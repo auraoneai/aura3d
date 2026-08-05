@@ -1354,17 +1354,79 @@ gradients and `fillRect`, selected whenever `shouldUseProductionRendererForCurre
 A naive `TextGeometry` could close a parity row while giving poor real-world text. Do not
 prescribe the implementation first.
 
-- [ ] **Step 1 — write the requirement doc** `docs/architecture/text-requirements.md`
+- [x] **Step 1 — write the requirement doc** `docs/architecture/text-requirements.md`
       covering which of these we owe developers: lit 3D geometry text · high-quality
       scalable UI text · world-space labels · accessible DOM labels · occlusion-aware
-      annotations.
-- [ ] **Step 2 — evaluate the four ecosystem approaches** against it: geometry text,
+      annotations. — **written and committed before any implementation** (commit `4f476464`,
+      one commit ahead of the code). Verdict per capability:
+
+      | Capability | Owed? | State |
+      |---|---|---|
+      | World-space annotations | **yes, primary** | **delivered** — `WorldLabelRenderer` projects with the scene's own view-projection each frame |
+      | Accessible DOM labels | **yes, must not lose** | **delivered** — real text, `role="note"`, `pointer-events: none` |
+      | Occlusion-aware annotations | **yes** | **was the only real gap** |
+      | High-quality scalable UI text | **yes** | **delivered** — and DOM does it better than any GPU approach |
+      | Lit 3D geometry text | **no** | absent, and **no consumer anywhere in the repository** |
+
+- [x] **Step 2 — evaluate the four ecosystem approaches** against it: geometry text,
       SDF/MSDF, DOM/CSS overlay, texture atlas. Note that **an SDF/MSDF system is likely
       more strategically useful than a TextGeometry equivalent**, and that we already have
-      accessible DOM labels.
-- [ ] **Step 3 — implement the chosen one(s).** File paths follow from the decision.
-- [ ] **Proof:** requirement doc + decision record committed *before* implementation; the
-      parity row cites the chosen approach and a visual test showing correct occlusion.
+      accessible DOM labels. — evaluated as a matrix in the doc. **The PRD's steer toward SDF/MSDF is
+      right in general and wrong here**, and saying so is the point of doing step 2 before step 3:
+      adopting it for the label layer would mean **replacing working accessible DOM text with pixels** —
+      losing accessibility outright, regressing UI crispness — to gain occlusion obtainable from a
+      geometry test. That is a downgrade dressed as parity. Geometry text serves only the one capability
+      we do not owe. Both deferrals are recorded **with the conditions that would make them correct**
+      (SDF/MSDF: curved surfaces, VR with no DOM plane, thousands of labels; geometry text: a route that
+      needs signage — and R11 requires an ADR first).
+- [x] **Step 3 — implement the chosen one(s).** File paths follow from the decision. — **occlusion for
+      the existing DOM layer. No text renderer in 1.6.**
+
+      **The gap was not missing code — it was a declared option that did nothing.** `occlusionAware` has
+      defaulted to **`true`** on every `labels.billboard()`, `labels.anchor()` and `labels.axisTick()`
+      since before 1.6 (`index.ts:3058`, `:3070`, `:3081`), `AuraLabelOptions` accepts it (`:1375`),
+      `FocusSelection.ts:266` sets it explicitly — and `worldLabelsFromSnapshot` **never read it**.
+      `WorldLabel` had no field to read it into. `depth` existed and was used only for draw ordering.
+      A developer reading the API saw occlusion-aware labels on by default; a developer watching the
+      screen saw labels drawn through walls. **Same defect shape as the P1 fabrications and the WS-2.5
+      gradient.**
+
+      Implemented as a **world-space segment-vs-box test** from the camera eye, not a depth-buffer read,
+      for a reason worth recording: **WebGL2 cannot read depth from the default framebuffer.**
+      `readPixels` reads colour only, and depth readback needs rendering into a framebuffer with a depth
+      *texture* attachment — restructuring both render paths to render off-screen and blit, for a label
+      feature. The segment test also answers the real question better: *"is the subject this label points
+      at hidden"* is a property of the scene, not of whatever happened to rasterise at one pixel, and it
+      is resolution-independent and unit-testable without a GPU.
+
+      Three details that were each a defect if got wrong: the test uses the **leader anchor**, not the
+      label box (a callout sits beside its subject, often over empty space, so testing the box asks about
+      the background); the **subject's own box is skipped** (otherwise every label is occluded by the
+      geometry it annotates); and **absence of a test means "not occluded"** — guessing pessimistically
+      would hide labels whenever the signal was unavailable, which is the exact shape this phase removes.
+
+      Default policy is **dim, not hide**: an annotation that vanishes is usually worse than one visibly
+      behind glass. `aria-hidden` is deliberately not set — the annotation is still true — and
+      `data-occluded` is exposed so an audit can distinguish "dimmed" from "unoccluded but faint", which
+      a screenshot cannot.
+- [x] **Proof:** requirement doc + decision record committed *before* implementation; the
+      parity row cites the chosen approach and a visual test showing correct occlusion. —
+      `tests/browser/label-occlusion.spec.ts` **1 passed** and
+      `tests/unit/agent-api/label-occlusion.test.ts` **8 passed**.
+
+      The browser test builds two scenes differing **only in the subject's z** — behind a wall, then in
+      front of it — so any difference is attributable to occlusion and nothing else. It asserts the DOM
+      actually dims (`style.opacity < 1`, `data-occluded="true"`), not merely that the projection report
+      says so, and carries the **control** that the in-front label is *not* occluded. Without that
+      control, occluding everything would satisfy the first half.
+
+      **Sabotage-verified:** forcing `occlusionAware: false` at the bridge fails the test on
+      *"a label whose subject is behind a wall must be occluded"*. Restoring it passes.
+
+      Parity: **`text rendering` stays a `gap` on purpose** — 1.6 ships no text renderer and must not
+      imply otherwise. Occlusion is a **new row**, `occlusion-aware annotations`, at genuine `parity` with
+      its lineage test named. Relabelling the text row would let a reader conclude 3D text exists.
+      `ecosystem-helpers` moves parity 8 → 9.
 
 ### WS-2.9 `step()` must render, or say why it cannot — found by WS-1.5
 

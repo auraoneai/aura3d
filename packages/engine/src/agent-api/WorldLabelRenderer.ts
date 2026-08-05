@@ -65,7 +65,57 @@ export interface WorldLabel {
   readonly hideWhenBehindCamera?: boolean | undefined;
   /** Screen-anchored HUD labels ignore the projection entirely. */
   readonly screenAnchor?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | undefined;
+  /**
+   * Respect geometry in front of the label's anchor (WS-2.7).
+   *
+   * ## Why this field is new when the option is old
+   *
+   * `occlusionAware` has defaulted to **true** on every `labels.billboard()`, `labels.anchor()` and
+   * `labels.axisTick()` since before 1.6, `AuraLabelOptions` accepts it, and `FocusSelection` sets it
+   * explicitly — but `worldLabelsFromSnapshot` never read it and `WorldLabel` had no field to read it
+   * into. `depth` existed and was used only for draw ordering and collision priority.
+   *
+   * So a developer reading the API saw occlusion-aware labels on by default while the screen showed
+   * labels drawn through walls: a declared capability that quietly did nothing. Adding the field is the
+   * part that makes the existing option mean something.
+   *
+   * Defaults to true here to match the public default. A label with no depth sampler available is drawn
+   * normally rather than hidden — absence of a depth signal is not evidence of occlusion.
+   */
+  readonly occlusionAware?: boolean | undefined;
+  /**
+   * What to do when the anchor is occluded. `"dim"` keeps the label readable but visibly behind, which
+   * is usually better for an annotation than vanishing; `"hide"` suits dense scenes.
+   */
+  readonly occlusionPolicy?: "dim" | "hide" | undefined;
 }
+
+/**
+ * Is the world point this label annotates hidden by geometry in front of it?
+ *
+ * ## Why a world-space test rather than a depth-buffer read
+ *
+ * The obvious implementation is to sample the depth buffer at the label's pixel. **WebGL2 cannot do
+ * that for the default framebuffer** — `readPixels` reads colour only, and reading depth requires
+ * rendering into a framebuffer with a depth *texture* attachment. Building that would mean restructuring
+ * both render paths to render off-screen and blit, for a label feature.
+ *
+ * A world-space segment test answers the question more directly anyway. "Is this label occluded" really
+ * means *"is the subject it points at behind something"*, which is a property of the scene, not of a
+ * pixel. It is also deterministic and unit-testable without a GPU, and it gives the same answer at any
+ * resolution — a depth read is subject to whatever happened to be rasterised at that exact pixel.
+ *
+ * Injected rather than computed here so this module stays pure: a test supplies a synthetic occluder and
+ * asserts the policy without constructing a scene.
+ *
+ * Returning `false` for "unknown" is deliberate. Absence of an occlusion signal is not evidence of
+ * occlusion, and guessing pessimistically would hide labels whenever the test was unavailable — the same
+ * silent-wrong-result shape this phase exists to remove.
+ */
+export type LabelOcclusionTest = (anchor: LabelVec3) => boolean;
+
+/** Opacity for an occluded label under the `"dim"` policy: visibly behind, still readable. */
+const OCCLUDED_OPACITY = 0.35;
 
 export interface LabelViewport {
   readonly width: number;
@@ -95,6 +145,15 @@ export interface ProjectedLabel {
   readonly leader: boolean;
   /** Normalized depth, 0 at the near plane. Used for draw ordering. */
   readonly depth: number;
+  /**
+   * True when geometry sits in front of this label's anchor (WS-2.7).
+   *
+   * Reported even when the policy is `"dim"` rather than `"hide"`, so evidence can distinguish
+   * "occluded and dimmed" from "not occluded" — a screenshot cannot.
+   */
+  readonly occluded: boolean;
+  /** Opacity multiplier applied for occlusion. 1 when unoccluded, < 1 when dimmed. */
+  readonly occlusionOpacity: number;
 }
 
 /**
@@ -138,7 +197,9 @@ const SCREEN_ANCHOR_MARGIN = 14;
 export function projectWorldLabels(
   labels: readonly WorldLabel[],
   viewProjection: ArrayLike<number>,
-  viewport: LabelViewport
+  viewport: LabelViewport,
+  /** WS-2.7 — occlusion test for a world anchor. Omit when unavailable; labels are then never occluded. */
+  isOccluded?: LabelOcclusionTest
 ): readonly ProjectedLabel[] {
   const compactScale = viewport.compact === true ? 0.86 : 1;
   return labels.map((label) => {
@@ -163,7 +224,10 @@ export function projectWorldLabels(
         color,
         background,
         leader: false,
-        depth: 0
+        depth: 0,
+        // A screen-anchored HUD label is deliberately in front of everything.
+        occluded: false,
+        occlusionOpacity: 1
       };
     }
 
@@ -206,6 +270,25 @@ export function projectWorldLabels(
       }
     }
 
+    /*
+     * WS-2.7 — occlusion of the point this label annotates.
+     *
+     * Tested at the LEADER anchor's world position, not the label box. A callout box is deliberately
+     * offset beside its subject and often sits over empty space, so testing there would ask about the
+     * background rather than the subject. The question is "is the thing this label points at hidden".
+     *
+     * A label already hidden for another reason is not tested — no need — and one behind the camera is
+     * not either, since `behindCamera` already covers it and is a stronger statement.
+     */
+    const occlusionAware = label.occlusionAware ?? true;
+    const occlusionAnchor = label.leaderAnchor ?? label.anchor;
+    const occluded = occlusionAware && isOccluded !== undefined && visible && !behindCamera
+      ? isOccluded(occlusionAnchor)
+      : false;
+    const occlusionPolicy = label.occlusionPolicy ?? "dim";
+    if (occluded && occlusionPolicy === "hide") visible = false;
+    const occlusionOpacity = occluded && occlusionPolicy === "dim" ? OCCLUDED_OPACITY : 1;
+
     return {
       id: label.id,
       text: label.text,
@@ -220,7 +303,9 @@ export function projectWorldLabels(
       color,
       background,
       leader,
-      depth: round(projected.ndc[2])
+      depth: round(projected.ndc[2]),
+      occluded,
+      occlusionOpacity
     };
   });
 }
@@ -283,6 +368,13 @@ export interface WorldLabelLayer {
   setLabels(labels: readonly WorldLabel[]): void;
   /** Reproject and redraw with the current view-projection matrix. */
   update(viewProjection: ArrayLike<number>): void;
+  /**
+   * Supply the occlusion test used for annotations (WS-2.7).
+   *
+   * Set separately from `update` because scene geometry changes with `setScene`, and because a layer
+   * created before the renderer mounts must remain usable and simply gain occlusion later.
+   */
+  setOcclusionTest(isOccluded: LabelOcclusionTest | undefined): void;
   /** Most recent projection result, for evidence and tests. */
   snapshot(): readonly ProjectedLabel[];
   dispose(): void;
@@ -296,6 +388,8 @@ export interface WorldLabelLayer {
  * annotations without announcing every camera-driven reposition.
  */
 export function createWorldLabelLayer(host: WorldLabelLayerHost): WorldLabelLayer {
+  /** WS-2.7 — set by the runtime once scene geometry is known. Undefined means "never occlude". */
+  let occlusionTest: LabelOcclusionTest | undefined;
   const root = document.createElement("div");
   root.className = "aura-world-label-layer";
   root.setAttribute("data-aura-world-labels", "");
@@ -379,6 +473,16 @@ export function createWorldLabelLayer(host: WorldLabelLayerHost): WorldLabelLaye
       element.style.color = label.color;
       element.style.background = label.background;
       element.style.fontSize = `${label.fontSize}px`;
+      /*
+       * WS-2.7 — dim an occluded label rather than removing it.
+       *
+       * `aria-hidden` is deliberately NOT set: the annotation is still true, it is simply behind
+       * geometry, and hiding it from a screen reader would trade a visual cue for an accessibility
+       * regression. `data-occluded` is exposed so an interaction audit can assert occlusion happened —
+       * a screenshot cannot distinguish "dimmed" from "unoccluded but faint".
+       */
+      element.style.opacity = String(label.occlusionOpacity);
+      element.dataset.occluded = label.occluded ? "true" : "false";
       if (element.textContent !== label.text) element.textContent = label.text;
       if (label.leader) {
         const line = ensureLeader(label.id);
@@ -387,7 +491,7 @@ export function createWorldLabelLayer(host: WorldLabelLayerHost): WorldLabelLaye
         line.setAttribute("x2", String(label.anchorX));
         line.setAttribute("y2", String(label.anchorY));
         line.setAttribute("stroke", label.color);
-        line.setAttribute("stroke-opacity", "0.72");
+        line.setAttribute("stroke-opacity", String(0.72 * label.occlusionOpacity));
       } else {
         leaders.get(label.id)?.setAttribute("stroke", "transparent");
       }
@@ -406,8 +510,11 @@ export function createWorldLabelLayer(host: WorldLabelLayerHost): WorldLabelLaye
     setLabels(next) {
       labels = next;
     },
+    setOcclusionTest(next) {
+      occlusionTest = next;
+    },
     update(viewProjection) {
-      projected = resolveLabelCollisions(projectWorldLabels(labels, viewProjection, viewport()));
+      projected = resolveLabelCollisions(projectWorldLabels(labels, viewProjection, viewport(), occlusionTest));
       draw();
     },
     snapshot() {

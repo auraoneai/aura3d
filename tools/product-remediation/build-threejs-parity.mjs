@@ -236,7 +236,21 @@ const ROWS = [
   { category: "ecosystem-helpers", capability: "contact shadows", expected: "drei ContactShadows", symbols: ["contactOcclusion", "contactShadows"], integrated: true, claim: "parity" },
   { category: "ecosystem-helpers", capability: "performance monitor", expected: "stats.js", symbols: ["createDiagnosticsOverlay", "AuraDiagnostics"], integrated: true, claim: "exceed", notes: "Diagnostics overlay reports backend, draw calls, renderer features and now placed labels." },
   { category: "ecosystem-helpers", capability: "scene inspector", expected: "three-devtools or custom", symbols: ["createGameInspector", "collectAuraSceneEvidence"], integrated: true, claim: "parity" },
-  { category: "ecosystem-helpers", capability: "text rendering", expected: "troika-three-text or TextGeometry", symbols: ["TextGeometry"], integrated: false, claim: "gap", notes: "No 3D text primitive. World labels are DOM, which is legible and accessible but cannot be occluded by geometry or lit by the scene." },
+    /*
+   * WS-2.7 — stays a `gap`, deliberately, and the note now distinguishes what is delivered from what is
+   * not. `docs/architecture/text-requirements.md` records the decision and its reasoning.
+   *
+   * We are not shipping a text renderer in 1.6 and must not imply we are. What the requirement analysis
+   * found is that of the five things called "text", four are already delivered by the DOM label layer —
+   * world-anchored placement, accessibility, crisp scaling, collision avoidance — and the fifth, lit 3D
+   * geometry text, has no consumer in this repository. Building `TextGeometry` would close this row and
+   * change nothing a developer can use, which is exactly the mistake WS-2.7 was written to prevent.
+   *
+   * The one genuine gap was occlusion, and it is closed as its OWN capability row below rather than by
+   * relabelling this one — a reader must not conclude from "occlusion works" that 3D text exists.
+   */
+  { category: "ecosystem-helpers", capability: "text rendering", expected: "troika-three-text or TextGeometry", symbols: ["TextGeometry"], integrated: false, claim: "gap", notes: "No 3D text primitive, and 1.6 deliberately does not add one: see docs/architecture/text-requirements.md. World labels are DOM — legible, accessible, crisply scaled, collision-avoiding, and now occlusion-aware (WS-2.7) — but they are not lit by the scene and cannot be extruded. Lit 3D geometry text has no consumer in this repository; adopting SDF/MSDF for the label layer would have traded accessibility and UI crispness for occlusion obtainable far more cheaply. Both deferrals carry the conditions that would make them correct." },
+  { category: "ecosystem-helpers", capability: "occlusion-aware annotations", expected: "drei Html with occlude, or a hand-written depth test", symbols: ["labels", "projectWorldLabels"], integrated: true, claim: "parity", notes: "WS-2.7. A label whose subject is behind geometry is dimmed (default) or hidden, per occlusionPolicy. The gap this closed was not missing code but a DECLARED option that did nothing: occlusionAware defaulted to true on every labels.billboard/anchor/axisTick, was accepted by AuraLabelOptions and set by FocusSelection, and worldLabelsFromSnapshot never read it — WorldLabel had no field for it. Implemented as a world-space segment-vs-box test from the camera eye rather than a depth-buffer read, because WebGL2 cannot read depth from the default framebuffer and because the real question is whether the annotated subject is hidden, which is a scene property rather than a pixel property. The subject\'s own box is skipped so a label cannot occlude itself.", evidence: ["tests/reports/browser.json"] },
 
   // --- Physics ---
   { category: "physics", capability: "rigid bodies", expected: "Rapier or Cannon integration", symbols: ["PhysicsWorld", "RigidBody"], integrated: true, claim: "parity" },
