@@ -1251,11 +1251,59 @@ Worth recording because each produced a *passing* number from a real bundler.
 gradients and `fillRect`, selected whenever `shouldUseProductionRendererForCurrentScene()`
 (:9907) is false. It already caused one defect class (labels drawn only in the 2D path).
 
-- [ ] Never select it for a developer-authored scene. If the production path cannot start,
-      throw a diagnosable error instead of silently drawing gradients.
-- [ ] Rename to `renderDiagnosticPreviewToCanvas`; headless/diagnostic use only.
-- [ ] Remove `"canvas2d"` from the public `AuraBackend` union (:9150) or mark internal.
-- [ ] **Proof:** a typed-GLB route with a deliberately failed device errors; no gradient frame.
+- [x] Never select it for a developer-authored scene. If the production path cannot start,
+      throw a diagnosable error instead of silently drawing gradients. — **done, and it needed three
+      guards rather than one**, because "the production path cannot start" happens at three different
+      moments:
+
+      1. **Synchronously, before the mount** — a scene declaring renderable content on a supplied canvas
+         with no WebGL2 now throws a named error.
+      2. **While the mount is in flight** — already covered by WS-2.9.
+      3. **After the mount FAILS** — this was the gap, and it was invisible. With both
+         `productionMountPending` and the controller absent, a failed mount was indistinguishable from
+         "this scene never wanted WebGL", so `step()` fell through and painted a gradient over a scene
+         whose renderer had just failed. **Measured: 16,384 lit pixels on a 128x128 canvas — the entire
+         surface** — with the real error sitting in `diagnostics().errors` where nobody was looking. Now
+         tracked as `productionMountFailed`.
+
+      **And the live render loop needed the same guard.** Fixing only `step()` would have left the gradient
+      reachable through `autoStart`, which is the path most routes actually take.
+
+      **Scoped deliberately: a canvas-less app does NOT throw.** `createAuraApp(undefined, ...)` is a
+      legitimate, widely used pattern — 18 tests exercise scene, runtime and physics behaviour headlessly,
+      and it is the documented way to reach `app.physics` without rendering. Throwing there would break
+      working semantics to satisfy a rendering rule, which R7 forbids; such a caller is not being shown a
+      misleading frame, they are being shown none, and `backend` reports `"headless"`. That over-broad
+      first attempt failed 18 tests and the scope was corrected rather than the tests.
+- [x] Rename to `renderDiagnosticPreviewToCanvas`; headless/diagnostic use only. — renamed, with a
+      docblock stating it draws *a gradient, a grid, and a rectangle per node* — a schematic, not a
+      render — and naming the defect class it already caused: world labels reached the scene graph but
+      were drawn only there, so every production callout was silently dropped while evidence counted the
+      nodes.
+- [x] Remove `"canvas2d"` from the public `AuraBackend` union (:9150) or mark internal. — **marked
+      internal**, not removed. `diagnostics().backend` can still legitimately report it for a scene with
+      nothing to render, and deleting the union member would force that reading to lie. The docblock says
+      it is internal and diagnostic-only, that it is never selected for a scene declaring renderable
+      content, and that a `"canvas2d"` reading must not be treated as a render.
+- [x] **Proof:** a typed-GLB route with a deliberately failed device errors; no gradient frame. —
+      `tests/browser/canvas2d-diagnostic-only.spec.ts` + harness, **1 passed**, and
+      `tests/unit/agent-api/canvas2d-is-diagnostic-only.test.ts`, **4 passed**.
+
+      The failure is provoked honestly: `getContext` is stubbed on **one** canvas instance to return null
+      for `webgl2`, which is what a browser does when the GPU process is unavailable or too many contexts
+      are live. The test accepts **either** a synchronous throw or a recorded async mount error — this
+      canvas exists in a browser, so the selection rule correctly attempts WebGL and only learns of the
+      denial inside `startProductionRender` — while asserting the third outcome is impossible: a gradient
+      on screen with `backend: "canvas2d"` and empty errors.
+
+      It carries a **control**: the same scene on a working canvas must still report `backend: "webgl2"`
+      and > 1,000 lit pixels. Without it, breaking rendering generally would make the main assertion pass,
+      which is exactly the shortcut worth guarding against.
+
+      The unit half asserts the *selection rule* rather than constructing the failure, because the
+      behavioural case is unreachable from Node — `resolveCanvas` requires a real `HTMLCanvasElement`, so a
+      stub throws `"HTMLCanvasElement is not defined"` before the rule is consulted, and faking further
+      would test the fake.
 
 ### WS-2.6 Context-loss recovery through the root API
 

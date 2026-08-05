@@ -9202,6 +9202,16 @@ function promptPlanWarnings(plan: AuraPromptPlan): readonly string[] {
   return warnings;
 }
 
+/**
+ * Which backend a mounted app is drawing with.
+ *
+ * `"canvas2d"` is **internal and diagnostic-only** (WS-2.5). It is never selected for a scene that
+ * declares renderable content: such a scene either renders through WebGL2/WebGPU or raises a diagnosable
+ * error. It appears here because `diagnostics().backend` can still report it for a scene with nothing to
+ * render, and hiding that would make the diagnostic less useful, not more honest.
+ *
+ * Do not treat a `"canvas2d"` reading as a render. See `renderDiagnosticPreviewToCanvas`.
+ */
 export type AuraBackend = "webgl2" | "webgpu" | "canvas2d" | "headless";
 
 export interface AuraDiagnostics {
@@ -9910,6 +9920,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   /** WS-2.9: true from the moment a WebGL mount starts until the controller arrives or fails. */
   let productionMountPending = false;
   /**
+   * WS-2.5 — true when a WebGL mount was attempted and FAILED for this scene.
+   *
+   * Distinct from `productionMountPending`, and the distinction is the whole point. After a failed mount
+   * both the pending flag and the controller are absent, which used to be indistinguishable from "this
+   * scene never wanted WebGL" — so `step()` and the render loop fell through to the Canvas-2D branch and
+   * painted a gradient over a scene whose renderer had just failed. Measured: 16,384 lit pixels on a
+   * 128x128 canvas, i.e. the entire surface, with the real error sitting in `diagnostics().errors` where
+   * nobody was looking.
+   */
+  let productionMountFailed = false;
+  /**
    * Settles when the in-flight WebGL mount finishes, successfully or not. Backs `app.ready()`.
    *
    * Resolved rather than pending when no mount is in flight, so `await app.ready()` is safe to call at
@@ -10077,7 +10098,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     }
     diagnosticsState.evidence = collectAuraSceneEvidence(renderSnapshot);
     diagnosticsState.fps = Math.round(1000 / delta);
-    diagnosticsState.drawCalls = renderSceneToCanvas(canvas, renderSnapshot, time);
+    /*
+     * WS-2.5 — the live loop must respect the same rule as `step()`.
+     *
+     * Fixing only `step()` would have left the gradient reachable through `autoStart`, which is the path
+     * most routes take. A scene whose WebGL mount is pending or has failed gets nothing drawn; the reason
+     * is already recorded in `warnings`/`errors`.
+     */
+    diagnosticsState.drawCalls = productionMountPending || productionMountFailed
+      ? 0
+      : renderDiagnosticPreviewToCanvas(canvas, renderSnapshot, time);
     if (canvas) diagnosticsState.renderSize = [canvas.width, canvas.height];
     overlay?.update();
     if (options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
@@ -10092,6 +10122,37 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     productionController = undefined;
     lastTime = 0;
     const shouldUseProductionRenderer = shouldUseProductionRendererForCurrentScene();
+    /*
+     * WS-2.5 — a scene with renderable content must never fall to the diagnostic 2D path.
+     *
+     * `shouldUseProductionRendererForCurrentScene()` is false in two very different situations, and the
+     * old code treated them the same: a scene with nothing renderable in it (fine, nothing to draw), and
+     * a scene *with* renderable nodes that could not reach WebGL — no canvas, or no `window`. The second
+     * used to silently produce a gradient schematic, which looks like a render and is not.
+     *
+     * So the two cases are separated. A renderable scene with no usable canvas now raises a diagnosable
+     * error naming the cause, instead of drawing something plausible.
+     */
+    const declaresRenderableContent = renderSnapshot.nodes.some(isWebGLRenderableNode);
+    /*
+     * Scoped to the case that is actually a lie: a canvas WAS supplied, so the caller is looking at
+     * pixels, and the scene has renderable content — but WebGL declined it, so those pixels would be a
+     * gradient schematic.
+     *
+     * Deliberately NOT extended to `canvas === undefined`. Constructing an app with no canvas is a
+     * legitimate and widely used pattern — 18 tests across `tests/unit/agent-api` and
+     * `tests/unit/rendering` do it to exercise scene, runtime and physics behaviour headlessly, and
+     * `createAuraApp(undefined, ...)` is how `lazy-physics-world.test.ts` checks `app.physics`. Throwing
+     * there would break working semantics to satisfy a rendering rule, which R7 forbids. Those callers
+     * are not being shown a misleading frame; they are not being shown a frame at all, and
+     * `diagnostics().backend` reports `"headless"`.
+     */
+    if (declaresRenderableContent && canvas && !shouldUseProductionRenderer) {
+      throw new AuraRuntimeError(
+        "backend-fallback",
+        "Aura3D cannot render this scene on the canvas you supplied: it has renderable nodes but WebGL2 is unavailable in this context. It will NOT fall back to the Canvas 2D diagnostic preview, because that draws a gradient schematic rather than your scene and has silently hidden defects before — world labels once reached the scene graph but were drawn only in that path. Suggested fix: run in a browser context with WebGL2 available, or inspect diagnostics().errors for the underlying device failure."
+      );
+    }
     const backend: AuraBackend = shouldUseProductionRenderer ? "webgl2" : canvas ? "canvas2d" : "headless";
     resetDiagnosticsForCurrentScene(backend);
     canvasRuntimePhysics = shouldUseProductionRenderer ? undefined : createRuntimeScenePhysics(renderSnapshot);
@@ -10107,6 +10168,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
      * headless capture got a blank image and no explanation.
      */
     productionMountPending = shouldUseProductionRenderer && Boolean(canvas);
+    productionMountFailed = false;
     let settleMount: () => void = () => undefined;
     productionMountSettled = productionMountPending
       ? new Promise<void>((resolveSettled) => { settleMount = resolveSettled; })
@@ -10150,6 +10212,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         .catch((error: unknown) => {
           if (disposed || revision !== mountRevision) return;
           productionMountPending = false;
+          productionMountFailed = true;
           settleMount();
           diagnosticsState.backend = "webgl2";
           diagnosticsState.errors.push(productionRenderErrorMessage(error));
@@ -10289,7 +10352,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       const simulatedMs = runtimeTime * 1000;
       if (productionController) {
         productionController.render(simulatedMs);
-      } else if (productionMountPending) {
+      } else if (productionMountPending || productionMountFailed) {
         /*
          * WS-2.9 — a WebGL mount is in flight, so there is nothing correct to draw yet.
          *
@@ -10304,8 +10367,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
          * the fix, because a developer writing a headless capture has no way to guess that a
          * documented deterministic entry point depends on an animation frame having elapsed.
          */
-        const pendingWarning =
-          "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix: await one animation frame — `await new Promise(requestAnimationFrame)` — or await `app.ready()` before stepping, then call step() as normal.";
+        const pendingWarning = productionMountFailed
+          ? "Aura3D step() rendered nothing because the WebGL renderer failed to mount for this scene. It will NOT fall back to the Canvas 2D diagnostic preview, because that paints a gradient schematic over a scene whose renderer just failed. Suggested fix: read diagnostics().errors for the underlying device failure."
+          : "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix: await one animation frame — `await new Promise(requestAnimationFrame)` — or await `app.ready()` before stepping, then call step() as normal.";
         if (!diagnosticsState.warnings.includes(pendingWarning)) diagnosticsState.warnings.push(pendingWarning);
         diagnosticsState.drawCalls = 0;
         overlay?.update();
@@ -14799,7 +14863,23 @@ function collectGeneratedCodeWarnings(snapshot: AuraSceneSnapshot): string[] {
   return warnings;
 }
 
-function renderSceneToCanvas(canvas: HTMLCanvasElement | undefined, snapshot: AuraSceneSnapshot, time: number): number {
+/**
+ * WS-2.5 — DIAGNOSTIC PREVIEW ONLY. Renamed from `renderSceneToCanvas`.
+ *
+ * This draws a scene with `getContext("2d")`: a linear gradient, a grid, and a coloured rectangle per
+ * node. It is a *schematic*, not a render, and it has already produced one real defect class — world
+ * labels reached the scene graph but were drawn only here, so every production callout was silently
+ * dropped while evidence counted the nodes.
+ *
+ * The old name did not say any of that, and the old selection rule made it the fallback for anything
+ * the WebGL path declined. A developer whose scene failed to qualify got a plausible-looking gradient
+ * frame and no indication that they were not looking at their renderer.
+ *
+ * It is retained because a headless or non-renderable scene still benefits from *something* inspectable,
+ * and because the diagnostics overlay uses it. What changed is that it is no longer reachable for a
+ * scene that declares renderable content — see `mountCurrentScene`.
+ */
+function renderDiagnosticPreviewToCanvas(canvas: HTMLCanvasElement | undefined, snapshot: AuraSceneSnapshot, time: number): number {
   if (!canvas) return 0;
   const context = canvas.getContext("2d");
   if (!context) return 0;
