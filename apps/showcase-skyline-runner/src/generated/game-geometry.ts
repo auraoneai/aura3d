@@ -483,7 +483,7 @@ export const gameGeometryContract = {
   "evidence": {
     "geometryReport": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "routePrimaryScreenshotSha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61"
+    "routePrimaryScreenshotSha256": "sha256-bfa6f3716a1929fb6d4cda503427c920a70d8d5bd75dd832c3f26deee7859ed6"
   },
   "design": {
     "minPlayableSeconds": 30,
@@ -736,14 +736,14 @@ export const gameGeometryContract = {
       ],
       "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
       "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
-      "screenshotSha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61",
+      "screenshotSha256": "sha256-bfa6f3716a1929fb6d4cda503427c920a70d8d5bd75dd832c3f26deee7859ed6",
       "geometryEvidence": {
         "category": "platformer",
         "kind": "platformer-playable-surface-map",
         "source": "asset-mesh-extracted",
         "report": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
         "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-        "routePrimaryScreenshotSha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61",
+        "routePrimaryScreenshotSha256": "sha256-bfa6f3716a1929fb6d4cda503427c920a70d8d5bd75dd832c3f26deee7859ed6",
         "assets": [
           {
             "id": "showcaseKenneyOobiPlatformerHero",
