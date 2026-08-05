@@ -1,12 +1,14 @@
 # Aura3D Product Remediation PRD
 
 **Baseline under remediation:** 1.5.0
-**Status:** in progress
+**Status:** closed out at 1.5.2 (2026-08-04). See section 17.
+**Remaining debt:** section 15 items are still open and carried forward.
 **Inventory artifact:** `tests/reports/aura3d-product-inventory.json` (regenerate with `node tools/product-remediation/build-product-inventory.mjs`)
 **Interaction evidence:** `tests/reports/showcase-interaction-audit/` (regenerate with `npx playwright test tests/browser/showcase-route-interaction-audit.spec.ts`)
 
-Release and marketing are frozen for the duration of this work. No npm publish, no
-GitHub release, no marketing deploy, no version change, no route-status promotion.
+Release and marketing were frozen for the duration of this work. That freeze was
+lifted by the user on 2026-08-03, and 1.5.2 shipped under the terms recorded in
+section 17. The route-status freeze was **not** lifted: no game route was promoted.
 
 ---
 
@@ -429,7 +431,7 @@ Not minimised:
 10. **10 parity rows remain `parity-unproven`** — not proven by the generator's
     consumer detection, which is weaker evidence than a passing test.
 
-## 16. Release recommendation
+## 16. Release recommendation (as written 2026-08-02, superseded by section 17)
 
 **Aura3D has not earned another release.**
 
@@ -447,3 +449,47 @@ the rest of the workspace.
 
 The next release should follow a user visual review that clears the game gates and the
 `engine-runtime` consolidation.
+
+## 17. Closeout — what actually shipped as 1.5.2 (2026-08-04)
+
+Section 16's recommendation was written before the 1.5.2 work existed. It is retained
+as the honest verdict at that date. This section records what changed and what did not,
+so the recommendation is not read as either approval or as still-current advice.
+
+**The two conditions section 16 set were partially met.**
+
+- *"a user visual review that clears the game gates"* — **met for the four
+  `release-ready candidate` routes only.** Independent human approval is recorded
+  hash-bound in `docs/project/showcase-visual-review.json`, and the release gate at
+  `v1.5.2` reported `publicReleaseOk: true` with zero `visualReview.failures`.
+- *"the `engine-runtime` consolidation"* — **not met.** Section 15 item 3 is unchanged:
+  `@aura3d/engine-runtime` still declares 322 exports and 51 symbol names still have
+  multiple owners. This debt shipped.
+- The three game routes (Blockfall Reactor, Skyline Runner, Turbo Drift Circuit)
+  were **not** approved and remain `prototype-blocked`. Aura Clash remains ungated.
+  No status was promoted to enable this release.
+
+**What 1.5.2 added at the library level**, which is the distinction that motivated the
+release: orthographic and isometric camera framing in `@aura3d/rendering`
+(`computeOrthographicCameraFrame`, `computeOrthographicCameraView`,
+`RenderSource.cameraProjection`), `camera.orthographic()` / `camera.isometric()` on the
+public agent API, and `fitSizeToRegion()` in `SpatialAnchoring` for bounds-derived asset
+sizing. Registry tarball diff confirms 1.5.2 is not byte-identical to 1.5.1 and that
+these symbols are absent in 1.5.1 and exported in 1.5.2.
+
+**What 1.5.2 did not establish.** Visual parity with Three.js is still not provable.
+Three of the four visual-parity suites pass only very loose gates (PBR tolerates 0.82
+pixel-divergence ratio); the one strict gate, product render, still **fails** at
+0.331/17.4 — improved from 0.914/36.2 by a real library fix, but failing. Colour
+management remains `parity-unproven`. Text rendering, morph targets, and context-loss
+recovery remain hard gaps. `blockedClaims` still forbids broad
+better-than-Three.js and better-than-Babylon.js language; that prohibition is unchanged
+by this release.
+
+**Sections 1–15 are not re-verified as of this closeout.** They describe the state at
+2026-08-02. Seven later commits (`cc4624af`..`edde88af`, a physics/vehicle/character-controller
+workstream) plus uncommitted edits have since changed route sources and screenshots,
+which re-opens the hash-bound human approval. `build-and-check` is therefore currently
+red with `stale-source` / `stale-screenshot` / `not-approved` findings. That is
+re-approval bookkeeping for the next release, not a defect in what shipped as 1.5.2.
+The next release needs regenerated screenshots and fresh human sign-off.

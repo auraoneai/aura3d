@@ -468,9 +468,17 @@ non-human, and `nonHumanReviewerPattern` explicitly matches `pending`, `machine`
 self-approve visual quality. **This is the single remaining gate between the current
 worktree and Gate C**, and it requires a human to look at the screenshots.
 
-**Consequence: Gate C and Gate D remain not started**, per this plan's own
-instruction — "If the evidence does not support the release, say so and stop before
-Gate C. That is a successful outcome of this task, not a failure of it."
+**Consequence at the time this was written: Gate C and Gate D were not started**,
+per this plan's own instruction — "If the evidence does not support the release, say
+so and stop before Gate C."
+
+**This blocker was subsequently cleared by the human owner, not by an agent.**
+`docs/project/showcase-visual-review.json` now records
+`reviewer: { id: "gchahal1982@procure-net.com", name: "Gurbaksh Chahal", kind: "human" }`
+with `overallVerdict: "pass"` and `approvalScope: "public-release"` on exactly the
+four release-ready candidates. The three prototypes remain `needs-work` /
+`development-review`, so no route status was promoted to obtain the approval. Gates C
+and D then ran to completion — see "Gate C/D completion record" below.
 
 - [x] **Original A1 note about labels was wrong and should not be propagated.**
   The plan asserted district labels anchor "to points on the car body". They do
@@ -578,18 +586,93 @@ mine and are fixed; one is blocked on pre-existing user work (`prompt.md`); one
 encodes an obsolete expectation and is entangled with a status decision; six are
 parallel-load timeouts that pass 95/95 in isolation.
 
-**Gate C: deliberately NOT started.** No version bump beyond the pre-existing
-uncommitted 1.5.2 edit, no commit, no push, no `npm publish`, no tag, no GitHub
-release. The gate that blocks it is `publicReleaseOk: false` driven by
-`reviewer.kind: "pending"` — a human sign-off an agent must not fabricate.
+**Gate C: COMPLETE (after human approval).** Superseded by the completion record
+below. At the time of writing it was correctly blocked by `publicReleaseOk: false`
+driven by `reviewer.kind: "pending"` — a human sign-off an agent must not fabricate.
 
-**Gate D: deliberately NOT started.** No marketing edit, no Vercel deploy. Deploying
-would publish four routes the repo's own gate marks `release-blocked`.
+**Gate D: COMPLETE (after human approval).** Superseded by the completion record
+below. It was correctly withheld while the repo's own gate marked the four
+release-ready routes `release-blocked`.
 
 `pnpm build` succeeds and the new API is present in shipped output
 (`packages/rendering/dist/CameraFraming.d.ts`,
 `packages/engine/dist/agent-api/SpatialAnchoring.d.ts`), so the work is
 release-*ready* in the mechanical sense. What is missing is approval, not code.
+
+## Gate C/D completion record — verified 2026-08-03
+
+Re-verified from current external state, not from memory. Every claim below has a
+command behind it.
+
+- [x] **C1 version.** Tag `v1.5.2` exists. Commits `508fdb76` (`release: Aura3D
+  1.5.2`), `c83b186b` (marketing copy), `d441a368` (deploy-path doc fix).
+
+- [x] **C2 documentation.** `CHANGELOG.md`, `README.md`, `docs/api/public-api.md`
+  (regenerated, `pnpm verify:api-docs` → `ok: true`, 26 packages / 993 exports),
+  `docs/project/migration.md`, and the parity plan all carry 1.5.2 and the new API.
+  The remediation PRD is now closed out in a new section 17: its section 16
+  "Aura3D has not earned another release" verdict is retained and dated rather than
+  rewritten, section 17 records that only one of its two release conditions was met
+  (human visual review cleared the four release-ready routes; the `engine-runtime`
+  consolidation did **not** happen and shipped as debt), and it states plainly that
+  no route status was promoted. `pnpm check:marketing-truth` and
+  `pnpm check:agent-docs` both pass with that text in place.
+
+- [x] **C3 publish.** `@aura3d/engine@1.5.2` resolves on the public registry and
+  packs successfully. The 1.5.1-era split-registry hazard did not recur for this
+  package.
+
+- [x] **A4 release-substance gate holds at the tag, which is the claim that
+  matters.** `git diff --name-only v1.5.1..v1.5.2 | grep "packages/.*/src/"`
+  returns **5 files**, not zero:
+  `packages/engine/src/agent-api/SpatialAnchoring.ts`,
+  `packages/engine/src/agent-api/index.ts`,
+  `packages/rendering/src/CameraFraming.ts`,
+  `packages/rendering/src/Renderer.ts`,
+  `packages/rendering/src/index.ts`.
+  The no-op-release trap was avoided.
+
+- [x] **C4 post-publish library-change proof — the user's central confirmation.**
+  Both tarballs pulled from the registry and diffed. 1.5.2 is **not** byte-identical
+  to 1.5.1; 22 files differ, and the difference is real new public API rather than
+  only rebuild noise:
+
+  | check | 1.5.1 | 1.5.2 |
+  | --- | --- | --- |
+  | `computeOrthographicCameraFrame` in `dist/rendering/CameraFraming.js` | absent (0) | present (1) |
+  | same symbol re-exported from `dist/rendering/index.js` | absent (0) | present (1) |
+  | `fitSizeToRegion` in `dist/engine/agent-api/SpatialAnchoring.js` | absent | exported |
+  | public typing | — | `export declare function computeOrthographicCameraFrame(bounds, viewport, options?): OrthographicCameraFrame` |
+
+  This is the proof that the release fixed the library, not only the games. It is
+  narrow proof: it establishes new shipped public capability, **not** blanket visual
+  parity. The parity table above still governs what may be claimed.
+
+- [x] **D3 deploy live.** `aura3d.auraone.ai/` → 200,
+  `/showcase/aura-clash` → 200, `/playable` → 200. The root `vercel.json` rewrites
+  resolve rather than 404. No DNS, alias, or project setting was changed.
+
+- [x] **Release gate was green at the published commit.**
+  `git show v1.5.2:docs/project/showcase-launch-evidence.json` reports
+  `publicReleaseOk: true` with **zero** `visualReview.failures` on all four
+  release-ready candidates, and the three prototypes still `prototype-blocked`.
+  The release did not ship over a failing gate.
+
+### Current worktree is red again, and that is expected, not a release regression
+
+`node tools/showcase-library/build-and-check.mjs` now fails
+(`publicReleaseOk: false`). This does **not** retroactively invalidate 1.5.2. The
+cause is 7 newer unpushed commits (`cc4624af` WS-0 through `edde88af` WS-3.3/3.4 —
+a physics/vehicle/character-controller workstream) plus uncommitted edits that
+changed route sources, screenshots and route-health *after* the approval was
+recorded. The human approval is deliberately hash-bound, so any later source edit
+re-opens it. Failure list is entirely `stale-source` / `stale-screenshot` /
+`*-hash` / `not-approved` — i.e. re-approval bookkeeping for the *next* release,
+not a defect in what shipped.
+
+**Therefore: this plan (`resetprompt.md`) is fully executed. The open physics
+workstream belongs to a subsequent release and needs its own screenshot
+regeneration and fresh human sign-off before it can claim `publicReleaseOk`.**
 
 ### The honest answer to the user's central question
 
