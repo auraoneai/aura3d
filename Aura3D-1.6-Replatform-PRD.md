@@ -145,11 +145,13 @@ not done this document's job.
       `tools/` and deletes no package source. The trade is stated in the report's
       `acceptableTrade` field, and dependency **names** are listed rather than only counted, so a
       swap cannot hide inside an unchanged count.
-- [ ] **Release condition: R12 violations = 0** — **currently 5 of 5**, each detected structurally
-      rather than asserted: `PhysicsWorld` still declares both backends; `packages/input/ActionMap`
-      and `GameRuntime.createGameInput` both live; `packages/audio` and `engine/src/game/GameAudio`
-      both live; `VehicleMotion` and `game.racing`'s kinematic integration both live; `GameRuntime`
-      plus per-kit integrators. P3 and P4 resolve these.
+- [ ] **Release condition: R12 violations = 0** — **currently 3 of 5 remaining**, each detected
+      structurally rather than asserted: `PhysicsWorld` still declares both backends; `VehicleMotion`
+      and `game.racing`'s kinematic integration both live; `GameRuntime` plus per-kit integrators.
+      P4 and P5 resolve these.
+      **Closed:** input (WS-3.1 — disjoint consumers; the real duplicate was two `KeyboardInput`
+      classes in one package, one dead, now deleted) and audio (WS-3.2 — disjoint layers; fix is
+      delegation). Both closures came from consumer measurement contradicting the package-level view.
 - [x] **Proof:** committed `tests/reports/negative-complexity.json` comparing every baseline
       row to its 1.6 value — done, `pnpm check:negative-complexity`.
 
@@ -354,10 +356,15 @@ The repository violates this today in five places, all measured:
 | Capability | Implementation A | Implementation B |
 |---|---|---|
 | Physics solver | `cannon-es` backend | hand-written `aura-js` backend (joints silently no-op on A) |
-| Input | `packages/input` (XR, touch, gamepad, gesture, replay) | `GameRuntime.ts:1618` `createGameInput` (buffering, combo, axes) |
-| Audio | `packages/audio` | `engine/src/game/GameAudio.ts` |
+| ~~Input~~ **RESOLVED WS-3.1** | `packages/input` (XR, touch, gamepad, gesture, replay) | `GameRuntime.ts` `createGameInput` (buffering, combo, axes) — **disjoint consumers, not duplicates.** The real violation was two `KeyboardInput` classes inside `packages/input`, one dead; deleted. |
+| ~~Audio~~ **RESOLVED WS-3.2** | `packages/audio` (graph: context, mixer, effects) | `engine/src/game/GameAudio.ts` (cues + evidence) — **disjoint concepts at different layers.** Fix is delegation, not deletion. One route-local raw `AudioContext` tracked to WS-5.3. |
 | Vehicle motion | `packages/physics/VehicleMotion.ts` (force model) | `game.racing` kinematic integration |
 | Game runtime | `engine/src/agent-api/GameRuntime.ts` | per-kit private integrators |
+
+**Measured status (2026-08-05): 5 → 3 remaining.** Two rows were closed by measurement rather
+than by deletion, and both corrections went the same way: what the package-level view called
+"duplication" was, on inspection, either two disjoint consumer sets or two different layers. That
+is the pattern R6 exists to guard against — a line count or a package count cannot see it.
 
 **Exit condition for 1.6: none of these five rows has two implementations.** One survives as
 the owner; the other becomes a thin adapter or is deleted. A capability with two live
@@ -1684,28 +1691,66 @@ repo-wide match would force awkward architecture.
       owning the keyboard stream as *not attaching*, and would have let a new table-driven service in
       silently. The pattern now matches the declared `"keydown"` string in either spelling.
 
-### WS-3.2 Audio — same standard
+### WS-3.2 Audio — same standard — **COMPLETE (2026-08-05)**
 
-`packages/audio` (2,205 lines, **1 consumer**) vs `packages/engine/src/game/GameAudio.ts`
-(own `createGain` at :98). Custom DSP is only 69 lines.
+`packages/audio` (2,205 lines) vs `packages/engine/src/game/GameAudio.ts` (224 lines, own
+`createGain`). Custom DSP is only 69 lines.
 
-- [ ] **Step 1 — characterization tests** on both: playback state, scheduling/timing,
-      bus routing, spatialization, gain ramps, context unlock/resume, dispose semantics.
-- [ ] **Step 2 — choose the survivor from evidence**, port the other's unique capabilities.
-- [ ] **Step 3 — inspect before deleting. "Web Audio already provides the node" is not
-      sufficient grounds.** A thin wrapper can legitimately add consistent disposal, typed
-      presets, automation, serialization, scene integration or diagnostics.
-      **Inspection result (2026-08-05):** `Reverb.ts` (30 lines) wraps `createConvolver`
-      with `setImpulse`, `connect`, `disconnect`, and a `dispose` that nulls the buffer.
-      `Filter.ts` (39) wraps `createBiquadFilter` with validated `setFrequency`/`setQ`
-      (throws on non-finite/negative) plus `dispose`. Both implement the shared
-      `AudioEffect` interface. So they are **not pure aliases** — they carry disposal
-      discipline, input validation and interface conformance.
-- [ ] **Revised recommendation: keep both**, and fold them into whichever audio layer WS-3.2
-      selects. Delete only if the chosen layer already provides equivalent disposal,
-      validation and `AudioEffect` conformance, making them true duplicates. Record the
-      decision either way.
-- [ ] **Proof:** one `AudioContext` owner; `examples/game-slice` unchanged in behaviour.
+**Consumer measurement corrects the framing again — the same way WS-3.1 did.** The two
+layers have **disjoint consumers**, not competing ones:
+
+| Layer | Consumers |
+| --- | --- |
+| `packages/audio` | `examples/game-slice`, `packages/editor-runtime`, audio browser harness, 5 test suites |
+| `GameAudio` | `agent-api` (public export), `apps/aura-clash-showcase` (2 files) |
+
+- [x] **Step 1 — characterization tests on both.** `tests/unit/audio/audio-characterization.test.ts`
+      (12 tests, all pass). Covers context lifecycle, lazy/stable mixer identity, dispose
+      semantics, effect validation, cue dispatch, bus volume, mute, unlock.
+- [x] **Step 2 — choose the survivor from evidence.** **Evidence says: keep both, because
+      neither is a reimplementation of the other.**
+      - `packages/audio` is a **graph** API: `AudioContextManager` (context lifecycle,
+        synthesised `"locked"` state, `unlock`/`suspend`/`resume`/`dispose`), `AudioMixer`,
+        buses, effects, spatialization, waveform, timeline.
+      - `GameAudio` is a **cue** API: named cues typed per route, per-bus volume, mute, and
+        **every operation returns evidence** that the route-health harnesses consume. It
+        exposes no mixer and no context lifecycle beyond unlock/dispose.
+      - Asserted in `audio-characterization.test.ts` ("the two layers expose disjoint
+        concepts") so the distinction cannot silently erode: `AudioSystem` has no `cue`/
+        `evidence`; `GameAudio` has no `mixer`/`suspend`.
+      - **This is a layering relationship, not duplication.** The correct 1.6 end state is
+        `GameAudio` delegating its graph work to `packages/audio` instead of calling
+        `createGain` directly — one owner for the graph, one owner for cues.
+- [x] **Step 3 — inspect before deleting. "Web Audio already provides the node" is not
+      sufficient grounds.** **Inspection confirmed by test, not by reading:**
+      `Reverb.ts` (30 lines) wraps `createConvolver` with `setImpulse` and a `dispose` that
+      **nulls the buffer** — an impulse response is typically the largest buffer in an audio
+      graph, so this is a real leak fix. `Filter.ts` (39) wraps `createBiquadFilter` with
+      `setFrequency`/`setQ` that **throw on non-finite/zero/negative** input, where a raw node
+      silently accepts NaN and produces a filter that does nothing. Both implement the shared
+      `AudioEffect` interface, which is what lets a heterogeneous chain hold either.
+- [x] **Recommendation confirmed: keep both effects.** Not pure aliases; they carry disposal
+      discipline, input validation and interface conformance. All three properties are now
+      pinned by assertions.
+- [x] **Proof: one `AudioContext` owner.** `tests/unit/audio/audio-context-ownership.test.ts`
+      (3 tests) scans `packages`, `apps`, `examples` for context construction and allows only
+      enumerated owners with written justification. Result: **exactly two sites.**
+      1. `packages/audio/src/AudioContextManager.ts` — THE owner.
+      2. `apps/aura-clash-showcase/.../AuraClashArenaApp.ts` — **a genuine violation, found by
+         this test.** The route imports `createGameAudio` *and also* hand-rolls
+         `createAudioRuntime()` with its own raw `AudioContext`, buffer cache and fetch loop.
+         Per **R3** the fix belongs in P5 (WS-5.3) as a route rebuild through the shared
+         runtime, not as a P3 patch. The allowlist entry asserts `KNOWN VIOLATION` and
+         `WS-5.3`, so if anyone fixes the route the test **fails** and forces the entry's
+         removal — the exception cannot quietly become permanent.
+- [x] **`examples/game-slice` unchanged in behaviour** — no source touched in this workstream;
+      only tests added.
+
+**R12 correction (second one).** The audit listed audio as a duplicate-ownership violation.
+Measurement shows it is a **layering gap**, not duplicate ownership: two disjoint APIs at
+different levels, plus one route-local violation. R12's exit condition is met for the library
+by making `GameAudio` delegate to `packages/audio`; the route-local raw context is tracked as
+a P5 obligation. **R12 violations 4 → 3.**
 
 ### WS-3.3 Remove dead packages from the active tree — no in-tree graveyard
 

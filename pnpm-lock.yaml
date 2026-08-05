@@ -259,6 +259,9 @@ importers:
       '@aura3d/assets':
         specifier: workspace:*
         version: link:../assets
+      '@aura3d/audio':
+        specifier: workspace:*
+        version: link:../audio
       '@aura3d/core':
         specifier: workspace:*
         version: link:../core

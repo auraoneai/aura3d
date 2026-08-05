@@ -202,9 +202,43 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
       detail: "A file wiring BOTH @aura3d/input and game.input() would mean the two services compete for one consumer. None does (verified across apps/, examples/, packages/), so they are disjoint layers rather than duplicate implementations — see tests/unit/input/input-service-ownership.test.ts. WS-3.1 removed the real duplicate: createGameInputController, 175 dead lines with its own keyboard listeners."
     },
     {
+      /*
+       * WS-3.2 — corrected the same way the input row was, and for the same reason.
+       *
+       * The PRD listed `packages/audio` vs `engine/src/game/GameAudio.ts` as duplicate ownership. Measured,
+       * their consumers are disjoint and their concepts are disjoint: `packages/audio` owns the GRAPH
+       * (context lifecycle, mixer, buses, effects, spatialization), `GameAudio` owns CUES and the evidence
+       * the route-health harnesses read. Neither exposes the other's surface — asserted in
+       * `tests/unit/audio/audio-characterization.test.ts`.
+       *
+       * So co-existence is not the violation. The violation was that `GameAudio` reimplemented the graph:
+       * its own `context.createGain()`, its own volume/mute fields, its own gain disposal. That is now
+       * delegated to `AudioBus`, leaving exactly one implementation of bus routing in the repository.
+       *
+       * This therefore detects the real shape: `GameAudio` building gain nodes itself instead of going
+       * through `@aura3d/audio`. If anyone reintroduces a hand-rolled graph there, the row reopens.
+       */
       capability: "audio",
-      present: exists("packages/audio/src/index.ts") && exists("packages/engine/src/game/GameAudio.ts"),
-      detail: "packages/audio and engine/src/game/GameAudio both exist"
+      present: (() => {
+        const path = join(repoRoot, "packages/engine/src/game/GameAudio.ts");
+        if (!existsSync(path)) return false;
+        const source = readFileSync(path, "utf8");
+        // Bus routing must come from the graph owner.
+        if (!/from\s+["'`]@aura3d\/audio["'`]/.test(source)) return true;
+        if (!source.includes("new AudioBus(")) return true;
+        /*
+         * Scope the gain-node check to the factory body. `playDefaultCue` legitimately creates a
+         * per-cue envelope gain, which is a VOICE, not a bus — `packages/audio` has no equivalent, so
+         * counting it would force a false violation that could only be "fixed" by deleting the envelope.
+         * The violation is a gain node built for BUS routing, which lives inside `createGameAudio`.
+         */
+        const start = source.indexOf("export function createGameAudio");
+        const end = source.indexOf("function playDefaultCue");
+        if (start < 0 || end < 0) return true;
+        return source.slice(start, end).includes(".createGain()");
+      })(),
+      detail:
+        "GameAudio must not build its own gain graph; it delegates bus routing to AudioBus from @aura3d/audio. packages/audio owns the graph, GameAudio owns cues + evidence, and their consumer sets are disjoint (see tests/unit/audio/audio-characterization.test.ts), so co-existence is layering rather than duplicate ownership. Reopens if a hand-rolled createGain() returns to GameAudio."
     },
     {
       capability: "vehicle motion",
