@@ -487,6 +487,7 @@
     "check:examples": "pnpm exec playwright test tests/browser/examples-route-health.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-examples/index.ts",
     "check:devtools": "pnpm exec vitest run tests/unit/agent-api/devtools.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-devtools/index.ts",
     "check:deployment": "pnpm exec vitest run tests/unit/aura3d-cli/deployment.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-deployment/index.ts",
+    "check:material-structural-parity": "pnpm exec tsx --tsconfig tsconfig.base.json tools/material-structural-parity/index.ts",
     "bench:production-path": "pnpm exec tsx --tsconfig tsconfig.base.json tools/production-path-benchmark/index.ts",
     "check:production-path-benchmark": "pnpm exec tsx --tsconfig tsconfig.base.json tools/production-path-benchmark/index.ts --gate-only",
     "check:deletion-safety": "pnpm exec tsx --tsconfig tsconfig.base.json tools/deletion-safety/index.ts",

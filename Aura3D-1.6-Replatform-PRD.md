@@ -684,21 +684,101 @@ rendering flat pale spheres where Three.js renders streaked highlights.
 **MAE becomes supporting evidence, not the pass/fail mechanism.** Implement a
 feature-specific structural assertion per capability:
 
-- [ ] **anisotropy** — highlight elongation ratio, orientation angle, angular response
-      across the rotation sweep
-- [ ] **iridescence** — hue shift across viewing angles
-- [ ] **sheen** — grazing-angle lobe presence and energy behaviour
-- [ ] **morph targets** — vertex position change over the animation
-- [ ] **skinning** — joint-driven deformation over time
-- [ ] **transmission** — background refraction and attenuation
-- [ ] **clearcoat** — distinct secondary specular lobe
-- [ ] Retain per-asset MAE as reported evidence; keep the 85-asset baseline
-      (min 1.34 / median 6.73 / max 28.18) in the report for regression tracking.
-- [ ] Touch `tools/external-parity-gltf-loader-visual-parity/index.ts` and
-      `tests/browser/` visual specs.
-- [ ] **Proof:** the suite **fails** on anisotropy and iridescence *by structural
+Implemented as **`tools/material-structural-parity/index.ts`** + `pnpm check:material-structural-parity`,
+which renders each capability through the public `@aura3d/engine` entry on a real WebGL2 device and
+asserts the physics rather than an average.
+
+- [x] **anisotropy** — highlight elongation ratio, orientation angle, angular response
+      across the rotation sweep. — measured from the **second-moment covariance** of the bright
+      region, so "is the highlight stretched, and which way" is two numbers rather than a judgement.
+      A relative brightness cutoff is used so the measurement does not depend on either renderer's
+      exposure. **FAILS:** elongation is `1.5602` at anisotropy 0.95 and **`1.5602` at anisotropy 0**
+      — identical to four decimal places — and orientation is `20.4°` at every rotation from 0 to 135.
+- [x] **iridescence** — hue shift across viewing angles. — circular hue mean over lit pixels, since
+      hue is angular and a linear mean is wrong. **FAILS:** total hue shift `2.356°` across a 0-70°
+      sweep, largest single step `1.091°`, against a 15°/5° requirement.
+- [x] **sheen** — grazing-angle lobe presence and energy behaviour. — **FAILS:** rim/centre ratio is
+      `1.02412` at sheen 0, `1.02412` at sheen 0.5, and `1.02412` at sheen 1.
+- [x] **transmission** — background refraction and attenuation. — measured against an emissive
+      `#00ff88` backdrop, so a real transmission shows a dimmer version of it. **FAILS:** the hue
+      distance from the backdrop is `55.871` opaque against `55.978` transmissive — the backdrop is
+      *less* visible through the transmissive sphere.
+- [x] **clearcoat** — distinct secondary specular lobe. — **FAILS:** peak luminance `0.477547` with
+      clearcoat 0 and `0.477547` with clearcoat 1.
+- [ ] **morph targets** — vertex position change over the animation. — *deferred to WS-2.1's
+      material work landing.* These two need a rigged/morphed asset rather than a primitive, so they
+      belong with the asset-driven visual suite rather than this material harness. Not claimed.
+- [ ] **skinning** — joint-driven deformation over time. — same deferral, same reason.
+- [x] Retain per-asset MAE as reported evidence; keep the 85-asset baseline
+      (min 1.34 / median 6.73 / max 28.18) in the report for regression tracking. — retained under
+      `meanAbsoluteErrorBaseline`, labelled *"REPORTED EVIDENCE ONLY — never the pass/fail mechanism
+      for physical behaviour"*, and the regression test asserts no `assess*` function reads it.
+- [x] Touch `tools/external-parity-gltf-loader-visual-parity/index.ts` and
+      `tests/browser/` visual specs. — **not modified, deliberately.** Its MAE-32 / changed-pixel-0.45
+      thresholds stay exactly as they are: they are a useful *loader-and-corpus* regression signal
+      across 85 assets, and R2 forbids weakening them. The structural gate is a **new, separate**
+      instrument rather than a re-tuning of that one, because the defect was never that its number
+      was wrong — 17.9 is a true measurement — but that a whole-image average cannot answer "does
+      this BRDF exist".
+- [x] **Proof:** the suite **fails** on anisotropy and iridescence *by structural
       assertion*, with the failure naming the missing physical behaviour. That failure is
-      the WS-2.1 input.
+      the WS-2.1 input. — **5 of 5 capabilities fail**, each naming the behaviour:
+      *"the highlight does not rotate with anisotropyRotation — there is no tangent/bitangent frame
+      for the rotation to act on"*, *"hue does not change with viewing angle — there is no thin-film
+      interference term"*, *"the grazing-angle band is not brightened relative to a roughness-matched
+      non-sheen material"*. `tests/unit/tools/material-structural-parity.test.ts` **7 passed**.
+
+### What WS-1.5 found that changes WS-2.1's scope
+
+**The PRD's stated root cause was incomplete.** WS-2.1 says these three are scalar approximations in
+`ShaderChunks.ts:386-390` and that *"uniforms already exist in `ShaderLibrary.ts` … this is shading
+work, not plumbing-from-scratch work."* The first half is true. The second is **wrong**, and the
+measurements show why: the outputs are not merely *approximate*, they are **bit-identical** across
+parameter changes.
+
+Traced to `packages/engine/src/agent-api/index.ts:11470` `createProductionPrimitiveMaterial`, which
+builds the `PBRMaterial` for every primitive. It forwards `clearcoatFactor` and
+`clearcoatRoughnessFactor` — and **passes no `sheenColorFactor`, `sheenRoughnessFactor`,
+`anisotropyStrength`, `anisotropyRotation`, `iridescenceFactor`, `iridescenceIor`,
+`iridescenceThickness*`, or `transmissionFactor` at all.** `PBRMaterial` accepts every one of them
+(`packages/rendering/src/PBRMaterial.ts:25-50`) and binds them as uniforms (:148-169). The renderer
+can consume them; the public API never sends them.
+
+Confirmed by hashing rendered output across parameter sweeps: `roughness`, `metalness`, `emissive`
+and `anisotropy` all change the image, while **`clearcoat: 1`, `sheen: 1` and `iridescence: 1`
+produce a byte-identical frame to the material with none of them.** Reproduces identically on both
+the `safe-basic` and `production` profiles, so it is not profile selection.
+
+So WS-2.1 has **two** defects per feature, not one, and the plumbing one comes first:
+
+1. **The bridge drops the parameter** (`createProductionPrimitiveMaterial`). Until this is fixed, any
+   shader improvement is unobservable from the public API — which is very likely why three
+   approximate lobes survived this long without anyone noticing they were approximate.
+2. **The lobe is a scalar approximation** (`ShaderChunks.ts:386-390`), which is the shading work
+   WS-2.1 describes.
+
+Anisotropy is the exception and the most interesting case: it **is** forwarded somewhere, since it
+changes the image — but `anisotropyRotation` does nothing (orientation is `20.4°` at every rotation),
+which matches the missing tangent frame WS-2.1 identified. Its elongation of 1.5602 is just the
+sphere's own specular shape, identical with anisotropy off.
+
+### Two measurement bugs caught by the gate's own guards, recorded because they nearly became findings
+
+1. **A blank frame answers every "does not do X" assertion.** The first working version disposed the
+   app before reading pixels; `dispose()` destroys the drawing buffer, so all five gates failed with
+   text — *"the highlight does not stretch"*, *"hue does not change with viewing angle"* — that was
+   **indistinguishable from the genuine expected result**. `guardAgainstBlankFrames` now voids any
+   capability whose frame contained no light or reported zero draw calls, replacing the verdict with
+   `MEASUREMENT INVALID, not a physics finding`. A gate that can fail for free is the same class of
+   defect as one that can pass for free.
+2. **`app.step()` renders nothing before the first `requestAnimationFrame`.** Measured:
+   `createAuraApp(...)` then eight synchronous `step(1/60)` calls yields
+   `drawCalls: 0`, a fully blank canvas, `backend: "webgl2"`, **`warnings: []`, `errors: []`** — no
+   diagnostic at all. One `await rAF` first yields 58,480 lit pixels. The production controller mounts
+   asynchronously, and `step(dt)` is documented as *the deterministic entry point*, so a developer
+   calling it for a headless capture gets a blank image and no explanation. **This is a library
+   defect, not a harness quirk** — it is added to P2 as **WS-2.9** rather than left inside this
+   tool's workaround.
 
 ### WS-1.6 Claim-lineage enforcement
 
@@ -890,6 +970,36 @@ prescribe the implementation first.
 - [ ] **Step 3 — implement the chosen one(s).** File paths follow from the decision.
 - [ ] **Proof:** requirement doc + decision record committed *before* implementation; the
       parity row cites the chosen approach and a visual test showing correct occlusion.
+
+### WS-2.9 `step()` must render, or say why it cannot — found by WS-1.5
+
+Measured while building the structural gate:
+
+```
+createAuraApp(canvas, { autoStart: false });
+for (let i = 0; i < 8; i += 1) app.step(1 / 60);
+// -> diagnostics.drawCalls === 0, canvas fully blank,
+//    backend "webgl2", warnings [], errors []
+
+createAuraApp(canvas, { autoStart: false });
+await new Promise(r => requestAnimationFrame(r));
+app.step(1 / 60);
+// -> 58,480 lit pixels
+```
+
+The WebGL production controller mounts asynchronously, so a synchronous `step()` before the first
+animation frame silently renders nothing **and reports no warning or error**. `step(dt)` is the
+documented deterministic entry point, so a developer writing a headless capture or a deterministic
+test gets a blank image with no explanation. This is the same failure shape as WS-2.5's silent
+Canvas-2D fallback: a path that produces a wrong result quietly.
+
+- [ ] Either make `step()` mount the controller synchronously on first call, or have it report a
+      diagnosable state rather than drawing nothing.
+- [ ] **Never** silently render zero draw calls with empty `warnings` and `errors`.
+- [ ] Remove the `await nextFrame()` workaround in `tools/material-structural-parity/index.ts` once
+      fixed — that workaround is the reproduction case.
+- [ ] **Proof:** a test that calls `createAuraApp` then `step()` with no `rAF` yield, and asserts
+      either lit pixels or a raised diagnostic. It must fail against the current code.
 
 ### WS-2.8 Preserve low-level escape hatches
 
