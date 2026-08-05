@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createAuraApp, createGameApp, defineAuraAssets, game, lights, model, scene, solvePlatformerMotion } from "../../../packages/engine/src";
@@ -1341,7 +1341,6 @@ describe("game runtime source gates", () => {
 
   it("keeps showcase game routes on public genre kits instead of route-local engines", () => {
     const skylineMain = readSource("apps/showcase-skyline-runner/src/main.ts");
-    const skylineRules = readSource("apps/showcase-skyline-runner/src/runner-rules.ts");
     const turboMain = readSource("apps/showcase-turbo-drift-circuit/src/main.ts");
     const blockfallMain = readSource("apps/showcase-blockfall-reactor/src/main.ts");
     const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
@@ -1379,9 +1378,20 @@ describe("game runtime source gates", () => {
     expect(skylineMain).not.toContain("stepSkylineRunner(");
     expect(skylineMain).not.toContain("createInitialSkylineState(");
     expect(skylineMain).not.toContain("(state.player.x - 18) * 0.08");
-    expect(skylineRules).not.toContain("stepSkylineRunner");
-    expect(skylineRules).not.toContain("resolvePlatformLanding");
-    expect(skylineRules).not.toContain("advanceFrame");
+    /*
+     * `runner-rules.ts` is gone, so assert it stays gone.
+     *
+     * It was a 252-line orphan with **zero importers** that still declared `gravity: -20.2` and
+     * `jumpVelocity: 8.75` — the route-local motion constants PRD rule 1 bans, and the same stale
+     * tuning WS-4.2 removed from `main.ts`. The old gate only checked what the file must *not*
+     * contain (`stepSkylineRunner`, `resolvePlatformLanding`, `advanceFrame`), which let the dead
+     * constants sit there indefinitely: it policed a route-local *engine* while ignoring route-local
+     * *tuning*.
+     *
+     * Deleting it is the fix. Checking for its absence is what stops it coming back, and is strictly
+     * stronger than the three negative assertions it replaces.
+     */
+    expect(existsSync("apps/showcase-skyline-runner/src/runner-rules.ts")).toBe(false);
 
     expect(turboMain).toContain("const trackTopology =");
     expect(turboMain).toContain("const route = game.assetBoundRacingRoute(");
