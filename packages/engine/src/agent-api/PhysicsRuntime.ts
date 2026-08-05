@@ -553,7 +553,28 @@ export function createPhysicsRuntime(
 
   function resolveId(id: number | string): number | undefined {
     if (typeof id === "number") return id;
-    return idsByName.get(id);
+    const known = idsByName.get(id);
+    if (known !== undefined) return known;
+    /*
+     * Fall back to the host's node-name resolver for bodies this runtime did not create.
+     *
+     * `idsByName` is only populated by `createBody`, so a body registered externally — which is
+     * exactly what `createAuraApp` does for every node declaring `.physics({...})` — was invisible to
+     * name lookup. `app.physics.bodies.get(1).nodeName` correctly returned "declared" while
+     * `bodies.has("declared")` returned **false**, so the documented ergonomic
+     * (`app.physics.bodies.require("crate").applyImpulse(...)`) silently failed for the one case the
+     * docs use as its example: a body declared on a scene node.
+     *
+     * Resolving through `nodeNameFor` closes it without a second source of truth: the host already
+     * owns the id-to-name mapping, so this asks it rather than duplicating it.
+     */
+    for (const body of world.bodies()) {
+      if (nodeNameFor(body.id) === id) {
+        idsByName.set(id, body.id);
+        return body.id;
+      }
+    }
+    return undefined;
   }
 
   /** Translate the public layer-name filter into the numeric mask the solver takes. */

@@ -9812,16 +9812,41 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // One world owned by the app, so `app.physics` is live whether or not the scene declared
   // any bodies. A route that spawns everything at runtime (a shooter, a stacking puzzle) is
   // then no harder to write than one that declares bodies up front.
-  const appPhysicsWorld = new PhysicsWorld({
-    gravity: options.physics?.gravity ? [...options.physics.gravity] : [0, -9.81, 0],
-    fixedDelta: 1 / 60,
-    enableSleeping: true
-  });
   const appPhysicsNodeNames = new Map<number, string>();
-  const appPhysics = createPhysicsRuntime(appPhysicsWorld, {
-    ...(options.physics?.layers ? { layers: options.physics.layers } : {}),
-    nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
-  });
+  /*
+   * The physics world is created on first use, not on app construction.
+   *
+   * `app.physics` must be live for every app — a route that spawns bodies at runtime should be no
+   * harder to write than one that declares them. But constructing the world eagerly made **every**
+   * app pay for the solver, and `PhysicsWorld` pulls in `cannon-es`.
+   *
+   * Measured cost of the eager version: a minimal `createAuraApp` scene containing one box bundled to
+   * **350 KB gzip**, of which 85 KB was `cannon-es` that the scene never touched. That is the single
+   * largest avoidable item in the `core-agent-api` budget overrun.
+   *
+   * Lazily constructing it changes no behaviour — `app.physics` still returns a working runtime, and
+   * a scene that declares `.physics({...})` still gets its bodies registered, because
+   * `registerDeclaredBodies` asks for the world and therefore creates it. What changes is that a
+   * scene with no physics never instantiates a solver, so a bundler can drop it.
+   */
+  let appPhysicsWorldInstance: PhysicsWorld | undefined;
+  const appPhysicsWorld = (): PhysicsWorld => {
+    appPhysicsWorldInstance ??= new PhysicsWorld({
+      gravity: options.physics?.gravity ? [...options.physics.gravity] : [0, -9.81, 0],
+      fixedDelta: 1 / 60,
+      enableSleeping: true
+    });
+    return appPhysicsWorldInstance;
+  };
+  let appPhysicsInstance: AuraPhysicsRuntime | undefined;
+  /** Lazy `app.physics`. Identity is stable: the same runtime is returned on every access. */
+  const appPhysics = (): AuraPhysicsRuntime => {
+    appPhysicsInstance ??= createPhysicsRuntime(appPhysicsWorld(), {
+      ...(options.physics?.layers ? { layers: options.physics.layers } : {}),
+      nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
+    });
+    return appPhysicsInstance;
+  };
   /**
    * Register scene-declared bodies into the app-owned world.
    *
@@ -9829,10 +9854,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    * `app.physics.bodies.require(name)` without the route restating the body.
    */
   const registerDeclaredBodies = (target: AuraSceneSnapshot) => {
+    // Ask the question before creating the world, so a scene with no declared bodies never does.
+    const declaresPhysics = target.nodes.some(
+      (node) => (node.kind === "model" || node.kind === "primitive") && Boolean(node.physics)
+    );
+    if (!declaresPhysics) return;
+    const world = appPhysicsWorld();
     for (const node of target.nodes) {
       if ((node.kind !== "model" && node.kind !== "primitive") || !node.physics) continue;
       const spec = node.physics;
-      const body = appPhysicsWorld.createRigidBody({
+      const body = world.createRigidBody({
         type: spec.type ?? "dynamic",
         position: node.position ?? [0, 0, 0],
         rotation: eulerToQuat(node.rotation ?? [0, 0, 0]),
@@ -9840,7 +9871,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         ...(spec.friction === undefined ? {} : { friction: spec.friction }),
         ...(spec.restitution === undefined ? {} : { restitution: spec.restitution })
       });
-      appPhysicsWorld.createCollider(body, {
+      world.createCollider(body, {
         shape: resolveNodePhysicsShape(node as AuraModelNode | AuraPrimitiveNode, spec),
         ...(spec.sensor === undefined ? {} : { sensor: spec.sensor }),
         material: { friction: spec.friction ?? 0.5, restitution: spec.restitution ?? 0 }
@@ -9932,7 +9963,13 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         runtimeNodes,
         // A route that registered a frame callback, or that has bodies to simulate, needs
         // frames regardless of what the scene declares.
-        () => frameCallbacks.size > 0 || appPhysicsWorld.bodies().length > 0,
+        /*
+         * Must not *create* a world just to ask whether one exists.
+         * Reading `appPhysicsWorldInstance` directly keeps the lazy construction lazy; calling
+         * `appPhysicsWorld()` here would instantiate the solver on the first render of every scene
+         * and defeat the whole point.
+         */
+        () => frameCallbacks.size > 0 || (appPhysicsWorldInstance?.bodies().length ?? 0) > 0,
         // Paused frames render at the app's own simulated clock, so a held frame really is held.
         () => runtimeTime * 1000
       )
@@ -9971,13 +10008,21 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       runtimeNodes.reset(renderSnapshot);
       // Drop bodies from the previous scene before registering the new ones, so swapping
       // scenes does not leave orphaned bodies colliding with the new level.
-      for (const id of [...appPhysicsNodeNames.keys()]) appPhysicsWorld.removeRigidBody(id);
+      // Only a world that exists can hold stale bodies; `setScene` on a physics-free app is a no-op here.
+      for (const id of [...appPhysicsNodeNames.keys()]) appPhysicsWorldInstance?.removeRigidBody(id);
       appPhysicsNodeNames.clear();
       registerDeclaredBodies(renderSnapshot);
       mountCurrentScene();
     },
     nodes: runtimeNodes,
-    physics: appPhysics,
+    /*
+     * A getter, so touching `app.physics` is what constructs the world.
+     * Declared as a getter rather than an eager property because the property access itself is the
+     * signal that a route intends to use physics.
+     */
+    get physics() {
+      return appPhysics();
+    },
     get runtime() {
       return {
         paused: runtimePaused,
