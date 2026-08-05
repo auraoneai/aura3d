@@ -1065,15 +1065,59 @@ on identical content — so no P1 finding is withdrawn.
 
 #### WS-2.1b Sheen
 
-- [ ] Proper sheen lobe: Charlie or Ashikhmin distribution with sheen albedo scaling and
-      correct energy behaviour.
-- [ ] **Proof:** grazing-angle lobe presence and energy behaviour asserted structurally.
+- [x] Proper sheen lobe: Charlie or Ashikhmin distribution with sheen albedo scaling and
+      correct energy behaviour. — **done.** Charlie distribution (inverted-Gaussian `sin`-power
+      lobe) with Ashikhmin-style visibility, in the agent-runtime fragment shader alongside the
+      anisotropy work. `sheenColor` defaults to **white**; see the note below on why that is the
+      difference between a forwarded parameter and a visible one.
+- [x] **Proof:** grazing-angle lobe presence and energy behaviour asserted structurally.
+      Rim/centre luminance ratio, which is the quantity that distinguishes a retroreflective
+      grazing lobe from a general brightening:
+
+      | sheen | before | after |
+      |---|---:|---:|
+      | 0 (control) | 1.02412 | 1.02412 |
+      | 0.5 | 1.02412 | **1.21396** |
+      | 1 | 1.02412 | **1.32641** |
+
+      Before, all three were identical to five decimal places. After, the control is **unchanged**
+      and the response is monotonic in the parameter. Grazing 0.485181 vs centre 0.365784 at
+      sheen 1, over a 58,480-pixel silhouette. Rim measured from the subject's own silhouette
+      bands, not a fixed pixel window, so it does not depend on framing.
+      PNG: `tests/reports/material-structural-parity/sheen.png`.
 
 #### WS-2.1c Iridescence
 
-- [ ] Thin-film interference varying with view angle and IOR, honouring
-      `iridescenceThicknessMinimum`/`Maximum`.
-- [ ] **Proof:** hue shift across viewing angles asserted structurally, on `iridescence-abalone`.
+- [x] Thin-film interference varying with view angle and IOR, honouring
+      `iridescenceThicknessMinimum`/`Maximum`. — **done.** Optical path difference evaluated at
+      R/G/B wavelengths, so the hue shift comes from the three channels going out of phase at
+      different rates — the actual mechanism — rather than a colour ramp. Thickness is interpolated
+      between minimum and maximum, and the view-angle term uses the refracted angle via `iridescenceIor`.
+- [x] **Proof:** hue shift across viewing angles asserted structurally, on `iridescence-abalone`.
+      Measured on the controlled primitive sphere rather than the Khronos asset, **deliberately and
+      for the same reason as WS-2.1a**: `iridescence-abalone` is one fixed camera, and the defect is
+      specifically *the absence of change across view angle*, which a single view cannot see. Circular
+      hue mean over lit pixels, since hue is angular and a linear mean is wrong:
+
+      | measurement | before | after |
+      |---|---:|---:|
+      | total hue shift over a 0-70° sweep | 2.356° | **132.582°** |
+      | largest single step | 1.091° | **92.448°** |
+
+      Per-angle: 236.862° → 231.893° → 196.728° → 104.280°, monotonic, with saturation rising
+      0.31731 → 0.37210 rather than washing out.
+      PNG: `tests/reports/material-structural-parity/iridescence.png`.
+
+**Console honesty fix made while closing these two.** With four of five capabilities passing, the
+gate printed `PASS  transmission` — beside its own numbers showing the backdrop is *less* visible
+through the transmissive sphere (hue distance 55.871 opaque vs 55.978 transmissive). The report was
+honest (`scopedOut.measuredPass: false`), but the console is what a human reads, and a `PASS` label
+over a failing measurement is the same label/measurement mismatch R1 exists to forbid — the pattern
+that let three approximate lobes survive. The verdict is now `SCOPED`, printing
+`NOT CLAIMED for primitives. measuredPass=false` and the architectural reason. It still exits zero,
+so it does not block; it no longer says the thing works. Pinned by
+`tests/unit/tools/material-structural-parity.test.ts` → "never prints PASS for a capability it has
+scoped out" (**8 passed**).
 
 ### WS-2.2 Split the monolithic agent entry point
 

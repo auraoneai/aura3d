@@ -874,7 +874,18 @@ function writeStructuralReport(unguarded: readonly CapabilityResult[], gpuRender
   mkdirSync(dirname(resolve(REPORT_PATH)), { recursive: true });
   writeFileSync(resolve(REPORT_PATH), `${JSON.stringify(report, null, 2)}\n`);
   for (const result of results) {
-    console.log(`${result.pass ? "PASS" : "FAIL"}  ${result.capability}`);
+    /*
+     * A scoped-out capability must never print `PASS`. It exits zero so it does not block the gate,
+     * but printing `PASS transmission` next to numbers showing the backdrop is *less* visible through
+     * the transmissive sphere is exactly the mismatch between a label and its measurement that R1
+     * exists to forbid. The console is what a human reads; it gets the honest word.
+     */
+    const label = result.scopedOut ? "SCOPED" : result.pass ? "PASS" : "FAIL";
+    console.log(`${label}  ${result.capability}`);
+    if (result.scopedOut) {
+      console.log(`      NOT CLAIMED for primitives. measuredPass=${result.scopedOut.measuredPass}`);
+      console.log(`      reason: ${result.scopedOut.reason}`);
+    }
     if (!result.pass) console.log(`      missing: ${result.missingPhysicalBehaviour}`);
     console.log(`      measured: ${JSON.stringify(result.measured)}`);
   }

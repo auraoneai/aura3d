@@ -87,4 +87,25 @@ describe("material structural parity gates (WS-1.5)", () => {
       }
     }
   });
+
+  /*
+   * A scoped-out capability exits zero so it does not block the gate. That makes its *label* the only
+   * thing standing between "we deliberately do not claim this" and "this works" — and the console is
+   * what a human reads. `PASS transmission` printed next to numbers showing the backdrop is less
+   * visible through the transmissive sphere is the same label/measurement mismatch R1 forbids, so the
+   * word and the recorded verdict are both locked here.
+   */
+  it("never prints PASS for a capability it has scoped out", () => {
+    expect(toolSource).toContain('result.scopedOut ? "SCOPED"');
+    // The honest verdict must survive into the report, not only the console.
+    expect(toolSource).toContain("measuredPass");
+    if (!existsSync(reportPath)) return;
+    const report = JSON.parse(readFileSync(reportPath, "utf8")) as Record<string, any>;
+    for (const capability of report.capabilities) {
+      if (!capability.scopedOut) continue;
+      expect(capability.scopedOut.reason, `${capability.capability} must record why it is scoped out`).toBeTruthy();
+      // A scope-out that actually measures as working would be a claim, not a scope-out.
+      expect(typeof capability.scopedOut.measuredPass).toBe("boolean");
+    }
+  });
 });
