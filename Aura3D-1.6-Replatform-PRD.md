@@ -1043,8 +1043,31 @@ on identical content — so no P1 finding is withdrawn.
 Measured: **579,953 B gzip vs an 80,000 B budget (7.25x)**; **1,145,689 vs Three.js
 671,968 (1.70x)** on the same scene. Nothing tree-shakes.
 
-- [ ] Split into entry points: core scene+app, `/game`, `/animation`, `/product`,
-      `/diagnostics`, `/evidence`.
+- [~] Split into entry points: core scene+app, `/game`, `/animation`, `/product`,
+      `/diagnostics`, `/evidence`. — **in progress.** First cut landed: `TypedGLBActor` is now a
+      **type-only** static import plus an `await import()` at its single call site, which already sits
+      inside an async function on the typed-GLB path. A type-only import erases the graph edge
+      entirely, so a cube no longer downloads a glTF loader.
+
+      Measured effect on scenario 1's initial download: **335,877 → 303,149 gzip (2.815x → 2.541x).**
+
+      What the metafile says still sits on a *cube's* critical path, largest first — this is the
+      remaining WS-2.2 work, and it is now named rather than guessed:
+
+      | eager chunk | gzip | dominated by |
+      |---|---:|---|
+      | `chunk-TFYVI2TD` | 122,285 | `ShaderLibrary.ts` 182 KB raw, `WebGL2Device.ts` 103 KB, `Renderer.ts`, `ForwardPass`, `PostProcessPass` |
+      | `chunk-V6HNQGKX` | 77,081 | **`cannon-es` 83,869 raw** + `PhysicsWorld`, `HitboxWorld`, `CharacterController`, `VehicleDynamics` |
+      | entry | 56,056 | `agent-api/index.ts` itself, 139 KB raw |
+      | `chunk-WABF5Y2X` | 22,143 | `TexturedPBRMaterial`, `ProductTurntableFixtures`, `SkinnedLitMaterial` |
+      | `chunk-WMZORKGI` | 18,689 | **`WebGPUDevice.ts` 74,438 raw** |
+
+      Two of those are the clearest remaining wins and both are *static-import* problems rather than
+      construction problems: `PhysicsWorld` is already **lazily constructed** (`:9832`, with a comment
+      recording that eager construction cost 85 KB of `cannon-es`) yet still **statically imported** at
+      module scope, and `WebGPUDevice` arrives through
+      `rendering/src/index.ts → advanced-runtime → Renderer → RenderBackend`. Deferring either needs the
+      value import removed from the barrel, which is exactly the entry-point split this row describes.
 - [ ] **State the root's bundle behaviour explicitly — WS-2.2 and WS-2.4 conflict otherwise.**
       If `@aura3d/engine`'s root keeps re-exporting everything, existing users keep working
       but the root bundle stays enormous and the WS-2.4 budget is unreachable. Choose one
@@ -1103,23 +1126,65 @@ into a single "non-browser" package would be wrong.
 A single "cube ≤ 100 KB" number is gameable without a canonical entry and bundler config.
 Define exactly what each scenario contains.
 
-- [ ] **Create** `tools/bundle-scenarios/` with one committed entry file per scenario and
+- [x] **Create** `tools/bundle-scenarios/` with one committed entry file per scenario and
       one shared bundler config (esbuild, minify, gzip, `size-limit`), documenting for
       each: renderer included? WebGL2 only or WebGPU too? asset loaders? scene graph?
       math? typed API? diagnostics? environment code? polyfills? compressed-texture support?
-- [ ] **Scenario 1 — Core primitive scene:** WebGL2 renderer, scene graph, camera, one
+      — done; every scenario carries a `contents` block answering all eleven questions, and both
+      engines build through one config.
+- [x] **Scenario 1 — Core primitive scene:** WebGL2 renderer, scene graph, camera, one
       material, one cube. No glTF, no WebGPU, no diagnostics, no compressed textures.
-- [ ] **Scenario 2 — Product-viewer scene:** glTF, PBR, orbit controls, lighting, environment.
-- [ ] **Scenario 3 — Game runtime:** input, animation, physics integration, game loop.
-- [ ] For each, build an **equivalent Three.js stack** (three + GLTFLoader + OrbitControls,
-      etc.) and report both numbers side by side.
-- [ ] Set budgets from the Three.js comparison, not from aspiration. Record the ratio.
-- [ ] `tools/bundle-size/index.ts` currently writes `pass: false` and **never sets a
+- [x] **Scenario 2 — Product-viewer scene:** glTF, PBR, orbit controls, lighting, environment.
+- [x] **Scenario 3 — Game runtime:** input, animation, physics integration, game loop.
+- [x] For each, build an **equivalent Three.js stack** (three + GLTFLoader + OrbitControls,
+      etc.) and report both numbers side by side. — committed entries: scenario 2 uses
+      `three` + `GLTFLoader` + `OrbitControls` + `PMREMGenerator` + `RoomEnvironment`; scenario 3 uses
+      `three` + `cannon-es` + hand-written input and loop, which is what the comparison is *for*.
+- [x] Set budgets from the Three.js comparison, not from aspiration. Record the ratio. — done, and
+      **the budget is derived at measurement time rather than written down.** `derivedBudget =
+      threejsGzip * maxRatio`, so there is no threshold constant a future session can nudge: the only
+      way to raise it is for Three.js itself to grow. This makes R2 structural rather than a promise.
+- [x] ~~`tools/bundle-size/index.ts` currently writes `pass: false` and **never sets a
       non-zero exit code**, which is why `check:release` (package.json:507) passes today
-      with a 7.25x overrun. Add `process.exitCode = 1` on any failure.
-- [ ] **Never raise a budget to go green** (R2).
-- [ ] **Proof:** `pnpm check:bundle-size; echo $?` non-zero while over; all three
-      scenarios reported against their Three.js equivalents.
+      with a 7.25x overrun. Add `process.exitCode = 1` on any failure.~~ — **the PRD was wrong
+      here, and no change was needed.** `writeReport` in `tools/check-common.ts` has set
+      `process.exitCode = 1` on any failure since at least `v1.5.2` (verified with
+      `git show v1.5.2:tools/check-common.ts`). Measured: `pnpm check:bundle-size` → **EXIT=1**, with
+      `core-agent-api` at 584,911 B gzip against an 80,000 B budget (7.31x). So `check:release` is
+      **red, and has been** — it is not passing over the overrun. Recording the correction rather
+      than silently "fixing" a non-defect.
+- [x] **Never raise a budget to go green** (R2). — honoured, and made structurally impossible above.
+- [x] **Proof:** `pnpm check:bundle-size; echo $?` non-zero while over; all three
+      scenarios reported against their Three.js equivalents. — `check:bundle-size` EXIT=1;
+      `check:bundle-scenarios` EXIT=1 with:
+
+      | scenario | Aura3D initial | Three.js | ratio | limit |
+      |---|---:|---:|---:|---:|
+      | 1 core primitive scene | 303,149 | 119,296 | **2.541x** | 1.25x |
+      | 2 product viewer | 304,211 | 146,680 | **2.074x** | 1.25x |
+      | 3 game runtime | 340,657 | 143,669 | **2.371x** | 1.50x |
+
+### Two ways this measurement flattered itself, both caught and fixed
+
+Worth recording because each produced a *passing* number from a real bundler.
+
+1. **Without `splitting: true`, esbuild inlines every dynamic import into one file.** WS-2.2's
+   deferral of the glTF loader removed a **179 KB static edge** and the reported total moved by
+   **137 bytes**. The natural conclusion is "deferring achieved nothing" — when in fact the
+   instrument could not see it. Splitting is now on.
+2. **The entry chunk is not the initial download.** With splitting on, scenario 1's entry chunk
+   measured 56,056 B against Three.js's 119,296 and **all three scenarios passed** at 0.470x /
+   0.389x / 0.651x. That was wrong: the entry chunk **statically imports six other chunks**, and a
+   static import is fetched and evaluated before the importing module's body runs, so the browser
+   downloads all seven before the first frame. The honest figure is the transitive closure over
+   `import-statement` edges only — **303,149 B, not 56,056** — and gating on the entry alone would
+   have published a comfortable 0.470x pass against a true 2.541x.
+
+   That is the same defect class as the gates P1 deleted: a number correctly computed by a real tool,
+   answering the wrong question. So three fields are reported separately —
+   `entryChunkGzipBytes` (diagnosis) · `initialDownloadGzipBytes` (**gated**) ·
+   `allChunksGzipBytes` (eventual cost) — and Three.js is measured identically, so its ecosystem gets
+   the same credit for anything it defers.
 
 ### WS-2.5 Make Canvas 2D internal and diagnostic-only
 
