@@ -19,6 +19,31 @@
  * Node builtins only. `three` is NOT external for the Three.js entries and `@aura3d/*` is NOT external
  * for the Aura3D entries, because the question is what a developer downloads. Marking either engine's
  * own code external would produce a flattering number for whichever side got the exemption.
+ *
+ * ## Code splitting is on, and the headline number is the ENTRY chunk
+ *
+ * This matters more than it sounds. Without `splitting: true`, esbuild inlines every `await import()`
+ * into one file, so a correctly deferred subsystem still counts against the initial download and a
+ * genuine improvement measures as zero. That happened here: making `TypedGLBActor` a dynamic import
+ * removed a 179 KB static edge and the un-split total moved by **137 bytes**.
+ *
+ * ## The entry chunk alone is NOT the initial download
+ *
+ * The obvious next mistake, and I made it: after enabling splitting, scenario 1's entry chunk measured
+ * 56 KB against Three.js's 119 KB and all three scenarios passed by a wide margin. That number is
+ * wrong. The entry chunk **statically imports six other chunks**, and a static import is fetched and
+ * evaluated before the module body runs — so the browser downloads all seven before the first frame.
+ *
+ * The honest figure is the transitive closure of the entry chunk over `import-statement` edges only:
+ * **303,149 bytes**, not 56,056. Dynamic-import edges are excluded, because those genuinely defer.
+ *
+ * So three numbers, and the gated one is the middle:
+ *
+ *   `entryChunkGzipBytes`      — the entry file alone. Reported for diagnosis; NOT the download.
+ *   `initialDownloadGzipBytes` — entry + every statically reachable chunk. **This gates the ratio.**
+ *   `allChunksGzipBytes`       — every chunk, including deferred ones.
+ *
+ * Three.js is measured identically, so if its ecosystem defers work it gets the same credit.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -188,7 +213,21 @@ function auraSourceAlias(): Plugin {
 interface Measurement {
   readonly entry: string;
   readonly jsBytes: number;
+  /**
+   * Entry chunk plus every chunk reachable from it by static import, gzipped.
+   *
+   * A static import is fetched and evaluated before the importing module's body runs, so all of these
+   * are on the critical path to the first frame. **This is the gated metric.**
+   */
   readonly gzipBytes: number;
+  /** The entry file alone. Reported for diagnosis; it is not what a browser downloads. */
+  readonly entryChunkGzipBytes: number;
+  /** Every chunk, gzipped: the eventual cost if every deferred feature is used. Reported, not gated. */
+  readonly allChunksGzipBytes: number;
+  /** Chunks on the critical path, largest first. Names the next thing to defer. */
+  readonly eagerChunks: readonly { readonly name: string; readonly gzipBytes: number }[];
+  readonly chunkCount: number;
+  readonly chunks: readonly { readonly name: string; readonly gzipBytes: number; readonly isEntry: boolean }[];
   readonly artifactPath: string;
   /** Bytes contributed to the output, grouped by workspace package or third-party module. */
   readonly bytesByPackage: Readonly<Record<string, number>>;
@@ -205,6 +244,13 @@ async function measure(id: string, engine: "aura3d" | "threejs", entry: string):
     platform: "browser",
     target: "es2022",
     treeShaking: true,
+    /*
+     * Required for the measurement to mean anything. Without it esbuild inlines every dynamic import
+     * into a single file, so deferring a subsystem shows as no improvement at all — measured: removing
+     * a 179 KB static edge moved the un-split total by 137 bytes.
+     */
+    splitting: true,
+    outdir: `${ARTIFACT_DIR}/${id}-${engine}`,
     sourcemap: false,
     write: false,
     metafile: true,
@@ -212,15 +258,47 @@ async function measure(id: string, engine: "aura3d" | "threejs", entry: string):
     plugins: engine === "aura3d" ? [auraSourceAlias()] : [],
     external: [...EXTERNAL_NODE_BUILTINS]
   });
-  const output = result.outputFiles[0];
-  if (!output) throw new Error(`No output produced for ${id}/${engine}`);
-  const gzip = gzipSync(output.contents);
+  const entryBaseName = entry.split("/").pop()!.replace(/\.tsx?$/, "");
+  const entryOutput = result.outputFiles.find((file) => file.path.includes(entryBaseName));
+  if (!entryOutput) throw new Error(`No entry chunk produced for ${id}/${engine}`);
+  const gzip = gzipSync(entryOutput.contents);
+  const chunks = result.outputFiles.map((file) => ({
+    name: file.path.split("/").pop()!,
+    gzipBytes: gzipSync(file.contents).byteLength,
+    isEntry: file.path === entryOutput.path
+  })).sort((left, right) => right.gzipBytes - left.gzipBytes);
+  const allChunksGzipBytes = chunks.reduce((total, chunk) => total + chunk.gzipBytes, 0);
+  /*
+   * Transitive closure over `import-statement` edges from the entry output. Dynamic-import edges are
+   * deliberately not followed: those are the ones that genuinely defer, and following them would
+   * collapse this back into the single-file number.
+   */
+  const gzipByName = new Map(result.outputFiles.map((file) => [file.path.split("/").pop()!, gzipSync(file.contents).byteLength]));
+  const outputs = result.metafile!.outputs;
+  const entryOutputKey = Object.keys(outputs).find((key) => key.includes(entryBaseName))!;
+  const eagerKeys = new Set<string>();
+  const queue = [entryOutputKey];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (eagerKeys.has(current)) continue;
+    eagerKeys.add(current);
+    for (const dependency of outputs[current]?.imports ?? []) {
+      if (dependency.kind === "import-statement") queue.push(dependency.path);
+    }
+  }
+  const eagerChunks = [...eagerKeys]
+    .map((key) => {
+      const name = key.split("/").pop()!;
+      return { name, gzipBytes: gzipByName.get(name) ?? 0 };
+    })
+    .sort((left, right) => right.gzipBytes - left.gzipBytes);
+  const initialDownloadGzipBytes = eagerChunks.reduce((total, chunk) => total + chunk.gzipBytes, 0);
   const artifactPath = `${ARTIFACT_DIR}/${id}-${engine}.js`;
   mkdirSync(dirname(resolve(artifactPath)), { recursive: true });
-  writeFileSync(resolve(artifactPath), output.contents);
+  writeFileSync(resolve(artifactPath), entryOutput.contents);
   writeFileSync(resolve(`${artifactPath}.gz`), gzip);
 
-  const outputKey = Object.keys(result.metafile!.outputs)[0]!;
+  const outputKey = Object.keys(result.metafile!.outputs).find((key) => key.includes(entryBaseName))!;
   const inputs = result.metafile!.outputs[outputKey]!.inputs;
   const contributions = Object.entries(inputs)
     .map(([path, value]) => ({ path, bytes: value.bytesInOutput }))
@@ -234,8 +312,13 @@ async function measure(id: string, engine: "aura3d" | "threejs", entry: string):
   }
   return {
     entry,
-    jsBytes: output.contents.byteLength,
-    gzipBytes: gzip.byteLength,
+    jsBytes: entryOutput.contents.byteLength,
+    gzipBytes: initialDownloadGzipBytes,
+    entryChunkGzipBytes: gzip.byteLength,
+    allChunksGzipBytes,
+    eagerChunks,
+    chunkCount: chunks.length,
+    chunks,
     artifactPath,
     bytesByPackage: Object.fromEntries(Object.entries(bytesByPackage).sort((left, right) => right[1] - left[1])),
     largestContributors: contributions.slice(0, 12)
@@ -286,7 +369,7 @@ async function main(): Promise<void> {
     checks.push({
       id: scenario.id,
       pass,
-      detail: `${scenario.label}: Aura3D ${aura3d.gzipBytes} B gzip vs Three.js ${threejs.gzipBytes} B = ${ratio.toFixed(3)}x (limit ${scenario.maxRatio}x, derived budget ${derivedBudget} B)`
+      detail: `${scenario.label}: Aura3D ${aura3d.gzipBytes} B initial download across ${aura3d.eagerChunks.length} eager chunk(s) (entry alone ${aura3d.entryChunkGzipBytes} B; ${aura3d.allChunksGzipBytes} B all ${aura3d.chunkCount} chunks) vs Three.js ${threejs.gzipBytes} B = ${ratio.toFixed(3)}x (limit ${scenario.maxRatio}x, derived budget ${derivedBudget} B)`
     });
     scenarios.push({
       id: scenario.id,
@@ -314,7 +397,10 @@ async function main(): Promise<void> {
       target: "es2022",
       treeShaking: true,
       gzip: true,
-      verifiedBy: "size-limit against the gzip artifact",
+      splitting: true,
+      splittingNote: "Required. Without it esbuild inlines dynamic imports into one file, so a correctly deferred subsystem still counts against the initial download and a real improvement measures as zero.",
+      gatedMetric: "gzipBytes = the entry chunk PLUS every chunk reachable from it by static import, since a static import is fetched and evaluated before the importing module's body runs. entryChunkGzipBytes and allChunksGzipBytes are reported for diagnosis but not gated. Measured trap: scenario 1's entry chunk alone is 56,056 B while its true initial download is 303,149 B — gating on the entry alone would have shown a 0.470x pass where the honest figure is 2.541x.",
+      verifiedBy: "size-limit against the gzip entry-chunk artifact",
       external: EXTERNAL_NODE_BUILTINS,
       externalPolicy: "Node builtins only. Neither engine's own code is external: the question is what a developer downloads, so exempting either side would flatter it.",
       aura3dResolution: "packages/*/src sources — a bundle budget must reflect the code as written. The behavioural gates measure dist/ instead, because that is what a developer's bundler resolves."

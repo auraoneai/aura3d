@@ -50,11 +50,20 @@ import {
   SpotLight,
   type Light
 } from "@aura3d/scene";
-import {
-  createTypedGLBActor,
-  type TypedGLBActor,
-  type TypedGLBActorEvidence
-} from "../production-runtime/TypedGLBActor.js";
+/*
+ * WS-2.2 — TYPE-ONLY import, plus a dynamic import at the single call site below.
+ *
+ * `TypedGLBActor` reaches `packages/assets` -> `GLTFRenderResources` -> `GLTFLoader`, and from there
+ * into `@aura3d/rendering`'s `advanced-runtime` and so `WebGPUDevice`. Measured with an esbuild
+ * metafile: a scene containing **one cube and no model at all** paid 68,664 bytes of `GLTFLoader`,
+ * 36,168 of `GLTFRenderResources` and 74,742 of `WebGPUDevice` because of this one static edge.
+ *
+ * A type-only import erases at compile time, so the graph edge disappears entirely. The value is
+ * loaded by `await import(...)` at its one call site, which is already inside an async function on the
+ * typed-GLB path — so a scene that uses a typed GLB pays for the loader exactly when it needs it, and
+ * a scene that does not never downloads it.
+ */
+import type { TypedGLBActor, TypedGLBActorEvidence } from "../production-runtime/TypedGLBActor.js";
 import {
   AURA_NORMALIZED_MODEL_MAX_DIMENSION,
   boundsFromAsset,
@@ -11265,6 +11274,11 @@ async function createProductionRuntimeSceneRenderer(
   const modelNodes = flattened.filter((node): node is AuraModelNode =>
     isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
   );
+  /*
+   * Loaded here rather than imported at module scope (WS-2.2). This function is only reached when the
+   * scene contains a typed GLB, so the glTF loader is downloaded exactly when it is needed.
+   */
+  const { createTypedGLBActor } = await import("../production-runtime/TypedGLBActor.js");
   const actorEntries: ProductionRuntimeActorEntry[] = await Promise.all(modelNodes.map(async (node, index) => ({
     node,
     actor: await createTypedGLBActor({
