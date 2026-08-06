@@ -2212,20 +2212,97 @@ Proof:
   gap above — the rule was fixed, not the test (R2).
 - `pnpm check:package-graph` → 4 PASS, 0 layer violations.
 
-#### WS-3.6c Zero-consumer audit — classify, do not delete
+#### WS-3.6c Zero-consumer audit — classify, do not delete — COMPLETE
 
-- [ ] For each of the six: is it public API, a dependency layer, or genuinely dead?
+- [x] For each of the six: is it public API, a dependency layer, or genuinely dead?
       Use the table above as the starting evidence, not app-import counts.
-- [ ] **Proof:** committed classification with the public-export and transitive-dependency
+- [x] **Proof:** committed classification with the public-export and transitive-dependency
       status of each.
+
+**Method.** App-import counts were discarded as the criterion, per the workstream. Four
+independent signals were measured per package: (1) whether a root `exports` subpath resolves
+to it, (2) whether a *published* install can import that subpath, (3) which workspace
+manifests declare it as a dependency, (4) real source importers, excluding
+`tests/reports/**`, `node_modules/**` and `dist/**`, which inflate every naive grep by
+3-20x (`core` reads as 97 importers unfiltered, 50 filtered; `materials` 25 unfiltered,
+**4** filtered).
+
+Signal 2 is the load-bearing one and it corrected the starting table. The root `exports`
+map points at `./dist/<pkg>/`, **not** `packages/<pkg>/`, so a scan for `packages/core/`
+inside `exports` returns nothing and would have wrongly cleared all six as unexported. The
+authoritative check is resolution from an installed tarball:
+
+```
+$ node probe.mjs          # @aura3d/engine installed from a file: dependency
+OK   ./core          exports=22   Diagnostics, DisposableStack, Engine, EngineError, EngineLoop, EventBus, ...
+OK   ./apps          exports=3    A3D_APP_WORKFLOW_PRESETS, createA3DApp, resolveA3DAppQualityPreset
+OK   ./materials     exports=14   MATERIAL_PRESETS, NodeMaterial, THREE_COMPAT_PBR_MATERIAL_LIBRARY, ...
+OK   ./environments  exports=12   createProductionEnvironmentCorpusSummary, createThreeCompatEnvironmentDiagnostics, ...
+OK   ./editor        exports=74   AnimationSceneEditor, AssetDropZone, CameraPathEditor, CommandHistory, ...
+FAIL ./test-utils    ERR_PACKAGE_PATH_NOT_EXPORTED
+```
+
+Five of the six ship to users and are importable today. `test-utils` is `"private": true`,
+has no `exports` subpath, and has no `dist/` output.
+
+**Classification.**
+
+| Package | src lines | Public subpath | Resolves when installed | Declared as a dep by | Real source importers | Class |
+|---|---|---|---|---|---|---|
+| `core` | 1,186 | `./core` | 22 exports | `ecs`, `scene`, `engine`, `apps` (+ root devDep) | 50 | **public API + dependency layer** |
+| `apps` | 162 | `./apps` | 3 exports | `engine` (+ root devDep) | 13 | **public API + dependency layer** |
+| `editor` | 1 | `./editor` | 74 exports | root devDep | 7 | **public API, re-export shim** |
+| `materials` | 360 | `./materials` | 14 exports | — | 4 | **public API, no internal consumer** |
+| `environments` | 469 | `./environments` | 12 exports | — | 4 | **public API, no internal consumer** |
+| `test-utils` | 62 | none | `ERR_PACKAGE_PATH_NOT_EXPORTED` | — | 4 | **internal only** |
+
+**None of the six is dead.** The two that looked deadest by app-import count —
+`materials` (4) and `environments` (4) — are precisely the two with *no internal consumer
+at all*, which means every one of their 26 combined exports exists only to be imported by
+an outside developer. Low internal usage is what a leaf public API looks like; it is the
+opposite of evidence for deletion. `editor` is a single line, `export * from
+"@aura3d/editor-runtime"`, and that one line is the delivery mechanism for 74 editor
+symbols; deleting the file removes the whole `./editor` surface.
+
+**`test-utils` is internal but still not free to delete.** R8 blocks it:
+
+```
+$ pnpm check:deletion-safety packages/test-utils/src/index.ts
+BLOCKED  packages/test-utils/src/index.ts: 8 blocking reference(s) —
+  runtime-consumer @ tools/browser-entry-purity/index.ts:81;
+  runtime-consumer @ tools/bundle-scenarios/index.ts:207;
+  runtime-consumer @ tools/foundation-api-audit/index.ts:97;
+  runtime-consumer @ tools/foundation-api-audit/index.ts:98;
+  runtime-consumer @ tsconfig.base.json:149; runtime-consumer @ tsconfig.base.json:150 ...
+exit 1
+```
+
+Three release tools enumerate the package by name and a `tsconfig.base.json` path alias
+resolves it. This is the R8 rule doing its job on the package the starting table called
+"the only straightforward candidate": straightforward in *export* terms, not in
+*dependency* terms. Removing it means editing three tools and the base tsconfig first,
+which is a WS-3.6d decision with its own commit, not a `git rm`.
+
+**Consequence for WS-3.6d.** Zero packages are cleared for deletion by this audit. Five
+require a deprecation path through §12 and `MIGRATION-1.6.md` if they are ever to be
+removed; one requires tool changes first. The 3,363-line figure in §9 stands as an
+observation only (R6), and its "not removal candidates" verdict is now proven rather than
+assumed.
 
 #### WS-3.6d Per-package consolidation decisions
 
 - [ ] One decision, one commit, per package. Under R8 and R7.
-- [ ] **`core` and `apps` are not candidates for removal in 1.6** — `engine` depends on both.
-- [ ] `materials`, `environments`, `editor` are public exports: removal is a **breaking
-      change** feeding §12, and requires a deprecation path, not a delete.
-- [ ] `test-utils` (62, not exported) is the only straightforward candidate.
+- [x] **`core` and `apps` are not candidates for removal in 1.6** — `engine` depends on both.
+      Confirmed in WS-3.6c: `core` is a declared dependency of `ecs`, `scene`, `engine` and
+      `apps`; both also resolve as public subpaths from an installed tarball.
+- [x] `materials`, `environments`, `editor` are public exports: removal is a **breaking
+      change** feeding §12, and requires a deprecation path, not a delete. Confirmed: 14,
+      12 and 74 exports respectively resolve from an installed `@aura3d/engine`.
+- [x] `test-utils` (62, not exported) is the only straightforward candidate — **corrected by
+      WS-3.6c**: it is the only *unexported* package, but R8 blocks deletion with 8 blocking
+      references (3 release tools plus a `tsconfig.base.json` alias). Not a delete; a
+      tool-edit decision. Deferred: it costs 4 file edits to remove 62 lines and buys no
+      bundle, parity or friction improvement, so it loses to every remaining P2/P4 item.
 - [ ] **Proof:** `pnpm build && pnpm typecheck` after each; no public subpath disappears
       without a `MIGRATION-1.6.md` entry.
 
@@ -2568,8 +2645,8 @@ was caught before any `git rm`. The `Fixtures` suffix — not the code — was t
 | `rendering/threejs-compatibility/` | 354 | delete | R8 |
 | Audio DSP (`Reverb`, `Filter`) | 69 | **retain — inspection showed real behaviour** (WS-3.2) | inspected |
 | Fabricated perf gate | ~60 | delete, per WS-1.1 atomic order | — |
-| `core`, `apps`, `materials`, `environments`, `editor` | 3,363 | **not removal candidates** — public exports; `engine` depends on `core` and `apps` | WS-3.6c |
-| `test-utils` | 62 | only straightforward candidate | R8 |
+| `core`, `apps`, `materials`, `environments`, `editor` | 3,363 | **not removal candidates — proven in WS-3.6c**: all five resolve as public subpaths from an installed tarball (22/3/14/12/74 exports); `engine` depends on `core` and `apps` | WS-3.6c |
+| `test-utils` | 62 | **not cleared** — the only unexported package, but R8 reports 8 blocking references (3 release tools + `tsconfig.base.json` alias). Deferred, not deleted | R8, WS-3.6c |
 | Markdown + loose scripts + `logs.txt` | ~994 KB | staged per §7, audits preserved | reference scan |
 | Rendering descriptor files | ~11,100 | **deferred to 1.7** except where they block bundle size, false claims, or package boundaries | §12 |
 
