@@ -2135,11 +2135,31 @@ consumer counts. Measured 2026-08-05:
 dependency of five packages including `engine`.** Deleting on app-consumer count would
 have broken the published surface. Low direct app usage does not mean unused.
 
-#### WS-3.6a Dependency graph and ownership rules
+#### WS-3.6a Dependency graph and ownership rules — **DONE**
 
-- [ ] Document owner + allowed dependency direction per package in `DESIGN.md`.
-- [ ] Publish the actual current graph, including transitive edges, as committed evidence.
-- [ ] **Proof:** graph matches `pnpm -r list`; no undocumented edge.
+- [x] Documented owner + allowed dependency direction per package. `DESIGN.md` §8 carries the
+      tier table and the four rules; the per-package record (owner, tier, LOC, public subpath,
+      dependency union) lives in `docs/architecture/package-ownership.md`, which §8 links as
+      canonical. Split because `DESIGN.md` is the showcase visual system and a 27-row source
+      table does not belong inside it.
+- [x] Published the actual current graph as committed evidence — `tools/package-graph/index.ts`
+      (583 lines) writes `tests/reports/package-graph.json` and
+      `docs/architecture/package-graph.dot`. It measures **two** edge sets separately because they
+      disagree here: **declared** (`@aura3d/*` in `dependencies`/`peerDependencies`) and **source**
+      (`@aura3d/...` specifiers actually imported under `packages/*/src`). Subpaths are resolved
+      through `tsconfig.base.json` `paths`, not by prefix — `@aura3d/engine/rendering` aliases to
+      `packages/rendering/src/index.ts` and does **not** resolve into `packages/engine`; attributing
+      it to `engine` invents cycles that do not exist.
+- [x] **Proof:** `pnpm check:package-graph` — 7/7 PASS, 27 packages, 0 undeclared, 0 cycles,
+      0 layer violations, 0 doc gaps, 6 over-declarations reported as weight.
+- [x] **`pnpm -r list` was rejected as the proof source and replaced with something stronger.**
+      `pnpm -r list --depth 0 --json` derives its output from the same `package.json` files being
+      audited, so comparing them is circular and always passes. The gate instead compares each
+      manifest against `pnpm-lock.yaml`'s `importers` block (what `--frozen-lockfile` installs)
+      **and** the `@aura3d` symlinks actually on disk under `packages/*/node_modules/`. Check
+      `install-graph-matches-manifests` PASSes across all 27.
+- [x] Doc-drift is machine-enforced: `ownership-doc-documents-every-edge` fails if
+      `package-ownership.md` omits a measured edge or documents one that no longer exists.
 
 #### WS-3.6b Lint enforcement
 

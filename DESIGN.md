@@ -131,3 +131,40 @@ Mixed tonal-shift and thin borders. Public routes use translucent panels only wh
 - Do not use heavy decorative shadows or gradient blobs.
 - Avoid clipped primitives at viewport edges unless they are clearly background set dressing.
 - Public screenshots should read as finished route compositions, not probe harnesses.
+
+## 8. Package Architecture
+
+The visual system above governs routes. This section governs the source tree those routes import.
+
+Canonical record: [`docs/architecture/package-ownership.md`](docs/architecture/package-ownership.md).
+It lists, per package, its owner responsibility, its tier, its public `exports` subpath, and the
+union of its declared and imported `@aura3d/*` dependencies. That document is descriptive; the gate
+`pnpm check:package-graph` (`tools/package-graph/index.ts`) is authoritative and writes
+`tests/reports/package-graph.json` plus `docs/architecture/package-graph.dot`.
+
+### Dependency direction
+
+Packages are assigned to seven tiers. Dependencies point **down only**.
+
+| Tier | Meaning |
+| --- | --- |
+| 0 | Foundation — no Aura3D dependencies |
+| 1 | Core data model |
+| 2 | Subsystems over the data model |
+| 3 | Subsystems composing other subsystems |
+| 4 | Product surfaces |
+| 5 | Aggregate runtime (`engine`) |
+| 6 | Consumers of the aggregate, and standalone tools |
+
+### Rules
+
+- A package may import only from a strictly lower tier. An edge from tier N to tier M where
+  M > N fails `check:package-graph`.
+- A package may import only through another package's `exports` subpath. Deep imports
+  (`@aura3d/*/src/*`) are blocked by ESLint.
+- A package may import only what its own `package.json` declares. An imported-but-undeclared
+  `@aura3d/*` specifier resolves through workspace hoisting or a `tsconfig` path alias locally and
+  breaks for a registry consumer; that count must stay at zero.
+- Nothing may depend on tier 5 or 6 except tier 6.
+- A declared dependency with no source import is an over-declaration. It is reported as install
+  weight, not failed — removing it from a published manifest is a consumer-visible change.

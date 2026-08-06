@@ -1,4 +1,4 @@
-import { loadProductionGLTFRenderPipeline, type ProductionGLTFRenderMetadata as ProductionGLTFRenderMetadata } from "@aura3d/engine/assets/browser";
+import { loadProductionGLTFRenderPipeline, type ProductionGLTFRenderMetadata as ProductionGLTFRenderMetadata } from "@aura3d/assets/browser";
 import {
   ProductionWebGL2Renderer,
   createProductionEnvironmentLightingResources as createProductionEnvironmentLightingResources,
@@ -7,7 +7,7 @@ import {
   summarizeProductionWebGL2Proof as summarizeProductionWebGL2Proof,
   type ProductionRenderProof as ProductionRenderProof,
   type ProductionWebGPUReport
-} from "@aura3d/engine/rendering";
+} from "@aura3d/rendering";
 
 export interface ProductionExampleAsset {
   readonly id: string;
