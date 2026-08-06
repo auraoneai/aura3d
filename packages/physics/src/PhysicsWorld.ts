@@ -1,9 +1,11 @@
 import {
   Body as CannonBody,
   Box as CannonBox,
+  ContactMaterial as CannonContactMaterial,
   ConvexPolyhedron as CannonConvexPolyhedron,
   Cylinder as CannonCylinder,
   Heightfield as CannonHeightfield,
+  Material as CannonMaterial,
   Plane as CannonPlane,
   Quaternion as CannonQuaternion,
   Sphere as CannonSphere,
@@ -125,6 +127,10 @@ export class PhysicsWorld {
   private backendSelection: PhysicsBackendSelection;
   private cannonWorld: CannonWorld | undefined;
   private readonly cannonBodiesByAuraId = new Map<number, CannonBody>();
+  // Interned by `${friction}|${restitution}` so two colliders declaring the same surface
+  // share one cannon Material, and each unordered pair gets exactly one ContactMaterial.
+  private readonly cannonMaterialsByKey = new Map<string, CannonMaterial>();
+  private readonly cannonContactMaterialPairs = new Set<string>();
   private nextBodyId = 1;
   private nextColliderId = 1;
   private lastEvents: readonly CollisionEvent[] = [];
@@ -645,9 +651,43 @@ export class PhysicsWorld {
     cannonBody.collisionFilterGroup = collider.filter.layer;
     cannonBody.collisionFilterMask = collider.filter.mask;
     cannonBody.isTrigger = cannonBody.isTrigger || collider.sensor;
+    // Defect class: engine. The collider's `material` was validated, stored, and read by the
+    // aura-js resolver, but never handed to cannon -- so on the production backend every
+    // surface used `defaultContactMaterial` (friction 0.3, restitution 0). A collider
+    // declaring `restitution: 1` did not bounce and `friction: 1` did not grip.
+    const surface = this.internCannonMaterial(collider.material.friction, collider.material.restitution);
+    resolved.shape.material = surface;
+    cannonBody.material = surface;
     cannonBody.addShape(resolved.shape, resolved.offset, resolved.orientation);
     cannonBody.updateMassProperties();
     syncCannonFromAura(body, cannonBody);
+  }
+
+  private internCannonMaterial(friction: number, restitution: number): CannonMaterial {
+    const key = `${friction}|${restitution}`;
+    const existing = this.cannonMaterialsByKey.get(key);
+    if (existing) return existing;
+    const created = new CannonMaterial({ friction, restitution });
+    this.cannonMaterialsByKey.set(key, created);
+    // cannon combines a pair's properties from an explicit ContactMaterial when one exists,
+    // and silently falls back to `defaultContactMaterial` when it does not. Register the
+    // pairing against every known surface -- including itself -- so no declared pair is
+    // resolved by the default.
+    for (const other of this.cannonMaterialsByKey.values()) {
+      const pairKey = created.id <= other.id ? `${created.id}:${other.id}` : `${other.id}:${created.id}`;
+      if (this.cannonContactMaterialPairs.has(pairKey)) continue;
+      this.cannonContactMaterialPairs.add(pairKey);
+      this.cannonWorld?.addContactMaterial(
+        new CannonContactMaterial(created, other, {
+          // Pairwise combination matches the aura-js resolver: friction multiplies (so a
+          // frictionless surface stays frictionless against anything), restitution takes
+          // the maximum (so one elastic surface is enough to bounce).
+          friction: created.friction * other.friction,
+          restitution: Math.max(created.restitution, other.restitution)
+        })
+      );
+    }
+    return created;
   }
 
   private disableCannonBackend(reason: string): void {
