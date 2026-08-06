@@ -280,6 +280,23 @@ function moduleSpecifiersFor(path: string, ambiguous: ReadonlySet<string>): read
   return [...specifiers].filter((value) => value.length > 3);
 }
 
+/**
+ * Extensions that can actually declare an exported symbol. A `.txt` or `.md` file cannot.
+ *
+ * Symbol harvesting is a text scan, so pointing it at a file that merely *contains* code
+ * attributes that code's exports to the containing file. `logs.txt` is a 9,000-line session
+ * transcript with pasted source in it; the scan read 29 "exports" out of the paste — including
+ * `frame`, `resolve`, `create` and `analyze` — and then reported 111 blocking references, none of
+ * which were references to `logs.txt`. Two of the highest-count entries were
+ * `Array.from({ length: frames }, (_, frame) =>` in unrelated engine files.
+ *
+ * That is the same defect class as the 27,230-reference and 306-reference bugs above: the gate
+ * manufacturing its own blocking evidence, which under R8 blocks a legitimate deletion on a
+ * dependency that does not exist. A non-module candidate is matched on its path alone, which is
+ * the only identity it has.
+ */
+const MODULE_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".cjs", ".jsx"]);
+
 /** Symbols this module exports. A registry can name a symbol without naming the file. */
 function exportedSymbols(text: string): readonly string[] {
   const names = new Set<string>();
@@ -364,6 +381,65 @@ function quotedSpans(line: string): readonly string[] {
 /** A line with every quoted span blanked out, so prose inside a string cannot match an identifier. */
 function withoutQuotedSpans(line: string): string {
   return line.replace(/"[^"]*"|'[^']*'|`[^`]*`/g, '""');
+}
+
+/**
+ * Whether `symbol` is actually *bound* by this line, as opposed to merely appearing on it.
+ *
+ * This replaced a bare `/\b(import|from|require|registry|register)\b/` keyword test that guarded the
+ * symbol-matching fallback, and the keyword test produced the highest-frequency false positives in
+ * the WS-0.2 calibration:
+ *
+ *   - `Array.from({ length: frames }, (_, frame) =>` contains `from` on a word boundary, so any
+ *     candidate exporting a short common name was blocked by
+ *     `packages/engine/src/agent-api/ApplicationKits.ts:998` — a line that imports nothing.
+ *   - `export type AuraAppFrameCallback = (frame: AuraAppFrame) => void` starts with `export`, so
+ *     tightening the test to a leading statement keyword still matched seven unrelated engine
+ *     signatures where the name was a *parameter*, not an import.
+ *
+ * Both are the defect class R8 exists to prevent: fabricated blocking evidence stops a legitimate
+ * deletion on a dependency that does not exist, and the report reads as though it were real.
+ *
+ * A symbol is bound in exactly three shapes, so those are the three tested here:
+ *
+ *   1. a brace list on an `import`/`export ... from` statement, or a `require` destructuring;
+ *   2. an argument to a `register*(...)` call;
+ *   3. a bare identifier standing alone as an array or object-literal entry, which is how a
+ *      generated registry table names a symbol without naming its file — accepted only in a file
+ *      whose path already looks like a registry, since elsewhere it is ordinary code.
+ */
+function bindsSymbol(line: string, symbol: string, referencingPath: string): boolean {
+  // Cheap prefilter. The three shapes below all require the name to be present literally, and this
+  // scan runs the check for every exported symbol against every line of the repository.
+  if (!line.includes(symbol)) return false;
+  const code = withoutQuotedSpans(line);
+  const boundary = new RegExp(`\\b${escapeRegExp(symbol)}\\b`);
+
+  // 1. `import { X } from "..."`, `export { X } from "..."`, `const { X } = require("...")`.
+  if (/^\s*(?:import|export)\b/.test(code) || /\brequire\s*\(/.test(code)) {
+    for (const braced of code.match(/\{[^}]*\}/g) ?? []) {
+      if (boundary.test(braced)) return true;
+    }
+    // `import X from "..."` / `import * as X from "..."` — a default or namespace binding.
+    if (/^\s*import\s+(?:\*\s+as\s+)?[A-Za-z_$][\w$]*\s*(?:,|from\b)/.test(code) && boundary.test(code.split(/\bfrom\b/)[0] ?? "")) {
+      return true;
+    }
+    return false;
+  }
+
+  // 2. `registerThing(X)` / `registry.add(X)`.
+  const registerCall = /\b(?:register[A-Za-z0-9_$]*|registry(?:\.[A-Za-z0-9_$]+)?)\s*\(([^)]*)\)/g;
+  let call: RegExpExecArray | null;
+  while ((call = registerCall.exec(code)) !== null) {
+    if (boundary.test(call[1])) return true;
+  }
+
+  // 3. A bare table entry inside a generated registry.
+  if (REGISTRY_HINTS.some((hint) => referencingPath.toLowerCase().includes(hint))) {
+    if (new RegExp(`(?:^|[\\[{,:]\\s*)${escapeRegExp(symbol)}\\s*(?:,|\\]|\\}|$)`).test(code.trim())) return true;
+  }
+
+  return false;
 }
 
 /** The last path segment of a specifier, without a module extension. */
@@ -463,7 +539,7 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
   const exists = existsSync(absolute);
   const text = exists ? readFileSync(absolute, "utf8") : "";
   const specifiers = moduleSpecifiersFor(path, ambiguous);
-  const symbols = exportedSymbols(text);
+  const symbols = MODULE_EXTENSIONS.has(extname(path)) ? exportedSymbols(text) : [];
   const points = emptyPoints();
   const intraCandidate: Evidence[] = [];
   const seen = new Set<string>();
@@ -482,12 +558,10 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
       }
       if (matched === undefined) {
         /*
-         * A registry can name an exported symbol without naming the file — but the symbol must
-         * appear as an *identifier* on an import/export/registration line, not as text inside a
-         * string. `{ title: "Spin Behavior" }` is a UI label, not a consumer of `Behavior.ts`.
-         */
-        if (!/\b(import|from|require|registry|register)\b/.test(line)) continue;
-        /*
+         * A registry can name an exported symbol without naming the file. `bindsSymbol` decides
+         * whether the name is actually *bound* here rather than merely present: a UI label
+         * `{ title: "Spin Behavior" }` and a parameter `(frame: AuraAppFrame)` are not consumers.
+         *
          * And if the line binds its identifiers from an explicit module specifier that is *not*
          * the candidate, the symbol came from somewhere else and this is a name collision.
          *
@@ -498,13 +572,10 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
          * `@aura3d/scripting` in its dependencies. Reporting it made a package deletion look
          * blocked by a cross-package import that does not exist.
          */
-        if (!bindsFromOtherModule(line, specifiers)) {
-          const code = withoutQuotedSpans(line);
-          const symbolHit = symbols.find((symbol) => symbol.length > 4 && new RegExp(`\\b${escapeRegExp(symbol)}\\b`).test(code));
-          if (symbolHit === undefined) continue;
-          matched = symbolHit;
-        }
-        if (matched === undefined) continue;
+        if (bindsFromOtherModule(line, specifiers)) continue;
+        const symbolHit = symbols.find((symbol) => symbol.length > 4 && bindsSymbol(line, symbol, file.path));
+        if (symbolHit === undefined) continue;
+        matched = symbolHit;
       }
       const point = classify(file.path, line);
       const key = `${point}|${file.path}:${index + 1}`;
@@ -594,6 +665,13 @@ function parseArgs(argv: readonly string[]): Args {
       index += 1;
       continue;
     }
+    /*
+     * `pnpm check:deletion-safety -- a.ts b.ts` forwards the `--` separator itself. Treating it as
+     * a candidate produced a phantom `BLOCKED  -- does not exist; cannot prove a deletion of a file
+     * that is already gone` row, which fails the run for a file nobody asked about and buries the
+     * real verdicts under a spurious one.
+     */
+    if (arg === "--") continue;
     paths.push(arg);
   }
   let manifestRead: string | undefined;

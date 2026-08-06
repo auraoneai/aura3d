@@ -1,7 +1,8 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
 /**
@@ -212,4 +213,160 @@ describe("deletion-safety (R8)", () => {
     const failures = report.failures as readonly string[];
     expect(failures.some((failure) => failure.includes("already gone"))).toBe(true);
   }, 180_000);
+});
+
+/* ------------------------------------------------------------------------------------------- */
+/* Calibration harness (WS-0.2)                                                                 */
+/*                                                                                              */
+/* The cases above pin behaviour against real repository files. The cases below drive the same    */
+/* CLI over *synthetic* files, which is the only way to assert the negative — that the gate does  */
+/* not invent a consumer — without depending on the repository happening not to contain one.     */
+/*                                                                                              */
+/* The scratch directory lives inside the repo because the gate only scans repository            */
+/* directories, but deliberately not under `tests/reports/`, whose paths `classify`              */
+/* short-circuits by prefix. `tests/tooling-calibration/` gets no special handling.              */
+/* ------------------------------------------------------------------------------------------- */
+
+const calibrationScratch = mkdtempSync(join(repoRoot, "tests/tooling-calibration/scratch-"));
+const calibrationReports: string[] = [];
+
+afterAll(() => {
+  rmSync(calibrationScratch, { recursive: true, force: true });
+  for (const report of calibrationReports) rmSync(join(repoRoot, report), { force: true });
+});
+
+interface CalibrationReport {
+  readonly path: string;
+  readonly clear: boolean;
+  /** Keyed by R8 point; only non-empty keys are present. */
+  readonly blocking: Readonly<Record<string, readonly { readonly at: string }[]>>;
+}
+
+/**
+ * A name that appears nowhere in the repository as a literal — including in this file.
+ *
+ * The gate scans every file, this one included, so a hard-coded synthetic name would show up as a
+ * reference to itself and the assertion would be reading its own source text.
+ */
+function uniqueName(): string {
+  return `calib${randomBytes(6).toString("hex")}`;
+}
+
+/** Every blocking point on a report, flattened to `point @ location`. */
+function blockingEntries(report: CalibrationReport | undefined): readonly string[] {
+  return Object.entries(report?.blocking ?? {}).flatMap(([point, entries]) => entries.map((entry) => `${point} @ ${entry.at}`));
+}
+
+/** Run the real gate over `candidates` and return its per-file reports. */
+function runGate(candidates: readonly string[]): readonly CalibrationReport[] {
+  const reportPath = join("tests/reports", `${uniqueName()}.json`);
+  calibrationReports.push(reportPath);
+  try {
+    execFileSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/deletion-safety/index.ts", ...candidates, "--report", reportPath], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      stdio: "pipe"
+    });
+  } catch {
+    // A blocked candidate exits non-zero by design; the report is still written.
+  }
+  const parsed = JSON.parse(readFileSync(join(repoRoot, reportPath), "utf8")) as { readonly files: readonly CalibrationReport[] };
+  return parsed.files;
+}
+
+/** Write a file under the calibration scratch directory and return its repo-relative path. */
+function write(name: string, contents: string): string {
+  const absolute = join(calibrationScratch, name);
+  mkdirSync(join(absolute, ".."), { recursive: true });
+  writeFileSync(absolute, contents);
+  return relative(repoRoot, absolute);
+}
+
+describe("R8 deletion safety — blocks real dependencies", () => {
+  it("blocks a module that a runtime file imports by path", () => {
+    const moduleName = uniqueName();
+    const target = write(`${moduleName}.ts`, `export function widget(): number {\n  return 1;\n}\n`);
+    write(
+      `${uniqueName()}.ts`,
+      `import { widget } from "./${moduleName}";\nexport const used = widget();\n`
+    );
+
+    const [report] = runGate([target]);
+    expect(report?.clear).toBe(false);
+    expect(blockingEntries(report).some((entry) => entry.startsWith("runtime-consumer"))).toBe(true);
+  });
+
+  it("blocks a module whose exported symbol is re-exported by a registry that never names the file", () => {
+    const moduleName = uniqueName();
+    const symbol = uniqueName();
+    const target = write(`${moduleName}.ts`, `export const ${symbol} = { role: "fixture" };\n`);
+    write(`${uniqueName()}.ts`, `export { ${symbol} } from "./${moduleName}";\n`);
+
+    const [report] = runGate([target]);
+    expect(report?.clear).toBe(false);
+  });
+});
+
+describe("R8 deletion safety — argument handling", () => {
+  it("ignores the pnpm `--` separator instead of treating it as a candidate", () => {
+    /*
+     * `pnpm check:deletion-safety -- a.ts` forwards `--` through to the tool. It was pushed onto the
+     * candidate list, so every scripted invocation reported an extra
+     * `BLOCKED  -- ... already gone` row and exited non-zero regardless of the real verdicts. The
+     * WS-3.5 re-run surfaced this: 30 genuine results arrived alongside one phantom failure for a
+     * file nobody named.
+     */
+    const target = write(`${uniqueName()}.ts`, `export const ${uniqueName()} = 1;\n`);
+    const reports = runGate(["--", target]);
+    expect(reports.map((report) => report.path)).toEqual([target]);
+    expect(reports[0]?.clear).toBe(true);
+  });
+});
+
+describe("R8 deletion safety — does not manufacture dependencies", () => {
+  it("clears a prose file that merely contains pasted source code", () => {
+    // The exact defect that reported 111 references to logs.txt: a transcript is not a module, so
+    // `export function frame()` inside it is not an export *of* the transcript. Every identifier
+    // pasted below also exists as a real export elsewhere in the repository.
+    const target = write(
+      `${uniqueName()}.txt`,
+      [
+        "session log 2026-08-05",
+        "",
+        "  export function frame(index) {",
+        "    return index + 1;",
+        "  }",
+        "",
+        "  export const resolve = () => null;",
+        "  export { create, analyze };",
+        ""
+      ].join("\n")
+    );
+
+    const [report] = runGate([target]);
+    expect(blockingEntries(report)).toEqual([]);
+    expect(report?.clear).toBe(true);
+  });
+
+  it("clears a module whose exported name collides with an identifier bound from elsewhere", () => {
+    const target = write(`${uniqueName()}.ts`, `export function frame(): number {\n  return 0;\n}\n`);
+    write(
+      `${uniqueName()}.ts`,
+      `import { frame } from "./${uniqueName()}";\nexport const value = frame();\n`
+    );
+
+    const [report] = runGate([target]);
+    expect(blockingEntries(report)).toEqual([]);
+    expect(report?.clear).toBe(true);
+  });
+
+  it("clears a file whose only mention is prose in a Markdown document", () => {
+    const moduleName = uniqueName();
+    const target = write(`${moduleName}.ts`, `export const ${uniqueName()} = 7;\n`);
+    write(`${uniqueName()}.md`, `We should delete \`${moduleName}.ts\` at some point.\n`);
+
+    const [report] = runGate([target]);
+    expect(blockingEntries(report)).toEqual([]);
+    expect(report?.clear).toBe(true);
+  });
 });
