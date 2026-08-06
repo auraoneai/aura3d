@@ -30,6 +30,7 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSy
 import { spawnSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
+import { PACKAGE_TIERS } from "../package-tiers";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
 
@@ -37,47 +38,11 @@ const repoRoot = resolve(import.meta.dirname, "..", "..");
 const OWNERSHIP_DOC = "docs/architecture/package-ownership.md";
 
 /**
- * The intended layering. Lower tiers must never import higher ones. Tier is assigned per package
- * below; an edge from tier N to tier M with M > N is a violation.
- *
- * This ordering is derived from the audit, not asserted: `math` has zero @aura3d deps today, and
- * `engine`/`react`/`three-compat` are the only aggregate surfaces.
+ * The intended layering, imported from the single canonical source so this gate and the ESLint
+ * boundary rule (WS-3.6b) can never disagree. Tier is assigned per package in
+ * `tools/package-tiers.ts`; an edge from tier N to tier M with M > N is a violation.
  */
-const TIERS: Record<string, number> = {
-  // 0 — foundation: no Aura3D dependencies at all.
-  math: 0,
-  physics: 0,
-  scripting: 0,
-  "test-utils": 0,
-  "asset-index": 0,
-  // 1 — core data model.
-  core: 1,
-  scene: 1,
-  // 2 — subsystems over the data model.
-  animation: 2,
-  rendering: 2,
-  input: 2,
-  audio: 2,
-  ecs: 2,
-  // 3 — subsystems that compose other subsystems.
-  assets: 3,
-  controls: 3,
-  materials: 3,
-  environments: 3,
-  debug: 3,
-  "editor-runtime": 3,
-  // 4 — product surfaces.
-  "product-studio": 4,
-  apps: 4,
-  workflows: 4,
-  editor: 4,
-  // 5 — aggregates. Nothing may depend on these except other aggregates.
-  engine: 5,
-  react: 6,
-  "three-compat": 6,
-  "aura3d-cli": 6,
-  "create-aura3d": 6
-};
+const TIERS = PACKAGE_TIERS;
 
 interface Pkg {
   readonly dir: string;

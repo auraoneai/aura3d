@@ -2161,11 +2161,56 @@ have broken the published surface. Low direct app usage does not mean unused.
 - [x] Doc-drift is machine-enforced: `ownership-doc-documents-every-edge` fails if
       `package-ownership.md` omits a measured edge or documents one that no longer exists.
 
-#### WS-3.6b Lint enforcement
+#### WS-3.6b Lint enforcement — COMPLETE
 
-- [ ] Extend the ESLint boundary rule (already blocks `@aura3d/*/src/*`) to forbid upward
+- [x] Extend the ESLint boundary rule (already blocks `@aura3d/*/src/*`) to forbid upward
       dependencies per WS-3.6a.
-- [ ] **Proof:** `pnpm lint` passes; a deliberately-added upward import fails it.
+- [x] **Proof:** `pnpm lint` passes; a deliberately-added upward import fails it.
+
+**Finding — the pre-existing rule enforced nothing.** The claim that ESLint "already blocks
+`@aura3d/*/src/*`" was false in practice. `eslint.config.js` declared no parser for `.ts`,
+so every TypeScript file in the repository was skipped; the `no-restricted-imports` patterns
+matched only the handful of `.mjs`/`.js` tool files. `pnpm lint` had been passing for that
+reason, not because boundaries held. This is the same class of defect as the P1 fabricated
+gates: a green check whose scope was empty.
+
+Delivered:
+
+- `tools/eslint-plugin-aura3d-boundaries/index.mjs` — two real rules,
+  `no-upward-package-import` and `no-internal-deep-import`. Tiers are read from
+  `tools/package-tiers.ts`, the **same module** `tools/package-graph/index.ts` reads, so the
+  lint rule and the graph gate cannot disagree.
+- Subpath specifiers resolve through `tsconfig.base.json` `paths`, never by prefix.
+  `@aura3d/engine/rendering` aliases into `packages/rendering` (tier 2), not `packages/engine`
+  (tier 5); a prefix implementation would report violations that do not exist and miss ones
+  that do.
+- An `@aura3d/*` specifier that cannot be attributed to a tier is now reported as
+  `unresolved` rather than skipped. Skipping unknowns is precisely how the old config
+  enforced nothing.
+- `@typescript-eslint/eslint-plugin@8.66.0` installed. Template sources carry
+  `eslint-disable-next-line @typescript-eslint/...` directives that referenced an unknown
+  rule once a parser existed. No `@typescript-eslint` rule is enabled — this is a boundary
+  workstream, and switching on a style ruleset would mix an unrelated large diff into it.
+- `packages/*/tests/**` is exempt from tier direction. `editor-runtime`'s suite drives the
+  real `@aura3d/engine` runtime to prove the integration works; that edge is devOnly and
+  ships to nobody. Enforcing tier order there would force the test to mock the aggregate it
+  exists to verify.
+- `pnpm lint` added to `check:release`. It was absent, so the rule could not have blocked a
+  release.
+
+Proof:
+
+- `pnpm lint` → exit 0, **0 errors** (12 pre-existing unused-disable warnings) — now
+  actually covering every `.ts` file.
+- Deliberate upward import at `packages/math/src/__ws36b_probe.ts` importing `@aura3d/engine`
+  → `eslint` exit **1**: `math (tier 0) may not import engine (tier 5)`. Probe removed.
+- `tests/unit/tooling/eslint-boundaries.test.ts` — 9 passing tests asserting on reported
+  message ids: up-tier reported, down-tier allowed, alias-resolved subpath allowed,
+  unknown specifier reported, re-exports and dynamic `import()` covered, non-`packages/`
+  files ignored, deep `src/` import reported, public subpath allowed, and the tier map
+  shared with the graph gate. Two of these failed on first run and exposed the unresolved
+  gap above — the rule was fixed, not the test (R2).
+- `pnpm check:package-graph` → 4 PASS, 0 layer violations.
 
 #### WS-3.6c Zero-consumer audit — classify, do not delete
 
