@@ -591,6 +591,7 @@
     "@aura3d/workflows": "workspace:*",
     "@babylonjs/core": "^7.16.1",
     "@babylonjs/loaders": "^7.16.1",
+    "@dimforge/rapier3d-compat": "0.19.3",
     "@playwright/test": "^1.52.0",
     "@size-limit/file": "^12.1.0",
     "@types/node": "^22.15.3",

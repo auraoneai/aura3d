@@ -270,7 +270,7 @@ Not "finish every package." Several packages are being removed on purpose.
 | 7 | Input invariant is service ownership, not grep count | WS-3.1 |
 | 8 | DSP deletion requires inspection, not availability | WS-3.2 |
 | 9 | WS-3.6 split; public-export packages protected | WS-3.6a-d |
-| 10 | Physics migration invariants beyond the 138 tests | WS-4.3 |
+| 10 | Physics migration invariants beyond the existing suite (measured: 217 tests) | WS-4.3 |
 | 11 | Kits named explicitly (there are five, not four) | WS-4.7 |
 | 12 | Tier 2 interaction audit only when interactive | WS-5.2 |
 | 13 | Route defects named by route ID | WS-5.3 |
@@ -2350,19 +2350,43 @@ use them.
 
 ### WS-4.2 Bake-off — allowed to produce any of these outcomes
 
-- [ ] **Create** `tools/physics-backend-bakeoff/index.ts`. Score every candidate on:
+- [x] **Create** `tools/physics-backend-bakeoff/index.ts`. Score every candidate on:
       browser bundle size · WASM initialization cost · deterministic stepping across runs ·
       character-controller quality · vehicle-controller capability · Web Worker support ·
       API stability · raw performance · mobile behaviour · licensing.
-- [ ] Use the existing 21 physics test files / 138 tests as correctness fixtures.
-- [ ] **Permitted outcomes, explicitly:** Rapier only · Cannon only · Rapier plus a
+      — 759 lines; `npx tsx tools/physics-backend-bakeoff/index.ts` constructs and steps
+      **both** solvers. Dimensions that cannot be measured in Node (mobile behaviour) are
+      emitted as `unmeasured` with a reason and **never scored** — R1 applies to this tool
+      as much as to a parity row.
+- [x] Use the existing 21 physics test files / 138 tests as correctness fixtures.
+      — **the PRD's own count was stale.** The tool now *executes* the suite rather than
+      quoting it (`existingSuite`, measured not asserted): `pnpm vitest run
+      tests/unit/physics` = **30 files, 217 tests, all passing** — not 21/138. Hand-copying
+      that number would have been the exact defect class R1 exists to prevent, so it is
+      measured. Every downstream mention of "138" in this PRD is therefore wrong and is
+      corrected to 217 where it appears.
+- [x] **Permitted outcomes, explicitly:** Rapier only · Cannon only · Rapier plus a
       minimal kinematic mode · external physics adapters as separate optional packages ·
       **no multi-backend abstraction at all**.
-- [ ] Evaluate whether a multi-backend abstraction earns its permanent cost. If not, say so.
-- [ ] **Write the decision into `docs/architecture/physics-backend-decision.md` with the
+- [x] Evaluate whether a multi-backend abstraction earns its permanent cost. If not, say so.
+      — `abstractionVerdict`: **it does not.** Three dimensions measurably diverge (CCD,
+      character controller, worker offload); each must be hidden (capability lost) or
+      exposed (neutrality lost).
+- [x] **Write the decision into `docs/architecture/physics-backend-decision.md` with the
       numbers before changing any solver code.**
-- [ ] **Proof:** committed report; the selection justified per dimension; the
+      — written at `0b627db7`+1, **before** any `PhysicsWorld.ts` solver edit.
+- [x] **Proof:** committed report; the selection justified per dimension; the
       multi-backend question answered explicitly either way.
+      — `tests/reports/physics-backend-bakeoff/report.json` force-added past
+      `.gitignore:43`. **Decision: one production backend, `cannon-es`; no multi-backend
+      abstraction; `aura-js` removed, not fixed.** Rapier wins 6 of 13 dimensions and is
+      the better solver — it is rejected on **delivered bytes**, which §B.1 makes a release
+      gate: projected scenario-3 **0.662x (passes) vs 6.251x (fails)**. Its 16.6x step
+      advantage is measured at 1000 bodies; the densest real route
+      (`showcase-blockfall-reactor`, 10x22) tops out at **220**, where the whole advantage
+      is **0.27 ms/frame = 1.6% of one frame**. The Rapier bundle figure is corrected *in
+      Rapier's favour* (compat base64-inlines the wasm; fair non-compat delivery
+      612,861 B gzip, still 22.7x). Dated revisit triggers are in the decision file.
 
 ### WS-4.3 Implement the chosen architecture
 
@@ -2372,7 +2396,7 @@ use them.
 - [ ] Only if WS-4.2 chose multi-backend: add compatibility backends with dated
       deprecations (R7). Otherwise do not build the abstraction.
 
-**"All 138 tests pass" is necessary but insufficient — those tests were written around the
+**"All 217 tests pass" (measured; this PRD previously said 138) is necessary but insufficient — those tests were written around the
 current solver's semantics and may encode its quirks.** Classify every existing physics
 test before migrating:
 
@@ -2383,7 +2407,7 @@ test before migrating:
 - [ ] **New cross-backend physical invariants** — written fresh, must hold on any backend.
 - [ ] **Full-route behaviour tests** — end-to-end, per WS-5.3.
 
-The selected backend must additionally prove all nine, none of which the historical 138
+The selected backend must additionally prove all nine, none of which the historical 217
 fully cover:
 
 - [ ] stacked-body stability

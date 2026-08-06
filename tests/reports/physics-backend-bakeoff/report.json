@@ -1,0 +1,379 @@
+{
+  "generatedAt": "2026-08-06T11:00:27.569Z",
+  "harness": "tools/physics-backend-bakeoff/index.ts",
+  "routeBodyDemand": {
+    "measured": true,
+    "densestRoute": "showcase-blockfall-reactor",
+    "source": "apps/showcase-blockfall-reactor/src/rules.ts",
+    "boardWidth": 10,
+    "boardHeight": 22,
+    "ceilingBodies": 220,
+    "note": "A fully-packed board is the worst case; normal play holds far fewer settled cells."
+  },
+  "existingSuite": {
+    "measured": true,
+    "value": {
+      "command": "pnpm vitest run tests/unit/physics --reporter=basic",
+      "files": 30,
+      "tests": 217,
+      "passed": true,
+      "note": "Pre-swap baseline. These are the fixtures the chosen backend must satisfy; per WS-4.3 each is still classified contract vs implementation-characterization before migration, so a green count here is a starting point and not a licence to freeze old-solver semantics."
+    }
+  },
+  "bundleConsequence": {
+    "measured": true,
+    "fairestCaseRapierFraming": {
+      "measured": true,
+      "framing": "non-compat build, wasm as a separate fetch, excluded from the JS bundle",
+      "jsGlueGzipBytes": 22813,
+      "wasmGzipBytes": 586267,
+      "wasmAsMultipleOfEntireThreejsScenario3": 4.08,
+      "conclusion": "Even excluded from the JS bundle, the wasm is a blocking first-load fetch larger than the entire Three.js game-runtime bundle. The bundle objection survives the most favourable framing."
+    },
+    "rule": "§B.1 scenario 3 must stay within 1.5x the measured Three.js equivalent. The budget is derived from that measurement and cannot be raised (R2).",
+    "comparatorAlsoUsesCannon": "tools/bundle-scenarios/entries/scenario-3-threejs.ts imports cannon-es, so the denominator does not grow when Aura3D adopts a heavier backend.",
+    "measuredScenario3AuraGzipBytes": 95153,
+    "measuredScenario3ThreejsGzipBytes": 143669,
+    "incumbentPhysicsGzipBytes": 27006,
+    "perBackend": [
+      {
+        "id": "cannon-es",
+        "measured": true,
+        "backendGzipBytes": 27006,
+        "projectedScenario3AuraGzipBytes": 95153,
+        "threejsEquivalentGzipBytes": 143669,
+        "projectedRatio": 0.662,
+        "maxRatio": 1.5,
+        "passesB1": true,
+        "headroomBytes": 120351
+      },
+      {
+        "id": "rapier",
+        "measured": true,
+        "backendGzipBytes": 829957,
+        "projectedScenario3AuraGzipBytes": 898104,
+        "threejsEquivalentGzipBytes": 143669,
+        "projectedRatio": 6.251,
+        "maxRatio": 1.5,
+        "passesB1": false,
+        "headroomBytes": -682600
+      }
+    ]
+  },
+  "abstractionVerdict": {
+    "measured": true,
+    "divergenceCount": 3,
+    "divergences": [
+      {
+        "dimension": "CCD under high velocity",
+        "cannon": "stopped=false (raw step)",
+        "rapier": "stopped=true (native swept CCD)",
+        "contractConsequence": "`setCcdEnabled` means two different things; identical user code yields different physical outcomes."
+      },
+      {
+        "dimension": "character controller",
+        "cannon": "absent — cannon-es ships no character controller; Aura3D hand-wrote CharacterController.ts",
+        "rapier": "KinematicCharacterController: slopes, steps, snap-to-ground, autostep",
+        "contractConsequence": "A contract-level character controller is either hand-written for one backend or delegated for the other — not one implementation."
+      },
+      {
+        "dimension": "Web Worker offload",
+        "cannon": "none — no documented transferable/SAB path; state lives in JS objects",
+        "rapier": "WASM linear memory is transferable/SAB-compatible; documented worker usage",
+        "contractConsequence": "Worker stepping cannot be a contract feature if one backend cannot cross a thread boundary."
+      }
+    ],
+    "unionBundleGzipBytes": 856963,
+    "b1Status": "rapier fails §B.1",
+    "verdict": "A backend abstraction is NOT free: 3 measured dimensions diverge, and each one must be either hidden (losing capability) or exposed (losing neutrality). Shipping both also sums the bundles. Recommend ONE production backend plus an explicitly non-physical arcade-motion mode, which is not a physics backend and must not be described as one."
+  },
+  "rapierNonCompatDelivery": {
+    "measured": true,
+    "value": {
+      "glueGzipBytes": 26594,
+      "wasmGzipBytes": 586267,
+      "totalGzipBytes": 612861,
+      "compatGzipBytes": null,
+      "note": "Non-compat delivery: .wasm shipped as a separate asset rather than base64-inlined. This is the number Rapier should be judged on."
+    }
+  },
+  "rule": "R1 — every value below is produced by constructing and stepping the candidate world. Unmeasurable dimensions are reported as `unmeasured` with a reason and are not scored.",
+  "node": "v22.22.0",
+  "platform": "darwin/arm64",
+  "backends": [
+    {
+      "id": "cannon-es",
+      "label": "cannon-es (incumbent)",
+      "version": "0.20.0",
+      "license": "MIT",
+      "bundleGzipBytes": {
+        "measured": true,
+        "value": 27006
+      },
+      "initMs": {
+        "measured": true,
+        "value": 17.66562499999999
+      },
+      "wasm": false,
+      "stepMsPer1000Bodies": {
+        "measured": true,
+        "value": 5.32909305
+      },
+      "scaling": {
+        "measured": true,
+        "value": [
+          {
+            "bodies": 25,
+            "msPerStep": 0.027103474999999832,
+            "percentOf60fpsFrame": 0.16229625748502896
+          },
+          {
+            "bodies": 50,
+            "msPerStep": 0.0595932291666666,
+            "percentOf60fpsFrame": 0.3568456836327341
+          },
+          {
+            "bodies": 100,
+            "msPerStep": 0.11577205000000011,
+            "percentOf60fpsFrame": 0.6932458083832342
+          },
+          {
+            "bodies": 220,
+            "msPerStep": 0.4764067708333333,
+            "percentOf60fpsFrame": 2.852735154690619
+          },
+          {
+            "bodies": 250,
+            "msPerStep": 0.48507621250000027,
+            "percentOf60fpsFrame": 2.904647979041918
+          },
+          {
+            "bodies": 1000,
+            "msPerStep": 5.729559029166667,
+            "percentOf60fpsFrame": 34.308736701596814
+          }
+        ]
+      },
+      "mitigatedTunnelling": {
+        "measured": true,
+        "value": {
+          "nativeStopped": false,
+          "nativeFinalY": -391.9633174909412,
+          "mitigatedStopped": true,
+          "mitigatedFinalY": 109.23549403169585,
+          "mitigation": "adaptive substeps sized so no body advances more than half the thinnest static extent per substep"
+        }
+      },
+      "determinism": {
+        "measured": true,
+        "value": {
+          "identicalAcrossRuns": true,
+          "runASample": [
+            4.998364769149033,
+            4.99509479438255,
+            4.990190365900654,
+            4.983651758722121
+          ],
+          "runBSample": [
+            4.998364769149033,
+            4.99509479438255,
+            4.990190365900654,
+            4.983651758722121
+          ],
+          "maxAbsoluteDivergence": 0
+        }
+      },
+      "stackStability": {
+        "measured": true,
+        "value": {
+          "settled": true,
+          "maxDriftFromAxis": 0.11052224403940034,
+          "finalHeights": [
+            0.4975,
+            1.4954,
+            2.4938,
+            3.4928,
+            4.4923
+          ]
+        }
+      },
+      "joints": {
+        "measured": true,
+        "value": {
+          "jointConstrainsMotion": true,
+          "freeFallY": -38.949915739335395,
+          "jointedY": 4.2234713314328705
+        }
+      },
+      "tunnelling": {
+        "measured": true,
+        "value": {
+          "stopped": false,
+          "finalY": -391.9633174909412,
+          "velocity": -395.99999999999864
+        }
+      },
+      "sleeping": {
+        "measured": true,
+        "value": {
+          "supportsSleep": true,
+          "sleptThenWoke": true
+        }
+      },
+      "characterController": {
+        "measured": false,
+        "reason": "cannon-es ships no character controller; Aura3D hand-wrote CharacterController.ts"
+      },
+      "vehicleController": {
+        "measured": true,
+        "value": "RaycastVehicle + RigidVehicle shipped in-package"
+      },
+      "workerSupport": {
+        "measured": false,
+        "reason": "no documented transferable/SAB path; state lives in JS objects"
+      },
+      "notes": [
+        "`ccdSpeedThreshold` is NOT a property of cannon-es 0.20.0 Body (verified: `\"ccdSpeedThreshold\" in new Body()` === false). Setting it is inert, so the raw-step tunnelling result is a real library limitation, not a harness misconfiguration.",
+        "Adaptive substeps recover it: the same 400 m/s body is stopped by the wrapper Aura3D already ships in apps/common/src/cannon-physics-proof.ts.",
+        "cannon-es exports RaycastVehicle; Aura3D does not use it and hand-wrote 1,081 lines instead.",
+        "Pure JS: no WASM init, no worker-transferable state, single-threaded."
+      ]
+    },
+    {
+      "id": "rapier",
+      "label": "Rapier (@dimforge/rapier3d-compat)",
+      "version": "0.19.3",
+      "license": "Apache-2.0",
+      "bundleGzipBytes": {
+        "measured": true,
+        "value": 829957
+      },
+      "initMs": {
+        "measured": true,
+        "value": 17.28058299999975
+      },
+      "wasm": true,
+      "stepMsPer1000Bodies": {
+        "measured": true,
+        "value": 0.31511388333333346
+      },
+      "scaling": {
+        "measured": true,
+        "value": [
+          {
+            "bodies": 25,
+            "msPerStep": 0.022301562499999743,
+            "percentOf60fpsFrame": 0.13354229041916016
+          },
+          {
+            "bodies": 50,
+            "msPerStep": 0.04208645833333359,
+            "percentOf60fpsFrame": 0.2520147205588838
+          },
+          {
+            "bodies": 100,
+            "msPerStep": 0.08704253750000059,
+            "percentOf60fpsFrame": 0.5212127994012011
+          },
+          {
+            "bodies": 220,
+            "msPerStep": 0.20725208333333284,
+            "percentOf60fpsFrame": 1.2410304391217537
+          },
+          {
+            "bodies": 250,
+            "msPerStep": 0.24491996666666674,
+            "percentOf60fpsFrame": 1.4665866267465073
+          },
+          {
+            "bodies": 1000,
+            "msPerStep": 0.8968772583333343,
+            "percentOf60fpsFrame": 5.370522504990026
+          }
+        ]
+      },
+      "mitigatedTunnelling": {
+        "measured": true,
+        "value": {
+          "nativeStopped": true,
+          "nativeFinalY": 0.149000883102417,
+          "mitigatedStopped": true,
+          "mitigatedFinalY": 0.149000883102417,
+          "mitigation": "none required — setCcdEnabled(true) is native swept CCD; reported unchanged so the two backends are compared on the same field"
+        }
+      },
+      "determinism": {
+        "measured": true,
+        "value": {
+          "identicalAcrossRuns": true,
+          "runASample": [
+            4.998296737670898,
+            4.993868827819824,
+            4.986715316772461,
+            4.976837158203125
+          ],
+          "runBSample": [
+            4.998296737670898,
+            4.993868827819824,
+            4.986715316772461,
+            4.976837158203125
+          ],
+          "maxAbsoluteDivergence": 0
+        }
+      },
+      "stackStability": {
+        "measured": true,
+        "value": {
+          "settled": true,
+          "maxDriftFromAxis": 0.0028588627357515094,
+          "finalHeights": [
+            0.4976,
+            1.4944,
+            2.4918,
+            3.4896,
+            4.4881
+          ]
+        }
+      },
+      "joints": {
+        "measured": true,
+        "value": {
+          "jointConstrainsMotion": true,
+          "freeFallY": -39.206321716308594,
+          "jointedY": 4.053311824798584
+        }
+      },
+      "tunnelling": {
+        "measured": true,
+        "value": {
+          "stopped": true,
+          "finalY": 0.149000883102417,
+          "velocity": 0.000007629414540133439
+        }
+      },
+      "sleeping": {
+        "measured": true,
+        "value": {
+          "supportsSleep": true,
+          "sleptThenWoke": true
+        }
+      },
+      "characterController": {
+        "measured": true,
+        "value": "KinematicCharacterController: slopes, steps, snap-to-ground, autostep"
+      },
+      "vehicleController": {
+        "measured": true,
+        "value": "DynamicRayCastVehicleController: raycast suspension, engine/brake force, steering"
+      },
+      "workerSupport": {
+        "measured": true,
+        "value": "WASM linear memory is transferable/SAB-compatible; documented worker usage"
+      },
+      "notes": [
+        "Rust/WASM: cross-platform bit-identical stepping is a designed property, not incidental.",
+        "Ships KinematicCharacterController=true, DynamicRayCastVehicleController=true — the two subsystems Aura3D hand-wrote."
+      ]
+    }
+  ]
+}
