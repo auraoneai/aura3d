@@ -12,7 +12,7 @@ This matrix is generated from the current inventory. `partial` means some route 
 | `effects` | 0 | 0 | 3 | 0 |
 | `geometry` | 0 | 1 | 0 | 0 |
 | `instancing` | 0 | 0 | 2 | 0 |
-| `lines-points-sprites` | 0 | 0 | 3 | 0 |
+| `lines-points-sprites` | 0 | 1 | 2 | 0 |
 | `materials-basic` | 0 | 0 | 1 | 0 |
 | `materials-pbr` | 0 | 0 | 2 | 0 |
 | `materials-physical` | 0 | 0 | 2 | 0 |

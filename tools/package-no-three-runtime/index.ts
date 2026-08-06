@@ -79,6 +79,40 @@ const runtimeThreeImportPattern = /\b(?:import\s+(?:type\s+)?(?:[^'"]+\s+from\s+
 const runtimeThreeBackendPattern = /\bbackend:\s*["'](?:three|three-webgl|three-lean-[^"']*)["']|\bthree-lean-[\w-]+/g;
 const runtimeTypeImportPattern = /typeof\s+import\s*\(\s*["']three(?:\/[^"']*)?["']\s*\)/g;
 
+/**
+ * Every workspace package manifest that declares Three.js as an installed dependency.
+ *
+ * The root manifest is not sufficient: a published package can pull Three.js into a
+ * consumer's tree on its own. `@aura3d/three-compat` is deliberately NOT exempt here —
+ * it holds migration adapters and string-literal import maps, not Three.js calls, so it
+ * must not make consumers install the library they are migrating away from.
+ */
+function findWorkspaceThreeDependencies(): readonly { readonly manifest: string; readonly field: string; readonly range: string; readonly name: string }[] {
+  const findings: { manifest: string; field: string; range: string; name: string }[] = [];
+  let entries: Dirent[];
+  try {
+    entries = readdirSync(resolve("packages"), { withFileTypes: true });
+  } catch {
+    return findings;
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const manifestPath = join("packages", entry.name, "package.json");
+    if (!existsSync(resolve(manifestPath))) continue;
+    const manifest = JSON.parse(readFileSync(resolve(manifestPath), "utf8")) as PackageJson;
+    for (const field of ["dependencies", "peerDependencies"] as const) {
+      const record = (manifest as Record<string, unknown>)[field] as Record<string, string> | undefined;
+      if (!record) continue;
+      for (const [dependency, range] of Object.entries(record)) {
+        if (dependency !== "three" && !dependency.startsWith("three/")) continue;
+        findings.push({ manifest: manifestPath, field, range, name: manifest.name ?? entry.name });
+      }
+    }
+  }
+  return findings;
+}
+
+const workspaceThreeDependencies = findWorkspaceThreeDependencies();
 const sourceFindings = scanRoots(sourceRoots);
 const distFindings = scanRoots(distRoots);
 const pack = runPackDryRun();
@@ -95,6 +129,13 @@ const checks: ReleaseCheck[] = [
     id: "root-dependencies-no-three",
     pass: packageJson.dependencies?.three === undefined,
     detail: packageJson.dependencies?.three ? `dependencies.three=${packageJson.dependencies.three}` : "root dependencies do not install Three.js"
+  },
+  {
+    id: "workspace-packages-no-three-dependency",
+    pass: workspaceThreeDependencies.length === 0,
+    detail: workspaceThreeDependencies.length === 0
+      ? "no workspace package installs Three.js as a dependency or peerDependency"
+      : workspaceThreeDependencies.map((finding) => `${finding.manifest} ${finding.field}.three=${finding.range}`).join("; ")
   },
   {
     id: "root-dependencies-no-three-compat",
@@ -144,11 +185,12 @@ writeReport(reportPath, "a3d-package-no-three-runtime", checks, {
   distRootsScanned: distRoots.filter((root) => existsSync(resolve(root))),
   allowedThreeUsage: [
     "root devDependencies for local parity and migration tests",
-    "packages/three-compat/**",
+    "packages/three-compat/** source (adapters and string-literal import maps only, never a three runtime import)",
     "benchmarks/**",
     "tools/**threejs**/**",
     "tests explicitly scoped to Three.js parity or @aura3d/three-compat"
   ],
+  workspaceThreeDependencies,
   sourceFindings,
   distFindings,
   packedTextFindings

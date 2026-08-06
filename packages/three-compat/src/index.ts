@@ -90,11 +90,20 @@ export {
  * success.
  *
  * Everything else here is unaffected and stays: the API inventory, the import map, the animation, controls,
- * loader, material and geometry adapters, the migration warnings, and `migrateThreeToA3D`. Real postprocess
- * passes live in `packages/rendering/src/production-runtime/postprocess/`; re-aliasing them here is a
- * separate decision with a real implementation behind it, not a rename of a stub.
+ * loader, material and geometry adapters, the migration warnings, and `migrateThreeToA3D`.
+ *
+ * Follow-up: the deletion left `./postprocessing` declared in package.json `exports` pointing at a
+ * `dist/postprocessing/` that no longer builds, and `THREE_COMPAT_THREE_IMPORT_MAP` still rewrote Three.js
+ * `EffectComposer` imports onto it — a published subpath resolving to nothing, reachable from our own
+ * codemod. The dangling subpath is removed and those specifiers are now declared unsupported rather than
+ * rewritten.
+ *
+ * They are not re-aliased onto `packages/rendering/src/production-runtime/postprocess/`, which is real but
+ * operates on CPU `Uint8Array` pixel buffers rather than GPU render targets. Mapping `EffectComposer` onto a
+ * CPU pixel pass would satisfy the import and change the behaviour silently, recreating the WS-3.4 defect
+ * under a different path. Per R7 the migration surface reports what it cannot do instead.
  */
-export { THREE_COMPAT_THREE_IMPORT_MAP } from "./migration/ImportMap";
+export { THREE_COMPAT_THREE_IMPORT_MAP, THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
 export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
 export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";

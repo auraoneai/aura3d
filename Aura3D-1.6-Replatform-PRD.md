@@ -2027,7 +2027,7 @@ a consumer, which is how it passed the "parity requires a consumer" rule.
       `pnpm typecheck` exit 0; **3,159 unit tests pass** (the 7 remaining failures are the pre-existing
       stale-evidence set, verified unchanged); `check:claim-lineage` EXIT=0; routes 149 → 139.
 
-### Four consequences worth recording
+### Five consequences worth recording
 
 1. **The lineage gate caught a claim that had been proven by a fabrication.** `custom shaders` named
    `three-compat-shader-lab.spec.ts` as its production-path test — a spec that constructed a
@@ -2052,6 +2052,24 @@ a consumer, which is how it passed the "parity requires a consumer" rule.
    tree-shaking it: nothing a cube reaches actually constructed those classes. So this deletion buys
    trustworthiness and maintenance, not bytes. Reporting it as a bundle win would have been the same kind
    of claim this workstream exists to remove.
+
+5. **A phantom export subpath survived the deletion, and the gate that forbids it was never wired in.**
+   Found while auditing the release chain: root `package.json` still exposed
+   `"./three-compat": "./dist/three-compat/index.js"` even though `files` deliberately excludes
+   `dist/three-compat` and `@aura3d/three-compat` ships as its own package. So `@aura3d/engine/three-compat`
+   resolved for anyone running from the worktree and `ERR_PACKAGE_PATH_NOT_EXPORTED` for every installed
+   consumer — a broken subpath advertised to exactly the migrating Three.js developers WS-3.4 was
+   protecting. `tools/verify-imports/` reported it `ok` with `exportCount: 108` because it resolves
+   against the local tree, where `pnpm build` had populated `dist/three-compat/`; the tarball never
+   contained it.
+
+   `tools/package-no-three-runtime/index.ts` already asserted this exact condition in two of its 11 checks
+   (`root-exports-no-three-compat-subpath`, `pack-no-dist-three-compat`), but **no `package.json` script
+   ran it** — the tool existed, encoded the right rule, and was orphaned. Fixed both halves: removed the
+   subpath, and added `check:no-three-runtime` to the `check:release` chain so the rule is enforced rather
+   than merely written down. Verified load-bearing: against `HEAD`'s manifest the check returns `false`;
+   after the fix all 11 pass and the export surface drops 43 → 42 subpaths with no other entry affected.
+   **Same shape as WS-1.1** — the gate was not weak, it was unreachable.
 
 ### WS-3.5 Fixture files — dependency proof per file — **COMPLETE (2026-08-05). R8 refused every deletion.**
 

@@ -46,7 +46,7 @@ Generated inventory for the first Three.js parity code backlog.
 | `webgl_instancing_dynamic` | `instancing` | `high` | `matched` | `/apps/instancing-performance/` | `G` `I` `B` |
 | `webgl_instancing_performance` | `instancing` | `high` | `matched` | `/apps/instancing-performance/` | `G` `I` `B` |
 | `webgl_buffergeometry_drawrange` | `geometry` | `medium` | `partial` | `/apps/geometry-drawrange/` | `G` `B` `C` `K` |
-| `webgl_points_sprites` | `lines-points-sprites` | `medium` | `matched` | `/apps/interactive-picking/` | `G` `C` `K` |
+| `webgl_points_sprites` | `lines-points-sprites` | `medium` | `partial` | `/apps/interactive-picking/` | `G` `C` `K` |
 | `webgl_lines_fat` | `lines-points-sprites` | `medium` | `matched` | `/apps/lines-helpers/` | `G` `K` |
 | `misc_helpers` | `lines-points-sprites` | `medium` | `matched` | `/apps/lines-helpers/` | `G` `C` `K` |
 | `webgl_multiple_elements` | `camera` | `medium` | `partial` | `/apps/camera-multiple-views/` | `A` `B` `K` |

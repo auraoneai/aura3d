@@ -14,10 +14,6 @@
     "./loaders": {
       "types": "./dist/loaders/index.d.ts",
       "import": "./dist/loaders/index.js"
-    },
-    "./postprocessing": {
-      "types": "./dist/postprocessing/index.d.ts",
-      "import": "./dist/postprocessing/index.js"
     }
   },
   "main": "./dist/index.js",
@@ -26,10 +22,9 @@
     "@aura3d/animation": "workspace:*",
     "@aura3d/controls": "workspace:*",
     "@aura3d/debug": "workspace:*",
-    "@aura3d/rendering": "workspace:*",
-    "three": "^0.165.0"
+    "@aura3d/rendering": "workspace:*"
   },
-  "description": "Three.js compatibility adapters for Aura3D: core objects, math, cameras, geometries, materials, loaders, controls, animation, postprocessing, shaders, and migration helpers.",
+  "description": "Three.js compatibility adapters for Aura3D: core objects, math, cameras, geometries, materials, loaders, controls, animation, and migration helpers.",
   "keywords": [
     "aura3d",
     "3d",
@@ -41,7 +36,6 @@
     "threejs-migration",
     "gltfloader",
     "orbit-controls",
-    "postprocessing",
     "threejs-alternative"
   ],
   "homepage": "https://aura3d.auraone.ai",

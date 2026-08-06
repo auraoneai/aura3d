@@ -8,7 +8,7 @@ It is a construction backlog. It does not prove parity. Work items below must be
 
 - Total inventoried examples: 54
 - High-priority open examples: 1
-- Status counts: matched=40, partial=14
+- Status counts: matched=39, partial=15
 
 ## Next Implementation Targets
 

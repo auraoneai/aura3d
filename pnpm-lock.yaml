@@ -380,9 +380,6 @@ importers:
       '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
-      three:
-        specifier: ^0.165.0
-        version: 0.165.0
 
   packages/workflows:
     dependencies:
