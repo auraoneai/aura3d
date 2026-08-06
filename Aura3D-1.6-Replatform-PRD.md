@@ -2053,46 +2053,65 @@ a consumer, which is how it passed the "parity requires a consumer" rule.
    trustworthiness and maintenance, not bytes. Reporting it as a bundle win would have been the same kind
    of claim this workstream exists to remove.
 
-### WS-3.5 Fixture files — dependency proof per file, no bulk deletion
+### WS-3.5 Fixture files — dependency proof per file — **COMPLETE (2026-08-05). R8 refused every deletion.**
 
-38 files, 10,720 lines. They are descriptor objects, not simulations —
-`ClothFixtures.ts` carries a `blockedClaims` array listing the 8 things it cannot do.
-**Revision 1 was too confident here. Apply R8 to all 38, not just the 7 known-entangled.**
+38 files, 10,720 lines. Revision 1 assumed these were deletable scaffolding and
+listed 10,720 lines as removal. **R8 cleared none of them.**
 
-- [ ] Run `check:deletion-safety` on **all 38** and commit the report **before** deleting
-      anything. The report is the gate; this checklist is not.
-- [ ] Delete only files whose report is clear on all six points.
+`check:deletion-safety` ran on all 38. Result: **30 blocked on public-API grounds** —
+every one is re-exported from its package barrel and appears in the generated
+`docs/api/public-api.md`. The other 8 were blocked on internal consumers. Deleting any
+would have removed a published export, which R7 forbids.
 
-Known-entangled (verified 2026-08-05 — these already fail R8):
+- [x] Ran `check:deletion-safety` on all 38 and committed the report before touching
+      anything. The report was the gate, and it said no.
+- [x] Deleted nothing. Zero of 38 cleared all six points.
 
-- [ ] `rendering/OceanFixtures.ts` (318) ← `EnvironmentPlatform.ts`
-- [ ] `rendering/TerrainFixtures.ts` (310) ← `EnvironmentPlatform.ts`, `VegetationFixtures.ts`
-- [ ] `rendering/VegetationFixtures.ts` (314) ← `EnvironmentPlatform.ts`
-- [ ] `rendering/ProceduralTextureFixtures.ts` (393) ← `ProductTurntableFixtures.ts`, `ArchitecturalMaterialCatalog.ts`
-- [ ] `rendering/ProductTurntableFixtures.ts` (908) ← `CanonicalSceneFixtures.ts`
-- [ ] `rendering/CanonicalSceneFixtures.ts` (95) ← `tools/`
-- [ ] `animation/SecondaryAnimationFixtures.ts` (210) ← `SpringBones.ts`, `FootIk.ts`
-- [ ] For each: extract the genuinely-used generation code (e.g.
-      `createTerrainHeightfieldGeometry`) into a real module first, then delete the descriptor.
+**What these files actually are.** Not descriptor objects — deterministic procedural
+generators consumed by readiness tools and browser evidence. `TerrainFixtures.ts`
+exports `createTerrainHeightfieldGeometry`; `OceanFixtures.ts` generates a Gerstner
+displacement surface. The `Fixtures` suffix was the defect: it implied test scaffolding,
+so three consecutive audits (including revision 1 of this PRD) read them as dead code
+and proposed bulk deletion of working production generators.
 
-Candidates pending their R8 report (do not delete on this list alone): physics Cloth 359 ·
-FireSmoke 382 · Fluid 301 · Fracture 277 · SoftBody 363 · PhysicsSandbox 394 ·
-Platformer 205; rendering ArchitecturalLighting 241 · ArchitecturalMeasurement 155 ·
-Culling 280 · SpaceEnvironment 200 · VoxelWorld 280 · Weather 223; audio AdaptiveMusic 132 ·
-AudioEffectsAnalysis 311 · SpatialAudio 137; input GestureHaptics 179 ·
-InputActionBinding 121 · XR 203; editor-runtime LocalizationAccessibility 368;
-assets AssetBundleCache 290 · SceneAnalysis 438; animation MotionMatching 254;
-scripting (8 files, 2,079 — travel with WS-3.3).
+**Action taken instead of deletion — 8 renamed to their real responsibility:**
 
-Dependent test cleanup, once the corresponding fixture clears R8:
+- [x] `rendering/OceanFixtures.ts` → `OceanSurface.ts`
+- [x] `rendering/TerrainFixtures.ts` → `TerrainHeightfield.ts`
+- [x] `rendering/VegetationFixtures.ts` → `VegetationScatter.ts`
+- [x] `rendering/ProceduralTextureFixtures.ts` → `ProceduralTexture.ts`
+- [x] `rendering/ProductTurntableFixtures.ts` → `ProductTurntable.ts`
+- [x] `rendering/CanonicalSceneFixtures.ts` → `CanonicalProductScene.ts`
+- [x] `animation/SecondaryAnimationFixtures.ts` → `SecondaryAnimationSampling.ts`
+- [x] `input/InputActionBindingFixtures.ts` → `InputActionBinding.ts`
+- [x] Every exported symbol name unchanged — no public export removed (R7).
+- [x] Updated the 8 readiness tools and 1 browser spec that name these paths as evidence.
+- [x] Regenerated `docs/api/public-api.md` (29 packages, 1,003 export declarations, 0 violations).
 
-- [ ] `tests/browser/runtime-external-parity.spec.ts` (1,238 lines) asserts
-      `oldBranchClothSimulationPort` and — at :618-619 —
-      `expect(clothBlockedClaims).toContain("Unity Cloth parity")`. **It tests that a
-      descriptor declares what it cannot do.** Remove those cases (:266-287, :591-702).
-- [ ] `examples/game-slice/main.ts:1372,1789` sets those flags. Remove.
-- [ ] Remove deleted names from each `index.ts` / `browser-index.ts`.
-- [ ] **Proof:** committed dependency report + `pnpm typecheck && pnpm test:unit` pass.
+The extraction step revision 1 demanded ("extract the used generation code, then delete
+the descriptor") was unnecessary: there was no descriptor to delete. The used code was
+the whole file.
+
+**Dependent test cleanup — cancelled, and this was the right outcome:**
+
+- [x] `tests/browser/runtime-external-parity.spec.ts` — **cases retained.** Revision 1
+      wanted :266-287 and :591-702 removed. But `expect(clothBlockedClaims).toContain(
+      "Unity Cloth parity")` is a test that the engine **declares what it cannot do**.
+      Under R1 that is exactly the right kind of assertion and deleting it would remove
+      a guard against overclaiming. Only the renamed evidence path was updated.
+- [x] `examples/game-slice/main.ts` — flags retained for the same reason.
+- [x] No names removed from any `index.ts` / `browser-index.ts`; all re-exports preserved
+      under the new filenames.
+- [x] **Proof:** `pnpm typecheck` pass · `pnpm verify:api-docs -- --write` 0 violations ·
+      `tests/unit/tools/api-docs.test.ts` 3 passed · commit `02d1a6b1`.
+
+**30 files remain named `*Fixtures.ts`.** They are retained and public. The physics group
+(Cloth 359 · FireSmoke 382 · Fluid 301 · Fracture 277 · SoftBody 363 · PhysicsSandbox 394)
+is deliberately deferred to P4: those encode blocked-claim declarations tied to the solver,
+so the backend bake-off (WS-4.2) decides their fate, not a filename audit.
+
+**§9 correction:** the "38 fixture files — 10,720 lines — delete" row is now
+**0 lines deleted, 8 files renamed, 30 retained**.
 
 ### WS-3.6 Package boundaries — split into four workstreams
 
@@ -2461,16 +2480,18 @@ scan immediately before removal.
 **Relabelled from "tally" so no reader treats these as committed removals.** Every source
 row is *triage*; the per-file R8 report decides, not this table.
 
-### Fixture files — four buckets, not one number
+### Fixture files — resolved 2026-08-05. R8 cleared zero for deletion.
 
-| Bucket | Files | Lines | Meaning |
+| Bucket | Files | Lines | Outcome |
 |---|---:|---:|---|
-| **Needs extraction first** | 7 | 2,548 | Verified internal importers (WS-3.5). Extract real generation code, then delete the descriptor. |
-| **Returned to extraction queue** | 8 | 2,079 | `packages/scripting` fixtures. WS-3.3 reversed — the package is retained, so these no longer travel with it. Each needs its own R8 report (WS-3.5). |
-| **Undecided — pending R8 report** | 23 | 6,093 | May be deletable, may be retained. **No commitment.** |
-| **Confirmed deletable** | 0 | 0 | Nothing is confirmed until its report is clean. |
+| **Blocked — public API** | 30 | ~8,100 | Re-exported from the package barrel and listed in generated `docs/api/public-api.md`. Deleting removes a published export (R7 forbids). **Retained.** |
+| **Blocked — internal consumers** | 8 | ~2,600 | Verified importers in production modules. **Retained, renamed** to their real responsibility (WS-3.5). |
+| **Confirmed deletable** | **0** | **0** | No file cleared all six R8 points. |
 
-Total in scope: 38 files / 10,720 lines. **Action: triage; delete only cleared files.**
+Total in scope: 38 files / 10,720 lines. **Actual removal: 0 lines. 8 renamed, 30 retained.**
+
+Revision 1 listed all 10,720 lines as deletion. That was wrong, and R8 is the reason it
+was caught before any `git rm`. The `Fixtures` suffix — not the code — was the defect.
 
 ### Other categories
 
