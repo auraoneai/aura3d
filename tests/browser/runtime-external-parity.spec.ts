@@ -138,7 +138,7 @@ const report: ExternalParityRuntimeReport = {
     },
     {
       task: "Port bounded old input action binding processor and interaction concepts into current runtime evidence.",
-      evidence: ["packages/input/src/InputActionBindingFixtures.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
+      evidence: ["packages/input/src/InputActionBinding.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
       task: "Port bounded old gesture detection and rumble-pattern concepts into current runtime input evidence.",

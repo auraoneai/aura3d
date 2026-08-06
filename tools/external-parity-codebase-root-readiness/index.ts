@@ -104,7 +104,7 @@ export function createExternalParityCodebaseRootReadinessReport(root = process.c
   const perspectiveCameraSource = readText(root, "packages/scene/src/PerspectiveCamera.ts");
   const gltfLoaderSource = readText(root, "packages/assets/src/GLTFLoader.ts");
   const gltfResourcesSource = readText(root, "packages/assets/src/GLTFRenderResources.ts");
-  const productTurntableSource = readText(root, "packages/rendering/src/ProductTurntableFixtures.ts");
+  const productTurntableSource = readText(root, "packages/rendering/src/ProductTurntable.ts");
   const orbitControlsSource = readText(root, "packages/input/src/controls/OrbitControls.ts");
   const packagedDirectPbrShader = readText(root, "packages/rendering/src/shaders/pbr-direct.frag.glsl");
   const gltfInspectionSpec = readText(root, "tests/assets/gltf-inspection.test.ts");
@@ -330,7 +330,7 @@ export function createExternalParityCodebaseRootReadinessReport(root = process.c
         && rendererUnitSpec.includes("includes morph and skinning deformation bounds when picking scene renderables")
         && workstream5RuntimeSpec.includes("preserves glTF tangents through render resources")
         && workstream5RuntimeSpec.includes("synthesize fallback normals and TEXCOORD_0 attributes when material rendering needs them"),
-      ["packages/assets/src/GLTFLoader.ts", "packages/assets/src/GLTFRenderResources.ts", "packages/rendering/src/Renderer.ts", "packages/rendering/src/ProductTurntableFixtures.ts", "tests/assets/gltf-inspection.test.ts", "tests/browser/asset-texture-browser.spec.ts", "tests/browser/rendering-root-quality-gate.spec.ts", "tests/unit/rendering/procedural-texture-fixtures.test.ts", "tests/unit/rendering/renderer.test.ts", "tests/unit/workstream5-runtime.test.ts", "tests/reports/external-parity-root-rendering-quality.json", "tests/reports/external-parity-root-rendering-quality/product-turntable-render-kit.png"],
+      ["packages/assets/src/GLTFLoader.ts", "packages/assets/src/GLTFRenderResources.ts", "packages/rendering/src/Renderer.ts", "packages/rendering/src/ProductTurntable.ts", "tests/assets/gltf-inspection.test.ts", "tests/browser/asset-texture-browser.spec.ts", "tests/browser/rendering-root-quality-gate.spec.ts", "tests/unit/rendering/procedural-texture-fixtures.test.ts", "tests/unit/rendering/renderer.test.ts", "tests/unit/workstream5-runtime.test.ts", "tests/reports/external-parity-root-rendering-quality.json", "tests/reports/external-parity-root-rendering-quality/product-turntable-render-kit.png"],
       ["GLTF render resources do not expose a Renderer.render()-ready camera/frame/source contract with package-level preview lighting, HDR postprocess, package-level textured render-kit evidence, and postprocess defaults."]
     ),
     check(
@@ -564,7 +564,7 @@ export function createExternalParityCodebaseRootReadinessReport(root = process.c
         "package.json",
         "packages/rendering/src/Renderer.ts",
         "packages/rendering/src/ExternalParityRenderPreset.ts",
-        "packages/rendering/src/ProductTurntableFixtures.ts",
+        "packages/rendering/src/ProductTurntable.ts",
         "packages/rendering/src/FrameVisualMetrics.ts",
         "packages/rendering/src/Sampler.ts",
         "packages/rendering/src/index.ts",

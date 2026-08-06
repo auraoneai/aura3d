@@ -31,7 +31,7 @@ const flat = createHeightFieldGround(() => ({ height: 0, normal: [0, 1, 0] }));
 const requiredFiles = [
   "packages/animation/src/FootIk.ts",
   "packages/animation/src/IK.ts",
-  "packages/animation/src/SecondaryAnimationFixtures.ts",
+  "packages/animation/src/SecondaryAnimationSampling.ts",
   "packages/animation/src/LocomotionKit.ts",
   "packages/animation/src/LocomotionController.ts",
   "packages/physics/src/Raycast.ts",
@@ -84,7 +84,7 @@ const raycastSrc = read("packages/physics/src/Raycast.ts");
 check("physics-ground-query", raycastSrc.includes("groundHeightRaycaster"), "physics Raycast exposes groundHeightRaycaster");
 
 // 10. Source wiring: fixture claimBoundary points at the real runtime.
-const fixtureSrc = read("packages/animation/src/SecondaryAnimationFixtures.ts");
+const fixtureSrc = read("packages/animation/src/SecondaryAnimationSampling.ts");
 check("fixture-claim-updated", fixtureSrc.includes("FootIk.ts") && fixtureSrc.includes("real runtimes"), "fixture claimBoundary references the real FootIk runtime");
 
 const pass = checks.every((c) => c.pass);

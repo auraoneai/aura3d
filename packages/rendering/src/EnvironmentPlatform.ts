@@ -3,7 +3,7 @@ import { type EnvironmentLightingOptions, type RenderItem } from "./ForwardPass"
 import { PBRMaterial, type PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { createExternalParityContactShadowPlan, type ExternalParityContactShadowPlan } from "./shadows/ContactShadows";
-import { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry } from "./TerrainFixtures";
+import { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry } from "./TerrainHeightfield";
 
 export type EnvironmentCapabilityId =
   | "cubemap-renderer"
@@ -301,7 +301,7 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Browser pixel evidence moves scene geometry, refreshes the probe, and verifies the reflective PBR surface changes."
   ], "Rendering-internal live cube probes are implemented; planar mirrors, SSR, recursive captures, automatic scheduling, and root createAuraApp exposure remain separate claims.", "Retain moving-object pixel evidence and keep reflective objects excluded from their own capture pass."),
   capability("dynamic-ocean-plane", "Dynamic Ocean Plane", "helper", true, [
-    "OceanFixtures and waterSystems provide Gerstner/procedural water telemetry.",
+    "OceanSurface and waterSystems provide Gerstner/procedural water telemetry.",
     "Gallery routes can build dynamic water meshes from reusable samples."
   ], "No FFT/WebGPU ocean, planar reflection/refraction, caustics, or underwater volume renderer is accepted.", "Promote water helper to renderer subsystem or keep claims scoped to CPU/Gerstner water."),
   capability("procedural-sky-dome", "Procedural Sky Dome", "helper", true, [

@@ -12,8 +12,8 @@
 import { solveTwoBoneIk, type TwoBoneIkResult } from "./IK.js";
 import type { Vec3 } from "./Keyframe.js";
 // `FootIkSample` is the single source-of-truth data shape, defined in (and exported from)
-// SecondaryAnimationFixtures; the runtime here produces that exact shape.
-import type { FootIkSample } from "./SecondaryAnimationFixtures.js";
+// SecondaryAnimationSampling; the runtime here produces that exact shape.
+import type { FootIkSample } from "./SecondaryAnimationSampling.js";
 
 /** Result of a downward ground query: where the ground is and its surface normal. */
 export interface GroundSample {

@@ -7,7 +7,7 @@ import { afterAll, describe, expect, it } from "vitest";
 /**
  * WS-0.2 — the deletion-safety tool is only useful if it *blocks* a file that is genuinely unsafe
  * to delete. A tool that clears a known-unsafe file is worse than no tool, because it converts a
- * missing check into a false assurance. `OceanFixtures.ts` is the canonical case: revision 1 of the
+ * missing check into a false assurance. `OceanSurface.ts` is the canonical case: revision 1 of the
  * 1.6 PRD listed it for bulk deletion, and `EnvironmentPlatform.ts` imports it.
  */
 const scratch = mkdtempSync(join(tmpdir(), "deletion-safety-"));
@@ -33,15 +33,15 @@ function run(args: readonly string[]): { readonly status: number; readonly repor
 
 describe("deletion-safety (R8)", () => {
   it("blocks a file with a real internal importer", () => {
-    const { status, report } = run(["packages/rendering/src/OceanFixtures.ts"]);
+    const { status, report } = run(["packages/rendering/src/OceanSurface.ts"]);
     expect(status).not.toBe(0);
     expect(report.pass).toBe(false);
     const files = report.files as readonly { readonly path: string; readonly clear: boolean; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
-    const ocean = files.find((file) => file.path.endsWith("OceanFixtures.ts"));
+    const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
     expect(ocean?.clear).toBe(false);
     /*
      * The blocking evidence is the package's own public re-export. `packages/rendering/src/index.ts`
-     * has `export { sampleOceanFixture } from "./OceanFixtures"`, so deleting the file breaks the
+     * has `export { sampleOceanFixture } from "./OceanSurface"`, so deleting the file breaks the
      * published `@aura3d/rendering` surface. That is a real `export`-map dependency and it is what
      * the R8 gate exists to catch.
      */
@@ -52,7 +52,7 @@ describe("deletion-safety (R8)", () => {
   it("does not block on a specifier named inside a plain string", () => {
     /*
      * Regression pin. `EnvironmentPlatform.ts:304` contains the capability-description string
-     * "OceanFixtures and waterSystems provide Gerstner/procedural water telemetry." — English prose
+     * "OceanSurface and waterSystems provide Gerstner/procedural water telemetry." — English prose
      * in a quoted claim, not an import. An earlier version of this tool reported it as a
      * `runtime-consumer`, and this test asserted that false positive as its proof of correctness.
      *
@@ -61,9 +61,9 @@ describe("deletion-safety (R8)", () => {
      * rigorous. A gate that invents blockers gets routed around, exactly like the fabricated
      * performance gates this re-platform removed.
      */
-    const { report } = run(["packages/rendering/src/OceanFixtures.ts"]);
+    const { report } = run(["packages/rendering/src/OceanSurface.ts"]);
     const files = report.files as readonly { readonly path: string; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
-    const ocean = files.find((file) => file.path.endsWith("OceanFixtures.ts"));
+    const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
     const everyBlocker = Object.values(ocean?.blocking ?? {}).flat();
     expect(everyBlocker.length).toBeGreaterThan(0);
     expect(everyBlocker.some((evidence) => evidence.at.includes("EnvironmentPlatform.ts"))).toBe(false);
@@ -95,7 +95,7 @@ describe("deletion-safety (R8)", () => {
      * that as a runtime consumer and blocked on itself, which is unclearable. Prose is reported so
      * stale references get tidied, but it does not gate a deletion.
      */
-    const { report } = run(["packages/rendering/src/OceanFixtures.ts"]);
+    const { report } = run(["packages/rendering/src/OceanSurface.ts"]);
     const files = report.files as readonly { readonly proseMentions?: readonly unknown[] }[];
     expect(Array.isArray(files[0]?.proseMentions)).toBe(true);
   }, 180_000);
@@ -157,7 +157,7 @@ describe("deletion-safety (R8)", () => {
      * calibration bugs above: the tool manufacturing its own blocking evidence.
      */
     const manifestPath = "tests/reports/deletion-safety-selfref-manifest.json";
-    const candidates = ["packages/rendering/src/OceanFixtures.ts", "packages/ecs/src/Bitset.ts"];
+    const candidates = ["packages/rendering/src/OceanSurface.ts", "packages/ecs/src/Bitset.ts"];
     writeFileSync(join(repoRoot, manifestPath), JSON.stringify({ candidates }, null, 2));
     try {
       const { report } = run(["--manifest", manifestPath]);
@@ -174,11 +174,36 @@ describe("deletion-safety (R8)", () => {
       }
 
       // Still catches the real dependency, or the exclusion would have blunted the gate.
-      const ocean = files.find((file) => file.path.endsWith("OceanFixtures.ts"));
+      const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
       expect((ocean?.blocking["runtime-consumer"] ?? []).some((evidence) => evidence.at.startsWith("packages/rendering/src/index.ts:"))).toBe(true);
     } finally {
       rmSync(join(repoRoot, manifestPath), { force: true });
     }
+  }, 180_000);
+
+  it("excludes the deletion queue however the run was invoked", () => {
+    /*
+     * The first fix for the class above excluded the manifest only when the candidate list had been
+     * *read* from it, so `--manifest` runs passed while runs that named the same paths as CLI
+     * arguments were still blocked by `tools/deletion-safety/candidates.json`. WS-3.5 is driven by
+     * an explicit argument list of every per-package `Fixtures.ts` path, which is exactly the
+     * invocation that stayed broken.
+     *
+     * A gate whose verdict depends on how it was called is not evidence, so this pins the invariant
+     * on the CLI-argument path and against the *default* queue rather than a temporary one.
+     */
+    const candidate = "packages/physics/src/PlatformerFixtures.ts";
+    const { report } = run([candidate]);
+    const files = report.files as readonly {
+      readonly path: string;
+      readonly blocking: Record<string, readonly { readonly at: string }[]>;
+    }[];
+    const file = files.find((entry) => entry.path === candidate);
+    expect(file, `${candidate} must appear in the report`).toBeDefined();
+    const fromQueue = Object.values(file?.blocking ?? {})
+      .flat()
+      .filter((evidence) => evidence.at.startsWith("tools/deletion-safety/candidates.json"));
+    expect(fromQueue, "the default queue must never be reported as a consumer").toEqual([]);
   }, 180_000);
 
   it("fails when asked to prove a deletion of a file that does not exist", () => {

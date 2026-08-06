@@ -8,7 +8,7 @@
 // for stiffness stability), so it is deterministic: the same root-motion stream and the same `dt`
 // always produce the same chain. Pure: no `Date.now()` / `Math.random()`, no engine/render import.
 //
-// The deterministic `SpringBoneSample` / `springSample()` in SecondaryAnimationFixtures remain the
+// The deterministic `SpringBoneSample` / `springSample()` in SecondaryAnimationSampling remain the
 // telemetry oracle/data-shape; this runtime produces the same invariants via `telemetry()`.
 
 import type { Quat, Vec3 } from "./Keyframe.js";

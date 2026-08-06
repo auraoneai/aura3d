@@ -5,7 +5,7 @@ const reportPath = "tests/reports/engine-readiness-root-readiness.json";
 const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { readonly scripts?: Record<string, string> };
 const requiredFiles = [
   "packages/rendering/src/RenderPipeline.ts",
-  "packages/rendering/src/CanonicalSceneFixtures.ts",
+  "packages/rendering/src/CanonicalProductScene.ts",
   "packages/rendering/src/LightingDefaults.ts",
   "fixtures/engine-readiness/canonical-product-scene.json",
   "packages/assets/src/loadRenderableAsset.ts",

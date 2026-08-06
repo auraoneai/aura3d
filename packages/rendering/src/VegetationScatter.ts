@@ -1,4 +1,4 @@
-import { sampleTerrainHeightfield, type TerrainHeightfieldFixture } from "./TerrainFixtures";
+import { sampleTerrainHeightfield, type TerrainHeightfieldFixture } from "./TerrainHeightfield";
 
 export type VegetationFixtureLayer = "tree" | "grass" | "shrub";
 export type VegetationFixtureLod = "mesh" | "impostor" | "culled";

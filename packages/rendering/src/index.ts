@@ -776,9 +776,9 @@ export {
   hashRgba8,
   normalFromHeightMap,
   proceduralTextureFixtureKinds
-} from "./ProceduralTextureFixtures";
-export type { ProceduralTextureFixture, ProceduralTextureFixtureKind, ProceduralTextureFixtureOptions } from "./ProceduralTextureFixtures";
-export { createProductTurntableFixture, createProductTurntableRenderKit } from "./ProductTurntableFixtures";
+} from "./ProceduralTexture";
+export type { ProceduralTextureFixture, ProceduralTextureFixtureKind, ProceduralTextureFixtureOptions } from "./ProceduralTexture";
+export { createProductTurntableFixture, createProductTurntableRenderKit } from "./ProductTurntable";
 export type {
   ProductTurntableBatchTaskKind,
   ProductTurntableCaptureFormat,
@@ -791,9 +791,9 @@ export type {
   ProductTurntableLightingPreset,
   ProductTurntableRenderKit,
   ProductTurntableRenderKitOptions
-} from "./ProductTurntableFixtures";
-export { createCanonicalProductSceneRenderKit } from "./CanonicalSceneFixtures";
-export type { CanonicalProductSceneFixture, CanonicalProductSceneRenderKit } from "./CanonicalSceneFixtures";
+} from "./ProductTurntable";
+export { createCanonicalProductSceneRenderKit } from "./CanonicalProductScene";
+export type { CanonicalProductSceneFixture, CanonicalProductSceneRenderKit } from "./CanonicalProductScene";
 export { createLightingDefault } from "./LightingDefaults";
 export type { LightingDefault, LightingDefaultPreset } from "./LightingDefaults";
 export { auditPrimitiveSubmission, formatPrimitiveSubmissionAudit } from "./PrimitiveSubmissionAudit";
@@ -816,7 +816,7 @@ export type {
   LightingRigPreset,
   LightingRigUnsupportedFeature
 } from "./LightingRig";
-export { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry, sampleTerrainHeightfield } from "./TerrainFixtures";
+export { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry, sampleTerrainHeightfield } from "./TerrainHeightfield";
 export type {
   TerrainFixtureBiome,
   TerrainHeightfieldColliderDescriptor,
@@ -825,11 +825,11 @@ export type {
   TerrainHeightfieldGeometry,
   TerrainHeightfieldGeometryOptions,
   TerrainHeightfieldSample
-} from "./TerrainFixtures";
+} from "./TerrainHeightfield";
 export { sampleWeatherFixture } from "./WeatherFixtures";
 export type { WeatherFixtureOptions, WeatherFixtureSample, WeatherFixtureType, WeatherPuddlePatch, WeatherVisualDrop } from "./WeatherFixtures";
-export { sampleVegetationFixture } from "./VegetationFixtures";
-export type { VegetationFixtureInstance, VegetationFixtureLayer, VegetationFixtureLod, VegetationFixtureOptions, VegetationFixtureSample, VegetationLSystemBranchSegment, VegetationLSystemFixture } from "./VegetationFixtures";
+export { sampleVegetationFixture } from "./VegetationScatter";
+export type { VegetationFixtureInstance, VegetationFixtureLayer, VegetationFixtureLod, VegetationFixtureOptions, VegetationFixtureSample, VegetationLSystemBranchSegment, VegetationLSystemFixture } from "./VegetationScatter";
 export { sampleVoxelWorldFixture } from "./VoxelWorldFixtures";
 export type {
   VoxelBlockDescriptor,
@@ -839,7 +839,7 @@ export type {
   VoxelVisibleBlock,
   VoxelWorldFixture
 } from "./VoxelWorldFixtures";
-export { sampleOceanFixture } from "./OceanFixtures";
+export { sampleOceanFixture } from "./OceanSurface";
 export type {
   OceanBuoyancySample,
   OceanFixtureOptions,
@@ -848,7 +848,7 @@ export type {
   OceanFoamPatch,
   OceanWaveDescriptor,
   OceanWaveSample
-} from "./OceanFixtures";
+} from "./OceanSurface";
 export { sampleCullingFixture } from "./CullingFixtures";
 export type {
   CullingBvhTelemetry,

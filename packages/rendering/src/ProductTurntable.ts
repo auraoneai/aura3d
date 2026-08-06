@@ -1,6 +1,6 @@
 import { Geometry, type Bounds3 } from "./Geometry";
 import { PBRMaterial } from "./PBRMaterial";
-import { createProceduralTexture } from "./ProceduralTextureFixtures";
+import { createProceduralTexture } from "./ProceduralTexture";
 import { Sampler } from "./Sampler";
 import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
 import { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";

@@ -1,6 +1,6 @@
 import { Geometry } from "./Geometry";
 import { PBRMaterial } from "./PBRMaterial";
-import { createProductTurntableRenderKit, type ProductTurntableRenderKit, type ProductTurntableRenderKitOptions } from "./ProductTurntableFixtures";
+import { createProductTurntableRenderKit, type ProductTurntableRenderKit, type ProductTurntableRenderKitOptions } from "./ProductTurntable";
 import type { RenderItem } from "./ForwardPass";
 
 export interface CanonicalProductSceneFixture {

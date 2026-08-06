@@ -1,6 +1,6 @@
 import { PBRMaterial } from "./PBRMaterial";
 import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
-import { type ProceduralTextureFixtureKind, createProceduralTexture } from "./ProceduralTextureFixtures";
+import { type ProceduralTextureFixtureKind, createProceduralTexture } from "./ProceduralTexture";
 
 export type ArchitecturalMaterialCategory = "wood" | "stone" | "metal" | "fabric" | "glass" | "ceramic";
 

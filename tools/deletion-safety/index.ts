@@ -149,8 +149,14 @@ const gitAvailable = TRACKED.size > 0;
  * asked to run cannot ever pass, which is the third instance of this same defect class here
  * (see the calibration notes in WS-0.2): the tool manufacturing its own blocking evidence.
  *
- * The manifest in use is therefore excluded from the scan, not classified — classifying it as
- * prose would still print 68 misleading rows.
+ * The manifest is therefore excluded from the scan unconditionally, not classified — classifying
+ * it as prose would still print 68 misleading rows.
+ *
+ * Unconditionally matters. An earlier fix excluded it only when the candidate list had been *read*
+ * from it, so `--manifest` runs passed while runs that named the same paths on the command line
+ * were blocked by the queue entry. A gate whose verdict depends on how it was invoked is not
+ * evidence. The queue's schema is a `candidates` array of paths and `$`-prefixed prose; it has no
+ * import, no export and no runtime consumer, so it can never be a legitimate reference.
  */
 function scanRepository(excluded: ReadonlySet<string> = new Set()): readonly ScannedFile[] {
   const out: ScannedFile[] = [];
@@ -612,7 +618,9 @@ function gitTrackedAt(path: string): string | null {
 
 function main(): void {
   const { paths, reportPath, manifestPath } = parseArgs(process.argv.slice(2));
-  const repo = scanRepository(new Set(manifestPath === undefined ? [] : [manifestPath]));
+  // Every deletion queue is excluded, whether or not it was the source of this run's paths, and
+  // whether or not it is the default one; see `scanRepository`.
+  const repo = scanRepository(new Set([DEFAULT_MANIFEST, ...(manifestPath === undefined ? [] : [manifestPath])]));
   const expanded = [...new Set(paths.flatMap((path) => expandCandidate(path)))];
   const deletionSet = new Set(expanded);
   const ambiguous = ambiguousBasenames(repo);

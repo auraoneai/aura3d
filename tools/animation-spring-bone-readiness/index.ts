@@ -26,7 +26,7 @@ const DT = 1 / 60;
 // 1. Files present.
 const requiredFiles = [
   "packages/animation/src/SpringBones.ts",
-  "packages/animation/src/SecondaryAnimationFixtures.ts",
+  "packages/animation/src/SecondaryAnimationSampling.ts",
   "packages/animation/src/Skeleton.ts",
   "packages/animation/src/Bone.ts",
   "tests/unit/animation/spring-bones.test.ts",
@@ -102,7 +102,7 @@ const boneSrc = read("packages/animation/src/Bone.ts");
 check("skeleton-tag-and-writeback", boneSrc.includes("springChain") && skeletonSrc.includes("springChainIndices") && skeletonSrc.includes("writeSpringChainBack"), "Bone.springChain + Skeleton.springChainIndices/writeSpringChainBack present");
 
 // 10. Source wiring: fixture oracle retained + claimBoundary updated to the real runtime.
-const fixtureSrc = read("packages/animation/src/SecondaryAnimationFixtures.ts");
+const fixtureSrc = read("packages/animation/src/SecondaryAnimationSampling.ts");
 check("fixture-oracle-and-claim", fixtureSrc.includes("springSample") && fixtureSrc.includes("SpringBones.ts"), "springSample oracle retained; claimBoundary references the real SpringBones runtime");
 
 const pass = checks.every((c) => c.pass);

@@ -23,7 +23,7 @@ export * from "./IK.js";
 export * from "./FootIk.js";
 export * from "./SpringBones.js";
 export * from "./MotionMatchingFixtures.js";
-export * from "./SecondaryAnimationFixtures.js";
+export * from "./SecondaryAnimationSampling.js";
 export * from "./CrowdAnimation.js";
 export * from "./AnimationClipEvents.js";
 export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateAnimationStudioClipMap } from "./AnimationClipRegistry.js";

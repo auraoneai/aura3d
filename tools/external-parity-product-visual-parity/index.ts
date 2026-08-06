@@ -159,7 +159,7 @@ const sourceFiles = [
   "packages/rendering/src/Renderer.ts",
   "packages/rendering/src/Geometry.ts",
   "packages/rendering/src/PBRMaterial.ts",
-  "packages/rendering/src/ProductTurntableFixtures.ts",
+  "packages/rendering/src/ProductTurntable.ts",
   "packages/rendering/src/ExternalParityRenderPreset.ts",
   "tests/reports/external-parity-unity-product-visual-baseline.json",
   "tests/reports/external-parity-unreal-product-visual-baseline.json",
