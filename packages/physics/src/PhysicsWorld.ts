@@ -1,10 +1,13 @@
 import {
   Body as CannonBody,
   Box as CannonBox,
+  ConvexPolyhedron as CannonConvexPolyhedron,
   Cylinder as CannonCylinder,
+  Heightfield as CannonHeightfield,
   Plane as CannonPlane,
   Quaternion as CannonQuaternion,
   Sphere as CannonSphere,
+  Trimesh as CannonTrimesh,
   Vec3 as CannonVec3,
   World as CannonWorld
 } from "cannon-es";
@@ -957,7 +960,7 @@ function syncAuraFromCannon(cannonBody: CannonBody, body: RigidBody): void {
   body.sleeping = cannonBody.sleepState === CannonBody.SLEEPING;
 }
 
-function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | CannonSphere | CannonPlane | CannonCylinder; readonly offset?: CannonVec3; readonly orientation?: CannonQuaternion } | undefined {
+function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | CannonSphere | CannonPlane | CannonCylinder | CannonTrimesh | CannonConvexPolyhedron | CannonHeightfield; readonly offset?: CannonVec3; readonly orientation?: CannonQuaternion } | undefined {
   if (shape.kind === "box") return { shape: new CannonBox(toCannonVec3(shape.halfExtents)) };
   if (shape.kind === "sphere") return { shape: new CannonSphere(shape.radius) };
   if (shape.kind === "capsule") return { shape: new CannonCylinder(shape.radius, shape.radius, shape.halfHeight * 2 + shape.radius * 2, 12) };
@@ -969,6 +972,41 @@ function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | Canno
       offset: toCannonVec3(scaleVec3(shape.normal, shape.constant)),
       orientation
     };
+  }
+  if (shape.kind === "mesh") {
+    // cannon-es Trimesh takes flat vertex/index arrays. Concave triangle soup is supported
+    // for static and kinematic colliders; dynamic trimesh-vs-trimesh is a documented
+    // cannon-es limitation. Before this, `mesh` fell through to `undefined` and tripped
+    // `disableCannonBackend`, silently swapping the whole world onto the `aura-js` branch
+    // -- the same divergence class as the joint no-op recorded below in `stepCannon`.
+    const vertices: number[] = [];
+    for (const vertex of shape.vertices) vertices.push(vertex[0], vertex[1], vertex[2]);
+    return { shape: new CannonTrimesh(vertices, [...shape.indices]) };
+  }
+  if (shape.kind === "convex-hull") {
+    const vertices = shape.vertices.map((vertex) => new CannonVec3(vertex[0], vertex[1], vertex[2]));
+    const faces: number[][] = [];
+    for (let index = 0; index + 2 < shape.indices.length; index += 3) {
+      const a = shape.indices[index];
+      const b = shape.indices[index + 1];
+      const c = shape.indices[index + 2];
+      if (a === undefined || b === undefined || c === undefined) continue;
+      faces.push([a, b, c]);
+    }
+    if (vertices.length < 4 || faces.length < 4) return undefined;
+    return { shape: new CannonConvexPolyhedron({ vertices, faces }) };
+  }
+  if (shape.kind === "heightfield") {
+    // Aura stores heights row-major; cannon-es Heightfield indexes data[x][y].
+    const data: number[][] = [];
+    for (let column = 0; column < shape.columns; column += 1) {
+      const strip: number[] = [];
+      for (let row = 0; row < shape.rows; row += 1) {
+        strip.push(shape.heights[row * shape.columns + column] ?? 0);
+      }
+      data.push(strip);
+    }
+    return { shape: new CannonHeightfield(data, { elementSize: shape.cellSize }) };
   }
   return undefined;
 }
