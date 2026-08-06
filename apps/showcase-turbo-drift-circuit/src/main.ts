@@ -18,7 +18,7 @@ import {
   type VehicleSurface
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
-import { createShowcaseCannonPhysicsProof } from "../../showcase-cannon-physics-proof";
+import { createShowcaseCannonPhysicsProof } from "../../common/src/cannon-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
 import { createTurboOpponentAi } from "./opponent-ai";
 

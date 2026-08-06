@@ -60,7 +60,7 @@ import {
   type CellPoint,
   type PieceKind
 } from "./rules";
-import { createShowcaseCannonPhysicsProof } from "../../showcase-cannon-physics-proof";
+import { createShowcaseCannonPhysicsProof } from "../../common/src/cannon-physics-proof";
 import "./styles.css";
 
 type BlockfallWindow = Window & {

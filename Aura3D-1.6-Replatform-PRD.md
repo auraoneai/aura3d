@@ -2550,12 +2550,29 @@ scan immediately before removal.
 
 ### Immediate — actively confusing tooling or humans
 
-- [ ] `logs.txt` (678,992 B) — stale 2026-08-03 transcript, verified unreferenced, and
+- [x] `logs.txt` (678,992 B) — stale 2026-08-03 transcript, verified unreferenced, and
       already caused one session to mistake it for current state. Delete now.
-- [ ] `apps/showcase-cannon-physics-proof.ts` — stray source file at `apps/` root, outside
-      any app directory.
-- [ ] `_gallery.mjs` `_shot.mjs` `_shot7.mjs` `_shot8.mjs` `_shot9.mjs` (7,132 B) — loose
-      root scripts.
+      **Done.** `pnpm check:deletion-safety` cleared it: "all six R8 points empty across
+      4738 scanned files"; the 8 remaining mentions are prose in the deletion-safety tool's
+      own doc comment and in its JSON reports. `git rm`'d.
+- [x] ~~`apps/showcase-cannon-physics-proof.ts` — stray source file at `apps/` root, outside
+      any app directory.~~ **This PRD line was wrong; R8 caught it.** The file is not stray
+      — it is a live shared module with two runtime consumers:
+      `apps/showcase-blockfall-reactor/src/main.ts:63` and
+      `apps/showcase-turbo-drift-circuit/src/main.ts:21` both
+      `import { createShowcaseCannonPhysicsProof }` from it, and it supplies the
+      route-level cannon-es angular-contact + adaptive-substep CCD evidence that WS-4.2
+      depends on. Deleting it would have broken both routes and destroyed physics-backend
+      evidence. **Corrected action, taken:** `git mv` to
+      `apps/common/src/cannon-physics-proof.ts` — the directory that already holds
+      cross-route shared code (`apps/common/src/runtime.ts`, consumed by 10+ routes) — and
+      both importers repointed. Nothing deleted. This is the first R8 save; it is exactly
+      the class of mistake R8 exists to prevent, and it argues against trusting any
+      "stray file" claim in this document without running the tool first.
+- [x] `_gallery.mjs` `_shot.mjs` `_shot7.mjs` `_shot8.mjs` `_shot9.mjs` (7,132 B) — loose
+      root scripts. **Done.** All five cleared R8 (ad-hoc Playwright screenshot scripts
+      against `127.0.0.1:7782`, no importers, no registry/CLI/schema/doc dependency).
+      `git rm`'d.
 
 ### End of P3 — superseded prompt scratch (0 references, verified 2026-08-05)
 
