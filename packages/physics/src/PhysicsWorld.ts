@@ -116,6 +116,14 @@ export type PhysicsSnapshot = {
   readonly stats: PhysicsStepStats;
 };
 
+/**
+ * A cannon `Material` whose own `friction`/`restitution` are deliberately held at the `-1`
+ * "unspecified" sentinel so cannon resolves every pair through a registered ContactMaterial
+ * instead of silently multiplying the two materials together. The declared Aura values are
+ * carried alongside so newly interned surfaces can still be paired against existing ones.
+ */
+type AuraCannonMaterial = CannonMaterial & { auraFriction: number; auraRestitution: number };
+
 export class PhysicsWorld {
   readonly gravity: [number, number, number];
   readonly fixedDelta: number;
@@ -135,7 +143,7 @@ export class PhysicsWorld {
   private readonly cannonBodiesByAuraId = new Map<number, CannonBody>();
   // Interned by `${friction}|${restitution}` so two colliders declaring the same surface
   // share one cannon Material, and each unordered pair gets exactly one ContactMaterial.
-  private readonly cannonMaterialsByKey = new Map<string, CannonMaterial>();
+  private readonly cannonMaterialsByKey = new Map<string, AuraCannonMaterial>();
   private readonly cannonContactMaterialPairs = new Set<string>();
   private nextBodyId = 1;
   private nextColliderId = 1;
@@ -704,16 +712,30 @@ export class PhysicsWorld {
     syncCannonFromAura(body, cannonBody);
   }
 
-  private internCannonMaterial(friction: number, restitution: number): CannonMaterial {
+  private internCannonMaterial(friction: number, restitution: number): AuraCannonMaterial {
     const key = `${friction}|${restitution}`;
     const existing = this.cannonMaterialsByKey.get(key);
     if (existing) return existing;
-    const created = new CannonMaterial({ friction, restitution });
+    // Defect class: engine. cannon's `Material.friction`/`.restitution` are documented as
+    // overriding any matching ContactMaterial whenever they are non-negative
+    // (`cannon-es.js` Material, and the two override sites below). Two code paths read them:
+    //   - `Narrowphase.createContactEquation` / `createFrictionEquationsFromContact`
+    //     (~:10430, ~:10450) replace the pair's values with `matA.x * matB.x`;
+    //   - `World.step`'s contact loop (~:12694) overwrites `c.restitution` the same way.
+    // Both bypass `addContactMaterial` entirely, so registering the pair was necessary but
+    // not sufficient: cannon multiplied restitution behind our back. A `restitution: 1`
+    // collider landing on the default `0` ground resolved to `1 * 0 = 0` and did not bounce.
+    // Carrying the declared numbers as negative sentinels is cannon's own documented escape:
+    // a negative value means "unspecified for this material", which is the only way to make
+    // the ContactMaterial authoritative. The real values live on the pairings registered
+    // below; `auraFriction`/`auraRestitution` retain them for pairing new surfaces later.
+    const created = new CannonMaterial({ friction: -1, restitution: -1 }) as AuraCannonMaterial;
+    created.auraFriction = friction;
+    created.auraRestitution = restitution;
     this.cannonMaterialsByKey.set(key, created);
-    // cannon combines a pair's properties from an explicit ContactMaterial when one exists,
-    // and silently falls back to `defaultContactMaterial` when it does not. Register the
-    // pairing against every known surface -- including itself -- so no declared pair is
-    // resolved by the default.
+    // cannon resolves a pair from an explicit ContactMaterial when one exists and silently
+    // falls back to `defaultContactMaterial` when it does not. Register the pairing against
+    // every known surface -- including itself -- so no declared pair hits the default.
     for (const other of this.cannonMaterialsByKey.values()) {
       const pairKey = created.id <= other.id ? `${created.id}:${other.id}` : `${other.id}:${created.id}`;
       if (this.cannonContactMaterialPairs.has(pairKey)) continue;
@@ -723,8 +745,8 @@ export class PhysicsWorld {
           // Pairwise combination matches the aura-js resolver: friction multiplies (so a
           // frictionless surface stays frictionless against anything), restitution takes
           // the maximum (so one elastic surface is enough to bounce).
-          friction: created.friction * other.friction,
-          restitution: Math.max(created.restitution, other.restitution)
+          friction: created.auraFriction * other.auraFriction,
+          restitution: Math.max(created.auraRestitution, other.auraRestitution)
         })
       );
     }

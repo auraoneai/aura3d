@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T10:41:16.786Z",
+  "generatedAt": "2026-08-07T11:52:24.528Z",
   "method": "Each backend-pinned test file's `backend: \"aura-js\"` pin was rewritten to `backend: \"cannon-es\"` in place, the suite re-run, and the tree restored. Classification is derived from the observed pass/fail delta, never hand-authored.",
   "pinnedFiles": [
     "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
@@ -12,7 +12,7 @@
     "tests/unit/workstream4.physics-animation.test.ts"
   ],
   "counts": {
-    "contract": 111,
+    "contract": 113,
     "characterization": 7
   },
   "rows": [
@@ -89,6 +89,13 @@
     {
       "test": "a force applied once is applied for exactly one step, then stops",
       "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "a frictionless surface stays frictionless against a high-friction one",
+      "file": "tests/unit/physics/cannon-collider-material.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
@@ -586,6 +593,13 @@
     {
       "test": "native triangle surfaces accept rotated capsule contacts",
       "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "one elastic surface is enough to rebound off an inelastic one",
+      "file": "tests/unit/physics/cannon-collider-material.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"

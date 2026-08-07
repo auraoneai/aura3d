@@ -97,3 +97,62 @@ test("two colliders declaring the same surface share one interned cannon materia
   assert.equal(internal.cannonContactMaterialPairs.size, 1);
   assert.equal(world.snapshot().backend.active, "cannon-es");
 });
+
+/**
+ * Defect class: **engine**. Regression for the second half of the material defect, which the
+ * three tests above could not see because each of them applies the *same* surface to both
+ * colliders. Under a symmetric pair cannon's hidden `matA.x * matB.x` override and our
+ * intended pairwise rule stay ordered together (`r*r` and `max(r,r)` are both monotonic in
+ * `r`), so the monotonicity assertions passed while asymmetric pairs were still wrong.
+ *
+ * cannon documents `Material.friction`/`.restitution` as overriding any matching
+ * ContactMaterial whenever they are non-negative, and applies that override in two places
+ * that never consult `addContactMaterial`. Registering the pairings was therefore necessary
+ * but not sufficient. The concrete symptom: a `restitution: 1` ball landing on a default
+ * `restitution: 0` floor resolved to `1 * 0 = 0` and lay dead on the surface, even though
+ * the aura-js resolver takes `Math.max` and bounces.
+ *
+ * Both assertions below fail before the `-1` sentinel fix and pass after it.
+ */
+const asymmetricDropApex = (ballRestitution: number, floorRestitution: number): number => {
+  const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 10, enableSleeping: false });
+  const ball = world.createRigidBody({ position: [0, 2, 0], friction: 0, restitution: 0 });
+  world.createCollider(ball, { shape: Shape.sphere(0.5), material: { restitution: ballRestitution, friction: 0 } });
+  const floor = world.createRigidBody({ type: "static", position: [0, -0.5, 0], friction: 0, restitution: 0 });
+  world.createCollider(floor, { shape: Shape.box(20, 0.5, 20), material: { restitution: floorRestitution, friction: 0 } });
+
+  let bounced = false;
+  let apex = -Infinity;
+  for (let index = 0; index < 240; index += 1) {
+    world.step(1 / 60);
+    if (ball.velocity[1] > 0.05) bounced = true;
+    if (bounced) apex = Math.max(apex, ball.position[1]);
+  }
+  assert.equal(world.snapshot().backend.active, "cannon-es", "material test must measure the production backend");
+  return apex;
+};
+
+test("one elastic surface is enough to rebound off an inelastic one", () => {
+  // max(1, 0) = 1 bounces; cannon's undocumented 1 * 0 = 0 does not. Resting centre is the
+  // 0.5 radius, so an apex meaningfully above it is the signal.
+  const elasticBall = asymmetricDropApex(1, 0);
+  assert.ok(elasticBall > 0.6, `elastic ball on inelastic floor should rebound, apex was ${elasticBall}`);
+
+  // The rule must be symmetric in the pair: an inelastic ball on a trampoline floor bounces.
+  const elasticFloor = asymmetricDropApex(0, 1);
+  assert.ok(elasticFloor > 0.6, `inelastic ball on elastic floor should rebound, apex was ${elasticFloor}`);
+});
+
+test("a frictionless surface stays frictionless against a high-friction one", () => {
+  // Friction multiplies, so 0 * 1 = 0: an ice puck on grippy ground must not be slowed.
+  const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 10, enableSleeping: false });
+  const puck = world.createRigidBody({ position: [0, 0, 0], velocity: [4, 0, 0], friction: 0, restitution: 0 });
+  world.createCollider(puck, { shape: Shape.sphere(0.5), material: { friction: 0, restitution: 0 } });
+  const ground = world.createRigidBody({ type: "static", position: [0, -1, 0], friction: 0, restitution: 0 });
+  world.createCollider(ground, { shape: Shape.box(20, 0.5, 20), material: { friction: 1, restitution: 0 } });
+  for (let index = 0; index < 60; index += 1) world.step(1 / 60);
+
+  assert.equal(world.snapshot().backend.active, "cannon-es", "material test must measure the production backend");
+  assert.ok(Math.abs(puck.velocity[0] - 4) < 1e-6, `frictionless puck should keep vx 4, got ${puck.velocity[0]}`);
+  assert.ok(Math.abs(puck.angularVelocity[2]) < 1e-6, `frictionless puck should not spin, got ${puck.angularVelocity[2]}`);
+});
