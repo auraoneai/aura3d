@@ -748,9 +748,31 @@ export class PhysicsWorld {
   private stepCannon(dt: number): readonly CollisionEvent[] {
     if (!this.cannonWorld) return [];
     this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
+    /*
+     * Drain each body's force/torque accumulator once per outer step, then re-apply the
+     * same value at the top of every substep below.
+     *
+     * Defect class: engine. `cannon-es` zeroes `body.force`/`body.torque` at the end of
+     * every `World.step`, so forwarding the accumulator once before an N-substep frame
+     * applied it for `dt/N` seconds instead of `dt`. With CCD active at 60 fps and 4
+     * substeps, a 60 N force on a 1 kg body produced dv = 0.25 instead of 1.0 — forces
+     * were quietly scaled by 1/N, and N varies with body speed, so the same call
+     * accelerated differently depending on how fast the body already was.
+     *
+     * A force applied once is still applied once, for exactly one outer step of
+     * simulated time, which is the contract `RigidBody.integrate()` implements.
+     */
+    const stepForces = new Map<number, { readonly force: Vec3; readonly torque: Vec3 }>();
     for (const body of this.bodyValues()) {
       const cannonBody = this.cannonBodiesByAuraId.get(body.id);
-      if (cannonBody) syncCannonFromAura(body, cannonBody);
+      if (!cannonBody) continue;
+      const force = body.pendingForce();
+      const torque = body.pendingTorque();
+      if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0 || torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
+        stepForces.set(body.id, { force, torque });
+        body.clearForces();
+      }
+      syncCannonTransformFromAura(body, cannonBody);
     }
     const continuousStep = this.planContinuousCollisionStep(dt);
     this.lastContinuousCollisionStep = continuousStep;
@@ -758,6 +780,10 @@ export class PhysicsWorld {
     const subSteps = continuousStep.subSteps;
     const subDelta = dt / subSteps;
     for (let index = 0; index < subSteps; index += 1) {
+      for (const [bodyId, pending] of stepForces) {
+        const cannonBody = this.cannonBodiesByAuraId.get(bodyId);
+        if (cannonBody) applyCannonForces(cannonBody, pending.force, pending.torque);
+      }
       this.cannonWorld.step(subDelta);
       // Solve constraints inside the substep loop, and mirror the result back into the
       // cannon bodies before the next substep.
@@ -777,7 +803,9 @@ export class PhysicsWorld {
         }
         for (const body of this.bodyValues()) {
           const cannonBody = this.cannonBodiesByAuraId.get(body.id);
-          if (cannonBody) syncCannonFromAura(body, cannonBody);
+          // Transform-only: the accumulators were already drained into `stepForces`
+          // above, and re-applying them here would double-count within one substep.
+          if (cannonBody) syncCannonTransformFromAura(body, cannonBody);
         }
       }
     }
@@ -993,11 +1021,29 @@ function fromCannonVec3(value: CannonVec3): [number, number, number] {
   return [value.x, value.y, value.z];
 }
 
-function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
+/** Mirror Aura transform/velocity state onto a backend body without touching force state. */
+function syncCannonTransformFromAura(body: RigidBody, cannonBody: CannonBody): void {
   cannonBody.position.set(body.position[0], body.position[1], body.position[2]);
   cannonBody.velocity.set(body.velocity[0], body.velocity[1], body.velocity[2]);
   cannonBody.quaternion.set(body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]);
   cannonBody.angularVelocity.set(body.angularVelocity[0], body.angularVelocity[1], body.angularVelocity[2]);
+  if (body.sleeping) cannonBody.sleep();
+  else cannonBody.wakeUp();
+}
+
+/**
+ * Set (not add) the backend force/torque for the substep that is about to run.
+ *
+ * `set` rather than `+=` because `cannon-es` clears both at the end of each `World.step`,
+ * so each substep starts from zero and must receive the full outer-step value.
+ */
+function applyCannonForces(cannonBody: CannonBody, force: Vec3, torque: Vec3): void {
+  cannonBody.force.set(force[0], force[1], force[2]);
+  cannonBody.torque.set(torque[0], torque[1], torque[2]);
+}
+
+function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
+  syncCannonTransformFromAura(body, cannonBody);
   /*
    * Forward accumulated force and torque to the backend.
    *
@@ -1027,8 +1073,6 @@ function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
   if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0 || torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
     body.clearForces();
   }
-  if (body.sleeping) cannonBody.sleep();
-  else cannonBody.wakeUp();
 }
 
 /**

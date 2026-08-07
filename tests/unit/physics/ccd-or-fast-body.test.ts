@@ -147,15 +147,126 @@ test("timeOfImpact returns the first swept-bounds contact and rejects misses", (
   assert.equal(miss, undefined);
 });
 
-test("native CCD substeps preserve outer-step forces and interpolation history", () => {
+/*
+ * Defect class: **engine**, and a test-pinned-to-the-fallback defect on top of it.
+ *
+ * This assertion is correct and has always passed — but it was pinned to
+ * `backend: "aura-js"`, the branch WS-4.2 selected *against*. On the production
+ * `cannon-es` backend the same scenario produced `vx = 60.25`, not 61: `cannon-es` zeroes
+ * `body.force` at the end of every `World.step`, so forwarding the accumulator once before
+ * a 4-substep frame applied the force for `dt/4` instead of `dt`. Forces were silently
+ * scaled by `1/subSteps`, and `subSteps` is speed-dependent, so an identical `applyForce`
+ * call accelerated a body differently depending on how fast it already was.
+ *
+ * Exactly the family of the joint no-op and the `applyForce` drop: green tests on a path
+ * users never take. The `backend` parameter is now explicit in the test name and both
+ * production and fallback are asserted to agree, so the production path can no longer
+ * regress behind a passing fallback assertion.
+ */
+test("native CCD substeps preserve outer-step forces and interpolation history [production: cannon-es]", () => {
   const world = new PhysicsWorld({
-    backend: "aura-js",
+    backend: "cannon-es",
     gravity: [0, 0, 0],
     continuousCollision: {
       mode: "adaptive-substeps",
       maxSubSteps: 16,
       motionThreshold: 0.5
     }
+  });
+  const body = world.createRigidBody({ position: [0, 0, 0], velocity: [60, 0, 0] });
+  world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
+  body.applyForce([60, 0, 0]);
+
+  world.step(1 / 60);
+
+  assert.equal(world.snapshot().backend.active, "cannon-es");
+  assert.equal(world.snapshot().backend.continuousCollision.lastSubSteps, 4);
+  assert.ok(
+    Math.abs(body.velocity[0] - 61) < 1e-9,
+    `a 60 N force on a 1 kg body over 1/60 s must add exactly 1 m/s regardless of substep count, got ${body.velocity[0]}`
+  );
+  assert.deepEqual(body.previousPosition, [0, 0, 0]);
+});
+
+test("force integration is substep-count independent on the production backend", () => {
+  // The scaling bug was invisible at subSteps=1 and grew with speed. Asserting across a
+  // range makes the invariant "dv depends on dt, not on how the frame was subdivided".
+  const measured = [0.4, 20, 60, 120].map((speed) => {
+    const world = new PhysicsWorld({
+      backend: "cannon-es",
+      gravity: [0, 0, 0],
+      continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 32, motionThreshold: 0.5 }
+    });
+    const body = world.createRigidBody({ position: [0, 0, 0], velocity: [speed, 0, 0] });
+    world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
+    body.applyForce([60, 0, 0]);
+    world.step(1 / 60);
+    return {
+      speed,
+      subSteps: world.snapshot().backend.continuousCollision.lastSubSteps,
+      deltaV: body.velocity[0] - speed
+    };
+  });
+
+  assert.ok(
+    new Set(measured.map((entry) => entry.subSteps)).size > 1,
+    `the scenario must actually vary substep count or it proves nothing: ${JSON.stringify(measured)}`
+  );
+  for (const entry of measured) {
+    assert.ok(
+      Math.abs(entry.deltaV - 1) < 1e-9,
+      `dv must be 1 m/s at every substep count, got ${entry.deltaV} at ${entry.subSteps} substeps (speed ${entry.speed})`
+    );
+  }
+});
+
+test("a force applied once is applied for exactly one step, then stops", () => {
+  const world = new PhysicsWorld({ backend: "cannon-es", gravity: [0, 0, 0] });
+  const body = world.createRigidBody({ position: [0, 0, 0] });
+  world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
+
+  body.applyForce([60, 0, 0]);
+  world.step(1 / 60);
+  const afterFirst = body.velocity[0];
+  world.step(1 / 60);
+  const afterSecond = body.velocity[0];
+
+  assert.ok(Math.abs(afterFirst - 1) < 1e-9, `expected dv=1, got ${afterFirst}`);
+  assert.ok(
+    Math.abs(afterSecond - afterFirst) < 1e-9,
+    `a drained accumulator must not keep accelerating the body, got ${afterSecond}`
+  );
+});
+
+test("continuous force application accumulates linearly across frames", () => {
+  const world = new PhysicsWorld({
+    backend: "cannon-es",
+    gravity: [0, 0, 0],
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 32, motionThreshold: 0.5 }
+  });
+  const body = world.createRigidBody({ position: [0, 0, 0] });
+  world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
+
+  // The per-frame call every game loop makes. Under the 1/subSteps bug this curve bent
+  // downward as the body sped up and crossed the CCD motion threshold.
+  for (let frame = 0; frame < 60; frame += 1) {
+    body.applyForce([60, 0, 0]);
+    world.step(1 / 60);
+  }
+
+  assert.ok(
+    Math.abs(body.velocity[0] - 60) < 1e-6,
+    `60 N for 1 s on 1 kg must reach 60 m/s, got ${body.velocity[0]}`
+  );
+});
+
+test("the fallback backend agrees with production on force integration", () => {
+  // Retained cross-backend invariant: the original assertion, kept so the fallback cannot
+  // drift from production while `aura-js` still exists.
+  const world = new PhysicsWorld({
+    backend: "aura-js",
+    gravity: [0, 0, 0],
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 16, motionThreshold: 0.5 }
   });
   const body = world.createRigidBody({ position: [0, 0, 0], velocity: [60, 0, 0] });
   world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
