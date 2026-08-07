@@ -47,6 +47,17 @@ export class RigidBody {
   linearDamping: number;
   angularDamping: number;
   inverseInertia: [number, number, number];
+  /**
+   * The principal moments the caller explicitly asked for, or `undefined` when the body
+   * accepted the mass-derived default.
+   *
+   * Retained because a backend that derives inertia from collider geometry (cannon-es
+   * does, in `Body.updateMassProperties`) has no other way to learn that the descriptor
+   * declared something different. Without this, `inertia` was accepted, validated, and
+   * silently discarded on the default backend -- the same defect class as the `applyForce`
+   * and joint no-ops.
+   */
+  readonly declaredInertia?: Vec3;
   sleeping: boolean;
   private accumulatedForce: [number, number, number];
   private accumulatedTorque: [number, number, number];
@@ -86,6 +97,9 @@ export class RigidBody {
       this.mass = mass;
       this.inverseMass = 1 / mass;
       this.inverseInertia = inverseInertia(descriptor.inertia ?? [mass, mass, mass]);
+      if (descriptor.inertia) {
+        this.declaredInertia = [descriptor.inertia[0], descriptor.inertia[1], descriptor.inertia[2]];
+      }
     } else {
       this.mass = Number.POSITIVE_INFINITY;
       this.inverseMass = 0;

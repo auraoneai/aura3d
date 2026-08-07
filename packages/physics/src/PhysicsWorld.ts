@@ -635,6 +635,7 @@ export class PhysicsWorld {
       sleepTimeLimit: this.sleepDelay
     });
     if (body.sleeping) cannonBody.sleep();
+    applyDeclaredCannonInertia(body, cannonBody);
     return cannonBody;
   }
 
@@ -660,6 +661,10 @@ export class PhysicsWorld {
     cannonBody.material = surface;
     cannonBody.addShape(resolved.shape, resolved.offset, resolved.orientation);
     cannonBody.updateMassProperties();
+    // `updateMassProperties` recomputes inertia from the collider geometry and overwrites
+    // anything set at construction, so a declared inertia has to be re-applied after every
+    // shape addition, not only once.
+    applyDeclaredCannonInertia(body, cannonBody);
     syncCannonFromAura(body, cannonBody);
   }
 
@@ -988,6 +993,29 @@ function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
   }
   if (body.sleeping) cannonBody.sleep();
   else cannonBody.wakeUp();
+}
+
+/**
+ * Forward an explicitly declared principal inertia to the backend.
+ *
+ * Defect class: engine, and the same class as the joint and `applyForce` no-ops.
+ * `RigidBodyDescriptor.inertia` was validated (rejecting non-positive moments), stored as
+ * `inverseInertia`, and read by the `aura-js` integrator -- but never handed to cannon.
+ * cannon derives inertia from collider geometry in `updateMassProperties`, and a body with
+ * no collider gets **zero** inertia, hence zero inverse inertia. The observable result was
+ * that `applyTorque` did nothing at all on the default backend and a declared inertia
+ * tensor was silently ignored when it did: a caller could ask for `inertia: [2, 4, 8]`,
+ * get no error, and watch the body refuse to spin.
+ *
+ * Only applied when the descriptor asked for it. Bodies that took the mass-derived default
+ * keep cannon's geometry-derived tensor, which is the more physically accurate of the two.
+ */
+function applyDeclaredCannonInertia(body: RigidBody, cannonBody: CannonBody): void {
+  const declared = body.declaredInertia;
+  if (!declared || body.type !== "dynamic") return;
+  cannonBody.inertia.set(declared[0], declared[1], declared[2]);
+  cannonBody.invInertia.set(1 / declared[0], 1 / declared[1], 1 / declared[2]);
+  cannonBody.updateInertiaWorld(true);
 }
 
 function syncAuraFromCannon(cannonBody: CannonBody, body: RigidBody): void {
