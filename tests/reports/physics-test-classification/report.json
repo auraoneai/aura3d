@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T11:52:24.528Z",
+  "generatedAt": "2026-08-07T19:03:20.258Z",
   "method": "Each backend-pinned test file's `backend: \"aura-js\"` pin was rewritten to `backend: \"cannon-es\"` in place, the suite re-run, and the tree restored. Classification is derived from the observed pass/fail delta, never hand-authored.",
   "pinnedFiles": [
     "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
@@ -8,63 +8,12 @@
     "tests/unit/physics/constraints-stress.test.ts",
     "tests/unit/physics/coulomb-friction.test.ts",
     "tests/unit/physics/native-angular-contact.test.ts",
-    "tests/unit/physics/native-narrow-phase.test.ts",
     "tests/unit/workstream4.physics-animation.test.ts"
   ],
   "counts": {
-    "contract": 113,
-    "characterization": 7
+    "contract": 114
   },
   "rows": [
-    {
-      "test": "capsule contacts use segment distance for spheres, boxes, and other capsules",
-      "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "collider materials drive restitution and friction during contact resolution",
-      "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "native broadphase uses oriented bounds and routes box pairs through SAT",
-      "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "physics snapshot reports conservation sanity and stable stacking metrics",
-      "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "rigid bodies integrate angular velocity, torque, damping, and off-center impulses deterministically",
-      "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "sphere contacts use radial normals and deterministic impulse response",
-      "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "sphere-box contacts use closest point normals instead of AABB fallback",
-      "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
     {
       "test": "2D blend tree returns deterministic normalized weights",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
@@ -234,6 +183,13 @@
       "classification": "contract"
     },
     {
+      "test": "capsule contacts use segment distance for spheres, boxes, and other capsules",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
       "test": "centered face contacts do not manufacture a tumble",
       "file": "tests/unit/physics/native-angular-contact.test.ts",
       "onFallback": "pass",
@@ -250,6 +206,13 @@
     {
       "test": "collider friction converts sliding into rolling on the production backend",
       "file": "tests/unit/physics/cannon-collider-material.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "collider materials drive restitution and friction during contact resolution",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
@@ -563,41 +526,6 @@
       "classification": "contract"
     },
     {
-      "test": "native convex hull pairs use GJK/EPA penetration",
-      "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "pass",
-      "classification": "contract"
-    },
-    {
-      "test": "native heightfields generate sphere contacts from cell triangles",
-      "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "pass",
-      "classification": "contract"
-    },
-    {
-      "test": "native OBB SAT rejects rotated AABB false positives and accepts real overlap",
-      "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "pass",
-      "classification": "contract"
-    },
-    {
-      "test": "native triangle meshes generate box contacts instead of AABB fallback contacts",
-      "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "pass",
-      "classification": "contract"
-    },
-    {
-      "test": "native triangle surfaces accept rotated capsule contacts",
-      "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "pass",
-      "classification": "contract"
-    },
-    {
       "test": "one elastic surface is enough to rebound off an inelastic one",
       "file": "tests/unit/physics/cannon-collider-material.test.ts",
       "onFallback": "pass",
@@ -668,6 +596,13 @@
       "classification": "contract"
     },
     {
+      "test": "physics snapshot reports conservation sanity and stable stacking metrics",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
       "test": "physics stepper accumulates fixed steps deterministically",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
       "onFallback": "pass",
@@ -690,6 +625,13 @@
     },
     {
       "test": "raycast returns real closest hit and misses filtered rays",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "rigid bodies integrate angular velocity, torque, damping, and off-center impulses deterministically",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
@@ -760,6 +702,20 @@
     },
     {
       "test": "sphere casts sweep moving volumes against colliders without raycast stubs",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "sphere contacts use radial normals and deterministic impulse response",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "sphere-box contacts use closest point normals instead of AABB fallback",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",

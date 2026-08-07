@@ -25,9 +25,18 @@ test("native OBB SAT rejects rotated AABB false positives and accepts real overl
   assert.ok(contact?.point.every(Number.isFinite));
 });
 
-test("native broadphase uses oriented bounds and routes box pairs through SAT", () => {
+/**
+ * WS-4.3 disposition: classified `characterization` only because of the
+ * `backend.active === "aura-js"` assertion below — a statement about *which solver ran*,
+ * not about physics. Measured: with the pin rewritten to the production backend, the three
+ * physical assertions (one broadphase pair, one contact, a finite contact point) pass
+ * unchanged. `PhysicsWorld.detectContacts()` is called from `stepCannon` as well, so the
+ * oriented-bounds broadphase and the OBB-SAT narrow phase are Aura3D's on *every* backend;
+ * they are not a fallback feature. The pin and the backend assertion are therefore dropped
+ * and the contract is asserted on the shipped default.
+ */
+test("broadphase uses oriented bounds and routes box pairs through SAT", () => {
   const world = new PhysicsWorld({
-    backend: "aura-js",
     gravity: [0, 0, 0],
     solverIterations: 1,
     enableSleeping: false
@@ -41,7 +50,7 @@ test("native broadphase uses oriented bounds and routes box pairs through SAT", 
   world.step(1 / 120);
 
   const snapshot = world.snapshot();
-  assert.equal(snapshot.backend.active, "aura-js");
+  assert.equal(snapshot.backend.active, "cannon-es", "the shared narrow phase must be proven on the production backend");
   assert.equal(snapshot.stats.broadphasePairs, 1);
   assert.equal(snapshot.stats.contacts, 1);
   assert.ok(snapshot.contacts[0]?.point?.every(Number.isFinite));
