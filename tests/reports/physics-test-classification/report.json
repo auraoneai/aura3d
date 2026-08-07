@@ -1,0 +1,804 @@
+{
+  "generatedAt": "2026-08-07T02:11:45.380Z",
+  "method": "Each backend-pinned test file's `backend: \"aura-js\"` pin was rewritten to `backend: \"cannon-es\"` in place, the suite re-run, and the tree restored. Classification is derived from the observed pass/fail delta, never hand-authored.",
+  "pinnedFiles": [
+    "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+    "tests/unit/physics/cannon-collider-material.test.ts",
+    "tests/unit/physics/ccd-or-fast-body.test.ts",
+    "tests/unit/physics/constraints-stress.test.ts",
+    "tests/unit/physics/coulomb-friction.test.ts",
+    "tests/unit/physics/native-angular-contact.test.ts",
+    "tests/unit/physics/native-narrow-phase.test.ts",
+    "tests/unit/workstream4.physics-animation.test.ts"
+  ],
+  "counts": {
+    "contract": 101,
+    "characterization": 11
+  },
+  "rows": [
+    {
+      "test": "a native box dropped on a corner tumbles from contact torque",
+      "file": "tests/unit/physics/native-angular-contact.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "capsule contacts use segment distance for spheres, boxes, and other capsules",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "centered native face contacts do not manufacture torque",
+      "file": "tests/unit/physics/native-angular-contact.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "collider materials drive restitution and friction during contact resolution",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "Coulomb friction is bounded by accumulated normal impulse, not penetration depth",
+      "file": "tests/unit/physics/coulomb-friction.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "native broadphase uses oriented bounds and routes box pairs through SAT",
+      "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "native CCD substeps preserve outer-step forces and interpolation history",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "physics snapshot reports conservation sanity and stable stacking metrics",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "rigid bodies integrate angular velocity, torque, damping, and off-center impulses deterministically",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "sphere contacts use radial normals and deterministic impulse response",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "sphere-box contacts use closest point normals instead of AABB fallback",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "fail",
+      "classification": "characterization"
+    },
+    {
+      "test": "2D blend tree returns deterministic normalized weights",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "a cannon-es box dropped on a corner tumbles from angular contact response",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "accumulated Coulomb friction does not grow with solver iteration count",
+      "file": "tests/unit/physics/coulomb-friction.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "adaptive-substep CCD rejects a step that exceeds its configured guarantee",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation bridges report missing targets and component removal without losing sampled values",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation clip and track serialization round-trip deterministically",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation crossfade blends weighted scalar values",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation events fire once when looping across clip end",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation inspector snapshots mixer and skeleton without mutation",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation layers apply stable weights and expose target masks",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation mixer applies layer masks and weights during sampling",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation mixer applies root motion during normal action advancement",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation mixer blends numeric-array tracks for morph weights",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation mixer composes additive layer offsets over the blended base pose",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation mixer supports ping-pong playback and disposal guards",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation root motion extracts deterministic vector deltas and applies them to runtime targets",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation root motion preserves loop-wrap displacement across clip boundaries",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "animation track interpolation and mixer update target values",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "arcade vehicle dynamics exposes bounded speed, nitro, drift, and suspension state",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "Aura adaptive-substep CCD prevents a cannon-es fast mover from tunneling",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "Aura adaptive-substep CCD prevents a native fast mover from tunneling",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "cloth fixture ports old PBD collision tearing and material telemetry with bounded claims",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "collider friction converts sliding into rolling on the production backend",
+      "file": "tests/unit/physics/cannon-collider-material.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "collider restitution drives rebound height on the production backend",
+      "file": "tests/unit/physics/cannon-collider-material.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "collision filters and sensors emit bridgeable events without physical resolution",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "contact friction damps tangential sliding while preserving deterministic support",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "dynamic body falls, collides with static ground, and emits begin then stay",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "fast bodies use discrete fixed-step collision rather than continuous collision detection",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "fire smoke fixture ports old combustion particle and volume telemetry with bounded claims",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "fixed and hinge constraints solve deterministically in world steps",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "fixed constraint chain remains bounded under repeated solver steps",
+      "file": "tests/unit/physics/constraints-stress.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "fluid fixture ports old SPH MPM and screen-space telemetry with bounded claims",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "fracture fixture ports old Voronoi and hierarchical destruction telemetry with bounded claims",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates exposes a generic collision world with sensor events, tags, and layer filters",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps CLI asset command source tokens discoverable without writing CLI files",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps fighting-game template and kit source tokens tied to gameplay evidence",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps fighting-kit hitbox debug overlays opt-in at the engine level",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps hitbox debug overlay source coverage in the fighting-game template",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps package-smoke and release-gate scripts wired into game runtime readiness",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps root game facade helper exports source-visible without private runtime imports",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates keeps showcase game routes on public genre kits instead of route-local engines",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates moves a typed model runtime node through the frame loop without scene recreation",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates proves public GameAppRuntime lifecycle methods and evidence from the public createGameApp API",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates provides reusable falling-block mechanics for movement, rotation, hold, line clears, and replay checksums",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates provides reusable locomotion state for idle, run, jump, fall, land, and hit animation clips",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates provides reusable platformer mechanics for jump, collect, checkpoint, hazard, and finish state",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates provides reusable racing mechanics for throttle, steering, checkpoint order, lap validation, and camera follow",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates publishes generic game HUD, event-log, and collision evidence without fighting-only warnings",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates publishes standardized game evidence for input, movement, combat, animation, renderer, audio, and errors",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates records multi-anchor platformer world fit evidence instead of relying on one surface anchor",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates records multi-anchor racing model fit evidence instead of relying on one topology anchor",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates rejects public platformer world offsets that detach playable surfaces from retained overlay evidence",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates rejects public racing scene offsets that detach route topology from retained overlay evidence",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates rejects synthetic platformer markers as public playable surfaces",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates replays recorded attack input into combat hit resolution",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates requires public platformer examples to bind playable surfaces to typed world assets",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates requires public racing examples to bind a meaningful route to typed vehicle and track assets",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "game runtime source gates supports collision sweeps and explicit solid resolution through the public game facade",
+      "file": "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "hinge, slider, and spring constraints stay finite and axis-bounded under stress",
+      "file": "tests/unit/physics/constraints-stress.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "mesh raycasts support front faces, optional backfaces, max distance, and closest hit ordering",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "motion matching fixture scores trajectory poses with bounded old-system evidence",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "native convex hull pairs use GJK/EPA penetration",
+      "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "native heightfields generate sphere contacts from cell triangles",
+      "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "native OBB SAT rejects rotated AABB false positives and accepts real overlap",
+      "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "native triangle meshes generate box contacts instead of AABB fallback contacts",
+      "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "native triangle surfaces accept rotated capsule contacts",
+      "file": "tests/unit/physics/native-narrow-phase.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "pacejka tire model exposes combined slip forces and aligning torque",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics bridge ordering pushes kinematic transforms before stepping and pulls dynamics after stepping",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics broadphase prunes distant collider pairs deterministically",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics debug draw and adapter expose stable line counts",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics emits contact end when a body is removed during contact",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics emits contact end when overlapping bodies separate",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics replay is deterministic for repeated fixed input runs",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics sandbox fixture adapts old spawners and tools as bounded rigid-body evidence",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics shapes validate capsules, planes, and triangle meshes with finite bounds",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "physics stepper accumulates fixed steps deterministically",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "platformer fixture ports old controller camera and level telemetry with bounded claims",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "racing ai driver samples path following, overtaking, and rubberband controls",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "raycast returns real closest hit and misses filtered rays",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "rotated principal inertia is transformed into world space",
+      "file": "tests/unit/physics/native-angular-contact.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "scene and ECS physics bridges can pull interpolated dynamic transforms",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "scene and ECS physics bridges sync dynamic and kinematic transforms",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "scene animation bridge applies morph weight tracks to render targets",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "secondary animation fixture exposes bounded foot IK and spring-bone telemetry",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "settled dynamic bodies sleep deterministically and wake on impulse",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "skeleton palette handles a simple two-bone hierarchy",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "slider and spring constraints solve along their configured axes without teleporting static anchors",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "soft-body fixture ports old tetrahedral PBD telemetry with bounded claims",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "sphere casts sweep moving volumes against colliders without raycast stubs",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "sphereCast provides an explicit preflight for fast-body impact checks",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "state machine and blend tree are deterministic",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "state machine exposes deterministic graph debug output without evaluating transitions",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "state machine respects exit time and resets state time after transitions",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "timeOfImpact returns the first swept-bounds contact and rejects misses",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "two colliders declaring the same surface share one interned cannon material",
+      "file": "tests/unit/physics/cannon-collider-material.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "two-bone IK clamps unreachable targets unless stretching is enabled",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "two-bone IK reaches reachable targets while preserving segment lengths",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "two-bone IK respects blend weight",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "vehicle damage samples bounded impact health and visual damage levels",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "vehicle drivetrain samples engine torque, gear selection, differential split, and aero loads",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "vehicle effect emitters expose bounded smoke and nitro flame rates",
+      "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    }
+  ]
+}
