@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T03:42:39.693Z",
+  "generatedAt": "2026-08-07T05:46:13.724Z",
   "method": "Each backend-pinned test file's `backend: \"aura-js\"` pin was rewritten to `backend: \"cannon-es\"` in place, the suite re-run, and the tree restored. Classification is derived from the observed pass/fail delta, never hand-authored.",
   "pinnedFiles": [
     "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
@@ -12,8 +12,8 @@
     "tests/unit/workstream4.physics-animation.test.ts"
   ],
   "counts": {
-    "contract": 103,
-    "characterization": 9
+    "contract": 106,
+    "characterization": 8
   },
   "rows": [
     {
@@ -26,13 +26,6 @@
     {
       "test": "collider materials drive restitution and friction during contact resolution",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "Coulomb friction is bounded by accumulated normal impulse, not penetration depth",
-      "file": "tests/unit/physics/coulomb-friction.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "fail",
       "classification": "characterization"
@@ -101,7 +94,7 @@
       "classification": "contract"
     },
     {
-      "test": "accumulated Coulomb friction does not grow with solver iteration count",
+      "test": "accumulated Coulomb friction converges with solver iteration count",
       "file": "tests/unit/physics/coulomb-friction.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
@@ -276,6 +269,20 @@
       "classification": "contract"
     },
     {
+      "test": "Coulomb friction is bounded by accumulated normal impulse, not penetration depth",
+      "file": "tests/unit/physics/coulomb-friction.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "declared friction acts even when the world declares no gravity",
+      "file": "tests/unit/physics/coulomb-friction.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
       "test": "dynamic body falls, collides with static ground, and emits begin then stay",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
       "onFallback": "pass",
@@ -320,6 +327,13 @@
     {
       "test": "fracture fixture ports old Voronoi and hierarchical destruction telemetry with bounded claims",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "friction cannot reverse motion at any iteration count or duration",
+      "file": "tests/unit/physics/coulomb-friction.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
