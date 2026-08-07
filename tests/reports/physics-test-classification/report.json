@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T05:46:13.724Z",
+  "generatedAt": "2026-08-07T10:41:16.786Z",
   "method": "Each backend-pinned test file's `backend: \"aura-js\"` pin was rewritten to `backend: \"cannon-es\"` in place, the suite re-run, and the tree restored. Classification is derived from the observed pass/fail delta, never hand-authored.",
   "pinnedFiles": [
     "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
@@ -12,8 +12,8 @@
     "tests/unit/workstream4.physics-animation.test.ts"
   ],
   "counts": {
-    "contract": 106,
-    "characterization": 8
+    "contract": 111,
+    "characterization": 7
   },
   "rows": [
     {
@@ -33,13 +33,6 @@
     {
       "test": "native broadphase uses oriented bounds and routes box pairs through SAT",
       "file": "tests/unit/physics/native-narrow-phase.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "native CCD substeps preserve outer-step forces and interpolation history",
-      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "fail",
       "classification": "characterization"
@@ -88,6 +81,13 @@
     },
     {
       "test": "a cannon-es box dropped on a corner tumbles from angular contact response",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "a force applied once is applied for exactly one step, then stops",
       "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
@@ -269,6 +269,13 @@
       "classification": "contract"
     },
     {
+      "test": "continuous force application accumulates linearly across frames",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
       "test": "Coulomb friction is bounded by accumulated normal impulse, not penetration depth",
       "file": "tests/unit/physics/coulomb-friction.test.ts",
       "onFallback": "pass",
@@ -320,6 +327,13 @@
     {
       "test": "fluid fixture ports old SPH MPM and screen-space telemetry with bounded claims",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "force integration is substep-count independent on the production backend",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
@@ -530,6 +544,13 @@
     {
       "test": "motion matching fixture scores trajectory poses with bounded old-system evidence",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "native CCD substeps preserve outer-step forces and interpolation history [production: cannon-es]",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
@@ -754,6 +775,13 @@
     {
       "test": "state machine respects exit time and resets state time after transitions",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "the fallback backend agrees with production on force integration",
+      "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
