@@ -22,6 +22,12 @@ import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./R
 import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, validateFiniteVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
 import { timeOfImpact } from "./TimeOfImpact.js";
 
+/**
+ * Standard gravity, used as the floor for cannon's friction reference magnitude so that a
+ * zero-gravity or low-gravity world still honours declared surface friction.
+ */
+const STANDARD_GRAVITY = 9.81;
+
 export type PhysicsContinuousCollisionDescriptor = {
   /**
    * Bounds the travel of every moving collider by splitting a requested step.
@@ -175,6 +181,7 @@ export class PhysicsWorld {
       (this.cannonWorld.solver as { iterations?: number }).iterations = this.solverIterations;
       this.cannonWorld.defaultContactMaterial.friction = 0.5;
       this.cannonWorld.defaultContactMaterial.restitution = 0;
+      this.applyCannonFrictionGravity();
     }
   }
 
@@ -225,7 +232,35 @@ export class PhysicsWorld {
     this.gravity[0] = gravity[0];
     this.gravity[1] = gravity[1];
     this.gravity[2] = gravity[2];
-    if (this.cannonWorld) this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
+    if (this.cannonWorld) {
+      this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
+      this.applyCannonFrictionGravity();
+    }
+  }
+
+  /**
+   * Keep cannon's friction reference force independent of world gravity magnitude.
+   *
+   * Defect class: engine. cannon-es bounds a contact's friction impulse by
+   * `mu * reducedMass * |world.frictionGravity ?? world.gravity|`
+   * (`cannon-es/dist/cannon-es.js`, `mug` in `createFrictionEquationsFromContact`). With
+   * `frictionGravity` left undefined, a world built with `gravity: [0, 0, 0]` produced
+   * `mug = 0`, so *every* declared `material.friction` was silently discarded: a box given
+   * `velocity: [4, 0, 0]` on a `friction: 1` floor still read `vx === 4` after 5 steps of a
+   * zero-gravity world, and no combination of penetration depth or `solverIterations`
+   * changed it. Zero-g and low-g worlds are a supported public configuration
+   * (`setGravity`), so friction cannot be a function of how much gravity a scene happens to
+   * declare — the tangential bound belongs to the contact, not to the level design.
+   *
+   * The reference magnitude is therefore pinned to standard gravity whenever the world's own
+   * gravity is too small to bound friction, and tracks world gravity once it is larger, so
+   * high-gravity worlds keep their stronger grip.
+   */
+  private applyCannonFrictionGravity(): void {
+    if (!this.cannonWorld) return;
+    const magnitude = lengthVec3(this.gravity);
+    const reference = Math.max(magnitude, STANDARD_GRAVITY);
+    this.cannonWorld.frictionGravity = new CannonVec3(0, -reference, 0);
   }
 
   getBody(id: number): RigidBody | undefined {
