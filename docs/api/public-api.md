@@ -1330,7 +1330,7 @@ export { CubeTextureLoaderCompat, EXRLoaderCompat, GLTFLoaderCompat, HDRLoaderCo
 export { DragControls, FirstPersonControls, FlyControls, MapControls, OrbitControls, Picking, PointerLockControls, SelectionManager, TrackballControls, TransformControls } from "./controls";
 export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
 export { AnimationActionCompat, AnimationClipCompat, AnimationMixerCompat, MorphTargetMixerCompat, SkeletonCompat, SkinnedMeshCompat } from "./animation";
-export { THREE_COMPAT_THREE_IMPORT_MAP } from "./migration/ImportMap";
+export { THREE_COMPAT_THREE_IMPORT_MAP, THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
 export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
 export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";
