@@ -246,9 +246,10 @@ export class PhysicsWorld {
    * (`cannon-es/dist/cannon-es.js`, `mug` in `createFrictionEquationsFromContact`). With
    * `frictionGravity` left undefined, a world built with `gravity: [0, 0, 0]` produced
    * `mug = 0`, so *every* declared `material.friction` was silently discarded: a box given
-   * `velocity: [4, 0, 0]` on a `friction: 1` floor still read `vx === 4` after 5 steps of a
-   * zero-gravity world, and no combination of penetration depth or `solverIterations`
-   * changed it. Zero-g and low-g worlds are a supported public configuration
+   * `velocity: [4, 0, 0]` on a `friction: 1` floor still read `vx === 3.996651` after 5 steps
+   * of a zero-gravity world (measured on raw upstream cannon-es 0.20.0; the same fixture
+   * reads `vx === 1.689911` once `frictionGravity` is pinned), and no combination of
+   * penetration depth or `solverIterations` changed it. Zero-g and low-g worlds are a supported public configuration
    * (`setGravity`), so friction cannot be a function of how much gravity a scene happens to
    * declare — the tangential bound belongs to the contact, not to the level design.
    *
