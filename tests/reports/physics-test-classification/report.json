@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T02:11:45.380Z",
+  "generatedAt": "2026-08-07T03:42:39.693Z",
   "method": "Each backend-pinned test file's `backend: \"aura-js\"` pin was rewritten to `backend: \"cannon-es\"` in place, the suite re-run, and the tree restored. Classification is derived from the observed pass/fail delta, never hand-authored.",
   "pinnedFiles": [
     "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
@@ -12,27 +12,13 @@
     "tests/unit/workstream4.physics-animation.test.ts"
   ],
   "counts": {
-    "contract": 101,
-    "characterization": 11
+    "contract": 103,
+    "characterization": 9
   },
   "rows": [
     {
-      "test": "a native box dropped on a corner tumbles from contact torque",
-      "file": "tests/unit/physics/native-angular-contact.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
       "test": "capsule contacts use segment distance for spheres, boxes, and other capsules",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
-      "onFallback": "pass",
-      "onProductionBackend": "fail",
-      "classification": "characterization"
-    },
-    {
-      "test": "centered native face contacts do not manufacture torque",
-      "file": "tests/unit/physics/native-angular-contact.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "fail",
       "classification": "characterization"
@@ -96,6 +82,13 @@
     {
       "test": "2D blend tree returns deterministic normalized weights",
       "file": "tests/unit/workstream4.physics-animation.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "a box dropped on a corner tumbles from contact torque",
+      "file": "tests/unit/physics/native-angular-contact.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
@@ -236,6 +229,13 @@
     {
       "test": "Aura adaptive-substep CCD prevents a native fast mover from tunneling",
       "file": "tests/unit/physics/ccd-or-fast-body.test.ts",
+      "onFallback": "pass",
+      "onProductionBackend": "pass",
+      "classification": "contract"
+    },
+    {
+      "test": "centered face contacts do not manufacture a tumble",
+      "file": "tests/unit/physics/native-angular-contact.test.ts",
       "onFallback": "pass",
       "onProductionBackend": "pass",
       "classification": "contract"
