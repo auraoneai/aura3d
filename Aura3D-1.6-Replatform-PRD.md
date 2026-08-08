@@ -2343,10 +2343,27 @@ use them.
 
 ### WS-4.1 Backend-neutral public contract
 
-- [ ] Define in `packages/physics/src/index.ts`: bodies, colliders, joints,
+- [x] Define in `packages/physics/src/index.ts`: bodies, colliders, joints,
       raycast/shapecast, character controller, vehicle, deterministic stepping.
-- [ ] No `cannon-es` or Rapier type in the public surface.
-- [ ] **Proof:** `git grep -n "cannon-es" packages/physics/src/index.ts` empty.
+      — the barrel is now the contract: all seven areas named, each grouped with the
+      modules that satisfy it, plus the above-solver layer (navigation/steering/bridges)
+      and authored fixtures called out as *not* solver features. **The export set is
+      byte-identical to before** (`diff` of sorted `^export` lines is empty), so this is
+      documentation and grouping, not an API change.
+- [x] No `cannon-es` or Rapier type in the public surface.
+      — measured, not assumed: `cannon-es` is imported in exactly one file of the package
+      (`PhysicsWorld.ts`) and **no exported declaration in any of the 35 modules mentions a
+      `Cannon*` symbol**. Every public type (`Vec3`, `Quat`, `Bounds`, `PhysicsShape`,
+      `RaycastHit`) is Aura3D's own plain-array type.
+- [x] **Proof:** `git grep -n "cannon-es" packages/physics/src/index.ts` empty.
+      — empty (exit 1). Retained as the floor, not the ceiling: the barrel is `export *`, so
+      that grep cannot see a backend type leaking through a re-exported module's signature.
+      `tests/unit/physics/backend-neutral-contract.test.ts` (5 tests) asserts the property
+      instead — one solver importer, zero backend symbols in exported declarations, all
+      seven areas reachable from the *built* surface, and deterministic stepping proven by
+      two identical 120-step runs agreeing exactly rather than by a flag. It caught two real
+      defects while being written: a type-only symbol in the coverage list, and this file's
+      own explanatory comment naming the backend and thereby breaking the PRD's grep proof.
 
 ### WS-4.2 Bake-off — allowed to produce any of these outcomes
 
