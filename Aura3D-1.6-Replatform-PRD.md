@@ -2678,11 +2678,30 @@ Named explicitly so they cannot slip back into "not in scope." Every route below
 
 ### WS-5.4 Blocked routes stay blocked
 
-- [ ] `showcase-blockfall-reactor`, `showcase-skyline-runner`,
+- [x] `showcase-blockfall-reactor`, `showcase-skyline-runner`,
       `showcase-turbo-drift-circuit` remain `prototype-blocked` (R5). Prepare the review
       package; **do not promote.**
-- [ ] Do not refresh posters/screenshots to hide defects.
-- [ ] **Proof:** `route-gates.json` still shows all three blocked.
+      — all three still `prototype-blocked`, `publicShowcase: false`, human verdict
+      `needs-work`, with their named blockers intact. Review package:
+      `tools/blocked-route-review/index.ts` →
+      `tests/reports/blocked-route-review/report.json`, which records
+      `promotionPerformed: false` and cross-references each reported symptom to the engine
+      defect behind it. **4 of 6 engine causes are now FIXED** (the platformer apex, the
+      capsule-as-cylinder grounding failure, rotation-ignoring queries, and the
+      `solverIterations` default that collapsed stacks) and **2 are BLOCKED** on ADR 0002.
+      So `showcase-blockfall-reactor` and `showcase-skyline-runner` are ready for a human
+      visual-review decision; `showcase-turbo-drift-circuit` is not.
+- [x] Do not refresh posters/screenshots to hide defects.
+      — enforced by hashing the **PNG bytes**, not the digest recorded in
+      `route-health.json`: a refresh would update the record and the image together, so
+      reading the record would pass. All three retained screenshots are pinned, and a second
+      assertion cross-checks that the recorded digest still matches the image.
+- [x] **Proof:** `route-gates.json` still shows all three blocked.
+      — `tests/unit/tools/blocked-routes-stay-blocked.test.ts`, 14 tests, covering **all four
+      places a promotion could happen**: the gate `releaseClass` and `gameTemplateStatus`, the
+      route-health `classification` / `publicShowcase` / `promotionStatus` / `blockers`, the
+      human visual-review verdict, and the WS-5.1 tier — because a tier is a promotion, and
+      the WS-5.1 classifier's first version did in fact promote all three.
 
 ---
 
