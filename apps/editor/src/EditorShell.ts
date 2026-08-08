@@ -1,4 +1,4 @@
-import { EditorPluginHost, EditorRuntime, PlayModeBridge, PrefabRegistry, ReparentNodeCommand, sampleLocalizationAccessibilityFixture, type Command, type EditorLocalizationAccessibilityFixture, type EditorPickingEvidenceSnapshot, type EditorStateSnapshot, type EditorStateStorage, type GizmoSettings, type TimelineSnapshot } from "@aura3d/editor-runtime";
+import { EditorPluginHost, EditorRuntime, PlayModeBridge, PrefabRegistry, ReparentNodeCommand, type Command, type EditorPickingEvidenceSnapshot, type EditorStateSnapshot, type EditorStateStorage, type GizmoSettings, type TimelineSnapshot } from "@aura3d/editor-runtime";
 import { Scene, SceneNode } from "@aura3d/scene";
 import { StaticProjectExporter, type StaticExportResult } from "./export/StaticProjectExporter";
 import { ImportSettingsPanel } from "./import/ImportSettingsPanel";
@@ -54,7 +54,6 @@ export interface EditorAppState {
     readonly blocked: readonly string[];
   };
   readonly editorPicking: EditorPickingEvidenceSnapshot;
-  readonly localizationAccessibility: EditorLocalizationAccessibilityFixture;
   readonly featureEvidence: {
     readonly externalParityStarterAvailable: boolean;
     readonly importedAssets: number;
@@ -63,10 +62,6 @@ export interface EditorAppState {
     readonly cameras: number;
     readonly physicsBodies: number;
     readonly scripts: number;
-    readonly localizationHotSwap: boolean;
-    readonly rtlLocaleDirection: boolean;
-    readonly accessibilityFocusOrder: boolean;
-    readonly accessibilityContrast: boolean;
     readonly oldBranchGpuPickingPort: boolean;
     readonly gpuPickingColorIdEncoding: boolean;
     readonly gpuPickingRaycastFallback: boolean;
@@ -656,7 +651,6 @@ export class EditorShell {
         blocked: ["Unity replacement", "Unreal replacement", "broad Unity/Unreal for the web", "Unity Visual Scripting parity", "Unreal Blueprint parity"]
       },
       editorPicking: runtimeSnapshot.picking,
-      localizationAccessibility: sampleLocalizationAccessibilityFixture({ assetCount: this.project.assets.length }),
       featureEvidence: this.featureEvidenceSnapshot(),
       ...(this.error ? { error: this.error } : {})
     };
@@ -760,7 +754,6 @@ export class EditorShell {
 
   private featureEvidenceSnapshot(): EditorAppState["featureEvidence"] {
     const nodes = this.project.scene.nodes;
-    const localizationAccessibility = sampleLocalizationAccessibilityFixture({ assetCount: this.project.assets.length });
     const picking = this.runtime.pickingSnapshot();
     const visualScripting = this.panels.visualScript.snapshot();
     return {
@@ -771,10 +764,6 @@ export class EditorShell {
       cameras: nodes.filter((node) => node.camera.enabled).length,
       physicsBodies: nodes.filter((node) => node.physics.body !== "none").length,
       scripts: nodes.filter((node) => node.script.enabled && node.script.behavior.length > 0).length,
-      localizationHotSwap: localizationAccessibility.hotSwapLocale.directionChanged,
-      rtlLocaleDirection: localizationAccessibility.rtlLocaleCount > 0 && localizationAccessibility.samples.some((sample) => sample.direction === "rtl"),
-      accessibilityFocusOrder: localizationAccessibility.accessibility.focusWalk.length >= 3,
-      accessibilityContrast: localizationAccessibility.accessibility.aaContrastPasses,
       oldBranchGpuPickingPort: picking.source === "origin-master-gpu-picking-adapted",
       gpuPickingColorIdEncoding: picking.evidence.colorIdEncoding && picking.evidence.colorIdDecoding,
       gpuPickingRaycastFallback: picking.evidence.raycastFallback && picking.blockedClaims.includes("production GPU framebuffer picking pass"),

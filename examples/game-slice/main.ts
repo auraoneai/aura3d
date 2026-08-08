@@ -44,14 +44,14 @@ import {
   createExternalParityEnvironmentLighting,
   createExternalParityFlagshipRenderPresetEvidence,
   createProceduralTextureFixture,
-  sampleSpaceEnvironmentFixture,
+  createSpaceEnvironment,
   sampleExternalParityLdrPostprocessReadback,
   type ParticleRenderBatch,
   type ParticleSortMode,
   type ProceduralTextureFixture,
   type RenderDeviceDiagnostics,
   type RenderItem,
-  type SpaceEnvironmentFixture,
+  type SpaceEnvironmentState,
   type ExternalParityDirectionalShadowEvidence,
   type ExternalParityEnvironmentLightingBundle,
   type ExternalParityLdrPostprocessSummary,
@@ -189,7 +189,7 @@ type GameRenderResources = {
   readonly starfieldMaterial: UnlitMaterial;
   readonly arenaAccentMaterials: readonly UnlitMaterial[];
   readonly starfieldFixture: { readonly id: string; readonly hash: string; readonly semantic: string };
-  readonly spaceEnvironmentFixture: Pick<SpaceEnvironmentFixture, "id" | "source" | "hash" | "starCount" | "nebulaCount" | "dustCount" | "blockedClaims">;
+  readonly spaceEnvironment: Pick<SpaceEnvironmentState, "hash" | "starCount" | "nebulaCount" | "dustCount">;
   readonly materialFixtures: readonly { readonly id: string; readonly hash: string; readonly semantic: string }[];
 };
 
@@ -1129,7 +1129,7 @@ async function run(): Promise<void> {
       killFeedCount: objectiveState.phase === "won" ? 2 : 1
     });
     const spaceWave = sampleSpaceShooterWave({ wave: objectiveState.phase === "won" ? 10 : 4, width: canvas.width, height: canvas.height, seed: 0x4404 });
-    const spaceEnvironment = sampleSpaceEnvironmentFixture({
+    const spaceEnvironment = createSpaceEnvironment({
       width: canvas.width,
       height: canvas.height,
       elapsedSeconds: objectiveState.elapsedSeconds,
@@ -1164,7 +1164,7 @@ async function run(): Promise<void> {
         proceduralTextureFixturesApplied: renderResources.materialFixtures.length >= 2,
         seededStarfieldNebulaBackground: true,
         starfieldNebulaTextureHash: renderResources.starfieldFixture.hash,
-        oldBranchSpaceEnvironmentPort: spaceEnvironment.source === "origin-master-space-environment-adapted" && spaceEnvironment.starCount > 0 && spaceEnvironment.nebulaCount > 0 && spaceEnvironment.dustCount > 0,
+        renderedSpaceEnvironment: spaceEnvironment.starCount > 0 && spaceEnvironment.nebulaCount > 0 && spaceEnvironment.dustCount > 0,
         layeredSpaceBackground: spaceEnvironment.layerScroll.foregroundStars > spaceEnvironment.layerScroll.distantStars,
         spaceNebulaDustTelemetry: spaceEnvironment.nebulaCoverage > 0 && spaceEnvironment.dustAlpha > 0,
         gameConcreteAsphaltTextureHash: renderResources.materialFixtures.find((fixture) => fixture.id === "concrete-asphalt")?.hash ?? "missing",
@@ -1259,10 +1259,9 @@ async function run(): Promise<void> {
         generatedEnvironmentManifest: lightingBundle.manifestPath,
         proceduralTextureFixtureCount: renderResources.materialFixtures.length,
         starfieldNebulaTextureHash: renderResources.starfieldFixture.hash,
-        oldBranchSpaceEnvironmentPort: true,
-        spaceEnvironmentSource: spaceEnvironment.source,
+        renderedSpaceEnvironment: true,
         spaceEnvironmentHash: spaceEnvironment.hash,
-        spaceEnvironmentResourceHash: renderResources.spaceEnvironmentFixture.hash,
+        spaceEnvironmentResourceHash: renderResources.spaceEnvironment.hash,
         spaceEnvironmentStars: spaceEnvironment.starCount,
         spaceEnvironmentVisibleStars: spaceEnvironment.visibleStarCount,
         spaceEnvironmentNebulae: spaceEnvironment.nebulaCount,
@@ -1272,7 +1271,6 @@ async function run(): Promise<void> {
         spaceEnvironmentAverageBrightness: spaceEnvironment.averageStarBrightness,
         spaceEnvironmentNebulaCoverage: spaceEnvironment.nebulaCoverage,
         spaceEnvironmentDustAlpha: spaceEnvironment.dustAlpha,
-        spaceEnvironmentBlockedClaims: spaceEnvironment.blockedClaims.join(", "),
         gameConcreteAsphaltTextureHash: renderResources.materialFixtures.find((fixture) => fixture.id === "concrete-asphalt")?.hash ?? "missing",
         gameSciFiPanelTextureHash: renderResources.materialFixtures.find((fixture) => fixture.id === "sci-fi-panel")?.hash ?? "missing",
         environmentTextureMipCount: lightingBundle.resources.specularMipCount,
@@ -2158,7 +2156,7 @@ function createGameAiWorldState(
 
 function createGameRenderResources(): GameRenderResources {
   const starfieldFixture = createProceduralTextureFixture("starfield-nebula", { width: 64, height: 64 });
-  const spaceEnvironmentFixture = sampleSpaceEnvironmentFixture({ width: 960, height: 540, elapsedSeconds: 0, seed: 0x51ace });
+  const spaceEnvironment = createSpaceEnvironment({ width: 960, height: 540, elapsedSeconds: 0, seed: 0x51ace });
   const groundFixture = createProceduralTextureFixture("concrete-asphalt", { width: 96, height: 96, label: "game-arena-concrete-asphalt" });
   const platformFixture = createProceduralTextureFixture("sci-fi-panel", { width: 96, height: 96, label: "game-moving-platform-panel" });
   const starfieldTexture = textureFromFixture(starfieldFixture);
@@ -2178,7 +2176,7 @@ function createGameRenderResources(): GameRenderResources {
     railGeometry: Geometry.texturedCube(0.2),
     arenaDetailGeometry: Geometry.lineSegments(gameArenaDetailSegments()),
     starfieldGeometry: Geometry.lineSegments(gameStarSegments(starfieldFixture.data, 2200)),
-    spaceEnvironmentGeometry: Geometry.lineSegments(gameSpaceEnvironmentSegments(spaceEnvironmentFixture)),
+    spaceEnvironmentGeometry: Geometry.lineSegments(gameSpaceEnvironmentSegments(spaceEnvironment)),
     playerMaterial: new PBRMaterial({ name: "player", baseColor: [0.2, 0.76, 1, 1], roughness: 0.34, metallic: 0.18, emissiveColor: [0.02, 0.18, 0.36], emissiveStrength: 1.0, renderState: { cullMode: "none" } }),
     pickupMaterial: new PBRMaterial({ name: "pickup", baseColor: [1, 0.82, 0.28, 1], roughness: 0.2, metallic: 0.34, emissiveColor: [0.9, 0.48, 0.08], emissiveStrength: 0.9, renderState: { cullMode: "none" } }),
     platformMaterial: new TexturedPBRMaterial({ name: "moving-platform", baseColor: [0.58, 0.64, 0.72, 1], baseColorTexture: platformTexture, roughness: 0.6, metallic: 0.05, renderState: { cullMode: "none" } }),
@@ -2219,14 +2217,11 @@ function createGameRenderResources(): GameRenderResources {
       new UnlitMaterial({ name: "arena-accent-ice", color: [0.72, 0.9, 1, 0.7], renderState: { depthTest: true, depthWrite: false, cullMode: "none", blend: true } })
     ],
     starfieldFixture: { id: starfieldFixture.id, hash: starfieldFixture.hash, semantic: starfieldFixture.semantic },
-    spaceEnvironmentFixture: {
-      id: spaceEnvironmentFixture.id,
-      source: spaceEnvironmentFixture.source,
-      hash: spaceEnvironmentFixture.hash,
-      starCount: spaceEnvironmentFixture.starCount,
-      nebulaCount: spaceEnvironmentFixture.nebulaCount,
-      dustCount: spaceEnvironmentFixture.dustCount,
-      blockedClaims: spaceEnvironmentFixture.blockedClaims
+    spaceEnvironment: {
+      hash: spaceEnvironment.hash,
+      starCount: spaceEnvironment.starCount,
+      nebulaCount: spaceEnvironment.nebulaCount,
+      dustCount: spaceEnvironment.dustCount
     },
     materialFixtures: [
       { id: groundFixture.id, hash: groundFixture.hash, semantic: groundFixture.semantic },
@@ -3056,7 +3051,7 @@ function gameStarSegments(data: Uint8Array, count: number): readonly (readonly [
   return positions;
 }
 
-function gameSpaceEnvironmentSegments(fixture: SpaceEnvironmentFixture): readonly (readonly [number, number, number])[] {
+function gameSpaceEnvironmentSegments(fixture: SpaceEnvironmentState): readonly (readonly [number, number, number])[] {
   const positions: [number, number, number][] = [];
   for (const star of fixture.stars.slice(0, 160)) {
     const x = (star.x / fixture.width - 0.5) * 3.72;

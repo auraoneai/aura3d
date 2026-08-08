@@ -52,16 +52,6 @@ export type {
   TimelineKeyframeInterpolation,
   TimelineKeyframeValue
 } from "./KeyframeEditor";
-export { sampleLocalizationAccessibilityFixture } from "./LocalizationAccessibilityFixtures";
-export type {
-  EditorAccessibilityElementSample,
-  EditorAccessibilityRole,
-  EditorLocalizationAccessibilityFixture,
-  EditorLocalizedStringSample,
-  EditorLocaleDescriptor,
-  EditorLocaleDirection,
-  EditorPluralCategory
-} from "./LocalizationAccessibilityFixtures";
 export { MaterialVariantWorkflow } from "./MaterialVariantWorkflow";
 export type { MaterialVariantRenderOptions, MaterialVariantState } from "./MaterialVariantWorkflow";
 export { MultiUserReviewWorkflow, createMultiUserReviewWorkflow } from "./MultiUserReviewWorkflow";

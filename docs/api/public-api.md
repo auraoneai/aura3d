@@ -26,7 +26,7 @@ pnpm verify:api-docs
 | `@aura3d/debug` | `1.6.0` | `packages/debug/src/index.ts` | 30 |
 | `@aura3d/ecs` | `1.6.0` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor` | `1.6.0` | `packages/editor/src/index.ts` | 1 |
-| `@aura3d/editor-runtime` | `1.6.0` | `packages/editor-runtime/src/index.ts` | 82 |
+| `@aura3d/editor-runtime` | `1.6.0` | `packages/editor-runtime/src/index.ts` | 80 |
 | `@aura3d/engine` | `1.6.0` | `packages/engine/src/index.ts` | 39 |
 | `@aura3d/environments` | `1.6.0` | `packages/environments/src/index.ts` | 5 |
 | `@aura3d/environments/node` | `1.6.0` | `packages/environments/src/node.ts` | 6 |
@@ -41,7 +41,7 @@ pnpm verify:api-docs
 | `@aura3d/physics/world` | `1.6.0` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.6.0` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.6.0` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `1.6.0` | `packages/rendering/src/index.ts` | 266 |
+| `@aura3d/rendering` | `1.6.0` | `packages/rendering/src/index.ts` | 264 |
 | `@aura3d/rendering/lean-runtime` | `1.6.0` | `packages/rendering/src/lean-runtime.ts` | 10 |
 | `@aura3d/rendering/webgpu` | `1.6.0` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `1.6.0` | `packages/scene/src/index.ts` | 21 |
@@ -565,8 +565,6 @@ export { InspectorModel } from "./InspectorModel";
 export type { InspectorEditableValue, InspectorProperty } from "./InspectorModel";
 export { KeyframeEditor, encodeTimelineKeyframes, readTimelineKeyframes, timelineKeyframesByProperty } from "./KeyframeEditor";
 export type { CreateTimelineKeyframeOptions, PasteTimelineKeyframesOptions, TimelineBezierHandle, TimelineKeyframe, TimelineKeyframeInterpolation, TimelineKeyframeValue } from "./KeyframeEditor";
-export { sampleLocalizationAccessibilityFixture } from "./LocalizationAccessibilityFixtures";
-export type { EditorAccessibilityElementSample, EditorAccessibilityRole, EditorLocalizationAccessibilityFixture, EditorLocalizedStringSample, EditorLocaleDescriptor, EditorLocaleDirection, EditorPluralCategory } from "./LocalizationAccessibilityFixtures";
 export { MaterialVariantWorkflow } from "./MaterialVariantWorkflow";
 export type { MaterialVariantRenderOptions, MaterialVariantState } from "./MaterialVariantWorkflow";
 export { MultiUserReviewWorkflow, createMultiUserReviewWorkflow } from "./MultiUserReviewWorkflow";
@@ -1166,10 +1164,10 @@ export { BloomPass, DepthVisualizationPass, FXAAPass, ToneMappingPass, applyTone
 export type { AutoExposureOptions, AutoExposureResult, BloomOptions, BloomPassOptions, BloomResult, ChromaticAberrationOptions, ChromaticAberrationResult, ColorGradeOptions, ColorGradeResult, ContactShadowPostProcessOptions, ContactShadowPostProcessResult, DepthTextureBinding, DepthTextureFormat, DepthTextureStats, DepthVisualizationPassOptions, DepthVisualizationResult, DepthOfFieldOptions, DepthOfFieldResult, FilmGrainOptions, FilmGrainResult, FXAAOptions, FXAAPassOptions, FXAAResult, HdrToneMappingResult, ExposureHistogram, ExposureHistogramOptions, MotionBlurOptions, MotionBlurResult, OutlineOptions, OutlineResult, PostProcessColorSpace, SSAOOptions, SSAOResult, SSROptions, SSRResult, TAAOptions, TAAResult, ToneMappingCalibration, ToneMappingCalibrationSample, ToneMappingOperator, ToneMappingOptions, ToneMappingPassOptions, ToneMappingPreset, ToneMappingPresetName, ToneMappingPresetResult, ToneMappingResult, VolumetricLightOptions, VolumetricLightResult } from "./PostProcessPass";
 export { architecturalMaterialCatalogSummary, architecturalMaterialDescriptor, createArchitecturalMaterial, createArchitecturalMaterialCatalog } from "./ArchitecturalMaterialCatalog";
 export type { ArchitecturalMaterialCatalogSummary, ArchitecturalMaterialCategory, ArchitecturalMaterialDescriptor } from "./ArchitecturalMaterialCatalog";
-export { createArchitecturalLightingFixture } from "./ArchitecturalLightingFixtures";
-export type { ArchitecturalInteriorLight, ArchitecturalLightingFixture, ArchitecturalLightingFixtureOptions, ArchitecturalLightingPresetId, ArchitecturalLightType, ArchitecturalRgb, ArchitecturalVector3 } from "./ArchitecturalLightingFixtures";
-export { createArchitecturalMeasurementFixture } from "./ArchitecturalMeasurementFixtures";
-export type { ArchitecturalMeasurementFixture, ArchitecturalMeasurementOptions, ArchitecturalMeasurementResult, ArchitecturalMeasurementType, ArchitecturalMeasurementUnit, ArchitecturalPoint3 } from "./ArchitecturalMeasurementFixtures";
+export { createArchitecturalLightingState } from "./ArchitecturalLighting";
+export type { ArchitectureInteriorLight, ArchitecturalLightingState, ArchitecturalLightingOptions, ArchitectureLightingPreset, ArchitectureLightKind, ArchitectureRgb, ArchitectureVector3 } from "./ArchitecturalLighting";
+export { createArchitecturalMeasurementSet } from "./ArchitecturalMeasurement";
+export type { ArchitecturalMeasurementSet, ArchitecturalMeasurementOptions, ArchitecturalMeasurementResult, ArchitecturalMeasurementType, ArchitecturalMeasurementUnit, ArchitecturalPoint3 } from "./ArchitecturalMeasurement";
 export { createProceduralTexture, createProceduralTextureFixture, createProceduralTextureFixtureManifest, hashRgba8, normalFromHeightMap, proceduralTextureFixtureKinds } from "./ProceduralTexture";
 export type { ProceduralTextureFixture, ProceduralTextureFixtureKind, ProceduralTextureFixtureOptions } from "./ProceduralTexture";
 export { createProductTurntableFixture, createProductTurntableRenderKit } from "./ProductTurntable";
@@ -1184,18 +1182,16 @@ export { createLightingRig, listLightingRigPresets, resolveSubjectRimPlacement }
 export type { LightingRig, LightingRigDiagnostics, LightingRigSubject, SubjectRimPlacement, SubjectRimPlacementOptions, LightingRigLightDescriptor, LightingRigOptions, LightingRigPreset, LightingRigUnsupportedFeature } from "./LightingRig";
 export { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry, sampleTerrainHeightfield } from "./TerrainHeightfield";
 export type { TerrainFixtureBiome, TerrainHeightfieldColliderDescriptor, TerrainHeightfieldFixture, TerrainHeightfieldFixtureOptions, TerrainHeightfieldGeometry, TerrainHeightfieldGeometryOptions, TerrainHeightfieldSample } from "./TerrainHeightfield";
-export { sampleWeatherFixture } from "./WeatherFixtures";
-export type { WeatherFixtureOptions, WeatherFixtureSample, WeatherFixtureType, WeatherPuddlePatch, WeatherVisualDrop } from "./WeatherFixtures";
+export { createWeatherState } from "./Weather";
+export type { WeatherOptions, WeatherState, WeatherType, WeatherPuddlePatch, WeatherVisualDrop } from "./Weather";
 export { sampleVegetationFixture } from "./VegetationScatter";
 export type { VegetationFixtureInstance, VegetationFixtureLayer, VegetationFixtureLod, VegetationFixtureOptions, VegetationFixtureSample, VegetationLSystemBranchSegment, VegetationLSystemFixture } from "./VegetationScatter";
-export { sampleVoxelWorldFixture } from "./VoxelWorldFixtures";
-export type { VoxelBlockDescriptor, VoxelFixtureBlockType, VoxelFixtureLod, VoxelFixtureOptions, VoxelVisibleBlock, VoxelWorldFixture } from "./VoxelWorldFixtures";
+export { createVoxelWorld } from "./VoxelWorld";
+export type { VoxelBlockDescriptor, VoxelBlockType, VoxelLod, VoxelWorldOptions, VoxelVisibleBlock, VoxelWorldState } from "./VoxelWorld";
 export { sampleOceanFixture } from "./OceanSurface";
 export type { OceanBuoyancySample, OceanFixtureOptions, OceanFixturePreset, OceanFixtureSample, OceanFoamPatch, OceanWaveDescriptor, OceanWaveSample } from "./OceanSurface";
-export { sampleCullingFixture } from "./CullingFixtures";
-export type { CullingBvhTelemetry, CullingFeatureEvidence, CullingFixture, CullingFixtureObject, CullingFixtureOptions, CullingFrustumTelemetry, CullingHiZTelemetry } from "./CullingFixtures";
-export { sampleSpaceEnvironmentFixture } from "./SpaceEnvironmentFixtures";
-export type { SpaceEnvironmentDustParticle, SpaceEnvironmentFixture, SpaceEnvironmentNebula, SpaceEnvironmentStar } from "./SpaceEnvironmentFixtures";
+export { createSpaceEnvironment } from "./SpaceEnvironment";
+export type { SpaceEnvironmentDustParticle, SpaceEnvironmentState, SpaceEnvironmentNebula, SpaceEnvironmentStar } from "./SpaceEnvironment";
 export { LightingDebug } from "./LightingDebug";
 export type { DebugLine } from "./LightingDebug";
 export { CascadedShadowMaps, CascadedShadowPass, supportsCascadedShadowLight } from "./CascadedShadowMaps";

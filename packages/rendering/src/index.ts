@@ -750,25 +750,25 @@ export type {
   ArchitecturalMaterialCategory,
   ArchitecturalMaterialDescriptor
 } from "./ArchitecturalMaterialCatalog";
-export { createArchitecturalLightingFixture } from "./ArchitecturalLightingFixtures";
+export { createArchitecturalLightingState } from "./ArchitecturalLighting";
 export type {
-  ArchitecturalInteriorLight,
-  ArchitecturalLightingFixture,
-  ArchitecturalLightingFixtureOptions,
-  ArchitecturalLightingPresetId,
-  ArchitecturalLightType,
-  ArchitecturalRgb,
-  ArchitecturalVector3
-} from "./ArchitecturalLightingFixtures";
-export { createArchitecturalMeasurementFixture } from "./ArchitecturalMeasurementFixtures";
+  ArchitectureInteriorLight,
+  ArchitecturalLightingState,
+  ArchitecturalLightingOptions,
+  ArchitectureLightingPreset,
+  ArchitectureLightKind,
+  ArchitectureRgb,
+  ArchitectureVector3
+} from "./ArchitecturalLighting";
+export { createArchitecturalMeasurementSet } from "./ArchitecturalMeasurement";
 export type {
-  ArchitecturalMeasurementFixture,
+  ArchitecturalMeasurementSet,
   ArchitecturalMeasurementOptions,
   ArchitecturalMeasurementResult,
   ArchitecturalMeasurementType,
   ArchitecturalMeasurementUnit,
   ArchitecturalPoint3
-} from "./ArchitecturalMeasurementFixtures";
+} from "./ArchitecturalMeasurement";
 export {
   createProceduralTexture,
   createProceduralTextureFixture,
@@ -826,19 +826,19 @@ export type {
   TerrainHeightfieldGeometryOptions,
   TerrainHeightfieldSample
 } from "./TerrainHeightfield";
-export { sampleWeatherFixture } from "./WeatherFixtures";
-export type { WeatherFixtureOptions, WeatherFixtureSample, WeatherFixtureType, WeatherPuddlePatch, WeatherVisualDrop } from "./WeatherFixtures";
+export { createWeatherState } from "./Weather";
+export type { WeatherOptions, WeatherState, WeatherType, WeatherPuddlePatch, WeatherVisualDrop } from "./Weather";
 export { sampleVegetationFixture } from "./VegetationScatter";
 export type { VegetationFixtureInstance, VegetationFixtureLayer, VegetationFixtureLod, VegetationFixtureOptions, VegetationFixtureSample, VegetationLSystemBranchSegment, VegetationLSystemFixture } from "./VegetationScatter";
-export { sampleVoxelWorldFixture } from "./VoxelWorldFixtures";
+export { createVoxelWorld } from "./VoxelWorld";
 export type {
   VoxelBlockDescriptor,
-  VoxelFixtureBlockType,
-  VoxelFixtureLod,
-  VoxelFixtureOptions,
+  VoxelBlockType,
+  VoxelLod,
+  VoxelWorldOptions,
   VoxelVisibleBlock,
-  VoxelWorldFixture
-} from "./VoxelWorldFixtures";
+  VoxelWorldState
+} from "./VoxelWorld";
 export { sampleOceanFixture } from "./OceanSurface";
 export type {
   OceanBuoyancySample,
@@ -849,23 +849,13 @@ export type {
   OceanWaveDescriptor,
   OceanWaveSample
 } from "./OceanSurface";
-export { sampleCullingFixture } from "./CullingFixtures";
-export type {
-  CullingBvhTelemetry,
-  CullingFeatureEvidence,
-  CullingFixture,
-  CullingFixtureObject,
-  CullingFixtureOptions,
-  CullingFrustumTelemetry,
-  CullingHiZTelemetry
-} from "./CullingFixtures";
-export { sampleSpaceEnvironmentFixture } from "./SpaceEnvironmentFixtures";
+export { createSpaceEnvironment } from "./SpaceEnvironment";
 export type {
   SpaceEnvironmentDustParticle,
-  SpaceEnvironmentFixture,
+  SpaceEnvironmentState,
   SpaceEnvironmentNebula,
   SpaceEnvironmentStar
-} from "./SpaceEnvironmentFixtures";
+} from "./SpaceEnvironment";
 export { LightingDebug } from "./LightingDebug";
 export type { DebugLine } from "./LightingDebug";
 export { CascadedShadowMaps, CascadedShadowPass, supportsCascadedShadowLight } from "./CascadedShadowMaps";

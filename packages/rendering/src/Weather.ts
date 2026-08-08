@@ -1,7 +1,7 @@
-export type WeatherFixtureType = "clear" | "cloudy" | "rain" | "heavy-rain" | "thunderstorm" | "snow";
+export type WeatherType = "clear" | "cloudy" | "rain" | "heavy-rain" | "thunderstorm" | "snow";
 
-export interface WeatherFixtureOptions {
-  readonly type?: WeatherFixtureType;
+export interface WeatherOptions {
+  readonly type?: WeatherType;
   readonly elapsedSeconds?: number;
   readonly seed?: number;
   readonly cameraX?: number;
@@ -24,8 +24,8 @@ export interface WeatherPuddlePatch {
   readonly depth: number;
 }
 
-export interface WeatherFixtureSample {
-  readonly type: WeatherFixtureType;
+export interface WeatherState {
+  readonly type: WeatherType;
   readonly cloudCoverage: number;
   readonly fogDensity: number;
   readonly rainIntensity: number;
@@ -43,17 +43,15 @@ export interface WeatherFixtureSample {
   readonly visualDrops: readonly WeatherVisualDrop[];
   readonly puddlePatches: readonly WeatherPuddlePatch[];
   readonly hash: string;
-  readonly source: "origin-master-weather-system-adapted";
-  readonly claimBoundary: string;
 }
 
-export function sampleWeatherFixture(options: WeatherFixtureOptions = {}): WeatherFixtureSample {
+export function createWeatherState(options: WeatherOptions = {}): WeatherState {
   const type = options.type ?? "rain";
   const preset = weatherPreset(type);
   const elapsedSeconds = Math.max(0, finite(options.elapsedSeconds ?? 1, "elapsedSeconds"));
   const seed = Math.floor(options.seed ?? 0x5ea50a);
   if (!Number.isInteger(seed)) {
-    throw new RangeError("Weather fixture seed must be an integer.");
+    throw new RangeError("Weather state seed must be an integer.");
   }
   const cameraX = finite(options.cameraX ?? 0, "cameraX");
   const cameraZ = finite(options.cameraZ ?? 0, "cameraZ");
@@ -112,13 +110,11 @@ export function sampleWeatherFixture(options: WeatherFixtureOptions = {}): Weath
     visibilityMeters: preset.visibility,
     visualDrops,
     puddlePatches,
-    hash,
-    source: "origin-master-weather-system-adapted",
-    claimBoundary: "Deterministic weather, wind, rain/snow particle-count, splash, puddle, wetness, fog, and cloud telemetry adapted from the old weather system; this is bounded scene evidence, not volumetric clouds, full precipitation rendering, atmospheric scattering, or weather simulation parity."
+    hash
   };
 }
 
-function weatherPreset(type: WeatherFixtureType): {
+function weatherPreset(type: WeatherType): {
   readonly cloudCoverage: number;
   readonly fogDensity: number;
   readonly rainIntensity: number;
@@ -214,7 +210,7 @@ function seeded01(seed: number): number {
 }
 
 function finite(value: number, label: string): number {
-  if (!Number.isFinite(value)) throw new RangeError(`Weather fixture ${label} must be finite.`);
+  if (!Number.isFinite(value)) throw new RangeError(`Weather state ${label} must be finite.`);
   return value;
 }
 

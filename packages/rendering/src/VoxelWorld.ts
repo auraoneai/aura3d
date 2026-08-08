@@ -1,4 +1,4 @@
-export type VoxelFixtureBlockType =
+export type VoxelBlockType =
   | "air"
   | "stone"
   | "dirt"
@@ -20,9 +20,9 @@ export type VoxelFixtureBlockType =
   | "ice"
   | "lava";
 
-export type VoxelFixtureLod = "near" | "mid" | "far" | "culled";
+export type VoxelLod = "near" | "mid" | "far" | "culled";
 
-export interface VoxelFixtureOptions {
+export interface VoxelWorldOptions {
   readonly seed?: number;
   readonly chunkSize?: number;
   readonly viewDistance?: number;
@@ -31,11 +31,11 @@ export interface VoxelFixtureOptions {
 }
 
 export interface VoxelBlockDescriptor {
-  readonly type: VoxelFixtureBlockType;
+  readonly type: VoxelBlockType;
   readonly color: readonly [number, number, number, number];
   readonly hardness: number;
   readonly toolRequired: string | null;
-  readonly drops: VoxelFixtureBlockType | null;
+  readonly drops: VoxelBlockType | null;
   readonly sound: string;
   readonly animated: boolean;
   readonly lightLevel: number;
@@ -45,16 +45,14 @@ export interface VoxelBlockDescriptor {
 
 export interface VoxelVisibleBlock {
   readonly id: string;
-  readonly type: VoxelFixtureBlockType;
+  readonly type: VoxelBlockType;
   readonly x: number;
   readonly y: number;
   readonly z: number;
-  readonly lod: VoxelFixtureLod;
+  readonly lod: VoxelLod;
 }
 
-export interface VoxelWorldFixture {
-  readonly id: "external-parity-old-branch-voxel-world-fixture";
-  readonly source: "origin-master-voxel-world-adapted";
+export interface VoxelWorldState {
   readonly seed: number;
   readonly chunkSize: number;
   readonly viewDistance: number;
@@ -67,13 +65,12 @@ export interface VoxelWorldFixture {
   readonly chunkQueueSize: number;
   readonly generatingChunks: number;
   readonly meshingChunks: number;
-  readonly lodCounts: Record<VoxelFixtureLod, number>;
-  readonly blockCounts: Partial<Record<VoxelFixtureBlockType, number>>;
+  readonly lodCounts: Record<VoxelLod, number>;
+  readonly blockCounts: Partial<Record<VoxelBlockType, number>>;
   readonly visibleBlocks: readonly VoxelVisibleBlock[];
   readonly visibleFaceEstimate: number;
   readonly memoryBytes: number;
   readonly hash: string;
-  readonly claimBoundary: string;
 }
 
 const registry: readonly VoxelBlockDescriptor[] = [
@@ -99,15 +96,15 @@ const registry: readonly VoxelBlockDescriptor[] = [
   block("lava", [1, 0.28, 0.02, 0.95], 100, null, null, "lava", true, 12, true, false)
 ];
 
-export function sampleVoxelWorldFixture(options: VoxelFixtureOptions = {}): VoxelWorldFixture {
+export function createVoxelWorld(options: VoxelWorldOptions = {}): VoxelWorldState {
   const seed = integer(options.seed ?? 0x3d2025, "seed");
   const chunkSize = integer(options.chunkSize ?? 16, "chunkSize");
-  if (chunkSize < 8 || chunkSize > 64) throw new RangeError("Voxel fixture chunkSize must be between 8 and 64.");
+  if (chunkSize < 8 || chunkSize > 64) throw new RangeError("Voxel world chunkSize must be between 8 and 64.");
   const viewDistance = integer(options.viewDistance ?? 4, "viewDistance");
-  if (viewDistance < 1 || viewDistance > 16) throw new RangeError("Voxel fixture viewDistance must be between 1 and 16.");
+  if (viewDistance < 1 || viewDistance > 16) throw new RangeError("Voxel world viewDistance must be between 1 and 16.");
   const cameraChunkX = Math.trunc(options.cameraChunkX ?? 0);
   const cameraChunkZ = Math.trunc(options.cameraChunkZ ?? 0);
-  const blockCounts: Partial<Record<VoxelFixtureBlockType, number>> = {};
+  const blockCounts: Partial<Record<VoxelBlockType, number>> = {};
   const visibleBlocks: VoxelVisibleBlock[] = [];
   let visibleFaceEstimate = 0;
 
@@ -146,8 +143,6 @@ export function sampleVoxelWorldFixture(options: VoxelFixtureOptions = {}): Voxe
   const chunkQueueSize = Object.values(lodCounts).reduce((sum, count) => sum + count, 0);
   const memoryBytes = chunkQueueSize * chunkSize * chunkSize * chunkSize * 2;
   return {
-    id: "external-parity-old-branch-voxel-world-fixture",
-    source: "origin-master-voxel-world-adapted",
     seed,
     chunkSize,
     viewDistance,
@@ -165,17 +160,16 @@ export function sampleVoxelWorldFixture(options: VoxelFixtureOptions = {}): Voxe
     visibleBlocks,
     visibleFaceEstimate,
     memoryBytes,
-    hash: hashVoxel(seed, chunkSize, viewDistance, blockCounts, lodCounts, visibleFaceEstimate),
-    claimBoundary: "Deterministic block registry, chunk queue, terrain columns, LOD buckets, and visible block markers adapted from the old voxel-world example; this is not a production voxel engine, mesh builder, collision system, multiplayer sandbox, or Minecraft parity claim."
+    hash: hashVoxel(seed, chunkSize, viewDistance, blockCounts, lodCounts, visibleFaceEstimate)
   };
 }
 
 function block(
-  type: VoxelFixtureBlockType,
+  type: VoxelBlockType,
   color: readonly [number, number, number, number],
   hardness: number,
   toolRequired: string | null,
-  drops: VoxelFixtureBlockType | null,
+  drops: VoxelBlockType | null,
   sound: string,
   animated: boolean,
   lightLevel: number,
@@ -191,7 +185,7 @@ function terrainHeight(x: number, z: number, seed: number, chunkSize: number): n
   return Math.max(3, Math.min(chunkSize - 2, Math.round(chunkSize * (0.34 + base * 0.34 + detail))));
 }
 
-function surfaceBlock(x: number, z: number, seed: number, height: number, chunkSize: number): VoxelFixtureBlockType {
+function surfaceBlock(x: number, z: number, seed: number, height: number, chunkSize: number): VoxelBlockType {
   if (height < chunkSize * 0.38) return "sand";
   if (height > chunkSize * 0.78) return noise(x * 0.13, z * 0.13, seed) > 0.45 ? "snow" : "stone";
   const biome = noise(x * 0.05 - 20, z * 0.05 + 30, seed);
@@ -200,22 +194,22 @@ function surfaceBlock(x: number, z: number, seed: number, height: number, chunkS
   return "grass";
 }
 
-function oreBlock(height: number): VoxelFixtureBlockType {
+function oreBlock(height: number): VoxelBlockType {
   if (height < 6) return "diamond-ore";
   if (height < 9) return "gold-ore";
   if (height < 12) return "iron-ore";
   return "coal-ore";
 }
 
-function lodForDistance(distance: number): VoxelFixtureLod {
+function lodForDistance(distance: number): VoxelLod {
   if (distance <= 1.25) return "near";
   if (distance <= 2.5) return "mid";
   if (distance <= 4) return "far";
   return "culled";
 }
 
-function chunkLodCounts(viewDistance: number): Record<VoxelFixtureLod, number> {
-  const counts: Record<VoxelFixtureLod, number> = { near: 0, mid: 0, far: 0, culled: 0 };
+function chunkLodCounts(viewDistance: number): Record<VoxelLod, number> {
+  const counts: Record<VoxelLod, number> = { near: 0, mid: 0, far: 0, culled: 0 };
   const unloadDistance = viewDistance * 1.5;
   for (let x = -viewDistance; x <= viewDistance; x += 1) {
     for (let z = -viewDistance; z <= viewDistance; z += 1) {
@@ -227,7 +221,7 @@ function chunkLodCounts(viewDistance: number): Record<VoxelFixtureLod, number> {
   return counts;
 }
 
-function addCount(counts: Partial<Record<VoxelFixtureBlockType, number>>, type: VoxelFixtureBlockType, count: number): void {
+function addCount(counts: Partial<Record<VoxelBlockType, number>>, type: VoxelBlockType, count: number): void {
   counts[type] = (counts[type] ?? 0) + count;
 }
 
@@ -251,8 +245,8 @@ function hashVoxel(
   seed: number,
   chunkSize: number,
   viewDistance: number,
-  blockCounts: Partial<Record<VoxelFixtureBlockType, number>>,
-  lodCounts: Record<VoxelFixtureLod, number>,
+  blockCounts: Partial<Record<VoxelBlockType, number>>,
+  lodCounts: Record<VoxelLod, number>,
   visibleFaceEstimate: number
 ): string {
   let value = 0x811c9dc5;
@@ -267,7 +261,7 @@ function hashVoxel(
 }
 
 function integer(value: number, label: string): number {
-  if (!Number.isInteger(value)) throw new RangeError(`Voxel fixture ${label} must be an integer.`);
+  if (!Number.isInteger(value)) throw new RangeError(`Voxel world ${label} must be an integer.`);
   return value;
 }
 

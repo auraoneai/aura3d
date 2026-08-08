@@ -213,7 +213,7 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.oldBranchFpsEnemyTacticsPort).toBe(true);
     expect(state?.featureEvidence?.oldBranchFpsLevelPort).toBe(true);
     expect(state?.featureEvidence?.oldBranchFpsHudPort).toBe(true);
-    expect(state?.featureEvidence?.oldBranchSpaceEnvironmentPort).toBe(true);
+    expect(state?.featureEvidence?.renderedSpaceEnvironment).toBe(true);
     expect(state?.featureEvidence?.layeredSpaceBackground).toBe(true);
     expect(state?.featureEvidence?.spaceNebulaDustTelemetry).toBe(true);
     expect(state?.featureEvidence?.oldBranchSpaceWavePowerUpPort).toBe(true);
@@ -379,8 +379,7 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.fpsHudMinimapBlips ?? 0)).toBeGreaterThan(0);
     expect(state?.metrics.fpsHudKillFeedVisible).toBe(true);
     expect(String(state?.metrics.fpsHudWaveText ?? "")).toContain("WAVE:");
-    expect(state?.metrics.oldBranchSpaceEnvironmentPort).toBe(true);
-    expect(state?.metrics.spaceEnvironmentSource).toBe("origin-master-space-environment-adapted");
+    expect(state?.metrics.renderedSpaceEnvironment).toBe(true);
     expect(String(state?.metrics.spaceEnvironmentHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
     expect(String(state?.metrics.spaceEnvironmentResourceHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
     expect(Number(state?.metrics.spaceEnvironmentStars ?? 0)).toBeGreaterThan(0);
@@ -391,8 +390,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.spaceEnvironmentAverageBrightness ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.spaceEnvironmentNebulaCoverage ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.spaceEnvironmentDustAlpha ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.spaceEnvironmentBlockedClaims ?? "")).toContain("3D volumetric nebula rendering");
-    expect(String(state?.metrics.spaceEnvironmentBlockedClaims ?? "")).toContain("Unity VFX Graph background parity");
     expect(state?.metrics.oldBranchSpaceWavePowerUpPort).toBe(true);
     expect(state?.metrics.spaceWaveSource).toBe("origin-master-space-shooter-wave-powerup-adapted");
     expect(Number(state?.metrics.spaceWaveNumber ?? 0)).toBeGreaterThan(0);

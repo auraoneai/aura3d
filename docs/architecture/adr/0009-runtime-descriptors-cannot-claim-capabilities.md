@@ -59,6 +59,16 @@ controller, animation mixer, skinning, IK, and their direct tests. Claims for
 haptic delivery, headset behavior, hand/eye tracking, foveation, and
 motion-matching remain unavailable until mounted evidence proves them.
 
+The editor/rendering batch removes the hard-coded localization/accessibility
+audit object and simulated BVH/Hi-Z culling telemetry. Neither changed the
+mounted editor or the renderer's submitted draw list. Architectural lighting,
+architectural measurement, space-environment, voxel-world, and weather
+generators are retained because their outputs are consumed by mounted examples;
+they move to honest runtime filenames and symbols, and historical-source,
+blocked-claim, and self-certifying metadata is removed. The large-world route
+now reports its real CPU distance visibility/LOD decisions and rendered
+weather/voxel accents, without claiming a BVH or GPU occlusion pipeline.
+
 ## Evidence
 
 `tests/reports/public-runtime-descriptor-inventory/report.json` is the complete

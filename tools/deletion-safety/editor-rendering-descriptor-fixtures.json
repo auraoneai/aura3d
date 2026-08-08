@@ -1,0 +1,12 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's editor/rendering descriptor batch. Five rendered data generators migrated to honest runtime names; localization/accessibility and simulated BVH/Hi-Z descriptors were removed.",
+  "candidates": [
+    "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+    "packages/rendering/src/ArchitecturalLightingFixtures.ts",
+    "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
+    "packages/rendering/src/CullingFixtures.ts",
+    "packages/rendering/src/SpaceEnvironmentFixtures.ts",
+    "packages/rendering/src/VoxelWorldFixtures.ts",
+    "packages/rendering/src/WeatherFixtures.ts"
+  ]
+}

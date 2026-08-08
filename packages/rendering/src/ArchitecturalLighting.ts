@@ -1,4 +1,4 @@
-export type ArchitecturalLightingPresetId =
+export type ArchitectureLightingPreset =
   | "sunrise"
   | "morning"
   | "noon"
@@ -8,53 +8,48 @@ export type ArchitecturalLightingPresetId =
   | "dusk"
   | "night";
 
-export type ArchitecturalLightType = "point" | "spot" | "area";
-export type ArchitecturalRgb = readonly [number, number, number];
-export type ArchitecturalVector3 = readonly [number, number, number];
+export type ArchitectureLightKind = "point" | "spot" | "area";
+export type ArchitectureRgb = readonly [number, number, number];
+export type ArchitectureVector3 = readonly [number, number, number];
 
-export interface ArchitecturalLightingFixtureOptions {
-  readonly preset?: ArchitecturalLightingPresetId;
+export interface ArchitecturalLightingOptions {
+  readonly preset?: ArchitectureLightingPreset;
   readonly interiorLightsEnabled?: boolean;
 }
 
-export interface ArchitecturalInteriorLight {
+export interface ArchitectureInteriorLight {
   readonly id: string;
-  readonly type: ArchitecturalLightType;
-  readonly position: ArchitecturalVector3;
-  readonly color: ArchitecturalRgb;
+  readonly type: ArchitectureLightKind;
+  readonly position: ArchitectureVector3;
+  readonly color: ArchitectureRgb;
   readonly intensityLumens: number;
   readonly rangeMeters: number;
   readonly enabled: boolean;
   readonly temperatureKelvin: number;
 }
 
-export interface ArchitecturalLightingFixture {
-  readonly id: "external-parity-old-branch-architectural-lighting-fixture";
-  readonly source: "origin-master-arch-viz-lighting-controller-adapted";
-  readonly preset: ArchitecturalLightingPresetId;
+export interface ArchitecturalLightingState {
+  readonly preset: ArchitectureLightingPreset;
   readonly presetLabel: string;
   readonly timeOfDayHours: number;
-  readonly sunDirection: ArchitecturalVector3;
-  readonly sunColor: ArchitecturalRgb;
-  readonly skyColor: ArchitecturalRgb;
+  readonly sunDirection: ArchitectureVector3;
+  readonly sunColor: ArchitectureRgb;
+  readonly skyColor: ArchitectureRgb;
   readonly sunIntensity: number;
   readonly ambientIntensity: number;
   readonly interiorLightsEnabled: boolean;
-  readonly interiorLights: readonly ArchitecturalInteriorLight[];
+  readonly interiorLights: readonly ArchitectureInteriorLight[];
   readonly activeInteriorLightCount: number;
   readonly kelvinRange: readonly [number, number];
-  readonly supportedCurrentRendererLights: readonly ArchitecturalLightType[];
-  readonly blockedLightClaims: readonly string[];
   readonly hash: string;
-  readonly claimBoundary: string;
 }
 
-const presetDescriptors: Record<ArchitecturalLightingPresetId, {
+const presetDescriptors: Record<ArchitectureLightingPreset, {
   readonly label: string;
   readonly timeOfDayHours: number;
   readonly sunIntensity: number;
-  readonly sunColor: ArchitecturalRgb;
-  readonly skyColor: ArchitecturalRgb;
+  readonly sunColor: ArchitectureRgb;
+  readonly skyColor: ArchitectureRgb;
   readonly ambientIntensity: number;
   readonly interiorLightsOn: boolean;
 }> = {
@@ -132,7 +127,7 @@ const presetDescriptors: Record<ArchitecturalLightingPresetId, {
   }
 };
 
-const interiorLightDescriptors: readonly Omit<ArchitecturalInteriorLight, "color" | "enabled">[] = [
+const interiorLightDescriptors: readonly Omit<ArchitectureInteriorLight, "color" | "enabled">[] = [
   { id: "living-ceiling-1", type: "point", position: [0, 2.7, -2], intensityLumens: 800, rangeMeters: 5, temperatureKelvin: 3000 },
   { id: "living-ceiling-2", type: "point", position: [0, 2.7, 2], intensityLumens: 800, rangeMeters: 5, temperatureKelvin: 3000 },
   { id: "kitchen-task-1", type: "spot", position: [-3, 2.5, -1], intensityLumens: 1200, rangeMeters: 4, temperatureKelvin: 4000 },
@@ -145,7 +140,7 @@ const interiorLightDescriptors: readonly Omit<ArchitecturalInteriorLight, "color
   { id: "accent-wall", type: "spot", position: [-5.5, 1.5, 0], intensityLumens: 300, rangeMeters: 3, temperatureKelvin: 3200 }
 ];
 
-export function createArchitecturalLightingFixture(options: ArchitecturalLightingFixtureOptions = {}): ArchitecturalLightingFixture {
+export function createArchitecturalLightingState(options: ArchitecturalLightingOptions = {}): ArchitecturalLightingState {
   const preset = options.preset ?? "noon";
   const descriptor = presetDescriptors[preset];
   const interiorLightsEnabled = options.interiorLightsEnabled ?? descriptor.interiorLightsOn;
@@ -158,8 +153,6 @@ export function createArchitecturalLightingFixture(options: ArchitecturalLightin
   const kelvinValues = interiorLights.map((light) => light.temperatureKelvin);
   const sunDirection = directionForTimeOfDay(descriptor.timeOfDayHours);
   return {
-    id: "external-parity-old-branch-architectural-lighting-fixture",
-    source: "origin-master-arch-viz-lighting-controller-adapted",
     preset,
     presetLabel: descriptor.label,
     timeOfDayHours: descriptor.timeOfDayHours,
@@ -172,18 +165,11 @@ export function createArchitecturalLightingFixture(options: ArchitecturalLightin
     interiorLights,
     activeInteriorLightCount: enabledLights.length,
     kelvinRange: [Math.min(...kelvinValues), Math.max(...kelvinValues)],
-    supportedCurrentRendererLights: ["point", "spot"],
-    blockedLightClaims: [
-      "physically accurate global illumination",
-      "photometric area-light shading parity",
-      "Unity/Unreal architectural lighting workflow parity"
-    ],
-    hash: hashLighting(preset, sunDirection, descriptor, interiorLights),
-    claimBoundary: "Deterministic time-of-day sun, Kelvin interior-light metadata, and bounded current-renderer point/spot light evidence adapted from the old arch-viz LightingController; this does not claim GI, baked lighting, photometric area-light, or Unity/Unreal lighting-workflow parity."
+    hash: hashLighting(preset, sunDirection, descriptor, interiorLights)
   };
 }
 
-function directionForTimeOfDay(timeOfDayHours: number): ArchitecturalVector3 {
+function directionForTimeOfDay(timeOfDayHours: number): ArchitectureVector3 {
   const hourAngle = (timeOfDayHours - 6) * 15;
   const elevation = Math.sin(hourAngle * Math.PI / 180) * 60;
   const azimuth = (hourAngle - 90) * Math.PI / 180;
@@ -198,7 +184,7 @@ function directionForTimeOfDay(timeOfDayHours: number): ArchitecturalVector3 {
   ];
 }
 
-function kelvinToRgb(kelvin: number): ArchitecturalRgb {
+function kelvinToRgb(kelvin: number): ArchitectureRgb {
   const temp = kelvin / 100;
   const red = temp <= 66 ? 255 : clamp(329.698727446 * Math.pow(temp - 60, -0.1332047592), 0, 255);
   const green = temp <= 66
@@ -209,10 +195,10 @@ function kelvinToRgb(kelvin: number): ArchitecturalRgb {
 }
 
 function hashLighting(
-  preset: ArchitecturalLightingPresetId,
-  sunDirection: ArchitecturalVector3,
-  descriptor: (typeof presetDescriptors)[ArchitecturalLightingPresetId],
-  lights: readonly ArchitecturalInteriorLight[]
+  preset: ArchitectureLightingPreset,
+  sunDirection: ArchitectureVector3,
+  descriptor: (typeof presetDescriptors)[ArchitectureLightingPreset],
+  lights: readonly ArchitectureInteriorLight[]
 ): string {
   let hash = 0x811c9dc5;
   for (const value of [

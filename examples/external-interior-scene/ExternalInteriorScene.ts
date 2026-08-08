@@ -3,10 +3,10 @@ import {
   PBRMaterial,
   Renderer,
   architecturalMaterialCatalogSummary,
-  createArchitecturalLightingFixture,
+  createArchitecturalLightingState,
   createArchitecturalMaterial,
   createLightingDefault,
-  type ArchitecturalLightingPresetId,
+  type ArchitectureLightingPreset,
   type LightingDefaultPreset,
   type RenderItem
 } from "@aura3d/rendering";
@@ -49,7 +49,7 @@ export async function mountExternalInteriorScene(id: string): Promise<void> {
   function render(): void {
     const lightingPreset = lightingSelect.value as SceneLighting;
     const lighting = createLightingDefault(defaultLightingFor(lightingPreset));
-    const architecturalLighting = createArchitecturalLightingFixture({ preset: lightingPreset as ArchitecturalLightingPresetId, interiorLightsEnabled: true });
+    const architecturalLighting = createArchitecturalLightingState({ preset: lightingPreset as ArchitectureLightingPreset, interiorLightsEnabled: true });
     const renderItems = createInteriorRenderItems(lightingPreset);
     const diagnostics = renderer.render({
       renderItems,
@@ -76,7 +76,7 @@ export async function mountExternalInteriorScene(id: string): Promise<void> {
       texturedMaterialCount: materialSummary.texturedMaterialCount,
       lightingPreset,
       activeInteriorLightCount: architecturalLighting.activeInteriorLightCount,
-      supportedRendererLights: architecturalLighting.supportedCurrentRendererLights,
+      supportedRendererLights: ["point", "spot"],
       shadowStrategy: "contact-shadow-receiver-geometry",
       shadowReceiverCount: renderItems.filter((item) => item.label.includes("shadow")).length,
       spatialDepthMeters: 6.4,

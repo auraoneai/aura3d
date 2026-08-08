@@ -39,7 +39,7 @@ check(
   "scene-product-surface",
   includesAll(sceneSource, [
     "createArchitecturalMaterial",
-    "createArchitecturalLightingFixture",
+    "createArchitecturalLightingState",
     "multi-object-interior",
     "contact-shadow-receiver-geometry",
     "__A3D_EXTERNAL_PARITY_INTERIOR_SCENE__",

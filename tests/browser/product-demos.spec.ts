@@ -258,8 +258,7 @@ test.describe("productStudio product demos", () => {
     expect(state.measurements.spanMeters).toBeGreaterThan(17);
     expect(state.measurements.source).toBe("model-element-metadata");
     expect(state.measurements.elementId).toBe("room-gallery-l1");
-    expect(state.featureEvidence.oldBranchMeasurementToolPort).toBe(true);
-    expect(state.measurements.oldBranchSource).toBe("origin-master-arch-viz-measurement-tool-adapted");
+    expect(state.featureEvidence.architecturalMeasurementSet).toBe(true);
     expect(state.measurements.snapPointCount).toBeGreaterThanOrEqual(16);
     expect(state.measurements.computedDistanceMeters).toBe(12);
     expect(state.measurements.computedAreaSqm).toBe(144);
@@ -270,7 +269,6 @@ test.describe("productStudio product demos", () => {
     expect(state.measurements.angleLabel).toBe("90.00 deg");
     expect(state.measurements.heightLabel).toBe("2.10 m");
     expect(state.measurements.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(String(state.measurements.claimBoundary)).toContain("not CAD/BIM");
     expect(state.selectedElement).toMatchObject({
       id: "room-gallery-l1",
       kind: "room",
@@ -286,24 +284,19 @@ test.describe("productStudio product demos", () => {
     expect(state.metrics.actualElementSelection).toBe(true);
     expect(state.metrics.selectedElementId).toBe("room-gallery-l1");
     expect(state.metrics.measurementSource).toBe("model-element-metadata");
-    expect(state.metrics.oldBranchMeasurementToolPort).toBe(true);
-    expect(state.metrics.measurementToolSource).toBe("origin-master-arch-viz-measurement-tool-adapted");
+    expect(state.metrics.architecturalMeasurementSet).toBe(true);
     expect(state.metrics.measurementToolSnapPoints).toBeGreaterThanOrEqual(16);
     expect(state.metrics.measurementToolDistanceMeters).toBe(12);
     expect(state.metrics.measurementToolAreaSqm).toBe(144);
     expect(state.metrics.measurementToolAngleDegrees).toBeCloseTo(90, 3);
     expect(state.metrics.measurementToolHeightMeters).toBe(2.1);
     expect(state.metrics.measurementToolHash).toMatch(/^[0-9a-f]{8}$/);
-    expect(state.featureEvidence.oldBranchLightingControllerPort).toBe(true);
-    expect(state.oldBranchLighting.source).toBe("origin-master-arch-viz-lighting-controller-adapted");
-    expect(state.oldBranchLighting.preset).toBe("noon");
-    expect(state.oldBranchLighting.interiorLights).toHaveLength(10);
-    expect(state.oldBranchLighting.activeInteriorLightCount).toBe(0);
-    expect(state.oldBranchLighting.supportedCurrentRendererLights).toEqual(["point", "spot"]);
-    expect(state.oldBranchLighting.blockedLightClaims.join(" ")).toContain("Unity/Unreal");
-    expect(state.oldBranchLighting.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(state.metrics.oldBranchLightingControllerPort).toBe(true);
-    expect(state.metrics.lightingControllerSource).toBe("origin-master-arch-viz-lighting-controller-adapted");
+    expect(state.featureEvidence.architecturalLightingState).toBe(true);
+    expect(state.architecturalLighting.preset).toBe("noon");
+    expect(state.architecturalLighting.interiorLights).toHaveLength(10);
+    expect(state.architecturalLighting.activeInteriorLightCount).toBe(0);
+    expect(state.architecturalLighting.hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(state.metrics.architecturalLightingState).toBe(true);
     expect(state.metrics.lightingControllerPreset).toBe("noon");
     expect(state.metrics.lightingControllerInteriorLights).toBe(10);
     expect(state.metrics.lightingControllerActiveInteriorLights).toBe(0);

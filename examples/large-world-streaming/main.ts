@@ -5,12 +5,11 @@ import {
   UnlitMaterial,
   createTerrainHeightfieldFixture,
   createExternalParityEnvironmentLighting,
-  sampleCullingFixture,
   sampleOceanFixture,
   sampleTerrainHeightfield,
   sampleVegetationFixture,
-  sampleVoxelWorldFixture,
-  sampleWeatherFixture,
+  createVoxelWorld,
+  createWeatherState,
   type RenderDeviceDiagnostics,
   type RenderItem
 } from "@aura3d/rendering";
@@ -67,11 +66,11 @@ const screenshotPath = "tests/reports/external-parity-example-screenshots/large-
 const knownLimits = [
   "This is a bounded local streaming and culling harness, not an open-world asset pipeline.",
   "Chunks are generated modular WebGL2 geometry and deterministic terrain-heightfield state, not a full terrain ECS or network streaming stack.",
-  "LOD selection is distance-based with explicit metrics; occlusion culling is bounded BVH/Hi-Z telemetry only, while production GPU occlusion, hierarchical streaming, persistence, and volumetric weather are not claimed."
+  "LOD and visibility selection are CPU distance-based; GPU occlusion, hierarchical streaming, persistence, and volumetric weather are not implemented here."
 ] as const;
-const claimBoundary = "ExternalParity large-world-streaming evidence is limited to generated modular cells, deterministic terrain-heightfield/biome telemetry, async load/unload simulation, distance LOD, frustum culling, bounded BVH/Hi-Z occlusion telemetry, camera-path metrics, and browser screenshot checks.";
+const claimBoundary = "ExternalParity large-world-streaming evidence is limited to generated modular cells, deterministic terrain-heightfield/biome state, async load/unload simulation, CPU distance LOD and visibility culling, rendered weather/voxel accents, camera-path metrics, and browser screenshot checks.";
 const terrainFixture = createTerrainHeightfieldFixture({ width: 32, height: 32, seed: 0x3d2025 });
-const voxelFixture = sampleVoxelWorldFixture({ seed: 0x3d2025, chunkSize: 16, viewDistance: 4 });
+const voxelWorld = createVoxelWorld({ seed: 0x3d2025, chunkSize: 16, viewDistance: 4 });
 
 const cells: readonly WorldCell[] = Array.from({ length: 13 }, (_, index) => {
   const id = `cell-${String(index - 6).padStart(2, "0")}`;
@@ -195,17 +194,11 @@ async function run(): Promise<void> {
     }
 
     const vegetation = sampleVegetationFixture({ terrain: terrainFixture, seed: 0x3d2025, cameraX, elapsedSeconds: time * 0.001, maxInstances: 120 });
-    const build = buildRenderItems(cameraX, loaded, loading, vegetation, voxelFixture, geometry, materials);
+    const build = buildRenderItems(cameraX, loaded, loading, vegetation, voxelWorld, geometry, materials);
     for (const lod of build.activeLodLevels) activeLodEver.add(lod);
     culledEver ||= build.culledCells > 0;
-    const weather = sampleWeatherFixture({ type: "rain", elapsedSeconds: time * 0.001, seed: 0x3d2025, cameraX, cameraZ: 0, maxVisualDrops: 42 });
+    const weather = createWeatherState({ type: "rain", elapsedSeconds: time * 0.001, seed: 0x3d2025, cameraX, cameraZ: 0, maxVisualDrops: 42 });
     const ocean = sampleOceanFixture({ preset: "moderate", elapsedSeconds: time * 0.001, seed: 0x0cea6, cameraX, sampleCount: 11 });
-    const culling = sampleCullingFixture({
-      seed: 0xc0111,
-      objectCount: Math.min(48, cells.length + voxelFixture.visibleBlocks.length),
-      cameraX,
-      depthResolution: [320, 180]
-    });
     diagnostics = renderer.render({
       renderItems: withOceanRenderItems(withWeatherRenderItems(build.items, weather, cameraX, geometry, materials), ocean, cameraX, geometry, materials),
       cameraPosition: [cameraX, 0.28, 3.8],
@@ -231,14 +224,11 @@ async function run(): Promise<void> {
         cameraPathMetrics: cameraSamples > 10 && cameraPathLength > 0,
         frameAndMemoryMetrics: memoryBytes > 0 && frameSamples.length > 3,
         oldBranchTerrainGeneratorPort: terrainFixture.riverCellCount > 0 && terrainFixture.roughness > 0 && Object.values(terrainFixture.biomeCounts).some((count) => count > 0),
-        oldBranchWeatherSystemPort: weather.rainIntensity > 0 && weather.visibleDropCount > 0 && weather.puddleDepth > 0,
+        weatherRendered: weather.rainIntensity > 0 && weather.visibleDropCount > 0 && weather.puddleDepth > 0,
         oldBranchVegetationSystemPort: vegetation.visibleCount > 0 && vegetation.maxWindOffset > 0 && vegetation.meshLodCount + vegetation.impostorLodCount > 0,
         oldBranchLSystemVegetationPort: vegetation.lsystem.renderedBranchSegmentCount > 0 && vegetation.lsystem.branchTipCount > 0,
-        oldBranchVoxelWorldPort: voxelFixture.blockTypeCount >= 20 && voxelFixture.visibleBlocks.length > 0 && voxelFixture.chunkQueueSize > 0,
+        voxelBlocksRendered: voxelWorld.blockTypeCount >= 20 && voxelWorld.visibleBlocks.length > 0 && voxelWorld.chunkQueueSize > 0,
         oldBranchOceanSystemPort: ocean.waveCount >= 3 && ocean.foamPatches.length > 0 && ocean.buoyancy.submergedPointCount > 0,
-        oldBranchBvhHizCullingPort: culling.featureEvidence.bvhHierarchy && culling.featureEvidence.hizPyramid && culling.blockedClaims.includes("Unreal Nanite/occlusion parity"),
-        bvhCullingHierarchy: culling.featureEvidence.bvhHierarchy,
-        hizOcclusionTelemetry: culling.featureEvidence.conservativeOcclusion,
         screenshotEvidencePath: screenshotPath
       },
       metrics: {
@@ -271,9 +261,8 @@ async function run(): Promise<void> {
         terrainBiomeCount: Object.values(terrainFixture.biomeCounts).filter((count) => count > 0).length,
         terrainWaterCells: terrainFixture.biomeCounts.water,
         terrainForestCells: terrainFixture.biomeCounts.forest,
-        oldBranchWeatherSystemPort: true,
-        weatherFixtureSource: weather.source,
-        weatherFixtureHash: weather.hash,
+        weatherRendered: true,
+        weatherStateHash: weather.hash,
         weatherType: weather.type,
         weatherCloudCoverage: weather.cloudCoverage,
         weatherFogDensity: weather.fogDensity,
@@ -307,27 +296,26 @@ async function run(): Promise<void> {
         vegetationLSystemRenderedBranchSegments: vegetation.lsystem.renderedBranchSegmentCount,
         vegetationLSystemBranchTips: vegetation.lsystem.branchTipCount,
         vegetationLSystemMaxDepth: vegetation.lsystem.maxDepth,
-        oldBranchVoxelWorldPort: true,
-        voxelFixtureSource: voxelFixture.source,
-        voxelFixtureHash: voxelFixture.hash,
-        voxelBlockTypeCount: voxelFixture.blockTypeCount,
-        voxelSolidBlockTypes: voxelFixture.solidBlockTypes,
-        voxelTransparentBlockTypes: voxelFixture.transparentBlockTypes,
-        voxelAnimatedBlockTypes: voxelFixture.animatedBlockTypes,
-        voxelEmittingBlockTypes: voxelFixture.emittingBlockTypes,
-        voxelChunkQueueSize: voxelFixture.chunkQueueSize,
-        voxelGeneratingChunks: voxelFixture.generatingChunks,
-        voxelMeshingChunks: voxelFixture.meshingChunks,
-        voxelLodNear: voxelFixture.lodCounts.near,
-        voxelLodMid: voxelFixture.lodCounts.mid,
-        voxelLodFar: voxelFixture.lodCounts.far,
-        voxelLodCulled: voxelFixture.lodCounts.culled,
-        voxelVisibleBlocks: voxelFixture.visibleBlocks.length,
-        voxelVisibleFaceEstimate: voxelFixture.visibleFaceEstimate,
-        voxelMemoryBytes: voxelFixture.memoryBytes,
-        voxelGrassBlocks: voxelFixture.blockCounts.grass ?? 0,
-        voxelStoneBlocks: voxelFixture.blockCounts.stone ?? 0,
-        voxelWaterBlocks: voxelFixture.blockCounts.water ?? 0,
+        voxelBlocksRendered: true,
+        voxelWorldHash: voxelWorld.hash,
+        voxelBlockTypeCount: voxelWorld.blockTypeCount,
+        voxelSolidBlockTypes: voxelWorld.solidBlockTypes,
+        voxelTransparentBlockTypes: voxelWorld.transparentBlockTypes,
+        voxelAnimatedBlockTypes: voxelWorld.animatedBlockTypes,
+        voxelEmittingBlockTypes: voxelWorld.emittingBlockTypes,
+        voxelChunkQueueSize: voxelWorld.chunkQueueSize,
+        voxelGeneratingChunks: voxelWorld.generatingChunks,
+        voxelMeshingChunks: voxelWorld.meshingChunks,
+        voxelLodNear: voxelWorld.lodCounts.near,
+        voxelLodMid: voxelWorld.lodCounts.mid,
+        voxelLodFar: voxelWorld.lodCounts.far,
+        voxelLodCulled: voxelWorld.lodCounts.culled,
+        voxelVisibleBlocks: voxelWorld.visibleBlocks.length,
+        voxelVisibleFaceEstimate: voxelWorld.visibleFaceEstimate,
+        voxelMemoryBytes: voxelWorld.memoryBytes,
+        voxelGrassBlocks: voxelWorld.blockCounts.grass ?? 0,
+        voxelStoneBlocks: voxelWorld.blockCounts.stone ?? 0,
+        voxelWaterBlocks: voxelWorld.blockCounts.water ?? 0,
         oldBranchOceanSystemPort: true,
         oceanFixtureSource: ocean.source,
         oceanFixtureHash: ocean.hash,
@@ -346,32 +334,6 @@ async function run(): Promise<void> {
         oceanBuoyancyWaterHeight: ocean.buoyancy.waterHeight,
         oceanBuoyancyForceY: ocean.buoyancy.force[1],
         oceanBlockedClaims: ocean.blockedClaims.join("|"),
-        oldBranchBvhHizCullingPort: true,
-        cullingFixtureSource: culling.source,
-        cullingFixtureHash: culling.hash,
-        cullingObjectCount: culling.objectCount,
-        cullingBvhNodeCount: culling.bvh.nodeCount,
-        cullingBvhLeafCount: culling.bvh.leafCount,
-        cullingBvhMaxDepth: culling.bvh.maxDepth,
-        cullingBvhSahSplitCount: culling.bvh.sahSplitCount,
-        cullingBvhBoundsTests: culling.bvh.boundsTests,
-        cullingBvhObjectTests: culling.bvh.objectTests,
-        cullingBvhRangeQueryHits: culling.bvh.rangeQueryHits,
-        cullingBvhRaycastDistance: culling.bvh.raycastDistance,
-        cullingFrustumVisibleObjects: culling.frustum.visibleObjects,
-        cullingFrustumCulledObjects: culling.frustum.culledObjects,
-        cullingFrustumVisibleRatio: culling.frustum.visibleRatio,
-        cullingHizMipLevels: culling.hiz.mipLevels,
-        cullingHizDepthPyramidTexels: culling.hiz.depthPyramidTexels,
-        cullingHizMaxDepthSamples: culling.hiz.maxDepthSamples,
-        cullingHizConservativeTests: culling.hiz.conservativeTests,
-        cullingHizOccludedObjects: culling.hiz.occludedObjects,
-        cullingHizVisibleObjects: culling.hiz.visibleObjects,
-        cullingHizUnknownResults: culling.hiz.unknownResults,
-        cullingHizEstimatedBuildMs: culling.hiz.estimatedBuildMs,
-        cullingHizEstimatedTestMs: culling.hiz.estimatedTestMs,
-        cullingFrameCoherentReused: culling.hiz.frameCoherentReused,
-        cullingBlockedClaims: culling.blockedClaims.join("|"),
         rendererBacked: true,
         cameraPathStable: cameraSamples > 10 && p95FrameMs < 120
       },
@@ -404,7 +366,7 @@ function buildRenderItems(
   loaded: ReadonlyMap<string, LoadedCell>,
   loading: ReadonlyMap<string, LoadingCell>,
   vegetation: ReturnType<typeof sampleVegetationFixture>,
-  voxel: ReturnType<typeof sampleVoxelWorldFixture>,
+  voxel: ReturnType<typeof createVoxelWorld>,
   geometry: { readonly cube: Geometry; readonly low: Geometry; readonly path: Geometry },
   materials: ReturnType<typeof createMaterials>
 ): {
@@ -494,7 +456,7 @@ function buildRenderItems(
 
 function withWeatherRenderItems(
   items: readonly RenderItem[],
-  weather: ReturnType<typeof sampleWeatherFixture>,
+  weather: ReturnType<typeof createWeatherState>,
   cameraX: number,
   geometry: { readonly cube: Geometry; readonly low: Geometry; readonly path: Geometry },
   materials: ReturnType<typeof createMaterials>

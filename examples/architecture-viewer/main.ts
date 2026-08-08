@@ -5,16 +5,16 @@ import {
   Renderer,
   UnlitMaterial,
   architecturalMaterialCatalogSummary,
-  createArchitecturalLightingFixture,
-  createArchitecturalMeasurementFixture,
+  createArchitecturalLightingState,
+  createArchitecturalMeasurementSet,
   createArchitecturalMaterial,
   createProceduralTextureFixture,
   createExternalParityDirectionalShadowEvidence,
   createExternalParityEnvironmentLighting,
   createExternalParityFlagshipRenderPresetEvidence,
   sampleExternalParityLdrPostprocessReadback,
-  type ArchitecturalLightingFixture,
-  type ArchitecturalMeasurementFixture,
+  type ArchitecturalLightingState,
+  type ArchitecturalMeasurementSet,
   type EnvironmentLightingOptions,
   type RenderDeviceDiagnostics,
   type RenderItem,
@@ -76,7 +76,7 @@ type DemoStatus = {
   postprocess?: ExternalParityLdrPostprocessSummary;
   environmentResources?: ExternalParityEnvironmentLightingBundle["resources"];
   directionalShadow?: ExternalParityDirectionalShadowEvidence;
-  oldBranchLighting?: ArchitecturalLightingFixture;
+  architecturalLighting?: ArchitecturalLightingState;
   oldBranchSectionHatching?: ArchitectureSectionHatchingEvidence;
   claimBoundary: string;
   model: {
@@ -107,7 +107,6 @@ type DemoStatus = {
     roomCount: number;
     source: string;
     elementId: string;
-    oldBranchSource?: ArchitecturalMeasurementFixture["source"];
     snapPointCount?: number;
     computedDistanceMeters?: number;
     computedAreaSqm?: number;
@@ -118,7 +117,6 @@ type DemoStatus = {
     angleLabel?: string;
     heightLabel?: string;
     hash?: string;
-    claimBoundary?: string;
   };
   sectionView: boolean;
   cameraMode: CameraMode;
@@ -530,7 +528,7 @@ async function run(): Promise<void> {
     renderer.resize(canvas.width, canvas.height);
     camera.resize(canvas.width, canvas.height);
     const lightingBundle = createExternalParityEnvironmentLighting(architectureExternalParityEnvironmentPreset(lightPreset));
-    const oldBranchLighting = createArchitecturalLightingFixture({ preset: architectureLightingPreset(lightPreset) });
+    const architecturalLighting = createArchitecturalLightingState({ preset: architectureLightingPreset(lightPreset) });
     const renderItems = buildRenderItems(selectedZoneIndex, sectionView, cameraMode, externalParityArchitectureAsset, yaw, zoom, panX, panY);
     diagnostics = renderer.render({
       scene,
@@ -549,7 +547,7 @@ async function run(): Promise<void> {
       receiverCount: contactShadowReceivers.length,
       visibleReceiverDarkening: contactShadowPads.length > 0,
       mapSize: 768,
-      lightDirection: oldBranchLighting.sunDirection
+      lightDirection: architecturalLighting.sunDirection
     });
     const externalParityRenderPreset = createExternalParityFlagshipRenderPresetEvidence({
       exampleId: "architecture-viewer",
@@ -559,7 +557,7 @@ async function run(): Promise<void> {
       postprocessEvidence: postprocess.changedPixels > 0,
       lodEvidence: false
     });
-    const oldBranchMeasurements = createArchitecturalMeasurementFixture({ unit: "metric", precision: 2 });
+    const architecturalMeasurements = createArchitecturalMeasurementSet({ unit: "metric", precision: 2 });
 
     window.__AURA3D_ARCHITECTURE_DEMO__ = {
       id: "architecture-viewer",
@@ -572,11 +570,11 @@ async function run(): Promise<void> {
         roomModel: true,
         materialRoomSelection: true,
         measurementMetadata: true,
-        oldBranchMeasurementToolPort: oldBranchMeasurements.snapPointCount >= 16 &&
-          oldBranchMeasurements.distance.value > 0 &&
-          oldBranchMeasurements.area.value > 0 &&
-          oldBranchMeasurements.height.value > 0 &&
-          oldBranchMeasurements.angle.value > 0,
+        architecturalMeasurementSet: architecturalMeasurements.snapPointCount >= 16 &&
+          architecturalMeasurements.distance.value > 0 &&
+          architecturalMeasurements.area.value > 0 &&
+          architecturalMeasurements.height.value > 0 &&
+          architecturalMeasurements.angle.value > 0,
         oldBranchSectionHatchingPort: sectionHatchingEvidence.lineCount >= 24 && sectionHatchingEvidence.layerCount === 2,
         sectionCutHatching: sectionView && cameraMode === "section",
         contactShadowAlternative: true,
@@ -593,13 +591,12 @@ async function run(): Promise<void> {
         architecturalMaterialCategories: architectureMaterialCatalog.categories.length,
         architecturalMaterialPresets: architectureMaterialCatalog.materialCount,
         architecturalTexturedMaterialPresets: architectureMaterialCatalog.texturedMaterialCount,
-        oldBranchLightingControllerPort: oldBranchLighting.source === "origin-master-arch-viz-lighting-controller-adapted" &&
-          oldBranchLighting.interiorLights.length >= 10 &&
-          oldBranchLighting.supportedCurrentRendererLights.includes("point") &&
-          oldBranchLighting.supportedCurrentRendererLights.includes("spot"),
-        oldBranchLightingPreset: oldBranchLighting.preset,
-        oldBranchInteriorLightCount: oldBranchLighting.interiorLights.length,
-        oldBranchActiveInteriorLights: oldBranchLighting.activeInteriorLightCount,
+        architecturalLightingState: architecturalLighting.interiorLights.length >= 10 &&
+          architecturalLighting.kelvinRange[0] > 0 &&
+          architecturalLighting.kelvinRange[1] > architecturalLighting.kelvinRange[0],
+        architecturalLightingPreset: architecturalLighting.preset,
+        architecturalInteriorLightCount: architecturalLighting.interiorLights.length,
+        architecturalActiveInteriorLights: architecturalLighting.activeInteriorLightCount,
         kitchenBathroomFurnitureExteriorDetails: architectureInteriorDetailCount >= 30,
         bedroomFurnitureDetails: true,
         architectureConcreteTextureHash: architectureProceduralTextureFixtures.concrete.hash,
@@ -617,7 +614,7 @@ async function run(): Promise<void> {
       postprocess,
       environmentResources: lightingBundle.resources,
       directionalShadow,
-      oldBranchLighting,
+      architecturalLighting,
       oldBranchSectionHatching: sectionHatchingEvidence,
       claimBoundary,
       model: {
@@ -653,18 +650,16 @@ async function run(): Promise<void> {
         roomCount: zone.roomCount,
         source: "model-element-metadata",
         elementId: selectedElement.id,
-        oldBranchSource: oldBranchMeasurements.source,
-        snapPointCount: oldBranchMeasurements.snapPointCount,
-        computedDistanceMeters: oldBranchMeasurements.distance.value,
-        computedAreaSqm: oldBranchMeasurements.area.value,
-        computedAngleDegrees: oldBranchMeasurements.angle.value,
-        computedHeightMeters: oldBranchMeasurements.height.value,
-        distanceLabel: oldBranchMeasurements.distance.label,
-        areaLabel: oldBranchMeasurements.area.label,
-        angleLabel: oldBranchMeasurements.angle.label,
-        heightLabel: oldBranchMeasurements.height.label,
-        hash: oldBranchMeasurements.hash,
-        claimBoundary: oldBranchMeasurements.claimBoundary,
+        snapPointCount: architecturalMeasurements.snapPointCount,
+        computedDistanceMeters: architecturalMeasurements.distance.value,
+        computedAreaSqm: architecturalMeasurements.area.value,
+        computedAngleDegrees: architecturalMeasurements.angle.value,
+        computedHeightMeters: architecturalMeasurements.height.value,
+        distanceLabel: architecturalMeasurements.distance.label,
+        areaLabel: architecturalMeasurements.area.label,
+        angleLabel: architecturalMeasurements.angle.label,
+        heightLabel: architecturalMeasurements.height.label,
+        hash: architecturalMeasurements.hash,
       },
       sectionView,
       cameraMode,
@@ -690,19 +685,16 @@ async function run(): Promise<void> {
         architectureInteriorDetailCount,
         oldBranchArchitectureCompositionPort: true,
         oldBranchArchitecturalMaterialLibraryPort: true,
-        oldBranchLightingControllerPort: true,
-        lightingControllerSource: oldBranchLighting.source,
-        lightingControllerPreset: oldBranchLighting.preset,
-        lightingControllerTimeOfDayHours: oldBranchLighting.timeOfDayHours,
-        lightingControllerSunIntensity: oldBranchLighting.sunIntensity,
-        lightingControllerAmbientIntensity: oldBranchLighting.ambientIntensity,
-        lightingControllerInteriorLights: oldBranchLighting.interiorLights.length,
-        lightingControllerActiveInteriorLights: oldBranchLighting.activeInteriorLightCount,
-        lightingControllerKelvinMin: oldBranchLighting.kelvinRange[0],
-        lightingControllerKelvinMax: oldBranchLighting.kelvinRange[1],
-        lightingControllerSupportedRendererLights: oldBranchLighting.supportedCurrentRendererLights.join(","),
-        lightingControllerBlockedClaims: oldBranchLighting.blockedLightClaims.length,
-        lightingControllerHash: oldBranchLighting.hash,
+        architecturalLightingState: true,
+        lightingControllerPreset: architecturalLighting.preset,
+        lightingControllerTimeOfDayHours: architecturalLighting.timeOfDayHours,
+        lightingControllerSunIntensity: architecturalLighting.sunIntensity,
+        lightingControllerAmbientIntensity: architecturalLighting.ambientIntensity,
+        lightingControllerInteriorLights: architecturalLighting.interiorLights.length,
+        lightingControllerActiveInteriorLights: architecturalLighting.activeInteriorLightCount,
+        lightingControllerKelvinMin: architecturalLighting.kelvinRange[0],
+        lightingControllerKelvinMax: architecturalLighting.kelvinRange[1],
+        lightingControllerHash: architecturalLighting.hash,
         architecturalMaterialPresets: architectureMaterialCatalog.materialCount,
         architecturalMaterialCategories: architectureMaterialCatalog.categories.length,
         kitchenBathroomFurnitureExteriorDetailCount: architectureInteriorDetailCount,
@@ -744,7 +736,7 @@ async function run(): Promise<void> {
         selectedElementId: selectedElement.id,
         selectedElementKind: selectedElement.kind,
         measurementSource: "model-element-metadata",
-        oldBranchMeasurementToolPort: true,
+        architecturalMeasurementSet: true,
         oldBranchSectionHatchingPort: true,
         sectionHatchingSource: sectionHatchingEvidence.source,
         sectionHatchingPattern: sectionHatchingEvidence.pattern,
@@ -753,13 +745,12 @@ async function run(): Promise<void> {
         sectionHatchingAngleDegrees: sectionHatchingEvidence.angleDegrees.join(","),
         sectionHatchingSpacingMeters: sectionHatchingEvidence.spacingMeters,
         sectionHatchingHash: sectionHatchingEvidence.hash,
-        measurementToolSource: oldBranchMeasurements.source,
-        measurementToolSnapPoints: oldBranchMeasurements.snapPointCount,
-        measurementToolDistanceMeters: oldBranchMeasurements.distance.value,
-        measurementToolAreaSqm: oldBranchMeasurements.area.value,
-        measurementToolAngleDegrees: oldBranchMeasurements.angle.value,
-        measurementToolHeightMeters: oldBranchMeasurements.height.value,
-        measurementToolHash: oldBranchMeasurements.hash,
+        measurementToolSnapPoints: architecturalMeasurements.snapPointCount,
+        measurementToolDistanceMeters: architecturalMeasurements.distance.value,
+        measurementToolAreaSqm: architecturalMeasurements.area.value,
+        measurementToolAngleDegrees: architecturalMeasurements.angle.value,
+        measurementToolHeightMeters: architecturalMeasurements.height.value,
+        measurementToolHash: architecturalMeasurements.hash,
         architecturalElements: architectureElements.length,
         curtainWallPanels: architectureElements.filter((element) => element.id.startsWith("north-curtain-wall-panel")).length,
         curtainWallMullions: architectureElements.filter((element) => element.id.startsWith("curtain-wall-mullion")).length,

@@ -16,9 +16,7 @@ export interface ArchitecturalMeasurementResult {
   readonly points: readonly ArchitecturalPoint3[];
 }
 
-export interface ArchitecturalMeasurementFixture {
-  readonly id: "external-parity-old-branch-architectural-measurement-fixture";
-  readonly source: "origin-master-arch-viz-measurement-tool-adapted";
+export interface ArchitecturalMeasurementSet {
   readonly snapEnabled: boolean;
   readonly snapTolerance: number;
   readonly snapPointCount: number;
@@ -27,7 +25,6 @@ export interface ArchitecturalMeasurementFixture {
   readonly angle: ArchitecturalMeasurementResult;
   readonly height: ArchitecturalMeasurementResult;
   readonly hash: string;
-  readonly claimBoundary: string;
 }
 
 const defaultSnapPoints: readonly ArchitecturalPoint3[] = [
@@ -38,7 +35,7 @@ const defaultSnapPoints: readonly ArchitecturalPoint3[] = [
   [-3, 0, -6], [-3, 2.1, -6], [3, 1, 6], [3, 2.5, 6]
 ] as const;
 
-export function createArchitecturalMeasurementFixture(options: ArchitecturalMeasurementOptions = {}): ArchitecturalMeasurementFixture {
+export function createArchitecturalMeasurementSet(options: ArchitecturalMeasurementOptions = {}): ArchitecturalMeasurementSet {
   const unit = options.unit ?? "metric";
   const precision = Math.max(0, Math.min(4, Math.floor(options.precision ?? 2)));
   const snapTolerance = finiteNonNegative(options.snapTolerance ?? 0.12, "snapTolerance");
@@ -51,8 +48,6 @@ export function createArchitecturalMeasurementFixture(options: ArchitecturalMeas
   const angle = measurement("angle", anglePoints, unit, precision);
   const height = measurement("height", heightPoints, unit, precision);
   return {
-    id: "external-parity-old-branch-architectural-measurement-fixture",
-    source: "origin-master-arch-viz-measurement-tool-adapted",
     snapEnabled: true,
     snapTolerance,
     snapPointCount: defaultSnapPoints.length,
@@ -60,8 +55,7 @@ export function createArchitecturalMeasurementFixture(options: ArchitecturalMeas
     area,
     angle,
     height,
-    hash: hashMeasurements([distance, area, angle, height]),
-    claimBoundary: "Deterministic snap-point distance, area, angle, and height measurement math adapted from the old arch-viz measurement tool; this is architectural workflow evidence, not CAD/BIM dimensioning, IFC import, triangle picking, or legal measurement accuracy."
+    hash: hashMeasurements([distance, area, angle, height])
   };
 }
 

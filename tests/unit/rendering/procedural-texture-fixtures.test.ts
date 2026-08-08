@@ -11,13 +11,12 @@ import {
   createTerrainHeightfieldGeometry,
   normalFromHeightMap,
   proceduralTextureFixtureKinds,
-  sampleCullingFixture,
   sampleTerrainHeightfield,
   sampleOceanFixture,
-  sampleSpaceEnvironmentFixture,
+  createSpaceEnvironment,
   sampleVegetationFixture,
-  sampleVoxelWorldFixture,
-  sampleWeatherFixture
+  createVoxelWorld,
+  createWeatherState
 } from "../../../packages/rendering/src";
 
 describe("procedural texture fixtures", () => {
@@ -171,14 +170,11 @@ describe("procedural texture fixtures", () => {
     expect("data" in manifest[0]!).toBe(false);
   });
 
-  it("samples deterministic layered space environment telemetry adapted from the old space shooter", () => {
-    const fixture = sampleSpaceEnvironmentFixture({ width: 320, height: 180, elapsedSeconds: 1.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
-    const repeat = sampleSpaceEnvironmentFixture({ width: 320, height: 180, elapsedSeconds: 1.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
-    const advanced = sampleSpaceEnvironmentFixture({ width: 320, height: 180, elapsedSeconds: 2.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
+  it("creates deterministic layered space environment render data", () => {
+    const fixture = createSpaceEnvironment({ width: 320, height: 180, elapsedSeconds: 1.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
+    const repeat = createSpaceEnvironment({ width: 320, height: 180, elapsedSeconds: 1.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
+    const advanced = createSpaceEnvironment({ width: 320, height: 180, elapsedSeconds: 2.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
 
-    expect(fixture.id).toBe("external-parity-old-branch-space-environment");
-    expect(fixture.source).toBe("origin-master-space-environment-adapted");
-    expect(fixture.sourceFiles).toContain("origin/master:examples/space-shooter/src/SpaceEnvironment.ts");
     expect(fixture.hash).toBe(repeat.hash);
     expect(fixture.hash).not.toBe(advanced.hash);
     expect(fixture.starCount).toBe(24);
@@ -192,11 +188,8 @@ describe("procedural texture fixtures", () => {
     expect(fixture.nebulaCoverage).toBeGreaterThan(0);
     expect(fixture.dustAlpha).toBeGreaterThan(0);
     expect(fixture.layerScroll.foregroundStars).toBeGreaterThan(fixture.layerScroll.distantStars);
-    expect(fixture.blockedClaims).toContain("3D volumetric nebula rendering");
-    expect(fixture.blockedClaims).toContain("Unity VFX Graph background parity");
-    expect(fixture.claimBoundary).toContain("does not claim volumetric space rendering");
-    expect(() => sampleSpaceEnvironmentFixture({ width: 0 })).toThrow(/width/);
-    expect(() => sampleSpaceEnvironmentFixture({ elapsedSeconds: Number.NaN })).toThrow(/elapsedSeconds/);
+    expect(() => createSpaceEnvironment({ width: 0 })).toThrow(/width/);
+    expect(() => createSpaceEnvironment({ elapsedSeconds: Number.NaN })).toThrow(/elapsedSeconds/);
   });
 
   it("keeps the checked-in procedural manifest aligned with generated default hashes", () => {
@@ -282,11 +275,10 @@ describe("procedural texture fixtures", () => {
   });
 
   it("samples deterministic weather telemetry adapted from the old weather system", () => {
-    const storm = sampleWeatherFixture({ type: "thunderstorm", elapsedSeconds: 2.5, seed: 42, cameraX: 3, cameraZ: -2 });
-    const repeat = sampleWeatherFixture({ type: "thunderstorm", elapsedSeconds: 2.5, seed: 42, cameraX: 3, cameraZ: -2 });
-    const clear = sampleWeatherFixture({ type: "clear", elapsedSeconds: 2.5, seed: 42 });
+    const storm = createWeatherState({ type: "thunderstorm", elapsedSeconds: 2.5, seed: 42, cameraX: 3, cameraZ: -2 });
+    const repeat = createWeatherState({ type: "thunderstorm", elapsedSeconds: 2.5, seed: 42, cameraX: 3, cameraZ: -2 });
+    const clear = createWeatherState({ type: "clear", elapsedSeconds: 2.5, seed: 42 });
 
-    expect(storm.source).toBe("origin-master-weather-system-adapted");
     expect(storm.hash).toBe(repeat.hash);
     expect(storm.cloudCoverage).toBe(1);
     expect(storm.rainIntensity).toBe(1);
@@ -303,8 +295,7 @@ describe("procedural texture fixtures", () => {
     expect(storm.visibilityMeters).toBeLessThan(clear.visibilityMeters);
     expect(clear.visibleDropCount).toBeGreaterThanOrEqual(0);
     expect(clear.rainIntensity).toBe(0);
-    expect(storm.claimBoundary).toContain("not volumetric clouds");
-    expect(() => sampleWeatherFixture({ elapsedSeconds: Number.NaN })).toThrow(/elapsedSeconds/);
+    expect(() => createWeatherState({ elapsedSeconds: Number.NaN })).toThrow(/elapsedSeconds/);
   });
 
   it("samples deterministic vegetation placement, LOD, culling, and wind telemetry", () => {
@@ -339,12 +330,10 @@ describe("procedural texture fixtures", () => {
   });
 
   it("samples deterministic voxel-world block registry, chunk LOD, and visible block telemetry", () => {
-    const fixture = sampleVoxelWorldFixture({ seed: 4096, chunkSize: 16, viewDistance: 4 });
-    const repeat = sampleVoxelWorldFixture({ seed: 4096, chunkSize: 16, viewDistance: 4 });
-    const shifted = sampleVoxelWorldFixture({ seed: 4096, chunkSize: 16, viewDistance: 4, cameraChunkX: 2 });
+    const fixture = createVoxelWorld({ seed: 4096, chunkSize: 16, viewDistance: 4 });
+    const repeat = createVoxelWorld({ seed: 4096, chunkSize: 16, viewDistance: 4 });
+    const shifted = createVoxelWorld({ seed: 4096, chunkSize: 16, viewDistance: 4, cameraChunkX: 2 });
 
-    expect(fixture.id).toBe("external-parity-old-branch-voxel-world-fixture");
-    expect(fixture.source).toBe("origin-master-voxel-world-adapted");
     expect(fixture.hash).toBe(repeat.hash);
     expect(fixture.hash).not.toBe(shifted.hash);
     expect(fixture.blockTypeCount).toBe(20);
@@ -364,9 +353,8 @@ describe("procedural texture fixtures", () => {
     expect(fixture.visibleBlocks.some((block) => block.lod === "near")).toBe(true);
     expect(fixture.visibleFaceEstimate).toBeGreaterThan(0);
     expect(fixture.memoryBytes).toBeGreaterThan(0);
-    expect(fixture.claimBoundary).toContain("not a production voxel engine");
-    expect(() => sampleVoxelWorldFixture({ seed: 1.5 })).toThrow(/seed/);
-    expect(() => sampleVoxelWorldFixture({ chunkSize: 4 })).toThrow(/chunkSize/);
+    expect(() => createVoxelWorld({ seed: 1.5 })).toThrow(/seed/);
+    expect(() => createVoxelWorld({ chunkSize: 4 })).toThrow(/chunkSize/);
   });
 
   it("samples deterministic ocean wave, foam, and buoyancy telemetry adapted from the old ocean system", () => {
@@ -397,53 +385,6 @@ describe("procedural texture fixtures", () => {
     expect(fixture.claimBoundary).toContain("does not implement a production ocean renderer");
     expect(() => sampleOceanFixture({ seed: 1.5 })).toThrow(/seed/);
     expect(() => sampleOceanFixture({ sampleCount: 4 })).toThrow(/sampleCount/);
-  });
-
-  it("samples deterministic BVH, frustum, and Hi-Z culling telemetry adapted from the old rendering culling subsystem", () => {
-    const fixture = sampleCullingFixture({ seed: 0xc0111, objectCount: 32, cameraX: 0.15, depthResolution: [320, 180] });
-    const repeat = sampleCullingFixture({ seed: 0xc0111, objectCount: 32, cameraX: 0.15, depthResolution: [320, 180] });
-    const shifted = sampleCullingFixture({ seed: 0xc0111, objectCount: 32, cameraX: 1.1, depthResolution: [320, 180] });
-
-    expect(fixture.id).toBe("external-parity-old-branch-bvh-hiz-culling-fixture");
-    expect(fixture.source).toBe("origin-master-bvh-hiz-occlusion-adapted");
-    expect(fixture.sourceFiles).toContain("origin/master:src/rendering/culling/BVH.ts");
-    expect(fixture.sourceFiles).toContain("origin/master:src/rendering/culling/HiZCulling.ts");
-    expect(fixture.sourceFiles).toContain("origin/master:src/rendering/culling/OcclusionCuller.ts");
-    expect(fixture.hash).toBe(repeat.hash);
-    expect(fixture.hash).not.toBe(shifted.hash);
-    expect(fixture.objects).toHaveLength(32);
-    expect(fixture.bvh.objectCount).toBe(32);
-    expect(fixture.bvh.nodeCount).toBeGreaterThan(fixture.bvh.leafCount);
-    expect(fixture.bvh.maxDepth).toBeGreaterThan(1);
-    expect(fixture.bvh.sahSplitCount).toBeGreaterThan(0);
-    expect(fixture.bvh.boundsTests).toBeGreaterThan(0);
-    expect(fixture.bvh.objectTests).toBeGreaterThan(0);
-    expect(fixture.bvh.rangeQueryHits).toBeGreaterThan(0);
-    expect(fixture.bvh.raycastDistance).toBeGreaterThanOrEqual(0);
-    expect(fixture.frustum.visibleObjects).toBeGreaterThan(0);
-    expect(fixture.frustum.culledObjects).toBeGreaterThan(0);
-    expect(fixture.hiz.depthResolution).toEqual([320, 180]);
-    expect(fixture.hiz.mipLevels).toBeGreaterThan(1);
-    expect(fixture.hiz.depthPyramidTexels).toBeGreaterThan(320 * 180);
-    expect(fixture.hiz.conservativeTests).toBe(fixture.frustum.visibleObjects);
-    expect(fixture.hiz.occludedObjects).toBeGreaterThan(0);
-    expect(fixture.hiz.visibleObjects).toBeGreaterThan(0);
-    expect(fixture.hiz.frameCoherentReused).toBeGreaterThan(0);
-    expect(fixture.hiz.estimatedBuildMs).toBeLessThan(0.5);
-    expect(fixture.hiz.estimatedTestMs).toBeLessThan(0.3);
-    expect(fixture.featureEvidence).toMatchObject({
-      bvhHierarchy: true,
-      frustumTraversal: true,
-      hizPyramid: true,
-      conservativeOcclusion: true,
-      frameCoherency: true
-    });
-    expect(fixture.blockedClaims).toContain("Unity occlusion culling parity");
-    expect(fixture.blockedClaims).toContain("Unreal Nanite/occlusion parity");
-    expect(fixture.claimBoundary).toContain("not production GPU occlusion culling");
-    expect(() => sampleCullingFixture({ seed: 1.5 })).toThrow(/seed/);
-    expect(() => sampleCullingFixture({ objectCount: 4 })).toThrow(/objectCount/);
-    expect(() => sampleCullingFixture({ depthResolution: [32, 180] })).toThrow(/depthResolution/);
   });
 
   it("rejects invalid dimensions and seeds", () => {

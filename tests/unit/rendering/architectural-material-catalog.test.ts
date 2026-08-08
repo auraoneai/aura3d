@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   PBRMaterial,
   TexturedPBRMaterial,
-  createArchitecturalLightingFixture,
+  createArchitecturalLightingState,
   architecturalMaterialCatalogSummary,
   architecturalMaterialDescriptor,
-  createArchitecturalMeasurementFixture,
+  createArchitecturalMeasurementSet,
   createArchitecturalMaterial,
   createArchitecturalMaterialCatalog
 } from "../../../packages/rendering/src";
@@ -49,11 +49,10 @@ describe("architectural material catalog", () => {
   });
 });
 
-describe("architectural measurement fixture", () => {
-  it("ports snap-point distance, area, angle, and height measurement math from the old arch-viz tool", () => {
-    const fixture = createArchitecturalMeasurementFixture({ unit: "metric", precision: 2 });
+describe("architectural measurement set", () => {
+  it("computes snap-point distance, area, angle, and height measurements", () => {
+    const fixture = createArchitecturalMeasurementSet({ unit: "metric", precision: 2 });
 
-    expect(fixture.source).toBe("origin-master-arch-viz-measurement-tool-adapted");
     expect(fixture.snapEnabled).toBe(true);
     expect(fixture.snapPointCount).toBeGreaterThanOrEqual(16);
     expect(fixture.distance).toMatchObject({ type: "distance", value: 12, unit: "m", label: "12.00 m" });
@@ -63,11 +62,10 @@ describe("architectural measurement fixture", () => {
     expect(fixture.angle.value).toBeCloseTo(90, 3);
     expect(fixture.angle.label).toBe("90.00 deg");
     expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(fixture.claimBoundary).toContain("not CAD/BIM");
   });
 
   it("formats imperial measurement evidence without changing the metric source values", () => {
-    const fixture = createArchitecturalMeasurementFixture({ unit: "imperial", precision: 1 });
+    const fixture = createArchitecturalMeasurementSet({ unit: "imperial", precision: 1 });
 
     expect(fixture.distance.value).toBe(12);
     expect(fixture.distance.unit).toBe("ft");
@@ -78,17 +76,16 @@ describe("architectural measurement fixture", () => {
   });
 
   it("rejects invalid measurement tolerances", () => {
-    expect(() => createArchitecturalMeasurementFixture({ snapTolerance: -1 })).toThrow(/snapTolerance/);
-    expect(() => createArchitecturalMeasurementFixture({ snapTolerance: Number.NaN })).toThrow(/snapTolerance/);
+    expect(() => createArchitecturalMeasurementSet({ snapTolerance: -1 })).toThrow(/snapTolerance/);
+    expect(() => createArchitecturalMeasurementSet({ snapTolerance: Number.NaN })).toThrow(/snapTolerance/);
   });
 });
 
-describe("architectural lighting fixture", () => {
-  it("ports old arch-viz time-of-day lighting presets and Kelvin interior light metadata", () => {
-    const noon = createArchitecturalLightingFixture({ preset: "noon" });
-    const dusk = createArchitecturalLightingFixture({ preset: "dusk" });
+describe("architectural lighting state", () => {
+  it("computes time-of-day lighting presets and Kelvin interior light metadata", () => {
+    const noon = createArchitecturalLightingState({ preset: "noon" });
+    const dusk = createArchitecturalLightingState({ preset: "dusk" });
 
-    expect(noon.source).toBe("origin-master-arch-viz-lighting-controller-adapted");
     expect(noon.presetLabel).toBe("Noon");
     expect(noon.timeOfDayHours).toBe(12);
     expect(noon.sunIntensity).toBe(4.5);
@@ -97,10 +94,7 @@ describe("architectural lighting fixture", () => {
     expect(noon.interiorLights).toHaveLength(10);
     expect(noon.interiorLights.map((light) => light.type)).toEqual(expect.arrayContaining(["point", "spot", "area"]));
     expect(noon.kelvinRange).toEqual([2700, 5000]);
-    expect(noon.supportedCurrentRendererLights).toEqual(["point", "spot"]);
-    expect(noon.blockedLightClaims.join(" ")).toContain("area-light");
     expect(noon.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(noon.claimBoundary).toContain("does not claim GI");
 
     expect(dusk.presetLabel).toBe("Dusk");
     expect(dusk.interiorLightsEnabled).toBe(true);
@@ -110,8 +104,8 @@ describe("architectural lighting fixture", () => {
   });
 
   it("allows explicit interior light toggling while preserving deterministic preset colors", () => {
-    const sunsetOff = createArchitecturalLightingFixture({ preset: "sunset", interiorLightsEnabled: false });
-    const sunsetOn = createArchitecturalLightingFixture({ preset: "sunset", interiorLightsEnabled: true });
+    const sunsetOff = createArchitecturalLightingState({ preset: "sunset", interiorLightsEnabled: false });
+    const sunsetOn = createArchitecturalLightingState({ preset: "sunset", interiorLightsEnabled: true });
 
     expect(sunsetOff.sunColor).toEqual(sunsetOn.sunColor);
     expect(sunsetOff.interiorLightsEnabled).toBe(false);

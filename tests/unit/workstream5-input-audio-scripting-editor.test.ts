@@ -45,8 +45,7 @@ import {
   SetPropertyCommand,
   TransformCommand,
   TranslateGizmo,
-  createMemoryEditorStateStorage,
-  sampleLocalizationAccessibilityFixture
+  createMemoryEditorStateStorage
 } from "@aura3d/editor-runtime";
 
 class MockParam {
@@ -678,54 +677,6 @@ describe("scripting runtime contracts", () => {
 });
 
 describe("editor runtime contracts", () => {
-  it("samples bounded old localization and UI accessibility concepts without claiming certification", () => {
-    const fixture = sampleLocalizationAccessibilityFixture({ assetCount: 2 });
-
-    expect(fixture.source).toBe("origin-master-localization-ui-accessibility-adapted");
-    expect(fixture.sourceFiles).toEqual(expect.arrayContaining([
-      "origin/master:src/localization/LocalizationManager.ts",
-      "origin/master:src/localization/Pluralization.ts",
-      "origin/master:src/ui/UIAccessibility.ts"
-    ]));
-    expect(fixture.localeCount).toBeGreaterThanOrEqual(3);
-    expect(fixture.rtlLocaleCount).toBeGreaterThanOrEqual(1);
-    expect(fixture.jsonLoaderValidated).toBe(true);
-    expect(fixture.csvLoaderValidated).toBe(true);
-    expect(fixture.hotSwapLocale).toMatchObject({
-      from: "en-US",
-      to: "ar-SA",
-      directionChanged: true,
-      listenerNotifications: ["en-US", "ar-SA"]
-    });
-    expect(fixture.samples.find((sample) => sample.locale === "es-ES")).toMatchObject({
-      direction: "ltr",
-      title: "Editor Aura3D",
-      assetCount: "2 recursos importados",
-      fallbackTitle: "Inspector",
-      missingKey: "[missing.key]",
-      formattedNumber: "1.234,50",
-      formattedCurrency: "1.234,50 EUR",
-      pluralCategory: "other"
-    });
-    expect(fixture.samples.find((sample) => sample.locale === "ar-SA")).toMatchObject({
-      direction: "rtl",
-      pluralCategory: "two"
-    });
-    expect(fixture.missingKeys).toContain("panel.inspector");
-    expect(fixture.accessibility.focusOrder).toEqual(["command-menu", "viewport", "inspector-name", "timeline-scrub", "export-project"]);
-    expect(fixture.accessibility.focusWalk).toEqual(["command-menu", "viewport", "inspector-name", "viewport"]);
-    expect(fixture.accessibility.aaContrastPasses).toBe(true);
-    expect(fixture.accessibility.liveRegionAnnouncements).toContain("Saved");
-    expect(fixture.blockedClaims).toEqual(expect.arrayContaining([
-      "screen-reader certification",
-      "WCAG conformance certification",
-      "Unity UI Toolkit parity",
-      "Unreal UMG parity"
-    ]));
-    expect(fixture.claimBoundary).toContain("does not certify WCAG compliance");
-    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
-  });
-
   it("executes commands, undo, redo, selection pruning, picking, and translate gizmo edits", async () => {
     const target = { position: { x: 0, y: 0, z: 0 } };
     const history = new CommandHistory();

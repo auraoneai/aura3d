@@ -25,10 +25,7 @@ export interface SpaceEnvironmentDustParticle {
   readonly alpha: number;
 }
 
-export interface SpaceEnvironmentFixture {
-  readonly id: "external-parity-old-branch-space-environment";
-  readonly source: "origin-master-space-environment-adapted";
-  readonly sourceFiles: readonly string[];
+export interface SpaceEnvironmentState {
   readonly width: number;
   readonly height: number;
   readonly elapsedSeconds: number;
@@ -46,23 +43,8 @@ export interface SpaceEnvironmentFixture {
   readonly averageStarBrightness: number;
   readonly nebulaCoverage: number;
   readonly dustAlpha: number;
-  readonly blockedClaims: readonly string[];
-  readonly claimBoundary: string;
   readonly hash: string;
 }
-
-const sourceFiles = [
-  "origin/master:examples/space-shooter/src/SpaceEnvironment.ts",
-  "origin/master:src/assets/ProceduralTextures.ts"
-] as const;
-
-const blockedClaims = [
-  "3D volumetric nebula rendering",
-  "HDR skybox environment lighting",
-  "production space-scene asset pack",
-  "Unity VFX Graph background parity",
-  "Unreal Niagara background parity"
-] as const;
 
 const nebulaPalette = [
   [0.42, 0.18, 0.76],
@@ -72,7 +54,7 @@ const nebulaPalette = [
   [0.86, 0.46, 0.72]
 ] as const;
 
-export function sampleSpaceEnvironmentFixture(options: {
+export function createSpaceEnvironment(options: {
   readonly width?: number;
   readonly height?: number;
   readonly elapsedSeconds?: number;
@@ -80,7 +62,7 @@ export function sampleSpaceEnvironmentFixture(options: {
   readonly starCount?: number;
   readonly nebulaCount?: number;
   readonly dustCount?: number;
-} = {}): SpaceEnvironmentFixture {
+} = {}): SpaceEnvironmentState {
   const width = positiveInteger(options.width ?? 960, "width");
   const height = positiveInteger(options.height ?? 540, "height");
   const elapsedSeconds = finiteNonNegative(options.elapsedSeconds ?? 0, "elapsedSeconds");
@@ -95,10 +77,7 @@ export function sampleSpaceEnvironmentFixture(options: {
   const averageStarBrightness = stars.reduce((sum, star) => sum + star.brightness, 0) / stars.length;
   const nebulaCoverage = nebulae.reduce((sum, nebula) => sum + Math.PI * nebula.radius * nebula.radius, 0) / (width * height);
   const dustAlpha = dust.reduce((sum, particle) => sum + particle.alpha, 0) / dust.length;
-  const fixtureWithoutHash = {
-    id: "external-parity-old-branch-space-environment" as const,
-    source: "origin-master-space-environment-adapted" as const,
-    sourceFiles,
+  const stateWithoutHash = {
     width,
     height,
     elapsedSeconds: Number(elapsedSeconds.toFixed(4)),
@@ -115,13 +94,11 @@ export function sampleSpaceEnvironmentFixture(options: {
     visibleStarCount,
     averageStarBrightness: Number(averageStarBrightness.toFixed(4)),
     nebulaCoverage: Number(nebulaCoverage.toFixed(4)),
-    dustAlpha: Number(dustAlpha.toFixed(4)),
-    blockedClaims,
-    claimBoundary: "This fixture adapts old scrolling starfield, nebula, and dust concepts into deterministic 2D/background evidence. It does not claim volumetric space rendering, HDR skybox lighting, or Unity/Unreal VFX parity."
+    dustAlpha: Number(dustAlpha.toFixed(4))
   };
   return {
-    ...fixtureWithoutHash,
-    hash: stableHash(JSON.stringify(fixtureWithoutHash))
+    ...stateWithoutHash,
+    hash: stableHash(JSON.stringify(stateWithoutHash))
   };
 }
 

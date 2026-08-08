@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T22:38:34.517Z",
+  "generatedAt": "2026-08-08T22:51:53.267Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -11,39 +11,15 @@
     "*Reference"
   ],
   "summary": {
-    "modules": 13,
-    "lines": 5589,
+    "modules": 6,
+    "lines": 3842,
     "retainedRuntimeOrContracts": 6,
     "deleteAfterR8": 0,
-    "migrateThenDelete": 7,
+    "migrateThenDelete": 0,
     "unclassified": 0,
-    "booleanClaimModulesRejectedAsRuntimeProof": 5
+    "booleanClaimModulesRejectedAsRuntimeProof": 0
   },
   "modules": [
-    {
-      "path": "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
-      "package": "editor-runtime",
-      "lines": 368,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "apps/editor/src/EditorShell.ts",
-        "tests/unit/workstream5-input-audio-scripting-editor.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "focusable",
-        "disabled",
-        "contrastPassesAA",
-        "jsonLoaderValidated",
-        "csvLoaderValidated",
-        "directionChanged",
-        "highContrastMode",
-        "aaContrastPasses"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
     {
       "path": "packages/engine/src/agent-api/AssetEvidence.ts",
       "package": "engine",
@@ -211,68 +187,6 @@
       "disposition": "retain"
     },
     {
-      "path": "packages/rendering/src/ArchitecturalLightingFixtures.ts",
-      "package": "rendering",
-      "lines": 241,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "benchmarks/external-parity/aura3d/interior-scene.ts",
-        "examples/architecture-viewer/main.ts",
-        "examples/external-interior-scene/ExternalInteriorScene.ts",
-        "tests/unit/rendering/architectural-material-catalog.test.ts",
-        "tools/external-parity-scene-readiness/index.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "interiorLightsEnabled",
-        "enabled",
-        "interiorLightsEnabled",
-        "interiorLightsOn"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
-      "package": "rendering",
-      "lines": 155,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/architecture-viewer/main.ts",
-        "tests/unit/rendering/architectural-material-catalog.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "snapEnabled"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/rendering/src/CullingFixtures.ts",
-      "package": "rendering",
-      "lines": 280,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/large-world-streaming/main.ts",
-        "tests/unit/rendering/procedural-texture-fixtures.test.ts",
-        "tests/unit/tools/deletion-safety.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "bvhHierarchy",
-        "frustumTraversal",
-        "hizPyramid",
-        "conservativeOcclusion",
-        "frameCoherency"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
       "path": "packages/rendering/src/EnvironmentPlatform.ts",
       "package": "rendering",
       "lines": 1374,
@@ -435,55 +349,6 @@
       ],
       "rejectsUnmountedBooleanClaims": false,
       "disposition": "retain"
-    },
-    {
-      "path": "packages/rendering/src/SpaceEnvironmentFixtures.ts",
-      "package": "rendering",
-      "lines": 200,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [],
-      "rejectsUnmountedBooleanClaims": false,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/rendering/src/VoxelWorldFixtures.ts",
-      "package": "rendering",
-      "lines": 280,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/large-world-streaming/main.ts",
-        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "animated",
-        "transparent",
-        "solid"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/rendering/src/WeatherFixtures.ts",
-      "package": "rendering",
-      "lines": 223,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/large-world-streaming/main.ts",
-        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [],
-      "rejectsUnmountedBooleanClaims": false,
-      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/cinematic/CinematicEvidence.ts",

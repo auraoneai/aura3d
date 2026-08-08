@@ -1,0 +1,1088 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-08T22:53:05.957Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+      "pass": true,
+      "detail": "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: all six R8 points empty across 5018 scanned files (58 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/rendering/src/ArchitecturalLightingFixtures.ts",
+      "pass": true,
+      "detail": "packages/rendering/src/ArchitecturalLightingFixtures.ts: all six R8 points empty across 5018 scanned files (55 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
+      "pass": true,
+      "detail": "packages/rendering/src/ArchitecturalMeasurementFixtures.ts: all six R8 points empty across 5018 scanned files (55 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/rendering/src/CullingFixtures.ts",
+      "pass": true,
+      "detail": "packages/rendering/src/CullingFixtures.ts: all six R8 points empty across 5018 scanned files (55 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/rendering/src/SpaceEnvironmentFixtures.ts",
+      "pass": true,
+      "detail": "packages/rendering/src/SpaceEnvironmentFixtures.ts: all six R8 points empty across 5018 scanned files (55 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/rendering/src/VoxelWorldFixtures.ts",
+      "pass": true,
+      "detail": "packages/rendering/src/VoxelWorldFixtures.ts: all six R8 points empty across 5018 scanned files (56 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/rendering/src/WeatherFixtures.ts",
+      "pass": true,
+      "detail": "packages/rendering/src/WeatherFixtures.ts: all six R8 points empty across 5018 scanned files (55 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+    "packages/rendering/src/ArchitecturalLightingFixtures.ts",
+    "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
+    "packages/rendering/src/CullingFixtures.ts",
+    "packages/rendering/src/SpaceEnvironmentFixtures.ts",
+    "packages/rendering/src/VoxelWorldFixtures.ts",
+    "packages/rendering/src/WeatherFixtures.ts"
+  ],
+  "expandedFileCount": 7,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5018,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 369,
+      "lastCommit": "0fa7d680fe4f906d1725899f2ba0b9e0e13f99be",
+      "moduleSpecifiers": [
+        "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+        "LocalizationAccessibilityFixtures.ts",
+        "LocalizationAccessibilityFixtures",
+        "@aura3d/editor-runtime/src/LocalizationAccessibilityFixtures",
+        "@aura3d/editor-runtime/LocalizationAccessibilityFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 58,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:42",
+          "detail": "\"id\": \"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:44",
+          "detail": "\"detail\": \"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtime-consumer @ packages/editor-runtime/src/index.ts:64; documentation-gen"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:205",
+          "detail": "\"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtime-consumer @"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:245",
+          "detail": "\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34885",
+          "detail": "\"path\": \"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34890",
+          "detail": "\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34891",
+          "detail": "\"LocalizationAccessibilityFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34892",
+          "detail": "\"LocalizationAccessibilityFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34893",
+          "detail": "\"@aura3d/editor-runtime/src/LocalizationAccessibilityFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34894",
+          "detail": "\"@aura3d/editor-runtime/LocalizationAccessibilityFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34928",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34933",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtime-consumer @ packages/editor-runtime/src/index.ts:64; doc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34938",
+          "detail": "\"detail\": \"\\\"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtim"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34943",
+          "detail": "\"detail\": \"\\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34948",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34953",
+          "detail": "\"detail\": \"\\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34978",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34983",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtime-consumer @ packages/editor-runtime/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34988",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/ind"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34993",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34998",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35003",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:7",
+          "detail": "\"id\": \"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:9",
+          "detail": "\"detail\": \"packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 10 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtime-consumer @ packages/editor-runtime/src/index.ts:64; runtime-consumer"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:73",
+          "detail": "\"r8:packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts: 10 blocking reference(s) — runtime-consumer @ packages/editor-runtime/src/index.ts:55; runtime-consumer "
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/rendering/src/ArchitecturalLightingFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 242,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/rendering/src/ArchitecturalLightingFixtures.ts",
+        "ArchitecturalLightingFixtures.ts",
+        "ArchitecturalLightingFixtures",
+        "@aura3d/rendering/src/ArchitecturalLightingFixtures",
+        "@aura3d/rendering/ArchitecturalLightingFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 55,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:97",
+          "detail": "\"id\": \"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:99",
+          "detail": "\"detail\": \"packages/rendering/src/ArchitecturalLightingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/rendering/src/index.ts:762; documentation-generator-dependency"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:216",
+          "detail": "\"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts: packages/rendering/src/ArchitecturalLightingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/rendering/sr"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:256",
+          "detail": "\"packages/rendering/src/ArchitecturalLightingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36733",
+          "detail": "\"path\": \"packages/rendering/src/ArchitecturalLightingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36738",
+          "detail": "\"packages/rendering/src/ArchitecturalLightingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36739",
+          "detail": "\"ArchitecturalLightingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36740",
+          "detail": "\"ArchitecturalLightingFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36741",
+          "detail": "\"@aura3d/rendering/src/ArchitecturalLightingFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36742",
+          "detail": "\"@aura3d/rendering/ArchitecturalLightingFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36776",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36781",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/rendering/src/ArchitecturalLightingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/rendering/src/index.ts:762; documentation-genera"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36786",
+          "detail": "\"detail\": \"\\\"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts: packages/rendering/src/ArchitecturalLightingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36791",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/ArchitecturalLightingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36796",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/rendering/src/ArchitecturalLightingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36801",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/ArchitecturalLightingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36826",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36831",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/rendering/src/ArchitecturalLightingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/rendering/src/index.ts:762; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36836",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts: packages/rendering/src/ArchitecturalLightingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-cons"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36841",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/ArchitecturalLightingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36846",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/rendering/src/ArchitecturalLightingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36851",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/ArchitecturalLightingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:17",
+          "detail": "\"id\": \"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:19",
+          "detail": "\"detail\": \"packages/rendering/src/ArchitecturalLightingFixtures.ts: 8 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/rendering/src/index.ts:762; runtime-consumer @ examples/archit"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:75",
+          "detail": "\"r8:packages/rendering/src/ArchitecturalLightingFixtures.ts: packages/rendering/src/ArchitecturalLightingFixtures.ts: 8 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:753; runtime-consumer @ packages/rendering/sr"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 156,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
+        "ArchitecturalMeasurementFixtures.ts",
+        "ArchitecturalMeasurementFixtures",
+        "@aura3d/rendering/src/ArchitecturalMeasurementFixtures",
+        "@aura3d/rendering/ArchitecturalMeasurementFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 55,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:102",
+          "detail": "\"id\": \"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:104",
+          "detail": "\"detail\": \"packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ packages/rendering/src/index.ts:771; documentation-generator-depende"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:217",
+          "detail": "\"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts: packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ packages/render"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:257",
+          "detail": "\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36876",
+          "detail": "\"path\": \"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36881",
+          "detail": "\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36882",
+          "detail": "\"ArchitecturalMeasurementFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36883",
+          "detail": "\"ArchitecturalMeasurementFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36884",
+          "detail": "\"@aura3d/rendering/src/ArchitecturalMeasurementFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36885",
+          "detail": "\"@aura3d/rendering/ArchitecturalMeasurementFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36919",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36924",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ packages/rendering/src/index.ts:771; documentation-gen"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36929",
+          "detail": "\"detail\": \"\\\"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts: packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ pac"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36934",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36939",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36944",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36969",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36974",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ packages/rendering/src/index.ts:77"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36979",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts: packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtim"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36984",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36989",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36994",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/ArchitecturalMeasurementFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:22",
+          "detail": "\"id\": \"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:24",
+          "detail": "\"detail\": \"packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 7 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ packages/rendering/src/index.ts:771; runtime-consumer @ examples/arc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:76",
+          "detail": "\"r8:packages/rendering/src/ArchitecturalMeasurementFixtures.ts: packages/rendering/src/ArchitecturalMeasurementFixtures.ts: 7 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:763; runtime-consumer @ packages/render"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/rendering/src/CullingFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 281,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/rendering/src/CullingFixtures.ts",
+        "CullingFixtures.ts",
+        "CullingFixtures",
+        "@aura3d/rendering/src/CullingFixtures",
+        "@aura3d/rendering/CullingFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 55,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:112",
+          "detail": "\"id\": \"r8:packages/rendering/src/CullingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:114",
+          "detail": "\"detail\": \"packages/rendering/src/CullingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; documentation-generator-dependency @ docs/api/pu"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:219",
+          "detail": "\"r8:packages/rendering/src/CullingFixtures.ts: packages/rendering/src/CullingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; documentatio"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:259",
+          "detail": "\"packages/rendering/src/CullingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37177",
+          "detail": "\"path\": \"packages/rendering/src/CullingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37182",
+          "detail": "\"packages/rendering/src/CullingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37183",
+          "detail": "\"CullingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37184",
+          "detail": "\"CullingFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37185",
+          "detail": "\"@aura3d/rendering/src/CullingFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37186",
+          "detail": "\"@aura3d/rendering/CullingFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37220",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/rendering/src/CullingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37225",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/rendering/src/CullingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; documentation-generator-dependency"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37230",
+          "detail": "\"detail\": \"\\\"r8:packages/rendering/src/CullingFixtures.ts: packages/rendering/src/CullingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37235",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/CullingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37240",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/rendering/src/CullingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37245",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/CullingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37270",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/rendering/src/CullingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37275",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/rendering/src/CullingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; documentation-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37280",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/rendering/src/CullingFixtures.ts: packages/rendering/src/CullingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/sr"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37285",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/CullingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37290",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/rendering/src/CullingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37295",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/CullingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:27",
+          "detail": "\"id\": \"r8:packages/rendering/src/CullingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:29",
+          "detail": "\"detail\": \"packages/rendering/src/CullingFixtures.ts: 6 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; runtime-consumer @ examples/large-world-streamin"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:77",
+          "detail": "\"r8:packages/rendering/src/CullingFixtures.ts: packages/rendering/src/CullingFixtures.ts: 6 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:852; runtime-consumer @ packages/rendering/src/index.ts:861; runtime-cons"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/rendering/src/SpaceEnvironmentFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 201,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/rendering/src/SpaceEnvironmentFixtures.ts",
+        "SpaceEnvironmentFixtures.ts",
+        "SpaceEnvironmentFixtures",
+        "@aura3d/rendering/src/SpaceEnvironmentFixtures",
+        "@aura3d/rendering/SpaceEnvironmentFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 55,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:132",
+          "detail": "\"id\": \"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:134",
+          "detail": "\"detail\": \"packages/rendering/src/SpaceEnvironmentFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/src/index.ts:868; documentation-generator-dependency @ do"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:223",
+          "detail": "\"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts: packages/rendering/src/SpaceEnvironmentFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/src/index.ts"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:263",
+          "detail": "\"packages/rendering/src/SpaceEnvironmentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38059",
+          "detail": "\"path\": \"packages/rendering/src/SpaceEnvironmentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38064",
+          "detail": "\"packages/rendering/src/SpaceEnvironmentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38065",
+          "detail": "\"SpaceEnvironmentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38066",
+          "detail": "\"SpaceEnvironmentFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38067",
+          "detail": "\"@aura3d/rendering/src/SpaceEnvironmentFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38068",
+          "detail": "\"@aura3d/rendering/SpaceEnvironmentFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38102",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38107",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/rendering/src/SpaceEnvironmentFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/src/index.ts:868; documentation-generator-d"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38112",
+          "detail": "\"detail\": \"\\\"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts: packages/rendering/src/SpaceEnvironmentFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38117",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/SpaceEnvironmentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38122",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/rendering/src/SpaceEnvironmentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38127",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/SpaceEnvironmentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38152",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38157",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/rendering/src/SpaceEnvironmentFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/src/index.ts:868; docum"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38162",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts: packages/rendering/src/SpaceEnvironmentFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ pac"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38167",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/SpaceEnvironmentFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38172",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/rendering/src/SpaceEnvironmentFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38177",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/SpaceEnvironmentFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:32",
+          "detail": "\"id\": \"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:34",
+          "detail": "\"detail\": \"packages/rendering/src/SpaceEnvironmentFixtures.ts: 6 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/src/index.ts:868; runtime-consumer @ examples/game-slice/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:78",
+          "detail": "\"r8:packages/rendering/src/SpaceEnvironmentFixtures.ts: packages/rendering/src/SpaceEnvironmentFixtures.ts: 6 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:862; runtime-consumer @ packages/rendering/src/index.ts"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/rendering/src/VoxelWorldFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 281,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/rendering/src/VoxelWorldFixtures.ts",
+        "VoxelWorldFixtures.ts",
+        "VoxelWorldFixtures",
+        "@aura3d/rendering/src/VoxelWorldFixtures",
+        "@aura3d/rendering/VoxelWorldFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 56,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:147",
+          "detail": "\"id\": \"r8:packages/rendering/src/VoxelWorldFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:149",
+          "detail": "\"detail\": \"packages/rendering/src/VoxelWorldFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts:841; documentation-generator-dependency @ docs/api"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:226",
+          "detail": "\"r8:packages/rendering/src/VoxelWorldFixtures.ts: packages/rendering/src/VoxelWorldFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts:841; docume"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:266",
+          "detail": "\"packages/rendering/src/VoxelWorldFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38493",
+          "detail": "\"path\": \"packages/rendering/src/VoxelWorldFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38498",
+          "detail": "\"packages/rendering/src/VoxelWorldFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38499",
+          "detail": "\"VoxelWorldFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38500",
+          "detail": "\"VoxelWorldFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38501",
+          "detail": "\"@aura3d/rendering/src/VoxelWorldFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38502",
+          "detail": "\"@aura3d/rendering/VoxelWorldFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38536",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/rendering/src/VoxelWorldFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38541",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/rendering/src/VoxelWorldFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts:841; documentation-generator-depende"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38546",
+          "detail": "\"detail\": \"\\\"r8:packages/rendering/src/VoxelWorldFixtures.ts: packages/rendering/src/VoxelWorldFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38551",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/VoxelWorldFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38556",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/rendering/src/VoxelWorldFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38561",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/VoxelWorldFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38586",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/rendering/src/VoxelWorldFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38591",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/rendering/src/VoxelWorldFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts:841; documentati"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38596",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/rendering/src/VoxelWorldFixtures.ts: packages/rendering/src/VoxelWorldFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/render"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38601",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/VoxelWorldFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38606",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/rendering/src/VoxelWorldFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38611",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/VoxelWorldFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:37",
+          "detail": "\"id\": \"r8:packages/rendering/src/VoxelWorldFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:39",
+          "detail": "\"detail\": \"packages/rendering/src/VoxelWorldFixtures.ts: 7 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts:841; runtime-consumer @ examples/large-world-strea"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:79",
+          "detail": "\"r8:packages/rendering/src/VoxelWorldFixtures.ts: packages/rendering/src/VoxelWorldFixtures.ts: 7 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:833; runtime-consumer @ packages/rendering/src/index.ts:841; runtim"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/rendering/src/WeatherFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 224,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/rendering/src/WeatherFixtures.ts",
+        "WeatherFixtures.ts",
+        "WeatherFixtures",
+        "@aura3d/rendering/src/WeatherFixtures",
+        "@aura3d/rendering/WeatherFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 55,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:152",
+          "detail": "\"id\": \"r8:packages/rendering/src/WeatherFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:154",
+          "detail": "\"detail\": \"packages/rendering/src/WeatherFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; documentation-generator-dependency @ docs/api/pu"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:227",
+          "detail": "\"r8:packages/rendering/src/WeatherFixtures.ts: packages/rendering/src/WeatherFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; documentatio"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:267",
+          "detail": "\"packages/rendering/src/WeatherFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38636",
+          "detail": "\"path\": \"packages/rendering/src/WeatherFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38641",
+          "detail": "\"packages/rendering/src/WeatherFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38642",
+          "detail": "\"WeatherFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38643",
+          "detail": "\"WeatherFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38644",
+          "detail": "\"@aura3d/rendering/src/WeatherFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38645",
+          "detail": "\"@aura3d/rendering/WeatherFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38679",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/rendering/src/WeatherFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38684",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/rendering/src/WeatherFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; documentation-generator-dependency"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38689",
+          "detail": "\"detail\": \"\\\"r8:packages/rendering/src/WeatherFixtures.ts: packages/rendering/src/WeatherFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38694",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/WeatherFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38699",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/rendering/src/WeatherFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38704",
+          "detail": "\"detail\": \"\\\"packages/rendering/src/WeatherFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38729",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/rendering/src/WeatherFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38734",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/rendering/src/WeatherFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; documentation-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38739",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/rendering/src/WeatherFixtures.ts: packages/rendering/src/WeatherFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/sr"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38744",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/WeatherFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38749",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/rendering/src/WeatherFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:38754",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/rendering/src/WeatherFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:42",
+          "detail": "\"id\": \"r8:packages/rendering/src/WeatherFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:44",
+          "detail": "\"detail\": \"packages/rendering/src/WeatherFixtures.ts: 6 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; runtime-consumer @ examples/large-world-streamin"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/descriptor-delete-before.json:80",
+          "detail": "\"r8:packages/rendering/src/WeatherFixtures.ts: packages/rendering/src/WeatherFixtures.ts: 6 blocking reference(s) — runtime-consumer @ packages/rendering/src/index.ts:829; runtime-consumer @ packages/rendering/src/index.ts:830; runtime-cons"
+        }
+      ],
+      "proseMentionsTruncated": true
+    }
+  ]
+}
