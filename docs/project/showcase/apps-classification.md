@@ -118,6 +118,33 @@ separate decision that requires passing the current evidence gates — it is not
 | `three-compat-shader-lab-pro` | retained engine evidence |
 | `three-compat-threejs-migration-lab` | retained engine evidence |
 | `threejs-parity-lab` | retained engine evidence — Production Three.js Parity Lab |
+
+## `examples/` routes
+
+The tables above cover `apps/`. `examples/` routes are classified by what depends on them, and
+`tools/route-tiers` derives that mechanically: a route referenced by a shipped `docs/` page, a
+`create-aura3d` template name, or a retained spec/gate under `tests/` or `tools/` is at least a
+public documentation example. One route matches none of those and is therefore recorded here.
+
+| Route directory | Classification |
+| --- | --- |
+| `examples/data-galaxy` | retained engine evidence — superseded, R8-blocked |
+
+**`examples/data-galaxy`** has no live consumer: its scene logic now lives in
+`apps/showcase-data-galaxy` and `apps/advanced-examples-gallery/src/dataGalaxy*.ts`, and the
+directory still carries committed `.js` / `.js.map` build output beside its sources. It was
+therefore a Tier 4 (obsolete) candidate.
+
+**R8 refused the deletion.** `tools/deletion-safety` found **370 blocking references** to
+`examples/data-galaxy/index.html`, all of them `runtime-consumer` hits inside retained launch
+evidence (`apps/aura-clash-showcase/launch-evidence/readiness.json`,
+`cross-runtime-evidence.json` and siblings). Deleting the route would invalidate retained
+evidence that other gates read, so it is retained and labelled instead. Its `src/main.ts` is
+individually clear; the directory as a whole is not.
+
+This is the same outcome as ADR 0001 and the WS-3.5 fixture triage: a candidate that looks
+obviously deletable, and is not, because generated evidence in this repository names files
+directly. Revisit only if that launch evidence is regenerated without these references.
 | `webgpu-lab` | retained engine evidence — Production WebGPU Lab |
 | `v9-advanced-examples-gallery` | retained legacy gallery evidence |
 | `animation-studio-web` | local development control surface |

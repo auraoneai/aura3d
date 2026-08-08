@@ -2605,14 +2605,38 @@ this into another endless project. Only 11 routes are gated in
 
 ### WS-5.1 Classify every route into a tier
 
-- [ ] **Tier 1 — public and marketed.** Fully rebuilt and interaction-tested before
-      release. Starting set: the 11 gated routes in `route-gates.json`.
-- [ ] **Tier 2 — public documentation examples.** Must build, run, and demonstrate the API
-      accurately. No marketing polish required.
-- [ ] **Tier 3 — diagnostics and internal fixtures.** Stay internal, explicitly labelled,
-      no polish. Candidates: the 29 `wow-*` and 10 `three-compat-*` apps, `regression-*`.
-- [ ] **Tier 4 — obsolete or duplicative.** Delete under R8.
-- [ ] **Proof:** committed inventory with one tier + rationale per route, totalling 150+.
+- [x] **Tier 1 — public and marketed.** Fully rebuilt and interaction-tested before
+      release. ~~Starting set: the 11 gated routes in `route-gates.json`.~~
+      **Measured: 4, not 11.** The other 7 gate entries are `internal-diagnostic` (1),
+      `removed-from-public-showcase` (2), `index-route` (1) and `prototype-blocked` (3).
+      Being *gated* is not being *cleared* — the blocked three are in that file precisely so
+      their blockers are tracked. Tier 1 is `showcase-product-configurator`,
+      `showcase-smart-city-control`, `showcase-cinematic-architecture`,
+      `showcase-digital-twin-ops`; all four are interactive and all four already carry
+      route-health evidence.
+- [x] **Tier 2 — public documentation examples.** Must build, run, and demonstrate the API
+      accurately. No marketing polish required. — **31 routes**, derived from three signals:
+      `starter example` / `library demo` in the classification document, a `create-aura3d`
+      template name, or a retained spec/gate under `tests/` or `tools/` that depends on the
+      route's files.
+- [x] **Tier 3 — diagnostics and internal fixtures.** Stay internal, explicitly labelled,
+      no polish. — **101 routes.** The PRD's candidates were right in kind and low in count:
+      27 `wow-*`, 10 `three-compat-*`, plus the 32 `retained engine evidence` rows the
+      classification document already labelled and which no earlier count included.
+- [x] **Tier 4 — obsolete or duplicative.** Delete under R8. — **empty, and that is the
+      result rather than a skipped step.** The one genuine candidate,
+      `examples/data-galaxy` (superseded by `apps/showcase-data-galaxy` and
+      `advanced-examples-gallery/src/dataGalaxy*.ts`, still carrying committed `.js`/`.js.map`
+      output), was **refused by R8**: 370 blocking `runtime-consumer` references, all inside
+      retained launch evidence. Recorded in the classification document instead of deleted.
+- [x] **Proof:** committed inventory with one tier + rationale per route, totalling 150+.
+      — `tools/route-tiers/index.ts` + `tests/reports/route-tiers/report.json`: **136 routes,
+      0 unclassified**, every row citing the signal it was derived from. (150+ counted 112
+      apps + 38 examples; measured today it is 102 + 37 less 3 shared-code directories = 136,
+      so the test asserts completeness against the filesystem rather than a number from prose.)
+      Gated by `tests/unit/tools/route-tiers.test.ts` (7 tests), which **caught a real R5
+      violation in the classifier**: treating "has a gate entry" as Tier 1 promoted all three
+      `prototype-blocked` routes.
 
 ### WS-5.2 Rebuild Tier 1 and Tier 2
 
