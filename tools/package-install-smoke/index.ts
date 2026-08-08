@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
@@ -107,6 +107,17 @@ export function runPackageInstallSmoke(
       }
     }
 
+    if (violations.length === 0 && packageInfo.name) {
+      const installedPackage = join(tempProject, "node_modules", ...packageInfo.name.split("/"));
+      const unresolvedImports = findUnresolvedInternalAuraImports(installedPackage);
+      if (unresolvedImports.length > 0) {
+        violations.push(
+          `Packed root contains unresolved internal Aura3D imports: ${unresolvedImports.join(", ")}. `
+          + "The root tarball must internalize workspace package imports before publication."
+        );
+      }
+    }
+
     if (violations.length === 0) {
       try {
         smokeStdout = execFileSync(smokeCommand[0], smokeCommand.slice(1), {
@@ -166,6 +177,7 @@ export function runPackageInstallSmoke(
       "scene export map resolves",
       "math export map resolves",
       "assets export map resolves",
+      "packed root contains no unresolved internal @aura3d/* imports",
       "Geometry.litCube creates vertex/index buffers",
       "PBRMaterial can be instantiated",
       "External parity generated environment lighting validates BRDF LUT and diffuse irradiance resources",
@@ -180,6 +192,36 @@ export function runPackageInstallSmoke(
     viteBuildStdoutTail: viteBuildStdout.split("\n").slice(-12).join("\n"),
     violations
   };
+}
+
+export function findUnresolvedInternalAuraImports(packageRoot: string): string[] {
+  const distRoot = join(packageRoot, "dist");
+  if (!existsSync(distRoot)) return [`${relative(packageRoot, distRoot) || "dist"} is missing`];
+
+  const findings = new Set<string>();
+  for (const file of walkJavaScriptFiles(distRoot)) {
+    const source = readFileSync(file, "utf8");
+    const patterns = [
+      /\b(?:from\s*|import\s*\(\s*)["'](@aura3d\/[^"']+)["']/g,
+      /\bimport\s*["'](@aura3d\/[^"']+)["']/g
+    ];
+    for (const pattern of patterns) {
+      for (const match of source.matchAll(pattern)) {
+        findings.add(`${relative(packageRoot, file)} -> ${match[1]}`);
+      }
+    }
+  }
+  return [...findings].sort();
+}
+
+function walkJavaScriptFiles(directory: string, files: string[] = []): string[] {
+  for (const entry of readdirSync(directory)) {
+    const path = join(directory, entry);
+    const stats = statSync(path);
+    if (stats.isDirectory()) walkJavaScriptFiles(path, files);
+    else if (path.endsWith(".js")) files.push(path);
+  }
+  return files;
 }
 
 function smokeSource(packageName: string): string {
