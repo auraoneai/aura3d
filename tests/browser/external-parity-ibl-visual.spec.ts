@@ -19,7 +19,7 @@ test.describe("ExternalParity IBL browser evidence", () => {
 
   test("shows environment reflections and generated IBL resources in the material showroom", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/_quarantine/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_MATERIAL_SHOWROOM__?.status === "ready", undefined, { timeout: 30_000 });
     await page.getByTestId("material-showroom-environment-preset").selectOption("sunset");
     await expect.poll(() => page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__?.environmentPreset)).toBe("sunset");

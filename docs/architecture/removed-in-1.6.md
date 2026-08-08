@@ -89,4 +89,4 @@ future attempt should start from the measurement rather than repeat it.
 | `packages/ecs`, `packages/scripting` | 61 of 68 files blocked across 300 references; both are published subpaths; `scripting` is proven through a real WebGL2 path | Retained — ADR 0001 |
 | 38 `*Fixtures.ts` files | R8 refused all 38 | 8 renamed to their real responsibility, 30 retained, **0 lines removed** |
 | `examples/data-galaxy` | 370 `runtime-consumer` references inside retained launch evidence | Retained and labelled — see `docs/project/showcase/apps-classification.md` |
-| `examples/material-showroom` | 11 release gates read its `main.ts` for static composition analysis | Retained, and **broken**: it imports the deleted `examples/_quarantine/`. Named in `README.md` |
+| `examples/material-showroom` | 11 release gates read its `main.ts` for static composition analysis | Retained as a bounded WebGL2 material lab and moved out of quarantine. Browser gates use `examples/material-showroom`; generated assets remain explicitly insufficient for flagship proof. |

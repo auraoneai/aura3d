@@ -19,7 +19,7 @@ test.describe("ExternalParity physical material matrix browser evidence", () => 
 
   test("proves visible material variation and public material diagnostics", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/_quarantine/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_MATERIAL_SHOWROOM__?.status === "ready", undefined, { timeout: 30_000 });
 
     const screenshotPath = "tests/reports/external-gallery/materials/material-matrix.png";
