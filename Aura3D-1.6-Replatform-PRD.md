@@ -140,7 +140,7 @@ Aura3D wins by making developers faster. That must be measured, not asserted.
       equivalent. Baseline already measured from
       `external-parity-threejs-visual-parity/gap-report.md`: product configurator 15 vs 74,
       asset review 10 vs 68, interior 7 vs 54, orbit 7 vs 48
-      — scenarios: **9 vs 15 · 13 vs 27 · 19 vs 40**. Blanks and comments excluded, because the
+      — scenarios: **9 vs 15 · 14 vs 27 · 19 vs 40**. Blanks and comments excluded, because the
       Aura3D entries carry long explanatory headers that would otherwise count as developer
       effort in Aura3D's favour.
 - [x] **Number of imports** a developer must write per scenario — **1 vs 1 · 1 vs 4 · 1 vs 2**.
@@ -149,16 +149,21 @@ Aura3D wins by making developers faster. That must be measured, not asserted.
       and controls as subpaths of `three`, so the cost lands in the import count, not the
       install count. Scenario 3 is the real difference — a game runtime needs `three` plus
       `cannon-es`.
-- [x] **TypeScript compile time** for a scaffolded project — `tsc --noEmit` per entry:
-      **826 vs 689 ms · 902 vs 939 ms · 977 vs 847 ms**. Aura3D is *slower* on two of three;
-      recorded as measured.
-- [ ] **Runtime startup time** to first frame — reported `unmeasured` with a reason: it needs
-      a browser, and real per-route `readyTimeMs` for all 35 Tier 1/2 routes already exists in
-      `tests/browser/tier12-route-health.spec.ts`. A headless approximation would be a weaker
-      second number competing with a real one.
+- [x] **TypeScript compile time** for a scaffolded project — median of three fresh
+      `tsc --noEmit` processes per entry, with all samples retained:
+      **1,639 vs 1,315 ms · 1,243 vs 1,069 ms · 1,356 vs 1,035 ms**. Aura3D is slower on all
+      three in this run; recorded as measured rather than presented as a stable product property.
+- [x] **Runtime startup time** to first frame — measured in a real installed Chrome session by
+      `pnpm bench:production-path`: **24.1 ms Aura3D vs 33.8 ms Three.js** median across three
+      independent sessions. The timer starts immediately before runtime construction and stops only
+      after the first verified non-blank frame; it explicitly excludes bundle download and module
+      evaluation. Both engines use public entries, identical 960×600 content and camera, and every
+      startup frame clears the 1,000-pixel validity floor (Aura3D 168,992; Three.js 110,023).
+      Full min/median/p95/max/stddev and environment evidence:
+      `tests/reports/developer-startup/report.json`.
 - [x] **Proof:** committed `tests/reports/developer-friction.json` with every field measured
-      for both Aura3D and the Three.js equivalent — committed, with the two unmeasurable
-      fields declared rather than filled in.
+      for both Aura3D and the Three.js equivalent — committed, with the one remaining
+      unmeasurable field (clean registry install to first cube) declared rather than filled in.
 
 ### B.3 Negative complexity — deletion is a success metric
 
@@ -2930,7 +2935,7 @@ way an engine fix lands green while the route stays broken (R3).
 - [x] **Proof:** fewer lines **and** bundle within budget **and** correct behaviour. All
       three, or it fails.
       — **WS-6.1 FAILS, and the verdict is the deliverable.** Axis 1 (fewer authored lines):
-      **met** — 9v15, 13v27, 19v40 on the scenarios and 7/7 gap-report workflows. Axis 3
+      **met** — 9v15, 14v27, 19v40 on the scenarios and 7/7 gap-report workflows. Axis 3
       (correct behaviour): **met** for 32 of 35 Tier 1/2 routes, 3 pinned pre-existing
       failures. Axis 2 (bundle): **not met** — see §B.1. Recorded by
       `tests/unit/tools/developer-value.test.ts`, which asserts the *measured* state including
@@ -2955,8 +2960,8 @@ way an engine fix lands green while the route stays broken (R3).
       — the README now distinguishes the green comparative bundle table (**1.093x / 1.229x /
       1.256x** against 1.25 / 1.25 / 1.50) from the still-over absolute compatibility-root and
       template targets, states where Aura3D genuinely wins with the same rigour
-      (authored lines 9/13/19 vs 15/27/40, one install vs two) **and** where it loses
-      (TypeScript compile slower on two of three). It also names the three prototype-blocked routes
+      (authored lines 9/14/19 vs 15/27/40, one install vs two) **and** where it loses
+      (TypeScript compile slower on all three in the current three-process measurement). It also names the three prototype-blocked routes
       and the independent Aura Clash coverage boundary; the three formerly broken labs are repaired.
 
       **It also removed a stale claim that was wrong in both directions**: "five physics
@@ -3227,9 +3232,10 @@ exists", and fixing either failing condition breaks a test that must then be fli
       — **PASSES, all three: 1.093x / 1.229x / 1.256x** against 1.25 / 1.25 / 1.50, with the
       budgets unchanged. Asserted per scenario, not only in aggregate, so a regression is visible.
 - [x] **§B.2** `tests/reports/developer-friction.json` complete for both engines
-      — complete: four fields × 3 scenarios × both engines, plus the **2 fields declared
-      unmeasurable with reasons** rather than omitted or invented. Declaring them *is* the
-      completeness; fabricating them would be the R1 defect.
+      — complete: four fields × 3 scenarios × both engines, plus real-browser runtime startup
+      (**24.1 vs 33.8 ms**, three sessions, non-blank first frames) and the **one field declared
+      unmeasurable with a reason** rather than omitted or invented. Declaring registry-install time
+      unmeasurable before a publish rehearsal is completeness; fabricating it would be the R1 defect.
 - [ ] **§B.3** `packages/*/src` lines lower than the 212,810 baseline; R12 violations = 0;
       per-phase deletion report committed
       — **FAILS on both numeric conditions**, report committed. Lines **201,879 vs 200,929** baseline
@@ -3254,9 +3260,9 @@ exists", and fixing either failing condition breaks a test that must then be fli
       cause, both blocked on ADR 0002.
 - [x] **§A** no capability on the "what Aura3D is NOT" list gained a hand-written
       implementation during 1.6
-      — held, and it moved the right way: with 0 files added during 1.6, no NOT-list capability
-      could gain an implementation, and the physics row went **from two owners to one**. That is
-      the drift §A exists to reverse, reversing.
+      — held, and it moved the right way: the five added package source files are the R11-audited
+      narrow entry adapters enumerated above, not implementations of a §A capability, and the
+      physics row went **from two owners to one**. That is the drift §A exists to reverse, reversing.
 
 ### Verification hygiene — the earlier full-suite races make these mandatory
 
@@ -3344,8 +3350,9 @@ Not technical completion gates. **Do not perform any of these because §10 is gr
     Both premises this row reasoned from — packages disappearing, the barrel being split
     destructively — turned out false: the split *added* narrow entry points and kept the wide one.
 
-    Recorded caveat: `1.6.0` means safe to upgrade, **not** that §B.1 is met. Bundle size is still
-    ~1.8-2.2x the equivalent Three.js stack. (§10)
+    Recorded caveat: `1.6.0` means safe to upgrade, not automatic release approval. §B.1 is now met
+    by the documented lean entries at 1.093x / 1.229x / 1.256x; the separate compatibility root
+    remains over its historical absolute budget and §11 still requires explicit approval. (§10)
 
 ---
 

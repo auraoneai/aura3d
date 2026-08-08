@@ -87,10 +87,13 @@ describe("production-path benchmark report", () => {
     expect(report.schema).toBe("a3d-production-path-benchmark");
     for (const engine of ["aura3d", "threejs"] as const) {
       expect(report[engine].steadyStateFrameMs).toBeGreaterThan(0);
+      expect(report[engine].runtimeStartupToFirstFrameMs.median).toBeGreaterThan(0);
+      expect(report[engine].runtimeStartupToFirstFrameMs.sampleCount).toBeGreaterThanOrEqual(3);
       expect(report[engine].sessions.length).toBeGreaterThanOrEqual(3);
       for (const session of report[engine].sessions) {
         expect(session.realWebGL2).toBe(true);
         expect(session.nonBlankPixels).toBeGreaterThan(1_000);
+        expect(session.startupFrameNonBlankPixels).toBeGreaterThan(1_000);
       }
       // A GPU number must be accompanied by a query, or be null with a reason.
       if (report[engine].gpuTimerQueryMs === null) {

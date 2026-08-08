@@ -31,6 +31,11 @@ interface FrictionReport {
     readonly aura3dFewerLines: boolean;
   }[];
   readonly gapReportWorkflows: readonly { readonly workflow: string; readonly aura3dLines: number; readonly threejsLines: number }[];
+  readonly runtimeStartupToFirstFrame: {
+    readonly methodology: { readonly sessions: number; readonly identicalCameraAndContent: boolean };
+    readonly aura3d: { readonly median: number; readonly sampleCount: number };
+    readonly threejs: { readonly median: number; readonly sampleCount: number };
+  };
   readonly unmeasured: readonly { readonly field: string; readonly reason: string }[];
   readonly summary: Readonly<Record<string, number>>;
 }
@@ -61,7 +66,7 @@ describe("§B.2 — developer friction is measured for both engines", () => {
   });
 
   it("needs fewer authored lines in every scenario and every gap-report workflow", () => {
-    // Measured: 9v15, 13v27, 19v40 on the bundle scenarios; 15v74, 10v68, 8v58, 8v62, 7v54,
+    // Measured: 9v15, 14v27, 19v40 on the bundle scenarios; 15v74, 10v68, 8v58, 8v62, 7v54,
     // 7v48, 9v64 on the gap-report workflows. This is the axis Aura3D genuinely wins.
     expect(friction.summary.scenariosWhereAura3dNeedsFewerLines).toBe(friction.summary.totalScenarios);
     expect(friction.summary.gapReportWorkflowsWhereAura3dNeedsFewerLines).toBe(friction.summary.gapReportWorkflows);
@@ -76,12 +81,18 @@ describe("§B.2 — developer friction is measured for both engines", () => {
     expect(friction.summary.scenariosWhereAura3dNeedsFewerOrEqualDependencies).toBe(friction.summary.totalScenarios);
   });
 
-  it("declares the fields it cannot measure here rather than inventing them", () => {
+  it("measures runtime startup in a real browser and declares only the registry-install field unmeasured", () => {
     // R1: `installToFirstCubeMinutes` needs a clean machine profile and a real registry install;
-    // `startupMsToFirstFrame` needs a browser, and real per-route ready timings already exist in
-    // tests/browser/tier12-route-health.spec.ts. Both are reported unmeasured, with a reason.
+    // Startup is measured by the dual-engine production-path browser benchmark. Registry install
+    // still needs a clean release profile and remains explicitly unmeasured.
+    expect(friction.runtimeStartupToFirstFrame.methodology.sessions).toBeGreaterThanOrEqual(3);
+    expect(friction.runtimeStartupToFirstFrame.methodology.identicalCameraAndContent).toBe(true);
+    for (const engine of [friction.runtimeStartupToFirstFrame.aura3d, friction.runtimeStartupToFirstFrame.threejs]) {
+      expect(engine.median).toBeGreaterThan(0);
+      expect(engine.sampleCount).toBeGreaterThanOrEqual(3);
+    }
     const unmeasured = friction.unmeasured.map((field) => field.field).sort();
-    expect(unmeasured).toEqual(["installToFirstCubeMinutes", "startupMsToFirstFrame"]);
+    expect(unmeasured).toEqual(["installToFirstCubeMinutes"]);
     for (const field of friction.unmeasured) expect(field.reason.length).toBeGreaterThan(60);
   });
 });

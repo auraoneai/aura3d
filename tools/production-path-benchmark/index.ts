@@ -35,6 +35,7 @@ import { chromium, type Browser } from "@playwright/test";
 import { PRODUCTION_PATH_BENCHMARK_SCENE, type BenchmarkSceneDefinition } from "./scene";
 
 const REPORT_PATH = "tests/reports/production-path-benchmark.json";
+const STARTUP_REPORT_PATH = "tests/reports/developer-startup/report.json";
 
 /** Independent browser sessions. ≥ 3 is the PRD's minimum; variance across them is reported. */
 const SESSIONS = 3;
@@ -62,6 +63,9 @@ interface SessionMeasurement {
   readonly gpuTimerQueryUnavailableReason: string | null;
   /** First frame including shader compilation and pipeline creation. */
   readonly firstFrameCompileMs: number;
+  /** Runtime construction through the first verified non-blank frame. Excludes bundle download. */
+  readonly runtimeStartupToFirstFrameMs: number;
+  readonly startupFrameNonBlankPixels: number;
   /** Median CPU submission after warmup. The headline number, named for what it is. */
   readonly steadyStateFrameMs: number;
   /** Total wall-clock duration of the measured window divided by frame count. */
@@ -83,6 +87,7 @@ interface EngineSummary {
   readonly gpuTimerQueryMs: FrameSampleStats | null;
   readonly gpuTimerQueryUnavailableReason: string | null;
   readonly firstFrameCompileMs: number;
+  readonly runtimeStartupToFirstFrameMs: FrameSampleStats;
   readonly wallClockFrameMs: number;
   readonly browserReportedMemoryMb: number | null;
   readonly sessions: readonly SessionMeasurement[];
@@ -94,6 +99,8 @@ interface BrowserFrameReport {
   readonly gpuTimerQuerySamples: readonly number[];
   readonly gpuTimerQueryUnavailableReason: string | null;
   readonly firstFrameCompileMs: number;
+  readonly runtimeStartupToFirstFrameMs: number;
+  readonly startupFrameNonBlankPixels: number;
   readonly wallClockTotalMs: number;
   readonly measuredFrames: number;
   readonly browserReportedMemoryMb: number | null;
@@ -235,6 +242,7 @@ function aura3dBundleSource(): string {
     import { createWebGL2GpuTimingBackend, createCpuFallbackGpuTimingBackend } from "@aura3d/engine/rendering";
     ${sharedHarness()}
     async function runProductionPathBenchmark(canvas, definition) {
+      const startupStarted = performance.now();
       const built = scene().background(definition.background).camera(camera.perspective({
         position: definition.camera.position,
         target: definition.camera.target,
@@ -264,6 +272,10 @@ function aura3dBundleSource(): string {
         pixelRatio: definition.pixelRatio,
         resize: false
       });
+      await app.ready();
+      app.step(1 / 60);
+      const runtimeStartupToFirstFrameMs = performance.now() - startupStarted;
+      const startupFrameNonBlankPixels = countNonBlankPixels(canvas);
       const gl = canvas.getContext("webgl2");
       const gpu = gl ? createWebGL2GpuTimingBackend(gl) : createCpuFallbackGpuTimingBackend("no webgl2 context on the benchmark canvas");
       const timed = await runTimedFrames({
@@ -275,6 +287,8 @@ function aura3dBundleSource(): string {
       const diagnostics = app.diagnostics();
       const result = {
         ...timed,
+        runtimeStartupToFirstFrameMs,
+        startupFrameNonBlankPixels,
         gpuTimerQueryUnavailableReason: gpu.supported ? null : (gpu.unavailableReason || "GPU timer query unsupported"),
         browserReportedMemoryMb: browserReportedMemoryMb(),
         drawnObjectCount: diagnostics.drawCalls,
@@ -294,6 +308,7 @@ function threejsBundleSource(): string {
     import * as THREE from "three";
     ${sharedHarness()}
     async function runProductionPathBenchmark(canvas, definition) {
+      const startupStarted = performance.now();
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
       renderer.setPixelRatio(definition.pixelRatio);
       renderer.setSize(canvas.width, canvas.height, false);
@@ -332,6 +347,9 @@ function threejsBundleSource(): string {
         mesh.scale.setScalar(object.scale);
         scene.add(mesh);
       }
+      renderer.render(scene, camera);
+      const runtimeStartupToFirstFrameMs = performance.now() - startupStarted;
+      const startupFrameNonBlankPixels = countNonBlankPixels(canvas);
       const gl = renderer.getContext();
       const extension = gl.getExtension("EXT_disjoint_timer_query_webgl2");
       const pending = [];
@@ -369,6 +387,8 @@ function threejsBundleSource(): string {
       });
       const result = {
         ...timed,
+        runtimeStartupToFirstFrameMs,
+        startupFrameNonBlankPixels,
         gpuTimerQueryUnavailableReason: extension ? null : "EXT_disjoint_timer_query_webgl2 unavailable in this browser session",
         browserReportedMemoryMb: browserReportedMemoryMb(),
         drawnObjectCount: renderer.info.render.calls,
@@ -491,6 +511,8 @@ async function measure(
       gpuTimerQueryMs: report.gpuTimerQuerySamples.length > 0 ? stats(report.gpuTimerQuerySamples) : null,
       gpuTimerQueryUnavailableReason: report.gpuTimerQuerySamples.length > 0 ? null : (report.gpuTimerQueryUnavailableReason ?? "no GPU timer query samples were returned"),
       firstFrameCompileMs: round(report.firstFrameCompileMs),
+      runtimeStartupToFirstFrameMs: round(report.runtimeStartupToFirstFrameMs),
+      startupFrameNonBlankPixels: report.startupFrameNonBlankPixels,
       steadyStateFrameMs: cpu.median,
       wallClockFrameMs: report.measuredFrames > 0 ? round(report.wallClockTotalMs / report.measuredFrames) : 0,
       browserReportedMemoryMb: report.browserReportedMemoryMb,
@@ -518,6 +540,7 @@ function summarize(engine: Engine, bundleBytes: number, sessions: readonly Sessi
     gpuTimerQueryMs: gpuSamples.length > 0 ? stats(gpuSamples) : null,
     gpuTimerQueryUnavailableReason: gpuSamples.length > 0 ? null : (sessions[0]?.gpuTimerQueryUnavailableReason ?? "unknown"),
     firstFrameCompileMs: stats(sessions.map((session) => session.firstFrameCompileMs)).median,
+    runtimeStartupToFirstFrameMs: stats(sessions.map((session) => session.runtimeStartupToFirstFrameMs)),
     wallClockFrameMs: stats(sessions.map((session) => session.wallClockFrameMs)).median,
     browserReportedMemoryMb: sessions[0]?.browserReportedMemoryMb ?? null,
     sessions
@@ -636,6 +659,8 @@ function writeBenchmarkReport(
       rafIntervalMs: "Wall-clock interval between requestAnimationFrame callbacks. Includes compositing and vsync.",
       gpuTimerQueryMs: "EXT_disjoint_timer_query_webgl2 only, disjoint states discarded. null with a reason when unsupported.",
       firstFrameCompileMs: "First frame, including shader compilation and pipeline creation. Excluded from steady state.",
+      runtimeStartupToFirstFrameMs:
+        "Wall-clock time from immediately before runtime construction through completion of the first verified non-blank frame. Excludes bundle download and module evaluation.",
       steadyStateFrameMs: "Median cpuFrameSubmissionMs after warmup. The headline number.",
       wallClockFrameMs: "Measured-window wall clock divided by frame count.",
       browserReportedMemoryMb: "performance.memory.usedJSHeapSize when the browser exposes it."
@@ -664,9 +689,44 @@ function writeBenchmarkReport(
   };
   mkdirSync(dirname(resolve(REPORT_PATH)), { recursive: true });
   writeFileSync(resolve(REPORT_PATH), `${JSON.stringify(report, null, 2)}\n`);
+  const startupReport = {
+    schema: "aura3d-developer-startup/1.0",
+    generatedAt: report.generatedAt,
+    sourceReport: REPORT_PATH,
+    measurement:
+      "Runtime construction through completion of the first verified non-blank frame. Bundle download and module evaluation are excluded and must not be inferred from this number.",
+    methodology: {
+      sessions: SESSIONS,
+      publicEntries: { aura3d: "@aura3d/engine", threejs: "three" },
+      identicalCanvas: definition.canvas,
+      identicalCameraAndContent: true,
+      nonBlankPixelFloor: 1_000
+    },
+    environment,
+    aura3d: {
+      runtimeStartupToFirstFrameMs: aura3d.runtimeStartupToFirstFrameMs,
+      sessions: aura3d.sessions.map((session) => ({
+        session: session.session,
+        runtimeStartupToFirstFrameMs: session.runtimeStartupToFirstFrameMs,
+        nonBlankPixels: session.startupFrameNonBlankPixels
+      }))
+    },
+    threejs: {
+      runtimeStartupToFirstFrameMs: threejs.runtimeStartupToFirstFrameMs,
+      sessions: threejs.sessions.map((session) => ({
+        session: session.session,
+        runtimeStartupToFirstFrameMs: session.runtimeStartupToFirstFrameMs,
+        nonBlankPixels: session.startupFrameNonBlankPixels
+      }))
+    }
+  };
+  mkdirSync(dirname(resolve(STARTUP_REPORT_PATH)), { recursive: true });
+  writeFileSync(resolve(STARTUP_REPORT_PATH), `${JSON.stringify(startupReport, null, 2)}\n`);
   console.log(`aura3d  steadyStateFrameMs=${aura3d.steadyStateFrameMs} drawCalls=${aura3d.sessions[0]?.drawnObjectCount} gpuTimerQueryMs=${aura3d.gpuTimerQueryMs?.median ?? "null"}`);
   console.log(`threejs steadyStateFrameMs=${threejs.steadyStateFrameMs} drawCalls=${threejs.sessions[0]?.drawnObjectCount} gpuTimerQueryMs=${threejs.gpuTimerQueryMs?.median ?? "null"}`);
+  console.log(`startup aura3d=${aura3d.runtimeStartupToFirstFrameMs.median}ms threejs=${threejs.runtimeStartupToFirstFrameMs.median}ms`);
   console.log(`report: ${REPORT_PATH}`);
+  console.log(`startup report: ${STARTUP_REPORT_PATH}`);
   if (failures.length > 0) {
     console.error(report.failures.join("\n"));
     process.exitCode = 1;
@@ -692,6 +752,13 @@ function gateChecks(definition: BenchmarkSceneDefinition, aura3d: EngineSummary,
     add(`${summary.engine}:sessions`, summary.sessions.length >= 3, `${summary.engine} needs ≥ 3 independent sessions so variance is reportable.`);
     add(`${summary.engine}:samples`, summary.sessions.every((session) => session.cpuFrameSubmissionMs.sampleCount >= definition.measuredFrames * 0.8), `${summary.engine} must contribute at least 80% of the requested measured frames per session.`);
     add(`${summary.engine}:steady-state`, summary.steadyStateFrameMs > 0, `${summary.engine} steady-state frame time must be a measured positive value.`);
+    add(
+      `${summary.engine}:startup-first-frame`,
+      summary.runtimeStartupToFirstFrameMs.sampleCount >= 3 &&
+        summary.runtimeStartupToFirstFrameMs.median > 0 &&
+        summary.sessions.every((session) => session.startupFrameNonBlankPixels > 1_000),
+      `${summary.engine} runtime startup must include at least three positive measurements ending in a verified non-blank frame.`
+    );
   }
   add(
     "draw-calls-comparable",

@@ -194,10 +194,13 @@ Stated because a release note that omits this is not useful:
   without Three.js growing. Browser proof executes the core, real-GLB product, and input + shared
   production-physics game paths through `tests/browser/lean-entry-runtime.spec.ts`.
 - **Where Aura3D does win, measured on the same three scenarios:** authored lines
-  **9 / 13 / 19** against Three.js's **15 / 27 / 40**, and one install instead of two for
+  **9 / 14 / 19** against Three.js's **15 / 27 / 40**, and one install instead of two for
   a game runtime. Across seven product workflows the gap is wider — 15 vs 74 lines for a
   product configurator, 10 vs 68 for glTF asset review. TypeScript compile time is
-  *slower* on two of three scenarios (826 vs 689 ms, 977 vs 847 ms). Full figures:
+  *slower* on all three in the current three-process median measurement
+  (1,639 vs 1,315 ms; 1,243 vs 1,069 ms; 1,356 vs 1,035 ms). Runtime construction through
+  the first verified non-blank browser frame measured **24.1 ms vs 33.8 ms**, excluding download
+  and module evaluation. Full figures and methodology:
   `tests/reports/developer-friction.json`.
 - `showcase-blockfall-reactor`, `showcase-skyline-runner` and
   `showcase-turbo-drift-circuit` remain **prototype-blocked**. The engine causes behind

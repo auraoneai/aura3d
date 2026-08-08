@@ -21,14 +21,15 @@
  * - **imports** — `import` statements, i.e. how many module names a developer must know.
  * - **dependencies** — distinct npm packages the developer must install. `three` and
  *   `cannon-es` are two installs; `@aura3d/engine` is one.
- * - **typecheckMs** — `tsc --noEmit` on the scenario entry alone, so the number is compile time
- *   for what the developer wrote rather than for the whole monorepo.
+ * - **typecheckMs** — median of three fresh `tsc --noEmit` processes on the scenario entry alone,
+ *   so the number is compile time for what the developer wrote rather than for the monorepo. The
+ *   individual samples are retained because process startup and filesystem cache make one run noisy.
  * - **installToFirstCubeMinutes** — NOT measured here, and reported as `unmeasured` with a
  *   reason. It requires a clean machine profile and a real registry install; producing it from a
  *   warm monorepo would be a fabricated number, which is exactly what R1 exists to stop.
- * - **startupMs** — likewise `unmeasured` here: first-frame time needs a browser, and
- *   `tests/browser/tier12-route-health.spec.ts` already measures real `readyTimeMs` per route.
- *   Pointing at that is honest; inventing a headless figure is not.
+ * - **runtimeStartupToFirstFrameMs** — read from the real-browser, dual-engine production-path
+ *   benchmark. It starts immediately before runtime construction and ends only after the first
+ *   verified non-blank frame. Bundle download and module evaluation are explicitly excluded.
  *
  * R1 applies to this tool: a field that cannot be measured in this process is emitted as
  * `unmeasured` with a reason and is **never scored**.
@@ -38,6 +39,47 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
+const startupReportPath = join(repoRoot, "tests/reports/developer-startup/report.json");
+
+interface StartupReport {
+  readonly schema: "aura3d-developer-startup/1.0";
+  readonly measurement: string;
+  readonly methodology: {
+    readonly sessions: number;
+    readonly publicEntries: { readonly aura3d: string; readonly threejs: string };
+    readonly identicalCanvas: { readonly width: number; readonly height: number };
+    readonly identicalCameraAndContent: boolean;
+    readonly nonBlankPixelFloor: number;
+  };
+  readonly environment: Readonly<Record<string, unknown>>;
+  readonly aura3d: {
+    readonly runtimeStartupToFirstFrameMs: Readonly<Record<string, number>>;
+    readonly sessions: readonly { readonly nonBlankPixels: number }[];
+  };
+  readonly threejs: {
+    readonly runtimeStartupToFirstFrameMs: Readonly<Record<string, number>>;
+    readonly sessions: readonly { readonly nonBlankPixels: number }[];
+  };
+}
+
+function readStartupReport(): StartupReport {
+  if (!existsSync(startupReportPath)) {
+    throw new Error(
+      "Missing real-browser startup evidence. Run `pnpm bench:production-path` before generating developer friction."
+    );
+  }
+  const report = JSON.parse(readFileSync(startupReportPath, "utf8")) as StartupReport;
+  if (
+    report.schema !== "aura3d-developer-startup/1.0" ||
+    report.methodology.sessions < 3 ||
+    !report.methodology.identicalCameraAndContent ||
+    report.aura3d.sessions.some((session) => session.nonBlankPixels <= report.methodology.nonBlankPixelFloor) ||
+    report.threejs.sessions.some((session) => session.nonBlankPixels <= report.methodology.nonBlankPixelFloor)
+  ) {
+    throw new Error("Developer startup evidence is incomplete or does not prove a non-blank dual-engine browser frame.");
+  }
+  return report;
+}
 
 interface ScenarioEntries {
   readonly id: string;
@@ -140,21 +182,27 @@ function countDependencies(source: string): readonly string[] {
   return [...packages].sort();
 }
 
-/** `tsc --noEmit` on one entry, so the number is the developer's file rather than the monorepo. */
-function typecheckMs(entry: string): { readonly ms: number; readonly ok: boolean } {
-  const started = Date.now();
-  try {
-    execFileSync(
-      "npx",
-      ["tsc", "--noEmit", "--skipLibCheck", "--target", "es2022", "--module", "esnext", "--moduleResolution", "bundler", "--strict", entry],
-      { cwd: repoRoot, stdio: "pipe", encoding: "utf8" }
-    );
-    return { ms: Date.now() - started, ok: true };
-  } catch {
-    // A non-zero exit still yields a timing, and the entry compiling standalone is not the claim
-    // being made here — the monorepo `pnpm typecheck` is what gates correctness.
-    return { ms: Date.now() - started, ok: false };
+/** Three fresh `tsc --noEmit` processes; report the median and retain all samples. */
+function typecheckMs(entry: string): { readonly ms: number; readonly samplesMs: readonly number[]; readonly ok: boolean } {
+  const samplesMs: number[] = [];
+  let ok = true;
+  for (let sample = 0; sample < 3; sample += 1) {
+    const started = Date.now();
+    try {
+      execFileSync(
+        "npx",
+        ["tsc", "--noEmit", "--skipLibCheck", "--target", "es2022", "--module", "esnext", "--moduleResolution", "bundler", "--strict", entry],
+        { cwd: repoRoot, stdio: "pipe", encoding: "utf8" }
+      );
+    } catch {
+      // A non-zero exit still yields a timing, and the entry compiling standalone is not the claim
+      // being made here — the monorepo `pnpm typecheck` is what gates correctness.
+      ok = false;
+    }
+    samplesMs.push(Date.now() - started);
   }
+  const ordered = [...samplesMs].sort((left, right) => left - right);
+  return { ms: ordered[Math.floor(ordered.length / 2)]!, samplesMs, ok };
 }
 
 function measureEntry(relativePath: string) {
@@ -168,11 +216,13 @@ function measureEntry(relativePath: string) {
     dependencies,
     dependencyCount: dependencies.length,
     typecheckMs: compile.ms,
+    typecheckSamplesMs: compile.samplesMs,
     typecheckClean: compile.ok
   };
 }
 
 function main(): void {
+  const startup = readStartupReport();
   const scenarios = SCENARIOS.map((scenario) => {
     const aura3d = measureEntry(scenario.aura3d);
     const threejs = measureEntry(scenario.threejs);
@@ -203,6 +253,14 @@ function main(): void {
       "explanatory headers that would otherwise count as developer effort in Aura3D's favour.",
     scenarios,
     gapReportWorkflows: gapReport,
+    runtimeStartupToFirstFrame: {
+      source: "tests/reports/developer-startup/report.json",
+      measurement: startup.measurement,
+      methodology: startup.methodology,
+      environment: startup.environment,
+      aura3d: startup.aura3d.runtimeStartupToFirstFrameMs,
+      threejs: startup.threejs.runtimeStartupToFirstFrameMs
+    },
     unmeasured: [
       {
         field: "installToFirstCubeMinutes",
@@ -210,13 +268,6 @@ function main(): void {
           "Requires a clean machine profile and a real registry install. Producing it from a warm monorepo checkout " +
           "would be a fabricated number, which is what R1 exists to prevent. Measure during release rehearsal on a " +
           "clean profile, or leave unproven."
-      },
-      {
-        field: "startupMsToFirstFrame",
-        reason:
-          "Needs a browser. Real per-route first-ready timings are already measured by " +
-          "tests/browser/tier12-route-health.spec.ts (readyTimeMs, 35 Tier 1/2 routes); a headless approximation here " +
-          "would be a second, weaker number competing with a real one."
       }
     ],
     summary: {
@@ -244,7 +295,10 @@ function main(): void {
       `  dependencies   : ${scenario.aura3d.dependencyCount} [${scenario.aura3d.dependencies.join(", ")}]` +
         ` vs ${scenario.threejs.dependencyCount} [${scenario.threejs.dependencies.join(", ")}]`
     );
-    console.log(`  tsc --noEmit   : ${scenario.aura3d.typecheckMs}ms vs ${scenario.threejs.typecheckMs}ms`);
+    console.log(
+      `  tsc --noEmit   : ${scenario.aura3d.typecheckMs}ms [${scenario.aura3d.typecheckSamplesMs.join(", ")}]` +
+        ` vs ${scenario.threejs.typecheckMs}ms [${scenario.threejs.typecheckSamplesMs.join(", ")}]`
+    );
     console.log("");
   }
   for (const row of gapReport) {
@@ -252,6 +306,10 @@ function main(): void {
   }
   console.log("");
   console.log(`fewer authored lines : ${report.summary.scenariosWhereAura3dNeedsFewerLines}/${report.summary.totalScenarios} scenarios, ${report.summary.gapReportWorkflowsWhereAura3dNeedsFewerLines}/${report.summary.gapReportWorkflows} gap-report workflows`);
+  console.log(
+    `runtime startup      : ${startup.aura3d.runtimeStartupToFirstFrameMs.median}ms Aura3D vs ` +
+      `${startup.threejs.runtimeStartupToFirstFrameMs.median}ms Three.js (median of ${startup.methodology.sessions} browser sessions)`
+  );
   console.log(`unmeasured fields    : ${report.unmeasured.map((field) => field.field).join(", ")}`);
   console.log("\nreport: tests/reports/developer-friction.json");
 }

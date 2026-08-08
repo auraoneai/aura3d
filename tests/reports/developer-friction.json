@@ -1,0 +1,234 @@
+{
+  "schema": "aura3d-developer-friction/1.0",
+  "generatedAt": "2026-08-08T09:07:10.471Z",
+  "method": "Measured on the committed bundle-scenario entries, one per engine per scenario, so friction and bundle size describe the same apps. Authored lines exclude blanks and comments, because the Aura3D entries carry long explanatory headers that would otherwise count as developer effort in Aura3D's favour.",
+  "scenarios": [
+    {
+      "id": "scenario-1-core-primitive-scene",
+      "label": "Core primitive scene: renderer, scene graph, camera, one material, one cube",
+      "aura3d": {
+        "entry": "tools/bundle-scenarios/entries/scenario-1-aura3d.ts",
+        "authoredLines": 9,
+        "imports": 1,
+        "dependencies": [
+          "@aura3d/engine"
+        ],
+        "dependencyCount": 1,
+        "typecheckMs": 1639,
+        "typecheckSamplesMs": [
+          1639,
+          1671,
+          1542
+        ],
+        "typecheckClean": true
+      },
+      "threejs": {
+        "entry": "tools/bundle-scenarios/entries/scenario-1-threejs.ts",
+        "authoredLines": 15,
+        "imports": 1,
+        "dependencies": [
+          "three"
+        ],
+        "dependencyCount": 1,
+        "typecheckMs": 1315,
+        "typecheckSamplesMs": [
+          1290,
+          1610,
+          1315
+        ],
+        "typecheckClean": true
+      },
+      "deltas": {
+        "authoredLines": -6,
+        "imports": 0,
+        "dependencies": 0,
+        "authoredLineRatio": 0.6
+      },
+      "aura3dFewerLines": true,
+      "aura3dFewerDependencies": true
+    },
+    {
+      "id": "scenario-2-product-viewer",
+      "label": "Product viewer: glTF, PBR, orbit controls, lighting, environment",
+      "aura3d": {
+        "entry": "tools/bundle-scenarios/entries/scenario-2-aura3d.ts",
+        "authoredLines": 14,
+        "imports": 1,
+        "dependencies": [
+          "@aura3d/engine"
+        ],
+        "dependencyCount": 1,
+        "typecheckMs": 1243,
+        "typecheckSamplesMs": [
+          1237,
+          1243,
+          1634
+        ],
+        "typecheckClean": true
+      },
+      "threejs": {
+        "entry": "tools/bundle-scenarios/entries/scenario-2-threejs.ts",
+        "authoredLines": 27,
+        "imports": 4,
+        "dependencies": [
+          "three"
+        ],
+        "dependencyCount": 1,
+        "typecheckMs": 1069,
+        "typecheckSamplesMs": [
+          1113,
+          1017,
+          1069
+        ],
+        "typecheckClean": true
+      },
+      "deltas": {
+        "authoredLines": -13,
+        "imports": -3,
+        "dependencies": 0,
+        "authoredLineRatio": 0.519
+      },
+      "aura3dFewerLines": true,
+      "aura3dFewerDependencies": true
+    },
+    {
+      "id": "scenario-3-game-runtime",
+      "label": "Game runtime: input, animation, physics integration, game loop",
+      "aura3d": {
+        "entry": "tools/bundle-scenarios/entries/scenario-3-aura3d.ts",
+        "authoredLines": 19,
+        "imports": 1,
+        "dependencies": [
+          "@aura3d/engine"
+        ],
+        "dependencyCount": 1,
+        "typecheckMs": 1356,
+        "typecheckSamplesMs": [
+          1284,
+          1408,
+          1356
+        ],
+        "typecheckClean": true
+      },
+      "threejs": {
+        "entry": "tools/bundle-scenarios/entries/scenario-3-threejs.ts",
+        "authoredLines": 40,
+        "imports": 2,
+        "dependencies": [
+          "cannon-es",
+          "three"
+        ],
+        "dependencyCount": 2,
+        "typecheckMs": 1035,
+        "typecheckSamplesMs": [
+          1035,
+          1102,
+          1035
+        ],
+        "typecheckClean": true
+      },
+      "deltas": {
+        "authoredLines": -21,
+        "imports": -1,
+        "dependencies": -1,
+        "authoredLineRatio": 0.475
+      },
+      "aura3dFewerLines": true,
+      "aura3dFewerDependencies": true
+    }
+  ],
+  "gapReportWorkflows": [
+    {
+      "workflow": "Premium Product Configurator",
+      "aura3dLines": 15,
+      "threejsLines": 74
+    },
+    {
+      "workflow": "glTF Asset Review",
+      "aura3dLines": 10,
+      "threejsLines": 68
+    },
+    {
+      "workflow": "Physical Material Metals",
+      "aura3dLines": 8,
+      "threejsLines": 58
+    },
+    {
+      "workflow": "Transparent Material Review",
+      "aura3dLines": 8,
+      "threejsLines": 62
+    },
+    {
+      "workflow": "Interior Gallery Scene",
+      "aura3dLines": 7,
+      "threejsLines": 54
+    },
+    {
+      "workflow": "Interactive Orbit Scene",
+      "aura3dLines": 7,
+      "threejsLines": 48
+    },
+    {
+      "workflow": "Large Scene Performance",
+      "aura3dLines": 9,
+      "threejsLines": 64
+    }
+  ],
+  "runtimeStartupToFirstFrame": {
+    "source": "tests/reports/developer-startup/report.json",
+    "measurement": "Runtime construction through completion of the first verified non-blank frame. Bundle download and module evaluation are excluded and must not be inferred from this number.",
+    "methodology": {
+      "sessions": 3,
+      "publicEntries": {
+        "aura3d": "@aura3d/engine",
+        "threejs": "three"
+      },
+      "identicalCanvas": {
+        "width": 960,
+        "height": 600
+      },
+      "identicalCameraAndContent": true,
+      "nonBlankPixelFloor": 1000
+    },
+    "environment": {
+      "browserVersion": "151.0.7922.77",
+      "headless": true,
+      "nodeVersion": "v22.22.0",
+      "os": "darwin arm64",
+      "softwareRasterizer": false,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+      "platform": "MacIntel",
+      "gpuVendor": "Google Inc. (Apple)",
+      "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)"
+    },
+    "aura3d": {
+      "min": 20.2,
+      "median": 24.1,
+      "p95": 43.5,
+      "max": 43.5,
+      "stddev": 10.1896,
+      "sampleCount": 3
+    },
+    "threejs": {
+      "min": 33.2,
+      "median": 33.8,
+      "p95": 48.2,
+      "max": 48.2,
+      "stddev": 6.934,
+      "sampleCount": 3
+    }
+  },
+  "unmeasured": [
+    {
+      "field": "installToFirstCubeMinutes",
+      "reason": "Requires a clean machine profile and a real registry install. Producing it from a warm monorepo checkout would be a fabricated number, which is what R1 exists to prevent. Measure during release rehearsal on a clean profile, or leave unproven."
+    }
+  ],
+  "summary": {
+    "scenariosWhereAura3dNeedsFewerLines": 3,
+    "scenariosWhereAura3dNeedsFewerOrEqualDependencies": 3,
+    "totalScenarios": 3,
+    "gapReportWorkflowsWhereAura3dNeedsFewerLines": 7,
+    "gapReportWorkflows": 7
+  }
+}

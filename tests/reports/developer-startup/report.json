@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d-developer-startup/1.0",
+  "generatedAt": "2026-08-08T09:05:45.682Z",
+  "sourceReport": "tests/reports/production-path-benchmark.json",
+  "measurement": "Runtime construction through completion of the first verified non-blank frame. Bundle download and module evaluation are excluded and must not be inferred from this number.",
+  "methodology": {
+    "sessions": 3,
+    "publicEntries": {
+      "aura3d": "@aura3d/engine",
+      "threejs": "three"
+    },
+    "identicalCanvas": {
+      "width": 960,
+      "height": 600
+    },
+    "identicalCameraAndContent": true,
+    "nonBlankPixelFloor": 1000
+  },
+  "environment": {
+    "browserVersion": "151.0.7922.77",
+    "headless": true,
+    "nodeVersion": "v22.22.0",
+    "os": "darwin arm64",
+    "softwareRasterizer": false,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "platform": "MacIntel",
+    "gpuVendor": "Google Inc. (Apple)",
+    "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)"
+  },
+  "aura3d": {
+    "runtimeStartupToFirstFrameMs": {
+      "min": 20.2,
+      "median": 24.1,
+      "p95": 43.5,
+      "max": 43.5,
+      "stddev": 10.1896,
+      "sampleCount": 3
+    },
+    "sessions": [
+      {
+        "session": 1,
+        "runtimeStartupToFirstFrameMs": 43.5,
+        "nonBlankPixels": 168992
+      },
+      {
+        "session": 2,
+        "runtimeStartupToFirstFrameMs": 20.2,
+        "nonBlankPixels": 168992
+      },
+      {
+        "session": 3,
+        "runtimeStartupToFirstFrameMs": 24.1,
+        "nonBlankPixels": 168992
+      }
+    ]
+  },
+  "threejs": {
+    "runtimeStartupToFirstFrameMs": {
+      "min": 33.2,
+      "median": 33.8,
+      "p95": 48.2,
+      "max": 48.2,
+      "stddev": 6.934,
+      "sampleCount": 3
+    },
+    "sessions": [
+      {
+        "session": 1,
+        "runtimeStartupToFirstFrameMs": 48.2,
+        "nonBlankPixels": 110023
+      },
+      {
+        "session": 2,
+        "runtimeStartupToFirstFrameMs": 33.2,
+        "nonBlankPixels": 110023
+      },
+      {
+        "session": 3,
+        "runtimeStartupToFirstFrameMs": 33.8,
+        "nonBlankPixels": 110023
+      }
+    ]
+  }
+}

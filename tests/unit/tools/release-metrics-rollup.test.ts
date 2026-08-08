@@ -38,6 +38,10 @@ describe("§B.2 — developer friction is complete for both engines", () => {
   it("measures every field for both engines, or declares it unmeasurable", () => {
     const report = json<{
       readonly scenarios: readonly { readonly aura3d: Record<string, unknown>; readonly threejs: Record<string, unknown> }[];
+      readonly runtimeStartupToFirstFrame: {
+        readonly aura3d: { readonly median: number; readonly sampleCount: number };
+        readonly threejs: { readonly median: number; readonly sampleCount: number };
+      };
       readonly unmeasured: readonly { readonly field: string; readonly reason: string }[];
     }>("tests/reports/developer-friction.json");
     expect(report.scenarios.length).toBe(3);
@@ -47,9 +51,12 @@ describe("§B.2 — developer friction is complete for both engines", () => {
         expect(scenario.threejs[field], `threejs.${field} missing`).toBeTypeOf("number");
       }
     }
-    // "Complete" includes the two fields that cannot be measured in-process. Declaring them with a
-    // reason is completeness; silently omitting them is not, and inventing them is worse.
-    expect(report.unmeasured.length).toBe(2);
+    for (const engine of [report.runtimeStartupToFirstFrame.aura3d, report.runtimeStartupToFirstFrame.threejs]) {
+      expect(engine.median).toBeGreaterThan(0);
+      expect(engine.sampleCount).toBeGreaterThanOrEqual(3);
+    }
+    // Install-to-first-cube still requires a clean real-registry release profile.
+    expect(report.unmeasured.map((field) => field.field)).toEqual(["installToFirstCubeMinutes"]);
   });
 });
 
