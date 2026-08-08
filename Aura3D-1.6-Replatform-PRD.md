@@ -114,11 +114,20 @@ anisotropy and ships a 580 KB core has not succeeded. Bundle size is a first-cla
 a workstream side effect.
 
 - [ ] Scenario-1 (core primitive scene) gzip ≤ **1.25x** the equivalent Three.js stack
+      — **FAILS: 257,074 B vs 119,296 B = 2.155x** (measured 2026-08-07). Better than the
+      7.25x the PRD recorded, and still 1.7x over budget.
 - [ ] Scenario-2 (product viewer) gzip ≤ **1.25x** equivalent
+      — **FAILS: 258,168 B vs 146,680 B = 1.760x.**
 - [ ] Scenario-3 (game runtime) gzip ≤ **1.5x** equivalent
-- [ ] Ratios measured by WS-2.4's canonical config against a real Three.js build, reported
+      — **FAILS: 294,620 B vs 143,669 B = 2.051x.**
+- [x] Ratios measured by WS-2.4's canonical config against a real Three.js build, reported
       side by side. If a ratio is missed, the release does not ship on that dimension —
       **do not raise the budget** (R2)
+      — measured, reported side by side, budgets **not** raised. All three fail, so **1.6 does
+      not ship on the bundle dimension**, and §B.1's "both, not either" means the release
+      condition is unmet regardless of renderer progress. `developer-value.test.ts` asserts
+      each budget still holds its original value, because raising one is the most likely way
+      this gate gets defeated.
 
 ### B.2 Developer friction — measured, beside performance
 
@@ -126,16 +135,32 @@ Aura3D wins by making developers faster. That must be measured, not asserted.
 
 - [ ] **Minutes from `npm install` to first rendered cube** — timed on a clean machine
       profile, scripted, recorded
-- [ ] **Authored lines of code** for each of the three WS-2.4 scenarios vs the Three.js
+      — reported `unmeasured` **with a reason**, not fabricated: it needs a clean machine
+      profile and a real registry install, and producing it from a warm monorepo would be the
+      exact defect class R1 exists to stop. Measure during release rehearsal or leave unproven.
+- [x] **Authored lines of code** for each of the three WS-2.4 scenarios vs the Three.js
       equivalent. Baseline already measured from
       `external-parity-threejs-visual-parity/gap-report.md`: product configurator 15 vs 74,
       asset review 10 vs 68, interior 7 vs 54, orbit 7 vs 48
-- [ ] **Number of imports** a developer must write per scenario
-- [ ] **Number of dependencies** a developer must install per scenario
-- [ ] **TypeScript compile time** for a scaffolded project
-- [ ] **Runtime startup time** to first frame
-- [ ] **Proof:** committed `tests/reports/developer-friction.json` with every field measured
-      for both Aura3D and the Three.js equivalent
+      — scenarios: **9 vs 15 · 13 vs 27 · 19 vs 40**. Blanks and comments excluded, because the
+      Aura3D entries carry long explanatory headers that would otherwise count as developer
+      effort in Aura3D's favour.
+- [x] **Number of imports** a developer must write per scenario — **1 vs 1 · 1 vs 4 · 1 vs 2**.
+- [x] **Number of dependencies** a developer must install per scenario — **1 vs 1 · 1 vs 1 ·
+      1 vs 2**. Scenarios 1-2 tie, and that is stated rather than spun: Three.js ships loaders
+      and controls as subpaths of `three`, so the cost lands in the import count, not the
+      install count. Scenario 3 is the real difference — a game runtime needs `three` plus
+      `cannon-es`.
+- [x] **TypeScript compile time** for a scaffolded project — `tsc --noEmit` per entry:
+      **826 vs 689 ms · 902 vs 939 ms · 977 vs 847 ms**. Aura3D is *slower* on two of three;
+      recorded as measured.
+- [ ] **Runtime startup time** to first frame — reported `unmeasured` with a reason: it needs
+      a browser, and real per-route `readyTimeMs` for all 35 Tier 1/2 routes already exists in
+      `tests/browser/tier12-route-health.spec.ts`. A headless approximation would be a weaker
+      second number competing with a real one.
+- [x] **Proof:** committed `tests/reports/developer-friction.json` with every field measured
+      for both Aura3D and the Three.js equivalent — committed, with the two unmeasurable
+      fields declared rather than filled in.
 
 ### B.3 Negative complexity — deletion is a success metric
 
@@ -2766,14 +2791,28 @@ way an engine fix lands green while the route stays broken (R3).
 
 ### WS-6.1 Clean-room comparison
 
-- [ ] Extend `tests/clean-room/` (14 files today) with an Aura3D-vs-Three.js build of the
+- [x] Extend `tests/clean-room/` (14 files today) with an Aura3D-vs-Three.js build of the
       same app measuring: equivalent visual output · authored line count · setup burden ·
       bundle size (WS-2.4 scenarios) · runtime correctness · integration complexity ·
       escape hatches · zero private imports · zero route-local patches.
-- [ ] Baseline from `external-parity-threejs-visual-parity/gap-report.md`: product
+      — measured on the **committed bundle-scenario entries** rather than a new clean-room
+      app, deliberately: `tools/bundle-scenarios/entries/` already holds one entry per engine
+      per scenario built through one shared config, so measuring friction on different files
+      would let the two reports describe different apps. `tools/developer-friction/index.ts`
+      → `tests/reports/developer-friction.json`.
+- [x] Baseline from `external-parity-threejs-visual-parity/gap-report.md`: product
       configurator 15 vs 74 lines; asset review 10 vs 68; interior 7 vs 54; orbit 7 vs 48.
-- [ ] **Proof:** fewer lines **and** bundle within budget **and** correct behaviour. All
+      — **parsed from the report rather than restated**, so the two cannot drift. It carries
+      7 workflows, not 4: also physical metals 8 vs 58, transparent 8 vs 62, large scene 9 vs 64.
+- [x] **Proof:** fewer lines **and** bundle within budget **and** correct behaviour. All
       three, or it fails.
+      — **WS-6.1 FAILS, and the verdict is the deliverable.** Axis 1 (fewer authored lines):
+      **met** — 9v15, 13v27, 19v40 on the scenarios and 7/7 gap-report workflows. Axis 3
+      (correct behaviour): **met** for 32 of 35 Tier 1/2 routes, 3 pinned pre-existing
+      failures. Axis 2 (bundle): **not met** — see §B.1. Recorded by
+      `tests/unit/tools/developer-value.test.ts`, which asserts the *measured* state including
+      the failure, so closing the gap flips a test instead of going unnoticed. Writing this as
+      a passing test with a lowered threshold is what R2 forbids.
 
 ### WS-6.2 Honest public claims
 
