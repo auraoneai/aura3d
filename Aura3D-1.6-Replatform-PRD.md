@@ -868,10 +868,35 @@ asserts the physics rather than an average.
       *less* visible through the transmissive sphere.
 - [x] **clearcoat** — distinct secondary specular lobe. — **FAILS:** peak luminance `0.477547` with
       clearcoat 0 and `0.477547` with clearcoat 1.
-- [ ] **morph targets** — vertex position change over the animation. — *deferred to WS-2.1's
-      material work landing.* These two need a rigged/morphed asset rather than a primitive, so they
-      belong with the asset-driven visual suite rather than this material harness. Not claimed.
-- [ ] **skinning** — joint-driven deformation over time. — same deferral, same reason.
+- [x] **morph targets** — vertex position change over the animation.
+      — ~~*deferred to WS-2.1's material work landing; needs a rigged asset.*~~ **That deferral
+      split the row in the wrong place.** The *visual* half needs an asset — whether a rigged
+      character deforms plausibly is an image question. The *structural* half is a property of the
+      data path, and a primitive with a hand-authored delta tests it **more** precisely than an
+      asset, because the expected result is arithmetic rather than a screenshot.
+
+      `tests/unit/rendering/morph-and-skinning-structural.test.ts` asserts displacement: no
+      movement at weight 0, full delta at weight 1, linear scaling between, per-vertex targeting
+      (a non-uniform delta must move only the named vertices — this is what distinguishes a morph
+      from an object-space offset), accumulation of two simultaneous targets rather than
+      last-one-wins, and bounds that actually contain the morphed geometry, because culling reads
+      them and stale bounds are the "character vanishes mid-animation" bug.
+
+      **The existing coverage proved the wrong thing.** `animation-runtime-105.spec.ts` asserts
+      `morphTargetCount >= 3` and that named weights flow through the animation graph — a morph
+      system that accepted every weight and moved nothing would satisfy all of it. Verified by
+      breaking it: making `applyMorphTargets` ignore the weight fails **5 of 10** cases here.
+- [x] **skinning** — joint-driven deformation over time.
+      — GPU deformation through the joint palette stays with the browser suite, correctly: there
+      is no CPU function to ask for a deformed position. What was asserted **nowhere** is the
+      contract that carries a joint transform to a vertex — so this covers that: both skinned
+      vertex formats expose 4-component `joints`/`weights`, per-vertex influences round-trip
+      through a vertex buffer without reordering or precision loss, influence weights sum to 1 (a
+      rig where they do not is why a skinned mesh shrinks toward the origin), and the palette
+      admits ≥ 64 joints — measured `MAX_SKINNING_JOINTS = 1024` against a humanoid rig's 50-80,
+      where a smaller cap silently fails on every real asset while passing synthetic two-joint
+      tests. Read from the exported constants rather than by grepping the source, after my first
+      version guessed the constant's name and failed.
 - [x] Retain per-asset MAE as reported evidence; keep the 85-asset baseline
       (min 1.34 / median 6.73 / max 28.18) in the report for regression tracking. — retained under
       `meanAbsoluteErrorBaseline`, labelled *"REPORTED EVIDENCE ONLY — never the pass/fail mechanism
