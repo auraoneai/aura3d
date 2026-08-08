@@ -2,18 +2,19 @@
 
 Generated from `tests/reports/bundle-size.json` on 2026-08-08.
 
-Measurement method: esbuild bundle, minify, gzip artifact, and `size-limit`
-against the gzip artifact.
+Measurement method: esbuild ESM splitting, minify, statically reachable critical-path
+chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenated gzip members.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,344,285 | 622,848 | 80,000 | fail |
+| `@aura3d/engine/lean core primitive critical path` | 608,491 | 129,930 | 80,000 | fail |
+| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 1,644,401 | 431,132 | 80,000 | informational |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 957 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 705 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 49,614 | 13,514 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 1,455,325 | 363,627 | 250,000 | fail |
-| `cinematic-scene starter app before user assets` | 1,455,192 | 363,614 | 250,000 | fail |
-| `mini-game starter app before user assets` | 1,495,993 | 381,403 | 250,000 | fail |
+| `product-viewer starter app before user assets` | 1,139,062 | 279,710 | 250,000 | fail |
+| `cinematic-scene starter app before user assets` | 1,138,929 | 279,689 | 250,000 | fail |
+| `mini-game starter app before user assets` | 1,175,621 | 295,666 | 250,000 | fail |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
@@ -27,9 +28,10 @@ without a bundle-size review.
 
 ## Known Overrun
 
-The `core-agent-api` target measures the compatibility-heavy root and remains far over its
-historical 80,000 B absolute budget. WS-2.2 explicitly keeps that root intact for existing
-consumers; new apps use `@aura3d/engine/lean`, `/lean-product`, or `/lean-game`. Those entries
-pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`, including
-a real GLB loader and the production physics solver. This report keeps the separate absolute
+The `compatibility-root-observation` target retains the compatibility-heavy root as an
+informational measurement rather than pretending its bytes disappeared. WS-2.2 explicitly
+keeps that root intact for existing consumers; the unchanged 80,000 B new-app budget applies
+to `@aura3d/engine/lean`. New product and game apps use `/lean-product` or `/lean-game`. Those
+entries pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`,
+including a real GLB loader and the production physics solver. This report keeps the separate
 root/template debt visible. Do not raise either set of budgets to manufacture a pass.
