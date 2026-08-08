@@ -61,7 +61,7 @@ interface FileReport {
   readonly path: string;
   readonly exists: boolean;
   /** Where the candidate body came from. A working-tree deletion is read from HEAD for proof. */
-  readonly source: "working-tree" | "head" | "missing";
+  readonly source: "working-tree" | "head" | "history" | "missing";
   readonly lines: number;
   readonly moduleSpecifiers: readonly string[];
   readonly clear: boolean;
@@ -594,10 +594,35 @@ function candidateSource(path: string): {
     const text = execFileSync("git", ["show", `HEAD:${path}`], {
       cwd: repoRoot,
       encoding: "utf8",
-      maxBuffer: 16 * 1024 * 1024
+      maxBuffer: 16 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"]
     });
     return { exists: false, source: "head", text };
   } catch {
+    // A retained deletion proof must remain reproducible after the deletion commit. Walk only the
+    // candidate's history and use the newest revision that still contained the file.
+    try {
+      const revisions = execFileSync("git", ["log", "--format=%H", "--", path], {
+        cwd: repoRoot,
+        encoding: "utf8",
+        maxBuffer: 4 * 1024 * 1024
+      }).trim().split("\n").filter(Boolean);
+      for (const revision of revisions) {
+        try {
+          const text = execFileSync("git", ["show", `${revision}:${path}`], {
+            cwd: repoRoot,
+            encoding: "utf8",
+            maxBuffer: 16 * 1024 * 1024,
+            stdio: ["ignore", "pipe", "ignore"]
+          });
+          return { exists: false, source: "history", text };
+        } catch {
+          // The deletion commit itself has no blob; continue to the prior touching revision.
+        }
+      }
+    } catch {
+      // Fall through to the explicit missing verdict below.
+    }
     return { exists: false, source: "missing", text: "" };
   }
 }
@@ -724,6 +749,7 @@ interface Args {
 
 const DEFAULT_MANIFEST = "tools/deletion-safety/candidates.json";
 const DEFAULT_REPORT = "tests/reports/deletion-safety.json";
+const MAX_RETAINED_PROSE_MENTIONS_PER_FILE = 25;
 
 function parseArgs(argv: readonly string[]): Args {
   const paths: string[] = [];
@@ -774,7 +800,9 @@ function main(): void {
   const { paths, reportPath, manifestPath } = parseArgs(process.argv.slice(2));
   // Every deletion queue is excluded, whether or not it was the source of this run's paths, and
   // whether or not it is the default one; see `scanRepository`.
-  const repo = scanRepository(new Set([DEFAULT_MANIFEST, ...(manifestPath === undefined ? [] : [manifestPath])]));
+  // The producer's own retained output describes the candidate by design and is never a consumer.
+  // Excluding it keeps a post-commit rerun from treating yesterday's proof as a new dependency.
+  const repo = scanRepository(new Set([DEFAULT_MANIFEST, reportPath, ...(manifestPath === undefined ? [] : [manifestPath])]));
   const expanded = [...new Set(paths.flatMap((path) => expandCandidate(path)))];
   const deletionSet = new Set(expanded);
   const ambiguous = ambiguousBasenames(repo);
@@ -824,7 +852,9 @@ function main(): void {
         if (report.points[point].length > 0) accumulator[point] = report.points[point];
         return accumulator;
       }, {}),
-      proseMentions: report.points[INFORMATIONAL_POINT]
+      proseMentionCount: report.points[INFORMATIONAL_POINT].length,
+      proseMentions: report.points[INFORMATIONAL_POINT].slice(0, MAX_RETAINED_PROSE_MENTIONS_PER_FILE),
+      proseMentionsTruncated: report.points[INFORMATIONAL_POINT].length > MAX_RETAINED_PROSE_MENTIONS_PER_FILE
     }))
   });
 

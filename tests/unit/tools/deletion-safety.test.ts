@@ -229,6 +229,25 @@ describe("deletion-safety (R8)", () => {
       renameSync(held, absolute);
     }
   }, 180_000);
+
+  it("keeps a deletion proof reproducible after the deletion commit", () => {
+    const candidate = "packages/assets/src/AssetBundleCacheFixtures.ts";
+    const { report } = run([candidate]);
+    const files = report.files as readonly {
+      readonly path: string;
+      readonly exists: boolean;
+      readonly source: string;
+      readonly lines: number;
+      readonly proseMentionCount: number;
+      readonly proseMentions: readonly unknown[];
+      readonly proseMentionsTruncated: boolean;
+    }[];
+    const file = files.find((entry) => entry.path === candidate);
+    expect(file).toMatchObject({ exists: false, source: "history" });
+    expect(file?.lines).toBeGreaterThan(0);
+    expect(file?.proseMentions.length).toBeLessThanOrEqual(25);
+    expect(file?.proseMentionCount).toBeGreaterThanOrEqual(file?.proseMentions.length ?? 0);
+  }, 180_000);
 });
 
 /* ------------------------------------------------------------------------------------------- */
