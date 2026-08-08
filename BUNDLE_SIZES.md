@@ -7,12 +7,12 @@ against the gzip artifact.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,344,293 | 622,850 | 80,000 | fail |
+| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,344,285 | 622,848 | 80,000 | fail |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 957 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 705 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 49,614 | 13,514 | 45,000 | pass |
 | `product-viewer starter app before user assets` | 1,455,325 | 363,627 | 250,000 | fail |
-| `cinematic-scene starter app before user assets` | 1,455,184 | 363,617 | 250,000 | fail |
+| `cinematic-scene starter app before user assets` | 1,455,192 | 363,614 | 250,000 | fail |
 | `mini-game starter app before user assets` | 1,495,993 | 381,403 | 250,000 | fail |
 
 The authoritative machine-readable report is

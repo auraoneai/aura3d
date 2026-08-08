@@ -3146,8 +3146,8 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
 - [ ] `pnpm check:bundle-size` — exits non-zero on overrun **and** is green; all 3
       scenarios reported against Three.js equivalents
       — **exits non-zero, correctly, and therefore is not green.** Both halves cannot hold while
-      the legacy absolute targets are over: compatibility root **622,850 B gzip** against an 80,000 B
-      limit; three compatibility templates at **363,617-381,403 B** against 250,000 B. Separately,
+      the legacy absolute targets are over: compatibility root **622,848 B gzip** against an 80,000 B
+      limit; three compatibility templates at **363,614-381,403 B** against 250,000 B. Separately,
       all three release-defining scenarios are green against real Three.js builds (§B.1). The fixed
       absolute target remains an honest blocker for this checkbox; it is not used to erase the
       comparative win or weakened to make the command green.
