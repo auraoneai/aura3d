@@ -25,7 +25,7 @@ const packageDisposition = {
   "create-aura3d": "AURA-MOAT", debug: "AURA-MOAT", ecs: "COMPATIBILITY-ONLY",
   "editor-runtime": "OPTIONAL-PLUGIN", editor: "OPTIONAL-PLUGIN", engine: "AURA-MOAT",
   environments: "AURA-CORE", input: "AURA-CORE", materials: "AURA-CORE", math: "AURA-CORE",
-  physics: "COMPATIBILITY-ONLY", "physics-rapier": "EXTERNAL-ADAPTER", "product-studio": "AURA-MOAT", react: "EXTERNAL-ADAPTER",
+  "navigation-recast": "EXTERNAL-ADAPTER", physics: "COMPATIBILITY-ONLY", "physics-rapier": "EXTERNAL-ADAPTER", "product-studio": "AURA-MOAT", react: "EXTERNAL-ADAPTER",
   rendering: "AURA-CORE", scene: "AURA-CORE", scripting: "COMPATIBILITY-ONLY",
   "three-compat": "COMPATIBILITY-ONLY", workflows: "AURA-MOAT"
 };

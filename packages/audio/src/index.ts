@@ -11,6 +11,7 @@ export type {
   AudioFileFetchResponseLike,
   AudioFileInput,
   AudioFileManagerOptions,
+  AudioCodecCandidate,
   AudioFileRequest,
   ResolvedAudioFileRequest
 } from "./AudioFileManager";

@@ -32,6 +32,11 @@ export interface AudioFileManagerOptions {
   readonly validateTypedAudioAssets?: boolean;
 }
 
+export interface AudioCodecCandidate {
+  readonly input: AudioFileInput;
+  readonly mimeType: string;
+}
+
 export interface AudioFileFetchResponseLike {
   readonly ok: boolean;
   readonly status: number;
@@ -151,6 +156,16 @@ export class AudioFileManager {
     return Promise.all(inputs.map((input) => this.load(input, request)));
   }
 
+  async loadFirstSupported(
+    candidates: readonly AudioCodecCandidate[],
+    canPlayType: (mimeType: string) => "" | "maybe" | "probably" = defaultCanPlayType
+  ): Promise<AudioClip> {
+    if (candidates.length === 0) throw new Error("Audio codec candidates must contain at least one source");
+    const candidate = candidates.find((entry) => canPlayType(entry.mimeType) !== "");
+    if (!candidate) throw new Error(`No supported audio codec among: ${candidates.map((entry) => entry.mimeType).join(", ")}`);
+    return this.load(candidate.input);
+  }
+
   clear(input?: AudioFileInput): void {
     if (input === undefined) {
       this.cache.clear();
@@ -249,4 +264,9 @@ async function defaultFetchAudio(url: string, init?: { readonly signal?: AbortSi
     throw new Error("AudioFileManager requires fetch or a custom fetch implementation");
   }
   return fetch(url, init);
+}
+
+function defaultCanPlayType(mimeType: string): "" | "maybe" | "probably" {
+  if (typeof document === "undefined") throw new Error("Codec selection requires canPlayType injection outside a browser");
+  return document.createElement("audio").canPlayType(mimeType);
 }

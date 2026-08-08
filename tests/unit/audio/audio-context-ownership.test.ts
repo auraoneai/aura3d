@@ -15,13 +15,11 @@ const ROOT = process.cwd();
 const CONSTRUCT_PATTERN = /new\s+AudioContext\s*\(|new\s+AudioCtor\s*\(|webkitAudioContext/;
 
 /**
- * The one legitimate owner, plus the exception this test exists to hold visible.
+ * The one legitimate owner.
  */
 const LEGITIMATE_CONTEXT_OWNERS: Readonly<Record<string, string>> = {
   "packages/audio/src/AudioContextManager.ts":
-    "THE owner. Every other consumer receives a context from here or is handed one explicitly; `createContext` exists so a caller can inject its own rather than construct a second.",
-  "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts":
-    "KNOWN VIOLATION, retained deliberately and tracked. This route imports createGameAudio and ALSO hand-rolls createAudioRuntime() with its own raw AudioContext, buffer cache and fetch loop. Fixing it is P5 route work (WS-5.3), not P3 library work: the route is one of the reported-defect set and must be rebuilt through the shared runtime rather than patched here, per R3."
+    "THE owner. Every other consumer receives a context from here or is handed one explicitly; `createContext` exists so a caller can inject its own rather than construct a second."
 };
 
 function walk(directory: string, out: string[] = []): string[] {
@@ -59,18 +57,9 @@ describe("AudioContext ownership (WS-3.2)", () => {
     }
   });
 
-  it("records the aura-clash violation as a P5 obligation rather than closing over it", () => {
-    /*
-     * Deliberately asserted, so the exception cannot quietly become permanent. If someone fixes the route,
-     * this test fails and forces the allowlist entry to be removed — which is the outcome we want. If nobody
-     * does, the entry stays visible in a passing test rather than dissolving into a TODO.
-     */
-    const justification = LEGITIMATE_CONTEXT_OWNERS["apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"];
-    expect(justification).toContain("KNOWN VIOLATION");
-    expect(justification).toContain("WS-5.3");
+  it("keeps Aura Clash on the shared browser-context owner", () => {
     const source = readFileSync(join(ROOT, "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"), "utf8");
-    // It imports the shared runtime AND hand-rolls its own: that combination is the violation.
-    expect(source).toContain("createGameAudio");
-    expect(source).toContain("createAudioRuntime");
+    expect(source).toContain("browserContext: true");
+    expect(source).not.toMatch(CONSTRUCT_PATTERN);
   });
 });

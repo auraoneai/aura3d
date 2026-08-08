@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T21:00:21.135Z",
+  "generatedAt": "2026-08-08T21:32:51.933Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "1105bfebf39b2e229ea4504b6a9c0880c9621675",
+  "sourceCommit": "f3a8a8f50dfb6453b335a727b49b96f3a1eb5cd7",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -14,9 +14,9 @@
     "routes/templates",
     "external-consumer and clean-room tests"
   ],
-  "packageCount": 27,
-  "subsystemCount": 36,
-  "sourceFilesClassified": 900,
+  "packageCount": 28,
+  "subsystemCount": 37,
+  "sourceFilesClassified": 901,
   "packages": [
     {
       "package": "animation",
@@ -680,8 +680,8 @@
       "published": true,
       "disposition": "BROWSER-STANDARD",
       "source": {
-        "lines": 2225,
-        "bytes": 76152
+        "lines": 2291,
+        "bytes": 79256
       },
       "dist": {
         "jsFiles": 19,
@@ -710,6 +710,7 @@
           "tests/unit/tools/api-docs.test.ts",
           "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
           "tests/unit/workstream5-runtime.test.ts",
+          "tools/audio-backend-bakeoff/index.ts",
           "tools/browser-entry-purity/index.ts",
           "tools/bundle-scenarios/index.ts",
           "tools/claim-lineage/index.ts",
@@ -738,6 +739,7 @@
           "tests/unit/workstream5-runtime.test.ts"
         ],
         "cliOrGenerator": [
+          "tools/audio-backend-bakeoff/index.ts",
           "tools/browser-entry-purity/index.ts",
           "tools/bundle-scenarios/index.ts",
           "tools/claim-lineage/index.ts",
@@ -747,6 +749,7 @@
         "docs": [
           "1.6-FINAL-PRD-Finishes.md",
           "docs/api/public-api.md",
+          "docs/architecture/adr/0006-browser-audio-stays-web-audio-owned.md",
           "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/audio/animation-audio.md"
@@ -754,19 +757,19 @@
         "externalConsumer": []
       },
       "consumerCounts": {
-        "source": 18,
+        "source": 19,
         "dynamicImport": 3,
         "route": 1,
         "fixture": 9,
-        "cliOrGenerator": 5,
-        "docs": 5,
+        "cliOrGenerator": 6,
+        "docs": 6,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 19,
         "testMentions": 9,
-        "docsMentions": 5
+        "docsMentions": 6
       }
     },
     {
@@ -2043,8 +2046,8 @@
       "published": false,
       "disposition": "AURA-MOAT",
       "source": {
-        "lines": 56843,
-        "bytes": 2327611
+        "lines": 56873,
+        "bytes": 2329582
       },
       "dist": {
         "jsFiles": 125,
@@ -2542,6 +2545,73 @@
       }
     },
     {
+      "package": "navigation-recast",
+      "publishedName": "@aura3d/navigation-recast",
+      "published": true,
+      "disposition": "EXTERNAL-ADAPTER",
+      "source": {
+        "lines": 196,
+        "bytes": 8167
+      },
+      "dist": {
+        "jsFiles": 0,
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "brotliBytes": 0,
+        "caveat": "sum of built JS, not a tree-shaken application workload"
+      },
+      "publicExports": [
+        "."
+      ],
+      "publicExportBlocksImmediateRemoval": true,
+      "dependencies": {
+        "recast-navigation": "0.43.1"
+      },
+      "consumers": {
+        "source": [
+          "tests/browser/optional-recast-navigation.spec.ts",
+          "tests/unit/navigation-recast/optional-boundary.test.ts",
+          "tests/unit/navigation-recast/recast-adapter.test.ts",
+          "tools/navigation-backend-bakeoff/index.ts",
+          "vitest.config.ts"
+        ],
+        "dynamicImport": [
+          "tests/unit/navigation-recast/recast-adapter.test.ts",
+          "tools/navigation-backend-bakeoff/index.ts"
+        ],
+        "route": [],
+        "fixture": [
+          "tests/browser/optional-recast-navigation.spec.ts",
+          "tests/unit/navigation-recast/optional-boundary.test.ts",
+          "tests/unit/navigation-recast/recast-adapter.test.ts"
+        ],
+        "cliOrGenerator": [
+          "tools/navigation-backend-bakeoff/index.ts"
+        ],
+        "docs": [
+          "1.6-FINAL-PRD-Finishes.md",
+          "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+          "docs/architecture/package-ownership.md"
+        ],
+        "externalConsumer": []
+      },
+      "consumerCounts": {
+        "source": 5,
+        "dynamicImport": 2,
+        "route": 0,
+        "fixture": 3,
+        "cliOrGenerator": 1,
+        "docs": 3,
+        "externalConsumer": 0
+      },
+      "zeroSourceConsumers": false,
+      "maintenanceCost": {
+        "sourceFiles": 1,
+        "testMentions": 3,
+        "docsMentions": 3
+      }
+    },
+    {
       "package": "physics",
       "publishedName": "@aura3d/physics",
       "published": true,
@@ -2589,6 +2659,7 @@
           "tests/browser/debug-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/browser/optional-rapier-physics.spec.ts",
           "tests/browser/physics-browser-harness.ts",
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/system-baselines.ts",
@@ -2597,6 +2668,8 @@
           "tests/unit/apps/raycast-ccd-lab.test.ts",
           "tests/unit/engine/scene-queries.test.ts",
           "tests/unit/game-runtime/hitbox-world.test.ts",
+          "tests/unit/physics-rapier/optional-boundary.test.ts",
+          "tests/unit/physics-rapier/rapier-adapter.test.ts",
           "tests/unit/physics/public-joints.test.ts",
           "tests/unit/physics/public-physics-runtime.test.ts",
           "tests/unit/physics/tyre-load-rating.test.ts",
@@ -2641,15 +2714,19 @@
           "tests/browser/debug-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/browser/optional-rapier-physics.spec.ts",
           "tests/browser/physics-browser-harness.ts",
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/system-baselines.ts",
           "tests/reports/final-subsystem-ownership.json",
+          "tests/reports/optional-rapier-physics/report.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/animation/physics-capsule-locomotion.test.ts",
           "tests/unit/apps/raycast-ccd-lab.test.ts",
           "tests/unit/engine/scene-queries.test.ts",
           "tests/unit/game-runtime/hitbox-world.test.ts",
+          "tests/unit/physics-rapier/optional-boundary.test.ts",
+          "tests/unit/physics-rapier/rapier-adapter.test.ts",
           "tests/unit/physics/public-joints.test.ts",
           "tests/unit/physics/public-physics-runtime.test.ts",
           "tests/unit/physics/tyre-load-rating.test.ts",
@@ -2680,6 +2757,7 @@
           "docs/animation/believable-motion.md",
           "docs/api/public-api.md",
           "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
+          "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
           "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/meshbvh-responsibilities.md",
           "docs/architecture/package-ownership.md",
@@ -2690,28 +2768,28 @@
           "docs/project/plans/aura3d-package-architecture.md",
           "docs/project/plans/aura3d-product-remediation-prd.md",
           "docs/project/plans/engine-game-parity-execution-plan.md",
-          "docs/project/release/release-checklist.md",
           "docs/project/status/known-limits.md",
           "examples/physics-sandbox/README.md",
           "examples/raycast-ccd-lab/README.md",
-          "packages/create-aura3d/templates/character-controller/README.md"
+          "packages/create-aura3d/templates/character-controller/README.md",
+          "packages/physics-rapier/README.md"
         ],
         "externalConsumer": []
       },
       "consumerCounts": {
-        "source": 44,
+        "source": 47,
         "dynamicImport": 7,
         "route": 11,
-        "fixture": 21,
+        "fixture": 25,
         "cliOrGenerator": 6,
-        "docs": 28,
+        "docs": 29,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 35,
-        "testMentions": 21,
-        "docsMentions": 28
+        "testMentions": 25,
+        "docsMentions": 29
       }
     },
     {
@@ -2724,10 +2802,10 @@
         "bytes": 10533
       },
       "dist": {
-        "jsFiles": 0,
-        "rawBytes": 0,
-        "gzipBytes": 0,
-        "brotliBytes": 0,
+        "jsFiles": 1,
+        "rawBytes": 8312,
+        "gzipBytes": 2329,
+        "brotliBytes": 2080,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2739,36 +2817,42 @@
       },
       "consumers": {
         "source": [
+          "tests/browser/optional-rapier-physics.spec.ts",
+          "tests/unit/physics-rapier/optional-boundary.test.ts",
+          "tests/unit/physics-rapier/rapier-adapter.test.ts",
           "vitest.config.ts"
         ],
         "dynamicImport": [],
         "route": [],
         "fixture": [
-          "tests/reports/final-subsystem-ownership.json"
+          "tests/browser/optional-rapier-physics.spec.ts",
+          "tests/reports/final-subsystem-ownership.json",
+          "tests/reports/optional-rapier-physics/report.json",
+          "tests/unit/physics-rapier/optional-boundary.test.ts",
+          "tests/unit/physics-rapier/rapier-adapter.test.ts"
         ],
         "cliOrGenerator": [],
         "docs": [
           "1.6-FINAL-PRD-Finishes.md",
           "docs/architecture/final-subsystem-ownership.md",
-          "docs/architecture/package-ownership.md",
-          "docs/project/release/release-checklist.md"
+          "docs/architecture/package-ownership.md"
         ],
         "externalConsumer": []
       },
       "consumerCounts": {
-        "source": 1,
+        "source": 4,
         "dynamicImport": 0,
         "route": 0,
-        "fixture": 1,
+        "fixture": 5,
         "cliOrGenerator": 0,
-        "docs": 4,
+        "docs": 3,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 1,
-        "docsMentions": 4
+        "testMentions": 5,
+        "docsMentions": 3
       }
     },
     {
@@ -4941,8 +5025,8 @@
         "packages/audio/src/effects/Reverb.ts",
         "packages/audio/src/index.ts"
       ],
-      "lines": 1645,
-      "bytes": 53180,
+      "lines": 1711,
+      "bytes": 56284,
       "compiledCost": {
         "compiledFiles": 16,
         "rawBytes": 39278,
@@ -4955,6 +5039,7 @@
         "Aura3D-1.6-Replatform-PRD.md",
         "benchmark/context/threejs/files/build/three.module.js",
         "docs/api/public-api.md",
+        "docs/architecture/adr/0006-browser-audio-stays-web-audio-owned.md",
         "docs/architecture/final-subsystem-ownership.md",
         "docs/audio/animation-audio.md",
         "examples/game-slice/README.md",
@@ -4973,12 +5058,13 @@
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
         "tests/unit/workstream5-runtime.test.ts",
+        "tools/audio-backend-bakeoff/index.ts",
         "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/index.mjs",
         "tools/negative-complexity/index.ts",
         "tools/requirements-trace/index.ts"
       ],
-      "maintenanceReferenceCount": 26
+      "maintenanceReferenceCount": 28
     },
     {
       "id": "audio-evidence-fixtures",
@@ -5004,9 +5090,10 @@
         "docs/api/public-api.md",
         "packages/audio/src/index.ts",
         "tests/browser/runtime-external-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "tests/reports/final-subsystem-ownership.json",
+        "tools/audio-backend-bakeoff/index.ts"
       ],
-      "maintenanceReferenceCount": 4
+      "maintenanceReferenceCount": 5
     },
     {
       "id": "aura3d-cli-general",
@@ -5327,6 +5414,8 @@
         "docs/architecture/1.6-layers.md",
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
+        "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
+        "docs/architecture/adr/0006-browser-audio-stays-web-audio-owned.md",
         "docs/architecture/extension-points.md",
         "docs/architecture/final-subsystem-ownership.md",
         "docs/architecture/meshbvh-responsibilities.md",
@@ -5575,6 +5664,8 @@
         "packages/input/src/WebXRSessionController.ts",
         "packages/materials/package.json",
         "packages/math/package.json",
+        "packages/navigation-recast/package.json",
+        "packages/physics-rapier/package.json",
         "packages/physics/README.md",
         "packages/physics/package.json",
         "packages/physics/src/Constraint.ts",
@@ -5756,6 +5847,7 @@
         "tools/asset-index-refresh/search.mjs",
         "tools/asset-screening/screen.mjs",
         "tools/assets-provenance-evidence/index.ts",
+        "tools/audio-backend-bakeoff/index.ts",
         "tools/aura3d105-release-readiness/index.ts",
         "tools/aura3d106-docs-claims/index.ts",
         "tools/aura3d106-local-cli-pack-proof/index.ts",
@@ -5838,7 +5930,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 780
+      "maintenanceReferenceCount": 785
     },
     {
       "id": "controls-general",
@@ -6520,6 +6612,7 @@
         "packages/engine/src/ecs/ECSRenderSource.ts",
         "packages/input/src/GestureHapticsFixtures.ts",
         "packages/input/src/InputActionBindingFixtures.ts",
+        "packages/physics-rapier/src/index.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/SurfaceQuery.ts",
         "packages/rendering/src/EnvironmentPlatform.ts",
@@ -6551,7 +6644,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/requirements-trace/index.ts"
       ],
-      "maintenanceReferenceCount": 86
+      "maintenanceReferenceCount": 87
     },
     {
       "id": "editor-evidence-fixtures",
@@ -6933,8 +7026,8 @@
         "packages/engine/src/threejs-example-parity/FlagshipFoundation.ts",
         "packages/engine/src/threejs-example-parity/index.ts"
       ],
-      "lines": 54763,
-      "bytes": 2240683,
+      "lines": 54793,
+      "bytes": 2242654,
       "compiledCost": {
         "compiledFiles": 105,
         "rawBytes": 1722551,
@@ -7181,6 +7274,8 @@
         "docs/architecture/adr/0001-retain-ecs-and-scripting.md",
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
+        "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
+        "docs/architecture/adr/0006-browser-audio-stays-web-audio-owned.md",
         "docs/architecture/claim-lineage.md",
         "docs/architecture/meshbvh-responsibilities.md",
         "docs/architecture/physics-backend-decision.md",
@@ -7599,6 +7694,7 @@
         "tests/unit/game-runtime/runtime-node-frame-loop-source-contract.test.ts",
         "tests/unit/input/input-service-ownership.test.ts",
         "tests/unit/package-dist/root-gates.test.ts",
+        "tests/unit/physics-rapier/optional-boundary.test.ts",
         "tests/unit/physics/fighting-combat-world.test.ts",
         "tests/unit/physics/kinematic-fighting-controller.test.ts",
         "tests/unit/physics/physics-runtime.test.ts",
@@ -7651,6 +7747,7 @@
         "tools/animation-runtime-package-smoke/index.ts",
         "tools/api-docs/index.ts",
         "tools/asset-geometry-audit/make-multipart-fixture.mjs",
+        "tools/audio-backend-bakeoff/index.ts",
         "tools/aura-clash-flagship-readiness/index.ts",
         "tools/aura3d-recovery-baseline/index.mjs",
         "tools/aura3d105-release-readiness/index.ts",
@@ -7684,6 +7781,7 @@
         "tools/engine-readiness-visual-quality/index.ts",
         "tools/evidence-freshness/explain-staleness.mjs",
         "tools/evidence-freshness/index.mjs",
+        "tools/evidence-freshness/producer-registry.mjs",
         "tools/evidence/verify-agent-api-types.mjs",
         "tools/external-demo-validation/index.ts",
         "tools/external-deployment-smoke/index.ts",
@@ -7800,7 +7898,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 856
+      "maintenanceReferenceCount": 861
     },
     {
       "id": "engine-node-media-publishing",
@@ -8154,6 +8252,7 @@
         "packages/input/src/controls/SceneCameraAdapter.ts",
         "packages/input/tests/input.test.ts",
         "packages/math/README.md",
+        "packages/physics-rapier/src/index.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/SurfaceQuery.ts",
         "packages/rendering/src/EnvironmentPlatform.ts",
@@ -8250,7 +8349,28 @@
         "tools/threejs-parity-unreal-bloom-parity/index.ts",
         "tools/verify-architecture/index.ts"
       ],
-      "maintenanceReferenceCount": 176
+      "maintenanceReferenceCount": 177
+    },
+    {
+      "id": "navigation-recast-general",
+      "package": "navigation-recast",
+      "disposition": "EXTERNAL-ADAPTER",
+      "owner": "@aura3d/navigation-recast",
+      "decision": "Retain under the package disposition; reassess only with consumer and migration evidence.",
+      "files": [
+        "packages/navigation-recast/src/index.ts"
+      ],
+      "lines": 196,
+      "bytes": 8167,
+      "compiledCost": {
+        "compiledFiles": 0,
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "brotliBytes": 0,
+        "caveat": "concatenated built modules before application tree-shaking"
+      },
+      "maintenanceReferences": [],
+      "maintenanceReferenceCount": 0
     },
     {
       "id": "physics-cannon-adapter",
@@ -8343,6 +8463,7 @@
         "packages/engine/src/agent-api/index.ts",
         "packages/engine/src/agent-api/lean-game.ts",
         "packages/engine/src/production-runtime/index.ts",
+        "packages/physics-rapier/src/index.ts",
         "packages/physics/README.md",
         "packages/physics/src/CharacterController.ts",
         "packages/physics/src/CollisionVolumes.ts",
@@ -8414,7 +8535,7 @@
         "tools/requirements-trace/index.ts",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 131
+      "maintenanceReferenceCount": 132
     },
     {
       "id": "physics-custom-physical-controllers",
@@ -8627,6 +8748,7 @@
         "docs/api/public-api.md",
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
+        "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
         "docs/architecture/extension-points.md",
         "docs/architecture/meshbvh-responsibilities.md",
         "docs/architecture/physics-backend-decision.md",
@@ -8768,6 +8890,9 @@
         "packages/engine/src/animation-studio/scene-tools.ts",
         "packages/engine/src/ecs/ECSRenderSource.ts",
         "packages/engine/src/production-runtime/index.ts",
+        "packages/navigation-recast/README.md",
+        "packages/physics-rapier/README.md",
+        "packages/physics-rapier/src/index.ts",
         "packages/physics/README.md",
         "packages/physics/package.json",
         "packages/physics/src/CharacterController.ts",
@@ -8817,6 +8942,7 @@
         "tests/browser/threejs-parity-transform-controls.spec.ts",
         "tests/clean-room/physics-sandbox/src/main.ts",
         "tests/clean-room/product-configurator/src/main.ts",
+        "tests/fixtures/optional-rapier-browser.ts",
         "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-skyline-runner.json",
         "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.json",
         "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
@@ -8872,6 +8998,7 @@
         "tests/unit/game-runtime/hitbox-world.test.ts",
         "tests/unit/game-runtime/public-game-geometry.test.ts",
         "tests/unit/package-dist/root-gates.test.ts",
+        "tests/unit/physics-rapier/rapier-adapter.test.ts",
         "tests/unit/physics/backend-neutral-contract.test.ts",
         "tests/unit/physics/broadphase.test.ts",
         "tests/unit/physics/cannon-collider-material.test.ts",
@@ -8954,7 +9081,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 418
+      "maintenanceReferenceCount": 424
     },
     {
       "id": "physics-navigation-crowd-steering",
@@ -8985,6 +9112,8 @@
         "apps/aura-clash-showcase/src/GameConfig.ts",
         "docs/api/public-api.md",
         "docs/architecture/1.6-layers.md",
+        "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+        "docs/architecture/adr/README.md",
         "docs/architecture/final-subsystem-ownership.md",
         "docs/physics/runtime.md",
         "docs/project/parity/threejs-r185-surface-inventory.md",
@@ -8995,6 +9124,7 @@
         "packages/engine/src/agent-api/GameGenreKits.ts",
         "packages/engine/src/agent-api/VehicleChassis.ts",
         "packages/engine/src/agent-api/VehicleDriverAi.ts",
+        "packages/navigation-recast/src/index.ts",
         "packages/physics/src/index.ts",
         "tests/browser/runtime-external-parity.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
@@ -9002,7 +9132,7 @@
         "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/index.mjs"
       ],
-      "maintenanceReferenceCount": 24
+      "maintenanceReferenceCount": 27
     },
     {
       "id": "physics-rapier-general",
@@ -9016,10 +9146,10 @@
       "lines": 160,
       "bytes": 10533,
       "compiledCost": {
-        "compiledFiles": 0,
-        "rawBytes": 0,
-        "gzipBytes": 0,
-        "brotliBytes": 0,
+        "compiledFiles": 1,
+        "rawBytes": 8312,
+        "gzipBytes": 2329,
+        "brotliBytes": 2080,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [],
@@ -11500,7 +11630,8 @@
     "baselineCommit": "ce01b95f6a200175b3db7d47f30f8e6fea911018",
     "addedPackageSource": [],
     "adrMappings": {
-      "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md"
+      "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
+      "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md"
     },
     "missingAdrMappings": []
   },

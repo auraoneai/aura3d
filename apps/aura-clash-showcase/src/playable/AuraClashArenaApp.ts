@@ -1,4 +1,4 @@
-import { createGameApp, createGameAudio, game, scene, type GameAudio, type GameAudioContextLike, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
+import { createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import {
   createSideViewGameRenderPreset,
@@ -2364,24 +2364,8 @@ function createPerformanceProof(dt: number, renderMs: number, drawCalls: number)
 }
 
 function createAudioRuntime(): AudioRuntime {
-  const AudioCtor = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  const context = AudioCtor ? new AudioCtor() : null;
   const recentCues: string[] = [];
-  const buffers = new Map<string, Promise<AudioBuffer>>();
   const assetUrls = Object.values(auraClashAudioAssets).map((asset) => asset.url);
-  const loadBuffer = async (audioContext: AudioContext, url: string): Promise<AudioBuffer> => {
-    let pending = buffers.get(url);
-    if (!pending) {
-      pending = fetch(url)
-        .then((response) => {
-          if (!response.ok) throw new Error(`Audio asset ${url} returned ${response.status}`);
-          return response.arrayBuffer();
-        })
-        .then((bytes) => audioContext.decodeAudioData(bytes.slice(0)));
-      buffers.set(url, pending);
-    }
-    return pending;
-  };
   const cueEntries = Object.fromEntries(
     Object.values(auraClashAudioManifest).map((definition) => [
       definition.cue,
@@ -2389,22 +2373,12 @@ function createAudioRuntime(): AudioRuntime {
         id: definition.cue,
         bus: definition.bus,
         volume: definition.volume,
-        play: async (audioContext: GameAudioContextLike, destination: AudioNode) => {
-          const concreteContext = audioContext as AudioContext;
-          const buffer = await loadBuffer(concreteContext, definition.asset.url);
-          const source = concreteContext.createBufferSource();
-          const gain = concreteContext.createGain();
-          source.buffer = buffer;
-          gain.gain.value = definition.volume;
-          source.connect(gain);
-          gain.connect(destination);
-          source.start();
-        }
+        asset: definition.asset
       }
     ])
   ) as unknown as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
   const audio: GameAudio<keyof typeof auraClashAudioManifest> = createGameAudio({
-    context,
+    browserContext: true,
     buses: [
       { id: "ui", volume: 0.8 },
       { id: "combat", volume: 1 },
@@ -2428,8 +2402,8 @@ function createAudioRuntime(): AudioRuntime {
       return {
         enabled: evidence.enabled && !evidence.muted,
         muted: evidence.muted,
-        musicReady: context !== null,
-        sfxReady: context !== null && Object.keys(auraClashAudioManifest).length >= 10 && assetUrls.length >= 10,
+        musicReady: evidence.enabled,
+        sfxReady: evidence.enabled && Object.keys(auraClashAudioManifest).length >= 10 && assetUrls.length >= 10,
         lastCue: evidence.lastCue,
         recentCues,
         cueCount: Object.keys(auraClashAudioManifest).length,

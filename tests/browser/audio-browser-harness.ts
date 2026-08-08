@@ -5,7 +5,10 @@ interface AudioBrowserResult {
   readonly contextState: string;
   readonly clipDuration: number;
   readonly sourceStateAfterPlay: string;
+  readonly sourceStateAfterPause?: string;
+  readonly sourceStateAfterResume?: string;
   readonly sourceStateAfterStop: string;
+  readonly repeatedMounts?: number;
   readonly error?: string;
 }
 
@@ -48,16 +51,37 @@ document.querySelector<HTMLButtonElement>("#audio-start")?.addEventListener("cli
 
     source.play();
     const sourceStateAfterPlay = source.state;
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    source.fade(0.01, 0.005, 0.01);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    source.pause();
+    const sourceStateAfterPause = source.state;
+    source.resume();
+    const sourceStateAfterResume = source.state;
+    source.stop();
+    source.playSprite(0, Math.min(0.02, clip.duration));
+    await new Promise((resolve) => setTimeout(resolve, 25));
     source.stop();
     const sourceStateAfterStop = source.state;
+
+    let repeatedMounts = 0;
+    for (let iteration = 0; iteration < 10; iteration += 1) {
+      const mounted = new AudioSystem();
+      await mounted.unlock();
+      await mounted.suspend();
+      await mounted.resume();
+      await mounted.dispose();
+      if (mounted.contextManager.state === "closed") repeatedMounts += 1;
+    }
 
     publish({
       status: "ready",
       contextState: system.contextManager.state,
       clipDuration: clip.duration,
       sourceStateAfterPlay,
-      sourceStateAfterStop
+      sourceStateAfterPause,
+      sourceStateAfterResume,
+      sourceStateAfterStop,
+      repeatedMounts
     });
     source.dispose();
     await system.dispose();

@@ -198,7 +198,16 @@ test("AudioFileManager loads typed audio assets once and caches decoded clips", 
   assert.equal(fetchCount, 1);
   assert.equal(decodeCount, 1);
   assert.equal(manager.getCached(asset), first);
+  const selected = await manager.loadFirstSupported(
+    [
+      { input: "/aura-assets/dialogue.ogg", mimeType: "audio/ogg" },
+      { input: asset, mimeType: "audio/wav" }
+    ],
+    (mimeType) => mimeType === "audio/wav" ? "probably" : ""
+  );
+  assert.equal(selected, first);
   assert.throws(() => manager.resolve({ ...asset, type: "model" }), /not an audio asset/);
+  await assert.rejects(() => manager.loadFirstSupported([{ input: asset, mimeType: "audio/wav" }], () => ""), /No supported audio codec/);
 });
 
 test("AudioWaveform computes deterministic peak data and canvas path points", () => {

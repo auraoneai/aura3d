@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `1105bfebf39b2e229ea4504b6a9c0880c9621675`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `f3a8a8f50dfb6453b335a727b49b96f3a1eb5cd7`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -12,7 +12,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/apps` | `AURA-MOAT` | 162 | 16 | 1 | 1190 | yes |
 | `@aura3d/asset-index` | `AURA-MOAT` | 3438 | 35 | 1 | 24286 | yes |
 | `@aura3d/assets` | `AURA-MOAT` | 16584 | 88 | 3 | 109159 | yes |
-| `@aura3d/audio` | `BROWSER-STANDARD` | 2225 | 18 | 1 | 13124 | yes |
+| `@aura3d/audio` | `BROWSER-STANDARD` | 2291 | 19 | 1 | 13124 | yes |
 | `@aura3d/cli` | `AURA-MOAT` | 8756 | 32 | 1 | 78405 | yes |
 | `@aura3d/controls` | `AURA-CORE` | 2389 | 14 | 1 | 14931 | yes |
 | `@aura3d/core` | `AURA-CORE` | 1186 | 52 | 1 | 7644 | yes |
@@ -21,13 +21,14 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/ecs` | `COMPATIBILITY-ONLY` | 1480 | 22 | 1 | 10078 | yes |
 | `@aura3d/editor` | `OPTIONAL-PLUGIN` | 1 | 28 | 1 | 93 | yes |
 | `@aura3d/editor-runtime` | `OPTIONAL-PLUGIN` | 7915 | 28 | 1 | 50811 | yes |
-| `@aura3d/engine-runtime` | `AURA-MOAT` | 56843 | 11 | 3 | 409090 | no |
+| `@aura3d/engine-runtime` | `AURA-MOAT` | 56873 | 11 | 3 | 409090 | no |
 | `@aura3d/environments` | `AURA-CORE` | 469 | 5 | 1 | 3050 | yes |
 | `@aura3d/input` | `AURA-CORE` | 2471 | 34 | 1 | 14695 | yes |
 | `@aura3d/materials` | `AURA-CORE` | 360 | 5 | 1 | 2760 | yes |
 | `@aura3d/math` | `AURA-CORE` | 1220 | 49 | 1 | 8067 | yes |
-| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 11988 | 44 | 3 | 102048 | yes |
-| `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 160 | 1 | 1 | 0 | yes |
+| `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 196 | 5 | 1 | 0 | yes |
+| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 11988 | 47 | 3 | 102048 | yes |
+| `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 160 | 4 | 1 | 2329 | yes |
 | `@aura3d/product-studio` | `AURA-MOAT` | 696 | 29 | 1 | 4893 | yes |
 | `@aura3d/react` | `EXTERNAL-ADAPTER` | 173 | 13 | 1 | 1182 | yes |
 | `@aura3d/rendering` | `AURA-CORE` | 55125 | 224 | 3 | 390609 | yes |
@@ -47,30 +48,31 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 3 | 793 | 6457 | 5 | Remove evidence-only source from the published runtime after consumer proof. |
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `assets-general` | `assets` | `AURA-MOAT` | 61 | 15791 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1645 | 8464 | 26 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `audio-evidence-fixtures` | `audio` | `EVIDENCE-ONLY` | 3 | 580 | 4538 | 4 | Move non-runtime fixtures out of the published audio package. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 780 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1711 | 8464 | 28 | Select one playback owner; retain Aura-specific cue semantics only. |
+| `audio-evidence-fixtures` | `audio` | `EVIDENCE-ONLY` | 3 | 580 | 4538 | 5 | Move non-runtime fixtures out of the published audio package. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 785 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 67 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 199 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 86 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 87 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 3 | Move fixtures out of the optional editor runtime. |
 | `editor-general` | `editor` | `OPTIONAL-PLUGIN` | 1 | 1 | 93 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-runtime-general` | `editor-runtime` | `OPTIONAL-PLUGIN` | 45 | 7547 | 47379 | 119 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `engine-browser-media` | `engine` | `BROWSER-STANDARD` | 4 | 521 | 3170 | 11 | Keep browser capture separate from Node encoding and publishing. |
-| `engine-general` | `engine` | `AURA-MOAT` | 105 | 54763 | 380791 | 856 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `engine-general` | `engine` | `AURA-MOAT` | 105 | 54793 | 380791 | 861 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `engine-node-media-publishing` | `engine` | `OPTIONAL-PLUGIN` | 9 | 1559 | 10660 | 18 | Remove Node/cloud/FFmpeg ownership from browser entries. |
 | `environments-general` | `environments` | `AURA-CORE` | 8 | 469 | 3050 | 4 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `input-general` | `input` | `AURA-CORE` | 26 | 2471 | 14623 | 70 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `materials-general` | `materials` | `AURA-CORE` | 9 | 360 | 2760 | 6 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 176 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 131 | Compare against current Rapier topology; exactly one physical solver may remain. |
+| `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 177 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 196 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 132 | Compare against current Rapier topology; exactly one physical solver may remain. |
 | `physics-custom-physical-controllers` | `physics` | `DEPRECATE-REMOVE` | 4 | 2184 | 17116 | 31 | Retain only until the optional-engine bake-off and migration proof identify replacements. |
 | `physics-evidence-descriptors` | `physics` | `EVIDENCE-ONLY` | 7 | 2281 | 14925 | 8 | Move out of the published runtime; never represent descriptors as solvers. |
-| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2451 | 16083 | 418 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-navigation-crowd-steering` | `physics` | `OPTIONAL-PLUGIN` | 3 | 1135 | 7650 | 24 | Bake off against Recast/Detour and maintained alternatives in Phase 2. |
-| `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2451 | 16083 | 424 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-navigation-crowd-steering` | `physics` | `OPTIONAL-PLUGIN` | 3 | 1135 | 7650 | 27 | Bake off against Recast/Detour and maintained alternatives in Phase 2. |
+| `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `rendering-general` | `rendering` | `AURA-CORE` | 253 | 55125 | 381532 | 898 | Retain under the package disposition; reassess only with consumer and migration evidence. |
@@ -96,7 +98,7 @@ A metadata score is not a selection. Runtime, bundle, determinism, disposal, wor
 
 ## Consumer and removal truth
 
-The machine report retains the complete per-package paths for source, dynamic-import, route, fixture, generator/CLI, docs, and installed-consumer evidence. A package with zero direct source consumers is not deletable when its public exports, generators, docs, fixtures, or external-consumer proofs remain. All 26 packages publish at least one export, so none is a `DELETE-NOW` package in Phase 1.
+The machine report retains the complete per-package paths for source, dynamic-import, route, fixture, generator/CLI, docs, and installed-consumer evidence. A package with zero direct source consumers is not deletable when its public exports, generators, docs, fixtures, or external-consumer proofs remain. All 28 packages publish at least one export, so none is a `DELETE-NOW` package in this inventory.
 
 Known overlap queues:
 

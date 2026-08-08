@@ -18,6 +18,7 @@ export const PACKAGE_TIERS: Record<string, number> = {
   math: 0,
   physics: 0,
   "physics-rapier": 0,
+  "navigation-recast": 0,
   scripting: 0,
   "asset-index": 0,
   // 1 — core data model.

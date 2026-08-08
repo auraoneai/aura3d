@@ -87,6 +87,21 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "optional-rapier-browser": [
     "tests/reports/optional-rapier-physics/report.json"
   ],
+  "navigation-backend-bakeoff": [
+    "tests/reports/navigation-backend-bakeoff/report.json"
+  ],
+  "optional-recast-browser": [
+    "tests/reports/optional-recast-navigation/report.json"
+  ],
+  "audio-backend-bakeoff": [
+    "tests/reports/audio-backend-bakeoff/report.json"
+  ],
+  "audio-webkit-browser": [
+    "tests/reports/audio-webkit.json"
+  ],
+  "audio-chrome-browser": [
+    "tests/reports/audio-chrome.json"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -122,7 +137,10 @@ export const OWNED_ARTIFACT_DIRECTORIES = Object.freeze([
   "replicability-metrics",
   "evidence-freshness",
   "physics-backend-bakeoff",
-  "optional-rapier-physics"
+  "optional-rapier-physics",
+  "navigation-backend-bakeoff",
+  "optional-recast-navigation",
+  "audio-backend-bakeoff"
 ]);
 
 /** Producer id -> `{ writes, hashes }` in the same path vocabulary as ownership. */
@@ -218,6 +236,26 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
       "tests/fixtures/optional-rapier-browser.ts"
     ]
   },
+  "navigation-backend-bakeoff": {
+    writes: PRODUCER_OWNERSHIP["navigation-backend-bakeoff"],
+    hashes: ["tests/reports/external-candidate-package-audit.json", "tests/reports/optional-recast-navigation/report.json", "pnpm-lock.yaml"]
+  },
+  "optional-recast-browser": {
+    writes: PRODUCER_OWNERSHIP["optional-recast-browser"],
+    hashes: ["packages/navigation-recast/src/index.ts", "tests/fixtures/navigation-recast-worker.ts", "pnpm-lock.yaml"]
+  },
+  "audio-backend-bakeoff": {
+    writes: PRODUCER_OWNERSHIP["audio-backend-bakeoff"],
+    hashes: ["tests/reports/external-candidate-package-audit.json", "tests/reports/audio-chrome.json", "tests/reports/audio-webkit.json", "packages/audio/src/index.ts", "packages/engine/src/game/GameAudio.ts"]
+  },
+  "audio-webkit-browser": {
+    writes: PRODUCER_OWNERSHIP["audio-webkit-browser"],
+    hashes: ["packages/audio/src/index.ts", "tests/browser/audio-browser-harness.ts"]
+  },
+  "audio-chrome-browser": {
+    writes: PRODUCER_OWNERSHIP["audio-chrome-browser"],
+    hashes: ["packages/audio/src/index.ts", "tests/browser/audio-browser-harness.ts"]
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -249,6 +287,11 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "final-subsystem-ownership",
   "physics-backend-bakeoff",
   "optional-rapier-browser",
+  "optional-recast-browser",
+  "navigation-backend-bakeoff",
+  "audio-chrome-browser",
+  "audio-webkit-browser",
+  "audio-backend-bakeoff",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",

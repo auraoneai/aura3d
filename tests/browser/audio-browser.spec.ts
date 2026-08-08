@@ -27,7 +27,10 @@ test.describe("audio browser runtime", () => {
     expect(result?.contextState).toBe("running");
     expect(result?.clipDuration).toBeGreaterThan(0);
     expect(result?.sourceStateAfterPlay).toBe("playing");
+    expect(result?.sourceStateAfterPause).toBe("paused");
+    expect(result?.sourceStateAfterResume).toBe("playing");
     expect(result?.sourceStateAfterStop).toBe("stopped");
+    expect(result?.repeatedMounts).toBe(10);
   });
 });
 
@@ -38,7 +41,10 @@ declare global {
       readonly contextState: string;
       readonly clipDuration: number;
       readonly sourceStateAfterPlay: string;
+      readonly sourceStateAfterPause?: string;
+      readonly sourceStateAfterResume?: string;
       readonly sourceStateAfterStop: string;
+      readonly repeatedMounts?: number;
       readonly error?: string;
     };
   }

@@ -42,7 +42,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [x] `pnpm test:integration` passes when integration behavior changed.
 - [x] `pnpm test:browser` passes when browser routes changed; the final canonical
   invocation passed 37/37.
-- [ ] `pnpm build` passes; finalization covers 27 packages, including the optional `@aura3d/physics-rapier` adapter.
+- [ ] `pnpm build` passes; finalization covers 28 packages, including the optional physical-simulation and navigation adapters.
 - [x] `pnpm verify:api-docs -- --write` has been run after export changes.
 - [x] `pnpm verify:package-install-smoke:fresh` passes.
 - [x] `pnpm verify:package-provenance` passes.

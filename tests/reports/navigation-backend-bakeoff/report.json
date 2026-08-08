@@ -1,0 +1,155 @@
+{
+  "schema": "aura3d.navigation-backend-bakeoff/1.0",
+  "generatedAt": "2026-08-08T21:13:45.786Z",
+  "pass": true,
+  "decision": "Select exact recast-navigation@0.43.1 behind optional @aura3d/navigation-recast; retain Aura grid/crowd/steering only as compatibility until the major migration gate; reject Yuka as a second overlapping owner.",
+  "claimBoundary": "Small synthetic workload and Chromium evidence; results do not claim universal scale or quality.",
+  "candidates": {
+    "auraLegacy": {
+      "status": "compatibility-only",
+      "queryMs128Grid": 97.9992,
+      "crowdStepMs32Agents": 0.3208,
+      "runtimeNavmeshGeneration": false,
+      "offlineNavmeshGeneration": false,
+      "serializedNavmesh": false,
+      "temporaryObstacles": false,
+      "workerContract": false,
+      "note": "Grid A*, O(n²) neighbor crowd, and steering utilities are not a 3D navmesh/Detour stack."
+    },
+    "recast": {
+      "version": "0.43.1",
+      "status": "selected-optional",
+      "initMs": 58.4388,
+      "runtimeGenerationMs": 9.948,
+      "queryMs": 0.0153,
+      "importMs": 0.0075,
+      "serializedBytes": 3636,
+      "deterministicSerializedBytes": true,
+      "crowdStepMs32Agents": 0.1823,
+      "addObstacleUpdates": 1,
+      "removeObstacleUpdates": 1,
+      "tileCacheSerializedBytes": 2336,
+      "browser": {
+        "schema": "aura3d.optional-recast-browser/1.0",
+        "generatedAt": "2026-08-08T21:12:12.034Z",
+        "pass": true,
+        "package": "@aura3d/navigation-recast",
+        "backend": "recast-navigation@0.43.1",
+        "browser": "Chromium",
+        "bundle": {
+          "mainRawBytes": 797626,
+          "mainGzipBytes": 237003,
+          "mainBrotliBytes": 187473,
+          "workerRawBytes": 795976,
+          "workerGzipBytes": 236359,
+          "requestsAcrossColdAndCachedNavigation": 1
+        },
+        "cold": {
+          "pass": true,
+          "loadToReadyMs": 97.60000002384186,
+          "initMs": 21.400000005960464,
+          "workerGenerationMs": 18.399999976158142,
+          "workerRoundTripMs": 33.400000005960464,
+          "transferredBytes": 3636,
+          "pathPoints": 2,
+          "crowdStepMs32Agents": 0.13249999980131785,
+          "temporaryObstacleAddUpdates": 1,
+          "temporaryObstacleRemoveUpdates": 1,
+          "repeatedDisposals": 10,
+          "usedJSHeapSize": 5531520
+        },
+        "cached": {
+          "pass": true,
+          "loadToReadyMs": 79.09999999403954,
+          "initMs": 13.099999994039536,
+          "workerGenerationMs": 16.5,
+          "workerRoundTripMs": 25.700000017881393,
+          "transferredBytes": 3636,
+          "pathPoints": 2,
+          "crowdStepMs32Agents": 0.12999999995032946,
+          "temporaryObstacleAddUpdates": 1,
+          "temporaryObstacleRemoveUpdates": 1,
+          "repeatedDisposals": 10,
+          "usedJSHeapSize": 5532148
+        },
+        "consoleErrors": [],
+        "claimBoundary": "Optional Recast/Detour browser lifecycle, worker generation, query, crowd, and temporary-obstacle evidence only."
+      },
+      "packageAudit": {
+        "name": "recast-navigation",
+        "version": "0.43.1",
+        "tarball": {
+          "filename": "recast-navigation-0.43.1.tgz",
+          "packageBytes": 9302,
+          "unpackedBytes": 28346,
+          "fileCount": 9,
+          "integrity": "sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A==",
+          "shasum": "69a26bcafaea51aee4d08fc70d71d7dffc193555",
+          "sha256": "08ba2c71f71b8e342552c36ab63cebfddaa0a67d20dbee58979cd6a7561bb25f"
+        },
+        "allExportBrowserBundle": {
+          "pass": true,
+          "rawBytes": 1236913,
+          "gzipBytes": 258473,
+          "brotliBytes": 203914
+        },
+        "security": {
+          "vulnerable": false
+        }
+      }
+    },
+    "yuka": {
+      "version": "0.7.8",
+      "status": "rejected-overlap",
+      "packageAudit": {
+        "name": "yuka",
+        "version": "0.7.8",
+        "tarball": {
+          "filename": "yuka-0.7.8.tgz",
+          "packageBytes": 204105,
+          "unpackedBytes": 1031182,
+          "fileCount": 7,
+          "integrity": "sha512-G/pFcMZh2Azz7Yy500NSV1jQ0Ru7h9hTNyEW+HjRXcdzjJIyp/3mCGspnx7VJVP06zxORqK6mkl5TywLqVUnVg==",
+          "shasum": "5297c2d8c36e6e6bbe24c6119522cbc2a8dd8dd7",
+          "sha256": "ddf70965e0d9ac46a31e543fec7a04f5e196671f28fd2f02531f5e269469e8c9"
+        },
+        "allExportBrowserBundle": {
+          "pass": true,
+          "rawBytes": 372547,
+          "gzipBytes": 64295,
+          "brotliBytes": 50726
+        },
+        "security": {
+          "vulnerable": false
+        }
+      },
+      "strengths": [
+        "JavaScript steering, graphs, navmesh-region queries, and game-AI utilities"
+      ],
+      "gapsForThisWorkload": [
+        "no Recast geometry-to-navmesh generator",
+        "no Detour tile-cache temporary-obstacle owner",
+        "would duplicate retained steering and crowd semantics"
+      ],
+      "maintenanceDecision": "Dormant-risk package age and incomplete workload replacement do not justify a second navigation owner."
+    }
+  },
+  "workloadCoverage": {
+    "runtimeGeneration": true,
+    "offlineGenerationContract": true,
+    "pathQueries": true,
+    "crowdSimulation": true,
+    "temporaryObstacles": true,
+    "workerGenerationAndTransfer": true,
+    "serializedNavmeshes": true,
+    "dynamicObstacleUpdates": true,
+    "memorySample": {
+      "rssBytes": 208306176,
+      "heapUsedBytes": 21026528,
+      "browserUsedJSHeapSize": 5531520
+    },
+    "determinism": true,
+    "browserBundles": true,
+    "disposal": true
+  }
+}

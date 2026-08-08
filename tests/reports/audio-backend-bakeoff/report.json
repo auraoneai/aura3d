@@ -1,0 +1,132 @@
+{
+  "schema": "aura3d.audio-backend-bakeoff/1.0",
+  "generatedAt": "2026-08-08T21:34:49.484Z",
+  "pass": true,
+  "decision": "Keep one direct Web Audio owner in @aura3d/audio; reject Howler because it would duplicate context, cache, playback, spatial, and unlock ownership required by the retained Aura semantic layer.",
+  "consumers": [
+    "examples/game-slice/main.ts",
+    "packages/editor-runtime/tests/editor-runtime.test.ts",
+    "packages/engine/src/game/GameAudio.ts",
+    "tests/assets/vitest.config.ts",
+    "tests/browser/audio-browser-harness.ts",
+    "tests/browser/example-dev-server.ts",
+    "tests/browser/fixtures/workspace-vite-imports/main.ts",
+    "tests/unit/public-api-contracts.test.ts",
+    "tests/unit/tools/api-docs.test.ts",
+    "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
+    "tests/unit/workstream5-runtime.test.ts",
+    "tools/audio-backend-bakeoff/index.ts",
+    "tools/browser-entry-purity/index.ts",
+    "tools/bundle-scenarios/index.ts",
+    "tools/claim-lineage/index.ts",
+    "tools/negative-complexity/index.ts",
+    "tools/package-graph/index.ts",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ],
+  "currentFeatures": {
+    "cues": "packages/engine/src/game/GameAudio.ts semantic layer delegates playback",
+    "spatialAudio": "PannerNode adapter and SceneAudioBridge",
+    "sprites": "AudioSource.playSprite",
+    "fade": "AudioSource.fade",
+    "loop": "AudioSource.loop",
+    "codecFallback": "AudioFileManager.loadFirstSupported uses canPlayType",
+    "unlockPolicy": "AudioContextManager is the only constructor owner",
+    "lifecycle": [
+      "unlock",
+      "suspend",
+      "resume",
+      "close",
+      "source/bus/effect disposal"
+    ],
+    "typedAssetCaching": "AudioFileManager coalesces inflight loads and caches decoded AudioClip values",
+    "routeEvidence": "GameAudio cue and bus evidence"
+  },
+  "candidates": {
+    "directWebAudio": {
+      "status": "selected-browser-standard",
+      "workloadBundle": {
+        "rawBytes": 8641,
+        "gzipBytes": 2842,
+        "brotliBytes": 2509
+      },
+      "chrome": {
+        "pass": true,
+        "stats": {
+          "startTime": "2026-08-08T21:33:41.719Z",
+          "duration": 39543.602,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "webkit": {
+        "pass": true,
+        "stats": {
+          "startTime": "2026-08-08T21:27:08.802Z",
+          "duration": 51550.193,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "contextConstructors": [
+        "packages/audio/src/AudioContextManager.ts"
+      ]
+    },
+    "howler": {
+      "version": "2.2.4",
+      "status": "rejected-duplicate-owner",
+      "packageAudit": {
+        "name": "howler",
+        "version": "2.2.4",
+        "tarball": {
+          "filename": "howler-2.2.4.tgz",
+          "packageBytes": 72709,
+          "unpackedBytes": 318465,
+          "fileCount": 9,
+          "integrity": "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==",
+          "shasum": "bd3df4a4f68a0118a51e4bd84a2bfc2e93e6e5a1",
+          "sha256": "be9d8d09345954e246e932a057de0c9724475c8b58120dc690644432a0ba485f"
+        },
+        "allExportBrowserBundle": {
+          "pass": true,
+          "rawBytes": 88535,
+          "gzipBytes": 15336,
+          "brotliBytes": 12895
+        },
+        "security": {
+          "vulnerable": false
+        }
+      },
+      "strengths": [
+        "playback sprites",
+        "fades",
+        "codec fallback",
+        "mobile unlock compatibility"
+      ],
+      "missingAuraSemantics": [
+        "typed asset provenance",
+        "scene-node linkage",
+        "shared effect graph",
+        "semantic cue evidence",
+        "editor timeline/waveform contracts"
+      ],
+      "topologyCost": "Howler would retain its own global audio/context/cache graph while Aura3D still needs its typed semantic and spatial graph."
+    }
+  },
+  "duplicateOwnerAudit": {
+    "contextConstructorCount": 1,
+    "allowedOwner": "packages/audio/src/AudioContextManager.ts",
+    "routeLocalContextOwners": [],
+    "routeLocalPlaybackRemoved": true
+  },
+  "fixtureMigrationQueue": [
+    "AdaptiveMusicFixtures.ts",
+    "AudioEffectsAnalysisFixtures.ts",
+    "SpatialAudioFixtures.ts"
+  ],
+  "claimBoundary": "Browser lifecycle and synthetic short-buffer playback evidence; no claim about every device, codec, or production mix."
+}

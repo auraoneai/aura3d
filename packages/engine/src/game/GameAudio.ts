@@ -1,4 +1,4 @@
-import { AudioBus } from "@aura3d/audio";
+import { AudioBus, AudioContextManager, AudioFileManager, AudioSource, type AudioDecodeContextLike, type AudioFileInput } from "@aura3d/audio";
 
 export type GameAudioBusId = "master" | string;
 
@@ -24,6 +24,8 @@ export interface GameAudioCueDefinition<TCue extends string = string> {
   readonly volume?: number;
   readonly frequency?: number;
   readonly duration?: number;
+  readonly asset?: AudioFileInput;
+  readonly loop?: boolean;
   play?(context: GameAudioContextLike, destination: AudioNode, cue: GameAudioCueDefinition<TCue>): void | Promise<void>;
 }
 
@@ -53,6 +55,8 @@ export interface GameAudioEvidence<TCue extends string = string> {
 export interface GameAudioOptions<TCue extends string = string> {
   readonly context?: GameAudioContextLike | null;
   readonly createContext?: () => GameAudioContextLike | null;
+  /** Ask the shared AudioContextManager to create and own the browser context. */
+  readonly browserContext?: boolean;
   readonly buses?: readonly GameAudioBusDefinition[];
   readonly cues: Readonly<Record<TCue, GameAudioCueDefinition<TCue>>>;
 }
@@ -89,6 +93,10 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   const cueDefinitions = options.cues;
   const cueIds = Object.keys(cueDefinitions) as TCue[];
   let context: GameAudioContextLike | null | undefined = options.context;
+  if (options.browserContext && (options.context !== undefined || options.createContext !== undefined)) {
+    throw new Error("Game audio browserContext cannot be combined with context or createContext; choose one context owner.");
+  }
+  const contextManager = options.browserContext ? new AudioContextManager() : undefined;
   let muted = false;
   let unlocked = false;
   let disposed = false;
@@ -105,9 +113,11 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
    * `node` is absent, so there is no second source of truth for a live bus.
    */
   const contextlessBusVolumes = new Map<GameAudioBusId, number>();
+  let fileManager: AudioFileManager | undefined;
+  const activeSources = new Set<AudioSource>();
 
   const getContext = (): GameAudioContextLike | null => {
-    if (context === undefined) context = options.createContext?.() ?? null;
+    if (context === undefined) context = contextManager ? contextManager.context as unknown as GameAudioContextLike : options.createContext?.() ?? null;
     return context ?? null;
   };
 
@@ -120,6 +130,19 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     const bus: GameAudioBusState = { id, node };
     buses.set(id, bus);
     return bus;
+  };
+
+  const playAssetCue = async (audioContext: GameAudioContextLike, destination: AudioNode, definition: GameAudioCueDefinition<TCue>): Promise<void> => {
+    if (!definition.asset) return;
+    if (!("decodeAudioData" in audioContext) || !("createBufferSource" in audioContext)) {
+      throw new Error(`Game audio cue "${definition.id}" uses an asset but its context cannot decode or play audio buffers.`);
+    }
+    const decodeContext = audioContext as unknown as AudioDecodeContextLike;
+    fileManager ??= new AudioFileManager({ context: decodeContext });
+    const clip = await fileManager.load(definition.asset);
+    const source = new AudioSource({ context: decodeContext, destination, clip, loop: definition.loop, volume: definition.volume });
+    activeSources.add(source);
+    source.play();
   };
 
   getBus("master");
@@ -159,7 +182,8 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     async unlock() {
       const audioContext = getContext();
       if (!audioContext) return snapshot();
-      await audioContext.resume();
+      if (contextManager) await contextManager.unlock();
+      else await audioContext.resume();
       unlocked = true;
       return snapshot();
     },
@@ -186,6 +210,8 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
         if (!unlocked) await audio.unlock();
         if (definition.play) {
           await definition.play(audioContext, bus.node?.input ?? audioContext.destination, definition);
+        } else if (definition.asset) {
+          await playAssetCue(audioContext, bus.node?.input ?? audioContext.destination, definition);
         } else {
           playDefaultCue(audioContext, bus.node?.input ?? audioContext.destination, definition);
         }
@@ -216,7 +242,11 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
     async dispose() {
       disposed = true;
       for (const bus of buses.values()) bus.node?.dispose();
-      if (context?.close) await context.close();
+      for (const source of activeSources) source.dispose();
+      activeSources.clear();
+      fileManager?.clear();
+      if (contextManager) await contextManager.dispose();
+      else if (context?.close) await context.close();
       return snapshot();
     }
   };

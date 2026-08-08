@@ -1,0 +1,196 @@
+import type * as Recast from "recast-navigation";
+
+export type NavigationVec3 = readonly [number, number, number];
+export type RecastModule = typeof import("recast-navigation");
+export type RecastGenerators = typeof import("recast-navigation/generators");
+
+export interface NavigationTriangleSoup {
+  readonly positions: readonly number[] | Float32Array;
+  readonly indices: readonly number[] | Uint32Array;
+}
+
+export interface RecastNavigationOptions {
+  readonly moduleLoader?: () => Promise<RecastModule>;
+  readonly generatorLoader?: () => Promise<RecastGenerators>;
+}
+
+export interface NavigationPathResult {
+  readonly success: boolean;
+  readonly points: readonly NavigationVec3[];
+  readonly error?: string;
+}
+
+export interface NavigationCrowdAgentOptions {
+  readonly radius?: number;
+  readonly height?: number;
+  readonly maxAcceleration?: number;
+  readonly maxSpeed?: number;
+  readonly collisionQueryRange?: number;
+  readonly pathOptimizationRange?: number;
+  readonly separationWeight?: number;
+}
+
+function vector(value: NavigationVec3): { x: number; y: number; z: number } {
+  if (value.some((entry) => !Number.isFinite(entry))) throw new TypeError("Navigation coordinates must be finite.");
+  return { x: value[0], y: value[1], z: value[2] };
+}
+
+export class RecastNavMeshHandle {
+  readonly #module: RecastModule;
+  readonly #navMesh: Recast.NavMesh;
+  readonly #query: Recast.NavMeshQuery;
+  #disposed = false;
+
+  constructor(module: RecastModule, navMesh: Recast.NavMesh) {
+    this.#module = module;
+    this.#navMesh = navMesh;
+    this.#query = new module.NavMeshQuery(navMesh);
+  }
+
+  get disposed(): boolean { return this.#disposed; }
+
+  computePath(start: NavigationVec3, end: NavigationVec3): NavigationPathResult {
+    this.#assertAlive();
+    const result = this.#query.computePath(vector(start), vector(end));
+    if (!result.success) return { success: false, points: [], error: String(result.error ?? "Detour path query failed.") };
+    return { success: true, points: result.path.map((point) => [point.x, point.y, point.z] as const) };
+  }
+
+  createCrowd(maxAgents: number, maxAgentRadius: number): RecastCrowdHandle {
+    this.#assertAlive();
+    return new RecastCrowdHandle(this.#module, this.#navMesh, maxAgents, maxAgentRadius);
+  }
+
+  serialize(): Uint8Array { this.#assertAlive(); return this.#module.exportNavMesh(this.#navMesh); }
+  /** Stable escape hatch. The handle retains ownership and frees this object. */
+  unsafeRecastNavMesh(): Recast.NavMesh { this.#assertAlive(); return this.#navMesh; }
+
+  dispose(): void {
+    if (this.#disposed) return;
+    this.#query.destroy();
+    this.#navMesh.destroy();
+    this.#disposed = true;
+  }
+
+  #assertAlive(): void { if (this.#disposed) throw new Error("RecastNavMeshHandle is disposed."); }
+}
+
+export class RecastCrowdHandle {
+  readonly #crowd: Recast.Crowd;
+  #disposed = false;
+
+  constructor(module: RecastModule, navMesh: Recast.NavMesh, maxAgents: number, maxAgentRadius: number) {
+    if (!Number.isInteger(maxAgents) || maxAgents < 1) throw new RangeError("maxAgents must be an integer >= 1.");
+    if (!Number.isFinite(maxAgentRadius) || maxAgentRadius <= 0) throw new RangeError("maxAgentRadius must be positive.");
+    this.#crowd = new module.Crowd(navMesh, { maxAgents, maxAgentRadius });
+  }
+
+  addAgent(position: NavigationVec3, options: NavigationCrowdAgentOptions = {}): Recast.CrowdAgent {
+    this.#assertAlive();
+    return this.#crowd.addAgent(vector(position), options);
+  }
+
+  requestMoveTarget(agent: Recast.CrowdAgent, target: NavigationVec3): boolean {
+    this.#assertAlive();
+    return agent.requestMoveTarget(vector(target));
+  }
+
+  update(dt: number): void {
+    this.#assertAlive();
+    if (!Number.isFinite(dt) || dt <= 0) throw new RangeError("Crowd dt must be positive and finite.");
+    this.#crowd.update(dt);
+  }
+
+  positions(): readonly NavigationVec3[] {
+    this.#assertAlive();
+    return this.#crowd.getAgents().map((agent) => { const point = agent.position(); return [point.x, point.y, point.z] as const; });
+  }
+
+  /** Stable escape hatch. The handle owns and destroys this crowd. */
+  unsafeRecastCrowd(): Recast.Crowd { this.#assertAlive(); return this.#crowd; }
+  dispose(): void { if (!this.#disposed) { this.#crowd.destroy(); this.#disposed = true; } }
+  #assertAlive(): void { if (this.#disposed) throw new Error("RecastCrowdHandle is disposed."); }
+}
+
+export class RecastTileCacheHandle {
+  readonly navMesh: RecastNavMeshHandle;
+  readonly #module: RecastModule;
+  readonly #tileCache: Recast.TileCache;
+  #disposed = false;
+
+  constructor(module: RecastModule, navMesh: Recast.NavMesh, tileCache: Recast.TileCache) {
+    this.#module = module;
+    this.#tileCache = tileCache;
+    this.navMesh = new RecastNavMeshHandle(module, navMesh);
+  }
+
+  addCylinderObstacle(position: NavigationVec3, radius: number, height: number): Recast.Obstacle {
+    this.#assertAlive();
+    const result = this.#tileCache.addCylinderObstacle(vector(position), radius, height);
+    if (!result.success || !result.obstacle) throw new Error(`Recast obstacle creation failed with status ${result.status}.`);
+    return result.obstacle;
+  }
+
+  removeObstacle(obstacle: Recast.Obstacle): void {
+    this.#assertAlive();
+    const result = this.#tileCache.removeObstacle(obstacle);
+    if (!result.success) throw new Error(`Recast obstacle removal failed with status ${result.status}.`);
+  }
+
+  update(maxIterations = 64): number {
+    this.#assertAlive();
+    for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
+      const result = this.#tileCache.update(this.navMesh.unsafeRecastNavMesh());
+      if (!result.success) throw new Error(`Recast tile-cache update failed with status ${result.status}.`);
+      if (result.upToDate) return iteration;
+    }
+    throw new Error(`Recast tile cache did not settle within ${maxIterations} updates.`);
+  }
+
+  serialize(): Uint8Array {
+    this.#assertAlive();
+    return this.#module.exportTileCache(this.navMesh.unsafeRecastNavMesh(), this.#tileCache);
+  }
+
+  dispose(): void {
+    if (this.#disposed) return;
+    this.#tileCache.destroy();
+    this.navMesh.dispose();
+    this.#disposed = true;
+  }
+
+  #assertAlive(): void { if (this.#disposed) throw new Error("RecastTileCacheHandle is disposed."); }
+}
+
+export class RecastNavigation {
+  readonly #module: RecastModule;
+  readonly #generators: RecastGenerators;
+  constructor(module: RecastModule, generators: RecastGenerators) { this.#module = module; this.#generators = generators; }
+
+  generateSolo(input: NavigationTriangleSoup, config: Parameters<RecastGenerators["generateSoloNavMesh"]>[2]): RecastNavMeshHandle {
+    const result = this.#generators.generateSoloNavMesh([...input.positions], [...input.indices], config);
+    if (!result.success || !result.navMesh) throw new Error(`Recast navmesh generation failed: ${String(result.error ?? "unknown error")}`);
+    return new RecastNavMeshHandle(this.#module, result.navMesh);
+  }
+
+  generateTileCache(input: NavigationTriangleSoup, config: Parameters<RecastGenerators["generateTileCache"]>[2] = {}): RecastTileCacheHandle {
+    const result = this.#generators.generateTileCache(input.positions, input.indices, config);
+    if (!result.success || !result.navMesh || !result.tileCache) throw new Error(`Recast tile-cache generation failed: ${String(result.error ?? "unknown error")}`);
+    return new RecastTileCacheHandle(this.#module, result.navMesh, result.tileCache);
+  }
+
+  import(bytes: Uint8Array): RecastNavMeshHandle {
+    const result = this.#module.importNavMesh(bytes);
+    return new RecastNavMeshHandle(this.#module, result.navMesh);
+  }
+
+  /** Stable typed escape hatch for Crowd, TileCache, and advanced Detour APIs. */
+  get rawModule(): RecastModule { return this.#module; }
+}
+
+export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> {
+  const module = await (options.moduleLoader ?? (() => import("recast-navigation")))();
+  await module.init();
+  const generators = await (options.generatorLoader ?? (() => import("recast-navigation/generators")))();
+  return new RecastNavigation(module, generators);
+}

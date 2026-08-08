@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d.optional-recast-browser/1.0",
+  "generatedAt": "2026-08-08T21:12:12.034Z",
+  "pass": true,
+  "package": "@aura3d/navigation-recast",
+  "backend": "recast-navigation@0.43.1",
+  "browser": "Chromium",
+  "bundle": {
+    "mainRawBytes": 797626,
+    "mainGzipBytes": 237003,
+    "mainBrotliBytes": 187473,
+    "workerRawBytes": 795976,
+    "workerGzipBytes": 236359,
+    "requestsAcrossColdAndCachedNavigation": 1
+  },
+  "cold": {
+    "pass": true,
+    "loadToReadyMs": 97.60000002384186,
+    "initMs": 21.400000005960464,
+    "workerGenerationMs": 18.399999976158142,
+    "workerRoundTripMs": 33.400000005960464,
+    "transferredBytes": 3636,
+    "pathPoints": 2,
+    "crowdStepMs32Agents": 0.13249999980131785,
+    "temporaryObstacleAddUpdates": 1,
+    "temporaryObstacleRemoveUpdates": 1,
+    "repeatedDisposals": 10,
+    "usedJSHeapSize": 5531520
+  },
+  "cached": {
+    "pass": true,
+    "loadToReadyMs": 79.09999999403954,
+    "initMs": 13.099999994039536,
+    "workerGenerationMs": 16.5,
+    "workerRoundTripMs": 25.700000017881393,
+    "transferredBytes": 3636,
+    "pathPoints": 2,
+    "crowdStepMs32Agents": 0.12999999995032946,
+    "temporaryObstacleAddUpdates": 1,
+    "temporaryObstacleRemoveUpdates": 1,
+    "repeatedDisposals": 10,
+    "usedJSHeapSize": 5532148
+  },
+  "consoleErrors": [],
+  "claimBoundary": "Optional Recast/Detour browser lifecycle, worker generation, query, crowd, and temporary-obstacle evidence only."
+}

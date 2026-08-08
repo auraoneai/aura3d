@@ -1,0 +1,18 @@
+{
+  "name": "@aura3d/navigation-recast",
+  "version": "1.6.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "dependencies": { "recast-navigation": "0.43.1" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "description": "Optional asynchronously initialized Recast/Detour navigation adapter for Aura3D.",
+  "keywords": ["aura3d", "navigation", "recast", "detour", "navmesh", "crowd", "wasm"],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": { "type": "git", "url": "git+https://github.com/auraoneai/aura3d.git", "directory": "packages/navigation-recast" },
+  "bugs": { "url": "https://github.com/auraoneai/aura3d/issues" },
+  "license": "MIT",
+  "publishConfig": { "access": "public" },
+  "files": ["README.md", "dist"]
+}

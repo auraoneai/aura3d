@@ -26,6 +26,7 @@ describe("public package API contracts", () => {
     "editor-runtime",
     "input",
     "math",
+    "navigation-recast",
     "physics",
     "physics-rapier",
     "rendering",

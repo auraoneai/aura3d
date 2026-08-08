@@ -5,7 +5,7 @@ Machine-enforced by `pnpm check:package-graph` (`tools/package-graph/index.ts`),
 `tests/reports/package-graph.json` and `docs/architecture/package-graph.dot`. **This document is
 descriptive; the tool is authoritative.** If they disagree, the tool is right and this file is stale.
 
-Measured 2026-08-08 · 27 workspace packages · graph acyclic · 0 undeclared dependencies · 0 layer violations.
+Measured 2026-08-08 · 28 workspace packages · graph acyclic · 0 undeclared dependencies · 0 layer violations.
 
 ## How the graph is measured
 
@@ -32,7 +32,7 @@ and fails the gate.
 
 | Tier | Meaning | Packages |
 |---|---|---|
-| 0 | Foundation — zero Aura3D dependencies | `math`, `physics`, `physics-rapier`, `scripting`, `asset-index` |
+| 0 | Foundation — zero Aura3D dependencies | `math`, `navigation-recast`, `physics`, `physics-rapier`, `scripting`, `asset-index` |
 | 1 | Core data model | `core`, `scene` |
 | 2 | Subsystems over the data model | `animation`, `rendering`, `input`, `audio`, `ecs` |
 | 3 | Subsystems composing other subsystems | `assets`, `controls`, `materials`, `environments`, `debug`, `editor-runtime` |
@@ -49,8 +49,9 @@ Nothing may depend on tier 5 or 6 except tier 6.
 | Package | Tier | LOC | Public subpath | Owns | Dependencies (union of declared + source) |
 |---|---|---|---|---|---|
 | `math` | 0 | 1,220 | `@aura3d/math` | vectors, matrices, quaternions, curves | — |
+| `navigation-recast` | 0 | 196 | `@aura3d/navigation-recast` | optional Recast/Detour navmesh, path-query, crowd, and tile-cache adapter | — |
 | `physics` | 0 | 12,715 | `@aura3d/physics` | solver, collision, joints, character, vehicle. **Internals re-platformed by P4** | — |
-| `physics-rapier` | 0 | 157 | `@aura3d/physics-rapier` | optional async Rapier physical-simulation adapter; separate WASM | — |
+| `physics-rapier` | 0 | 160 | `@aura3d/physics-rapier` | optional async Rapier physical-simulation adapter; separate WASM | — |
 | `scripting` | 0 | 5,837 | `@aura3d/scripting` | GOAP / HTN / behaviour trees / utility AI. **Zero consumers — WS-3.3** | — |
 | `asset-index` | 0 | 3,438 | `@aura3d/asset-index` | asset catalogue index and search | — |
 | `core` | 1 | 1,186 | `@aura3d/core` | base object model. **Transitive dep of `engine`, `scene`, `ecs`, `apps`** | `math` |

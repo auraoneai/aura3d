@@ -9,6 +9,8 @@ class FakeParam {
   exponentialRampToValueAtTime(value: number): void {
     this.value = value;
   }
+  linearRampToValueAtTime(value: number): void { this.value = value; }
+  cancelScheduledValues(): void {}
 }
 
 class FakeAudioNode {
@@ -35,11 +37,21 @@ class FakeOscillator extends FakeAudioNode {
   }
 }
 
+class FakeBufferSource extends FakeAudioNode {
+  buffer: AudioBuffer | null = null;
+  loop = false;
+  onended: (() => void) | null = null;
+  started = false;
+  start(): void { this.started = true; }
+  stop(): void {}
+}
+
 class FakeAudioContext implements GameAudioContextLike {
   state = "suspended";
   currentTime = 0;
   readonly destination = new FakeAudioNode() as unknown as AudioNode;
   oscillators: FakeOscillator[] = [];
+  bufferSources: FakeBufferSource[] = [];
 
   async resume(): Promise<void> {
     this.state = "running";
@@ -57,6 +69,16 @@ class FakeAudioContext implements GameAudioContextLike {
     const oscillator = new FakeOscillator();
     this.oscillators.push(oscillator);
     return oscillator as unknown as OscillatorNode;
+  }
+
+  createBufferSource(): AudioBufferSourceNode {
+    const source = new FakeBufferSource();
+    this.bufferSources.push(source);
+    return source as unknown as AudioBufferSourceNode;
+  }
+
+  async decodeAudioData(): Promise<AudioBuffer> {
+    return { duration: 1, numberOfChannels: 1, sampleRate: 48_000 } as AudioBuffer;
   }
 }
 
@@ -111,5 +133,20 @@ describe("createGameAudio", () => {
       suppressedCueCount: 1,
       lastCue: "jump"
     });
+  });
+
+  it("delegates typed asset fetching, caching, decoding, and playback to the shared audio package", async () => {
+    const context = new FakeAudioContext();
+    const audio = createGameAudio({
+      context,
+      cues: { hit: { id: "hit", asset: "data:audio/wav;base64,AA==", volume: 0.25 } }
+    });
+    await audio.cue("hit");
+    await audio.cue("hit");
+    expect(context.bufferSources).toHaveLength(2);
+    expect(context.bufferSources.every((source) => source.started)).toBe(true);
+    expect(audio.evidence.playedCueCount).toBe(2);
+    await audio.dispose();
+    expect(context.state).toBe("closed");
   });
 });
