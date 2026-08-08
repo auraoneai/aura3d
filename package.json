@@ -370,7 +370,7 @@
     "verify:versioned-release": "node --experimental-strip-types tools/versioned-release-verification/index.ts",
     "verify:package-install-smoke": "node --experimental-strip-types tools/package-install-smoke/index.ts",
     "verify:package-install-smoke:fresh": "node --experimental-strip-types tools/package-install-smoke/index.ts --fresh-pack",
-    "verify:package-provenance": "node --experimental-strip-types tools/package-provenance/index.ts",
+    "verify:package-provenance": "pnpm verify:package-install-smoke:fresh && node --experimental-strip-types tools/package-provenance/index.ts",
     "verify:npm-release": "pnpm typecheck:raw && pnpm build:raw && pnpm test:packages && pnpm test:packages:dist && pnpm verify:exports && pnpm verify:imports && pnpm verify:size && pnpm verify:package-install-smoke:fresh && node tools/release/publish-all.mjs --dry-run",
     "verify:static-demo-server-smoke": "node --experimental-strip-types tools/static-demo-server-smoke/index.ts",
     "verify:public-demo-deployment": "tsx --tsconfig tsconfig.base.json tools/public-demo-deployment-smoke/index.ts",
