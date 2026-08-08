@@ -6,8 +6,6 @@ export { sampleGestureHapticsFixture } from "./GestureHapticsFixtures";
 export type { GestureHapticsFixture, GestureHapticsFixtureOptions, GestureHapticsGestureType, GestureHapticsPatternName } from "./GestureHapticsFixtures";
 export { GestureRecognizer } from "./GestureRecognizer";
 export type { Gesture } from "./GestureRecognizer";
-export { processInputValue, sampleInputActionBindingFixture } from "./InputActionBinding";
-export type { InputActionBindingFixture, InputValueProcessor } from "./InputActionBinding";
 export { InputSnapshot } from "./InputSnapshot";
 export type { ButtonState, GamepadSnapshot, InputSnapshotOptions, PointerSnapshot, PointerTouch } from "./InputSnapshot";
 export { InputPlayback, InputRecorder, parseInputRecording } from "./InputReplay";

@@ -1,7 +1,7 @@
-import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, sampleMotionMatchingFixture, sampleSecondaryAnimationFixture, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
+import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, sampleMotionMatchingFixture, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
 import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFRenderResources, type GLTFSkinAsset } from "@aura3d/assets";
 import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio, sampleAdaptiveMusicFixture, sampleAudioEffectsAnalysisFixture, sampleAudioEnvironmentFixture } from "@aura3d/audio";
-import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleGestureHapticsFixture, sampleInputActionBindingFixture, sampleVirtualTouchJoystickFixture, sampleXRRuntimeFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
+import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleGestureHapticsFixture, sampleVirtualTouchJoystickFixture, sampleXRRuntimeFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
   CharacterController,
   CrowdSimulation,
@@ -301,7 +301,6 @@ async function run(): Promise<void> {
   input.pointer.setDevicePixelRatio(window.devicePixelRatio);
   configureBindings(input, "space");
   const inputReplayEvidence = createRuntimeInputReplayEvidence();
-  const actionBindingEvidence = sampleInputActionBindingFixture();
   const virtualTouchEvidence = sampleVirtualTouchJoystickFixture();
   const gestureHapticsEvidence = sampleGestureHapticsFixture({ seed: 0x9e57, gamepadConnected: true });
   const xrRuntimeEvidence = sampleXRRuntimeFixture({ requestedMode: "immersive-vr", objectCount: 14 });
@@ -1179,14 +1178,6 @@ async function run(): Promise<void> {
       previousPoseId: objectiveState.phase === "won" ? "run-1" : "walk-1",
       seed: 0x3d2025
     });
-    const secondaryAnimation = sampleSecondaryAnimationFixture({
-      stridePhase: performance.now() * 0.001,
-      rootHeight: 1.08,
-      velocity: [Math.abs(lastInputAxis) + 0.45, 0, objectiveState.collectedPickup ? 0.28 : 0.12],
-      terrainSlope: objectiveState.collectedPickup ? 0.18 : 0.1,
-      deltaSeconds: 1 / 60,
-      seed: 0x3d2025
-    });
     const adaptiveMusic = sampleAdaptiveMusicFixture({
       state: objectiveState.phase === "won" ? "victory" : objectiveState.phase === "failed" ? "defeat" : objectiveState.collectedPickup ? "action" : "tension",
       intensity: objectiveState.phase === "won" ? 0.68 : objectiveState.collectedPickup ? 0.82 : 0.42,
@@ -1320,11 +1311,6 @@ async function run(): Promise<void> {
         oldBranchMotionMatchingPort: motionMatching.databasePoseCount >= 18 && motionMatching.candidateScores.length >= 6 && motionMatching.bestCost <= motionMatching.secondBestCost,
         motionMatchingTrajectoryPrediction: motionMatching.queryTrajectory.length >= 3 && motionMatching.querySpeed > 0,
         motionMatchingPoseSelection: motionMatching.selectedTags.length > 0 && motionMatching.costMargin >= 0,
-        oldBranchFootIkSpringBonePort: secondaryAnimation.source === "origin-master-foot-ik-spring-bone-adapted" && secondaryAnimation.footIk.groundedFeet === 2 && secondaryAnimation.springBone.boneCount >= 4,
-        footIkPlacementTelemetry: secondaryAnimation.productionReadiness.footPlacementTelemetry,
-        footIkHipAdjustmentTelemetry: secondaryAnimation.productionReadiness.hipAdjustmentTelemetry,
-        springBoneTelemetry: secondaryAnimation.productionReadiness.springChainTelemetry,
-        springBoneCollisionTelemetry: secondaryAnimation.productionReadiness.collisionTelemetry,
         oldBranchAiNavigationPort: true,
         oldBranchWeightedNavigationPort: navigationGrid.allowDiagonal && navigationRoute.cost > 0,
         aiNavigationPathfinding: navigationRoute.status === "success",
@@ -1458,11 +1444,6 @@ async function run(): Promise<void> {
         inputReplayRecording: inputReplayEvidence.recording.metadata.evidence.recording,
         inputReplayPlayback: inputReplayEvidence.playback.emittedEvents >= inputReplayEvidence.recording.metadata.eventCount,
         inputReplaySeekLoop: inputReplayEvidence.playback.evidence.seek && inputReplayEvidence.playback.loopCount >= 1,
-        oldBranchInputActionBindingPort: actionBindingEvidence.evidence.oldCodebasePort && actionBindingEvidence.evidence.processors,
-        inputActionProcessors: actionBindingEvidence.evidence.processors,
-        inputActionHoldTapDoubleTap: actionBindingEvidence.evidence.holdTapDoubleTap,
-        inputActionCompositeAxis: actionBindingEvidence.evidence.compositeAxis,
-        inputActionModifierChord: actionBindingEvidence.evidence.modifierChord,
         oldBranchGestureHapticsPort: gestureHapticsEvidence.source === "origin-master-input-gesture-rumble-adapted" && gestureHapticsEvidence.haptics.hapticsClaimed === false,
         inputSwipeRotateTelemetry: gestureHapticsEvidence.productionReadiness.swipeRotateTelemetry && gestureHapticsEvidence.gestureSummary.rotateDegrees > 0,
         inputHapticPatternTelemetry: gestureHapticsEvidence.productionReadiness.hapticPatternTelemetry && gestureHapticsEvidence.haptics.patterns.length >= 5,
@@ -1565,20 +1546,6 @@ async function run(): Promise<void> {
         motionMatchingSecondBestCost: motionMatching.secondBestCost,
         motionMatchingCostMargin: motionMatching.costMargin,
         motionMatchingHash: motionMatching.hash,
-        oldBranchFootIkSpringBonePort: true,
-        secondaryAnimationSource: secondaryAnimation.source,
-        footIkGroundedFeet: secondaryAnimation.footIk.groundedFeet,
-        footIkHipOffset: secondaryAnimation.footIk.hipOffset,
-        footIkAverageTargetError: secondaryAnimation.footIk.averageTargetError,
-        footIkTerrainSlope: secondaryAnimation.footIk.terrainSlope,
-        springBoneChain: secondaryAnimation.springBone.chainName,
-        springBoneCount: secondaryAnimation.springBone.boneCount,
-        springBoneMaxDisplacement: secondaryAnimation.springBone.maxDisplacement,
-        springBoneCollisionContacts: secondaryAnimation.springBone.collisionContacts,
-        springBoneSubsteps: secondaryAnimation.springBone.substeps,
-        springBoneTipY: secondaryAnimation.springBone.tipPosition[1],
-        secondaryAnimationHash: secondaryAnimation.hash,
-        secondaryAnimationBlockedClaims: secondaryAnimation.blockedClaims.join(", "),
         oldBranchAiNavigationPort: true,
         oldBranchWeightedNavigationPort: navigationGrid.allowDiagonal && navigationRoute.cost > 0,
         navigationGridCells: navigationGrid.width * navigationGrid.height,
@@ -2308,18 +2275,6 @@ async function run(): Promise<void> {
         inputReplayLoopCount: inputReplayEvidence.playback.loopCount,
         inputReplayFirstEventTypes: inputReplayEvidence.firstEventTypes,
         inputReplayState: inputReplayEvidence.playback.state,
-        oldBranchInputActionBindingPort: true,
-        inputActionBindingSource: actionBindingEvidence.source,
-        inputActionCount: actionBindingEvidence.actionCount,
-        inputBindingCount: actionBindingEvidence.bindingCount,
-        inputProcessorCount: actionBindingEvidence.processorCount,
-        inputProcessedAxis: actionBindingEvidence.processedAxis,
-        inputDeadzoneFilteredAxis: actionBindingEvidence.deadzoneFilteredAxis,
-        inputCompositeMagnitude: actionBindingEvidence.compositeMagnitude,
-        inputHoldTriggered: actionBindingEvidence.holdTriggered,
-        inputTapTriggered: actionBindingEvidence.tapTriggered,
-        inputDoubleTapTriggered: actionBindingEvidence.doubleTapTriggered,
-        inputModifierChordPressed: actionBindingEvidence.modifierChordPressed,
         oldBranchGestureHapticsPort: true,
         inputGestureHapticsSource: gestureHapticsEvidence.source,
         inputGestureHapticsHash: gestureHapticsEvidence.hash,

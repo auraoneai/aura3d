@@ -284,8 +284,10 @@ Measured facts:
   is not in the shipping path.
 - **Outcome (2026-08-08):** ADR 0003 classified the public racing contract as authored-unit arcade
   motion, moved its pose integration to a shared `GameRuntime` owner, and removed the unused,
-  unreleased force-motion prototype under a six-point R8 dependency proof. This preserves the audit
-  measurement above while making clear that the prototype is no longer current source.
+  unreleased force-motion prototype under a six-point R8 dependency proof. Its unreleased
+  force-model-only racing-line/path-follow experiment was also removed: the shipped arcade driver
+  path is the retained owner. This preserves the audit measurement above while making clear that
+  those prototypes are no longer current source.
 - Defect history, each a textbook-solved problem rediscovered from scratch: `maxLoad`
   never passed to `samplePacejkaTireForces`, costing ~10x grip (`ae71897a`); yaw
   integrated with no kinematic ceiling reaching -55 rad/s at 24.5 g (`0e031904`);
@@ -303,12 +305,12 @@ us nothing a user can see.
 ├── Rapier backend                              production default
 ├── cannon-es backend                           compatibility, deprecated
 └── aura-arcade backend                          explicit opt-in, honestly labelled
-Above the solver, all kept:
-    RacingLineProfile · PathFollowDriver · VehicleChassis spec-from-bounds
-    SurfaceQuery / MeshBVH · telemetry · PhysicsDebugDraw · deterministic stepper
+Above the solver, kept where consumed:
+    VehicleChassis spec-from-bounds · SurfaceQuery / MeshBVH · telemetry
+    PhysicsDebugDraw · deterministic stepper · shared arcade driver runtime
 ```
 
-Keep the racing line, the driver AI, the speed profile, the telemetry and the
+Keep the shipped arcade driver AI, telemetry and the
 agent-facing API — that is game-driving logic, not solver work, it is genuinely ours,
 and Rapier does not provide it. Delete the `aura-js` solver as a *default*. Delete
 `ClothFixtures`, `FluidFixtures`, `FractureFixtures`, `SoftBodyFixtures`,

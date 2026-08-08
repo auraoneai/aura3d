@@ -76,16 +76,15 @@ const PUBLIC_ENTRY_SPECIFIERS = [
  *
  * Two spellings, and the distinction between them matters more than it first appears:
  *
- *   @aura3d/physics/src/PathFollowDriver          — deep, always
- *   ../../../packages/physics/src/PathFollowDriver — deep, same thing spelled relatively
- *   ../../../packages/physics/src                  — the PUBLIC BARREL. `src/index.ts` is exactly
+ *   @aura3d/engine/src/agent-api/PlatformerMotion           — deep, always
+ *   ../../../packages/engine/src/agent-api/PlatformerMotion — deep, same thing spelled relatively
+ *   ../../../packages/engine/src/agent-api                  — the PUBLIC BARREL. Its `index.ts` is
  *                                                     what package.json `exports` points at once
  *                                                     built, so this is the public surface.
  *
- * Measured across the physics suite: `vehicle-force-motion.test.ts` imports
- * `../../../packages/physics/src`, which is the barrel and therefore admissible, while
- * `path-follow-driver.test.ts` imports `../../../packages/physics/src/PathFollowDriver` and
- * `platformer-jump-intent.test.ts` imports `packages/engine/src/agent-api/PlatformerMotion` — both
+ * Measured across the physics suite: tests importing `../../../packages/physics/src` reach that
+ * package's public barrel and are admissible, while `platformer-jump-intent.test.ts` imports
+ * `packages/engine/src/agent-api/PlatformerMotion` and
  * reach past the barrel into a file, so neither proves the capability is reachable by a developer.
  * Collapsing those three into one category would have been the single easiest way to make this tool
  * useless.
@@ -201,9 +200,9 @@ function isCleanRoom(path: string): boolean {
  * Is this path *inside* a package, past its barrel?
  *
  * The reachability walk must not traverse into package internals. Caught by sabotage: pointing
- * "materials" at `tests/unit/physics/path-follow-driver.test.ts` — which deep-imports
- * `packages/physics/src/PathFollowDriver` and nothing public — RESOLVED, because the walk stepped
- * into `PathFollowDriver.ts`, kept walking through its neighbours, and eventually found a file that
+ * "materials" at `tests/unit/physics/platformer-jump-intent.test.ts` — which deep-imports
+ * `packages/engine/src/agent-api/PlatformerMotion` and nothing public — RESOLVED, because the walk stepped
+ * into `PlatformerMotion.ts`, kept walking through its neighbours, and eventually found a file that
  * mentions a public specifier. Every deep import would resolve that way, since all internals are
  * transitively connected, which would make the whole tool a no-op.
  *

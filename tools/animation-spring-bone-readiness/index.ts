@@ -1,11 +1,11 @@
 // Source + runtime readiness gate for T1.3 Spring bones. Confirms the integrated spring chain
 // exists, behaves correctly (settles, swings under root motion, holds bone length, collider
-// push-out, deterministic), matches the fixture oracle's invariants, and is wired to the skeleton +
+// push-out, deterministic), reports runtime telemetry, and is wired to the skeleton +
 // exported. Pure Node; exits non-zero on failure.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { createSpringChain, sampleSecondaryAnimationFixture, type Vec3 } from "../../packages/animation/src";
+import { createSpringChain, type Vec3 } from "../../packages/animation/src";
 
 interface Check {
   readonly name: string;
@@ -26,7 +26,6 @@ const DT = 1 / 60;
 // 1. Files present.
 const requiredFiles = [
   "packages/animation/src/SpringBones.ts",
-  "packages/animation/src/SecondaryAnimationSampling.ts",
   "packages/animation/src/Skeleton.ts",
   "packages/animation/src/Bone.ts",
   "tests/unit/animation/spring-bones.test.ts",
@@ -84,12 +83,10 @@ for (let i = 0; i < 50; i += 1) {
 }
 check("deterministic", JSON.stringify(a.positions()) === JSON.stringify(b.positions()), "identical chains for identical inputs");
 
-// 7. Oracle invariants: the runtime reproduces the fixture oracle's invariants (chain swings out,
-// registers collision contacts) using the same SpringBoneSample telemetry shape.
-const fixture = sampleSecondaryAnimationFixture();
-const oracleInvariants = fixture.springBone.boneCount >= 4 && fixture.springBone.maxDisplacement > 0 && fixture.productionReadiness.springChainTelemetry;
-const runtimeMatchesInvariants = swing.telemetry().boneCount >= 4 && swing.telemetry().maxDisplacement > 0 && sawContact;
-check("matches-fixture-oracle-invariants", oracleInvariants && runtimeMatchesInvariants, `oracle=${oracleInvariants}, runtime=${runtimeMatchesInvariants}`);
+// 7. Runtime telemetry must report the observed swing and collision behavior directly.
+const runtimeTelemetry = swing.telemetry();
+check("runtime-telemetry", runtimeTelemetry.boneCount >= 4 && runtimeTelemetry.maxDisplacement > 0 && sawContact,
+  `bones=${runtimeTelemetry.boneCount}, displacement=${runtimeTelemetry.maxDisplacement}, contact=${sawContact}`);
 
 // 8. Source wiring: exported from both barrels.
 const indexSrc = read("packages/animation/src/index.ts");
@@ -100,10 +97,6 @@ check("exported-from-barrels", indexSrc.includes("./SpringBones.js") && browserS
 const skeletonSrc = read("packages/animation/src/Skeleton.ts");
 const boneSrc = read("packages/animation/src/Bone.ts");
 check("skeleton-tag-and-writeback", boneSrc.includes("springChain") && skeletonSrc.includes("springChainIndices") && skeletonSrc.includes("writeSpringChainBack"), "Bone.springChain + Skeleton.springChainIndices/writeSpringChainBack present");
-
-// 10. Source wiring: fixture oracle retained + claimBoundary updated to the real runtime.
-const fixtureSrc = read("packages/animation/src/SecondaryAnimationSampling.ts");
-check("fixture-oracle-and-claim", fixtureSrc.includes("springSample") && fixtureSrc.includes("SpringBones.ts"), "springSample oracle retained; claimBoundary references the real SpringBones runtime");
 
 const pass = checks.every((c) => c.pass);
 const report = { schema: "animation-spring-bone-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };

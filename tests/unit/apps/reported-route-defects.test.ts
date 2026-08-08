@@ -156,7 +156,7 @@ describe("showcase-turbo-drift-circuit — tyre contact, track surface, opponent
   });
 
   it("drives the opponent from a shared driver rather than a route-local integrator", () => {
-    expect(source).toMatch(/createTurboOpponentAi|opponentAi|createPathFollowDriver/);
+    expect(source).toMatch(/createTurboOpponentAi|opponentAi/);
   });
 
   it("still declares its blocker rather than claiming a visual pass", () => {

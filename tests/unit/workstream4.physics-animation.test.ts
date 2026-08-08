@@ -38,8 +38,7 @@ import {
   extractRootMotion,
   buildSkinningPalette,
   solveTwoBoneIk,
-  sampleMotionMatchingFixture,
-  sampleSecondaryAnimationFixture
+  sampleMotionMatchingFixture
 } from "../../packages/animation/src/index.js";
 import { AnimationInspector } from "../../packages/debug/src/AnimationInspector.js";
 import { PhysicsDebugAdapter } from "../../packages/debug/src/PhysicsDebugAdapter.js";
@@ -967,44 +966,6 @@ test("scene animation bridge applies morph weight tracks to render targets", () 
   assert.deepEqual(target.weights, [0.6, 0.375]);
   assert.deepEqual(target.applied, [[0.6, 0.375]]);
   assert.deepEqual(mixer.snapshot().applyErrors, []);
-});
-
-test("secondary animation fixture exposes bounded foot IK and spring-bone telemetry", () => {
-  const fixture = sampleSecondaryAnimationFixture({
-    stridePhase: 0.25,
-    rootHeight: 1.08,
-    velocity: [0.9, 0, 0.22],
-    terrainSlope: 0.18,
-    deltaSeconds: 1 / 60,
-    seed: 0x3d2025
-  });
-  const repeated = sampleSecondaryAnimationFixture({
-    stridePhase: 0.25,
-    rootHeight: 1.08,
-    velocity: [0.9, 0, 0.22],
-    terrainSlope: 0.18,
-    deltaSeconds: 1 / 60,
-    seed: 0x3d2025
-  });
-
-  assert.equal(fixture.source, "origin-master-foot-ik-spring-bone-adapted");
-  assert.deepEqual(fixture, repeated);
-  assert.equal(fixture.footIk.feet.length, 2);
-  assert.equal(fixture.footIk.groundedFeet, 2);
-  assert.ok(fixture.footIk.hipOffset < 0);
-  assert.ok(fixture.footIk.averageTargetError <= 0.015);
-  assert.equal(fixture.springBone.chainName, "ponytail");
-  assert.ok(fixture.springBone.boneCount >= 4);
-  assert.ok(fixture.springBone.maxDisplacement > 0);
-  assert.ok(fixture.springBone.collisionContacts > 0);
-  assert.ok(fixture.productionReadiness.footPlacementTelemetry);
-  assert.ok(fixture.productionReadiness.hipAdjustmentTelemetry);
-  assert.ok(fixture.productionReadiness.springChainTelemetry);
-  assert.ok(fixture.productionReadiness.collisionTelemetry);
-  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
-  assert.ok(fixture.blockedClaims.includes("Unity Animation Rigging parity"));
-  assert.ok(fixture.blockedClaims.includes("Unreal Control Rig parity"));
-  assert.throws(() => sampleSecondaryAnimationFixture({ seed: 1.25 }), /seed/);
 });
 
 test("arcade vehicle dynamics exposes bounded speed, nitro, drift, and suspension state", () => {

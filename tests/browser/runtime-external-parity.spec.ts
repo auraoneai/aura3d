@@ -137,10 +137,6 @@ const report: ExternalParityRuntimeReport = {
       evidence: ["packages/input/src/InputReplay.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Port bounded old input action binding processor and interaction concepts into current runtime evidence.",
-      evidence: ["packages/input/src/InputActionBinding.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
       task: "Port bounded old gesture detection and rumble-pattern concepts into current runtime input evidence.",
       evidence: ["packages/input/src/GestureHapticsFixtures.ts", "examples/game-slice/main.ts", "tests/unit/input/gesture-haptics-fixtures.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
@@ -352,11 +348,6 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.inputReplayRecording).toBe(true);
     expect(state?.featureEvidence?.inputReplayPlayback).toBe(true);
     expect(state?.featureEvidence?.inputReplaySeekLoop).toBe(true);
-    expect(state?.featureEvidence?.oldBranchInputActionBindingPort).toBe(true);
-    expect(state?.featureEvidence?.inputActionProcessors).toBe(true);
-    expect(state?.featureEvidence?.inputActionHoldTapDoubleTap).toBe(true);
-    expect(state?.featureEvidence?.inputActionCompositeAxis).toBe(true);
-    expect(state?.featureEvidence?.inputActionModifierChord).toBe(true);
     expect(state?.featureEvidence?.oldBranchGestureHapticsPort).toBe(true);
     expect(state?.featureEvidence?.inputSwipeRotateTelemetry).toBe(true);
     expect(state?.featureEvidence?.inputHapticPatternTelemetry).toBe(true);
@@ -374,11 +365,6 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.oldBranchMotionMatchingPort).toBe(true);
     expect(state?.featureEvidence?.motionMatchingTrajectoryPrediction).toBe(true);
     expect(state?.featureEvidence?.motionMatchingPoseSelection).toBe(true);
-    expect(state?.featureEvidence?.oldBranchFootIkSpringBonePort).toBe(true);
-    expect(state?.featureEvidence?.footIkPlacementTelemetry).toBe(true);
-    expect(state?.featureEvidence?.footIkHipAdjustmentTelemetry).toBe(true);
-    expect(state?.featureEvidence?.springBoneTelemetry).toBe(true);
-    expect(state?.featureEvidence?.springBoneCollisionTelemetry).toBe(true);
     expect(state?.metrics.oldBranchAiNavigationPort).toBe(true);
     expect(state?.metrics.oldBranchTwoBoneIkPort).toBe(true);
     expect(state?.metrics.twoBoneIkReached).toBe(true);
@@ -401,18 +387,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.motionMatchingBestCost ?? 999)).toBeLessThanOrEqual(Number(state?.metrics.motionMatchingSecondBestCost ?? 999));
     expect(Number(state?.metrics.motionMatchingCostMargin ?? -1)).toBeGreaterThanOrEqual(0);
     expect(String(state?.metrics.motionMatchingHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
-    expect(state?.metrics.oldBranchFootIkSpringBonePort).toBe(true);
-    expect(state?.metrics.secondaryAnimationSource).toBe("origin-master-foot-ik-spring-bone-adapted");
-    expect(Number(state?.metrics.footIkGroundedFeet ?? 0)).toBeGreaterThanOrEqual(2);
-    expect(Number(state?.metrics.footIkHipOffset ?? 0)).toBeLessThan(0);
-    expect(Number(state?.metrics.footIkAverageTargetError ?? 1)).toBeLessThanOrEqual(0.015);
-    expect(Number(state?.metrics.footIkTerrainSlope ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.springBoneChain).toBe("ponytail");
-    expect(Number(state?.metrics.springBoneCount ?? 0)).toBeGreaterThanOrEqual(4);
-    expect(Number(state?.metrics.springBoneMaxDisplacement ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.springBoneCollisionContacts ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.springBoneSubsteps ?? 0)).toBeGreaterThanOrEqual(1);
-    expect(String(state?.metrics.secondaryAnimationHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
     expect(String(state?.metrics.secondaryAnimationBlockedClaims ?? "")).toContain("Unity Animation Rigging parity");
     expect(String(state?.metrics.secondaryAnimationBlockedClaims ?? "")).toContain("Unreal Control Rig parity");
     expect(state?.metrics.oldBranchWeightedNavigationPort).toBe(true);
@@ -958,18 +932,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.inputReplayEmittedEvents ?? 0)).toBeGreaterThanOrEqual(Number(state?.metrics.inputReplayEvents ?? 0));
     expect(Number(state?.metrics.inputReplayLoopCount ?? 0)).toBeGreaterThanOrEqual(1);
     expect(String(state?.metrics.inputReplayFirstEventTypes ?? "")).toContain("key");
-    expect(state?.metrics.oldBranchInputActionBindingPort).toBe(true);
-    expect(state?.metrics.inputActionBindingSource).toBe("origin-master-input-action-binding-adapted");
-    expect(Number(state?.metrics.inputActionCount ?? 0)).toBeGreaterThanOrEqual(4);
-    expect(Number(state?.metrics.inputBindingCount ?? 0)).toBeGreaterThanOrEqual(8);
-    expect(Number(state?.metrics.inputProcessorCount ?? 0)).toBeGreaterThanOrEqual(3);
-    expect(Number(state?.metrics.inputProcessedAxis ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.inputDeadzoneFilteredAxis ?? -1)).toBe(0);
-    expect(Number(state?.metrics.inputCompositeMagnitude ?? 0)).toBeGreaterThan(1);
-    expect(state?.metrics.inputHoldTriggered).toBe(true);
-    expect(state?.metrics.inputTapTriggered).toBe(true);
-    expect(state?.metrics.inputDoubleTapTriggered).toBe(true);
-    expect(state?.metrics.inputModifierChordPressed).toBe(true);
     expect(state?.metrics.oldBranchGestureHapticsPort).toBe(true);
     expect(state?.metrics.inputGestureHapticsSource).toBe("origin-master-input-gesture-rumble-adapted");
     expect(String(state?.metrics.inputGestureHapticsHash ?? "")).toMatch(/^[0-9a-f]{8}$/);

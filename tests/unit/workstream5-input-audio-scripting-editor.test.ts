@@ -12,8 +12,6 @@ import {
   InteractionSystem,
   parseInputRecording,
   pickingRayFromCamera,
-  processInputValue,
-  sampleInputActionBindingFixture,
   sampleVirtualTouchJoystickFixture,
   sampleXRRuntimeFixture
 } from "@aura3d/input";
@@ -281,35 +279,6 @@ describe("input runtime contracts", () => {
       recordingEventCount: 5,
       evidence: { oldCodebasePort: true, recording: true, playback: true, seek: true, looping: true }
     });
-  });
-
-  it("samples old-style action bindings, processors, and hold tap double-tap interactions", () => {
-    expect(processInputValue(0.08, [{ type: "deadzone", threshold: 0.2 }])).toBe(0);
-    expect(processInputValue(0.42, [{ type: "deadzone", threshold: 0.2 }, { type: "scale", factor: 1.8 }, { type: "clamp", min: -1, max: 1 }])).toBe(0.756);
-    expect(processInputValue(-0.5, [{ type: "invert" }, { type: "exponential", exponent: 2 }])).toBe(0.25);
-
-    const fixture = sampleInputActionBindingFixture();
-    expect(fixture).toMatchObject({
-      source: "origin-master-input-action-binding-adapted",
-      evidence: {
-        oldCodebasePort: true,
-        actionBindings: true,
-        processors: true,
-        holdTapDoubleTap: true,
-        compositeAxis: true,
-        modifierChord: true
-      },
-      processedAxis: 0.756,
-      deadzoneFilteredAxis: 0,
-      compositeX: 1,
-      compositeY: 1,
-      holdTriggered: true,
-      tapTriggered: true,
-      doubleTapTriggered: true,
-      modifierChordPressed: true
-    });
-    expect(fixture.compositeMagnitude).toBeCloseTo(Math.SQRT2, 4);
-    expect(fixture.claimBoundary).toContain("does not claim full input action");
   });
 
   it("samples bounded old virtual touch joystick behavior with dead zone, clamping, and recentering", () => {

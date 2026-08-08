@@ -535,6 +535,44 @@ function emptyPoints(): Record<R8Point, Evidence[]> {
   };
 }
 
+function publicPackageName(candidatePath: string): string | undefined {
+  const match = /^packages\/([^/]+)\/src\//.exec(candidatePath);
+  return match?.[1] === undefined ? undefined : `@aura3d/${match[1]}`;
+}
+
+/**
+ * Multiline named imports bind symbols on lines that contain neither `import` nor `from`:
+ *
+ *   import {
+ *     sampleOceanFixture
+ *   } from "@aura3d/rendering";
+ *
+ * The line-oriented scan cannot recognize that binding. Search complete static import/export
+ * statements, but only when their source is the candidate package's public barrel; this avoids
+ * treating an identically named symbol from another package as a consumer.
+ */
+function multilinePublicBindings(file: ScannedFile, candidatePath: string, symbols: readonly string[]): readonly Evidence[] {
+  const packageName = publicPackageName(candidatePath);
+  if (!packageName || symbols.length === 0) return [];
+  const out: Evidence[] = [];
+  const statementPattern = /(?:^|\n)\s*(?:import|export)\s*\{([\s\S]*?)\}\s*from\s*["']([^"']+)["']/g;
+  let match: RegExpExecArray | null;
+  while ((match = statementPattern.exec(file.text)) !== null) {
+    const bindings = match[1] ?? "";
+    const source = match[2] ?? "";
+    if (source !== packageName) continue;
+    const symbol = symbols.find((name) => new RegExp(`\\b${escapeRegExp(name)}\\b`).test(bindings));
+    if (!symbol) continue;
+    const lineNumber = file.text.slice(0, match.index).split("\n").length;
+    out.push({
+      point: "runtime-consumer",
+      at: `${file.path}:${lineNumber}`,
+      detail: `multiline import from ${source} binds ${symbol}`
+    });
+  }
+  return out;
+}
+
 function candidateSource(path: string): {
   readonly exists: boolean;
   readonly source: FileReport["source"];
@@ -576,6 +614,13 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
 
   for (const file of repo) {
     if (file.path === path) continue;
+    for (const evidence of multilinePublicBindings(file, path, symbols)) {
+      const key = `${evidence.point}|${evidence.at}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (deletionSet.has(file.path)) intraCandidate.push(evidence);
+      else points[evidence.point].push(evidence);
+    }
     for (let index = 0; index < file.lines.length; index += 1) {
       const line = file.lines[index];
       if (line.length > 4000) continue;

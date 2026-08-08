@@ -37,8 +37,8 @@
  *    geometry-level queries.
  * 5. **Character controller** — `CharacterController` (grounding, slopes, steps) and
  *    `FightingCharacterController`. Ours by necessity: the production solver ships none.
- * 6. **Vehicle** — `VehicleDynamics` (arcade telemetry, Pacejka tyre sampling and drivetrain)
- *    plus the racing layer above the solver: `RacingLineProfile`, `PathFollowDriver`.
+ * 6. **Vehicle** — `VehicleDynamics` provides telemetry, Pacejka tyre sampling and drivetrain
+ *    helpers. Public arcade pose and driver ownership live in `GameRuntime`.
  * 7. **Deterministic stepping** — `PhysicsWorld.step(dt)` with a fixed delta,
  *    `PhysicsStepper` for accumulator-driven fixed-step loops, and the adaptive-substep
  *    CCD wrapper, which is Aura3D's because the solver exposes no native swept TOI.
@@ -77,8 +77,6 @@ export * from "./HitboxWorld.js";
 
 // --- 6. Vehicle, and the racing layer above the solver ---
 export * from "./VehicleDynamics.js";
-export * from "./RacingLineProfile.js";
-export * from "./PathFollowDriver.js";
 
 // --- 7. Deterministic stepping ---
 export * from "./PhysicsWorld.js";

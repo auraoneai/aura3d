@@ -263,6 +263,12 @@ This is the structural change. Without it, every future genre repeats this PRD.
   `createGamePlatformerKit`, `createGameFallingBlocksKit`, `createGameLocomotionKit`
   (`GameGenreKits.ts`) and `createFightingGameKit` (`game-kits/fighting.ts`).
 
+  **Final outcome (2026-08-08):** ADR 0003 rejected substituting a physical-units force model for
+  the authored-unit arcade contract. The force prototype and these force-path-only, unreleased
+  utilities were removed under R8; `GameRuntime` now owns the shared arcade vehicle integration and
+  the retained arcade AI/certified-route tests prove the shipped path. The text above remains the
+  historical correction that motivated the experiment, not a statement of the current export set.
+
   The original attempt narrative is retained verbatim below as the record of what was tried.
 
   ### Attempt 2, after fixing what attempt 1 blamed

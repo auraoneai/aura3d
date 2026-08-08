@@ -27,7 +27,7 @@ describe("AuraBodyHandle", () => {
     const world = new PhysicsWorld({ gravity: [0, 0, 0] });
     const body = world.createRigidBody({ type: "dynamic", mass: 2, position: [0, 0, 0] });
     world.createCollider(body, { shape: Shape.sphere(0.5) });
-    const handle = createBodyHandle(body, world, "crate");
+    const handle = createBodyHandle(body, "crate");
 
     expect(handle.velocity()).toEqual([0, 0, 0]);
     handle.applyImpulse([4, 0, 0]);
@@ -42,7 +42,7 @@ describe("AuraBodyHandle", () => {
     const world = new PhysicsWorld({ gravity: [0, 0, 0] });
     const body = world.createRigidBody({ type: "dynamic", mass: 1, position: [0, 0, 0] });
     world.createCollider(body, { shape: Shape.sphere(0.5) });
-    const handle = createBodyHandle(body, world);
+    const handle = createBodyHandle(body);
 
     handle.applyForce([10, 0, 0]);
     world.step(1 / 60);
@@ -59,7 +59,7 @@ describe("AuraBodyHandle", () => {
     const world = new PhysicsWorld({ gravity: [0, 0, 0] });
     const body = world.createRigidBody({ type: "dynamic", mass: 1, position: [0, 0, 0] });
     world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
-    const handle = createBodyHandle(body, world);
+    const handle = createBodyHandle(body);
 
     handle.applyAngularImpulse([0, 1, 0]);
     expect(Math.abs(handle.angularVelocity()[1])).toBeGreaterThan(0);
@@ -69,7 +69,7 @@ describe("AuraBodyHandle", () => {
     const world = new PhysicsWorld({ gravity: [0, 0, 0] });
     const body = world.createRigidBody({ type: "dynamic", mass: 1, position: [0, 0, 0] });
     world.createCollider(body, { shape: Shape.sphere(0.5) });
-    const handle = createBodyHandle(body, world);
+    const handle = createBodyHandle(body);
 
     handle.setVelocity([5, 0, 0]);
     handle.setPosition([10, 0, 0]);
@@ -84,7 +84,7 @@ describe("AuraBodyHandle", () => {
     const world = new PhysicsWorld({ gravity: [0, 0, 0], enableSleeping: true });
     const body = world.createRigidBody({ type: "dynamic", mass: 1, position: [0, 0, 0] });
     world.createCollider(body, { shape: Shape.sphere(0.5) });
-    const handle = createBodyHandle(body, world);
+    const handle = createBodyHandle(body);
 
     handle.sleep();
     expect(handle.sleeping()).toBe(true);
@@ -103,8 +103,8 @@ describe("collision events on the public surface", () => {
     world.createCollider(falling, { shape: Shape.sphere(0.5) });
 
     const handles = new Map([
-      [ground.id, createBodyHandle(ground, world, "ground")],
-      [falling.id, createBodyHandle(falling, world, "ball")]
+      [ground.id, createBodyHandle(ground, "ground")],
+      [falling.id, createBodyHandle(falling, "ball")]
     ]);
 
     let observed: ReturnType<typeof toAuraCollisionEvent>;

@@ -42,9 +42,9 @@ entry.
 import is by definition not the public path:
 
 ```ts
-import { createPathFollowDriver } from "@aura3d/physics/src/PathFollowDriver";        // NO
-import { createPathFollowDriver } from "../../../packages/physics/src/PathFollowDriver"; // NO — same thing
-import { createPathFollowDriver } from "../../../packages/physics/src";                  // YES — the barrel
+import { solvePlatformerMotion } from "@aura3d/engine/src/agent-api/PlatformerMotion";        // NO
+import { solvePlatformerMotion } from "../../../packages/engine/src/agent-api/PlatformerMotion"; // NO — same thing
+import { game } from "../../../packages/engine/src/agent-api";                                // YES — the barrel
 ```
 
 `packages/<pkg>/src/index.ts` is exactly what `package.json` `exports` points at once built, so the
@@ -52,7 +52,7 @@ relative spelling of the **barrel** is the public surface. A relative path to a 
 package is not.
 
 The reachability walk therefore **stops at the barrier**. It will not step from a test into
-`PathFollowDriver.ts` and keep walking: every internal file is transitively connected to some file
+`PlatformerMotion.ts` and keep walking: every internal file is transitively connected to some file
 that mentions a public specifier, so traversing internals would resolve *every* deep import and make
 the tool a no-op. This was caught by sabotage and is locked by
 `tests/unit/tools/claim-lineage.test.ts`.

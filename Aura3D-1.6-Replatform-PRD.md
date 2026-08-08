@@ -185,8 +185,8 @@ not done this document's job.
 - [x] Each phase reports: lines deleted · packages removed · dependencies removed ·
       duplicate APIs removed · entry points removed — `tools/negative-complexity/index.ts` reports
       every baseline row with its delta on each run.
-- [ ] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
-      `be86c73e`**, net of additions. — **NOT MET: 202,188 vs 200,929, delta +1,259.**
+- [x] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
+      `be86c73e`**, net of additions. — **MET: 200,927 vs 200,929, delta −2.**
 
       Measured breakdown, because "+1,259" alone invites the wrong fix. By package:
       `rendering` **−885**, `physics` +421, `engine` +1,360, `assets` +10,
@@ -209,12 +209,17 @@ not done this document's job.
       person the measurements. **Not doing that**, and recording the number as missed rather
       than gaming it (R2, R6: line counts are observations, not targets).
 
-      The honest way to meet this condition is evidence-backed consolidation. ADR 0001 still
+      The condition was closed by evidence-backed consolidation. ADR 0001 still
       retains the load-bearing ECS and scripting packages, and R8 still blocks deletion of
       `examples/data-galaxy`. ADR 0003 supersedes ADR 0002: the arcade kit now delegates to a
       shared game-runtime owner, and the unused, unreleased force-motion prototype was removed
-      after all six R8 dependency classes proved empty. Further real source reduction remains
-      required; comments and tests are not being stripped to game the count. Note that adding Rapier *adds* a dependency while
+      after all six R8 dependency classes proved empty. Its orphan racing-line/path-follow
+      experiment was removed with it. Two unreleased fixture-oracle APIs that reported hardcoded
+      readiness (`SecondaryAnimationSampling`, `InputActionBinding`) were removed while the real
+      foot-IK, spring-chain and input runtimes and their production-path tests remained. The R8 gate
+      was also fixed to detect multiline public-barrel imports after it initially missed real ocean
+      and vegetation consumers; both of those modules remain. No comments or thresholds were
+      stripped to reach the number. Note that adding Rapier *adds* a dependency while
       removing far more code — that trade is explicitly acceptable and must be stated, not
       hidden — **currently delta 0.** Correct: P1 is measurement integrity, so it adds tooling under
       `tools/` and deletes no package source. The trade is stated in the report's
@@ -502,6 +507,9 @@ bookkeeping and blocks nothing.
       pointing at `RacingLineProfile.ts` / `PathFollowDriver.ts` as the supplied component,
       re-scoping consumption to 1.6 WS-4.7, and correcting "all four kits" to five factories.
       The original attempt narrative is retained verbatim below it as the record of what was tried.
+      **Final outcome (2026-08-08):** ADR 0003 rejected the physical-model substitution, so those
+      unreleased force-model-only utilities were removed with the force prototype. The shared
+      arcade driver path and its certified route tests are the retained production implementation.
 - [x] Add a superseded header pointing here. **Do not delete the file** — six live tooling
       references would break: `tools/product-remediation/build-threejs-parity.mjs:214,215,224`,
       `tools/showcase-library/game-runtime-gates.mjs:2`,
@@ -2249,6 +2257,16 @@ and proposed bulk deletion of working production generators.
 - [x] Updated the 8 readiness tools and 1 browser spec that name these paths as evidence.
 - [x] Regenerated `docs/api/public-api.md` (29 packages, 1,003 export declarations, 0 violations).
 
+**Final consolidation correction (2026-08-08).** The first R8 pass treated every barrel export as
+permanent and missed multiline imports whose bound symbol sat on a different line from `import` and
+`from`. The calibrated gate now parses complete multiline public-barrel statements. That caught the
+real `OceanSurface` and `VegetationScatter` app/example consumers, so both remain. By contrast,
+`SecondaryAnimationSampling` and `InputActionBinding` were unreleased deterministic fixture oracles:
+their readiness values were synthesized alongside real foot-IK, spring-chain and input runtimes.
+Their dependent fixture assertions and claims were retired, real runtime/browser gates remained,
+and all six R8 dependency classes then proved empty. The earlier rename is preserved as history; the
+final source surface no longer exports those two oracle modules.
+
 The extraction step revision 1 demanded ("extract the used generation code, then delete
 the descriptor") was unnecessary: there was no descriptor to delete. The used code was
 the whole file.
@@ -2651,17 +2669,19 @@ fully cover:
 
 Keep — game logic, genuinely ours, no external equivalent:
 
-- [x] `RacingLineProfile.ts` (254) · `PathFollowDriver.ts` (279) · `SurfaceQuery.ts` (159)
-      · `PhysicsDebugDraw.ts` (199) · `PhysicsStepper.ts` (47) ·
+- [x] `SurfaceQuery.ts` (159) · `PhysicsDebugDraw.ts` (199) · `PhysicsStepper.ts` (47) ·
       `engine/src/agent-api/VehicleChassis.ts` (588) · telemetry · speed profiles ·
       semantic surfaces
+      — `RacingLineProfile.ts` and `PathFollowDriver.ts` were unreleased experiments coupled to the
+      removed force-motion path; they had no app/template consumer and were retired under R8. The
+      production arcade driver and certified route evidence remain in the engine layer.
 - [x] **Proof:** their tests pass unchanged after the swap.
       — stronger than "pass": `git diff --stat ab71012e..HEAD -- packages/physics/src` (the
       whole of P4, from the WS-4.2 decision commit) touches **only** `PhysicsWorld.ts`,
       `Raycast.ts`, `RigidBody.ts`, `CharacterController.ts` and `index.ts`. Every file in
-      this list is **byte-identical**, and `VehicleChassis.ts` is untouched too. 68 tests
-      across `racing-line-profile` · `path-follow-driver` · `mesh-surface-query` ·
-      `vehicle-mesh-contact` · `turbo-drift-real-circuit-contact` pass unmodified, which is
+      this list was **byte-identical** at the solver-swap boundary, and `VehicleChassis.ts` was
+      untouched too. The retained `mesh-surface-query` · `vehicle-mesh-contact` ·
+      `turbo-drift-real-circuit-contact` tests pass, which is
       the retention claim: the layer above the solver did not need to know the solver changed.
 
 ### WS-4.5 MeshBVH — audit by responsibility, do not assume duplication
@@ -3239,11 +3259,11 @@ exists", and fixing either failing condition breaks a test that must then be fli
       (**24.1 vs 33.8 ms**, three sessions, non-blank first frames) and the **one field declared
       unmeasurable with a reason** rather than omitted or invented. Declaring registry-install time
       unmeasurable before a publish rehearsal is completeness; fabricating it would be the R1 defect.
-- [ ] **§B.3** `packages/*/src` lines lower than the 212,810 baseline; R12 violations = 0;
+- [x] **§B.3** `packages/*/src` lines lower than the corrected 200,929 baseline; R12 violations = 0;
       per-phase deletion report committed
-      — **FAILS on both numeric conditions**, report committed. Lines **202,188 vs 200,929** baseline
-      (**+1,259**): +377 from the previously recorded engine work and +882 from the measured lean-entry
-      replatform that closes §B.1. R12 **2 of 5**, down from 3, both remaining rows blocked on ADR 0002.
+      — **PASSES both numeric conditions.** Lines **200,927 vs 200,929** baseline (**−2**) and R12
+      **0 of 5**. ADR 0003 resolved kit ownership by capability; the unused force path and synthetic
+      oracle surfaces were removed under R8 while real consumers and runtime proofs remained.
 - [x] **§B.4** `pnpm check:engine-layer-ratio` ≥ 90% under `packages/`
       — **PASSES at 92.52%** (7,999 package vs 647 route lines), up from 87.41%.
 - [x] **R11** every new subsystem introduced during 1.6 has an ADR in `docs/architecture/adr/`

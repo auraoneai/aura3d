@@ -64,14 +64,14 @@ describe("claim lineage (R1)", () => {
 
   it("rejects evidence that reaches Aura3D only by deep import", () => {
     /*
-     * The sabotage that mattered. path-follow-driver.test.ts imports
-     * packages/physics/src/PathFollowDriver and nothing public. An earlier version RESOLVED it,
-     * because the walk stepped into PathFollowDriver.ts and kept going until some transitively
+     * The sabotage that mattered. platformer-jump-intent.test.ts imports
+     * packages/engine/src/agent-api/PlatformerMotion and nothing public. An earlier version RESOLVED it,
+     * because the walk stepped into PlatformerMotion.ts and kept going until some transitively
      * reachable internal file mentioned a public specifier — which every deep import would do, since
      * all internals are connected. The walk now stops at the package barrel.
      */
     const map = JSON.parse(original) as { productionPathTests: Record<string, string> };
-    map.productionPathTests.materials = "tests/unit/physics/path-follow-driver.test.ts";
+    map.productionPathTests.materials = "tests/unit/physics/platformer-jump-intent.test.ts";
     writeFileSync(MAP_PATH, JSON.stringify(map, null, 2));
     const { status, report } = run();
     expect(status).not.toBe(0);
@@ -98,7 +98,7 @@ describe("claim lineage (R1)", () => {
      * unit tests, while accepting `src/SomeFile` would accept anything — the barrel is the line.
      */
     const map = JSON.parse(original) as { productionPathTests: Record<string, string> };
-    map.productionPathTests["rigid bodies"] = "tests/unit/physics/vehicle-force-motion.test.ts";
+    map.productionPathTests["rigid bodies"] = "tests/unit/physics/mesh-surface-query.test.ts";
     writeFileSync(MAP_PATH, JSON.stringify(map, null, 2));
     const { report } = run();
     const row = (report.rows as any[]).find((entry) => entry.capability === "rigid bodies");

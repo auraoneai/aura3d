@@ -11,9 +11,17 @@
 
 import { solveTwoBoneIk, type TwoBoneIkResult } from "./IK.js";
 import type { Vec3 } from "./Keyframe.js";
-// `FootIkSample` is the single source-of-truth data shape, defined in (and exported from)
-// SecondaryAnimationSampling; the runtime here produces that exact shape.
-import type { FootIkSample } from "./SecondaryAnimationSampling.js";
+
+/** Runtime foot-placement telemetry for one leg. */
+export interface FootIkSample {
+  readonly side: "left" | "right";
+  readonly sourceFoot: Vec3;
+  readonly plantedFoot: Vec3;
+  readonly groundNormal: Vec3;
+  readonly grounded: boolean;
+  readonly verticalCorrection: number;
+  readonly targetError: number;
+}
 
 /** Result of a downward ground query: where the ground is and its surface normal. */
 export interface GroundSample {

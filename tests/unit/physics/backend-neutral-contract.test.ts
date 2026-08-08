@@ -76,7 +76,7 @@ describe("the public physics contract does not name its backend", () => {
       // the `MeshBVH` interface is represented by its constructor, `buildMeshBVH`.
       "raycast/shapecast": ["raycastCollider", "sphereCastCollider", "timeOfImpact", "buildMeshBVH", "raycastMesh", "createMeshSurfaceQuery"],
       "character controller": ["CharacterController", "createFightingCharacterController"],
-      vehicle: ["createRacingLineProfile", "createPathFollowDriver"],
+      vehicle: ["samplePacejkaTireForces", "sampleRacingAiDriver"],
       "deterministic stepping": ["PhysicsWorld", "PhysicsStepper"]
     };
     const surface = new Set(Object.keys(physics));

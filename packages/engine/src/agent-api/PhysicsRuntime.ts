@@ -422,12 +422,7 @@ export function contactRelativeSpeed(
 }
 
 /** Internal: adapt a `@aura3d/physics` body to the public handle. */
-export function createBodyHandle(
-  body: RigidBody,
-  world: Pick<PhysicsWorld, "getBody">,
-  nodeName?: string
-): AuraBodyHandle {
-  void world;
+export function createBodyHandle(body: RigidBody, nodeName?: string): AuraBodyHandle {
   const snapshot = () => body.snapshot();
   const handle: AuraBodyHandle = {
     id: body.id,
@@ -548,7 +543,7 @@ export function createPhysicsRuntime(
     if (existing) return existing;
     const body = world.getBody(id);
     if (!body) return undefined;
-    const handle = createBodyHandle(body, world, nodeNameFor(id));
+    const handle = createBodyHandle(body, nodeNameFor(id));
     handles.set(id, handle);
     return handle;
   }
@@ -761,7 +756,7 @@ export function createPhysicsRuntime(
         namesById.set(body.id, spec.name);
         idsByName.set(spec.name, body.id);
       }
-      const handle = createBodyHandle(body, world, spec.name);
+      const handle = createBodyHandle(body, spec.name);
       handles.set(body.id, handle);
       return handle;
     },

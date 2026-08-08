@@ -13,7 +13,7 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `1.5.2` | `packages/animation/src/index.ts` | 47 |
+| `@aura3d/animation` | `1.5.2` | `packages/animation/src/index.ts` | 46 |
 | `@aura3d/apps` | `1.5.2` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `1.5.2` | `packages/asset-index/src/index.ts` | 32 |
 | `@aura3d/assets` | `1.5.2` | `packages/assets/src/index.ts` | 82 |
@@ -29,10 +29,10 @@ pnpm verify:api-docs
 | `@aura3d/editor-runtime` | `1.5.2` | `packages/editor-runtime/src/index.ts` | 82 |
 | `@aura3d/engine` | `1.5.2` | `packages/engine/src/index.ts` | 39 |
 | `@aura3d/environments` | `1.5.2` | `packages/environments/src/index.ts` | 10 |
-| `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 46 |
+| `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 44 |
 | `@aura3d/materials` | `1.5.2` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.5.2` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 34 |
+| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 32 |
 | `@aura3d/physics/solverless` | `1.5.2` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `1.5.2` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
@@ -79,7 +79,6 @@ export * from "./IK.js";
 export * from "./FootIk.js";
 export * from "./SpringBones.js";
 export * from "./MotionMatchingFixtures.js";
-export * from "./SecondaryAnimationSampling.js";
 export * from "./CrowdAnimation.js";
 export * from "./AnimationClipEvents.js";
 export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateAnimationStudioClipMap } from "./AnimationClipRegistry.js";
@@ -712,8 +711,6 @@ export { sampleGestureHapticsFixture } from "./GestureHapticsFixtures";
 export type { GestureHapticsFixture, GestureHapticsFixtureOptions, GestureHapticsGestureType, GestureHapticsPatternName } from "./GestureHapticsFixtures";
 export { GestureRecognizer } from "./GestureRecognizer";
 export type { Gesture } from "./GestureRecognizer";
-export { processInputValue, sampleInputActionBindingFixture } from "./InputActionBinding";
-export type { InputActionBindingFixture, InputValueProcessor } from "./InputActionBinding";
 export { InputSnapshot } from "./InputSnapshot";
 export type { ButtonState, GamepadSnapshot, InputSnapshotOptions, PointerSnapshot, PointerTouch } from "./InputSnapshot";
 export { InputPlayback, InputRecorder, parseInputRecording } from "./InputReplay";
@@ -828,8 +825,6 @@ export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
 export * from "./VehicleDynamics.js";
-export * from "./RacingLineProfile.js";
-export * from "./PathFollowDriver.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
 export * from "./Navigation.js";

@@ -8,8 +8,8 @@ import { afterAll, describe, expect, it } from "vitest";
 /**
  * WS-0.2 — the deletion-safety tool is only useful if it *blocks* a file that is genuinely unsafe
  * to delete. A tool that clears a known-unsafe file is worse than no tool, because it converts a
- * missing check into a false assurance. `OceanSurface.ts` is the canonical case: revision 1 of the
- * 1.6 PRD listed it for bulk deletion, and `EnvironmentPlatform.ts` imports it.
+ * missing check into a false assurance. `TerrainHeightfield.ts` is the canonical case:
+ * `EnvironmentPlatform.ts` imports it to build production terrain geometry.
  */
 const scratch = mkdtempSync(join(tmpdir(), "deletion-safety-"));
 const repoRoot = resolve(import.meta.dirname, "..", "..", "..");
@@ -34,40 +34,33 @@ function run(args: readonly string[]): { readonly status: number; readonly repor
 
 describe("deletion-safety (R8)", () => {
   it("blocks a file with a real internal importer", () => {
-    const { status, report } = run(["packages/rendering/src/OceanSurface.ts"]);
+    const { status, report } = run(["packages/rendering/src/TerrainHeightfield.ts"]);
     expect(status).not.toBe(0);
     expect(report.pass).toBe(false);
     const files = report.files as readonly { readonly path: string; readonly clear: boolean; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
-    const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
-    expect(ocean?.clear).toBe(false);
+    const terrain = files.find((file) => file.path.endsWith("TerrainHeightfield.ts"));
+    expect(terrain?.clear).toBe(false);
     /*
-     * The blocking evidence is the package's own public re-export. `packages/rendering/src/index.ts`
-     * has `export { sampleOceanFixture } from "./OceanSurface"`, so deleting the file breaks the
-     * published `@aura3d/rendering` surface. That is a real `export`-map dependency and it is what
-     * the R8 gate exists to catch.
+     * The blocking evidence includes the live production importer. A barrel-only reference can be
+     * retired with an unreleased addition, but `EnvironmentPlatform` actually executes this module.
      */
-    const runtime = ocean?.blocking["runtime-consumer"] ?? [];
-    expect(runtime.some((evidence) => evidence.at.startsWith("packages/rendering/src/index.ts:"))).toBe(true);
+    const runtime = terrain?.blocking["runtime-consumer"] ?? [];
+    expect(runtime.some((evidence) => evidence.at.startsWith("packages/rendering/src/EnvironmentPlatform.ts:"))).toBe(true);
   }, 180_000);
 
-  it("does not block on a specifier named inside a plain string", () => {
-    /*
-     * Regression pin. `EnvironmentPlatform.ts:304` contains the capability-description string
-     * "OceanSurface and waterSystems provide Gerstner/procedural water telemetry." — English prose
-     * in a quoted claim, not an import. An earlier version of this tool reported it as a
-     * `runtime-consumer`, and this test asserted that false positive as its proof of correctness.
-     *
-     * That is the failure mode R8 is most vulnerable to: fabricated blocking evidence blocks a
-     * legitimate deletion on a dependency that does not exist, and it does so while looking
-     * rigorous. A gate that invents blockers gets routed around, exactly like the fabricated
-     * performance gates this re-platform removed.
-     */
-    const { report } = run(["packages/rendering/src/OceanSurface.ts"]);
-    const files = report.files as readonly { readonly path: string; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
+  it("blocks a symbol consumed through a multiline public-barrel import", () => {
+    const { status, report } = run(["packages/rendering/src/OceanSurface.ts"]);
+    expect(status).not.toBe(0);
+    const files = report.files as readonly {
+      readonly path: string;
+      readonly blocking: Record<string, readonly { readonly at: string; readonly detail: string }[]>;
+    }[];
     const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
-    const everyBlocker = Object.values(ocean?.blocking ?? {}).flat();
-    expect(everyBlocker.length).toBeGreaterThan(0);
-    expect(everyBlocker.some((evidence) => evidence.at.includes("EnvironmentPlatform.ts"))).toBe(false);
+    const runtime = ocean?.blocking["runtime-consumer"] ?? [];
+    expect(runtime.some((evidence) =>
+      evidence.at.startsWith("apps/advanced-examples-gallery/src/waterSystems.ts:")
+      && evidence.detail.includes("multiline import")
+    )).toBe(true);
   }, 180_000);
 
   it("treats an empty deletion queue as a pass", () => {
@@ -96,7 +89,7 @@ describe("deletion-safety (R8)", () => {
      * that as a runtime consumer and blocked on itself, which is unclearable. Prose is reported so
      * stale references get tidied, but it does not gate a deletion.
      */
-    const { report } = run(["packages/rendering/src/OceanSurface.ts"]);
+    const { report } = run(["packages/test-utils/src/index.ts"]);
     const files = report.files as readonly { readonly proseMentions?: readonly unknown[] }[];
     expect(Array.isArray(files[0]?.proseMentions)).toBe(true);
   }, 180_000);
@@ -158,7 +151,7 @@ describe("deletion-safety (R8)", () => {
      * calibration bugs above: the tool manufacturing its own blocking evidence.
      */
     const manifestPath = "tests/reports/deletion-safety-selfref-manifest.json";
-    const candidates = ["packages/rendering/src/OceanSurface.ts", "packages/ecs/src/Bitset.ts"];
+    const candidates = ["packages/rendering/src/TerrainHeightfield.ts", "packages/ecs/src/Bitset.ts"];
     writeFileSync(join(repoRoot, manifestPath), JSON.stringify({ candidates }, null, 2));
     try {
       const { report } = run(["--manifest", manifestPath]);
@@ -175,8 +168,8 @@ describe("deletion-safety (R8)", () => {
       }
 
       // Still catches the real dependency, or the exclusion would have blunted the gate.
-      const ocean = files.find((file) => file.path.endsWith("OceanSurface.ts"));
-      expect((ocean?.blocking["runtime-consumer"] ?? []).some((evidence) => evidence.at.startsWith("packages/rendering/src/index.ts:"))).toBe(true);
+      const terrain = files.find((file) => file.path.endsWith("TerrainHeightfield.ts"));
+      expect((terrain?.blocking["runtime-consumer"] ?? []).some((evidence) => evidence.at.startsWith("packages/rendering/src/EnvironmentPlatform.ts:"))).toBe(true);
     } finally {
       rmSync(join(repoRoot, manifestPath), { force: true });
     }
