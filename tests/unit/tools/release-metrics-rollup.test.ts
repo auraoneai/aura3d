@@ -42,6 +42,12 @@ describe("§B.2 — developer friction is complete for both engines", () => {
         readonly aura3d: { readonly median: number; readonly sampleCount: number };
         readonly threejs: { readonly median: number; readonly sampleCount: number };
       };
+      readonly installToFirstCube: {
+        readonly summary: Record<"cold" | "warm", Record<"aura3d" | "threejs", {
+          readonly sampleCount: number;
+          readonly medianMs: number;
+        }>>;
+      };
       readonly unmeasured: readonly { readonly field: string; readonly reason: string }[];
     }>("tests/reports/developer-friction.json");
     expect(report.scenarios.length).toBe(3);
@@ -55,8 +61,13 @@ describe("§B.2 — developer friction is complete for both engines", () => {
       expect(engine.median).toBeGreaterThan(0);
       expect(engine.sampleCount).toBeGreaterThanOrEqual(3);
     }
-    // Install-to-first-cube still requires a clean real-registry release profile.
-    expect(report.unmeasured.map((field) => field.field)).toEqual(["installToFirstCubeMinutes"]);
+    for (const state of ["cold", "warm"] as const) {
+      for (const engine of ["aura3d", "threejs"] as const) {
+        expect(report.installToFirstCube.summary[state][engine].sampleCount).toBeGreaterThanOrEqual(3);
+        expect(report.installToFirstCube.summary[state][engine].medianMs).toBeGreaterThan(0);
+      }
+    }
+    expect(report.unmeasured).toEqual([]);
   });
 });
 

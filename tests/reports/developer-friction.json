@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-developer-friction/1.0",
-  "generatedAt": "2026-08-08T09:07:10.471Z",
+  "generatedAt": "2026-08-08T16:16:13.726Z",
   "method": "Measured on the committed bundle-scenario entries, one per engine per scenario, so friction and bundle size describe the same apps. Authored lines exclude blanks and comments, because the Aura3D entries carry long explanatory headers that would otherwise count as developer effort in Aura3D's favour.",
   "scenarios": [
     {
@@ -14,11 +14,11 @@
           "@aura3d/engine"
         ],
         "dependencyCount": 1,
-        "typecheckMs": 1639,
+        "typecheckMs": 653,
         "typecheckSamplesMs": [
-          1639,
-          1671,
-          1542
+          671,
+          653,
+          644
         ],
         "typecheckClean": true
       },
@@ -30,11 +30,11 @@
           "three"
         ],
         "dependencyCount": 1,
-        "typecheckMs": 1315,
+        "typecheckMs": 651,
         "typecheckSamplesMs": [
-          1290,
-          1610,
-          1315
+          664,
+          651,
+          630
         ],
         "typecheckClean": true
       },
@@ -58,11 +58,11 @@
           "@aura3d/engine"
         ],
         "dependencyCount": 1,
-        "typecheckMs": 1243,
+        "typecheckMs": 628,
         "typecheckSamplesMs": [
-          1237,
-          1243,
-          1634
+          632,
+          621,
+          628
         ],
         "typecheckClean": true
       },
@@ -74,11 +74,11 @@
           "three"
         ],
         "dependencyCount": 1,
-        "typecheckMs": 1069,
+        "typecheckMs": 676,
         "typecheckSamplesMs": [
-          1113,
-          1017,
-          1069
+          679,
+          670,
+          676
         ],
         "typecheckClean": true
       },
@@ -102,11 +102,11 @@
           "@aura3d/engine"
         ],
         "dependencyCount": 1,
-        "typecheckMs": 1356,
+        "typecheckMs": 642,
         "typecheckSamplesMs": [
-          1284,
-          1408,
-          1356
+          642,
+          654,
+          637
         ],
         "typecheckClean": true
       },
@@ -119,11 +119,11 @@
           "three"
         ],
         "dependencyCount": 2,
-        "typecheckMs": 1035,
+        "typecheckMs": 662,
         "typecheckSamplesMs": [
-          1035,
-          1102,
-          1035
+          670,
+          658,
+          662
         ],
         "typecheckClean": true
       },
@@ -218,12 +218,383 @@
       "sampleCount": 3
     }
   },
-  "unmeasured": [
-    {
-      "field": "installToFirstCubeMinutes",
-      "reason": "Requires a clean machine profile and a real registry install. Producing it from a warm monorepo checkout would be a fabricated number, which is what R1 exists to prevent. Measure during release rehearsal on a clean profile, or leave unproven."
-    }
-  ],
+  "installToFirstCube": {
+    "source": "tests/reports/install-to-first-cube.json",
+    "measurement": "Wall-clock time from npm install start through fresh project creation, production build, Vite readiness, and a browser-verified non-blank rendered cube.",
+    "methodology": {
+      "releaseCandidate": "actual pnpm-packed @aura3d/engine 1.6.0 tarball from the measured commit",
+      "comparison": "three@0.165.0 from the public npm registry",
+      "commonTooling": "vite@7.3.2",
+      "samplesPerEnginePerState": 3,
+      "cold": "fresh project, fresh npm cache, and fresh empty npm user config for every sample",
+      "warm": "fresh project and empty npm user config; npm cache deliberately primed once per engine before measured samples",
+      "browserBoundary": "Vite ready to first frame whose WebGL pixels differ from the background by more than 1,000 pixels",
+      "canvas": {
+        "width": 960,
+        "height": 600
+      },
+      "identicalCameraAndContent": true,
+      "monorepoResolutionDisabled": true
+    },
+    "environment": {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "node": "v22.22.0",
+      "npm": "10.9.4",
+      "pnpm": "11.1.3",
+      "browser": {
+        "name": "chromium",
+        "version": "147.0.7727.15"
+      },
+      "cpu": "Apple M4 Max",
+      "commit": "096068d1875673d7c0c4b5d13c63169387c5fe88",
+      "npmRegistry": "https://registry.npmjs.org/"
+    },
+    "artifacts": {
+      "aura3d": {
+        "version": "1.6.0",
+        "source": "release-candidate-tarball",
+        "sha256": "ade9696442d0297581c2f44d63d3539351ed0e7cac9b1b5958f398de5245675f"
+      },
+      "threejs": {
+        "version": "0.165.0",
+        "source": "npm-registry"
+      }
+    },
+    "summary": {
+      "cold": {
+        "aura3d": {
+          "sampleCount": 3,
+          "samplesMs": [
+            6638.6,
+            6520.5,
+            6663.8
+          ],
+          "medianMs": 6638.6,
+          "medianMinutes": 0.1106,
+          "meanMs": 6607.6,
+          "varianceMs2": 3901.9,
+          "standardDeviationMs": 62.5,
+          "minMs": 6520.5,
+          "maxMs": 6663.8
+        },
+        "threejs": {
+          "sampleCount": 3,
+          "samplesMs": [
+            5047.9,
+            5085.5,
+            4850.6
+          ],
+          "medianMs": 5047.9,
+          "medianMinutes": 0.0841,
+          "meanMs": 4994.7,
+          "varianceMs2": 10613.2,
+          "standardDeviationMs": 103,
+          "minMs": 4850.6,
+          "maxMs": 5085.5
+        }
+      },
+      "warm": {
+        "aura3d": {
+          "sampleCount": 3,
+          "samplesMs": [
+            3233.1,
+            3054,
+            3199.5
+          ],
+          "medianMs": 3199.5,
+          "medianMinutes": 0.0533,
+          "meanMs": 3162.2,
+          "varianceMs2": 6041.8,
+          "standardDeviationMs": 77.7,
+          "minMs": 3054,
+          "maxMs": 3233.1
+        },
+        "threejs": {
+          "sampleCount": 3,
+          "samplesMs": [
+            2297.7,
+            2390.6,
+            2275.8
+          ],
+          "medianMs": 2297.7,
+          "medianMinutes": 0.0383,
+          "meanMs": 2321.4,
+          "varianceMs2": 2476.6,
+          "standardDeviationMs": 49.8,
+          "minMs": 2275.8,
+          "maxMs": 2390.6
+        }
+      }
+    },
+    "samples": [
+      {
+        "engine": "aura3d",
+        "cacheState": "cold",
+        "sample": 1,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:05.866Z",
+          "installCompletedAt": "2026-08-08T16:13:10.585Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:10.585Z",
+          "buildCompletedAt": "2026-08-08T16:13:11.214Z",
+          "devServerReadyAt": "2026-08-08T16:13:11.450Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:12.504Z"
+        },
+        "installMs": 4719.1,
+        "projectCreationMs": 0.3,
+        "buildMs": 628.3,
+        "devServerReadyMs": 236.7,
+        "browserToVerifiedFrameMs": 1054.1,
+        "installToFirstCubeMs": 6638.6,
+        "verifiedChangedPixels": 144000,
+        "cacheDirectoryWasFresh": true,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "threejs",
+        "cacheState": "cold",
+        "sample": 1,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:12.726Z",
+          "installCompletedAt": "2026-08-08T16:13:16.169Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:16.169Z",
+          "buildCompletedAt": "2026-08-08T16:13:16.830Z",
+          "devServerReadyAt": "2026-08-08T16:13:17.145Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:17.774Z"
+        },
+        "installMs": 3442.9,
+        "projectCreationMs": 0.2,
+        "buildMs": 661.6,
+        "devServerReadyMs": 314.5,
+        "browserToVerifiedFrameMs": 628.7,
+        "installToFirstCubeMs": 5047.9,
+        "verifiedChangedPixels": 46577,
+        "cacheDirectoryWasFresh": true,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "threejs",
+        "cacheState": "cold",
+        "sample": 2,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:17.831Z",
+          "installCompletedAt": "2026-08-08T16:13:21.296Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:21.296Z",
+          "buildCompletedAt": "2026-08-08T16:13:21.970Z",
+          "devServerReadyAt": "2026-08-08T16:13:22.285Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:22.917Z"
+        },
+        "installMs": 3464.7,
+        "projectCreationMs": 0.3,
+        "buildMs": 674,
+        "devServerReadyMs": 314.9,
+        "browserToVerifiedFrameMs": 631.7,
+        "installToFirstCubeMs": 5085.5,
+        "verifiedChangedPixels": 46577,
+        "cacheDirectoryWasFresh": true,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "aura3d",
+        "cacheState": "cold",
+        "sample": 2,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:22.936Z",
+          "installCompletedAt": "2026-08-08T16:13:27.849Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:27.850Z",
+          "buildCompletedAt": "2026-08-08T16:13:28.430Z",
+          "devServerReadyAt": "2026-08-08T16:13:28.745Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:29.456Z"
+        },
+        "installMs": 4913.8,
+        "projectCreationMs": 0.2,
+        "buildMs": 580.7,
+        "devServerReadyMs": 315.1,
+        "browserToVerifiedFrameMs": 710.8,
+        "installToFirstCubeMs": 6520.5,
+        "verifiedChangedPixels": 144000,
+        "cacheDirectoryWasFresh": true,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "aura3d",
+        "cacheState": "cold",
+        "sample": 3,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:30.895Z",
+          "installCompletedAt": "2026-08-08T16:13:35.952Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:35.953Z",
+          "buildCompletedAt": "2026-08-08T16:13:36.521Z",
+          "devServerReadyAt": "2026-08-08T16:13:36.837Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:37.559Z"
+        },
+        "installMs": 5057,
+        "projectCreationMs": 0.3,
+        "buildMs": 568.4,
+        "devServerReadyMs": 315.8,
+        "browserToVerifiedFrameMs": 722.2,
+        "installToFirstCubeMs": 6663.8,
+        "verifiedChangedPixels": 144000,
+        "cacheDirectoryWasFresh": true,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "threejs",
+        "cacheState": "cold",
+        "sample": 3,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:38.981Z",
+          "installCompletedAt": "2026-08-08T16:13:42.210Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:42.211Z",
+          "buildCompletedAt": "2026-08-08T16:13:42.876Z",
+          "devServerReadyAt": "2026-08-08T16:13:43.192Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:43.832Z"
+        },
+        "installMs": 3228.9,
+        "projectCreationMs": 0.2,
+        "buildMs": 665.8,
+        "devServerReadyMs": 315.2,
+        "browserToVerifiedFrameMs": 640.5,
+        "installToFirstCubeMs": 4850.6,
+        "verifiedChangedPixels": 46577,
+        "cacheDirectoryWasFresh": true,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "aura3d",
+        "cacheState": "warm",
+        "sample": 1,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:46.194Z",
+          "installCompletedAt": "2026-08-08T16:13:47.819Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:47.819Z",
+          "buildCompletedAt": "2026-08-08T16:13:48.398Z",
+          "devServerReadyAt": "2026-08-08T16:13:48.714Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:49.427Z"
+        },
+        "installMs": 1624.8,
+        "projectCreationMs": 0.2,
+        "buildMs": 579.5,
+        "devServerReadyMs": 315.7,
+        "browserToVerifiedFrameMs": 712.9,
+        "installToFirstCubeMs": 3233.1,
+        "verifiedChangedPixels": 144000,
+        "cacheDirectoryWasFresh": false,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "threejs",
+        "cacheState": "warm",
+        "sample": 1,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:49.536Z",
+          "installCompletedAt": "2026-08-08T16:13:50.237Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:50.237Z",
+          "buildCompletedAt": "2026-08-08T16:13:50.899Z",
+          "devServerReadyAt": "2026-08-08T16:13:51.213Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:51.834Z"
+        },
+        "installMs": 701.1,
+        "projectCreationMs": 0.2,
+        "buildMs": 661.6,
+        "devServerReadyMs": 313.5,
+        "browserToVerifiedFrameMs": 621.2,
+        "installToFirstCubeMs": 2297.7,
+        "verifiedChangedPixels": 46577,
+        "cacheDirectoryWasFresh": false,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "threejs",
+        "cacheState": "warm",
+        "sample": 2,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:53.186Z",
+          "installCompletedAt": "2026-08-08T16:13:53.930Z",
+          "projectCreationCompletedAt": "2026-08-08T16:13:53.931Z",
+          "buildCompletedAt": "2026-08-08T16:13:54.629Z",
+          "devServerReadyAt": "2026-08-08T16:13:54.944Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:13:55.577Z"
+        },
+        "installMs": 743.8,
+        "projectCreationMs": 0.2,
+        "buildMs": 698.1,
+        "devServerReadyMs": 314.8,
+        "browserToVerifiedFrameMs": 633.6,
+        "installToFirstCubeMs": 2390.6,
+        "verifiedChangedPixels": 46577,
+        "cacheDirectoryWasFresh": false,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "aura3d",
+        "cacheState": "warm",
+        "sample": 2,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:13:58.557Z",
+          "installCompletedAt": "2026-08-08T16:14:00.005Z",
+          "projectCreationCompletedAt": "2026-08-08T16:14:00.005Z",
+          "buildCompletedAt": "2026-08-08T16:14:00.576Z",
+          "devServerReadyAt": "2026-08-08T16:14:00.892Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:14:01.611Z"
+        },
+        "installMs": 1448.3,
+        "projectCreationMs": 0.2,
+        "buildMs": 571.2,
+        "devServerReadyMs": 315.7,
+        "browserToVerifiedFrameMs": 718.5,
+        "installToFirstCubeMs": 3054,
+        "verifiedChangedPixels": 144000,
+        "cacheDirectoryWasFresh": false,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "aura3d",
+        "cacheState": "warm",
+        "sample": 3,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:14:02.212Z",
+          "installCompletedAt": "2026-08-08T16:14:03.825Z",
+          "projectCreationCompletedAt": "2026-08-08T16:14:03.825Z",
+          "buildCompletedAt": "2026-08-08T16:14:04.379Z",
+          "devServerReadyAt": "2026-08-08T16:14:04.693Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:14:05.412Z"
+        },
+        "installMs": 1612.7,
+        "projectCreationMs": 0.2,
+        "buildMs": 554.4,
+        "devServerReadyMs": 313.4,
+        "browserToVerifiedFrameMs": 718.8,
+        "installToFirstCubeMs": 3199.5,
+        "verifiedChangedPixels": 144000,
+        "cacheDirectoryWasFresh": false,
+        "projectDirectoryWasFresh": true
+      },
+      {
+        "engine": "threejs",
+        "cacheState": "warm",
+        "sample": 3,
+        "timeline": {
+          "installStartedAt": "2026-08-08T16:14:12.400Z",
+          "installCompletedAt": "2026-08-08T16:14:13.072Z",
+          "projectCreationCompletedAt": "2026-08-08T16:14:13.072Z",
+          "buildCompletedAt": "2026-08-08T16:14:13.736Z",
+          "devServerReadyAt": "2026-08-08T16:14:14.051Z",
+          "firstVerifiedFrameAt": "2026-08-08T16:14:14.676Z"
+        },
+        "installMs": 671.7,
+        "projectCreationMs": 0.2,
+        "buildMs": 664.5,
+        "devServerReadyMs": 314.3,
+        "browserToVerifiedFrameMs": 625.1,
+        "installToFirstCubeMs": 2275.8,
+        "verifiedChangedPixels": 46577,
+        "cacheDirectoryWasFresh": false,
+        "projectDirectoryWasFresh": true
+      }
+    ]
+  },
+  "unmeasured": [],
   "summary": {
     "scenariosWhereAura3dNeedsFewerLines": 3,
     "scenariosWhereAura3dNeedsFewerOrEqualDependencies": 3,

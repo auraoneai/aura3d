@@ -24,9 +24,9 @@
  * - **typecheckMs** — median of three fresh `tsc --noEmit` processes on the scenario entry alone,
  *   so the number is compile time for what the developer wrote rather than for the monorepo. The
  *   individual samples are retained because process startup and filesystem cache make one run noisy.
- * - **installToFirstCubeMinutes** — NOT measured here, and reported as `unmeasured` with a
- *   reason. It requires a clean machine profile and a real registry install; producing it from a
- *   warm monorepo would be a fabricated number, which is exactly what R1 exists to stop.
+ * - **installToFirstCubeMinutes** — read from the isolated release-rehearsal measurement. Aura3D
+ *   uses the actual packed release candidate and Three.js uses the public registry; both retain
+ *   three cold-cache and three warm-cache samples through a browser-verified non-blank cube.
  * - **runtimeStartupToFirstFrameMs** — read from the real-browser, dual-engine production-path
  *   benchmark. It starts immediately before runtime construction and ends only after the first
  *   verified non-blank frame. Bundle download and module evaluation are explicitly excluded.
@@ -40,6 +40,7 @@ import { join, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
 const startupReportPath = join(repoRoot, "tests/reports/developer-startup/report.json");
+const installReportPath = join(repoRoot, "tests/reports/install-to-first-cube.json");
 
 interface StartupReport {
   readonly schema: "aura3d-developer-startup/1.0";
@@ -62,6 +63,28 @@ interface StartupReport {
   };
 }
 
+interface InstallReport {
+  readonly schema: "aura3d-install-to-first-cube/1.0";
+  readonly pass: boolean;
+  readonly measurement: string;
+  readonly methodology: Readonly<Record<string, unknown>>;
+  readonly environment: Readonly<Record<string, unknown>>;
+  readonly artifacts: Readonly<Record<string, unknown>>;
+  readonly samples: readonly {
+    readonly engine: "aura3d" | "threejs";
+    readonly cacheState: "cold" | "warm";
+    readonly installToFirstCubeMs: number;
+    readonly verifiedChangedPixels: number;
+  }[];
+  readonly summary: Record<"cold" | "warm", Record<"aura3d" | "threejs", {
+    readonly sampleCount: number;
+    readonly samplesMs: readonly number[];
+    readonly medianMs: number;
+    readonly medianMinutes: number;
+    readonly varianceMs2: number;
+  }>>;
+}
+
 function readStartupReport(): StartupReport {
   if (!existsSync(startupReportPath)) {
     throw new Error(
@@ -77,6 +100,27 @@ function readStartupReport(): StartupReport {
     report.threejs.sessions.some((session) => session.nonBlankPixels <= report.methodology.nonBlankPixelFloor)
   ) {
     throw new Error("Developer startup evidence is incomplete or does not prove a non-blank dual-engine browser frame.");
+  }
+  return report;
+}
+
+function readInstallReport(): InstallReport {
+  if (!existsSync(installReportPath)) {
+    throw new Error(
+      "Missing install-to-first-cube evidence. Run `pnpm measure:install-to-first-cube` from an isolated release profile."
+    );
+  }
+  const report = JSON.parse(readFileSync(installReportPath, "utf8")) as InstallReport;
+  if (
+    report.schema !== "aura3d-install-to-first-cube/1.0" ||
+    !report.pass ||
+    report.samples.length !== 12 ||
+    report.samples.some((sample) => sample.installToFirstCubeMs <= 0 || sample.verifiedChangedPixels <= 1_000) ||
+    (["cold", "warm"] as const).some((state) =>
+      (["aura3d", "threejs"] as const).some((engine) => report.summary[state][engine].sampleCount < 3)
+    )
+  ) {
+    throw new Error("Install-to-first-cube evidence is incomplete or does not prove both engines in cold and warm profiles.");
   }
   return report;
 }
@@ -223,6 +267,8 @@ function measureEntry(relativePath: string) {
 
 function main(): void {
   const startup = readStartupReport();
+  const install = readInstallReport();
+  const unmeasured: readonly { readonly field: string; readonly reason: string }[] = [];
   const scenarios = SCENARIOS.map((scenario) => {
     const aura3d = measureEntry(scenario.aura3d);
     const threejs = measureEntry(scenario.threejs);
@@ -261,15 +307,16 @@ function main(): void {
       aura3d: startup.aura3d.runtimeStartupToFirstFrameMs,
       threejs: startup.threejs.runtimeStartupToFirstFrameMs
     },
-    unmeasured: [
-      {
-        field: "installToFirstCubeMinutes",
-        reason:
-          "Requires a clean machine profile and a real registry install. Producing it from a warm monorepo checkout " +
-          "would be a fabricated number, which is what R1 exists to prevent. Measure during release rehearsal on a " +
-          "clean profile, or leave unproven."
-      }
-    ],
+    installToFirstCube: {
+      source: "tests/reports/install-to-first-cube.json",
+      measurement: install.measurement,
+      methodology: install.methodology,
+      environment: install.environment,
+      artifacts: install.artifacts,
+      summary: install.summary,
+      samples: install.samples
+    },
+    unmeasured,
     summary: {
       scenariosWhereAura3dNeedsFewerLines: scenarios.filter((scenario) => scenario.aura3dFewerLines).length,
       scenariosWhereAura3dNeedsFewerOrEqualDependencies: scenarios.filter((scenario) => scenario.aura3dFewerDependencies).length,
@@ -309,6 +356,14 @@ function main(): void {
   console.log(
     `runtime startup      : ${startup.aura3d.runtimeStartupToFirstFrameMs.median}ms Aura3D vs ` +
       `${startup.threejs.runtimeStartupToFirstFrameMs.median}ms Three.js (median of ${startup.methodology.sessions} browser sessions)`
+  );
+  console.log(
+    `cold install→cube    : ${install.summary.cold.aura3d.medianMs}ms Aura3D vs ` +
+      `${install.summary.cold.threejs.medianMs}ms Three.js (median of ${install.summary.cold.aura3d.sampleCount})`
+  );
+  console.log(
+    `warm install→cube    : ${install.summary.warm.aura3d.medianMs}ms Aura3D vs ` +
+      `${install.summary.warm.threejs.medianMs}ms Three.js (median of ${install.summary.warm.aura3d.sampleCount})`
   );
   console.log(`unmeasured fields    : ${report.unmeasured.map((field) => field.field).join(", ")}`);
   console.log("\nreport: tests/reports/developer-friction.json");

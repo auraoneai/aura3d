@@ -36,6 +36,14 @@ interface FrictionReport {
     readonly aura3d: { readonly median: number; readonly sampleCount: number };
     readonly threejs: { readonly median: number; readonly sampleCount: number };
   };
+  readonly installToFirstCube: {
+    readonly summary: Record<"cold" | "warm", Record<"aura3d" | "threejs", {
+      readonly sampleCount: number;
+      readonly medianMs: number;
+      readonly varianceMs2: number;
+    }>>;
+    readonly samples: readonly { readonly verifiedChangedPixels: number }[];
+  };
   readonly unmeasured: readonly { readonly field: string; readonly reason: string }[];
   readonly summary: Readonly<Record<string, number>>;
 }
@@ -81,19 +89,24 @@ describe("§B.2 — developer friction is measured for both engines", () => {
     expect(friction.summary.scenariosWhereAura3dNeedsFewerOrEqualDependencies).toBe(friction.summary.totalScenarios);
   });
 
-  it("measures runtime startup in a real browser and declares only the registry-install field unmeasured", () => {
-    // R1: `installToFirstCubeMinutes` needs a clean machine profile and a real registry install;
-    // Startup is measured by the dual-engine production-path browser benchmark. Registry install
-    // still needs a clean release profile and remains explicitly unmeasured.
+  it("measures runtime startup and clean install-to-cube for both engines in real browsers", () => {
     expect(friction.runtimeStartupToFirstFrame.methodology.sessions).toBeGreaterThanOrEqual(3);
     expect(friction.runtimeStartupToFirstFrame.methodology.identicalCameraAndContent).toBe(true);
     for (const engine of [friction.runtimeStartupToFirstFrame.aura3d, friction.runtimeStartupToFirstFrame.threejs]) {
       expect(engine.median).toBeGreaterThan(0);
       expect(engine.sampleCount).toBeGreaterThanOrEqual(3);
     }
-    const unmeasured = friction.unmeasured.map((field) => field.field).sort();
-    expect(unmeasured).toEqual(["installToFirstCubeMinutes"]);
-    for (const field of friction.unmeasured) expect(field.reason.length).toBeGreaterThan(60);
+    for (const state of ["cold", "warm"] as const) {
+      for (const engine of ["aura3d", "threejs"] as const) {
+        const measurement = friction.installToFirstCube.summary[state][engine];
+        expect(measurement.sampleCount).toBeGreaterThanOrEqual(3);
+        expect(measurement.medianMs).toBeGreaterThan(0);
+        expect(measurement.varianceMs2).toBeGreaterThanOrEqual(0);
+      }
+    }
+    expect(friction.installToFirstCube.samples).toHaveLength(12);
+    expect(friction.installToFirstCube.samples.every((sample) => sample.verifiedChangedPixels > 1_000)).toBe(true);
+    expect(friction.unmeasured).toEqual([]);
   });
 });
 

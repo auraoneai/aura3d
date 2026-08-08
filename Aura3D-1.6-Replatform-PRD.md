@@ -131,11 +131,14 @@ a workstream side effect.
 
 Aura3D wins by making developers faster. That must be measured, not asserted.
 
-- [ ] **Minutes from `npm install` to first rendered cube** — timed on a clean machine
-      profile, scripted, recorded
-      — reported `unmeasured` **with a reason**, not fabricated: it needs a clean machine
-      profile and a real registry install, and producing it from a warm monorepo would be the
-      exact defect class R1 exists to stop. Measure during release rehearsal or leave unproven.
+- [x] **Minutes from `npm install` to first rendered cube** — timed on isolated clean profiles,
+      scripted, and recorded. Three cold-cache and three warm-cache samples per engine use fresh
+      project directories, identical Vite 7.3.2 tooling/content/camera/canvas, the actual packed
+      Aura3D 1.6.0 release candidate, `three@0.165.0` from npm, and a Chromium WebGL pixel check.
+      Cold median: **0.1106 min Aura3D vs 0.0841 min Three.js**; warm median: **0.0533 vs
+      0.0383 min**. Aura3D is slower in this run and that is recorded without spin. All 12 raw
+      timelines, install/build/server/frame durations, artifact hash, environment, variance, and
+      verified pixel counts are in `tests/reports/install-to-first-cube.json`.
 - [x] **Authored lines of code** for each of the three WS-2.4 scenarios vs the Three.js
       equivalent. Baseline already measured from
       `external-parity-threejs-visual-parity/gap-report.md`: product configurator 15 vs 74,
@@ -151,8 +154,9 @@ Aura3D wins by making developers faster. That must be measured, not asserted.
       `cannon-es`.
 - [x] **TypeScript compile time** for a scaffolded project — median of three fresh
       `tsc --noEmit` processes per entry, with all samples retained:
-      **1,639 vs 1,315 ms · 1,243 vs 1,069 ms · 1,356 vs 1,035 ms**. Aura3D is slower on all
-      three in this run; recorded as measured rather than presented as a stable product property.
+      **653 vs 651 ms · 628 vs 676 ms · 642 vs 662 ms**. The first scenario is effectively tied
+      and Aura3D is faster on the other two in this run; recorded as measured rather than presented
+      as a stable product property.
 - [x] **Runtime startup time** to first frame — measured in a real installed Chrome session by
       `pnpm bench:production-path`: **24.1 ms Aura3D vs 33.8 ms Three.js** median across three
       independent sessions. The timer starts immediately before runtime construction and stops only
@@ -162,8 +166,8 @@ Aura3D wins by making developers faster. That must be measured, not asserted.
       Full min/median/p95/max/stddev and environment evidence:
       `tests/reports/developer-startup/report.json`.
 - [x] **Proof:** committed `tests/reports/developer-friction.json` with every field measured
-      for both Aura3D and the Three.js equivalent — committed, with the one remaining
-      unmeasurable field (clean registry install to first cube) declared rather than filled in.
+      for both Aura3D and the Three.js equivalent. No §B.2 field remains unmeasured; the isolated
+      install evidence is retained separately and embedded into the rollup.
 
 ### B.3 Negative complexity — deletion is a success metric
 
@@ -3262,12 +3266,12 @@ exists", and fixing either failing condition breaks a test that must then be fli
       budgets unchanged. Asserted per scenario, not only in aggregate, so a regression is visible.
 - [x] **§B.2** `tests/reports/developer-friction.json` complete for both engines
       — complete: four fields × 3 scenarios × both engines, plus real-browser runtime startup
-      (**24.1 vs 33.8 ms**, three sessions, non-blank first frames) and the **one field declared
-      unmeasurable with a reason** rather than omitted or invented. Declaring registry-install time
-      unmeasurable before a publish rehearsal is completeness; fabricating it would be the R1 defect.
+      (**24.1 vs 33.8 ms**, three sessions, non-blank first frames) and 12 isolated cold/warm
+      install-to-verified-cube samples. Cold medians are **6,638.6 vs 5,047.9 ms** and warm medians
+      **3,199.5 vs 2,297.7 ms**. All raw timelines and variance are retained; no field is unmeasured.
 - [x] **§B.3** `packages/*/src` lines lower than the corrected 200,929 baseline; R12 violations = 0;
       per-phase deletion report committed
-      — **PASSES both numeric conditions.** Lines **200,927 vs 200,929** baseline (**−2**) and R12
+      — **PASSES both numeric conditions.** Lines **200,924 vs 200,929** baseline (**−5**) and R12
       **0 of 5**. ADR 0003 resolved kit ownership by capability; the unused force path and synthetic
       oracle surfaces were removed under R8 while real consumers and runtime proofs remained.
 - [x] **§B.4** `pnpm check:engine-layer-ratio` ≥ 90% under `packages/`
