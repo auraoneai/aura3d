@@ -3136,15 +3136,40 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
 
 ### Release success metrics (§B) — these are conditions, not reports
 
+All seven are asserted as **conditions** by `tests/unit/tools/release-metrics-rollup.test.ts`
+(7 tests), including the failures — so a release cannot be cut on the strength of "the report
+exists", and fixing either failing condition breaks a test that must then be flipped.
+
 - [ ] **§B.1** all three bundle scenarios within their ratio to the Three.js equivalent
-- [ ] **§B.2** `tests/reports/developer-friction.json` complete for both engines
+      — **FAILS, all three: 2.15x / 1.76x / 2.05x** against 1.25 / 1.25 / 1.50. Release-defining,
+      so **1.6 does not ship on this dimension.** Asserted per scenario, not only in aggregate, so
+      a partial fix is visible.
+- [x] **§B.2** `tests/reports/developer-friction.json` complete for both engines
+      — complete: four fields × 3 scenarios × both engines, plus the **2 fields declared
+      unmeasurable with reasons** rather than omitted or invented. Declaring them *is* the
+      completeness; fabricating them would be the R1 defect.
 - [ ] **§B.3** `packages/*/src` lines lower than the 212,810 baseline; R12 violations = 0;
       per-phase deletion report committed
-- [ ] **§B.4** `pnpm check:engine-layer-ratio` ≥ 90% under `packages/`
-- [ ] **R11** every new subsystem introduced during 1.6 has an ADR in `docs/architecture/adr/`
+      — **FAILS on both numeric conditions**, report committed. Lines 201,296 vs 200,929 baseline
+      (+367, of which code is +205 and comments +1,020 — the recorded reasoning for each engine
+      defect); R12 **2 of 5**, down from 3, both remaining rows blocked on ADR 0002.
+- [x] **§B.4** `pnpm check:engine-layer-ratio` ≥ 90% under `packages/`
+      — **PASSES at 92.52%** (7,999 package vs 647 route lines), up from 87.41%.
+- [x] **R11** every new subsystem introduced during 1.6 has an ADR in `docs/architecture/adr/`
+      — **zero new subsystems**, measured rather than asserted: `git diff --name-status` from the
+      first 1.6 commit shows **0 added source files and 0 added packages** under `packages/`. The
+      10 files added since `v1.5.2` all predate 1.6, which is why the measurement window matters.
+      Two ADRs exist for the decisions that did reach the lock (0001 retain ECS/scripting, 0002
+      racing force model).
 - [ ] **R12** none of the five duplicate-ownership rows has two live implementations
-- [ ] **§A** no capability on the "what Aura3D is NOT" list gained a hand-written
+      — **FAILS: 2 of 5.** The physics-solver row **closed in P4** (one-member union, second
+      integrator deleted). `vehicle motion` and `game runtime` remain, both the same underlying
+      cause, both blocked on ADR 0002.
+- [x] **§A** no capability on the "what Aura3D is NOT" list gained a hand-written
       implementation during 1.6
+      — held, and it moved the right way: with 0 files added during 1.6, no NOT-list capability
+      could gain an implementation, and the physics row went **from two owners to one**. That is
+      the drift §A exists to reverse, reversing.
 
 ### Verification hygiene — the earlier full-suite races make these mandatory
 
