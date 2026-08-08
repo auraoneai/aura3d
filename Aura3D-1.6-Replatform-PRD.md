@@ -2407,7 +2407,10 @@ use them.
 
 ### WS-4.3 Implement the chosen architecture
 
-- [ ] Implement whatever WS-4.2 selected, behind the WS-4.1 contract.
+- [x] Implement whatever WS-4.2 selected, behind the WS-4.1 contract.
+      — one production backend behind the WS-4.1 contract, which
+      `tests/unit/physics/backend-neutral-contract.test.ts` proves the solver cannot leak
+      through. The hardening this required is in commits `2c84c18d`..`4252ecbe`.
 - [x] Fix or remove the `aura-js` path — the joint no-op divergence must not survive in
       any form. **Removed, not fixed.** `PhysicsBackend` is a one-member union;
       `disableCannonBackend` and the second integrator are deleted; `step()` no longer
@@ -2434,34 +2437,71 @@ test before migrating:
       integration agreement case in `ccd-or-fast-body.test.ts`) were deleted after folding
       their one unique assertion — the wrapper's own swept time of impact, which is Aura3D's
       and therefore solver-independent — into the production case.
-- [ ] **New cross-backend physical invariants** — written fresh, must hold on any backend.
+- [x] **New cross-backend physical invariants** — written fresh, must hold on any backend.
+      — `tests/unit/physics/production-backend-invariants.test.ts`, 16 tests, every one
+      phrased as a physical property rather than a pinned number precisely so a future
+      backend is judged on physics instead of digits.
 - [ ] **Full-route behaviour tests** — end-to-end, per WS-5.3.
 
 The selected backend must additionally prove all nine, none of which the historical 217
 fully cover:
 
-- [ ] stacked-body stability
-- [ ] joint behaviour (the 1.5.x silent no-op class must be impossible)
-- [ ] tunnelling / CCD under high velocity
-- [ ] sleeping and waking
-- [ ] deterministic repeatability across runs and sessions
-- [ ] character grounding
-- [ ] slope and step movement
-- [ ] vehicle suspension
-- [ ] browser initialization and disposal (including WASM init and teardown)
+- [x] stacked-body stability — a 6-box stack holds for 4 s: no box slides more than its own
+      width, none sinks or is ejected, six distinct layers survive in order, residual
+      kinetic energy < 0.5. **This one failed and found the `solverIterations` default of
+      `1` overwriting cannon's `10`; at the old default the stack collapsed completely.**
+- [x] joint behaviour (the 1.5.x silent no-op class must be impossible) — a `fixed` joint
+      holds a body above y=0.5 for 4 s where free fall reaches −18.8, asserted at 1, 4 and
+      16 solver iterations so it cannot pass by virtue of a strong solve.
+- [x] tunnelling / CCD under high velocity — a 240 m/s body stops at a 0.1-thick wall, and
+      subdivision *scales with speed* rather than being a fixed count tuned for one case.
+- [x] sleeping and waking — a settled body sleeps, and an impulse both wakes it and moves it.
+- [x] deterministic repeatability across runs and sessions — two runs of a contact + rotation
+      + joint scene are bit-identical, and two worlds stepped **interleaved** agree, which
+      catches module-scope state a sequential comparison cannot.
+- [x] character grounding — `grounded`/`groundNormal`/`slopeAngle` on a floor, not grounded in
+      air, and a jump reaches >50% of its own ballistic ceiling `v²/2g` (the skyline-runner
+      "barely jumps" symptom, stated as physics). **Found the capsule-as-cylinder defect:
+      `grounded` was permanently false on any slope.**
+- [x] slope and step movement — climbs a 0.18 step and stays grounded for ≥95% of the frames
+      walked; measures 22.5° as 0.393 rad; classifies an 81.8° face as steep with a real
+      normal. **Found two defects: queries ignored body rotation, and step-up oscillated
+      against step-down.**
+- [x] vehicle suspension — compression stays in [0,1] and *responds*: differs straight vs
+      cornering, cornering vs drifting, and left vs right under steering (load transfer, not
+      a ride-height offset).
+- [x] browser initialization and disposal (including WASM init and teardown) — 5
+      mount/step/teardown cycles land bit-identically, an emptied world still steps rather
+      than throwing (unmount ordering is not guaranteed), and a mid-simulation removal does
+      not disturb its neighbours. No WASM: the selected backend is pure JS, which is §B.1's
+      reason for choosing it.
 
-- [ ] **Proof:** the test classification is committed; all nine invariants have named tests
+- [x] **Proof:** the test classification is committed; all nine invariants have named tests
       passing on the production backend, not a fallback.
+      — classification at `tests/reports/physics-test-classification/report.json`; the nine
+      at `tests/unit/physics/production-backend-invariants.test.ts`, and there is no longer
+      a fallback for them to pass on. Four of the nine failed on first run, which is the
+      point of writing them: `solverIterations` default 1 vs cannon's 10 · capsule built as a
+      flat-ended cylinder · every raycast/spherecast ignoring body rotation · step-up
+      oscillating against step-down. All four are library-level fixes in `packages/physics`,
+      none in `apps/` (R3).
 
 ### WS-4.4 Retain the layer above the solver
 
 Keep — game logic, genuinely ours, no external equivalent:
 
-- [ ] `RacingLineProfile.ts` (254) · `PathFollowDriver.ts` (279) · `SurfaceQuery.ts` (159)
+- [x] `RacingLineProfile.ts` (254) · `PathFollowDriver.ts` (279) · `SurfaceQuery.ts` (159)
       · `PhysicsDebugDraw.ts` (199) · `PhysicsStepper.ts` (47) ·
       `engine/src/agent-api/VehicleChassis.ts` (588) · telemetry · speed profiles ·
       semantic surfaces
-- [ ] **Proof:** their tests pass unchanged after the swap.
+- [x] **Proof:** their tests pass unchanged after the swap.
+      — stronger than "pass": `git diff --stat ab71012e..HEAD -- packages/physics/src` (the
+      whole of P4, from the WS-4.2 decision commit) touches **only** `PhysicsWorld.ts`,
+      `Raycast.ts`, `RigidBody.ts`, `CharacterController.ts` and `index.ts`. Every file in
+      this list is **byte-identical**, and `VehicleChassis.ts` is untouched too. 68 tests
+      across `racing-line-profile` · `path-follow-driver` · `mesh-surface-query` ·
+      `vehicle-mesh-contact` · `turbo-drift-real-circuit-contact` pass unmodified, which is
+      the retention claim: the layer above the solver did not need to know the solver changed.
 
 ### WS-4.5 MeshBVH — audit by responsibility, do not assume duplication
 
@@ -2472,13 +2512,21 @@ Measured consumers: `tests/unit/physics/mesh-surface-query.test.ts` (18 refs),
 `create-aura3d/src/showcase-spec-types.ts` (2), `PhysicsRuntime.ts` (1),
 `turbo-drift-real-circuit-contact.test.ts` (1), plus a docs snippet.
 
-- [ ] Classify each consumer by responsibility: rendering queries · selection/picking ·
+- [x] Classify each consumer by responsibility: rendering queries · selection/picking ·
       static geometry analysis · asset admission · raycasting · spatial indexing ·
       physics contact.
-- [ ] Only the physics-contact responsibility can be made redundant by a new solver. If
+      — table in `docs/architecture/meshbvh-responsibilities.md`, 11 consumer groups.
+- [x] Only the physics-contact responsibility can be made redundant by a new solver. If
       other responsibilities remain, `MeshBVH` **stays** and possibly moves out of
       `packages/physics`.
-- [ ] **Proof:** committed responsibility table; decision follows from it.
+      — **7 of 11 groups have nothing to do with contact.** Static geometry analysis
+      (`SurfaceQuery`), asset admission (`GameSceneGeometryBindings`), public re-export,
+      the `./physics/solverless` bundle boundary, the scaffold contract, a diagnostic
+      message, and the docs generator. `MeshBVH.ts` imports exactly one symbol —
+      `type Vec3` — and is unchanged across all of P4. **It stays.** It does *not* move
+      yet: the move would break the `@aura3d/physics/solverless` subpath
+      `GameSceneGeometryBindings` imports, for a cosmetic gain, mid-phase.
+- [x] **Proof:** committed responsibility table; decision follows from it.
 
 ### WS-4.6 Navigation is independent of the solver swap
 
@@ -2486,10 +2534,15 @@ Measured consumers: `tests/unit/physics/mesh-surface-query.test.ts` (18 refs),
 this is in use. Path planning, navmeshes, semantic routes and steering overlap with
 physics queries but are not the same problem.
 
-- [ ] Keep `Navigation.ts` (321), `Crowd.ts` (283), `Steering.ts` (531) unchanged through P4.
-- [ ] Re-evaluate against the chosen backend's queries **afterwards**, as its own decision
-      with its own evidence.
-- [ ] **Proof:** navigation tests pass before and after, untouched by the swap.
+- [x] Keep `Navigation.ts` (321), `Crowd.ts` (283), `Steering.ts` (531) unchanged through P4.
+      — all three are **byte-identical** across `ab71012e..HEAD`; they do not appear in the
+      P4 diffstat for `packages/physics/src` at all.
+- [x] Re-evaluate against the chosen backend's queries **afterwards**, as its own decision
+      with its own evidence. — deferred by design, and now genuinely deferrable: the
+      selected backend is unchanged from 1.5.x, so there is no new query surface to
+      re-evaluate against. Recorded in `docs/architecture/physics-backend-decision.md`.
+- [x] **Proof:** navigation tests pass before and after, untouched by the swap.
+      — `navigation` (4) · `crowd` (3) · `steering` (11) pass with the files unmodified.
 
 ### WS-4.7 Kits consume the shared runtime — named individually
 
