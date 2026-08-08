@@ -2,7 +2,7 @@
 
 Date: 2026-08-08
 Controlling PRD: `1.6-FINAL-PRD-Finishes.md`
-Current completed phase: Phase 0
+Current completed phase: Phase 1
 Release state: release candidate; no npm publish, Git tag, GitHub release, or production deployment performed
 
 This ledger records evidence against exact commits. It does not broaden a claim
@@ -125,6 +125,92 @@ improvement, release readiness, publication, or deployment.
 
 ## Remaining program
 
-Phases 1 through 9 remain open. The next irreversible operation is any subsystem
-deprecation or deletion; none is authorized until Phase 1 produces the required
-consumer graph, bake-off, ADR, migration, rollback, and deletion-safety evidence.
+Phases 2 through 9 remain open. The next irreversible operation is any subsystem
+deprecation or deletion; none is authorized until Phase 2 adds the required
+workload bake-off, ADR, migration, rollback, and deletion-safety evidence to the
+Phase 1 consumer graph.
+
+## Phase 1 — subsystem ownership and external-candidate audit
+
+### Exact source commit and generated evidence
+
+| Purpose | Commit or artifact |
+| --- | --- |
+| Ownership/audit producers and gates | `c108150216f9ac2714b97193d11a42bd9c64bf2d` |
+| Generated ownership report | `tests/reports/final-subsystem-ownership.json` |
+| Generated human ownership record | `docs/architecture/final-subsystem-ownership.md` |
+| Isolated candidate package/security report | `tests/reports/external-candidate-package-audit.json` |
+
+The generated ownership report is bound to the producer commit above. It covers
+all 26 workspace packages, 35 classified subsystem groups, and all 899 package
+source files exactly once. Its graph searches static source use, dynamic import
+use, package exports, CLI/tool/worker generators, documentation, tests and
+fixtures, routes and templates, and external-consumer/clean-room proofs.
+
+### Ownership decisions
+
+- Renderer, scene, math, controls, animation, materials, environments, and input
+  remain `AURA-CORE`.
+- The typed agent API, typed asset/provenance pipeline, CLI, scaffolds,
+  diagnostics, workflows, product studio, and app helpers remain `AURA-MOAT`.
+- React and the current physical solver surface are adapter territory.
+- ECS, scripting, and `three-compat` are `COMPATIBILITY-ONLY`; their public
+  exports prevent minor-release deletion.
+- Editor/editor-runtime are `OPTIONAL-PLUGIN` application dependencies.
+- Browser audio is `BROWSER-STANDARD` pending the one-owner Phase 2 selection.
+- Custom physical character/kinematic/vehicle controllers form a
+  `DEPRECATE-REMOVE` queue, not an immediate deletion.
+- Physics, audio, asset, and editor fixture/descriptor modules identified by the
+  audit are `EVIDENCE-ONLY` and cannot support shipped runtime claims.
+- Node/cloud/FFmpeg/YouTube publishing is an optional-integration queue; browser
+  capture and WebCodecs/MediaRecorder remain a separate browser-standard group.
+- No package is `DELETE-NOW`: every published package has an export barrier, and
+  the private engine-runtime package has real source consumers. R8 must run on
+  individual displaced files after consumers are migrated.
+
+### External maintenance, package, bundle, and security facts
+
+All candidates are locked by exact version and integrity. One isolated npm
+lockfile and audit reports zero known vulnerabilities across the candidate set.
+Tarball and all-export browser bundles are measured rather than inferred:
+
+| Candidate | Maintenance reading | All-export browser gzip |
+| --- | --- | ---: |
+| Rapier main 0.19.3 | active | requires explicit `.wasm` loader; naïve bundle correctly fails |
+| Rapier compat 0.19.3 | active | 838,598 B |
+| Cannon 0.20.0 | dormant-risk | 62,507 B |
+| Recast Navigation 0.43.1 | active | 258,473 B |
+| Howler 2.2.4 | aging | 15,336 B |
+| Yuka 0.7.8 | dormant-risk | 64,295 B |
+| bitECS 0.4.0 | active | 6,663 B |
+| Miniplex 2.0.0 | dormant-risk | 8,824 B |
+
+These figures do not select an implementation. Phase 2 must still measure real
+features, initialization, workers, determinism, resource disposal, browser
+lifecycle, and workload performance. In particular, neither Yuka nor Cannon may
+be called “mature” merely because it is familiar.
+
+### Architecture lock and verified commands
+
+The architecture lock uses baseline
+`ce01b95f6a200175b3db7d47f30f8e6fea911018`. Any added
+`packages/*/src` file must map to an existing ADR in
+`tools/final-subsystem-ownership/adr-registry.json`; a new package also fails
+until it has an explicit disposition.
+
+| Command | Result |
+| --- | --- |
+| `pnpm audit:external-candidate-packages` | pass; 8 packages, zero audit vulnerabilities |
+| `pnpm final-subsystem:ownership` | pass; 26 packages, 35 subsystems, 899 files |
+| final subsystem, external audit, and evidence-freshness Vitest suites | pass; 63 tests |
+| `pnpm check:package-graph` | pass; no undeclared dependencies, cycles, or layer violations |
+| `pnpm check:agent-docs` | pass |
+| `pnpm check:docs-codeblocks` | pass |
+| `pnpm typecheck` | pass |
+
+### Phase 1 claim boundary
+
+Phase 1 establishes classification, consumer and export barriers, measured
+maintenance/built-module costs, current package/security facts, and migration
+queues. It does not authorize deletion, select Rapier/Recast/Howler or any other
+candidate, prove current Three.js parity, or change release status.
