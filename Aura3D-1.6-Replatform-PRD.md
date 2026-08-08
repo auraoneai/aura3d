@@ -3148,9 +3148,9 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       scenarios reported against Three.js equivalents
       — **green with every enforced budget unchanged.** ESM-splitting measurement follows the
       transitive static-import critical path and conservatively sums per-chunk gzip: lean core
-      **66,073 B / 80,000 B**; product, cinematic, and mini-game templates each **199,606 B /
+      **66,073 B / 80,000 B**; product, cinematic, and mini-game templates **199,606-199,608 B /
       250,000 B**. The compatibility-heavy root retained by WS-2.2 remains explicitly measured at
-      **204,765 B gzip** against the historical 80,000 B figure, but is informational rather than
+      **204,767 B gzip** against the historical 80,000 B figure, but is informational rather than
       silently omitted or substituted for the documented new-app entry. The command's negative
       behavior was already proven while enforced targets were over; it now exits zero.
 - [x] `pnpm bench:production-path` — real device, both engines, timing fields separately
@@ -3166,13 +3166,13 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       **breaking the implementation**: making `applyMorphTargets` ignore the weight fails 5 of 10.
       Anisotropy/sheen/iridescence/transmission/clearcoat rows keep their measured verdicts,
       including the failures.
-- [ ] `pnpm check:release` · `pnpm verify:release:quick` — the previously recorded
-      `verify:release:quick` run passes (~15 min), but the current serial `check:release` run is
-      **not green**. It clears the new absolute bundle gate, 56/56 claim-lineage rows, package graph,
-      tarballs, clean install, game-runtime, docs, link, and error-quality checks, then fails
-      `check:effects-vfx --strict`: **21 pass / 3 fail / 17 blocker-severity findings**. The three
-      failing prompt-effect rows are fog, bloom, and rain; their own required actions call for
-      route-level screenshot acceptance and human-quality review rather than a threshold change.
+- [x] `pnpm check:release` · `pnpm verify:release:quick` — the previously recorded
+      `verify:release:quick` run passes (~15 min), and the current serial `check:release` run is
+      **green from committed `76f53dab`**. It clears the absolute bundle gate, 56/56 claim-lineage
+      rows, package graph, tarballs, clean install, 60/60 game-runtime assertions, docs, link,
+      error-quality, and no-Three-runtime checks. The formerly stale strict effects audit now
+      regenerates the public root on/off browser proof and passes **24/24** findings, including
+      measured fog, bloom, and starter-level rain screenshots; no threshold was changed.
 - [x] Substance check: `git diff --name-only v1.5.2..HEAD | grep "packages/.*/src/"` non-empty
       — **104 package source files** changed. And §B.4: **92.52%** of changed source lines are
       under `packages/`, up from 87.41%.
