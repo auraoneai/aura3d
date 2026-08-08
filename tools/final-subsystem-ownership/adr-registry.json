@@ -1,5 +1,7 @@
 {
   "$schema": "aura3d.final-subsystem-adr-registry/1.0",
   "baselineCommit": "ce01b95f6a200175b3db7d47f30f8e6fea911018",
-  "addedPackageSource": {}
+  "addedPackageSource": {
+    "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md"
+  }
 }

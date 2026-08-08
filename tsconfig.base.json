@@ -128,6 +128,9 @@
       "@aura3d/physics": [
         "packages/physics/src/index.ts"
       ],
+      "@aura3d/physics-rapier": [
+        "packages/physics-rapier/src/index.ts"
+      ],
       "@aura3d/product-studio": [
         "packages/product-studio/src/index.ts"
       ],

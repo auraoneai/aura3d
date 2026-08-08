@@ -1,0 +1,38 @@
+{
+  "schema": "aura3d.optional-rapier-browser/1.0",
+  "generatedAt": "2026-08-08T20:57:52.005Z",
+  "pass": true,
+  "package": "@aura3d/physics-rapier",
+  "backend": "@dimforge/rapier3d-compat@0.19.3",
+  "browser": "Chromium",
+  "bundle": {
+    "rawBytes": 2243573,
+    "gzipBytes": 838259,
+    "brotliBytes": 616561,
+    "requestsAcrossColdAndCachedNavigation": 1
+  },
+  "cold": {
+    "pass": true,
+    "loadToReadyMs": 137.80000001192093,
+    "initMs": 22.599999994039536,
+    "stepMs220Bodies": 0.32000000004967055,
+    "rayHit": true,
+    "nativeCharacterController": true,
+    "nativeVehicleController": true,
+    "repeatedDisposals": 20,
+    "usedJSHeapSize": 38149596
+  },
+  "cached": {
+    "pass": true,
+    "loadToReadyMs": 127.30000001192093,
+    "initMs": 14.5,
+    "stepMs220Bodies": 0.32416666646798453,
+    "rayHit": true,
+    "nativeCharacterController": true,
+    "nativeVehicleController": true,
+    "repeatedDisposals": 20,
+    "usedJSHeapSize": 38149004
+  },
+  "consoleErrors": [],
+  "claimBoundary": "Optional physical-simulation browser lifecycle only; no renderer, arcade-game, or universal performance claim."
+}

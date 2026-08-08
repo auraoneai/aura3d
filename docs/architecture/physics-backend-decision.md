@@ -1,5 +1,12 @@
 # Physics backend decision (WS-4.2)
 
+> **Superseded on 2026-08-08 by [ADR 0004](adr/0004-physical-simulation-is-optional-rapier.md).**
+> The measurements and the one-owner conclusion remain historical evidence, but
+> the Cannon selection depended on physical simulation being inside the lean
+> game bundle. The final PRD makes physical simulation optional; under that
+> topology the current bake-off selects Rapier. Do not use this file as the
+> current backend decision.
+
 **Status:** decided
 **Date:** 2026-08-05
 **Evidence:** `tests/reports/physics-backend-bakeoff/report.json`

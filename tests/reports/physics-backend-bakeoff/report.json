@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T11:00:27.569Z",
+  "generatedAt": "2026-08-08T20:47:25.255Z",
   "harness": "tools/physics-backend-bakeoff/index.ts",
   "routeBodyDemand": {
     "measured": true,
@@ -14,8 +14,8 @@
     "measured": true,
     "value": {
       "command": "pnpm vitest run tests/unit/physics --reporter=basic",
-      "files": 30,
-      "tests": 217,
+      "files": 29,
+      "tests": 208,
       "passed": true,
       "note": "Pre-swap baseline. These are the fixtures the chosen backend must satisfy; per WS-4.3 each is still classified contract vs implementation-characterization before migration, so a green count here is a starting point and not a licence to freeze old-solver semantics."
     }
@@ -25,38 +25,38 @@
     "fairestCaseRapierFraming": {
       "measured": true,
       "framing": "non-compat build, wasm as a separate fetch, excluded from the JS bundle",
-      "jsGlueGzipBytes": 22813,
-      "wasmGzipBytes": 586267,
-      "wasmAsMultipleOfEntireThreejsScenario3": 4.08,
+      "jsGlueGzipBytes": 22796,
+      "wasmGzipBytes": 583684,
+      "wasmAsMultipleOfEntireThreejsScenario3": 4.09,
       "conclusion": "Even excluded from the JS bundle, the wasm is a blocking first-load fetch larger than the entire Three.js game-runtime bundle. The bundle objection survives the most favourable framing."
     },
     "rule": "§B.1 scenario 3 must stay within 1.5x the measured Three.js equivalent. The budget is derived from that measurement and cannot be raised (R2).",
     "comparatorAlsoUsesCannon": "tools/bundle-scenarios/entries/scenario-3-threejs.ts imports cannon-es, so the denominator does not grow when Aura3D adopts a heavier backend.",
-    "measuredScenario3AuraGzipBytes": 95153,
-    "measuredScenario3ThreejsGzipBytes": 143669,
-    "incumbentPhysicsGzipBytes": 27006,
+    "measuredScenario3AuraGzipBytes": 99152,
+    "measuredScenario3ThreejsGzipBytes": 142809,
+    "incumbentPhysicsGzipBytes": 26893,
     "perBackend": [
       {
         "id": "cannon-es",
         "measured": true,
-        "backendGzipBytes": 27006,
-        "projectedScenario3AuraGzipBytes": 95153,
-        "threejsEquivalentGzipBytes": 143669,
-        "projectedRatio": 0.662,
+        "backendGzipBytes": 26893,
+        "projectedScenario3AuraGzipBytes": 99152,
+        "threejsEquivalentGzipBytes": 142809,
+        "projectedRatio": 0.694,
         "maxRatio": 1.5,
         "passesB1": true,
-        "headroomBytes": 120351
+        "headroomBytes": 115062
       },
       {
         "id": "rapier",
         "measured": true,
-        "backendGzipBytes": 829957,
-        "projectedScenario3AuraGzipBytes": 898104,
-        "threejsEquivalentGzipBytes": 143669,
-        "projectedRatio": 6.251,
+        "backendGzipBytes": 835217,
+        "projectedScenario3AuraGzipBytes": 907476,
+        "threejsEquivalentGzipBytes": 142809,
+        "projectedRatio": 6.354,
         "maxRatio": 1.5,
         "passesB1": false,
-        "headroomBytes": -682600
+        "headroomBytes": -693262
       }
     ]
   },
@@ -73,7 +73,7 @@
       {
         "dimension": "character controller",
         "cannon": "absent — cannon-es ships no character controller; Aura3D hand-wrote CharacterController.ts",
-        "rapier": "KinematicCharacterController: slopes, steps, snap-to-ground, autostep",
+        "rapier": "KinematicCharacterController constructed and removed; disposed=true; slopes, steps, snap-to-ground and autostep API present",
         "contractConsequence": "A contract-level character controller is either hand-written for one backend or delegated for the other — not one implementation."
       },
       {
@@ -83,16 +83,16 @@
         "contractConsequence": "Worker stepping cannot be a contract feature if one backend cannot cross a thread boundary."
       }
     ],
-    "unionBundleGzipBytes": 856963,
+    "unionBundleGzipBytes": 862110,
     "b1Status": "rapier fails §B.1",
     "verdict": "A backend abstraction is NOT free: 3 measured dimensions diverge, and each one must be either hidden (losing capability) or exposed (losing neutrality). Shipping both also sums the bundles. Recommend ONE production backend plus an explicitly non-physical arcade-motion mode, which is not a physics backend and must not be described as one."
   },
   "rapierNonCompatDelivery": {
     "measured": true,
     "value": {
-      "glueGzipBytes": 26594,
-      "wasmGzipBytes": 586267,
-      "totalGzipBytes": 612861,
+      "glueGzipBytes": 26557,
+      "wasmGzipBytes": 583684,
+      "totalGzipBytes": 610241,
       "compatGzipBytes": null,
       "note": "Non-compat delivery: .wasm shipped as a separate asset rather than base64-inlined. This is the number Rapier should be judged on."
     }
@@ -108,49 +108,54 @@
       "license": "MIT",
       "bundleGzipBytes": {
         "measured": true,
-        "value": 27006
+        "value": 26893
       },
       "initMs": {
         "measured": true,
-        "value": 17.66562499999999
+        "value": 21.61166700000001
       },
       "wasm": false,
       "stepMsPer1000Bodies": {
         "measured": true,
-        "value": 5.32909305
+        "value": 6.752995133333334
       },
       "scaling": {
         "measured": true,
         "value": [
           {
             "bodies": 25,
-            "msPerStep": 0.027103474999999832,
-            "percentOf60fpsFrame": 0.16229625748502896
+            "msPerStep": 0.05070364583333363,
+            "percentOf60fpsFrame": 0.3036146457085846
           },
           {
             "bodies": 50,
-            "msPerStep": 0.0595932291666666,
-            "percentOf60fpsFrame": 0.3568456836327341
+            "msPerStep": 0.1292371499999997,
+            "percentOf60fpsFrame": 0.773875149700597
           },
           {
             "bodies": 100,
-            "msPerStep": 0.11577205000000011,
-            "percentOf60fpsFrame": 0.6932458083832342
+            "msPerStep": 0.4981734374999997,
+            "percentOf60fpsFrame": 2.9830744760479027
           },
           {
             "bodies": 220,
-            "msPerStep": 0.4764067708333333,
-            "percentOf60fpsFrame": 2.852735154690619
+            "msPerStep": 1.6514269083333326,
+            "percentOf60fpsFrame": 9.888783882235524
           },
           {
             "bodies": 250,
-            "msPerStep": 0.48507621250000027,
-            "percentOf60fpsFrame": 2.904647979041918
+            "msPerStep": 2.2063064208333336,
+            "percentOf60fpsFrame": 13.211415693612777
           },
           {
             "bodies": 1000,
-            "msPerStep": 5.729559029166667,
-            "percentOf60fpsFrame": 34.308736701596814
+            "msPerStep": 12.781844445833332,
+            "percentOf60fpsFrame": 76.53799069361277
+          },
+          {
+            "bodies": 5000,
+            "msPerStep": 402.29130833333335,
+            "percentOf60fpsFrame": 2408.9299900199603
           }
         ]
       },
@@ -226,7 +231,7 @@
       },
       "vehicleController": {
         "measured": true,
-        "value": "RaycastVehicle + RigidVehicle shipped in-package"
+        "value": "RaycastVehicle constructed, one wheel stepped, engine force applied, and removed; wheels=1"
       },
       "workerSupport": {
         "measured": false,
@@ -246,49 +251,54 @@
       "license": "Apache-2.0",
       "bundleGzipBytes": {
         "measured": true,
-        "value": 829957
+        "value": 835217
       },
       "initMs": {
         "measured": true,
-        "value": 17.28058299999975
+        "value": 64.86741600000096
       },
       "wasm": true,
       "stepMsPer1000Bodies": {
         "measured": true,
-        "value": 0.31511388333333346
+        "value": 0.7048951333332903
       },
       "scaling": {
         "measured": true,
         "value": [
           {
             "bodies": 25,
-            "msPerStep": 0.022301562499999743,
-            "percentOf60fpsFrame": 0.13354229041916016
+            "msPerStep": 0.04058802083333527,
+            "percentOf60fpsFrame": 0.24304204091817527
           },
           {
             "bodies": 50,
-            "msPerStep": 0.04208645833333359,
-            "percentOf60fpsFrame": 0.2520147205588838
+            "msPerStep": 0.07650225416667429,
+            "percentOf60fpsFrame": 0.458097330339367
           },
           {
             "bodies": 100,
-            "msPerStep": 0.08704253750000059,
-            "percentOf60fpsFrame": 0.5212127994012011
+            "msPerStep": 0.17462413333332732,
+            "percentOf60fpsFrame": 1.045653493013936
           },
           {
             "bodies": 220,
-            "msPerStep": 0.20725208333333284,
-            "percentOf60fpsFrame": 1.2410304391217537
+            "msPerStep": 0.29474652499999743,
+            "percentOf60fpsFrame": 1.7649492514969907
           },
           {
             "bodies": 250,
-            "msPerStep": 0.24491996666666674,
-            "percentOf60fpsFrame": 1.4665866267465073
+            "msPerStep": 0.3074831625000115,
+            "percentOf60fpsFrame": 1.8412165419162365
           },
           {
             "bodies": 1000,
-            "msPerStep": 0.8968772583333343,
-            "percentOf60fpsFrame": 5.370522504990026
+            "msPerStep": 1.2659762166666648,
+            "percentOf60fpsFrame": 7.580695908183623
+          },
+          {
+            "bodies": 5000,
+            "msPerStep": 4.081301399999939,
+            "percentOf60fpsFrame": 24.43893053892179
           }
         ]
       },
@@ -360,11 +370,11 @@
       },
       "characterController": {
         "measured": true,
-        "value": "KinematicCharacterController: slopes, steps, snap-to-ground, autostep"
+        "value": "KinematicCharacterController constructed and removed; disposed=true; slopes, steps, snap-to-ground and autostep API present"
       },
       "vehicleController": {
         "measured": true,
-        "value": "DynamicRayCastVehicleController: raycast suspension, engine/brake force, steering"
+        "value": "DynamicRayCastVehicleController constructed, one wheel stepped, and removed; wheels=1; raycast suspension, engine/brake force and steering API present"
       },
       "workerSupport": {
         "measured": true,

@@ -5,7 +5,7 @@ describe("final subsystem ownership", () => {
   it("covers every package and every package source file exactly once", () => {
     const report = JSON.parse(readFileSync("tests/reports/final-subsystem-ownership.json", "utf8"));
     expect(report.pass).toBe(true);
-    expect(report.packageCount).toBe(26);
+    expect(report.packageCount).toBe(27);
     expect(new Set(report.subsystems.flatMap((entry: { files: string[] }) => entry.files)).size).toBe(report.sourceFilesClassified);
     expect(report.packages.every((entry: { disposition?: string }) => Boolean(entry.disposition))).toBe(true);
     expect(report.subsystems.every((entry: { compiledCost?: { gzipBytes: number }; maintenanceReferenceCount?: number }) => entry.compiledCost && typeof entry.compiledCost.gzipBytes === "number" && typeof entry.maintenanceReferenceCount === "number")).toBe(true);

@@ -56,6 +56,7 @@ digraph aura3d {
   "materials" -> "rendering";
   "math" [label="math\ntier 0"];
   "physics" [label="physics\ntier 0"];
+  "physics-rapier" [label="physics-rapier\ntier 0"];
   "product-studio" [label="product-studio\ntier 4"];
   "product-studio" -> "assets";
   "product-studio" -> "rendering";

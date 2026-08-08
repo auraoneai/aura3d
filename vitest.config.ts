@@ -59,6 +59,7 @@ export default defineConfig({
        */
       "@aura3d/physics/world": new URL("./packages/physics/src/world.ts", import.meta.url).pathname,
       "@aura3d/physics/solverless": new URL("./packages/physics/src/solverless.ts", import.meta.url).pathname,
+      "@aura3d/physics-rapier": new URL("./packages/physics-rapier/src/index.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
       "@aura3d/assets/gltf-runtime": new URL("./packages/assets/src/gltf-runtime.ts", import.meta.url).pathname,

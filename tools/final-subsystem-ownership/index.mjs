@@ -25,7 +25,7 @@ const packageDisposition = {
   "create-aura3d": "AURA-MOAT", debug: "AURA-MOAT", ecs: "COMPATIBILITY-ONLY",
   "editor-runtime": "OPTIONAL-PLUGIN", editor: "OPTIONAL-PLUGIN", engine: "AURA-MOAT",
   environments: "AURA-CORE", input: "AURA-CORE", materials: "AURA-CORE", math: "AURA-CORE",
-  physics: "EXTERNAL-ADAPTER", "product-studio": "AURA-MOAT", react: "EXTERNAL-ADAPTER",
+  physics: "COMPATIBILITY-ONLY", "physics-rapier": "EXTERNAL-ADAPTER", "product-studio": "AURA-MOAT", react: "EXTERNAL-ADAPTER",
   rendering: "AURA-CORE", scene: "AURA-CORE", scripting: "COMPATIBILITY-ONLY",
   "three-compat": "COMPATIBILITY-ONLY", workflows: "AURA-MOAT"
 };
@@ -230,7 +230,7 @@ function renderDoc(value) {
     const exitRisk = `${entry.scoring.fiveYearExitRisk}; tarball ${entry.packageAudit?.tarball?.packageBytes ?? "unmeasured"} B; all-export browser gzip ${bundle?.pass ? `${bundle.gzipBytes} B` : `requires explicit WASM loader (${bundle?.error ?? "unmeasured"})`}; isolated npm audit ${entry.packageAudit?.security?.vulnerable ? "vulnerable" : "0 vulnerabilities"}`;
     lines.push(`| \`${entry.name}\` | \`${entry.version}\` | ${entry.license} | ${entry.modified.slice(0, 10)} | ${entry.freshness} | \`${entry.integrity}\` | ${cell(exitRisk)} |`);
   }
-  lines.push("", "## Consumer and removal truth", "", "The machine report retains the complete per-package paths for source, dynamic-import, route, fixture, generator/CLI, docs, and installed-consumer evidence. A package with zero direct source consumers is not deletable when its public exports, generators, docs, fixtures, or external-consumer proofs remain. All 26 packages publish at least one export, so none is a `DELETE-NOW` package in Phase 1.", "", "Known overlap queues:", "");
+  lines.push("", "## Consumer and removal truth", "", `The machine report retains the complete per-package paths for source, dynamic-import, route, fixture, generator/CLI, docs, and installed-consumer evidence. A package with zero direct source consumers is not deletable when its public exports, generators, docs, fixtures, or external-consumer proofs remain. All ${value.packageCount} packages publish at least one export, so none is a \`DELETE-NOW\` package in this inventory.`, "", "Known overlap queues:", "");
   for (const entry of value.overlaps) lines.push(`- **${entry.capability}:** ${entry.status}. Owners: ${entry.owners.join(", ")}.`);
   lines.push("", "## Architecture lock", "", `The source-addition baseline is \`${value.architectureLock.baselineCommit}\`. Every added \`packages/*/src\` file after that commit must be mapped to an existing ADR in \`${adrRegistryPath}\`; the current missing-ADR count is **${value.architectureLock.missingAdrMappings.length}**. A new package also fails because it has no disposition.`, "", "## Decision boundary", "", "No source is deleted by this audit. `DEPRECATE-REMOVE` means a candidate migration queue requiring Phase 2 bake-off, R8 deletion proof, semver review, migration tests, and rollback. `EVIDENCE-ONLY` means the code cannot support a shipped runtime claim and should move only after its consumers are relocated. Dormant-risk libraries are not selected merely because they are familiar.");
   return `${lines.join("\n")}\n`;

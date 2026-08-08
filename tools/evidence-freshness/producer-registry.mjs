@@ -81,6 +81,12 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
     "tests/reports/final-subsystem-ownership.json",
     "docs/architecture/final-subsystem-ownership.md"
   ],
+  "physics-backend-bakeoff": [
+    "tests/reports/physics-backend-bakeoff/<artifact>"
+  ],
+  "optional-rapier-browser": [
+    "tests/reports/optional-rapier-physics/report.json"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -114,7 +120,9 @@ export const OWNED_ARTIFACT_DIRECTORIES = Object.freeze([
   "multipart-primitive-draw",
   "asset-screening",
   "replicability-metrics",
-  "evidence-freshness"
+  "evidence-freshness",
+  "physics-backend-bakeoff",
+  "optional-rapier-physics"
 ]);
 
 /** Producer id -> `{ writes, hashes }` in the same path vocabulary as ownership. */
@@ -195,6 +203,21 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
       "tools/final-subsystem-ownership/adr-registry.json"
     ]
   },
+  "physics-backend-bakeoff": {
+    writes: PRODUCER_OWNERSHIP["physics-backend-bakeoff"],
+    hashes: [
+      "pnpm-lock.yaml",
+      "tools/physics-backend-bakeoff/index.ts"
+    ]
+  },
+  "optional-rapier-browser": {
+    writes: PRODUCER_OWNERSHIP["optional-rapier-browser"],
+    hashes: [
+      "pnpm-lock.yaml",
+      "packages/physics-rapier/src/index.ts",
+      "tests/fixtures/optional-rapier-browser.ts"
+    ]
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -224,6 +247,8 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "current-threejs-baseline",
   "external-candidate-package-audit",
   "final-subsystem-ownership",
+  "physics-backend-bakeoff",
+  "optional-rapier-browser",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",

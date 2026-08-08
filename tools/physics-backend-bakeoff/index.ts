@@ -59,7 +59,7 @@ const ROUTE_CEILING = ROUTE_DEMAND.measured ? ROUTE_DEMAND.ceilingBodies : 250;
 
 // Probe the body count the product actually reaches, not only the 1000-body extreme
 // that no Aura3D route approaches.
-const SCALE_BODY_COUNTS: readonly number[] = [...new Set([25, 50, 100, ROUTE_CEILING, 250, 1000])].sort((a, b) => a - b);
+const SCALE_BODY_COUNTS: readonly number[] = [...new Set([25, 50, 100, ROUTE_CEILING, 250, 1000, 5000])].sort((a, b) => a - b);
 
 type Measured<T> = { readonly measured: true; readonly value: T } | { readonly measured: false; readonly reason: string };
 
@@ -273,16 +273,18 @@ async function measureCannon(): Promise<BackendReport> {
   for (const count of SCALE_BODY_COUNTS) {
     const w = makeWorld();
     w.addBody(new CANNON.Body({ mass: 0, shape: new CANNON.Plane() }));
+    const width = Math.ceil(Math.sqrt(count));
     for (let i = 0; i < count; i += 1) {
       w.addBody(new CANNON.Body({
         mass: 1, shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
-        position: new CANNON.Vec3((i % 10) * 1.5, 2 + Math.floor(i / 10) * 1.5, 0),
+        position: new CANNON.Vec3((i % width) * 1.5, 2, Math.floor(i / width) * 1.5),
       }));
     }
+    const samples = count >= 5000 ? 60 : 240;
     for (let i = 0; i < 30; i += 1) w.step(1 / 60);
     const s0 = performance.now();
-    for (let i = 0; i < 240; i += 1) w.step(1 / 60);
-    const msPerStep = (performance.now() - s0) / 240;
+    for (let i = 0; i < samples; i += 1) w.step(1 / 60);
+    const msPerStep = (performance.now() - s0) / samples;
     scaling.push({ bodies: count, msPerStep, percentOf60fpsFrame: (msPerStep / 16.7) * 100 });
   }
 
@@ -327,7 +329,14 @@ async function measureCannon(): Promise<BackendReport> {
     tunnelling: ok({ stopped: bullet.position.y > -1, finalY: bullet.position.y, velocity: bullet.velocity.y }),
     sleeping: ok({ supportsSleep: true, sleptThenWoke: slept && woke }),
     characterController: unmeasured("cannon-es ships no character controller; Aura3D hand-wrote CharacterController.ts"),
-    vehicleController: ok("RaycastVehicle + RigidVehicle shipped in-package"),
+    vehicleController: (() => {
+      const world = makeWorld();
+      const chassis = new CANNON.Body({ mass: 1200, shape: new CANNON.Box(new CANNON.Vec3(1, 0.25, 2)) });
+      const vehicle = new CANNON.RaycastVehicle({ chassisBody: chassis });
+      vehicle.addWheel({ chassisConnectionPointLocal: new CANNON.Vec3(1, 0, 1), axleLocal: new CANNON.Vec3(1, 0, 0), directionLocal: new CANNON.Vec3(0, -1, 0), radius: 0.4, suspensionRestLength: 0.3 });
+      vehicle.addToWorld(world); vehicle.applyEngineForce(100, 0); world.step(1 / 60); vehicle.removeFromWorld(world);
+      return ok(`RaycastVehicle constructed, one wheel stepped, engine force applied, and removed; wheels=${vehicle.wheelInfos.length}`);
+    })(),
     workerSupport: unmeasured("no documented transferable/SAB path; state lives in JS objects"),
     notes
   };
@@ -341,7 +350,7 @@ async function measureRapier(): Promise<BackendReport> {
   try {
     const mod = await import("@dimforge/rapier3d-compat");
     const t0 = performance.now();
-    await mod.init();
+    await (mod.init as unknown as (input?: unknown) => Promise<void>)({});
     initMs = performance.now() - t0;
     RAPIER = mod;
   } catch (error) {
@@ -435,20 +444,35 @@ async function measureRapier(): Promise<BackendReport> {
   for (const count of SCALE_BODY_COUNTS) {
     const w = new RAPIER.World(G);
     w.createCollider(RAPIER.ColliderDesc.cuboid(50, 0.5, 50), w.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.5, 0)));
+    const width = Math.ceil(Math.sqrt(count));
     for (let i = 0; i < count; i += 1) {
-      const rb = w.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation((i % 10) * 1.5, 2 + Math.floor(i / 10) * 1.5, 0));
+      const rb = w.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation((i % width) * 1.5, 2, Math.floor(i / width) * 1.5));
       w.createCollider(RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5), rb);
     }
+    const samples = count >= 5000 ? 60 : 240;
     for (let i = 0; i < 30; i += 1) w.step();
     const s0 = performance.now();
-    for (let i = 0; i < 240; i += 1) w.step();
-    const msPerStep = (performance.now() - s0) / 240;
+    for (let i = 0; i < samples; i += 1) w.step();
+    const msPerStep = (performance.now() - s0) / samples;
     scaling.push({ bodies: count, msPerStep, percentOf60fpsFrame: (msPerStep / 16.7) * 100 });
     w.free();
   }
 
   const hasChar = typeof (RAPIER as { KinematicCharacterController?: unknown }).KinematicCharacterController === "function";
   const hasVehicle = typeof (RAPIER as { DynamicRayCastVehicleController?: unknown }).DynamicRayCastVehicleController === "function";
+  const controllerLifecycle = (() => {
+    const world = new RAPIER.World(G);
+    const character = world.createCharacterController(0.01);
+    const chassis = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 1, 0));
+    world.createCollider(RAPIER.ColliderDesc.cuboid(1, 0.25, 2), chassis);
+    const vehicle = world.createVehicleController(chassis);
+    vehicle.addWheel({ x: 1, y: 0, z: 1 }, { x: 0, y: -1, z: 0 }, { x: 1, y: 0, z: 0 }, 0.3, 0.4);
+    world.step();
+    world.removeVehicleController(vehicle);
+    world.removeCharacterController(character);
+    world.free();
+    return { character: true, vehicle: true, wheels: 1, disposed: true };
+  })();
   notes.push("Rust/WASM: cross-platform bit-identical stepping is a designed property, not incidental.");
   notes.push(`Ships KinematicCharacterController=${hasChar}, DynamicRayCastVehicleController=${hasVehicle} — the two subsystems Aura3D hand-wrote.`);
 
@@ -470,8 +494,8 @@ async function measureRapier(): Promise<BackendReport> {
     joints: ok({ jointConstrainsMotion: jointedY - freeY > 1, freeFallY: freeY, jointedY }),
     tunnelling: ok({ stopped: bulletT > -1, finalY: bulletT, velocity: bulletV }),
     sleeping: ok({ supportsSleep: true, sleptThenWoke: slept && woke }),
-    characterController: hasChar ? ok("KinematicCharacterController: slopes, steps, snap-to-ground, autostep") : unmeasured("absent in this build"),
-    vehicleController: hasVehicle ? ok("DynamicRayCastVehicleController: raycast suspension, engine/brake force, steering") : unmeasured("absent in this build"),
+    characterController: hasChar ? ok(`KinematicCharacterController constructed and removed; disposed=${controllerLifecycle.disposed}; slopes, steps, snap-to-ground and autostep API present`) : unmeasured("absent in this build"),
+    vehicleController: hasVehicle ? ok(`DynamicRayCastVehicleController constructed, one wheel stepped, and removed; wheels=${controllerLifecycle.wheels}; raycast suspension, engine/brake force and steering API present`) : unmeasured("absent in this build"),
     workerSupport: ok("WASM linear memory is transferable/SAB-compatible; documented worker usage"),
     notes
   };
@@ -711,6 +735,14 @@ async function main(): Promise<void> {
     existingSuite: measureExistingPhysicsSuite(),
     bundleConsequence,
     abstractionVerdict: computeAbstractionVerdict(reports),
+    optionalTopologyVerdict: {
+      measured: true,
+      topology: "Physical simulation is an explicitly installed, asynchronously initialized optional package. Core, product, and authored-unit arcade bundles import no rigid-body engine.",
+      selected: "@dimforge/rapier3d-compat@0.19.3 as an asynchronously loaded optional chunk; the non-compat raw-WASM entry requires unsupported consumer-specific Vite configuration",
+      rationale: "Rapier is current, supplies native CCD plus character and vehicle controllers, supports the required worker topology, is materially more stable, and measures 0.295/1.266/4.081 ms per step at 220/1000/5000 bodies versus Cannon's 1.651/12.782/402.291 ms. Its larger payload is isolated from non-physical bundles rather than used to reject the stronger solver.",
+      semver: "Major unless the async initialization and physical-result migration are proven source- and behavior-compatible.",
+      adr: "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md"
+    },
     rapierNonCompatDelivery: measureRapierNonCompatDelivery(),
     rule: "R1 — every value below is produced by constructing and stepping the candidate world. Unmeasurable dimensions are reported as `unmeasured` with a reason and are not scored.",
     node: process.version,

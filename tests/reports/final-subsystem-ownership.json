@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T20:43:36.441Z",
+  "generatedAt": "2026-08-08T21:00:21.135Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "c108150216f9ac2714b97193d11a42bd9c64bf2d",
+  "sourceCommit": "1105bfebf39b2e229ea4504b6a9c0880c9621675",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -14,9 +14,9 @@
     "routes/templates",
     "external-consumer and clean-room tests"
   ],
-  "packageCount": 26,
-  "subsystemCount": 35,
-  "sourceFilesClassified": 899,
+  "packageCount": 27,
+  "subsystemCount": 36,
+  "sourceFilesClassified": 900,
   "packages": [
     {
       "package": "animation",
@@ -167,6 +167,7 @@
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/animation-crowd-baseline.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/animation/physics-capsule-locomotion.test.ts",
           "tests/unit/assets/gltf-animation-runtime-apply-pose.test.ts",
@@ -192,6 +193,7 @@
           "docs/animation/runtime-support.md",
           "docs/api/assets.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/plans/aura3d-package-architecture.md",
           "docs/project/plans/engine-game-parity-execution-plan.md",
@@ -205,16 +207,16 @@
         "source": 74,
         "dynamicImport": 9,
         "route": 24,
-        "fixture": 17,
+        "fixture": 18,
         "cliOrGenerator": 7,
-        "docs": 12,
+        "docs": 13,
         "externalConsumer": 1
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 44,
-        "testMentions": 17,
-        "docsMentions": 12
+        "testMentions": 18,
+        "docsMentions": 13
       }
     },
     {
@@ -273,6 +275,7 @@
           "benchmark/context/aura3d/files/packages/engine/dist/index.d.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/external-parity-public-api-app/main.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/engine/external-parity-app-api.test.ts",
           "tests/unit/engine/external-parity-public-api-stability.test.ts",
           "tests/unit/tools/api-docs.test.ts"
@@ -286,6 +289,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md"
@@ -296,16 +300,16 @@
         "source": 16,
         "dynamicImport": 5,
         "route": 0,
-        "fixture": 6,
+        "fixture": 7,
         "cliOrGenerator": 5,
-        "docs": 4,
+        "docs": 5,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 6,
-        "docsMentions": 4
+        "testMentions": 7,
+        "docsMentions": 5
       }
     },
     {
@@ -375,6 +379,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/asset-index/animation-profile.test.ts",
           "tests/unit/asset-index/cli-pull-bridge.test.ts",
           "tests/unit/asset-index/federated-resolver.test.ts",
@@ -406,6 +411,7 @@
           "docs/agents/asset-workflow.md",
           "docs/api/assets.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -418,16 +424,16 @@
         "source": 35,
         "dynamicImport": 4,
         "route": 0,
-        "fixture": 10,
+        "fixture": 11,
         "cliOrGenerator": 13,
-        "docs": 9,
+        "docs": 10,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 20,
-        "testMentions": 10,
-        "docsMentions": 9
+        "testMentions": 11,
+        "docsMentions": 10
       }
     },
     {
@@ -610,6 +616,7 @@
           "tests/fixtures/visual-examples/postprocess-lab/main.ts",
           "tests/performance/asset-load-performance.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/public-api-contracts.test.ts",
           "tests/unit/rendering/tsukuba-arch-opacity.test.ts",
@@ -644,6 +651,7 @@
           "CHANGELOG.md",
           "MIGRATION-1.6.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/plans/aura3d-package-architecture.md",
           "docs/project/plans/recovery-remediation-prd.md"
@@ -654,16 +662,16 @@
         "source": 88,
         "dynamicImport": 11,
         "route": 31,
-        "fixture": 22,
+        "fixture": 23,
         "cliOrGenerator": 20,
-        "docs": 6,
+        "docs": 7,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 64,
-        "testMentions": 22,
-        "docsMentions": 6
+        "testMentions": 23,
+        "docsMentions": 7
       }
     },
     {
@@ -723,6 +731,7 @@
           "tests/browser/audio-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/public-api-contracts.test.ts",
           "tests/unit/tools/api-docs.test.ts",
           "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
@@ -738,6 +747,7 @@
         "docs": [
           "1.6-FINAL-PRD-Finishes.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/audio/animation-audio.md"
         ],
@@ -747,16 +757,16 @@
         "source": 18,
         "dynamicImport": 3,
         "route": 1,
-        "fixture": 8,
+        "fixture": 9,
         "cliOrGenerator": 5,
-        "docs": 4,
+        "docs": 5,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 19,
-        "testMentions": 8,
-        "docsMentions": 4
+        "testMentions": 9,
+        "docsMentions": 5
       }
     },
     {
@@ -848,6 +858,7 @@
           "benchmark/context/aura3d/files/templates/cinematic-scene/README.md",
           "benchmark/context/aura3d/files/templates/product-viewer/README.md",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/aura3d-cli/assets.test.ts",
           "tests/unit/aura3d-cli/deployment.test.ts",
           "tests/unit/tools/api-docs.test.ts",
@@ -906,6 +917,7 @@
           "docs/api/prompt-animation.md",
           "docs/api/public-api.md",
           "docs/api/readme.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/concepts/assets.md",
           "docs/examples/animation-channel.md",
@@ -941,16 +953,16 @@
         "source": 32,
         "dynamicImport": 6,
         "route": 4,
-        "fixture": 18,
+        "fixture": 19,
         "cliOrGenerator": 13,
-        "docs": 65,
+        "docs": 66,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 31,
-        "testMentions": 18,
-        "docsMentions": 65
+        "testMentions": 19,
+        "docsMentions": 66
       }
     },
     {
@@ -1006,6 +1018,7 @@
         "fixture": [
           "tests/browser/example-dev-server.ts",
           "tests/browser/threejs-parity-transform-controls-harness.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
         "cliOrGenerator": [
@@ -1017,6 +1030,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/controls/interaction-and-picking.md",
           "docs/project/aura3d-141-release-notes.md",
@@ -1031,16 +1045,16 @@
         "source": 14,
         "dynamicImport": 3,
         "route": 3,
-        "fixture": 3,
+        "fixture": 4,
         "cliOrGenerator": 5,
-        "docs": 8,
+        "docs": 9,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 15,
-        "testMentions": 3,
-        "docsMentions": 8
+        "testMentions": 4,
+        "docsMentions": 9
       }
     },
     {
@@ -1138,6 +1152,7 @@
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/integration/engine-loop.test.ts",
           "tests/performance/vitest.config.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/core/config-time.test.ts",
           "tests/unit/core/edge-cases.test.ts",
           "tests/unit/core/events-disposal-diagnostics.test.ts",
@@ -1155,6 +1170,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/plans/aura3d-package-architecture.md",
           "packages/apps/README.md"
@@ -1165,16 +1181,16 @@
         "source": 52,
         "dynamicImport": 6,
         "route": 0,
-        "fixture": 14,
+        "fixture": 15,
         "cliOrGenerator": 5,
-        "docs": 4,
+        "docs": 5,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 15,
-        "testMentions": 14,
-        "docsMentions": 4
+        "testMentions": 15,
+        "docsMentions": 5
       }
     },
     {
@@ -1370,6 +1386,7 @@
           "tests/integration/external-parity-create-aura3d.test.ts",
           "tests/integration/production-runtime-create-aura3d.test.ts",
           "tests/integration/three-compat-create-aura3d.test.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/agent-api/line-count-acceptance.test.ts",
           "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
           "tests/unit/agent-api/public-example-boundary.test.ts",
@@ -1513,6 +1530,7 @@
           "docs/api/prompt-animation.md",
           "docs/api/public-api.md",
           "docs/api/readme.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/meshbvh-responsibilities.md",
           "docs/architecture/package-ownership.md",
           "docs/archive/AURA3D_KILL_OR_REPAIR_AUDIT.md",
@@ -1553,16 +1571,16 @@
         "source": 127,
         "dynamicImport": 12,
         "route": 6,
-        "fixture": 61,
+        "fixture": 62,
         "cliOrGenerator": 63,
-        "docs": 59,
+        "docs": 60,
         "externalConsumer": 5
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 24,
-        "testMentions": 61,
-        "docsMentions": 59
+        "testMentions": 62,
+        "docsMentions": 60
       }
     },
     {
@@ -1619,6 +1637,7 @@
           "tests/browser/debug-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
         "cliOrGenerator": [
@@ -1629,6 +1648,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/debug/profiling-and-diagnostics.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -1640,16 +1660,16 @@
         "source": 13,
         "dynamicImport": 3,
         "route": 1,
-        "fixture": 5,
+        "fixture": 6,
         "cliOrGenerator": 4,
-        "docs": 5,
+        "docs": 6,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 16,
-        "testMentions": 5,
-        "docsMentions": 5
+        "testMentions": 6,
+        "docsMentions": 6
       }
     },
     {
@@ -1718,6 +1738,7 @@
           "tests/performance/ecs-entities-baseline.test.ts",
           "tests/performance/system-baselines.ts",
           "tests/performance/vitest.config.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/ecs/ecs-render-integration.test.ts",
           "tests/unit/ecs/runtime.test.ts",
           "tests/unit/engine/ecs-render-bridge.test.ts",
@@ -1732,6 +1753,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md"
         ],
         "externalConsumer": []
@@ -1740,16 +1762,16 @@
         "source": 22,
         "dynamicImport": 3,
         "route": 0,
-        "fixture": 17,
+        "fixture": 18,
         "cliOrGenerator": 2,
-        "docs": 2,
+        "docs": 3,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 30,
-        "testMentions": 17,
-        "docsMentions": 2
+        "testMentions": 18,
+        "docsMentions": 3
       }
     },
     {
@@ -1832,6 +1854,7 @@
           "tests/browser/editor-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/editor/plugin-api.test.ts",
           "tests/unit/editor/shader-graph-model.test.ts",
@@ -1856,6 +1879,7 @@
           "docs/api/editor-review-tooling.md",
           "docs/api/editor-visual-scripting.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/controls/interaction-and-picking.md",
           "docs/project/parity/threejs/scope-decisions.md",
@@ -1870,16 +1894,16 @@
         "source": 28,
         "dynamicImport": 5,
         "route": 11,
-        "fixture": 13,
+        "fixture": 14,
         "cliOrGenerator": 5,
-        "docs": 14,
+        "docs": 15,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 13,
-        "docsMentions": 14
+        "testMentions": 14,
+        "docsMentions": 15
       }
     },
     {
@@ -1964,6 +1988,7 @@
           "tests/browser/editor-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/editor/plugin-api.test.ts",
           "tests/unit/editor/shader-graph-model.test.ts",
@@ -1986,6 +2011,7 @@
           "docs/api/editor-review-tooling.md",
           "docs/api/editor-visual-scripting.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/controls/interaction-and-picking.md",
           "docs/project/parity/threejs/scope-decisions.md",
@@ -1999,16 +2025,16 @@
         "source": 28,
         "dynamicImport": 5,
         "route": 11,
-        "fixture": 13,
+        "fixture": 14,
         "cliOrGenerator": 4,
-        "docs": 12,
+        "docs": 13,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 46,
-        "testMentions": 13,
-        "docsMentions": 12
+        "testMentions": 14,
+        "docsMentions": 13
       }
     },
     {
@@ -2065,6 +2091,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/engine/ecs-render-bridge.test.ts",
           "tests/unit/engine/external-parity-public-api-stability.test.ts",
           "tests/unit/tools/api-docs.test.ts",
@@ -2081,6 +2108,7 @@
         "docs": [
           "CHANGELOG.md",
           "README.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/plans/aura3d-api-design-rules.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -2095,16 +2123,16 @@
         "source": 11,
         "dynamicImport": 1,
         "route": 0,
-        "fixture": 4,
+        "fixture": 5,
         "cliOrGenerator": 6,
-        "docs": 7,
+        "docs": 8,
         "externalConsumer": 1
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 118,
-        "testMentions": 4,
-        "docsMentions": 7
+        "testMentions": 5,
+        "docsMentions": 8
       }
     },
     {
@@ -2145,6 +2173,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
         "cliOrGenerator": [
@@ -2154,6 +2183,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md"
@@ -2164,16 +2194,16 @@
         "source": 5,
         "dynamicImport": 3,
         "route": 0,
-        "fixture": 1,
+        "fixture": 2,
         "cliOrGenerator": 3,
-        "docs": 4,
+        "docs": 5,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 8,
-        "testMentions": 1,
-        "docsMentions": 4
+        "testMentions": 2,
+        "docsMentions": 5
       }
     },
     {
@@ -2256,6 +2286,7 @@
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/browser/input-browser-harness.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/controls/interaction-controls.test.ts",
@@ -2276,6 +2307,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/audits/engine-parity-gap-audit.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -2287,16 +2319,16 @@
         "source": 34,
         "dynamicImport": 3,
         "route": 7,
-        "fixture": 13,
+        "fixture": 14,
         "cliOrGenerator": 6,
-        "docs": 5,
+        "docs": 6,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 26,
-        "testMentions": 13,
-        "docsMentions": 5
+        "testMentions": 14,
+        "docsMentions": 6
       }
     },
     {
@@ -2338,6 +2370,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
         "cliOrGenerator": [
@@ -2347,6 +2380,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md"
@@ -2357,16 +2391,16 @@
         "source": 5,
         "dynamicImport": 3,
         "route": 0,
-        "fixture": 1,
+        "fixture": 2,
         "cliOrGenerator": 3,
-        "docs": 4,
+        "docs": 5,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 9,
-        "testMentions": 1,
-        "docsMentions": 4
+        "testMentions": 2,
+        "docsMentions": 5
       }
     },
     {
@@ -2460,6 +2494,7 @@
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/performance/vitest.config.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/interactive-transform-gizmo.test.ts",
           "tests/unit/ecs/ecs-render-integration.test.ts",
           "tests/unit/ecs/runtime.test.ts",
@@ -2484,6 +2519,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/plans/aura3d-package-architecture.md"
         ],
@@ -2493,23 +2529,23 @@
         "source": 49,
         "dynamicImport": 6,
         "route": 2,
-        "fixture": 20,
+        "fixture": 21,
         "cliOrGenerator": 4,
-        "docs": 3,
+        "docs": 4,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 19,
-        "testMentions": 20,
-        "docsMentions": 3
+        "testMentions": 21,
+        "docsMentions": 4
       }
     },
     {
       "package": "physics",
       "publishedName": "@aura3d/physics",
       "published": true,
-      "disposition": "EXTERNAL-ADAPTER",
+      "disposition": "COMPATIBILITY-ONLY",
       "source": {
         "lines": 11988,
         "bytes": 464665
@@ -2608,6 +2644,7 @@
           "tests/browser/physics-browser-harness.ts",
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/animation/physics-capsule-locomotion.test.ts",
           "tests/unit/apps/raycast-ccd-lab.test.ts",
@@ -2643,6 +2680,7 @@
           "docs/animation/believable-motion.md",
           "docs/api/public-api.md",
           "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/meshbvh-responsibilities.md",
           "docs/architecture/package-ownership.md",
           "docs/concepts/physics.md",
@@ -2652,6 +2690,7 @@
           "docs/project/plans/aura3d-package-architecture.md",
           "docs/project/plans/aura3d-product-remediation-prd.md",
           "docs/project/plans/engine-game-parity-execution-plan.md",
+          "docs/project/release/release-checklist.md",
           "docs/project/status/known-limits.md",
           "examples/physics-sandbox/README.md",
           "examples/raycast-ccd-lab/README.md",
@@ -2663,16 +2702,73 @@
         "source": 44,
         "dynamicImport": 7,
         "route": 11,
-        "fixture": 20,
+        "fixture": 21,
         "cliOrGenerator": 6,
-        "docs": 26,
+        "docs": 28,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 35,
-        "testMentions": 20,
-        "docsMentions": 26
+        "testMentions": 21,
+        "docsMentions": 28
+      }
+    },
+    {
+      "package": "physics-rapier",
+      "publishedName": "@aura3d/physics-rapier",
+      "published": true,
+      "disposition": "EXTERNAL-ADAPTER",
+      "source": {
+        "lines": 160,
+        "bytes": 10533
+      },
+      "dist": {
+        "jsFiles": 0,
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "brotliBytes": 0,
+        "caveat": "sum of built JS, not a tree-shaken application workload"
+      },
+      "publicExports": [
+        "."
+      ],
+      "publicExportBlocksImmediateRemoval": true,
+      "dependencies": {
+        "@dimforge/rapier3d-compat": "0.19.3"
+      },
+      "consumers": {
+        "source": [
+          "vitest.config.ts"
+        ],
+        "dynamicImport": [],
+        "route": [],
+        "fixture": [
+          "tests/reports/final-subsystem-ownership.json"
+        ],
+        "cliOrGenerator": [],
+        "docs": [
+          "1.6-FINAL-PRD-Finishes.md",
+          "docs/architecture/final-subsystem-ownership.md",
+          "docs/architecture/package-ownership.md",
+          "docs/project/release/release-checklist.md"
+        ],
+        "externalConsumer": []
+      },
+      "consumerCounts": {
+        "source": 1,
+        "dynamicImport": 0,
+        "route": 0,
+        "fixture": 1,
+        "cliOrGenerator": 0,
+        "docs": 4,
+        "externalConsumer": 0
+      },
+      "zeroSourceConsumers": false,
+      "maintenanceCost": {
+        "sourceFiles": 1,
+        "testMentions": 1,
+        "docsMentions": 4
       }
     },
     {
@@ -2753,6 +2849,7 @@
           "benchmark/runner/scene-kit-performance-budget.mjs",
           "tests/assets/vitest.config.ts",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/product-studio/product-asset-loader.test.ts",
           "tests/unit/product-studio/product-camera.test.ts",
           "tests/unit/product-studio/product-export.test.ts",
@@ -2771,6 +2868,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -2782,16 +2880,16 @@
         "source": 29,
         "dynamicImport": 6,
         "route": 6,
-        "fixture": 11,
+        "fixture": 12,
         "cliOrGenerator": 6,
-        "docs": 5,
+        "docs": 6,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 13,
-        "testMentions": 11,
-        "docsMentions": 5
+        "testMentions": 12,
+        "docsMentions": 6
       }
     },
     {
@@ -2845,6 +2943,7 @@
           "benchmark/context/aura3d/README.md",
           "benchmark/context/aura3d/files/README.md",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/react-adapter/react-adapter.test.ts",
           "tests/unit/tools/api-docs.test.ts"
         ],
@@ -2867,6 +2966,7 @@
           "docs/api/contracts/public-api-contract.md",
           "docs/api/public-api.md",
           "docs/api/readme.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md"
@@ -2877,16 +2977,16 @@
         "source": 13,
         "dynamicImport": 4,
         "route": 0,
-        "fixture": 5,
+        "fixture": 6,
         "cliOrGenerator": 8,
-        "docs": 11,
+        "docs": 12,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 5,
-        "docsMentions": 11
+        "testMentions": 6,
+        "docsMentions": 12
       }
     },
     {
@@ -3295,6 +3395,7 @@
           "tests/performance/production-runtime-performance-baselines.ts",
           "tests/performance/rendering-frame-budgets.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/apps/advanced-gallery-route-policies.test.ts",
           "tests/unit/engine/external-parity-app-api.test.ts",
@@ -3355,6 +3456,7 @@
           "docs/api/app-api.md",
           "docs/api/public-api.md",
           "docs/api/readme.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/concepts/rendering.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -3375,16 +3477,16 @@
         "source": 224,
         "dynamicImport": 18,
         "route": 91,
-        "fixture": 57,
+        "fixture": 58,
         "cliOrGenerator": 29,
-        "docs": 22,
+        "docs": 23,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 253,
-        "testMentions": 57,
-        "docsMentions": 22
+        "testMentions": 58,
+        "docsMentions": 23
       }
     },
     {
@@ -3647,6 +3749,7 @@
           "tests/integration/scene-ecs-contracts.test.ts",
           "tests/integration/scripting-scene-ecs.test.ts",
           "tests/performance/vitest.config.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/assets/gltf-animation-runtime-apply-pose.test.ts",
           "tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts",
           "tests/unit/input/camera-controls.test.ts",
@@ -3686,6 +3789,7 @@
         "docs": [
           "MIGRATION-1.6.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/plans/aura3d-package-architecture.md",
           "docs/project/plans/engine-game-parity-execution-plan.md"
@@ -3696,16 +3800,16 @@
         "source": 148,
         "dynamicImport": 11,
         "route": 44,
-        "fixture": 38,
+        "fixture": 39,
         "cliOrGenerator": 19,
-        "docs": 5,
+        "docs": 6,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 22,
-        "testMentions": 38,
-        "docsMentions": 5
+        "testMentions": 39,
+        "docsMentions": 6
       }
     },
     {
@@ -3763,6 +3867,7 @@
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/browser/scripting-browser-harness.ts",
           "tests/integration/scripting-scene-ecs.test.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/public-api-contracts.test.ts",
           "tests/unit/tools/api-docs.test.ts",
           "tests/unit/workstream5-input-audio-scripting-editor.test.ts"
@@ -3775,6 +3880,7 @@
         "docs": [
           "docs/api/editor-visual-scripting.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md"
         ],
         "externalConsumer": []
@@ -3783,16 +3889,16 @@
         "source": 15,
         "dynamicImport": 4,
         "route": 2,
-        "fixture": 8,
+        "fixture": 9,
         "cliOrGenerator": 3,
-        "docs": 3,
+        "docs": 4,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 29,
-        "testMentions": 8,
-        "docsMentions": 3
+        "testMentions": 9,
+        "docsMentions": 4
       }
     },
     {
@@ -3856,6 +3962,7 @@
         "fixture": [
           "tests/browser/three-compat-threejs-migration.spec.ts",
           "tests/integration/three-compat-threejs-migration.test.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts",
           "tests/unit/three-compat/three-compat-migration.test.ts",
           "tests/unit/tools/api-docs.test.ts",
@@ -3879,6 +3986,7 @@
           "MIGRATION-1.6.md",
           "README.md",
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/migration.md",
@@ -3893,16 +4001,16 @@
         "source": 19,
         "dynamicImport": 5,
         "route": 0,
-        "fixture": 7,
+        "fixture": 8,
         "cliOrGenerator": 9,
-        "docs": 10,
+        "docs": 11,
         "externalConsumer": 1
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 20,
-        "testMentions": 7,
-        "docsMentions": 10
+        "testMentions": 8,
+        "docsMentions": 11
       }
     },
     {
@@ -3981,6 +4089,7 @@
           "benchmark/context/aura3d/files/packages/engine/dist/index.d.ts",
           "tests/assets/vitest.config.ts",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts",
           "tests/unit/workflows/animation-lab-workflow.test.ts",
           "tests/unit/workflows/asset-viewer-workflow.test.ts",
@@ -4002,6 +4111,7 @@
         ],
         "docs": [
           "docs/api/public-api.md",
+          "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
           "docs/project/aura3d-141-release-notes.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -4014,16 +4124,16 @@
         "source": 29,
         "dynamicImport": 4,
         "route": 5,
-        "fixture": 11,
+        "fixture": 12,
         "cliOrGenerator": 8,
-        "docs": 6,
+        "docs": 7,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 20,
-        "testMentions": 11,
-        "docsMentions": 6
+        "testMentions": 12,
+        "docsMentions": 7
       }
     }
   ],
@@ -4231,6 +4341,7 @@
         "tests/performance/animation-crowd-baseline.ts",
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/runtime-node-handle.test.ts",
@@ -4288,7 +4399,7 @@
         "tools/threejs-parity-threejs-inventory/index.ts",
         "tools/webgpu-feature-matrix/index.ts"
       ],
-      "maintenanceReferenceCount": 197
+      "maintenanceReferenceCount": 198
     },
     {
       "id": "apps-general",
@@ -4335,9 +4446,10 @@
         "docs/api/public-api.md",
         "packages/assets/src/browser-index.ts",
         "packages/assets/src/index.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tools/external-parity-gltf-corpus-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 4
+      "maintenanceReferenceCount": 5
     },
     {
       "id": "asset-index-general",
@@ -4444,6 +4556,7 @@
         "tests/browser/editor-tools-105.spec.ts",
         "tests/browser/khronos-gltf-visual-external-parity.spec.ts",
         "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/agent-api/animation-production-pipeline.test.ts",
         "tests/unit/animation/humanoid-bone-inference.test.ts",
         "tests/unit/apps/threejs-parity-product-configurator-policy.test.ts",
@@ -4490,7 +4603,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 112
+      "maintenanceReferenceCount": 113
     },
     {
       "id": "assets-general",
@@ -4737,6 +4850,7 @@
         "tests/fixtures/visual-examples/postprocess-lab/main.ts",
         "tests/performance/asset-load-performance.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/public-example-boundary.test.ts",
         "tests/unit/apps/threejs-parity-product-configurator-policy.test.ts",
@@ -4801,7 +4915,7 @@
         "tools/threejs-parity-skinning-ik-parity/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 229
+      "maintenanceReferenceCount": 230
     },
     {
       "id": "audio-browser-runtime",
@@ -4841,6 +4955,7 @@
         "Aura3D-1.6-Replatform-PRD.md",
         "benchmark/context/threejs/files/build/three.module.js",
         "docs/api/public-api.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/audio/animation-audio.md",
         "examples/game-slice/README.md",
         "examples/game-slice/main.ts",
@@ -4852,6 +4967,7 @@
         "tests/browser/audio-browser.spec.ts",
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/audio/audio-characterization.test.ts",
         "tests/unit/audio/audio-context-ownership.test.ts",
         "tests/unit/public-api-contracts.test.ts",
@@ -4862,7 +4978,7 @@
         "tools/negative-complexity/index.ts",
         "tools/requirements-trace/index.ts"
       ],
-      "maintenanceReferenceCount": 24
+      "maintenanceReferenceCount": 26
     },
     {
       "id": "audio-evidence-fixtures",
@@ -4887,9 +5003,10 @@
       "maintenanceReferences": [
         "docs/api/public-api.md",
         "packages/audio/src/index.ts",
-        "tests/browser/runtime-external-parity.spec.ts"
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/reports/final-subsystem-ownership.json"
       ],
-      "maintenanceReferenceCount": 3
+      "maintenanceReferenceCount": 4
     },
     {
       "id": "aura3d-cli-general",
@@ -5211,6 +5328,7 @@
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
         "docs/architecture/extension-points.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/architecture/meshbvh-responsibilities.md",
         "docs/architecture/package-ownership.md",
         "docs/architecture/physics-backend-decision.md",
@@ -5535,6 +5653,7 @@
         "tests/reports/current-threejs-baseline.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/animation-episode-package.test.ts",
         "tests/unit/agent-api/animation-export-adapters.test.ts",
@@ -5719,7 +5838,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 778
+      "maintenanceReferenceCount": 780
     },
     {
       "id": "controls-general",
@@ -5799,6 +5918,7 @@
         "tests/browser/threejs-parity-orbit-controls.spec.ts",
         "tests/browser/threejs-parity-transform-controls-harness.ts",
         "tests/browser/threejs-parity-transform-controls.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts",
         "tests/unit/controls/exported-controls-resolution.test.ts",
         "tests/unit/controls/interaction-controls.test.ts",
@@ -5821,7 +5941,7 @@
         "tools/three-compat-migration-readiness/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 66
+      "maintenanceReferenceCount": 67
     },
     {
       "id": "core-general",
@@ -5937,6 +6057,7 @@
         "tests/browser/core-raf-loop.spec.ts",
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
         "tests/integration/engine-loop.test.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/animation/retargeting-harness.test.ts",
         "tests/unit/animation/rig-quality.test.ts",
         "tests/unit/core/config-time.test.ts",
@@ -5979,7 +6100,7 @@
         "tools/threejs-parity-instancing-parity/index.ts",
         "tools/verify-architecture/index.ts"
       ],
-      "maintenanceReferenceCount": 122
+      "maintenanceReferenceCount": 123
     },
     {
       "id": "create-aura3d-general",
@@ -6084,6 +6205,7 @@
         "docs/api/prompt-animation.md",
         "docs/api/public-api.md",
         "docs/api/readme.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/architecture/package-ownership.md",
         "docs/archive/AURA3D_KILL_OR_REPAIR_AUDIT.md",
         "docs/concepts/assets.md",
@@ -6159,6 +6281,7 @@
         "tests/fixtures/showcase-spec/turbo-drift-racing.json",
         "tests/fixtures/showcase-spec/webgpu-overclaim.json",
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
         "tests/unit/animation-studio/prompt-universality.test.ts",
         "tests/unit/animation-studio/skeleton-overlay-strip.test.ts",
@@ -6221,7 +6344,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 197
+      "maintenanceReferenceCount": 199
     },
     {
       "id": "debug-general",
@@ -6279,6 +6402,7 @@
         "tests/browser/editor-app.spec.ts",
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
         "tests/performance/physics-animation-baseline.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/debug/debug-runtime.test.ts",
         "tests/unit/debug/rendering-diagnostics.test.ts",
         "tests/unit/rendering/shadow-pass.test.ts",
@@ -6290,7 +6414,7 @@
         "tools/superiority-resource-lifecycle/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 32
+      "maintenanceReferenceCount": 33
     },
     {
       "id": "ecs-general",
@@ -6411,6 +6535,7 @@
         "tests/integration/scripting-scene-ecs.test.ts",
         "tests/performance/ecs-entities-baseline.test.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/ecs/ecs-render-integration.test.ts",
         "tests/unit/ecs/runtime.test.ts",
         "tests/unit/engine/ecs-render-bridge.test.ts",
@@ -6426,7 +6551,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/requirements-trace/index.ts"
       ],
-      "maintenanceReferenceCount": 85
+      "maintenanceReferenceCount": 86
     },
     {
       "id": "editor-evidence-fixtures",
@@ -6448,9 +6573,10 @@
       },
       "maintenanceReferences": [
         "docs/api/public-api.md",
-        "packages/editor-runtime/src/index.ts"
+        "packages/editor-runtime/src/index.ts",
+        "tests/reports/final-subsystem-ownership.json"
       ],
-      "maintenanceReferenceCount": 2
+      "maintenanceReferenceCount": 3
     },
     {
       "id": "editor-general",
@@ -6625,6 +6751,7 @@
         "tests/browser/editor-tools-105.spec.ts",
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
         "tests/browser/threejs-parity-transform-controls-harness.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/animation/animation-event-tracks.test.ts",
         "tests/unit/controls/interactive-transform-gizmo.test.ts",
         "tests/unit/editor/plugin-api.test.ts",
@@ -6655,7 +6782,7 @@
         "tools/requirements-trace/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 118
+      "maintenanceReferenceCount": 119
     },
     {
       "id": "engine-browser-media",
@@ -6687,10 +6814,11 @@
         "packages/engine/src/agent-api/PngSequenceEncoder.ts",
         "packages/engine/src/agent-api/VideoExportPipeline.ts",
         "packages/engine/src/agent-api/index.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/runtime-edge-coverage.test.ts",
         "tools/final-subsystem-ownership/index.mjs"
       ],
-      "maintenanceReferenceCount": 10
+      "maintenanceReferenceCount": 11
     },
     {
       "id": "engine-general",
@@ -7055,6 +7183,7 @@
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
         "docs/architecture/claim-lineage.md",
         "docs/architecture/meshbvh-responsibilities.md",
+        "docs/architecture/physics-backend-decision.md",
         "docs/architecture/text-requirements.md",
         "docs/archive/AURA3D_KILL_OR_REPAIR_AUDIT.md",
         "docs/archive/aura3d-game-examples-stop-decision.md",
@@ -7408,6 +7537,7 @@
         "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
         "tests/game-runtime/aura3d104-game-runtime-source.test.ts",
         "tests/integration/production-runtime-create-aura3d.test.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/animation-export-adapters.test.ts",
@@ -7670,7 +7800,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 854
+      "maintenanceReferenceCount": 856
     },
     {
       "id": "engine-node-media-publishing",
@@ -7709,6 +7839,7 @@
         "docs/project/plans/engine-game-parity-execution-plan.md",
         "packages/engine/src/agent-api/index.ts",
         "packages/engine/src/agent-api/media-node.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/agent-api/ffmpeg-frame-encoder.test.ts",
         "tests/unit/runtime-edge-coverage.test.ts",
         "tools/browser-entry-purity/index.ts",
@@ -7717,7 +7848,7 @@
         "tools/final-subsystem-ownership/index.mjs",
         "tools/production-path-benchmark/index.ts"
       ],
-      "maintenanceReferenceCount": 17
+      "maintenanceReferenceCount": 18
     },
     {
       "id": "environments-general",
@@ -7746,10 +7877,11 @@
       },
       "maintenanceReferences": [
         "docs/api/public-api.md",
+        "tests/reports/final-subsystem-ownership.json",
         "tools/production-runtime-report-bridge/shared.ts",
         "tools/three-compat-environment-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 3
+      "maintenanceReferenceCount": 4
     },
     {
       "id": "input-general",
@@ -7840,6 +7972,7 @@
         "tests/browser/three-compat-controls.spec.ts",
         "tests/browser/three-compat-threejs-migration.spec.ts",
         "tests/browser/threejs-parity-orbit-controls.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/controls/exported-controls-resolution.test.ts",
         "tests/unit/controls/interaction-controls.test.ts",
@@ -7865,7 +7998,7 @@
         "tools/three-compat-migration-readiness/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 69
+      "maintenanceReferenceCount": 70
     },
     {
       "id": "materials-general",
@@ -7898,9 +8031,10 @@
         "docs/api/public-api.md",
         "packages/materials/README.md",
         "packages/rendering/src/index.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tools/three-compat-material-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 5
+      "maintenanceReferenceCount": 6
     },
     {
       "id": "math-general",
@@ -8052,6 +8186,7 @@
         "tests/browser/runtime-parity-webgpu-threejs-delta.spec.ts",
         "tests/browser/three-compat-material-geometry-compat.spec.ts",
         "tests/performance/physics-comparison-baseline.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/apps/threejs-parity-route-scene-modules.test.ts",
         "tests/unit/asset-index/embedding.test.ts",
         "tests/unit/controls/interactive-transform-gizmo.test.ts",
@@ -8115,7 +8250,7 @@
         "tools/threejs-parity-unreal-bloom-parity/index.ts",
         "tools/verify-architecture/index.ts"
       ],
-      "maintenanceReferenceCount": 175
+      "maintenanceReferenceCount": 176
     },
     {
       "id": "physics-cannon-adapter",
@@ -8180,6 +8315,7 @@
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
         "docs/architecture/claim-lineage.md",
         "docs/architecture/extension-points.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/architecture/meshbvh-responsibilities.md",
         "docs/architecture/physics-backend-decision.md",
         "docs/concepts/animation.md",
@@ -8237,6 +8373,7 @@
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/lazy-physics-world.test.ts",
         "tests/unit/apps/raycast-ccd-lab.test.ts",
@@ -8277,7 +8414,7 @@
         "tools/requirements-trace/index.ts",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 129
+      "maintenanceReferenceCount": 131
     },
     {
       "id": "physics-custom-physical-controllers",
@@ -8306,6 +8443,7 @@
         "GameEngine-PRD.md",
         "docs/api/public-api.md",
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/architecture/physics-backend-decision.md",
         "docs/physics/runtime.md",
         "docs/project/plans/aura3d-threejs-ecosystem-parity.md",
@@ -8318,6 +8456,7 @@
         "packages/physics/src/world.ts",
         "tests/browser/runtime-character-controller.spec.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/unit/physics/backend-neutral-contract.test.ts",
         "tests/unit/physics/character-mesh-contact.test.ts",
@@ -8331,7 +8470,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 29
+      "maintenanceReferenceCount": 31
     },
     {
       "id": "physics-evidence-descriptors",
@@ -8364,14 +8503,15 @@
         "packages/physics/src/index.ts",
         "packages/physics/src/world.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/deletion-safety.test.ts"
       ],
-      "maintenanceReferenceCount": 7
+      "maintenanceReferenceCount": 8
     },
     {
       "id": "physics-general",
       "package": "physics",
-      "disposition": "EXTERNAL-ADAPTER",
+      "disposition": "COMPATIBILITY-ONLY",
       "owner": "@aura3d/physics",
       "decision": "Retain under the package disposition; reassess only with consumer and migration evidence.",
       "files": [
@@ -8690,6 +8830,7 @@
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
@@ -8813,7 +8954,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 417
+      "maintenanceReferenceCount": 418
     },
     {
       "id": "physics-navigation-crowd-steering",
@@ -8844,9 +8985,11 @@
         "apps/aura-clash-showcase/src/GameConfig.ts",
         "docs/api/public-api.md",
         "docs/architecture/1.6-layers.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/physics/runtime.md",
         "docs/project/parity/threejs-r185-surface-inventory.md",
         "docs/project/plans/engine-game-parity-execution-plan.md",
+        "docs/project/plans/final-competitive-execution-ledger.md",
         "packages/animation/src/CrowdAnimation.ts",
         "packages/assets/src/CarConceptMaterialStability.ts",
         "packages/engine/src/agent-api/GameGenreKits.ts",
@@ -8854,11 +8997,33 @@
         "packages/engine/src/agent-api/VehicleDriverAi.ts",
         "packages/physics/src/index.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/engine/racing-signed-track-offset.test.ts",
         "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/index.mjs"
       ],
-      "maintenanceReferenceCount": 21
+      "maintenanceReferenceCount": 24
+    },
+    {
+      "id": "physics-rapier-general",
+      "package": "physics-rapier",
+      "disposition": "EXTERNAL-ADAPTER",
+      "owner": "@aura3d/physics-rapier",
+      "decision": "Retain under the package disposition; reassess only with consumer and migration evidence.",
+      "files": [
+        "packages/physics-rapier/src/index.ts"
+      ],
+      "lines": 160,
+      "bytes": 10533,
+      "compiledCost": {
+        "compiledFiles": 0,
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "brotliBytes": 0,
+        "caveat": "concatenated built modules before application tree-shaking"
+      },
+      "maintenanceReferences": [],
+      "maintenanceReferenceCount": 0
     },
     {
       "id": "product-studio-general",
@@ -8902,11 +9067,12 @@
         "packages/workflows/src/WorkflowTypes.ts",
         "tests/assets/product-studio-product-assets.test.ts",
         "tests/browser/product-studio-app.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/api-docs.test.ts",
         "tools/product-studio-product-readiness/index.ts",
         "tools/product-studio-truth/index.ts"
       ],
-      "maintenanceReferenceCount": 14
+      "maintenanceReferenceCount": 15
     },
     {
       "id": "react-general",
@@ -9836,6 +10002,7 @@
         "tests/performance/webgpu-vs-webgl2-baseline.ts",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/production-bridge-boundary.test.ts",
@@ -10098,7 +10265,7 @@
         "tsconfig.base.json",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 897
+      "maintenanceReferenceCount": 898
     },
     {
       "id": "scene-general",
@@ -10568,6 +10735,7 @@
         "tests/integration/scene-ecs-contracts.test.ts",
         "tests/integration/scripting-scene-ecs.test.ts",
         "tests/reports/developer-friction.json",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/animation-studio/fidelity-tiering.test.ts",
         "tests/unit/animation-studio/prompt-to-scene.test.ts",
         "tests/unit/animation/humanoid-bone-inference.test.ts",
@@ -10659,7 +10827,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 518
+      "maintenanceReferenceCount": 519
     },
     {
       "id": "scripting-general",
@@ -10736,6 +10904,7 @@
         "tests/browser/scripting-browser-harness.ts",
         "tests/browser/visual-scripting-105.spec.ts",
         "tests/integration/scripting-scene-ecs.test.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/game-runtime/behavior-retarget-stretch.test.ts",
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/scripting/behavior-tree.test.ts",
@@ -10752,7 +10921,7 @@
         "tools/visual-scripting-evidence/index.ts",
         "tools/visual-scripting-package-smoke/index.ts"
       ],
-      "maintenanceReferenceCount": 43
+      "maintenanceReferenceCount": 44
     },
     {
       "id": "three-compat-general",
@@ -10798,6 +10967,7 @@
         "packages/three-compat/README.md",
         "tests/browser/three-compat-controls.spec.ts",
         "tests/browser/three-compat-core-compat.spec.ts",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/controls/three-compat-controls.test.ts",
         "tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts",
         "tests/unit/scene/object3d-parity.test.ts",
@@ -10811,7 +10981,7 @@
         "tools/threejs-parity-migration-audit/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 18
+      "maintenanceReferenceCount": 19
     },
     {
       "id": "workflows-general",
@@ -10852,12 +11022,13 @@
       },
       "maintenanceReferences": [
         "docs/api/public-api.md",
+        "tests/reports/final-subsystem-ownership.json",
         "tests/unit/tools/api-docs.test.ts",
         "tools/foundation-workflows-readiness/index.ts",
         "tools/production-runtime-literal-completion/index.ts",
         "tools/production-runtime-package-surface-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 5
+      "maintenanceReferenceCount": 6
     }
   ],
   "externalCandidates": [
@@ -10869,25 +11040,21 @@
       "modified": "2026-08-08T17:52:36.228Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": "git+https://github.com/dimforge/rapier.js.git",
-      "maintainers": [
-        "sebcrozet <developer@crozet.re>"
-      ],
+      "repository": null,
+      "maintainers": null,
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": "rapier.d.ts",
-        "module": "rapier.js",
+        "types": null,
+        "module": null,
         "main": null,
-        "sideEffects": [
-          "./*.js"
-        ],
+        "sideEffects": null,
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": 3,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -10914,7 +11081,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "@dimforge/rapier3d-compat",
@@ -10924,25 +11091,21 @@
       "modified": "2026-08-08T17:54:11.553Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": "git+https://github.com/dimforge/rapier.js.git",
-      "maintainers": [
-        "sebcrozet <developer@crozet.re>"
-      ],
+      "repository": null,
+      "maintainers": null,
       "dependencies": {},
       "moduleShape": {
-        "type": "module",
-        "types": "rapier.d.ts",
-        "module": "rapier.mjs",
-        "main": "rapier.cjs",
-        "sideEffects": [
-          "./snippets/*"
-        ],
+        "type": null,
+        "types": null,
+        "module": null,
+        "main": null,
+        "sideEffects": null,
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": 3,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -10971,7 +11134,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "cannon-es",
@@ -10981,27 +11144,21 @@
       "modified": "2022-08-12T16:46:01.002Z",
       "ageDays": 1457,
       "freshness": "dormant-risk",
-      "repository": "https://github.com/pmndrs/cannon-es.git",
-      "maintainers": [
-        "drcmda <drcmda@gmail.com>",
-        "marcofugaro <marco.fugaro@gmail.com>",
-        "codynova <codyrnova@gmail.com>",
-        "heyo_sean <harringtonsp1@gmail.com>",
-        "stockhuman <mikemingway@gmail.com>"
-      ],
+      "repository": null,
+      "maintainers": null,
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": "./dist/cannon-es.d.ts",
-        "module": "./dist/cannon-es.js",
-        "main": "./dist/cannon-es.cjs.js",
-        "sideEffects": false,
+        "types": null,
+        "module": null,
+        "main": null,
+        "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": 3,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -11030,7 +11187,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "recast-navigation",
@@ -11041,25 +11198,20 @@
       "ageDays": 185,
       "freshness": "active",
       "repository": null,
-      "maintainers": [
-        "isaacmason <isaac@isaacmason.com>"
-      ],
-      "dependencies": {
-        "@recast-navigation/core": "0.43.1",
-        "@recast-navigation/generators": "0.43.1"
-      },
+      "maintainers": null,
+      "dependencies": {},
       "moduleShape": {
-        "type": "module",
-        "types": "./index.d.ts",
-        "module": "./index.mjs",
-        "main": "./index.mjs",
+        "type": null,
+        "types": null,
+        "module": null,
+        "main": null,
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": 3,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -11088,7 +11240,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "howler",
@@ -11098,23 +11250,21 @@
       "modified": "2023-09-19T14:59:40.275Z",
       "ageDays": 1054,
       "freshness": "aging",
-      "repository": "git://github.com/goldfire/howler.js.git",
-      "maintainers": [
-        "goldfire <james@goldfirestudios.com>"
-      ],
+      "repository": null,
+      "maintainers": null,
       "dependencies": {},
       "moduleShape": {
         "type": null,
         "types": null,
         "module": null,
-        "main": "dist/howler.js",
+        "main": null,
         "sideEffects": null,
         "summary": "legacy main bundle; browser audio singleton behavior requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 2,
         "license": 3,
-        "types": 1,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -11143,7 +11293,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "yuka",
@@ -11153,23 +11303,21 @@
       "modified": "2022-09-17T08:45:45.072Z",
       "ageDays": 1421,
       "freshness": "dormant-risk",
-      "repository": "git+https://github.com/Mugen87/yuka.git",
-      "maintainers": [
-        "mugen87 <michael.herzog@human-interactive.org>"
-      ],
+      "repository": null,
+      "maintainers": null,
       "dependencies": {},
       "moduleShape": {
         "type": null,
         "types": null,
-        "module": "build/yuka.module.js",
-        "main": "build/yuka.js",
+        "module": null,
+        "main": null,
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": 1,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -11198,7 +11346,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "bitecs",
@@ -11208,23 +11356,21 @@
       "modified": "2025-12-06T23:15:32.228Z",
       "ageDays": 245,
       "freshness": "active",
-      "repository": "https://github.com/NateTheGreatt/bitECS",
-      "maintainers": [
-        "natethegreatt <natelawl@gmail.com>"
-      ],
+      "repository": null,
+      "maintainers": null,
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": "./dist/core/index.d.ts",
-        "module": "./dist/core/index.min.mjs",
-        "main": "./dist/core/index.min.cjs",
+        "types": null,
+        "module": null,
+        "main": null,
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 1,
-        "types": 3,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -11253,7 +11399,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     },
     {
       "name": "miniplex",
@@ -11264,26 +11410,20 @@
       "ageDays": 1119,
       "freshness": "dormant-risk",
       "repository": null,
-      "maintainers": [
-        "hendrik.mans <hendrik@mans.de>"
-      ],
-      "dependencies": {
-        "@hmans/id": "^0.0.1",
-        "@hmans/queue": "^0.0.1",
-        "@miniplex/bucket": "2.0.0"
-      },
+      "maintainers": null,
+      "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": "dist/miniplex.cjs.d.ts",
-        "module": "dist/miniplex.esm.js",
-        "main": "dist/miniplex.cjs.js",
-        "sideEffects": false,
+        "types": null,
+        "module": null,
+        "main": null,
+        "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": 3,
+        "types": null,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -11312,7 +11452,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": true
+      "onlineLockMatches": null
     }
   ],
   "overlaps": [
@@ -11359,7 +11499,9 @@
   "architectureLock": {
     "baselineCommit": "ce01b95f6a200175b3db7d47f30f8e6fea911018",
     "addedPackageSource": [],
-    "adrMappings": {},
+    "adrMappings": {
+      "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md"
+    },
     "missingAdrMappings": []
   },
   "failures": []

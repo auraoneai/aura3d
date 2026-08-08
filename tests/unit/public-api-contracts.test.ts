@@ -27,6 +27,7 @@ describe("public package API contracts", () => {
     "input",
     "math",
     "physics",
+    "physics-rapier",
     "rendering",
     "scene",
     "scripting"
