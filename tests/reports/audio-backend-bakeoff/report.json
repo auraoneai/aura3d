@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.audio-backend-bakeoff/1.0",
-  "generatedAt": "2026-08-08T21:34:49.484Z",
+  "generatedAt": "2026-08-08T22:13:55.204Z",
   "pass": true,
   "decision": "Keep one direct Web Audio owner in @aura3d/audio; reject Howler because it would duplicate context, cache, playback, spatial, and unlock ownership required by the retained Aura semantic layer.",
   "consumers": [
@@ -47,7 +47,7 @@
       "status": "selected-browser-standard",
       "workloadBundle": {
         "rawBytes": 8641,
-        "gzipBytes": 2842,
+        "gzipBytes": 2841,
         "brotliBytes": 2509
       },
       "chrome": {
@@ -123,10 +123,6 @@
     "routeLocalContextOwners": [],
     "routeLocalPlaybackRemoved": true
   },
-  "fixtureMigrationQueue": [
-    "AdaptiveMusicFixtures.ts",
-    "AudioEffectsAnalysisFixtures.ts",
-    "SpatialAudioFixtures.ts"
-  ],
+  "fixtureMigrationQueue": [],
   "claimBoundary": "Browser lifecycle and synthetic short-buffer playback evidence; no claim about every device, codec, or production mix."
 }

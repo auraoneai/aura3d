@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.external-candidate-package-audit/1.0",
-  "generatedAt": "2026-08-08T20:36:20.288Z",
+  "generatedAt": "2026-08-08T22:11:59.450Z",
   "pass": true,
   "claimBoundary": "Install/package/security and all-export bundle evidence only. It does not select an engine or replace Phase 2 browser workload bake-offs.",
   "environment": {
@@ -21,19 +21,19 @@
   "packages": [
     {
       "name": "@dimforge/rapier3d",
-      "version": "0.19.3",
+      "version": "0.20.0",
       "tarball": {
-        "filename": "dimforge-rapier3d-0.19.3.tgz",
-        "packageBytes": 781538,
-        "unpackedBytes": 2872353,
+        "filename": "dimforge-rapier3d-0.20.0.tgz",
+        "packageBytes": 985990,
+        "unpackedBytes": 3487655,
         "fileCount": 172,
-        "integrity": "sha512-tkD1tvHTDML0W9s9rUYAsx0btO9LbVTnMBKJWVgOsas5haGFbYY+pzr5hbwYysv/IJmgmMrIFoVWIcsaCUE9ow==",
-        "shasum": "eca704398f98e1740f5e5c823654e340d96d1c58",
-        "sha256": "f23ae1729ffaab2ae14226c0f10a714a8435df4676c260db873e3003d0f7a8fa"
+        "integrity": "sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==",
+        "shasum": "554254dd5f335aa9613c04fb207ebe40a9353e44",
+        "sha256": "eb735548b8d4e1ab51777e935148ba47166094e3c81b845e2b146a017ea29767"
       },
       "allExportBrowserBundle": {
         "pass": false,
-        "error": "✘ [ERROR] No loader is configured for \".wasm\" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm\n\n    node_modules/@dimforge/rapier3d/rapier_wasm3d.js:1:22:\n      1 │ import * as wasm from \"./rapier_wasm3d_bg.wasm\";\n        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~"
+        "error": "✘ [ERROR] No loader is configured for \".wasm\" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm\n\n    node_modules/@dimforge/rapier3d/rapier_wasm3d.js:2:22:\n      2 │ import * as wasm from \"./rapier_wasm3d_bg.wasm\";\n        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~"
       },
       "security": {
         "vulnerable": false
@@ -41,21 +41,21 @@
     },
     {
       "name": "@dimforge/rapier3d-compat",
-      "version": "0.19.3",
+      "version": "0.20.0",
       "tarball": {
-        "filename": "dimforge-rapier3d-compat-0.19.3.tgz",
-        "packageBytes": 2602383,
-        "unpackedBytes": 8209064,
-        "fileCount": 50,
-        "integrity": "sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==",
-        "shasum": "b7092f4c75e696750c817c9ff6046a8d13015864",
-        "sha256": "09c411bc02d85a2bcf9b2cb01b55fca2edcb6fad52e1e093ddafd25d66db087c"
+        "filename": "dimforge-rapier3d-compat-0.20.0.tgz",
+        "packageBytes": 3316431,
+        "unpackedBytes": 10170768,
+        "fileCount": 52,
+        "integrity": "sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==",
+        "shasum": "a3e5ab3dd0f13d28a6933589b8b8a869c63574ee",
+        "sha256": "36e2ce7b5879d29d36915ec532720afb84b1fd2b58f7ed08308598d747a1908f"
       },
       "allExportBrowserBundle": {
         "pass": true,
-        "rawBytes": 2281435,
-        "gzipBytes": 838598,
-        "brotliBytes": 616289
+        "rawBytes": 2906439,
+        "gzipBytes": 1088423,
+        "brotliBytes": 797888
       },
       "security": {
         "vulnerable": false

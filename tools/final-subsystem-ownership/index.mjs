@@ -44,8 +44,8 @@ const overrides = [
 ];
 
 const externalLocks = {
-  "@dimforge/rapier3d": ["0.19.3", "sha512-tkD1tvHTDML0W9s9rUYAsx0btO9LbVTnMBKJWVgOsas5haGFbYY+pzr5hbwYysv/IJmgmMrIFoVWIcsaCUE9ow==", "Apache-2.0", "2026-08-08T17:52:36.228Z"],
-  "@dimforge/rapier3d-compat": ["0.19.3", "sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==", "Apache-2.0", "2026-08-08T17:54:11.553Z"],
+  "@dimforge/rapier3d": ["0.20.0", "sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==", "Apache-2.0", "2026-08-08T22:04:29.667Z"],
+  "@dimforge/rapier3d-compat": ["0.20.0", "sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==", "Apache-2.0", "2026-08-08T22:07:07.640Z"],
   "cannon-es": ["0.20.0", "sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==", "MIT", "2022-08-12T16:46:01.002Z"],
   "recast-navigation": ["0.43.1", "sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A==", "MIT", "2026-02-04T13:50:20.423Z"],
   howler: ["2.2.4", "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==", "MIT", "2023-09-19T14:59:40.275Z"],

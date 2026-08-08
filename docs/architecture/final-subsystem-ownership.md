@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `129432073eb95e386a07cc456e9e3ad5fde210df`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `fc122e51349d8b467ae0457051841222032c87b0`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -12,7 +12,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/apps` | `AURA-MOAT` | 162 | 16 | 1 | 1190 | yes |
 | `@aura3d/asset-index` | `AURA-MOAT` | 3438 | 35 | 1 | 24286 | yes |
 | `@aura3d/assets` | `AURA-MOAT` | 15823 | 88 | 3 | 109159 | yes |
-| `@aura3d/audio` | `BROWSER-STANDARD` | 2291 | 19 | 1 | 13124 | yes |
+| `@aura3d/audio` | `BROWSER-STANDARD` | 1696 | 19 | 1 | 13124 | yes |
 | `@aura3d/cli` | `AURA-MOAT` | 8756 | 32 | 1 | 78405 | yes |
 | `@aura3d/controls` | `AURA-CORE` | 2389 | 14 | 1 | 14931 | yes |
 | `@aura3d/core` | `AURA-CORE` | 1186 | 52 | 1 | 7644 | yes |
@@ -43,17 +43,16 @@ Every package source file is assigned exactly once. General rows inherit the pac
 
 | Subsystem | Package | Disposition | Files | Lines | Built gzip | Maintenance refs | Decision |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 199 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 200 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `apps-general` | `apps` | `AURA-MOAT` | 1 | 162 | 1190 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 1 | 65 | 674 | 5 | Remove evidence-only source from the published runtime after consumer proof. |
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `assets-general` | `assets` | `AURA-MOAT` | 61 | 15758 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1711 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `audio-evidence-fixtures` | `audio` | `EVIDENCE-ONLY` | 3 | 580 | 4538 | 7 | Move non-runtime fixtures out of the published audio package. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 789 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1696 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 790 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 68 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 201 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 202 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 87 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 4 | Move fixtures out of the optional editor runtime. |
@@ -87,8 +86,8 @@ A metadata score is not a selection. Runtime, bundle, determinism, disposal, wor
 
 | Candidate | Version | License | Modified | Freshness | Integrity | Exit-risk note |
 | --- | --- | --- | --- | --- | --- | --- |
-| `@dimforge/rapier3d` | `0.19.3` | Apache-2.0 | 2026-08-08 | active | `sha512-tkD1tvHTDML0W9s9rUYAsx0btO9LbVTnMBKJWVgOsas5haGFbYY+pzr5hbwYysv/IJmgmMrIFoVWIcsaCUE9ow==` | medium until adapter boundary is proven; tarball 781538 B; all-export browser gzip requires explicit WASM loader (✘ [ERROR] No loader is configured for ".wasm" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm      node_modules/@dimforge/rapier3d/rapier_wasm3d.js:1:22:       1 │ import * as wasm from "./rapier_wasm3d_bg.wasm";         ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~); isolated npm audit 0 vulnerabilities |
-| `@dimforge/rapier3d-compat` | `0.19.3` | Apache-2.0 | 2026-08-08 | active | `sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==` | medium until adapter boundary is proven; tarball 2602383 B; all-export browser gzip 838598 B; isolated npm audit 0 vulnerabilities |
+| `@dimforge/rapier3d` | `0.20.0` | Apache-2.0 | 2026-08-08 | active | `sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==` | medium until adapter boundary is proven; tarball 985990 B; all-export browser gzip requires explicit WASM loader (✘ [ERROR] No loader is configured for ".wasm" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm      node_modules/@dimforge/rapier3d/rapier_wasm3d.js:2:22:       2 │ import * as wasm from "./rapier_wasm3d_bg.wasm";         ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~); isolated npm audit 0 vulnerabilities |
+| `@dimforge/rapier3d-compat` | `0.20.0` | Apache-2.0 | 2026-08-08 | active | `sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==` | medium until adapter boundary is proven; tarball 3316431 B; all-export browser gzip 1088423 B; isolated npm audit 0 vulnerabilities |
 | `cannon-es` | `0.20.0` | MIT | 2022-08-12 | dormant-risk | `sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==` | high; tarball 164649 B; all-export browser gzip 62507 B; isolated npm audit 0 vulnerabilities |
 | `recast-navigation` | `0.43.1` | MIT | 2026-02-04 | active | `sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A==` | medium until adapter boundary is proven; tarball 9302 B; all-export browser gzip 258473 B; isolated npm audit 0 vulnerabilities |
 | `howler` | `2.2.4` | MIT | 2023-09-19 | aging | `sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==` | medium until adapter boundary is proven; tarball 72709 B; all-export browser gzip 15336 B; isolated npm audit 0 vulnerabilities |

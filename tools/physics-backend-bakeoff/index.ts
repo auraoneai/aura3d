@@ -355,7 +355,7 @@ async function measureRapier(): Promise<BackendReport> {
     RAPIER = mod;
   } catch (error) {
     return {
-      id: "rapier", label: "Rapier (@dimforge/rapier3d-compat)", version: "0.19.3", license: "Apache-2.0",
+      id: "rapier", label: "Rapier (@dimforge/rapier3d-compat)", version: "0.20.0", license: "Apache-2.0",
       bundleGzipBytes: await measureBundle("rapier", `import RAPIER from "@dimforge/rapier3d-compat";await RAPIER.init();const w=new RAPIER.World({x:0,y:-9.81,z:0});globalThis.__k=w;`),
       initMs: unmeasured(`init() threw: ${(error as Error).message.split("\n")[0]}`), wasm: true,
       stepMsPer1000Bodies: unmeasured("init failed"), scaling: unmeasured("init failed"),
@@ -477,7 +477,7 @@ async function measureRapier(): Promise<BackendReport> {
   notes.push(`Ships KinematicCharacterController=${hasChar}, DynamicRayCastVehicleController=${hasVehicle} — the two subsystems Aura3D hand-wrote.`);
 
   return {
-    id: "rapier", label: "Rapier (@dimforge/rapier3d-compat)", version: "0.19.3", license: "Apache-2.0",
+    id: "rapier", label: "Rapier (@dimforge/rapier3d-compat)", version: "0.20.0", license: "Apache-2.0",
     bundleGzipBytes: await measureBundle("rapier", `import RAPIER from "@dimforge/rapier3d-compat";await RAPIER.init();const w=new RAPIER.World({x:0,y:-9.81,z:0});const b=w.createRigidBody(RAPIER.RigidBodyDesc.dynamic());w.createCollider(RAPIER.ColliderDesc.ball(1),b);w.createImpulseJoint(RAPIER.JointData.spherical({x:0,y:0,z:0},{x:0,y:0,z:0}),b,b,true);w.step();globalThis.__k=[w,RAPIER.KinematicCharacterController,RAPIER.DynamicRayCastVehicleController];`),
     initMs: ok(initMs), wasm: true,
     stepMsPer1000Bodies: ok(stepMs),
@@ -738,7 +738,7 @@ async function main(): Promise<void> {
     optionalTopologyVerdict: {
       measured: true,
       topology: "Physical simulation is an explicitly installed, asynchronously initialized optional package. Core, product, and authored-unit arcade bundles import no rigid-body engine.",
-      selected: "@dimforge/rapier3d-compat@0.19.3 as an asynchronously loaded optional chunk; the non-compat raw-WASM entry requires unsupported consumer-specific Vite configuration",
+      selected: "@dimforge/rapier3d-compat@0.20.0 as an asynchronously loaded optional chunk; the non-compat raw-WASM entry requires unsupported consumer-specific Vite configuration",
       rationale: "Rapier is current, supplies native CCD plus character and vehicle controllers, supports the required worker topology, is materially more stable, and measures 0.295/1.266/4.081 ms per step at 220/1000/5000 bodies versus Cannon's 1.651/12.782/402.291 ms. Its larger payload is isolated from non-physical bundles rather than used to reject the stronger solver.",
       semver: "Major unless the async initialization and physical-result migration are proven source- and behavior-compatible.",
       adr: "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md"

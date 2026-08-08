@@ -13,8 +13,8 @@ loaded package. Its payload must be measured and disclosed, but it no longer
 competes with the core/product bundle or the explicitly non-physical arcade
 runtime.
 
-The current rerun uses Cannon 0.20.0 and Rapier 0.19.3. Both are exact locks.
-Cannon's last npm modification is 2022-08-12; Rapier 0.19.3 was modified on
+The current rerun uses Cannon 0.20.0 and Rapier 0.20.0. Both are exact locks.
+Cannon's last npm modification is 2022-08-12; Rapier 0.20.0 was modified on
 2026-08-08. The isolated eight-candidate lockfile has zero npm audit findings.
 
 ## The four R11 questions
@@ -34,7 +34,7 @@ Cannon's last npm modification is 2022-08-12; Rapier 0.19.3 was modified on
 
 ## Decision
 
-1. Select `@dimforge/rapier3d-compat@0.19.3` as the sole new
+1. Select `@dimforge/rapier3d-compat@0.20.0` as the sole new
    physical-simulation engine. The smaller non-compat package was measured, but
    its npm entry imports raw `.wasm` and does not resolve in the supported Vite
    toolchain without application-specific loader configuration. The compat
@@ -59,21 +59,21 @@ Cannon's last npm modification is 2022-08-12; Rapier 0.19.3 was modified on
 
 ## Measured basis
 
-| Dimension | Cannon 0.20.0 | Rapier 0.19.3 |
+| Dimension | Cannon 0.20.0 | Rapier 0.20.0 |
 | --- | ---: | ---: |
-| All-export/physics gzip | 26,893 B | 835,217 B compat; 610,241 B non-compat glue + separate WASM |
-| Initialization in the Node harness | 21.61 ms | 64.87 ms WASM |
-| 220 dynamic bodies | 1.651 ms/step | 0.295 ms/step |
-| 1,000 dynamic bodies | 12.782 ms/step | 1.266 ms/step |
-| 5,000 dynamic bodies | 402.291 ms/step | 4.081 ms/step |
-| Five-box stack drift | 0.11052 | 0.00286 |
+| All-export/physics gzip | 26,893 B | 1,084,237 B compat; raw-WASM entry requires an explicit consumer loader |
+| Initialization in the Node harness | 18.52 ms | 37.38 ms WASM |
+| 220 dynamic bodies | 0.920 ms/step | 0.048 ms/step |
+| 1,000 dynamic bodies | 5.507 ms/step | 0.206 ms/step |
+| 5,000 dynamic bodies | 99.685 ms/step | 1.661 ms/step |
+| Five-box stack drift | 0.11052 | 0.00112 |
 | Native 400 m/s CCD | tunnels | stops at y=0.149 |
 | Character controller | absent; Aura-owned | constructed and disposed |
 | Vehicle controller | constructed RaycastVehicle | constructed and disposed DynamicRayCastVehicleController |
 | Worker-oriented state | no documented transferable path | WASM linear memory topology |
 
-At the measured 220-body route ceiling Rapier uses about 1.8% of a 60 fps frame
-and Cannon uses 9.9%. At 5,000 bodies Rapier remains within a frame while Cannon
+At the measured 220-body route ceiling Rapier uses about 0.3% of a 60 fps frame
+and Cannon uses 5.5%. At 5,000 bodies Rapier remains within a frame while Cannon
 does not. Rapier's download is much larger; making it optional and separately
 cacheable is therefore part of the decision, not an implementation detail.
 

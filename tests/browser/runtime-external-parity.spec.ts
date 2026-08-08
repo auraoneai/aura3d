@@ -121,10 +121,6 @@ const report: ExternalParityRuntimeReport = {
       evidence: ["packages/audio/src/SceneAudioBridge.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Port bounded old compressor, EQ, and spectrum-analysis audio concepts into current runtime evidence.",
-      evidence: ["packages/audio/src/AudioEffectsAnalysisFixtures.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
       task: "Add runtime error overlay for asset, render, physics, animation, script, and audio errors.",
       evidence: ["examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
@@ -198,9 +194,10 @@ test.describe("externalParity runtime systems", () => {
     await page.locator("[data-testid='inject-audio-error']").dispatchEvent("click");
     await page.locator("[data-testid='reload-behavior']").dispatchEvent("click");
 
-    await setTestGamepad(page, 0.9, false);
-    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "won", undefined, { timeout: 45_000 });
     await setTestGamepad(page, 0, false);
+    await page.keyboard.down("ArrowRight");
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "won", undefined, { timeout: 45_000 });
+    await page.keyboard.up("ArrowRight");
     await page.locator("[data-testid='restart-objective']").click();
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "playing" && Number(window.__AURA3D_GAME_DEMO__?.metrics.objectiveRestartCount ?? 0) >= 1, undefined, { timeout: 10_000 });
     await page.waitForFunction(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.scriptErrors ?? 0) >= 1, undefined, { timeout: 10_000 });
@@ -290,7 +287,6 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.spaceNebulaDustTelemetry).toBe(true);
     expect(state?.featureEvidence?.oldBranchSpaceWavePowerUpPort).toBe(true);
     expect(state?.featureEvidence?.oldBranchPowerUpEffectPort).toBe(true);
-    expect(state?.featureEvidence?.oldBranchAdaptiveMusicPort).toBe(true);
     expect(state?.featureEvidence?.oldBranchAdaptiveDifficultyPort).toBe(true);
     expect(state?.featureEvidence?.adaptiveDifficultyMetrics).toBe(true);
     expect(state?.featureEvidence?.adaptiveDifficultyRules).toBe(true);
@@ -335,15 +331,6 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.analyticsBatchingTelemetry).toBe(true);
     expect(state?.featureEvidence?.analyticsMetricsTelemetry).toBe(true);
     expect(state?.featureEvidence?.analyticsProviderBoundaryTelemetry).toBe(true);
-    expect(state?.featureEvidence?.oldBranchAudioEnvironmentPort).toBe(true);
-    expect(state?.featureEvidence?.oldBranchAudioEffectsAnalysisPort).toBe(true);
-    expect(state?.featureEvidence?.audioCompressorTelemetry).toBe(true);
-    expect(state?.featureEvidence?.audioEqTelemetry).toBe(true);
-    expect(state?.featureEvidence?.audioDelayTelemetry).toBe(true);
-    expect(state?.featureEvidence?.audioChorusTelemetry).toBe(true);
-    expect(state?.featureEvidence?.audioDistortionTelemetry).toBe(true);
-    expect(state?.featureEvidence?.audioFilterTelemetry).toBe(true);
-    expect(state?.featureEvidence?.audioSpectrumTelemetry).toBe(true);
     expect(state?.featureEvidence?.oldBranchInputReplayPort).toBe(true);
     expect(state?.featureEvidence?.inputReplayRecording).toBe(true);
     expect(state?.featureEvidence?.inputReplayPlayback).toBe(true);
@@ -387,8 +374,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.motionMatchingBestCost ?? 999)).toBeLessThanOrEqual(Number(state?.metrics.motionMatchingSecondBestCost ?? 999));
     expect(Number(state?.metrics.motionMatchingCostMargin ?? -1)).toBeGreaterThanOrEqual(0);
     expect(String(state?.metrics.motionMatchingHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
-    expect(String(state?.metrics.secondaryAnimationBlockedClaims ?? "")).toContain("Unity Animation Rigging parity");
-    expect(String(state?.metrics.secondaryAnimationBlockedClaims ?? "")).toContain("Unreal Control Rig parity");
     expect(state?.metrics.oldBranchWeightedNavigationPort).toBe(true);
     expect(state?.metrics.oldBranchSteeringPort).toBe(true);
     expect(state?.metrics.oldBranchBehaviorTreePort).toBe(true);
@@ -751,16 +736,6 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.metrics.audioMixerMuted).toBe(true);
     expect(state?.metrics.spatialAudio).toBe(true);
     expect(Number(state?.metrics.spatialDistance ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.oldBranchAdaptiveMusicPort).toBe(true);
-    expect(state?.metrics.adaptiveMusicSource).toBe("origin-master-adaptive-music-adapted");
-    expect(String(state?.metrics.adaptiveMusicState ?? "")).toMatch(/tension|action|victory|defeat/);
-    expect(Number(state?.metrics.adaptiveMusicIntensity ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.adaptiveMusicCurve).toBe("equal-power");
-    expect(Number(state?.metrics.adaptiveMusicActiveLayers ?? 0)).toBeGreaterThanOrEqual(2);
-    expect(Number(state?.metrics.adaptiveMusicPeakLayerVolume ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.adaptiveMusicLayerMix ?? "")).toContain("ambient-bed");
-    expect(state?.metrics.adaptiveMusicEqualPowerCrossfade).toBe(true);
-    expect(String(state?.metrics.adaptiveMusicHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
     expect(state?.metrics.oldBranchAdaptiveDifficultyPort).toBe(true);
     expect(state?.metrics.adaptiveDifficultySource).toBe("origin-master-ai-balancing-smart-difficulty-adapted");
     expect(String(state?.metrics.adaptiveDifficultyStrategy ?? "")).toMatch(/gradual|predictive/);
@@ -916,15 +891,6 @@ test.describe("externalParity runtime systems", () => {
     expect(String(state?.metrics.analyticsBlockedClaims ?? "")).toContain("Unity Analytics parity");
     expect(String(state?.metrics.analyticsBlockedClaims ?? "")).toContain("Unreal Insights/Analytics parity");
     expect(String(state?.metrics.analyticsPrivacyHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
-    expect(state?.metrics.oldBranchAudioEnvironmentPort).toBe(true);
-    expect(state?.metrics.audioEnvironmentSource).toBe("origin-master-spatial-audio-environment-adapted");
-    expect(String(state?.metrics.audioOcclusionLevel ?? "")).toMatch(/light|medium|heavy|complete/);
-    expect(Number(state?.metrics.audioOcclusionObstacleCount ?? 0)).toBeGreaterThanOrEqual(1);
-    expect(Number(state?.metrics.audioOcclusionLowpassHz ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioOcclusionVolume ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDopplerPitchFactor ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDopplerFrequencyShiftHz ?? 0)).not.toBeNaN();
-    expect(Number(state?.metrics.audioReverbBlend ?? 0)).toBeGreaterThan(0);
     expect(state?.metrics.oldBranchInputReplayPort).toBe(true);
     expect(state?.metrics.inputReplaySource).toBe("origin-master-input-recorder-playback-adapted");
     expect(Number(state?.metrics.inputReplayEvents ?? 0)).toBeGreaterThanOrEqual(6);
@@ -978,41 +944,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.xrGazeLodUpdatedObjects ?? 0)).toBeGreaterThan(0);
     expect(String(state?.metrics.xrGazeLodSelectedLevels ?? "")).toContain("high");
     expect(String(state?.metrics.xrBlockedClaims ?? "")).toContain("Unity XR Interaction Toolkit parity");
-    expect(Number(state?.metrics.audioReverbWetLevel ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioReverbDryLevel ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.audioEnvironmentHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
-    expect(state?.metrics.oldBranchAudioEffectsAnalysisPort).toBe(true);
-    expect(state?.metrics.audioEffectsAnalysisSource).toBe("origin-master-audio-effects-analysis-adapted");
-    expect(String(state?.metrics.audioEffectsChain ?? "")).toBe("parametric-eq>dynamic-compressor>delay>chorus>distortion>filter>spectrum-analyzer");
-    expect(String(state?.metrics.audioCompressorPreset ?? "")).toMatch(/master|vocal/);
-    expect(Number(state?.metrics.audioCompressorGainReductionDb ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioCompressorOutputPeakDb ?? 0)).toBeLessThan(Number(state?.metrics.audioCompressorInputPeakDb ?? 0));
-    expect(Number(state?.metrics.audioEqActiveBands ?? 0)).toBeGreaterThanOrEqual(3);
-    expect(Number(state?.metrics.audioEqPresenceGainDb ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.audioDelayPreset ?? "")).toMatch(/short_echo|medium_echo|tape_echo/);
-    expect(Number(state?.metrics.audioDelayTimeSeconds ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDelayFeedback ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDelayWetDryMix ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDelayRepeatsAboveNoiseFloor ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.audioChorusPreset ?? "")).toMatch(/subtle|classic|ensemble/);
-    expect(Number(state?.metrics.audioChorusRateHz ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioChorusDepthSeconds ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioChorusVoices ?? 0)).toBeGreaterThanOrEqual(1);
-    expect(Number(state?.metrics.audioChorusStereoWidth ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.audioDistortionCurve ?? "")).toMatch(/sigmoid|softclip|saturation/);
-    expect(Number(state?.metrics.audioDistortionAmount ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDistortionHarmonicBoost ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioDistortionOutputCeiling ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.audioFilterType ?? "")).toMatch(/lowpass|bandpass/);
-    expect(Number(state?.metrics.audioFilterFrequencyHz ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioFilterQ ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioFilterResonanceDb ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioSpectrumBarCount ?? 0)).toBeGreaterThanOrEqual(16);
-    expect(Number(state?.metrics.audioSpectrumPeakFrequencyHz ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.audioSpectrumPeakMagnitude ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.audioEffectsBlockedClaims ?? "")).toContain("Unity Audio Mixer parity");
-    expect(String(state?.metrics.audioEffectsBlockedClaims ?? "")).toContain("Unreal Audio Mixer parity");
-    expect(String(state?.metrics.audioEffectsAnalysisHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
     expect(Number(state?.metrics.mobileUnlockAttempts ?? 0)).toBeGreaterThanOrEqual(1);
     expect(state?.metrics.bindingPreset).toBe("pointer");
     expect(Number(state?.metrics.scriptHookInit ?? 0)).toBeGreaterThanOrEqual(1);

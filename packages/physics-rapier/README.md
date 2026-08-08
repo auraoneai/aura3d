@@ -1,7 +1,7 @@
 # @aura3d/physics-rapier
 
 Optional physical simulation for Aura3D, backed by exact
-`@dimforge/rapier3d-compat@0.19.3`. The package is asynchronous and optional.
+`@dimforge/rapier3d-compat@0.20.0`. The package is asynchronous and optional.
 The compat build is selected because it is portable across the supported
 bundlers without requiring each application to configure a raw-WASM loader; its
 larger lazy payload is disclosed by the retained bundle report.

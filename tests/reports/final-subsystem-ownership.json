@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T22:01:23.431Z",
+  "generatedAt": "2026-08-08T22:13:24.483Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "129432073eb95e386a07cc456e9e3ad5fde210df",
+  "sourceCommit": "fc122e51349d8b467ae0457051841222032c87b0",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -15,8 +15,8 @@
     "external-consumer and clean-room tests"
   ],
   "packageCount": 28,
-  "subsystemCount": 37,
-  "sourceFilesClassified": 901,
+  "subsystemCount": 36,
+  "sourceFilesClassified": 898,
   "packages": [
     {
       "package": "animation",
@@ -167,6 +167,7 @@
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/animation-crowd-baseline.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/descriptor-assets-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/animation/physics-capsule-locomotion.test.ts",
@@ -207,7 +208,7 @@
         "source": 74,
         "dynamicImport": 9,
         "route": 24,
-        "fixture": 18,
+        "fixture": 19,
         "cliOrGenerator": 7,
         "docs": 13,
         "externalConsumer": 1
@@ -215,7 +216,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 44,
-        "testMentions": 18,
+        "testMentions": 19,
         "docsMentions": 13
       }
     },
@@ -617,6 +618,7 @@
           "tests/fixtures/visual-examples/postprocess-lab/main.ts",
           "tests/performance/asset-load-performance.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/descriptor-assets-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/public-api-contracts.test.ts",
@@ -663,7 +665,7 @@
         "source": 88,
         "dynamicImport": 11,
         "route": 31,
-        "fixture": 23,
+        "fixture": 24,
         "cliOrGenerator": 20,
         "docs": 7,
         "externalConsumer": 0
@@ -671,7 +673,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 62,
-        "testMentions": 23,
+        "testMentions": 24,
         "docsMentions": 7
       }
     },
@@ -681,8 +683,8 @@
       "published": true,
       "disposition": "BROWSER-STANDARD",
       "source": {
-        "lines": 2291,
-        "bytes": 79256
+        "lines": 1696,
+        "bytes": 55494
       },
       "dist": {
         "jsFiles": 19,
@@ -769,7 +771,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 19,
+        "sourceFiles": 16,
         "testMentions": 10,
         "docsMentions": 6
       }
@@ -2844,7 +2846,7 @@
       ],
       "publicExportBlocksImmediateRemoval": true,
       "dependencies": {
-        "@dimforge/rapier3d-compat": "0.19.3"
+        "@dimforge/rapier3d-compat": "0.20.0"
       },
       "consumers": {
         "source": [
@@ -4479,6 +4481,7 @@
         "tests/performance/animation-crowd-baseline.ts",
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -4538,7 +4541,7 @@
         "tools/threejs-parity-threejs-inventory/index.ts",
         "tools/webgpu-feature-matrix/index.ts"
       ],
-      "maintenanceReferenceCount": 199
+      "maintenanceReferenceCount": 200
     },
     {
       "id": "apps-general",
@@ -5078,8 +5081,8 @@
         "packages/audio/src/effects/Reverb.ts",
         "packages/audio/src/index.ts"
       ],
-      "lines": 1711,
-      "bytes": 56284,
+      "lines": 1696,
+      "bytes": 55494,
       "compiledCost": {
         "compiledFiles": 16,
         "rawBytes": 39278,
@@ -5121,37 +5124,6 @@
         "tools/requirements-trace/index.ts"
       ],
       "maintenanceReferenceCount": 31
-    },
-    {
-      "id": "audio-evidence-fixtures",
-      "package": "audio",
-      "disposition": "EVIDENCE-ONLY",
-      "owner": "tests/tools",
-      "decision": "Move non-runtime fixtures out of the published audio package.",
-      "files": [
-        "packages/audio/src/AdaptiveMusicFixtures.ts",
-        "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
-        "packages/audio/src/SpatialAudioFixtures.ts"
-      ],
-      "lines": 580,
-      "bytes": 22972,
-      "compiledCost": {
-        "compiledFiles": 3,
-        "rawBytes": 16488,
-        "gzipBytes": 4538,
-        "brotliBytes": 4018,
-        "caveat": "concatenated built modules before application tree-shaking"
-      },
-      "maintenanceReferences": [
-        "docs/api/public-api.md",
-        "packages/audio/src/index.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/reports/audio-backend-bakeoff/report.json",
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tools/audio-backend-bakeoff/index.ts"
-      ],
-      "maintenanceReferenceCount": 7
     },
     {
       "id": "aura3d-cli-general",
@@ -5802,6 +5774,7 @@
         "tests/performance/system-baselines.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/current-threejs-baseline.json",
+        "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
@@ -5992,7 +5965,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 789
+      "maintenanceReferenceCount": 790
     },
     {
       "id": "controls-general",
@@ -6436,6 +6409,7 @@
         "tests/fixtures/showcase-spec/turbo-drift-racing.json",
         "tests/fixtures/showcase-spec/webgpu-overclaim.json",
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
+        "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -6501,7 +6475,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 201
+      "maintenanceReferenceCount": 202
     },
     {
       "id": "debug-general",
@@ -8254,6 +8228,7 @@
         "docs/api/prompt-animation.md",
         "docs/api/public-api.md",
         "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
+        "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
         "docs/architecture/adr/README.md",
         "docs/architecture/extension-points.md",
         "docs/architecture/final-subsystem-ownership.md",
@@ -8341,7 +8316,6 @@
         "packages/assets/tests/assets.test.ts",
         "packages/audio/README.md",
         "packages/audio/src/AudioBus.ts",
-        "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
         "packages/audio/src/AudioSource.ts",
         "packages/audio/src/SceneAudioBridge.ts",
         "packages/audio/tests/audio.test.ts",
@@ -9747,6 +9721,7 @@
         "docs/api/prompt-animation.md",
         "docs/api/public-api.md",
         "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
+        "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
         "docs/architecture/adr/README.md",
         "docs/architecture/extension-points.md",
         "docs/architecture/final-subsystem-ownership.md",
@@ -9834,7 +9809,6 @@
         "packages/assets/tests/assets.test.ts",
         "packages/audio/README.md",
         "packages/audio/src/AudioBus.ts",
-        "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
         "packages/audio/src/AudioSource.ts",
         "packages/audio/src/SceneAudioBridge.ts",
         "packages/audio/tests/audio.test.ts",
@@ -13929,13 +13903,13 @@
   "externalCandidates": [
     {
       "name": "@dimforge/rapier3d",
-      "version": "0.19.3",
-      "integrity": "sha512-tkD1tvHTDML0W9s9rUYAsx0btO9LbVTnMBKJWVgOsas5haGFbYY+pzr5hbwYysv/IJmgmMrIFoVWIcsaCUE9ow==",
+      "version": "0.20.0",
+      "integrity": "sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==",
       "license": "Apache-2.0",
-      "modified": "2026-08-08T17:52:36.228Z",
+      "modified": "2026-08-08T22:04:29.667Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": "git+https://github.com/dimforge/rapier.js.git",
+      "repository": "git+https://github.com/dimforge/rapier.git",
       "maintainers": [
         "sebcrozet <developer@crozet.re>"
       ],
@@ -13962,19 +13936,19 @@
       },
       "packageAudit": {
         "name": "@dimforge/rapier3d",
-        "version": "0.19.3",
+        "version": "0.20.0",
         "tarball": {
-          "filename": "dimforge-rapier3d-0.19.3.tgz",
-          "packageBytes": 781538,
-          "unpackedBytes": 2872353,
+          "filename": "dimforge-rapier3d-0.20.0.tgz",
+          "packageBytes": 985990,
+          "unpackedBytes": 3487655,
           "fileCount": 172,
-          "integrity": "sha512-tkD1tvHTDML0W9s9rUYAsx0btO9LbVTnMBKJWVgOsas5haGFbYY+pzr5hbwYysv/IJmgmMrIFoVWIcsaCUE9ow==",
-          "shasum": "eca704398f98e1740f5e5c823654e340d96d1c58",
-          "sha256": "f23ae1729ffaab2ae14226c0f10a714a8435df4676c260db873e3003d0f7a8fa"
+          "integrity": "sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==",
+          "shasum": "554254dd5f335aa9613c04fb207ebe40a9353e44",
+          "sha256": "eb735548b8d4e1ab51777e935148ba47166094e3c81b845e2b146a017ea29767"
         },
         "allExportBrowserBundle": {
           "pass": false,
-          "error": "✘ [ERROR] No loader is configured for \".wasm\" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm\n\n    node_modules/@dimforge/rapier3d/rapier_wasm3d.js:1:22:\n      1 │ import * as wasm from \"./rapier_wasm3d_bg.wasm\";\n        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~"
+          "error": "✘ [ERROR] No loader is configured for \".wasm\" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm\n\n    node_modules/@dimforge/rapier3d/rapier_wasm3d.js:2:22:\n      2 │ import * as wasm from \"./rapier_wasm3d_bg.wasm\";\n        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~"
         },
         "security": {
           "vulnerable": false
@@ -13984,25 +13958,23 @@
     },
     {
       "name": "@dimforge/rapier3d-compat",
-      "version": "0.19.3",
-      "integrity": "sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==",
+      "version": "0.20.0",
+      "integrity": "sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==",
       "license": "Apache-2.0",
-      "modified": "2026-08-08T17:54:11.553Z",
+      "modified": "2026-08-08T22:07:07.640Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": "git+https://github.com/dimforge/rapier.js.git",
+      "repository": "git+https://github.com/dimforge/rapier.git",
       "maintainers": [
         "sebcrozet <developer@crozet.re>"
       ],
       "dependencies": {},
       "moduleShape": {
-        "type": "module",
-        "types": "rapier.d.ts",
-        "module": "rapier.mjs",
-        "main": "rapier.cjs",
-        "sideEffects": [
-          "./snippets/*"
-        ],
+        "type": null,
+        "types": "dist/rapier.d.ts",
+        "module": "dist/rapier.mjs",
+        "main": "dist/rapier.cjs",
+        "sideEffects": false,
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
@@ -14017,21 +13989,21 @@
       },
       "packageAudit": {
         "name": "@dimforge/rapier3d-compat",
-        "version": "0.19.3",
+        "version": "0.20.0",
         "tarball": {
-          "filename": "dimforge-rapier3d-compat-0.19.3.tgz",
-          "packageBytes": 2602383,
-          "unpackedBytes": 8209064,
-          "fileCount": 50,
-          "integrity": "sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==",
-          "shasum": "b7092f4c75e696750c817c9ff6046a8d13015864",
-          "sha256": "09c411bc02d85a2bcf9b2cb01b55fca2edcb6fad52e1e093ddafd25d66db087c"
+          "filename": "dimforge-rapier3d-compat-0.20.0.tgz",
+          "packageBytes": 3316431,
+          "unpackedBytes": 10170768,
+          "fileCount": 52,
+          "integrity": "sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==",
+          "shasum": "a3e5ab3dd0f13d28a6933589b8b8a869c63574ee",
+          "sha256": "36e2ce7b5879d29d36915ec532720afb84b1fd2b58f7ed08308598d747a1908f"
         },
         "allExportBrowserBundle": {
           "pass": true,
-          "rawBytes": 2281435,
-          "gzipBytes": 838598,
-          "brotliBytes": 616289
+          "rawBytes": 2906439,
+          "gzipBytes": 1088423,
+          "brotliBytes": 797888
         },
         "security": {
           "vulnerable": false

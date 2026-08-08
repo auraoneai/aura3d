@@ -176,8 +176,8 @@ Tarball and all-export browser bundles are measured rather than inferred:
 
 | Candidate | Maintenance reading | All-export browser gzip |
 | --- | --- | ---: |
-| Rapier main 0.19.3 | active | requires explicit `.wasm` loader; naïve bundle correctly fails |
-| Rapier compat 0.19.3 | active | 838,598 B |
+| Rapier main 0.20.0 | active | requires explicit `.wasm` loader; naïve bundle correctly fails |
+| Rapier compat 0.20.0 | active | remeasure in the current bake-off artifact |
 | Cannon 0.20.0 | dormant-risk | 62,507 B |
 | Recast Navigation 0.43.1 | active | 258,473 B |
 | Howler 2.2.4 | aging | 15,336 B |

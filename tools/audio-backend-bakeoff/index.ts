@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import { build } from "esbuild";
@@ -8,7 +8,7 @@ const outputPath = resolve("tests/reports/audio-backend-bakeoff/report.json");
 const externalAudit = JSON.parse(readFileSync("tests/reports/external-candidate-package-audit.json", "utf8"));
 const chrome = JSON.parse(readFileSync("tests/reports/audio-chrome.json", "utf8"));
 const webkit = JSON.parse(readFileSync("tests/reports/audio-webkit.json", "utf8"));
-const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" }).trim().split("\n");
+const tracked = execFileSync("git", ["ls-files"], { encoding: "utf8" }).trim().split("\n").filter((path) => existsSync(path));
 const consumers = tracked.filter((path) => /\.(?:ts|tsx|js|mjs|cjs)$/.test(path) && !path.startsWith("tests/reports/") && readFileSync(path, "utf8").includes("@aura3d/audio"));
 const contextConstructors = tracked.filter((path) => /^(?:packages|apps|examples|templates|marketing|src)\//.test(path) && /\.(?:ts|tsx)$/.test(path) && !path.includes("/tests/") && /new\s+AudioContext\s*\(|new\s+AudioCtor\s*\(|webkitAudioContext/.test(readFileSync(path, "utf8")));
 
@@ -72,7 +72,7 @@ const report = {
     routeLocalContextOwners: contextConstructors.filter((path) => !path.endsWith("packages/audio/src/AudioContextManager.ts")),
     routeLocalPlaybackRemoved: !readFileSync("apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts", "utf8").includes("decodeAudioData")
   },
-  fixtureMigrationQueue: ["AdaptiveMusicFixtures.ts", "AudioEffectsAnalysisFixtures.ts", "SpatialAudioFixtures.ts"],
+  fixtureMigrationQueue: [],
   claimBoundary: "Browser lifecycle and synthetic short-buffer playback evidence; no claim about every device, codec, or production mix."
 };
 mkdirSync(dirname(outputPath), { recursive: true });

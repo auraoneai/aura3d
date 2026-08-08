@@ -19,7 +19,7 @@ describe("optional physical simulation boundary", () => {
 
   it("pins one exact engine only inside the optional adapter", () => {
     const manifest = JSON.parse(readFileSync("packages/physics-rapier/package.json", "utf8"));
-    expect(manifest.dependencies).toEqual({ "@dimforge/rapier3d-compat": "0.19.3" });
+    expect(manifest.dependencies).toEqual({ "@dimforge/rapier3d-compat": "0.20.0" });
     expect(manifest.sideEffects).toBe(false);
   });
 });

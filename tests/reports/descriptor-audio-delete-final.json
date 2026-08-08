@@ -1,0 +1,480 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-08T22:20:52.199Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/audio/src/AdaptiveMusicFixtures.ts",
+      "pass": true,
+      "detail": "packages/audio/src/AdaptiveMusicFixtures.ts: all six R8 points empty across 5044 scanned files (26 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+      "pass": true,
+      "detail": "packages/audio/src/AudioEffectsAnalysisFixtures.ts: all six R8 points empty across 5044 scanned files (32 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/audio/src/SpatialAudioFixtures.ts",
+      "pass": true,
+      "detail": "packages/audio/src/SpatialAudioFixtures.ts: all six R8 points empty across 5044 scanned files (26 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/audio/src/AdaptiveMusicFixtures.ts",
+    "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+    "packages/audio/src/SpatialAudioFixtures.ts"
+  ],
+  "expandedFileCount": 3,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5044,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/audio/src/AdaptiveMusicFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 133,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/audio/src/AdaptiveMusicFixtures.ts",
+        "AdaptiveMusicFixtures.ts",
+        "AdaptiveMusicFixtures",
+        "@aura3d/audio/src/AdaptiveMusicFixtures",
+        "@aura3d/audio/AdaptiveMusicFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 26,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:27",
+          "detail": "\"id\": \"r8:packages/audio/src/AdaptiveMusicFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:29",
+          "detail": "\"detail\": \"packages/audio/src/AdaptiveMusicFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:55; runtime-consumer @ packages/audio/src/index.ts:56; documentation-generator-dependency @ docs/api/public-api"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:202",
+          "detail": "\"r8:packages/audio/src/AdaptiveMusicFixtures.ts: packages/audio/src/AdaptiveMusicFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:55; runtime-consumer @ packages/audio/src/index.ts:56; documentation-gene"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:242",
+          "detail": "\"packages/audio/src/AdaptiveMusicFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34426",
+          "detail": "\"path\": \"packages/audio/src/AdaptiveMusicFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34431",
+          "detail": "\"packages/audio/src/AdaptiveMusicFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34432",
+          "detail": "\"AdaptiveMusicFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34433",
+          "detail": "\"AdaptiveMusicFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34434",
+          "detail": "\"@aura3d/audio/src/AdaptiveMusicFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34435",
+          "detail": "\"@aura3d/audio/AdaptiveMusicFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34469",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/audio/src/AdaptiveMusicFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34474",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/audio/src/AdaptiveMusicFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:55; runtime-consumer @ packages/audio/src/index.ts:56; documentation-generator-dependency @ docs/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34479",
+          "detail": "\"detail\": \"\\\"r8:packages/audio/src/AdaptiveMusicFixtures.ts: packages/audio/src/AdaptiveMusicFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:55; runtime-consumer @ packages/audio/src/index.ts:56; docume"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34484",
+          "detail": "\"detail\": \"\\\"packages/audio/src/AdaptiveMusicFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34489",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/audio/src/AdaptiveMusicFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34494",
+          "detail": "\"detail\": \"\\\"packages/audio/src/AdaptiveMusicFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34519",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/audio/src/AdaptiveMusicFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34524",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/audio/src/AdaptiveMusicFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:55; runtime-consumer @ packages/audio/src/index.ts:56; documentation-generato"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34529",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/audio/src/AdaptiveMusicFixtures.ts: packages/audio/src/AdaptiveMusicFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:55; runtime-consumer @ packages/audio/src/ind"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34534",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/audio/src/AdaptiveMusicFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34539",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/audio/src/AdaptiveMusicFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34544",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/audio/src/AdaptiveMusicFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:2192",
+          "detail": "\"path\": \"dist/audio/AdaptiveMusicFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:11364",
+          "detail": "\"path\": \"dist/packages/audio/src/AdaptiveMusicFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:2192",
+          "detail": "\"path\": \"dist/audio/AdaptiveMusicFixtures.js\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 312,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+        "AudioEffectsAnalysisFixtures.ts",
+        "AudioEffectsAnalysisFixtures",
+        "@aura3d/audio/src/AudioEffectsAnalysisFixtures",
+        "@aura3d/audio/AudioEffectsAnalysisFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 32,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:32",
+          "detail": "\"id\": \"r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34",
+          "detail": "\"detail\": \"packages/audio/src/AudioEffectsAnalysisFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:44; runtime-consumer @ packages/audio/src/index.ts:54; runtime-consumer @ tests/browser/runtime-external"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:203",
+          "detail": "\"r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts: packages/audio/src/AudioEffectsAnalysisFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:44; runtime-consumer @ packages/audio/src/index.ts:54; runt"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:243",
+          "detail": "\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34569",
+          "detail": "\"path\": \"packages/audio/src/AudioEffectsAnalysisFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34574",
+          "detail": "\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34575",
+          "detail": "\"AudioEffectsAnalysisFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34576",
+          "detail": "\"AudioEffectsAnalysisFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34577",
+          "detail": "\"@aura3d/audio/src/AudioEffectsAnalysisFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34578",
+          "detail": "\"@aura3d/audio/AudioEffectsAnalysisFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34597",
+          "detail": "\"detail\": \"evidence: [\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream5-input-audio-scripting-editor.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/repor"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34617",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34622",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:44; runtime-consumer @ packages/audio/src/index.ts:54; runtime-consumer @ tests/browser/ru"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34627",
+          "detail": "\"detail\": \"\\\"r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts: packages/audio/src/AudioEffectsAnalysisFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:44; runtime-consumer @ packages/audio/src/index"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34632",
+          "detail": "\"detail\": \"\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34637",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34642",
+          "detail": "\"detail\": \"\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34667",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream5-input-audio-scripting-editor.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-par"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34672",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34677",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:44; runtime-consumer @ packages/audio/src/index.ts:54; runtime-consume"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34682",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts: packages/audio/src/AudioEffectsAnalysisFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:44; runtime-consumer @ packages"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34687",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34692",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34697",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34702",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/audio/src/AudioEffectsAnalysisFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/workstream5-input-audio-scripting-editor.test.ts\\\\\\\\"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/audio/src/SpatialAudioFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 138,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/audio/src/SpatialAudioFixtures.ts",
+        "SpatialAudioFixtures.ts",
+        "SpatialAudioFixtures",
+        "@aura3d/audio/src/SpatialAudioFixtures",
+        "@aura3d/audio/SpatialAudioFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 26,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:37",
+          "detail": "\"id\": \"r8:packages/audio/src/SpatialAudioFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:39",
+          "detail": "\"detail\": \"packages/audio/src/SpatialAudioFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:57; runtime-consumer @ packages/audio/src/index.ts:58; documentation-generator-dependency @ docs/api/public-api."
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:204",
+          "detail": "\"r8:packages/audio/src/SpatialAudioFixtures.ts: packages/audio/src/SpatialAudioFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:57; runtime-consumer @ packages/audio/src/index.ts:58; documentation-genera"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:244",
+          "detail": "\"packages/audio/src/SpatialAudioFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34742",
+          "detail": "\"path\": \"packages/audio/src/SpatialAudioFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34747",
+          "detail": "\"packages/audio/src/SpatialAudioFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34748",
+          "detail": "\"SpatialAudioFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34749",
+          "detail": "\"SpatialAudioFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34750",
+          "detail": "\"@aura3d/audio/src/SpatialAudioFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34751",
+          "detail": "\"@aura3d/audio/SpatialAudioFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34785",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/audio/src/SpatialAudioFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34790",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/audio/src/SpatialAudioFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:57; runtime-consumer @ packages/audio/src/index.ts:58; documentation-generator-dependency @ docs/a"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34795",
+          "detail": "\"detail\": \"\\\"r8:packages/audio/src/SpatialAudioFixtures.ts: packages/audio/src/SpatialAudioFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:57; runtime-consumer @ packages/audio/src/index.ts:58; document"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34800",
+          "detail": "\"detail\": \"\\\"packages/audio/src/SpatialAudioFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34805",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/audio/src/SpatialAudioFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34810",
+          "detail": "\"detail\": \"\\\"packages/audio/src/SpatialAudioFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34835",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/audio/src/SpatialAudioFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34840",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/audio/src/SpatialAudioFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:57; runtime-consumer @ packages/audio/src/index.ts:58; documentation-generator"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34845",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/audio/src/SpatialAudioFixtures.ts: packages/audio/src/SpatialAudioFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/audio/src/index.ts:57; runtime-consumer @ packages/audio/src/index"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34850",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/audio/src/SpatialAudioFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34855",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/audio/src/SpatialAudioFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:34860",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/audio/src/SpatialAudioFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:2480",
+          "detail": "\"path\": \"dist/audio/SpatialAudioFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:11652",
+          "detail": "\"path\": \"dist/packages/audio/src/SpatialAudioFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:2480",
+          "detail": "\"path\": \"dist/audio/SpatialAudioFixtures.js\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    }
+  ]
+}

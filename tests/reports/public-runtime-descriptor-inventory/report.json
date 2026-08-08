@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T22:01:28.953Z",
+  "generatedAt": "2026-08-08T22:13:29.714Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -11,13 +11,13 @@
     "*Reference"
   ],
   "summary": {
-    "modules": 34,
-    "lines": 11165,
+    "modules": 31,
+    "lines": 10585,
     "retainedRuntimeOrContracts": 6,
     "deleteAfterR8": 0,
-    "migrateThenDelete": 28,
+    "migrateThenDelete": 25,
     "unclassified": 0,
-    "booleanClaimModulesRejectedAsRuntimeProof": 23
+    "booleanClaimModulesRejectedAsRuntimeProof": 20
   },
   "modules": [
     {
@@ -35,66 +35,6 @@
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "transitioned"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/audio/src/AdaptiveMusicFixtures.ts",
-      "package": "audio",
-      "lines": 132,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
-        "tools/audio-backend-bakeoff/index.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "enabled",
-        "equalPowerNormalized"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
-      "package": "audio",
-      "lines": 311,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
-        "tools/audio-backend-bakeoff/index.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "enabled",
-        "limiterTriggered",
-        "pingPong",
-        "enabled",
-        "logarithmicScale"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/audio/src/SpatialAudioFixtures.ts",
-      "package": "audio",
-      "lines": 137,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
-        "tools/audio-backend-bakeoff/index.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "approaching"
       ],
       "rejectsUnmountedBooleanClaims": true,
       "disposition": "migrate-consumers-then-delete"

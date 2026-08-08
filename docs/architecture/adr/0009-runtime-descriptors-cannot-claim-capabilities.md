@@ -24,6 +24,13 @@ material variants, morph targets, animation controls, and captured WebGL pixels.
 It no longer turns deterministic metadata into cache, computer-vision,
 segmentation, detection, tracking, or pose capability claims.
 
+The audio batch removes three deterministic descriptor generators for adaptive
+music, spatial-environment calculations, and mastering-analysis telemetry. The
+selected direct Web Audio owner, its real node graph, lifecycle, source/bus
+state, spatial panner, codec selection, browser unlock, and Chrome/WebKit
+evidence remain. The game slice no longer publishes synthetic mixer, reverb,
+occlusion, Doppler, or spectrum metrics as mounted behavior.
+
 ## Evidence
 
 `tests/reports/public-runtime-descriptor-inventory/report.json` is the complete

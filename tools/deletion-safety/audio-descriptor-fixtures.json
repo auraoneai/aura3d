@@ -1,0 +1,8 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's deterministic audio descriptor modules; mounted Web Audio behavior remains the only audio proof.",
+  "candidates": [
+    "packages/audio/src/AdaptiveMusicFixtures.ts",
+    "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+    "packages/audio/src/SpatialAudioFixtures.ts"
+  ]
+}

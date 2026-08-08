@@ -117,6 +117,9 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "asset-descriptor-deletion-proof": [
     "tests/reports/descriptor-assets-delete-final.json"
   ],
+  "audio-descriptor-deletion-proof": [
+    "tests/reports/descriptor-audio-delete-final.json"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -293,6 +296,10 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
     writes: PRODUCER_OWNERSHIP["asset-descriptor-deletion-proof"],
     hashes: ["examples/asset-viewer/main.ts", "tests/browser/asset-viewer-browser.spec.ts"]
   },
+  "audio-descriptor-deletion-proof": {
+    writes: PRODUCER_OWNERSHIP["audio-descriptor-deletion-proof"],
+    hashes: ["packages/audio/src/index.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts"]
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -334,6 +341,7 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "public-runtime-descriptor-inventory",
   "input-descriptor-deletion-proof",
   "asset-descriptor-deletion-proof",
+  "audio-descriptor-deletion-proof",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",

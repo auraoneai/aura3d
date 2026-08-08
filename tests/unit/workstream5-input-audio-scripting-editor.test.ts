@@ -27,9 +27,6 @@ import {
   ReverbEffect,
   SceneAudioBridge,
   SpatialAudio,
-  sampleAudioEffectsAnalysisFixture,
-  sampleAudioEnvironmentFixture,
-  sampleAdaptiveMusicFixture
 } from "@aura3d/audio";
 import { BehaviorHost, BehaviorSystem, createVisualNode, deserializeGraph, listVisualNodeDefinitions, serializeGraph, validateGraph, VisualGraphExecutor, type VisualGraph } from "@aura3d/scripting";
 import {
@@ -434,101 +431,6 @@ describe("audio runtime contracts", () => {
     filter.dispose();
     reverb.dispose();
     mixer.dispose();
-  });
-
-  it("samples bounded adaptive music layers and crossfades from old audio concepts", () => {
-    const action = sampleAdaptiveMusicFixture({ state: "action", curve: "equal-power" });
-    const victory = sampleAdaptiveMusicFixture({ state: "victory", intensity: 0.7, curve: "s-curve" });
-
-    expect(action).toMatchObject({
-      source: "origin-master-adaptive-music-adapted",
-      state: "action",
-      curve: "equal-power",
-      activeLayerCount: 3,
-      tempoBpm: 138,
-      crossfade: { equalPowerNormalized: true }
-    });
-    expect(action.layers.map((layer) => layer.id)).toEqual(["ambient-bed", "rhythm-pulse", "lead-motif", "result-stinger"]);
-    expect(action.layers.find((layer) => layer.id === "lead-motif")?.targetVolume).toBeGreaterThan(0);
-    expect(victory.activeLayerCount).toBeGreaterThanOrEqual(3);
-    expect(victory.layers.find((layer) => layer.id === "result-stinger")?.enabled).toBe(true);
-    expect(victory.crossfade.equalPowerNormalized).toBe(false);
-    expect(victory.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(victory.claimBoundary).toContain("does not play authored stems");
-  });
-
-  it("samples bounded spatial occlusion, doppler, and reverb-zone audio telemetry", () => {
-    const fixture = sampleAudioEnvironmentFixture({
-      sourcePosition: [0, 0, 0],
-      listenerPosition: [0, 0, 4],
-      sourceVelocity: [0, 0, 8],
-      listenerVelocity: [0, 0, 0],
-      obstacleCount: 3,
-      reverbZoneRadius: 10,
-      reverbZoneDistance: 4,
-      baseFrequencyHz: 220
-    });
-
-    expect(fixture).toMatchObject({
-      source: "origin-master-spatial-audio-environment-adapted",
-      distance: 4,
-      occlusion: {
-        level: "heavy",
-        obstacleCount: 3,
-        lowpassHz: 800,
-        volume: 0.4
-      },
-      doppler: {
-        approaching: true
-      },
-      reverb: {
-        zoneRadius: 10,
-        zoneDistance: 4,
-        blend: 0.6
-      }
-    });
-    expect(fixture.doppler.pitchFactor).toBeGreaterThan(1);
-    expect(fixture.doppler.frequencyShiftHz).toBeGreaterThan(0);
-    expect(fixture.reverb.wetLevel).toBeGreaterThan(0);
-    expect(fixture.reverb.dryLevel).toBeLessThan(0.85);
-    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(fixture.claimBoundary).toContain("does not implement authored audio middleware");
-  });
-
-  it("samples bounded compressor, EQ, delay, chorus, distortion, filter, and spectrum telemetry from old audio concepts", () => {
-    const fixture = sampleAudioEffectsAnalysisFixture({ preset: "master", inputPeakDb: -3, intensity: 0.75 });
-    const repeat = sampleAudioEffectsAnalysisFixture({ preset: "master", inputPeakDb: -3, intensity: 0.75 });
-
-    expect(fixture.source).toBe("origin-master-audio-effects-analysis-adapted");
-    expect(fixture).toEqual(repeat);
-    expect(fixture.effectChain).toEqual(["parametric-eq", "dynamic-compressor", "delay", "chorus", "distortion", "filter", "spectrum-analyzer"]);
-    expect(fixture.compressor.preset).toBe("master");
-    expect(fixture.compressor.gainReductionDb).toBeGreaterThan(0);
-    expect(fixture.compressor.outputPeakDb).toBeLessThan(fixture.compressor.inputPeakDb);
-    expect(fixture.eq.activeBandCount).toBe(4);
-    expect(fixture.eq.lowShelfGainDb).toBeGreaterThan(0);
-    expect(fixture.eq.presenceGainDb).toBeGreaterThan(0);
-    expect(fixture.delay.source).toBe("origin-master-delay-effect-adapted");
-    expect(fixture.delay.delayTimeSeconds).toBeGreaterThan(0);
-    expect(fixture.delay.feedback).toBeGreaterThan(0);
-    expect(fixture.delay.wetDryMix).toBeGreaterThan(0);
-    expect(fixture.delay.repeatsAboveNoiseFloor).toBeGreaterThan(0);
-    expect(fixture.chorus.source).toBe("origin-master-chorus-effect-adapted");
-    expect(fixture.chorus.voices).toBeGreaterThanOrEqual(1);
-    expect(fixture.chorus.stereoWidth).toBeGreaterThan(0);
-    expect(fixture.distortion.source).toBe("origin-master-distortion-effect-adapted");
-    expect(fixture.distortion.harmonicBoost).toBeGreaterThan(0);
-    expect(fixture.distortion.outputCeiling).toBeGreaterThan(0);
-    expect(fixture.filter.source).toBe("origin-master-filter-effect-adapted");
-    expect(fixture.filter.enabled).toBe(true);
-    expect(fixture.filter.frequencyHz).toBeGreaterThan(0);
-    expect(fixture.spectrum.barCount).toBe(16);
-    expect(fixture.spectrum.peakFrequencyHz).toBeGreaterThan(0);
-    expect(fixture.spectrum.peakMagnitude).toBeGreaterThan(0);
-    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(fixture.blockedClaims).toEqual(expect.arrayContaining(["Unity Audio Mixer parity", "Unreal Audio Mixer parity"]));
-    expect(fixture.blockedClaims).toContain("production delay/chorus/distortion/filter node graph parity");
-    expect(fixture.claimBoundary).toContain("does not instantiate a production WebAudio mastering graph");
   });
 
   it("updates spatial panner parameters and disconnects on disposal", () => {

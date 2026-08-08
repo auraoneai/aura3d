@@ -34,7 +34,7 @@ This decision is **reversible and dated** — see "When to revisit".
 
 ## The measurements
 
-| Dimension | cannon-es 0.20.0 | Rapier 0.19.3 | Winner |
+| Dimension | cannon-es 0.20.0 | Rapier 0.19.3 (historical run) | Winner |
 |---|---|---|---|
 | Bundle, gzip | **27,006 B** | 829,957 B compat / **612,861 B** fair | cannon-es, 22.7x |
 | Init | **16.1 ms** | 23.6 ms (WASM) | cannon-es |

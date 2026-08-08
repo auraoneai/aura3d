@@ -61,7 +61,7 @@ test("optional Rapier package loads, caches, steps, queries, controls, and dispo
     generatedAt: new Date().toISOString(),
     pass: typed.every((entry) => entry.pass) && consoleErrors.length === 0 && bundleRequests === 1,
     package: "@aura3d/physics-rapier",
-    backend: "@dimforge/rapier3d-compat@0.19.3",
+    backend: "@dimforge/rapier3d-compat@0.20.0",
     browser: "Chromium",
     bundle: { rawBytes: bundle.length, gzipBytes: gzipSync(bundle).length, brotliBytes: brotliCompressSync(bundle).length, requestsAcrossColdAndCachedNavigation: bundleRequests },
     cold: typed[0],

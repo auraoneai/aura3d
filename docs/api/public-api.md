@@ -18,7 +18,7 @@ pnpm verify:api-docs
 | `@aura3d/asset-index` | `1.6.0` | `packages/asset-index/src/index.ts` | 32 |
 | `@aura3d/assets` | `1.6.0` | `packages/assets/src/index.ts` | 78 |
 | `@aura3d/assets/gltf-runtime` | `1.6.0` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `1.6.0` | `packages/audio/src/index.ts` | 31 |
+| `@aura3d/audio` | `1.6.0` | `packages/audio/src/index.ts` | 25 |
 | `@aura3d/cli` | `1.6.0` | `packages/aura3d-cli/src/index.ts` | 32 |
 | `@aura3d/controls` | `1.6.0` | `packages/controls/src/index.ts` | 25 |
 | `@aura3d/core` | `1.6.0` | `packages/core/src/index.ts` | 14 |
@@ -292,12 +292,6 @@ export { createAudioTimelineMixSnapshot, defaultAudioTimelineBusForRole, validat
 export type { AudioCaptionCue, AudioCaptionSyncIssue, AudioCaptionSyncReport, AudioTimelineBusMix, AudioTimelineClip, AudioTimelineClipOptions, AudioTimelineEnvelopePoint, AudioTimelineMixOptions, AudioTimelineMixSnapshot, AudioTimelineSample, AudioTimelineTrackOptions, AudioTimelineTrackRole } from "./AudioTimelineTrack";
 export { audioWaveformPeakRange, createAudioWaveform, createAudioWaveformPath, createAudioWaveformReviewData, sampleAudioWaveformAtTime } from "./AudioWaveform";
 export type { AudioWaveformData, AudioWaveformInput, AudioWaveformOptions, AudioWaveformPathOptions, AudioWaveformPathPoint, AudioWaveformPeak, AudioWaveformReviewData, AudioWaveformReviewStem, AudioWaveformReviewStemView } from "./AudioWaveform";
-export { sampleAudioEffectsAnalysisFixture } from "./AudioEffectsAnalysisFixtures";
-export type { AudioChorusPreset, AudioCompressorPreset, AudioDelayPreset, AudioDistortionCurve, AudioEffectsAnalysisFixture, AudioEffectsAnalysisFixtureOptions, AudioEqBandFixture, AudioSpectrumBandFixture } from "./AudioEffectsAnalysisFixtures";
-export { sampleAdaptiveMusicFixture } from "./AdaptiveMusicFixtures";
-export type { AdaptiveMusicCrossfadeCurve, AdaptiveMusicFixture, AdaptiveMusicFixtureOptions, AdaptiveMusicFixtureState, AdaptiveMusicLayerMix } from "./AdaptiveMusicFixtures";
-export { sampleAudioEnvironmentFixture } from "./SpatialAudioFixtures";
-export type { AudioEnvironmentFixture, AudioEnvironmentFixtureOptions, AudioOcclusionLevel } from "./SpatialAudioFixtures";
 export { AudioContextManager } from "./AudioContextManager";
 export type { AudioContextLike, AudioContextManagerOptions, AudioContextState } from "./AudioContextManager";
 export type { AudioEffect } from "./AudioEffect";

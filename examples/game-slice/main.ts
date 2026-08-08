@@ -1,6 +1,6 @@
 import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, sampleMotionMatchingFixture, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
 import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFRenderResources, type GLTFSkinAsset } from "@aura3d/assets";
-import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio, sampleAdaptiveMusicFixture, sampleAudioEffectsAnalysisFixture, sampleAudioEnvironmentFixture } from "@aura3d/audio";
+import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio } from "@aura3d/audio";
 import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleGestureHapticsFixture, sampleVirtualTouchJoystickFixture, sampleXRRuntimeFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
   CharacterController,
@@ -229,7 +229,10 @@ type LoadedGameVisualAssets = {
 const playerStartPosition: readonly [number, number, number] = [-0.72, -0.16, 0];
 const pickupPosition: readonly [number, number, number] = [0.9, 0.35, 0];
 const exitPosition: readonly [number, number, number] = [1.16, -0.12, 0];
-const hazardPosition: readonly [number, number, number] = [-1.18, -0.12, 0];
+// Keep the spawn capsule clear of the sensor by more than their combined half extents. The old
+// exact-edge placement could emit a hazard contact on the first solver step and fail the objective
+// before the player's first input.
+const hazardPosition: readonly [number, number, number] = [-1.34, -0.12, 0];
 const objectiveTimeLimitSeconds = 18;
 const playerAnimationStates: readonly PlayerAnimationState[] = ["idle", "run", "jump", "win", "fail"] as const;
 const externalParityScreenshotPath = "tests/reports/external-parity-example-screenshots/game-slice.png";
@@ -1178,26 +1181,6 @@ async function run(): Promise<void> {
       previousPoseId: objectiveState.phase === "won" ? "run-1" : "walk-1",
       seed: 0x3d2025
     });
-    const adaptiveMusic = sampleAdaptiveMusicFixture({
-      state: objectiveState.phase === "won" ? "victory" : objectiveState.phase === "failed" ? "defeat" : objectiveState.collectedPickup ? "action" : "tension",
-      intensity: objectiveState.phase === "won" ? 0.68 : objectiveState.collectedPickup ? 0.82 : 0.42,
-      curve: "equal-power"
-    });
-    const audioEnvironment = sampleAudioEnvironmentFixture({
-      sourcePosition: [spatialPosition.x, spatialPosition.y, spatialPosition.z],
-      listenerPosition: [audioListener.position.x, audioListener.position.y, audioListener.position.z],
-      sourceVelocity: [0.6 + Math.abs(lastInputAxis), 0.12, 0],
-      listenerVelocity: [lastInputAxis * 0.4, 0, 0],
-      obstacleCount: objectiveState.collectedPickup ? 1 : 2,
-      reverbZoneRadius: 7,
-      reverbZoneDistance: spatialDistance,
-      baseFrequencyHz: 440
-    });
-    const audioEffectsAnalysis = sampleAudioEffectsAnalysisFixture({
-      preset: objectiveState.collectedPickup ? "master" : "vocal",
-      inputPeakDb: audioState.mixerMuted ? -18 : -3.5,
-      intensity: objectiveState.collectedPickup ? 0.78 : 0.46
-    });
     const adaptiveDifficulty = sampleAdaptiveDifficultyFixture({
       strategy: objectiveState.phase === "won" ? "predictive" : "gradual",
       recentDeaths: objectiveState.failCount + (objectiveState.phase === "failed" ? 5 : 4),
@@ -1386,7 +1369,6 @@ async function run(): Promise<void> {
         oldBranchPowerUpEffectPort: powerUpEffect.changedFields.length > 0,
         particles: particleStats.liveCount > 0,
         spatialAudio: true,
-        oldBranchAdaptiveMusicPort: adaptiveMusic.activeLayerCount >= 2 && adaptiveMusic.crossfade.equalPowerNormalized,
         oldBranchAdaptiveDifficultyPort: adaptiveDifficulty.triggeredRules.length >= 3 && adaptiveDifficulty.appliedChangeCount === adaptiveDifficulty.triggeredRules.length,
         adaptiveDifficultyMetrics: adaptiveDifficulty.metrics.length >= 8,
         adaptiveDifficultyRules: adaptiveDifficulty.triggeredRules.some((rule) => rule.changeType === "enemy-damage") && adaptiveDifficulty.triggeredRules.some((rule) => rule.changeType === "resource-drop-rate"),
@@ -1431,15 +1413,6 @@ async function run(): Promise<void> {
         analyticsBatchingTelemetry: analyticsPrivacy.batching.queuedEvents > 0 && analyticsPrivacy.batching.flushedBatches > 0,
         analyticsMetricsTelemetry: analyticsPrivacy.metrics.fps > 0 && analyticsPrivacy.metrics.customMetricCount > 0,
         analyticsProviderBoundaryTelemetry: analyticsPrivacy.productionReadiness.providerBoundaryTelemetry && analyticsPrivacy.blockedClaims.includes("production analytics SaaS integration"),
-        oldBranchAudioEnvironmentPort: audioEnvironment.occlusion.level !== "none" && audioEnvironment.reverb.blend > 0,
-        oldBranchAudioEffectsAnalysisPort: audioEffectsAnalysis.compressor.gainReductionDb > 0 && audioEffectsAnalysis.eq.activeBandCount >= 3 && audioEffectsAnalysis.delay.repeatsAboveNoiseFloor > 0 && audioEffectsAnalysis.chorus.voices > 0 && audioEffectsAnalysis.distortion.harmonicBoost > 0 && audioEffectsAnalysis.filter.enabled && audioEffectsAnalysis.spectrum.peakMagnitude > 0,
-        audioCompressorTelemetry: audioEffectsAnalysis.compressor.outputPeakDb < audioEffectsAnalysis.compressor.inputPeakDb,
-        audioEqTelemetry: audioEffectsAnalysis.eq.presenceGainDb > 0,
-        audioDelayTelemetry: audioEffectsAnalysis.delay.wetDryMix > 0 && audioEffectsAnalysis.delay.repeatsAboveNoiseFloor > 0,
-        audioChorusTelemetry: audioEffectsAnalysis.chorus.voices >= 1 && audioEffectsAnalysis.chorus.stereoWidth > 0,
-        audioDistortionTelemetry: audioEffectsAnalysis.distortion.harmonicBoost > 0 && audioEffectsAnalysis.distortion.outputCeiling > 0,
-        audioFilterTelemetry: audioEffectsAnalysis.filter.enabled && audioEffectsAnalysis.filter.frequencyHz > 0,
-        audioSpectrumTelemetry: audioEffectsAnalysis.spectrum.barCount >= 16 && audioEffectsAnalysis.spectrum.peakFrequencyHz > 0,
         oldBranchInputReplayPort: inputReplayEvidence.recording.metadata.evidence.oldCodebasePort && inputReplayEvidence.playback.evidence.playback,
         inputReplayRecording: inputReplayEvidence.recording.metadata.evidence.recording,
         inputReplayPlayback: inputReplayEvidence.playback.emittedEvents >= inputReplayEvidence.recording.metadata.eventCount,
@@ -2023,19 +1996,6 @@ async function run(): Promise<void> {
         spatialAudio: true,
         spatialAudioState: true,
         spatialAudioStateText,
-        oldBranchAdaptiveMusicPort: true,
-        adaptiveMusicSource: adaptiveMusic.source,
-        adaptiveMusicState: adaptiveMusic.state,
-        adaptiveMusicIntensity: adaptiveMusic.intensity,
-        adaptiveMusicCurve: adaptiveMusic.curve,
-        adaptiveMusicTransitionSeconds: adaptiveMusic.transitionSeconds,
-        adaptiveMusicLoopBars: adaptiveMusic.loopBars,
-        adaptiveMusicTempoBpm: adaptiveMusic.tempoBpm,
-        adaptiveMusicActiveLayers: adaptiveMusic.activeLayerCount,
-        adaptiveMusicPeakLayerVolume: adaptiveMusic.peakLayerVolume,
-        adaptiveMusicLayerMix: adaptiveMusic.layers.map((layer) => `${layer.id}:${layer.targetVolume.toFixed(3)}`).join("|"),
-        adaptiveMusicEqualPowerCrossfade: adaptiveMusic.crossfade.equalPowerNormalized,
-        adaptiveMusicHash: adaptiveMusic.hash,
         oldBranchAdaptiveDifficultyPort: true,
         adaptiveDifficultySource: adaptiveDifficulty.source,
         adaptiveDifficultyStrategy: adaptiveDifficulty.strategy,
@@ -2199,56 +2159,6 @@ async function run(): Promise<void> {
         analyticsCustomMetricCount: analyticsPrivacy.metrics.customMetricCount,
         analyticsBlockedClaims: analyticsPrivacy.blockedClaims.join("|"),
         analyticsPrivacyHash: analyticsPrivacy.hash,
-        oldBranchAudioEnvironmentPort: true,
-        audioEnvironmentSource: audioEnvironment.source,
-        audioOcclusionLevel: audioEnvironment.occlusion.level,
-        audioOcclusionObstacleCount: audioEnvironment.occlusion.obstacleCount,
-        audioOcclusionLowpassHz: audioEnvironment.occlusion.lowpassHz,
-        audioOcclusionVolume: audioEnvironment.occlusion.volume,
-        audioDopplerPitchFactor: audioEnvironment.doppler.pitchFactor,
-        audioDopplerRelativeVelocity: audioEnvironment.doppler.relativeVelocity,
-        audioDopplerApproaching: audioEnvironment.doppler.approaching,
-        audioDopplerFrequencyShiftHz: audioEnvironment.doppler.frequencyShiftHz,
-        audioReverbBlend: audioEnvironment.reverb.blend,
-        audioReverbWetLevel: audioEnvironment.reverb.wetLevel,
-        audioReverbDryLevel: audioEnvironment.reverb.dryLevel,
-        audioEnvironmentHash: audioEnvironment.hash,
-        oldBranchAudioEffectsAnalysisPort: true,
-        audioEffectsAnalysisSource: audioEffectsAnalysis.source,
-        audioEffectsChain: audioEffectsAnalysis.effectChain.join(">"),
-        audioCompressorPreset: audioEffectsAnalysis.compressor.preset,
-        audioCompressorInputPeakDb: audioEffectsAnalysis.compressor.inputPeakDb,
-        audioCompressorOutputPeakDb: audioEffectsAnalysis.compressor.outputPeakDb,
-        audioCompressorGainReductionDb: audioEffectsAnalysis.compressor.gainReductionDb,
-        audioCompressorMakeupGainDb: audioEffectsAnalysis.compressor.makeupGainDb,
-        audioCompressorLimiterTriggered: audioEffectsAnalysis.compressor.limiterTriggered,
-        audioEqActiveBands: audioEffectsAnalysis.eq.activeBandCount,
-        audioEqLowShelfGainDb: audioEffectsAnalysis.eq.lowShelfGainDb,
-        audioEqPresenceGainDb: audioEffectsAnalysis.eq.presenceGainDb,
-        audioDelayPreset: audioEffectsAnalysis.delay.preset,
-        audioDelayTimeSeconds: audioEffectsAnalysis.delay.delayTimeSeconds,
-        audioDelayFeedback: audioEffectsAnalysis.delay.feedback,
-        audioDelayWetDryMix: audioEffectsAnalysis.delay.wetDryMix,
-        audioDelayRepeatsAboveNoiseFloor: audioEffectsAnalysis.delay.repeatsAboveNoiseFloor,
-        audioDelayPingPong: audioEffectsAnalysis.delay.pingPong,
-        audioChorusPreset: audioEffectsAnalysis.chorus.preset,
-        audioChorusRateHz: audioEffectsAnalysis.chorus.rateHz,
-        audioChorusDepthSeconds: audioEffectsAnalysis.chorus.depthSeconds,
-        audioChorusVoices: audioEffectsAnalysis.chorus.voices,
-        audioChorusStereoWidth: audioEffectsAnalysis.chorus.stereoWidth,
-        audioDistortionCurve: audioEffectsAnalysis.distortion.curve,
-        audioDistortionAmount: audioEffectsAnalysis.distortion.amount,
-        audioDistortionHarmonicBoost: audioEffectsAnalysis.distortion.harmonicBoost,
-        audioDistortionOutputCeiling: audioEffectsAnalysis.distortion.outputCeiling,
-        audioFilterType: audioEffectsAnalysis.filter.type,
-        audioFilterFrequencyHz: audioEffectsAnalysis.filter.frequencyHz,
-        audioFilterQ: audioEffectsAnalysis.filter.q,
-        audioFilterResonanceDb: audioEffectsAnalysis.filter.resonanceDb,
-        audioSpectrumBarCount: audioEffectsAnalysis.spectrum.barCount,
-        audioSpectrumPeakFrequencyHz: audioEffectsAnalysis.spectrum.peakFrequencyHz,
-        audioSpectrumPeakMagnitude: audioEffectsAnalysis.spectrum.peakMagnitude,
-        audioEffectsBlockedClaims: audioEffectsAnalysis.blockedClaims.join("|"),
-        audioEffectsAnalysisHash: audioEffectsAnalysis.hash,
         spatialListenerX: Number(audioListener.position.x.toFixed(3)),
         spatialListenerY: Number(audioListener.position.y.toFixed(3)),
         spatialSourceX: Number(spatialPosition.x.toFixed(3)),

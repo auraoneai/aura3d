@@ -11,8 +11,8 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const reportPath = resolve(repoRoot, "tests/reports/external-candidate-package-audit.json");
 const candidates = {
-  "@dimforge/rapier3d": "0.19.3",
-  "@dimforge/rapier3d-compat": "0.19.3",
+  "@dimforge/rapier3d": "0.20.0",
+  "@dimforge/rapier3d-compat": "0.20.0",
   "cannon-es": "0.20.0",
   "recast-navigation": "0.43.1",
   howler: "2.2.4",
