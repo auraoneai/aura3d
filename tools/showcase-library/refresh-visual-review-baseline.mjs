@@ -31,21 +31,24 @@ function hashFile(path) {
   return `sha256-${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
 }
 
-function screenshotCandidates(routeId) {
+function screenshotCandidates(route) {
+  const evidencePath = route.releaseClass === "release-ready candidate"
+    ? `tests/reports/showcase-interaction-audit/${route.id}-final.png`
+    : `tests/reports/showcase-gameplay/${route.id}-after-input.png`;
   return [
     {
       kind: "desktop",
-      path: `tests/reports/showcase-library-screenshots/${routeId}-desktop.png`,
+      path: `tests/reports/showcase-library-screenshots/${route.id}-desktop.png`,
       viewport: { width: 1440, height: 900 }
     },
     {
       kind: "mobile",
-      path: `tests/reports/showcase-library-screenshots/${routeId}-mobile.png`,
-      viewport: { width: 390, height: 844 }
+      path: `tests/reports/showcase-library-screenshots/${route.id}-mobile.png`,
+      viewport: { width: 390, height: 740 }
     },
     {
       kind: "gameplay",
-      path: `tests/reports/showcase-gameplay/${routeId}-after-input.png`,
+      path: evidencePath,
       viewport: { width: 1440, height: 900 }
     }
   ];
@@ -70,7 +73,7 @@ for (const route of reviewedRoutes) {
   const previous = existingById.get(route.id) ?? {};
   const routeHealthPath = resolve(repoRoot, "apps", route.id, "route-health.json");
   const screenshots = [];
-  for (const candidate of screenshotCandidates(route.id)) {
+  for (const candidate of screenshotCandidates(route)) {
     const absolute = resolve(repoRoot, candidate.path);
     if (!existsSync(absolute)) continue;
     newestArtifactMs = Math.max(newestArtifactMs, statSync(absolute).mtimeMs);
