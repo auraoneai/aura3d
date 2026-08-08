@@ -855,6 +855,39 @@ describe("verification tools", () => {
     expect(report.incompleteByPrefix.TRACE?.statusCounts["Almost done"]).toBe(1);
   });
 
+  it("requirements trace uses the canonical release checklist and ignores archived prose", () => {
+    const root = fixtureRoot();
+    mkdirSync(join(root, "docs", "project", "release"), { recursive: true });
+    mkdirSync(join(root, "docs", "archive"), { recursive: true });
+    writeFileSync(join(root, "docs", "project", "release", "release-checklist.md"), [
+      "# Release checklist",
+      "",
+      "## Package Gates",
+      "",
+      "- [x] Typecheck passes.",
+      "- [ ] Browser evidence passes."
+    ].join("\n"));
+    writeFileSync(join(root, "docs", "archive", "legacy-plan.md"), "- [ ] Historical work must not reopen.\n");
+
+    const result = spawnSync(process.execPath, [
+      "--experimental-strip-types",
+      join(process.cwd(), "tools", "requirements-trace", "index.ts")
+    ], {
+      cwd: root,
+      encoding: "utf8"
+    });
+
+    expect(result.status).toBe(0);
+    const report = JSON.parse(readFileSync(join(root, "tests", "reports", "final-requirements-trace.json"), "utf8"));
+    expect(report.docs).toEqual(["docs/project/release/release-checklist.md"]);
+    expect(report.totalRequirements).toBe(2);
+    expect(report.statusCounts).toMatchObject({
+      "Implemented and verified": 1,
+      "Not started": 1
+    });
+    expect(report.rows.map((row: { readonly requirement: string }) => row.requirement)).not.toContain("Historical work must not reopen.");
+  });
+
   it("trace verifier rejects generated audit artifacts and rebuild-progress pass text as sole evidence", () => {
     const report = analyzeTraceReport({
       totalRequirements: 3,

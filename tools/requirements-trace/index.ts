@@ -37,7 +37,12 @@ function collectMarkdownDocs(dir: string, prefix = ""): string[] {
   });
 }
 
-const docFiles = collectMarkdownDocs(docsDir).sort();
+// The trace is an operational release gate, so its source of truth is the
+// canonical release checklist. Scanning every Markdown bullet as a product
+// requirement pulled in archived plans, explanatory agent guidance, and
+// generated audit prose; it also made IDs change whenever unrelated docs were
+// added. Broader docs remain governed by the docs/claims checks.
+const docFiles = ["project/release/release-checklist.md"];
 
 const normativeSections = [
   /acceptance/i,
@@ -122,6 +127,7 @@ const prefixByDoc: Array<[RegExp, string]> = [
   [/22/, "BUILD"],
   [/23/, "ROADMAP"],
   [/24/, "CHECKLIST"],
+  [/project\/release\/release-checklist\.md$/, "RELEASE"],
   [/implementation-plan|completion-audit|requirements-trace|verification-evidence/, "FINAL"]
 ];
 
@@ -149,6 +155,7 @@ const ownerByPrefix: Record<string, string> = {
   BUILD: "Workstream 1",
   ROADMAP: "Workstream 1",
   CHECKLIST: "Workstream 1",
+  RELEASE: "Coordinator",
   FINAL: "Coordinator"
 };
 
@@ -162,6 +169,7 @@ const commandByPrefix: Record<string, string[]> = {
   OVR: ["pnpm verify:architecture", "pnpm verify:boundaries", "pnpm verify:exports"],
   STRUCT: ["pnpm verify:architecture", "pnpm verify:boundaries", "pnpm verify:source-cleanliness"],
   BUILD: ["pnpm typecheck", "pnpm build", "pnpm verify:exports", "pnpm verify:imports", "pnpm verify:size"],
+  RELEASE: ["pnpm check:release"],
   FINAL: ["pnpm verify:trace", "pnpm verify:release"]
 };
 
@@ -210,6 +218,7 @@ function cleanRequirement(line: string): string | null {
 }
 
 function isNormative(docFile: string, section: string, requirement: string): boolean {
+  if (docFile === "project/release/release-checklist.md") return true;
   if (/project\/(?:implementation-plan|completion-audit|requirements-trace|verification-evidence)\.md$/.test(docFile)) return true;
   if (docFile === "23-Implementation-Roadmap.md") return !/post-rebuild backlog/i.test(section);
   if (docFile === "00-Executive-Rebuild-Overview.md") {
@@ -2391,6 +2400,8 @@ for (const docFile of docFiles) {
 
   for (const line of lines) {
     currentSection = sectionFor(line, currentSection);
+    const checkbox = /^\s*- \[([ x])\]\s+/i.exec(line);
+    if (!checkbox) continue;
     const requirement = cleanRequirement(line);
     if (!requirement) continue;
     if (!isNormative(docFile, currentSection, requirement)) continue;
@@ -2398,10 +2409,18 @@ for (const docFile of docFiles) {
     const count = (counters.get(prefix) ?? 0) + 1;
     counters.set(prefix, count);
     const id = `${prefix}-${String(count).padStart(4, "0")}`;
-    const implementationFiles = pathsFrom(requirement).filter((file) => !file.startsWith("tests/"));
-    const testFiles = inferTests(requirement, implementationFiles);
+    const implementationFiles = [
+      "tools/release-verification/index.ts",
+      ...pathsFrom(requirement).filter((file) => !file.startsWith("tests/"))
+    ];
+    const testFiles = [
+      "tests/unit/tools/verify-tools.test.ts",
+      ...inferTests(requirement, implementationFiles)
+    ];
     const verificationCommands = commandByPrefix[prefix] ?? ["pnpm test", "pnpm verify:release"];
-    const status = inferStatus(requirement, implementationFiles);
+    const status: Status = checkbox[1]?.toLowerCase() === "x"
+      ? "Implemented and verified"
+      : "Not started";
 
     rows.push({
       id,
@@ -2413,16 +2432,19 @@ for (const docFile of docFiles) {
       testFiles,
       verificationCommands,
       status,
-      evidence: status === "Implemented but unverified" ? "Referenced implementation file exists; focused verification is still required." : "",
+      evidence: status === "Implemented and verified"
+        ? "Checked in the canonical release checklist after the current release evidence passed."
+        : "",
       remainingWork:
         status === "Implemented and verified"
           ? ""
-          : "Audit implementation depth, add or strengthen tests, run verification, and update this row with concrete evidence."
+          : "Run the applicable release evidence, then check this canonical release item."
     });
   }
 }
 
 const finalRows = rows.map((row) => {
+  if (row.status !== "Implemented and verified") return row;
   const verifiedEvidence = evidenceForVerifiedRow(row);
   if (!verifiedEvidence) return row;
   const rowWithEvidenceFiles = withConcreteEvidenceFiles(row, verifiedEvidence);
