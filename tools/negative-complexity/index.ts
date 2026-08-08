@@ -184,9 +184,32 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
        * A substring check would also have been satisfied by the prose two paragraphs up in
        * this very file, which is the trap being avoided.
        */
-      capability: "physics solver",
-      present: countPhysicsBackends() !== 1,
-      detail: `PhysicsBackend declares ${countPhysicsBackends()} selectable solvers; R12 allows one`
+      capability: "physical simulation",
+      present: countPhysicsBackends() !== 1 || (
+        exists("packages/physics/src/PhysicsWorld.ts")
+        && exists("packages/physics-rapier/src/index.ts")
+        && contains("packages/physics/src/PhysicsWorld.ts", "from \"cannon-es\"")
+        && contains("packages/physics-rapier/src/index.ts", "@dimforge/rapier3d-compat")
+      ),
+      detail: `PhysicsBackend declares ${countPhysicsBackends()} selectable legacy-package solver(s), while the selected optional Rapier adapter ${exists("packages/physics-rapier/src/index.ts") ? "exists" : "does not exist"}. Cannon-backed PhysicsWorld and Rapier cannot both remain production owners.`
+    },
+    {
+      capability: "physical character controller",
+      present: exists("packages/physics/src/CharacterController.ts")
+        && contains("packages/physics-rapier/src/index.ts", "RapierCharacterControllerHandle"),
+      detail: "The custom physical CharacterController and Rapier kinematic character-controller adapter overlap until the major migration and R8 deletion complete. Authored-unit arcade platforming is a separate contract."
+    },
+    {
+      capability: "physical vehicle controller",
+      present: exists("packages/physics/src/VehicleDynamics.ts")
+        && contains("packages/physics-rapier/src/index.ts", "RapierVehicleControllerHandle"),
+      detail: "The custom physical VehicleDynamics controller and Rapier dynamic raycast vehicle adapter overlap until the major migration and R8 deletion complete. Authored-unit arcade racing is a separate contract."
+    },
+    {
+      capability: "navigation and crowd",
+      present: ["packages/physics/src/Navigation.ts", "packages/physics/src/Crowd.ts", "packages/physics/src/Steering.ts"].some(exists)
+        && exists("packages/navigation-recast/src/index.ts"),
+      detail: "Legacy grid navigation/crowd/steering and the selected Recast/Detour adapter overlap until consumers migrate and the displaced algorithms pass R8 deletion."
     },
     {
       /*
@@ -348,7 +371,7 @@ function main(): void {
     {
       id: "r12-duplicate-ownership-zero",
       pass: current.duplicateOwnershipViolations === 0,
-      detail: `${current.duplicateOwnershipViolations} of 5 duplicate-ownership rows still have two live implementations: ${duplicates.rows.filter((row) => row.present).map((row) => row.capability).join(", ") || "none"}`
+      detail: `${current.duplicateOwnershipViolations} of ${duplicates.rows.length} duplicate-ownership rows still have two live implementations: ${duplicates.rows.filter((row) => row.present).map((row) => row.capability).join(", ") || "none"}`
     }
   ];
 
@@ -377,7 +400,7 @@ function main(): void {
   console.log(`root export subpaths : ${current.rootExportSubpaths} (baseline ${BASELINE.rootExportSubpaths})`);
   console.log(`external runtime deps: ${current.externalRuntimeDependencies} [${dependencies.names.join(", ")}]`);
   console.log(`engine barrel exports: ${current.engineBarrelExports} (baseline ${BASELINE.engineBarrelExports})`);
-  console.log(`R12 violations       : ${current.duplicateOwnershipViolations} of 5`);
+  console.log(`R12 violations       : ${current.duplicateOwnershipViolations} of ${duplicates.rows.length}`);
   console.log(`routes               : ${current.routes} (baseline ${BASELINE.routes})`);
   console.log(`report: ${REPORT_PATH}`);
 }
