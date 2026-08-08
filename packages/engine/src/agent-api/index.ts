@@ -76,6 +76,7 @@ import {
   SpotLight,
   type Light
 } from "@aura3d/scene";
+import { lookAtMat4, multiplyMat4, orthographicMat4, perspectiveMat4 } from "@aura3d/scene/math";
 /*
  * WS-2.2 — TYPE-ONLY import, plus a dynamic import at the single call site below.
  *
@@ -14311,11 +14312,13 @@ function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time:
   const cameraSpec = snapshot.camera;
   const target = resolveCameraTarget(snapshot, cameraSpec, runtimeNodes);
   const eye = resolveCameraEye(snapshot, cameraSpec, time, runtimeNodes);
-  const view = lookAt(eye, target, [0, 1, 0]);
+  const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
+  const halfHeight = Math.max(1e-4, cameraSpec.orthographicSize ?? 1.4);
+  const halfWidth = Math.max(1e-4, halfHeight * aspect);
   const projection = isOrthographicCameraMode(cameraSpec.mode)
-    ? orthographic(cameraSpec.orthographicSize ?? 1.4, aspect, 0.05, 100)
-    : perspective(((cameraSpec.fov ?? 45) * Math.PI) / 180, aspect, 0.05, 100);
-  return multiply4(projection, view);
+    ? orthographicMat4(-halfWidth, halfWidth, -halfHeight, halfHeight, 0.05, 100)
+    : perspectiveMat4(((cameraSpec.fov ?? 45) * Math.PI) / 180, aspect, 0.05, 100);
+  return new Float32Array(multiplyMat4(projection, view));
 }
 
 function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {
@@ -14408,41 +14411,6 @@ export function isOrthographicCameraMode(mode: AuraCameraMode): boolean {
   return mode === "orthographic" || mode === "isometric";
 }
 
-function orthographic(halfHeight: number, aspect: number, near: number, far: number): Float32Array {
-  const safeHalfHeight = Math.max(1e-4, halfHeight);
-  const halfWidth = Math.max(1e-4, safeHalfHeight * aspect);
-  const nf = 1 / (near - far);
-  return new Float32Array([
-    1 / halfWidth, 0, 0, 0,
-    0, 1 / safeHalfHeight, 0, 0,
-    0, 0, 2 * nf, 0,
-    0, 0, (far + near) * nf, 1
-  ]);
-}
-
-function perspective(fovRadians: number, aspect: number, near: number, far: number): Float32Array {
-  const f = 1 / Math.tan(fovRadians / 2);
-  const nf = 1 / (near - far);
-  return new Float32Array([
-    f / aspect, 0, 0, 0,
-    0, f, 0, 0,
-    0, 0, (far + near) * nf, -1,
-    0, 0, 2 * far * near * nf, 0
-  ]);
-}
-
-function lookAt(eye: AuraVec3, target: AuraVec3, up: AuraVec3): Float32Array {
-  const z = normalize3([eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]]);
-  const x = normalize3(cross3(up, z));
-  const y = cross3(z, x);
-  return new Float32Array([
-    x[0], y[0], z[0], 0,
-    x[1], y[1], z[1], 0,
-    x[2], y[2], z[2], 0,
-    -dot3(x, eye), -dot3(y, eye), -dot3(z, eye), 1
-  ]);
-}
-
 function multiply4(a: Float32Array, b: Float32Array): Float32Array {
   const output = new Float32Array(16);
   for (let column = 0; column < 4; column += 1) {
@@ -14531,18 +14499,6 @@ function clamp01(value: number): number {
 function normalize3(value: AuraVec3): AuraVec3 {
   const length = Math.hypot(value[0], value[1], value[2]) || 1;
   return [value[0] / length, value[1] / length, value[2] / length];
-}
-
-function cross3(a: AuraVec3, b: AuraVec3): AuraVec3 {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0]
-  ];
-}
-
-function dot3(a: AuraVec3, b: AuraVec3): number {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
 function mix3(a: AuraVec3, b: AuraVec3, t: number): AuraVec3 {

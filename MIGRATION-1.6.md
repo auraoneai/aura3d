@@ -11,7 +11,7 @@ produced it.
 ## Migration matrix
 
 Measured against `v1.5.2`, comparing the generated public API surface
-(`docs/api/public-api.md`, 2,498 → 2,501 exported symbols) and the root `exports` map.
+(`docs/api/public-api.md`, 2,498 → 2,506 exported symbols) and the root `exports` map.
 
 | Change | Kind | Affects you if… | What to do |
 | --- | --- | --- | --- |
@@ -39,7 +39,7 @@ should use the narrow entry matching their workload:
 
 This is a performance recommendation, not a removal. The README's first code example uses the
 product entry, and the canonical bundle scenarios measure the matching entry. Fresh measurements
-are **0.556x / 1.249x / 0.810x** the equivalent Three.js stacks against unchanged limits of
+are **0.582x / 1.248x / 0.832x** the equivalent Three.js stacks against unchanged limits of
 1.25x / 1.25x / 1.50x. The compatibility root is still intentionally broad and is not presented as
 the smallest entry.
 
@@ -51,7 +51,7 @@ the smallest entry.
   tooling aliases and test-calibration references were retired and R8 cleared both remaining files.
   It was never installable and its helpers had no source consumers.
 - **Public symbols: zero non-`three-compat` removals.** 36 removed, all `*Compat`, all still
-  reachable from `@aura3d/three-compat`. 39 added, all additive.
+  reachable from `@aura3d/three-compat`. 44 added, all additive.
 - **No renames.** No symbol was renamed without an alias.
 
 ## Physics: what to expect at runtime
@@ -82,7 +82,7 @@ now behave. Nine named invariants cover the production backend:
 | --- | --- | --- |
 | Public packages disappear | 0 of 26 removed | no |
 | Commonly used imports break | 0 non-`three-compat` symbols removed; the one removed subpath was already unusable when installed | no |
-| High-value public concepts preserved | 2,501 symbols vs 2,498; all additive | yes |
+| High-value public concepts preserved | 2,506 symbols vs 2,498; all additive | yes |
 | Most source compatibility retained | Only `backend: "aura-js"` and two fallback fields break, and both were part of the defect | yes |
 
 §12 anticipated `2.0.0` because "two packages are already slated for removal and the engine barrel
@@ -92,7 +92,7 @@ the wide one. Removing one unexported private helper workspace does not change t
 the answer the matrix produces is `1.6.0`, not the one the prose expected.
 
 **Bundle boundary:** 1.6.0 clears the §B.1 release condition through the recommended lean entries,
-not by shrinking the compatibility-heavy root. The frozen scenarios measure **0.556x / 1.249x /
-0.810x** the equivalent Three.js stacks against limits of **1.25x / 1.25x / 1.50x**. Existing
+not by shrinking the compatibility-heavy root. The frozen scenarios measure **0.582x / 1.248x /
+0.832x** the equivalent Three.js stacks against limits of **1.25x / 1.25x / 1.50x**. Existing
 root imports remain supported; new applications should select the matching lean entry when bundle
 cost matters. These are scenario-specific build measurements, not universal performance claims.

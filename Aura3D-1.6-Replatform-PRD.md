@@ -114,11 +114,11 @@ anisotropy and ships a 580 KB core has not succeeded. Bundle size is a first-cla
 a workstream side effect.
 
 - [x] Scenario-1 (core primitive scene) gzip ≤ **1.25x** the equivalent Three.js stack
-      — **PASSES: 65,978 B vs 118,603 B = 0.556x** (remeasured 2026-08-08).
+      — **PASSES: 69,024 B vs 118,603 B = 0.582x** (remeasured 2026-08-08).
 - [x] Scenario-2 (product viewer) gzip ≤ **1.25x** equivalent
-      — **PASSES: 182,303 B vs 145,978 B = 1.249x**, including the real static GLB loader edge.
+      — **PASSES: 182,144 B vs 145,978 B = 1.248x**, including the real static GLB loader edge.
 - [x] Scenario-3 (game runtime) gzip ≤ **1.5x** equivalent
-      — **PASSES: 115,706 B vs 142,809 B = 0.810x**, including input and the one production solver.
+      — **PASSES: 118,765 B vs 142,809 B = 0.832x**, including input and the one production solver.
 - [x] Ratios measured by WS-2.4's canonical config against a real Three.js build, reported
       side by side. If a ratio is missed, the release does not ship on that dimension —
       **do not raise the budget** (R2)
@@ -1256,11 +1256,13 @@ scoped out" (**8 passed**).
 Measured: **579,953 B gzip vs an 80,000 B budget (7.25x)**; **1,145,689 vs Three.js
 671,968 (1.70x)** on the same scene. Nothing tree-shakes.
 
-- [~] Split into entry points: core scene+app, `/game`, `/animation`, `/product`,
-      `/diagnostics`, `/evidence`. — **in progress.** First cut landed: `TypedGLBActor` is now a
-      **type-only** static import plus an `await import()` at its single call site, which already sits
-      inside an async function on the typed-GLB path. A type-only import erases the graph edge
-      entirely, so a cube no longer downloads a glTF loader.
+- [x] Split into workload entry points. — **complete through the additive public entries
+      `./lean`, `./lean-product`, and `./lean-game`, while the broad root remains the compatibility
+      entry by the explicit option-(a) decision below.** The narrow entries have their own runtime
+      browser proof and pass all three frozen bundle scenarios. Diagnostics/evidence/animation
+      remain opt-in exports on the compatibility surface; they do not enter a new app's lean critical
+      path. The first cut made `TypedGLBActor` a **type-only** static import plus an `await import()` at
+      its single call site, so a cube no longer downloads a glTF loader.
 
       Measured effect on scenario 1's initial download: **335,877 → 303,149 gzip (2.815x → 2.541x).**
 
@@ -1345,7 +1347,7 @@ scenario ratios **2.054x / 1.676x / 1.968x** (about **12.5 KB gzip** removed fro
 migration cost and the experiment was reverted. Canonical post-revert measurement is
 **2.160x / 1.762x / 2.056x**. That experiment established that the gap was the 15,249-line
 monolithic agent API and its namespace objects, not a single shader-family edge. The subsequent
-root-entry replatform closes it with additive workload entries at **0.556x / 1.249x / 0.810x**;
+root-entry replatform closes it with additive workload entries at **0.582x / 1.248x / 0.832x**;
 the compatibility root remains broad by the explicit option-(a) policy below.
 
 **P3's planned deletions also reduce this number**, and are sequenced first because they are discrete and
@@ -1374,7 +1376,7 @@ ten `postprocess/*` modules that a cube currently reaches through the barrel.
 - [x] Adapters + `MIGRATION-1.6.md` entries per R7. — additive adapters documented; no root symbol
       was removed and each entry states its supported workload.
 - [x] **Proof:** the WS-2.4 scenario targets are met. — `pnpm check:bundle-scenarios` exits 0 at
-      **0.556x / 1.249x / 0.810x**. `lean-entry-runtime.spec.ts` is **3/3 green** in Chromium:
+      **0.582x / 1.248x / 0.832x**. `lean-entry-runtime.spec.ts` is **3/3 green** in Chromium:
       real WebGL2 core draw, real GLB load/draw, and input + shared production-solver motion.
 
 ### WS-2.3 Classify media files by runtime, then separate
@@ -2979,8 +2981,8 @@ way an engine fix lands green while the route stays broken (R3).
       `honest-public-claims.test.ts` keeps it that way against 8 patterns.
 - [x] State plainly where we remain behind: breadth of loaders/examples, bundle size if
       still over, physics history.
-      — the README now distinguishes the green comparative bundle table (**0.556x / 1.249x /
-      0.810x** against 1.25 / 1.25 / 1.50) from the informational compatibility-root observation and
+      — the README now distinguishes the green comparative bundle table (**0.582x / 1.248x /
+      0.832x** against 1.25 / 1.25 / 1.50) from the informational compatibility-root observation and
       template targets, states where Aura3D genuinely wins with the same rigour
       (authored lines 9/14/19 vs 15/27/40, one install vs two) **and** where it loses
       (TypeScript compile slower on all three in the current three-process measurement). It also names the three prototype-blocked routes
@@ -3169,7 +3171,7 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       scenarios reported against Three.js equivalents
       — **green with every enforced budget unchanged.** ESM-splitting measurement follows the
       transitive static-import critical path and conservatively sums per-chunk gzip: lean core
-      **66,073 B / 80,000 B**; product, cinematic, and mini-game templates **199,606-199,608 B /
+      **69,134 B / 80,000 B**; product, cinematic, and mini-game templates **199,634 B /
       250,000 B**. The compatibility-heavy root retained by WS-2.2 remains explicitly measured at
       **204,767 B gzip** against the historical 80,000 B figure, but is informational rather than
       silently omitted or substituted for the documented new-app entry. The command's negative
@@ -3221,7 +3223,7 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       landed: skyline's regenerated screenshot digest moved while turbo drift's is byte-identical.
 - [x] `MIGRATION-1.6.md` complete, with the migration matrix
       — written, and **every row measured against `v1.5.2`** rather than described: 27 packages
-      unchanged (0 removed), public symbols 2,498 → 2,501, and **0 non-`three-compat` symbols
+      unchanged (0 removed), public symbols 2,498 → 2,506, and **0 non-`three-compat` symbols
       removed**. Gated by `tests/unit/tools/migration-matrix.test.ts` (13 tests), which recomputes
       all four claims, so a later removal fails the gate and forces the version to be revisited.
 - [x] Version decided per §12 from that matrix — **`1.6.0`.**
@@ -3256,7 +3258,7 @@ All seven are asserted as **conditions** by `tests/unit/tools/release-metrics-ro
 exists", and fixing either failing condition breaks a test that must then be flipped.
 
 - [x] **§B.1** all three bundle scenarios within their ratio to the Three.js equivalent
-      — **PASSES, all three: 0.556x / 1.249x / 0.810x** against 1.25 / 1.25 / 1.50, with the
+      — **PASSES, all three: 0.582x / 1.248x / 0.832x** against 1.25 / 1.25 / 1.50, with the
       budgets unchanged. Asserted per scenario, not only in aggregate, so a regression is visible.
 - [x] **§B.2** `tests/reports/developer-friction.json` complete for both engines
       — complete: four fields × 3 scenarios × both engines, plus real-browser runtime startup
@@ -3388,7 +3390,7 @@ Not technical completion gates. **Do not perform any of these because §10 is gr
     decides, not this sentence"*, and the sentence was wrong.
 
     Measured: **0 of 26 public packages removed** (R8 refused both public candidates — ADR 0001), **0
-    non-`three-compat` public symbols removed**, surface 2,498 → 2,501. The one removed root
+    non-`three-compat` public symbols removed**, surface 2,498 → 2,506. The one removed root
     subpath never resolved for an installed consumer, so removing it is a fix rather than a break.
     Both premises this row reasoned from — packages disappearing, the barrel being split
     destructively — turned out false: the split *added* narrow entry points and kept the wide one.
@@ -3396,7 +3398,7 @@ Not technical completion gates. **Do not perform any of these because §10 is gr
     that does not alter the installable surface or the semver conclusion.
 
     Recorded caveat: `1.6.0` means safe to upgrade, not automatic release approval. §B.1 is now met
-    by the documented lean entries at 0.556x / 1.249x / 0.810x; the separate compatibility root
+    by the documented lean entries at 0.582x / 1.248x / 0.832x; the separate compatibility root
     remains visibly over its historical absolute figure as an informational observation, and §11
     still requires explicit approval. (§10)
 

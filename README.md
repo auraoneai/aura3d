@@ -213,9 +213,9 @@ Stated because a release note that omits this is not useful:
 
   | Scenario | Aura3D | Three.js | Ratio | Budget |
   | --- | --- | --- | --- | --- |
-  | Core primitive scene (one cube) | 65,978 B | 118,603 B | **0.556x** | 1.25x |
-  | Product viewer (glTF, PBR, orbit, IBL) | 182,303 B | 145,978 B | **1.249x** | 1.25x |
-  | Game runtime (input, physics, loop) | 115,706 B | 142,809 B | **0.810x** | 1.50x |
+  | Core primitive scene (one cube) | 69,024 B | 118,603 B | **0.582x** | 1.25x |
+  | Product viewer (glTF, PBR, orbit, IBL) | 182,144 B | 145,978 B | **1.248x** | 1.25x |
+  | Game runtime (input, physics, loop) | 118,765 B | 142,809 B | **0.832x** | 1.50x |
 
   Budgets are derived from the measured Three.js equivalent, so they cannot be raised
   without Three.js growing. Browser proof executes the core, real-GLB product, and input + shared

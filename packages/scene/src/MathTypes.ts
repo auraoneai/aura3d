@@ -87,6 +87,10 @@ export function perspectiveMat4(fovYRadians: number, aspect: number, near: numbe
   return fromMathMat4(Matrix4.perspective(fovYRadians, aspect, near, far));
 }
 
+export function lookAtMat4(eye: Vec3, target: Vec3, up: Vec3): Mat4 {
+  return fromMathMat4(Matrix4.lookAt(toMathVec3(eye), toMathVec3(target), toMathVec3(up)));
+}
+
 export function orthographicMat4(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4 {
   return fromMathMat4(Matrix4.orthographic(left, right, bottom, top, near, far));
 }

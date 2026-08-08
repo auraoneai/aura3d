@@ -5,6 +5,13 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering/lean-runtime";
+import {
+  composeMat4,
+  lookAtMat4,
+  multiplyMat4,
+  perspectiveMat4,
+  type Vec3
+} from "@aura3d/scene/math";
 
 export type AuraLeanVec3 = readonly [number, number, number];
 export type AuraLeanColor = string;
@@ -407,52 +414,13 @@ function color4(value: string): readonly [number, number, number, number] {
 function clamp(value: number): number { return Math.max(0, Math.min(1, value)); }
 
 export function createAuraLeanModelMatrix(position: AuraLeanVec3, scale: AuraLeanVec3): Float32Array {
-  return new Float32Array([
-    scale[0], 0, 0, 0,
-    0, scale[1], 0, 0,
-    0, 0, scale[2], 0,
-    position[0], position[1], position[2], 1
-  ]);
+  return new Float32Array(composeMat4(vec3(position), [0, 0, 0, 1], vec3(scale)));
 }
 
 function viewProjection(cameraSpec: AuraLeanCameraSpec, aspect: number): Float32Array {
-  const view = lookAt(cameraSpec.position, cameraSpec.target);
-  const f = 1 / Math.tan(cameraSpec.fov * Math.PI / 360);
-  const near = 0.05;
-  const far = 100;
-  const projection = new Float32Array([
-    f / Math.max(0.01, aspect), 0, 0, 0,
-    0, f, 0, 0,
-    0, 0, (far + near) / (near - far), -1,
-    0, 0, (2 * far * near) / (near - far), 0
-  ]);
-  return multiply(projection, view);
+  const view = lookAtMat4(vec3(cameraSpec.position), vec3(cameraSpec.target), [0, 1, 0]);
+  const projection = perspectiveMat4(cameraSpec.fov * Math.PI / 180, Math.max(0.01, aspect), 0.05, 100);
+  return new Float32Array(multiplyMat4(projection, view));
 }
 
-function lookAt(eye: AuraLeanVec3, target: AuraLeanVec3): Float32Array {
-  const z = normalize([eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]]);
-  const x = normalize(cross([0, 1, 0], z));
-  const y = cross(z, x);
-  return new Float32Array([
-    x[0], y[0], z[0], 0,
-    x[1], y[1], z[1], 0,
-    x[2], y[2], z[2], 0,
-    -dot(x, eye), -dot(y, eye), -dot(z, eye), 1
-  ]);
-}
-
-function normalize(value: AuraLeanVec3): AuraLeanVec3 {
-  const length = Math.hypot(value[0], value[1], value[2]) || 1;
-  return [value[0] / length, value[1] / length, value[2] / length];
-}
-function cross(a: AuraLeanVec3, b: AuraLeanVec3): AuraLeanVec3 { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
-function dot(a: AuraLeanVec3, b: AuraLeanVec3): number { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
-function multiply(a: Float32Array, b: Float32Array): Float32Array {
-  const result = new Float32Array(16);
-  for (let column = 0; column < 4; column += 1) {
-    for (let row = 0; row < 4; row += 1) {
-      result[column * 4 + row] = a[row]! * b[column * 4]! + a[4 + row]! * b[column * 4 + 1]! + a[8 + row]! * b[column * 4 + 2]! + a[12 + row]! * b[column * 4 + 3]!;
-    }
-  }
-  return result;
-}
+function vec3(value: AuraLeanVec3): Vec3 { return [value[0], value[1], value[2]]; }

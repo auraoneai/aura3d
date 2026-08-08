@@ -14,8 +14,8 @@ evidence is missing or stale.
 - New `@aura3d/engine/lean`, `@aura3d/engine/lean-product`, and
   `@aura3d/engine/lean-game` entries give new applications workload-specific
   paths without removing the broad compatibility root.
-- The frozen bundle scenarios measure the recommended entries at **0.556x,
-  1.249x, and 0.810x** their equivalent Three.js stacks, within the unchanged
+- The frozen bundle scenarios measure the recommended entries at **0.582x,
+  1.248x, and 0.832x** their equivalent Three.js stacks, within the unchanged
   **1.25x, 1.25x, and 1.50x** limits. These are build-scenario measurements,
   not universal runtime-performance claims.
 - Production physics now has one solver owner, `cannon-es`. The second
