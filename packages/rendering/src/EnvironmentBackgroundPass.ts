@@ -4,7 +4,7 @@ import { type RenderDevice, RenderDeviceError, type RenderShaderProgram, type Un
 import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { ShaderModule } from "./ShaderModule";
-import { createDefaultShaderLibrary, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME, type ShaderLibrary } from "./ShaderLibrary";
+import { createLeanCoreShaderLibrary, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { TextureBinding } from "./TextureBinding";
 import { VertexBuffer } from "./VertexBuffer";
 import { VertexFormat } from "./VertexFormat";
@@ -38,7 +38,7 @@ export class EnvironmentBackgroundPass extends BaseRenderPass {
 
   constructor(private readonly options: EnvironmentBackgroundOptions) {
     super("environment-background", [], [ENVIRONMENT_BACKGROUND_COLOR_RESOURCE]);
-    this.shaderLibrary = options.shaderLibrary ?? createDefaultShaderLibrary();
+    this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
   }
 
   execute(context: RenderPassContext): void {

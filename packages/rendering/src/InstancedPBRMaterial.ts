@@ -1,6 +1,6 @@
 import { Material, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
-import { DEFAULT_INSTANCED_PBR_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_INSTANCED_PBR_SHADER_NAME } from "./ShaderLibraryCore";
 import { TextureBinding } from "./TextureBinding";
 
 export const MAX_INSTANCED_PBR_INSTANCES = 64;

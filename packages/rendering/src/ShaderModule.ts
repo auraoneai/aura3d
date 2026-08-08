@@ -1,5 +1,5 @@
 import { type RenderDevice, type RenderShaderProgram } from "./RenderDevice";
-import { type CompiledShaderSource, type ShaderLibrary } from "./ShaderLibrary";
+import { type CompiledShaderSource, type ShaderLibrary } from "./ShaderLibraryCore";
 import { reflectShaderSources, type ShaderReflection } from "./ShaderReflection";
 
 export class ShaderModule {

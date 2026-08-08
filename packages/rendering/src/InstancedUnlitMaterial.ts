@@ -1,5 +1,5 @@
 import { Material, type RenderState } from "./Material";
-import { DEFAULT_INSTANCED_UNLIT_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_INSTANCED_UNLIT_SHADER_NAME } from "./ShaderLibraryCore";
 
 export const MAX_INSTANCED_UNLIT_INSTANCES = 64;
 

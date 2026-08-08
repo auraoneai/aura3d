@@ -1,5 +1,5 @@
 import { Material, type RenderState } from "./Material";
-import { DEFAULT_UNLIT_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_UNLIT_SHADER_NAME } from "./ShaderLibraryCore";
 
 export interface UnlitMaterialOptions {
   readonly name?: string;

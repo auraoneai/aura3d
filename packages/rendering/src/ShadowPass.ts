@@ -7,7 +7,7 @@ import { type RenderDeviceDiagnostics, type RenderTarget } from "./RenderDevice"
 import { type RenderPassContext } from "./RenderPass";
 import { Sampler } from "./Sampler";
 import { ShadowMap } from "./ShadowMap";
-import { type ShaderLibrary } from "./ShaderLibrary";
+import { type ShaderLibrary } from "./ShaderLibraryCore";
 import { TextureBinding } from "./TextureBinding";
 
 export interface ShadowPassOptions {
@@ -96,9 +96,11 @@ export class ShadowPass {
     const target = this.ensureRenderTarget(context);
     context.device.setRenderTarget(target);
     initializeShadowTarget(context, target);
-    const depthOptions = this.options.shaderLibrary
-      ? { casters: opaqueCasters, shaderLibrary: this.options.shaderLibrary, viewProjectionMatrix: this.options.viewProjectionMatrix }
-      : { casters: opaqueCasters, viewProjectionMatrix: this.options.viewProjectionMatrix };
+    const depthOptions = {
+      casters: opaqueCasters,
+      shaderLibrary: this.options.shaderLibrary,
+      viewProjectionMatrix: this.options.viewProjectionMatrix
+    };
     const pass = new DepthPass(depthOptions);
     pass.execute(context);
     context.device.setRenderTarget(null);

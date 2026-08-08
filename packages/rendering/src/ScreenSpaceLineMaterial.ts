@@ -1,5 +1,5 @@
 import { Material, type RenderState } from "./Material";
-import { DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME } from "./ShaderLibraryCore";
 
 export type ScreenSpaceLineCap = "butt" | "square" | "round";
 

@@ -1,6 +1,6 @@
 import { Material } from "./Material";
 import { MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
-import { DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_NAME } from "./ShaderLibraryCore";
 import { TextureBinding } from "./TextureBinding";
 
 /** Upper bound on joints per skin when the palette travels as a data texture. */

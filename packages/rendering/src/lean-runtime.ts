@@ -7,7 +7,10 @@
  */
 export { Geometry } from "./Geometry.js";
 export { PBRMaterial } from "./PBRMaterial.js";
-export { ProductionRuntimeRenderer } from "./production-runtime/ProductionRuntimeRenderer.js";
+export { LeanProductionRenderer } from "./lean/LeanProductionRenderer.js";
+export type { LeanProductionRendererOptions } from "./lean/LeanProductionRenderer.js";
+export { LeanProductRenderer } from "./lean/LeanProductRenderer.js";
+export type { LeanProductRendererOptions } from "./lean/LeanProductRenderer.js";
 export { collectRenderItems } from "./Renderer.js";
 export type { CameraLike, RenderSource } from "./Renderer.js";
 export type { RenderItem } from "./ForwardPass.js";

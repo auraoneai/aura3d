@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_INSTANCED_PBR_SHADER_NAME,
+  DEFAULT_DEPTH_SHADER_NAME,
   DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME,
   DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME,
   DEFAULT_PBR_SHADER_NAME,
@@ -23,6 +24,7 @@ import {
   createDefaultShaderLibrary,
   texturedPbrShaderActiveTextureSlots
 } from "../../../packages/rendering/src";
+import { createLeanCoreShaderLibrary } from "../../../packages/rendering/src/ShaderLibraryCore";
 
 const SPLIT_SUM_CALL = "a3dPbrEnvironmentLightSplitSum(";
 
@@ -79,6 +81,18 @@ function splitSumCallArguments(fragmentSource: string): string[][] {
 }
 
 describe("ShaderLibrary", () => {
+  it("keeps the lean shader profile limited to the four first-frame programs", () => {
+    const leanNames = createLeanCoreShaderLibrary().names();
+
+    expect(leanNames).toEqual([
+      DEFAULT_UNLIT_SHADER_NAME,
+      DEFAULT_PBR_SHADER_NAME,
+      DEFAULT_DEPTH_SHADER_NAME,
+      DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME
+    ]);
+    expect(createDefaultShaderLibrary().names()).toEqual(expect.arrayContaining([...leanNames]));
+  });
+
   it("preserves source markers when compiling default unlit shader", () => {
     const library = createDefaultShaderLibrary();
     const compiled = library.compileSource(DEFAULT_UNLIT_SHADER_NAME);

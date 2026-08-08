@@ -1,7 +1,7 @@
 import { Material, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { Sampler } from "./Sampler";
-import { DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME } from "./ShaderLibraryCore";
 import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 

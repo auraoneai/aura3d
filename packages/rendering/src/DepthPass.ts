@@ -2,7 +2,7 @@ import { Material } from "./Material";
 import { type DrawCommand, type RenderDevice, RenderDeviceError, type RenderShaderProgram } from "./RenderDevice";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { ShaderModule } from "./ShaderModule";
-import { DEFAULT_DEPTH_SHADER_NAME, type ShaderLibrary, createDefaultShaderLibrary } from "./ShaderLibrary";
+import { createLeanCoreShaderLibrary, DEFAULT_DEPTH_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { type RenderItem } from "./ForwardPass";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
@@ -47,7 +47,7 @@ export class DepthPass extends BaseRenderPass {
 
   constructor(private readonly options: DepthPassOptions) {
     super("depth", [], ["depth"]);
-    this.shaderLibrary = options.shaderLibrary ?? createDefaultShaderLibrary();
+    this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
   }
 
   execute(context: RenderPassContext): void {

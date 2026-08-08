@@ -1,5 +1,5 @@
 import { Material, type RenderState } from "./Material";
-import { DEFAULT_TEXTURED_UNLIT_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_TEXTURED_UNLIT_SHADER_NAME } from "./ShaderLibraryCore";
 import { Sampler } from "./Sampler";
 import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";

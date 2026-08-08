@@ -1,19 +1,23 @@
-import { collectRenderItems, type RenderItem } from "@aura3d/rendering/lean-runtime";
+import {
+  collectRenderItems,
+  LeanProductRenderer,
+  type RenderItem
+} from "@aura3d/rendering/lean-runtime";
 import {
   loadProductionGLTFRenderPipeline,
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/gltf-runtime";
 import {
-  createAuraApp as createLeanApp,
+  createAuraAppWithRenderer,
   type AuraLeanApp,
   type AuraLeanAppTarget,
   type AuraLeanCreateAppOptions,
   type AuraLeanModelRuntime,
   type AuraLeanModelSpec,
   type AuraLeanSceneSnapshot
-} from "./lean.js";
+} from "./lean-base.js";
 
-export * from "./lean.js";
+export * from "./lean-base.js";
 
 export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanApp {
   const pipelines: Array<{ readonly node: AuraLeanModelSpec; readonly pipeline: ProductionGLTFRenderPipeline }> = [];
@@ -41,5 +45,9 @@ export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreate
       pipelines.length = 0;
     }
   };
-  return createLeanApp(canvas, { ...options, modelRuntime });
+  return createAuraAppWithRenderer(canvas, {
+    ...options,
+    modelRuntime,
+    rendererFactory: LeanProductRenderer
+  });
 }

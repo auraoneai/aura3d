@@ -10,7 +10,7 @@ import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { MAX_UNIFORM_SKINNING_JOINTS as SHADER_MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
 import { ShaderModule } from "./ShaderModule";
-import { createDefaultShaderLibrary, type ShaderLibrary } from "./ShaderLibrary";
+import { createLeanCoreShaderLibrary, type ShaderLibrary } from "./ShaderLibraryCore";
 import { createShadowFilterKernel, type ShadowFilterKernel } from "./ShadowMap";
 import { Sampler } from "./Sampler";
 import { Texture } from "./Texture";
@@ -200,7 +200,7 @@ export class ForwardPass extends BaseRenderPass {
 
   constructor(private readonly options: ForwardPassOptions) {
     super("forward", options.inputColorResource ? [options.inputColorResource] : [], ["color"]);
-    this.shaderLibrary = options.shaderLibrary ?? createDefaultShaderLibrary();
+    this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
   }
 
   execute(context: RenderPassContext): void {

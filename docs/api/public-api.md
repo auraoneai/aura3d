@@ -38,7 +38,7 @@ pnpm verify:api-docs
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.5.2` | `packages/react/src/index.ts` | 14 |
 | `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 266 |
-| `@aura3d/rendering/lean-runtime` | `1.5.2` | `packages/rendering/src/lean-runtime.ts` | 7 |
+| `@aura3d/rendering/lean-runtime` | `1.5.2` | `packages/rendering/src/lean-runtime.ts` | 10 |
 | `@aura3d/rendering/webgpu` | `1.5.2` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `1.5.2` | `packages/scene/src/index.ts` | 21 |
 | `@aura3d/scripting` | `1.5.2` | `packages/scripting/src/index.ts` | 53 |
@@ -1221,7 +1221,10 @@ export * from "./animation/index.js";
 ```ts
 export { Geometry } from "./Geometry.js";
 export { PBRMaterial } from "./PBRMaterial.js";
-export { ProductionRuntimeRenderer } from "./production-runtime/ProductionRuntimeRenderer.js";
+export { LeanProductionRenderer } from "./lean/LeanProductionRenderer.js";
+export type { LeanProductionRendererOptions } from "./lean/LeanProductionRenderer.js";
+export { LeanProductRenderer } from "./lean/LeanProductRenderer.js";
+export type { LeanProductRendererOptions } from "./lean/LeanProductRenderer.js";
 export { collectRenderItems } from "./Renderer.js";
 export type { CameraLike, RenderSource } from "./Renderer.js";
 export type { RenderItem } from "./ForwardPass.js";

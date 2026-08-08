@@ -79,7 +79,7 @@ import {
   type RendererPostprocessPlanOptions,
   type RendererPostprocessTargetFormat
 } from "./RendererPostprocessPlan";
-import { createDefaultShaderLibrary, type ShaderLibrary } from "./ShaderLibrary";
+import type { ShaderLibrary } from "./ShaderLibraryCore";
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
@@ -448,13 +448,13 @@ export class Renderer {
   private animationLoop: RendererAnimationLoopImpl | null = null;
   private readonly fusedLdrPostprocessScratch: FusedLdrPostProcessScratch = {};
 
-  private constructor(device: RenderDevice, options: RendererOptions) {
+  private constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }) {
     this.device = device;
     this.canvas = options.canvas;
     this.width = options.width ?? inferInitialCanvasDimension(options.canvas, "width");
     this.height = options.height ?? inferInitialCanvasDimension(options.canvas, "height");
     this.clearColor = options.clearColor ?? [0, 0, 0, 1];
-    this.shaderLibrary = options.shaderLibrary ?? createDefaultShaderLibrary();
+    this.shaderLibrary = options.shaderLibrary;
     this.resizeCanvas(this.width, this.height);
   }
 
@@ -463,7 +463,9 @@ export class Renderer {
     if (options.requiredFeatures && options.requiredFeatures.length > 0) {
       assertRendererFeatures(device, options.requiredFeatures);
     }
-    return new Renderer(device, options);
+    const shaderLibrary = options.shaderLibrary
+      ?? (await import("./ShaderLibrary.js")).createDefaultShaderLibrary();
+    return new Renderer(device, { ...options, shaderLibrary });
   }
 
   getFeatureReport(): RendererFeatureReport {

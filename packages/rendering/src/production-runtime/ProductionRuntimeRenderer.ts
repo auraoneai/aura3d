@@ -1,6 +1,7 @@
 import { ProductionWebGL2Renderer, type ProductionWebGL2RendererOptions } from './ProductionWebGL2Renderer';
 import type { ProductionWebGPURenderer } from './ProductionWebGPURenderer';
 import type { RenderDeviceDiagnostics } from "../RenderDevice";
+import { createDefaultShaderLibrary } from "../ShaderLibrary";
 import type {
   ProductionRendererBackend,
   ProductionProductionRenderer,
@@ -70,7 +71,14 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
       return new ProductionRuntimeRenderer(await ProductionWebGPURenderer.create(options), "webgpu", selection);
     }
     const { backend: _backend, ...webgl2Options } = options;
-    return new ProductionRuntimeRenderer(await ProductionWebGL2Renderer.create(webgl2Options), "webgl2", selection);
+    return new ProductionRuntimeRenderer(
+      await ProductionWebGL2Renderer.create({
+        ...webgl2Options,
+        shaderLibrary: webgl2Options.shaderLibrary ?? createDefaultShaderLibrary()
+      }),
+      "webgl2",
+      selection
+    );
   }
 
   renderInteractiveFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {

@@ -5,7 +5,7 @@ import { type RenderDeviceDiagnostics } from "./RenderDevice";
 import { type RenderPassContext } from "./RenderPass";
 import { ShadowMap } from "./ShadowMap";
 import { ShadowPass, type ShadowPassReason } from "./ShadowPass";
-import { type ShaderLibrary } from "./ShaderLibrary";
+import { type ShaderLibrary } from "./ShaderLibraryCore";
 
 export interface CascadeSplitOptions {
   readonly cascadeCount: number;

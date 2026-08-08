@@ -1,5 +1,5 @@
 import { Material } from "./Material";
-import { DEFAULT_MORPH_UNLIT_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_MORPH_UNLIT_SHADER_NAME } from "./ShaderLibraryCore";
 
 export interface MorphUnlitMaterialOptions {
   readonly name?: string;

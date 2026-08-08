@@ -2,7 +2,7 @@ import { Material, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import type { PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
-import { DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibrary";
+import { DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibraryCore";
 import { MAX_DATA_TEXTURE_SKINNING_JOINTS } from "./SkinnedUnlitMaterial";
 import { TextureBinding } from "./TextureBinding";
 

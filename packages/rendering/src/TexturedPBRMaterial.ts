@@ -10,7 +10,7 @@ import {
   DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT
-} from "./ShaderLibrary";
+} from "./ShaderLibraryCore";
 import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 
