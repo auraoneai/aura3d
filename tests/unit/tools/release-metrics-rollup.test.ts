@@ -90,12 +90,12 @@ describe("R11 — architecture lock", () => {
   it("introduced no new engine subsystem during 1.6", () => {
     /*
      * Measured from the diff rather than judged. R11's subject is a *new subsystem*, not an
-     * additive entry adapter that composes existing owners. The bundle replatform added five
-     * deliberately narrow adapter files in existing packages; pinning that exact set makes a
-     * future unreviewed source-file addition fail this gate.
+     * additive entry adapter or module boundary that composes existing owners. The bundle
+     * replatform added nine deliberately narrow files in existing packages; pinning that exact
+     * set makes a future unreviewed source-file addition fail this gate.
      *
-     * `v1.5.2..HEAD` shows 10 added files, which is why the window matters: all 10 landed before
-     * 1.6 started. The paths below are the only source additions after the first 1.6 commit.
+     * `v1.5.2..HEAD` shows 19 added files, which is why the window matters: 10 landed before 1.6
+     * started. The paths below are the only source additions after the first 1.6 commit.
      */
     const addedFiles = execFileSync(
       "git",
@@ -106,10 +106,14 @@ describe("R11 — architecture lock", () => {
       .filter((line) => line.startsWith("A\t"));
     expect(addedFiles, `unexpected source additions during 1.6: ${addedFiles.join(", ")}`).toEqual([
       "A\tpackages/assets/src/gltf-runtime.ts",
+      "A\tpackages/engine/src/agent-api/lean-base.ts",
       "A\tpackages/engine/src/agent-api/lean-game.ts",
       "A\tpackages/engine/src/agent-api/lean-product.ts",
       "A\tpackages/engine/src/agent-api/lean.ts",
-      "A\tpackages/rendering/src/lean-runtime.ts"
+      "A\tpackages/rendering/src/ShaderLibraryCore.ts",
+      "A\tpackages/rendering/src/lean-runtime.ts",
+      "A\tpackages/rendering/src/lean/LeanProductRenderer.ts",
+      "A\tpackages/rendering/src/lean/LeanProductionRenderer.ts"
     ]);
 
     const addedPackages = execFileSync(
@@ -141,8 +145,9 @@ describe("§A — what Aura3D is NOT", () => {
      * pre-existing ones — the PRD is explicit that "not a" means "does not build speculative
      * subsystems", not "must delete on sight", and R8/R1 refused three of those deletions.
      *
-     * Since zero source files were added during 1.6 (asserted above), no NOT-list capability could
-     * have gained one. This asserts the stronger, more direct form: the physics solver count went
+     * The exact source additions asserted above are entry adapters and renderer/shader module
+     * boundaries for existing owners, so no NOT-list capability gained an implementation. This
+     * also asserts the stronger, more direct form: the physics solver count went
      * *down*, which is the opposite of the drift §A exists to reverse.
      */
     const report = json<{ readonly current: { readonly duplicateOwnershipViolations: number } }>(

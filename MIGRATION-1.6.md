@@ -39,7 +39,7 @@ should use the narrow entry matching their workload:
 
 This is a performance recommendation, not a removal. The README's first code example uses the
 product entry, and the canonical bundle scenarios measure the matching entry. Fresh measurements
-are **1.093x / 1.229x / 1.256x** the equivalent Three.js stacks against unchanged limits of
+are **0.556x / 1.249x / 0.810x** the equivalent Three.js stacks against unchanged limits of
 1.25x / 1.25x / 1.50x. The compatibility root is still intentionally broad and is not presented as
 the smallest entry.
 

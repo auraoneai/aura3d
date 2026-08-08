@@ -1,13 +1,13 @@
 # Public API Contract
 
-Generated: 2026-08-06T07:21:53.026Z
+Generated: 2026-08-08T09:55:48.106Z
 
 ## Summary
 
 - Checks passing: 7/7
 - Engine exports: 502
 - React exports: 8
-- Docs named imports checked: 47
+- Docs named imports checked: 43
 
 ## Checks
 
@@ -18,7 +18,7 @@ Generated: 2026-08-06T07:21:53.026Z
 | `react-required-exports` | pass | all required exports present |
 | `public-valid-examples-compile` | pass | valid public API examples compile from packed packages |
 | `public-invalid-examples-fail-as-expected` | pass | invalid model string, missing asset, archived imports, and archived package imports are rejected by TypeScript |
-| `docs-named-imports-are-exported` | pass | 47 documented named imports resolve |
+| `docs-named-imports-are-exported` | pass | 43 documented named imports resolve |
 | `archived-runtime-not-exported` | pass | archived runtime names are absent from public engine exports |
 
 ## Required Engine Exports
