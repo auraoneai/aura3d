@@ -13,7 +13,7 @@ Generated inventory for the first Three.js parity code backlog.
 | `webgl_morphtargets` | `morph-targets` | `high` | `matched` | `/apps/skinning-morph/` | `E` `D` `C` `K` |
 | `webgl_loader_gltf` | `asset-loaders` | `high` | `matched` | `/apps/flagship-viewer/` | `D` `C` `K` |
 | `webgl_loader_gltf_compressed` | `asset-loaders` | `high` | `matched` | `/apps/loader-compression/` | `D` `C` `K` |
-| `webgl_loader_gltf_instancing` | `asset-loaders` | `high` | `partial` | `/apps/loader-instancing/` | `D` `G` `I` `K` |
+| `webgl_loader_gltf_instancing` | `asset-loaders` | `high` | `matched` | `/apps/loader-instancing/` | `D` `G` `I` `K` |
 | `webgl_loader_gltf_sheen` | `materials-physical` | `high` | `matched` | `/apps/loader-material-extensions/` | `C` `D` `K` |
 | `webgl_loader_gltf_transmission` | `transparency-transmission` | `high` | `matched` | `/apps/loader-material-extensions/` | `C` `D` `H` `K` |
 | `webgl_loader_gltf_variants` | `asset-loaders` | `medium` | `partial` | `/apps/loader-gltf-variants/` | `D` `C` `K` |

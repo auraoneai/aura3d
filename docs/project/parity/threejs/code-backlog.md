@@ -7,17 +7,10 @@ It is a construction backlog. It does not prove parity. Work items below must be
 ## Summary
 
 - Total inventoried examples: 54
-- High-priority open examples: 1
-- Status counts: matched=39, partial=15
+- High-priority open examples: 0
+- Status counts: matched=40, partial=14
 
 ## Next Implementation Targets
-
-### webgl_loader_gltf_instancing
-
-- Category: `asset-loaders`
-- Current status: `partial`
-- Construction tracks: `D: Asset Loaders And Resource Pipeline`, `G: Geometry, Lines, Points, Sprites, Helpers, Instancing`, `I: Performance, Memory, Scale, Bundle Health`, `K: Product Apps, Examples, Templates, Docs`
-- Blocking features: `Row names test files that are absent from the current source tree: tests/unit/workstream5-runtime.test.ts -t imports EXT_mesh_gpu_instancing.`
 
 ## Backlog By Construction Track
 
