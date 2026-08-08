@@ -110,7 +110,7 @@ describe("public showcase gameplay regressions", () => {
     expect(continued.deaths).toBe(0);
   });
 
-  it("locks held movement briefly after a Skyline death to prevent checkpoint death loops", () => {
+  it("requires neutral movement after a Skyline death to prevent checkpoint death loops", () => {
     /*
      * The route's own level, from the module that owns it.
      *
@@ -128,12 +128,22 @@ describe("public showcase gameplay regressions", () => {
     }
     expect(snapshot.deaths).toBe(1);
     const respawnDeaths = snapshot.deaths;
-    for (let frame = 0; frame < 12; frame += 1) {
+    // Keep holding well beyond the old 300 ms timer but inside the bounded
+    // continuous-controller fallback. A human release must remain the fast path.
+    for (let frame = 0; frame < 36; frame += 1) {
       snapshot = simulation.step(1 / 60, { moveX: 1 });
     }
     expect(snapshot.deaths).toBe(respawnDeaths);
     expect(snapshot.player.x).toBeCloseTo(checkpointX, 3);
     expect(snapshot.player.grounded).toBe(true);
+
+    simulation.step(1 / 60, { moveX: 0 });
+    const releasedAtX = simulation.snapshot().player.x;
+    for (let frame = 0; frame < 30; frame += 1) {
+      snapshot = simulation.step(1 / 60, { moveX: 1, jumpPressed: frame === 0 });
+    }
+    expect(snapshot.deaths).toBe(respawnDeaths);
+    expect(snapshot.player.x).toBeGreaterThan(releasedAtX + 0.3);
   });
 
   it("faces the Skyline character along travel instead of toward the camera", () => {

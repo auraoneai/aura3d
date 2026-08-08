@@ -231,6 +231,7 @@ interface MutablePlatformerState {
   lives: number;
   deaths: number;
   respawnControlLock: number;
+  respawnAwaitingNeutralInput: boolean;
   checkpointId: string;
   collected: Set<string>;
   activatedCheckpoints: Set<string>;
@@ -913,7 +914,10 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     // Ignore held directional input briefly after a death so a key that caused
     // the miss cannot immediately carry the fresh spawn off its supporting
     // surface before the player or an automated driver can react.
-    state.respawnControlLock = 0.3;
+    // A released direction unlocks immediately; the bounded fallback keeps
+    // continuous-input AI/autoplay controllers from remaining locked forever.
+    state.respawnControlLock = 0.75;
+    state.respawnAwaitingNeutralInput = true;
     emit("respawn", state.checkpointId);
   };
 
@@ -950,8 +954,13 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       }
 
       state.respawnControlLock = Math.max(0, state.respawnControlLock - step);
-      const controlsLocked = state.respawnControlLock > 0;
-      const moveX = controlsLocked ? 0 : clampNumber(input.moveX ?? 0, -1, 1);
+      const requestedMoveX = clampNumber(input.moveX ?? 0, -1, 1);
+      if (state.respawnAwaitingNeutralInput && Math.abs(requestedMoveX) <= 0.01) {
+        state.respawnAwaitingNeutralInput = false;
+      }
+      if (state.respawnControlLock <= 0) state.respawnAwaitingNeutralInput = false;
+      const controlsLocked = state.respawnAwaitingNeutralInput;
+      const moveX = controlsLocked ? 0 : requestedMoveX;
       if (Math.abs(moveX) > 0.01) state.player.facing = moveX >= 0 ? 1 : -1;
       state.player.vx = moveX * config.moveSpeed;
       state.player.coyote = state.player.grounded ? config.coyoteMs / 1000 : Math.max(0, state.player.coyote - step);
@@ -1727,6 +1736,7 @@ function createPlatformerState(config: Required<Omit<GamePlatformerLevel, "id">>
     lives: config.lives,
     deaths: 0,
     respawnControlLock: 0,
+    respawnAwaitingNeutralInput: false,
     checkpointId,
     collected: new Set<string>(),
     activatedCheckpoints: checkpointId === "start" ? new Set<string>() : new Set([checkpointId])

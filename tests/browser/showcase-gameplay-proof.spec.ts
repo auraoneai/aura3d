@@ -349,7 +349,16 @@ test.describe("showcase gameplay proof", () => {
     const skylineCaptures: Record<string, ScreenshotEvidence> = { "first-load": beforePng };
 
     await page.keyboard.down("KeyD");
-    await page.waitForTimeout(620);
+    await expect.poll(async () => {
+      const current = await readSkyline(page);
+      return current.deaths === before.deaths
+        ? (current.diagnostics?.snapshot?.x ?? 0)
+        : Number.NEGATIVE_INFINITY;
+    }, {
+      timeout: 2_000,
+      message: "runner should move right while alive before the opening jump"
+    }).toBeGreaterThan((before.diagnostics?.snapshot?.x ?? 0) + 0.35);
+    const traversing = await readSkyline(page);
     // Traversal: the runner is moving right along the course.
     skylineCaptures.traversal = await capture(page, "showcase-skyline-runner", "traversal");
     await page.keyboard.press("Space");
@@ -443,7 +452,7 @@ test.describe("showcase gameplay proof", () => {
     const states = (after.animation?.stateHistory ?? []).map((entry) => entry.state);
     const beforeContact = before.diagnostics?.surfaceContactAlignment;
 
-    check((after.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.35, blockers, "movement did not change runner x position");
+    check((traversing.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.35, blockers, "movement did not change runner x position");
     check(rightFacing?.facing === 1 && rightFacing.facingYaw === Math.PI / 2, blockers, "runner did not face right along forward travel");
     check(leftFacing.diagnostics?.snapshot?.facing === -1 && leftFacing.diagnostics.snapshot.facingYaw === -Math.PI / 2, blockers, "runner did not turn left with reverse travel");
     check(checkpointSpawn.checkpointId === "asset-checkpoint-03", blockers, "mid-course checkpoint setup failed");
@@ -495,6 +504,7 @@ test.describe("showcase gameplay proof", () => {
     }
     writeRouteReport("showcase-skyline-runner", blockers, errors, beforePng, afterPng, {
       before,
+      traversing,
       after,
       checkpointSpawn,
       respawned,
