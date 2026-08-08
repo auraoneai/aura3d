@@ -1,0 +1,198 @@
+{
+  "schema": "aura3d.external-candidate-package-audit/1.0",
+  "generatedAt": "2026-08-08T20:36:20.288Z",
+  "pass": true,
+  "claimBoundary": "Install/package/security and all-export bundle evidence only. It does not select an engine or replace Phase 2 browser workload bake-offs.",
+  "environment": {
+    "node": "v22.22.0",
+    "npm": "10.9.4",
+    "platform": "darwin-arm64"
+  },
+  "lockfileVersion": 3,
+  "auditExitCode": 0,
+  "auditTotals": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packages": [
+    {
+      "name": "@dimforge/rapier3d",
+      "version": "0.19.3",
+      "tarball": {
+        "filename": "dimforge-rapier3d-0.19.3.tgz",
+        "packageBytes": 781538,
+        "unpackedBytes": 2872353,
+        "fileCount": 172,
+        "integrity": "sha512-tkD1tvHTDML0W9s9rUYAsx0btO9LbVTnMBKJWVgOsas5haGFbYY+pzr5hbwYysv/IJmgmMrIFoVWIcsaCUE9ow==",
+        "shasum": "eca704398f98e1740f5e5c823654e340d96d1c58",
+        "sha256": "f23ae1729ffaab2ae14226c0f10a714a8435df4676c260db873e3003d0f7a8fa"
+      },
+      "allExportBrowserBundle": {
+        "pass": false,
+        "error": "✘ [ERROR] No loader is configured for \".wasm\" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm\n\n    node_modules/@dimforge/rapier3d/rapier_wasm3d.js:1:22:\n      1 │ import * as wasm from \"./rapier_wasm3d_bg.wasm\";\n        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~"
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "@dimforge/rapier3d-compat",
+      "version": "0.19.3",
+      "tarball": {
+        "filename": "dimforge-rapier3d-compat-0.19.3.tgz",
+        "packageBytes": 2602383,
+        "unpackedBytes": 8209064,
+        "fileCount": 50,
+        "integrity": "sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg==",
+        "shasum": "b7092f4c75e696750c817c9ff6046a8d13015864",
+        "sha256": "09c411bc02d85a2bcf9b2cb01b55fca2edcb6fad52e1e093ddafd25d66db087c"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 2281435,
+        "gzipBytes": 838598,
+        "brotliBytes": 616289
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "cannon-es",
+      "version": "0.20.0",
+      "tarball": {
+        "filename": "cannon-es-0.20.0.tgz",
+        "packageBytes": 164649,
+        "unpackedBytes": 773946,
+        "fileCount": 8,
+        "integrity": "sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==",
+        "shasum": "bf2f62a674701f37e3d861c90668a32d4d32f082",
+        "sha256": "8bb8590fb142095d506d5a5fe13b0331430d05363eff8b6e33fac83c9dd14a84"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 307325,
+        "gzipBytes": 62507,
+        "brotliBytes": 51305
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "recast-navigation",
+      "version": "0.43.1",
+      "tarball": {
+        "filename": "recast-navigation-0.43.1.tgz",
+        "packageBytes": 9302,
+        "unpackedBytes": 28346,
+        "fileCount": 9,
+        "integrity": "sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A==",
+        "shasum": "69a26bcafaea51aee4d08fc70d71d7dffc193555",
+        "sha256": "08ba2c71f71b8e342552c36ab63cebfddaa0a67d20dbee58979cd6a7561bb25f"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 1236913,
+        "gzipBytes": 258473,
+        "brotliBytes": 203914
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "howler",
+      "version": "2.2.4",
+      "tarball": {
+        "filename": "howler-2.2.4.tgz",
+        "packageBytes": 72709,
+        "unpackedBytes": 318465,
+        "fileCount": 9,
+        "integrity": "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==",
+        "shasum": "bd3df4a4f68a0118a51e4bd84a2bfc2e93e6e5a1",
+        "sha256": "be9d8d09345954e246e932a057de0c9724475c8b58120dc690644432a0ba485f"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 88535,
+        "gzipBytes": 15336,
+        "brotliBytes": 12895
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "yuka",
+      "version": "0.7.8",
+      "tarball": {
+        "filename": "yuka-0.7.8.tgz",
+        "packageBytes": 204105,
+        "unpackedBytes": 1031182,
+        "fileCount": 7,
+        "integrity": "sha512-G/pFcMZh2Azz7Yy500NSV1jQ0Ru7h9hTNyEW+HjRXcdzjJIyp/3mCGspnx7VJVP06zxORqK6mkl5TywLqVUnVg==",
+        "shasum": "5297c2d8c36e6e6bbe24c6119522cbc2a8dd8dd7",
+        "sha256": "ddf70965e0d9ac46a31e543fec7a04f5e196671f28fd2f02531f5e269469e8c9"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 372547,
+        "gzipBytes": 64295,
+        "brotliBytes": 50726
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "bitecs",
+      "version": "0.4.0",
+      "tarball": {
+        "filename": "bitecs-0.4.0.tgz",
+        "packageBytes": 358155,
+        "unpackedBytes": 1752971,
+        "fileCount": 87,
+        "integrity": "sha512-ho6Zop/L79DRTnBAfakPpGPuX7y0+lAjX06CpaAW+5tnAc7BH3L3RlSrWAXAqwnQGDZ10GsoxaxyTTsddlun3g==",
+        "shasum": "13efc4eaba85f25a1f6b2929953b2e5172f58032",
+        "sha256": "c6b7a6d7f836fde0b49d4dc9a4ec00d5783d2916e32bdfe509a86adee9ce238a"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 22574,
+        "gzipBytes": 6663,
+        "brotliBytes": 5998
+      },
+      "security": {
+        "vulnerable": false
+      }
+    },
+    {
+      "name": "miniplex",
+      "version": "2.0.0",
+      "tarball": {
+        "filename": "miniplex-2.0.0.tgz",
+        "packageBytes": 17283,
+        "unpackedBytes": 107893,
+        "fileCount": 11,
+        "integrity": "sha512-pJlxmlPf5Qyx12amgOCyRE6Lzw28ct2G0lF9xn7/xudLtA/xDOUnCIU2xOxCk8GkjePYctcNpjmFshJp/Ht66A==",
+        "shasum": "5d0be39b78a838bf35702d7e5de26c4df87f70bf",
+        "sha256": "0b1ab78333436eedde0f672135bf41eff5a92d04eba0c869d08e9c8b343571a3"
+      },
+      "allExportBrowserBundle": {
+        "pass": true,
+        "rawBytes": 42777,
+        "gzipBytes": 8824,
+        "brotliBytes": 7614
+      },
+      "security": {
+        "vulnerable": false
+      }
+    }
+  ],
+  "failures": []
+}

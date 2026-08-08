@@ -74,6 +74,13 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "final-competitive-baseline": [
     "tests/reports/final-competitive-baseline/<artifact>"
   ],
+  "external-candidate-package-audit": [
+    "tests/reports/external-candidate-package-audit.json"
+  ],
+  "final-subsystem-ownership": [
+    "tests/reports/final-subsystem-ownership.json",
+    "docs/architecture/final-subsystem-ownership.md"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -177,6 +184,17 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
     writes: PRODUCER_OWNERSHIP["final-competitive-baseline"],
     hashes: []
   },
+  "external-candidate-package-audit": {
+    writes: PRODUCER_OWNERSHIP["external-candidate-package-audit"],
+    hashes: []
+  },
+  "final-subsystem-ownership": {
+    writes: PRODUCER_OWNERSHIP["final-subsystem-ownership"],
+    hashes: [
+      "tests/reports/external-candidate-package-audit.json",
+      "tools/final-subsystem-ownership/adr-registry.json"
+    ]
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -204,6 +222,8 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   // Immutable program inputs; generation is one-time and later invocations verify.
   "final-competitive-baseline",
   "current-threejs-baseline",
+  "external-candidate-package-audit",
+  "final-subsystem-ownership",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",
