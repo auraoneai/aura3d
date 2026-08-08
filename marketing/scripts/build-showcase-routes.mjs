@@ -47,6 +47,20 @@ const showcaseRoutes = [
   "showcase-webgpu-particle-lab"
 ];
 
+const evidenceRoutes = [
+  "loader-gltf-variants",
+  "loader-obj",
+  "texture-anisotropy",
+  "postprocessing-depth-outline",
+  "controls-trackball",
+  "geometry-drawrange",
+  "interactive-picking",
+  "camera-multiple-views",
+  "webxr-interactions"
+];
+
+const publicRoutes = [...showcaseRoutes, ...evidenceRoutes];
+
 const requiredPublicGameEngineHelpers = [
   "racingRoadMesh",
   "racingStartFinish",
@@ -93,7 +107,7 @@ function assertRequiredEngineSourceHelpers() {
 
 function writeViteConfig(tempDir) {
   const routeInputs = Object.fromEntries(
-    showcaseRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "index.html")])
+    publicRoutes.map((route) => [route, path.join(repoRoot, "apps", route, "index.html")])
   );
 
   const configPath = path.join(tempDir, "vite.config.mjs");
@@ -147,7 +161,7 @@ function runViteBuild(configPath) {
 }
 
 function copyRouteHealth() {
-  for (const route of showcaseRoutes) {
+  for (const route of publicRoutes) {
     const routeHealth = path.join(repoRoot, "apps", route, "route-health.json");
     if (!existsSync(routeHealth)) continue;
     const outputDir = path.join(distDir, "apps", route);
@@ -191,7 +205,7 @@ function resolveShowcaseAssetBaseUrl() {
 function collectRouteAssetIds() {
   const routeAssetIds = new Set();
   const assetReferencePattern = /\bassets\.([A-Za-z0-9_$]+)\b/g;
-  for (const route of showcaseRoutes) {
+  for (const route of publicRoutes) {
     const routeDir = path.join(repoRoot, "apps", route, "src");
     if (!existsSync(routeDir)) continue;
     for (const file of collectRouteFiles(routeDir)) {
@@ -258,7 +272,7 @@ function assertBuiltRoutes() {
     rmSync(stalePoster, { force: true });
   }
 
-  for (const route of showcaseRoutes) {
+  for (const route of publicRoutes) {
     const builtHtml = path.join(distDir, "apps", route, "index.html");
     if (!existsSync(builtHtml)) {
       throw new Error(`showcase route did not build: ${builtHtml}`);
@@ -298,7 +312,7 @@ function main() {
       copyAuraAssets();
     }
     assertBuiltRoutes();
-    console.log(`Built ${showcaseRoutes.length} showcase routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
+    console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
   } finally {
     rmSync(tempDir, { force: true, recursive: true });
   }

@@ -31,7 +31,7 @@
   "url": "https://aura3d.auraone.ai",
   "downloadUrl": "https://www.npmjs.com/package/@aura3d/engine",
   "codeRepository": "https://github.com/auraoneai/aura3d",
-  "softwareVersion": "1.5.2",
+  "softwareVersion": "1.6.0",
   "programmingLanguage": "TypeScript",
   "description": "AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deployment checks."
 }
@@ -71,7 +71,7 @@
           <span>npm</span>
         </a>
       </div>
-      <span class="nav-version">v1.5.2</span>
+      <span class="nav-version">v1.6.0</span>
       <a class="btn btn-ghost" href="/docs/index.html">Docs</a>
       <a class="btn btn-primary nav-start" href="#templates">Get&nbsp;started <span class="arr"></span></a>
     </div>
@@ -118,7 +118,7 @@
           <span class="k">agent-resolved catalog</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>v1.5.2</b></span>
+          <span class="v"><b>v1.6.0</b></span>
           <span class="k">latest engine</span>
         </div>
         <div class="hero-meta-item">
@@ -168,14 +168,14 @@
   </div>
 </section>
 
-<!-- ─── NEW IN 1.5.2 ───────────────────────────────────────── -->
-<section class="section-tight" id="release-152" data-search-index="release 1.5.2 orthographic camera isometric camera parallel projection fitSizeToRegion bounds derived sizing cad technical drawing floor plan sprite bake product turntable clean room developer proof gltf loader visual parity webgpu route health">
+<!-- ─── NEW IN 1.6.0 ───────────────────────────────────────── -->
+<section class="section-tight" id="release-160" data-search-index="release 1.6.0 lean product game entries physics ownership compatibility gltf variants obj anisotropy postprocess controls draw range camera views picking webxr evidence">
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
-        <span class="eyebrow">New in 1.5.2</span>
-        <h2 class="h2">Cameras and sizing you no longer <em style="font-family:var(--serif);font-style:italic">have to solve yourself.</em></h2>
-        <p class="lede">1.5.2 adds orthographic and isometric cameras to the public API, and bounds-derived asset sizing through <code>fitSizeToRegion</code>. Before this release you could not request a parallel projection at all: auto-framing could only build a perspective frustum, so CAD views, isometric games, floor plans, sprite bakes and product turntables silently rendered with foreshortening. Sizing had the same gap &mdash; placement was bounds-derived, sizing was not, so routes invented scale multipliers that broke the moment an asset changed. Both are now library capabilities with tests and shipped type definitions.</p>
+        <span class="eyebrow">New in 1.6.0</span>
+        <h2 class="h2">Narrower entries. One production physics owner. <em style="font-family:var(--serif);font-style:italic">Evidence that fails closed.</em></h2>
+        <p class="lede">1.6.0 adds recommended <code>lean</code>, <code>lean-product</code>, and <code>lean-game</code> engine entries while retaining the broad compatibility root. It consolidates production physics on the shared <code>cannon-es</code> path, corrects capsule grounding and rotation-aware queries, preserves published 1.5.2 input fixtures, and restores real browser evidence for loaders, materials, controls, postprocess, geometry, cameras, picking, and injected WebXR interaction semantics.</p>
       </div>
     </div>
 
@@ -197,30 +197,30 @@
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">new library capability</span>
+          <span class="title">recommended 1.6 entries</span>
           <span class="pass">● tests + dist types</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">cameras</span> <span class="v ok">camera.orthographic(), camera.isometric()</span></div>
-          <div class="diag-row"><span class="k">framing</span> <span class="v ok">computeOrthographicCameraFrame / View</span></div>
-          <div class="diag-row"><span class="k">sizing</span> <span class="v ok">fitSizeToRegion() from region bounds</span></div>
-          <div class="diag-row"><span class="k">renderer</span> <span class="v ok">RenderSource.cameraProjection</span></div>
-          <div class="diag-row"><span class="k">isometric</span> <span class="v">true atan(1/&radic;2) elevation</span></div>
-          <div class="diag-row"><span class="k">default</span> <span class="v">perspective unchanged, not a breaking change</span></div>
+          <div class="diag-row"><span class="k">core scene</span> <span class="v ok">@aura3d/engine/lean</span></div>
+          <div class="diag-row"><span class="k">typed GLB product</span> <span class="v ok">@aura3d/engine/lean-product</span></div>
+          <div class="diag-row"><span class="k">input + physics</span> <span class="v ok">@aura3d/engine/lean-game</span></div>
+          <div class="diag-row"><span class="k">physics owner</span> <span class="v ok">one shared cannon-es path</span></div>
+          <div class="diag-row"><span class="k">compatibility</span> <span class="v">broad root retained</span></div>
+          <div class="diag-row"><span class="k">version</span> <span class="v">minor; published fixture exports preserved</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
           <span class="title">measured, with thresholds disclosed</span>
-          <span class="warn">● not full parity</span>
+          <span class="warn">● scoped comparisons</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">product render</span> <span class="v">0.331 changed px vs strict 0.15 gate &mdash; fails</span></div>
-          <div class="diag-row"><span class="k">pbr / hdr / shadow</span> <span class="v">pass only under loose 0.82 / 0.55 / 0.86 gates</span></div>
-          <div class="diag-row"><span class="k">gltf loader</span> <span class="v ok">170 / 170 same-source diffs</span></div>
-          <div class="diag-row"><span class="k">capability</span> <span class="v">6 exceed / 37 parity / 10 unproven / 3 gap</span></div>
-          <div class="diag-row"><span class="k">hard gaps</span> <span class="v">morph targets, context loss, text rendering</span></div>
+          <div class="diag-row"><span class="k">selected inventory</span> <span class="v ok">54 / 54 matched</span></div>
+          <div class="diag-row"><span class="k">high-priority open</span> <span class="v ok">0</span></div>
+          <div class="diag-row"><span class="k">same-asset animation</span> <span class="v ok">7 / 7 comparisons pass</span></div>
+          <div class="diag-row"><span class="k">resource lifecycle</span> <span class="v ok">0 tracked leaks after 100 reloads</span></div>
+          <div class="diag-row"><span class="k">boundary</span> <span class="v">named routes, assets, browsers, and thresholds only</span></div>
           <div class="diag-row"><span class="k">games</span> <span class="v">3 routes remain prototype-blocked</span></div>
         </div>
       </div>
@@ -268,7 +268,7 @@
           <span>foot IK + foot-lock</span>
           <span>spring body-sway</span>
           <span>authored event tracks</span>
-          <span>1.5.2 package proof</span>
+          <span>1.6.0 package proof</span>
         </div>
         <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
           <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
@@ -510,8 +510,8 @@
     <div class="sec-head">
       <div class="sec-head-left">
         <span class="eyebrow">04 — Public showcase</span>
-        <h2 class="h2">Eight tracked experiences.<br /><em style="font-family:var(--serif);font-style:italic">Every status stays visible.</em></h2>
-        <p class="lede">The website tracks four current route-library candidates, three visual-rebuild prototypes, and the Aura Clash development showcase. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner retain bounded technical evidence but no current visual approval. Superseded proofs and the duplicate headphone inspector remain accessible as evidence and tooling; Data Galaxy and Particle Lab remain Labs diagnostics.</p>
+        <h2 class="h2">Tracked public experiences.<br /><em style="font-family:var(--serif);font-style:italic">Every status stays visible.</em></h2>
+        <p class="lede">The website tracks four route-library candidates awaiting current human approval, three visual-rebuild prototypes, and the Aura Clash development showcase. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner retain bounded technical evidence but cannot be promoted. Superseded and duplicate public routes are excluded from the website; Data Galaxy and Particle Lab remain Labs diagnostics.</p>
         <p class="lede">The same source-code workflow powers the starter apps, while retained engine evidence routes stay separately labeled and unpromoted.</p>
       </div>
       <div class="sec-head-right">
@@ -529,7 +529,7 @@
         <div class="showcase-copy">
           <div class="showcase-kicker"><span class="chip">Candidate</span><span class="chip">Product</span></div>
           <h3>Product Configurator</h3>
-          <p>Typed headphones, material controls, and a retained public visual pass.</p>
+          <p>Typed headphones, material controls, and current technical evidence; human visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/apps/showcase-smart-city-control/" role="link" tabindex="0" aria-label="Open Smart City Control showcase">
@@ -540,7 +540,7 @@
         <div class="showcase-copy">
           <div class="showcase-kicker"><span class="chip">Candidate</span><span class="chip">Operations</span></div>
           <h3>Smart City Control</h3>
-          <p>A bounded operations interface with a typed vehicle and accepted visuals.</p>
+          <p>A bounded operations interface with a typed vehicle; current human visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/apps/showcase-cinematic-architecture/" role="link" tabindex="0" aria-label="Open Cinematic Architecture showcase">
@@ -551,7 +551,7 @@
         <div class="showcase-copy">
           <div class="showcase-kicker"><span class="chip">Candidate</span><span class="chip">Architecture</span></div>
           <h3>Cinematic Architecture</h3>
-          <p>A typed city district with route evidence and cinematic public framing.</p>
+          <p>A typed city district with route evidence and cinematic framing; human visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/apps/showcase-digital-twin-ops/" role="link" tabindex="0" aria-label="Open Digital Twin Operations showcase">
@@ -562,7 +562,7 @@
         <div class="showcase-copy">
           <div class="showcase-kicker"><span class="chip">Candidate</span><span class="chip">Industrial</span></div>
           <h3>Digital Twin Operations</h3>
-          <p>A typed workcell and bounded operations dashboard with deploy proof.</p>
+          <p>A typed workcell and bounded operations dashboard with technical proof; human visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/apps/showcase-blockfall-reactor/" role="link" tabindex="0" aria-label="Open Blockfall Reactor showcase">
@@ -620,19 +620,19 @@
         <div class="example-list">
           <a class="example-card" href="/apps/showcase-product-configurator/">
             <span>Product Configurator</span>
-            <small>typed headphones · material controls · public visual pass</small>
+            <small>typed headphones · material controls · human review pending</small>
           </a>
           <a class="example-card" href="/apps/showcase-smart-city-control/">
             <span>Smart City Control</span>
-            <small>typed vehicle · bounded operations UI · public visual pass</small>
+            <small>typed vehicle · bounded operations UI · human review pending</small>
           </a>
           <a class="example-card" href="/apps/showcase-cinematic-architecture/">
             <span>Cinematic Architecture</span>
-            <small>typed city architecture · route evidence · public visual pass</small>
+            <small>typed city architecture · route evidence · human review pending</small>
           </a>
           <a class="example-card" href="/apps/showcase-digital-twin-ops/">
             <span>Digital Twin Operations</span>
-            <small>typed industrial workcell · bounded ops dashboard · public visual pass</small>
+            <small>typed industrial workcell · bounded ops dashboard · human review pending</small>
           </a>
           <a class="example-card" href="/apps/showcase-blockfall-reactor/">
             <span>Blockfall Reactor</span>
@@ -667,6 +667,42 @@
           <a class="example-card" href="/apps/showcase-webgpu-particle-lab/">
             <span>Particle Lab</span>
             <small>internal diagnostic · no native WebGPU claim · public release excluded</small>
+          </a>
+          <a class="example-card" href="/apps/loader-gltf-variants/">
+            <span>glTF Material Variants</span>
+            <small>WebGL2 evidence · KHR_materials_variants · scoped loader proof</small>
+          </a>
+          <a class="example-card" href="/apps/loader-obj/">
+            <span>OBJ Import</span>
+            <small>WebGL2 evidence · triangulation · normals · UV preservation</small>
+          </a>
+          <a class="example-card" href="/apps/texture-anisotropy/">
+            <span>Texture Anisotropy</span>
+            <small>WebGL2 evidence · sampler upload diagnostics</small>
+          </a>
+          <a class="example-card" href="/apps/postprocessing-depth-outline/">
+            <span>Depth + Outline</span>
+            <small>WebGL2 evidence · DOF · SSAO · outline chain</small>
+          </a>
+          <a class="example-card" href="/apps/controls-trackball/">
+            <span>Trackball Controls</span>
+            <small>WebGL2 evidence · rotate · pan · dolly · roll</small>
+          </a>
+          <a class="example-card" href="/apps/geometry-drawrange/">
+            <span>Geometry Draw Ranges</span>
+            <small>WebGL2 evidence · indexed and array draw ranges</small>
+          </a>
+          <a class="example-card" href="/apps/interactive-picking/">
+            <span>Interactive Picking</span>
+            <small>WebGL2 evidence · cubes · points · pointer rays</small>
+          </a>
+          <a class="example-card" href="/apps/camera-multiple-views/">
+            <span>Multiple Camera Views</span>
+            <small>WebGL2 evidence · shared geometry · three distinct views</small>
+          </a>
+          <a class="example-card" href="/apps/webxr-interactions/">
+            <span>Injected WebXR Interactions</span>
+            <small>input/session contract · explanatory 2D preview · no hardware claim</small>
           </a>
         </div>
       </div>
@@ -764,7 +800,7 @@
         <p class="lede">Aura3D brings the current production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
       </div>
       <div class="sec-head-right">
-        <span class="eyebrow-num">@aura3d/engine@1.5.2</span>
+        <span class="eyebrow-num">@aura3d/engine@1.6.0</span>
         <span class="mute-2 mono" style="font-size:11px">latest root runtime</span>
       </div>
     </div>
@@ -776,7 +812,7 @@
           <span class="pass">● latest</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.5.2</span></div>
+          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.6.0</span></div>
           <div class="diag-row"><span class="k">renderer proof</span> <span class="v ok">WebGL2 route evidence + bounded diagnostics</span></div>
           <div class="diag-row"><span class="k">animation</span> <span class="v ok">believable-motion packages</span></div>
         </div>
@@ -1123,7 +1159,7 @@ scene()
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Aura3D · @aura3d/engine v1.5.2 · MIT licensed</span>
+      <span>© 2026 Aura3D · @aura3d/engine v1.6.0 · MIT licensed</span>
       <span>Prompt-to-3D · typed assets · production browser scenes</span>
     </div>
   </div>
