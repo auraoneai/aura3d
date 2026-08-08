@@ -183,16 +183,38 @@ not done this document's job.
       duplicate APIs removed · entry points removed — `tools/negative-complexity/index.ts` reports
       every baseline row with its delta on each run.
 - [ ] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
-      `be86c73e`**, net of additions. Note that adding Rapier *adds* a dependency while
+      `be86c73e`**, net of additions. — **NOT MET: 201,296 vs 200,929, delta +367.**
+
+      Measured breakdown, because "+367" alone invites the wrong fix. By package:
+      `rendering` **−902**, `physics` +421, `engine` +804, `three-compat` +24, `audio` +20.
+      Splitting the physics+engine diff by line kind: **code +692 / −487 = net +205**, and
+      **comment or blank +1,048 / −28 = net +1,020**.
+
+      So the growth is overwhelmingly the recorded reasoning for each engine defect — the
+      cylinder-capsule contact geometry, the rotation-ignoring query path, the
+      `solverIterations` default against cannon's own, the joint no-op, the deleted second
+      solver. Deleting those comments would satisfy this metric today and cost the next
+      person the measurements. **Not doing that**, and recording the number as missed rather
+      than gaming it (R2, R6: line counts are observations, not targets).
+
+      The honest way to meet this condition is deletion that R8 currently refuses
+      (`packages/ecs`, `packages/scripting` — ADR 0001; `examples/data-galaxy` — 370 retained
+      references) or the physics/vehicle consolidation that ADR 0002 blocks. Both are real
+      reductions; neither is available yet. Note that adding Rapier *adds* a dependency while
       removing far more code — that trade is explicitly acceptable and must be stated, not
       hidden — **currently delta 0.** Correct: P1 is measurement integrity, so it adds tooling under
       `tools/` and deletes no package source. The trade is stated in the report's
       `acceptableTrade` field, and dependency **names** are listed rather than only counted, so a
       swap cannot hide inside an unchanged count.
-- [ ] **Release condition: R12 violations = 0** — **currently 3 of 5 remaining**, each detected
-      structurally rather than asserted: `PhysicsWorld` still declares both backends; `VehicleMotion`
-      and `game.racing`'s kinematic integration both live; `GameRuntime` plus per-kit integrators.
-      P4 and P5 resolve these.
+- [ ] **Release condition: R12 violations = 0** — **NOT MET: 2 of 5 remaining**, down from 3.
+      **Closed in P4:** the physics solver. `PhysicsBackend` is now a one-member union and the
+      second integrator is deleted, so the row is resolved structurally rather than by
+      assertion — and the check itself was rewritten to count union members after the previous
+      substring form proved satisfiable by a comment.
+      **Remaining, both the same underlying cause:** `VehicleMotion` versus `game.racing`'s
+      kinematic integration, and `GameRuntime` plus the per-kit integrators. Blocked on ADR 0002
+      (`GameRacingRoute` states no length scale), not on effort — the rewire is written and
+      reverted, with the measurements in the ADR.
       **Closed:** input (WS-3.1 — disjoint consumers; the real duplicate was two `KeyboardInput`
       classes in one package, one dead, now deleted) and audio (WS-3.2 — disjoint layers; fix is
       delegation). Both closures came from consumer measurement contradicting the package-level view.
@@ -244,11 +266,16 @@ examples is irresistible — it is what produced the current situation.
 - [x] Exclude from the denominator, with justification recorded: route deletions (Tier 4),
       tier reclassification, and generated asset maps — done, and the reason is written into the
       report per excluded file rather than assumed.
-- [ ] A route-only fix for a defect reproducible in two routes is an automatic failure of
+- [x] A route-only fix for a defect reproducible in two routes is an automatic failure of
       this gate regardless of the ratio — **deliberately not automated.** Whether two routes share
       one defect is a judgement no diff can make; the tool instead publishes
       `largestRouteChanges` so a reviewer can see every route-side edit ranked by size. Recording
       this as a human gate rather than pretending it is mechanical.
+      **Human verdict for P4-P6: pass.** The four defects behind the reported route symptoms —
+      platformer apex, capsule-as-cylinder grounding, rotation-ignoring queries, the
+      `solverIterations` default — were each reproducible in more than one route and each was
+      fixed in `packages/physics`. Zero route-side edits were made to close them; WS-5.3 instead
+      asserts each route *reaches* the shared fix.
 - [x] **Proof:** `pnpm check:engine-layer-ratio` reports the ratio and exits non-zero below
       the threshold — **currently 87.41% (4,402 package vs 634 route), EXIT=1.** Below threshold and
       correctly so: the ratio is measured from `v1.5.2..HEAD`, which includes pre-1.6 route work
