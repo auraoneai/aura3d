@@ -32,11 +32,11 @@ npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
 Render it from normal TypeScript:
 
 ```ts
-import { createAuraApp, lights, model, scene } from "@aura3d/engine";
+import { createAuraApp, environments, model, scene } from "@aura3d/engine/lean-product";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
-  scene: scene().add(model(assets.sneaker)).add(lights.studio())
+  scene: scene().add(model(assets.sneaker)).add(environments.studio())
 });
 ```
 
@@ -179,20 +179,20 @@ systems, each backed by unit tests and a runtime probe rather than by a screensh
 
 Stated because a release note that omits this is not useful:
 
-- **Bundle size is over budget on every scenario, and this is the one that matters most
-  for adoption.** Measured 2026-08-08 by `tools/bundle-scenarios` against real Three.js
-  builds of the same scene, through one shared bundler config:
+- **The recommended narrow entries now meet all three comparative bundle budgets.** Measured
+  2026-08-08 by `tools/bundle-scenarios` against real Three.js builds of the same scene, through
+  one shared bundler config. The compatibility-heavy root still exists for upgrades and is not
+  presented as the smallest new-app import:
 
   | Scenario | Aura3D | Three.js | Ratio | Budget |
   | --- | --- | --- | --- | --- |
-  | Core primitive scene (one cube) | 256,168 B | 118,603 B | **2.16x** | 1.25x |
-  | Product viewer (glTF, PBR, orbit, IBL) | 257,235 B | 145,978 B | **1.76x** | 1.25x |
-  | Game runtime (input, physics, loop) | 293,593 B | 142,809 B | **2.06x** | 1.50x |
+  | Core primitive scene (one cube) | 129,591 B | 118,603 B | **1.093x** | 1.25x |
+  | Product viewer (glTF, PBR, orbit, IBL) | 179,358 B | 145,978 B | **1.229x** | 1.25x |
+  | Game runtime (input, physics, loop) | 179,411 B | 142,809 B | **1.256x** | 1.50x |
 
   Budgets are derived from the measured Three.js equivalent, so they cannot be raised
-  without Three.js growing. A developer downloads roughly **twice** what the Three.js
-  equivalent costs. Improved from 7.25x over an absolute 80 KB budget, and not yet
-  acceptable.
+  without Three.js growing. Browser proof executes the core, real-GLB product, and input + shared
+  production-physics game paths through `tests/browser/lean-entry-runtime.spec.ts`.
 - **Where Aura3D does win, measured on the same three scenarios:** authored lines
   **9 / 13 / 19** against Three.js's **15 / 27 / 40**, and one install instead of two for
   a game runtime. Across seven product workflows the gap is wider — 15 vs 74 lines for a

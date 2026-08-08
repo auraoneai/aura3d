@@ -105,9 +105,15 @@ function createAliasPlugin(external: readonly string[]): Plugin {
     setup(buildApi) {
     const aliases = new Map([
       ["@aura3d/engine", "./packages/engine/src/agent-api/index.ts"],
+      ["@aura3d/engine/lean", "./packages/engine/src/agent-api/lean.ts"],
+      ["@aura3d/engine/lean-product", "./packages/engine/src/agent-api/lean-product.ts"],
+      ["@aura3d/engine/lean-game", "./packages/engine/src/agent-api/lean-game.ts"],
       ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
+      ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
       ["@aura3d/assets", "./packages/assets/src/browser-index.ts"],
+      ["@aura3d/assets/gltf-runtime", "./packages/assets/src/gltf-runtime.ts"],
       ["@aura3d/scene", "./packages/scene/src/index.ts"],
+      ["@aura3d/scene/math", "./packages/scene/src/MathTypes.ts"],
       ["@aura3d/core", "./packages/core/src/index.ts"],
       ["@aura3d/math", "./packages/math/src/index.ts"],
       ["@aura3d/physics", "./packages/physics/src/index.ts"],
@@ -267,12 +273,12 @@ function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
     "",
     "## Known Overrun",
     "",
-    "The `core-agent-api` target is far over budget and has been since before 1.5.2 (measured:",
-    "567,890 B gzip at `v1.5.2` against an 80,000 B budget, 7.10x). The likely cause is that",
-    "`packages/engine/src/agent-api/index.ts` re-exports the entire surface — including Node-only",
-    "encoders and video tooling — from one module, so nothing tree-shakes. Splitting that surface is",
-    "its own workstream. Do not resolve this by raising the budget: the budget is the only artifact",
-    "recording what a browser consumer actually downloads.",
+    "The `core-agent-api` target measures the compatibility-heavy root and remains far over its",
+    "historical 80,000 B absolute budget. WS-2.2 explicitly keeps that root intact for existing",
+    "consumers; new apps use `@aura3d/engine/lean`, `/lean-product`, or `/lean-game`. Those entries",
+    "pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`, including",
+    "a real GLB loader and the production physics solver. This report keeps the separate absolute",
+    "root/template debt visible. Do not raise either set of budgets to manufacture a pass.",
     ""
   ];
   writeFileSync("BUNDLE_SIZES.md", lines.join("\n"));

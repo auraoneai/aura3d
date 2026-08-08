@@ -50,6 +50,24 @@
       "import": "./dist/engine/agent-api/index.js",
       "default": "./dist/engine/agent-api/index.js"
     },
+    "./lean": {
+      "types": "./dist/engine/agent-api/lean.d.ts",
+      "browser": "./dist/engine/agent-api/lean.js",
+      "import": "./dist/engine/agent-api/lean.js",
+      "default": "./dist/engine/agent-api/lean.js"
+    },
+    "./lean-game": {
+      "types": "./dist/engine/agent-api/lean-game.d.ts",
+      "browser": "./dist/engine/agent-api/lean-game.js",
+      "import": "./dist/engine/agent-api/lean-game.js",
+      "default": "./dist/engine/agent-api/lean-game.js"
+    },
+    "./lean-product": {
+      "types": "./dist/engine/agent-api/lean-product.d.ts",
+      "browser": "./dist/engine/agent-api/lean-product.js",
+      "import": "./dist/engine/agent-api/lean-product.js",
+      "default": "./dist/engine/agent-api/lean-product.js"
+    },
     "./scene-kits/particle-fountain": {
       "types": "./dist/engine/agent-api/particle-fountain-runtime.d.ts",
       "browser": "./dist/engine/agent-api/particle-fountain-runtime.js",
@@ -71,6 +89,7 @@
     "./core": "./dist/core/index.js",
     "./math": "./dist/math/index.js",
     "./scene": "./dist/scene/index.js",
+    "./scene/math": "./dist/scene/MathTypes.js",
     "./ecs": "./dist/ecs/index.js",
     "./rendering": "./dist/rendering/index.js",
     "./controls": "./dist/controls/index.js",
@@ -85,6 +104,7 @@
     "./animation/browser": "./dist/animation/browser-index.js",
     "./assets": "./dist/assets/index.js",
     "./assets/browser": "./dist/assets/browser-index.js",
+    "./assets/gltf-runtime": "./dist/assets/gltf-runtime.js",
     "./input": "./dist/input/index.js",
     "./audio": "./dist/audio/index.js",
     "./apps": "./dist/apps/index.js",

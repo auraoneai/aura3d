@@ -113,19 +113,17 @@ developer downloads **579,953 B gzip to draw a cube** (7.25x our own 80 KB budge
 anisotropy and ships a 580 KB core has not succeeded. Bundle size is a first-class KPI, not
 a workstream side effect.
 
-- [ ] Scenario-1 (core primitive scene) gzip ≤ **1.25x** the equivalent Three.js stack
-      — **FAILS: 256,168 B vs 118,603 B = 2.160x** (remeasured 2026-08-08). Better than the
-      7.25x the PRD recorded, and still 1.7x over budget.
-- [ ] Scenario-2 (product viewer) gzip ≤ **1.25x** equivalent
-      — **FAILS: 257,235 B vs 145,978 B = 1.762x.**
-- [ ] Scenario-3 (game runtime) gzip ≤ **1.5x** equivalent
-      — **FAILS: 293,593 B vs 142,809 B = 2.056x.**
+- [x] Scenario-1 (core primitive scene) gzip ≤ **1.25x** the equivalent Three.js stack
+      — **PASSES: 129,591 B vs 118,603 B = 1.093x** (remeasured 2026-08-08).
+- [x] Scenario-2 (product viewer) gzip ≤ **1.25x** equivalent
+      — **PASSES: 179,358 B vs 145,978 B = 1.229x**, including the real static GLB loader edge.
+- [x] Scenario-3 (game runtime) gzip ≤ **1.5x** equivalent
+      — **PASSES: 179,411 B vs 142,809 B = 1.256x**, including input and the one production solver.
 - [x] Ratios measured by WS-2.4's canonical config against a real Three.js build, reported
       side by side. If a ratio is missed, the release does not ship on that dimension —
       **do not raise the budget** (R2)
-      — measured, reported side by side, budgets **not** raised. All three fail, so **1.6 does
-      not ship on the bundle dimension**, and §B.1's "both, not either" means the release
-      condition is unmet regardless of renderer progress. `developer-value.test.ts` asserts
+      — measured, reported side by side, budgets **not** raised. All three now pass through the
+      documented lean entries. `developer-value.test.ts` asserts
       each budget still holds its original value, because raising one is the most likely way
       this gate gets defeated.
 
@@ -183,14 +181,20 @@ not done this document's job.
       duplicate APIs removed · entry points removed — `tools/negative-complexity/index.ts` reports
       every baseline row with its delta on each run.
 - [ ] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
-      `be86c73e`**, net of additions. — **NOT MET: 201,306 vs 200,929, delta +377.**
+      `be86c73e`**, net of additions. — **NOT MET: 201,879 vs 200,929, delta +950.**
 
-      Measured breakdown, because "+377" alone invites the wrong fix. By package:
-      `rendering` **−902**, `physics` +421, `engine` +814, `three-compat` +24, `audio` +20.
+      Measured breakdown, because "+950" alone invites the wrong fix. By package:
+      `rendering` **−885**, `physics` +421, `engine` +1,360, `assets` +10,
+      `three-compat` +24, `audio` +20.
       Splitting the physics+engine diff before the final route gate: **code +692 / −487 = net
       +205**, and **comment or blank +1,048 / −28 = net +1,020**. The final **+7 code lines** are
       the neutral-input respawn fix and state field that the full-route Skyline test found; three
       more lines bound its continuous-controller fallback so AI/autoplay cannot remain locked.
+
+      The bundle replatform then adds **573 package-source lines**: 546 for the three public lean
+      adapters, 17 for the narrow rendering surface, and 10 for the narrow GLB surface. That is a
+      deliberate trade which turns all three release-defining bundle ratios green, but §B.3 says
+      net source still has to shrink; the performance win does not waive this independent condition.
 
       So the growth is overwhelmingly the recorded reasoning for each engine defect — the
       cylinder-capsule contact geometry, the rotation-ignoring query path, the
@@ -1321,14 +1325,15 @@ no material gzip improvement. Removing that export from the broad rendering barr
 scenario ratios **2.054x / 1.676x / 1.968x** (about **12.5 KB gzip** removed from scenario 1), still
 **95,381 B** over scenario 1's derived budget. That public break therefore did not earn its R7
 migration cost and the experiment was reverted. Canonical post-revert measurement is
-**2.160x / 1.762x / 2.056x**. The remaining gap is the 15,249-line monolithic agent API and its
-namespace objects, not a single shader-family edge; closing it requires the root entry replatform,
-not an unproven renderer-path cut.
+**2.160x / 1.762x / 2.056x**. That experiment established that the gap was the 15,249-line
+monolithic agent API and its namespace objects, not a single shader-family edge. The subsequent
+root-entry replatform closes it with additive workload entries at **1.093x / 1.229x / 1.256x**;
+the compatibility root remains broad by the explicit option-(a) policy below.
 
 **P3's planned deletions also reduce this number**, and are sequenced first because they are discrete and
 independently verifiable: `rendering/threejs-compatibility/` (WS-3.4, 354 lines, 0 consumers) contributes
 ten `postprocess/*` modules that a cube currently reaches through the barrel.
-- [ ] **State the root's bundle behaviour explicitly — WS-2.2 and WS-2.4 conflict otherwise.**
+- [x] **State the root's bundle behaviour explicitly — WS-2.2 and WS-2.4 conflict otherwise.**
       If `@aura3d/engine`'s root keeps re-exporting everything, existing users keep working
       but the root bundle stays enormous and the WS-2.4 budget is unreachable. Choose one
       and record it in `MIGRATION-1.6.md`:
@@ -1339,12 +1344,20 @@ ten `postprocess/*` modules that a cube currently reaches through the barrel.
         breaking change and feeds the §12 version decision; **or**
       - **(c)** root keeps every export but uses boundaries that provably tree-shake under
         the WS-2.4 canonical bundler config — only valid if measured, not assumed.
-- [ ] Whichever is chosen, the scenario-1 budget must be met by the entry point the
+      — chose **(a)** and recorded it in `MIGRATION-1.6.md`: root remains compatibility-heavy;
+      new apps use `./lean`, `./lean-product`, or `./lean-game`.
+- [x] Whichever is chosen, the scenario-1 budget must be met by the entry point the
       documentation tells a new developer to use. A budget met only by an entry nobody is
       told to import is not a budget.
-- [ ] Update `package.json` `exports` (39 subpaths today).
-- [ ] Adapters + `MIGRATION-1.6.md` entries per R7.
-- [ ] **Proof:** the WS-2.4 scenario targets are met.
+      — README's first rendered example imports `@aura3d/engine/lean-product`; scenario 2 measures
+      that exact entry. Primitive and game entries are named beside it.
+- [x] Update `package.json` `exports` (39 subpaths today). — **47 current exports**, including
+      the three engine entries and their narrow rendering/asset/scene dependency seams.
+- [x] Adapters + `MIGRATION-1.6.md` entries per R7. — additive adapters documented; no root symbol
+      was removed and each entry states its supported workload.
+- [x] **Proof:** the WS-2.4 scenario targets are met. — `pnpm check:bundle-scenarios` exits 0 at
+      **1.093x / 1.229x / 1.256x**. `lean-entry-runtime.spec.ts` is **3/3 green** in Chromium:
+      real WebGL2 core draw, real GLB load/draw, and input + shared production-solver motion.
 
 ### WS-2.3 Classify media files by runtime, then separate
 
@@ -2939,10 +2952,12 @@ way an engine fix lands green while the route stays broken (R3).
       `honest-public-claims.test.ts` keeps it that way against 8 patterns.
 - [x] State plainly where we remain behind: breadth of loaders/examples, bundle size if
       still over, physics history.
-      — the README now leads its limitations with the bundle table (**2.15x / 1.76x / 2.05x**
-      against 1.25 / 1.25 / 1.50), states where Aura3D genuinely wins with the same rigour
+      — the README now distinguishes the green comparative bundle table (**1.093x / 1.229x /
+      1.256x** against 1.25 / 1.25 / 1.50) from the still-over absolute compatibility-root and
+      template targets, states where Aura3D genuinely wins with the same rigour
       (authored lines 9/13/19 vs 15/27/40, one install vs two) **and** where it loses
-      (TypeScript compile slower on two of three), and names the three broken public routes.
+      (TypeScript compile slower on two of three). It also names the three prototype-blocked routes
+      and the independent Aura Clash coverage boundary; the three formerly broken labs are repaired.
 
       **It also removed a stale claim that was wrong in both directions**: "five physics
       capabilities remain unreachable from the public API" — constraints, friction,
@@ -2952,11 +2967,10 @@ way an engine fix lands green while the route stays broken (R3).
       honesty, it is noise.
 - [x] **Proof:** `pnpm check:marketing-truth && pnpm check:agent-docs` pass.
       — both pass, and `tests/unit/tools/honest-public-claims.test.ts` (6 tests) runs them as
-      part of the gate so a claim edit cannot break them silently. The gate **caught a wrong
-      number in my own README edit**: I wrote 2.16x where the measurement is 2.155 → 2.15x. It
-      compares the README's table against the live report, so a re-measurement forces the
-      table to move; and the bundle disclosure requirement is conditional on `bundle.pass`, so
-      the README will not be left carrying a stale warning once the gap closes.
+      part of the gate so a claim edit cannot break them silently. The gate caught a wrong number
+      in an earlier README edit. Its bundle disclosure requirement is conditional on `bundle.pass`,
+      so the README did not remain stuck on the old failing ratios once the gap closed; the separate
+      absolute compatibility overrun remains stated because that command is still red.
 
 ---
 
@@ -3117,7 +3131,7 @@ was caught before any `git rm`. The `Fixtures` suffix — not the code — was t
 Approval gate. Every box needs command output (R4). **No publishing action appears here.**
 
 - [x] `pnpm typecheck` · `pnpm test` · `pnpm build` — `typecheck:raw` clean; `build:raw` finalizes
-      27 packages; **3,328 of 3,329** unit+integration tests pass. The single failure is the R5
+      27 packages; **3,348 of 3,349** unit+integration tests pass. The single failure is the R5
       human-approval gate below, and it must stay failing.
 - [x] `pnpm check:deletion-safety` — clean for every deleted file, reports committed
       — passes. The queue had to be **emptied first**: it still listed WS-3.5's 30 `*Fixtures.ts`
@@ -3127,9 +3141,11 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
 - [ ] `pnpm check:bundle-size` — exits non-zero on overrun **and** is green; all 3
       scenarios reported against Three.js equivalents
       — **exits non-zero, correctly, and therefore is not green.** Both halves cannot hold while
-      the bundle is over: core-agent-api **586,288 B gzip** against an 80,000 B limit; three templates
-      at **363,583-381,377 B** against 250,000 B. All 3 scenarios are reported side by side against real
-      Three.js builds (§B.1). **This is the release blocker**, not a gate defect.
+      the legacy absolute targets are over: compatibility root **622,850 B gzip** against an 80,000 B
+      limit; three compatibility templates at **363,617-381,403 B** against 250,000 B. Separately,
+      all three release-defining scenarios are green against real Three.js builds (§B.1). The fixed
+      absolute target remains an honest blocker for this checkbox; it is not used to erase the
+      comparative win or weakened to make the command green.
 - [x] `pnpm bench:production-path` — real device, both engines, timing fields separately
       named, variance across ≥ 3 sessions
       — ran on ANGLE / Apple M4 Max, 3 sessions, 60 warmup + 180 measured frames, identical canvas
@@ -3207,27 +3223,29 @@ All seven are asserted as **conditions** by `tests/unit/tools/release-metrics-ro
 (7 tests), including the failures — so a release cannot be cut on the strength of "the report
 exists", and fixing either failing condition breaks a test that must then be flipped.
 
-- [ ] **§B.1** all three bundle scenarios within their ratio to the Three.js equivalent
-      — **FAILS, all three: 2.160x / 1.762x / 2.056x** against 1.25 / 1.25 / 1.50. Release-defining,
-      so **1.6 does not ship on this dimension.** Asserted per scenario, not only in aggregate, so
-      a partial fix is visible.
+- [x] **§B.1** all three bundle scenarios within their ratio to the Three.js equivalent
+      — **PASSES, all three: 1.093x / 1.229x / 1.256x** against 1.25 / 1.25 / 1.50, with the
+      budgets unchanged. Asserted per scenario, not only in aggregate, so a regression is visible.
 - [x] **§B.2** `tests/reports/developer-friction.json` complete for both engines
       — complete: four fields × 3 scenarios × both engines, plus the **2 fields declared
       unmeasurable with reasons** rather than omitted or invented. Declaring them *is* the
       completeness; fabricating them would be the R1 defect.
 - [ ] **§B.3** `packages/*/src` lines lower than the 212,810 baseline; R12 violations = 0;
       per-phase deletion report committed
-      — **FAILS on both numeric conditions**, report committed. Lines 201,306 vs 200,929 baseline
-      (+377; the additional ten lines are the tested neutral-input respawn fix found by the
-      full-route gate; the earlier measured breakdown was code +205 and comments +1,020, primarily
-      recorded engine-defect reasoning); R12 **2 of 5**, down from 3, both remaining rows blocked
-      on ADR 0002.
+      — **FAILS on both numeric conditions**, report committed. Lines **201,879 vs 200,929** baseline
+      (**+950**): +377 from the previously recorded engine work and +573 from the measured lean-entry
+      replatform that closes §B.1. R12 **2 of 5**, down from 3, both remaining rows blocked on ADR 0002.
 - [x] **§B.4** `pnpm check:engine-layer-ratio` ≥ 90% under `packages/`
       — **PASSES at 92.52%** (7,999 package vs 647 route lines), up from 87.41%.
 - [x] **R11** every new subsystem introduced during 1.6 has an ADR in `docs/architecture/adr/`
       — **zero new subsystems**, measured rather than asserted: `git diff --name-status` from the
-      first 1.6 commit shows **0 added source files and 0 added packages** under `packages/`. The
-      10 files added since `v1.5.2` all predate 1.6, which is why the measurement window matters.
+      first 1.6 commit shows **5 added source files and 0 added packages** under `packages/`. All
+      five are narrow entry adapters in existing owners: assets GLB runtime (1), rendering runtime
+      exports (1), and engine lean core/product/game composition (3). The R11 test pins that exact
+      set so another source addition cannot pass silently. These adapters add no §A capability:
+      they compose the existing production renderer, GLB loader, input owner, and physics owner.
+      The 10 files added since `v1.5.2` before this set all predate 1.6, which is why the measurement
+      window matters.
       Two ADRs exist for the decisions that did reach the lock (0001 retain ECS/scripting, 0002
       racing force model).
 - [ ] **R12** none of the five duplicate-ownership rows has two live implementations

@@ -2083,7 +2083,7 @@ function collectSourceCameraPosition(source: RenderSource | Iterable<RenderItem>
   return position;
 }
 
-function collectRenderItems(
+export function collectRenderItems(
   source: RenderSource | Iterable<RenderItem> | Scene,
   cameraViewProjection?: Mat4,
   camera?: Camera

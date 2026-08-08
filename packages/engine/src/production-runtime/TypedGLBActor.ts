@@ -6,9 +6,9 @@ import {
   type GLTFSceneAnimationRuntimeSnapshot,
   type GLTFScenePose,
   type ProductionGLTFRenderPipeline
-} from "@aura3d/assets/browser";
+} from "@aura3d/assets/gltf-runtime";
 import { type Material, type RenderItem } from "@aura3d/rendering";
-import { multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { multiplyMat4, type Mat4 } from "@aura3d/scene/math";
 
 export interface TypedGLBActorAsset {
   readonly url: string;

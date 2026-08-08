@@ -7,6 +7,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./lean-runtime": {
+      "types": "./dist/lean-runtime.d.ts",
+      "import": "./dist/lean-runtime.js"
+    },
     "./webgpu": {
       "types": "./dist/webgpu.d.ts",
       "import": "./dist/webgpu.js"

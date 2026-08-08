@@ -8,6 +8,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./math": {
+      "types": "./dist/MathTypes.d.ts",
+      "import": "./dist/MathTypes.js"
     }
   },
   "sideEffects": false,

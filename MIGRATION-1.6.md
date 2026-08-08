@@ -22,7 +22,26 @@ Measured against `v1.5.2`, comparing the generated public API surface
 | Capsule colliders are now a true capsule | **behaviour change** | you used `Shape.capsule` on sloped ground | Nothing. They were built as flat-ended cylinders, so a character rested on a rim ~0.1 above any incline and `grounded` was permanently `false`. If you added an offset to compensate, remove it. |
 | `raycast` / `sphereCast` now respect body rotation | **behaviour change** | you cast against a rotated box or capsule | Nothing. Queries previously used the axis-aligned bounding box and returned axis-aligned normals, so slopes did not exist as far as any query was concerned. Contacts always respected rotation; only queries did not. |
 | New: `@aura3d/physics/solverless`, `@aura3d/physics/world`, `@aura3d/engine/rendering/webgpu`, `@aura3d/engine/media-node` | **additive** | — | Optional. Import from `./solverless` if your scene has no rigid bodies and you do not want the solver on your critical path. |
+| New: `@aura3d/engine/lean`, `@aura3d/engine/lean-product`, `@aura3d/engine/lean-game` | **additive, recommended for new apps** | you want the production renderer without the compatibility barrel | Use `./lean` for primitive scenes, `./lean-product` for typed GLB product viewers, and `./lean-game` for input + the shared production physics owner. The broad root remains available for existing apps and advanced helpers. |
+| New narrow internals: `@aura3d/rendering/lean-runtime`, `@aura3d/assets/gltf-runtime`, `@aura3d/scene/math` | **additive** | you build a package-level adapter | Prefer the three public engine entries above for apps. These subpaths prevent a narrow adapter from crossing the broad inspection/fixture barrels. |
 | New: `GameRacingSnapshot.vehicle` | *not shipped in 1.6* | — | Reverted with the racing rewire; see ADR 0002. |
+
+### Root bundle policy
+
+Aura3D 1.6 chooses PRD WS-2.2 option **(a)**: the root `@aura3d/engine` entry remains
+compatibility-heavy so an existing import does not silently lose any of its 1.5 surface. New apps
+should use the narrow entry matching their workload:
+
+- `@aura3d/engine/lean` — WebGL2 scene graph, camera, PBR material, primitives.
+- `@aura3d/engine/lean-product` — the same core plus the real GLB/glTF production pipeline.
+- `@aura3d/engine/lean-game` — the same core plus input, the shared `PhysicsWorld`, and the public
+  physics runtime; it does not define a second integrator.
+
+This is a performance recommendation, not a removal. The README's first code example uses the
+product entry, and the canonical bundle scenarios measure the matching entry. Fresh measurements
+are **1.093x / 1.229x / 1.256x** the equivalent Three.js stacks against unchanged limits of
+1.25x / 1.25x / 1.50x. The compatibility root is still intentionally broad and is not presented as
+the smallest entry.
 
 ### Nothing else changed
 

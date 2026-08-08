@@ -7,13 +7,13 @@ against the gzip artifact.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,207,036 | 586,288 | 80,000 | fail |
+| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,344,293 | 622,850 | 80,000 | fail |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 957 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 705 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 49,614 | 13,514 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 1,455,338 | 363,597 | 250,000 | fail |
-| `cinematic-scene starter app before user assets` | 1,455,205 | 363,583 | 250,000 | fail |
-| `mini-game starter app before user assets` | 1,496,014 | 381,377 | 250,000 | fail |
+| `product-viewer starter app before user assets` | 1,455,325 | 363,627 | 250,000 | fail |
+| `cinematic-scene starter app before user assets` | 1,455,184 | 363,617 | 250,000 | fail |
+| `mini-game starter app before user assets` | 1,495,993 | 381,403 | 250,000 | fail |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
@@ -27,9 +27,9 @@ without a bundle-size review.
 
 ## Known Overrun
 
-The `core-agent-api` target is far over budget and has been since before 1.5.2 (measured:
-567,890 B gzip at `v1.5.2` against an 80,000 B budget, 7.10x). The likely cause is that
-`packages/engine/src/agent-api/index.ts` re-exports the entire surface — including Node-only
-encoders and video tooling — from one module, so nothing tree-shakes. Splitting that surface is
-its own workstream. Do not resolve this by raising the budget: the budget is the only artifact
-recording what a browser consumer actually downloads.
+The `core-agent-api` target measures the compatibility-heavy root and remains far over its
+historical 80,000 B absolute budget. WS-2.2 explicitly keeps that root intact for existing
+consumers; new apps use `@aura3d/engine/lean`, `/lean-product`, or `/lean-game`. Those entries
+pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`, including
+a real GLB loader and the production physics solver. This report keeps the separate absolute
+root/template debt visible. Do not raise either set of budgets to manufacture a pass.

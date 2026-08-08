@@ -17,6 +17,7 @@ pnpm verify:api-docs
 | `@aura3d/apps` | `1.5.2` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `1.5.2` | `packages/asset-index/src/index.ts` | 32 |
 | `@aura3d/assets` | `1.5.2` | `packages/assets/src/index.ts` | 82 |
+| `@aura3d/assets/gltf-runtime` | `1.5.2` | `packages/assets/src/gltf-runtime.ts` | 4 |
 | `@aura3d/audio` | `1.5.2` | `packages/audio/src/index.ts` | 31 |
 | `@aura3d/cli` | `1.5.2` | `packages/aura3d-cli/src/index.ts` | 32 |
 | `@aura3d/controls` | `1.5.2` | `packages/controls/src/index.ts` | 25 |
@@ -37,6 +38,7 @@ pnpm verify:api-docs
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.5.2` | `packages/react/src/index.ts` | 14 |
 | `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 266 |
+| `@aura3d/rendering/lean-runtime` | `1.5.2` | `packages/rendering/src/lean-runtime.ts` | 7 |
 | `@aura3d/rendering/webgpu` | `1.5.2` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `1.5.2` | `packages/scene/src/index.ts` | 21 |
 | `@aura3d/scripting` | `1.5.2` | `packages/scripting/src/index.ts` | 53 |
@@ -256,6 +258,21 @@ export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";
 export * from "./TextureStreaming.js";
+```
+
+## @aura3d/assets/gltf-runtime
+
+- Version: `1.5.2`
+- Package manifest: `packages/assets/package.json`
+- Public entrypoint: `packages/assets/src/gltf-runtime.ts`
+
+### Export Declarations
+
+```ts
+export { createGLTFSceneAnimationRuntime } from "./GLTFAnimationRuntime.js";
+export type { GLTFSceneAnimationApplyResult, GLTFSceneAnimationRuntime, GLTFSceneAnimationRuntimeSnapshot, GLTFScenePose } from "./GLTFAnimationRuntime.js";
+export { loadProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
+export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 ```
 
 ## @aura3d/audio
@@ -1191,6 +1208,24 @@ export * from "./effects/ParticleSystem.js";
 export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
 export * from "./animation/index.js";
+```
+
+## @aura3d/rendering/lean-runtime
+
+- Version: `1.5.2`
+- Package manifest: `packages/rendering/package.json`
+- Public entrypoint: `packages/rendering/src/lean-runtime.ts`
+
+### Export Declarations
+
+```ts
+export { Geometry } from "./Geometry.js";
+export { PBRMaterial } from "./PBRMaterial.js";
+export { ProductionRuntimeRenderer } from "./production-runtime/ProductionRuntimeRenderer.js";
+export { collectRenderItems } from "./Renderer.js";
+export type { CameraLike, RenderSource } from "./Renderer.js";
+export type { RenderItem } from "./ForwardPass.js";
+export type { ProductionImportedAssetRenderMetadata, ProductionRendererInput } from "./production-runtime/ProductionRendererTypes.js";
 ```
 
 ## @aura3d/rendering/webgpu

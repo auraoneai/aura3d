@@ -5,7 +5,7 @@
  * authored lines even if it loses on bytes, because the Three.js equivalent needs a separate physics
  * library the developer has to install and wire.
  */
-import { createAuraApp, camera, game, lights, material, primitives, scene } from "@aura3d/engine";
+import { createAuraApp, camera, game, lights, material, primitives, scene } from "@aura3d/engine/lean-game";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const app = createAuraApp(canvas, {

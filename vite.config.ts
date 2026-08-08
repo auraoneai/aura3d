@@ -7,6 +7,9 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { ViteDevServer } from "vite";
 
 const aliasEntries = [
+  ["@aura3d/engine/lean-product", "./packages/engine/src/agent-api/lean-product.ts"],
+  ["@aura3d/engine/lean-game", "./packages/engine/src/agent-api/lean-game.ts"],
+  ["@aura3d/engine/lean", "./packages/engine/src/agent-api/lean.ts"],
   ["@aura3d/engine/rendering/production-runtime", "./packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/engine/rendering/advanced-runtime", "./packages/rendering/src/advanced-runtime/index.ts"],
   ["@aura3d/engine/rendering", "./packages/rendering/src/index.ts"],
@@ -22,8 +25,10 @@ const aliasEntries = [
   ["@aura3d/react", "./packages/react/src/index.ts"],
   ["@aura3d/math", "./packages/math/src/index.ts"],
   ["@aura3d/core", "./packages/core/src/index.ts"],
+  ["@aura3d/scene/math", "./packages/scene/src/MathTypes.ts"],
   ["@aura3d/scene", "./packages/scene/src/index.ts"],
   ["@aura3d/ecs", "./packages/ecs/src/index.ts"],
+  ["@aura3d/rendering/lean-runtime", "./packages/rendering/src/lean-runtime.ts"],
   ["@aura3d/rendering", "./packages/rendering/src/index.ts"],
   ["@aura3d/controls", "./packages/controls/src/index.ts"],
   ["@aura3d/environments", "./packages/environments/src/index.ts"],
@@ -51,6 +56,7 @@ const aliasEntries = [
   ["@aura3d/product-studio", "./packages/product-studio/src/index.ts"],
   ["@aura3d/animation", "./packages/animation/src/browser-index.ts"],
   ["@aura3d/assets/browser", "./packages/assets/src/browser-index.ts"],
+  ["@aura3d/assets/gltf-runtime", "./packages/assets/src/gltf-runtime.ts"],
   ["@aura3d/assets", "./packages/assets/src/browser-index.ts"],
   ["@aura3d/input", "./packages/input/src/index.ts"],
   ["@aura3d/audio", "./packages/audio/src/index.ts"],

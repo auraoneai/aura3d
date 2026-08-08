@@ -13,8 +13,10 @@ export default defineConfig({
     alias: {
       "@aura3d/math": new URL("./packages/math/src/index.ts", import.meta.url).pathname,
       "@aura3d/core": new URL("./packages/core/src/index.ts", import.meta.url).pathname,
+      "@aura3d/scene/math": new URL("./packages/scene/src/MathTypes.ts", import.meta.url).pathname,
       "@aura3d/scene": new URL("./packages/scene/src/index.ts", import.meta.url).pathname,
       "@aura3d/ecs": new URL("./packages/ecs/src/index.ts", import.meta.url).pathname,
+      "@aura3d/rendering/lean-runtime": new URL("./packages/rendering/src/lean-runtime.ts", import.meta.url).pathname,
       "@aura3d/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/controls": new URL("./packages/controls/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/production-runtime": new URL("./packages/rendering/src/production-runtime/index.ts", import.meta.url).pathname,
@@ -37,6 +39,9 @@ export default defineConfig({
        */
       "@aura3d/engine/media-node": new URL("./packages/engine/src/agent-api/media-node.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/webgpu": new URL("./packages/rendering/src/webgpu.ts", import.meta.url).pathname,
+      "@aura3d/engine/lean-product": new URL("./packages/engine/src/agent-api/lean-product.ts", import.meta.url).pathname,
+      "@aura3d/engine/lean-game": new URL("./packages/engine/src/agent-api/lean-game.ts", import.meta.url).pathname,
+      "@aura3d/engine/lean": new URL("./packages/engine/src/agent-api/lean.ts", import.meta.url).pathname,
       "@aura3d/engine": new URL("./packages/engine/src/index.ts", import.meta.url).pathname,
       "@aura3d/cli": new URL("./packages/aura3d-cli/src/index.ts", import.meta.url).pathname,
       "@aura3d/react": new URL("./packages/react/src/index.ts", import.meta.url).pathname,
@@ -56,6 +61,7 @@ export default defineConfig({
       "@aura3d/physics/solverless": new URL("./packages/physics/src/solverless.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
+      "@aura3d/assets/gltf-runtime": new URL("./packages/assets/src/gltf-runtime.ts", import.meta.url).pathname,
       "@aura3d/assets/browser": new URL("./packages/assets/src/browser-index.ts", import.meta.url).pathname,
       "@aura3d/assets": new URL("./packages/assets/src/index.ts", import.meta.url).pathname,
       "@aura3d/input": new URL("./packages/input/src/index.ts", import.meta.url).pathname,

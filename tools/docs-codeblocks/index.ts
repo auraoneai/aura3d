@@ -12,7 +12,15 @@ const docs = [
   "docs/concepts/physics.md",
   "docs/templates/create-aura3d-templates.md"
 ].filter((path) => existsSync(path));
-const knownPackages = new Set(["@aura3d/engine", "@aura3d/react", "@aura3d/cli", "create-aura3d"]);
+const knownPackages = new Set([
+  "@aura3d/engine",
+  "@aura3d/engine/lean",
+  "@aura3d/engine/lean-product",
+  "@aura3d/engine/lean-game",
+  "@aura3d/react",
+  "@aura3d/cli",
+  "create-aura3d"
+]);
 const knownTemplates = new Set<string>(CREATE_AURA3D_TEMPLATES);
 const blocks = docs.flatMap(extractBlocks);
 const packageImportErrors: string[] = [];
