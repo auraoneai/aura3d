@@ -29,8 +29,8 @@ const languageIssues = publicDocs().flatMap((path) => {
     : []);
 });
 const requiredReadmePhrases = [
-  "matches or exceeds three.js",
-  "why a3d beats three.js",
+  "scoped three.js comparisons",
+  "why aura3d can beat three.js in scoped workflows",
   "tests/reports/superiority/claim-defense.json",
   "docs/project/threejs-superiority-status.md"
 ];
@@ -52,4 +52,3 @@ writeReport(outputPath, {
   issues,
   evidence: [...requiredReports, ...publicDocs()]
 });
-

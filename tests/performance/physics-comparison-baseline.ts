@@ -142,7 +142,7 @@ export function writePhysicsComparisonBaseline(path = outputPath): PhysicsCompar
     schema: "a3d-physics-showcase-evidence",
     generatedAt: report.generatedAt,
     pass: report.pass,
-    route: "apps/physics-showcase",
+    route: "examples/physics-sandbox",
     renderer: "a3d-webgl2",
     physics: {
       bodies: report.samples.bodies,

@@ -4,7 +4,7 @@ const outputPath = "tests/reports/superiority/developer-workflow.json";
 const packageSmoke = reportPasses("tests/reports/threejs-parity/package-smoke.json");
 const externalConsumer = reportPasses("tests/reports/threejs-parity/external-consumer.json");
 const migrationAudit = reportPasses("tests/reports/threejs-parity/migration-audit.json");
-const templateReport = reportPasses("tests/reports/external-parity-template-readiness.json") || reportPasses("tests/reports/production-runtime-template-readiness.json");
+const templateReport = reportPasses("tests/reports/aura3d105/templates-smoke-gate.json");
 const publicApi = reportPasses("tests/reports/threejs-parity/api-surface.json");
 const apiDocs = readJson<{ readonly ok?: boolean }>("tests/reports/api-docs.json");
 const issues = [
@@ -19,8 +19,7 @@ const evidence = [
   "tests/reports/threejs-parity/package-smoke.json",
   "tests/reports/threejs-parity/external-consumer.json",
   "tests/reports/threejs-parity/migration-audit.json",
-  "tests/reports/external-parity-template-readiness.json",
-  "tests/reports/production-runtime-template-readiness.json",
+  "tests/reports/aura3d105/templates-smoke-gate.json",
   "tests/reports/threejs-parity/api-surface.json",
   "tests/reports/api-docs.json"
 ];
@@ -37,4 +36,3 @@ writeReport(outputPath, {
   issues,
   evidence
 });
-

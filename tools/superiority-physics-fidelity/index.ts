@@ -8,7 +8,7 @@ const requiredFiles = [
   "packages/physics/src/Constraints.ts",
   "packages/physics/src/CharacterController.ts",
   "packages/physics/src/Raycast.ts",
-  "apps/physics-showcase/src/main.ts",
+  "examples/physics-sandbox/main.ts",
   "tests/performance/physics-comparison-baseline.ts"
 ];
 const requiredReports = [
@@ -32,4 +32,3 @@ writeReport(outputPath, {
   issues,
   evidence: [...requiredFiles, ...requiredReports]
 });
-

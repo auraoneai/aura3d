@@ -216,9 +216,21 @@ Stated because a release note that omits this is not useful:
 - All **35 of 35** Tier 1/2 routes now pass the real-browser health gate with no failure
   allowlist. `material-showroom`, `postprocess-lab`, and `shadow-lab` were repaired against
   their retained 10-case renderer visual contract rather than replaced by weaker demos.
-- Practical Three.js ecosystem parity is **6 exceed / 37 parity / 10 unproven / 3 gap**
-  across 56 capabilities. Aura3D is behind on ecosystem breadth, shader authoring
-  through the safe API, 3D text, and LOD/instancing exposure.
+- The current scoped Three.js comparisons cover **54 selected example-level rows**, all
+  matched by the generated inventory with **0 high-priority rows open**. This is a
+  bounded compatibility and migration result, not a claim that Aura3D universally
+  replaces the Three.js ecosystem or that every feature is exposed through the root
+  safe API. See `docs/project/threejs-superiority-status.md` and the generated
+  `tests/reports/superiority/claim-defense.json` decision.
+
+### Why Aura3D can beat Three.js in scoped workflows
+
+Aura3D's measured advantage is the integrated product workflow: the frozen bundle and
+developer-friction scenarios above use fewer authored lines, fewer direct dependencies,
+and narrower entry points while retaining browser-rendered evidence. Visual quality,
+animation, physics, lifecycle, and migration conclusions remain limited to the named
+fixtures, routes, assets, browsers, and thresholds in those reports. Universal engine or
+ecosystem superiority is not claimed.
 
 Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd.md`.
 
