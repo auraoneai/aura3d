@@ -28,7 +28,9 @@ type VariantId =
   | "bloom"
   | "ambient-occlusion"
   | "contact-occlusion"
-  | "fog";
+  | "fog"
+  | "rain-baseline"
+  | "rain";
 
 interface PixelMetrics {
   readonly width: number;
@@ -93,7 +95,7 @@ declare global {
 const CHANGED_PIXEL_THRESHOLD = 12;
 const captured = new Map<VariantId, { readonly capture: VariantCapture; readonly pixels: Uint8Array }>();
 
-const variantIds: readonly VariantId[] = ["baseline", "bloom", "ambient-occlusion", "contact-occlusion", "fog"];
+const variantIds: readonly VariantId[] = ["baseline", "bloom", "ambient-occlusion", "contact-occlusion", "fog", "rain-baseline", "rain"];
 
 void run().catch((error: unknown) => {
   window.__AURA3D_ROOT_POSTPROCESS_ERROR__ =
@@ -140,10 +142,13 @@ async function renderVariant(
   stage.style.height = `${options.cssHeight ?? 480}px`;
   stage.style.minHeight = "0px";
   stage.replaceChildren();
+  const rainVariant = id === "rain" || id === "rain-baseline";
   const app = createAuraApp(stage, {
     pixelRatio: options.pixelRatio ?? 1,
     resize: false,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: rainVariant
+      ? { mode: "safe-basic", qualityProfile: "safe-basic", fallback: "safe-basic" }
+      : { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     scene: sceneForVariant(id)
   });
   await waitForAppDraw(app);
@@ -228,6 +233,9 @@ function sceneForVariant(id: VariantId) {
   }
   if (id === "fog") {
     builder.add(effects.fog({ name: "root fog probe", density: 0.42, color: "#7f9fd0", intensity: 0.7 }));
+  }
+  if (id === "rain") {
+    builder.add(effects.rain({ name: "root rain probe", density: 1.2, intensity: 0.9, color: "#bcdfff" }));
   }
   return builder;
 }

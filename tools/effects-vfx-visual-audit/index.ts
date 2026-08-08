@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { chromium } from "@playwright/test";
 import {
@@ -62,16 +63,30 @@ interface KernelCheck {
   readonly summary: string;
 }
 
+interface PromptEffectEvidence {
+  readonly effect: string;
+  readonly status: "root-proven" | "partial" | "unreachable-from-root";
+  readonly passName?: string;
+  readonly screenshotOff?: string;
+  readonly screenshotOn?: string;
+  readonly comparison?: {
+    readonly changedPixelFraction: number;
+    readonly meanAbsoluteChannelDelta: number;
+  };
+  readonly reason: string;
+}
+
 const strict = process.argv.includes("--strict");
 const reportPath = "tests/reports/effects-vfx-visual-audit.json";
 const markdownPath = "tests/reports/effects-vfx-visual-audit.md";
-const agentApiPath = "packages/engine/src/agent-api/index.ts";
+const promptEffectEvidencePath = "tests/reports/createAuraApp-postprocess-contract/postprocess-contract.json";
 const contactSheetPath = "tests/reports/effects-vfx-visual-audit-contact-sheet.png";
 const findings: AuditFinding[] = [];
 
 async function main(): Promise<void> {
+  const promptEffectEvidence = createPromptEffectEvidence();
   const visualProof = await createVisualProof();
-  auditPromptFacingEffects();
+  auditPromptFacingEffects(promptEffectEvidence);
   const kernelChecks = auditPostprocessKernels();
   auditParticlePresets(visualProof);
   auditCinematicSystems(visualProof);
@@ -99,44 +114,60 @@ async function main(): Promise<void> {
   if (strict && !report.pass) process.exitCode = 1;
 }
 
-function auditPromptFacingEffects(): void {
-  const source = read(agentApiPath);
-  addFinding({
-    id: "prompt-effect-fog",
-    surface: "Public prompt API / effects.fog",
-    status: includesAll(source, ["FogExp2", "node.effect === \"fog\"", "toAlphaColor(node.color ?? \"#9fb7d9\""]) ? "pass" : "fail",
-    severity: "blocker",
-    summary: "Fog has a real Three.js atmosphere path and Canvas2D fallback.",
-    evidence: [
-      "Three renderer maps fog to THREE.FogExp2.",
-      "Canvas2D fallback paints an atmospheric overlay."
-    ],
-    requiredAction: "Keep fog tied to renderer atmosphere and screenshot contrast checks; do not replace it with a label or DOM overlay."
-  });
-  addFinding({
-    id: "prompt-effect-bloom",
-    surface: "Public prompt API / effects.bloom",
-    status: includesAll(source, ["function createThreeBloom", "SpriteMaterial", "AdditiveBlending", "collectBloomAnchors"]) ? "pass" : "fail",
-    severity: "blocker",
-    summary: "Bloom now has visible renderer-owned glow in the public Three path, but this remains a stylized bloom proxy rather than full HDR postprocess.",
-    evidence: [
-      "Three renderer creates additive bloom sprites anchored to emissive primitives, point lights, and the hero model.",
-      "Canvas2D fallback already has a radial bloom overlay."
-    ],
-    requiredAction: "Add screenshot acceptance for bloom halos and keep the claim scoped as prompt-facing glow until full HDR postprocess is wired into createAuraApp."
-  });
-  addFinding({
-    id: "prompt-effect-rain",
-    surface: "Public prompt API / effects.rain",
-    status: includesAll(source, ["function createThreeRain", "InstancedMesh", "RingGeometry", "aura-rain-floor-splash-ripples", "aura-rain-mist-bank"]) ? "pass" : "fail",
-    severity: "blocker",
-    summary: "Rain now uses layered instanced streaks, floor splash ripples, and mist in the public Three path.",
-    evidence: [
-      "The old sparse line-segment path has been replaced for the primary Three renderer.",
-      "Canvas2D fallback now draws layered rain, mist, and splash ellipses."
-    ],
-    requiredAction: "Run starter and agent screenshots after this change; fail any route that visually collapses to a lone asset plus sparse rain marks."
-  });
+function createPromptEffectEvidence(): readonly PromptEffectEvidence[] {
+  execFileSync("pnpm", [
+    "exec",
+    "playwright",
+    "test",
+    "tests/browser/createAuraApp-postprocess-contract.spec.ts",
+    "--reporter=line"
+  ], { cwd: process.cwd(), encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const report = JSON.parse(read(promptEffectEvidencePath)) as {
+    readonly pass: boolean;
+    readonly effects: readonly PromptEffectEvidence[];
+  };
+  if (!report.pass) throw new Error(`Prompt-effect browser evidence is not passing: ${promptEffectEvidencePath}`);
+  return report.effects;
+}
+
+function auditPromptFacingEffects(effects: readonly PromptEffectEvidence[]): void {
+  const evidenceFor = (effect: string): PromptEffectEvidence | undefined => effects.find((entry) => entry.effect === effect);
+  const addPromptFinding = (effect: "fog" | "bloom" | "rain", summary: string, requiredAction: string): void => {
+    const evidence = evidenceFor(effect);
+    const comparison = evidence?.comparison;
+    addFinding({
+      id: `prompt-effect-${effect}`,
+      surface: `Public prompt API / effects.${effect}`,
+      status: evidence?.status === "root-proven" ? "pass" : "fail",
+      severity: "blocker",
+      summary,
+      evidence: evidence ? [
+        `pass=${evidence.passName ?? "renderer-owned-effect"}`,
+        `off=${evidence.screenshotOff ?? "missing"}`,
+        `on=${evidence.screenshotOn ?? "missing"}`,
+        `changedPixelFraction=${comparison?.changedPixelFraction ?? 0}`,
+        `meanAbsoluteChannelDelta=${comparison?.meanAbsoluteChannelDelta ?? 0}`,
+        evidence.reason
+      ] : [`missing ${promptEffectEvidencePath} row`],
+      requiredAction
+    });
+  };
+
+  addPromptFinding(
+    "fog",
+    "Fog has renderer-owned forward-environment output and an on/off screenshot delta through the public root API.",
+    "Keep fog tied to renderer atmosphere and screenshot contrast checks; do not replace it with a label or DOM overlay."
+  );
+  addPromptFinding(
+    "bloom",
+    "Bloom has a pixel-backed renderer pass and an on/off screenshot delta through the public root API.",
+    "Keep the claim scoped to the measured root bloom pass; do not broaden it to unproven HDR/WebGPU postprocess."
+  );
+  addPromptFinding(
+    "rain",
+    "Rain has starter-level renderer-owned WebGL2 geometry and an on/off screenshot delta through the public root API.",
+    "Keep rain scoped as starter-level geometry and retain route screenshot review before any premium weather claim."
+  );
 }
 
 function auditPostprocessKernels(): readonly KernelCheck[] {

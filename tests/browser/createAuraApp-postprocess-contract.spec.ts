@@ -165,13 +165,23 @@ test.describe("createAuraApp root postprocess contract", () => {
       { effect: "bloom", variant: "bloom", passName: "bloom", passRan: (capture: VariantCapture) => capture.diagnostics.postprocess.bloomPass },
       { effect: "ambient-occlusion", variant: "ambient-occlusion", passName: "ssao", passRan: (capture: VariantCapture) => capture.diagnostics.postprocess.ambientOcclusionPass },
       { effect: "contact-occlusion", variant: "contact-occlusion", passName: "ssao", passRan: (capture: VariantCapture) => capture.diagnostics.postprocess.ambientOcclusionPass },
-      { effect: "fog", variant: "fog", passName: "forward-environment-fog", passRan: (capture: VariantCapture) => capture.pixels.hash !== baseline.capture.pixels.hash }
+      { effect: "fog", variant: "fog", passName: "forward-environment-fog", passRan: (capture: VariantCapture) => capture.pixels.hash !== baseline.capture.pixels.hash },
+      {
+        effect: "rain",
+        variant: "rain",
+        baselineVariant: "rain-baseline",
+        passName: "safe-basic-rain-geometry",
+        passRan: (capture: VariantCapture) => capture.diagnostics.runtimeBackend === "webgl2-agent-runtime" && capture.diagnostics.drawCalls > 0
+      }
     ] as const;
 
     for (const entry of measured) {
       const variant = captures.get(entry.variant);
       if (!variant) throw new Error(`Missing postprocess variant capture: ${entry.variant}`);
-      const comparison = await compareVariants(page, "baseline", entry.variant);
+      const comparisonBaseline = "baselineVariant" in entry ? entry.baselineVariant : "baseline";
+      const comparisonCapture = captures.get(comparisonBaseline);
+      if (!comparisonCapture) throw new Error(`Missing comparison baseline capture: ${comparisonBaseline}`);
+      const comparison = await compareVariants(page, comparisonBaseline, entry.variant);
       const passRan = entry.passRan(variant.capture);
       const pixelsChanged = comparison.changedPixelFraction >= MIN_CHANGED_PIXEL_FRACTION
         && comparison.meanAbsoluteChannelDelta >= MIN_MEAN_CHANNEL_DELTA;
@@ -181,9 +191,9 @@ test.describe("createAuraApp root postprocess contract", () => {
         status,
         passName: entry.passName,
         passRan,
-        screenshotOff: baseline.screenshot,
+        screenshotOff: comparisonCapture.screenshot,
         screenshotOn: variant.screenshot,
-        hashOff: baseline.hash,
+        hashOff: comparisonCapture.hash,
         hashOn: variant.hash,
         comparison,
         reason: status === "root-proven"
@@ -232,9 +242,9 @@ test.describe("createAuraApp root postprocess contract", () => {
         failures.push(`${effect.effect} is root-proven without both on/off screenshot hashes.`);
       }
     }
-    // Bloom and fog are the two effects this contract claims. Everything else is
+    // Bloom, fog, and starter-level rain are the effects this contract claims. Everything else is
     // recorded honestly as partial or unreachable rather than quietly omitted.
-    for (const required of ["bloom", "fog"]) {
+    for (const required of ["bloom", "fog", "rain"]) {
       const effect = effects.find((entry) => entry.effect === required);
       if (effect?.status !== "root-proven") failures.push(`${required} is not root-proven by an on/off pixel delta.`);
     }
@@ -243,7 +253,7 @@ test.describe("createAuraApp root postprocess contract", () => {
       schema: "aura3d-root-postprocess-contract/1.0",
       generatedAt: new Date().toISOString(),
       imports: runnerInfo.imports,
-      claimBoundary: "Root createAuraApp runs a pixel-backed LDR postprocess chain (tone mapping, colour grade, FXAA) and adds a measurable bloom pass and forward environment fog when the scene authors them. SSAO executes when an occlusion effect is authored but its visible contribution is not proven. Outline, SSR, depth of field, motion blur, and TAA are not reachable through the public root effects surface and are not claimed. No HDR-dependent or WebGPU postprocess claim is made.",
+      claimBoundary: "Root createAuraApp runs a pixel-backed LDR postprocess chain (tone mapping, colour grade, FXAA) and adds measurable bloom and forward environment fog on the typed-GLB production bridge. The safe-basic WebGL2 path draws starter-level rain geometry with a measured on/off screenshot delta. SSAO executes when an occlusion effect is authored but its visible contribution is not proven. Outline, SSR, depth of field, motion blur, and TAA are not reachable through the public root effects surface and are not claimed. No HDR-dependent or WebGPU postprocess claim is made.",
       renderer: {
         backend: baseline.capture.diagnostics.backend,
         runtimeBackend: baseline.capture.diagnostics.runtimeBackend,
@@ -263,6 +273,7 @@ test.describe("createAuraApp root postprocess contract", () => {
     expect(evidence.renderer.baselineActualPasses).toEqual(expect.arrayContaining(["tone-mapping", "color-grade", "fxaa"]));
     expect(effectStatus(evidence, "bloom")).toBe("root-proven");
     expect(effectStatus(evidence, "fog")).toBe("root-proven");
+    expect(effectStatus(evidence, "rain")).toBe("root-proven");
     // SSAO must at minimum be reported as an executed pass; claiming it as proven
     // would overstate a measured near-zero contribution.
     expect(evidence.effects.find((entry) => entry.effect === "ambient-occlusion")?.passRan).toBe(true);
