@@ -57,6 +57,48 @@ export function countChecklist(path = "docs/project/parity/threejs/status.md"): 
   };
 }
 
+export interface ChecklistScope {
+  readonly path: string;
+  readonly startHeading: string;
+  readonly endHeading: string;
+}
+
+/**
+ * Count a bounded checklist and fail closed when either boundary disappears.
+ *
+ * The historical Three.js status page intentionally contains prose rather than
+ * checkboxes. Treating its zero/zero result as completion allowed the old parity
+ * pipeline to certify itself without reading a single current acceptance item.
+ * Current competitive gates use this bounded reader against the final PRD.
+ */
+export function readChecklistScope(scope: ChecklistScope): {
+  readonly checked: number;
+  readonly unchecked: number;
+  readonly total: number;
+  readonly items: readonly { readonly checked: boolean; readonly text: string }[];
+} {
+  if (!existsSync(scope.path)) {
+    throw new Error(`Missing checklist source: ${scope.path}`);
+  }
+  const source = readText(scope.path);
+  const start = source.indexOf(scope.startHeading);
+  const end = source.indexOf(scope.endHeading, start + scope.startHeading.length);
+  if (start < 0 || end < 0 || end <= start) {
+    throw new Error(`Checklist boundaries not found in ${scope.path}: ${scope.startHeading} -> ${scope.endHeading}`);
+  }
+  const items = source.slice(start, end)
+    .split(/\r?\n/)
+    .flatMap((line) => {
+      const match = /^\s*- \[([ xX])\]\s+(.+)$/.exec(line);
+      return match ? [{ checked: match[1]!.toLowerCase() === "x", text: match[2]!.trim() }] : [];
+    });
+  if (items.length === 0) {
+    throw new Error(`Checklist scope contains zero acceptance items: ${scope.path} (${scope.startHeading})`);
+  }
+  const checked = items.filter((item) => item.checked).length;
+  return { checked, unchecked: items.length - checked, total: items.length, items };
+}
+
 export function reportIssue(id: string, message: string, severity: "info" | "warning" | "blocker" = "warning") {
   return { id, severity, message };
 }
