@@ -1,7 +1,7 @@
 # Release Tracks
 
-Date: 2026-07-01
-Status: release-candidate baseline
+Date: 2026-08-08
+Status: 1.6.0 release-candidate tracks
 
 Aura3D releases are split into independent tracks. Passing one track does not
 grant claims for another.
@@ -72,7 +72,10 @@ Required gates:
 - copy review against `docs/project/claim-guidelines.md`.
 - `node tools/showcase-library/build-and-check.mjs`
 
-Current status for this track: 7/7 distinct route-library release candidates pass; Aura Clash is tracked separately as the flagship game experience. Data Galaxy and WebGPU Particle Lab are internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses and are not public examples.
+Current status for this track: four non-game route-library candidates have current automated
+evidence and await a recorded human visual verdict. Blockfall Reactor, Turbo Drift Circuit, and
+Skyline Runner remain `prototype-blocked` and cannot be promoted. Aura Clash is tracked separately
+as a development showcase. Data Galaxy and WebGPU Particle Lab remain internal diagnostics.
 
 ## Track 3: Marketing Launch Release
 
@@ -126,6 +129,6 @@ Required gates before promotion:
 
 ## Current Recommendation
 
-Treat package/runtime work and showcase/marketing work as separate. Do not
-promote current showcase routes as public examples until route-level gates and
-visual review pass. Do not use package stability as evidence for visual quality.
+Treat package/runtime work and showcase/marketing work as separate. Do not promote a candidate
+until its route-level gates and current human visual review pass. Never infer visual quality from
+package stability, and never broaden the scoped comparison reports into universal superiority.

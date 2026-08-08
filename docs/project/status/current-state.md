@@ -1,7 +1,7 @@
 # Aura3D Current State
 
-Date: 2026-07-27
-Status: release-candidate documentation baseline
+Date: 2026-08-08
+Status: Aura3D 1.6.0 release-candidate baseline
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -30,6 +30,8 @@ only `@aura3d/engine`, import generated typed assets, and pass browser evidence:
 - frame updates, app pause/resume/step, and deterministic runtime tests;
 - basic game input helpers and fighting-game helper surfaces where the APIs are
   exported from root `@aura3d/engine`;
+- recommended `lean`, `lean-product`, and `lean-game` public entries for new
+  applications that do not need the compatibility-heavy root barrel;
 - screenshots, diagnostics, deployment checks, and route-health style evidence
   when generated from current tests.
 
@@ -62,36 +64,36 @@ The package track can be considered for release when package tests, API docs,
 packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
-The retained `node tools/showcase-library/build-and-check.mjs` report predates
-the current evidence-truth reset and is not current-worktree approval.
-Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
-`prototype-blocked` while their visual rebuilds and hash-bound independent
-reviews are pending. Aura Clash remains a development showcase without a
-flagship-quality claim.
+Current automated route evidence has been regenerated for the 1.6.0 candidate.
+Its four eligible non-game routes still require a recorded human visual verdict
+before the aggregate showcase gate can pass. Blockfall Reactor, Turbo Drift
+Circuit, and Skyline Runner remain `prototype-blocked` and cannot be promoted.
+Aura Clash remains a development showcase without a flagship-quality claim.
 
 Current retained result:
 
 - configured public route-library candidates: four remain eligible for current
-  review; no new aggregate pass is claimed until the gate is regenerated;
+  review; no aggregate public-release pass is claimed until the human gate is
+  recorded;
 - internal diagnostics: 2 retained and not counted as public failures;
 - game-layer diagnostics: 2 retained as contract/debug harnesses, not public examples;
 - prototype-blocked routes: 3;
 - showcase index: handled as an index/catalog route.
 
-Current route-library release status: not approved for the current worktree.
-The July 19 manual review predates current Turbo, Skyline, and Blockfall source.
-Performance/parity promotion is also unavailable while the comparative
-performance report lacks six required inputs.
+Current route-library release status: automated gates current, human verdict
+pending. The July 19 manual review does not approve the current candidate.
+Comparison language is permitted only for the selected frozen workloads in
+`docs/project/threejs-superiority-status.md`; it is not a universal performance
+or ecosystem claim.
 
 ## Showcase Reality
 
 The currently eligible four-route slate includes Product Configurator, Smart
 City Control, Cinematic Architecture, and Digital Twin Operations. Blockfall
 Reactor, Turbo Drift Circuit, and Skyline Runner are visual-rebuild prototypes.
-Aura Clash is tracked separately. Material Asset Inspector and the earlier racing/platformer
-presentation proofs remain accessible but unpromoted. Data Galaxy and WebGPU
-Particle Lab remain internal diagnostics. Racing Game Layer Proof and
-Platformer Game Layer Proof remain diagnostic harnesses.
+Aura Clash is tracked separately. Superseded and duplicate public routes are
+excluded from the website build. Data Galaxy and WebGPU Particle Lab remain
+internal diagnostics.
 
 Turbo Drift and Skyline retain bounded certified asset-geometry, pair,
 mounted gameplay, route-local AI/challenge, route-primary, and deploy evidence.
@@ -126,4 +128,4 @@ No route may move to public-ready based only on boot success, nonblank screensho
 - Release tracks: `docs/project/release-tracks.md`
 - Launch positioning: `docs/project/launch-positioning.md`
 - Game layer rebuild plan: `docs/project/aura3d-game-layer-rebuild-plan.md`
-- Next release candidate: `docs/project/aura3d-140-release-candidate.md`
+- Aura3D 1.6.0 release notes: `docs/project/aura3d-160-release-notes.md`

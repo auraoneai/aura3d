@@ -1,7 +1,7 @@
 # Verification Evidence
 
-Date: 2026-06-18
-Status: evidence policy
+Date: 2026-08-08
+Status: Aura3D 1.6.0 evidence policy and candidate status
 
 This document defines what counts as evidence for release and showcase claims.
 It does not certify that all evidence currently exists.
@@ -58,12 +58,23 @@ Reject evidence when:
 
 ## Current Evidence Status
 
-The remediation PRD identifies current evidence gaps. Until the new gates are
-implemented, treat prior "complete" or "verified" language in older docs as
-historical and insufficient for public release claims.
+The 1.6 candidate has current focused evidence for package exports, lean bundle
+entries, the single production physics owner, 35 Tier 1/2 browser routes, the
+selected 54-row Three.js inventory, seven named same-asset animation fixtures,
+resource lifecycle, and nine restored public evidence routes. Those results are
+scoped to their named commands, routes, assets, browsers, and thresholds.
 
-Current minimum public-safe statement:
+The aggregate public showcase gate is still held until a human verdict is
+recorded for Product Configurator, Smart City Control, Cinematic Architecture,
+and Digital Twin Operations. Blockfall Reactor, Turbo Drift Circuit, and Skyline
+Runner remain `prototype-blocked` regardless of their technical evidence.
 
-"Aura3D has package, CLI, typed asset, basic browser route, and diagnostics
-surfaces. Showcase and advanced renderer/game claims remain route-specific and
-must pass the updated evidence gates before promotion."
+The release itself is not proven complete until two serial full-suite runs from
+the same clean commit pass and npm registry, tarball integrity, Git tag, GitHub
+release, Vercel deployment, production-origin routes, and clean installed-package
+checks have durable receipts. Until then the public-safe statement is:
+
+"Aura3D 1.6.0 is a release candidate with current package, bundle, typed-asset,
+browser-route, and scoped comparison evidence. Showcase and advanced
+renderer/game claims remain route-specific, and publication/deployment claims
+remain pending until their post-release checks pass."

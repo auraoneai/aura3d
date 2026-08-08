@@ -4,8 +4,8 @@ Version: 1.6.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-Date: 2026-07-01
-Status: release-candidate gate checklist
+Date: 2026-08-08
+Status: Aura3D 1.6.0 release-candidate gate checklist
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy.
@@ -21,8 +21,8 @@ routes, benchmark claims, or marketing copy.
 - [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
 - [ ] The current release-candidate summary in
-  `docs/project/aura3d-140-release-candidate.md` matches the commands being
-  run for this release.
+  `docs/project/aura3d-160-release-notes.md` matches the commands being run for
+  this release.
 
 ## Package Gates
 
@@ -79,7 +79,9 @@ routes, benchmark claims, or marketing copy.
 - [ ] Route claims do not exceed detected capability.
 - [ ] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
   their public visual/release evidence passes.
-- [ ] Turbo Drift Circuit and Skyline Runner are counted as public only while current certified geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence all pass.
+- [ ] Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner remain
+  `prototype-blocked` and are never counted as promoted public candidates in
+  this release.
 - [ ] A 7/7 route-library build/check result is described as a technical
   sub-gate, not an overall public-ready verdict, unless the full required test
   and evidence chain also passes.
@@ -122,8 +124,10 @@ routes, benchmark claims, or marketing copy.
 - [ ] `docs/project/site-map.md` links resolve.
 - [ ] README, marketing, route README, and route-health claims agree.
 - [ ] Prototype routes are not presented as public release candidates.
-- [ ] Turbo Drift Circuit and Skyline Runner are described as bounded certified presentations, not production games or arbitrary GLB-to-game conversion proof.
-- [ ] Racing Game Layer Proof and Platformer Game Layer Proof remain clearly labeled diagnostic harnesses.
+- [ ] Turbo Drift Circuit and Skyline Runner are described as bounded prototype
+  evidence, not production games or arbitrary GLB-to-game conversion proof.
+- [ ] Superseded Racing Game Layer Proof and Platformer Game Layer Proof routes
+  remain excluded from current public website and release claims.
 
 ## Go-Live Gates
 

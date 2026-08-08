@@ -2,8 +2,8 @@
 
 Version: 1.6.0
 
-Date: 2026-06-18
-Status: remediation site map
+Date: 2026-08-08
+Status: Aura3D 1.6.0 site map
 
 ## Public Marketing Pages
 
@@ -37,6 +37,8 @@ copy boundary and must not present prototypes as public release examples.
 - [Aura3D 1.4.2 release notes](aura3d-142-release-notes.md)
 - [Aura3D 1.4.4 release notes](aura3d-144-release-notes.md)
 - [Aura3D 1.4.5 release notes](aura3d-145-release-notes.md)
+- [Aura3D 1.6.0 release notes](aura3d-160-release-notes.md)
+- [Aura3D 1.6.0 Three.js comparison status](threejs-superiority-status.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase/quality-gates.md)
 - [Showcase application plan](showcase-application-plan.md)

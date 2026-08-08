@@ -1,6 +1,6 @@
 # Aura3D Known Limits
 
-Date: 2026-07-27
+Date: 2026-08-08
 Status: canonical limitations doc
 
 This file is the public limitations source for project docs, release copy, and
@@ -125,7 +125,19 @@ guide or README must include the narrower wording.
 
 ## Physics Backend Limits
 
-- `@aura3d/physics` exposes a conservative swept-bounds `timeOfImpact(...)` query and an opt-in adaptive-substep continuous-collision wrapper on both `aura-js` and `cannon-es`. The wrapper bounds linear/angular travel and rejects a step when its configured substep guarantee would be exceeded.
-- The native `aura-js` contact solver now uses accumulated Coulomb friction impulses; penetration depth is not part of the friction impulse bound.
-- Native `aura-js` now has focused proof for rotated box SAT, convex-hull GJK/EPA, box/convex/sphere/capsule contacts against indexed triangle meshes and heightfields, and contact-point angular response from a native corner-drop tumble. Surface↔surface pairs remain excluded, and broad production collision parity is not inferred from these bounded tests.
-- Turbo Drift Circuit and Blockfall Reactor use `cannon-es@0.20.0` for angular contact fidelity. Their fast-body protection is Aura3D's adaptive-substep wrapper, not native Cannon swept-TOI support.
+- `@aura3d/physics` has one production solver owner: `cannon-es@0.20.0`.
+  The removed `aura-js` backend is not a fallback and must not be described as
+  available in 1.6.0.
+- The public contract has named production-backend invariants for stacking,
+  fixed joints, adaptive-substep tunnelling protection, sleeping/waking,
+  repeatability, grounding, slope/step movement, suspension response, and
+  browser lifecycle. Those bounded fixtures do not establish universal physics
+  or arbitrary-mesh game-engine parity.
+- The adaptive-substep continuous-collision mitigation is an Aura3D wrapper;
+  it is not native Cannon swept-TOI support.
+- Capsule grounding and rotated ray/sphere queries are corrected in 1.6.0. A
+  project that compensated for the earlier flat-ended capsule or axis-aligned
+  query behavior should remove and retest that workaround.
+- Racing uses shared authored-unit arcade motion, not a physical tyre model.
+  It does not claim weight transfer, understeer, slip/yaw inertia, or physical
+  vehicle parity. See ADR 0003 for the ownership decision.

@@ -87,7 +87,8 @@ is being split". Both premises turned out false: R8 refused the package removals
 the barrel split added narrower entry points **without** removing the wide one. So the answer the
 matrix produces is `1.6.0`, not the one the prose expected.
 
-**Caveat, stated because it changes what 1.6.0 means:** a minor version implies "safe to upgrade",
-and it is — but 1.6.0 does **not** clear the §B.1 release condition. Bundle size remains ~1.8-2.2x
-the equivalent Three.js stack across all three measured scenarios. Upgrading is safe; the bundle
-is not yet competitive. `README.md` states the measured ratios.
+**Bundle boundary:** 1.6.0 clears the §B.1 release condition through the recommended lean entries,
+not by shrinking the compatibility-heavy root. The frozen scenarios measure **0.556x / 1.249x /
+0.810x** the equivalent Three.js stacks against limits of **1.25x / 1.25x / 1.50x**. Existing
+root imports remain supported; new applications should select the matching lean entry when bundle
+cost matters. These are scenario-specific build measurements, not universal performance claims.

@@ -87,11 +87,36 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 1.5.2
+## Current Release: Aura3D 1.6.0
 
-Aura3D 1.5.2 is the current source release across all 26 public packages. It adds
-**camera and sizing capability to the public API** and carries an
-**evidence-correctness patch** on top of 1.5.1.
+Aura3D 1.6.0 is the current source release candidate across all 26 public
+packages. It adds workload-specific lean entries, consolidates production
+physics on one solver owner, preserves the broad compatibility root, and
+restores scoped browser evidence for nine selected routes.
+
+### What ships in 1.6.0
+
+- **Recommended lean entries.** New apps can use `@aura3d/engine/lean`,
+  `@aura3d/engine/lean-product`, or `@aura3d/engine/lean-game`. The broad root
+  remains available for compatibility.
+- **One production physics owner.** `cannon-es` owns rigid-body stepping. The
+  divergent `aura-js` backend is removed, the solver default is restored to ten
+  iterations, capsules are true capsules, and ray/sphere queries respect body
+  rotation.
+- **Compatibility fixtures retained.** Published 1.5.2 input action-binding
+  fixture exports remain reachable through deprecated aliases.
+- **Scoped comparison closure.** The selected Three.js inventory is 54/54
+  matched with zero high-priority rows open. Seven named same-asset animation
+  comparisons pass, and the 100-reload lifecycle fixture reports zero tracked
+  leaks. These results do not imply universal Three.js replacement.
+- **Restored evidence routes.** glTF variants, OBJ loading, anisotropy,
+  depth/outline postprocess, trackball controls, draw ranges, picking, multiple
+  camera views, and injected WebXR interaction semantics are built into the
+  public website. The WebXR preview is explanatory 2D UI, not headset or native
+  renderer proof.
+- **Prototype status preserved.** Blockfall Reactor, Skyline Runner, and Turbo
+  Drift Circuit remain `prototype-blocked` and cannot be promoted by this
+  package release.
 
 ### What shipped in 1.5.2
 
@@ -169,7 +194,9 @@ systems, each backed by unit tests and a runtime probe rather than by a screensh
   across 13 routes, with zero console errors.
 - **21 of 21** combined quality gates pass with **zero unproven**. Missing evidence is
   reported as `unproven`, never as a pass.
-- **2903 of 2904** unit and integration tests, identical across two serial runs.
+- The retained package, architecture, route-health, parity, superiority, and
+  documentation gates pass individually; the two required final serial release
+  runs remain pending until the human visual-review gate is recorded.
 - Clean-room projects against the public surface only: **137 / 142 / 122 / 99** authored
   lines against budgets of 200 / 200 / 300 / 300; one package imported each; **zero**
   private imports.
@@ -202,13 +229,12 @@ Stated because a release note that omits this is not useful:
   the first verified non-blank browser frame measured **24.1 ms vs 33.8 ms**, excluding download
   and module evaluation. Full figures and methodology:
   `tests/reports/developer-friction.json`.
-- `showcase-blockfall-reactor`, `showcase-skyline-runner` and
-  `showcase-turbo-drift-circuit` remain **prototype-blocked**. The engine causes behind
-  their reported defects are now fixed for blockfall and skyline — the platformer jump
-  apex, capsule grounding on slopes, rotation-aware queries, and the solver-iteration
-  default — so both are ready for a visual-review decision. Turbo drift is **not**: its
-  vehicle motion is still a kinematic integrator, blocked on a route-contract gap recorded
-  in `docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md`.
+- `showcase-blockfall-reactor`, `showcase-skyline-runner`, and
+  `showcase-turbo-drift-circuit` remain **prototype-blocked** and cannot be
+  promoted in this release. Their reusable engine causes have been addressed,
+  and racing now delegates authored-unit arcade motion to the shared runtime
+  owner under ADR 0003. None of that supplies public visual approval or turns
+  the arcade contract into physical vehicle-dynamics proof.
 - `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
   not cover it. It carries its own 23-spec suite.
 - `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51
@@ -242,8 +268,8 @@ npm install @aura3d/engine@1.6.0
 npx create-aura3d@1.6.0 my-product --template product-viewer
 ```
 
-Detailed release notes are in
-[`docs/project/aura3d-145-release-notes.md`](docs/project/aura3d-145-release-notes.md),
+Detailed 1.6 release notes are in
+[`docs/project/aura3d-160-release-notes.md`](docs/project/aura3d-160-release-notes.md),
 with retained claim boundaries and release evidence under `docs/project/`.
 
 ## Aura3D 1.1.0 asset catalog
@@ -268,7 +294,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.5.2 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.6.0 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -728,15 +754,13 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.5.2 baseline,
-but the current route-library gate is deliberately non-passing until independent
-review is current. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
-prototype-blocked during visual reconstruction; their typed assets, mounted
-gameplay, and bounded route evidence are technical proof, not current visual
-approval. Aura Clash is tracked separately as a development showcase; two
-internal diagnostics and two game-layer diagnostic harnesses remain outside
-the configured public count. Comparative performance/parity promotion
-remains unavailable while six required performance reports are missing.
+Expected current state — The scoped 1.6 package, bundle, and comparison gates
+pass locally, but the aggregate route-library gate remains non-passing until the
+current human verdict is recorded. Blockfall Reactor, Turbo Drift Circuit, and
+Skyline Runner remain `prototype-blocked`; their typed assets, mounted gameplay,
+and bounded route evidence are technical proof, not promotion. Aura Clash is
+tracked separately as a development showcase. Comparison wording remains limited
+to the selected frozen workloads and disclosed thresholds.
 
 ## Contributing
 

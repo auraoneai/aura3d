@@ -1,7 +1,7 @@
 # Marketing Site
 
-Date: 2026-07-19
-Status: marketing release-candidate copy requirements
+Date: 2026-08-08
+Status: Aura3D 1.6.0 marketing release-candidate requirements
 
 The marketing site must be claim-safe. It can sell Aura3D's current strengths,
 but it cannot imply unsupported root renderer, animation, game, or WebGPU
@@ -9,20 +9,29 @@ capability.
 
 ## Current Showcase Gallery State
 
-The production website publishes 10 release-ready showcase routes:
+The 1.6 website build publishes four non-game route-library candidates awaiting
+current human review:
 
 - Product Configurator
-- Material Asset Inspector
 - Smart City Control
 - Cinematic Architecture
 - Digital Twin Operations
+
+It also publishes three clearly labeled visual-rebuild prototypes that cannot
+be promoted in this release:
+
 - Blockfall Reactor
-- Public Racing Presentation Proof
-- Public Platformer Presentation Proof
 - Turbo Drift Circuit
 - Skyline Runner
 
-Data Galaxy and WebGPU Particle Lab remain Labs diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain internal diagnostic harnesses and are not published as marketing cards. The three current public racing/platformer routes keep bounded stylized-presentation claims and require current certified geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence.
+Aura Clash remains a development showcase. Data Galaxy and WebGPU Particle Lab
+remain Labs diagnostics. Superseded public proofs and the duplicate Material
+Asset Inspector are excluded from the current website build.
+
+Nine separately labeled evidence routes cover glTF variants, OBJ import,
+anisotropy, depth/outline postprocessing, trackball controls, draw ranges,
+picking, multiple camera views, and injected WebXR interaction semantics. Their
+claims stay bound to the exact route and renderer path.
 
 ## Allowed Site Message
 
@@ -75,4 +84,7 @@ Before publication:
 - verify every promoted route has current evidence;
 - ensure screenshots come from the current build;
 - ensure app READMEs and marketing copy agree.
-- verify the gallery matches current `tools/showcase-library/route-gates.json` and `docs/project/showcase-launch-evidence.json`: 9 current public release candidates, two Labs diagnostics, two internal game-layer diagnostics, and no prototype-blocked routes.
+- verify the gallery matches current `tools/showcase-library/route-gates.json`
+  and `docs/project/showcase-launch-evidence.json`: four review-eligible
+  candidates, two Labs diagnostics, three visibly prototype-blocked games, and
+  no superseded or duplicate public routes.

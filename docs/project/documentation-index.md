@@ -1,7 +1,7 @@
 # Documentation Index
 
-Date: 2026-07-01
-Status: project documentation index
+Date: 2026-08-08
+Status: Aura3D 1.6.0 documentation index
 
 ## Directory Taxonomy
 
@@ -32,7 +32,6 @@ These requested documents stay beside the code or evidence they explain:
 - Showcase app entry points:
   `apps/showcase-turbo-drift-circuit/README.md`,
   `apps/showcase-skyline-runner/README.md`,
-  `apps/showcase-material-asset-inspector/README.md`,
   `apps/world-war-x-showcase/README.md`,
   `apps/aura-clash-showcase/README.md`,
   `apps/animation-studio-web/README.md`, and
@@ -67,11 +66,15 @@ These requested documents stay beside the code or evidence they explain:
 
 ## Active Plans And Audits
 
-- Final remaining-work PRD: `docs/project/plans/final-remaining-work-prd.md`
-- Recovery remediation PRD: `docs/project/plans/recovery-remediation-prd.md`
-- Engine/game parity execution plan: `docs/project/plans/engine-game-parity-execution-plan.md`
+- Aura3D 1.6 governing PRD: `Aura3D-1.6-Replatform-PRD.md`
+- Aura3D 1.6 migration and version decision: `MIGRATION-1.6.md`
 - Engine parity gap audit: `docs/project/audits/engine-parity-gap-audit.md`
-- Three.js parity execution plan: `docs/project/parity/threejs/execution-plan.md`
+- Three.js comparison status: `docs/project/threejs-superiority-status.md`
+
+The final remaining-work, recovery remediation, engine/game parity, and Three.js
+execution plans are retained as implementation history. Their completed or
+superseded tasks are not current release requirements; the 1.6 PRD and canonical
+release checklist own the current gate state.
 
 ## Release Docs
 
@@ -85,6 +88,7 @@ These requested documents stay beside the code or evidence they explain:
 - Aura3D 1.4.3 release notes: `docs/project/aura3d-143-release-notes.md`
 - Aura3D 1.4.4 release notes: `docs/project/aura3d-144-release-notes.md`
 - Aura3D 1.4.5 release notes: `docs/project/aura3d-145-release-notes.md`
+- Aura3D 1.6.0 release notes: `docs/project/aura3d-160-release-notes.md`
 - Verification evidence: `docs/project/verification-evidence.md`
 - Requirements trace: `docs/project/requirements-trace.md`
 - Completion audit: `docs/project/completion-audit.md`
