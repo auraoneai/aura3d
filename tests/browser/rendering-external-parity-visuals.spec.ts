@@ -150,7 +150,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("shadow lab publishes ExternalParity preset evidence and visible shadow screenshot", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/shadow-lab.png";
     await captureScreenshot(page, "body", screenshotPath);
@@ -206,7 +206,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     });
     const page = await context.newPage();
     try {
-      await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
       await waitForState(page, "__AURA3D_SHADOW_LAB__");
       const dprScreenshot = "tests/reports/external-parity-example-screenshots/shadow-lab-dpr2.png";
       await captureScreenshot(page, "body", dprScreenshot);
@@ -298,7 +298,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("postprocess lab publishes ExternalParity preset evidence and before-after screenshot", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/postprocess-lab.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", screenshotPath);
@@ -402,7 +402,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("postprocess lab exposes runtime color-management controls backed by real-scene pixels", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const canvas = page.getByTestId("postprocess-lab-canvas");
     const beforeBox = await requiredBox(canvas);
@@ -472,7 +472,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("postprocess lab exposes color-grading controls backed by real-scene pixels", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const initial = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     await page.getByTestId("postprocess-tone-mapper").selectOption("filmic");
@@ -537,7 +537,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("renderer runtime toggles keep layout stable and change visual state", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const postprocessCanvas = page.getByTestId("postprocess-lab-canvas");
     const postprocessBefore = await requiredBox(postprocessCanvas);
@@ -549,7 +549,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     const postprocessToggleScreenshot = "tests/reports/external-parity-example-screenshots/postprocess-lab-toggle-bloom-off.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", postprocessToggleScreenshot);
 
-    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const shadowCanvas = page.getByTestId("shadow-lab-canvas");
     const shadowBefore = await requiredBox(shadowCanvas);

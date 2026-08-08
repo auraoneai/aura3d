@@ -30,6 +30,8 @@ interface ArchitectureEvidence {
   readonly status: RouteStatus;
   readonly appId: "showcase-cinematic-architecture";
   readonly frameCount: number;
+  /** Shared route-health diagnostic; kept top-level so the generic probe can settle promptly. */
+  readonly drawCalls: number;
   readonly controls: ArchitectureControls;
   readonly interactionState: {
     readonly lastChanged: string;
@@ -372,6 +374,7 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
     status: forcedStatus ?? (diagnostics.errors.length > 0 ? "error" : "ready"),
     appId: APP_ID,
     frameCount: app.runtime.frame,
+    drawCalls: diagnostics.drawCalls,
     controls,
     interactionState: {
       lastChanged: lastInteraction,

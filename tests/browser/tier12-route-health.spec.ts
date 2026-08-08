@@ -156,33 +156,10 @@ test.describe("WS-5.2 — Tier 1 and Tier 2 route health", () => {
     );
 
     /*
-     * Three routes fail, and they are **pre-existing defects this gate found**, not regressions
-     * from it. All three are in the same rendering-lab family and are named here so the count
-     * cannot quietly grow:
-     *
-     * - `examples/material-showroom` — its entire `main.ts` is
-     *   `import "../_quarantine/material-showroom/main";`, and `examples/_quarantine/` was
-     *   deleted from the tree. The route 404s and renders nothing. Verified pre-existing: the
-     *   committed file at HEAD is that one line, unchanged since 1.5.0.
-     * - `examples/postprocess-lab` and `examples/shadow-lab` — never reach a ready state within
-     *   the 10 s route budget and render at half the expected DPR backing size.
-     *
-     * Independently confirmed by the retained `rendering-external-parity-visuals.spec.ts`, where
-     * **7 of 10 cases already fail on `main`** against exactly these three routes.
-     *
-     * They are recorded as a known-failing set rather than asserted to zero, because fixing them
-     * is route work with its own contract — the material showroom's retained spec requires 22
-     * named materials, 5 procedural texture fixtures and 3 environment presets — and R2 forbids
-     * weakening the gate to make it pass. Every *other* Tier 1/2 route must stay clean.
+     * WS-5.2 now has no retained failure exemption. The three rendering labs that originally
+     * motivated the known-failing set have been repaired against their full browser contracts;
+     * keeping an allowlist after that point would let a real regression ship green.
      */
-    const KNOWN_FAILING_ROUTES = ["material-showroom", "postprocess-lab", "shadow-lab"] as const;
-    const unexpected = failures.filter((failure) => !KNOWN_FAILING_ROUTES.some((id) => failure.includes(`/${id}/`)));
-    expect(unexpected, `${unexpected.length} unexpected Tier 1/2 route failure(s):\n${unexpected.join("\n")}`).toEqual([]);
-
-    // And the known set must not grow: a fourth failing route fails here.
-    const failingIds = new Set(
-      failures.map((failure) => failure.split("/")[2]).filter((id): id is string => id !== undefined)
-    );
-    expect([...failingIds].sort(), "the known-failing route set changed").toEqual([...KNOWN_FAILING_ROUTES].sort());
+    expect(failures, `${failures.length} Tier 1/2 route failure(s):\n${failures.join("\n")}`).toEqual([]);
   });
 });
