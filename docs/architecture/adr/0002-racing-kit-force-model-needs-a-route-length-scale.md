@@ -1,7 +1,7 @@
 # ADR 0002 — `game.racing` cannot adopt the force model until the route contract states a length scale
 
 - **Date:** 2026-08-07
-- **Status:** accepted (the *blocking* is the decision; the rewire is reverted, not abandoned)
+- **Status:** superseded by ADR 0003
 - **Workstream:** WS-4.7 — kits consume the shared runtime
 
 ## The four R11 questions
@@ -156,3 +156,10 @@ The three defect fixes, which stand on their own. The kinematic integrator stays
 **named**: it is the remaining R12 vehicle-motion row, reported by
 `tools/negative-complexity/index.ts` (2 of 5 violations) rather than quietly closed. R12 is
 not satisfied by this ADR and should not be marked satisfied.
+
+## Supersession
+
+ADR 0003 preserves this document and its measurements as the rejected force-model migration
+record, but changes the decision about what `game.racing` is required to consume. The public kit's
+documented `paceMultiplier` and arbitrary authored route units describe an arcade-motion contract,
+not a tyre-simulation contract. Requiring the force model here conflated two different capabilities.

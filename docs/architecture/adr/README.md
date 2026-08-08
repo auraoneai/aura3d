@@ -62,4 +62,5 @@ records why an existing one could not be removed.
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-retain-ecs-and-scripting.md) | Retain `packages/ecs` and `packages/scripting` as public game-kit-layer API | accepted |
-| [0002](0002-racing-kit-force-model-needs-a-route-length-scale.md) | `game.racing` cannot adopt the shared force model until `GameRacingRoute` states a length scale | accepted |
+| [0002](0002-racing-kit-force-model-needs-a-route-length-scale.md) | `game.racing` cannot adopt the shared force model until `GameRacingRoute` states a length scale | superseded by ADR 0003 |
+| [0003](0003-game-kits-use-shared-runtime-by-capability.md) | Game kits consume shared runtime services by capability; racing remains explicitly arcade | accepted |
