@@ -531,6 +531,7 @@
     "descriptor-assets-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/asset-descriptor-fixtures.json --report tests/reports/descriptor-assets-delete-final.json",
     "descriptor-audio-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/audio-descriptor-fixtures.json --report tests/reports/descriptor-audio-delete-final.json",
     "descriptor-scripting-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/scripting-descriptor-fixtures.json --report tests/reports/descriptor-scripting-delete-final.json",
+    "descriptor-physics-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/physics-descriptor-fixtures.json --report tests/reports/descriptor-physics-delete-final.json",
     "audit:external-candidate-packages": "node tools/external-candidate-package-audit/index.mjs",
     "check:deletion-safety": "pnpm exec tsx --tsconfig tsconfig.base.json tools/deletion-safety/index.ts",
     "check:package-graph": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-graph/index.ts --dot docs/architecture/package-graph.dot",

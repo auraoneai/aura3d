@@ -1,0 +1,1088 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-08T22:33:02.986Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/physics/src/ClothFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/ClothFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/FireSmokeFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/FireSmokeFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/FluidFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/FluidFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/FractureFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/FractureFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/PhysicsSandboxFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/PhysicsSandboxFixtures.ts: all six R8 points empty across 5027 scanned files (27 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/PlatformerFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/PlatformerFixtures.ts: all six R8 points empty across 5027 scanned files (27 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/SoftBodyFixtures.ts",
+      "pass": true,
+      "detail": "packages/physics/src/SoftBodyFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/physics/src/ClothFixtures.ts",
+    "packages/physics/src/FireSmokeFixtures.ts",
+    "packages/physics/src/FluidFixtures.ts",
+    "packages/physics/src/FractureFixtures.ts",
+    "packages/physics/src/PhysicsSandboxFixtures.ts",
+    "packages/physics/src/PlatformerFixtures.ts",
+    "packages/physics/src/SoftBodyFixtures.ts"
+  ],
+  "expandedFileCount": 7,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5027,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/physics/src/ClothFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 360,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/ClothFixtures.ts",
+        "ClothFixtures.ts",
+        "ClothFixtures",
+        "@aura3d/physics/src/ClothFixtures",
+        "@aura3d/physics/ClothFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 34,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2039",
+          "detail": "\"./ClothFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:62",
+          "detail": "\"id\": \"r8:packages/physics/src/ClothFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:64",
+          "detail": "\"detail\": \"packages/physics/src/ClothFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:22; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:93; documentation-generator-dependency @ docs/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:209",
+          "detail": "\"r8:packages/physics/src/ClothFixtures.ts: packages/physics/src/ClothFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:22; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:93; documentat"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:249",
+          "detail": "\"packages/physics/src/ClothFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35582",
+          "detail": "\"path\": \"packages/physics/src/ClothFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35587",
+          "detail": "\"packages/physics/src/ClothFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35588",
+          "detail": "\"ClothFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35589",
+          "detail": "\"ClothFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35590",
+          "detail": "\"@aura3d/physics/src/ClothFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35591",
+          "detail": "\"@aura3d/physics/ClothFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35605",
+          "detail": "\"detail\": \"evidence: [\\\"packages/physics/src/ClothFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream4.physics-animation.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-parity-runti"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35625",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/ClothFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35630",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/ClothFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:22; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:93; documentation-generator-depe"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35635",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/ClothFixtures.ts: packages/physics/src/ClothFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:22; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:93"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35640",
+          "detail": "\"detail\": \"\\\"packages/physics/src/ClothFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35645",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/ClothFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35650",
+          "detail": "\"detail\": \"\\\"packages/physics/src/ClothFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35675",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/physics/src/ClothFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream4.physics-animation.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\", \\\\\\\"tes"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35680",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/ClothFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35685",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/ClothFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:22; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:93; document"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35690",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/ClothFixtures.ts: packages/physics/src/ClothFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:22; runtime-consumer @ tests/browser/runtime-external-p"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35695",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/ClothFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35700",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/ClothFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35705",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/ClothFixtures.ts\\\\\\\",\\\"\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/physics/src/FireSmokeFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 383,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/FireSmokeFixtures.ts",
+        "FireSmokeFixtures.ts",
+        "FireSmokeFixtures",
+        "@aura3d/physics/src/FireSmokeFixtures",
+        "@aura3d/physics/FireSmokeFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 34,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2043",
+          "detail": "\"./FireSmokeFixtures.js\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:67",
+          "detail": "\"id\": \"r8:packages/physics/src/FireSmokeFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:69",
+          "detail": "\"detail\": \"packages/physics/src/FireSmokeFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:26; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:109; documentation-generator-dependency @ "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:210",
+          "detail": "\"r8:packages/physics/src/FireSmokeFixtures.ts: packages/physics/src/FireSmokeFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:26; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:109; d"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:250",
+          "detail": "\"packages/physics/src/FireSmokeFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35755",
+          "detail": "\"path\": \"packages/physics/src/FireSmokeFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35760",
+          "detail": "\"packages/physics/src/FireSmokeFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35761",
+          "detail": "\"FireSmokeFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35762",
+          "detail": "\"FireSmokeFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35763",
+          "detail": "\"@aura3d/physics/src/FireSmokeFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35764",
+          "detail": "\"@aura3d/physics/FireSmokeFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35778",
+          "detail": "\"detail\": \"evidence: [\\\"packages/physics/src/FireSmokeFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream4.physics-animation.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-parity-r"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35798",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/FireSmokeFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35803",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/FireSmokeFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:26; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:109; documentation-generator"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35808",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/FireSmokeFixtures.ts: packages/physics/src/FireSmokeFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:26; runtime-consumer @ tests/browser/runtime-external-parity.sp"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35813",
+          "detail": "\"detail\": \"\\\"packages/physics/src/FireSmokeFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35818",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/FireSmokeFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35823",
+          "detail": "\"detail\": \"\\\"packages/physics/src/FireSmokeFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35848",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/physics/src/FireSmokeFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream4.physics-animation.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\", \\\\\\"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35853",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/FireSmokeFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35858",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/FireSmokeFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:26; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:109; doc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35863",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/FireSmokeFixtures.ts: packages/physics/src/FireSmokeFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:26; runtime-consumer @ tests/browser/runtime-ex"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35868",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/FireSmokeFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35873",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/FireSmokeFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35878",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/FireSmokeFixtures.ts\\\\\\\",\\\"\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/physics/src/FluidFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 302,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/FluidFixtures.ts",
+        "FluidFixtures.ts",
+        "FluidFixtures",
+        "@aura3d/physics/src/FluidFixtures",
+        "@aura3d/physics/FluidFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 34,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2042",
+          "detail": "\"./FluidFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:72",
+          "detail": "\"id\": \"r8:packages/physics/src/FluidFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:74",
+          "detail": "\"detail\": \"packages/physics/src/FluidFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:105; documentation-generator-dependency @ docs"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:211",
+          "detail": "\"r8:packages/physics/src/FluidFixtures.ts: packages/physics/src/FluidFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:105; documenta"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:251",
+          "detail": "\"packages/physics/src/FluidFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35928",
+          "detail": "\"path\": \"packages/physics/src/FluidFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35933",
+          "detail": "\"packages/physics/src/FluidFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35934",
+          "detail": "\"FluidFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35935",
+          "detail": "\"FluidFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35936",
+          "detail": "\"@aura3d/physics/src/FluidFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35937",
+          "detail": "\"@aura3d/physics/FluidFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35951",
+          "detail": "\"detail\": \"evidence: [\\\"packages/physics/src/FluidFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream4.physics-animation.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-parity-runti"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35971",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/FluidFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35976",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/FluidFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:105; documentation-generator-dep"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35981",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/FluidFixtures.ts: packages/physics/src/FluidFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:10"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35986",
+          "detail": "\"detail\": \"\\\"packages/physics/src/FluidFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35991",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/FluidFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35996",
+          "detail": "\"detail\": \"\\\"packages/physics/src/FluidFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36021",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/physics/src/FluidFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream4.physics-animation.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\", \\\\\\\"tes"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36026",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/FluidFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36031",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/FluidFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:105; documen"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36036",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/FluidFixtures.ts: packages/physics/src/FluidFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-p"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36041",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/FluidFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36046",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/FluidFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36051",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/FluidFixtures.ts\\\\\\\",\\\"\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/physics/src/FractureFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 278,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/FractureFixtures.ts",
+        "FractureFixtures.ts",
+        "FractureFixtures",
+        "@aura3d/physics/src/FractureFixtures",
+        "@aura3d/physics/FractureFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 34,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2041",
+          "detail": "\"./FractureFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:77",
+          "detail": "\"id\": \"r8:packages/physics/src/FractureFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:79",
+          "detail": "\"detail\": \"packages/physics/src/FractureFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:24; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:101; documentation-generator-dependency @ d"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:212",
+          "detail": "\"r8:packages/physics/src/FractureFixtures.ts: packages/physics/src/FractureFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:24; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:101; doc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:252",
+          "detail": "\"packages/physics/src/FractureFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36101",
+          "detail": "\"path\": \"packages/physics/src/FractureFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36106",
+          "detail": "\"packages/physics/src/FractureFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36107",
+          "detail": "\"FractureFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36108",
+          "detail": "\"FractureFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36109",
+          "detail": "\"@aura3d/physics/src/FractureFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36110",
+          "detail": "\"@aura3d/physics/FractureFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36124",
+          "detail": "\"detail\": \"evidence: [\\\"packages/physics/src/FractureFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream4.physics-animation.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-parity-ru"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36144",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/FractureFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36149",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/FractureFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:24; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:101; documentation-generator-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36154",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/FractureFixtures.ts: packages/physics/src/FractureFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:24; runtime-consumer @ tests/browser/runtime-external-parity.spec"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36159",
+          "detail": "\"detail\": \"\\\"packages/physics/src/FractureFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36164",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/FractureFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36169",
+          "detail": "\"detail\": \"\\\"packages/physics/src/FractureFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36194",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/physics/src/FractureFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream4.physics-animation.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\", \\\\\\\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36199",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/FractureFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36204",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/FractureFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:24; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:101; docu"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36209",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/FractureFixtures.ts: packages/physics/src/FractureFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:24; runtime-consumer @ tests/browser/runtime-exte"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36214",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/FractureFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36219",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/FractureFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36224",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/FractureFixtures.ts\\\\\\\",\\\"\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/physics/src/PhysicsSandboxFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 395,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/PhysicsSandboxFixtures.ts",
+        "PhysicsSandboxFixtures.ts",
+        "PhysicsSandboxFixtures",
+        "@aura3d/physics/src/PhysicsSandboxFixtures",
+        "@aura3d/physics/PhysicsSandboxFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 27,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2038",
+          "detail": "\"./PhysicsSandboxFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:82",
+          "detail": "\"id\": \"r8:packages/physics/src/PhysicsSandboxFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:84",
+          "detail": "\"detail\": \"packages/physics/src/PhysicsSandboxFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:21; documentation-generator-dependency @ docs/api/public-api.md:817\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:213",
+          "detail": "\"r8:packages/physics/src/PhysicsSandboxFixtures.ts: packages/physics/src/PhysicsSandboxFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:21; documentation-generator-dependency @ docs/api/public-api.md:8"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:253",
+          "detail": "\"packages/physics/src/PhysicsSandboxFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36274",
+          "detail": "\"path\": \"packages/physics/src/PhysicsSandboxFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36279",
+          "detail": "\"packages/physics/src/PhysicsSandboxFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36280",
+          "detail": "\"PhysicsSandboxFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36281",
+          "detail": "\"PhysicsSandboxFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36282",
+          "detail": "\"@aura3d/physics/src/PhysicsSandboxFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36283",
+          "detail": "\"@aura3d/physics/PhysicsSandboxFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36312",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/PhysicsSandboxFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36317",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/PhysicsSandboxFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:21; documentation-generator-dependency @ docs/api/public-api.md:817\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36322",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/PhysicsSandboxFixtures.ts: packages/physics/src/PhysicsSandboxFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:21; documentation-generator-dependency @ docs/api/pub"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36327",
+          "detail": "\"detail\": \"\\\"packages/physics/src/PhysicsSandboxFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36332",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/PhysicsSandboxFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36337",
+          "detail": "\"detail\": \"\\\"packages/physics/src/PhysicsSandboxFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36362",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/PhysicsSandboxFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36367",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/PhysicsSandboxFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:21; documentation-generator-dependency @ docs/api/public-api.md:817\\\\\\\"\\"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36372",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/PhysicsSandboxFixtures.ts: packages/physics/src/PhysicsSandboxFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:21; documentation-generator-dependenc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36377",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/PhysicsSandboxFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36382",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/PhysicsSandboxFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36387",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/PhysicsSandboxFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18420",
+          "detail": "\"path\": \"dist/packages/physics/src/PhysicsSandboxFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:25860",
+          "detail": "\"path\": \"dist/physics/PhysicsSandboxFixtures.js\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/physics/src/PlatformerFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 206,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/PlatformerFixtures.ts",
+        "PlatformerFixtures.ts",
+        "PlatformerFixtures",
+        "@aura3d/physics/src/PlatformerFixtures",
+        "@aura3d/physics/PlatformerFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 27,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2037",
+          "detail": "\"./PlatformerFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:87",
+          "detail": "\"id\": \"r8:packages/physics/src/PlatformerFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:89",
+          "detail": "\"detail\": \"packages/physics/src/PlatformerFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:20; documentation-generator-dependency @ docs/api/public-api.md:816\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:214",
+          "detail": "\"r8:packages/physics/src/PlatformerFixtures.ts: packages/physics/src/PlatformerFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:20; documentation-generator-dependency @ docs/api/public-api.md:816\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:254",
+          "detail": "\"packages/physics/src/PlatformerFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36417",
+          "detail": "\"path\": \"packages/physics/src/PlatformerFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36422",
+          "detail": "\"packages/physics/src/PlatformerFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36423",
+          "detail": "\"PlatformerFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36424",
+          "detail": "\"PlatformerFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36425",
+          "detail": "\"@aura3d/physics/src/PlatformerFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36426",
+          "detail": "\"@aura3d/physics/PlatformerFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36455",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/PlatformerFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36460",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/PlatformerFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:20; documentation-generator-dependency @ docs/api/public-api.md:816\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36465",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/PlatformerFixtures.ts: packages/physics/src/PlatformerFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:20; documentation-generator-dependency @ docs/api/public-api."
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36470",
+          "detail": "\"detail\": \"\\\"packages/physics/src/PlatformerFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36475",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/PlatformerFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36480",
+          "detail": "\"detail\": \"\\\"packages/physics/src/PlatformerFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36505",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/PlatformerFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36510",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/PlatformerFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:20; documentation-generator-dependency @ docs/api/public-api.md:816\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36515",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/PlatformerFixtures.ts: packages/physics/src/PlatformerFixtures.ts: 2 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:20; documentation-generator-dependency @ docs"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36520",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/PlatformerFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36525",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/PlatformerFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36530",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/PlatformerFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18468",
+          "detail": "\"path\": \"dist/packages/physics/src/PlatformerFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:25908",
+          "detail": "\"path\": \"dist/physics/PlatformerFixtures.js\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/physics/src/SoftBodyFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 364,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/physics/src/SoftBodyFixtures.ts",
+        "SoftBodyFixtures.ts",
+        "SoftBodyFixtures",
+        "@aura3d/physics/src/SoftBodyFixtures",
+        "@aura3d/physics/SoftBodyFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 34,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2040",
+          "detail": "\"./SoftBodyFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:92",
+          "detail": "\"id\": \"r8:packages/physics/src/SoftBodyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:94",
+          "detail": "\"detail\": \"packages/physics/src/SoftBodyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:23; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:97; documentation-generator-dependency @ do"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:215",
+          "detail": "\"r8:packages/physics/src/SoftBodyFixtures.ts: packages/physics/src/SoftBodyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:23; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:97; docu"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:255",
+          "detail": "\"packages/physics/src/SoftBodyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36560",
+          "detail": "\"path\": \"packages/physics/src/SoftBodyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36565",
+          "detail": "\"packages/physics/src/SoftBodyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36566",
+          "detail": "\"SoftBodyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36567",
+          "detail": "\"SoftBodyFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36568",
+          "detail": "\"@aura3d/physics/src/SoftBodyFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36569",
+          "detail": "\"@aura3d/physics/SoftBodyFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36583",
+          "detail": "\"detail\": \"evidence: [\\\"packages/physics/src/SoftBodyFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream4.physics-animation.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-parity-ru"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36603",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/physics/src/SoftBodyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36608",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/physics/src/SoftBodyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:23; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:97; documentation-generator-d"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36613",
+          "detail": "\"detail\": \"\\\"r8:packages/physics/src/SoftBodyFixtures.ts: packages/physics/src/SoftBodyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:23; runtime-consumer @ tests/browser/runtime-external-parity.spec"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36618",
+          "detail": "\"detail\": \"\\\"packages/physics/src/SoftBodyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36623",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/physics/src/SoftBodyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36628",
+          "detail": "\"detail\": \"\\\"packages/physics/src/SoftBodyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36653",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/physics/src/SoftBodyFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream4.physics-animation.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\", \\\\\\\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36658",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/physics/src/SoftBodyFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36663",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/physics/src/SoftBodyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:23; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:97; docum"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36668",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/physics/src/SoftBodyFixtures.ts: packages/physics/src/SoftBodyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:23; runtime-consumer @ tests/browser/runtime-exte"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36673",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/SoftBodyFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36678",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/physics/src/SoftBodyFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:36683",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/physics/src/SoftBodyFixtures.ts\\\\\\\",\\\"\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    }
+  ]
+}

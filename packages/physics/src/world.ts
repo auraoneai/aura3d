@@ -18,7 +18,7 @@
  *
  *   via the barrel      77,081 B gzip   (cannon-es 83,869 raw + HitboxWorld 14,379 + KinematicBody
  *                                        8,975 + CharacterController 8,531 + NarrowPhase 8,488 +
- *                                        VehicleDynamics 8,125 + PhysicsSandboxFixtures 7,687 + ...)
+ *                                        VehicleDynamics 8,125 + compatibility controllers + ...)
  *   via this entry      the solver only
  *
  * `cannon-es` itself stays on the critical path, and that is the honest remaining cost of a synchronous

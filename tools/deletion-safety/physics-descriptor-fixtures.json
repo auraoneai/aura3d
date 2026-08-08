@@ -1,0 +1,12 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's simulated advanced-physics descriptors; retained proof is executable rigid-body behavior, browser rendering, and the optional Rapier adapter.",
+  "candidates": [
+    "packages/physics/src/ClothFixtures.ts",
+    "packages/physics/src/FireSmokeFixtures.ts",
+    "packages/physics/src/FluidFixtures.ts",
+    "packages/physics/src/FractureFixtures.ts",
+    "packages/physics/src/PhysicsSandboxFixtures.ts",
+    "packages/physics/src/PlatformerFixtures.ts",
+    "packages/physics/src/SoftBodyFixtures.ts"
+  ]
+}

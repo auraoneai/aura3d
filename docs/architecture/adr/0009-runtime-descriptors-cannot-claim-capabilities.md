@@ -39,6 +39,16 @@ perception, and lifecycle hooks as an optional compatibility package. The game
 slice no longer advertises simulated SaaS, networking, ML, or analytics objects
 as runtime integrations.
 
+The physics batch removes seven deterministic descriptor generators for a
+platformer controller, sandbox catalog, cloth, soft-body, fracture, fluid, and
+volumetric fire/smoke simulations. Those modules calculated plausible-looking
+counts and set capability booleans, but they did not step or render the solvers
+they named. Aura3D retains its executable first-party rigid-body world, contacts,
+constraints, queries, scene bridges, debug rendering, browser-tested physics
+sandbox, and the optional Rapier adapter. Cloth, soft-body, fracture, fluid, and
+volumetric fire/smoke remain unclaimed until executable runtime and browser
+evidence exists.
+
 ## Evidence
 
 `tests/reports/public-runtime-descriptor-inventory/report.json` is the complete

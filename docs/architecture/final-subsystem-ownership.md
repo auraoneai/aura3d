@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `7647e5233996af380c2a272a55560aa5f84b2e9e`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `876f80044f97230feab1afd6d7efb6171c840daa`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -27,7 +27,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/materials` | `AURA-CORE` | 339 | 5 | 2 | 2760 | yes |
 | `@aura3d/math` | `AURA-CORE` | 1220 | 49 | 1 | 8067 | yes |
 | `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 196 | 7 | 1 | 0 | yes |
-| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 11988 | 47 | 3 | 102048 | yes |
+| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 9698 | 47 | 3 | 102048 | yes |
 | `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 160 | 6 | 1 | 2329 | yes |
 | `@aura3d/product-studio` | `AURA-MOAT` | 696 | 29 | 1 | 4893 | yes |
 | `@aura3d/react` | `EXTERNAL-ADAPTER` | 173 | 14 | 1 | 1182 | yes |
@@ -43,16 +43,16 @@ Every package source file is assigned exactly once. General rows inherit the pac
 
 | Subsystem | Package | Disposition | Files | Lines | Built gzip | Maintenance refs | Decision |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 200 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 201 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `apps-general` | `apps` | `AURA-MOAT` | 1 | 162 | 1190 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 1 | 65 | 674 | 5 | Remove evidence-only source from the published runtime after consumer proof. |
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `assets-general` | `assets` | `AURA-MOAT` | 61 | 15758 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1696 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 791 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 792 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 68 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 203 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 204 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 87 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 4 | Move fixtures out of the optional editor runtime. |
@@ -66,10 +66,9 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1342 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 177 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 196 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 133 | Compare against current Rapier topology; exactly one physical solver may remain. |
+| `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 132 | Compare against current Rapier topology; exactly one physical solver may remain. |
 | `physics-custom-physical-controllers` | `physics` | `DEPRECATE-REMOVE` | 4 | 2184 | 17116 | 32 | Retain only until the optional-engine bake-off and migration proof identify replacements. |
-| `physics-evidence-descriptors` | `physics` | `EVIDENCE-ONLY` | 7 | 2281 | 14925 | 9 | Move out of the published runtime; never represent descriptors as solvers. |
-| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2451 | 16083 | 426 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2442 | 16083 | 426 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `physics-navigation-crowd-steering` | `physics` | `OPTIONAL-PLUGIN` | 3 | 1135 | 7650 | 27 | Bake off against Recast/Detour and maintained alternatives in Phase 2. |
 | `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |

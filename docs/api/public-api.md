@@ -35,7 +35,7 @@ pnpm verify:api-docs
 | `@aura3d/materials/node` | `1.6.0` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `1.6.0` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/navigation-recast` | `1.6.0` | `packages/navigation-recast/src/index.ts` | 12 |
-| `@aura3d/physics` | `1.6.0` | `packages/physics/src/index.ts` | 32 |
+| `@aura3d/physics` | `1.6.0` | `packages/physics/src/index.ts` | 25 |
 | `@aura3d/physics-rapier` | `1.6.0` | `packages/physics-rapier/src/index.ts` | 11 |
 | `@aura3d/physics/solverless` | `1.6.0` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `1.6.0` | `packages/physics/src/world.ts` | 2 |
@@ -869,13 +869,6 @@ export * from "./Crowd.js";
 export * from "./ScenePhysicsBridge.js";
 export * from "./ECSPhysicsBridge.js";
 export * from "./PhysicsDebugDraw.js";
-export * from "./PlatformerFixtures.js";
-export * from "./PhysicsSandboxFixtures.js";
-export * from "./ClothFixtures.js";
-export * from "./SoftBodyFixtures.js";
-export * from "./FractureFixtures.js";
-export * from "./FluidFixtures.js";
-export * from "./FireSmokeFixtures.js";
 ```
 
 ## @aura3d/physics-rapier

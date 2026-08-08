@@ -123,6 +123,9 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "scripting-descriptor-deletion-proof": [
     "tests/reports/descriptor-scripting-delete-final.json"
   ],
+  "physics-descriptor-deletion-proof": [
+    "tests/reports/descriptor-physics-delete-final.json"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *

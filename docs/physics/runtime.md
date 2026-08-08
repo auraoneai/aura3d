@@ -17,13 +17,16 @@ Version: 1.4.5
 | Character and movement helpers | `CharacterController.ts`, `Navigation.ts`, `Steering.ts` |
 | Scene/ECS bridges | `ScenePhysicsBridge.ts`, `ECSPhysicsBridge.ts` |
 | Debug visualization | `PhysicsDebugDraw.ts`, `packages/debug/src/PhysicsDebugAdapter.ts` |
-| Fixture systems | `PhysicsSandboxFixtures.ts`, `PlatformerFixtures.ts`, `VehicleDynamics.ts`, `ClothFixtures.ts`, `SoftBodyFixtures.ts`, `FluidFixtures.ts`, `FractureFixtures.ts`, `FireSmokeFixtures.ts`, `Crowd.ts` |
+| Higher-level helpers | `VehicleDynamics.ts`, `Crowd.ts` |
+| Optional production solver | `@aura3d/physics-rapier` (explicit adapter over `@dimforge/rapier3d-compat`) |
 
 ## Runtime Model
 
 Use `PhysicsWorld` as the owner of bodies, colliders, constraints, contacts, and deterministic stepping. Use `PhysicsStepper` when the app frame rate and simulation tick rate differ. Scene or ECS bridges should be the boundary between simulation state and renderable transforms.
 
 The advanced gallery `physics-playground` route uses this model for deterministic rigid-body/contact movement and route-level manipulation evidence. It intentionally uses primitive/proxy colliders for a stable showcase route.
+
+Aura3D does not currently claim first-party cloth, soft-body, fluid, fracture, or volumetric fire/smoke solvers. Earlier deterministic descriptor fixtures for those categories were removed because reporting a configuration and derived counters did not demonstrate a working simulation. Projects that need production rigid-body physics can opt into `@aura3d/physics-rapier`; advanced simulation categories remain integration opportunities until backed by executable runtime and browser evidence.
 
 ## Supported Evidence
 

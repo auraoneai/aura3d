@@ -1,4 +1,4 @@
-import { PhysicsDebugDraw, PhysicsWorld, Shape, samplePhysicsSandboxFixture, type DebugLine, type PhysicsSandboxFixture } from "@aura3d/physics";
+import { PhysicsDebugDraw, PhysicsWorld, Shape, type DebugLine } from "@aura3d/physics";
 import { Geometry, Renderer, UnlitMaterial, type RenderDeviceDiagnostics, type RenderItem } from "@aura3d/rendering";
 
 interface PhysicsSandboxState {
@@ -12,7 +12,6 @@ interface PhysicsSandboxState {
   readonly debugVisible: boolean;
   readonly interactions: number;
   readonly diagnostics?: RenderDeviceDiagnostics;
-  readonly oldBranchPhysicsSandbox?: PhysicsSandboxFixture;
   readonly metrics?: Record<string, string | number | boolean>;
   readonly error?: string;
 }
@@ -150,7 +149,6 @@ function createSandbox(renderer: Renderer, status: HTMLElement): {
   let spawned = 0;
   let activeScene = "stack";
   let lastDiagnostics: RenderDeviceDiagnostics | undefined;
-  const oldBranchPhysicsSandbox = samplePhysicsSandboxFixture({ seed: 0x3d2025, steps: 24 });
 
   const ground = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   world.createCollider(ground, { shape: Shape.plane([0, 1, 0], 0) });
@@ -358,19 +356,9 @@ function createSandbox(renderer: Renderer, status: HTMLElement): {
       debugVisible,
       interactions,
       diagnostics: lastDiagnostics,
-      oldBranchPhysicsSandbox,
       metrics: {
         activeScene,
         availableScenes: "stack,constraints,triggers,raycasts,shape-casts,sleeping,stress",
-        oldBranchPhysicsSandboxPort: true,
-        oldBranchPhysicsSandboxSource: oldBranchPhysicsSandbox.source,
-        oldBranchPhysicsSandboxHash: oldBranchPhysicsSandbox.hash,
-        oldBranchSpawnerPresetCount: oldBranchPhysicsSandbox.spawners.length,
-        oldBranchSpawnerBodyCount: oldBranchPhysicsSandbox.metrics.totalSpawnedBodies,
-        oldBranchSpawnerConstraintCount: oldBranchPhysicsSandbox.metrics.totalSpawnerConstraints,
-        oldBranchSupportedToolCount: oldBranchPhysicsSandbox.metrics.supportedToolCount,
-        oldBranchBlockedToolCount: oldBranchPhysicsSandbox.metrics.blockedToolCount,
-        oldBranchUnsupportedAdvancedSimulationCount: oldBranchPhysicsSandbox.unsupportedAdvancedSimulations.length,
         bodies: snapshot.stats.bodies,
         colliders: snapshot.stats.colliders,
         constraints: snapshot.stats.constraints,

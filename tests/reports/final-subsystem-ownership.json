@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T22:26:11.029Z",
+  "generatedAt": "2026-08-08T22:32:53.154Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "7647e5233996af380c2a272a55560aa5f84b2e9e",
+  "sourceCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -15,8 +15,8 @@
     "external-consumer and clean-room tests"
   ],
   "packageCount": 28,
-  "subsystemCount": 36,
-  "sourceFilesClassified": 890,
+  "subsystemCount": 35,
+  "sourceFilesClassified": 883,
   "packages": [
     {
       "package": "animation",
@@ -2650,8 +2650,8 @@
       "published": true,
       "disposition": "COMPATIBILITY-ONLY",
       "source": {
-        "lines": 11988,
-        "bytes": 464665
+        "lines": 9698,
+        "bytes": 374949
       },
       "dist": {
         "jsFiles": 40,
@@ -2821,7 +2821,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 35,
+        "sourceFiles": 28,
         "testMentions": 26,
         "docsMentions": 29
       }
@@ -2879,7 +2879,8 @@
           "1.6-FINAL-PRD-Finishes.md",
           "docs/api/public-api.md",
           "docs/architecture/final-subsystem-ownership.md",
-          "docs/architecture/package-ownership.md"
+          "docs/architecture/package-ownership.md",
+          "docs/physics/runtime.md"
         ],
         "externalConsumer": []
       },
@@ -2889,14 +2890,14 @@
         "route": 0,
         "fixture": 7,
         "cliOrGenerator": 1,
-        "docs": 4,
+        "docs": 5,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
         "testMentions": 7,
-        "docsMentions": 4
+        "docsMentions": 5
       }
     },
     {
@@ -4002,6 +4003,7 @@
           "tests/browser/scripting-browser-harness.ts",
           "tests/integration/scripting-scene-ecs.test.ts",
           "tests/reports/browser-entry-purity.json",
+          "tests/reports/descriptor-scripting-delete-final.json",
           "tests/reports/ecs-scripting-compatibility/report.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/public-api-contracts.test.ts",
@@ -4028,7 +4030,7 @@
         "source": 16,
         "dynamicImport": 4,
         "route": 2,
-        "fixture": 11,
+        "fixture": 12,
         "cliOrGenerator": 4,
         "docs": 6,
         "externalConsumer": 0
@@ -4036,7 +4038,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 21,
-        "testMentions": 11,
+        "testMentions": 12,
         "docsMentions": 6
       }
     },
@@ -4507,6 +4509,7 @@
         "tests/unit/runtime-edge-coverage.test.ts",
         "tests/unit/scene/hierarchy-serialization.test.ts",
         "tests/unit/three-compat/three-compat-threejs-inventory.test.ts",
+        "tests/unit/tools/deletion-safety.test.ts",
         "tests/unit/workstream4.physics-animation.test.ts",
         "tools/animation-engine-docs-claims/index.ts",
         "tools/animation-engine-inertialization-readiness/index.ts",
@@ -4542,7 +4545,7 @@
         "tools/threejs-parity-threejs-inventory/index.ts",
         "tools/webgpu-feature-matrix/index.ts"
       ],
-      "maintenanceReferenceCount": 200
+      "maintenanceReferenceCount": 201
     },
     {
       "id": "apps-general",
@@ -5778,6 +5781,7 @@
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
+        "tests/reports/descriptor-scripting-delete-final.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
         "tests/reports/final-subsystem-ownership.json",
@@ -5967,7 +5971,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 791
+      "maintenanceReferenceCount": 792
     },
     {
       "id": "controls-general",
@@ -6414,6 +6418,7 @@
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
+        "tests/reports/descriptor-scripting-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
@@ -6478,7 +6483,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 203
+      "maintenanceReferenceCount": 204
     },
     {
       "id": "debug-general",
@@ -11204,7 +11209,6 @@
         "packages/physics/src/KinematicWorld.ts",
         "packages/physics/src/MeshBVH.ts",
         "packages/physics/src/PhysicsDebugDraw.ts",
-        "packages/physics/src/PhysicsSandboxFixtures.ts",
         "packages/physics/src/ScenePhysicsBridge.ts",
         "packages/physics/src/index.ts",
         "packages/physics/src/solverless.ts",
@@ -11267,7 +11271,7 @@
         "tools/requirements-trace/index.ts",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 133
+      "maintenanceReferenceCount": 132
     },
     {
       "id": "physics-custom-physical-controllers",
@@ -11327,43 +11331,6 @@
       "maintenanceReferenceCount": 32
     },
     {
-      "id": "physics-evidence-descriptors",
-      "package": "physics",
-      "disposition": "EVIDENCE-ONLY",
-      "owner": "tests/tools",
-      "decision": "Move out of the published runtime; never represent descriptors as solvers.",
-      "files": [
-        "packages/physics/src/ClothFixtures.ts",
-        "packages/physics/src/FireSmokeFixtures.ts",
-        "packages/physics/src/FluidFixtures.ts",
-        "packages/physics/src/FractureFixtures.ts",
-        "packages/physics/src/PhysicsSandboxFixtures.ts",
-        "packages/physics/src/PlatformerFixtures.ts",
-        "packages/physics/src/SoftBodyFixtures.ts"
-      ],
-      "lines": 2281,
-      "bytes": 89363,
-      "compiledCost": {
-        "compiledFiles": 7,
-        "rawBytes": 72021,
-        "gzipBytes": 14925,
-        "brotliBytes": 12950,
-        "caveat": "concatenated built modules before application tree-shaking"
-      },
-      "maintenanceReferences": [
-        "Aura3D-1.6-Architecture-Decision.md",
-        "docs/api/public-api.md",
-        "docs/physics/runtime.md",
-        "packages/physics/src/index.ts",
-        "packages/physics/src/world.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
-        "tests/unit/tools/deletion-safety.test.ts"
-      ],
-      "maintenanceReferenceCount": 9
-    },
-    {
       "id": "physics-general",
       "package": "physics",
       "disposition": "COMPATIBILITY-ONLY",
@@ -11380,8 +11347,8 @@
         "packages/physics/src/solverless.ts",
         "packages/physics/src/world.ts"
       ],
-      "lines": 2451,
-      "bytes": 86856,
+      "lines": 2442,
+      "bytes": 86503,
       "compiledCost": {
         "compiledFiles": 9,
         "rawBytes": 70908,
@@ -11483,6 +11450,7 @@
         "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
         "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
+        "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
         "docs/architecture/extension-points.md",
         "docs/architecture/meshbvh-responsibilities.md",
         "docs/architecture/physics-backend-decision.md",
@@ -11632,7 +11600,6 @@
         "packages/physics/src/CharacterController.ts",
         "packages/physics/src/KinematicBody.ts",
         "packages/physics/src/KinematicWorld.ts",
-        "packages/physics/src/PhysicsSandboxFixtures.ts",
         "packages/physics/src/PhysicsStepper.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/Raycast.ts",

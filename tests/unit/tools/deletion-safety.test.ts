@@ -186,7 +186,7 @@ describe("deletion-safety (R8)", () => {
      * A gate whose verdict depends on how it was called is not evidence, so this pins the invariant
      * on the CLI-argument path and against the *default* queue rather than a temporary one.
      */
-    const candidate = "packages/physics/src/PlatformerFixtures.ts";
+    const candidate = "packages/animation/src/MotionMatchingFixtures.ts";
     const { report } = run([candidate]);
     const files = report.files as readonly {
       readonly path: string;

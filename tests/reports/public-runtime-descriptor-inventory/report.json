@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T22:26:15.184Z",
+  "generatedAt": "2026-08-08T22:32:56.691Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -11,13 +11,13 @@
     "*Reference"
   ],
   "summary": {
-    "modules": 23,
-    "lines": 8506,
+    "modules": 16,
+    "lines": 6225,
     "retainedRuntimeOrContracts": 6,
     "deleteAfterR8": 0,
-    "migrateThenDelete": 17,
+    "migrateThenDelete": 10,
     "unclassified": 0,
-    "booleanClaimModulesRejectedAsRuntimeProof": 13
+    "booleanClaimModulesRejectedAsRuntimeProof": 8
   },
   "modules": [
     {
@@ -30,6 +30,7 @@
         "examples/game-slice/main.ts",
         "packages/animation/src/browser-index.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/tools/deletion-safety.test.ts",
         "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
@@ -284,134 +285,6 @@
       "disposition": "migrate-consumers-then-delete"
     },
     {
-      "path": "packages/physics/src/ClothFixtures.ts",
-      "package": "physics",
-      "lines": 359,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "pinned"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/physics/src/FireSmokeFixtures.ts",
-      "package": "physics",
-      "lines": 382,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [],
-      "rejectsUnmountedBooleanClaims": false,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/physics/src/FluidFixtures.ts",
-      "package": "physics",
-      "lines": 301,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [],
-      "rejectsUnmountedBooleanClaims": false,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/physics/src/FractureFixtures.ts",
-      "package": "physics",
-      "lines": 277,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "interiorFaces",
-        "progressiveDamage"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/physics/src/PhysicsSandboxFixtures.ts",
-      "package": "physics",
-      "lines": 394,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/physics-sandbox/main.ts",
-        "packages/physics/src/world.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "supported"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/physics/src/PlatformerFixtures.ts",
-      "package": "physics",
-      "lines": 205,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/unit/tools/deletion-safety.test.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "grounded",
-        "coyoteJumpAccepted",
-        "bufferedJumpAccepted",
-        "doubleJumpAccepted",
-        "wallJumpAccepted",
-        "lockOnSupported"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/physics/src/SoftBodyFixtures.ts",
-      "package": "physics",
-      "lines": 363,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "attached"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
       "path": "packages/rendering/src/ArchitecturalLightingFixtures.ts",
       "package": "rendering",
       "lines": 241,
@@ -588,7 +461,6 @@
         "packages/physics/src/MeshBVH.ts",
         "packages/physics/src/NarrowPhase.ts",
         "packages/physics/src/PhysicsDebugDraw.ts",
-        "packages/physics/src/PhysicsSandboxFixtures.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/Raycast.ts",
         "packages/physics/src/RigidBody.ts",

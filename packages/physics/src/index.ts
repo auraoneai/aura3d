@@ -89,12 +89,3 @@ export * from "./Crowd.js";
 export * from "./ScenePhysicsBridge.js";
 export * from "./ECSPhysicsBridge.js";
 export * from "./PhysicsDebugDraw.js";
-
-// --- Authored fixtures: declarative scenarios, not solver features ---
-export * from "./PlatformerFixtures.js";
-export * from "./PhysicsSandboxFixtures.js";
-export * from "./ClothFixtures.js";
-export * from "./SoftBodyFixtures.js";
-export * from "./FractureFixtures.js";
-export * from "./FluidFixtures.js";
-export * from "./FireSmokeFixtures.js";
