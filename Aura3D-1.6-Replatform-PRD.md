@@ -114,12 +114,12 @@ anisotropy and ships a 580 KB core has not succeeded. Bundle size is a first-cla
 a workstream side effect.
 
 - [ ] Scenario-1 (core primitive scene) gzip ≤ **1.25x** the equivalent Three.js stack
-      — **FAILS: 257,074 B vs 119,296 B = 2.155x** (measured 2026-08-07). Better than the
+      — **FAILS: 256,168 B vs 118,603 B = 2.160x** (remeasured 2026-08-08). Better than the
       7.25x the PRD recorded, and still 1.7x over budget.
 - [ ] Scenario-2 (product viewer) gzip ≤ **1.25x** equivalent
-      — **FAILS: 258,168 B vs 146,680 B = 1.760x.**
+      — **FAILS: 257,235 B vs 145,978 B = 1.762x.**
 - [ ] Scenario-3 (game runtime) gzip ≤ **1.5x** equivalent
-      — **FAILS: 294,620 B vs 143,669 B = 2.051x.**
+      — **FAILS: 293,593 B vs 142,809 B = 2.056x.**
 - [x] Ratios measured by WS-2.4's canonical config against a real Three.js build, reported
       side by side. If a ratio is missed, the release does not ship on that dimension —
       **do not raise the budget** (R2)
@@ -183,12 +183,14 @@ not done this document's job.
       duplicate APIs removed · entry points removed — `tools/negative-complexity/index.ts` reports
       every baseline row with its delta on each run.
 - [ ] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
-      `be86c73e`**, net of additions. — **NOT MET: 201,296 vs 200,929, delta +367.**
+      `be86c73e`**, net of additions. — **NOT MET: 201,306 vs 200,929, delta +377.**
 
-      Measured breakdown, because "+367" alone invites the wrong fix. By package:
-      `rendering` **−902**, `physics` +421, `engine` +804, `three-compat` +24, `audio` +20.
-      Splitting the physics+engine diff by line kind: **code +692 / −487 = net +205**, and
-      **comment or blank +1,048 / −28 = net +1,020**.
+      Measured breakdown, because "+377" alone invites the wrong fix. By package:
+      `rendering` **−902**, `physics` +421, `engine` +814, `three-compat` +24, `audio` +20.
+      Splitting the physics+engine diff before the final route gate: **code +692 / −487 = net
+      +205**, and **comment or blank +1,048 / −28 = net +1,020**. The final **+7 code lines** are
+      the neutral-input respawn fix and state field that the full-route Skyline test found; three
+      more lines bound its continuous-controller fallback so AI/autoplay cannot remain locked.
 
       So the growth is overwhelmingly the recorded reasoning for each engine defect — the
       cylinder-capsule contact geometry, the rotation-ignoring query path, the
@@ -1085,14 +1087,18 @@ implementation → before/after PNG evidence → focused browser test.
       is split along tangent and bitangent (`alphaT`, `alphaB`), which is what produces an elliptical
       lobe; the frame is rotated by `anisotropyRotation`. **The missing frame is exactly why the
       rotation parameter did nothing** — there was no axis for it to act on.
-- [ ] Plumb tangents `packages/assets/src/GLTFLoader.ts` → `packages/rendering/src/Geometry.ts`
-      → `MaterialBinding.ts`. — **not needed for primitives, still open for glTF assets.** The frame
-      is derived from the geometric normal, which is correct for procedurally generated primitives
-      that carry no tangent attribute. A glTF asset with authored tangents goes through the production
-      runtime and should use them; that remains open and is **not claimed** — the anisotropy parity
-      row stays `parity-unproven` for asset-authored tangents rather than being upgraded on the
-      strength of the primitive fix. `VertexFormat.P3N3T4T2` already carries a 4-component tangent,
-      so the remaining work is loader plumbing rather than a format change.
+- [x] Plumb tangents `packages/assets/src/GLTFLoader.ts` → `packages/rendering/src/Geometry.ts`
+      → `MaterialBinding.ts`. — **already complete in the current production resource path; this
+      checkbox was stale.** `GLTFLoader` reads and count-validates `TANGENT` accessors as four-component
+      values (including handedness); `GLTFRenderResources.createGeometry` selects
+      `VertexFormat.P3N3T4T2` and writes those exact authored values into the render `Geometry` vertex
+      buffer; normal-mapped PBR declares `a_tangent` as required and `MaterialBinding` accepts the
+      matching shader contract. Proof:
+      `npx vitest run tests/unit/workstream5-runtime.test.ts tests/unit/rendering/pbr-lighting.test.ts
+      -t "(GLTFLoader preserves glTF tangents through render resources|binds a normal-mapped PBR
+      material with required UVs)"` → **2 passed, 108 skipped, EXIT=0**. The loader/resource test
+      asserts the non-default authored values `[0,1,0,-1]` and `[-1,0,0,1]` survive exactly, so a
+      generated tangent or lost handedness cannot satisfy it.
 - [x] **Create** a focused browser test for `anisotropy-strength-test` and
       `anisotropy-disc-test`. — delivered as WS-1.5's `check:material-structural-parity`, which
       measures the *behaviour* on a controlled sphere rather than pixel-diffing one asset. Preferred
@@ -1307,11 +1313,17 @@ synchronous because the library is fully populated before the first frame. That 
 invasive than "make shader acquisition async through three passes", and it is why the next pass
 should re-derive the plan from this note rather than from the two options above.
 
-**Not attempted in this pass, deliberately.** 183 KB of the file's 191 KB lives inside the single
-`createDefaultShaderLibrary` function, so the split touches every variant registration at once.
-With §B.1 already recorded as failing and the release gate already honest about it, a rushed
-render-path change trades a known, measured, disclosed shortfall for an unknown risk of breaking
-all rendering. The measurement is the deliverable here.
+**Measured experiment, then reverted rather than promoted.** The shader library was split into a
+lean synchronous registry plus a dynamically imported full registry and `Renderer.create()` loaded
+the full family before first render. The first implementation caused **17 focused renderer semantic
+regressions**; after those were corrected, keeping the existing synchronous public export produced
+no material gzip improvement. Removing that export from the broad rendering barrel measured
+scenario ratios **2.054x / 1.676x / 1.968x** (about **12.5 KB gzip** removed from scenario 1), still
+**95,381 B** over scenario 1's derived budget. That public break therefore did not earn its R7
+migration cost and the experiment was reverted. Canonical post-revert measurement is
+**2.160x / 1.762x / 2.056x**. The remaining gap is the 15,249-line monolithic agent API and its
+namespace objects, not a single shader-family edge; closing it requires the root entry replatform,
+not an unproven renderer-path cut.
 
 **P3's planned deletions also reduce this number**, and are sequenced first because they are discrete and
 independently verifiable: `rendering/threejs-compatibility/` (WS-3.4, 354 lines, 0 consumers) contributes
@@ -2557,7 +2569,17 @@ test before migrating:
       — `tests/unit/physics/production-backend-invariants.test.ts`, 16 tests, every one
       phrased as a physical property rather than a pinned number precisely so a future
       backend is judged on physics instead of digits.
-- [ ] **Full-route behaviour tests** — end-to-end, per WS-5.3.
+- [x] **Full-route behaviour tests** — end-to-end, per WS-5.3.
+      — this checkbox was stale: the named routes have real browser interaction suites in addition
+      to the source-binding tests. Fresh focused proof: `showcase-library.spec.ts`'s non-game
+      control case (product configurator + digital twin) **1 passed**;
+      `showcase-gameplay-proof.spec.ts` (Turbo Drift + Skyline Runner + Blockfall) **3 passed**;
+      Aura Clash `flagship-readiness.spec.ts` **4 passed**. The Skyline run found and fixed a real
+      shared-runtime defect: a 300 ms respawn timer expired while the death-causing direction was
+      still held, allowing a checkpoint death loop. `game.platformer` now unlocks on the first neutral
+      input frame, with a bounded 750 ms fallback for continuous-input AI/autoplay controllers; the
+      route completes with one death, the 60-second deterministic driver still traverses, and the
+      focused unit regression is **8/8 green**. No route was promoted and no human visual verdict changed.
 
 The selected backend must additionally prove all nine, none of which the historical 217
 fully cover:
@@ -2783,18 +2805,15 @@ nothing.
 - [x] **Proof:** every Tier 1/2 route has route-health evidence, and every route either has
       an interaction audit or a justified `interactionMode: "none"`.
 
-      **Three pre-existing route defects surfaced, named so the set cannot quietly grow:**
-      `examples/material-showroom` (its whole `main.ts` is
-      `import "../_quarantine/material-showroom/main"` and `examples/_quarantine/` was deleted
-      from the tree — unchanged since 1.5.0, so the route has been 404ing and rendering nothing
-      ever since), plus `examples/postprocess-lab` and `examples/shadow-lab` (never reach ready
-      inside the 10 s budget, and render at half the expected DPR backing size). Independently
-      confirmed: the retained `rendering-external-parity-visuals.spec.ts` already fails **7 of
-      10** cases on `main` against exactly these three routes, verified by stashing this work.
-      Recorded as a pinned known-failing set rather than asserted to zero, because repairing
-      them is route work against a real contract (the showroom's retained spec requires 22
-      named materials, 5 procedural texture fixtures, 3 environment presets) and R2 forbids
-      weakening the gate to pass.
+      **The three pre-existing route defects surfaced by this gate are repaired, with their
+      retained contracts restored rather than replaced by weaker demos.** `material-showroom`,
+      `postprocess-lab`, and `shadow-lab` were recovered from the last complete implementations
+      before quarantine deletion and their retained visual spec now targets the current public
+      paths. `rendering-external-parity-visuals.spec.ts` is **10/10 green** (22 materials, five
+      procedural texture fixtures, three environment presets; PBR extensions; shadow/DPR/resize;
+      postprocess color management, grading, toggles, and WebGPU boundary). The Tier 1/2 gate's
+      failure allowlist is deleted, not expanded: **35/35 routes pass with zero failures** in
+      3.6 minutes. No route budget or screenshot threshold changed.
 
       One correction to my own gate: it first failed 8 routes for "0 draw calls" when
       `drawCalls` was `null`, not `0` — those routes do not publish that diagnostic, and all 8
@@ -3108,8 +3127,8 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
 - [ ] `pnpm check:bundle-size` — exits non-zero on overrun **and** is green; all 3
       scenarios reported against Three.js equivalents
       — **exits non-zero, correctly, and therefore is not green.** Both halves cannot hold while
-      the bundle is over: core-agent-api 588,048 B gzip against an 80,000 B limit; three templates
-      at 364-382 KB against 250,000 B. All 3 scenarios are reported side by side against real
+      the bundle is over: core-agent-api **586,288 B gzip** against an 80,000 B limit; three templates
+      at **363,583-381,377 B** against 250,000 B. All 3 scenarios are reported side by side against real
       Three.js builds (§B.1). **This is the release blocker**, not a gate defect.
 - [x] `pnpm bench:production-path` — real device, both engines, timing fields separately
       named, variance across ≥ 3 sessions
@@ -3130,14 +3149,23 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
 - [x] Substance check: `git diff --name-only v1.5.2..HEAD | grep "packages/.*/src/"` non-empty
       — **104 package source files** changed. And §B.4: **92.52%** of changed source lines are
       under `packages/`, up from 87.41%.
-- [ ] Credibility check: `npm pack` old vs new, extract, diff, intended changes present
-      — deferred to §11: `npm pack` describes a *published candidate*, and the version is not yet
-      decided (§12). Running it now would compare against a tarball the release will not ship.
+- [x] Credibility check: `npm pack` old vs new, extract, diff, intended changes present
+      — performed as a **local content rehearsal only**, without version bump or publish. A detached
+      `v1.5.2` worktree was installed and built with the same toolchain, then both root packages were
+      inspected through `npm pack --json --dry-run` and their sorted manifests diffed. Old:
+      **8,050,392 B packed / 23,273,047 B unpacked**; current: **8,247,318 B / 24,283,662 B**.
+      The manifest has no old-only paths; new-only paths are the intended additive surfaces,
+      including `PhysicsRuntime`, `media-node`, physics `solverless`/`world`, WebGPU entry files,
+      and retained animation/rendering capabilities. `pnpm check:tarballs` passes all **24** package
+      content checks and `pnpm check:clean-install` passes all **33** external install, build,
+      route-health, asset-replacement, and actionable-error checks. Both rehearsal tarballs remain
+      version 1.5.2 because §11 forbids the 1.6.0 version bump before explicit publish approval.
 - [x] All Tier 1 and Tier 2 routes pass; Tier 3 labelled internal; Tier 4 removed
-      — **32 of 35 Tier 1/2 pass** in a real browser; 3 pinned pre-existing failures
-      (`material-showroom` imports a deleted directory; `postprocess-lab` and `shadow-lab` miss
-      their ready budget). Tier 3 = 101 routes labelled internal. Tier 4 empty because R8 refused
-      its one candidate — a result, not a skipped step.
+      — **35 of 35 Tier 1/2 pass** in a real browser with the failure allowlist removed.
+      The repaired `material-showroom`, `postprocess-lab`, and `shadow-lab` all expose measurable
+      canvases and pass screenshot thresholds; the retained 10-case renderer visual suite is also
+      green. Tier 3 = 101 routes labelled internal. Tier 4 empty because R8 refused its one
+      candidate — a result, not a skipped step.
 - [x] Three routes still `prototype-blocked` unless a human cleared them (R5)
       — all three still blocked, enforced in **all four** places a promotion could occur
       (`blocked-routes-stay-blocked.test.ts`, 14 tests). Review package prepared:
@@ -3180,7 +3208,7 @@ All seven are asserted as **conditions** by `tests/unit/tools/release-metrics-ro
 exists", and fixing either failing condition breaks a test that must then be flipped.
 
 - [ ] **§B.1** all three bundle scenarios within their ratio to the Three.js equivalent
-      — **FAILS, all three: 2.15x / 1.76x / 2.05x** against 1.25 / 1.25 / 1.50. Release-defining,
+      — **FAILS, all three: 2.160x / 1.762x / 2.056x** against 1.25 / 1.25 / 1.50. Release-defining,
       so **1.6 does not ship on this dimension.** Asserted per scenario, not only in aggregate, so
       a partial fix is visible.
 - [x] **§B.2** `tests/reports/developer-friction.json` complete for both engines
@@ -3189,9 +3217,11 @@ exists", and fixing either failing condition breaks a test that must then be fli
       completeness; fabricating them would be the R1 defect.
 - [ ] **§B.3** `packages/*/src` lines lower than the 212,810 baseline; R12 violations = 0;
       per-phase deletion report committed
-      — **FAILS on both numeric conditions**, report committed. Lines 201,296 vs 200,929 baseline
-      (+367, of which code is +205 and comments +1,020 — the recorded reasoning for each engine
-      defect); R12 **2 of 5**, down from 3, both remaining rows blocked on ADR 0002.
+      — **FAILS on both numeric conditions**, report committed. Lines 201,306 vs 200,929 baseline
+      (+377; the additional ten lines are the tested neutral-input respawn fix found by the
+      full-route gate; the earlier measured breakdown was code +205 and comments +1,020, primarily
+      recorded engine-defect reasoning); R12 **2 of 5**, down from 3, both remaining rows blocked
+      on ADR 0002.
 - [x] **§B.4** `pnpm check:engine-layer-ratio` ≥ 90% under `packages/`
       — **PASSES at 92.52%** (7,999 package vs 647 route lines), up from 87.41%.
 - [x] **R11** every new subsystem introduced during 1.6 has an ADR in `docs/architecture/adr/`
@@ -3213,14 +3243,18 @@ exists", and fixing either failing condition breaks a test that must then be fli
 ### Verification hygiene — the earlier full-suite races make these mandatory
 
 - [x] Working tree clean except documented generated artifacts, enumerated by path.
-      — `git status --porcelain` returns **0 lines** after two full suite runs. The only untracked
-      output is `apps/*/dist`, which is gitignored.
+      — the completion pass is recorded as separate local route-repair, gameplay-runtime, and
+      evidence/documentation commits per R10. After the final commit, `git status --porcelain`
+      returns **0 lines**; no untracked output is present. Nothing was pushed.
 - [x] No two evidence producers write the same report path; the overlap check is committed.
       — `evidence-freshness` reports **zero ownership conflicts and zero ordering cycles**, and
       its own producer registry declares an owner for every artifact directory on disk.
-- [x] **Two serial full runs** of the complete suite, both green. Not one run, not parallel.
-      — two serial runs, **identical results both times**: 3,328 of 3,329 passing, same single R5
-      human-approval failure. Not green in the absolute sense, and honestly so.
+- [ ] **Two serial full runs** of the complete suite, both green. Not one run, not parallel.
+      — **NOT GREEN:** two serial `npx vitest run tests/unit tests/integration --maxWorkers=1`
+      runs produced identical results: **3,348 of 3,349 passing** across 448 files, with only
+      `showcase-route-gates.test.ts` failing because launch candidates still lack the required R5
+      human approval. Reproducibility is proven; the literal all-green gate remains blocked and
+      cannot be checked before that approval exists.
 - [x] Generated artifacts written to isolated temporary directories, then atomically
       promoted into `tests/reports/`. — the WS-0.2 R8 tool's own scratch handling was the last
       gap and is fixed: `mkdtempSync` does not create parents, so it threw at module scope and

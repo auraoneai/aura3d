@@ -180,14 +180,14 @@ systems, each backed by unit tests and a runtime probe rather than by a screensh
 Stated because a release note that omits this is not useful:
 
 - **Bundle size is over budget on every scenario, and this is the one that matters most
-  for adoption.** Measured 2026-08-07 by `tools/bundle-scenarios` against real Three.js
+  for adoption.** Measured 2026-08-08 by `tools/bundle-scenarios` against real Three.js
   builds of the same scene, through one shared bundler config:
 
   | Scenario | Aura3D | Three.js | Ratio | Budget |
   | --- | --- | --- | --- | --- |
-  | Core primitive scene (one cube) | 257,074 B | 119,296 B | **2.15x** | 1.25x |
-  | Product viewer (glTF, PBR, orbit, IBL) | 258,168 B | 146,680 B | **1.76x** | 1.25x |
-  | Game runtime (input, physics, loop) | 294,620 B | 143,669 B | **2.05x** | 1.50x |
+  | Core primitive scene (one cube) | 256,168 B | 118,603 B | **2.16x** | 1.25x |
+  | Product viewer (glTF, PBR, orbit, IBL) | 257,235 B | 145,978 B | **1.76x** | 1.25x |
+  | Game runtime (input, physics, loop) | 293,593 B | 142,809 B | **2.06x** | 1.50x |
 
   Budgets are derived from the measured Three.js equivalent, so they cannot be raised
   without Three.js growing. A developer downloads roughly **twice** what the Three.js
@@ -210,10 +210,9 @@ Stated because a release note that omits this is not useful:
   not cover it. It carries its own 23-spec suite.
 - `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51
   exported symbol names have more than one owning package.
-- Three public routes are broken: `examples/material-showroom` imports a directory that
-  was deleted from the tree, and `examples/postprocess-lab` and `examples/shadow-lab`
-  never reach a ready state within their load budget. Found by loading all 35 Tier 1/2
-  routes in a real browser (`tests/browser/tier12-route-health.spec.ts`); 32 of 35 pass.
+- All **35 of 35** Tier 1/2 routes now pass the real-browser health gate with no failure
+  allowlist. `material-showroom`, `postprocess-lab`, and `shadow-lab` were repaired against
+  their retained 10-case renderer visual contract rather than replaced by weaker demos.
 - Practical Three.js ecosystem parity is **6 exceed / 37 parity / 10 unproven / 3 gap**
   across 56 capabilities. Aura3D is behind on ecosystem breadth, shader authoring
   through the safe API, 3D text, and LOD/instancing exposure.
