@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   processInputValue,
-  sampleInputActionBindingFixture,
   type InputValueProcessor
 } from "../../packages/input/src/index";
+import { createInputActionBindingDiagnostic } from "../fixtures/input-action-binding";
 
-describe("published v1 input-action compatibility", () => {
+describe("input value processors", () => {
   it("keeps the processor export deterministic", () => {
     const processors: readonly InputValueProcessor[] = [
       { type: "deadzone", threshold: 0.2 },
@@ -17,12 +17,12 @@ describe("published v1 input-action compatibility", () => {
     expect(processInputValue(-0.5, [{ type: "invert" }, { type: "exponential", exponent: 2 }])).toBe(0.25);
   });
 
-  it("retains the diagnostic sample without promoting it to runtime parity", () => {
-    const sample = sampleInputActionBindingFixture();
+  it("keeps diagnostic composition outside the public runtime package", () => {
+    const sample = createInputActionBindingDiagnostic();
     expect(sample.processedAxis).toBe(0.756);
     expect(sample.deadzoneFilteredAxis).toBe(0);
+    expect(sample.compositeMagnitude).toBe(1.4142);
     expect(sample.modifierChordPressed).toBe(true);
-    expect(sample.claimBoundary).toMatch(/bounded deterministic/i);
-    expect(sample.claimBoundary).toMatch(/does not claim/i);
+    expect(sample.scope).toBe("test-only-diagnostic");
   });
 });

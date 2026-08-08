@@ -1,0 +1,815 @@
+{
+  "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
+  "generatedAt": "2026-08-08T21:53:46.111Z",
+  "pass": true,
+  "patterns": [
+    "*Fixture",
+    "*Fixtures",
+    "*Evidence",
+    "*Capability",
+    "*Platform",
+    "*Reference"
+  ],
+  "summary": {
+    "modules": 36,
+    "lines": 11893,
+    "retainedRuntimeOrContracts": 6,
+    "deleteAfterR8": 12,
+    "migrateThenDelete": 18,
+    "unclassified": 0,
+    "booleanClaimModulesRejectedAsRuntimeProof": 25
+  },
+  "modules": [
+    {
+      "path": "packages/animation/src/MotionMatchingFixtures.ts",
+      "package": "animation",
+      "lines": 254,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "packages/animation/src/browser-index.ts",
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "transitioned"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/assets/src/AssetBundleCacheFixtures.ts",
+      "package": "assets",
+      "lines": 290,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "packages/assets/src/browser-index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "bundleManifest",
+        "dependencySorting",
+        "memoryBudgetEviction",
+        "cacheTelemetry",
+        "inFlightDeduplicationBoundary"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/assets/src/SceneAnalysisFixtures.ts",
+      "package": "assets",
+      "lines": 438,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "packages/assets/src/browser-index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "classificationTelemetry",
+        "detectionTelemetry",
+        "trackingTelemetry",
+        "poseTelemetry",
+        "semanticSegmentTelemetry",
+        "deterministicMaskSummary",
+        "deterministicObjectTelemetry",
+        "deterministicTrackingTelemetry",
+        "skeletalPoseTelemetry",
+        "complexityBudgetTelemetry",
+        "browserAssetViewerEvidence"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/audio/src/AdaptiveMusicFixtures.ts",
+      "package": "audio",
+      "lines": 132,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tools/audio-backend-bakeoff/index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "enabled",
+        "equalPowerNormalized"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+      "package": "audio",
+      "lines": 311,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tools/audio-backend-bakeoff/index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "enabled",
+        "limiterTriggered",
+        "pingPong",
+        "enabled",
+        "logarithmicScale"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/audio/src/SpatialAudioFixtures.ts",
+      "package": "audio",
+      "lines": 137,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tools/audio-backend-bakeoff/index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "approaching"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+      "package": "editor-runtime",
+      "lines": 368,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "focusable",
+        "disabled",
+        "contrastPassesAA",
+        "jsonLoaderValidated",
+        "csvLoaderValidated",
+        "directionChanged",
+        "highContrastMode",
+        "aaContrastPasses"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/engine/src/agent-api/AssetEvidence.ts",
+      "package": "engine",
+      "lines": 285,
+      "classification": "real-runtime-or-mounted-evidence",
+      "publicBarrelExport": false,
+      "nonBarrelSourceConsumers": [
+        "apps/aura-clash-showcase/scripts/check-production-assets.mjs",
+        "apps/aura-clash-showcase/scripts/create-launch-readiness-report.mjs",
+        "apps/aura-clash-showcase/scripts/create-launch-review-package.mjs",
+        "apps/aura-clash-showcase/scripts/update-prd-from-launch-evidence.mjs",
+        "apps/aura-clash-showcase/src/evidence/evidenceModel.ts",
+        "apps/aura-clash-showcase/src/showcaseProofBoot.ts",
+        "apps/showcase-data-galaxy/src/main.ts",
+        "packages/create-aura3d/src/showcase-spec-evidence.ts",
+        "packages/editor-runtime/src/ProjectSerializer.ts",
+        "packages/editor-runtime/tests/editor-runtime.test.ts",
+        "packages/engine/src/agent-api/RuntimeNodeHandle.ts",
+        "packages/engine/src/agent-api/index.ts",
+        "tests/browser/createAuraApp-animation-bridge-harness.ts",
+        "tests/browser/createAuraApp-camera-frame-asset-harness.ts",
+        "tests/browser/createAuraApp-morph-targets-harness.ts",
+        "tests/browser/createAuraApp-production-bridge-harness.ts",
+        "tests/browser/editor-tools-105.spec.ts",
+        "tests/unit/agent-api/runtime-node-handle.test.ts",
+        "tests/unit/create-aura3d/showcase-platformer-spec.test.ts",
+        "tests/unit/create-aura3d/showcase-spec-compiler.test.ts",
+        "tools/editor-tools-evidence/index.ts",
+        "tools/requirements-trace/index.ts",
+        "tools/showcase-library/build-and-check.mjs",
+        "tools/showcase-library/route-primary-probes.mjs"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "nonBlank",
+        "reviewed",
+        "hasProvenance",
+        "hasThumbnail",
+        "hasBounds",
+        "publishReady",
+        "requireReviewedScreenshot",
+        "ready"
+      ],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/engine/src/agent-api/GameEvidence.ts",
+      "package": "engine",
+      "lines": 622,
+      "classification": "real-runtime-or-mounted-evidence",
+      "publicBarrelExport": false,
+      "nonBarrelSourceConsumers": [
+        "apps/aura-clash-showcase/scripts/check-launch-evidence-manifest.mjs",
+        "packages/create-aura3d/templates/mini-game/src/main.ts",
+        "packages/engine/src/agent-api/AuraAppHandle.ts",
+        "packages/engine/src/agent-api/GameAppRuntime.ts",
+        "packages/engine/src/agent-api/index.ts",
+        "templates/mini-game/src/main.ts",
+        "tools/foundation-runtime/index.ts",
+        "tools/game-runtime-prd-readiness/index.ts",
+        "tools/game-runtime-readiness/index.ts",
+        "tools/replicability-metrics/index.mjs",
+        "tools/showcase-library/showcase-game-release-retained-files.mjs"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "paused",
+        "contextLost",
+        "unlocked",
+        "muted",
+        "musicPlaying",
+        "safeZones",
+        "expectsGame",
+        "expectsGame",
+        "paused",
+        "mutableNodes",
+        "frameLoop",
+        "inputPlan",
+        "physicsPlan",
+        "animationPlan",
+        "effectsPlan",
+        "cameraPlan",
+        "collisionPlan",
+        "stagePlan",
+        "configured",
+        "collisionWorld",
+        "combatWorld",
+        "configured",
+        "contextLost",
+        "unlocked",
+        "muted",
+        "musicPlaying",
+        "active",
+        "reducedMotion",
+        "safeZones",
+        "reducedMotion",
+        "reducedFlash",
+        "highContrast",
+        "pauseControls",
+        "configured",
+        "inputConfigured",
+        "bodiesConfigured",
+        "collisionConfigured",
+        "combatConfigured",
+        "eventsConfigured",
+        "effectsConfigured",
+        "cameraConfigured",
+        "animationConfigured",
+        "assetsConfigured",
+        "stageConfigured",
+        "hudConfigured",
+        "accessibilityConfigured",
+        "frameAdvanced"
+      ],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/engine/src/agent-api/PromptAnimationEvidence.ts",
+      "package": "engine",
+      "lines": 757,
+      "classification": "real-runtime-or-mounted-evidence",
+      "publicBarrelExport": false,
+      "nonBarrelSourceConsumers": [
+        "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+        "packages/create-aura3d/templates/episode-builder/src/render-plan.ts",
+        "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
+        "packages/engine/src/agent-api/index.ts",
+        "packages/engine/src/agent-api/media-node.ts",
+        "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
+        "tools/evidence/verify-agent-api-types.mjs",
+        "tools/prompt-animation-auravoice-contract/index.ts",
+        "tools/prompt-animation-auravoice-render/index.ts",
+        "tools/prompt-animation-evidence/index.ts",
+        "tools/prompt-animation-package-smoke/index.ts",
+        "tools/prompt-animation-readiness/index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "present",
+        "required",
+        "metadataComplete",
+        "executionRequired",
+        "thumbnail",
+        "missingThumbnailSource",
+        "captionsReadable",
+        "reducedMotion",
+        "highContrast",
+        "flashingSafe",
+        "childSafe",
+        "publishReady",
+        "ready"
+      ],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/input/src/GestureHapticsFixtures.ts",
+      "package": "input",
+      "lines": 179,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "gamepadConnected",
+        "tapDetected",
+        "gamepadConnected",
+        "loop",
+        "gestureTelemetry",
+        "swipeRotateTelemetry",
+        "hapticPatternTelemetry",
+        "hapticClaimBoundaryTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/input/src/XRFixtures.ts",
+      "package": "input",
+      "lines": 203,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "sessionSupported",
+        "fallbackUsed",
+        "oldCodebasePort",
+        "sessionCapabilityNegotiation",
+        "gracefulInlineFallback",
+        "controllerInputTelemetry",
+        "handGestureTelemetry",
+        "gazeBasedLodTelemetry",
+        "triggerPressed",
+        "squeezePressed",
+        "pinchDetected",
+        "pointDetected"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/ClothFixtures.ts",
+      "package": "physics",
+      "lines": 359,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "pinned"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/FireSmokeFixtures.ts",
+      "package": "physics",
+      "lines": 382,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/FluidFixtures.ts",
+      "package": "physics",
+      "lines": 301,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/FractureFixtures.ts",
+      "package": "physics",
+      "lines": 277,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "interiorFaces",
+        "progressiveDamage"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/PhysicsSandboxFixtures.ts",
+      "package": "physics",
+      "lines": 394,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "packages/physics/src/world.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "supported"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/PlatformerFixtures.ts",
+      "package": "physics",
+      "lines": 205,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/unit/tools/deletion-safety.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "grounded",
+        "coyoteJumpAccepted",
+        "bufferedJumpAccepted",
+        "doubleJumpAccepted",
+        "wallJumpAccepted",
+        "lockOnSupported"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/physics/src/SoftBodyFixtures.ts",
+      "package": "physics",
+      "lines": 363,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "attached"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/rendering/src/ArchitecturalLightingFixtures.ts",
+      "package": "rendering",
+      "lines": 241,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "interiorLightsEnabled",
+        "enabled",
+        "interiorLightsEnabled",
+        "interiorLightsOn"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
+      "package": "rendering",
+      "lines": 155,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "snapEnabled"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/rendering/src/CullingFixtures.ts",
+      "package": "rendering",
+      "lines": 280,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "bvhHierarchy",
+        "frustumTraversal",
+        "hizPyramid",
+        "conservativeOcclusion",
+        "frameCoherency"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/rendering/src/EnvironmentPlatform.ts",
+      "package": "rendering",
+      "lines": 1374,
+      "classification": "real-runtime-or-mounted-evidence",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "packages/rendering/src/EnvironmentPreset.ts",
+        "tests/unit/tools/deletion-safety.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "reusable",
+        "monotonicDistanceResponse",
+        "includeSkyDome",
+        "includeStageShell",
+        "includeGroundGrid",
+        "includeStageAccents"
+      ],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/rendering/src/PbrReference.ts",
+      "package": "rendering",
+      "lines": 681,
+      "classification": "public-data-contract",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/production-runtime-hd-materials.ts",
+        "tests/browser/production-runtime-hd-product-hero.ts",
+        "tests/browser/production-runtime-production-scene-tools.ts",
+        "tools/external-parity-pbr-gltf-readiness/index.ts",
+        "tools/external-parity-pbr-reference-readiness/index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "passed",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/rendering/src/SpaceEnvironmentFixtures.ts",
+      "package": "rendering",
+      "lines": 200,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/rendering/src/VoxelWorldFixtures.ts",
+      "package": "rendering",
+      "lines": 280,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "animated",
+        "transparent",
+        "solid"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/rendering/src/WeatherFixtures.ts",
+      "package": "rendering",
+      "lines": 223,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/rendering/src/cinematic/CinematicEvidence.ts",
+      "package": "rendering",
+      "lines": 123,
+      "classification": "real-runtime-or-mounted-evidence",
+      "publicBarrelExport": false,
+      "nonBarrelSourceConsumers": [
+        "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraCinematicRenderEvidence.ts",
+        "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraCinematicSceneCompiler.ts",
+        "packages/engine/src/threejs-example-parity/index.ts",
+        "packages/rendering/src/cinematic/BloomPass.ts",
+        "packages/rendering/src/cinematic/CinematicDepthComposition.ts",
+        "packages/rendering/src/cinematic/CinematicLightingRig.ts",
+        "packages/rendering/src/cinematic/CinematicMaterialPresets.ts",
+        "packages/rendering/src/cinematic/CinematicPostProcess.ts",
+        "packages/rendering/src/cinematic/DepthHazePass.ts",
+        "packages/rendering/src/cinematic/EmissivePracticalLightSystem.ts",
+        "packages/rendering/src/cinematic/FilmGrainPass.ts",
+        "packages/rendering/src/cinematic/FogVolumeSystem.ts",
+        "packages/rendering/src/cinematic/GlowCardSystem.ts",
+        "packages/rendering/src/cinematic/RainParticleSystem.ts",
+        "packages/rendering/src/cinematic/VignettePass.ts",
+        "packages/rendering/src/cinematic/WetReflectionApproximation.ts",
+        "packages/rendering/src/cinematic/index.ts",
+        "tests/unit/rendering/cinematic-postprocess.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "rendererOwned",
+        "sceneContent",
+        "domOverlay",
+        "satisfiesPublicCinematicGate",
+        "ok",
+        "sceneContent"
+      ],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+      "package": "scripting",
+      "lines": 324,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [],
+      "rejectsUnmountedBooleanClaims": false,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+      "package": "scripting",
+      "lines": 182,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "analyticsConsent",
+        "marketingConsent",
+        "explicitRequired",
+        "granted",
+        "previous",
+        "emailRedacted",
+        "tokenRedacted",
+        "offlineQueueEnabled",
+        "consentTelemetry",
+        "anonymizationTelemetry",
+        "batchingTelemetry",
+        "metricsTelemetry",
+        "providerBoundaryTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/scripting/src/CloudServiceFixtures.ts",
+      "package": "scripting",
+      "lines": 225,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "offlineMode",
+        "activated",
+        "cloudServiceTelemetry",
+        "offlineQueueTelemetry",
+        "remoteConfigTelemetry",
+        "leaderboardTelemetry",
+        "matchmakingTelemetry",
+        "contentDeliveryTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/scripting/src/CulturalBehaviorFixtures.ts",
+      "package": "scripting",
+      "lines": 262,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "approachAllowed",
+        "audienceAdapted",
+        "hierarchyAware",
+        "allowed",
+        "proxemicTelemetry",
+        "communicationStyleTelemetry",
+        "socialNormTelemetry",
+        "gestureBoundaryTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/scripting/src/LearningAgentFixtures.ts",
+      "package": "scripting",
+      "lines": 184,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "featureExtractionTelemetry",
+        "behaviorCloningTelemetry",
+        "ppoStatsTelemetry",
+        "rewardBreakdownTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    },
+    {
+      "path": "packages/scripting/src/NetworkReplicationFixtures.ts",
+      "package": "scripting",
+      "lines": 440,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "tests/browser/runtime-external-parity.spec.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "forward",
+        "right",
+        "fire",
+        "reconciliationAccepted",
+        "reconstructedMatches"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+      "package": "scripting",
+      "lines": 257,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [
+        "packages/scripting/src/ProceduralContentAdaptationFixtures.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
+      "booleanClaimFields": [
+        "playerProfileTelemetry",
+        "eventTrackingTelemetry",
+        "behaviorPatternTelemetry",
+        "adaptiveSystemInputTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "migrate-consumers-then-delete"
+    },
+    {
+      "path": "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
+      "package": "scripting",
+      "lines": 205,
+      "classification": "test-or-evidence-fixture",
+      "publicBarrelExport": true,
+      "nonBarrelSourceConsumers": [],
+      "zeroNonBarrelSourceConsumers": true,
+      "booleanClaimFields": [
+        "hasSecretAreas",
+        "hasTimeLimit",
+        "contentGenerationTelemetry",
+        "playstyleCustomizationTelemetry",
+        "skillScalingTelemetry",
+        "adaptiveAiParameterTelemetry"
+      ],
+      "rejectsUnmountedBooleanClaims": true,
+      "disposition": "delete-after-r8"
+    }
+  ],
+  "unclassified": [],
+  "rule": "A fixture object's boolean fields never establish runtime capability. Only mounted behavior and derived evidence may support a public claim.",
+  "claimBoundary": "Inventory and deletion queue only; retained runtime contracts still require their own mounted browser evidence."
+}

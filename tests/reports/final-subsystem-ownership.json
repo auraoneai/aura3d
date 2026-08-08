@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T21:45:30.880Z",
+  "generatedAt": "2026-08-08T21:47:36.011Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "f7969be43d6214d6dc00920074c6143727f35bfa",
+  "sourceCommit": "fc6cf5304516d02a7306f3115b5e1bf717efab71",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -275,6 +275,7 @@
           "benchmark/context/aura3d/files/packages/engine/dist/index.d.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/external-parity-public-api-app/main.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/engine/external-parity-app-api.test.ts",
           "tests/unit/engine/external-parity-public-api-stability.test.ts",
@@ -300,7 +301,7 @@
         "source": 16,
         "dynamicImport": 5,
         "route": 0,
-        "fixture": 7,
+        "fixture": 8,
         "cliOrGenerator": 5,
         "docs": 5,
         "externalConsumer": 0
@@ -308,7 +309,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 7,
+        "testMentions": 8,
         "docsMentions": 5
       }
     },
@@ -1156,6 +1157,7 @@
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/integration/engine-loop.test.ts",
           "tests/performance/vitest.config.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/core/config-time.test.ts",
           "tests/unit/core/edge-cases.test.ts",
@@ -1185,7 +1187,7 @@
         "source": 52,
         "dynamicImport": 6,
         "route": 0,
-        "fixture": 15,
+        "fixture": 16,
         "cliOrGenerator": 5,
         "docs": 5,
         "externalConsumer": 0
@@ -1193,7 +1195,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 15,
-        "testMentions": 15,
+        "testMentions": 16,
         "docsMentions": 5
       }
     },
@@ -1641,6 +1643,7 @@
           "tests/browser/debug-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
@@ -1664,7 +1667,7 @@
         "source": 13,
         "dynamicImport": 3,
         "route": 1,
-        "fixture": 6,
+        "fixture": 7,
         "cliOrGenerator": 4,
         "docs": 6,
         "externalConsumer": 0
@@ -1672,7 +1675,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 16,
-        "testMentions": 6,
+        "testMentions": 7,
         "docsMentions": 6
       }
     },
@@ -1743,6 +1746,8 @@
           "tests/performance/ecs-entities-baseline.test.ts",
           "tests/performance/system-baselines.ts",
           "tests/performance/vitest.config.ts",
+          "tests/reports/browser-entry-purity.json",
+          "tests/reports/ecs-scripting-compatibility/report.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/ecs/ecs-render-integration.test.ts",
           "tests/unit/ecs/runtime.test.ts",
@@ -1770,7 +1775,7 @@
         "source": 23,
         "dynamicImport": 3,
         "route": 0,
-        "fixture": 18,
+        "fixture": 20,
         "cliOrGenerator": 3,
         "docs": 5,
         "externalConsumer": 0
@@ -1778,7 +1783,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 30,
-        "testMentions": 18,
+        "testMentions": 20,
         "docsMentions": 5
       }
     },
@@ -1862,6 +1867,7 @@
           "tests/browser/editor-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/editor/plugin-api.test.ts",
@@ -1902,7 +1908,7 @@
         "source": 28,
         "dynamicImport": 5,
         "route": 11,
-        "fixture": 14,
+        "fixture": 15,
         "cliOrGenerator": 5,
         "docs": 15,
         "externalConsumer": 0
@@ -1910,7 +1916,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 14,
+        "testMentions": 15,
         "docsMentions": 15
       }
     },
@@ -1996,6 +2002,7 @@
           "tests/browser/editor-browser-harness.ts",
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/editor/plugin-api.test.ts",
@@ -2033,7 +2040,7 @@
         "source": 28,
         "dynamicImport": 5,
         "route": 11,
-        "fixture": 14,
+        "fixture": 15,
         "cliOrGenerator": 4,
         "docs": 13,
         "externalConsumer": 0
@@ -2041,7 +2048,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 46,
-        "testMentions": 14,
+        "testMentions": 15,
         "docsMentions": 13
       }
     },
@@ -2182,6 +2189,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
@@ -2203,7 +2211,7 @@
         "source": 5,
         "dynamicImport": 3,
         "route": 0,
-        "fixture": 2,
+        "fixture": 3,
         "cliOrGenerator": 3,
         "docs": 5,
         "externalConsumer": 0
@@ -2211,7 +2219,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 9,
-        "testMentions": 2,
+        "testMentions": 3,
         "docsMentions": 5
       }
     },
@@ -2221,8 +2229,8 @@
       "published": true,
       "disposition": "AURA-CORE",
       "source": {
-        "lines": 2471,
-        "bytes": 86844
+        "lines": 2369,
+        "bytes": 82979
       },
       "dist": {
         "jsFiles": 27,
@@ -2380,6 +2388,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts"
         ],
@@ -2401,7 +2410,7 @@
         "source": 5,
         "dynamicImport": 3,
         "route": 0,
-        "fixture": 2,
+        "fixture": 3,
         "cliOrGenerator": 3,
         "docs": 5,
         "externalConsumer": 0
@@ -2409,7 +2418,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 10,
-        "testMentions": 2,
+        "testMentions": 3,
         "docsMentions": 5
       }
     },
@@ -2593,6 +2602,7 @@
         "route": [],
         "fixture": [
           "tests/browser/optional-recast-navigation.spec.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/reports/navigation-backend-bakeoff/report.json",
           "tests/reports/optional-recast-navigation/report.json",
@@ -2617,7 +2627,7 @@
         "source": 7,
         "dynamicImport": 4,
         "route": 0,
-        "fixture": 7,
+        "fixture": 8,
         "cliOrGenerator": 2,
         "docs": 5,
         "externalConsumer": 0
@@ -2625,7 +2635,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 7,
+        "testMentions": 8,
         "docsMentions": 5
       }
     },
@@ -2736,6 +2746,7 @@
           "tests/browser/physics-browser-harness.ts",
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/reports/optional-rapier-physics/report.json",
           "tests/templates/template-verification.test.ts",
@@ -2798,7 +2809,7 @@
         "source": 47,
         "dynamicImport": 7,
         "route": 11,
-        "fixture": 25,
+        "fixture": 26,
         "cliOrGenerator": 6,
         "docs": 29,
         "externalConsumer": 0
@@ -2806,7 +2817,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 35,
-        "testMentions": 25,
+        "testMentions": 26,
         "docsMentions": 29
       }
     },
@@ -2849,6 +2860,7 @@
         "route": [],
         "fixture": [
           "tests/browser/optional-rapier-physics.spec.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/reports/optional-rapier-physics/report.json",
           "tests/unit/physics-rapier/optional-boundary.test.ts",
@@ -2870,7 +2882,7 @@
         "source": 6,
         "dynamicImport": 2,
         "route": 0,
-        "fixture": 6,
+        "fixture": 7,
         "cliOrGenerator": 1,
         "docs": 4,
         "externalConsumer": 0
@@ -2878,7 +2890,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 6,
+        "testMentions": 7,
         "docsMentions": 4
       }
     },
@@ -2960,6 +2972,7 @@
           "benchmark/runner/scene-kit-performance-budget.mjs",
           "tests/assets/vitest.config.ts",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/product-studio/product-asset-loader.test.ts",
           "tests/unit/product-studio/product-camera.test.ts",
@@ -2991,7 +3004,7 @@
         "source": 29,
         "dynamicImport": 6,
         "route": 6,
-        "fixture": 12,
+        "fixture": 13,
         "cliOrGenerator": 6,
         "docs": 6,
         "externalConsumer": 0
@@ -2999,7 +3012,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 13,
-        "testMentions": 12,
+        "testMentions": 13,
         "docsMentions": 6
       }
     },
@@ -3056,6 +3069,7 @@
           "benchmark/context/aura3d/README.md",
           "benchmark/context/aura3d/files/README.md",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/react-adapter/react-adapter.test.ts",
           "tests/unit/tools/api-docs.test.ts"
@@ -3091,7 +3105,7 @@
         "source": 14,
         "dynamicImport": 5,
         "route": 0,
-        "fixture": 6,
+        "fixture": 7,
         "cliOrGenerator": 9,
         "docs": 12,
         "externalConsumer": 0
@@ -3099,7 +3113,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 6,
+        "testMentions": 7,
         "docsMentions": 12
       }
     },
@@ -3982,6 +3996,8 @@
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/browser/scripting-browser-harness.ts",
           "tests/integration/scripting-scene-ecs.test.ts",
+          "tests/reports/browser-entry-purity.json",
+          "tests/reports/ecs-scripting-compatibility/report.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/public-api-contracts.test.ts",
           "tests/unit/tools/api-docs.test.ts",
@@ -4007,7 +4023,7 @@
         "source": 16,
         "dynamicImport": 4,
         "route": 2,
-        "fixture": 9,
+        "fixture": 11,
         "cliOrGenerator": 4,
         "docs": 6,
         "externalConsumer": 0
@@ -4015,7 +4031,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 29,
-        "testMentions": 9,
+        "testMentions": 11,
         "docsMentions": 6
       }
     },
@@ -4080,6 +4096,7 @@
         "fixture": [
           "tests/browser/three-compat-threejs-migration.spec.ts",
           "tests/integration/three-compat-threejs-migration.test.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts",
           "tests/unit/three-compat/three-compat-migration.test.ts",
@@ -4119,7 +4136,7 @@
         "source": 19,
         "dynamicImport": 5,
         "route": 0,
-        "fixture": 8,
+        "fixture": 9,
         "cliOrGenerator": 9,
         "docs": 11,
         "externalConsumer": 1
@@ -4127,7 +4144,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 20,
-        "testMentions": 8,
+        "testMentions": 9,
         "docsMentions": 11
       }
     },
@@ -4207,6 +4224,7 @@
           "benchmark/context/aura3d/files/packages/engine/dist/index.d.ts",
           "tests/assets/vitest.config.ts",
           "tests/browser/example-dev-server.ts",
+          "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/tools/api-docs.test.ts",
           "tests/unit/workflows/animation-lab-workflow.test.ts",
@@ -4242,7 +4260,7 @@
         "source": 29,
         "dynamicImport": 4,
         "route": 5,
-        "fixture": 12,
+        "fixture": 13,
         "cliOrGenerator": 8,
         "docs": 7,
         "externalConsumer": 0
@@ -4250,7 +4268,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 20,
-        "testMentions": 12,
+        "testMentions": 13,
         "docsMentions": 7
       }
     }
@@ -6652,7 +6670,6 @@
         "packages/engine/src/animation-studio/episode-document.ts",
         "packages/engine/src/ecs/ECSRenderSource.ts",
         "packages/input/src/GestureHapticsFixtures.ts",
-        "packages/input/src/InputActionBindingFixtures.ts",
         "packages/physics-rapier/src/index.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/SurfaceQuery.ts",
@@ -6685,7 +6702,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/requirements-trace/index.ts"
       ],
-      "maintenanceReferenceCount": 88
+      "maintenanceReferenceCount": 87
     },
     {
       "id": "editor-evidence-fixtures",
@@ -7675,6 +7692,8 @@
         "tests/game-runtime/aura3d104-game-runtime-source.test.ts",
         "tests/integration/production-runtime-create-aura3d.test.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
+        "tests/reports/browser-entry-purity.json",
+        "tests/reports/ecs-scripting-compatibility/report.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
@@ -7943,7 +7962,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 865
+      "maintenanceReferenceCount": 867
     },
     {
       "id": "engine-node-media-publishing",
@@ -8729,6 +8748,7 @@
         "tests/performance/vitest.config.ts",
         "tests/performance/webgpu-vs-webgl2-baseline.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
+        "tests/reports/browser-entry-purity.json",
         "tests/reports/developer-friction.json",
         "tests/reports/external-candidate-package-audit.json",
         "tests/reports/final-subsystem-ownership.json",
@@ -9358,7 +9378,7 @@
         "vitest.config.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 1337
+      "maintenanceReferenceCount": 1338
     },
     {
       "id": "input-general",
@@ -9373,10 +9393,10 @@
         "packages/input/src/GestureControls.ts",
         "packages/input/src/GestureHapticsFixtures.ts",
         "packages/input/src/GestureRecognizer.ts",
-        "packages/input/src/InputActionBindingFixtures.ts",
         "packages/input/src/InputReplay.ts",
         "packages/input/src/InputSnapshot.ts",
         "packages/input/src/InputSystem.ts",
+        "packages/input/src/InputValueProcessors.ts",
         "packages/input/src/InteractionSystem.ts",
         "packages/input/src/KeyboardDevice.ts",
         "packages/input/src/PickingRay.ts",
@@ -9394,13 +9414,13 @@
         "packages/input/src/controls/ThirdPersonFollowControls.ts",
         "packages/input/src/index.ts"
       ],
-      "lines": 2471,
-      "bytes": 86844,
+      "lines": 2369,
+      "bytes": 82979,
       "compiledCost": {
-        "compiledFiles": 26,
-        "rawBytes": 65725,
-        "gzipBytes": 14623,
-        "brotliBytes": 12612,
+        "compiledFiles": 25,
+        "rawBytes": 61596,
+        "gzipBytes": 13557,
+        "brotliBytes": 11750,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -9415,6 +9435,7 @@
         "docs/agents/claims-and-boundaries.md",
         "docs/agents/no-hackjob-rules.md",
         "docs/api/public-api.md",
+        "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
         "docs/controls/interaction-and-picking.md",
         "docs/project/audits/engine-parity-gap-audit.md",
         "docs/project/parity/threejs-r185-surface-inventory.md",
@@ -9467,6 +9488,7 @@
         "tools/bundle-scenarios/entries/scenario-2-threejs.ts",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/external-parity-runtime/index.ts",
+        "tools/final-subsystem-ownership/adr-registry.json",
         "tools/naming-taxonomy/contextualAliases.ts",
         "tools/negative-complexity/index.ts",
         "tools/product-remediation/build-threejs-parity.mjs",
@@ -9475,7 +9497,7 @@
         "tools/three-compat-migration-readiness/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 70
+      "maintenanceReferenceCount": 72
     },
     {
       "id": "materials-general",
@@ -10216,6 +10238,7 @@
         "tests/performance/vitest.config.ts",
         "tests/performance/webgpu-vs-webgl2-baseline.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
+        "tests/reports/browser-entry-purity.json",
         "tests/reports/developer-friction.json",
         "tests/reports/external-candidate-package-audit.json",
         "tests/reports/final-subsystem-ownership.json",
@@ -10845,7 +10868,7 @@
         "vitest.config.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 1339
+      "maintenanceReferenceCount": 1340
     },
     {
       "id": "math-general",
@@ -11669,6 +11692,7 @@
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/browser-entry-purity.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
@@ -11794,7 +11818,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 424
+      "maintenanceReferenceCount": 425
     },
     {
       "id": "physics-navigation-crowd-steering",
@@ -12842,6 +12866,7 @@
         "tests/performance/rendering-frame-budgets.ts",
         "tests/performance/system-baselines.ts",
         "tests/performance/webgpu-vs-webgl2-baseline.ts",
+        "tests/reports/browser-entry-purity.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
         "tests/reports/final-subsystem-ownership.json",
@@ -13107,7 +13132,7 @@
         "tsconfig.base.json",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 897
+      "maintenanceReferenceCount": 898
     },
     {
       "id": "scene-general",
@@ -14346,7 +14371,8 @@
       "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
       "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
       "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
-      "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md"
+      "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
+      "packages/input/src/InputValueProcessors.ts": "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md"
     },
     "missingAdrMappings": []
   },

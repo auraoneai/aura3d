@@ -108,6 +108,12 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "browser-entry-purity": [
     "tests/reports/browser-entry-purity.json"
   ],
+  "public-runtime-descriptor-inventory": [
+    "tests/reports/public-runtime-descriptor-inventory/report.json"
+  ],
+  "input-descriptor-deletion-proof": [
+    "tests/reports/descriptor-input-action-delete-final.json"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -147,7 +153,8 @@ export const OWNED_ARTIFACT_DIRECTORIES = Object.freeze([
   "navigation-backend-bakeoff",
   "optional-recast-navigation",
   "audio-backend-bakeoff",
-  "ecs-scripting-compatibility"
+  "ecs-scripting-compatibility",
+  "public-runtime-descriptor-inventory"
 ]);
 
 /** Producer id -> `{ writes, hashes }` in the same path vocabulary as ownership. */
@@ -271,6 +278,14 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
     writes: PRODUCER_OWNERSHIP["browser-entry-purity"],
     hashes: ["packages/engine/src/agent-api/media-node.ts", "packages/materials/src/node.ts", "packages/environments/src/node.ts"]
   },
+  "public-runtime-descriptor-inventory": {
+    writes: PRODUCER_OWNERSHIP["public-runtime-descriptor-inventory"],
+    hashes: ["tools/final-subsystem-ownership/adr-registry.json"]
+  },
+  "input-descriptor-deletion-proof": {
+    writes: PRODUCER_OWNERSHIP["input-descriptor-deletion-proof"],
+    hashes: ["packages/input/src/InputValueProcessors.ts", "packages/input/src/index.ts", "tests/fixtures/input-action-binding.ts", "tests/unit/input-action-binding-compatibility.test.ts"]
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -309,6 +324,8 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "audio-backend-bakeoff",
   "ecs-scripting-compatibility",
   "browser-entry-purity",
+  "public-runtime-descriptor-inventory",
+  "input-descriptor-deletion-proof",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",

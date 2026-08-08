@@ -5,6 +5,7 @@
     "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
     "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
     "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
-    "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md"
+    "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
+    "packages/input/src/InputValueProcessors.ts": "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md"
   }
 }

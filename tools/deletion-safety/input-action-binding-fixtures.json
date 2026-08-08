@@ -1,0 +1,6 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's InputActionBindingFixtures deletion. This retained manifest makes the proof reproducible without becoming its own dependency.",
+  "candidates": [
+    "packages/input/src/InputActionBindingFixtures.ts"
+  ]
+}
