@@ -31,14 +31,17 @@ evidence is missing or stale.
 - Public API documentation is regenerated for 31 public package entrypoints
   across the 26-package release set and 1,013 export declarations.
 
-## Browser and comparison evidence
+## Historical browser and comparison evidence
 
-The selected Three.js example inventory contains 54 rows, all matched, with no
-high-priority row open. Seven named same-asset animation comparisons pass, and
-the 100-reload lifecycle fixture reports no tracked-resource leak. These results
-permit only the workload-specific wording in
-`docs/project/threejs-superiority-status.md`; Aura3D does not claim universal
-Three.js replacement or ecosystem superiority.
+The selected historical `three@0.165.0` example inventory contains 54 rows, all
+matched, with no high-priority row open under that frozen protocol. Seven named
+same-asset animation comparisons pass, and the 100-reload lifecycle fixture
+reports no tracked-resource leak. These results are regression history only.
+They do not establish current parity with the locked `three@0.185.1` baseline,
+current WebGPU/TSL/node-material behavior, or the current companion ecosystem.
+The current head-to-head program remains incomplete under
+`1.6-FINAL-PRD-Finishes.md`; Aura3D does not claim current broad Three.js
+replacement or ecosystem superiority.
 
 Nine public evidence routes are restored and included in the website build:
 

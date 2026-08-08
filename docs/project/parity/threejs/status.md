@@ -1,5 +1,7 @@
 # Three.js Parity Status
 
+Historical scope: generated from the frozen `three@0.165.0` comparison inventory. This is not a current r185 market verdict.
+
 Status: code construction started.
 
 The next work remains code construction, not more claim machinery.

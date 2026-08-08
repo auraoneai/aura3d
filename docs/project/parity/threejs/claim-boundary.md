@@ -1,5 +1,7 @@
 # Three.js Parity Claim Boundary
 
+Historical scope: generated from the frozen `three@0.165.0` comparison inventory. This is not a current r185 market verdict.
+
 Generated from the Three.js parity inventory.
 
 ## Current Claim

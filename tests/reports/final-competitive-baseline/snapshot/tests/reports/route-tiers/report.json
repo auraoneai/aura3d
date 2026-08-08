@@ -1,0 +1,1226 @@
+{
+  "generatedAt": "2026-08-08T16:27:10.075Z",
+  "method": "Tier is derived from signals already in the tree — docs/project/showcase/apps-classification.md labels (the canonical classification policy), route-gates.json releaseClass, create-aura3d template names, shipped docs/ references via git grep, retained spec/gate file references under tests/ and tools/, and diagnostic naming conventions — never hand-authored per route. Precedence: Tier 1 > Tier 3 > Tier 2. Interaction is detected from route source, not declared.",
+  "counts": {
+    "tier3": 102,
+    "tier2": 39,
+    "tier1": 4
+  },
+  "totalRoutes": 145,
+  "tier12Count": 43,
+  "tier12MissingRouteHealth": [
+    "apps/camera-multiple-views",
+    "apps/camera-path",
+    "apps/controls-trackball",
+    "apps/geometry-drawrange",
+    "apps/hello-world-typed-asset",
+    "apps/instancing-performance",
+    "apps/loader-gltf-variants",
+    "apps/loader-obj",
+    "apps/material-lighting",
+    "apps/postprocessing-depth-outline",
+    "apps/texture-anisotropy",
+    "apps/webxr-interactions",
+    "examples/10-particles",
+    "examples/animated-character",
+    "examples/animation-state-machine",
+    "examples/asset-viewer",
+    "examples/character-animation-viewer",
+    "examples/editor-authored-game",
+    "examples/editor-authored-project",
+    "examples/external-asset-gallery",
+    "examples/external-character-viewer",
+    "examples/external-editor-authored-app",
+    "examples/external-interactive-showcase",
+    "examples/external-interior-scene",
+    "examples/external-material-studio",
+    "examples/external-product-configurator",
+    "examples/foundation-editor-authored-app",
+    "examples/game-slice",
+    "examples/large-world-streaming",
+    "examples/material-showroom",
+    "examples/pbr-extension-texture-variants",
+    "examples/physics-sandbox",
+    "examples/postprocess-lab",
+    "examples/racing-showcase",
+    "examples/raycast-ccd-lab",
+    "examples/renderer-stress-lab",
+    "examples/rendering-large-scene",
+    "examples/shadow-lab",
+    "examples/webgpu-capability"
+  ],
+  "unclassified": [],
+  "routes": [
+    {
+      "id": "advanced-examples-gallery",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "animation-keyframes",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "animation-multiple",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "animation-studio-pro",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "animation-studio-web",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: local development surface"
+    },
+    {
+      "id": "animation-walk",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "architecture-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "asset-inspector",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "asset-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "asset-studio-pro",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "aura-clash-showcase",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: development showcase"
+    },
+    {
+      "id": "automotive-configurator",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "camera-multiple-views",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "camera-path",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "classification doc: starter example"
+    },
+    {
+      "id": "character-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "cinematic-postprocess",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "context-loss-recovery",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "controls-orbit",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "controls-trackball",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "controls-transform",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "decals",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "editor",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "flagship-ibl-states",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "flagship-viewer",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "game-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "geometry-drawrange",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "hdr-render-target-check",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "hello-world-typed-asset",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "classification doc: starter example"
+    },
+    {
+      "id": "instancing-performance",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "classification doc: starter example"
+    },
+    {
+      "id": "interactive-picking",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "interactive-showcase-pro",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "large-scene-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "lights-spotlight",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "lines-helpers",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "loader-compression",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "loader-gltf-variants",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "loader-instancing",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "loader-ktx2",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "loader-material-extensions",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "loader-obj",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "material-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "material-lighting",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "classification doc: starter example"
+    },
+    {
+      "id": "material-studio",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "material-studio-pro",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "materials-transmission",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "parallax-barrier",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "postprocessing-bloom",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "postprocessing-depth-outline",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "product-configurator",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "product-studio",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "product-studio-pro",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "public-scene",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "regression-animation-keyframes",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "scene-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "scene-studio-pro",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "shadow-cascade-evidence",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "shadowmap-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "showcase-asset-audition",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal asset diagnostic"
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "prototype-blocked",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'prototype-blocked' (R5 — must stay blocked, do not promote)"
+    },
+    {
+      "id": "showcase-cinematic-architecture",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "release-ready candidate",
+      "tier": 1,
+      "rationale": "gated in route-gates.json as 'release-ready candidate'"
+    },
+    {
+      "id": "showcase-data-galaxy",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "removed-from-public-showcase",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'removed-from-public-showcase'"
+    },
+    {
+      "id": "showcase-digital-twin-ops",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "release-ready candidate",
+      "tier": 1,
+      "rationale": "gated in route-gates.json as 'release-ready candidate'"
+    },
+    {
+      "id": "showcase-index",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "releaseClass": "index-route",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'index-route'"
+    },
+    {
+      "id": "showcase-material-asset-inspector",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "removed-from-public-showcase",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'removed-from-public-showcase'"
+    },
+    {
+      "id": "showcase-orbital-defense",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "tier": 3,
+      "rationale": "classification doc: blocked"
+    },
+    {
+      "id": "showcase-product-configurator",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "release-ready candidate",
+      "tier": 1,
+      "rationale": "gated in route-gates.json as 'release-ready candidate'"
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "prototype-blocked",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'prototype-blocked' (R5 — must stay blocked, do not promote)"
+    },
+    {
+      "id": "showcase-smart-city-control",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "release-ready candidate",
+      "tier": 1,
+      "rationale": "gated in route-gates.json as 'release-ready candidate'"
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "prototype-blocked",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'prototype-blocked' (R5 — must stay blocked, do not promote)"
+    },
+    {
+      "id": "showcase-webgpu-particle-lab",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": true,
+      "releaseClass": "internal-diagnostic",
+      "tier": 3,
+      "rationale": "route-gates.json marks it 'internal-diagnostic'"
+    },
+    {
+      "id": "skinning-additive",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "skinning-blending",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "skinning-ik",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "skinning-morph",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "stereo-effects",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "texture-anisotropy",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "threejs-parity-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "v9-advanced-examples-gallery",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "webgpu-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "webxr-interactions",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "world-war-x-showcase",
+      "root": "apps",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: blocked"
+    },
+    {
+      "id": "wow-additional-cesium-man-animation",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-additional-transmission-sample",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-additional-variant-product",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-antique-camera-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-avocado-pbr-study",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-boombox-texture-lab",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-cesium-milk-truck-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-clearcoat-material-sample",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-concept-car-cinema",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-damaged-helmet-pbr-detail",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-duck-prop-studio",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-robot-expressive-rig",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-sheen-material-grid",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-simple-material-lighting",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-simple-points-lines",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-simple-transforms",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-simple-triangle",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-soldier-animation-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-standard-animated-cube",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-standard-material-spheres",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-standard-product-camera",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-tokyo-keyframes",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-webgpu-compute-particles",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-webgpu-instancing",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-webgpu-pbr-asset",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-webgpu-product-viewer",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-webgpu-render-target",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "wow-webgpu-triangle",
+      "root": "apps",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "10-particles",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "animated-character",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "animation-state-machine",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "architecture-viewer",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "asset-viewer",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "character-animation-viewer",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "data-galaxy",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "editor-authored-game",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "editor-authored-project",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "external-asset-gallery",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "external-character-viewer",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "external-editor-authored-app",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "external-interactive-showcase",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "external-interior-scene",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "external-material-studio",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "external-product-configurator",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "forward-shadow-map-check",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "diagnostic naming convention /-check$/"
+    },
+    {
+      "id": "foundation-editor-authored-app",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "game-slice",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "hdr-render-target-check",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: internal diagnostic"
+    },
+    {
+      "id": "large-world-streaming",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "legacy-asset-viewer",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "diagnostic naming convention /^legacy-/"
+    },
+    {
+      "id": "legacy-material-studio",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "diagnostic naming convention /^legacy-/"
+    },
+    {
+      "id": "legacy-product-viewer",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "diagnostic naming convention /^legacy-/"
+    },
+    {
+      "id": "legacy-rendering-showcase",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "diagnostic naming convention /^legacy-/"
+    },
+    {
+      "id": "material-showroom",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "referenced by a shipped document under docs/"
+    },
+    {
+      "id": "pbr-extension-texture-variants",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "physics-sandbox",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "postprocess-lab",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "product-configurator",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 3,
+      "rationale": "classification doc: retained evidence route"
+    },
+    {
+      "id": "racing-showcase",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "raycast-ccd-lab",
+      "root": "examples",
+      "interactive": true,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "renderer-stress-lab",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "rendering-large-scene",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "shadow-lab",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    },
+    {
+      "id": "webgpu-capability",
+      "root": "examples",
+      "interactive": false,
+      "hasRouteHealth": false,
+      "tier": 2,
+      "rationale": "a retained spec or release gate depends on this route's files"
+    }
+  ]
+}

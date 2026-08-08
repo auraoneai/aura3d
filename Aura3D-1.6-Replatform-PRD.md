@@ -1,5 +1,14 @@
 # Aura3D 1.6 Re-platform PRD
 
+> **Completion-standard amendment — 2026-08-08:** comparison measurements in
+> this document use the historical frozen `three@0.165.0` target unless a row
+> explicitly names another version. They do not establish current-market parity
+> with `three@0.185.1`. Phase 5 checked boxes prove classification, route health,
+> interaction contracts, and technical browser evidence; they do not prove the
+> material flagship visual rebuild now required by
+> `1.6-FINAL-PRD-Finishes.md`. The final PRD is the controlling release and
+> competitive-completion standard.
+
 *Formerly `CleanUp16-PRD.md`. Renamed in revision 4: this is not cleanup. It is the
 architecture, product and platform-strategy blueprint governing a multi-month re-platform,
 and it is intended to govern 1.7 and beyond.*
@@ -2791,7 +2800,8 @@ this into another endless project. Only 11 routes are gated in
 
 ### WS-5.1 Classify every route into a tier
 
-- [x] **Tier 1 — public and marketed.** Fully rebuilt and interaction-tested before
+- [x] **Tier 1 — public and marketed technical candidates.** Classified,
+      route-health checked, and interaction-tested before
       release. ~~Starting set: the 11 gated routes in `route-gates.json`.~~
       **Measured: 4, not 11.** The other 7 gate entries are `internal-diagnostic` (1),
       `removed-from-public-showcase` (2), `index-route` (1) and `prototype-blocked` (3).
@@ -2800,6 +2810,10 @@ this into another endless project. Only 11 routes are gated in
       `showcase-smart-city-control`, `showcase-cinematic-architecture`,
       `showcase-digital-twin-ops`; all four are interactive and all four already carry
       route-health evidence.
+      **2026-08-08 amendment:** this closes the technical candidate sub-gate
+      only. The four routes are retained as `needs-work` before captures and
+      have not completed the material visual rebuild or independent human
+      approval required by the final PRD.
 - [x] **Tier 2 — public documentation examples.** Must build, run, and demonstrate the API
       accurately. No marketing polish required. — **31 routes**, derived from three signals:
       `starter example` / `library demo` in the classification document, a `create-aura3d`
@@ -2824,7 +2838,12 @@ this into another endless project. Only 11 routes are gated in
       violation in the classifier**: treating "has a gate entry" as Tier 1 promoted all three
       `prototype-blocked` routes.
 
-### WS-5.2 Rebuild Tier 1 and Tier 2
+### WS-5.2 Technical route rebuild and health for Tier 1 and Tier 2
+
+> **Narrowed 2026-08-08:** “rebuild” in this section means restored production
+> paths, route health, interaction contracts, and browser evidence. It does not
+> mean materially improved flagship visuals. That product outcome remains open
+> in `1.6-FINAL-PRD-Finishes.md` Phase 5.
 
 - [x] Every Tier 1/2 route uses the production renderer, shared interaction APIs,
       asset-relative placement, the consolidated input/audio layers, and the selected
@@ -3216,13 +3235,16 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       content checks and `pnpm check:clean-install` passes all **33** external install, build,
       route-health, asset-replacement, and actionable-error checks. Both rehearsal tarballs remain
       version 1.5.2 because §11 forbids the 1.6.0 version bump before explicit publish approval.
-- [x] All Tier 1 and Tier 2 routes pass; Tier 3 labelled internal; Tier 4 removed
+- [x] All Tier 1 and Tier 2 routes pass the named technical route-health and
+      browser sub-gates; Tier 3 labelled internal; Tier 4 removal evaluated
       — **43 of 43 Tier 1/2 pass** in a real browser with the failure allowlist removed.
       The repaired `material-showroom`, `postprocess-lab`, and `shadow-lab` all expose measurable
       canvases and pass screenshot thresholds; the retained 10-case renderer visual suite is also
       green. The current derived inventory is Tier 1 = 4, Tier 2 = 39, Tier 3 = 102, 145 total,
       and 0 unclassified. Tier 4 is empty because R8 refused its one
       candidate — a result, not a skipped step.
+      This checked item does not assert material visual completion or human
+      showcase approval.
 - [x] Three routes still `prototype-blocked` unless a human cleared them (R5)
       — all three still blocked, enforced in **all four** places a promotion could occur
       (`blocked-routes-stay-blocked.test.ts`, 14 tests). Review package prepared:

@@ -6,7 +6,10 @@ low-level renderer code runs.
 ## Package Target
 
 - Package: `three`
-- Version: `0.165.0`
+- Version: `0.165.0` (historical frozen fixture; not the current competitive baseline)
+
+Current comparisons use `benchmark/context/threejs-r185.1-20260808.json`. Do not
+update this directory in place or cite it as current evidence.
 - Source: local npm package snapshot from `node_modules/three`
 - License: MIT, copied in `files/LICENSE`
 

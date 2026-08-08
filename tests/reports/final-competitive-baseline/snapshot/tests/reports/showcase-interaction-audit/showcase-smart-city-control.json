@@ -1,0 +1,513 @@
+{
+  "schema": "aura3d-showcase-interaction-audit/1.0",
+  "routeId": "showcase-smart-city-control",
+  "label": "Smart City Control Room",
+  "releaseClass": "release-ready candidate",
+  "generatedAt": "2026-08-08T16:22:05.400Z",
+  "producer": "tests/browser/showcase-route-interaction-audit.spec.ts",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "driftingEvidenceKeys": [
+    "diagnostics.drawCalls",
+    "diagnostics.fps",
+    "diagnostics.renderSize[0]",
+    "diagnostics.renderSize[1]",
+    "frameCount",
+    "telemetry.energyMw",
+    "telemetry.incidents",
+    "telemetry.mobility",
+    "updatedAt"
+  ],
+  "controlsDiscovered": 12,
+  "controlsOperated": 12,
+  "controlsWithEffect": 12,
+  "controlsPassing": 12,
+  "controlResults": [
+    {
+      "selector": "button[data-district=\"all\"]",
+      "label": "All",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.district",
+        "diagnostics.district",
+        "diagnostics.kit.accessibilityLabel",
+        "diagnostics.kit.districtId",
+        "diagnostics.sceneEvidence.interactions.hoverTargets[0]",
+        "interactionState.lastChanged",
+        "interactionState.selectedDistrict"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-district=\"core\"]",
+      "label": "Core",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.district",
+        "diagnostics.district",
+        "diagnostics.kit.accessibilityLabel",
+        "diagnostics.kit.districtId",
+        "diagnostics.sceneEvidence.interactions.hoverTargets[0]",
+        "interactionState.lastChanged",
+        "interactionState.selectedDistrict"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-district=\"north\"]",
+      "label": "North",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.district",
+        "diagnostics.district",
+        "diagnostics.kit.accessibilityLabel",
+        "diagnostics.kit.districtId",
+        "diagnostics.sceneEvidence.interactions.hoverTargets[0]",
+        "interactionState.lastChanged",
+        "interactionState.selectedDistrict"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-district=\"harbor\"]",
+      "label": "Harbor",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.district",
+        "diagnostics.district",
+        "diagnostics.kit.accessibilityLabel",
+        "diagnostics.kit.districtId",
+        "diagnostics.sceneEvidence.interactions.hoverTargets[0]",
+        "interactionState.lastChanged",
+        "interactionState.selectedDistrict"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-district=\"industrial\"]",
+      "label": "Industrial",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.district",
+        "diagnostics.district",
+        "diagnostics.kit.accessibilityLabel",
+        "diagnostics.kit.districtId",
+        "diagnostics.sceneEvidence.interactions.hoverTargets[0]",
+        "interactionState.lastChanged",
+        "interactionState.selectedDistrict"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-camera=\"command\"]",
+      "label": "Command",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.cameraMode",
+        "interactionState.cameraMode",
+        "interactionState.lastChanged"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-camera=\"overview\"]",
+      "label": "Overview",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.cameraMode",
+        "interactionState.cameraMode",
+        "interactionState.lastChanged"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-camera=\"street\"]",
+      "label": "Street",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.cameraMode",
+        "diagnostics.sceneEvidence.camera.mode",
+        "diagnostics.sceneKit.cameraMode",
+        "interactionState.cameraMode",
+        "interactionState.lastChanged"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-camera=\"flythrough\"]",
+      "label": "Flythrough",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.cameraMode",
+        "diagnostics.nodeCount",
+        "diagnostics.sceneEvidence.camera.captureTime",
+        "diagnostics.sceneEvidence.camera.mode",
+        "diagnostics.sceneKit.cameraMode",
+        "interactionState.cameraMode",
+        "interactionState.lastChanged"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "#city-day-night",
+      "label": "Night Ops",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.timeOfDay",
+        "diagnostics.cityInstancing.lights",
+        "diagnostics.cityInstancing.props",
+        "diagnostics.cityInstancing.roadMarkings",
+        "diagnostics.cityQA.crosswalks",
+        "diagnostics.cityQA.instancing.lights",
+        "diagnostics.cityQA.instancing.props",
+        "diagnostics.cityQA.instancing.roadMarkings",
+        "diagnostics.cityQA.lights",
+        "diagnostics.cityQA.props",
+        "diagnostics.cityQA.streets",
+        "diagnostics.kit.temporalState",
+        "diagnostics.nodeCount",
+        "diagnostics.sceneEvidence.rendering.bloom.intensity",
+        "diagnostics.sceneEvidence.rendering.fog.density",
+        "diagnostics.sceneEvidence.rendering.occlusion.contactOcclusion",
+        "diagnostics.sceneEvidence.rendering.occlusion.enabled",
+        "diagnostics.sceneEvidence.rendering.occlusion.evidence",
+        "diagnostics.sceneEvidence.rendering.postprocess.requestedPasses.length",
+        "diagnostics.sceneEvidence.rendering.postprocess.requestedPasses[1]",
+        "diagnostics.sceneEvidence.rendering.postprocess.requestedPasses[2]",
+        "diagnostics.sceneEvidence.rendering.postprocess.requestedPasses[3]",
+        "diagnostics.sceneEvidence.rendering.shadows.contactShadows",
+        "diagnostics.sceneEvidence.rendering.warnings.length",
+        "diagnostics.sceneEvidence.rendering.warnings[0]",
+        "diagnostics.sceneEvidence.rendering.warnings[1]",
+        "diagnostics.sceneKit.nodeCount",
+        "diagnostics.sceneKit.performance.instancing.estimatedDrawCallSavings",
+        "diagnostics.sceneKit.performance.instancing.estimatedDrawCallsWithoutInstancing",
+        "interactionState.lastChanged",
+        "systems[8]"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "#city-traffic",
+      "label": "Traffic Live",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.traffic",
+        "interactionState.lastChanged",
+        "systems[5]"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "#city-alert",
+      "label": "city-alert",
+      "kind": "range",
+      "changed": true,
+      "changedKeys": [
+        "controls.alertLevel",
+        "interactionState.lastChanged",
+        "telemetry.alertLevel"
+      ],
+      "domChanged": false,
+      "pass": true
+    }
+  ],
+  "keyboardResults": [],
+  "cameraDragOk": true,
+  "mobileControlsDiscovered": 12,
+  "restartRecovered": true,
+  "initialInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "peakInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "finalInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "observedInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "consoleErrors": [],
+  "trace": [
+    {
+      "step": 1,
+      "timestamp": "2026-08-08T16:21:44.558Z",
+      "action": "operate button",
+      "target": "button[data-district=\"all\"] (All)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.district, diagnostics.district, diagnostics.kit.accessibilityLabel, diagnostics.kit.districtId, diagnostics.sceneEvidence.interactions.hoverTargets[0], interactionState.lastChanged, interactionState.selectedDistrict",
+      "evidenceRevisionBefore": "fa0b1a854e0e14ff",
+      "evidenceRevisionAfter": "2336901f530483b9",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 2,
+      "timestamp": "2026-08-08T16:21:45.384Z",
+      "action": "operate button",
+      "target": "button[data-district=\"core\"] (Core)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.district, diagnostics.district, diagnostics.kit.accessibilityLabel, diagnostics.kit.districtId, diagnostics.sceneEvidence.interactions.hoverTargets[0], interactionState.lastChanged, interactionState.selectedDistrict",
+      "evidenceRevisionBefore": "a21199a987b3e47f",
+      "evidenceRevisionAfter": "399f6cca21c1b13c",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 3,
+      "timestamp": "2026-08-08T16:21:46.183Z",
+      "action": "operate button",
+      "target": "button[data-district=\"north\"] (North)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.district, diagnostics.district, diagnostics.kit.accessibilityLabel, diagnostics.kit.districtId, diagnostics.sceneEvidence.interactions.hoverTargets[0], interactionState.lastChanged, interactionState.selectedDistrict",
+      "evidenceRevisionBefore": "399f6cca21c1b13c",
+      "evidenceRevisionAfter": "3193db020051e365",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 4,
+      "timestamp": "2026-08-08T16:21:46.974Z",
+      "action": "operate button",
+      "target": "button[data-district=\"harbor\"] (Harbor)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.district, diagnostics.district, diagnostics.kit.accessibilityLabel, diagnostics.kit.districtId, diagnostics.sceneEvidence.interactions.hoverTargets[0], interactionState.lastChanged, interactionState.selectedDistrict",
+      "evidenceRevisionBefore": "3193db020051e365",
+      "evidenceRevisionAfter": "2954d577c9e77701",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 5,
+      "timestamp": "2026-08-08T16:21:47.772Z",
+      "action": "operate button",
+      "target": "button[data-district=\"industrial\"] (Industrial)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.district, diagnostics.district, diagnostics.kit.accessibilityLabel, diagnostics.kit.districtId, diagnostics.sceneEvidence.interactions.hoverTargets[0], interactionState.lastChanged, interactionState.selectedDistrict",
+      "evidenceRevisionBefore": "7b7d61b6ead3da33",
+      "evidenceRevisionAfter": "136da3d02e4ba8da",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 6,
+      "timestamp": "2026-08-08T16:21:49.049Z",
+      "action": "operate button",
+      "target": "button[data-camera=\"command\"] (Command)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.cameraMode, interactionState.cameraMode, interactionState.lastChanged",
+      "evidenceRevisionBefore": "ef76736211354277",
+      "evidenceRevisionAfter": "f6a61a5b1e2b9a01",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 7,
+      "timestamp": "2026-08-08T16:21:49.841Z",
+      "action": "operate button",
+      "target": "button[data-camera=\"overview\"] (Overview)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.cameraMode, interactionState.cameraMode, interactionState.lastChanged",
+      "evidenceRevisionBefore": "f6a61a5b1e2b9a01",
+      "evidenceRevisionAfter": "0edf19b2863fb77e",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 8,
+      "timestamp": "2026-08-08T16:21:50.634Z",
+      "action": "operate button",
+      "target": "button[data-camera=\"street\"] (Street)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.cameraMode, diagnostics.sceneEvidence.camera.mode, diagnostics.sceneKit.cameraMode, interactionState.cameraMode, interactionState.lastChanged",
+      "evidenceRevisionBefore": "0edf19b2863fb77e",
+      "evidenceRevisionAfter": "33a0cba2175d9cec",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 9,
+      "timestamp": "2026-08-08T16:21:51.429Z",
+      "action": "operate button",
+      "target": "button[data-camera=\"flythrough\"] (Flythrough)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.cameraMode, diagnostics.nodeCount, diagnostics.sceneEvidence.camera.captureTime, diagnostics.sceneEvidence.camera.mode, diagnostics.sceneKit.cameraMode, interactionState.cameraMode, interactionState.lastChanged",
+      "evidenceRevisionBefore": "01e1234261b49322",
+      "evidenceRevisionAfter": "8b2d25821076dac6",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 10,
+      "timestamp": "2026-08-08T16:21:52.224Z",
+      "action": "operate button",
+      "target": "#city-day-night (Night Ops)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.timeOfDay, diagnostics.cityInstancing.lights, diagnostics.cityInstancing.props, diagnostics.cityInstancing.roadMarkings, diagnostics.cityQA.crosswalks, diagnostics.cityQA.instancing.lights, diagnostics.cityQA.instancing.props, diagnostics.cityQA.instancing.roadMarkings",
+      "evidenceRevisionBefore": "8b2d25821076dac6",
+      "evidenceRevisionAfter": "ffb93be354f4ecdc",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 11,
+      "timestamp": "2026-08-08T16:21:53.489Z",
+      "action": "operate button",
+      "target": "#city-traffic (Traffic Live)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.traffic, interactionState.lastChanged, systems[5]",
+      "evidenceRevisionBefore": "010f22a88d38d9f0",
+      "evidenceRevisionAfter": "cd08672714000d59",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 12,
+      "timestamp": "2026-08-08T16:21:54.028Z",
+      "action": "operate range",
+      "target": "#city-alert (city-alert)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.alertLevel, interactionState.lastChanged, telemetry.alertLevel",
+      "evidenceRevisionBefore": "cd08672714000d59",
+      "evidenceRevisionAfter": "7f5f53b6343d772d",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 13,
+      "timestamp": "2026-08-08T16:21:54.539Z",
+      "action": "drag camera",
+      "target": "scene canvas",
+      "expected": "camera orbits without runtime errors",
+      "actual": "no runtime errors",
+      "evidenceRevisionBefore": "n/a",
+      "evidenceRevisionAfter": "n/a",
+      "changed": false,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 14,
+      "timestamp": "2026-08-08T16:21:55.255Z",
+      "action": "resize to mobile viewport",
+      "target": "390x780",
+      "expected": "route stays mounted and operable without runtime errors",
+      "actual": "12 controls reachable",
+      "evidenceRevisionBefore": "n/a",
+      "evidenceRevisionAfter": "n/a",
+      "changed": false,
+      "consoleErrors": [],
+      "pass": true
+    }
+  ],
+  "screenshot": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-final.png",
+  "viewportVariants": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "height": 900,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-desktop.png",
+      "sha256": "sha256-87ea20f043d3b2665b1aea92510c676de0769e2bd95ac1ece9376ff962bd6273"
+    },
+    {
+      "label": "tablet",
+      "width": 834,
+      "height": 1112,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-tablet.png",
+      "sha256": "sha256-03c5a7c2f9a403bbe191176a034290a7ec670a510e62fd4fe2f5502e4ae1598f"
+    },
+    {
+      "label": "phone",
+      "width": 390,
+      "height": 780,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-phone.png",
+      "sha256": "sha256-bd57e2fbb2e8d52f785ae20de3e8ceab93a181186b1113ba2e3a515c965bf047"
+    }
+  ],
+  "frameSequence": [
+    {
+      "index": 0,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-frame-00.png",
+      "sha256": "sha256-a6219cd2b2bb3924eb9e940f353059402c918341762bbfa7263cf30bb5395e4b"
+    },
+    {
+      "index": 1,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-frame-01.png",
+      "sha256": "sha256-c5c5e879be597d3ae5f4f63f3048a39fc212eb8bbde20c7dba5e765f7940ef62"
+    },
+    {
+      "index": 2,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-frame-02.png",
+      "sha256": "sha256-b8b18511bf13b66b0f717d38ccf9350a20caa8f335f80d310ccbc3c60fa70fc2"
+    },
+    {
+      "index": 3,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-frame-03.png",
+      "sha256": "sha256-6639479ec649a3b83995d9f6a02cf65779aedf05c868b5b7be86763c8348c721"
+    },
+    {
+      "index": 4,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-frame-04.png",
+      "sha256": "sha256-ba66ef82936d6cb90228b4183aec378d5b29b41fb7e379bd9875f7d33731aba1"
+    },
+    {
+      "index": 5,
+      "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-frame-05.png",
+      "sha256": "sha256-5f8ca1c2b0ddb0f0a2144bbc56620b328c19fadd4aef3b69f7950765ddc78c4a"
+    }
+  ],
+  "distinctFrames": 6,
+  "frameVariationRequired": false,
+  "sourceFingerprint": "sha256-b7554c416fb2763ca3d3820cae80a8fdd5fdde41ad0362052876f8d46fc2dc30",
+  "configurationFingerprint": "sha256-ccf87fed4bc878f225fc389c9f5e785d3544d49399ebafced51b40e91f5b50de",
+  "producerVersion": "aura3d-showcase-interaction-audit/1.1"
+}

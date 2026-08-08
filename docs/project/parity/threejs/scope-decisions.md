@@ -1,5 +1,9 @@
 # Three.js and External-Renderer Scope Decisions
 
+> **Historical comparison scope:** the Three.js inventory governed by these
+> decisions uses frozen `three@0.165.0`; this record does not establish current
+> parity with r185.
+
 **Status:** Active product boundary  
 **Decision date:** 2026-07-28  
 **Applies to:** the release tracked by

@@ -68,6 +68,12 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "replicability-metrics": [
     "tests/reports/replicability-metrics/report.json"
   ],
+  "current-threejs-baseline": [
+    "tests/reports/current-threejs-baseline.json"
+  ],
+  "final-competitive-baseline": [
+    "tests/reports/final-competitive-baseline/<artifact>"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -159,6 +165,18 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
     writes: PRODUCER_OWNERSHIP["replicability-metrics"],
     hashes: []
   },
+  "current-threejs-baseline": {
+    writes: PRODUCER_OWNERSHIP["current-threejs-baseline"],
+    hashes: [
+      "benchmark/context/threejs-r185.1-20260808.json",
+      "docs/project/parity/threejs-r185-surface-inventory.md",
+      "pnpm-lock.yaml"
+    ]
+  },
+  "final-competitive-baseline": {
+    writes: PRODUCER_OWNERSHIP["final-competitive-baseline"],
+    hashes: []
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -183,6 +201,9 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
  */
 export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "asset-screening",
+  // Immutable program inputs; generation is one-time and later invocations verify.
+  "final-competitive-baseline",
+  "current-threejs-baseline",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",

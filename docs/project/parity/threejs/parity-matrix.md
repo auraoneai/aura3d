@@ -1,5 +1,7 @@
 # Three.js Parity Matrix
 
+Historical scope: generated from the frozen `three@0.165.0` comparison inventory. This is not a current r185 market verdict.
+
 This matrix is generated from the current inventory. `partial` means some route or infrastructure exists, but the implementation is not yet accepted as full parity.
 
 | Category | Unsupported | Partial | Matched | Exceeded |

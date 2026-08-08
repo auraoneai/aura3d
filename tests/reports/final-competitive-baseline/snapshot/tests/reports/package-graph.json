@@ -1,0 +1,462 @@
+{
+  "schema": "aura3d.package-graph.v1",
+  "generatedAt": "2026-08-08T16:01:04.990Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "every-package-tiered",
+      "pass": true,
+      "detail": "26 packages assigned a tier"
+    },
+    {
+      "id": "no-undeclared-dependencies",
+      "pass": true,
+      "detail": "every imported package is declared"
+    },
+    {
+      "id": "no-dependency-cycles",
+      "pass": true,
+      "detail": "graph is acyclic"
+    },
+    {
+      "id": "no-published-cycles",
+      "pass": true,
+      "detail": "no cycle among published packages"
+    },
+    {
+      "id": "no-layer-violations",
+      "pass": true,
+      "detail": "all edges point down-tier"
+    },
+    {
+      "id": "install-graph-matches-manifests",
+      "pass": true,
+      "detail": "pnpm-lock.yaml and on-disk @aura3d symlinks agree with all 26 manifests"
+    },
+    {
+      "id": "ownership-doc-documents-every-edge",
+      "pass": true,
+      "detail": "26 documented packages match the measured graph exactly"
+    }
+  ],
+  "failures": [],
+  "packageCount": 26,
+  "tiers": {
+    "math": 0,
+    "physics": 0,
+    "scripting": 0,
+    "asset-index": 0,
+    "core": 1,
+    "scene": 1,
+    "animation": 2,
+    "rendering": 2,
+    "input": 2,
+    "audio": 2,
+    "ecs": 2,
+    "assets": 3,
+    "controls": 3,
+    "materials": 3,
+    "environments": 3,
+    "debug": 3,
+    "editor-runtime": 3,
+    "product-studio": 4,
+    "apps": 4,
+    "workflows": 4,
+    "editor": 4,
+    "engine": 5,
+    "react": 6,
+    "three-compat": 6,
+    "aura3d-cli": 6,
+    "create-aura3d": 6
+  },
+  "undeclared": [],
+  "overDeclared": [
+    "animation declares math but no src file imports it",
+    "core declares math but no src file imports it",
+    "environments declares rendering but no src file imports it",
+    "materials declares assets but no src file imports it",
+    "materials declares rendering but no src file imports it",
+    "three-compat declares rendering but no src file imports it"
+  ],
+  "cycles": [],
+  "layerViolations": [],
+  "installMismatches": [],
+  "docGaps": [],
+  "edges": {
+    "animation": [
+      "math"
+    ],
+    "apps": [
+      "core",
+      "rendering",
+      "workflows"
+    ],
+    "asset-index": [],
+    "assets": [
+      "animation",
+      "rendering",
+      "scene"
+    ],
+    "audio": [
+      "scene"
+    ],
+    "aura3d-cli": [
+      "asset-index"
+    ],
+    "controls": [
+      "input"
+    ],
+    "core": [
+      "math"
+    ],
+    "create-aura3d": [
+      "asset-index"
+    ],
+    "debug": [
+      "animation",
+      "physics",
+      "rendering"
+    ],
+    "ecs": [
+      "core",
+      "math"
+    ],
+    "editor": [
+      "editor-runtime"
+    ],
+    "editor-runtime": [
+      "animation",
+      "math",
+      "scene"
+    ],
+    "engine": [
+      "animation",
+      "apps",
+      "assets",
+      "audio",
+      "core",
+      "ecs",
+      "physics",
+      "product-studio",
+      "rendering",
+      "scene",
+      "workflows"
+    ],
+    "environments": [
+      "rendering"
+    ],
+    "input": [
+      "math",
+      "scene"
+    ],
+    "materials": [
+      "assets",
+      "rendering"
+    ],
+    "math": [],
+    "physics": [],
+    "product-studio": [
+      "assets",
+      "rendering",
+      "scene"
+    ],
+    "react": [
+      "engine"
+    ],
+    "rendering": [
+      "math",
+      "scene"
+    ],
+    "scene": [
+      "core",
+      "math"
+    ],
+    "scripting": [],
+    "three-compat": [
+      "animation",
+      "controls",
+      "debug",
+      "rendering"
+    ],
+    "workflows": [
+      "animation",
+      "assets",
+      "product-studio",
+      "rendering",
+      "scene"
+    ]
+  },
+  "sourceEvidence": {
+    "animation": {},
+    "apps": {
+      "core": [
+        "packages/apps/src/index.ts -> @aura3d/core"
+      ],
+      "rendering": [
+        "packages/apps/src/index.ts -> @aura3d/rendering"
+      ],
+      "workflows": [
+        "packages/apps/src/index.ts -> @aura3d/workflows"
+      ]
+    },
+    "asset-index": {},
+    "assets": {
+      "animation": [
+        "packages/assets/src/AssetInspection.ts -> @aura3d/animation",
+        "packages/assets/src/GLTFAnimationRuntime.ts -> @aura3d/animation",
+        "packages/assets/src/GLTFLoader.ts -> @aura3d/animation",
+        "packages/assets/src/SceneLoader.ts -> @aura3d/animation"
+      ],
+      "rendering": [
+        "packages/assets/src/AssetInspection.ts -> @aura3d/rendering",
+        "packages/assets/src/AssetRenderDefaults.ts -> @aura3d/rendering",
+        "packages/assets/src/AssetRenderDefaults.ts -> @aura3d/rendering",
+        "packages/assets/src/CarConceptMaterialStability.ts -> @aura3d/rendering"
+      ],
+      "scene": [
+        "packages/assets/src/AssetInspection.ts -> @aura3d/scene",
+        "packages/assets/src/GLTFAnimationRuntime.ts -> @aura3d/scene",
+        "packages/assets/src/GLTFLoader.ts -> @aura3d/scene",
+        "packages/assets/src/GLTFRenderResources.ts -> @aura3d/scene"
+      ]
+    },
+    "audio": {
+      "scene": [
+        "packages/audio/src/SceneAudioBridge.ts -> @aura3d/scene"
+      ]
+    },
+    "aura3d-cli": {
+      "asset-index": [
+        "packages/aura3d-cli/src/animation-asset-profiles.ts -> @aura3d/asset-index",
+        "packages/aura3d-cli/src/game-asset-profiles.ts -> @aura3d/asset-index",
+        "packages/aura3d-cli/src/game-asset-validator.ts -> @aura3d/asset-index",
+        "packages/aura3d-cli/src/game-asset-validator.ts -> @aura3d/asset-index"
+      ]
+    },
+    "controls": {
+      "input": [
+        "packages/controls/src/FirstPersonControls.ts -> @aura3d/input",
+        "packages/controls/src/FlyControls.ts -> @aura3d/input",
+        "packages/controls/src/InteractionControls.ts -> @aura3d/input",
+        "packages/controls/src/MapControls.ts -> @aura3d/input"
+      ]
+    },
+    "core": {},
+    "create-aura3d": {
+      "asset-index": [
+        "packages/create-aura3d/src/showcase-spec-replacement-candidates.ts -> @aura3d/asset-index"
+      ]
+    },
+    "debug": {
+      "animation": [
+        "packages/debug/src/AnimationInspector.ts -> @aura3d/animation"
+      ],
+      "rendering": [
+        "packages/debug/src/DrawCallTracker.ts -> @aura3d/rendering",
+        "packages/debug/src/MaterialDiagnostics.ts -> @aura3d/rendering",
+        "packages/debug/src/ShaderDiagnostics.ts -> @aura3d/rendering"
+      ],
+      "physics": [
+        "packages/debug/src/PhysicsDebugAdapter.ts -> @aura3d/physics"
+      ]
+    },
+    "ecs": {
+      "core": [
+        "packages/ecs/src/Bitset.ts -> @aura3d/core",
+        "packages/ecs/src/CommandBuffer.ts -> @aura3d/core",
+        "packages/ecs/src/Component.ts -> @aura3d/core",
+        "packages/ecs/src/ComponentRegistry.ts -> @aura3d/core"
+      ],
+      "math": [
+        "packages/ecs/src/systems/CameraSystem.ts -> @aura3d/math",
+        "packages/ecs/src/systems/TransformSystem.ts -> @aura3d/math",
+        "packages/ecs/src/components/TransformComponent.ts -> @aura3d/math"
+      ]
+    },
+    "editor": {
+      "editor-runtime": [
+        "packages/editor/src/index.ts -> @aura3d/editor-runtime"
+      ]
+    },
+    "editor-runtime": {
+      "math": [
+        "packages/editor-runtime/src/EditorRuntime.ts -> @aura3d/math",
+        "packages/editor-runtime/src/Gizmo.ts -> @aura3d/math",
+        "packages/editor-runtime/src/InteractiveTransformGizmo.ts -> @aura3d/math",
+        "packages/editor-runtime/src/PickingService.ts -> @aura3d/math"
+      ],
+      "animation": [
+        "packages/editor-runtime/src/EventTrackEditor.ts -> @aura3d/animation"
+      ],
+      "scene": [
+        "packages/editor-runtime/src/PickingService.ts -> @aura3d/scene"
+      ]
+    },
+    "engine": {
+      "apps": [
+        "packages/engine/src/A3DApp.ts -> @aura3d/apps",
+        "packages/engine/src/A3DApp.ts -> @aura3d/apps",
+        "packages/engine/src/A3DQualityPresets.ts -> @aura3d/apps",
+        "packages/engine/src/A3DQualityPresets.ts -> @aura3d/apps"
+      ],
+      "core": [
+        "packages/engine/src/index.ts -> @aura3d/core",
+        "packages/engine/src/agent-api/index.ts -> @aura3d/core"
+      ],
+      "rendering": [
+        "packages/engine/src/index.ts -> @aura3d/rendering",
+        "packages/engine/src/index.ts -> @aura3d/rendering",
+        "packages/engine/src/index.ts -> @aura3d/rendering",
+        "packages/engine/src/index.ts -> @aura3d/rendering"
+      ],
+      "assets": [
+        "packages/engine/src/index.ts -> @aura3d/assets",
+        "packages/engine/src/index.ts -> @aura3d/assets",
+        "packages/engine/src/production-runtime/TypedGLBActor.ts -> @aura3d/assets/gltf-runtime",
+        "packages/engine/src/production-runtime/index.ts -> @aura3d/assets/browser"
+      ],
+      "product-studio": [
+        "packages/engine/src/index.ts -> @aura3d/product-studio",
+        "packages/engine/src/index.ts -> @aura3d/product-studio",
+        "packages/engine/src/index.ts -> @aura3d/product-studio"
+      ],
+      "workflows": [
+        "packages/engine/src/index.ts -> @aura3d/workflows",
+        "packages/engine/src/index.ts -> @aura3d/workflows"
+      ],
+      "scene": [
+        "packages/engine/src/production-runtime/TypedGLBActor.ts -> @aura3d/scene",
+        "packages/engine/src/production-runtime/index.ts -> @aura3d/scene",
+        "packages/engine/src/ecs/ECSRenderSource.ts -> @aura3d/scene",
+        "packages/engine/src/agent-api/index.ts -> @aura3d/scene"
+      ],
+      "animation": [
+        "packages/engine/src/production-runtime/index.ts -> @aura3d/animation",
+        "packages/engine/src/agent-api/AnimationController.ts -> @aura3d/animation",
+        "packages/engine/src/agent-api/AnimationController.ts -> @aura3d/animation",
+        "packages/engine/src/agent-api/RuntimeNodeHandle.ts -> @aura3d/animation"
+      ],
+      "physics": [
+        "packages/engine/src/production-runtime/index.ts -> @aura3d/physics",
+        "packages/engine/src/agent-api/GameRuntime.ts -> @aura3d/physics/solverless",
+        "packages/engine/src/agent-api/GameRuntime.ts -> @aura3d/physics/world",
+        "packages/engine/src/agent-api/GameRuntime.ts -> @aura3d/physics"
+      ],
+      "audio": [
+        "packages/engine/src/game/GameAudio.ts -> @aura3d/audio"
+      ],
+      "ecs": [
+        "packages/engine/src/ecs/ECSRenderSource.ts -> @aura3d/ecs"
+      ]
+    },
+    "environments": {},
+    "input": {
+      "math": [
+        "packages/input/src/InteractionSystem.ts -> @aura3d/math",
+        "packages/input/src/PickingRay.ts -> @aura3d/math",
+        "packages/input/src/controls/SceneCameraAdapter.ts -> @aura3d/math"
+      ],
+      "scene": [
+        "packages/input/src/InteractionSystem.ts -> @aura3d/scene",
+        "packages/input/src/PickingRay.ts -> @aura3d/scene",
+        "packages/input/src/controls/SceneCameraAdapter.ts -> @aura3d/scene"
+      ]
+    },
+    "materials": {},
+    "math": {},
+    "physics": {},
+    "product-studio": {
+      "assets": [
+        "packages/product-studio/src/ProductAssetLoader.ts -> @aura3d/assets",
+        "packages/product-studio/src/ProductRenderScene.ts -> @aura3d/assets",
+        "packages/product-studio/src/ProductTypes.ts -> @aura3d/assets"
+      ],
+      "rendering": [
+        "packages/product-studio/src/ProductCamera.ts -> @aura3d/rendering",
+        "packages/product-studio/src/ProductDiagnostics.ts -> @aura3d/rendering",
+        "packages/product-studio/src/ProductFloor.ts -> @aura3d/rendering",
+        "packages/product-studio/src/ProductFloor.ts -> @aura3d/rendering"
+      ],
+      "scene": [
+        "packages/product-studio/src/ProductFloor.ts -> @aura3d/scene",
+        "packages/product-studio/src/ProductLighting.ts -> @aura3d/scene"
+      ]
+    },
+    "react": {
+      "engine": [
+        "packages/react/src/index.ts -> @aura3d/engine"
+      ]
+    },
+    "rendering": {
+      "scene": [
+        "packages/rendering/src/CameraFraming.ts -> @aura3d/scene",
+        "packages/rendering/src/CascadedShadowMaps.ts -> @aura3d/scene",
+        "packages/rendering/src/DepthPass.ts -> @aura3d/scene",
+        "packages/rendering/src/LightCollector.ts -> @aura3d/scene"
+      ],
+      "math": [
+        "packages/rendering/src/Raycaster.ts -> @aura3d/math",
+        "packages/rendering/src/Renderer.ts -> @aura3d/math",
+        "packages/rendering/src/SceneOptimization.ts -> @aura3d/math",
+        "packages/rendering/src/performance/FrustumCuller.ts -> @aura3d/math"
+      ]
+    },
+    "scene": {
+      "math": [
+        "packages/scene/src/Bounds.ts -> @aura3d/math",
+        "packages/scene/src/Camera.ts -> @aura3d/math",
+        "packages/scene/src/Light.ts -> @aura3d/math",
+        "packages/scene/src/MathTypes.ts -> @aura3d/math"
+      ],
+      "core": [
+        "packages/scene/src/Camera.ts -> @aura3d/core",
+        "packages/scene/src/Light.ts -> @aura3d/core",
+        "packages/scene/src/OrthographicCamera.ts -> @aura3d/core",
+        "packages/scene/src/PerspectiveCamera.ts -> @aura3d/core"
+      ]
+    },
+    "scripting": {},
+    "three-compat": {
+      "debug": [
+        "packages/three-compat/src/helpers/index.ts -> @aura3d/debug"
+      ],
+      "controls": [
+        "packages/three-compat/src/controls/index.ts -> @aura3d/controls",
+        "packages/three-compat/src/controls/index.ts -> @aura3d/controls"
+      ],
+      "animation": [
+        "packages/three-compat/src/animation/index.ts -> @aura3d/animation",
+        "packages/three-compat/src/animation/index.ts -> @aura3d/animation"
+      ]
+    },
+    "workflows": {
+      "animation": [
+        "packages/workflows/src/AnimationLabWorkflow.ts -> @aura3d/animation",
+        "packages/workflows/src/WorkflowTypes.ts -> @aura3d/animation"
+      ],
+      "scene": [
+        "packages/workflows/src/AnimationLabWorkflow.ts -> @aura3d/scene",
+        "packages/workflows/src/ComparisonWorkflow.ts -> @aura3d/scene",
+        "packages/workflows/src/InteractiveSceneWorkflow.ts -> @aura3d/scene",
+        "packages/workflows/src/MaterialStudioWorkflow.ts -> @aura3d/scene"
+      ],
+      "rendering": [
+        "packages/workflows/src/AnimationLabWorkflow.ts -> @aura3d/rendering",
+        "packages/workflows/src/ComparisonWorkflow.ts -> @aura3d/rendering",
+        "packages/workflows/src/InteractiveSceneWorkflow.ts -> @aura3d/rendering",
+        "packages/workflows/src/MaterialStudioWorkflow.ts -> @aura3d/rendering"
+      ],
+      "assets": [
+        "packages/workflows/src/AssetViewerWorkflow.ts -> @aura3d/assets",
+        "packages/workflows/src/AssetViewerWorkflow.ts -> @aura3d/assets",
+        "packages/workflows/src/WorkflowDiagnostics.ts -> @aura3d/assets",
+        "packages/workflows/src/WorkflowTypes.ts -> @aura3d/assets"
+      ],
+      "product-studio": [
+        "packages/workflows/src/ProductConfiguratorWorkflow.ts -> @aura3d/product-studio",
+        "packages/workflows/src/WorkflowDiagnostics.ts -> @aura3d/product-studio",
+        "packages/workflows/src/WorkflowTypes.ts -> @aura3d/product-studio"
+      ]
+    }
+  }
+}

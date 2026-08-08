@@ -1,15 +1,16 @@
 # Completion Audit
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 pre-publication audit
+Status: superseded pre-publication audit; final competitive program incomplete
 
 ## Current Result
 
-The 1.6 implementation and focused evidence work is complete enough to enter the
-final release sequence. The release is not complete: current human visual review,
-two serial full-suite runs, package provenance/tarballs, npm publication, registry
-integrity, GitHub tag/release, Vercel deployment, and live-origin verification
-remain open.
+This audit is retained as a historical snapshot. It is not sufficient to enter
+the final release sequence. In addition to human visual review, serial suites,
+package provenance/tarballs, publication, registry integrity, GitHub release,
+deployment, and live verification, the current `three@0.185.1` comparison,
+subsystem ownership work, and material flagship rebuild in
+`1.6-FINAL-PRD-Finishes.md` remain open.
 
 ## Completed For The Candidate
 
@@ -31,7 +32,7 @@ remain open.
   sleep/wake, repeatability, step/slope, suspension, and lifecycle invariants
   are retained.
 - All 43 Tier 1/2 routes pass the current real-browser health gate.
-- The selected 54-row Three.js inventory is matched with zero high-priority rows
+- The selected historical `three@0.165.0` 54-row inventory is matched with zero high-priority rows
   open, bounded by the comparison-status document.
 - The public website source and build include the 1.6 content update and nine
   restored, separately scoped evidence routes.

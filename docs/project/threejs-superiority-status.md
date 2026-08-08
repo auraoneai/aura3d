@@ -1,13 +1,16 @@
 # Three.js Comparison Status
 
 Date: 2026-08-08
-Status: scoped comparison gates passing
+Status: historical `three@0.165.0` scoped comparison; current-market comparison incomplete
 
-Aura3D passes the repository's current Three.js comparison suite for the selected,
-frozen workloads. This status is deliberately narrower than universal engine or
-ecosystem superiority.
+Aura3D passes the repository's historical Three.js comparison suite for the
+selected frozen workloads against `three@0.165.0`. This evidence remains useful
+for regression history, but it is not a current-market parity, superiority, or
+replacement verdict. The current comparison target is `three@0.185.1`, locked in
+`benchmark/context/threejs-r185.1-20260808.json`; its full workload program is
+still in progress under `1.6-FINAL-PRD-Finishes.md`.
 
-## Current result
+## Historical frozen result
 
 - The generated Three.js inventory contains 54 example-level rows, all marked
   `matched`, with zero high-priority rows open.
@@ -24,11 +27,13 @@ at `tests/reports/threejs-parity/threejs-inventory.json`.
 
 ## What this permits
 
-Public copy may cite a specific measured win or parity result when it also names the
-workload, date, protocol or report, and relevant boundary. For example:
+Public copy may cite a specific historical measured result only when it also names
+`three@0.165.0`, the workload, date, protocol or report, and relevant boundary. It
+may not describe that result as current. For example:
 
-> In the frozen 2026-08-08 developer-friction scenarios, Aura3D required fewer
-> authored lines than the corresponding Three.js implementations.
+> In the frozen 2026-08-08 developer-friction scenarios against
+> `three@0.165.0`, Aura3D required fewer authored lines than the corresponding
+> implementations.
 
 ## What this does not permit
 
@@ -38,6 +43,8 @@ workload, date, protocol or report, and relevant boundary. For example:
 - No blanket claim covering untested add-ons, assets, browsers, devices, shaders, or
   ecosystem breadth.
 - No visual-quality claim beyond the named same-scene captures and thresholds.
+- No claim that the 54-row historical inventory covers Three.js r185, current
+  WebGPU/TSL/node-material behavior, or the current companion ecosystem.
 
 The canonical wording rules remain
 `docs/agents/claims-and-boundaries.md` and

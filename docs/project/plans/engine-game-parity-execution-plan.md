@@ -6,6 +6,8 @@
 > supersede any checkbox, status line, or completion claim here. A checked item in
 > this file does not override a failing or stale current artifact; where the two
 > disagree, the current generated report wins.
+> Three.js comparisons in this plan used the historical frozen
+> `three@0.165.0` baseline and cannot support a current-market verdict.
 
 
 Repo: `/Users/gurbakshchahal/platforms/aura3d` · pnpm@11.1.3 · published root package

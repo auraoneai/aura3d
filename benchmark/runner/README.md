@@ -44,7 +44,9 @@ Use the current repo commit recorded in the result file for Aura3D package
 artifacts. The agent may import published public APIs but may not inspect
 implementation source.
 
-Use `three@0.165.0` for low-level renderer code runs.
+Use the version in `benchmark/context/threejs-r185.1-20260808.json` for current
+low-level renderer code runs. The older `benchmark/context/threejs/` bundle is a
+historical fixture and must not be used for a current comparison claim.
 
 Lockfiles are allowed for reproducibility but are not counted as user-written
 code.

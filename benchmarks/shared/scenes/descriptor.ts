@@ -63,7 +63,7 @@ export type EngineBenchmarkScene = BenchmarkSceneDescriptor & {
 
 const engineVersions: Record<BenchmarkEngine, string> = {
   aura3d: "0.1.0-alpha.0",
-  threejs: "0.165.0",
+  threejs: "0.185.1",
   babylon: "7.16.1",
 };
 

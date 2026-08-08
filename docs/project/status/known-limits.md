@@ -77,6 +77,12 @@ guide or README must include the narrower wording.
 
 ## Evidence Limits
 
+- The retained 54-row Three.js comparison and its bundle/developer-friction
+  measurements use `three@0.165.0`. They are historical regression evidence,
+  not evidence of parity with the locked current `three@0.185.1` ecosystem.
+- The current r185 comparison program, including WebGPU/TSL/node-material and
+  realistic companion-stack workloads, is incomplete. Aura3D therefore makes
+  no current broad head-to-head, replacement, or ecosystem-parity claim.
 - `tests/reports/` artifacts may be local or ignored; they must be regenerated
   in release runs or attached as immutable artifacts.
 - Nonblank screenshots prove only that something rendered.

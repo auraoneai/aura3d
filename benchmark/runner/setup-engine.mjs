@@ -77,10 +77,10 @@ function basePackage(scene, library) {
       preview: "vite preview --host 127.0.0.1"
     },
     dependencies: aura
-      ? { "@aura3d/engine": `file:${auraTarball}`, three: "0.165.0" }
-      : { three: "0.165.0" },
+      ? { "@aura3d/engine": `file:${auraTarball}`, three: "0.185.1" }
+      : { three: "0.185.1" },
     devDependencies: {
-      "@types/three": "^0.165.0",
+      "@types/three": "0.185.4",
       typescript: "^5.8.3",
       vite: "^7.3.2"
     }

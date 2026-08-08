@@ -4,9 +4,9 @@
   "type": "module",
   "benchmarkEngine": {
     "name": "three",
-    "version": "0.165.0"
+    "version": "0.185.1"
   },
   "devDependencies": {
-    "three": "0.165.0"
+    "three": "0.185.1"
   }
 }

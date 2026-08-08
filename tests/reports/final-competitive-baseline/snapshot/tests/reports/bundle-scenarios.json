@@ -1,0 +1,668 @@
+{
+  "schema": "a3d-bundle-scenarios",
+  "generatedAt": "2026-08-08T16:01:07.016Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "scenario-1-core-primitive-scene",
+      "pass": true,
+      "detail": "Core primitive scene: WebGL2 renderer, scene graph, camera, one material, one cube: Aura3D 69024 B initial download across 4 eager chunk(s) (entry alone 49411 B; 105795 B all 6 chunks) vs Three.js 118603 B = 0.582x (limit 1.25x, derived budget 148253 B)"
+    },
+    {
+      "id": "scenario-2-product-viewer",
+      "pass": true,
+      "detail": "Product viewer: glTF, PBR, orbit controls, lighting, environment: Aura3D 182144 B initial download across 8 eager chunk(s) (entry alone 49666 B; 235175 B all 14 chunks) vs Three.js 145978 B = 1.248x (limit 1.25x, derived budget 182472 B)"
+    },
+    {
+      "id": "scenario-3-game-runtime",
+      "pass": true,
+      "detail": "Game runtime: input, animation, physics integration, game loop: Aura3D 118765 B initial download across 4 eager chunk(s) (entry alone 99152 B; 155536 B all 6 chunks) vs Three.js 142809 B = 0.832x (limit 1.5x, derived budget 214213 B)"
+    }
+  ],
+  "failures": [],
+  "rule": "§B.1 — 1.6 succeeds only if renderer parity improves AND developer bundle size approaches Three.js. Ratios are measured against a committed equivalent Three.js entry using one shared bundler config. Never raise a budget to go green (R2); the budget is derived from the comparison, so it cannot be raised at all.",
+  "canonicalBundlerConfig": {
+    "bundler": "esbuild",
+    "minify": true,
+    "format": "esm",
+    "platform": "browser",
+    "target": "es2022",
+    "treeShaking": true,
+    "gzip": true,
+    "splitting": true,
+    "splittingNote": "Required. Without it esbuild inlines dynamic imports into one file, so a correctly deferred subsystem still counts against the initial download and a real improvement measures as zero.",
+    "gatedMetric": "gzipBytes = the entry chunk PLUS every chunk reachable from it by static import, since a static import is fetched and evaluated before the importing module's body runs. entryChunkGzipBytes and allChunksGzipBytes are reported for diagnosis but not gated. Measured trap: scenario 1's entry chunk alone is 56,056 B while its true initial download is 303,149 B — gating on the entry alone would have shown a 0.470x pass where the honest figure is 2.541x.",
+    "verifiedBy": "size-limit against the gzip entry-chunk artifact",
+    "external": [
+      "node:child_process",
+      "node:fs/promises",
+      "node:os",
+      "node:path",
+      "node:fs",
+      "node:crypto",
+      "node:url"
+    ],
+    "externalPolicy": "Node builtins only. Neither engine's own code is external: the question is what a developer downloads, so exempting either side would flatter it.",
+    "aura3dResolution": "packages/*/src sources — a bundle budget must reflect the code as written. The behavioural gates measure dist/ instead, because that is what a developer's bundler resolves."
+  },
+  "scenarios": [
+    {
+      "id": "scenario-1-core-primitive-scene",
+      "label": "Core primitive scene: WebGL2 renderer, scene graph, camera, one material, one cube",
+      "contents": {
+        "renderer": "WebGL2 only",
+        "webgl2": true,
+        "webgpu": false,
+        "assetLoaders": false,
+        "sceneGraph": true,
+        "math": true,
+        "typedApi": true,
+        "diagnostics": false,
+        "environment": false,
+        "polyfills": false,
+        "compressedTextures": false,
+        "physics": false
+      },
+      "maxRatio": 1.25,
+      "derivedBudgetBytes": 148253,
+      "budgetSource": "Derived from the measured Three.js equivalent, not chosen. It cannot be raised without Three.js growing, which is what makes R2 structural.",
+      "ratio": 0.582,
+      "pass": true,
+      "overBy": 0,
+      "aura3d": {
+        "entry": "tools/bundle-scenarios/entries/scenario-1-aura3d.ts",
+        "jsBytes": 203048,
+        "gzipBytes": 69024,
+        "entryChunkGzipBytes": 49411,
+        "allChunksGzipBytes": 105795,
+        "eagerChunks": [
+          {
+            "name": "scenario-1-aura3d.js",
+            "gzipBytes": 49411
+          },
+          {
+            "name": "chunk-TVXUOFEE.js",
+            "gzipBytes": 16043
+          },
+          {
+            "name": "chunk-SAMCAUGS.js",
+            "gzipBytes": 2768
+          },
+          {
+            "name": "chunk-FDMHKPZB.js",
+            "gzipBytes": 802
+          }
+        ],
+        "chunkCount": 6,
+        "chunks": [
+          {
+            "name": "scenario-1-aura3d.js",
+            "gzipBytes": 49411,
+            "isEntry": true
+          },
+          {
+            "name": "WebGPUDevice-62RB374X.js",
+            "gzipBytes": 18639,
+            "isEntry": false
+          },
+          {
+            "name": "ShaderLibrary-X5MIBZCD.js",
+            "gzipBytes": 18132,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-TVXUOFEE.js",
+            "gzipBytes": 16043,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-SAMCAUGS.js",
+            "gzipBytes": 2768,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-FDMHKPZB.js",
+            "gzipBytes": 802,
+            "isEntry": false
+          }
+        ],
+        "artifactPath": "tests/reports/bundle-scenarios/scenario-1-core-primitive-scene-aura3d.js",
+        "bytesByPackage": {
+          "@aura3d/rendering": 186464,
+          "@aura3d/math": 11177,
+          "@aura3d/engine": 4584,
+          "@aura3d/scene": 383,
+          "entry": 239
+        },
+        "largestContributors": [
+          {
+            "path": "packages/rendering/src/WebGL2Device.ts",
+            "bytes": 103189
+          },
+          {
+            "path": "packages/rendering/src/ForwardPass.ts",
+            "bytes": 38380
+          },
+          {
+            "path": "packages/rendering/src/Geometry.ts",
+            "bytes": 9425
+          },
+          {
+            "path": "packages/rendering/src/WebGL2StateCache.ts",
+            "bytes": 6117
+          },
+          {
+            "path": "packages/math/src/Matrix4.ts",
+            "bytes": 4937
+          },
+          {
+            "path": "packages/engine/src/agent-api/lean-base.ts",
+            "bytes": 4528
+          },
+          {
+            "path": "packages/rendering/src/VertexFormat.ts",
+            "bytes": 3773
+          },
+          {
+            "path": "packages/rendering/src/ClusteredForwardLighting.ts",
+            "bytes": 3318
+          },
+          {
+            "path": "packages/rendering/src/LightUniforms.ts",
+            "bytes": 2888
+          },
+          {
+            "path": "packages/math/src/Quaternion.ts",
+            "bytes": 2772
+          },
+          {
+            "path": "packages/rendering/src/ShadowMap.ts",
+            "bytes": 2317
+          },
+          {
+            "path": "packages/rendering/src/MaterialBinding.ts",
+            "bytes": 2143
+          }
+        ]
+      },
+      "threejs": {
+        "entry": "tools/bundle-scenarios/entries/scenario-1-threejs.ts",
+        "jsBytes": 471470,
+        "gzipBytes": 118603,
+        "entryChunkGzipBytes": 118603,
+        "allChunksGzipBytes": 118603,
+        "eagerChunks": [
+          {
+            "name": "scenario-1-threejs.js",
+            "gzipBytes": 118603
+          }
+        ],
+        "chunkCount": 1,
+        "chunks": [
+          {
+            "name": "scenario-1-threejs.js",
+            "gzipBytes": 118603,
+            "isEntry": true
+          }
+        ],
+        "artifactPath": "tests/reports/bundle-scenarios/scenario-1-core-primitive-scene-threejs.js",
+        "bytesByPackage": {
+          ".pnpm": 470899,
+          "entry": 402
+        },
+        "largestContributors": [
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/build/three.module.js",
+            "bytes": 470899
+          },
+          {
+            "path": "tools/bundle-scenarios/entries/scenario-1-threejs.ts",
+            "bytes": 402
+          }
+        ]
+      },
+      "sizeLimitVerification": {
+        "bytes": 49415,
+        "passed": true
+      }
+    },
+    {
+      "id": "scenario-2-product-viewer",
+      "label": "Product viewer: glTF, PBR, orbit controls, lighting, environment",
+      "contents": {
+        "renderer": "WebGL2 only",
+        "webgl2": true,
+        "webgpu": false,
+        "assetLoaders": true,
+        "sceneGraph": true,
+        "math": true,
+        "typedApi": true,
+        "diagnostics": false,
+        "environment": true,
+        "polyfills": false,
+        "compressedTextures": false,
+        "physics": false
+      },
+      "maxRatio": 1.25,
+      "derivedBudgetBytes": 182472,
+      "budgetSource": "Derived from the measured Three.js equivalent, not chosen. It cannot be raised without Three.js growing, which is what makes R2 structural.",
+      "ratio": 1.2477,
+      "pass": true,
+      "overBy": 0,
+      "aura3d": {
+        "entry": "tools/bundle-scenarios/entries/scenario-2-aura3d.ts",
+        "jsBytes": 205345,
+        "gzipBytes": 182144,
+        "entryChunkGzipBytes": 49666,
+        "allChunksGzipBytes": 235175,
+        "eagerChunks": [
+          {
+            "name": "chunk-NNLUTYSS.js",
+            "gzipBytes": 91664
+          },
+          {
+            "name": "scenario-2-aura3d.js",
+            "gzipBytes": 49666
+          },
+          {
+            "name": "chunk-ONJONOSB.js",
+            "gzipBytes": 17667
+          },
+          {
+            "name": "chunk-ATA6HHWM.js",
+            "gzipBytes": 16047
+          },
+          {
+            "name": "chunk-ZBCMK4JH.js",
+            "gzipBytes": 6133
+          },
+          {
+            "name": "chunk-FDMHKPZB.js",
+            "gzipBytes": 802
+          },
+          {
+            "name": "chunk-WOT6VMZA.js",
+            "gzipBytes": 120
+          },
+          {
+            "name": "chunk-3XAIX4CG.js",
+            "gzipBytes": 45
+          }
+        ],
+        "chunkCount": 14,
+        "chunks": [
+          {
+            "name": "chunk-NNLUTYSS.js",
+            "gzipBytes": 91664,
+            "isEntry": false
+          },
+          {
+            "name": "scenario-2-aura3d.js",
+            "gzipBytes": 49666,
+            "isEntry": true
+          },
+          {
+            "name": "WebGPUDevice-O6OGADNW.js",
+            "gzipBytes": 18660,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-ONJONOSB.js",
+            "gzipBytes": 17667,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-ATA6HHWM.js",
+            "gzipBytes": 16047,
+            "isEntry": false
+          },
+          {
+            "name": "dist-52UWTE3A.js",
+            "gzipBytes": 15421,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-EMT7ZL6K.js",
+            "gzipBytes": 10147,
+            "isEntry": false
+          },
+          {
+            "name": "dist-X57U7N67.js",
+            "gzipBytes": 7937,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-ZBCMK4JH.js",
+            "gzipBytes": 6133,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-FDMHKPZB.js",
+            "gzipBytes": 802,
+            "isEntry": false
+          },
+          {
+            "name": "ShaderLibrary-NHWTWPPZ.js",
+            "gzipBytes": 689,
+            "isEntry": false
+          },
+          {
+            "name": "ProductionWebGPURenderer-3WWHJW2O.js",
+            "gzipBytes": 177,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-WOT6VMZA.js",
+            "gzipBytes": 120,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-3XAIX4CG.js",
+            "gzipBytes": 45,
+            "isEntry": false
+          }
+        ],
+        "artifactPath": "tests/reports/bundle-scenarios/scenario-2-product-viewer-aura3d.js",
+        "bytesByPackage": {
+          "@aura3d/assets": 117917,
+          "@aura3d/rendering": 74321,
+          "@aura3d/animation": 6915,
+          "@aura3d/engine": 5148,
+          "entry": 504
+        },
+        "largestContributors": [
+          {
+            "path": "packages/assets/src/GLTFLoader.ts",
+            "bytes": 68536
+          },
+          {
+            "path": "packages/assets/src/GLTFRenderResources.ts",
+            "bytes": 36044
+          },
+          {
+            "path": "packages/rendering/src/TexturedPBRMaterial.ts",
+            "bytes": 32854
+          },
+          {
+            "path": "packages/rendering/src/SkinnedLitMaterial.ts",
+            "bytes": 11661
+          },
+          {
+            "path": "packages/rendering/src/EnvironmentMapResources.ts",
+            "bytes": 9590
+          },
+          {
+            "path": "packages/rendering/src/SpecularPrefilter.ts",
+            "bytes": 7016
+          },
+          {
+            "path": "packages/rendering/src/ExternalParityRenderPreset.ts",
+            "bytes": 5956
+          },
+          {
+            "path": "packages/assets/src/GLTFExtensionSupport.ts",
+            "bytes": 5305
+          },
+          {
+            "path": "packages/rendering/src/InstancedPBRMaterial.ts",
+            "bytes": 4743
+          },
+          {
+            "path": "packages/engine/src/agent-api/lean-base.ts",
+            "bytes": 4736
+          },
+          {
+            "path": "packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.ts",
+            "bytes": 3659
+          },
+          {
+            "path": "packages/assets/src/KTX2BasisTextureTranscoder.ts",
+            "bytes": 3358
+          }
+        ]
+      },
+      "threejs": {
+        "entry": "tools/bundle-scenarios/entries/scenario-2-threejs.ts",
+        "jsBytes": 569267,
+        "gzipBytes": 145978,
+        "entryChunkGzipBytes": 145978,
+        "allChunksGzipBytes": 145978,
+        "eagerChunks": [
+          {
+            "name": "scenario-2-threejs.js",
+            "gzipBytes": 145978
+          }
+        ],
+        "chunkCount": 1,
+        "chunks": [
+          {
+            "name": "scenario-2-threejs.js",
+            "gzipBytes": 145978,
+            "isEntry": true
+          }
+        ],
+        "artifactPath": "tests/reports/bundle-scenarios/scenario-2-product-viewer-threejs.js",
+        "bytesByPackage": {
+          ".pnpm": 568457,
+          "entry": 641
+        },
+        "largestContributors": [
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/build/three.module.js",
+            "bytes": 508238
+          },
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/examples/jsm/loaders/GLTFLoader.js",
+            "bytes": 44162
+          },
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/examples/jsm/controls/OrbitControls.js",
+            "bytes": 13299
+          },
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/examples/jsm/environments/RoomEnvironment.js",
+            "bytes": 1767
+          },
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/examples/jsm/utils/BufferGeometryUtils.js",
+            "bytes": 991
+          },
+          {
+            "path": "tools/bundle-scenarios/entries/scenario-2-threejs.ts",
+            "bytes": 641
+          }
+        ]
+      },
+      "sizeLimitVerification": {
+        "bytes": 49670,
+        "passed": true
+      }
+    },
+    {
+      "id": "scenario-3-game-runtime",
+      "label": "Game runtime: input, animation, physics integration, game loop",
+      "contents": {
+        "renderer": "WebGL2 only",
+        "webgl2": true,
+        "webgpu": false,
+        "assetLoaders": false,
+        "sceneGraph": true,
+        "math": true,
+        "typedApi": true,
+        "diagnostics": false,
+        "environment": false,
+        "polyfills": false,
+        "compressedTextures": false,
+        "physics": true
+      },
+      "maxRatio": 1.5,
+      "derivedBudgetBytes": 214213,
+      "budgetSource": "Derived from the measured Three.js equivalent, not chosen. It cannot be raised without Three.js growing, which is what makes R2 structural.",
+      "ratio": 0.8316,
+      "pass": true,
+      "overBy": 0,
+      "aura3d": {
+        "entry": "tools/bundle-scenarios/entries/scenario-3-aura3d.ts",
+        "jsBytes": 371465,
+        "gzipBytes": 118765,
+        "entryChunkGzipBytes": 99152,
+        "allChunksGzipBytes": 155536,
+        "eagerChunks": [
+          {
+            "name": "scenario-3-aura3d.js",
+            "gzipBytes": 99152
+          },
+          {
+            "name": "chunk-TVXUOFEE.js",
+            "gzipBytes": 16043
+          },
+          {
+            "name": "chunk-SAMCAUGS.js",
+            "gzipBytes": 2768
+          },
+          {
+            "name": "chunk-FDMHKPZB.js",
+            "gzipBytes": 802
+          }
+        ],
+        "chunkCount": 6,
+        "chunks": [
+          {
+            "name": "scenario-3-aura3d.js",
+            "gzipBytes": 99152,
+            "isEntry": true
+          },
+          {
+            "name": "WebGPUDevice-62RB374X.js",
+            "gzipBytes": 18639,
+            "isEntry": false
+          },
+          {
+            "name": "ShaderLibrary-X5MIBZCD.js",
+            "gzipBytes": 18132,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-TVXUOFEE.js",
+            "gzipBytes": 16043,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-SAMCAUGS.js",
+            "gzipBytes": 2768,
+            "isEntry": false
+          },
+          {
+            "name": "chunk-FDMHKPZB.js",
+            "gzipBytes": 802,
+            "isEntry": false
+          }
+        ],
+        "artifactPath": "tests/reports/bundle-scenarios/scenario-3-game-runtime-aura3d.js",
+        "bytesByPackage": {
+          "@aura3d/rendering": 186626,
+          ".pnpm": 95492,
+          "@aura3d/physics": 56867,
+          "@aura3d/engine": 19949,
+          "@aura3d/math": 11193,
+          "entry": 746,
+          "@aura3d/scene": 389
+        },
+        "largestContributors": [
+          {
+            "path": "packages/rendering/src/WebGL2Device.ts",
+            "bytes": 103212
+          },
+          {
+            "path": "node_modules/.pnpm/cannon-es@0.20.0/node_modules/cannon-es/dist/cannon-es.js",
+            "bytes": 95492
+          },
+          {
+            "path": "packages/rendering/src/ForwardPass.ts",
+            "bytes": 38426
+          },
+          {
+            "path": "packages/physics/src/PhysicsWorld.ts",
+            "bytes": 23196
+          },
+          {
+            "path": "packages/rendering/src/Geometry.ts",
+            "bytes": 9468
+          },
+          {
+            "path": "packages/engine/src/agent-api/PhysicsRuntime.ts",
+            "bytes": 8629
+          },
+          {
+            "path": "packages/physics/src/NarrowPhase.ts",
+            "bytes": 8488
+          },
+          {
+            "path": "packages/physics/src/RigidBody.ts",
+            "bytes": 6261
+          },
+          {
+            "path": "packages/rendering/src/WebGL2StateCache.ts",
+            "bytes": 6134
+          },
+          {
+            "path": "packages/engine/src/agent-api/GameRuntime.ts",
+            "bytes": 5699
+          },
+          {
+            "path": "packages/math/src/Matrix4.ts",
+            "bytes": 4948
+          },
+          {
+            "path": "packages/physics/src/Constraint.ts",
+            "bytes": 4740
+          }
+        ]
+      },
+      "threejs": {
+        "entry": "tools/bundle-scenarios/entries/scenario-3-threejs.ts",
+        "jsBytes": 554909,
+        "gzipBytes": 142809,
+        "entryChunkGzipBytes": 142809,
+        "allChunksGzipBytes": 142809,
+        "eagerChunks": [
+          {
+            "name": "scenario-3-threejs.js",
+            "gzipBytes": 142809
+          }
+        ],
+        "chunkCount": 1,
+        "chunks": [
+          {
+            "name": "scenario-3-threejs.js",
+            "gzipBytes": 142809,
+            "isEntry": true
+          }
+        ],
+        "artifactPath": "tests/reports/bundle-scenarios/scenario-3-game-runtime-threejs.js",
+        "bytesByPackage": {
+          ".pnpm": 553521,
+          "entry": 1219
+        },
+        "largestContributors": [
+          {
+            "path": "node_modules/.pnpm/three@0.165.0/node_modules/three/build/three.module.js",
+            "bytes": 470910
+          },
+          {
+            "path": "node_modules/.pnpm/cannon-es@0.20.0/node_modules/cannon-es/dist/cannon-es.js",
+            "bytes": 82611
+          },
+          {
+            "path": "tools/bundle-scenarios/entries/scenario-3-threejs.ts",
+            "bytes": 1219
+          }
+        ]
+      },
+      "sizeLimitVerification": {
+        "bytes": 99157,
+        "passed": true
+      }
+    }
+  ]
+}

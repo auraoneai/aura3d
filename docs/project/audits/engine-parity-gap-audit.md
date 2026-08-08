@@ -6,6 +6,8 @@
 > supersede any checkbox, status line, or completion claim here. A checked item in
 > this file does not override a failing or stale current artifact; where the two
 > disagree, the current generated report wins.
+> Three.js comparisons in this audit used the historical frozen
+> `three@0.165.0` baseline and cannot support a current-market verdict.
 
 
 Audit date: 2026-07-26 · Verified against commit `43ec8f59` (worktree at `e0f7e2e0` + prompt)

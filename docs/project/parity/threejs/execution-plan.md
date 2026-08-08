@@ -1,5 +1,9 @@
 # Three.js Parity Execution Plan
 
+> **Historical comparison scope:** this plan and its 54 declared examples use
+> the frozen `three@0.165.0` target. It cannot support a current r185 verdict and
+> is superseded for competitive completion by `1.6-FINAL-PRD-Finishes.md`.
+
 Status: active execution contract for broad Three.js parity, which remains genuinely open.
 
 > **Scope note (2026-07-29).** Broad Three.js parity is *not* in scope for

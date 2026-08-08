@@ -105,10 +105,11 @@ restores scoped browser evidence for nine selected routes.
   rotation.
 - **Compatibility fixtures retained.** Published 1.5.2 input action-binding
   fixture exports remain reachable through deprecated aliases.
-- **Scoped comparison closure.** The selected Three.js inventory is 54/54
-  matched with zero high-priority rows open. Seven named same-asset animation
-  comparisons pass, and the 100-reload lifecycle fixture reports zero tracked
-  leaks. These results do not imply universal Three.js replacement.
+- **Historical scoped comparison closure.** The selected `three@0.165.0`
+  inventory is 54/54 matched with zero high-priority rows open under that frozen
+  protocol. Seven named same-asset animation comparisons pass, and the
+  100-reload lifecycle fixture reports zero tracked leaks. These results do not
+  establish current parity with the locked `three@0.185.1` ecosystem.
 - **Restored evidence routes.** glTF variants, OBJ loading, anisotropy,
   depth/outline postprocess, trackball controls, draw ranges, picking, multiple
   camera views, and injected WebXR interaction semantics are built into the
@@ -217,10 +218,10 @@ Stated because a release note that omits this is not useful:
   | Product viewer (glTF, PBR, orbit, IBL) | 182,144 B | 145,978 B | **1.248x** | 1.25x |
   | Game runtime (input, physics, loop) | 118,765 B | 142,809 B | **0.832x** | 1.50x |
 
-  Budgets are derived from the measured Three.js equivalent, so they cannot be raised
-  without Three.js growing. Browser proof executes the core, real-GLB product, and input + shared
+  These historical budgets were derived from the measured `three@0.165.0`
+  equivalents. Browser proof executes the core, real-GLB product, and input + shared
   production-physics game paths through `tests/browser/lean-entry-runtime.spec.ts`.
-- **Where Aura3D does win, measured on the same three scenarios:** authored lines
+- **Where Aura3D won in the frozen `three@0.165.0` scenarios:** authored lines
   **9 / 14 / 19** against Three.js's **15 / 27 / 40**, and one install instead of two for
   a game runtime. Across seven product workflows the gap is wider — 15 vs 74 lines for a
   product configurator, 10 vs 68 for glTF asset review. TypeScript compile time is
@@ -244,7 +245,7 @@ Stated because a release note that omits this is not useful:
 - All **35 of 35** Tier 1/2 routes now pass the real-browser health gate with no failure
   allowlist. `material-showroom`, `postprocess-lab`, and `shadow-lab` were repaired against
   their retained 10-case renderer visual contract rather than replaced by weaker demos.
-- The current scoped Three.js comparisons cover **54 selected example-level rows**, all
+- The historical `three@0.165.0` comparisons cover **54 selected example-level rows**, all
   matched by the generated inventory with **0 high-priority rows open**. This is a
   bounded compatibility and migration result, not a claim that Aura3D universally
   replaces the Three.js ecosystem or that every feature is exposed through the root
@@ -253,7 +254,7 @@ Stated because a release note that omits this is not useful:
 
 ### Why Aura3D can beat Three.js in scoped workflows
 
-Aura3D's measured advantage is the integrated product workflow: the frozen bundle and
+Aura3D's historical measured advantage is the integrated product workflow: the frozen `three@0.165.0` bundle and
 developer-friction scenarios above use fewer authored lines, fewer direct dependencies,
 and narrower entry points while retaining browser-rendered evidence. Visual quality,
 animation, physics, lifecycle, and migration conclusions remain limited to the named
@@ -756,13 +757,14 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped 1.6 package, bundle, and comparison gates
-pass locally, but the aggregate route-library gate remains non-passing until the
-current human verdict is recorded. Blockfall Reactor, Turbo Drift Circuit, and
+Expected current state — The scoped 1.6 package gates and historical
+`three@0.165.0` comparison gates pass locally. The current `three@0.185.1`
+competitive program and material flagship rebuild remain incomplete; the
+aggregate route-library gate is also non-passing. Blockfall Reactor, Turbo Drift Circuit, and
 Skyline Runner remain `prototype-blocked`; their typed assets, mounted gameplay,
 and bounded route evidence are technical proof, not promotion. Aura Clash is
-tracked separately as a development showcase. Comparison wording remains limited
-to the selected frozen workloads and disclosed thresholds.
+tracked separately as a development showcase. Historical comparison wording must
+name `three@0.165.0`; no current broad parity or replacement claim is made.
 
 ## Contributing
 

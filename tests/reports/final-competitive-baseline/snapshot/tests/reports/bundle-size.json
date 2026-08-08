@@ -1,0 +1,285 @@
+{
+  "schema": "aura3d-real-bundle-size",
+  "generatedAt": "2026-08-08T16:01:10.764Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "core-agent-api",
+      "pass": true,
+      "detail": "@aura3d/engine/lean core primitive critical path: critical-path bundle 284961 bytes, gzip 69134 bytes, deferred 230317 bytes / 36771 gzip, size-limit 69139 bytes <= 80000"
+    },
+    {
+      "id": "compatibility-root-observation",
+      "pass": true,
+      "detail": "@aura3d/engine compatibility root (informational, not the new-app entry): critical-path bundle 889973 bytes, gzip 204783 bytes, deferred 1430430 bytes / 419353 gzip, size-limit 204788 bytes <= 80000 (informational)"
+    },
+    {
+      "id": "react-adapter",
+      "pass": true,
+      "detail": "@aura3d/react adapter excluding React and core: critical-path bundle 2097 bytes, gzip 957 bytes, deferred 0 bytes / 0 gzip, size-limit 961 bytes <= 15000"
+    },
+    {
+      "id": "devtools",
+      "pass": true,
+      "detail": "opt-in devtools exports: critical-path bundle 1297 bytes, gzip 705 bytes, deferred 0 bytes / 0 gzip, size-limit 709 bytes <= 20000"
+    },
+    {
+      "id": "presets-effects",
+      "pass": true,
+      "detail": "cinematic presets/effects helpers: critical-path bundle 49614 bytes, gzip 13514 bytes, deferred 0 bytes / 0 gzip, size-limit 13518 bytes <= 45000"
+    },
+    {
+      "id": "template-product-viewer",
+      "pass": true,
+      "detail": "product-viewer starter app before user assets: critical-path bundle 872820 bytes, gzip 199634 bytes, deferred 959627 bytes / 278546 gzip, size-limit 199639 bytes <= 250000"
+    },
+    {
+      "id": "template-cinematic-scene",
+      "pass": true,
+      "detail": "cinematic-scene starter app before user assets: critical-path bundle 872820 bytes, gzip 199634 bytes, deferred 959494 bytes / 278531 gzip, size-limit 199639 bytes <= 250000"
+    },
+    {
+      "id": "template-mini-game",
+      "pass": true,
+      "detail": "mini-game starter app before user assets: critical-path bundle 872820 bytes, gzip 199634 bytes, deferred 997237 bytes / 295069 gzip, size-limit 199639 bytes <= 250000"
+    },
+    {
+      "id": "real-size-limit-bundle-measurement",
+      "pass": true,
+      "detail": "all targets were bundled/minified with esbuild, gzipped, and checked by size-limit against the gzip artifact"
+    }
+  ],
+  "failures": [],
+  "measurement": "esbuild ESM splitting + statically reachable critical-path chunks + per-chunk gzip sum + size-limit",
+  "targets": [
+    {
+      "id": "core-agent-api",
+      "label": "@aura3d/engine/lean core primitive critical path",
+      "budget": 80000,
+      "jsBytes": 284961,
+      "gzipBytes": 69134,
+      "bundlePath": "tests/reports/bundle-size/core-agent-api.js",
+      "gzipPath": "tests/reports/bundle-size/core-agent-api.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/core-agent-api/chunk-FDMHKPZB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/core-agent-api/chunk-SAMCAUGS.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/core-agent-api/chunk-TVXUOFEE.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/core-agent-api/entry.js"
+      ],
+      "deferredFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/core-agent-api/chunk-3CADY5WW.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/core-agent-api/chunk-RB4WIIUR.js"
+      ],
+      "deferredJsBytes": 230317,
+      "deferredGzipBytes": 36771,
+      "sizeLimitBytes": 69139,
+      "sizeLimitPassed": true
+    },
+    {
+      "id": "compatibility-root-observation",
+      "label": "@aura3d/engine compatibility root (informational, not the new-app entry)",
+      "budget": 80000,
+      "jsBytes": 889973,
+      "gzipBytes": 204783,
+      "bundlePath": "tests/reports/bundle-size/compatibility-root-observation.js",
+      "gzipPath": "tests/reports/bundle-size/compatibility-root-observation.js.gz",
+      "enforced": false,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-3XAIX4CG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-ATA6HHWM.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-FDMHKPZB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-H2LVMNGX.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-OE64CEY5.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-ONJONOSB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-SQUGDOHH.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-WOT6VMZA.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-ZBCMK4JH.js"
+      ],
+      "deferredFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-2K2OCYOZ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-3L3RAJKP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-6JQSNJEF.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-74NX633X.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-7KBDW5KP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-DY2THYSI.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-EMT7ZL6K.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-SQSAW3SW.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/chunk-XBGKJP6T.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/compatibility-root-observation/entry.js"
+      ],
+      "deferredJsBytes": 1430430,
+      "deferredGzipBytes": 419353,
+      "sizeLimitBytes": 204788,
+      "sizeLimitPassed": false
+    },
+    {
+      "id": "react-adapter",
+      "label": "@aura3d/react adapter excluding React and core",
+      "budget": 15000,
+      "jsBytes": 2097,
+      "gzipBytes": 957,
+      "bundlePath": "tests/reports/bundle-size/react-adapter.js",
+      "gzipPath": "tests/reports/bundle-size/react-adapter.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/react-adapter/entry.js"
+      ],
+      "deferredFiles": [],
+      "deferredJsBytes": 0,
+      "deferredGzipBytes": 0,
+      "sizeLimitBytes": 961,
+      "sizeLimitPassed": true
+    },
+    {
+      "id": "devtools",
+      "label": "opt-in devtools exports",
+      "budget": 20000,
+      "jsBytes": 1297,
+      "gzipBytes": 705,
+      "bundlePath": "tests/reports/bundle-size/devtools.js",
+      "gzipPath": "tests/reports/bundle-size/devtools.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/devtools/entry.js"
+      ],
+      "deferredFiles": [],
+      "deferredJsBytes": 0,
+      "deferredGzipBytes": 0,
+      "sizeLimitBytes": 709,
+      "sizeLimitPassed": true
+    },
+    {
+      "id": "presets-effects",
+      "label": "cinematic presets/effects helpers",
+      "budget": 45000,
+      "jsBytes": 49614,
+      "gzipBytes": 13514,
+      "bundlePath": "tests/reports/bundle-size/presets-effects.js",
+      "gzipPath": "tests/reports/bundle-size/presets-effects.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/presets-effects/entry.js"
+      ],
+      "deferredFiles": [],
+      "deferredJsBytes": 0,
+      "deferredGzipBytes": 0,
+      "sizeLimitBytes": 13518,
+      "sizeLimitPassed": true
+    },
+    {
+      "id": "template-product-viewer",
+      "label": "product-viewer starter app before user assets",
+      "budget": 250000,
+      "jsBytes": 872820,
+      "gzipBytes": 199634,
+      "bundlePath": "tests/reports/bundle-size/template-product-viewer.js",
+      "gzipPath": "tests/reports/bundle-size/template-product-viewer.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-3XAIX4CG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-ATA6HHWM.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-FDMHKPZB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-JRKWSN2E.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-MWVMVVR5.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-NGYQQQOQ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-ONJONOSB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-S2J7DIDY.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-WOT6VMZA.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-ZBCMK4JH.js"
+      ],
+      "deferredFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-2K2OCYOZ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-3L3RAJKP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-4JOQLHBO.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-6JQSNJEF.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-7KBDW5KP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-EMT7ZL6K.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-PVHWVCPG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-SQSAW3SW.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/chunk-XBGKJP6T.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-product-viewer/entry.js"
+      ],
+      "deferredJsBytes": 959627,
+      "deferredGzipBytes": 278546,
+      "sizeLimitBytes": 199639,
+      "sizeLimitPassed": true
+    },
+    {
+      "id": "template-cinematic-scene",
+      "label": "cinematic-scene starter app before user assets",
+      "budget": 250000,
+      "jsBytes": 872820,
+      "gzipBytes": 199634,
+      "bundlePath": "tests/reports/bundle-size/template-cinematic-scene.js",
+      "gzipPath": "tests/reports/bundle-size/template-cinematic-scene.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-3XAIX4CG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-ATA6HHWM.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-FDMHKPZB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-JRKWSN2E.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-MWVMVVR5.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-NGYQQQOQ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-ONJONOSB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-S2J7DIDY.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-WOT6VMZA.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-ZBCMK4JH.js"
+      ],
+      "deferredFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-2K2OCYOZ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-3L3RAJKP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-4JOQLHBO.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-6JQSNJEF.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-7KBDW5KP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-EMT7ZL6K.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-PVHWVCPG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-SQSAW3SW.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/chunk-XBGKJP6T.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-cinematic-scene/entry.js"
+      ],
+      "deferredJsBytes": 959494,
+      "deferredGzipBytes": 278531,
+      "sizeLimitBytes": 199639,
+      "sizeLimitPassed": true
+    },
+    {
+      "id": "template-mini-game",
+      "label": "mini-game starter app before user assets",
+      "budget": 250000,
+      "jsBytes": 872820,
+      "gzipBytes": 199634,
+      "bundlePath": "tests/reports/bundle-size/template-mini-game.js",
+      "gzipPath": "tests/reports/bundle-size/template-mini-game.js.gz",
+      "enforced": true,
+      "criticalPathFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-3XAIX4CG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-ATA6HHWM.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-FDMHKPZB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-JRKWSN2E.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-MWVMVVR5.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-NGYQQQOQ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-ONJONOSB.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-S2J7DIDY.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-WOT6VMZA.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-ZBCMK4JH.js"
+      ],
+      "deferredFiles": [
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-2K2OCYOZ.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-3L3RAJKP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-4JOQLHBO.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-6JQSNJEF.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-7KBDW5KP.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-EMT7ZL6K.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-PVHWVCPG.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-SQSAW3SW.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/chunk-XBGKJP6T.js",
+        "/Users/gurbakshchahal/platforms/aura3d/tests/reports/bundle-size/chunks/template-mini-game/entry.js"
+      ],
+      "deferredJsBytes": 997237,
+      "deferredGzipBytes": 295069,
+      "sizeLimitBytes": 199639,
+      "sizeLimitPassed": true
+    }
+  ]
+}

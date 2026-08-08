@@ -1,5 +1,9 @@
 # Aura3D Product Remediation PRD
 
+> **Historical comparison scope:** Three.js comparisons recorded in this closed
+> plan use the frozen `three@0.165.0` baseline. The regenerated parity matrix is
+> a capability-lineage inventory, not a current r185 market verdict.
+
 **Baseline under remediation:** 1.5.0
 **Status:** closed out at 1.5.2 (2026-08-04). See section 17.
 **Remaining debt:** section 15 items are still open and carried forward.

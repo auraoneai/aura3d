@@ -10,8 +10,10 @@ verdict. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
 currently prototype-blocked while their visual rebuild and hash-bound
 independent review are pending. Their prior release receipts remain history,
 not approval of the current worktree.
-Comparison wording is limited to the named, passing workloads and reports; it
-must not be broadened into universal engine or ecosystem superiority.
+Comparison wording for the 1.6.0 entry is historical and limited to the named
+`three@0.165.0` workloads and reports. It must not be described as current or
+broadened into universal engine or ecosystem superiority. The current
+`three@0.185.1` program is tracked by `1.6-FINAL-PRD-Finishes.md`.
 
 ## 1.6.0 (2026-08-08)
 
@@ -28,7 +30,7 @@ Architecture, compatibility, and evidence release:
 - restores scoped WebGL2 evidence routes for glTF variants, OBJ, anisotropy,
   postprocessing, trackball controls, draw ranges, picking, and multiple camera
   views, with an explicitly injected-session-only WebXR example;
-- closes the selected 54-row Three.js example inventory with zero
+- closes the selected historical `three@0.165.0` 54-row example inventory with zero
   high-priority rows open, without claiming universal Three.js replacement;
 - hardens browser, visual, demo, package-export, architecture, source-cleanliness,
   requirements-trace, and comparison gates so missing or stale evidence fails

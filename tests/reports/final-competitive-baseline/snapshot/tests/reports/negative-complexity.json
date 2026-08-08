@@ -1,0 +1,88 @@
+{
+  "schema": "a3d-negative-complexity",
+  "generatedAt": "2026-08-08T16:00:44.404Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "package-source-lines-lower-than-baseline",
+      "pass": true,
+      "detail": "200924 vs baseline 200929 (delta -5) — release condition, reported per run. Definition: tracked packages/<pkg>/src/**/*.{ts,tsx}, excluding packages/create-aura3d/templates/*/src (scaffold code shipped for copying, 14,170 lines, counted separately)"
+    },
+    {
+      "id": "r12-duplicate-ownership-zero",
+      "pass": true,
+      "detail": "0 of 5 duplicate-ownership rows still have two live implementations: none"
+    }
+  ],
+  "failures": [],
+  "rule": "§B.3 — 1.6 must shrink. Every phase reports what disappeared; a phase that only adds code has not done this document's job.",
+  "enforcement": "Reported every run; enforced as a release condition at PRD §10. Not a per-commit gate, because a phase may legitimately add a tool before deleting a package.",
+  "acceptableTrade": "Adding a mature backend such as Rapier ADDS a dependency while removing far more code. That trade is acceptable under §B.3 and must be stated, not hidden — which is why dependency names are listed rather than only counted.",
+  "baseline": {
+    "commit": "be86c73e",
+    "packageSourceLines": 200929,
+    "packageSourceLinesDefinition": "tracked packages/<pkg>/src/**/*.{ts,tsx}, excluding packages/create-aura3d/templates/*/src (scaffold code shipped for copying, 14,170 lines, counted separately)",
+    "packageSourceLinesAsWrittenInPrd": 212810,
+    "packageSourceLinesCorrectionReason": "The PRD figure is not reproducible: the same tracked-file measurement at be86c73e gives 200,929 excluding scaffold templates or 215,099 including them. 212,810 matches neither, so the definition is restated rather than the number trusted.",
+    "templateScaffoldLines": 14170,
+    "packages": 27,
+    "rootExportSubpaths": 39,
+    "externalRuntimeDependencies": 3,
+    "engineBarrelExports": 361,
+    "duplicateOwnershipViolations": 5,
+    "routes": 149
+  },
+  "current": {
+    "commit": "d5df274a",
+    "packageSourceLines": 200924,
+    "packages": 26,
+    "rootExportSubpaths": 47,
+    "externalRuntimeDependencies": 3,
+    "engineBarrelExports": 360,
+    "duplicateOwnershipViolations": 0,
+    "routes": 148,
+    "templateScaffoldLines": 14170
+  },
+  "delta": {
+    "packageSourceLines": -5,
+    "packages": -1,
+    "rootExportSubpaths": 8,
+    "externalRuntimeDependencies": 0,
+    "engineBarrelExports": -1,
+    "duplicateOwnershipViolations": -5,
+    "routes": -1,
+    "templateScaffoldLines": 0
+  },
+  "externalRuntimeDependencyNames": [
+    "@loaders.gl/core",
+    "@loaders.gl/textures",
+    "cannon-es"
+  ],
+  "duplicateOwnershipRows": [
+    {
+      "capability": "physics solver",
+      "present": false,
+      "detail": "PhysicsBackend declares 1 selectable solvers; R12 allows one"
+    },
+    {
+      "capability": "input",
+      "present": false,
+      "detail": "A file wiring BOTH @aura3d/input and game.input() would mean the two services compete for one consumer. None does (verified across apps/, examples/, packages/), so they are disjoint layers rather than duplicate implementations — see tests/unit/input/input-service-ownership.test.ts. WS-3.1 removed the real duplicate: createGameInputController, 175 dead lines with its own keyboard listeners."
+    },
+    {
+      "capability": "audio",
+      "present": false,
+      "detail": "GameAudio must not build its own gain graph; it delegates bus routing to AudioBus from @aura3d/audio. packages/audio owns the graph, GameAudio owns cues + evidence, and their consumer sets are disjoint (see tests/unit/audio/audio-characterization.test.ts), so co-existence is layering rather than duplicate ownership. Reopens if a hand-rolled createGain() returns to GameAudio."
+    },
+    {
+      "capability": "vehicle motion",
+      "present": false,
+      "detail": "game.racing delegates arcade pose integration to GameRuntime.createGameArcadeVehicle; the unused unreleased force-motion prototype was removed under R8 rather than retained as a second vehicle owner (ADR 0003)"
+    },
+    {
+      "capability": "game runtime",
+      "present": false,
+      "detail": "Continuous kit motion delegates to GameRuntime; falling blocks owns discrete board rules, locomotion consumes motion state, and fighting composes shared services (ADR 0003)"
+    }
+  ]
+}

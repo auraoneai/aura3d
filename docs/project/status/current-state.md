@@ -1,7 +1,7 @@
 # Aura3D Current State
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 release-candidate baseline
+Status: Aura3D 1.6.0 release-candidate baseline; final competitive replatform incomplete
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -65,8 +65,11 @@ packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
 Current automated route evidence has been regenerated for the 1.6.0 candidate.
-Its four eligible non-game routes still require a recorded human visual verdict
-before the aggregate showcase gate can pass. Blockfall Reactor, Turbo Drift
+Its four eligible non-game routes are retained as the immutable visual "before"
+baseline and are **not visually approved**. Their current review verdict is
+`needs-work`; route health, fresh screenshots, and interactions do not prove a
+material visual rebuild. A recorded human verdict is still required after that
+rebuild before the aggregate showcase gate can pass. Blockfall Reactor, Turbo Drift
 Circuit, and Skyline Runner remain `prototype-blocked` and cannot be promoted.
 Aura Clash remains a development showcase without a flagship-quality claim.
 
@@ -80,11 +83,12 @@ Current retained result:
 - prototype-blocked routes: 3;
 - showcase index: handled as an index/catalog route.
 
-Current route-library release status: automated gates current, human verdict
-pending. The July 19 manual review does not approve the current candidate.
-Comparison language is permitted only for the selected frozen workloads in
-`docs/project/threejs-superiority-status.md`; it is not a universal performance
-or ecosystem claim.
+Current route-library release status: automated technical baseline retained,
+material rebuild incomplete, human approval absent. The July 19 manual review
+does not approve the current candidate. The former comparison suite is frozen
+against `three@0.165.0` and is historical only. The current target is
+`three@0.185.1`; no current broad parity, performance, head-to-head, replacement,
+or ecosystem claim is permitted until `1.6-FINAL-PRD-Finishes.md` passes.
 
 ## Showcase Reality
 

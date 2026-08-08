@@ -1,0 +1,328 @@
+{
+  "schema": "aura3d-showcase-visual-review/2.0",
+  "reviewer": {
+    "id": "pending-user-review",
+    "name": "Pending independent human review",
+    "kind": "pending"
+  },
+  "reviewedAt": "2026-08-08T16:37:16.282Z",
+  "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+  "overallVerdict": "needs-work",
+  "summary": "Hash-refreshed rejected baseline. These retained screenshots record the current machine-inspected state of each route for the active visual rebuild. No route has independent human approval, and this document cannot grant it.",
+  "routes": [
+    {
+      "id": "showcase-product-configurator",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-da4975e8593cc2a74177f7b013c4af75975efb54fe333c10af3bfc5546a8adaf",
+      "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-d4974f55b2b692ef01b956b5f511e262d3bb38a355c128a994f1ced34661f4b2",
+          "perceptualSignature": "perceptual-8x8-5bit-20588cd18349ca59349ae6ca2f5a6bd9b7dc3cd2b17ce975b680d6932c381c30"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-acfab109936c8f8526154c20c9f2df296a184ef605db41769621e905a2c98ee0",
+          "perceptualSignature": "perceptual-8x8-5bit-fa266bbc45768e7f4cacf2b2cb9ee4d123dd07a2700c5a03b1f6efc69e63eff7"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-interaction-audit/showcase-product-configurator-final.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-3da55132fe65e8eb74251d336fb3c96346c99635be893f35e22ea4cec6f9c51e",
+          "perceptualSignature": "perceptual-8x8-5bit-d3a5e7d2773543f778b150a0c418b7307a7c37c37a6c929c323e2c08334b81de"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    },
+    {
+      "id": "showcase-smart-city-control",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-2ff1662f7e1a3b1451113073b2cb96981935efe14997f118ec2f2855b807d5c9",
+      "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-a75df7db870091deda0cfd6c9e55e3ea252f0622d622cd12c12f51f67e338d60",
+          "perceptualSignature": "perceptual-8x8-5bit-9386ee816fa5a6fdfdce2f77d86b4a8e9701bb6c2f3a5b2aee8928bfc4aff6e2"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-592c2e5be07111b9d0ae19c5d94a745a0bd897931ee1d4a9e6973e807315f640",
+          "perceptualSignature": "perceptual-8x8-5bit-a44ba0e7413064b2d86c300de9f174fc3c34a4b6b596a81896d1fed7069dbf98"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-final.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-e97009196fb148223b0b7cfee0af1706dfab857f52453ef5965dc5236b69864a",
+          "perceptualSignature": "perceptual-8x8-5bit-3aabc13d2d0c3b5a7a8c88ed52b6eb74142989820ab4f756d2ea435cc4cee243"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    },
+    {
+      "id": "showcase-cinematic-architecture",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-4acb2355097d4105be4a4865232e57dad88443989f5dbf91df904fd91f1f85af",
+      "routeHealthHash": "sha256-8f3852397e93e3bc0f62986b14ce2174bd1d3a91076268b2ee5afca0a317093a",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-f0be0e3682358fd03d176e5e802bb7560b73e4ee57ee7ff965661d7502864209",
+          "perceptualSignature": "perceptual-8x8-5bit-ef3c774ff649772205a1876969b5f1dbde38c230bf026242f7e08f712672e382"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-f2cf913a6fb1ac060ebbf6db1495aa487ee0b04d77e81d38b2b91221642e895f",
+          "perceptualSignature": "perceptual-8x8-5bit-3fad279120eaa86b44ec0d4e39f74689cc13a2033a035cd7cee466a449498176"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-final.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-b9f450a4c08f870b7e3c4f59a2f55aabad6d70e2d2e902d6188427174c927c80",
+          "perceptualSignature": "perceptual-8x8-5bit-ef3c774ff649772205a1876969b5f1dbde38c230bf026242f7e08f712672e382"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    },
+    {
+      "id": "showcase-digital-twin-ops",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-11a9ef69a33cd8eeb5bd608855916f92857967b3a43776e2b20d5cf9b3a09fe7",
+      "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-a4e32e17eb4e7a7230d0fed768342fa7846d63bcf7d4e4d63ae0c21a92456466",
+          "perceptualSignature": "perceptual-8x8-5bit-a789826e9a1e08785538b34225c0bbf46d4cec730892dbc81087033c76358ef9"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-2bc6b754cb216e8a147ade1a78b671d4da6c76f7ee71d8aa1449ec9125cf4aad",
+          "perceptualSignature": "perceptual-8x8-5bit-d820e31fef0ae6926b1f6b72c9ad54114116f92825543b70d2e99a231adefbbe"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-final.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-f0bf0fffe74accef2d4511cd9443e851947ef6a9f36783438d5cd1798a12e422",
+          "perceptualSignature": "perceptual-8x8-5bit-cd62a22fd071ba6838ed1dda3b316c4481dbfe3392cf3c4afa21f22aea7bffe1"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-8801a40a17033cd3ddae00d98f151b19df088200b2789c8ab8e3cbfe8cb63eda",
+      "routeHealthHash": "sha256-e9a7de51c4406f4e7e7961b4f60a5615e4648901b10eabd5df8acb66c82051ca",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-a95728c5687135802d311f8a57497d7690b74e8129b26d4f2703605f8a41e014",
+          "perceptualSignature": "perceptual-8x8-5bit-21cbbd4363d6bf766670d87ed5e687bc0a8f49cafb993ff4ab659bb43c4669fb"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-0788c5c7f0426af54c63cedfba5b8312eaa2c0c9394e5246f855c24283f49d5d",
+          "perceptualSignature": "perceptual-8x8-5bit-054368830e8390856b7918e84071bd6f7249efda543381ad6f06b288d1e3d82d"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-4c6ce9fd594128092a4d51565acd8cb7a1de157428c719e3799943aeae932b39",
+          "perceptualSignature": "perceptual-8x8-5bit-32059861b3834a7f7250a3dc6f96b24b0cd6ec3e3b9484910dbeb9e24322afe5"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "visual:cabinet-and-board-do-not-read-as-one-arcade-subject",
+        "visual:fresh-first-load-progression-game-over-and-reset-captures-required",
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-bb31d94e53682f7dceef1472ecb37afd6bfb88ba9380273e7e45232cd1003125",
+      "routeHealthHash": "sha256-dbe6dbde2fd714689213a505522f7f0695d15b57e4e41e2e2e013c8cb39c260a",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-281eed42588b7b022fba079736943003b0b909914c55dcfe46d6fc8bbde52a14",
+          "perceptualSignature": "perceptual-8x8-5bit-598795cdbe3f2c5f329234f50dc79644d5c5716fc495d3a5317dcab7b16901c8"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-1580a5a1ff83e18b2e95663d79b735cad73cd27ec060df24f303560b4de052ad",
+          "perceptualSignature": "perceptual-8x8-5bit-2baa5616c94f1d816a3bb42d6fec35ee03906daa3708c090db2c1dabfe2049a4"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-61827bf9f7c9b3d36f7a7ff31768aa25f5cbdc462187e610650adc29b295ad7d",
+          "perceptualSignature": "perceptual-8x8-5bit-00eef3f17b4dc52d083f4727b03121ab6ab325a7e02cf1c4a9810de7c865190a"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "visual:hero-and-immediate-traversal-path-need-stronger-framing",
+        "visual:world-depth-and-gameplay-state-feedback-need-reconstruction",
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
+      "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
+      "sourceHash": "sha256-676ba9404bb78cb9ca590b054554d1af134138daff33fcae1a08ca28c378ac88",
+      "routeHealthHash": "sha256-c3463e67c9736a80645c4f51f71b74c6d7ac02e375b545c0454f6d7ca1488356",
+      "screenshots": [
+        {
+          "kind": "desktop",
+          "path": "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-e77b7760f11bef64b7afc3646153f6b499c1265ed58abcf24becbade563d0595",
+          "perceptualSignature": "perceptual-8x8-5bit-36629d36c7bdde90f859bffd0928613e5bb7d698270ee71c2bf952ec5e5ded88"
+        },
+        {
+          "kind": "mobile",
+          "path": "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 740
+          },
+          "sha256": "sha256-ae0bcc2d9b64b562c1619e01011fd7d04ed23ad4ae2d1d6f1f612800bacaa207",
+          "perceptualSignature": "perceptual-8x8-5bit-d4037109e6044ab32091fbcfce15633099668d8fa2f8fc9daa0deea514cd6dbf"
+        },
+        {
+          "kind": "gameplay",
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "sha256-2e8fe4fd57605bab790116f6efc8f990d30f309bb34785ab04d52129762cd283",
+          "perceptualSignature": "perceptual-8x8-5bit-b25c14ddf26f14d62ab4a1a9c107f184845ddf8c9332e450ba73939cd88bddba"
+        }
+      ],
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "visual:proof-camera-does-not-read-as-a-finished-racing-view",
+        "visual:player-and-independent-ai-opponent-need-clear-visual-separation",
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
+    }
+  ]
+}

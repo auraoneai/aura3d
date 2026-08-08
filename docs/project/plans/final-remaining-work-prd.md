@@ -1,5 +1,9 @@
 # Aura3D Final Remaining-Work PRD
 
+> **Historical comparison scope:** Three.js comparisons recorded in this plan
+> use the frozen `three@0.165.0` baseline. This plan is superseded for current
+> competitive completion by `1.6-FINAL-PRD-Finishes.md`.
+
 **Status:** Fresh-agent handoff — implementation incomplete; all four visual
 routes currently fail the quality bar  
 **Created:** 2026-07-28  

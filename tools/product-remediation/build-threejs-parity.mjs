@@ -374,7 +374,9 @@ const report = {
   schema: "aura3d-threejs-ecosystem-parity/1.0",
   generatedAt: new Date().toISOString(),
   producer: "tools/product-remediation/build-threejs-parity.mjs",
-  baseline: "1.5.0 under remediation",
+  baseline: "three@0.165.0 historical capability inventory",
+  currentCompetitiveBaseline: "benchmark/context/threejs-r185.1-20260808.json",
+  claimBoundary: "This inventory is historical lineage evidence. It is not a current r185 rendering, performance, workflow, or ecosystem-parity verdict.",
   method: [
     "Each row's implementation must resolve to a real exported symbol or agent-API source.",
     "Parity requires at least one app or example that actually imports the capability.",
@@ -392,9 +394,119 @@ const report = {
 
 const outPath = join(root, "tests/reports/aura3d-threejs-ecosystem-parity.json");
 writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
+const markdownPath = join(root, "docs/project/plans/aura3d-threejs-ecosystem-parity.md");
+writeFileSync(markdownPath, renderMarkdown(report));
 console.log("wrote tests/reports/aura3d-threejs-ecosystem-parity.json");
+console.log("wrote docs/project/plans/aura3d-threejs-ecosystem-parity.md");
 console.log(JSON.stringify(report.totals, null, 2));
 for (const [category, bucket] of Object.entries(byCategory)) {
   console.log(`${category}: exceed ${bucket.exceed}, parity ${bucket.parity}, unproven ${bucket.unproven}, gap ${bucket.gap} (of ${bucket.total})`);
 }
 void statSync;
+
+function renderMarkdown(value) {
+  const statusOrder = ["exceed", "parity", "parity-unproven", "gap"];
+  const categoryLabels = {
+    "core-rendering": "core rendering",
+    "ecosystem-helpers": "ecosystem helpers",
+    physics: "physics",
+    "game-systems": "game systems",
+    "application-workflows": "application workflows",
+    "developer-tooling": "developer tooling"
+  };
+  const escapeCell = (input) => String(input ?? "")
+    .replaceAll("|", "\\|")
+    .replaceAll("\n", " ")
+    .trim();
+  const listPaths = (paths) => paths.length > 0 ? paths.map((path) => `\`${path}\``).join(", ") : "none retained";
+  const lines = [
+    "# Aura3D vs the practical Three.js ecosystem",
+    "",
+    "**Generated report:** `tests/reports/aura3d-threejs-ecosystem-parity.json`",
+    "**Regenerate JSON and Markdown:** `node tools/product-remediation/build-threejs-parity.mjs`",
+    `**Frozen baseline:** ${value.baseline}`,
+    "**Current comparison lock:** `benchmark/context/threejs-r185.1-20260808.json`",
+    "",
+    "> This is historical capability-lineage evidence. It does not establish current",
+    "> Three.js r185 renderer quality, performance, workflow, or ecosystem parity.",
+    "",
+    "## Method, and why it is adversarial",
+    "",
+    "The comparison inventory covers the practical stack developers assemble around",
+    "Three.js, but its expected-solution column was authored against `three@0.165.0`.",
+    "The final competitive program must use the separate current-baseline lock and",
+    "like-for-like workload evidence before making a current claim.",
+    "",
+    "Every row is derived under these rules:",
+    ""
+  ];
+  value.method.forEach((rule, index) => lines.push(`${index + 1}. ${rule}`));
+  lines.push(
+    "",
+    "This method proves implementation lineage and retained evidence. It does not, by",
+    "itself, prove equivalent pixels, runtime performance, ecosystem breadth, maintenance",
+    "risk, or installed-consumer ergonomics.",
+    "",
+    "## Headline result",
+    "",
+    "| Status | Rows |",
+    "| --- | ---: |"
+  );
+  for (const status of statusOrder) lines.push(`| ${status} | ${value.totals[status] ?? 0} |`);
+  lines.push(`| **total** | **${value.totals.rows}** |`, "", "### By category", "", "| Category | exceed | parity | unproven | gap | total |", "| --- | ---: | ---: | ---: | ---: | ---: |");
+  for (const [category, bucket] of Object.entries(value.byCategory)) {
+    lines.push(`| ${categoryLabels[category] ?? category} | ${bucket.exceed} | ${bucket.parity} | ${bucket.unproven} | ${bucket.gap} | ${bucket.total} |`);
+  }
+  const exceeds = value.rows.filter((row) => row.parityStatus === "exceed");
+  lines.push(
+    "",
+    "## Where Aura3D genuinely exceeds in this historical inventory",
+    "",
+    `${exceeds.length} rows survive the implementation, consumer, evidence, and lineage rules.`,
+    "These are bounded workflow or integration results, not a universal renderer verdict.",
+    "",
+    "| Capability | Why it exceeds | Evidence |",
+    "| --- | --- | --- |"
+  );
+  for (const row of exceeds) {
+    lines.push(`| ${escapeCell(row.capability)} | ${escapeCell(row.limitations || "Integrated public workflow with a retained production consumer.")} | ${escapeCell(listPaths(row.runtimeEvidence))} |`);
+  }
+  const incomplete = value.rows.filter((row) => row.parityStatus === "gap" || row.parityStatus === "parity-unproven");
+  lines.push("", "## Remaining gaps and unproven rows", "", "| Capability | Status | Why it is not proven |", "| --- | --- | --- |");
+  for (const row of incomplete) {
+    const reasons = [...row.downgradeReasons, row.limitations].filter(Boolean).join(" ");
+    lines.push(`| ${escapeCell(row.capability)} | ${row.parityStatus} | ${escapeCell(reasons || "No current workload evidence establishes this row.")} |`);
+  }
+  lines.push(
+    "",
+    "## Categories where the current Three.js ecosystem remains ahead",
+    "",
+    "- **Ecosystem breadth:** official examples, addons, loaders, community libraries,",
+    "  integrations, learning material, hiring familiarity, and production history.",
+    "- **Rendering feature depth:** current WebGPURenderer, TSL/node materials, node-based",
+    "  postprocessing, and maintained WebGL2 remain moving targets outside this historical",
+    "  inventory.",
+    "- **Escape hatches:** raw Three.js and React Three Fiber expose lower-level composition",
+    "  directly; Aura3D must prove its public extension path from installed packages.",
+    "- **Adoption risk:** this inventory does not erase Three.js's larger maintainer, user,",
+    "  example, and third-party integration base.",
+    "",
+    "## Full row detail"
+  );
+  for (const [category] of Object.entries(value.byCategory)) {
+    lines.push("", `### ${categoryLabels[category] ?? category}`, "", "| Capability | Three.js ecosystem | Aura3D | Integrated | Consumers | Status | Production-path test | Notes |", "| --- | --- | --- | --- | ---: | --- | --- | --- |");
+    for (const row of value.rows.filter((candidate) => candidate.category === category)) {
+      lines.push(`| ${escapeCell(row.capability)} | ${escapeCell(row.threejsEcosystemSolution)} | ${escapeCell(row.aura3dImplementation.map((symbol) => `\`${symbol}\``).join(", "))} | ${row.integrated ? "yes" : "no"} | ${row.productionConsumers.length} | ${row.parityStatus === "exceed" ? "**exceed**" : row.parityStatus} | ${escapeCell(row.productionPathTest ? `\`${row.productionPathTest}\`` : "none")} | ${escapeCell(row.limitations)} |`);
+    }
+  }
+  lines.push(
+    "",
+    "## Claim boundary",
+    "",
+    "This generated inventory may support a statement about a specifically named row and",
+    "its retained historical evidence. It may not support `current`, `head-to-head`, broad",
+    "`parity`, `replacement`, or performance wording. Those claims require the r185 current",
+    "comparison program defined in `1.6-FINAL-PRD-Finishes.md`."
+  );
+  return `${lines.join("\n")}\n`;
+}

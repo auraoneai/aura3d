@@ -11,6 +11,11 @@ Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained
 or command evidence; unchecked items are real release blockers.
 
+The final competitive program in `1.6-FINAL-PRD-Finishes.md` supersedes earlier
+technical passes as a release-completion standard. Historical comparison gates
+against `three@0.165.0` remain recorded but cannot close the current
+`three@0.185.1` or material-showcase gates below.
+
 ## Track Selection
 
 - [x] The release track is selected in `docs/project/release-tracks.md`.
@@ -64,6 +69,8 @@ or command evidence; unchecked items are real release blockers.
 
 ## Showcase Gates
 
+- [ ] The four retained candidate routes have been materially rebuilt from the
+  immutable before captures and independently approved by a named human reviewer.
 - [ ] `node tools/showcase-library/build-and-check.mjs` exits 0 for public
   release status. Static, route-primary, build, deploy, interaction, and
   structural checks pass; four human candidate verdicts are still pending.
@@ -109,6 +116,8 @@ or command evidence; unchecked items are real release blockers.
 
 ## Rendering, Animation, And WebGPU Gates
 
+- [ ] Current same-workload comparisons against locked `three@0.185.1` and the
+  realistic companion stacks pass for every advertised flagship capability.
 - [x] Material, lighting, shadow, and postprocess claims cite exact route pixels.
 - [x] Animation claims use screenshot/video deltas in the animated subject
   region, not only counters or camera movement.
@@ -135,6 +144,8 @@ or command evidence; unchecked items are real release blockers.
 
 ## Go-Live Gates
 
+- [ ] Every applicable checkbox in `1.6-FINAL-PRD-Finishes.md` is complete and
+  its exact-commit evidence ledger is current.
 - [ ] Hosted 1.6 route claims have public HTTPS deployment checks. Complete only
   after the verified production deployment reaches `https://aura3d.auraone.ai`.
 - [ ] `docs/project/release-artifacts.json` references the final package

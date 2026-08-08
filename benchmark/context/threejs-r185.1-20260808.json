@@ -1,0 +1,208 @@
+{
+  "schema": "aura3d.current-threejs-context/1.0",
+  "status": "immutable-phase-0-input",
+  "frozenAt": "2026-08-08T20:10:26.424Z",
+  "frozenBy": "1.6-FINAL-PRD-Finishes.md WS-0.2",
+  "claimBoundary": "This file fixes inputs for the current comparison program. It is not a parity result and does not make the historical three@0.165.0 reports current.",
+  "three": {
+    "package": "three",
+    "version": "0.185.1",
+    "npmIntegrity": "sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==",
+    "npmTarball": "https://registry.npmjs.org/three/-/three-0.185.1.tgz",
+    "publishedAt": "2026-07-01T14:04:30.373Z",
+    "tag": "r185",
+    "tagObjectCommit": "cb3b077ee63818a8cc1ab273f08704d89b8ac492",
+    "releaseCommit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "npmGitHead": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "releaseNotes": "https://github.com/mrdoob/three.js/releases/tag/r185",
+    "migrationGuide": "https://github.com/mrdoob/three.js/wiki/Migration-Guide#184--185"
+  },
+  "officialSurfaceSources": [
+    "https://threejs.org/manual/en/webgpurenderer",
+    "https://threejs.org/docs/pages/WebGLRenderer.html",
+    "https://threejs.org/docs/pages/WebGPURenderer.html",
+    "https://threejs.org/docs/pages/TSL.html",
+    "https://threejs.org/docs/pages/EffectComposer.html",
+    "https://threejs.org/docs/pages/GLTFLoader.html",
+    "https://threejs.org/docs/pages/AnimationMixer.html",
+    "https://threejs.org/docs/pages/InstancedMesh.html",
+    "https://threejs.org/docs/pages/LOD.html",
+    "https://threejs.org/docs/pages/WebXRManager.html",
+    "https://threejs.org/examples/"
+  ],
+  "companionPackages": {
+    "react": {
+      "version": "19.2.8",
+      "npmIntegrity": "sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw=="
+    },
+    "react-dom": {
+      "version": "19.2.8",
+      "npmIntegrity": "sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ=="
+    },
+    "@react-three/fiber": {
+      "version": "9.7.0",
+      "npmIntegrity": "sha512-EWm9FwcaOZQu/ExFW5rggoCMM1NJet5YbxVxKaOE+KSncrjU0Wx7017qSyGFvupviK89nMYGCWU3BIK4dI1clw=="
+    },
+    "@react-three/drei": {
+      "version": "10.7.8",
+      "npmIntegrity": "sha512-rJXyuzLm2Xq0kafHuR47ajDGbOe/pEhzIr4m8E8zwzQs0iNjloFDqBwRhrXmP/w+onLeYyN3EYPFW/cwWK/4yA=="
+    },
+    "postprocessing": {
+      "version": "6.39.4",
+      "npmIntegrity": "sha512-oAS/PjAbc/xT3OzjUrGsorJ4J064XwhVD2t0OwKLP/E8QwDMUJ0oOv6ZI1SYMtLchv4g0ySEx+JcLy92+48vlA=="
+    },
+    "troika-three-text": {
+      "version": "0.52.5",
+      "npmIntegrity": "sha512-Ry3jRhic9pzcY4JduSvRRyDmVOSqEW19gT4vtK+aCiPNVcDlmkxvGG0YbFd36RTDq1wExOupXnvNF/j1oiHHDA=="
+    },
+    "@dimforge/rapier3d-compat": {
+      "version": "0.19.3",
+      "npmIntegrity": "sha512-mMVdSj1PRTT108s9Swbu2GQOmHbn8kbJANRV5xfczL3s0T4vkgZAuoMRgvBzQcHanpKusbC0ZJj6z3mC3aj3vg=="
+    },
+    "recast-navigation": {
+      "version": "0.43.1",
+      "npmIntegrity": "sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A=="
+    },
+    "howler": {
+      "version": "2.2.4",
+      "npmIntegrity": "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w=="
+    },
+    "@gltf-transform/core": {
+      "version": "4.4.2",
+      "npmIntegrity": "sha512-qsWKwNSwK+2s834Mt4xbYcyHqCrgNFP7hIv5s487JxebngRfDgelpghNF+kSswGb2/NuapasfK3UViFoSJJoMg=="
+    },
+    "meshoptimizer": {
+      "version": "1.2.0",
+      "npmIntegrity": "sha512-davRZeIJbxJrE24cwQle7ZDsxjdk/OphNOV83oX+efQinyoHY9Jcyz3MHbaoG0qySZajldGztNZ1RN/T19PZsg=="
+    },
+    "draco3d": {
+      "version": "1.5.7",
+      "npmIntegrity": "sha512-m6WCKt/erDXcw+70IJXnG7M3awwQPAsZvJGX5zY7beBqpELw6RDGkYVU0W43AFxye4pDZ5i2Lbyc/NNGqwjUVQ=="
+    },
+    "stats.js": {
+      "version": "0.17.0",
+      "npmIntegrity": "sha512-hNKz8phvYLPEcRkeG1rsGmV5ChMjKDAWU7/OJJdDErPBNChQXxCo3WZurGpnWc6gZhAzEPFad1aVgyOANH1sMw=="
+    }
+  },
+  "decisionCandidatesNotInTheBaselineStack": {
+    "cannon-es": {
+      "version": "0.20.0",
+      "npmIntegrity": "sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA=="
+    },
+    "yuka": {
+      "version": "0.7.8",
+      "npmIntegrity": "sha512-G/pFcMZh2Azz7Yy500NSV1jQ0Ru7h9hTNyEW+HjRXcdzjJIyp/3mCGspnx7VJVP06zxORqK6mkl5TywLqVUnVg==",
+      "npmModifiedAt": "2022-09-17T08:45:45.072Z",
+      "reason": "A current maintenance and security bake-off is required before selection."
+    }
+  },
+  "environment": {
+    "os": "macOS 26.3 build 25D5101c",
+    "architecture": "arm64",
+    "cpu": "Apple M4 Max",
+    "gpu": "Apple M4 Max 40-core GPU",
+    "gpuBackend": "ANGLE Metal",
+    "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+    "browser": "Chromium 151.0.7922.77",
+    "playwright": "1.59.1",
+    "node": "22.22.0",
+    "pnpm": "11.1.3",
+    "headless": true,
+    "softwareRasterizer": false
+  },
+  "commonRenderContract": {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "devicePixelRatio": 1,
+    "camera": {
+      "projection": "perspective",
+      "position": [8, 6, 12],
+      "target": [0, 1, 0],
+      "fovYDegrees": 45,
+      "near": 0.1,
+      "far": 500
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "position": [8, 14, 10],
+        "color": "#fff4e6",
+        "intensity": 2.6
+      },
+      "ambientIntensity": 0.35,
+      "environment": "neutral-studio-1k-or-procedural-equivalent"
+    },
+    "color": {
+      "workingSpace": "linear-srgb",
+      "outputSpace": "srgb",
+      "toneMapping": "ACES filmic",
+      "exposure": 1
+    },
+    "sampling": {
+      "warmupFrames": 120,
+      "measuredFrames": 600,
+      "sessions": 5,
+      "coldSessions": 3,
+      "cacheStates": ["cold", "warm"]
+    },
+    "nonInferiority": {
+      "cpuMedianRatioMaximum": 1.15,
+      "wallMedianRatioMaximum": 1.1,
+      "firstValidFrameRatioMaximum": 1.2,
+      "crashOrConsoleErrorMaximum": 0,
+      "resourceGrowthAfter20ReloadsMaximumPercent": 5,
+      "visualCorrectnessFailuresMaximum": 0
+    }
+  },
+  "assets": {
+    "product": {
+      "id": "showcaseHeadphones",
+      "path": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+      "sha256": "40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833"
+    },
+    "architecture": {
+      "id": "showcaseSkylineCity",
+      "path": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
+      "sha256": "2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338"
+    },
+    "digitalTwin": {
+      "id": "showcaseRoboticWeldingWorkcell",
+      "path": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
+      "sha256": "cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387"
+    },
+    "vehicle": {
+      "id": "showcaseCityVehicle",
+      "path": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
+      "sha256": "15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e"
+    },
+    "skinnedCharacter": {
+      "id": "showcaseAnimatedRunnerHero",
+      "path": "public/aura-assets/showcaseAnimatedRunnerHero.9ff4ea51.glb",
+      "sha256": "9ff4ea5196df2f58c9f63ff6d8608f084808a84b2ad992237a8a530b8b18899f"
+    },
+    "morphExpression": {
+      "id": "showcaseMorphExpression",
+      "path": "fixtures/external-parity-assets/morph/external-parity-morph-expression/external-parity-morph-expression.gltf",
+      "sha256": "7617880e389ad59912ac1efaced7d127e50372aaeb3b1ab8dceefe4bdca39474"
+    }
+  },
+  "workloads": [
+    { "id": "primitive-scene", "stack": ["three"], "assets": [], "camera": "common", "lighting": "common", "toneMapping": "common" },
+    { "id": "gltf-product-viewer", "stack": ["three", "GLTFLoader", "DRACOLoader", "KTX2Loader", "MeshoptDecoder", "OrbitControls"], "assets": ["product"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "cinematic-architecture", "stack": ["react", "react-dom", "@react-three/fiber", "@react-three/drei", "three"], "assets": ["architecture"], "camera": "common-plus-deterministic-path", "lighting": "common", "toneMapping": "common" },
+    { "id": "digital-twin-data", "stack": ["react", "react-dom", "@react-three/fiber", "@react-three/drei", "three"], "assets": ["digitalTwin"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "instancing-lod", "stack": ["three", "InstancedMesh", "LOD", "stats.js"], "assets": ["product"], "camera": "common", "lighting": "common", "toneMapping": "common" },
+    { "id": "skinning-morph", "stack": ["three", "GLTFLoader", "AnimationMixer"], "assets": ["skinnedCharacter", "morphExpression"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "custom-material", "stack": ["three/webgpu", "three/tsl"], "assets": ["product"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "postprocess", "stack": ["three", "postprocessing"], "assets": ["product"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "physical-character", "stack": ["three", "@dimforge/rapier3d-compat"], "assets": ["skinnedCharacter"], "camera": "common", "lighting": "common", "toneMapping": "common" },
+    { "id": "physical-vehicle", "stack": ["three", "@dimforge/rapier3d-compat"], "assets": ["vehicle"], "camera": "common-chase", "lighting": "common", "toneMapping": "common", "conditional": "Run only if Aura3D ships or claims physical vehicle parity." },
+    { "id": "navigation-crowd", "stack": ["three", "recast-navigation"], "assets": ["architecture", "skinnedCharacter"], "camera": "common", "lighting": "common", "toneMapping": "common", "conditional": "Run only if Aura3D ships navigation." },
+    { "id": "webgpu-tsl", "stack": ["three/webgpu", "three/tsl"], "assets": ["product"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "xr-interaction", "stack": ["three", "WebXRManager", "XRButton"], "assets": ["product"], "camera": "xr-session", "lighting": "common", "toneMapping": "common" },
+    { "id": "resource-lifecycle", "stack": ["three", "GLTFLoader", "OrbitControls", "EffectComposer"], "assets": ["product"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" },
+    { "id": "scaffold-to-deploy", "stack": ["react", "react-dom", "@react-three/fiber", "@react-three/drei", "three"], "assets": ["product"], "camera": "common-fit-bounds", "lighting": "common", "toneMapping": "common" }
+  ]
+}

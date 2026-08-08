@@ -1,5 +1,7 @@
 # Three.js Parity Inventory
 
+Historical scope: generated from the frozen `three@0.165.0` comparison inventory. This is not a current r185 market verdict.
+
 Generated inventory for the first Three.js parity code backlog.
 
 | Three.js example | Category | Priority | A3D status | A3D route | Construction tracks |

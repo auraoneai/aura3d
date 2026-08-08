@@ -1,0 +1,491 @@
+{
+  "schema": "aura3d-showcase-interaction-audit/1.0",
+  "routeId": "showcase-digital-twin-ops",
+  "label": "Digital Twin Operations Center",
+  "releaseClass": "release-ready candidate",
+  "generatedAt": "2026-08-08T16:22:52.707Z",
+  "producer": "tests/browser/showcase-route-interaction-audit.spec.ts",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "driftingEvidenceKeys": [
+    "diagnostics.drawCalls",
+    "diagnostics.fps",
+    "energyMw",
+    "frameCount",
+    "motionProof.conveyorSegmentX",
+    "motionProof.movingWorkpieces.length",
+    "motionProof.movingWorkpieces[0].id",
+    "motionProof.movingWorkpieces[0].x",
+    "motionProof.movingWorkpieces[0].z",
+    "motionProof.movingWorkpieces[1].id",
+    "motionProof.movingWorkpieces[1].x",
+    "motionProof.movingWorkpieces[1].z",
+    "motionProof.movingWorkpieces[2].id",
+    "motionProof.movingWorkpieces[2].x",
+    "motionProof.movingWorkpieces[2].z",
+    "motionProof.robotArmRadians",
+    "motionProof.sensorSweepRadians",
+    "motionProof.typedRobotYaw",
+    "status",
+    "throughput",
+    "uptime"
+  ],
+  "controlsDiscovered": 10,
+  "controlsOperated": 10,
+  "controlsWithEffect": 10,
+  "controlsPassing": 10,
+  "controlResults": [
+    {
+      "selector": "button[data-mode=\"normal\"]",
+      "label": "Normal",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog.length",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "mode",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.mode"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-mode=\"maintenance\"]",
+      "label": "Service",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog.length",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "mode",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.mode"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-mode=\"incident\"]",
+      "label": "Incident",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog.length",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "mode",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.mode"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-zone=\"assembly\"]",
+      "label": "Assembly",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog.length",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "selectedZone",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.selectedEquipmentId"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-zone=\"packaging\"]",
+      "label": "Packaging",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "selectedZone",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.selectedEquipmentId"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-zone=\"energy\"]",
+      "label": "Energy",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "selectedZone",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.selectedEquipmentId"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-zone=\"dock\"]",
+      "label": "Dock",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "selectedZone",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.selectedEquipmentId"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "#inject-alert",
+      "label": "Inject Alert",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "alerts",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "zones[3].incidents",
+        "zones[3].temperature"
+      ],
+      "domChanged": false,
+      "pass": true
+    },
+    {
+      "selector": "#clear-alerts",
+      "label": "Clear Alerts",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "alerts",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "mode",
+        "spatialInvariants.kit.accessibilityLabel",
+        "spatialInvariants.kit.mode",
+        "zones[3].incidents"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "#focus-zone",
+      "label": "Focus Zone",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "camera.focusedZone",
+        "camera.position[0]",
+        "camera.position[1]",
+        "camera.position[2]",
+        "camera.target[0]",
+        "camera.target[1]",
+        "camera.target[2]",
+        "eventLog[0]",
+        "eventLog[1]",
+        "eventLog[2]",
+        "eventLog[3]",
+        "eventLog[4]",
+        "eventLog[5]",
+        "eventLog[6]",
+        "spatialInvariants.kit.focused"
+      ],
+      "domChanged": false,
+      "pass": true
+    }
+  ],
+  "keyboardResults": [],
+  "cameraDragOk": true,
+  "mobileControlsDiscovered": 10,
+  "restartRecovered": true,
+  "initialInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "peakInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "finalInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "observedInvariants": {
+    "spatial": {
+      "passes": true,
+      "failing": []
+    }
+  },
+  "consoleErrors": [],
+  "trace": [
+    {
+      "step": 1,
+      "timestamp": "2026-08-08T16:22:36.183Z",
+      "action": "operate button",
+      "target": "button[data-mode=\"normal\"] (Normal)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog.length, eventLog[0], eventLog[1], eventLog[2], mode, spatialInvariants.kit.accessibilityLabel, spatialInvariants.kit.mode",
+      "evidenceRevisionBefore": "f07055bd823bf325",
+      "evidenceRevisionAfter": "b1a932965a837261",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 2,
+      "timestamp": "2026-08-08T16:22:36.936Z",
+      "action": "operate button",
+      "target": "button[data-mode=\"maintenance\"] (Service)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog.length, eventLog[0], eventLog[1], eventLog[2], eventLog[3], mode, spatialInvariants.kit.accessibilityLabel, spatialInvariants.kit.mode",
+      "evidenceRevisionBefore": "b1a932965a837261",
+      "evidenceRevisionAfter": "44bc54326b201ff0",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 3,
+      "timestamp": "2026-08-08T16:22:37.686Z",
+      "action": "operate button",
+      "target": "button[data-mode=\"incident\"] (Incident)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog.length, eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], mode, spatialInvariants.kit.accessibilityLabel",
+      "evidenceRevisionBefore": "44bc54326b201ff0",
+      "evidenceRevisionAfter": "610016b8a20877ac",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 4,
+      "timestamp": "2026-08-08T16:22:38.890Z",
+      "action": "operate button",
+      "target": "button[data-zone=\"assembly\"] (Assembly)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog.length, eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], eventLog[5], eventLog[6]",
+      "evidenceRevisionBefore": "982029abef5ee108",
+      "evidenceRevisionAfter": "2da679da5c2255c3",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 5,
+      "timestamp": "2026-08-08T16:22:39.642Z",
+      "action": "operate button",
+      "target": "button[data-zone=\"packaging\"] (Packaging)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], eventLog[5], eventLog[6], selectedZone",
+      "evidenceRevisionBefore": "2da679da5c2255c3",
+      "evidenceRevisionAfter": "760d520554cbe491",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 6,
+      "timestamp": "2026-08-08T16:22:40.392Z",
+      "action": "operate button",
+      "target": "button[data-zone=\"energy\"] (Energy)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], eventLog[5], eventLog[6], selectedZone",
+      "evidenceRevisionBefore": "760d520554cbe491",
+      "evidenceRevisionAfter": "0e3d2bf8ec68532a",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 7,
+      "timestamp": "2026-08-08T16:22:41.143Z",
+      "action": "operate button",
+      "target": "button[data-zone=\"dock\"] (Dock)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], eventLog[5], eventLog[6], selectedZone",
+      "evidenceRevisionBefore": "0e3d2bf8ec68532a",
+      "evidenceRevisionAfter": "6dbd6f17da40561c",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 8,
+      "timestamp": "2026-08-08T16:22:41.895Z",
+      "action": "operate button",
+      "target": "#inject-alert (Inject Alert)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: alerts, eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], eventLog[5], eventLog[6]",
+      "evidenceRevisionBefore": "6dbd6f17da40561c",
+      "evidenceRevisionAfter": "014aa64f0ecd9080",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 9,
+      "timestamp": "2026-08-08T16:22:42.639Z",
+      "action": "operate button",
+      "target": "#clear-alerts (Clear Alerts)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: alerts, eventLog[0], eventLog[1], eventLog[2], eventLog[3], eventLog[4], eventLog[5], eventLog[6]",
+      "evidenceRevisionBefore": "014aa64f0ecd9080",
+      "evidenceRevisionAfter": "063dac8dd79a6c0d",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 10,
+      "timestamp": "2026-08-08T16:22:43.389Z",
+      "action": "operate button",
+      "target": "#focus-zone (Focus Zone)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: camera.focusedZone, camera.position[0], camera.position[1], camera.position[2], camera.target[0], camera.target[1], camera.target[2], eventLog[0]",
+      "evidenceRevisionBefore": "063dac8dd79a6c0d",
+      "evidenceRevisionAfter": "7b97eca76b5834db",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 11,
+      "timestamp": "2026-08-08T16:22:43.903Z",
+      "action": "drag camera",
+      "target": "scene canvas",
+      "expected": "camera orbits without runtime errors",
+      "actual": "no runtime errors",
+      "evidenceRevisionBefore": "n/a",
+      "evidenceRevisionAfter": "n/a",
+      "changed": false,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 12,
+      "timestamp": "2026-08-08T16:22:44.618Z",
+      "action": "resize to mobile viewport",
+      "target": "390x780",
+      "expected": "route stays mounted and operable without runtime errors",
+      "actual": "10 controls reachable",
+      "evidenceRevisionBefore": "n/a",
+      "evidenceRevisionAfter": "n/a",
+      "changed": false,
+      "consoleErrors": [],
+      "pass": true
+    }
+  ],
+  "screenshot": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-final.png",
+  "viewportVariants": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "height": 900,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-desktop.png",
+      "sha256": "sha256-228b9c6c58076a0e5e00861ed5e0c88d1dce59dda92b42b6cc692735dde7d18d"
+    },
+    {
+      "label": "tablet",
+      "width": 834,
+      "height": 1112,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-tablet.png",
+      "sha256": "sha256-fdae4e10884e4e8882da96dbc5ac7a3c2a8e1285b2def8e646fbd9257bf55bdf"
+    },
+    {
+      "label": "phone",
+      "width": 390,
+      "height": 780,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-phone.png",
+      "sha256": "sha256-6b8d632b99dd238500b9c2eff598c52e68a321b2c31baf235b9c92b1e6d54c88"
+    }
+  ],
+  "frameSequence": [
+    {
+      "index": 0,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-frame-00.png",
+      "sha256": "sha256-286cd11331484b380672a7643b500f38f0b065345a960c9d73006dc7f1b99f83"
+    },
+    {
+      "index": 1,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-frame-01.png",
+      "sha256": "sha256-25f0c73ef6fc60d0d0c2336eefe23df9f3f4f31989fc4477f70167a8b3d6f30c"
+    },
+    {
+      "index": 2,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-frame-02.png",
+      "sha256": "sha256-9bebfbebf9d98355d62c1b0716be75a8565f8171664c2f0c3bb549effbebce4b"
+    },
+    {
+      "index": 3,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-frame-03.png",
+      "sha256": "sha256-35d11ca8500b967b150464398cf4738d9d44465d7049ca0dc8bb36a163d6b930"
+    },
+    {
+      "index": 4,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-frame-04.png",
+      "sha256": "sha256-52f4c4f5c911efe1b5ea6e180bd901e64fc3c6086d75b1e0a5bc6670e5396f8f"
+    },
+    {
+      "index": 5,
+      "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-frame-05.png",
+      "sha256": "sha256-7bb61029290667572e425edbec4c0928d2032934b82a6540086a2c1ccd672a2d"
+    }
+  ],
+  "distinctFrames": 6,
+  "frameVariationRequired": false,
+  "sourceFingerprint": "sha256-6b8605e9bb54ce0757bccf3c0a616f3950681d4db7bfa71ac5987ddd62077691",
+  "configurationFingerprint": "sha256-4c8c366d0355f83effe83a8ce79327533ae865b976c1697179b418a6c1fe4da5",
+  "producerVersion": "aura3d-showcase-interaction-audit/1.1"
+}

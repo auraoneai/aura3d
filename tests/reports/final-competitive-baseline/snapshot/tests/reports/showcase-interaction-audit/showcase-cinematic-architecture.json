@@ -1,0 +1,337 @@
+{
+  "schema": "aura3d-showcase-interaction-audit/1.0",
+  "routeId": "showcase-cinematic-architecture",
+  "label": "Architectural District Tour",
+  "releaseClass": "release-ready candidate",
+  "generatedAt": "2026-08-08T16:22:28.551Z",
+  "producer": "tests/browser/showcase-route-interaction-audit.spec.ts",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "driftingEvidenceKeys": [
+    "frameCount"
+  ],
+  "controlsDiscovered": 7,
+  "controlsOperated": 7,
+  "controlsWithEffect": 7,
+  "controlsPassing": 7,
+  "controlResults": [
+    {
+      "selector": "button[data-mood=\"dawn\"]",
+      "label": "Dawn",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.mood",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "kits.architecture.accessibilityLabel",
+        "kits.architecture.moodId",
+        "kits.architecture.sunDirection[0]",
+        "kits.architecture.sunDirection[1]",
+        "kits.architecture.sunDirection[2]",
+        "telemetry.mood"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-mood=\"gallery\"]",
+      "label": "Gallery",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.mood",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "kits.architecture.accessibilityLabel",
+        "kits.architecture.moodId",
+        "kits.architecture.sunDirection[0]",
+        "kits.architecture.sunDirection[1]",
+        "kits.architecture.sunDirection[2]",
+        "telemetry.mood"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-mood=\"nocturne\"]",
+      "label": "Nocturne",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "controls.mood",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "kits.architecture.accessibilityLabel",
+        "kits.architecture.moodId",
+        "kits.architecture.sunDirection[0]",
+        "kits.architecture.sunDirection[1]",
+        "kits.architecture.sunDirection[2]",
+        "telemetry.mood"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-path=\"establish\"]",
+      "label": "Establish",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "aura.camera.captureTime",
+        "aura.camera.mode",
+        "controls.cameraPath",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "kits.cinematic.activeShotId",
+        "kits.cinematic.shotProgress",
+        "telemetry.cameraPath"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-path=\"glide\"]",
+      "label": "Glide",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "aura.camera.captureTime",
+        "aura.camera.mode",
+        "controls.cameraPath",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "kits.cinematic.activeShotId",
+        "kits.cinematic.shotProgress",
+        "telemetry.cameraPath"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "button[data-path=\"balcony\"]",
+      "label": "Balcony",
+      "kind": "button",
+      "changed": true,
+      "changedKeys": [
+        "aura.camera.captureTime",
+        "aura.camera.mode",
+        "controls.cameraPath",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "kits.cinematic.activeShotId",
+        "kits.cinematic.shotProgress",
+        "telemetry.cameraPath"
+      ],
+      "domChanged": true,
+      "pass": true
+    },
+    {
+      "selector": "#haze-control",
+      "label": "haze-control",
+      "kind": "range",
+      "changed": true,
+      "changedKeys": [
+        "composition.hazeDensity",
+        "controls.haze",
+        "interactionState.lastChanged",
+        "interactionState.revision",
+        "telemetry.haze",
+        "telemetry.hazeDensity"
+      ],
+      "domChanged": false,
+      "pass": true
+    }
+  ],
+  "keyboardResults": [],
+  "cameraDragOk": true,
+  "mobileControlsDiscovered": 7,
+  "restartRecovered": true,
+  "initialInvariants": {},
+  "peakInvariants": {},
+  "finalInvariants": {},
+  "observedInvariants": {},
+  "consoleErrors": [],
+  "trace": [
+    {
+      "step": 1,
+      "timestamp": "2026-08-08T16:22:12.356Z",
+      "action": "operate button",
+      "target": "button[data-mood=\"dawn\"] (Dawn)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.mood, interactionState.lastChanged, interactionState.revision, kits.architecture.accessibilityLabel, kits.architecture.moodId, kits.architecture.sunDirection[0], kits.architecture.sunDirection[1], kits.architecture.sunDirection[2]",
+      "evidenceRevisionBefore": "7a7c6c5383bfb7be",
+      "evidenceRevisionAfter": "8f0261a842bca013",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 2,
+      "timestamp": "2026-08-08T16:22:13.320Z",
+      "action": "operate button",
+      "target": "button[data-mood=\"gallery\"] (Gallery)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.mood, interactionState.lastChanged, interactionState.revision, kits.architecture.accessibilityLabel, kits.architecture.moodId, kits.architecture.sunDirection[0], kits.architecture.sunDirection[1], kits.architecture.sunDirection[2]",
+      "evidenceRevisionBefore": "c5d31e34ec38695a",
+      "evidenceRevisionAfter": "e5e84b89fac0163a",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 3,
+      "timestamp": "2026-08-08T16:22:14.134Z",
+      "action": "operate button",
+      "target": "button[data-mood=\"nocturne\"] (Nocturne)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: controls.mood, interactionState.lastChanged, interactionState.revision, kits.architecture.accessibilityLabel, kits.architecture.moodId, kits.architecture.sunDirection[0], kits.architecture.sunDirection[1], kits.architecture.sunDirection[2]",
+      "evidenceRevisionBefore": "e5e84b89fac0163a",
+      "evidenceRevisionAfter": "cc39d9665f0d349d",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 4,
+      "timestamp": "2026-08-08T16:22:15.623Z",
+      "action": "operate button",
+      "target": "button[data-path=\"establish\"] (Establish)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: aura.camera.captureTime, aura.camera.mode, controls.cameraPath, interactionState.lastChanged, interactionState.revision, kits.cinematic.activeShotId, kits.cinematic.shotProgress, telemetry.cameraPath",
+      "evidenceRevisionBefore": "65fe206a9ea30c1b",
+      "evidenceRevisionAfter": "f2f54b8ec5abcaaa",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 5,
+      "timestamp": "2026-08-08T16:22:16.407Z",
+      "action": "operate button",
+      "target": "button[data-path=\"glide\"] (Glide)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: aura.camera.captureTime, aura.camera.mode, controls.cameraPath, interactionState.lastChanged, interactionState.revision, kits.cinematic.activeShotId, kits.cinematic.shotProgress, telemetry.cameraPath",
+      "evidenceRevisionBefore": "f2f54b8ec5abcaaa",
+      "evidenceRevisionAfter": "fb1c283e3510fd3f",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 6,
+      "timestamp": "2026-08-08T16:22:17.191Z",
+      "action": "operate button",
+      "target": "button[data-path=\"balcony\"] (Balcony)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: aura.camera.captureTime, aura.camera.mode, controls.cameraPath, interactionState.lastChanged, interactionState.revision, kits.cinematic.activeShotId, kits.cinematic.shotProgress, telemetry.cameraPath",
+      "evidenceRevisionBefore": "fb1c283e3510fd3f",
+      "evidenceRevisionAfter": "9189f50eadfdbc8f",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 7,
+      "timestamp": "2026-08-08T16:22:17.742Z",
+      "action": "operate range",
+      "target": "#haze-control (haze-control)",
+      "expected": "control performs its documented action and produces observable state or UI change",
+      "actual": "changed: composition.hazeDensity, controls.haze, interactionState.lastChanged, interactionState.revision, telemetry.haze, telemetry.hazeDensity",
+      "evidenceRevisionBefore": "9189f50eadfdbc8f",
+      "evidenceRevisionAfter": "159fee46c40c7df8",
+      "changed": true,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 8,
+      "timestamp": "2026-08-08T16:22:18.265Z",
+      "action": "drag camera",
+      "target": "scene canvas",
+      "expected": "camera orbits without runtime errors",
+      "actual": "no runtime errors",
+      "evidenceRevisionBefore": "n/a",
+      "evidenceRevisionAfter": "n/a",
+      "changed": false,
+      "consoleErrors": [],
+      "pass": true
+    },
+    {
+      "step": 9,
+      "timestamp": "2026-08-08T16:22:18.990Z",
+      "action": "resize to mobile viewport",
+      "target": "390x780",
+      "expected": "route stays mounted and operable without runtime errors",
+      "actual": "7 controls reachable",
+      "evidenceRevisionBefore": "n/a",
+      "evidenceRevisionAfter": "n/a",
+      "changed": false,
+      "consoleErrors": [],
+      "pass": true
+    }
+  ],
+  "screenshot": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-final.png",
+  "viewportVariants": [
+    {
+      "label": "desktop",
+      "width": 1440,
+      "height": 900,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-desktop.png",
+      "sha256": "sha256-e674aa601f1668f4e786952b80f42fb2760702f764c8b24e7710ff5bb7270173"
+    },
+    {
+      "label": "tablet",
+      "width": 834,
+      "height": 1112,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-tablet.png",
+      "sha256": "sha256-49ec81423cec519143565feb3cea7e20fb1659e526fe6c72fad7afd123bf4f00"
+    },
+    {
+      "label": "phone",
+      "width": 390,
+      "height": 780,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-phone.png",
+      "sha256": "sha256-63577bf75823b4bcdef2d8998439b801521a9f3f2e887ade6b96be35c5c2b35e"
+    }
+  ],
+  "frameSequence": [
+    {
+      "index": 0,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-frame-00.png",
+      "sha256": "sha256-4a86b61d7b1213fb14151f685e320a55bcc12d9cf5a51d2a1a547f589ae862bd"
+    },
+    {
+      "index": 1,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-frame-01.png",
+      "sha256": "sha256-1bbc9f69290d1d2b85af63510b96fa495b0994d529c793ec21db87dec118734c"
+    },
+    {
+      "index": 2,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-frame-02.png",
+      "sha256": "sha256-0ff6517a447d19d9e688cf35587687ba4023297209ccefee79cfd59162f8a13c"
+    },
+    {
+      "index": 3,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-frame-03.png",
+      "sha256": "sha256-7d777f675b1d882e48af9559ebd4509e0f77208cdb8039563827c0f7086962df"
+    },
+    {
+      "index": 4,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-frame-04.png",
+      "sha256": "sha256-c40d75bb1dba781153a924b2ccee72e2a7772add448598409d9261506fad7203"
+    },
+    {
+      "index": 5,
+      "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-frame-05.png",
+      "sha256": "sha256-65cb7614a9e1d4f58ac77d8bb53ed148c81306d9edcd64ef02bc0eeb7814b81b"
+    }
+  ],
+  "distinctFrames": 6,
+  "frameVariationRequired": false,
+  "sourceFingerprint": "sha256-d97427097575eca3b7026589f489b732264ee691a8418fe60b5beccb682b7d23",
+  "configurationFingerprint": "sha256-14934e24295bd899d0015ca3da644d289806b737f2bfe54b47581557a175e68e",
+  "producerVersion": "aura3d-showcase-interaction-audit/1.1"
+}

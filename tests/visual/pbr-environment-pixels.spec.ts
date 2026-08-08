@@ -261,7 +261,7 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
     claim: "bounded-perspective-camera-pbr-comparison",
     aura3dRenderer: "webgl2",
     referenceRenderer: "three",
-    referencePackage: "three@^0.165.0",
+    referencePackage: "three@0.185.1",
     resolution: validation.canvasFrame,
     camera: { type: "perspective", fovYDegrees: 45, position: [0, 0, 6], near: 0.1, far: 40 },
     lights: [

@@ -51,7 +51,7 @@ const tarballDirectory = join(profileRoot, "release-candidate");
 const samples: Sample[] = [];
 const sampleCount = 3;
 const viteVersion = "7.3.2";
-const threeVersion = "0.165.0";
+const threeVersion = "0.185.1";
 
 mkdirSync(tarballDirectory, { recursive: true });
 const auraTarball = packReleaseCandidate();

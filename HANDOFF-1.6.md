@@ -1,10 +1,18 @@
 # Aura3D 1.6 release handoff
 
 Date: 2026-08-08
-Status: release candidate; publication is blocked only by the required human visual verdict and the release sequence that follows it
+Status: superseded handoff snapshot; release candidate remains incomplete
 
-Read this file, then `Aura3D-1.6-Replatform-PRD.md`, `MIGRATION-1.6.md`,
-`llms.txt`, and `docs/agents/claims-and-boundaries.md`. The PRD remains the
+> **Superseded 2026-08-08:** publication is not blocked only by a human verdict.
+> The material flagship rebuild, current `three@0.185.1` comparison, subsystem
+> ownership program, final package/site/docs work, serial verification, and
+> external release receipts in `1.6-FINAL-PRD-Finishes.md` are also open. Values
+> below are retained as a historical handoff snapshot and must not be read as
+> current completion status.
+
+Read `1.6-FINAL-PRD-Finishes.md` first, then this file,
+`Aura3D-1.6-Replatform-PRD.md`, `MIGRATION-1.6.md`,
+`llms.txt`, and `docs/agents/claims-and-boundaries.md`. The final PRD is the
 authoritative checklist.
 
 ## Current repository state
@@ -37,7 +45,7 @@ closed:
   tests reject private continuous integrators.
 - R12 is 0/5 and tracked package source is five lines below the frozen baseline.
 - The lean public entries remain within their unchanged absolute budgets. The
-  current Aura/Three scenario ratios are 0.582x for core, 1.248x for product,
+  historical Aura/`three@0.165.0` scenario ratios are 0.582x for core, 1.248x for product,
   and 0.832x for game.
 - The root tarball finalizer resolves exported workspace subpaths internally.
   Fresh isolated package installation, Node ESM import, TypeScript, and Vite

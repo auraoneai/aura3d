@@ -1,0 +1,119 @@
+{
+  "schema": "aura3d.current-threejs-baseline/1.0",
+  "generatedAt": "2026-08-08T20:25:06.386Z",
+  "pass": true,
+  "mode": "online-registry-verification",
+  "contextPath": "benchmark/context/threejs-r185.1-20260808.json",
+  "contextSha256": "3ad155ede7c82e58f4f7898fd014d333285e7e6c296eaa09ff68c6b1b0c6829b",
+  "inventoryPath": "docs/project/parity/threejs-r185-surface-inventory.md",
+  "inventorySha256": "312a52870e2505efae31fe70f7fff40d3f7ec1d423ab62b318ac0fdc12b09715",
+  "historicalVersion": "0.165.0",
+  "currentInputs": {
+    "context": "0.185.1",
+    "rootThree": "0.185.1",
+    "rootThreeTypes": "0.185.4",
+    "benchmarkThree": "0.185.1",
+    "benchmarkDeclaredVersion": "0.185.1",
+    "setupEngine": "0.185.1",
+    "developerFriction": "0.185.1",
+    "sharedDescriptor": "0.185.1",
+    "visualReference": "0.185.1"
+  },
+  "three": {
+    "package": "three",
+    "version": "0.185.1",
+    "npmIntegrity": "sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==",
+    "npmTarball": "https://registry.npmjs.org/three/-/three-0.185.1.tgz",
+    "publishedAt": "2026-07-01T14:04:30.373Z",
+    "tag": "r185",
+    "tagObjectCommit": "cb3b077ee63818a8cc1ab273f08704d89b8ac492",
+    "releaseCommit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "npmGitHead": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "releaseNotes": "https://github.com/mrdoob/three.js/releases/tag/r185",
+    "migrationGuide": "https://github.com/mrdoob/three.js/wiki/Migration-Guide#184--185"
+  },
+  "latest": {
+    "version": "0.185.1",
+    "dist.integrity": "sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==",
+    "gitHead": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "publishedAt": "2026-07-01T14:04:30.373Z"
+  },
+  "checks": [
+    {
+      "id": "context-exists",
+      "pass": true,
+      "detail": "benchmark/context/threejs-r185.1-20260808.json"
+    },
+    {
+      "id": "surface-inventory-exists",
+      "pass": true,
+      "detail": "docs/project/parity/threejs-r185-surface-inventory.md"
+    },
+    {
+      "id": "context-is-not-historical-target",
+      "pass": true,
+      "detail": "current=0.185.1; forbidden current target=0.165.0"
+    },
+    {
+      "id": "current-inputs-agree",
+      "pass": true,
+      "detail": "{\"context\":\"0.185.1\",\"rootThree\":\"0.185.1\",\"rootThreeTypes\":\"0.185.4\",\"benchmarkThree\":\"0.185.1\",\"benchmarkDeclaredVersion\":\"0.185.1\",\"setupEngine\":\"0.185.1\",\"developerFriction\":\"0.185.1\",\"sharedDescriptor\":\"0.185.1\",\"visualReference\":\"0.185.1\"}"
+    },
+    {
+      "id": "types-match-current-minor",
+      "pass": true,
+      "detail": "@types/three=0.185.4"
+    },
+    {
+      "id": "npm-and-tag-commit-agree",
+      "pass": true,
+      "detail": "2431a09f46f34c560bc8e44b33be0e567723d5b9 vs 2431a09f46f34c560bc8e44b33be0e567723d5b9"
+    },
+    {
+      "id": "root-lock-has-current-three",
+      "pass": true,
+      "detail": "pnpm lock contains exact three@0.185.1 importer and package"
+    },
+    {
+      "id": "root-lock-does-not-select-historical-three",
+      "pass": true,
+      "detail": "pnpm lock has no active three@0.165.0 package/importer"
+    },
+    {
+      "id": "official-surface-inventory-complete",
+      "pass": true,
+      "detail": "11 official source URLs locked"
+    },
+    {
+      "id": "workload-set-complete",
+      "pass": true,
+      "detail": "15 of 15 required workloads locked"
+    },
+    {
+      "id": "common-render-contract-complete",
+      "pass": true,
+      "detail": "viewport, DPR, camera, lighting, color, sampling, and thresholds present"
+    },
+    {
+      "id": "asset-hashes-current",
+      "pass": true,
+      "detail": "6 locked assets match bytes on disk"
+    },
+    {
+      "id": "npm-latest-matches-or-is-within-two-releases",
+      "pass": true,
+      "detail": "frozen=0.185.1; npm latest=0.185.1; stable-release distance=0"
+    },
+    {
+      "id": "npm-latest-integrity-matches-when-same-version",
+      "pass": true,
+      "detail": "frozen=sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==; npm=sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg=="
+    },
+    {
+      "id": "npm-latest-git-head-matches-when-same-version",
+      "pass": true,
+      "detail": "frozen=2431a09f46f34c560bc8e44b33be0e567723d5b9; npm=2431a09f46f34c560bc8e44b33be0e567723d5b9"
+    }
+  ],
+  "failures": []
+}

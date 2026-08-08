@@ -39,7 +39,8 @@ should use the narrow entry matching their workload:
 
 This is a performance recommendation, not a removal. The README's first code example uses the
 product entry, and the canonical bundle scenarios measure the matching entry. Fresh measurements
-are **0.582x / 1.248x / 0.832x** the equivalent Three.js stacks against unchanged limits of
+are **0.582x / 1.248x / 0.832x** the equivalent historical
+`three@0.165.0` stacks against unchanged limits of
 1.25x / 1.25x / 1.50x. The compatibility root is still intentionally broad and is not presented as
 the smallest entry.
 
@@ -92,7 +93,8 @@ the wide one. Removing one unexported private helper workspace does not change t
 the answer the matrix produces is `1.6.0`, not the one the prose expected.
 
 **Bundle boundary:** 1.6.0 clears the §B.1 release condition through the recommended lean entries,
-not by shrinking the compatibility-heavy root. The frozen scenarios measure **0.582x / 1.248x /
-0.832x** the equivalent Three.js stacks against limits of **1.25x / 1.25x / 1.50x**. Existing
+not by shrinking the compatibility-heavy root. The frozen historical scenarios
+measure **0.582x / 1.248x / 0.832x** the equivalent `three@0.165.0` stacks against
+limits of **1.25x / 1.25x / 1.50x**. Existing
 root imports remain supported; new applications should select the matching lean entry when bundle
 cost matters. These are scenario-specific build measurements, not universal performance claims.

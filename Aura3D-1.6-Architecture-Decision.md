@@ -9,6 +9,12 @@ Nothing here is derived from `logs.txt` (a stale 2026-08-03 transcript), from
 
 **Status: decision document. No code was changed, nothing was published, nothing was deleted.**
 
+> **Comparison-scope note — 2026-08-08:** Three.js measurements in this
+> historical decision use the then-frozen `three@0.165.0` context. They remain
+> evidence for the decisions made here, but they are not a current-market
+> comparison with `three@0.185.1`. `1.6-FINAL-PRD-Finishes.md` controls current
+> competitive and release completion.
+
 > **Amendment 2026-08-05 — three conclusions in this document have been superseded during
 > execution, and the superseding evidence is stronger than the evidence here.** This audit
 > scanned consumers in `apps/`, `examples/`, `templates/` and `packages/engine`, which turned out
