@@ -3104,9 +3104,35 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       (`blocked-routes-stay-blocked.test.ts`, 14 tests). Review package prepared:
       **4 of 6 engine causes FIXED, 2 BLOCKED** on ADR 0002. Independent evidence the fixes
       landed: skyline's regenerated screenshot digest moved while turbo drift's is byte-identical.
-- [ ] `MIGRATION-1.6.md` complete, with the migration matrix
-- [ ] Version decided per §12 from that matrix
-- [ ] `docs/architecture/removed-in-1.6.md` retrieval instructions verified
+- [x] `MIGRATION-1.6.md` complete, with the migration matrix
+      — written, and **every row measured against `v1.5.2`** rather than described: 27 packages
+      unchanged (0 removed), public symbols 2,498 → 2,501, and **0 non-`three-compat` symbols
+      removed**. Gated by `tests/unit/tools/migration-matrix.test.ts` (13 tests), which recomputes
+      all four claims, so a later removal fails the gate and forces the version to be revisited.
+- [x] Version decided per §12 from that matrix — **`1.6.0`.**
+      §12 expected `2.0.0` "because two packages are already slated for removal and the engine
+      barrel is being split". **Both premises turned out false:** R8 refused the package removals
+      (ADR 0001), and the barrel split *added* narrow entry points without removing the wide one.
+      Against §12's own rule — *"if packages disappear and commonly used imports break, it is
+      2.0.0"* — nothing disappeared and nothing commonly used broke. The one removed root subpath,
+      `./three-compat`, **never resolved for an installed consumer** at all: root `files` excludes
+      `dist/three-compat`, so it threw `ERR_PACKAGE_PATH_NOT_EXPORTED` outside a built worktree.
+      Removing it is a fix. All 36 `*Compat` symbols still ship from `@aura3d/three-compat`.
+
+      Three genuine breaks, all part of the defect being fixed: `backend: "aura-js"` now throws by
+      name, and `PhysicsBackendSelection.fallback` / `.jsFallbackAvailable` are gone because there
+      is no fallback to report. Stated with replacements in the matrix.
+
+      **`1.6.0` says "safe to upgrade", not "ready"** — the migration document says so explicitly,
+      and a test asserts it does, because otherwise a minor version becomes a claim of its own
+      while §B.1 still fails on bundle size.
+- [x] `docs/architecture/removed-in-1.6.md` retrieval instructions verified
+      — written and **verified by execution**: the test runs the documented
+      `git show <commit>^:<path>` against a real deleted file and checks content comes back, then
+      cross-checks the record against `git show --diff-filter=D` so a deletion cannot be omitted
+      from a document whose whole value is completeness. Also records the four R8-refused
+      deletions with their measured blocker counts, so a future attempt starts from the
+      measurement instead of repeating it.
 
 ### Release success metrics (§B) — these are conditions, not reports
 
@@ -3192,11 +3218,18 @@ Not technical completion gates. **Do not perform any of these because §10 is gr
 3. **Rendering descriptor files (~11,100 lines)** — broad triage **deferred to 1.7**.
     In 1.6 touch only files that directly block bundle size, produce false claims, or
     violate package boundaries. (§9)
-4. **Version — deferred, decided after the migration matrix exists.** `1.6.0` is
-    defensible only if high-value public concepts and most source compatibility remain.
-    **If packages disappear and commonly used imports break, it is `2.0.0`.** Two packages
-    are already slated for removal and the engine barrel is being split, so `2.0.0` is
-    currently the more likely answer — but the matrix decides, not this sentence. (§10)
+4. **Version — DECIDED: `1.6.0`.** ~~Deferred until the migration matrix exists.~~ The matrix
+    exists (`MIGRATION-1.6.md`) and decided it, exactly as this row said it would — *"the matrix
+    decides, not this sentence"*, and the sentence was wrong.
+
+    Measured: **0 of 27 packages removed** (R8 refused both candidates — ADR 0001), **0
+    non-`three-compat` public symbols removed**, surface 2,498 → 2,501. The one removed root
+    subpath never resolved for an installed consumer, so removing it is a fix rather than a break.
+    Both premises this row reasoned from — packages disappearing, the barrel being split
+    destructively — turned out false: the split *added* narrow entry points and kept the wide one.
+
+    Recorded caveat: `1.6.0` means safe to upgrade, **not** that §B.1 is met. Bundle size is still
+    ~1.8-2.2x the equivalent Three.js stack. (§10)
 
 ---
 
