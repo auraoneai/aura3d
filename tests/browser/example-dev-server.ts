@@ -163,6 +163,10 @@ function resolveRequest(root: string, pathname: string): string | undefined {
   } else if (loadersBrowserMappedPath) {
     candidates.push(join(root, loadersBrowserMappedPath));
   } else if (legacyGameSliceTemplatePath) {
+    // A real evidence route takes precedence when it exists. The template mapping
+    // is only a compatibility fallback for checkouts that do not carry the
+    // historical example tree.
+    candidates.push(join(root, normalizedPath));
     candidates.push(join(root, legacyGameSliceTemplatePath));
   } else {
     candidates.push(join(root, normalizedPath));

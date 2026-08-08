@@ -180,6 +180,9 @@ test.describe("product demo visual screenshot diffs", () => {
     test(`${demo.id} product demo has stable visual evidence`, async ({ page }) => {
       await openReadyProductDemo(page, server, demo);
       const state = await readDemoState(page, demo.stateName);
+      if (demo.id === "game-slice") {
+        await pauseAmbientFrames(page);
+      }
       const first = await readCanvasPixels(page, demo.canvasSelector);
       await page.waitForTimeout(120);
       const stable = await readCanvasPixels(page, demo.canvasSelector);
@@ -199,6 +202,9 @@ test.describe("product demo visual screenshot diffs", () => {
         });
       }
 
+      if (demo.id === "game-slice") {
+        await resumeAmbientFrames(page);
+      }
       await demo.interaction(page, demo);
       await page.waitForTimeout(120);
       const afterInteractionPixels = await readCanvasPixels(page, demo.canvasSelector);
@@ -244,6 +250,33 @@ test.describe("product demo visual screenshot diffs", () => {
     });
   }
 });
+
+async function pauseAmbientFrames(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const visualWindow = globalThis as Record<string, any>;
+    const originalRequestAnimationFrame = window.requestAnimationFrame.bind(window);
+    let pendingFrame: FrameRequestCallback | undefined;
+    window.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+      pendingFrame = callback;
+      return -1;
+    }) as typeof window.requestAnimationFrame;
+    visualWindow.__AURA3D_RESUME_VISUAL_FRAMES__ = () => {
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+      if (pendingFrame) originalRequestAnimationFrame(pendingFrame);
+      delete visualWindow.__AURA3D_RESUME_VISUAL_FRAMES__;
+    };
+  });
+  // Let the already queued frame finish and park its successor.
+  await page.waitForTimeout(50);
+}
+
+async function resumeAmbientFrames(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const resume = (globalThis as Record<string, any>).__AURA3D_RESUME_VISUAL_FRAMES__;
+    if (typeof resume !== "function") throw new Error("Missing visual-frame resume hook.");
+    resume();
+  });
+}
 
 async function openReadyProductDemo(page: Page, server: ExampleDevServer, demo: ProductDemo): Promise<void> {
   await page.goto(`${server.origin}/examples/${demo.id}/index.html`, { waitUntil: "domcontentloaded" });
