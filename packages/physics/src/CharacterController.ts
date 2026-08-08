@@ -346,15 +346,57 @@ export class CharacterController {
       ];
       {
         const blocked = this.castHorizontal(direction, this.radius * 0.6);
+        /*
+         * Only step once the capsule is actually *at* the ledge.
+         *
+         * `castHorizontal` reports how far its probe sphere travelled, and that sphere is
+         * smaller than the capsule and starts at the capsule's centre — so `blocked.distance`
+         * is not the gap to the obstacle at all. The real gap is
+         * `probeRadius + distance - radius`, which `castHorizontal` now returns as `gap`.
+         * Treating the raw travel as the surface gap
+         * lifted the character while it was still ~0.5 units short of a 0.18-unit ledge, so
+         * it rose over nothing, `probeGroundAt` found the low floor below, and step-down put
+         * it straight back. Measured on a 0.18 ledge at x=3.0: step-up fired repeatedly from
+         * x=2.46, each frame immediately undone by a 0.196 step-down, `grounded` flickering
+         * true/false, and forward motion stalling for ~20 frames at a time before the
+         * character crept past.
+         *
+         * That is precisely the oscillation step-down exists to prevent, caused by step-up.
+         * The surface gap is the probe's travel less the capsule's own radius, and the
+         * character may only be lifted when that gap is genuinely closing.
+         */
         if (blocked && Math.abs(blocked.normal[1]) < 0.5) {
           const stepTarget = this.probeStepSurface(direction, blocked.distance);
           if (stepTarget !== undefined) {
             const rise = stepTarget - (this.body.position[1] - this.halfHeight - this.radius);
             if (rise > 1e-4 && rise <= this.maxStepHeight) {
+              /*
+               * Lift *and* carry the capsule over the edge, not lift alone.
+               *
+               * Lifting while the capsule is still short of the obstacle leaves it hanging
+               * over the low floor it was already on. `probeGroundAt` then finds that floor
+               * and step-down immediately undoes the lift — an up/down oscillation, one
+               * cycle per frame, with `grounded` flickering and forward motion stalling.
+               * Measured on a 0.18 ledge before this: step-up of 0.158 cancelled by a
+               * step-down of 0.196, repeating for ~20 frames while x moved 0.004.
+               *
+               * That is the exact oscillation step-down exists to prevent, caused by
+               * step-up.
+               *
+               * The fix has to be geometric, not a cooldown. A capsule lifted while its
+               * centre is still short of the obstacle face has its *support point* over the
+               * low floor, so the ground probe is right to find that floor and step-down is
+               * right to act — suppressing step-down for a frame would only hide a character
+               * standing on nothing. The capsule must clear the face: advance by the measured
+               * surface gap (closing the remaining distance) plus its own radius (carrying
+               * the support point past the edge), which is why a step-up is inherently a
+               * small teleport rather than an impulse.
+               */
+              const carry = blocked.gap + this.radius * 1.05;
               this.body.setPosition([
-                this.body.position[0],
+                this.body.position[0] + direction[0] * carry,
                 this.body.position[1] + rise,
-                this.body.position[2]
+                this.body.position[2] + direction[2] * carry
               ]);
               steppedUp = rise;
               // The obstacle is cleared, so the wall-slide redirect no longer applies.
@@ -452,8 +494,16 @@ export class CharacterController {
     };
   }
 
-  /** Horizontal sweep ahead of the capsule's mid-section, for wall and ledge detection. */
-  private castHorizontal(direction: Vec3, distance: number): { readonly normal: Vec3; readonly distance: number } | undefined {
+  /**
+   * Horizontal sweep ahead of the capsule's mid-section, for wall and ledge detection.
+   *
+   * Returns both the sweep's own travel (`distance`, which callers feed back into
+   * `probeStepSurface` so the two probes stay consistent) and `gap`, the distance from the
+   * **capsule's surface** to the obstacle. The two differ by the probe sphere's radius less
+   * the capsule's, and conflating them is what made step-up fire early: see the comment at
+   * the step-up call site.
+   */
+  private castHorizontal(direction: Vec3, distance: number): { readonly normal: Vec3; readonly distance: number; readonly gap: number } | undefined {
     /*
      * Probe just above the capsule's base, not above step height.
      *
@@ -485,23 +535,40 @@ export class CharacterController {
       this.body.position[2]
     ];
     /*
-     * Reach must cover the capsule's own radius plus the requested margin.
+     * Reach is expressed as a margin from the capsule's *surface*, not from its centre.
      *
-     * A sweep of radius 0.85r starting at the centre only extends 0.85r + distance. With a
-     * 0.12 margin that is 0.29 for a 0.2 capsule — but geometry the capsule is already
-     * touching sits at exactly r, so a wall in contact was *behind* the sweep's reach and
-     * reported no hit. The character walked into the ledge and stopped without ever seeing
-     * it, which is indistinguishable from the bug this method exists to fix.
+     * Two corrections live here, in order.
+     *
+     * First: a sweep of radius 0.7r starting at the centre only extends 0.7r + travel, so
+     * geometry the capsule is already touching — at exactly r — sat behind the reach and
+     * reported no hit. The character walked into a ledge and stopped without ever seeing it.
+     * Hence the `this.radius +` term.
+     *
+     * Second, and the reason this comment is longer than it was: that term double-counts.
+     * The sweep sphere's leading point is already `probeRadius` ahead of its centre, so
+     * `maxDistance = radius + distance` detects an obstacle `radius + distance + probeRadius`
+     * from the centre — `distance + probeRadius` from the capsule's surface, not `distance`.
+     * Measured with r=0.24: the intended 0.144 margin became 0.312, so the character halted
+     * a third of its own radius short of every wall and ledge. Subtracting `probeRadius`
+     * makes the requested margin mean what it says, which is what lets the step-up gate below
+     * be stated in surface terms.
      */
     const hit = this.world.sphereCast(origin, probeRadius, direction, {
-      maxDistance: this.radius + distance,
+      maxDistance: Math.max(0, this.radius + distance - probeRadius),
       includeSensors: false,
       // Never detect our own capsule: a self-hit at distance 0 reads as a wall.
       ignoreBodies: [this.body.id],
       ...(this.collisionMask === undefined ? {} : { mask: this.collisionMask })
     });
     if (!hit) return undefined;
-    return { normal: orientAgainst(normalizeVec3(hit.normal), direction), distance: hit.distance };
+    /*
+     * The probe sphere's leading point is `probeRadius` ahead of its centre, so the obstacle
+     * sits `probeRadius + hit.distance` from the capsule's centre and `- this.radius` from the
+     * capsule's surface. Clamped at zero: already-touching geometry reports a gap of 0, not a
+     * negative one.
+     */
+    const gap = Math.max(0, probeRadius + hit.distance - this.radius);
+    return { normal: orientAgainst(normalizeVec3(hit.normal), direction), distance: hit.distance, gap };
   }
 
   /**

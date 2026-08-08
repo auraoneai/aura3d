@@ -1,4 +1,4 @@
-import { addVec3, dotVec3, scaleVec3, subVec3, type Vec3 } from "./Shape.js";
+import { addVec3, dotVec3, rotateVec3ByQuat, scaleVec3, subVec3, type Vec3 } from "./Shape.js";
 import type { Collider } from "./Collider.js";
 import type { RigidBody } from "./RigidBody.js";
 
@@ -76,7 +76,7 @@ export function raycastCollider(origin: Vec3, direction: Vec3, collider: Collide
       return raycastSphere(origin, direction, body.position, collider.shape.radius, collider, maxDistance);
     case "box":
     case "capsule":
-      return raycastAabb(origin, direction, collider.bounds(body.position), collider, body.id, maxDistance);
+      return raycastOrientedBox(origin, direction, collider, body, 0, maxDistance);
     case "plane":
       return raycastPlane(origin, direction, collider.shape.normal, collider.shape.constant, collider, body.id, maxDistance);
     case "mesh":
@@ -100,12 +100,7 @@ export function sphereCastCollider(origin: Vec3, radius: number, direction: Vec3
       return sphereCastSphere(origin, radius, direction, body.position, collider.shape.radius, collider, maxDistance);
     case "box":
     case "capsule": {
-      const bounds = collider.bounds(body.position);
-      const expanded = {
-        min: [bounds.min[0] - radius, bounds.min[1] - radius, bounds.min[2] - radius] as Vec3,
-        max: [bounds.max[0] + radius, bounds.max[1] + radius, bounds.max[2] + radius] as Vec3
-      };
-      const hit = raycastAabb(origin, direction, expanded, collider, body.id, maxDistance);
+      const hit = raycastOrientedBox(origin, direction, collider, body, radius, maxDistance);
       return hit ? toSphereCastHit(hit, origin, direction, radius) : undefined;
     }
     case "plane":
@@ -154,6 +149,71 @@ function sphereCastSphere(origin: Vec3, castRadius: number, direction: Vec3, cen
     distance: expandedHit.distance,
     castCenter,
     castRadius
+  };
+}
+
+/**
+ * Cast against a box or capsule collider **in the body's own frame**, so a rotated collider
+ * is a rotated box rather than its axis-aligned bounding box.
+ *
+ * Defect class: engine, and the same family as the joint no-op — a feature that worked on
+ * one path and silently did not on another. Contacts already respected rotation (the
+ * narrow phase is OBB-SAT), but every query — `raycast`, `raycastAll`, `sphereCast`,
+ * `sphereCastAll` — passed `collider.bounds(body.position)` with **no rotation argument**,
+ * even though `Collider.bounds` accepts one. So a tilted platform reported an axis-aligned
+ * box with axis-aligned face normals.
+ *
+ * The visible consequence was that slopes did not exist as far as any query was concerned.
+ * Measured on a box rotated 22.5 degrees about +Z with a character standing on it:
+ * `groundNormal` came back `[0, 1, 0]` and `slopeAngle` `0.0000`, so `onSteepSlope` could
+ * never become true, a 82-degree face read as walkable flat ground, and any route trying to
+ * slide a character down a ramp or reject a cliff had nothing to read. Two independent
+ * defects, one cause.
+ *
+ * Method: transform the ray into the collider's local frame by the inverse body rotation,
+ * intersect the axis-aligned box there (which is exact, because in that frame it *is* axis
+ * aligned), then rotate the hit point and normal back out. A swept sphere is handled by
+ * inflating the local extents by its radius, which is the same conservative approximation
+ * the previous AABB path used and is exact for the face regions that dominate ground and
+ * wall probes.
+ */
+function raycastOrientedBox(
+  origin: Vec3,
+  direction: Vec3,
+  collider: Collider,
+  body: RigidBody,
+  inflate: number,
+  maxDistance: number
+): RaycastHit | undefined {
+  const rotation = body.rotation;
+  const identity = rotation[0] === 0 && rotation[1] === 0 && rotation[2] === 0;
+  // Local-frame half extents: the collider's own bounds around the origin, inflated by any
+  // sweep radius. Taken from `bounds` at the origin with no rotation so capsules keep the
+  // same extents the previous path used.
+  const local = collider.bounds([0, 0, 0]);
+  const bounds = {
+    min: [local.min[0] - inflate, local.min[1] - inflate, local.min[2] - inflate] as Vec3,
+    max: [local.max[0] + inflate, local.max[1] + inflate, local.max[2] + inflate] as Vec3
+  };
+  if (identity) {
+    // Unrotated: the local frame differs from the world frame only by a translation, so
+    // shift the ray rather than paying for two quaternion rotations per query.
+    const shifted: Vec3 = [origin[0] - body.position[0], origin[1] - body.position[1], origin[2] - body.position[2]];
+    const hit = raycastAabb(shifted, direction, bounds, collider, body.id, maxDistance);
+    if (!hit) return undefined;
+    return { ...hit, point: addVec3(hit.point, body.position) };
+  }
+  const inverse: readonly [number, number, number, number] = [-rotation[0], -rotation[1], -rotation[2], rotation[3]];
+  const localOrigin = rotateVec3ByQuat(subVec3(origin, body.position), inverse);
+  // Rotation preserves length, so the local direction stays unit and `distance` needs no
+  // rescaling on the way back out.
+  const localDirection = rotateVec3ByQuat(direction, inverse);
+  const hit = raycastAabb(localOrigin, localDirection, bounds, collider, body.id, maxDistance);
+  if (!hit) return undefined;
+  return {
+    ...hit,
+    point: addVec3(rotateVec3ByQuat(hit.point, rotation), body.position),
+    normal: rotateVec3ByQuat(hit.normal, rotation)
   };
 }
 

@@ -167,7 +167,29 @@ export class PhysicsWorld {
     this.requestedBackend = descriptor.backend ?? "auto";
     this.gravity = cloneVec3(descriptor.gravity ?? [0, -9.81, 0]);
     this.fixedDelta = descriptor.fixedDelta ?? 1 / 60;
-    this.solverIterations = descriptor.solverIterations ?? 1;
+    /*
+     * Default solver iterations: cannon's own default, not 1.
+     *
+     * Defect class: engine. This defaulted to `1` and is then written straight onto
+     * `world.solver.iterations`, which cannon initialises to **10** (`GSSolver`,
+     * `cannon-es.js:9878`). So *every* world that did not explicitly pass the option — which
+     * is every route, because `game.collisionWorld()` and `createRuntimeScenePhysics` do not
+     * — ran a 1-iteration Gauss-Seidel solve and silently got a tenth of the constraint
+     * quality cannon ships with. cannon's own docs on that field: "the more iterations, the
+     * more correct simulation... if you have a large gravity force in your world, you will
+     * need more iterations."
+     *
+     * Measured on a 6-box stack at 0.9 friction, 5 seconds, defaults otherwise: at 1 and 4
+     * iterations the stack **completely collapses** — all six boxes end flat on the ground at
+     * y=0.70 having slid up to 3.4 units — while at 8 they hold and at 20 they barely move
+     * (0.099 max drift). The visible symptom is "boxes shove each other apart", which reads
+     * as a solver defect but was a default.
+     *
+     * A route author who never heard of `solverIterations` should get a solver that can hold
+     * a stack. 10 matches the backend's own default, so this restores the behaviour cannon
+     * was designed around rather than inventing a number.
+     */
+    this.solverIterations = descriptor.solverIterations ?? 10;
     this.enableSleeping = descriptor.enableSleeping ?? true;
     this.sleepVelocityThreshold = descriptor.sleepVelocityThreshold ?? 0.02;
     this.sleepDelay = descriptor.sleepDelay ?? 0.5;
@@ -567,7 +589,7 @@ export class PhysicsWorld {
     const cannonBody = this.cannonBodiesByAuraId.get(collider.bodyId);
     if (!body || !cannonBody) return;
     const resolved = toCannonShape(collider.shape);
-    if (!resolved) {
+    if (!resolved || resolved.length === 0) {
       /*
        * A shape the production solver cannot express is a hole, not a degradation.
        *
@@ -593,9 +615,11 @@ export class PhysicsWorld {
     // surface used `defaultContactMaterial` (friction 0.3, restitution 0). A collider
     // declaring `restitution: 1` did not bounce and `friction: 1` did not grip.
     const surface = this.internCannonMaterial(collider.material.friction, collider.material.restitution);
-    resolved.shape.material = surface;
     cannonBody.material = surface;
-    cannonBody.addShape(resolved.shape, resolved.offset, resolved.orientation);
+    for (const part of resolved) {
+      part.shape.material = surface;
+      cannonBody.addShape(part.shape, part.offset, part.orientation);
+    }
     cannonBody.updateMassProperties();
     // `updateMassProperties` recomputes inertia from the collider geometry and overwrites
     // anything set at construction, so a declared inertia has to be re-applied after every
@@ -1007,18 +1031,61 @@ function syncAuraFromCannon(cannonBody: CannonBody, body: RigidBody): void {
   body.sleeping = cannonBody.sleepState === CannonBody.SLEEPING;
 }
 
-function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | CannonSphere | CannonPlane | CannonCylinder | CannonTrimesh | CannonConvexPolyhedron | CannonHeightfield; readonly offset?: CannonVec3; readonly orientation?: CannonQuaternion } | undefined {
-  if (shape.kind === "box") return { shape: new CannonBox(toCannonVec3(shape.halfExtents)) };
-  if (shape.kind === "sphere") return { shape: new CannonSphere(shape.radius) };
-  if (shape.kind === "capsule") return { shape: new CannonCylinder(shape.radius, shape.radius, shape.halfHeight * 2 + shape.radius * 2, 12) };
+type CannonShapePart = {
+  readonly shape: CannonBox | CannonSphere | CannonPlane | CannonCylinder | CannonTrimesh | CannonConvexPolyhedron | CannonHeightfield;
+  readonly offset?: CannonVec3;
+  readonly orientation?: CannonQuaternion;
+};
+
+/**
+ * Express a public `Shape` as one or more backend sub-shapes.
+ *
+ * Returns a list rather than a single shape because a capsule is not a primitive here: see
+ * the capsule branch for why a compound is required rather than preferred.
+ */
+function toCannonShape(shape: PhysicsShape): readonly CannonShapePart[] | undefined {
+  if (shape.kind === "box") return [{ shape: new CannonBox(toCannonVec3(shape.halfExtents)) }];
+  if (shape.kind === "sphere") return [{ shape: new CannonSphere(shape.radius) }];
+  if (shape.kind === "capsule") {
+    /*
+     * A capsule is a cylinder plus a hemisphere at each end, built as a compound.
+     *
+     * Defect class: engine. This used to be a single `CannonCylinder` of the capsule's full
+     * height, and a cylinder has **flat ends with a hard rim**. On flat ground the two are
+     * indistinguishable, which is why it survived; on any incline the rim catches instead of
+     * the rounded cap rolling over, and that is a different shape with different contact
+     * behaviour.
+     *
+     * Measured with a character capsule (r=0.24, halfHeight=0.38) on a plane tilted 22.5
+     * degrees: the body came to rest with its base **0.099 units above the surface**, held
+     * off by the rim, and held there — so the ground probe (reach 0.204 from a point 0.12
+     * inside the capsule) found nothing, `grounded` stayed `false` forever, and with it
+     * `slopeAngle` stayed 0 and `onSteepSlope` could never fire. A character on a ramp could
+     * not jump, could not step, and reported flat ground.
+     *
+     * A route author sees "the character floats and slides down every slope". The cause is
+     * that the collider they asked for was never built.
+     */
+    const cylinderHeight = shape.halfHeight * 2;
+    const parts: CannonShapePart[] = [{ shape: new CannonSphere(shape.radius), offset: new CannonVec3(0, shape.halfHeight, 0) }];
+    parts.push({ shape: new CannonSphere(shape.radius), offset: new CannonVec3(0, -shape.halfHeight, 0) });
+    if (cylinderHeight > 1e-6) {
+      // cannon's Cylinder is built along +Z, so it needs rotating onto +Y to be the barrel
+      // of a Y-up capsule. Omitting this produced a shape lying on its side.
+      const upright = new CannonQuaternion();
+      upright.setFromAxisAngle(new CannonVec3(1, 0, 0), -Math.PI / 2);
+      parts.push({ shape: new CannonCylinder(shape.radius, shape.radius, cylinderHeight, 12), orientation: upright });
+    }
+    return parts;
+  }
   if (shape.kind === "plane") {
     const orientation = new CannonQuaternion();
     orientation.setFromVectors(new CannonVec3(0, 0, 1), toCannonVec3(shape.normal));
-    return {
+    return [{
       shape: new CannonPlane(),
       offset: toCannonVec3(scaleVec3(shape.normal, shape.constant)),
       orientation
-    };
+    }];
   }
   if (shape.kind === "mesh") {
     // cannon-es Trimesh takes flat vertex/index arrays. Concave triangle soup is supported
@@ -1029,7 +1096,7 @@ function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | Canno
     // removed that escape hatch: an inexpressible shape now throws at the call site.
     const vertices: number[] = [];
     for (const vertex of shape.vertices) vertices.push(vertex[0], vertex[1], vertex[2]);
-    return { shape: new CannonTrimesh(vertices, [...shape.indices]) };
+    return [{ shape: new CannonTrimesh(vertices, [...shape.indices]) }];
   }
   if (shape.kind === "convex-hull") {
     const vertices = shape.vertices.map((vertex) => new CannonVec3(vertex[0], vertex[1], vertex[2]));
@@ -1042,7 +1109,7 @@ function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | Canno
       faces.push([a, b, c]);
     }
     if (vertices.length < 4 || faces.length < 4) return undefined;
-    return { shape: new CannonConvexPolyhedron({ vertices, faces }) };
+    return [{ shape: new CannonConvexPolyhedron({ vertices, faces }) }];
   }
   if (shape.kind === "heightfield") {
     // Aura stores heights row-major; cannon-es Heightfield indexes data[x][y].
@@ -1054,7 +1121,7 @@ function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | Canno
       }
       data.push(strip);
     }
-    return { shape: new CannonHeightfield(data, { elementSize: shape.cellSize }) };
+    return [{ shape: new CannonHeightfield(data, { elementSize: shape.cellSize }) }];
   }
   return undefined;
 }

@@ -227,7 +227,18 @@ describe("deletion-safety (R8)", () => {
 /* short-circuits by prefix. `tests/tooling-calibration/` gets no special handling.              */
 /* ------------------------------------------------------------------------------------------- */
 
-const calibrationScratch = mkdtempSync(join(repoRoot, "tests/tooling-calibration/scratch-"));
+/*
+ * `mkdtempSync` creates the leaf, never the parent.
+ *
+ * `tests/tooling-calibration/` is not tracked (it holds only scratch directories, all of them
+ * removed in `afterAll`) and nothing else creates it, so this file threw
+ * `ENOENT ... mkdtemp` at module scope on a clean checkout and vitest reported
+ * "Failed Suites 1 / no tests". Every calibration case below — the negative half of the R8
+ * gate, the half that proves it does not invent a consumer — was silently not running.
+ */
+const CALIBRATION_ROOT = join(repoRoot, "tests/tooling-calibration");
+mkdirSync(CALIBRATION_ROOT, { recursive: true });
+const calibrationScratch = mkdtempSync(join(CALIBRATION_ROOT, "scratch-"));
 const calibrationReports: string[] = [];
 
 afterAll(() => {
