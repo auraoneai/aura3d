@@ -1,5 +1,5 @@
 import { createGLTFCorpusReport, type GLTFCorpusManifest, type GLTFCorpusReport } from "@aura3d/assets";
-import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
+import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../../../../examples/shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {
   id: "gltf-corpus-gallery",
@@ -60,7 +60,7 @@ if (typeof document !== "undefined") {
 }
 
 async function loadManifest(): Promise<GLTFCorpusManifest> {
-  const response = await fetch("../../tests/assets/corpus/gltf-corpus.manifest.json");
+  const response = await fetch("../../../assets/corpus/gltf-corpus.manifest.json");
   if (!response.ok) {
     throw new Error(`glTF corpus manifest request failed with ${response.status}`);
   }
