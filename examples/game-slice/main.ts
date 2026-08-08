@@ -1,7 +1,7 @@
-import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, sampleMotionMatchingFixture, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
+import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
 import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFRenderResources, type GLTFSkinAsset } from "@aura3d/assets";
 import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio } from "@aura3d/audio";
-import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleGestureHapticsFixture, sampleVirtualTouchJoystickFixture, sampleXRRuntimeFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
+import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleVirtualTouchJoystickFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
   CharacterController,
   CrowdSimulation,
@@ -291,8 +291,6 @@ async function run(): Promise<void> {
   configureBindings(input, "space");
   const inputReplayEvidence = createRuntimeInputReplayEvidence();
   const virtualTouchEvidence = sampleVirtualTouchJoystickFixture();
-  const gestureHapticsEvidence = sampleGestureHapticsFixture({ seed: 0x9e57, gamepadConnected: true });
-  const xrRuntimeEvidence = sampleXRRuntimeFixture({ requestedMode: "immersive-vr", objectCount: 14 });
   const onWindowKeyDown = (event: KeyboardEvent) => input.keyboard.keyDown(event);
   const onWindowKeyUp = (event: KeyboardEvent) => input.keyboard.keyUp(event);
   window.addEventListener("keydown", onWindowKeyDown);
@@ -1130,15 +1128,6 @@ async function run(): Promise<void> {
       minimapEnemyCount: fpsLevelLayout.enemySpawnPoints.length,
       killFeedCount: objectiveState.phase === "won" ? 2 : 1
     });
-    const motionMatching = sampleMotionMatchingFixture({
-      currentPosition: [player.position[0], player.position[1], player.position[2]],
-      moveDirection: [lastInputAxis || 1, 0, objectiveState.collectedPickup ? 0.18 : 0.04],
-      facingDirection: [1, 0, 0],
-      speed: Math.max(0.18, Math.min(1, Math.abs(lastInputAxis) || 0.72)),
-      elapsedSeconds: performance.now() * 0.001,
-      previousPoseId: objectiveState.phase === "won" ? "run-1" : "walk-1",
-      seed: 0x3d2025
-    });
     const spaceWave = sampleSpaceShooterWave({ wave: objectiveState.phase === "won" ? 10 : 4, width: canvas.width, height: canvas.height, seed: 0x4404 });
     const spaceEnvironment = sampleSpaceEnvironmentFixture({
       width: canvas.width,
@@ -1186,9 +1175,6 @@ async function run(): Promise<void> {
         postprocessRealSceneReadback: postprocess.changedPixels > 0,
         physicsController: true,
         oldBranchTwoBoneIkPort: heroReachIk.reached && heroReachIk.endDistanceToTarget < 0.01 && heroReachIk.poleInfluence > 0,
-        oldBranchMotionMatchingPort: motionMatching.databasePoseCount >= 18 && motionMatching.candidateScores.length >= 6 && motionMatching.bestCost <= motionMatching.secondBestCost,
-        motionMatchingTrajectoryPrediction: motionMatching.queryTrajectory.length >= 3 && motionMatching.querySpeed > 0,
-        motionMatchingPoseSelection: motionMatching.selectedTags.length > 0 && motionMatching.costMargin >= 0,
         oldBranchAiNavigationPort: true,
         oldBranchWeightedNavigationPort: navigationGrid.allowDiagonal && navigationRoute.cost > 0,
         aiNavigationPathfinding: navigationRoute.status === "success",
@@ -1239,20 +1225,10 @@ async function run(): Promise<void> {
         inputReplayRecording: inputReplayEvidence.recording.metadata.evidence.recording,
         inputReplayPlayback: inputReplayEvidence.playback.emittedEvents >= inputReplayEvidence.recording.metadata.eventCount,
         inputReplaySeekLoop: inputReplayEvidence.playback.evidence.seek && inputReplayEvidence.playback.loopCount >= 1,
-        oldBranchGestureHapticsPort: gestureHapticsEvidence.source === "origin-master-input-gesture-rumble-adapted" && gestureHapticsEvidence.haptics.hapticsClaimed === false,
-        inputSwipeRotateTelemetry: gestureHapticsEvidence.productionReadiness.swipeRotateTelemetry && gestureHapticsEvidence.gestureSummary.rotateDegrees > 0,
-        inputHapticPatternTelemetry: gestureHapticsEvidence.productionReadiness.hapticPatternTelemetry && gestureHapticsEvidence.haptics.patterns.length >= 5,
-        inputHapticClaimBoundary: gestureHapticsEvidence.productionReadiness.hapticClaimBoundaryTelemetry && gestureHapticsEvidence.blockedClaims.includes("gamepad haptic actuator delivery guarantee"),
         oldBranchVirtualTouchJoystickPort: virtualTouchEvidence.active.evidence.oldCodebasePort && virtualTouchEvidence.active.evidence.virtualJoystick,
         virtualTouchJoystickDeadZone: virtualTouchEvidence.active.evidence.deadZone,
         virtualTouchJoystickClamped: virtualTouchEvidence.active.evidence.clampedMagnitude,
         virtualTouchJoystickRecentered: virtualTouchEvidence.released.value[0] === 0 && virtualTouchEvidence.released.value[1] === 0,
-        oldBranchXrRuntimePort: xrRuntimeEvidence.evidence.oldCodebasePort,
-        xrSessionCapabilityNegotiation: xrRuntimeEvidence.evidence.sessionCapabilityNegotiation,
-        xrInlineFallback: xrRuntimeEvidence.fallbackUsed && xrRuntimeEvidence.webXRSessionClaimed === false,
-        xrControllerInputTelemetry: xrRuntimeEvidence.evidence.controllerInputTelemetry && xrRuntimeEvidence.input.controllerCount >= 2,
-        xrHandGestureTelemetry: xrRuntimeEvidence.input.pinchDetected && xrRuntimeEvidence.input.pointDetected,
-        xrGazeLodTelemetry: xrRuntimeEvidence.evidence.gazeBasedLodTelemetry && xrRuntimeEvidence.gazeLod.selectedLevels.includes("high"),
         objectiveLoop: objectiveState.phase !== undefined,
         animationStateMachine: true,
         screenshotEvidencePath: externalParityScreenshotPath,
@@ -1324,23 +1300,6 @@ async function run(): Promise<void> {
         twoBoneIkUpperLength: Number(heroReachIk.upperLength.toFixed(6)),
         twoBoneIkLowerLength: Number(heroReachIk.lowerLength.toFixed(6)),
         twoBoneIkPoleInfluence: Number(heroReachIk.poleInfluence.toFixed(6)),
-        oldBranchMotionMatchingPort: true,
-        motionMatchingSource: motionMatching.source,
-        motionMatchingDatabasePoses: motionMatching.databasePoseCount,
-        motionMatchingSelectedPose: motionMatching.selectedPoseId,
-        motionMatchingSelectedClip: motionMatching.selectedClip,
-        motionMatchingSelectedTags: motionMatching.selectedTags.join(","),
-        motionMatchingSelectedTime: motionMatching.selectedTime,
-        motionMatchingTransitioned: motionMatching.transitioned,
-        motionMatchingBlendWeight: motionMatching.blendWeight,
-        motionMatchingTransitionDuration: motionMatching.transitionDurationSeconds,
-        motionMatchingTrajectorySamples: motionMatching.queryTrajectory.length,
-        motionMatchingQuerySpeed: motionMatching.querySpeed,
-        motionMatchingFacingAlignment: motionMatching.queryFacingAlignment,
-        motionMatchingBestCost: motionMatching.bestCost,
-        motionMatchingSecondBestCost: motionMatching.secondBestCost,
-        motionMatchingCostMargin: motionMatching.costMargin,
-        motionMatchingHash: motionMatching.hash,
         oldBranchAiNavigationPort: true,
         oldBranchWeightedNavigationPort: navigationGrid.allowDiagonal && navigationRoute.cost > 0,
         navigationGridCells: navigationGrid.width * navigationGrid.height,
@@ -1673,22 +1632,6 @@ async function run(): Promise<void> {
         inputReplayLoopCount: inputReplayEvidence.playback.loopCount,
         inputReplayFirstEventTypes: inputReplayEvidence.firstEventTypes,
         inputReplayState: inputReplayEvidence.playback.state,
-        oldBranchGestureHapticsPort: true,
-        inputGestureHapticsSource: gestureHapticsEvidence.source,
-        inputGestureHapticsHash: gestureHapticsEvidence.hash,
-        inputGestureCount: gestureHapticsEvidence.gestures.length,
-        inputGestureTypes: gestureHapticsEvidence.gestures.map((gesture) => gesture.type).join(","),
-        inputGesturePanDistance: gestureHapticsEvidence.gestureSummary.panDistance,
-        inputGesturePinchScale: gestureHapticsEvidence.gestureSummary.pinchScale,
-        inputGestureSwipeDirection: gestureHapticsEvidence.gestureSummary.swipeDirection,
-        inputGestureRotateDegrees: gestureHapticsEvidence.gestureSummary.rotateDegrees,
-        inputHapticsGamepadConnected: gestureHapticsEvidence.haptics.gamepadConnected,
-        inputHapticsClaimed: gestureHapticsEvidence.haptics.hapticsClaimed,
-        inputHapticPatternCount: gestureHapticsEvidence.haptics.patterns.length,
-        inputHapticQueuedPatterns: gestureHapticsEvidence.haptics.queuedPatterns,
-        inputHapticTotalDurationMs: gestureHapticsEvidence.haptics.totalDurationMs,
-        inputHapticIntensityMultiplier: gestureHapticsEvidence.haptics.intensityMultiplier,
-        inputGestureHapticsBlockedClaims: gestureHapticsEvidence.blockedClaims.join("|"),
         oldBranchVirtualTouchJoystickPort: true,
         virtualTouchJoystickSource: virtualTouchEvidence.active.source,
         virtualTouchJoystickActiveMagnitude: virtualTouchEvidence.active.magnitude,
@@ -1697,29 +1640,6 @@ async function run(): Promise<void> {
         virtualTouchJoystickDeadZone: virtualTouchEvidence.active.deadZone,
         virtualTouchJoystickFloatingCenter: virtualTouchEvidence.active.evidence.floatingCenter,
         virtualTouchJoystickReturnToCenter: virtualTouchEvidence.active.evidence.returnToCenter,
-        oldBranchXrRuntimePort: xrRuntimeEvidence.evidence.oldCodebasePort,
-        xrRuntimeSource: xrRuntimeEvidence.source,
-        xrRuntimeHash: xrRuntimeEvidence.hash,
-        xrRequestedMode: xrRuntimeEvidence.requestedMode,
-        xrFallbackMode: xrRuntimeEvidence.fallbackMode,
-        xrSessionSupported: xrRuntimeEvidence.sessionSupported,
-        xrFallbackUsed: xrRuntimeEvidence.fallbackUsed,
-        xrWebXRSessionClaimed: xrRuntimeEvidence.webXRSessionClaimed,
-        xrDeviceRuntimeClaimed: xrRuntimeEvidence.deviceRuntimeClaimed,
-        xrControllerCount: xrRuntimeEvidence.input.controllerCount,
-        xrTriggerPressed: xrRuntimeEvidence.input.triggerPressed,
-        xrThumbstickMagnitude: xrRuntimeEvidence.input.thumbstickMagnitude,
-        xrPinchDetected: xrRuntimeEvidence.input.pinchDetected,
-        xrPinchStrength: xrRuntimeEvidence.input.pinchStrength,
-        xrPointDetected: xrRuntimeEvidence.input.pointDetected,
-        xrPointConfidence: xrRuntimeEvidence.input.pointConfidence,
-        xrGazeLodHigh: xrRuntimeEvidence.gazeLod.highDetailCount,
-        xrGazeLodMedium: xrRuntimeEvidence.gazeLod.mediumDetailCount,
-        xrGazeLodLow: xrRuntimeEvidence.gazeLod.lowDetailCount,
-        xrGazeLodCulled: xrRuntimeEvidence.gazeLod.culledCount,
-        xrGazeLodUpdatedObjects: xrRuntimeEvidence.gazeLod.updatedObjects,
-        xrGazeLodSelectedLevels: xrRuntimeEvidence.gazeLod.selectedLevels.join(","),
-        xrBlockedClaims: xrRuntimeEvidence.blockedClaims.join("|"),
         pointerLockSupported: pointerLockState.supported,
         pointerLockRequested: pointerLockState.requested,
         pointerLockActive: pointerLockState.active,

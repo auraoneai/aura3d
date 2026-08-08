@@ -105,21 +105,9 @@ const report: ExternalParityRuntimeReport = {
       evidence: ["packages/input/src/InputReplay.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Port bounded old gesture detection and rumble-pattern concepts into current runtime input evidence.",
-      evidence: ["packages/input/src/GestureHapticsFixtures.ts", "examples/game-slice/main.ts", "tests/unit/input/gesture-haptics-fixtures.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
-      task: "Port bounded old motion-matching trajectory/database concepts into current runtime animation evidence.",
-      evidence: ["packages/animation/src/MotionMatchingFixtures.ts", "examples/game-slice/main.ts", "tests/unit/workstream4.physics-animation.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
       task: "Port bounded old virtual touch joystick concepts into current runtime input evidence.",
       evidence: ["packages/input/src/VirtualTouchControls.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
-    {
-      task: "Port bounded old XR session, input, and gaze-LOD concepts into current runtime evidence.",
-      evidence: ["packages/input/src/XRFixtures.ts", "examples/game-slice/main.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    }
   ],
   blockedTasks: [
     "The ExternalParity game slice uses generated local glTF validation assets, not externally licensed production art.",
@@ -234,23 +222,10 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.inputReplayRecording).toBe(true);
     expect(state?.featureEvidence?.inputReplayPlayback).toBe(true);
     expect(state?.featureEvidence?.inputReplaySeekLoop).toBe(true);
-    expect(state?.featureEvidence?.oldBranchGestureHapticsPort).toBe(true);
-    expect(state?.featureEvidence?.inputSwipeRotateTelemetry).toBe(true);
-    expect(state?.featureEvidence?.inputHapticPatternTelemetry).toBe(true);
-    expect(state?.featureEvidence?.inputHapticClaimBoundary).toBe(true);
     expect(state?.featureEvidence?.oldBranchVirtualTouchJoystickPort).toBe(true);
     expect(state?.featureEvidence?.virtualTouchJoystickDeadZone).toBe(true);
     expect(state?.featureEvidence?.virtualTouchJoystickClamped).toBe(true);
     expect(state?.featureEvidence?.virtualTouchJoystickRecentered).toBe(true);
-    expect(state?.featureEvidence?.oldBranchXrRuntimePort).toBe(true);
-    expect(state?.featureEvidence?.xrSessionCapabilityNegotiation).toBe(true);
-    expect(state?.featureEvidence?.xrInlineFallback).toBe(true);
-    expect(state?.featureEvidence?.xrControllerInputTelemetry).toBe(true);
-    expect(state?.featureEvidence?.xrHandGestureTelemetry).toBe(true);
-    expect(state?.featureEvidence?.xrGazeLodTelemetry).toBe(true);
-    expect(state?.featureEvidence?.oldBranchMotionMatchingPort).toBe(true);
-    expect(state?.featureEvidence?.motionMatchingTrajectoryPrediction).toBe(true);
-    expect(state?.featureEvidence?.motionMatchingPoseSelection).toBe(true);
     expect(state?.metrics.oldBranchAiNavigationPort).toBe(true);
     expect(state?.metrics.oldBranchTwoBoneIkPort).toBe(true);
     expect(state?.metrics.twoBoneIkReached).toBe(true);
@@ -258,21 +233,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.twoBoneIkUpperLength ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.twoBoneIkLowerLength ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.twoBoneIkPoleInfluence ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.oldBranchMotionMatchingPort).toBe(true);
-    expect(state?.metrics.motionMatchingSource).toBe("origin-master-motion-matching-system-adapted");
-    expect(Number(state?.metrics.motionMatchingDatabasePoses ?? 0)).toBeGreaterThanOrEqual(18);
-    expect(String(state?.metrics.motionMatchingSelectedPose ?? "")).toMatch(/^(idle|walk|run|strafe|turn|jump)-[0-9]+$/);
-    expect(String(state?.metrics.motionMatchingSelectedClip ?? "")).toMatch(/idle|walk|run|strafe|turn|jump/);
-    expect(String(state?.metrics.motionMatchingSelectedTags ?? "")).not.toBe("");
-    expect(Number(state?.metrics.motionMatchingTransitionDuration ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.motionMatchingBlendWeight ?? -1)).toBeGreaterThanOrEqual(0);
-    expect(Number(state?.metrics.motionMatchingBlendWeight ?? 2)).toBeLessThanOrEqual(1);
-    expect(Number(state?.metrics.motionMatchingTrajectorySamples ?? 0)).toBeGreaterThanOrEqual(3);
-    expect(Number(state?.metrics.motionMatchingQuerySpeed ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.motionMatchingFacingAlignment ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.motionMatchingBestCost ?? 999)).toBeLessThanOrEqual(Number(state?.metrics.motionMatchingSecondBestCost ?? 999));
-    expect(Number(state?.metrics.motionMatchingCostMargin ?? -1)).toBeGreaterThanOrEqual(0);
-    expect(String(state?.metrics.motionMatchingHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
     expect(state?.metrics.oldBranchWeightedNavigationPort).toBe(true);
     expect(state?.metrics.oldBranchSteeringPort).toBe(true);
     expect(state?.metrics.oldBranchBehaviorTreePort).toBe(true);
@@ -468,24 +428,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.inputReplayEmittedEvents ?? 0)).toBeGreaterThanOrEqual(Number(state?.metrics.inputReplayEvents ?? 0));
     expect(Number(state?.metrics.inputReplayLoopCount ?? 0)).toBeGreaterThanOrEqual(1);
     expect(String(state?.metrics.inputReplayFirstEventTypes ?? "")).toContain("key");
-    expect(state?.metrics.oldBranchGestureHapticsPort).toBe(true);
-    expect(state?.metrics.inputGestureHapticsSource).toBe("origin-master-input-gesture-rumble-adapted");
-    expect(String(state?.metrics.inputGestureHapticsHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
-    expect(Number(state?.metrics.inputGestureCount ?? 0)).toBeGreaterThanOrEqual(5);
-    expect(String(state?.metrics.inputGestureTypes ?? "")).toContain("swipe");
-    expect(String(state?.metrics.inputGestureTypes ?? "")).toContain("rotate");
-    expect(Number(state?.metrics.inputGesturePanDistance ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.inputGesturePinchScale ?? 0)).toBeGreaterThan(1);
-    expect(String(state?.metrics.inputGestureSwipeDirection ?? "")).toMatch(/left|right|up|down/);
-    expect(Number(state?.metrics.inputGestureRotateDegrees ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.inputHapticsGamepadConnected).toBe(true);
-    expect(state?.metrics.inputHapticsClaimed).toBe(false);
-    expect(Number(state?.metrics.inputHapticPatternCount ?? 0)).toBeGreaterThanOrEqual(5);
-    expect(Number(state?.metrics.inputHapticQueuedPatterns ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.inputHapticTotalDurationMs ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.inputHapticIntensityMultiplier ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.inputGestureHapticsBlockedClaims ?? "")).toContain("Unity Input System haptics parity");
-    expect(String(state?.metrics.inputGestureHapticsBlockedClaims ?? "")).toContain("Unreal Enhanced Input haptics parity");
     expect(state?.metrics.oldBranchVirtualTouchJoystickPort).toBe(true);
     expect(state?.metrics.virtualTouchJoystickSource).toBe("origin-master-touch-joystick-virtual-input-adapted");
     expect(Number(state?.metrics.virtualTouchJoystickActiveMagnitude ?? 0)).toBeGreaterThan(0.8);
@@ -494,26 +436,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.virtualTouchJoystickDeadZone ?? 0)).toBeGreaterThan(0);
     expect(state?.metrics.virtualTouchJoystickFloatingCenter).toBe(true);
     expect(state?.metrics.virtualTouchJoystickReturnToCenter).toBe(true);
-    expect(state?.metrics.oldBranchXrRuntimePort).toBe(true);
-    expect(state?.metrics.xrRuntimeSource).toBe("origin-master-xr-session-input-foveated-adapted");
-    expect(String(state?.metrics.xrRuntimeHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
-    expect(state?.metrics.xrRequestedMode).toBe("immersive-vr");
-    expect(state?.metrics.xrFallbackMode).toBe("inline");
-    expect(state?.metrics.xrSessionSupported).toBe(false);
-    expect(state?.metrics.xrFallbackUsed).toBe(true);
-    expect(state?.metrics.xrWebXRSessionClaimed).toBe(false);
-    expect(state?.metrics.xrDeviceRuntimeClaimed).toBe(false);
-    expect(Number(state?.metrics.xrControllerCount ?? 0)).toBeGreaterThanOrEqual(2);
-    expect(state?.metrics.xrTriggerPressed).toBe(true);
-    expect(Number(state?.metrics.xrThumbstickMagnitude ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.xrPinchDetected).toBe(true);
-    expect(Number(state?.metrics.xrPinchStrength ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.xrPointDetected).toBe(true);
-    expect(Number(state?.metrics.xrPointConfidence ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.xrGazeLodHigh ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.xrGazeLodUpdatedObjects ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.xrGazeLodSelectedLevels ?? "")).toContain("high");
-    expect(String(state?.metrics.xrBlockedClaims ?? "")).toContain("Unity XR Interaction Toolkit parity");
     expect(Number(state?.metrics.mobileUnlockAttempts ?? 0)).toBeGreaterThanOrEqual(1);
     expect(state?.metrics.bindingPreset).toBe("pointer");
     expect(Number(state?.metrics.scriptHookInit ?? 0)).toBeGreaterThanOrEqual(1);

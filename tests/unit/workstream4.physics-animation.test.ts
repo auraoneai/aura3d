@@ -30,8 +30,7 @@ import {
   applyRootMotion,
   extractRootMotion,
   buildSkinningPalette,
-  solveTwoBoneIk,
-  sampleMotionMatchingFixture
+  solveTwoBoneIk
 } from "../../packages/animation/src/index.js";
 import { AnimationInspector } from "../../packages/debug/src/AnimationInspector.js";
 import { PhysicsDebugAdapter } from "../../packages/debug/src/PhysicsDebugAdapter.js";
@@ -1483,48 +1482,6 @@ test("2D blend tree returns deterministic normalized weights", () => {
   assert.deepEqual(weights.map((entry) => Number(entry.weight.toFixed(6))), [0.251166, 0.561625, 0.187208]);
   assert.throws(() => new BlendTree2D([]), /requires/);
   assert.throws(() => tree.weights([Number.NaN, 0]), /finite/);
-});
-
-test("motion matching fixture scores trajectory poses with bounded old-system evidence", () => {
-  const fixture = sampleMotionMatchingFixture({
-    currentPosition: [0.25, 0, 0.1],
-    moveDirection: [1, 0, 0.12],
-    facingDirection: [1, 0, 0],
-    speed: 0.9,
-    elapsedSeconds: 0.09,
-    previousPoseId: "walk-1",
-    seed: 0x3d2025
-  });
-  const repeat = sampleMotionMatchingFixture({
-    currentPosition: [0.25, 0, 0.1],
-    moveDirection: [1, 0, 0.12],
-    facingDirection: [1, 0, 0],
-    speed: 0.9,
-    elapsedSeconds: 0.09,
-    previousPoseId: "walk-1",
-    seed: 0x3d2025
-  });
-  const slower = sampleMotionMatchingFixture({ speed: 0.18, previousPoseId: "idle-0", seed: 0x3d2025 });
-
-  assert.equal(fixture.id, "external-parity-old-branch-motion-matching-fixture");
-  assert.equal(fixture.source, "origin-master-motion-matching-system-adapted");
-  assert.equal(fixture.hash, repeat.hash);
-  assert.notEqual(fixture.hash, slower.hash);
-  assert.equal(fixture.databasePoseCount, 18);
-  assert.equal(fixture.queryTrajectory.length, 3);
-  assert.ok(fixture.querySpeed > 0);
-  assert.ok(fixture.queryFacingAlignment > 0.9);
-  assert.ok(fixture.candidateScores.length >= 6);
-  assert.ok(fixture.bestCost <= fixture.secondBestCost);
-  assert.ok(fixture.costMargin >= 0);
-  assert.match(fixture.selectedClip, /walk|run|strafe|turn|jump|idle/);
-  assert.ok(fixture.selectedTags.length > 0);
-  assert.ok(fixture.blendWeight >= 0 && fixture.blendWeight <= 1);
-  assert.equal(fixture.transitionDurationSeconds, 0.18);
-  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
-  assert.match(fixture.claimBoundary, /not a full animation database/);
-  assert.throws(() => sampleMotionMatchingFixture({ seed: 1.25 }), /seed/);
-  assert.throws(() => sampleMotionMatchingFixture({ speed: Number.NaN }), /speed/);
 });
 
 test("animation inspector snapshots mixer and skeleton without mutation", () => {

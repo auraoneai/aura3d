@@ -49,6 +49,16 @@ sandbox, and the optional Rapier adapter. Cloth, soft-body, fracture, fluid, and
 volumetric fire/smoke remain unclaimed until executable runtime and browser
 evidence exists.
 
+The input/animation batch removes synthetic gesture/haptics, XR, and
+motion-matching descriptors. The gesture object never received browser pointer
+events or drove an actuator; the XR object never requested a session or consumed
+an XR frame; and the motion-matching object generated its own miniature pose
+database without applying the selected pose to a skeleton. Aura3D retains its
+real gesture recognizer, touch joystick, recording/playback, WebXR session
+controller, animation mixer, skinning, IK, and their direct tests. Claims for
+haptic delivery, headset behavior, hand/eye tracking, foveation, and
+motion-matching remain unavailable until mounted evidence proves them.
+
 ## Evidence
 
 `tests/reports/public-runtime-descriptor-inventory/report.json` is the complete

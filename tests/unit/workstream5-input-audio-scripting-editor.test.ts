@@ -12,8 +12,7 @@ import {
   InteractionSystem,
   parseInputRecording,
   pickingRayFromCamera,
-  sampleVirtualTouchJoystickFixture,
-  sampleXRRuntimeFixture
+  sampleVirtualTouchJoystickFixture
 } from "@aura3d/input";
 import {
   AudioClip,
@@ -299,39 +298,6 @@ describe("input runtime contracts", () => {
     expect(fixture.released.center).toEqual([96, 420]);
   });
 
-  it("samples bounded old XR session, input, and gaze LOD concepts without claiming device parity", () => {
-    const fixture = sampleXRRuntimeFixture({ requestedMode: "immersive-vr", objectCount: 14 });
-
-    expect(fixture.source).toBe("origin-master-xr-session-input-foveated-adapted");
-    expect(fixture.evidence).toMatchObject({
-      oldCodebasePort: true,
-      sessionCapabilityNegotiation: true,
-      gracefulInlineFallback: true,
-      controllerInputTelemetry: true,
-      handGestureTelemetry: true,
-      gazeBasedLodTelemetry: true
-    });
-    expect(fixture.requestedMode).toBe("immersive-vr");
-    expect(fixture.fallbackMode).toBe("inline");
-    expect(fixture.sessionSupported).toBe(false);
-    expect(fixture.fallbackUsed).toBe(true);
-    expect(fixture.webXRSessionClaimed).toBe(false);
-    expect(fixture.deviceRuntimeClaimed).toBe(false);
-    expect(fixture.capabilities.supportedModes).toEqual(["inline"]);
-    expect(fixture.capabilities.unsupportedFeatures).toContain("hand-tracking");
-    expect(fixture.input.controllerCount).toBe(2);
-    expect(fixture.input.triggerPressed).toBe(true);
-    expect(fixture.input.pinchDetected).toBe(true);
-    expect(fixture.input.pinchStrength).toBeGreaterThan(0);
-    expect(fixture.input.pointDetected).toBe(true);
-    expect(fixture.gazeLod.objectCount).toBe(14);
-    expect(fixture.gazeLod.updatedObjects).toBeLessThanOrEqual(fixture.gazeLod.performanceBudget);
-    expect(fixture.gazeLod.selectedLevels).toEqual(expect.arrayContaining(["high", "medium", "low"]));
-    expect(fixture.blockedClaims).toContain("eye-tracked foveated rendering");
-    expect(fixture.blockedClaims).toContain("Unity XR Interaction Toolkit parity");
-    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(fixture.claimBoundary).toContain("does not claim a real WebXR headset session");
-  });
 });
 
 describe("audio runtime contracts", () => {

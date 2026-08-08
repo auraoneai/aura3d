@@ -1,0 +1,8 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's synthetic gesture/haptics, XR, and motion-matching descriptors; real input, WebXR session, animation, skinning, and IK owners remain.",
+  "candidates": [
+    "packages/animation/src/MotionMatchingFixtures.ts",
+    "packages/input/src/GestureHapticsFixtures.ts",
+    "packages/input/src/XRFixtures.ts"
+  ]
+}

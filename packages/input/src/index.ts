@@ -2,8 +2,6 @@ export { ActionMap } from "./ActionMap";
 export type { ActionBinding, AxisBinding } from "./ActionMap";
 export { GamepadDevice } from "./GamepadDevice";
 export type { GamepadButtonLike, GamepadLike } from "./GamepadDevice";
-export { sampleGestureHapticsFixture } from "./GestureHapticsFixtures";
-export type { GestureHapticsFixture, GestureHapticsFixtureOptions, GestureHapticsGestureType, GestureHapticsPatternName } from "./GestureHapticsFixtures";
 export { GestureRecognizer } from "./GestureRecognizer";
 export type { Gesture } from "./GestureRecognizer";
 export { InputSnapshot } from "./InputSnapshot";
@@ -33,8 +31,6 @@ export { PointerDevice } from "./PointerDevice";
 export type { PointerEventLike, WheelEventLike } from "./PointerDevice";
 export { VirtualTouchJoystick, sampleVirtualTouchJoystickFixture } from "./VirtualTouchControls";
 export type { VirtualJoystickConfig, VirtualTouchJoystickSnapshot, VirtualTouchPoint } from "./VirtualTouchControls";
-export { sampleXRRuntimeFixture } from "./XRFixtures";
-export type { XRFixtureLodLevel, XRFixtureOptions, XRFixtureSessionMode, XRRuntimeFixture } from "./XRFixtures";
 export { WebXRSessionController } from "./WebXRSessionController";
 export type {
   A3DXRFrameLike,

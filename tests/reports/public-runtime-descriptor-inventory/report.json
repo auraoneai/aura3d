@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T22:32:56.691Z",
+  "generatedAt": "2026-08-08T22:38:34.517Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -11,35 +11,15 @@
     "*Reference"
   ],
   "summary": {
-    "modules": 16,
-    "lines": 6225,
+    "modules": 13,
+    "lines": 5589,
     "retainedRuntimeOrContracts": 6,
     "deleteAfterR8": 0,
-    "migrateThenDelete": 10,
+    "migrateThenDelete": 7,
     "unclassified": 0,
-    "booleanClaimModulesRejectedAsRuntimeProof": 8
+    "booleanClaimModulesRejectedAsRuntimeProof": 5
   },
   "modules": [
-    {
-      "path": "packages/animation/src/MotionMatchingFixtures.ts",
-      "package": "animation",
-      "lines": 254,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "packages/animation/src/browser-index.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/tools/deletion-safety.test.ts",
-        "tests/unit/workstream4.physics-animation.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "transitioned"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
     {
       "path": "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
       "package": "editor-runtime",
@@ -231,60 +211,6 @@
       "disposition": "retain"
     },
     {
-      "path": "packages/input/src/GestureHapticsFixtures.ts",
-      "package": "input",
-      "lines": 179,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/input/gesture-haptics-fixtures.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "gamepadConnected",
-        "tapDetected",
-        "gamepadConnected",
-        "loop",
-        "gestureTelemetry",
-        "swipeRotateTelemetry",
-        "hapticPatternTelemetry",
-        "hapticClaimBoundaryTelemetry"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/input/src/XRFixtures.ts",
-      "package": "input",
-      "lines": 203,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/game-slice/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/unit/workstream5-input-audio-scripting-editor.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "sessionSupported",
-        "fallbackUsed",
-        "oldCodebasePort",
-        "sessionCapabilityNegotiation",
-        "gracefulInlineFallback",
-        "controllerInputTelemetry",
-        "handGestureTelemetry",
-        "gazeBasedLodTelemetry",
-        "triggerPressed",
-        "squeezePressed",
-        "pinchDetected",
-        "pointDetected"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
       "path": "packages/rendering/src/ArchitecturalLightingFixtures.ts",
       "package": "rendering",
       "lines": 241,
@@ -332,7 +258,8 @@
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
         "examples/large-world-streaming/main.ts",
-        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
+        "tests/unit/rendering/procedural-texture-fixtures.test.ts",
+        "tests/unit/tools/deletion-safety.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -416,7 +343,6 @@
         "packages/animation/src/IK.ts",
         "packages/animation/src/Inertialization.ts",
         "packages/animation/src/Keyframe.ts",
-        "packages/animation/src/MotionMatchingFixtures.ts",
         "packages/animation/src/RootMotion.ts",
         "packages/animation/src/Skeleton.ts",
         "packages/animation/src/SpringBones.ts",

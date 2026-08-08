@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T22:32:53.154Z",
+  "generatedAt": "2026-08-08T22:38:26.336Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
+  "sourceCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -16,7 +16,7 @@
   ],
   "packageCount": 28,
   "subsystemCount": 35,
-  "sourceFilesClassified": 883,
+  "sourceFilesClassified": 880,
   "packages": [
     {
       "package": "animation",
@@ -24,8 +24,8 @@
       "published": true,
       "disposition": "AURA-CORE",
       "source": {
-        "lines": 7783,
-        "bytes": 280267
+        "lines": 7527,
+        "bytes": 269457
       },
       "dist": {
         "jsFiles": 47,
@@ -215,7 +215,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 44,
+        "sourceFiles": 43,
         "testMentions": 19,
         "docsMentions": 13
       }
@@ -2233,8 +2233,8 @@
       "published": true,
       "disposition": "AURA-CORE",
       "source": {
-        "lines": 2369,
-        "bytes": 82979
+        "lines": 1983,
+        "bytes": 68337
       },
       "dist": {
         "jsFiles": 27,
@@ -2348,7 +2348,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 26,
+        "sourceFiles": 24,
         "testMentions": 15,
         "docsMentions": 6
       }
@@ -2752,6 +2752,7 @@
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/system-baselines.ts",
           "tests/reports/browser-entry-purity.json",
+          "tests/reports/descriptor-physics-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/reports/optional-rapier-physics/report.json",
           "tests/templates/template-verification.test.ts",
@@ -2814,7 +2815,7 @@
         "source": 47,
         "dynamicImport": 7,
         "route": 11,
-        "fixture": 26,
+        "fixture": 27,
         "cliOrGenerator": 6,
         "docs": 29,
         "externalConsumer": 0
@@ -2822,7 +2823,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 28,
-        "testMentions": 26,
+        "testMentions": 27,
         "docsMentions": 29
       }
     },
@@ -4312,7 +4313,6 @@
         "packages/animation/src/Keyframe.ts",
         "packages/animation/src/LocomotionController.ts",
         "packages/animation/src/LocomotionKit.ts",
-        "packages/animation/src/MotionMatchingFixtures.ts",
         "packages/animation/src/MotionQuality.ts",
         "packages/animation/src/RigQuality.ts",
         "packages/animation/src/RootMotion.ts",
@@ -4333,13 +4333,13 @@
         "packages/animation/src/threejs-compatibility/SkinnedMesh.ts",
         "packages/animation/src/threejs-compatibility/index.ts"
       ],
-      "lines": 7783,
-      "bytes": 280267,
+      "lines": 7527,
+      "bytes": 269457,
       "compiledCost": {
-        "compiledFiles": 44,
-        "rawBytes": 224578,
-        "gzipBytes": 51730,
-        "brotliBytes": 43344,
+        "compiledFiles": 43,
+        "rawBytes": 215987,
+        "gzipBytes": 49680,
+        "brotliBytes": 41479,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -4396,6 +4396,7 @@
         "docs/api/editor-visual-scripting.md",
         "docs/api/game-runtime.md",
         "docs/api/public-api.md",
+        "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
         "docs/architecture/claim-lineage.md",
         "docs/concepts/animation.md",
         "docs/examples/fighting-game.md",
@@ -4472,7 +4473,6 @@
         "tests/browser/character-foot-ik.spec.ts",
         "tests/browser/createAuraApp-animation-bridge-contract.spec.ts",
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
         "tests/browser/threejs-parity-animation-keyframes-parity.spec.ts",
         "tests/browser/threejs-parity-animation-multiple-parity.spec.ts",
         "tests/browser/threejs-parity-animation-walk-parity.spec.ts",
@@ -4484,7 +4484,6 @@
         "tests/performance/animation-crowd-baseline.ts",
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/system-baselines.ts",
-        "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -4509,7 +4508,6 @@
         "tests/unit/runtime-edge-coverage.test.ts",
         "tests/unit/scene/hierarchy-serialization.test.ts",
         "tests/unit/three-compat/three-compat-threejs-inventory.test.ts",
-        "tests/unit/tools/deletion-safety.test.ts",
         "tests/unit/workstream4.physics-animation.test.ts",
         "tools/animation-engine-docs-claims/index.ts",
         "tools/animation-engine-inertialization-readiness/index.ts",
@@ -4545,7 +4543,7 @@
         "tools/threejs-parity-threejs-inventory/index.ts",
         "tools/webgpu-feature-matrix/index.ts"
       ],
-      "maintenanceReferenceCount": 201
+      "maintenanceReferenceCount": 199
     },
     {
       "id": "apps-general",
@@ -5532,7 +5530,6 @@
         "packages/animation/src/HumanoidBoneInference.ts",
         "packages/animation/src/Inertialization.ts",
         "packages/animation/src/LocomotionController.ts",
-        "packages/animation/src/MotionMatchingFixtures.ts",
         "packages/animation/src/RootMotion.ts",
         "packages/animation/src/library/standardHumanoidClips.ts",
         "packages/apps/package.json",
@@ -5781,6 +5778,7 @@
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
+        "tests/reports/descriptor-physics-delete-final.json",
         "tests/reports/descriptor-scripting-delete-final.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
@@ -6418,6 +6416,7 @@
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
+        "tests/reports/descriptor-physics-delete-final.json",
         "tests/reports/descriptor-scripting-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -6483,7 +6482,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 204
+      "maintenanceReferenceCount": 205
     },
     {
       "id": "debug-general",
@@ -6658,7 +6657,6 @@
         "packages/engine/src/agent-api/index.ts",
         "packages/engine/src/animation-studio/episode-document.ts",
         "packages/engine/src/ecs/ECSRenderSource.ts",
-        "packages/input/src/GestureHapticsFixtures.ts",
         "packages/physics-rapier/src/index.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/SurfaceQuery.ts",
@@ -6667,7 +6665,6 @@
         "packages/rendering/src/PrimitiveSubmissionAudit.ts",
         "src/aura-assets.ts",
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
         "tests/browser/threejs-parity-fat-lines-harness.ts",
         "tests/integration/animation-root-motion-scene-ecs.test.ts",
         "tests/integration/physics-animation-scene-ecs.test.ts",
@@ -6679,7 +6676,6 @@
         "tests/unit/ecs/ecs-render-integration.test.ts",
         "tests/unit/ecs/runtime.test.ts",
         "tests/unit/engine/ecs-render-bridge.test.ts",
-        "tests/unit/input/gesture-haptics-fixtures.test.ts",
         "tests/unit/physics/ccd-or-fast-body.test.ts",
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/tools/deletion-safety.test.ts",
@@ -6691,7 +6687,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/requirements-trace/index.ts"
       ],
-      "maintenanceReferenceCount": 87
+      "maintenanceReferenceCount": 84
     },
     {
       "id": "editor-evidence-fixtures",
@@ -9386,7 +9382,6 @@
         "packages/input/src/GamepadDevice.ts",
         "packages/input/src/GamepadInput.ts",
         "packages/input/src/GestureControls.ts",
-        "packages/input/src/GestureHapticsFixtures.ts",
         "packages/input/src/GestureRecognizer.ts",
         "packages/input/src/InputReplay.ts",
         "packages/input/src/InputSnapshot.ts",
@@ -9398,7 +9393,6 @@
         "packages/input/src/PointerDevice.ts",
         "packages/input/src/VirtualTouchControls.ts",
         "packages/input/src/WebXRSessionController.ts",
-        "packages/input/src/XRFixtures.ts",
         "packages/input/src/controls/CameraRig.ts",
         "packages/input/src/controls/ControlTypes.ts",
         "packages/input/src/controls/EditorFlyControls.ts",
@@ -9409,13 +9403,13 @@
         "packages/input/src/controls/ThirdPersonFollowControls.ts",
         "packages/input/src/index.ts"
       ],
-      "lines": 2369,
-      "bytes": 82979,
+      "lines": 1983,
+      "bytes": 68337,
       "compiledCost": {
-        "compiledFiles": 25,
-        "rawBytes": 61596,
-        "gzipBytes": 13557,
-        "brotliBytes": 11750,
+        "compiledFiles": 23,
+        "rawBytes": 51307,
+        "gzipBytes": 10744,
+        "brotliBytes": 9470,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -9467,7 +9461,6 @@
         "tests/browser/threejs-parity-orbit-controls.spec.ts",
         "tests/fixtures/input-action-binding.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/controls/exported-controls-resolution.test.ts",
         "tests/unit/controls/interaction-controls.test.ts",
@@ -9495,7 +9488,7 @@
         "tools/three-compat-migration-readiness/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 75
+      "maintenanceReferenceCount": 74
     },
     {
       "id": "materials-general",
@@ -12768,7 +12761,6 @@
         "tests/browser/rendering-webgl2-harness.ts",
         "tests/browser/rendering-webgl2.spec.ts",
         "tests/browser/rendering-webgpu.spec.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
         "tests/browser/runtime-parity-contact-shadow-parity.ts",
         "tests/browser/runtime-parity-material-extension-parity.ts",
         "tests/browser/runtime-parity-material-extensions.ts",
@@ -12956,7 +12948,6 @@
         "tests/unit/workflows/material-studio-workflow.test.ts",
         "tests/unit/workflows/production-runtime-workflows.test.ts",
         "tests/unit/workflows/scene-showcase-workflow.test.ts",
-        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
         "tests/unit/workstream5-runtime.test.ts",
         "tests/visual/editor-app-pixels.spec.ts",
         "tests/visual/pbr-environment-pixels.spec.ts",
@@ -13100,7 +13091,7 @@
         "tsconfig.base.json",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 900
+      "maintenanceReferenceCount": 898
     },
     {
       "id": "scene-general",

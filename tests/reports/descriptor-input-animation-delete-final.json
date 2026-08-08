@@ -1,0 +1,480 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-08T22:40:34.737Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/animation/src/MotionMatchingFixtures.ts",
+      "pass": true,
+      "detail": "packages/animation/src/MotionMatchingFixtures.ts: all six R8 points empty across 5019 scanned files (6722 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/input/src/GestureHapticsFixtures.ts",
+      "pass": true,
+      "detail": "packages/input/src/GestureHapticsFixtures.ts: all six R8 points empty across 5019 scanned files (33 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/input/src/XRFixtures.ts",
+      "pass": true,
+      "detail": "packages/input/src/XRFixtures.ts: all six R8 points empty across 5019 scanned files (33 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/animation/src/MotionMatchingFixtures.ts",
+    "packages/input/src/GestureHapticsFixtures.ts",
+    "packages/input/src/XRFixtures.ts"
+  ],
+  "expandedFileCount": 3,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5019,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/animation/src/MotionMatchingFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 255,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/animation/src/MotionMatchingFixtures.ts",
+        "MotionMatchingFixtures.ts",
+        "MotionMatchingFixtures",
+        "@aura3d/animation/src/MotionMatchingFixtures",
+        "@aura3d/animation/MotionMatchingFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 6722,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:299",
+          "detail": "\"./MotionMatchingFixtures.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:7",
+          "detail": "\"id\": \"r8:packages/animation/src/MotionMatchingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:9",
+          "detail": "\"detail\": \"packages/animation/src/MotionMatchingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/animation/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:149; generated-registry-consumer "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:198",
+          "detail": "\"r8:packages/animation/src/MotionMatchingFixtures.ts: packages/animation/src/MotionMatchingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/animation/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parit"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:238",
+          "detail": "\"packages/animation/src/MotionMatchingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:291",
+          "detail": "\"path\": \"packages/animation/src/MotionMatchingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:296",
+          "detail": "\"packages/animation/src/MotionMatchingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:297",
+          "detail": "\"MotionMatchingFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:298",
+          "detail": "\"MotionMatchingFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:299",
+          "detail": "\"@aura3d/animation/src/MotionMatchingFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:300",
+          "detail": "\"@aura3d/animation/MotionMatchingFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:314",
+          "detail": "\"detail\": \"evidence: [\\\"packages/animation/src/MotionMatchingFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream4.physics-animation.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-p"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:341",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/animation/src/MotionMatchingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:346",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/animation/src/MotionMatchingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/animation/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:149; generated-regi"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:351",
+          "detail": "\"detail\": \"\\\"r8:packages/animation/src/MotionMatchingFixtures.ts: packages/animation/src/MotionMatchingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/animation/src/index.ts:25; runtime-consumer @ tests/browser/runtime-ex"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:356",
+          "detail": "\"detail\": \"\\\"packages/animation/src/MotionMatchingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:361",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/animation/src/MotionMatchingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:366",
+          "detail": "\"detail\": \"\\\"packages/animation/src/MotionMatchingFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:391",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/animation/src/MotionMatchingFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream4.physics-animation.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:396",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/animation/src/MotionMatchingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:401",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/animation/src/MotionMatchingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/animation/src/index.ts:25; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:406",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/animation/src/MotionMatchingFixtures.ts: packages/animation/src/MotionMatchingFixtures.ts: 4 blocking reference(s) — runtime-consumer @ packages/animation/src/index.ts:25; runtime-consumer @ tests/br"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:411",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/animation/src/MotionMatchingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:416",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/animation/src/MotionMatchingFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:421",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/animation/src/MotionMatchingFixtures.ts\\\\\\\",\\\"\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/input/src/GestureHapticsFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 180,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/input/src/GestureHapticsFixtures.ts",
+        "GestureHapticsFixtures.ts",
+        "GestureHapticsFixtures",
+        "@aura3d/input/src/GestureHapticsFixtures",
+        "@aura3d/input/GestureHapticsFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 33,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:47",
+          "detail": "\"id\": \"r8:packages/input/src/GestureHapticsFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:49",
+          "detail": "\"detail\": \"packages/input/src/GestureHapticsFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:5; runtime-consumer @ packages/input/src/index.ts:6; runtime-consumer @ tests/browser/runtime-external-parity."
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:206",
+          "detail": "\"r8:packages/input/src/GestureHapticsFixtures.ts: packages/input/src/GestureHapticsFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:5; runtime-consumer @ packages/input/src/index.ts:6; runtime-consumer @"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:246",
+          "detail": "\"packages/input/src/GestureHapticsFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35028",
+          "detail": "\"path\": \"packages/input/src/GestureHapticsFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35033",
+          "detail": "\"packages/input/src/GestureHapticsFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35034",
+          "detail": "\"GestureHapticsFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35035",
+          "detail": "\"GestureHapticsFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35036",
+          "detail": "\"@aura3d/input/src/GestureHapticsFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35037",
+          "detail": "\"@aura3d/input/GestureHapticsFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35056",
+          "detail": "\"detail\": \"evidence: [\\\"packages/input/src/GestureHapticsFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/input/gesture-haptics-fixtures.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-pari"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35076",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/input/src/GestureHapticsFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35081",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/input/src/GestureHapticsFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:5; runtime-consumer @ packages/input/src/index.ts:6; runtime-consumer @ tests/browser/runtime-ex"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35086",
+          "detail": "\"detail\": \"\\\"r8:packages/input/src/GestureHapticsFixtures.ts: packages/input/src/GestureHapticsFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:5; runtime-consumer @ packages/input/src/index.ts:6; runtim"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35091",
+          "detail": "\"detail\": \"\\\"packages/input/src/GestureHapticsFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35096",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/input/src/GestureHapticsFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35101",
+          "detail": "\"detail\": \"\\\"packages/input/src/GestureHapticsFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35126",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/input/src/GestureHapticsFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/input/gesture-haptics-fixtures.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35131",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/input/src/GestureHapticsFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35136",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/input/src/GestureHapticsFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:5; runtime-consumer @ packages/input/src/index.ts:6; runtime-consumer @ test"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35141",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/input/src/GestureHapticsFixtures.ts: packages/input/src/GestureHapticsFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:5; runtime-consumer @ packages/input/src/in"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35146",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/input/src/GestureHapticsFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35151",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/input/src/GestureHapticsFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35156",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/input/src/GestureHapticsFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35161",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/input/src/GestureHapticsFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/input/gesture-haptics-fixtures.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"te"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/input/src/XRFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 204,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/input/src/XRFixtures.ts",
+        "XRFixtures.ts",
+        "XRFixtures",
+        "@aura3d/input/src/XRFixtures",
+        "@aura3d/input/XRFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 33,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:57",
+          "detail": "\"id\": \"r8:packages/input/src/XRFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:59",
+          "detail": "\"detail\": \"packages/input/src/XRFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:36; runtime-consumer @ packages/input/src/index.ts:37; runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:15"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:208",
+          "detail": "\"r8:packages/input/src/XRFixtures.ts: packages/input/src/XRFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:36; runtime-consumer @ packages/input/src/index.ts:37; runtime-consumer @ tests/browser/runtime"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:248",
+          "detail": "\"packages/input/src/XRFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35409",
+          "detail": "\"path\": \"packages/input/src/XRFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35414",
+          "detail": "\"packages/input/src/XRFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35415",
+          "detail": "\"XRFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35416",
+          "detail": "\"XRFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35417",
+          "detail": "\"@aura3d/input/src/XRFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35418",
+          "detail": "\"@aura3d/input/XRFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35437",
+          "detail": "\"detail\": \"evidence: [\\\"packages/input/src/XRFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/workstream5-input-audio-scripting-editor.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-parity"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35457",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/input/src/XRFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35462",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/input/src/XRFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:36; runtime-consumer @ packages/input/src/index.ts:37; runtime-consumer @ tests/browser/runtime-external-par"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35467",
+          "detail": "\"detail\": \"\\\"r8:packages/input/src/XRFixtures.ts: packages/input/src/XRFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:36; runtime-consumer @ packages/input/src/index.ts:37; runtime-consumer @ tests/bro"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35472",
+          "detail": "\"detail\": \"\\\"packages/input/src/XRFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35477",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/input/src/XRFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35482",
+          "detail": "\"detail\": \"\\\"packages/input/src/XRFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35507",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/input/src/XRFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/workstream5-input-audio-scripting-editor.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\", \\"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35512",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"id\\\\\\\": \\\\\\\"r8:packages/input/src/XRFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35517",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"packages/input/src/XRFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:36; runtime-consumer @ packages/input/src/index.ts:37; runtime-consumer @ tests/browser/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35522",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"r8:packages/input/src/XRFixtures.ts: packages/input/src/XRFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/input/src/index.ts:36; runtime-consumer @ packages/input/src/index.ts:37; runtime-cons"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35527",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/input/src/XRFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35532",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"path\\\\\\\": \\\\\\\"packages/input/src/XRFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35537",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/input/src/XRFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:35542",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/input/src/XRFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/workstream5-input-audio-scripting-editor.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"test"
+        }
+      ],
+      "proseMentionsTruncated": true
+    }
+  ]
+}

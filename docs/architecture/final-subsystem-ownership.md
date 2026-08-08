@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `876f80044f97230feab1afd6d7efb6171c840daa`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `ff7abcc9f97028a20f82818166ab7581d1a787b2`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -8,7 +8,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 
 | Package | Disposition | Source lines | Source consumers | Public exports | Built JS gzip | Removal blocked by public export |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `@aura3d/animation` | `AURA-CORE` | 7783 | 74 | 1 | 53722 | yes |
+| `@aura3d/animation` | `AURA-CORE` | 7527 | 74 | 1 | 53722 | yes |
 | `@aura3d/apps` | `AURA-MOAT` | 162 | 16 | 1 | 1190 | yes |
 | `@aura3d/asset-index` | `AURA-MOAT` | 3438 | 35 | 1 | 24286 | yes |
 | `@aura3d/assets` | `AURA-MOAT` | 15823 | 88 | 3 | 109159 | yes |
@@ -23,7 +23,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/editor-runtime` | `OPTIONAL-PLUGIN` | 7915 | 28 | 1 | 50811 | yes |
 | `@aura3d/engine-runtime` | `AURA-MOAT` | 56873 | 11 | 3 | 409090 | no |
 | `@aura3d/environments` | `AURA-CORE` | 464 | 5 | 2 | 3050 | yes |
-| `@aura3d/input` | `AURA-CORE` | 2369 | 34 | 1 | 14695 | yes |
+| `@aura3d/input` | `AURA-CORE` | 1983 | 34 | 1 | 14695 | yes |
 | `@aura3d/materials` | `AURA-CORE` | 339 | 5 | 2 | 2760 | yes |
 | `@aura3d/math` | `AURA-CORE` | 1220 | 49 | 1 | 8067 | yes |
 | `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 196 | 7 | 1 | 0 | yes |
@@ -43,7 +43,7 @@ Every package source file is assigned exactly once. General rows inherit the pac
 
 | Subsystem | Package | Disposition | Files | Lines | Built gzip | Maintenance refs | Decision |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 201 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `animation-general` | `animation` | `AURA-CORE` | 43 | 7527 | 49680 | 199 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `apps-general` | `apps` | `AURA-MOAT` | 1 | 162 | 1190 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 1 | 65 | 674 | 5 | Remove evidence-only source from the published runtime after consumer proof. |
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
@@ -52,9 +52,9 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 792 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 68 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 204 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 205 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 87 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 84 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 4 | Move fixtures out of the optional editor runtime. |
 | `editor-general` | `editor` | `OPTIONAL-PLUGIN` | 1 | 1 | 93 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-runtime-general` | `editor-runtime` | `OPTIONAL-PLUGIN` | 45 | 7547 | 47379 | 120 | Retain under the package disposition; reassess only with consumer and migration evidence. |
@@ -62,7 +62,7 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `engine-general` | `engine` | `AURA-MOAT` | 105 | 54793 | 380791 | 869 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `engine-node-media-publishing` | `engine` | `OPTIONAL-PLUGIN` | 9 | 1559 | 10660 | 18 | Remove Node/cloud/FFmpeg ownership from browser entries. |
 | `environments-general` | `environments` | `AURA-CORE` | 9 | 464 | 3050 | 1340 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `input-general` | `input` | `AURA-CORE` | 26 | 2369 | 13557 | 75 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `input-general` | `input` | `AURA-CORE` | 24 | 1983 | 10744 | 74 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1342 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 177 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 196 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
@@ -73,7 +73,7 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `rendering-general` | `rendering` | `AURA-CORE` | 253 | 55125 | 381532 | 900 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `rendering-general` | `rendering` | `AURA-CORE` | 253 | 55125 | 381532 | 898 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `scene-general` | `scene` | `AURA-CORE` | 22 | 1708 | 10343 | 520 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 21 | 3692 | 25121 | 45 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `three-compat-general` | `three-compat` | `COMPATIBILITY-ONLY` | 20 | 1234 | 10185 | 19 | Retain under the package disposition; reassess only with consumer and migration evidence. |

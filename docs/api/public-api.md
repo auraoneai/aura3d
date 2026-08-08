@@ -13,7 +13,7 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `1.6.0` | `packages/animation/src/index.ts` | 46 |
+| `@aura3d/animation` | `1.6.0` | `packages/animation/src/index.ts` | 45 |
 | `@aura3d/apps` | `1.6.0` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `1.6.0` | `packages/asset-index/src/index.ts` | 32 |
 | `@aura3d/assets` | `1.6.0` | `packages/assets/src/index.ts` | 78 |
@@ -30,7 +30,7 @@ pnpm verify:api-docs
 | `@aura3d/engine` | `1.6.0` | `packages/engine/src/index.ts` | 39 |
 | `@aura3d/environments` | `1.6.0` | `packages/environments/src/index.ts` | 5 |
 | `@aura3d/environments/node` | `1.6.0` | `packages/environments/src/node.ts` | 6 |
-| `@aura3d/input` | `1.6.0` | `packages/input/src/index.ts` | 46 |
+| `@aura3d/input` | `1.6.0` | `packages/input/src/index.ts` | 42 |
 | `@aura3d/materials` | `1.6.0` | `packages/materials/src/index.ts` | 1 |
 | `@aura3d/materials/node` | `1.6.0` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `1.6.0` | `packages/math/src/index.ts` | 18 |
@@ -82,7 +82,6 @@ export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
 export * from "./FootIk.js";
 export * from "./SpringBones.js";
-export * from "./MotionMatchingFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./AnimationClipEvents.js";
 export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateAnimationStudioClipMap } from "./AnimationClipRegistry.js";
@@ -713,8 +712,6 @@ export { ActionMap } from "./ActionMap";
 export type { ActionBinding, AxisBinding } from "./ActionMap";
 export { GamepadDevice } from "./GamepadDevice";
 export type { GamepadButtonLike, GamepadLike } from "./GamepadDevice";
-export { sampleGestureHapticsFixture } from "./GestureHapticsFixtures";
-export type { GestureHapticsFixture, GestureHapticsFixtureOptions, GestureHapticsGestureType, GestureHapticsPatternName } from "./GestureHapticsFixtures";
 export { GestureRecognizer } from "./GestureRecognizer";
 export type { Gesture } from "./GestureRecognizer";
 export { InputSnapshot } from "./InputSnapshot";
@@ -735,8 +732,6 @@ export { PointerDevice } from "./PointerDevice";
 export type { PointerEventLike, WheelEventLike } from "./PointerDevice";
 export { VirtualTouchJoystick, sampleVirtualTouchJoystickFixture } from "./VirtualTouchControls";
 export type { VirtualJoystickConfig, VirtualTouchJoystickSnapshot, VirtualTouchPoint } from "./VirtualTouchControls";
-export { sampleXRRuntimeFixture } from "./XRFixtures";
-export type { XRFixtureLodLevel, XRFixtureOptions, XRFixtureSessionMode, XRRuntimeFixture } from "./XRFixtures";
 export { WebXRSessionController } from "./WebXRSessionController";
 export type { A3DXRFrameLike, A3DXRHandedness, A3DXRHitTestResultLike, A3DXRInputSourceLike, A3DXRPoseLike, A3DXRReferenceSpaceLike, A3DXRReferenceSpaceType, A3DXRSessionInit, A3DXRSessionLike, A3DXRSessionMode, A3DXRSystemLike, WebXRControllerSample, WebXRFrameSample, WebXRHitTestSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
 export * from "./GamepadInput.js";

@@ -193,6 +193,17 @@ function scanRepository(excluded: ReadonlySet<string> = new Set()): readonly Sca
       }
       const relativePath = relative(repoRoot, child);
       if (excluded.has(relativePath)) continue;
+      /*
+       * A retained deletion-proof report records the candidate, its historical
+       * source body, and every reference found during that earlier run. It is
+       * evidence that a deletion was safe at a point in time, not a live schema
+       * or consumer of every identifier quoted inside it. Scanning one proof as
+       * a dependency of the next candidate creates an evidence-recursion cycle:
+       * changing the calibration candidate makes every previously committed
+       * proof block that candidate forever. Other tracked reports remain in the
+       * scan and still block when they contain a live retained dependency.
+       */
+      if (/^tests\/reports\/descriptor-[^/]+-delete-final\.json$/.test(relativePath)) continue;
       out.push({ path: relativePath, text, lines: text.split("\n") });
     }
   };
