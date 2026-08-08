@@ -1610,17 +1610,21 @@ gradients and `fillRect`, selected whenever `shouldUseProductionRendererForCurre
       this row describes, and asserting it without that would be exactly the kind of unproven claim P1
       spent its time deleting. The row's note says so.
 - [x] **Create** `tests/browser/context-loss-recovery.spec.ts` using `WEBGL_lose_context`. — created,
-      plus a harness importing only `@aura3d/engine` (R1 harness-import shape). **1 passed.** It provokes
+      now driving `apps/context-loss-recovery`, which imports only `@aura3d/engine` (R1
+      harness-import shape). **1 passed.** It provokes
       a real loss, and asserts: the API exists on the root surface · a healthy app renders and reports
       `deviceLost() === false` · the loss event fires · the flag flips · restoration is observed · and
       unsubscribing detaches. It also asserts `WEBGL_lose_context` **is available** rather than skipping
       when it is not — a green check that proved nothing is the defect class P1 removed.
-- [~] **Proof:** row moves `gap` → `parity` **with** its lineage test named (R1). — **`gap` → cleared,
-      and the generator holds it at `parity-unproven` for an honest reason I am not overriding: no
-      *route* consumes the API yet.** `core-rendering` now reports **gap 0** (was 1), and the lineage test
-      is named in `production-path-tests.json`. Forcing `parity` would mean weakening the
-      consumer rule that P1 relied on to catch unused APIs. It reaches `parity` when a Tier 1 route
-      subscribes, which is P5's job.
+- [x] **Proof:** row moves `gap` → `parity` **with** its lineage test named (R1).
+      — closed without weakening the consumer rule. `apps/context-loss-recovery` is a retained
+      internal diagnostic that subscribes through the root `createAuraApp` API before renderer mount,
+      drives a real `WEBGL_lose_context` loss/restoration cycle, and proves unsubscribe detaches. The
+      browser spec now drives that app route rather than a test-only harness. Fresh
+      `build-product-inventory.mjs` + `build-threejs-parity.mjs` output reports the row at **parity**
+      with `productionConsumers: ["context-loss-recovery"]`; `pnpm check:claim-lineage` resolves
+      **56/56** rows, and the focused Playwright case passes **1/1**. The app remains an internal
+      diagnostic and explicitly does not claim automatic GPU-resource recreation.
 
 ### Two findings, both of which would have shipped a hollow API
 

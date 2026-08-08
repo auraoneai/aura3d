@@ -94,4 +94,8 @@ Neither proves a test executed the public path and observed the claimed behaviou
    that nothing surfaces through the root API. The vaguer note invited closing the row by pointing at
    the listeners. Note also that `tests/browser/production-runtime-webgl2-context-loss.spec.ts` is a
    **one-line re-export shell containing no test** — the kind of file that makes a capability look
-   covered. WS-2.6 closes the real gap.
+   covered. WS-2.6 closed the root-API gap, and the final 1.6 completion pass added
+   `apps/context-loss-recovery` as an actual retained consumer. Its browser test provokes a real
+   loss/restoration cycle through the public app API, so the generated row now reaches `parity`
+   without relaxing the consumer rule. Automatic GPU-resource recreation remains explicitly
+   unclaimed.

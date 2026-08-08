@@ -1,0 +1,157 @@
+/**
+ * Root-safe production consumer for Aura3D's WebGL context lifecycle API.
+ *
+ * This is intentionally an internal diagnostic rather than a showcase claim. It proves that an
+ * application can subscribe before the asynchronous renderer mount, observe a real browser context
+ * loss and restoration, and detach its subscription without importing renderer internals.
+ */
+import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
+
+interface LoseContextExtension {
+  loseContext(): void;
+  restoreContext(): void;
+}
+
+interface ContextLossRecoveryProbe {
+  readonly status: "ready" | "lost" | "restored" | "error";
+  readonly extensionAvailable: boolean;
+  readonly beforeLoss: { readonly litPixels: number; readonly deviceLost: boolean };
+  readonly lostCount: number;
+  readonly restoredCount: number;
+  readonly deviceLost: boolean;
+  readonly lossSubscriptionActive: boolean;
+  readonly apiPresent: {
+    readonly onDeviceLost: boolean;
+    readonly onDeviceRestored: boolean;
+    readonly deviceLost: boolean;
+  };
+  readonly error?: string;
+}
+
+declare global {
+  interface Window {
+    __AURA3D_CONTEXT_LOSS_RECOVERY__?: ContextLossRecoveryProbe;
+  }
+}
+
+function litPixels(canvas: HTMLCanvasElement): number {
+  const probe = document.createElement("canvas");
+  probe.width = canvas.width;
+  probe.height = canvas.height;
+  const context = probe.getContext("2d");
+  if (!context) return 0;
+  context.drawImage(canvas, 0, 0);
+  const data = context.getImageData(0, 0, probe.width, probe.height).data;
+  let count = 0;
+  for (let index = 0; index < data.length; index += 4) {
+    if (data[index]! > 24 || data[index + 1]! > 24 || data[index + 2]! > 24) count += 1;
+  }
+  return count;
+}
+
+async function main(): Promise<void> {
+  const canvas = document.querySelector<HTMLCanvasElement>("#aura-context-loss-canvas");
+  const status = document.querySelector<HTMLOutputElement>("#context-status");
+  const loseButton = document.querySelector<HTMLButtonElement>("#lose-context");
+  const restoreButton = document.querySelector<HTMLButtonElement>("#restore-context");
+  const unsubscribeButton = document.querySelector<HTMLButtonElement>("#unsubscribe-loss");
+  if (!canvas || !status || !loseButton || !restoreButton || !unsubscribeButton) {
+    throw new Error("Context-loss diagnostic shell is incomplete.");
+  }
+
+  const built = scene()
+    .background("#05070b")
+    .camera(camera.perspective({ position: [0, 0.35, 3.2], target: [0, 0, 0], fov: 45 }))
+    .add(lights.ambient({ intensity: 0.22 }))
+    .add(lights.directional({ name: "key", intensity: 3 }).position(1.6, 2.1, 2.4))
+    .add(
+      primitives.box({
+        name: "abstract context lifecycle subject",
+        material: material.pbr({ color: "#60a5fa", roughness: 0.32, metallic: 0.18 })
+      }).rotate(0.32, 0.62, 0)
+    );
+
+  const app = createAuraApp(canvas, {
+    scene: built,
+    autoStart: false,
+    pixelRatio: 1,
+    resize: false,
+    renderer: { qualityProfile: "production" }
+  });
+
+  let lostCount = 0;
+  let restoredCount = 0;
+  let lossSubscriptionActive = true;
+  let lifecycleStatus: ContextLossRecoveryProbe["status"] = "ready";
+  let beforeLoss = { litPixels: 0, deviceLost: false };
+  let extension: LoseContextExtension | null = null;
+
+  const publish = (): void => {
+    window.__AURA3D_CONTEXT_LOSS_RECOVERY__ = {
+      status: lifecycleStatus,
+      extensionAvailable: Boolean(extension),
+      beforeLoss,
+      lostCount,
+      restoredCount,
+      deviceLost: app.deviceLost(),
+      lossSubscriptionActive,
+      apiPresent: {
+        onDeviceLost: typeof app.onDeviceLost === "function",
+        onDeviceRestored: typeof app.onDeviceRestored === "function",
+        deviceLost: typeof app.deviceLost === "function"
+      }
+    };
+    status.value = `status=${lifecycleStatus} lost=${lostCount} restored=${restoredCount} subscription=${lossSubscriptionActive ? "active" : "detached"}`;
+  };
+
+  const unsubscribeLost = app.onDeviceLost(() => {
+    lostCount += 1;
+    lifecycleStatus = "lost";
+    loseButton.disabled = true;
+    restoreButton.disabled = false;
+    publish();
+  });
+  app.onDeviceRestored(() => {
+    restoredCount += 1;
+    lifecycleStatus = "restored";
+    loseButton.disabled = false;
+    restoreButton.disabled = true;
+    publish();
+  });
+
+  await app.ready();
+  app.step(1 / 60);
+  beforeLoss = { litPixels: litPixels(canvas), deviceLost: app.deviceLost() };
+  extension = canvas.getContext("webgl2")?.getExtension("WEBGL_lose_context") as LoseContextExtension | null;
+
+  loseButton.disabled = !extension;
+  loseButton.addEventListener("click", () => extension?.loseContext());
+  restoreButton.addEventListener("click", () => extension?.restoreContext());
+  unsubscribeButton.addEventListener("click", () => {
+    if (!lossSubscriptionActive) return;
+    unsubscribeLost();
+    lossSubscriptionActive = false;
+    unsubscribeButton.disabled = true;
+    publish();
+  });
+
+  publish();
+  window.addEventListener("beforeunload", () => app.dispose(), { once: true });
+}
+
+void main().catch((error: unknown) => {
+  const message = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+  window.__AURA3D_CONTEXT_LOSS_RECOVERY__ = {
+    status: "error",
+    extensionAvailable: false,
+    beforeLoss: { litPixels: 0, deviceLost: false },
+    lostCount: 0,
+    restoredCount: 0,
+    deviceLost: false,
+    lossSubscriptionActive: false,
+    apiPresent: { onDeviceLost: false, onDeviceRestored: false, deviceLost: false },
+    error: message
+  };
+  const status = document.querySelector<HTMLOutputElement>("#context-status");
+  if (status) status.value = `error: ${message}`;
+});

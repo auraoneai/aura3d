@@ -10,7 +10,9 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * them was a canvas that quietly stopped updating. The device layer was never the gap.
  *
  * A vaguer note ("context loss is not handled") would have invited closing the row by pointing at those
- * listeners, which is why WS-1.6 corrected the wording before this work started.
+ * listeners, which is why WS-1.6 corrected the wording before this work started. The test now drives the
+ * retained application route rather than a test-only harness, so the parity row has a real production
+ * consumer as well as browser evidence.
  */
 test.describe("context loss recovery", () => {
   let server: ExampleDevServer;
@@ -26,26 +28,14 @@ test.describe("context loss recovery", () => {
   test("a lost context is observable through createAuraApp, and unsubscribing detaches", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("pageerror", (error) => consoleErrors.push(error.message));
-    await page.goto(`${server.origin}/tests/browser/context-loss-recovery-harness.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/apps/context-loss-recovery/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => Boolean((window as unknown as { __contextLossProbe?: unknown }).__contextLossProbe)
-        || (window as unknown as { __contextLossProbeError?: unknown }).__contextLossProbeError !== undefined,
+      () => Boolean(window.__AURA3D_CONTEXT_LOSS_RECOVERY__),
       undefined,
       { timeout: 60_000 }
     );
-    const harnessError = await page.evaluate(() => (window as unknown as { __contextLossProbeError?: string }).__contextLossProbeError);
-    expect(harnessError ?? consoleErrors.join(" | "), "harness must run to completion").toBeFalsy();
-
-    const probe = await page.evaluate(() => (window as unknown as {
-      __contextLossProbe: {
-        readonly extensionAvailable: boolean;
-        readonly beforeLoss: { readonly litPixels: number; readonly deviceLost: boolean };
-        readonly afterLoss: { readonly lostCount: number; readonly deviceLost: boolean };
-        readonly afterRestore: { readonly restoredCount: number; readonly deviceLost: boolean };
-        readonly afterUnsubscribe: { readonly lostCount: number };
-        readonly apiPresent: { readonly onDeviceLost: boolean; readonly onDeviceRestored: boolean; readonly deviceLost: boolean };
-      };
-    }).__contextLossProbe);
+    let probe = await page.evaluate(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__!);
+    expect(probe.error ?? consoleErrors.join(" | "), "diagnostic route must run to completion").toBeFalsy();
 
     // The API must exist on the root surface. This is the whole point of the row.
     expect(probe.apiPresent.onDeviceLost).toBe(true);
@@ -64,14 +54,42 @@ test.describe("context loss recovery", () => {
     expect(probe.extensionAvailable, "WEBGL_lose_context is required to provoke a real context loss").toBe(true);
 
     // Subscribed BEFORE ready(), so this also proves a pre-mount subscription is not silently dropped.
-    expect(probe.afterLoss.lostCount).toBeGreaterThanOrEqual(1);
-    expect(probe.afterLoss.deviceLost).toBe(true);
+    await page.getByRole("button", { name: "Lose WebGL context" }).click();
+    await page.waitForFunction(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__?.status === "lost");
+    probe = await page.evaluate(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__!);
+    expect(probe.lostCount).toBeGreaterThanOrEqual(1);
+    expect(probe.deviceLost).toBe(true);
 
     // Restoration is observable and clears the flag.
-    expect(probe.afterRestore.restoredCount).toBeGreaterThanOrEqual(1);
-    expect(probe.afterRestore.deviceLost).toBe(false);
+    await page.getByRole("button", { name: "Restore WebGL context" }).click();
+    await page.waitForFunction(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__?.status === "restored");
+    probe = await page.evaluate(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__!);
+    expect(probe.restoredCount).toBeGreaterThanOrEqual(1);
+    expect(probe.deviceLost).toBe(false);
 
     // Unsubscribing detaches: a second loss after unsubscribe must not increment.
-    expect(probe.afterUnsubscribe.lostCount).toBe(probe.afterLoss.lostCount);
+    const lostCountBeforeUnsubscribe = probe.lostCount;
+    await page.getByRole("button", { name: "Unsubscribe loss listener" }).click();
+    await page.getByRole("button", { name: "Lose WebGL context" }).click();
+    await page.waitForTimeout(100);
+    probe = await page.evaluate(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__!);
+    expect(probe.lossSubscriptionActive).toBe(false);
+    expect(probe.lostCount).toBe(lostCountBeforeUnsubscribe);
   });
 });
+
+declare global {
+  interface Window {
+    __AURA3D_CONTEXT_LOSS_RECOVERY__?: {
+      readonly status: "ready" | "lost" | "restored" | "error";
+      readonly extensionAvailable: boolean;
+      readonly beforeLoss: { readonly litPixels: number; readonly deviceLost: boolean };
+      readonly lostCount: number;
+      readonly restoredCount: number;
+      readonly deviceLost: boolean;
+      readonly lossSubscriptionActive: boolean;
+      readonly apiPresent: { readonly onDeviceLost: boolean; readonly onDeviceRestored: boolean; readonly deviceLost: boolean };
+      readonly error?: string;
+    };
+  }
+}
