@@ -1,11 +1,10 @@
 /**
- * Turns a path plus a speed target into steering, throttle and brake for `createVehicleMotion`.
+ * Turns a path plus a speed target into generic steering, throttle and brake commands.
  *
  * ## Why this exists
  *
- * The library shipped the two hard halves of AI driving — `createVehicleMotion` for the tyre and
- * yaw dynamics, `createRacingLineProfile` for the speed a corner can be taken at — and nothing to
- * join them. Every racing route therefore hand-rolled its own driver, and hand-rolled drivers all
+ * The library shipped racing-line speed profiles but nothing that converted them into portable
+ * vehicle commands. Every racing route therefore hand-rolled a driver, and hand-rolled drivers all
  * fail the same way. The obvious formulation, a Stanley controller that steers on
  * `headingError + atan2(crossTrack, speed)`, is stable on gentle curves and diverges on a hairpin:
  *
@@ -78,7 +77,7 @@ export interface PathFollowDriverOptions {
   speedAt(distance: number): number;
   /** Vehicle wheelbase, world units. Sets how much steer angle a given arc needs. */
   readonly wheelbase: number;
-  /** Vehicle maximum steer angle, radians, matching `createVehicleMotion`. */
+  /** Vehicle maximum steer angle, radians, used to normalize the output command. */
   readonly maxSteerAngle: number;
   /**
    * Seconds of travel to look ahead. Larger is smoother and cuts corners more; smaller tracks the
@@ -129,7 +128,7 @@ export interface PathFollowDriverOptions {
 }
 
 export interface PathFollowCommand {
-  /** 0..1, feed straight to `VehicleMotion.step`. */
+  /** 0..1 throttle request for the consuming vehicle service. */
   readonly throttle: number;
   /** 0..1. */
   readonly brake: number;

@@ -70,9 +70,8 @@ export interface RacingLineProfileSpec {
   /**
    * Lateral acceleration the tyres can sustain, world units per second squared.
    *
-   * This is the grip limit, and it is the number that sets corner speeds. For a vehicle running
-   * `createVehicleMotion`, it is `grip * tyrePeakFriction * gravity` in the same units the route
-   * is authored in.
+   * This is the grip limit, and it is the number that sets corner speeds. For a physical vehicle,
+   * it is `grip * tyrePeakFriction * gravity` in the same units the route is authored in.
    */
   readonly lateralLimit: number;
   /** Longitudinal acceleration available on exit, world units per second squared. */

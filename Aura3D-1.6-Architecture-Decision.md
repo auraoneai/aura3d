@@ -282,6 +282,10 @@ Measured facts:
 - And per our own parity report: `game.racing` **does not use** `VehicleMotion.ts`. The
   kit integrates its own kinematic motion. So the force model was written, tested, and
   is not in the shipping path.
+- **Outcome (2026-08-08):** ADR 0003 classified the public racing contract as authored-unit arcade
+  motion, moved its pose integration to a shared `GameRuntime` owner, and removed the unused,
+  unreleased force-motion prototype under a six-point R8 dependency proof. This preserves the audit
+  measurement above while making clear that the prototype is no longer current source.
 - Defect history, each a textbook-solved problem rediscovered from scratch: `maxLoad`
   never passed to `samplePacejkaTireForces`, costing ~10x grip (`ae71897a`); yaw
   integrated with no kinematic ceiling reaching -55 rad/s at 24.5 g (`0e031904`);

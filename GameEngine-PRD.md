@@ -227,12 +227,21 @@ This is the structural change. Without it, every future genre repeats this PRD.
 
 - [x] 3.1 Mesh-backed vehicle surface, per-wheel — `meshVehicleSurface` + `createMeshVehicleSurface` path; `vehicle-mesh-contact.test.ts` → `gives four wheels four different heights on a banked corner` passes. Also proven on the **real** circuit in `turbo-drift-real-circuit-contact.test.ts` (529 distinct mesh elevations vs the centreline's 13).
 - [x] 3.2 Attitude from surface normal — `vehicle-mesh-contact.test.ts` → `follows a banked surface in roll instead of staying level` and `follows a longitudinal slope in pitch` both pass. `packages/physics/src/SurfaceQuery.ts` is new in this branch (absent at `v1.5.2`).
-- [x] 3.3 Force-based tyre model on the shared engine — `packages/physics/src/VehicleMotion.ts` (new; absent at `v1.5.2`). `vehicle-force-motion.test.ts` 14/14, including `reports understeer when the front axle saturates first`, `flags wheelspin when drive torque exceeds available traction`, `loads the front axle under braking and the rear under acceleration`, and `initiates a slide when the handbrake kills rear grip`. **Caveat, stated rather than hidden:** the racing *kit* does not yet consume this model — see WS-3.8, attempted and reverted.
+- [x] 3.3 Vehicle ownership resolved without a false physical claim — the force-motion prototype
+  was new after `v1.5.2`, never consumed by the racing kit, and removed under the six-point R8
+  dependency proof after ADR 0003 classified the public contract as authored-unit arcade motion.
+  `GameRuntime.createGameArcadeVehicle` is now the single shipped pose owner. Physical vehicle
+  parity remains unproven; this checkbox records resolution of duplicate ownership, not delivery of
+  a force simulation.
 - [x] 3.4 No tunnelling at 200 km/h — `vehicle-mesh-contact.test.ts` → `keeps a wheel out of the mesh at 200 km/h with a 16 ms step` passes, plus `reports the continuous-collision plan the world will use for a fast mover`.
 - [x] 3.5 Character controller real against mesh — `character-mesh-contact.test.ts` 10/10, one test per behaviour the row names: ground+slope normal, step up within `maxStepHeight`, refusal above it, step down without launching, ceiling cancelling upward velocity, and wall slide. `maxStepHeight`/`wallSlide` did not exist at `v1.5.2` (grep returns 0 there).
 - [x] 3.6 Apex from intent, validated, loud on failure — apex comes from `jumpHeight` or a `feel` preset scaled by character height, then is validated against geometry; an unclearable level throws naming the offending step instead of silently shrinking. `platformer-jump-intent.test.ts` 13/13.
 - [x] 3.7 Coyote/buffer/variable-height/asymmetric gravity — coyote and buffer windows scale with airtime rather than being fixed milliseconds, plus asymmetric fall gravity, apex hang and short-hop apex. Asserted on the real level in `skyline-real-level-motion.test.ts`.
-- [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED TWICE AND REVERTED TWICE. The blocker recorded here was route re-certification. That diagnosis was disproved by `be86c73e` and is corrected below. Re-scoped as 1.6 WS-4.7, where the count is also corrected: there are five kit factories, not four.**
+- [x] 3.8 All five kits consume shared services by capability — **resolved by ADR 0003.** Racing
+  delegates arcade pose integration, platformer delegates continuous kinematics, falling blocks
+  uses deterministic stepping, locomotion consumes motion state, and fighting composes shared
+  collision/combat/camera/effects. `game-kit-runtime-ownership.test.ts` rejects private continuous
+  integration. The historical failed force-model attempts remain below as evidence for the decision.
 
   ### Correction (2026-08-05) — the recorded blocker was wrong
 
@@ -322,7 +331,10 @@ This is the structural change. Without it, every future genre repeats this PRD.
   Remaining scope for 3.8: re-derive the racing route's speed/steer contract against the force
   model, then re-certify `turbo-drift-circuit`'s lap time. The kit-swap diff is recorded in this
   session's history and the defect it uncovered is already fixed and shipped.
-- [ ] 3.9 Kits are compositions, path documented — **blocked on 3.8 by construction.** The composition path cannot be documented as real while the kits do not consume the shared layer; writing it now would describe an architecture that does not exist. The general layer *is* usable without kits — that is what WS-6.2's kitless top-down shooter proves in 176 lines — but "a fifth genre needs no new kit code" is only half-demonstrated: it is true for anything built directly on `app.physics`, and false for anything wanting to reuse racing or platformer behaviour.
+- [x] 3.9 Kits are compositions, path documented — ADR 0003 names the shared capability for every
+  kit and the kitless top-down shooter proves a new genre can compose the general layer without new
+  kit code. Reusing racing or platformer behaviour means consuming their public composition, not
+  creating another integrator.
 
 ---
 

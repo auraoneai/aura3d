@@ -22,7 +22,7 @@ it is not rigid-body gravity. Locomotion selects clips from supplied velocity an
 not move an actor. Making either instantiate a physics world would add a solver dependency without
 removing an implementation. R11 and the product North Star forbid that coupling.
 
-ADR 0002 proved a different mismatch. `createVehicleMotion` is a force-based tyre simulation with
+ADR 0002 proved a different mismatch. The then-present `createVehicleMotion` prototype was a force-based tyre simulation with
 metres, kilograms, newtons, gravity, load transfer, slip and yaw inertia. `game.racing` promises an
 arcade route contract: arbitrary authored units and a public `paceMultiplier` from 0.5 through 4.
 The measured 4x route pace cannot be represented by the force model without physically meaningless
@@ -44,7 +44,8 @@ force-simulation contract.
 ## Decision
 
 1. `GameRuntime` owns deterministic game stepping and general kinematic bodies.
-2. The physics package owns force-based vehicle simulation and geometry surface queries.
+2. The physics package owns geometry surface queries. The unused force-vehicle prototype is not a
+   second shipped motion owner; a future physical vehicle API requires a new explicit contract.
 3. `game.racing` is explicitly arcade motion. It delegates pose integration to one shared arcade
    vehicle service; it is not an adapter over the tyre-force model.
 4. `game.platformer` delegates continuous pose integration to the shared kinematic-body service and
@@ -56,9 +57,10 @@ force-simulation contract.
    continuous pose integration in racing and platformer. It does not pass by checking that files
    merely coexist.
 
-This resolves ADR 0002 by rejecting its premise that the force model must own the arcade kit. It does
-not weaken the force-model tests or change their physical units. A future physically simulated racing
-kit must use a separate public contract that states length scale and physical handling explicitly.
+This resolves ADR 0002 by rejecting its premise that the force model must own the arcade kit. The
+unreleased prototype and its prototype-only tests were subsequently removed under a six-point R8
+dependency proof. A future physically simulated racing kit must use a separate public contract that
+states length scale and physical handling explicitly.
 
 ## Unit and stepping contract
 
@@ -66,8 +68,8 @@ kit must use a separate public contract that states length scale and physical ha
 - `dt` is finite seconds, clamped at the public kit boundary, and deterministic for identical state
   and input.
 - Arcade velocity and acceleration are authored units per second and per second squared.
-- Force-model mass, force, torque, gravity, wheelbase, grip and suspension retain their documented
-  physical meanings.
+- A future force-model contract must state mass, force, torque, gravity, wheelbase, grip and
+  suspension in physical units; the arcade service does not claim those meanings.
 - Surface queries classify/support motion but do not integrate it.
 - Reset replaces pose and velocity and clears the step accumulator.
 - Fixed-step services expose interpolation alpha when they accumulate wall-clock deltas; kit tests
@@ -104,9 +106,11 @@ approval or promote a route.
 - ADR 0002 contains the measured failed force-model migration and route pace sweep.
 - `packages/engine/src/agent-api/GameRuntime.ts` owns kinematic bodies, collision, combat, simulation,
   camera and effects services.
-- `packages/engine/src/agent-api/GameGenreKits.ts` shows the two private continuous pose updates that
-  remain before this decision is implemented.
+- `packages/engine/src/agent-api/GameGenreKits.ts` delegates racing and platformer pose integration
+  to the shared owners named by this decision.
 - `packages/engine/src/agent-api/game-kits/fighting.ts` already composes the shared combat, camera and
   effects services.
+- `pnpm check:deletion-safety -- packages/physics/src/VehicleMotion.ts` proves all six R8 dependency
+  classes empty before removal.
 - Focused compatibility suites are named in the implementation commits; this ADR grants no checkbox
   by file existence alone.

@@ -147,10 +147,13 @@ What ships instead:
   `tests/reports/physics-test-classification/report.json` is retained as the evidence.
 - **Character controller** — stays ours by necessity; cannon-es ships none. It is now
   load-bearing rather than duplicated, so it needs the WS-4.3 grounding/slope/step tests.
-- **Vehicle** — cannon-es ships `RaycastVehicle` and `grep` proves we use none of it while
-  hand-writing 1,081 lines (`VehicleDynamics.ts` 553 + `VehicleMotion.ts` 528), which
-  `game.racing` does not consume. Evaluate `RaycastVehicle` for the suspension/contact
-  layer under WS-4.3 and keep our racing-line/telemetry work above it (WS-4.4).
+- **Vehicle** — the original audit found 1,081 hand-written lines (`VehicleDynamics.ts` 553 +
+  `VehicleMotion.ts` 528) that `game.racing` did not consume. ADR 0003 classified the shipped
+  racing contract as authored-unit arcade motion; it now delegates to the shared game-runtime
+  owner. The unused, unreleased 528-line force-motion prototype was removed. `VehicleDynamics`,
+  racing-line and telemetry utilities remain as lower-level capabilities, but physical vehicle
+  parity is not claimed. A future physical vehicle API must make an explicit backend and units
+  decision rather than silently substituting the arcade contract.
 - **Nine invariants** — all nine must pass on cannon-es, including the two it fails or
   lacks natively (tunnelling, character grounding). Those are now implementation
   obligations, not "the backend handles it".

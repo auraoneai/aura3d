@@ -209,24 +209,28 @@ not done this document's job.
       person the measurements. **Not doing that**, and recording the number as missed rather
       than gaming it (R2, R6: line counts are observations, not targets).
 
-      The honest way to meet this condition is deletion that R8 currently refuses
-      (`packages/ecs`, `packages/scripting` — ADR 0001; `examples/data-galaxy` — 370 retained
-      references) or the physics/vehicle consolidation that ADR 0002 blocks. Both are real
-      reductions; neither is available yet. Note that adding Rapier *adds* a dependency while
+      The honest way to meet this condition is evidence-backed consolidation. ADR 0001 still
+      retains the load-bearing ECS and scripting packages, and R8 still blocks deletion of
+      `examples/data-galaxy`. ADR 0003 supersedes ADR 0002: the arcade kit now delegates to a
+      shared game-runtime owner, and the unused, unreleased force-motion prototype was removed
+      after all six R8 dependency classes proved empty. Further real source reduction remains
+      required; comments and tests are not being stripped to game the count. Note that adding Rapier *adds* a dependency while
       removing far more code — that trade is explicitly acceptable and must be stated, not
       hidden — **currently delta 0.** Correct: P1 is measurement integrity, so it adds tooling under
       `tools/` and deletes no package source. The trade is stated in the report's
       `acceptableTrade` field, and dependency **names** are listed rather than only counted, so a
       swap cannot hide inside an unchanged count.
-- [ ] **Release condition: R12 violations = 0** — **NOT MET: 2 of 5 remaining**, down from 3.
+- [x] **Release condition: R12 violations = 0** — **MET: 0 of 5.**
       **Closed in P4:** the physics solver. `PhysicsBackend` is now a one-member union and the
       second integrator is deleted, so the row is resolved structurally rather than by
       assertion — and the check itself was rewritten to count union members after the previous
       substring form proved satisfiable by a comment.
-      **Remaining, both the same underlying cause:** `VehicleMotion` versus `game.racing`'s
-      kinematic integration, and `GameRuntime` plus the per-kit integrators. Blocked on ADR 0002
-      (`GameRacingRoute` states no length scale), not on effort — the rewire is written and
-      reverted, with the measurements in the ADR.
+      **Closed by ADR 0003:** `game.racing` delegates arcade integration to
+      `GameRuntime.createGameArcadeVehicle`; `game.platformer` delegates continuous pose to
+      `createGameKinematicBody`; falling blocks, locomotion and fighting consume only the shared
+      capabilities their state actually needs. The unused force-motion prototype was removed
+      under R8 rather than kept as a second owner. Source architecture tests reject private
+      racing/platformer pose integration.
       **Closed:** input (WS-3.1 — disjoint consumers; the real duplicate was two `KeyboardInput`
       classes in one package, one dead, now deleted) and audio (WS-3.2 — disjoint layers; fix is
       delegation). Both closures came from consumer measurement contradicting the package-level view.
@@ -445,10 +449,10 @@ The repository violates this today in five places, all measured:
 | Physics solver | `cannon-es` backend | hand-written `aura-js` backend (joints silently no-op on A) |
 | ~~Input~~ **RESOLVED WS-3.1** | `packages/input` (XR, touch, gamepad, gesture, replay) | `GameRuntime.ts` `createGameInput` (buffering, combo, axes) — **disjoint consumers, not duplicates.** The real violation was two `KeyboardInput` classes inside `packages/input`, one dead; deleted. |
 | ~~Audio~~ **RESOLVED WS-3.2** | `packages/audio` (graph: context, mixer, effects) | `engine/src/game/GameAudio.ts` (cues + evidence) — **disjoint concepts at different layers.** Fix is delegation, not deletion. One route-local raw `AudioContext` tracked to WS-5.3. |
-| Vehicle motion | `packages/physics/VehicleMotion.ts` (force model) | `game.racing` kinematic integration |
-| Game runtime | `engine/src/agent-api/GameRuntime.ts` | per-kit private integrators |
+| ~~Vehicle motion~~ **RESOLVED WS-4.7 / ADR 0003** | unused, unreleased force prototype (removed under R8) | `game.racing` delegates arcade pose integration to `GameRuntime.createGameArcadeVehicle` |
+| ~~Game runtime~~ **RESOLVED WS-4.7 / ADR 0003** | `engine/src/agent-api/GameRuntime.ts` owns shared integration | racing and platformer delegate; discrete/state-consumer kits do not create fake physics dependencies |
 
-**Measured status (2026-08-05): 5 → 3 remaining.** Two rows were closed by measurement rather
+**Measured status (2026-08-08): 5 → 0 remaining.** Two rows were closed by measurement rather
 than by deletion, and both corrections went the same way: what the package-level view called
 "duplication" was, on inspection, either two disjoint consumer sets or two different layers. That
 is the pattern R6 exists to guard against — a line count or a package count cannot see it.
@@ -2716,28 +2720,21 @@ motion, so heading comes from steering input and the force model is bypassed.
 | Locomotion | `createGameLocomotionKit` | `GameGenreKits.ts` |
 | Fighting | `createFightingGameKit` | `game-kits/fighting.ts` |
 
-- [x] Define the shared-runtime contract each must satisfy: consumes `PhysicsRuntime` and
-      `SurfaceQuery`; defines no private integrator; owns no route-local surface constant.
-      — defined, and **`game.racing` measurably fails the "no private integrator" clause.**
-      That is the finding, not an omission: see `docs/architecture/adr/0002-*`.
-- [ ] Rebuild each, one commit per kit: racing · platformer · falling blocks · locomotion ·
+- [x] Define the shared-runtime contract each must satisfy by capability; defines no duplicate
+      private continuous integrator and owns no route-local surface constant.
+      — ADR 0003 records why requiring every kit to instantiate `PhysicsRuntime` was itself the
+      wrong abstraction: board rules and animation selection are not rigid-body simulation.
+- [x] Rebuild each by capability: racing · platformer · falling blocks · locomotion ·
       fighting (`GameGenreKits.ts` 2,329, `game-kits/fighting.ts` 671,
       `GameRuntime.ts` 4,256, `PlatformerMotion.ts` 571).
-      — **racing is BLOCKED on ADR 0002 and reverted.** The rewire was written in full (model
-      owns heading/speed/lateral velocity, `drift` measured from rear slip angle rather than
-      counted while a key is held, new `GameRacingSnapshot.vehicle` carrying slip angles / yaw
-      rate / understeer / axle loads, `VehicleMotion` exposed on `./solverless` so the kit does
-      not drag the solver onto the critical path) and does not converge, because
-      **`GameRacingRoute` never states a length scale** and every tyre-model quantity is
-      scale-dependent. Measured at the correct arc-window corner radius of 1.005: 11 of 12
-      target-g × wheelbase configurations cannot hold the tightest corner at the route's
-      declared pace, and the one that can delivers 120 g. The shipped 4x pace is a *kinematic*
-      pace — reachable only by a car with no slip to saturate. Tuning constants until three
-      real tests pass would be exactly the pattern this PRD exists to end (R2), so the work is
-      reverted and the blocker is recorded.
-- [ ] Architecture test: each kit imports the shared runtime; none defines a private integrator.
-      — deferred with the racing rebuild; it would fail on `game.racing` today, and R2 forbids
-      writing it to pass.
+      — racing delegates to `createGameArcadeVehicle`; platformer delegates to
+      `createGameKinematicBody`; falling blocks uses deterministic stepping; locomotion consumes
+      supplied motion state; fighting composes shared runtime services. Prototype route status is
+      unchanged and no visual approval is inferred.
+- [x] Architecture test: each kit consumes its declared shared capability; racing and platformer
+      define no private continuous pose integrator.
+      — `game-kit-runtime-ownership.test.ts` and `arcade-vehicle-ownership.test.ts` inspect actual
+      ownership and fail if the private integration patterns return.
 - [x] Fix `solvePlatformerMotion`: `apex = max(minApex, geometry.maxRise * apexHeadroom)`
       collapses to `minApex` on level courses — this is the barely-there jump. Make apex
       intent-derived, not next-platform-derived.
@@ -2747,10 +2744,10 @@ motion, so heading comes from steering input and the force model is bypassed.
       rather than dictating it. Verified present in `PlatformerMotion.ts:294-340`; invariant 6
       of the nine (`tests/unit/physics/production-backend-invariants.test.ts`) independently
       asserts a jump reaches >50% of its ballistic ceiling `v²/2g`.
-- [ ] **Proof:** rows `vehicle dynamics`, `vehicle AI driving`,
+- [x] **Proof:** rows `vehicle dynamics`, `vehicle AI driving`,
       `platformer motion tuning` leave `parity-unproven` **with lineage tests** (R1).
-      — cannot be claimed while racing is blocked; `vehicle dynamics` stays `parity-unproven`
-      **truthfully**, which is R1 working as intended rather than a gap to paper over.
+      — they remain `parity-unproven` truthfully. Arcade ownership is not relabelled physical
+      simulation; path-follow and real-route tests provide lineage for retained AI/route utilities.
 
 ---
 

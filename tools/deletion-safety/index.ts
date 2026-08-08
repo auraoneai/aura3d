@@ -60,6 +60,8 @@ interface Evidence {
 interface FileReport {
   readonly path: string;
   readonly exists: boolean;
+  /** Where the candidate body came from. A working-tree deletion is read from HEAD for proof. */
+  readonly source: "working-tree" | "head" | "missing";
   readonly lines: number;
   readonly moduleSpecifiers: readonly string[];
   readonly clear: boolean;
@@ -533,11 +535,39 @@ function emptyPoints(): Record<R8Point, Evidence[]> {
   };
 }
 
+function candidateSource(path: string): {
+  readonly exists: boolean;
+  readonly source: FileReport["source"];
+  readonly text: string;
+} {
+  const absolute = join(repoRoot, path);
+  if (existsSync(absolute)) {
+    return { exists: true, source: "working-tree", text: readFileSync(absolute, "utf8") };
+  }
+
+  /*
+   * R8 is normally run after the candidate has been removed from the working tree, while the
+   * deletion is still reviewable against HEAD. The old implementation discarded the candidate
+   * body in exactly that state and then failed a separate "already gone" check, making it
+   * impossible to prove an ordinary staged or unstaged deletion. Read the last committed body for
+   * symbol discovery, but continue scanning the current working tree for surviving consumers.
+   */
+  try {
+    const text = execFileSync("git", ["show", `HEAD:${path}`], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      maxBuffer: 16 * 1024 * 1024
+    });
+    return { exists: false, source: "head", text };
+  } catch {
+    return { exists: false, source: "missing", text: "" };
+  }
+}
+
 function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: ReadonlySet<string>, ambiguous: ReadonlySet<string>): FileReport {
   const path = relative(repoRoot, resolve(repoRoot, candidate));
-  const absolute = join(repoRoot, path);
-  const exists = existsSync(absolute);
-  const text = exists ? readFileSync(absolute, "utf8") : "";
+  const candidateBody = candidateSource(path);
+  const { exists, source, text } = candidateBody;
   const specifiers = moduleSpecifiersFor(path, ambiguous);
   const symbols = MODULE_EXTENSIONS.has(extname(path)) ? exportedSymbols(text) : [];
   const points = emptyPoints();
@@ -594,7 +624,8 @@ function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: R
   return {
     path,
     exists,
-    lines: exists ? text.split("\n").length : 0,
+    source,
+    lines: source === "missing" ? 0 : text.split("\n").length,
     moduleSpecifiers: specifiers,
     clear,
     points,
@@ -723,7 +754,7 @@ function main(): void {
   }
 
   for (const report of reports) {
-    if (!report.exists) {
+    if (report.source === "missing") {
       checks.push({ id: `r8:missing:${report.path}`, pass: false, detail: `${report.path} does not exist; cannot prove a deletion of a file that is already gone` });
     }
   }
@@ -738,6 +769,7 @@ function main(): void {
     files: reports.map((report) => ({
       path: report.path,
       exists: report.exists,
+      source: report.source,
       lines: report.lines,
       lastCommit: gitTrackedAt(report.path),
       moduleSpecifiers: report.moduleSpecifiers,

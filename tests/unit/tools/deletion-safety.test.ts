@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
@@ -212,6 +212,29 @@ describe("deletion-safety (R8)", () => {
     expect(status).not.toBe(0);
     const failures = report.failures as readonly string[];
     expect(failures.some((failure) => failure.includes("already gone"))).toBe(true);
+  }, 180_000);
+
+  it("proves a tracked working-tree deletion from its HEAD body", () => {
+    const candidate = "packages/test-utils/src/index.ts";
+    const absolute = join(repoRoot, candidate);
+    const held = `${absolute}.deletion-safety-test`;
+    renameSync(absolute, held);
+    try {
+      const { report } = run([candidate]);
+      const files = report.files as readonly {
+        readonly path: string;
+        readonly exists: boolean;
+        readonly source: string;
+        readonly lines: number;
+      }[];
+      const file = files.find((entry) => entry.path === candidate);
+      expect(file).toMatchObject({ exists: false, source: "head" });
+      expect(file?.lines).toBeGreaterThan(0);
+      const checks = report.checks as readonly { readonly id: string }[];
+      expect(checks.some((check) => check.id === `r8:missing:${candidate}`)).toBe(false);
+    } finally {
+      renameSync(held, absolute);
+    }
   }, 180_000);
 });
 

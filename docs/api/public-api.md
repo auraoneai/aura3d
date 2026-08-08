@@ -32,7 +32,7 @@ pnpm verify:api-docs
 | `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.5.2` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.5.2` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 35 |
+| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 34 |
 | `@aura3d/physics/solverless` | `1.5.2` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `1.5.2` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
@@ -828,7 +828,6 @@ export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
 export * from "./VehicleDynamics.js";
-export * from "./VehicleMotion.js";
 export * from "./RacingLineProfile.js";
 export * from "./PathFollowDriver.js";
 export * from "./PhysicsWorld.js";

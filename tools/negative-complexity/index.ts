@@ -284,7 +284,7 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
           || /state\.position\.[xy]\s*\+\s*Math\.(?:cos|sin)/.test(racing)
           || /state\.heading\s*\+\s*steer/.test(racing);
       })(),
-      detail: "game.racing delegates arcade pose integration to GameRuntime.createGameArcadeVehicle; the force-based VehicleMotion contract remains a distinct physics capability (ADR 0003)"
+      detail: "game.racing delegates arcade pose integration to GameRuntime.createGameArcadeVehicle; the unused unreleased force-motion prototype was removed under R8 rather than retained as a second vehicle owner (ADR 0003)"
     },
     {
       capability: "game runtime",

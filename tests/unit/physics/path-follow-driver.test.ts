@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createPathFollowDriver } from "../../../packages/physics/src/PathFollowDriver";
 import { createRacingLineProfile } from "../../../packages/physics/src/RacingLineProfile";
-import { createVehicleMotion } from "../../../packages/physics/src/VehicleMotion";
 import { game } from "../../../packages/engine/src/agent-api";
 import { gameGeometryContract } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
 
 /*
- * WS-3.8. The library had `createVehicleMotion` for tyre and yaw dynamics and
- * `createRacingLineProfile` for corner speeds, and nothing to join them, so every racing route
+ * WS-3.8. The library had `createRacingLineProfile` for corner speeds and nothing to join it to a
+ * vehicle command contract, so every racing route
  * hand-rolled a driver. The hand-rolled Stanley formulation diverged on the certified circuit's
  * 95-degree hairpin: saturated at full lock it ran off the road, the nearest-point progress then
  * latched at 0.2789 for 8,700 consecutive frames, and the car sawed 43 units away from a
@@ -44,21 +43,12 @@ function certifiedCircuit() {
     maxSpeed: kit.maxSpeed,
     closed: true
   });
-  return { surface, profile, gravity };
+  return { surface, profile };
 }
 
 function drive(frames: number, overrides: { readonly lookaheadTime?: number; readonly crossTrackGain?: number } = {}) {
-  const { surface, profile, gravity } = certifiedCircuit();
-  const car = createVehicleMotion({
-    mass: 1200,
-    wheelbase: 0.35,
-    maxSteerAngle: 0.6,
-    driveForce: 9000,
-    brakeForce: 14000,
-    dragCoefficient: 0.2,
-    rollingResistance: 0.01,
-    gravity
-  });
+  const { surface, profile } = certifiedCircuit();
+  const car = createDriverTestVehicle({ wheelbase: 0.35, maxSteerAngle: 0.6, maxSpeed: profile.speedAt(0) * 4 });
   const start = surface.sampleAt(0);
   car.reset({ x: start.x, z: start.y, heading: start.heading, speed: profile.speedAt(0) * 0.5 });
   const driver = createPathFollowDriver({
@@ -88,7 +78,7 @@ function drive(frames: number, overrides: { readonly lookaheadTime?: number; rea
   let previousDistance = -1;
   for (let frame = 0; frame < frames; frame += 1) {
     const command = driver.step({ x: state.x, z: state.z, heading: state.heading, speed: state.speed });
-    state = car.step(1 / 60, { throttle: command.throttle, brake: command.brake, steer: command.steer, grip: 1 });
+    state = car.step(1 / 60, { throttle: command.throttle, brake: command.brake, steer: command.steer });
     const contact = surface.query({ x: state.x, y: state.z });
     if (Math.abs(contact.signedTrackOffset) > contact.roadHalfWidth) offTrack += 1;
     if (command.saturated) saturated += 1;
@@ -99,6 +89,32 @@ function drive(frames: number, overrides: { readonly lookaheadTime?: number; rea
     previousDistance = command.distance;
   }
   return { laps: driver.lapsCompleted, offTrack, offTrackFraction: offTrack / frames, saturatedFraction: saturated / frames, worstOffset, minSpeed, longestStall, profile };
+}
+
+function createDriverTestVehicle(options: { readonly wheelbase: number; readonly maxSteerAngle: number; readonly maxSpeed: number }) {
+  let state = { x: 0, z: 0, heading: 0, speed: 0 };
+  return {
+    state: () => state,
+    reset(next: typeof state) {
+      state = { ...next };
+    },
+    step(dt: number, input: { readonly throttle: number; readonly brake: number; readonly steer: number }) {
+      const drive = input.throttle * 9;
+      const brake = input.brake * 14;
+      const resistance = 0.35 * state.speed;
+      const speed = Math.max(0, Math.min(options.maxSpeed, state.speed + (drive - brake - resistance) * dt));
+      const steerAngle = Math.max(-1, Math.min(1, input.steer)) * options.maxSteerAngle;
+      const yawRate = speed * Math.tan(steerAngle) / options.wheelbase;
+      const heading = state.heading + yawRate * dt;
+      state = {
+        x: state.x + Math.cos(heading) * speed * dt,
+        z: state.z + Math.sin(heading) * speed * dt,
+        heading,
+        speed
+      };
+      return state;
+    }
+  };
 }
 
 describe("createPathFollowDriver on the certified circuit", () => {
@@ -142,4 +158,3 @@ describe("createPathFollowDriver on the certified circuit", () => {
     expect(tight.offTrackFraction).toBeLessThan(loose.offTrackFraction / 3);
   });
 });
-

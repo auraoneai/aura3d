@@ -197,13 +197,14 @@ specific API and the test or route evidence behind them.
   `tests/clean-room/physics-sandbox`, which reports per-category line counts.
 ## Current Limits
 
-- Genre kits (`game.racing`, `game.platformer`, `game.fallingBlocks`, `game.locomotion`) do
-  **not** yet consume `app.physics`. They remain separate implementations, so a fix in a kit does
-  not reach the general layer or vice versa. See `GameEngine-PRD.md` WS-3.8, which records an
-  attempt at this and why it was reverted.
-- Vehicle dynamics and vehicle AI driving are `parity-unproven` in the Three.js parity report. A
-  racing route's motion is a kit-local kinematic model, not the force-based tyre model in
-  `packages/physics/src/VehicleMotion.ts`.
+- Genre kits consume shared runtime services by capability, as recorded in ADR 0003. Racing and
+  platformer delegate continuous pose integration to shared `GameRuntime` services; falling blocks
+  uses deterministic stepping; locomotion consumes motion state; fighting composes shared combat,
+  collision, camera and effects services. They do not all instantiate `app.physics`, because board
+  rules and animation selection are not rigid-body simulation.
+- Vehicle dynamics and vehicle AI driving remain `parity-unproven` in the Three.js parity report.
+  `game.racing` is an authored-unit arcade contract. The unused, unreleased force-tyre prototype was
+  removed rather than presented as physical simulation or retained as a second vehicle integrator.
 - Cloth, softbody and large-scale simulation are not implemented.
 - Rendering visual parity against Three.js is a separate, still-unproven claim; the strict
   product-render gate fails at 0.331 against a 0.15 threshold and is untouched by this layer.
