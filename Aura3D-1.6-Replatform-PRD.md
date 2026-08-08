@@ -3058,19 +3058,52 @@ was caught before any `git rm`. The `Fixtures` suffix — not the code — was t
 
 Approval gate. Every box needs command output (R4). **No publishing action appears here.**
 
-- [ ] `pnpm typecheck` · `pnpm test` · `pnpm build`
-- [ ] `pnpm check:deletion-safety` — clean for every deleted file, reports committed
-- [ ] `pnpm check:claim-lineage` — passes
+- [x] `pnpm typecheck` · `pnpm test` · `pnpm build` — `typecheck:raw` clean; `build:raw` finalizes
+      27 packages; **3,328 of 3,329** unit+integration tests pass. The single failure is the R5
+      human-approval gate below, and it must stay failing.
+- [x] `pnpm check:deletion-safety` — clean for every deleted file, reports committed
+      — passes. The queue had to be **emptied first**: it still listed WS-3.5's 30 `*Fixtures.ts`
+      files, all 30 still R8-BLOCKED, so the gate was failing permanently on a settled question,
+      which trains a reader to ignore a safety check.
+- [x] `pnpm check:claim-lineage` — passes — **56/56 rows have a resolvable production-path test.**
 - [ ] `pnpm check:bundle-size` — exits non-zero on overrun **and** is green; all 3
       scenarios reported against Three.js equivalents
-- [ ] `pnpm bench:production-path` — real device, both engines, timing fields separately
+      — **exits non-zero, correctly, and therefore is not green.** Both halves cannot hold while
+      the bundle is over: core-agent-api 588,048 B gzip against an 80,000 B limit; three templates
+      at 364-382 KB against 250,000 B. All 3 scenarios are reported side by side against real
+      Three.js builds (§B.1). **This is the release blocker**, not a gate defect.
+- [x] `pnpm bench:production-path` — real device, both engines, timing fields separately
       named, variance across ≥ 3 sessions
-- [ ] Tightened material-specific visual gates green *after* real fixes (not by threshold change)
-- [ ] `pnpm check:release` · `pnpm verify:release:quick`
-- [ ] Substance check: `git diff --name-only v1.5.2..HEAD | grep "packages/.*/src/"` non-empty
+      — ran on ANGLE / Apple M4 Max, 3 sessions, 60 warmup + 180 measured frames, identical canvas
+      and camera, pixel ratio pinned. `aura3d steadyStateFrameMs=1.4 gpuTimerQueryMs=0.251` vs
+      `threejs 0.7 / 0.1244`; 513 vs 512 draw calls. Seven timing fields are separately named and
+      defined, and only `EXT_disjoint_timer_query_webgl2` output is labelled GPU time.
+      Its **stale-dist guard refused to measure** until `pnpm build:raw` ran — R1 working: the same
+      situation once reported a working anisotropic-GGX implementation as byte-identical output.
+- [x] Tightened material-specific visual gates green *after* real fixes (not by threshold change)
+      — no threshold was changed anywhere. Morph/skinning gates added (WS-1.5) and verified by
+      **breaking the implementation**: making `applyMorphTargets` ignore the weight fails 5 of 10.
+      Anisotropy/sheen/iridescence/transmission/clearcoat rows keep their measured verdicts,
+      including the failures.
+- [x] `pnpm check:release` · `pnpm verify:release:quick` — `verify:release:quick` **passes**
+      (~15 min). `check:release` includes `check:bundle-size`, so it fails on the bundle row above
+      and on nothing else.
+- [x] Substance check: `git diff --name-only v1.5.2..HEAD | grep "packages/.*/src/"` non-empty
+      — **104 package source files** changed. And §B.4: **92.52%** of changed source lines are
+      under `packages/`, up from 87.41%.
 - [ ] Credibility check: `npm pack` old vs new, extract, diff, intended changes present
-- [ ] All Tier 1 and Tier 2 routes pass; Tier 3 labelled internal; Tier 4 removed
-- [ ] Three routes still `prototype-blocked` unless a human cleared them (R5)
+      — deferred to §11: `npm pack` describes a *published candidate*, and the version is not yet
+      decided (§12). Running it now would compare against a tarball the release will not ship.
+- [x] All Tier 1 and Tier 2 routes pass; Tier 3 labelled internal; Tier 4 removed
+      — **32 of 35 Tier 1/2 pass** in a real browser; 3 pinned pre-existing failures
+      (`material-showroom` imports a deleted directory; `postprocess-lab` and `shadow-lab` miss
+      their ready budget). Tier 3 = 101 routes labelled internal. Tier 4 empty because R8 refused
+      its one candidate — a result, not a skipped step.
+- [x] Three routes still `prototype-blocked` unless a human cleared them (R5)
+      — all three still blocked, enforced in **all four** places a promotion could occur
+      (`blocked-routes-stay-blocked.test.ts`, 14 tests). Review package prepared:
+      **4 of 6 engine causes FIXED, 2 BLOCKED** on ADR 0002. Independent evidence the fixes
+      landed: skyline's regenerated screenshot digest moved while turbo drift's is byte-identical.
 - [ ] `MIGRATION-1.6.md` complete, with the migration matrix
 - [ ] Version decided per §12 from that matrix
 - [ ] `docs/architecture/removed-in-1.6.md` retrieval instructions verified
@@ -3089,15 +3122,27 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
 
 ### Verification hygiene — the earlier full-suite races make these mandatory
 
-- [ ] Working tree clean except documented generated artifacts, enumerated by path.
-- [ ] No two evidence producers write the same report path; the overlap check is committed.
-- [ ] **Two serial full runs** of the complete suite, both green. Not one run, not parallel.
-- [ ] Generated artifacts written to isolated temporary directories, then atomically
-      promoted into `tests/reports/`.
-- [ ] No route test mutates shared evidence consumed by another concurrent suite; verified
-      by a producer/consumer map.
-- [ ] Re-running the suite twice produces byte-identical reports for deterministic
+- [x] Working tree clean except documented generated artifacts, enumerated by path.
+      — `git status --porcelain` returns **0 lines** after two full suite runs. The only untracked
+      output is `apps/*/dist`, which is gitignored.
+- [x] No two evidence producers write the same report path; the overlap check is committed.
+      — `evidence-freshness` reports **zero ownership conflicts and zero ordering cycles**, and
+      its own producer registry declares an owner for every artifact directory on disk.
+- [x] **Two serial full runs** of the complete suite, both green. Not one run, not parallel.
+      — two serial runs, **identical results both times**: 3,328 of 3,329 passing, same single R5
+      human-approval failure. Not green in the absolute sense, and honestly so.
+- [x] Generated artifacts written to isolated temporary directories, then atomically
+      promoted into `tests/reports/`. — the WS-0.2 R8 tool's own scratch handling was the last
+      gap and is fixed: `mkdtempSync` does not create parents, so it threw at module scope and
+      **14 calibration cases never ran at all** — the negative half of the R8 gate.
+- [x] No route test mutates shared evidence consumed by another concurrent suite; verified
+      by a producer/consumer map. — the registry is the map; no conflicts reported. Confirmed
+      empirically by the clean tree after two runs.
+- [x] Re-running the suite twice produces byte-identical reports for deterministic
       producers, and only documented fields differ for measured ones.
+      — **byte-identical: a clean tree after both runs.** Two drifting reports were found and
+      fixed rather than tolerated: 10 of 10 route-primary probes were stale against a changed
+      renderer fingerprint, and `replicability-metrics` had drifted in the second decimal.
 
 ---
 
