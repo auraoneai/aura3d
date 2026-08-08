@@ -288,8 +288,22 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
     },
     {
       capability: "game runtime",
-      present: exists("packages/engine/src/agent-api/GameRuntime.ts") && exists("packages/engine/src/agent-api/GameGenreKits.ts"),
-      detail: "GameRuntime plus per-kit integrators in GameGenreKits"
+      present: (() => {
+        const genre = readFileSync(join(repoRoot, "packages/engine/src/agent-api/GameGenreKits.ts"), "utf8");
+        const fighting = readFileSync(join(repoRoot, "packages/engine/src/agent-api/game-kits/fighting.ts"), "utf8");
+        const platformerStart = genre.indexOf("export function createGamePlatformerKit");
+        const platformerEnd = genre.indexOf("export function createGameAssetBoundPlatformerLevel", platformerStart);
+        if (platformerStart < 0 || platformerEnd < 0) return true;
+        const platformer = genre.slice(platformerStart, platformerEnd);
+        return !platformer.includes("createGameKinematicBody")
+          || !platformer.includes("body.update(step)")
+          || /state\.player\.[xy]\s*\+=\s*state\.player\.v[xy]\s*\*\s*step/.test(platformer)
+          || !fighting.includes("createGameKinematicBody")
+          || !fighting.includes("createCombatWorld")
+          || !fighting.includes("createGameCameraDirector")
+          || !fighting.includes("createGameEffects");
+      })(),
+      detail: "Continuous kit motion delegates to GameRuntime; falling blocks owns discrete board rules, locomotion consumes motion state, and fighting composes shared services (ADR 0003)"
     }
   ];
   return { count: rows.filter((row) => row.present).length, rows };

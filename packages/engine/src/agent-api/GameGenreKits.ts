@@ -3,7 +3,7 @@ import {
   validatePlatformerMotion,
   type PlatformerMotionReport
 } from "./PlatformerMotion.js";
-import { createGameArcadeVehicle } from "./GameRuntime.js";
+import { createGameArcadeVehicle, createGameKinematicBody, type GameKinematicBody } from "./GameRuntime.js";
 export interface GameKitVec2 {
   readonly x: number;
   readonly y: number;
@@ -223,8 +223,6 @@ interface MutablePlatformerState {
     vy: number;
     facing: 1 | -1;
     grounded: boolean;
-    coyote: number;
-    jumpBuffer: number;
     dashCooldown: number;
     ridingPlatformId?: string;
   };
@@ -865,7 +863,31 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
   const playerHeight = config.playerSize[1];
   const surfaceQuery = createGamePlatformerSurfaceQuery(level);
   let state = createPlatformerState(config);
+  const createBody = (): GameKinematicBody => createGameKinematicBody({
+    id: `${config.id}-player`,
+    position: [state.player.x, state.player.y, 0],
+    velocity: [state.player.vx, state.player.vy, 0],
+    size: [playerWidth, playerHeight, 0.25],
+    gravity: config.gravity,
+    groundY: -1_000_000,
+    friction: 0,
+    maxSpeed: Math.max(config.moveSpeed, config.dashSpeed),
+    jumpVelocity: config.jumpVelocity,
+    coyoteMs: config.coyoteMs,
+    jumpBufferMs: config.jumpBufferMs
+  });
+  let body = createBody();
   let events: GamePlatformerEvent[] = [];
+
+  const syncPlayerFromBody = () => {
+    const next = body.snapshot();
+    state.player.x = next.position[0];
+    state.player.y = next.position[1];
+    state.player.vx = next.velocity[0];
+    state.player.vy = next.velocity[1];
+    state.player.facing = next.facing;
+    state.player.grounded = next.grounded;
+  };
 
   const snapshot = (): GamePlatformerSnapshot => ({
     kind: "aura-game-platformer-kit",
@@ -907,11 +929,10 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       vy: 0,
       facing: state.player.facing,
       grounded: false,
-      coyote: 0,
-      jumpBuffer: 0,
       dashCooldown: 0,
       ridingPlatformId: undefined
     };
+    body = createBody();
     // Ignore held directional input briefly after a death so a key that caused
     // the miss cannot immediately carry the fresh spawn off its supporting
     // surface before the player or an automated driver can react.
@@ -933,6 +954,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       if (input.reset === true) {
         events = [];
         state = createPlatformerState(config);
+        body = createBody();
         emit("reset");
         return snapshot();
       }
@@ -950,8 +972,12 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         ? previousMoving.find((platform) => platform.id === state.player.ridingPlatformId)
         : undefined;
       if (carried && carriedPrevious && state.player.grounded) {
-        state.player.x += carried.x - carriedPrevious.x;
-        state.player.y += platformTop(carried) - platformTop(carriedPrevious);
+        body.position = [
+          body.position[0] + carried.x - carriedPrevious.x,
+          body.position[1] + platformTop(carried) - platformTop(carriedPrevious),
+          body.position[2]
+        ];
+        syncPlayerFromBody();
       }
 
       state.respawnControlLock = Math.max(0, state.respawnControlLock - step);
@@ -962,38 +988,30 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       if (state.respawnControlLock <= 0) state.respawnAwaitingNeutralInput = false;
       const controlsLocked = state.respawnAwaitingNeutralInput;
       const moveX = controlsLocked ? 0 : requestedMoveX;
-      if (Math.abs(moveX) > 0.01) state.player.facing = moveX >= 0 ? 1 : -1;
-      state.player.vx = moveX * config.moveSpeed;
-      state.player.coyote = state.player.grounded ? config.coyoteMs / 1000 : Math.max(0, state.player.coyote - step);
-      state.player.jumpBuffer = input.jumpPressed ? config.jumpBufferMs / 1000 : Math.max(0, state.player.jumpBuffer - step);
+      body.move(moveX, config.moveSpeed);
+      if (input.jumpPressed) body.requestJump();
       state.player.dashCooldown = Math.max(0, state.player.dashCooldown - step);
       if (!controlsLocked && input.dashPressed && state.player.dashCooldown <= 0) {
-        state.player.vx = state.player.facing * config.dashSpeed;
+        body.dash([body.facing, 0, 0], config.dashSpeed);
         state.player.dashCooldown = 0.38;
         emit("dash");
       }
-      if (state.player.jumpBuffer > 0 && (state.player.grounded || state.player.coyote > 0)) {
-        state.player.vy = config.jumpVelocity;
-        state.player.grounded = false;
+      if (body.consumeJump(config.jumpVelocity)) {
         state.player.ridingPlatformId = undefined;
-        state.player.coyote = 0;
-        state.player.jumpBuffer = 0;
         emit("jump");
       }
-      const gravity = input.fastFall && state.player.vy < 0 ? config.gravity * 1.6 : config.gravity;
-      state.player.vy += gravity * step;
-      state.player.x += state.player.vx * step;
-      state.player.y += state.player.vy * step;
-      state.player.grounded = false;
+      if (input.fastFall && body.velocity[1] < 0) {
+        body.velocity = [body.velocity[0], body.velocity[1] + config.gravity * 0.6 * step, body.velocity[2]];
+      }
+      body.update(step);
+      syncPlayerFromBody();
       state.player.ridingPlatformId = undefined;
 
       const platforms = [...config.platforms, ...moving];
       const groundContact = surfaceQuery.groundContact({ player: state.player, previousPlayer, additionalSurfaces: moving });
       if (groundContact.grounded && groundContact.surfaceId && groundContact.surfaceTop !== undefined) {
-        state.player.y = groundContact.surfaceTop;
-        state.player.vy = 0;
-        state.player.grounded = true;
-        state.player.coyote = config.coyoteMs / 1000;
+        body.snapToGround(groundContact.surfaceTop);
+        syncPlayerFromBody();
         state.player.ridingPlatformId = moving.some((candidate) => candidate.id === groundContact.surfaceId) ? groundContact.surfaceId : undefined;
         if (!previousPlayer.grounded) emit("land", groundContact.surfaceId);
       }
@@ -1031,6 +1049,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     reset(checkpointId) {
       events = [];
       state = createPlatformerState(config, checkpointId);
+      body = createBody();
       return snapshot();
     },
     snapshot,
@@ -1751,8 +1770,6 @@ function createPlatformerState(config: Required<Omit<GamePlatformerLevel, "id">>
       vy: 0,
       facing: 1,
       grounded: false,
-      coyote: 0,
-      jumpBuffer: 0,
       dashCooldown: 0
     },
     score: 0,
