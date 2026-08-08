@@ -590,6 +590,40 @@ export interface GameKinematicMoveCommand {
   readonly knockback?: GameVec2 | GameVec3;
 }
 
+export interface GameArcadeVehicleOptions {
+  readonly maxSpeed: number;
+  readonly acceleration?: number;
+  readonly brakeStrength?: number;
+  readonly reverseSpeed?: number;
+  readonly drag?: number;
+  readonly steerRate?: number;
+  readonly boostAcceleration?: number;
+}
+
+export interface GameArcadeVehicleInput {
+  readonly throttle?: number;
+  readonly brake?: number;
+  readonly steer?: number;
+  readonly drifting?: boolean;
+  readonly boost?: boolean;
+}
+
+export interface GameArcadeVehicleState {
+  readonly x: number;
+  readonly z: number;
+  readonly heading: number;
+  readonly speed: number;
+  readonly drift: number;
+}
+
+export interface GameArcadeVehicle {
+  readonly kind: "aura-game-arcade-vehicle";
+  step(dt: number, input?: GameArcadeVehicleInput): GameArcadeVehicleState;
+  constrain(options: { readonly x?: number; readonly z?: number; readonly speedMultiplier?: number }): GameArcadeVehicleState;
+  reset(state?: Partial<GameArcadeVehicleState>): GameArcadeVehicleState;
+  snapshot(): GameArcadeVehicleState;
+}
+
 export type GameCombatMoveDefinition = Omit<GameCombatMove, "id"> & {
   readonly id?: string;
 };
@@ -1959,6 +1993,68 @@ export function createGameInput(options: GameInputOptions): GameInputController 
       axisValues.clear();
       actionPressHistory.length = 0;
     }
+  };
+}
+
+export function createGameArcadeVehicle(options: GameArcadeVehicleOptions): GameArcadeVehicle {
+  const maxSpeed = Math.max(0.001, options.maxSpeed);
+  const acceleration = options.acceleration ?? 16;
+  const brakeStrength = options.brakeStrength ?? 24;
+  const reverseSpeed = options.reverseSpeed ?? 4;
+  const drag = options.drag ?? 2.4;
+  const steerRate = options.steerRate ?? 2.7;
+  const boostAcceleration = options.boostAcceleration ?? 9;
+  let state: GameArcadeVehicleState = { x: 0, z: 0, heading: 0, speed: 0, drift: 0 };
+  const snapshot = (): GameArcadeVehicleState => ({ ...state });
+
+  return {
+    kind: "aura-game-arcade-vehicle",
+    step(dt, input = {}) {
+      const seconds = clamp(dt, 0, 0.05);
+      let speed = state.speed
+        + clamp(input.throttle ?? 0, 0, 1) * acceleration * seconds
+        - clamp(input.brake ?? 0, 0, 1) * brakeStrength * seconds;
+      if (input.boost && state.drift > 0.18) speed += boostAcceleration * seconds;
+      speed -= Math.sign(speed) * Math.min(Math.abs(speed), drag * seconds);
+      speed = clamp(speed, -reverseSpeed, maxSpeed);
+      const steer = clamp(input.steer ?? 0, -1, 1);
+      const drift = clamp(
+        state.drift + (input.drifting && Math.abs(steer) > 0.1 && speed > 2 ? seconds * 1.8 : -seconds * 1.2),
+        0,
+        1
+      );
+      const heading = state.heading
+        + steer * steerRate * (0.28 + Math.min(1, Math.abs(speed) / maxSpeed))
+        * (1 + drift * 0.55) * seconds * (speed < 0 ? -1 : 1);
+      state = {
+        x: state.x + Math.cos(heading) * speed * seconds,
+        z: state.z + Math.sin(heading) * speed * seconds,
+        heading,
+        speed,
+        drift
+      };
+      return snapshot();
+    },
+    constrain(constraint) {
+      state = {
+        ...state,
+        x: constraint.x ?? state.x,
+        z: constraint.z ?? state.z,
+        speed: state.speed * clamp(constraint.speedMultiplier ?? 1, 0, 1)
+      };
+      return snapshot();
+    },
+    reset(next = {}) {
+      state = {
+        x: next.x ?? 0,
+        z: next.z ?? 0,
+        heading: next.heading ?? 0,
+        speed: next.speed ?? 0,
+        drift: next.drift ?? 0
+      };
+      return snapshot();
+    },
+    snapshot
   };
 }
 

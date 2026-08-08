@@ -273,8 +273,18 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
     },
     {
       capability: "vehicle motion",
-      present: exists("packages/physics/src/VehicleMotion.ts") && contains("packages/engine/src/agent-api/GameGenreKits.ts", "heading"),
-      detail: "packages/physics/VehicleMotion (force model) and game.racing's own kinematic integration both exist"
+      present: (() => {
+        const source = readFileSync(join(repoRoot, "packages/engine/src/agent-api/GameGenreKits.ts"), "utf8");
+        const start = source.indexOf("export function createGameRacingKit");
+        const end = source.indexOf("const FALLING_BLOCK_SHAPES", start);
+        if (start < 0 || end < 0) return true;
+        const racing = source.slice(start, end);
+        return !racing.includes("createGameArcadeVehicle")
+          || !racing.includes("motion.step(step")
+          || /state\.position\.[xy]\s*\+\s*Math\.(?:cos|sin)/.test(racing)
+          || /state\.heading\s*\+\s*steer/.test(racing);
+      })(),
+      detail: "game.racing delegates arcade pose integration to GameRuntime.createGameArcadeVehicle; the force-based VehicleMotion contract remains a distinct physics capability (ADR 0003)"
     },
     {
       capability: "game runtime",

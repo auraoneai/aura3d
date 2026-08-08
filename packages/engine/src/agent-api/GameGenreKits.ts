@@ -3,6 +3,7 @@ import {
   validatePlatformerMotion,
   type PlatformerMotionReport
 } from "./PlatformerMotion.js";
+import { createGameArcadeVehicle } from "./GameRuntime.js";
 export interface GameKitVec2 {
   readonly x: number;
   readonly y: number;
@@ -1269,11 +1270,21 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
   const offTrackDrag = options.offTrackDrag ?? 5.5;
   const checkpointRadius = options.checkpointRadius ?? 0.07;
   const lapsToWin = Math.max(1, options.lapsToWin ?? 1);
+  const motion = createGameArcadeVehicle({
+    maxSpeed,
+    acceleration,
+    brakeStrength,
+    reverseSpeed,
+    drag,
+    steerRate,
+    boostAcceleration
+  });
   let events: GameRacingEvent[] = [];
   let state = createRaceState(options.startProgress ?? 0);
 
   function createRaceState(progress: number): Omit<GameRacingSnapshot, "kind" | "routeId" | "events" | "checkpointCount" | "lapsToWin"> {
     const sample = sampleRaceRoute(segments, length, progress);
+    const vehicle = motion.reset({ x: sample.x, z: sample.y, heading: sample.heading });
     return {
       frame: 0,
       time: 0,
@@ -1281,15 +1292,15 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       checkpoint: 0,
       lapTime: 0,
       bestTime: undefined,
-      speed: 0,
-      drift: 0,
+      speed: vehicle.speed,
+      drift: vehicle.drift,
       offTrack: false,
       progress: normalizeProgress(progress),
       distance: normalizeProgress(progress) * length,
       trackOffset: 0,
       signedTrackOffset: 0,
-      position: { x: sample.x, y: sample.y },
-      heading: sample.heading,
+      position: { x: vehicle.x, y: vehicle.z },
+      heading: vehicle.heading,
       status: "running"
     };
   }
@@ -1308,14 +1319,21 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
   const placeAtProgress = (progress: number, offset = 0) => {
     const sample = sampleRaceRoute(segments, length, progress);
     const normal = { x: -Math.sin(sample.heading), y: Math.cos(sample.heading) };
+    const vehicle = motion.reset({
+      x: sample.x + normal.x * offset,
+      z: sample.y + normal.y * offset,
+      heading: sample.heading,
+      speed: state.speed,
+      drift: state.drift
+    });
     state = {
       ...state,
       progress: normalizeProgress(progress),
       distance: normalizeProgress(progress) * length,
       trackOffset: Math.abs(offset),
       signedTrackOffset: offset,
-      position: { x: sample.x + normal.x * offset, y: sample.y + normal.y * offset },
-      heading: sample.heading
+      position: { x: vehicle.x, y: vehicle.z },
+      heading: vehicle.heading
     };
     return snapshot();
   };
@@ -1337,21 +1355,21 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       state = { ...state, frame: state.frame + 1, time: state.time + step, lapTime: state.lapTime + step };
       const throttle = typeof input.throttle === "boolean" ? (input.throttle ? 1 : 0) : clampNumber(input.throttle ?? 0, 0, 1);
       const brake = typeof input.brake === "boolean" ? (input.brake ? 1 : 0) : clampNumber(input.brake ?? 0, 0, 1);
-      let speed = state.speed + throttle * acceleration * step - brake * brakeStrength * step;
-      if (input.boost && state.drift > 0.18) speed += boostAcceleration * step;
-      speed -= Math.sign(speed) * Math.min(Math.abs(speed), drag * step);
-      speed = clampNumber(speed, -reverseSpeed, maxSpeed);
       const steer = clampNumber(input.steer ?? 0, -1, 1);
-      const drift = clampNumber(state.drift + ((input.drift && Math.abs(steer) > 0.1 && speed > 2) ? step * 1.8 : -step * 1.2), 0, 1);
-      const heading = state.heading + steer * steerRate * (0.28 + Math.min(1, Math.abs(speed) / maxSpeed)) * (1 + drift * 0.55) * step * (speed < 0 ? -1 : 1);
+      let vehicle = motion.step(step, {
+        throttle,
+        brake,
+        steer,
+        drifting: input.drift,
+        boost: input.boost
+      });
       let position = {
-        x: state.position.x + Math.cos(heading) * speed * step,
-        y: state.position.y + Math.sin(heading) * speed * step
+        x: vehicle.x,
+        y: vehicle.z
       };
       let contact = surfaceQuery.query(position);
       const offTrack = !contact.onTrack;
       if (offTrack) {
-        speed *= Math.max(0, 1 - offTrackDrag * step);
         if (!state.offTrack) emit("off-track");
         if (surfaceQuery.certified) {
           const center = sampleRaceRoute(segments, length, contact.progress);
@@ -1361,13 +1379,18 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
           position = { x: center.x + dx * scale, y: center.y + dy * scale };
           contact = surfaceQuery.query(position);
         }
+        vehicle = motion.constrain({
+          x: position.x,
+          z: position.y,
+          speedMultiplier: Math.max(0, 1 - offTrackDrag * step)
+        });
       }
       state = {
         ...state,
-        speed,
-        drift,
-        heading,
-        position,
+        speed: vehicle.speed,
+        drift: vehicle.drift,
+        heading: vehicle.heading,
+        position: { x: vehicle.x, y: vehicle.z },
         progress: contact.progress,
         distance: contact.distance,
         trackOffset: contact.trackOffset,
