@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T22:13:24.483Z",
+  "generatedAt": "2026-08-08T22:26:11.029Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "fc122e51349d8b467ae0457051841222032c87b0",
+  "sourceCommit": "7647e5233996af380c2a272a55560aa5f84b2e9e",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -16,7 +16,7 @@
   ],
   "packageCount": 28,
   "subsystemCount": 36,
-  "sourceFilesClassified": 898,
+  "sourceFilesClassified": 890,
   "packages": [
     {
       "package": "animation",
@@ -736,6 +736,7 @@
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/reports/audio-backend-bakeoff/report.json",
+          "tests/reports/descriptor-audio-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/public-api-contracts.test.ts",
           "tests/unit/tools/api-docs.test.ts",
@@ -764,7 +765,7 @@
         "source": 19,
         "dynamicImport": 3,
         "route": 1,
-        "fixture": 10,
+        "fixture": 11,
         "cliOrGenerator": 6,
         "docs": 6,
         "externalConsumer": 0
@@ -772,7 +773,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 16,
-        "testMentions": 10,
+        "testMentions": 11,
         "docsMentions": 6
       }
     },
@@ -3950,8 +3951,8 @@
       "published": true,
       "disposition": "COMPATIBILITY-ONLY",
       "source": {
-        "lines": 5837,
-        "bytes": 236285
+        "lines": 3692,
+        "bytes": 152491
       },
       "dist": {
         "jsFiles": 31,
@@ -4034,7 +4035,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 29,
+        "sourceFiles": 21,
         "testMentions": 11,
         "docsMentions": 6
       }
@@ -5775,6 +5776,7 @@
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/current-threejs-baseline.json",
         "tests/reports/descriptor-assets-delete-final.json",
+        "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
@@ -5965,7 +5967,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 790
+      "maintenanceReferenceCount": 791
     },
     {
       "id": "controls-general",
@@ -6410,6 +6412,7 @@
         "tests/fixtures/showcase-spec/webgpu-overclaim.json",
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
         "tests/reports/descriptor-assets-delete-final.json",
+        "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -6475,7 +6478,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 202
+      "maintenanceReferenceCount": 203
     },
     {
       "id": "debug-general",
@@ -13702,8 +13705,6 @@
       "owner": "@aura3d/scripting",
       "decision": "Retain under the package disposition; reassess only with consumer and migration evidence.",
       "files": [
-        "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
-        "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
         "packages/scripting/src/AnimationNodeCategories.ts",
         "packages/scripting/src/AnimationVisualNodes.ts",
         "packages/scripting/src/Behavior.ts",
@@ -13711,16 +13712,10 @@
         "packages/scripting/src/BehaviorRegistry.ts",
         "packages/scripting/src/BehaviorSystem.ts",
         "packages/scripting/src/BehaviorTree.ts",
-        "packages/scripting/src/CloudServiceFixtures.ts",
-        "packages/scripting/src/CulturalBehaviorFixtures.ts",
         "packages/scripting/src/DecisionTree.ts",
         "packages/scripting/src/GOAP.ts",
         "packages/scripting/src/HTN.ts",
-        "packages/scripting/src/LearningAgentFixtures.ts",
-        "packages/scripting/src/NetworkReplicationFixtures.ts",
         "packages/scripting/src/Perception.ts",
-        "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
-        "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
         "packages/scripting/src/ScriptContext.ts",
         "packages/scripting/src/StateMachine.ts",
         "packages/scripting/src/UtilityAI.ts",
@@ -13732,13 +13727,13 @@
         "packages/scripting/src/WeaponSystem.ts",
         "packages/scripting/src/index.ts"
       ],
-      "lines": 5837,
-      "bytes": 236285,
+      "lines": 3692,
+      "bytes": 152491,
       "compiledCost": {
-        "compiledFiles": 29,
-        "rawBytes": 188727,
-        "gzipBytes": 39265,
-        "brotliBytes": 33032,
+        "compiledFiles": 21,
+        "rawBytes": 126979,
+        "gzipBytes": 25121,
+        "brotliBytes": 21652,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -13755,6 +13750,7 @@
         "docs/api/public-api.md",
         "docs/architecture/1.6-layers.md",
         "docs/architecture/adr/0001-retain-ecs-and-scripting.md",
+        "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md",
         "docs/architecture/adr/README.md",
         "docs/architecture/package-ownership.md",
         "docs/migration/ecs-scripting-compatibility.md",
@@ -13772,11 +13768,9 @@
         "tests/browser/visual-scripting-105.spec.ts",
         "tests/integration/scripting-scene-ecs.test.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/game-runtime/behavior-retarget-stretch.test.ts",
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/scripting/behavior-tree.test.ts",
-        "tests/unit/scripting/cultural-behavior-fixtures.test.ts",
         "tests/unit/scripting/decision-tree.test.ts",
         "tests/unit/scripting/htn.test.ts",
         "tests/unit/scripting/state-machine.test.ts",
@@ -13789,7 +13783,7 @@
         "tools/visual-scripting-evidence/index.ts",
         "tools/visual-scripting-package-smoke/index.ts"
       ],
-      "maintenanceReferenceCount": 46
+      "maintenanceReferenceCount": 45
     },
     {
       "id": "three-compat-general",

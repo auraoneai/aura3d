@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { sampleAdaptiveDifficultyFixture, sampleFpsEnemyTactics, sampleFpsHudOverlay, sampleFpsLevelLayout, sampleFpsWeaponCycle, sampleNetworkReplicationFixture, samplePowerUpEffect, sampleSpaceShooterWave, sampleWeaponBurst } from "../../../packages/scripting/src/index.js";
+import { sampleFpsEnemyTactics, sampleFpsHudOverlay, sampleFpsLevelLayout, sampleFpsWeaponCycle, samplePowerUpEffect, sampleSpaceShooterWave, sampleWeaponBurst } from "../../../packages/scripting/src/index.js";
 
 test("weapon burst sampler adapts old laser spread and radial secondary patterns", () => {
   const primary = sampleWeaponBurst({ kind: "laser", level: 3, angle: 0.25 });
@@ -209,88 +209,4 @@ test("power-up effect sampler adapts old ship effect semantics", () => {
   assert.equal(life.lives, 3);
   assert.equal(multiplier.multiplier, 4);
   assert.equal(multiplier.source, "origin-master-space-shooter-powerup-effects-adapted");
-});
-
-test("adaptive difficulty fixture adapts old balancing metrics, rules, and blocked claims", () => {
-  const fixture = sampleAdaptiveDifficultyFixture({
-    strategy: "gradual",
-    recentDeaths: 4,
-    completionTimeSeconds: 118,
-    accuracy: 0.38,
-    resourceEfficiency: 0.76,
-    progressionRate: 0.48,
-    playerSkill: 0.45,
-    seed: 2025
-  });
-  const repeat = sampleAdaptiveDifficultyFixture({
-    strategy: "gradual",
-    recentDeaths: 4,
-    completionTimeSeconds: 118,
-    accuracy: 0.38,
-    resourceEfficiency: 0.76,
-    progressionRate: 0.48,
-    playerSkill: 0.45,
-    seed: 2025
-  });
-
-  assert.equal(fixture.source, "origin-master-ai-balancing-smart-difficulty-adapted");
-  assert.deepEqual(fixture, repeat);
-  assert.equal(fixture.metrics.length, 9);
-  assert.ok(fixture.metrics.every((metric) => metric.count === 9));
-  assert.ok(fixture.triggeredRules.some((rule) => rule.id === "death-rate-relief"));
-  assert.ok(fixture.triggeredRules.some((rule) => rule.id === "slow-completion-timer"));
-  assert.ok(fixture.triggeredRules.some((rule) => rule.id === "low-accuracy-resource-support"));
-  assert.ok(fixture.triggeredRules.some((rule) => rule.id === "retry-checkpoint-support"));
-  assert.ok(fixture.adjustment.enemyDamage < 1);
-  assert.ok(fixture.adjustment.timerMultiplier > 1);
-  assert.ok(fixture.adjustment.resourceDropRate > 1);
-  assert.ok(fixture.adjustment.checkpointMultiplier > 1);
-  assert.equal(fixture.appliedChangeCount, fixture.triggeredRules.length);
-  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
-  assert.ok(fixture.blockedClaims.includes("Unity/Unreal AI middleware parity"));
-  assert.match(fixture.claimBoundary, /not production DDA/);
-  assert.throws(() => sampleAdaptiveDifficultyFixture({ seed: 1.5 }), /seed/);
-});
-
-test("network replication fixture adapts old prediction, reconciliation, delta, and interest concepts", () => {
-  const fixture = sampleNetworkReplicationFixture({
-    seed: 4096,
-    latencyMs: 72,
-    jitterMs: 9,
-    interestRadius: 18
-  });
-  const repeat = sampleNetworkReplicationFixture({
-    seed: 4096,
-    latencyMs: 72,
-    jitterMs: 9,
-    interestRadius: 18
-  });
-
-  assert.equal(fixture.source, "origin-master-net-prediction-replication-adapted");
-  assert.deepEqual(fixture, repeat);
-  assert.equal(fixture.tickRate, 60);
-  assert.equal(fixture.inputFrames.length, 6);
-  assert.equal(fixture.prediction.inputCount, 6);
-  assert.equal(fixture.prediction.acknowledgedSequence, 102);
-  assert.equal(fixture.prediction.pendingInputs, 3);
-  assert.ok(fixture.prediction.predictionError > 0);
-  assert.equal(fixture.prediction.reconciliationAccepted, true);
-  assert.ok(fixture.delta.changedFields.includes("health"));
-  assert.ok(fixture.delta.changedFields.includes("ammo"));
-  assert.ok(fixture.delta.changedFields.includes("animation"));
-  assert.equal(fixture.delta.reconstructedMatches, true);
-  assert.ok(fixture.delta.compressionRatio < 1);
-  assert.ok(fixture.delta.bytesSaved > 0);
-  assert.ok(fixture.interest.relevant.includes("net-enemy-alpha"));
-  assert.ok(fixture.interest.relevant.includes("net-loot-health"));
-  assert.ok(fixture.interest.culled.includes("net-distant-prop"));
-  assert.ok(fixture.interest.culled.includes("net-owner-secret"));
-  assert.ok(fixture.interest.added.length > 0);
-  assert.ok(fixture.interest.removed.includes("net-distant-prop"));
-  assert.deepEqual(fixture.interpolation.interpolatedPosition, [4.5, 0, -3.25]);
-  assert.ok(fixture.blockedClaims.includes("Unity Netcode parity"));
-  assert.ok(fixture.blockedClaims.includes("Unreal replication parity"));
-  assert.match(fixture.claimBoundary, /does not open sockets/);
-  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
-  assert.throws(() => sampleNetworkReplicationFixture({ latencyMs: -1 }), /latencyMs/);
 });

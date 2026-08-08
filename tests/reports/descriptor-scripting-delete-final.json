@@ -1,0 +1,1240 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-08T22:26:22.376Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/AdaptiveDifficultyFixtures.ts: all six R8 points empty across 5032 scanned files (324 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/AnalyticsPrivacyFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/CloudServiceFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/CloudServiceFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/CulturalBehaviorFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/CulturalBehaviorFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/LearningAgentFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/LearningAgentFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/NetworkReplicationFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/NetworkReplicationFixtures.ts: all six R8 points empty across 5032 scanned files (324 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: all six R8 points empty across 5032 scanned files (117 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
+      "pass": true,
+      "detail": "packages/scripting/src/ProceduralContentAdaptationFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+    "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+    "packages/scripting/src/CloudServiceFixtures.ts",
+    "packages/scripting/src/CulturalBehaviorFixtures.ts",
+    "packages/scripting/src/LearningAgentFixtures.ts",
+    "packages/scripting/src/NetworkReplicationFixtures.ts",
+    "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+    "packages/scripting/src/ProceduralContentAdaptationFixtures.ts"
+  ],
+  "expandedFileCount": 8,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5032,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 325,
+      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "moduleSpecifiers": [
+        "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+        "AdaptiveDifficultyFixtures.ts",
+        "AdaptiveDifficultyFixtures",
+        "@aura3d/scripting/src/AdaptiveDifficultyFixtures",
+        "@aura3d/scripting/AdaptiveDifficultyFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 324,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:17",
+          "detail": "\"id\": \"r8:packages/scripting/src/AdaptiveDifficultyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:19",
+          "detail": "\"detail\": \"packages/scripting/src/AdaptiveDifficultyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:85; documentation-generator-dependency @ docs/api/public-api.md:1265; documentation-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:174",
+          "detail": "\"r8:packages/scripting/src/AdaptiveDifficultyFixtures.ts: packages/scripting/src/AdaptiveDifficultyFixtures.ts: 3 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:85; documentation-generator-dependenc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:353",
+          "detail": "\"path\": \"packages/scripting/src/AdaptiveDifficultyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:358",
+          "detail": "\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:359",
+          "detail": "\"AdaptiveDifficultyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:360",
+          "detail": "\"AdaptiveDifficultyFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:361",
+          "detail": "\"@aura3d/scripting/src/AdaptiveDifficultyFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:362",
+          "detail": "\"@aura3d/scripting/AdaptiveDifficultyFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:371",
+          "detail": "\"detail\": \"evidence: [\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/scripting/weapon-system.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-par"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:391",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:396",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts: 62 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:85; runtime-consumer @ tests/unit/scripting/weapon-system.test.ts:3; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:401",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/AdaptiveDifficultyFixtures.ts: packages/scripting/src/AdaptiveDifficultyFixtures.ts: 62 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:85; runtime-consumer @ t"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:406",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:411",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:436",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:446",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"t"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:461",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"detail\\\\\\\\\\\\\\\": \\\\\\\\\\\\\\\"evidence: [\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\", \\\\\\\\\\"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:471",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"detail\\\\\\\\\\\\\\\": \\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\",\\\\\\\\\\\\\\\"\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:476",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\",\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:481",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"t"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:496",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\",\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:501",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:526",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:536",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/scripting/src/AdaptiveDifficultyFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"t"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 183,
+      "lastCommit": "336dd1ca31c69585d5e9dea149561265a2da395c",
+      "moduleSpecifiers": [
+        "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+        "AnalyticsPrivacyFixtures.ts",
+        "AnalyticsPrivacyFixtures",
+        "@aura3d/scripting/src/AnalyticsPrivacyFixtures",
+        "@aura3d/scripting/AnalyticsPrivacyFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 442,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:22",
+          "detail": "\"id\": \"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:24",
+          "detail": "\"detail\": \"packages/scripting/src/AnalyticsPrivacyFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1267; documentation-generator-dependency @ docs/api/public-api.md:1268\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:175",
+          "detail": "\"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts: packages/scripting/src/AnalyticsPrivacyFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1267; documentation-generator-dependency @ doc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:621",
+          "detail": "\"path\": \"packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:626",
+          "detail": "\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:627",
+          "detail": "\"AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:628",
+          "detail": "\"AnalyticsPrivacyFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:629",
+          "detail": "\"@aura3d/scripting/src/AnalyticsPrivacyFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:630",
+          "detail": "\"@aura3d/scripting/AnalyticsPrivacyFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:652",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:657",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/AnalyticsPrivacyFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/analytics-privacy-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.m"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:662",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts: packages/scripting/src/AnalyticsPrivacyFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/analytics-privacy-fixtures.test.ts:2; documentation-g"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:667",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:672",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15221",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15226",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/AnalyticsPrivacyFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/analytics-privacy-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.m"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15506",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts: packages/scripting/src/AnalyticsPrivacyFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/analytics-privacy-fixtures.test.ts:2; documentation-g"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15816",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15821",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:162",
+          "detail": "\"id\": \"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:164",
+          "detail": "\"detail\": \"packages/scripting/src/AnalyticsPrivacyFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:55; runtime-consumer @ packages/scripting/src/index.ts:61; runtime-consumer @ tools/deletion-safety/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:229",
+          "detail": "\"r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts: packages/scripting/src/AnalyticsPrivacyFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:55; runtime-consumer @ packages/scripting/src/index.ts:"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:269",
+          "detail": "\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:40167",
+          "detail": "\"path\": \"packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:40172",
+          "detail": "\"packages/scripting/src/AnalyticsPrivacyFixtures.ts\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/CloudServiceFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 226,
+      "lastCommit": "336dd1ca31c69585d5e9dea149561265a2da395c",
+      "moduleSpecifiers": [
+        "packages/scripting/src/CloudServiceFixtures.ts",
+        "CloudServiceFixtures.ts",
+        "CloudServiceFixtures",
+        "@aura3d/scripting/src/CloudServiceFixtures",
+        "@aura3d/scripting/CloudServiceFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 442,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:62",
+          "detail": "\"id\": \"r8:packages/scripting/src/CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:64",
+          "detail": "\"detail\": \"packages/scripting/src/CloudServiceFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1271; documentation-generator-dependency @ docs/api/public-api.md:1272\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:183",
+          "detail": "\"r8:packages/scripting/src/CloudServiceFixtures.ts: packages/scripting/src/CloudServiceFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1271; documentation-generator-dependency @ docs/api/pu"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4141",
+          "detail": "\"path\": \"packages/scripting/src/CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4146",
+          "detail": "\"packages/scripting/src/CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4147",
+          "detail": "\"CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4148",
+          "detail": "\"CloudServiceFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4149",
+          "detail": "\"@aura3d/scripting/src/CloudServiceFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4150",
+          "detail": "\"@aura3d/scripting/CloudServiceFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4172",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/CloudServiceFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4177",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/CloudServiceFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cloud-service-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.md:1271; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4182",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/CloudServiceFixtures.ts: packages/scripting/src/CloudServiceFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cloud-service-fixtures.test.ts:2; documentation-generator-dep"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4187",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/CloudServiceFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4192",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/CloudServiceFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15301",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/CloudServiceFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15306",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/CloudServiceFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cloud-service-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.md:1271; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15546",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/CloudServiceFixtures.ts: packages/scripting/src/CloudServiceFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cloud-service-fixtures.test.ts:2; documentation-generator-dep"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:18501",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/CloudServiceFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:18506",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/CloudServiceFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:167",
+          "detail": "\"id\": \"r8:packages/scripting/src/CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:169",
+          "detail": "\"detail\": \"packages/scripting/src/CloudServiceFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:73; runtime-consumer @ packages/scripting/src/index.ts:74; runtime-consumer @ tools/deletion-safety/cand"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:230",
+          "detail": "\"r8:packages/scripting/src/CloudServiceFixtures.ts: packages/scripting/src/CloudServiceFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:73; runtime-consumer @ packages/scripting/src/index.ts:74; runt"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:270",
+          "detail": "\"packages/scripting/src/CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:40730",
+          "detail": "\"path\": \"packages/scripting/src/CloudServiceFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:40735",
+          "detail": "\"packages/scripting/src/CloudServiceFixtures.ts\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/CulturalBehaviorFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 263,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/scripting/src/CulturalBehaviorFixtures.ts",
+        "CulturalBehaviorFixtures.ts",
+        "CulturalBehaviorFixtures",
+        "@aura3d/scripting/src/CulturalBehaviorFixtures",
+        "@aura3d/scripting/CulturalBehaviorFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 442,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:67",
+          "detail": "\"id\": \"r8:packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:69",
+          "detail": "\"detail\": \"packages/scripting/src/CulturalBehaviorFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1269; documentation-generator-dependency @ docs/api/public-api.md:1270\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:184",
+          "detail": "\"r8:packages/scripting/src/CulturalBehaviorFixtures.ts: packages/scripting/src/CulturalBehaviorFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1269; documentation-generator-dependency @ doc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4302",
+          "detail": "\"path\": \"packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4307",
+          "detail": "\"packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4308",
+          "detail": "\"CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4309",
+          "detail": "\"CulturalBehaviorFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4310",
+          "detail": "\"@aura3d/scripting/src/CulturalBehaviorFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4311",
+          "detail": "\"@aura3d/scripting/CulturalBehaviorFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4333",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/CulturalBehaviorFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4338",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/CulturalBehaviorFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cultural-behavior-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.m"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4343",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/CulturalBehaviorFixtures.ts: packages/scripting/src/CulturalBehaviorFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cultural-behavior-fixtures.test.ts:2; documentation-g"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4383",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/CulturalBehaviorFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:4388",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/CulturalBehaviorFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15311",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/CulturalBehaviorFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15316",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/CulturalBehaviorFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cultural-behavior-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.m"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15551",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/CulturalBehaviorFixtures.ts: packages/scripting/src/CulturalBehaviorFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/cultural-behavior-fixtures.test.ts:2; documentation-g"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:18631",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/CulturalBehaviorFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:18636",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/CulturalBehaviorFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:172",
+          "detail": "\"id\": \"r8:packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:174",
+          "detail": "\"detail\": \"packages/scripting/src/CulturalBehaviorFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:62; runtime-consumer @ packages/scripting/src/index.ts:72; runtime-consumer @ tools/deletion-safety/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:231",
+          "detail": "\"r8:packages/scripting/src/CulturalBehaviorFixtures.ts: packages/scripting/src/CulturalBehaviorFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:62; runtime-consumer @ packages/scripting/src/index.ts:"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:271",
+          "detail": "\"packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:41293",
+          "detail": "\"path\": \"packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:41298",
+          "detail": "\"packages/scripting/src/CulturalBehaviorFixtures.ts\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/LearningAgentFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 185,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/scripting/src/LearningAgentFixtures.ts",
+        "LearningAgentFixtures.ts",
+        "LearningAgentFixtures",
+        "@aura3d/scripting/src/LearningAgentFixtures",
+        "@aura3d/scripting/LearningAgentFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 442,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:87",
+          "detail": "\"id\": \"r8:packages/scripting/src/LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:89",
+          "detail": "\"detail\": \"packages/scripting/src/LearningAgentFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1273; documentation-generator-dependency @ docs/api/public-api.md:1274\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:188",
+          "detail": "\"r8:packages/scripting/src/LearningAgentFixtures.ts: packages/scripting/src/LearningAgentFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1273; documentation-generator-dependency @ docs/api/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6259",
+          "detail": "\"path\": \"packages/scripting/src/LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6264",
+          "detail": "\"packages/scripting/src/LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6265",
+          "detail": "\"LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6266",
+          "detail": "\"LearningAgentFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6267",
+          "detail": "\"@aura3d/scripting/src/LearningAgentFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6268",
+          "detail": "\"@aura3d/scripting/LearningAgentFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6290",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/LearningAgentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6295",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/LearningAgentFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/learning-agent-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.md:1273"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6300",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/LearningAgentFixtures.ts: packages/scripting/src/LearningAgentFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/learning-agent-fixtures.test.ts:2; documentation-generator-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6305",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/LearningAgentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6310",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/LearningAgentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15351",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/LearningAgentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15356",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/LearningAgentFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/learning-agent-fixtures.test.ts:2; documentation-generator-dependency @ docs/api/public-api.md:1273"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15571",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/LearningAgentFixtures.ts: packages/scripting/src/LearningAgentFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/learning-agent-fixtures.test.ts:2; documentation-generator-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:19601",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/LearningAgentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:19606",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/LearningAgentFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:177",
+          "detail": "\"id\": \"r8:packages/scripting/src/LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:179",
+          "detail": "\"detail\": \"packages/scripting/src/LearningAgentFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:75; runtime-consumer @ packages/scripting/src/index.ts:76; runtime-consumer @ tools/deletion-safety/can"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:232",
+          "detail": "\"r8:packages/scripting/src/LearningAgentFixtures.ts: packages/scripting/src/LearningAgentFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:75; runtime-consumer @ packages/scripting/src/index.ts:76; ru"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:272",
+          "detail": "\"packages/scripting/src/LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:41891",
+          "detail": "\"path\": \"packages/scripting/src/LearningAgentFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:41896",
+          "detail": "\"packages/scripting/src/LearningAgentFixtures.ts\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/NetworkReplicationFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 441,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/scripting/src/NetworkReplicationFixtures.ts",
+        "NetworkReplicationFixtures.ts",
+        "NetworkReplicationFixtures",
+        "@aura3d/scripting/src/NetworkReplicationFixtures",
+        "@aura3d/scripting/NetworkReplicationFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 324,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:92",
+          "detail": "\"id\": \"r8:packages/scripting/src/NetworkReplicationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:94",
+          "detail": "\"detail\": \"packages/scripting/src/NetworkReplicationFixtures.ts: 3 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:89; documentation-generator-dependency @ docs/api/public-api.md:1275; documentation-"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:189",
+          "detail": "\"r8:packages/scripting/src/NetworkReplicationFixtures.ts: packages/scripting/src/NetworkReplicationFixtures.ts: 3 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:89; documentation-generator-dependenc"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6420",
+          "detail": "\"path\": \"packages/scripting/src/NetworkReplicationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6425",
+          "detail": "\"packages/scripting/src/NetworkReplicationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6426",
+          "detail": "\"NetworkReplicationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6427",
+          "detail": "\"NetworkReplicationFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6428",
+          "detail": "\"@aura3d/scripting/src/NetworkReplicationFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6429",
+          "detail": "\"@aura3d/scripting/NetworkReplicationFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6438",
+          "detail": "\"detail\": \"evidence: [\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\", \\\"examples/game-slice/main.ts\\\", \\\"tests/unit/scripting/weapon-system.test.ts\\\", \\\"tests/browser/runtime-external-parity.spec.ts\\\", \\\"tests/reports/external-par"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6458",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/NetworkReplicationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6463",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/NetworkReplicationFixtures.ts: 62 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:89; runtime-consumer @ tests/unit/scripting/weapon-system.test.ts:3; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6468",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/NetworkReplicationFixtures.ts: packages/scripting/src/NetworkReplicationFixtures.ts: 62 blocking reference(s) — runtime-consumer @ tests/browser/runtime-external-parity.spec.ts:89; runtime-consumer @ t"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6483",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6488",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6513",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6523",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"t"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6538",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"detail\\\\\\\\\\\\\\\": \\\\\\\\\\\\\\\"evidence: [\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\", \\\\\\\\\\"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6548",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"detail\\\\\\\\\\\\\\\": \\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\",\\\\\\\\\\\\\\\"\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6553",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\",\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6558",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"t"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6573",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\",\\\\\\\"\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6578",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\",\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6593",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"evidence: [\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\", \\\\\\\"examples/game-slice/main.ts\\\\\\\", \\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\", \\\\\\\"tests/browser/runtime-external-parity.spec.ts\\\\\\\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:6603",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"\\\\\\\"detail\\\\\\\": \\\\\\\"evidence: [\\\\\\\\\\\\\\\"packages/scripting/src/NetworkReplicationFixtures.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"examples/game-slice/main.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"tests/unit/scripting/weapon-system.test.ts\\\\\\\\\\\\\\\", \\\\\\\\\\\\\\\"t"
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 258,
+      "lastCommit": "336dd1ca31c69585d5e9dea149561265a2da395c",
+      "moduleSpecifiers": [
+        "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+        "PlayerBehaviorTelemetryFixtures.ts",
+        "PlayerBehaviorTelemetryFixtures",
+        "@aura3d/scripting/src/PlayerBehaviorTelemetryFixtures",
+        "@aura3d/scripting/PlayerBehaviorTelemetryFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 117,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:102",
+          "detail": "\"id\": \"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:104",
+          "detail": "\"detail\": \"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1277; documentation-generator-dependency @ docs/api/public-api.md:1278\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:191",
+          "detail": "\"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1277; documentation-generator-de"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7036",
+          "detail": "\"path\": \"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7041",
+          "detail": "\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7042",
+          "detail": "\"PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7043",
+          "detail": "\"PlayerBehaviorTelemetryFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7044",
+          "detail": "\"@aura3d/scripting/src/PlayerBehaviorTelemetryFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7045",
+          "detail": "\"@aura3d/scripting/PlayerBehaviorTelemetryFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7067",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7072",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 58 blocking reference(s) — runtime-consumer @ tests/unit/scripting/player-behavior-telemetry-fixtures.test.ts:2; runtime-consumer @ tests/unit/scripting/pro"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7077",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 58 blocking reference(s) — runtime-consumer @ tests/unit/scripting/player-behavior-telemetry-fixtures.test"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7122",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7127",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15381",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15386",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 58 blocking reference(s) — runtime-consumer @ tests/unit/scripting/player-behavior-telemetry-fixtures.test.ts:2; runtime-consumer @ tests/unit/scripting/pro"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15586",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 58 blocking reference(s) — runtime-consumer @ tests/unit/scripting/player-behavior-telemetry-fixtures.test"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:20111",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:20116",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:187",
+          "detail": "\"id\": \"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:189",
+          "detail": "\"detail\": \"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:89; runtime-consumer @ packages/scripting/src/index.ts:100; runtime-consumer @ tools/deletion"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:234",
+          "detail": "\"r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:89; runtime-consumer @ packages/scripting"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:274",
+          "detail": "\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:43842",
+          "detail": "\"path\": \"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:43847",
+          "detail": "\"packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    },
+    {
+      "path": "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 206,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
+        "ProceduralContentAdaptationFixtures.ts",
+        "ProceduralContentAdaptationFixtures",
+        "@aura3d/scripting/src/ProceduralContentAdaptationFixtures",
+        "@aura3d/scripting/ProceduralContentAdaptationFixtures"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 442,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:107",
+          "detail": "\"id\": \"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:109",
+          "detail": "\"detail\": \"packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1279; documentation-generator-dependency @ docs/api/public-api.md:1280\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:192",
+          "detail": "\"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts: packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 2 blocking reference(s) — documentation-generator-dependency @ docs/api/public-api.md:1279; documentation-gene"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7262",
+          "detail": "\"path\": \"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7267",
+          "detail": "\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7268",
+          "detail": "\"ProceduralContentAdaptationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7269",
+          "detail": "\"ProceduralContentAdaptationFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7270",
+          "detail": "\"@aura3d/scripting/src/ProceduralContentAdaptationFixtures\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7271",
+          "detail": "\"@aura3d/scripting/ProceduralContentAdaptationFixtures\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7293",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7298",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/procedural-content-adaptation-fixtures.test.ts:2; documentation-generator-dependency "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7303",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts: packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/procedural-content-adaptation-f"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7328",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:7333",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15391",
+          "detail": "\"detail\": \"\\\"id\\\": \\\"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15396",
+          "detail": "\"detail\": \"\\\"detail\\\": \\\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/procedural-content-adaptation-fixtures.test.ts:2; documentation-generator-dependency "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:15591",
+          "detail": "\"detail\": \"\\\"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts: packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 54 blocking reference(s) — runtime-consumer @ tests/unit/scripting/procedural-content-adaptation-f"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:20251",
+          "detail": "\"detail\": \"\\\"path\\\": \\\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-3.json:20256",
+          "detail": "\"detail\": \"\\\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:192",
+          "detail": "\"id\": \"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:194",
+          "detail": "\"detail\": \"packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:101; runtime-consumer @ packages/scripting/src/index.ts:109; runtime-consumer @ tools/del"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:235",
+          "detail": "\"r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts: packages/scripting/src/ProceduralContentAdaptationFixtures.ts: 5 blocking reference(s) — runtime-consumer @ packages/scripting/src/index.ts:101; runtime-consumer @ packages/"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:275",
+          "detail": "\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:44470",
+          "detail": "\"path\": \"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/deletion-safety-ws-3-5-fixtures.json:44475",
+          "detail": "\"packages/scripting/src/ProceduralContentAdaptationFixtures.ts\","
+        }
+      ],
+      "proseMentionsTruncated": true
+    }
+  ]
+}

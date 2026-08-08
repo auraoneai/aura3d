@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `fc122e51349d8b467ae0457051841222032c87b0`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `7647e5233996af380c2a272a55560aa5f84b2e9e`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -33,7 +33,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/react` | `EXTERNAL-ADAPTER` | 173 | 14 | 1 | 1182 | yes |
 | `@aura3d/rendering` | `AURA-CORE` | 55125 | 224 | 3 | 390609 | yes |
 | `@aura3d/scene` | `AURA-CORE` | 1708 | 148 | 2 | 10343 | yes |
-| `@aura3d/scripting` | `COMPATIBILITY-ONLY` | 5837 | 16 | 1 | 39403 | yes |
+| `@aura3d/scripting` | `COMPATIBILITY-ONLY` | 3692 | 16 | 1 | 39403 | yes |
 | `@aura3d/three-compat` | `COMPATIBILITY-ONLY` | 1234 | 19 | 3 | 10386 | yes |
 | `@aura3d/workflows` | `AURA-MOAT` | 1174 | 29 | 1 | 8260 | yes |
 
@@ -49,10 +49,10 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `assets-general` | `assets` | `AURA-MOAT` | 61 | 15758 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1696 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 790 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 791 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 68 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 202 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 203 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 87 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 4 | Move fixtures out of the optional editor runtime. |
@@ -76,7 +76,7 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `rendering-general` | `rendering` | `AURA-CORE` | 253 | 55125 | 381532 | 900 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `scene-general` | `scene` | `AURA-CORE` | 22 | 1708 | 10343 | 520 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 29 | 5837 | 39265 | 46 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 21 | 3692 | 25121 | 45 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `three-compat-general` | `three-compat` | `COMPATIBILITY-ONLY` | 20 | 1234 | 10185 | 19 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `workflows-general` | `workflows` | `AURA-MOAT` | 20 | 1174 | 8260 | 7 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 

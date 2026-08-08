@@ -31,6 +31,14 @@ state, spatial panner, codec selection, browser unlock, and Chrome/WebKit
 evidence remain. The game slice no longer publishes synthetic mixer, reverb,
 occlusion, Doppler, or spectrum metrics as mounted behavior.
 
+The scripting batch removes eight deterministic descriptor generators for
+difficulty, replication, cultural behavior, learning agents, player analytics,
+procedural adaptation, cloud services, and analytics privacy. Aura3D continues
+to ship executable behavior trees, state machines, GOAP, HTN, utility AI,
+perception, and lifecycle hooks as an optional compatibility package. The game
+slice no longer advertises simulated SaaS, networking, ML, or analytics objects
+as runtime integrations.
+
 ## Evidence
 
 `tests/reports/public-runtime-descriptor-inventory/report.json` is the complete

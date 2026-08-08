@@ -1,0 +1,13 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's scripting/cloud/analytics descriptor modules; retained scripting exports are executable planning and behavior primitives.",
+  "candidates": [
+    "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+    "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+    "packages/scripting/src/CloudServiceFixtures.ts",
+    "packages/scripting/src/CulturalBehaviorFixtures.ts",
+    "packages/scripting/src/LearningAgentFixtures.ts",
+    "packages/scripting/src/NetworkReplicationFixtures.ts",
+    "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+    "packages/scripting/src/ProceduralContentAdaptationFixtures.ts"
+  ]
+}
