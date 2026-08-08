@@ -237,9 +237,9 @@ Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd
 Install after the npm publication completes:
 
 ```bash
-npm install @aura3d/engine@1.5.2
+npm install @aura3d/engine@1.6.0
 # or scaffold an app
-npx create-aura3d@1.5.2 my-product --template product-viewer
+npx create-aura3d@1.6.0 my-product --template product-viewer
 ```
 
 Detailed release notes are in

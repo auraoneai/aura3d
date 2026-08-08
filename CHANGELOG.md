@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 1.5.2
+Version: 1.6.0
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.5.2` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release candidate is `1.6.0` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-07-27): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -10,8 +10,31 @@ verdict. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
 currently prototype-blocked while their visual rebuild and hash-bound
 independent review are pending. Their prior release receipts remain history,
 not approval of the current worktree.
-Performance/parity wording is also blocked while six comparative-report inputs
-are missing.
+Comparison wording is limited to the named, passing workloads and reports; it
+must not be broadened into universal engine or ecosystem superiority.
+
+## 1.6.0 (2026-08-08)
+
+Architecture, compatibility, and evidence release:
+
+- adds the recommended `@aura3d/engine/lean`, `./lean-product`, and
+  `./lean-game` entries while retaining the compatibility-heavy root entry;
+- consolidates production physics ownership on the `cannon-es` path, raises
+  the solver-iteration default, and corrects capsule grounding plus
+  rotation-aware ray/sphere queries;
+- preserves the published input action-binding fixture surface with deprecated
+  compatibility exports, so the minor release does not silently remove 1.5.2
+  symbols;
+- restores scoped WebGL2 evidence routes for glTF variants, OBJ, anisotropy,
+  postprocessing, trackball controls, draw ranges, picking, and multiple camera
+  views, with an explicitly injected-session-only WebXR example;
+- closes the selected 54-row Three.js example inventory with zero
+  high-priority rows open, without claiming universal Three.js replacement;
+- hardens browser, visual, demo, package-export, architecture, source-cleanliness,
+  requirements-trace, and comparison gates so missing or stale evidence fails
+  closed;
+- keeps Blockfall Reactor, Skyline Runner, and Turbo Drift Circuit
+  `prototype-blocked`; this package release does not promote them.
 
 ## 1.5.2 (2026-08-04)
 

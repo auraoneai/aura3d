@@ -1,6 +1,6 @@
 # Site Map
 
-Version: 1.5.2
+Version: 1.6.0
 
 Date: 2026-06-18
 Status: remediation site map

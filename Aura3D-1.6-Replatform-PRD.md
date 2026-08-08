@@ -3332,8 +3332,13 @@ exists", and fixing either failing condition breaks a test that must then be fli
 
 Not technical completion gates. **Do not perform any of these because §10 is green.**
 
-- [ ] User states approval to publish.
-- [ ] Version bump to the §12 decision.
+- [x] User states approval to publish.
+      — the owner explicitly requested the npm publication, GitHub push/tag/release,
+      and website deployment in this task.
+- [x] Version bump to the §12 decision.
+      — root, all workspace package manifests, and the private asset-index cron
+      worker are versioned `1.6.0`; `pnpm verify:docs-version` passes after the
+      generated public API reference and current release docs were refreshed.
 
 **Pre-publish provenance — encoded because the 1.5.1 split publication happened.**
 

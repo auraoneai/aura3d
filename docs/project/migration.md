@@ -1,6 +1,6 @@
 # Migration From low-level renderer code
 
-Version: 1.5.2
+Version: 1.6.0
 
 ## Current Migration Surface
 
@@ -31,7 +31,7 @@ A3D can help migrate selected workflows:
 
 The compatibility package does not make A3D a full runtime drop-in for every low-level renderer code API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
 
-`@aura3d/engine@1.1.0` keeps Three.js out of the root engine runtime and npm
+`@aura3d/engine@1.6.0` keeps Three.js out of the root engine runtime and npm
 dependency graph. Three.js parity, migration, and compatibility tooling remain
 available outside the default engine install path. Public Aura3D agent APIs,
 typed assets, templates, diagnostics, screenshots, runtime helpers, and catalog
@@ -58,8 +58,9 @@ for `model(asset, { targetMaxDimension })`. A hardcoded multiplier keeps working
 it just does not follow the asset or scene when either changes size.
 
 Claim boundary: these are `createAuraApp` root safe-API and `rendering` internal
-surfaces. They add camera and sizing capability. They are not a rendering-quality
-claim, and same-asset product render parity against Three.js remains unproven.
+surfaces. They add camera and sizing capability. Named same-asset comparison
+routes now pass their bounded protocols, but that evidence is not a blanket
+rendering-quality or ecosystem-parity claim.
 
 ## Useful Commands
 
