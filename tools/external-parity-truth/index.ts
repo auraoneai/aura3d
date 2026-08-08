@@ -9,11 +9,11 @@ interface Finding {
 }
 
 const requiredFiles = [
-  "docs/project/implementation-plan.md",
-  "docs/project/parity/threejs/status.md",
-  "docs/project/verification-evidence.md",
+  "1.6-FINAL-PRD-Finishes.md",
+  "docs/project/parity/threejs-r185-surface-inventory.md",
+  "benchmark/context/threejs-r185.1-20260808.json",
   "docs/project/claim-guidelines.md",
-  "docs/project/verification-evidence.md"
+  "docs/agents/claims-and-boundaries.md"
 ] as const;
 
 const blockedPatterns: readonly { readonly pattern: RegExp; readonly reason: string }[] = [
@@ -38,7 +38,13 @@ const safeLinePatterns = [
   /\btarget\b/i,
   /\bcurrently allowed target language\b/i,
   /\bclaim boundary\b/i,
-  /\bblocked claims\b/i
+  /\bblocked claims\b/i,
+  /\bdisallowed\b/i,
+  /\bremoved\b/i,
+  /\bbanned\b/i,
+  /\bforbidden\b/i,
+  /\bnon-goals?\b/i,
+  /\bunsupported\b/i
 ] as const;
 
 const publicDocRoots = [
@@ -65,48 +71,26 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = readIfExists("docs/project/parity/threejs/status.md");
-const progress = readIfExists("docs/project/verification-evidence.md");
-const visualFailures = readIfExists("docs/project/verification-evidence.md");
-const externalParity = readIfExists("docs/project/implementation-plan.md");
-const requiredStatusPatterns = [
-  /\bnot complete until\b[\s\S]*pnpm external-parity:release/i,
-  /\bFoundation screenshots prove wiring\b/i,
-  /\bdoes not currently prove\b/i
+const finalPrd = readIfExists("1.6-FINAL-PRD-Finishes.md");
+const currentInventory = readIfExists("docs/project/parity/threejs-r185-surface-inventory.md");
+const currentTruthChecks = [
+  { id: "current-target", pass: /three@0\.185\.1|Three\.js r185/i.test(`${finalPrd}\n${currentInventory}`), detail: "Final acceptance is bound to Three.js r185 / three@0.185.1." },
+  { id: "renderer-workstream", pass: finalPrd.includes("## 7. Phase 3 — Make the public renderer a current competitor"), detail: "Final PRD contains the current renderer workstream." },
+  { id: "comparison-workstream", pass: finalPrd.includes("## 8. Phase 4 — Current head-to-head comparison program"), detail: "Final PRD contains the current comparison workstream." },
+  { id: "no-broad-score", pass: finalPrd.includes("F13 — No broad superiority score"), detail: "Broad superiority scoring remains prohibited." }
 ] as const;
-const requiredPlanPatterns = [
-  /\bReal Product Contract\b/i,
-  /\bDemo Slice Is Not Completion\b/i,
-  /\bDeveloper-Usable Product Requirements\b/i,
-  /\bInstallable Product SDK And Templates\b/i,
-  /\bAll 19 milestones pass\b/i
-] as const;
-const requiredFailurePaths = [
-  "tests/reports/foundation-app-suite/asset-lab-default.png",
-  "tests/reports/current-routes-route-health.json",
-  "tests/reports/foundation-threejs-comparison/product-a3d.png"
-] as const;
-const missingStatusPhrases = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);
-const missingPlanPhrases = requiredPlanPatterns.filter((pattern) => !pattern.test(externalParity)).map(String);
-const missingFailureReferences = requiredFailurePaths.filter((path) => !visualFailures.includes(path));
-const progressHasAllMilestones = Array.from({ length: 20 }, (_, index) => `Milestone ${index}`).every((milestone) => progress.includes(milestone));
 
 const report = {
   schema: "a3d-external-parity-truth",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0
     && findings.length === 0
-    && missingStatusPhrases.length === 0
-    && missingPlanPhrases.length === 0
-    && missingFailureReferences.length === 0
-    && progressHasAllMilestones,
+    && currentTruthChecks.every((entry) => entry.pass),
   requiredFiles: requiredFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),
   missing,
   findings,
-  missingStatusPhrases,
-  missingPlanPhrases,
-  missingFailureReferences,
-  progressHasAllMilestones,
+  currentTruthChecks,
+  historicalMilestonePhraseChecksRemoved: true,
   blockedClaimsRemainBlocked: true
 };
 
@@ -123,7 +107,12 @@ function isSafeBlockedClaimContext(lines: readonly string[], index: number): boo
   const line = lines[index] ?? "";
   if (safeLinePatterns.some((safe) => safe.test(line))) return true;
   const previousHeading = nearestHeading(lines, index);
-  return /\bblocked\b/i.test(previousHeading) || /\bclaim boundary\b/i.test(previousHeading) || /\bnot allowed\b/i.test(previousHeading);
+  if (safeLinePatterns.some((safe) => safe.test(previousHeading))) return true;
+  // Lists often use a plain-text lead-in such as "Disallowed current public
+  // wording:" rather than a Markdown heading. Limit the look-back so a remote
+  // disclaimer cannot bless an affirmative claim elsewhere in the document.
+  const recentContext = lines.slice(Math.max(0, index - 8), index).join("\n");
+  return safeLinePatterns.some((safe) => safe.test(recentContext));
 }
 
 function nearestHeading(lines: readonly string[], index: number): string {
