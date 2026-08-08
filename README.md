@@ -179,16 +179,41 @@ systems, each backed by unit tests and a runtime probe rather than by a screensh
 
 Stated because a release note that omits this is not useful:
 
+- **Bundle size is over budget on every scenario, and this is the one that matters most
+  for adoption.** Measured 2026-08-07 by `tools/bundle-scenarios` against real Three.js
+  builds of the same scene, through one shared bundler config:
+
+  | Scenario | Aura3D | Three.js | Ratio | Budget |
+  | --- | --- | --- | --- | --- |
+  | Core primitive scene (one cube) | 257,074 B | 119,296 B | **2.15x** | 1.25x |
+  | Product viewer (glTF, PBR, orbit, IBL) | 258,168 B | 146,680 B | **1.76x** | 1.25x |
+  | Game runtime (input, physics, loop) | 294,620 B | 143,669 B | **2.05x** | 1.50x |
+
+  Budgets are derived from the measured Three.js equivalent, so they cannot be raised
+  without Three.js growing. A developer downloads roughly **twice** what the Three.js
+  equivalent costs. Improved from 7.25x over an absolute 80 KB budget, and not yet
+  acceptable.
+- **Where Aura3D does win, measured on the same three scenarios:** authored lines
+  **9 / 13 / 19** against Three.js's **15 / 27 / 40**, and one install instead of two for
+  a game runtime. Across seven product workflows the gap is wider — 15 vs 74 lines for a
+  product configurator, 10 vs 68 for glTF asset review. TypeScript compile time is
+  *slower* on two of three scenarios (826 vs 689 ms, 977 vs 847 ms). Full figures:
+  `tests/reports/developer-friction.json`.
 - `showcase-blockfall-reactor`, `showcase-skyline-runner` and
-  `showcase-turbo-drift-circuit` remain **prototype-blocked**. Their physics and frame
-  data are correct; whether they are good games is a judgement their visual review has
-  not yet made.
+  `showcase-turbo-drift-circuit` remain **prototype-blocked**. The engine causes behind
+  their reported defects are now fixed for blockfall and skyline — the platformer jump
+  apex, capsule grounding on slopes, rotation-aware queries, and the solver-iteration
+  default — so both are ready for a visual-review decision. Turbo drift is **not**: its
+  vehicle motion is still a kinematic integrator, blocked on a route-contract gap recorded
+  in `docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md`.
 - `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
   not cover it. It carries its own 23-spec suite.
 - `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51
   exported symbol names have more than one owning package.
-- Five physics capabilities remain unreachable from the public API: penetration
-  resolution, friction, restitution, constraints, continuous collision detection.
+- Three public routes are broken: `examples/material-showroom` imports a directory that
+  was deleted from the tree, and `examples/postprocess-lab` and `examples/shadow-lab`
+  never reach a ready state within their load budget. Found by loading all 35 Tier 1/2
+  routes in a real browser (`tests/browser/tier12-route-health.spec.ts`); 32 of 35 pass.
 - Practical Three.js ecosystem parity is **6 exceed / 37 parity / 10 unproven / 3 gap**
   across 56 capabilities. Aura3D is behind on ecosystem breadth, shader authoring
   through the safe API, 3D text, and LOD/instancing exposure.

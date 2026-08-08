@@ -2816,12 +2816,37 @@ way an engine fix lands green while the route stays broken (R3).
 
 ### WS-6.2 Honest public claims
 
-- [ ] Regenerate the parity output under R1.
-- [ ] Update `README.md`, `llms.txt`, `docs/agents/claims-and-boundaries.md`, `marketing/`.
-- [ ] Keep `blockedClaims`; no broad better-than-Three.js/Babylon language.
-- [ ] State plainly where we remain behind: breadth of loaders/examples, bundle size if
+- [x] Regenerate the parity output under R1. — bundle scenarios re-measured against real
+      Three.js builds (not read from a stale report); developer friction generated fresh.
+- [x] Update `README.md`, `llms.txt`, `docs/agents/claims-and-boundaries.md`, `marketing/`.
+      — README's limitations section rewritten. `llms.txt`, `claims-and-boundaries.md` and
+      `marketing/` needed no change: **measured, they carry no comparative bundle or
+      superiority claim at all**, so there was nothing to walk back. Saying otherwise would
+      have been a fabricated edit.
+- [x] Keep `blockedClaims`; no broad better-than-Three.js/Babylon language. — `blockedClaims`
+      intact across `apps/` and `packages/`; a grep for broad superiority phrasing over
+      `README.md`, `llms.txt`, `marketing/` and `docs/agents/` returns **empty**, and
+      `honest-public-claims.test.ts` keeps it that way against 8 patterns.
+- [x] State plainly where we remain behind: breadth of loaders/examples, bundle size if
       still over, physics history.
-- [ ] **Proof:** `pnpm check:marketing-truth && pnpm check:agent-docs` pass.
+      — the README now leads its limitations with the bundle table (**2.15x / 1.76x / 2.05x**
+      against 1.25 / 1.25 / 1.50), states where Aura3D genuinely wins with the same rigour
+      (authored lines 9/13/19 vs 15/27/40, one install vs two) **and** where it loses
+      (TypeScript compile slower on two of three), and names the three broken public routes.
+
+      **It also removed a stale claim that was wrong in both directions**: "five physics
+      capabilities remain unreachable from the public API" — constraints, friction,
+      restitution, CCD, penetration resolution — when all five are reachable via
+      `createPhysicsRuntime` from `@aura3d/engine` and covered by the WS-4.3 invariants, while
+      the section said nothing about the bundle. An out-of-date limitations list is not
+      honesty, it is noise.
+- [x] **Proof:** `pnpm check:marketing-truth && pnpm check:agent-docs` pass.
+      — both pass, and `tests/unit/tools/honest-public-claims.test.ts` (6 tests) runs them as
+      part of the gate so a claim edit cannot break them silently. The gate **caught a wrong
+      number in my own README edit**: I wrote 2.16x where the measurement is 2.155 → 2.15x. It
+      compares the README's table against the live report, so a re-measurement forces the
+      table to move; and the bundle disclosure requirement is conditional on `bundle.pass`, so
+      the README will not be left carrying a stale warning once the gap closes.
 
 ---
 
