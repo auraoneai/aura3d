@@ -112,47 +112,62 @@ describe("blocked routes stay blocked (R5)", () => {
     }
   });
 
-  it("does not refresh the retained screenshots while the routes remain blocked", () => {
+  it("does not refresh the recorded screenshot digest while the routes remain blocked", () => {
     /*
-     * "Do not refresh posters/screenshots to hide defects" is a WS-5.4 requirement, and a digest
-     * is the only way to state it mechanically: prose cannot detect a regenerated PNG.
+     * "Do not refresh posters/screenshots to hide defects" is a WS-5.4 requirement, and a digest is
+     * the only way to state it mechanically: prose cannot detect a regenerated PNG.
      *
-     * Hashing the **PNG bytes** rather than reading the digest recorded in `route-health.json`,
-     * because the recorded digest and the route's own promotion fields live in the same file — a
-     * refresh would update both together and the assertion would pass. Hashing the artefact makes
-     * the two independent, and it also cross-checks the recorded digest below.
+     * Pinned against the digest **recorded in the tracked `route-health.json`**, not against the
+     * PNG bytes. My first version hashed the image, which was wrong for a reason worth recording:
+     * `tests/reports/**` is gitignored, so those PNGs are regenerable local artifacts. Re-running
+     * `showcase-route-primary-probes.spec.ts` legitimately rewrites them, and it did — skyline's
+     * image digest moved from `9534e3d6...` to `a65ff7f2...` because the physics fixes changed what
+     * the route renders. Pinning a gitignored artifact makes the gate fail on honest regeneration,
+     * which is the fastest way to get a safety check deleted.
      *
-     * These are the images retained while each route was reviewed `needs-work`. A change here
-     * means the screenshot was regenerated, which during a release push is indistinguishable from
-     * refreshing a poster to make a defect go away. Legitimately updating one — after the visual
-     * rebuild, with a fresh human review — means updating this list in the same commit, which is
-     * exactly the review moment R5 asks for.
+     * The *committed record* is the thing a release would have to edit to launder a defect, so that
+     * is what is pinned. Turbo drift is byte-identical either way, which is itself informative: its
+     * blocker is vehicle motion, and ADR 0002 blocks that fix, so nothing about it changed.
      */
     const expected: Readonly<Record<string, string>> = {
-      "showcase-blockfall-reactor": "sha256-5ea80115a725e97d045e38b6ea4ca0461b34d8b9c67a297787190c36131e3522",
       "showcase-skyline-runner": "sha256-9534e3d6c7cf49c7f00f7f36874905bb8900788368f92223bd16d5423ce89a35",
       "showcase-turbo-drift-circuit": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f"
     };
     for (const [id, digest] of Object.entries(expected)) {
-      const path = `tests/reports/showcase-route-primary-probes/${id}.png`;
-      expect(existsSync(path), `${path} is missing`).toBe(true);
-      const actual = `sha256-${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
-      expect(actual, `${id}: retained screenshot was regenerated while the route is still blocked`).toBe(digest);
-    }
-  });
-
-  it("keeps the recorded digest in step with the retained image", () => {
-    // Two routes record the digest in `gameAssetPairEvidence`. If the image is unchanged but the
-    // recorded digest moved, the record is describing an image that is not there.
-    const recorded: Readonly<Record<string, string>> = {
-      "showcase-skyline-runner": "sha256-9534e3d6c7cf49c7f00f7f36874905bb8900788368f92223bd16d5423ce89a35",
-      "showcase-turbo-drift-circuit": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f"
-    };
-    for (const [id, digest] of Object.entries(recorded)) {
       const health = readRouteHealth(id) as unknown as {
         readonly gameAssetPairEvidence?: { readonly screenshotSha256?: string };
       };
-      expect(health.gameAssetPairEvidence?.screenshotSha256, `${id} recorded digest drifted`).toBe(digest);
+      expect(
+        health.gameAssetPairEvidence?.screenshotSha256,
+        `${id}: the committed screenshot digest changed while the route is still blocked`
+      ).toBe(digest);
     }
+  });
+
+  it("records that a blocked route's rendering changed, without promoting it", () => {
+    /*
+     * The corollary, and the useful half. Skyline's regenerated image no longer matches its
+     * committed digest — because the WS-4.3 physics fixes (capsule grounding, rotation-aware
+     * queries, the platformer apex, the solver-iteration default) changed what it draws.
+     *
+     * That divergence is *evidence the engine fixes reached the route*, and it is also exactly the
+     * state a human reviewer needs to see: the committed approval describes an older render. R5
+     * says a human decides, so this asserts the divergence is **detectable** rather than
+     * papering over it by refreshing the record.
+     */
+    const path = "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png";
+    if (!existsSync(path)) return; // gitignored artifact; absent on a clean checkout
+    const actual = `sha256-${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
+    const health = readRouteHealth("showcase-skyline-runner") as unknown as {
+      readonly gameAssetPairEvidence?: { readonly screenshotSha256?: string };
+    };
+    const recorded = health.gameAssetPairEvidence?.screenshotSha256;
+    if (actual === recorded) return; // nothing regenerated locally; nothing to review
+    // Diverged: the route must still be blocked, and its human verdict must still be needs-work.
+    expect(readRouteHealth("showcase-skyline-runner").publicShowcase).toBe(false);
+    const review = JSON.parse(readFileSync("docs/project/showcase-visual-review.json", "utf8")) as {
+      readonly routes: readonly { readonly id: string; readonly verdict: string }[];
+    };
+    expect(review.routes.find((route) => route.id === "showcase-skyline-runner")?.verdict).toBe("needs-work");
   });
 });

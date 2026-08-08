@@ -32,6 +32,21 @@ const aliasEntries = [
   ["@aura3d/apps", "./packages/apps/src/index.ts"],
   ["@aura3d/create-aura3d", "./packages/create-aura3d/src/index.ts"],
   ["create-aura3d", "./packages/create-aura3d/src/index.ts"],
+  /*
+   * Subpath entries must precede the bare package, because a string `find` matches by PREFIX.
+   *
+   * Vite/rollup treat a string alias as "starts with", so `@aura3d/physics` alone rewrote
+   * `@aura3d/physics/solverless` to `packages/physics/src/index.ts/solverless` and the build died
+   * with `ENOTDIR: not a directory`. `tsconfig.base.json` already declares both subpaths, so
+   * typecheck passed and only a real bundle failed — which is why this surfaced from a showcase
+   * route build rather than from `pnpm typecheck`.
+   *
+   * These two subpaths exist precisely so a scene with no bodies does not download the solver
+   * (WS-2.2), so leaving them unresolvable would either break the build or, worse, silently fall
+   * back to the full barrel and undo the bundle work.
+   */
+  ["@aura3d/physics/solverless", "./packages/physics/src/solverless.ts"],
+  ["@aura3d/physics/world", "./packages/physics/src/world.ts"],
   ["@aura3d/physics", "./packages/physics/src/index.ts"],
   ["@aura3d/product-studio", "./packages/product-studio/src/index.ts"],
   ["@aura3d/animation", "./packages/animation/src/browser-index.ts"],
