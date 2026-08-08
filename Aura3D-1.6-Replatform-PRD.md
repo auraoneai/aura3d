@@ -1285,6 +1285,34 @@ Either is a real architectural change to the render path, and attempting it hast
 rendering — the opposite of the WS-2.1a lesson, where a correct change looked inert for an hour. It is
 recorded here with its measurement so the next pass starts from evidence rather than guesswork.
 
+**Per-variant sizing, measured 2026-08-07, so the next pass can order the work by payoff:**
+
+| | bytes of GLSL | variants |
+|---|---:|---:|
+| what a cube **needs** (unlit + PBR) | 25,229 | 2 |
+| what a cube **pays for** | **157,414** | 13 |
+
+Largest single droppable variants: `TEXTURED_PBR` 54,289 · `SKINNED_LIT_EIGHT_INFLUENCE` 24,307 ·
+`SKINNED_LIT` 23,931 · `NORMAL_MAPPED_PBR` 19,970 · `INSTANCED_PBR` 19,616. Dropping just
+`TEXTURED_PBR` and the two skinned-lit variants is 102,527 bytes of source — more than the entire
+remaining gap to the scenario-1 budget, before gzip.
+
+**The seam already exists and is narrower than option 1 implies.** `Renderer.create()` is *already*
+`async` (`Renderer.ts:461`), and the four synchronous consumers all take `options.shaderLibrary`
+and only fall back to `createDefaultShaderLibrary()` when none is supplied
+(`Renderer.ts:457`, `ForwardPass.ts:203`, `DepthPass.ts:50`, `EnvironmentBackgroundPass.ts:41`).
+So a lazy family registration can be `await`ed inside `Renderer.create` and handed down as
+`options.shaderLibrary` **without** making `getShader` async — `ForwardPass.getShader` stays
+synchronous because the library is fully populated before the first frame. That is materially less
+invasive than "make shader acquisition async through three passes", and it is why the next pass
+should re-derive the plan from this note rather than from the two options above.
+
+**Not attempted in this pass, deliberately.** 183 KB of the file's 191 KB lives inside the single
+`createDefaultShaderLibrary` function, so the split touches every variant registration at once.
+With §B.1 already recorded as failing and the release gate already honest about it, a rushed
+render-path change trades a known, measured, disclosed shortfall for an unknown risk of breaking
+all rendering. The measurement is the deliverable here.
+
 **P3's planned deletions also reduce this number**, and are sequenced first because they are discrete and
 independently verifiable: `rendering/threejs-compatibility/` (WS-3.4, 354 lines, 0 consumers) contributes
 ten `postprocess/*` modules that a cube currently reaches through the barrel.
