@@ -77,8 +77,10 @@ function listActiveSourceFiles(): string[] {
       "RuntimeScenePRD.md",
       "CinematicPrevisPRD.md",
       "UnifiedPRD.md",
-      "UnifiedPRD.md",
-      "QuickFixes.md",
+      // `QuickFixes.md` was excluded here until the §7 cleanup deleted it. The entry is gone
+      // rather than kept "just in case": an exclusion list naming a file that does not exist is
+      // indistinguishable from one naming a file that does, and it was the single R8 blocker
+      // standing between that document and deletion.
       "tools/package-tarball-audit/index.ts"
     ].includes(path))
     .filter((path) => isTextSource(path));

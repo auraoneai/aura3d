@@ -2920,34 +2920,56 @@ scan immediately before removal.
 (17,546, untracked) · `shipprompt.md` (17,007) · `FixUpNewPRD.md` (73,267) ·
 `finalfixesatlibrarylevel.md` (18,203) · `GoLiveCheckList.md` (7,838).
 
-- [ ] Re-run the reference scan, then delete. Cross-references among them are only between
+- [x] Re-run the reference scan, then delete. Cross-references among them are only between
       files themselves being deleted.
+      — **all seven deleted** after `tools/deletion-safety` cleared all six R8 points for each.
+      One correction to this section's own claim: `GoLiveCheckList.md` was listed as "0
+      references" and had **8** — all prose mentions inside historical plan documents, which R8
+      classifies as non-blocking, so the deletion was still clear. The scan mattered.
 
 ### Preserve as decision context — move, do not delete
 
-- [ ] `AURA3D_KILL_OR_REPAIR_AUDIT.md` (22,117 B) and
+- [x] `AURA3D_KILL_OR_REPAIR_AUDIT.md` (22,117 B) and
       `aura3d-game-examples-stop-decision.md` (6,585 B) — historical architectural audits.
       **Move to `docs/archive/`**, or summarize into
       `docs/architecture/removed-in-1.6.md` and `Aura3D-1.6-Architecture-Decision.md`
       before deleting. Do not simply erase prior architectural reasoning.
+      — **moved**, with `docs/archive/README.md` recording what each decided and what
+      superseded it: the kill-or-repair audit was overturned on the renderer (keep and finish),
+      and the game-examples stop decision was overturned by Phase 5, which fixed the engine
+      defects behind the symptoms instead of stopping. The README also states the distinction
+      that governs the directory — a document is archived if it *decided* something, and
+      deleted if it was a working prompt.
 
 ### Requires clearing two live references first
 
-- [ ] `QuickFixes.md` (46,098 B) — `tools/product-cutover/index.ts:81` (exclusion list) and
+- [x] `QuickFixes.md` (46,098 B) — `tools/product-cutover/index.ts:81` (exclusion list) and
       `tools/release/finish-133.sh:37` (stale 1.3.3 instruction). Clear both, consider
       deleting `finish-133.sh` entirely, then remove.
+      — R8 confirmed exactly the predicted single blocker at
+      `tools/product-cutover/index.ts:81`. `finish-133.sh` deleted (R8-clear; a 1.3.3 script
+      referenced only by itself and this PRD), the exclusion entry removed rather than left
+      pointing at a non-existent file, then `QuickFixes.md` deleted once R8 came back clear.
+      `pnpm check:product-cutover` still passes.
 
 ### Keep with a superseded header
 
-- [ ] `GameEngine-PRD.md` — 6 live tooling references (WS-0.1).
+- [x] `GameEngine-PRD.md` — 6 live tooling references (WS-0.1). — retained with its
+      superseded header; all six references re-verified live
+      (`build-threejs-parity.mjs`, `game-runtime-gates.mjs`,
+      `regenerate-game-geometry-contracts.ts`, `parity-consumers.test.ts`,
+      `agent-examples/index.ts`, `clean-room/top-down-shooter/src/main.ts`).
 
 ### Keep and update
 
 `README.md` · `CHANGELOG.md` · `AGENTS.md` · `CONTRIBUTING.md` · `DESIGN.md` ·
 `llms.txt` · `BUNDLE_SIZES.md` · `Aura3D-1.6-Architecture-Decision.md` · this file.
 
-- [ ] **Proof:** immediately before each deletion batch, re-run
+- [x] **Proof:** immediately before each deletion batch, re-run
       `git grep -l "<basename>" -- tools tests packages .github marketing`; expect empty.
+      — run before and after. After: **0 tooling references for all eight deleted files**; the
+      single remaining `QuickFixes` match is the explanatory comment left at the exclusion site
+      recording why the entry was removed.
 
 ## 8. Files to create
 
