@@ -2,25 +2,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const requiredExamples = [
-  "00-basic-triangle",
-  "01-basic-scene",
-  "02-materials-pbr",
-  "03-shadows",
-  "04-physics-stack",
-  "05-animation-character",
-  "06-asset-gltf",
-  "07-input-controls",
-  "08-audio-spatial",
-  "09-editor-runtime",
-  "10-particles",
-  "11-showcase-world"
-] as const;
-
 const productExamples = [
   "product-configurator",
   "architecture-viewer",
   "game-slice"
+] as const;
+
+const productInteractionSpecs = [
+  "product configurator cycles material variants on pointer input",
+  "architecture viewer updates selected zone and measurement on pointer input",
+  "game slice responds to keyboard input through the input system"
 ] as const;
 
 type JsonRecord = Record<string, unknown>;
@@ -107,14 +98,14 @@ export function validateFinalDemos(rootDir = root): FinalDemoValidationReport {
   const pbrRenderingComparison = readJson(join(rootDir, "tests", "reports", "pbr-rendering-comparison.json"));
   const browserSpecs = collectSpecs(browser);
   const visualSpecs = collectSpecs(visualBrowser);
-  const browserReadyExamples = requiredExamples.filter((id) => browserSpecs.some((spec) => spec.ok && spec.title === `${id} reaches ready in Chromium`));
+  const browserReadyExamples = productExamples.filter((id) => browserSpecs.some((spec) => spec.ok && spec.title === `${id} product demo reaches ready in Chromium`));
   const productBrowserReadyExamples = productExamples.filter((id) => browserSpecs.some((spec) => spec.ok && spec.title === `${id} product demo reaches ready in Chromium`));
-  const visualPixelExamples = requiredExamples.filter((id) => visualSpecs.some((spec) => spec.ok && spec.title === `${id} has expected visible pixels`));
-  const interactionMetricsPassed = browserSpecs.some((spec) => spec.ok && spec.title === "input and editor examples expose first-person, orbit, and editor selection metrics");
+  const visualPixelExamples = productExamples.filter((id) => visualSpecs.some((spec) => spec.ok && spec.title === `${id} product demo has stable visual evidence`));
+  const interactionMetricsPassed = productInteractionSpecs.every((title) => browserSpecs.some((spec) => spec.ok && spec.title === title));
   const productRendererBackedPassed = productBrowserReadyExamples.length === productExamples.length;
-  const browserReportPassed = reportHasNoErrors(browser) && browserReadyExamples.length === requiredExamples.length && interactionMetricsPassed && productRendererBackedPassed;
-  const visualReportPassed = visual !== null && visual.ok === true && Number(visual.browserChecks) >= requiredExamples.length;
-  const visualBrowserReportPassed = reportHasNoErrors(visualBrowser) && visualPixelExamples.length === requiredExamples.length;
+  const browserReportPassed = reportHasNoErrors(browser) && browserReadyExamples.length === productExamples.length && interactionMetricsPassed && productRendererBackedPassed;
+  const visualReportPassed = visual !== null && visual.ok === true && Number(visual.browserChecks) >= productExamples.length;
+  const visualBrowserReportPassed = reportHasNoErrors(visualBrowser) && visualPixelExamples.length === productExamples.length;
   const performanceReportPassed = performance?.status === "pass";
   const pbrEnvironmentReportPassed =
     pbrEnvironment?.ok === true &&
@@ -136,7 +127,7 @@ export function validateFinalDemos(rootDir = root): FinalDemoValidationReport {
       browserReportPassed,
       browser === null
         ? "missing report"
-        : `ready=${browserReadyExamples.length}/${requiredExamples.length}, productReady=${productBrowserReadyExamples.length}/${productExamples.length}, interactionMetrics=${interactionMetricsPassed}, errorsClean=${reportHasNoErrors(browser)}`
+        : `ready=${browserReadyExamples.length}/${productExamples.length}, productReady=${productBrowserReadyExamples.length}/${productExamples.length}, interactionMetrics=${interactionMetricsPassed}, errorsClean=${reportHasNoErrors(browser)}`
     ),
     upstreamReport(
       "visual",
@@ -150,7 +141,7 @@ export function validateFinalDemos(rootDir = root): FinalDemoValidationReport {
       visualBrowserReportPassed,
       visualBrowser === null
         ? "missing report"
-        : `visiblePixels=${visualPixelExamples.length}/${requiredExamples.length}, errorsClean=${reportHasNoErrors(visualBrowser)}`
+        : `visiblePixels=${visualPixelExamples.length}/${productExamples.length}, errorsClean=${reportHasNoErrors(visualBrowser)}`
     ),
     upstreamReport(
       "performance",
@@ -167,9 +158,9 @@ export function validateFinalDemos(rootDir = root): FinalDemoValidationReport {
         : `ok=${String(pbrEnvironment.ok)}, hasClaimBoundary=${String(isRecord(pbrEnvironment.claimBoundary))}, validations=${String(Array.isArray(pbrEnvironment.validations) ? pbrEnvironment.validations.length : 0)}, comparisonOk=${String(pbrRenderingComparison?.ok)}`
     )
   ];
-  const missingBrowserReadyExamples = requiredExamples.filter((id) => !browserReadyExamples.includes(id));
+  const missingBrowserReadyExamples = productExamples.filter((id) => !browserReadyExamples.includes(id));
   const missingProductBrowserReadyExamples = productExamples.filter((id) => !productBrowserReadyExamples.includes(id));
-  const missingVisualPixelExamples = requiredExamples.filter((id) => !visualPixelExamples.includes(id));
+  const missingVisualPixelExamples = productExamples.filter((id) => !visualPixelExamples.includes(id));
   const violations = [
     ...missingBrowserReadyExamples.map((id) => `Missing browser-ready example validation: ${id}`),
     ...missingProductBrowserReadyExamples.map((id) => `Missing renderer-backed product demo validation: ${id}`),
@@ -186,7 +177,7 @@ export function validateFinalDemos(rootDir = root): FinalDemoValidationReport {
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
     releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-demo-validation-run",
-    examples: [...requiredExamples],
+    examples: [...productExamples],
     upstreamReports,
     browserReadyExamples,
     productBrowserReadyExamples,

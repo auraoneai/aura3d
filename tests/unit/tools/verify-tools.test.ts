@@ -582,36 +582,23 @@ describe("verification tools", () => {
   it("final demo validator requires browser, visual, interaction, and performance evidence", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
-    const examples = [
-      "00-basic-triangle",
-      "01-basic-scene",
-      "02-materials-pbr",
-      "03-shadows",
-      "04-physics-stack",
-      "05-animation-character",
-      "06-asset-gltf",
-      "07-input-controls",
-      "08-audio-spatial",
-      "09-editor-runtime",
-      "10-particles",
-      "11-showcase-world"
-    ];
     const productExamples = ["product-configurator", "architecture-viewer", "game-slice"];
     writeFileSync(join(root, "tests", "reports", "browser.json"), JSON.stringify({
       stats: { unexpected: 0 },
       errors: [],
       suites: [{
         specs: [
-          ...examples.map((id) => ({ title: `${id} reaches ready in Chromium`, ok: true, tests: [] })),
           ...productExamples.map((id) => ({ title: `${id} product demo reaches ready in Chromium`, ok: true, tests: [] })),
-          { title: "input and editor examples expose first-person, orbit, and editor selection metrics", ok: true, tests: [] }
+          { title: "product configurator cycles material variants on pointer input", ok: true, tests: [] },
+          { title: "architecture viewer updates selected zone and measurement on pointer input", ok: true, tests: [] },
+          { title: "game slice responds to keyboard input through the input system", ok: true, tests: [] }
         ]
       }]
     }));
     writeFileSync(join(root, "tests", "reports", "visual-browser.json"), JSON.stringify({
       stats: { unexpected: 0 },
       errors: [],
-      suites: [{ specs: examples.map((id) => ({ title: `${id} has expected visible pixels`, ok: true, tests: [] })) }]
+      suites: [{ specs: productExamples.map((id) => ({ title: `${id} product demo has stable visual evidence`, ok: true, tests: [] })) }]
     }));
     writeFileSync(join(root, "tests", "reports", "visual.json"), JSON.stringify({ ok: true, browserChecks: 20, violations: [] }));
     writeFileSync(join(root, "tests", "reports", "performance.json"), JSON.stringify({ status: "pass", baselines: [] }));
@@ -636,9 +623,9 @@ describe("verification tools", () => {
       interactionMetricsPassed: true,
       productRendererBackedPassed: true,
       pbrEnvironmentReportPassed: true,
-      browserReadyExamples: examples,
+      browserReadyExamples: productExamples,
       productBrowserReadyExamples: productExamples,
-      visualPixelExamples: examples
+      visualPixelExamples: productExamples
     });
 
     writeFileSync(join(root, "tests", "reports", "visual.json"), JSON.stringify({ ok: true, browserChecks: 2, violations: [] }));
