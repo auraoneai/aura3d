@@ -24,10 +24,14 @@ describe("public API docs", () => {
       "@aura3d/editor-runtime",
       "@aura3d/engine",
       "@aura3d/environments",
+      "@aura3d/environments/node",
       "@aura3d/input",
       "@aura3d/materials",
+      "@aura3d/materials/node",
       "@aura3d/math",
+      "@aura3d/navigation-recast",
       "@aura3d/physics",
+      "@aura3d/physics-rapier",
       /*
        * WS-2.2 subpaths. These are public entry points introduced so a lean import does not drag a
        * rigid-body solver or a WebGPU device onto the critical path, and they belong in this list for

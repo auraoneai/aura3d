@@ -1,5 +1,10 @@
 # @aura3d/scripting
 
+> Optional compatibility/authoring package. It is not part of the recommended
+> renderer, product, or arcade entry and is not a rendering capability claim.
+> Prefer this direct package over the legacy `@aura3d/engine/scripting`
+> subpath, which is scheduled for removal in 2.0.
+
 `@aura3d/scripting` owns behavior attachment, behavior runtime phases, script context data, behavior registries, visual graph validation, graph serialization, and deterministic visual graph execution.
 
 ## Public API

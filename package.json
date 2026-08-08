@@ -525,6 +525,7 @@
     "test:audio:webkit": "pnpm exec playwright test --config playwright.audio-webkit.config.ts",
     "test:audio:chrome": "pnpm exec playwright test --config playwright.audio-chrome.config.ts",
     "audio-backend:bakeoff": "pnpm exec tsx --tsconfig tsconfig.base.json tools/audio-backend-bakeoff/index.ts",
+    "ecs-scripting:compatibility": "pnpm exec tsx --tsconfig tsconfig.base.json tools/ecs-scripting-compatibility/index.ts",
     "audit:external-candidate-packages": "node tools/external-candidate-package-audit/index.mjs",
     "check:deletion-safety": "pnpm exec tsx --tsconfig tsconfig.base.json tools/deletion-safety/index.ts",
     "check:package-graph": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-graph/index.ts --dot docs/architecture/package-graph.dot",

@@ -1,0 +1,466 @@
+{
+  "schema": "a3d-browser-entry-purity",
+  "generatedAt": "2026-08-08T21:45:11.946Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "browser-entry:engine-agent-api",
+      "pass": true,
+      "detail": "@aura3d/engine (root public entry): no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:engine-lean",
+      "pass": true,
+      "detail": "@aura3d/engine/lean: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:engine-lean-product",
+      "pass": true,
+      "detail": "@aura3d/engine/lean-product: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:engine-lean-game",
+      "pass": true,
+      "detail": "@aura3d/engine/lean-game: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:engine-barrel",
+      "pass": true,
+      "detail": "@aura3d/engine/engine: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:rendering",
+      "pass": true,
+      "detail": "@aura3d/engine/rendering: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:rendering-webgpu",
+      "pass": true,
+      "detail": "@aura3d/engine/rendering/webgpu: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:physics",
+      "pass": true,
+      "detail": "@aura3d/engine/physics: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:physics-solverless",
+      "pass": true,
+      "detail": "@aura3d/engine/physics/solverless: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:physics-world",
+      "pass": true,
+      "detail": "@aura3d/engine/physics/world: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:physics-rapier",
+      "pass": true,
+      "detail": "@aura3d/physics-rapier: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:navigation-recast",
+      "pass": true,
+      "detail": "@aura3d/navigation-recast: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:assets-browser",
+      "pass": true,
+      "detail": "@aura3d/engine/assets/browser: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:animation-browser",
+      "pass": true,
+      "detail": "@aura3d/engine/animation/browser: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:scene",
+      "pass": true,
+      "detail": "@aura3d/engine/scene: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:input",
+      "pass": true,
+      "detail": "@aura3d/engine/input: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:audio",
+      "pass": true,
+      "detail": "@aura3d/engine/audio: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:controls",
+      "pass": true,
+      "detail": "@aura3d/engine/controls: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:core",
+      "pass": true,
+      "detail": "@aura3d/core: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:ecs",
+      "pass": true,
+      "detail": "@aura3d/ecs: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:scripting",
+      "pass": true,
+      "detail": "@aura3d/scripting: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:product-studio",
+      "pass": true,
+      "detail": "@aura3d/product-studio: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:apps",
+      "pass": true,
+      "detail": "@aura3d/apps: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:workflows",
+      "pass": true,
+      "detail": "@aura3d/workflows: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:editor-runtime",
+      "pass": true,
+      "detail": "@aura3d/editor-runtime: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:editor",
+      "pass": true,
+      "detail": "@aura3d/editor: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:debug",
+      "pass": true,
+      "detail": "@aura3d/debug: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:materials",
+      "pass": true,
+      "detail": "@aura3d/materials: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:environments",
+      "pass": true,
+      "detail": "@aura3d/environments: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:three-compat",
+      "pass": true,
+      "detail": "@aura3d/three-compat: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:react",
+      "pass": true,
+      "detail": "@aura3d/react: no node: builtin is reachable"
+    },
+    {
+      "id": "node-entry:media-node",
+      "pass": true,
+      "detail": "@aura3d/engine/media-node: correctly reaches node:fs/promises, node:os, node:path"
+    },
+    {
+      "id": "node-entry:materials-node",
+      "pass": true,
+      "detail": "@aura3d/materials/node: correctly reaches node:fs, node:path"
+    },
+    {
+      "id": "node-entry:environments-node",
+      "pass": true,
+      "detail": "@aura3d/environments/node: correctly reaches node:fs, node:path, node:crypto"
+    }
+  ],
+  "failures": [],
+  "rule": "WS-2.3 — no `node:` import may be reachable from any browser entry, and no browser-only API from a Node entry. Enforced by bundling each entry with NO node: externals, so a reachable builtin becomes a resolution failure naming the specifier. tools/bundle-size marks four node: specifiers external to make its measurement succeed; that is a workaround for reachability, not proof of its absence — which is why this gate exists separately.",
+  "browserEntries": [
+    {
+      "id": "engine-agent-api",
+      "label": "@aura3d/engine (root public entry)",
+      "path": "packages/engine/src/agent-api/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine (root public entry): no node: builtin is reachable"
+    },
+    {
+      "id": "engine-lean",
+      "label": "@aura3d/engine/lean",
+      "path": "packages/engine/src/agent-api/lean.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/lean: no node: builtin is reachable"
+    },
+    {
+      "id": "engine-lean-product",
+      "label": "@aura3d/engine/lean-product",
+      "path": "packages/engine/src/agent-api/lean-product.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/lean-product: no node: builtin is reachable"
+    },
+    {
+      "id": "engine-lean-game",
+      "label": "@aura3d/engine/lean-game",
+      "path": "packages/engine/src/agent-api/lean-game.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/lean-game: no node: builtin is reachable"
+    },
+    {
+      "id": "engine-barrel",
+      "label": "@aura3d/engine/engine",
+      "path": "packages/engine/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/engine: no node: builtin is reachable"
+    },
+    {
+      "id": "rendering",
+      "label": "@aura3d/engine/rendering",
+      "path": "packages/rendering/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/rendering: no node: builtin is reachable"
+    },
+    {
+      "id": "rendering-webgpu",
+      "label": "@aura3d/engine/rendering/webgpu",
+      "path": "packages/rendering/src/webgpu.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/rendering/webgpu: no node: builtin is reachable"
+    },
+    {
+      "id": "physics",
+      "label": "@aura3d/engine/physics",
+      "path": "packages/physics/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/physics: no node: builtin is reachable"
+    },
+    {
+      "id": "physics-solverless",
+      "label": "@aura3d/engine/physics/solverless",
+      "path": "packages/physics/src/solverless.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/physics/solverless: no node: builtin is reachable"
+    },
+    {
+      "id": "physics-world",
+      "label": "@aura3d/engine/physics/world",
+      "path": "packages/physics/src/world.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/physics/world: no node: builtin is reachable"
+    },
+    {
+      "id": "physics-rapier",
+      "label": "@aura3d/physics-rapier",
+      "path": "packages/physics-rapier/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/physics-rapier: no node: builtin is reachable"
+    },
+    {
+      "id": "navigation-recast",
+      "label": "@aura3d/navigation-recast",
+      "path": "packages/navigation-recast/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/navigation-recast: no node: builtin is reachable"
+    },
+    {
+      "id": "assets-browser",
+      "label": "@aura3d/engine/assets/browser",
+      "path": "packages/assets/src/browser-index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/assets/browser: no node: builtin is reachable"
+    },
+    {
+      "id": "animation-browser",
+      "label": "@aura3d/engine/animation/browser",
+      "path": "packages/animation/src/browser-index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/animation/browser: no node: builtin is reachable"
+    },
+    {
+      "id": "scene",
+      "label": "@aura3d/engine/scene",
+      "path": "packages/scene/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/scene: no node: builtin is reachable"
+    },
+    {
+      "id": "input",
+      "label": "@aura3d/engine/input",
+      "path": "packages/input/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/input: no node: builtin is reachable"
+    },
+    {
+      "id": "audio",
+      "label": "@aura3d/engine/audio",
+      "path": "packages/audio/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/audio: no node: builtin is reachable"
+    },
+    {
+      "id": "controls",
+      "label": "@aura3d/engine/controls",
+      "path": "packages/controls/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/engine/controls: no node: builtin is reachable"
+    },
+    {
+      "id": "core",
+      "label": "@aura3d/core",
+      "path": "packages/core/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/core: no node: builtin is reachable"
+    },
+    {
+      "id": "ecs",
+      "label": "@aura3d/ecs",
+      "path": "packages/ecs/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/ecs: no node: builtin is reachable"
+    },
+    {
+      "id": "scripting",
+      "label": "@aura3d/scripting",
+      "path": "packages/scripting/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/scripting: no node: builtin is reachable"
+    },
+    {
+      "id": "product-studio",
+      "label": "@aura3d/product-studio",
+      "path": "packages/product-studio/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/product-studio: no node: builtin is reachable"
+    },
+    {
+      "id": "apps",
+      "label": "@aura3d/apps",
+      "path": "packages/apps/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/apps: no node: builtin is reachable"
+    },
+    {
+      "id": "workflows",
+      "label": "@aura3d/workflows",
+      "path": "packages/workflows/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/workflows: no node: builtin is reachable"
+    },
+    {
+      "id": "editor-runtime",
+      "label": "@aura3d/editor-runtime",
+      "path": "packages/editor-runtime/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/editor-runtime: no node: builtin is reachable"
+    },
+    {
+      "id": "editor",
+      "label": "@aura3d/editor",
+      "path": "packages/editor/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/editor: no node: builtin is reachable"
+    },
+    {
+      "id": "debug",
+      "label": "@aura3d/debug",
+      "path": "packages/debug/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/debug: no node: builtin is reachable"
+    },
+    {
+      "id": "materials",
+      "label": "@aura3d/materials",
+      "path": "packages/materials/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/materials: no node: builtin is reachable"
+    },
+    {
+      "id": "environments",
+      "label": "@aura3d/environments",
+      "path": "packages/environments/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/environments: no node: builtin is reachable"
+    },
+    {
+      "id": "three-compat",
+      "label": "@aura3d/three-compat",
+      "path": "packages/three-compat/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/three-compat: no node: builtin is reachable"
+    },
+    {
+      "id": "react",
+      "label": "@aura3d/react",
+      "path": "packages/react/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/react: no node: builtin is reachable"
+    }
+  ],
+  "nodeEntries": [
+    {
+      "id": "media-node",
+      "label": "@aura3d/engine/media-node",
+      "path": "packages/engine/src/agent-api/media-node.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [
+        "node:fs/promises",
+        "node:os",
+        "node:path"
+      ],
+      "detail": "@aura3d/engine/media-node: correctly reaches node:fs/promises, node:os, node:path"
+    },
+    {
+      "id": "materials-node",
+      "label": "@aura3d/materials/node",
+      "path": "packages/materials/src/node.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [
+        "node:fs",
+        "node:path"
+      ],
+      "detail": "@aura3d/materials/node: correctly reaches node:fs, node:path"
+    },
+    {
+      "id": "environments-node",
+      "label": "@aura3d/environments/node",
+      "path": "packages/environments/src/node.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [
+        "node:fs",
+        "node:path",
+        "node:crypto"
+      ],
+      "detail": "@aura3d/environments/node: correctly reaches node:fs, node:path, node:crypto"
+    }
+  ]
+}

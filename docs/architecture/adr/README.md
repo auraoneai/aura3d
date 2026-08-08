@@ -67,3 +67,5 @@ records why an existing one could not be removed.
 | [0004](0004-physical-simulation-is-optional-rapier.md) | Physical simulation is optional and Rapier owns the selected engine | accepted |
 | [0005](0005-navigation-is-optional-recast-detour.md) | Navigation is optional and Recast/Detour owns the selected engine | accepted |
 | [0006](0006-browser-audio-stays-web-audio-owned.md) | Browser audio keeps one Web Audio playback/context owner | accepted |
+| [0007](0007-ecs-and-scripting-are-optional-compatibility-layers.md) | ECS and scripting are optional compatibility/authoring layers | accepted; supersedes ADR 0001 permanence |
+| [0008](0008-browser-roots-and-node-utilities-are-separated.md) | Browser package roots and Node-only utilities are separated | accepted |

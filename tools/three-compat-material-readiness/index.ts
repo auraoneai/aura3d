@@ -6,7 +6,7 @@ import {
   listThreeCompatPbrMaterials,
   summarizeThreeCompatMaterialLibrary,
   THREE_COMPAT_REQUIRED_MATERIAL_CLASSES
-} from "../../packages/materials/src";
+} from "../../packages/materials/src/node";
 
 interface ThreeCompatMaterialManifest {
   readonly schema: "a3d-three-compat-material-library";

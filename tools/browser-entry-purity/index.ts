@@ -25,18 +25,36 @@ const REPORT_PATH = "tests/reports/browser-entry-purity.json";
 /** Entry points a browser consumer is documented to import. */
 const BROWSER_ENTRIES = [
   { id: "engine-agent-api", path: "packages/engine/src/agent-api/index.ts", label: "@aura3d/engine (root public entry)" },
+  { id: "engine-lean", path: "packages/engine/src/agent-api/lean.ts", label: "@aura3d/engine/lean" },
+  { id: "engine-lean-product", path: "packages/engine/src/agent-api/lean-product.ts", label: "@aura3d/engine/lean-product" },
+  { id: "engine-lean-game", path: "packages/engine/src/agent-api/lean-game.ts", label: "@aura3d/engine/lean-game" },
   { id: "engine-barrel", path: "packages/engine/src/index.ts", label: "@aura3d/engine/engine" },
   { id: "rendering", path: "packages/rendering/src/index.ts", label: "@aura3d/engine/rendering" },
   { id: "rendering-webgpu", path: "packages/rendering/src/webgpu.ts", label: "@aura3d/engine/rendering/webgpu" },
   { id: "physics", path: "packages/physics/src/index.ts", label: "@aura3d/engine/physics" },
   { id: "physics-solverless", path: "packages/physics/src/solverless.ts", label: "@aura3d/engine/physics/solverless" },
   { id: "physics-world", path: "packages/physics/src/world.ts", label: "@aura3d/engine/physics/world" },
+  { id: "physics-rapier", path: "packages/physics-rapier/src/index.ts", label: "@aura3d/physics-rapier" },
+  { id: "navigation-recast", path: "packages/navigation-recast/src/index.ts", label: "@aura3d/navigation-recast" },
   { id: "assets-browser", path: "packages/assets/src/browser-index.ts", label: "@aura3d/engine/assets/browser" },
   { id: "animation-browser", path: "packages/animation/src/browser-index.ts", label: "@aura3d/engine/animation/browser" },
   { id: "scene", path: "packages/scene/src/index.ts", label: "@aura3d/engine/scene" },
   { id: "input", path: "packages/input/src/index.ts", label: "@aura3d/engine/input" },
   { id: "audio", path: "packages/audio/src/index.ts", label: "@aura3d/engine/audio" },
-  { id: "controls", path: "packages/controls/src/index.ts", label: "@aura3d/engine/controls" }
+  { id: "controls", path: "packages/controls/src/index.ts", label: "@aura3d/engine/controls" },
+  { id: "core", path: "packages/core/src/index.ts", label: "@aura3d/core" },
+  { id: "ecs", path: "packages/ecs/src/index.ts", label: "@aura3d/ecs" },
+  { id: "scripting", path: "packages/scripting/src/index.ts", label: "@aura3d/scripting" },
+  { id: "product-studio", path: "packages/product-studio/src/index.ts", label: "@aura3d/product-studio" },
+  { id: "apps", path: "packages/apps/src/index.ts", label: "@aura3d/apps" },
+  { id: "workflows", path: "packages/workflows/src/index.ts", label: "@aura3d/workflows" },
+  { id: "editor-runtime", path: "packages/editor-runtime/src/index.ts", label: "@aura3d/editor-runtime" },
+  { id: "editor", path: "packages/editor/src/index.ts", label: "@aura3d/editor" },
+  { id: "debug", path: "packages/debug/src/index.ts", label: "@aura3d/debug" },
+  { id: "materials", path: "packages/materials/src/index.ts", label: "@aura3d/materials" },
+  { id: "environments", path: "packages/environments/src/index.ts", label: "@aura3d/environments" },
+  { id: "three-compat", path: "packages/three-compat/src/index.ts", label: "@aura3d/three-compat" },
+  { id: "react", path: "packages/react/src/index.ts", label: "@aura3d/react" }
 ] as const;
 
 /**
@@ -44,7 +62,9 @@ const BROWSER_ENTRIES = [
  * absence. These are *expected* to reach `node:` builtins and are not checked for purity.
  */
 const NODE_ENTRIES = [
-  { id: "media-node", path: "packages/engine/src/agent-api/media-node.ts", label: "@aura3d/engine/media-node", expects: "node:child_process, node:fs/promises, node:os, node:path" }
+  { id: "media-node", path: "packages/engine/src/agent-api/media-node.ts", label: "@aura3d/engine/media-node", expects: "node:child_process, node:fs/promises, node:os, node:path" },
+  { id: "materials-node", path: "packages/materials/src/node.ts", label: "@aura3d/materials/node", expects: "node:fs, node:path" },
+  { id: "environments-node", path: "packages/environments/src/node.ts", label: "@aura3d/environments/node", expects: "node:fs, node:path, node:crypto" }
 ] as const;
 
 function auraSourceAlias(): Plugin {
@@ -62,6 +82,8 @@ function auraSourceAlias(): Plugin {
     ["@aura3d/physics", "packages/physics/src/index.ts"],
     ["@aura3d/physics/solverless", "packages/physics/src/solverless.ts"],
     ["@aura3d/physics/world", "packages/physics/src/world.ts"],
+    ["@aura3d/physics-rapier", "packages/physics-rapier/src/index.ts"],
+    ["@aura3d/navigation-recast", "packages/navigation-recast/src/index.ts"],
     ["@aura3d/product-studio", "packages/product-studio/src/index.ts"],
     ["@aura3d/apps", "packages/apps/src/index.ts"],
     ["@aura3d/animation", "packages/animation/src/browser-index.ts"],

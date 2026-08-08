@@ -3,6 +3,8 @@
   "baselineCommit": "ce01b95f6a200175b3db7d47f30f8e6fea911018",
   "addedPackageSource": {
     "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
-    "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md"
+    "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+    "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
+    "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md"
   }
 }

@@ -28,11 +28,15 @@ pnpm verify:api-docs
 | `@aura3d/editor` | `1.6.0` | `packages/editor/src/index.ts` | 1 |
 | `@aura3d/editor-runtime` | `1.6.0` | `packages/editor-runtime/src/index.ts` | 82 |
 | `@aura3d/engine` | `1.6.0` | `packages/engine/src/index.ts` | 39 |
-| `@aura3d/environments` | `1.6.0` | `packages/environments/src/index.ts` | 10 |
+| `@aura3d/environments` | `1.6.0` | `packages/environments/src/index.ts` | 5 |
+| `@aura3d/environments/node` | `1.6.0` | `packages/environments/src/node.ts` | 6 |
 | `@aura3d/input` | `1.6.0` | `packages/input/src/index.ts` | 46 |
-| `@aura3d/materials` | `1.6.0` | `packages/materials/src/index.ts` | 10 |
+| `@aura3d/materials` | `1.6.0` | `packages/materials/src/index.ts` | 1 |
+| `@aura3d/materials/node` | `1.6.0` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `1.6.0` | `packages/math/src/index.ts` | 18 |
+| `@aura3d/navigation-recast` | `1.6.0` | `packages/navigation-recast/src/index.ts` | 12 |
 | `@aura3d/physics` | `1.6.0` | `packages/physics/src/index.ts` | 32 |
+| `@aura3d/physics-rapier` | `1.6.0` | `packages/physics-rapier/src/index.ts` | 11 |
 | `@aura3d/physics/solverless` | `1.6.0` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `1.6.0` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.6.0` | `packages/product-studio/src/index.ts` | 12 |
@@ -287,7 +291,7 @@ export { AudioBus } from "./AudioBus";
 export { AudioClip } from "./AudioClip";
 export type { AudioClipOptions } from "./AudioClip";
 export { AudioFileManager, validateEpisodeAudioAssets } from "./AudioFileManager";
-export type { AudioDecodeContextLike, EpisodeAudioAssetDiagnostic, EpisodeAudioAssetReadiness, EpisodeAudioAssetRequirement, AudioFileAssetLike, AudioFileFetchResponseLike, AudioFileInput, AudioFileManagerOptions, AudioFileRequest, ResolvedAudioFileRequest } from "./AudioFileManager";
+export type { AudioDecodeContextLike, EpisodeAudioAssetDiagnostic, EpisodeAudioAssetReadiness, EpisodeAudioAssetRequirement, AudioFileAssetLike, AudioFileFetchResponseLike, AudioFileInput, AudioFileManagerOptions, AudioCodecCandidate, AudioFileRequest, ResolvedAudioFileRequest } from "./AudioFileManager";
 export { createAudioTimelineMixSnapshot, defaultAudioTimelineBusForRole, validateAudioCaptionSync, AudioTimelineTrack } from "./AudioTimelineTrack";
 export type { AudioCaptionCue, AudioCaptionSyncIssue, AudioCaptionSyncReport, AudioTimelineBusMix, AudioTimelineClip, AudioTimelineClipOptions, AudioTimelineEnvelopePoint, AudioTimelineMixOptions, AudioTimelineMixSnapshot, AudioTimelineSample, AudioTimelineTrackOptions, AudioTimelineTrackRole } from "./AudioTimelineTrack";
 export { audioWaveformPeakRange, createAudioWaveform, createAudioWaveformPath, createAudioWaveformReviewData, sampleAudioWaveformAtTime } from "./AudioWaveform";
@@ -682,16 +686,28 @@ export function createDiagnosticsPanel(initial: { readonly render?: RenderDevice
 ### Export Declarations
 
 ```ts
-export { findThreeCompatEnvironmentPreset, listThreeCompatEnvironmentPresets, loadThreeCompatEnvironmentManifest, createThreeCompatEnvironmentGalleryModel, summarizeThreeCompatEnvironmentLibrary } from "./EnvironmentRegistry";
-export type { ThreeCompatEnvironmentLibrarySummary, ThreeCompatEnvironmentManifest } from "./EnvironmentRegistry";
-export { createThreeCompatEnvironmentDiagnostics, verifyThreeCompatHdriFile } from "./HDRIEnvironment";
-export type { ThreeCompatEnvironmentDiagnostics, ThreeCompatEnvironmentKind, ThreeCompatEnvironmentProbeType, ThreeCompatHDRIEnvironmentPreset } from "./HDRIEnvironment";
-export { createThreeCompatPMREMDiagnostics } from "./PMREMPreset";
-export type { ThreeCompatPMREMDiagnostics, ThreeCompatPMREMPreset } from "./PMREMPreset";
-export { createThreeCompatEnvironmentProbePreviews } from "./EnvironmentPreview";
-export type { ThreeCompatEnvironmentProbePreview } from "./EnvironmentPreview";
-export { createProductionEnvironmentCorpusSummary, inspectProductionHDR, loadProductionEnvironmentManifest } from "./production-runtime/ProductionEnvironmentCorpus";
-export type { ProductionHDREnvironment, ProductionHDRInspection, ProductionEnvironmentCorpusSummary, ProductionEnvironmentManifest, ProductionEnvironmentProbeType, ProductionEnvironmentReadinessEntry, ProductionEnvironmentRequirements, ProductionPMREMPreset } from "./production-runtime/ProductionEnvironmentCorpus";
+export { createThreeCompatPMREMDiagnostics } from "./PMREMPreset.js";
+export type { ThreeCompatPMREMDiagnostics, ThreeCompatPMREMPreset } from "./PMREMPreset.js";
+export { createThreeCompatEnvironmentProbePreviews } from "./EnvironmentPreview.js";
+export type { ThreeCompatEnvironmentProbePreview } from "./EnvironmentPreview.js";
+export type { ThreeCompatEnvironmentDiagnostics, ThreeCompatEnvironmentKind, ThreeCompatEnvironmentProbeType, ThreeCompatHDRIEnvironmentPreset } from "./HDRIEnvironment.js";
+```
+
+## @aura3d/environments/node
+
+- Version: `1.6.0`
+- Package manifest: `packages/environments/package.json`
+- Public entrypoint: `packages/environments/src/node.ts`
+
+### Export Declarations
+
+```ts
+export * from "./index.js";
+export { findThreeCompatEnvironmentPreset, listThreeCompatEnvironmentPresets, loadThreeCompatEnvironmentManifest, createThreeCompatEnvironmentGalleryModel, summarizeThreeCompatEnvironmentLibrary } from "./EnvironmentRegistry.js";
+export type { ThreeCompatEnvironmentLibrarySummary, ThreeCompatEnvironmentManifest } from "./EnvironmentRegistry.js";
+export { createThreeCompatEnvironmentDiagnostics, verifyThreeCompatHdriFile } from "./HDRIEnvironment.js";
+export { createProductionEnvironmentCorpusSummary, inspectProductionHDR, loadProductionEnvironmentManifest } from "./production-runtime/ProductionEnvironmentCorpus.js";
+export type { ProductionHDREnvironment, ProductionHDRInspection, ProductionEnvironmentCorpusSummary, ProductionEnvironmentManifest, ProductionEnvironmentProbeType, ProductionEnvironmentReadinessEntry, ProductionEnvironmentRequirements, ProductionPMREMPreset } from "./production-runtime/ProductionEnvironmentCorpus.js";
 ```
 
 ## @aura3d/input
@@ -760,16 +776,21 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 ### Export Declarations
 
 ```ts
-export { findThreeCompatPbrMaterial, listThreeCompatMaterialProofChannels, listThreeCompatPbrMaterials, THREE_COMPAT_PBR_MATERIAL_LIBRARY, THREE_COMPAT_REQUIRED_MATERIAL_CLASSES } from "./PBRMaterialLibrary";
-export { findThreeCompatTextureSet, THREE_COMPAT_TEXTURE_SETS } from "./TextureSet";
-export { summarizeThreeCompatMaterialLibrary } from "./MaterialValidation";
-export { createThreeCompatMaterialPreviewScene, createThreeCompatMaterialPreviewTile } from "./MaterialPreviewScene";
-export type { ThreeCompatMaterialClass, ThreeCompatMaterialParameters, ThreeCompatMaterialPreset, ThreeCompatMaterialProofChannel } from "./MaterialPreset";
-export type { ThreeCompatTextureMapReference, ThreeCompatTextureSemantic, ThreeCompatTextureSet } from "./TextureSet";
-export type { ThreeCompatMaterialLibrarySummary } from "./MaterialValidation";
-export type { ThreeCompatMaterialPreviewTile } from "./MaterialPreviewScene";
-export * from "./MaterialPresets.js";
-export * from "./NodeMaterial.js";
+export * from "./browser-index.js";
+```
+
+## @aura3d/materials/node
+
+- Version: `1.6.0`
+- Package manifest: `packages/materials/package.json`
+- Public entrypoint: `packages/materials/src/node.ts`
+
+### Export Declarations
+
+```ts
+export * from "./browser-index.js";
+export { summarizeThreeCompatMaterialLibrary } from "./MaterialValidation.js";
+export type { ThreeCompatMaterialLibrarySummary } from "./MaterialValidation.js";
 ```
 
 ## @aura3d/math
@@ -799,6 +820,29 @@ export * from "./Interpolation.js";
 export * from "./Easing.js";
 export * from "./Random.js";
 export * from "./Curves.js";
+```
+
+## @aura3d/navigation-recast
+
+- Version: `1.6.0`
+- Package manifest: `packages/navigation-recast/package.json`
+- Public entrypoint: `packages/navigation-recast/src/index.ts`
+
+### Export Declarations
+
+```ts
+export type NavigationVec3 = readonly [number, number, number];
+export type RecastModule = typeof import("recast-navigation");
+export type RecastGenerators = typeof import("recast-navigation/generators");
+export interface NavigationTriangleSoup { readonly positions: readonly number[] | Float32Array;
+export interface RecastNavigationOptions { readonly moduleLoader?: () => Promise<RecastModule>;
+export interface NavigationPathResult { readonly success: boolean;
+export interface NavigationCrowdAgentOptions { readonly radius?: number;
+export class RecastNavMeshHandle { readonly #module: RecastModule;
+export class RecastCrowdHandle { readonly #crowd: Recast.Crowd;
+export class RecastTileCacheHandle { readonly navMesh: RecastNavMeshHandle;
+export class RecastNavigation { readonly #module: RecastModule;
+export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> { const module = await (options.moduleLoader ?? (() => import("recast-navigation")))();
 ```
 
 ## @aura3d/physics
@@ -842,6 +886,28 @@ export * from "./SoftBodyFixtures.js";
 export * from "./FractureFixtures.js";
 export * from "./FluidFixtures.js";
 export * from "./FireSmokeFixtures.js";
+```
+
+## @aura3d/physics-rapier
+
+- Version: `1.6.0`
+- Package manifest: `packages/physics-rapier/package.json`
+- Public entrypoint: `packages/physics-rapier/src/index.ts`
+
+### Export Declarations
+
+```ts
+export type RapierModule = typeof import("@dimforge/rapier3d-compat");
+export type PhysicsVec3 = readonly [number, number, number];
+export type RapierShapeSpec =
+export interface RapierBodySpec { readonly type?: "dynamic" | "fixed" | "kinematic-position" | "kinematic-velocity";
+export interface RapierPhysicsOptions { readonly gravity?: PhysicsVec3;
+export class RapierBodyHandle { readonly #body: Rapier.RigidBody;
+export interface RapierRayHit { readonly body: RapierBodyHandle;
+export class RapierCharacterControllerHandle { readonly #world: RapierPhysicsWorld;
+export class RapierVehicleControllerHandle { readonly #world: RapierPhysicsWorld;
+export class RapierPhysicsWorld { readonly #module: RapierModule;
+export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> { const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))();
 ```
 
 ## @aura3d/physics/solverless

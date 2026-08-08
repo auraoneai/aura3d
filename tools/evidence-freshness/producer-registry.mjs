@@ -102,6 +102,12 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "audio-chrome-browser": [
     "tests/reports/audio-chrome.json"
   ],
+  "ecs-scripting-compatibility": [
+    "tests/reports/ecs-scripting-compatibility/report.json"
+  ],
+  "browser-entry-purity": [
+    "tests/reports/browser-entry-purity.json"
+  ],
   /*
    * The freshness audit owns its own retained report.
    *
@@ -140,7 +146,8 @@ export const OWNED_ARTIFACT_DIRECTORIES = Object.freeze([
   "optional-rapier-physics",
   "navigation-backend-bakeoff",
   "optional-recast-navigation",
-  "audio-backend-bakeoff"
+  "audio-backend-bakeoff",
+  "ecs-scripting-compatibility"
 ]);
 
 /** Producer id -> `{ writes, hashes }` in the same path vocabulary as ownership. */
@@ -256,6 +263,14 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
     writes: PRODUCER_OWNERSHIP["audio-chrome-browser"],
     hashes: ["packages/audio/src/index.ts", "tests/browser/audio-browser-harness.ts"]
   },
+  "ecs-scripting-compatibility": {
+    writes: PRODUCER_OWNERSHIP["ecs-scripting-compatibility"],
+    hashes: ["tests/reports/external-candidate-package-audit.json", "packages/ecs/src/index.ts", "packages/scripting/src/index.ts"]
+  },
+  "browser-entry-purity": {
+    writes: PRODUCER_OWNERSHIP["browser-entry-purity"],
+    hashes: ["packages/engine/src/agent-api/media-node.ts", "packages/materials/src/node.ts", "packages/environments/src/node.ts"]
+  },
   "evidence-freshness-audit": {
     writes: PRODUCER_OWNERSHIP["evidence-freshness-audit"],
     /*
@@ -292,6 +307,8 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "audio-chrome-browser",
   "audio-webkit-browser",
   "audio-backend-bakeoff",
+  "ecs-scripting-compatibility",
+  "browser-entry-purity",
   "showcase-release-asset-probes",
   "vehicle-wheel-visibility",
   "multipart-primitive-draw",
