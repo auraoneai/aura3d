@@ -190,7 +190,7 @@ not done this document's job.
       duplicate APIs removed · entry points removed — `tools/negative-complexity/index.ts` reports
       every baseline row with its delta on each run.
 - [x] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
-      `be86c73e`**, net of additions. — **MET: 200,927 vs 200,929, delta −2.**
+      `be86c73e`**, net of additions. — **MET: 200,924 vs 200,929, delta −5.**
 
       Measured breakdown, because "+1,259" alone invites the wrong fix. By package:
       `rendering` **−885**, `physics` +421, `engine` +1,360, `assets` +10,
@@ -2339,14 +2339,16 @@ have broken the published surface. Low direct app usage does not mean unused.
       through `tsconfig.base.json` `paths`, not by prefix — `@aura3d/engine/rendering` aliases to
       `packages/rendering/src/index.ts` and does **not** resolve into `packages/engine`; attributing
       it to `engine` invents cycles that do not exist.
-- [x] **Proof:** `pnpm check:package-graph` — 7/7 PASS, 27 packages, 0 undeclared, 0 cycles,
+- [x] **Proof:** `pnpm check:package-graph` — 7/7 PASS, 26 packages, 0 undeclared, 0 cycles,
       0 layer violations, 0 doc gaps, 6 over-declarations reported as weight.
 - [x] **`pnpm -r list` was rejected as the proof source and replaced with something stronger.**
       `pnpm -r list --depth 0 --json` derives its output from the same `package.json` files being
       audited, so comparing them is circular and always passes. The gate instead compares each
       manifest against `pnpm-lock.yaml`'s `importers` block (what `--frozen-lockfile` installs)
       **and** the `@aura3d` symlinks actually on disk under `packages/*/node_modules/`. Check
-      `install-graph-matches-manifests` PASSes across all 27.
+      `install-graph-matches-manifests` PASSes across all 26. The unused private
+      `packages/test-utils` workspace was removed after consumer, graph, deletion-safety,
+      typecheck, build, and focused-test proof; it was never part of the public package set.
 - [x] Doc-drift is machine-enforced: `ownership-doc-documents-every-edge` fails if
       `package-ownership.md` omits a measured edge or documents one that no longer exists.
 
@@ -3215,10 +3217,11 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       route-health, asset-replacement, and actionable-error checks. Both rehearsal tarballs remain
       version 1.5.2 because §11 forbids the 1.6.0 version bump before explicit publish approval.
 - [x] All Tier 1 and Tier 2 routes pass; Tier 3 labelled internal; Tier 4 removed
-      — **35 of 35 Tier 1/2 pass** in a real browser with the failure allowlist removed.
+      — **43 of 43 Tier 1/2 pass** in a real browser with the failure allowlist removed.
       The repaired `material-showroom`, `postprocess-lab`, and `shadow-lab` all expose measurable
       canvases and pass screenshot thresholds; the retained 10-case renderer visual suite is also
-      green. Tier 3 = 101 routes labelled internal. Tier 4 empty because R8 refused its one
+      green. The current derived inventory is Tier 1 = 4, Tier 2 = 39, Tier 3 = 102, 145 total,
+      and 0 unclassified. Tier 4 is empty because R8 refused its one
       candidate — a result, not a skipped step.
 - [x] Three routes still `prototype-blocked` unless a human cleared them (R5)
       — all three still blocked, enforced in **all four** places a promotion could occur
@@ -3226,8 +3229,9 @@ Approval gate. Every box needs command output (R4). **No publishing action appea
       **4 of 6 engine causes FIXED, 2 BLOCKED** on ADR 0002. Independent evidence the fixes
       landed: skyline's regenerated screenshot digest moved while turbo drift's is byte-identical.
 - [x] `MIGRATION-1.6.md` complete, with the migration matrix
-      — written, and **every row measured against `v1.5.2`** rather than described: 27 packages
-      unchanged (0 removed), public symbols 2,498 → 2,506, and **0 non-`three-compat` symbols
+      — written, and **every row measured against `v1.5.2`** rather than described: all 26 public
+      packages retained (0 public packages removed), public symbols 2,498 → 2,506, and **0
+      non-`three-compat` symbols
       removed**. Gated by `tests/unit/tools/migration-matrix.test.ts` (13 tests), which recomputes
       all four claims, so a later removal fails the gate and forces the version to be revisited.
 - [x] Version decided per §12 from that matrix — **`1.6.0`.**
@@ -3309,20 +3313,19 @@ exists", and fixing either failing condition breaks a test that must then be fli
       — `evidence-freshness` reports **zero ownership conflicts and zero ordering cycles**, and
       its own producer registry declares an owner for every artifact directory on disk.
 - [ ] **Two serial full runs** of the complete suite, both green. Not one run, not parallel.
-      — **NOT GREEN:** two serial `npx vitest run tests/unit tests/integration --maxWorkers=1`
-      runs produced identical results: **3,348 of 3,349 passing** across 448 files, with only
-      `showcase-route-gates.test.ts` failing because four release candidates still lack the required
-      independent human approval: `showcase-product-configurator`, `showcase-smart-city-control`,
-      `showcase-cinematic-architecture`, and `showcase-digital-twin-ops`. The current review packet
-      was regenerated from committed producer `0eddc4ed3720d4e10f629d1b7960b120623fd58a` after the
-      targeted settled-screenshot test passed **1/1** and the targeted interaction audit passed
-      **4/4**. `showcase-visual-review.json` validates with `fileOk: true`, all seven route records
-      have zero structural failures, and it remains an explicitly rejected baseline
-      (`reviewer: pending`, `overallVerdict: needs-work`). `build-and-check.mjs` consequently reports
-      **0/4 release candidates passed**, with human approval as the sole visual-review failure. The
-      three R5 prototype routes remain `needs-work`/`development-review` with their named visual
-      blockers intact. Reproducibility is proven; the literal all-green gate remains blocked and
-      cannot be checked before the four release-candidate approvals exist.
+      — **WAITING ON THE HUMAN GATE:** after the final runtime commit, the canonical browser suite
+      passed **37/37**, the retained evidence/freshness suites passed **76/76**, and final demo
+      validation passed 3/3. The current screenshots and interaction packet were produced from
+      source commit `f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338`, refreshed in `6e28bca4`, and
+      synchronized to the generated asset manifest in `018d0730`. `showcase-visual-review.json`
+      validates with `fileOk: true` and has only the deliberate
+      `visual-review-overall-verdict:needs-work` failure. Four release candidates still need the
+      owner's independent verdict: `showcase-product-configurator`,
+      `showcase-smart-city-control`, `showcase-cinematic-architecture`, and
+      `showcase-digital-twin-ops`. The three R5 prototype routes remain
+      `needs-work`/`development-review`. The two serial all-green release runs must be made only
+      after the real reviewer identity and verdict are recorded; no agent verdict can satisfy this
+      box.
 - [x] Generated artifacts written to isolated temporary directories, then atomically
       promoted into `tests/reports/`. — the WS-0.2 R8 tool's own scratch handling was the last
       gap and is fixed: `mkdtempSync` does not create parents, so it threw at module scope and

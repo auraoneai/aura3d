@@ -30,7 +30,7 @@ remain open.
   been removed; grounding, query rotation, stability, joint, tunnelling,
   sleep/wake, repeatability, step/slope, suspension, and lifecycle invariants
   are retained.
-- All 35 Tier 1/2 routes pass the current real-browser health gate.
+- All 43 Tier 1/2 routes pass the current real-browser health gate.
 - The selected 54-row Three.js inventory is matched with zero high-priority rows
   open, bounded by the comparison-status document.
 - The public website source and build include the 1.6 content update and nine

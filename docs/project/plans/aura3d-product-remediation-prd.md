@@ -168,9 +168,9 @@ behind on breadth and low-level access.
 
 ## 2. Product architecture
 
-See `docs/project/plans/aura3d-package-architecture.md`. Measured state: 27 packages,
+See `docs/project/plans/aura3d-package-architecture.md`. Measured state: 26 packages,
 **51 exported symbol names owned by more than one package**, dominated by
-`@aura3d/engine-runtime` (322 exports, 50,358 lines, 0 tests, 0 consumers).
+`@aura3d/engine-runtime` (325 exports, 56,961 lines, 0 package-local tests, 0 consumers).
 Consolidation recommendations are documented and deliberately not performed, because
 each is a breaking change needing its own migration.
 

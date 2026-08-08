@@ -5,7 +5,7 @@
 
 ## Current state, measured
 
-27 workspace packages, 113 apps, 36 examples. The problems are visible in the numbers.
+26 workspace packages, 110 apps, 37 examples. The problems are visible in the numbers.
 
 ### Overlapping ownership
 
@@ -23,7 +23,7 @@ depends on which one it imported.
 | 8 `create*Workflow` factories | `@aura3d/engine-runtime`, `@aura3d/workflows` | Whole subsystem duplicated |
 | `DragControls`, `FlyControls`, `FirstPersonControls` | `@aura3d/controls`, `@aura3d/input`, `@aura3d/three-compat` | Three homes for camera controls |
 
-The dominant cause is `@aura3d/engine-runtime`: **322 exports, 50,358 lines, 0 test
+The dominant cause is `@aura3d/engine-runtime`: **325 exports, 56,961 lines, 0 package-local test
 files, 0 consumers.** It appears to be a superset barrel that re-declares much of the
 rest of the workspace. It is the single largest source of duplicated ownership.
 
@@ -31,10 +31,10 @@ rest of the workspace. It is the single largest source of duplicated ownership.
 
 | Package | Exports | Lines | Tests | Reading |
 | --- | --- | --- | --- | --- |
-| `@aura3d/engine-runtime` | 322 | 50,358 | 0 | Duplicate surface; primary consolidation target |
-| `@aura3d/three-compat` | 108 | 1,232 | 0 | Migration aid; consumed by `three-compat-*` fixture apps, not by product routes |
+| `@aura3d/engine-runtime` | 325 | 56,961 | 0 | Duplicate surface; primary consolidation target |
+| `@aura3d/three-compat` | 91 | 1,254 | 0 | Migration aid; consumed by `three-compat-*` fixture apps, not by product routes |
 | `@aura3d/cli` | 44 | 8,787 | 0 | Consumed as a binary, not imported; the zero is an artefact of import-graph measurement |
-| `create-aura3d` | 17 | 8,461 | 0 | As above |
+| `create-aura3d` | 17 | 8,598 | 0 | As above |
 | `@aura3d/environments` | 12 | 477 | 0 | Superseded by `environments` in the agent API |
 | `@aura3d/materials` | 12 | 369 | 0 | Superseded by `material` in the agent API |
 | `@aura3d/react` | 14 | 174 | 0 | Adapter with no example |
@@ -42,14 +42,14 @@ rest of the workspace. It is the single largest source of duplicated ownership.
 
 ### Test coverage by package
 
-Only 8 of 27 packages have any package-level test files. `@aura3d/rendering` (493
-exports, 55,752 lines) and `@aura3d/physics` (251 exports, 10,393 lines) have none. Their
+Only 7 of 26 packages have any package-level test files. `@aura3d/rendering` (490
+exports, 55,378 lines) and `@aura3d/physics` (266 exports, 12,023 lines) have none. Their
 behaviour is covered indirectly through `tests/unit` and browser suites, which is real
 coverage but leaves no package-local contract.
 
 ### The agent API
 
-`packages/engine/src/agent-api` is 74 files and 42,159 lines, with `index.ts` alone at
+`packages/engine/src/agent-api` is 89 files and 50,455 lines, with `index.ts` alone at
 over 14,000. It is the public surface and the most-consumed code in the product, and it
 mixes scene authoring, game kits, animation direction, video export, asset evidence and
 two renderer implementations in one module.

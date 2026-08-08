@@ -28,8 +28,8 @@ evidence is missing or stale.
 - Published 1.5.2 input action-binding fixture exports remain available through
   deprecated compatibility aliases, preventing an accidental minor-version
   surface removal.
-- Public API documentation is regenerated for 31 workspace packages and 1,013
-  export declarations.
+- Public API documentation is regenerated for 31 public package entrypoints
+  across the 26-package release set and 1,013 export declarations.
 
 ## Browser and comparison evidence
 

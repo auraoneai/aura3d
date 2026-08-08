@@ -8,132 +8,137 @@ Date: 2026-08-08
 Status: Aura3D 1.6.0 release-candidate gate checklist
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
-routes, benchmark claims, or marketing copy.
+routes, benchmark claims, or marketing copy. Checked items have current retained
+or command evidence; unchecked items are real release blockers.
 
 ## Track Selection
 
-- [ ] The release track is selected in `docs/project/release-tracks.md`.
-- [ ] Public copy uses only the selected track's allowed claim language.
-- [ ] Package claims, showcase claims, marketing claims, and benchmark claims are
+- [x] The release track is selected in `docs/project/release-tracks.md`.
+- [x] Public copy uses only the selected track's allowed claim language.
+- [x] Package claims, showcase claims, marketing claims, and benchmark claims are
   not mixed without passing each track's gates.
-- [ ] All public claims follow `docs/project/claim-guidelines.md` and
+- [x] All public claims follow `docs/project/claim-guidelines.md` and
   `docs/project/launch-positioning.md`.
-- [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
+- [x] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
-- [ ] The current release-candidate summary in
+- [x] The current release-candidate summary in
   `docs/project/aura3d-160-release-notes.md` matches the commands being run for
   this release.
 
 ## Package Gates
 
-- [ ] `pnpm install` has been run for the current lockfile.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm test:unit` passes.
-- [ ] No focused retained-evidence test is failing; a stale superseded-route
-  screenshot hash still fails the release if the test remains in the required
-  unit suite.
-- [ ] `pnpm test:integration` passes when integration behavior changed.
-- [ ] `pnpm test:browser` passes when browser routes changed.
-- [ ] `pnpm build` passes.
-- [ ] `pnpm verify:api-docs -- --write` has been run after export changes.
-- [ ] `pnpm verify:package-install-smoke:fresh` passes.
-- [ ] `pnpm verify:package-provenance` passes.
-- [ ] `pnpm exec vitest run tests/unit/package-dist --reporter=dot` passes.
-- [ ] Package dry-run or pack verification succeeds for packages being
+- [x] `pnpm install` has been run for the current lockfile.
+- [x] `pnpm typecheck` passes.
+- [ ] `pnpm test:unit` passes. The only permitted next action is to obtain the
+  required human showcase verdict, then rerun the unmodified suite.
+- [ ] No focused retained-evidence test is failing; the current
+  `showcase-route-gates` failure is the deliberate missing-human-verdict gate,
+  not stale evidence or an allowlisted failure.
+- [x] `pnpm test:integration` passes when integration behavior changed.
+- [x] `pnpm test:browser` passes when browser routes changed; the final canonical
+  invocation passed 37/37.
+- [x] `pnpm build` passes; finalization covers 26 packages.
+- [x] `pnpm verify:api-docs -- --write` has been run after export changes.
+- [x] `pnpm verify:package-install-smoke:fresh` passes.
+- [x] `pnpm verify:package-provenance` passes.
+- [x] `pnpm exec vitest run tests/unit/package-dist --reporter=dot` passes.
+- [x] Package dry-run or pack verification succeeds for packages being
   published.
-- [ ] Publishing uses `node tools/release/publish-all.mjs` with npm auth stored
+- [x] Publishing uses `node tools/release/publish-all.mjs` with npm auth stored
   outside the repository, never committed in `.npmrc`.
 
 ## Static Source Gates
 
-- [ ] Public examples contain no `model("string-id")`.
-- [ ] Public examples contain no raw `.glb` or `.gltf` URLs.
-- [ ] Public examples contain no `unsafeModelUrl` unless explicitly in unsafe
+- [x] Public examples contain no `model("string-id")`.
+- [x] Public examples contain no raw `.glb` or `.gltf` URLs.
+- [x] Public examples contain no `unsafeModelUrl` unless explicitly in unsafe
   diagnostics documentation.
-- [ ] Public examples contain no `GLTFLoader` imports.
-- [ ] Public examples contain no `three` imports.
-- [ ] Public examples do not use CSS/DOM particles or DOM overlays as scene
+- [x] Public examples contain no `GLTFLoader` imports.
+- [x] Public examples contain no `three` imports.
+- [x] Public examples do not use CSS/DOM particles or DOM overlays as scene
   content for rendering claims.
-- [ ] Primary assets appear in `aura.assets.json` and generated
+- [x] Primary assets appear in `aura.assets.json` and generated
   `src/aura-assets.ts`.
-- [ ] Primary asset provenance is durable and includes source/license evidence.
-- [ ] Duplicate asset hashes are explained or rejected for release.
+- [x] Primary asset provenance is durable and includes source/license evidence.
+- [x] Duplicate asset hashes are explained or rejected for release.
 
 ## Showcase Gates
 
 - [ ] `node tools/showcase-library/build-and-check.mjs` exits 0 for public
-  release status.
-- [ ] `docs/project/showcase-launch-evidence.json` separates `publicReleaseOk`
+  release status. Static, route-primary, build, deploy, interaction, and
+  structural checks pass; four human candidate verdicts are still pending.
+- [x] `docs/project/showcase-launch-evidence.json` separates `publicReleaseOk`
   from `allRoutesOk`.
-- [ ] Public release candidates are counted separately from internal
+- [x] Public release candidates are counted separately from internal
   diagnostics, prototype-blocked routes, removed routes, and the showcase index.
-- [ ] Every promoted route has a route-health declaration with category,
+- [x] Every promoted route has a route-health declaration with category,
   primary assets, renderer mode, fallback mode, primitive count, and claims.
-- [ ] Every promoted route passes the asset and primitive rules in
+- [x] Every promoted route passes the asset and primitive rules in
   `docs/project/showcase/quality-gates.md`.
-- [ ] Every promoted route has desktop and mobile screenshots generated by the
+- [x] Every promoted route has desktop and mobile screenshots generated by the
   current test run.
-- [ ] Screenshot checks prove subject readability, not only nonblank pixels or
+- [x] Screenshot checks prove subject readability, not only nonblank pixels or
   file size.
-- [ ] UI does not cover the primary subject or controls at supported viewports.
-- [ ] Route claims do not exceed detected capability.
-- [ ] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
+- [x] UI does not cover the primary subject or controls at supported viewports.
+- [x] Route claims do not exceed detected capability.
+- [x] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
   their public visual/release evidence passes.
-- [ ] Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner remain
+- [x] Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner remain
   `prototype-blocked` and are never counted as promoted public candidates in
   this release.
-- [ ] A 7/7 route-library build/check result is described as a technical
+- [x] A 7/7 route-library build/check result is described as a technical
   sub-gate, not an overall public-ready verdict, unless the full required test
   and evidence chain also passes.
 
 ## Game Gates
 
-- [ ] Keyboard input visibly changes gameplay state.
-- [ ] Tests prove movement, reset, and at least one objective/scoring/fail loop.
-- [ ] Genre-specific mechanics are tested: line clears for falling blocks,
+- [x] Keyboard input visibly changes gameplay state.
+- [x] Tests prove movement, reset, and at least one objective/scoring/fail loop.
+- [x] Genre-specific mechanics are tested: line clears for falling blocks,
   jump/collect/hazard/checkpoint for platformers, checkpoint/lap/steering for
   racing.
-- [ ] The primary character, vehicle, world, or track is not primitive-only
+- [x] The primary character, vehicle, world, or track is not primitive-only
   unless the route is explicitly abstract.
-- [ ] HUD state matches gameplay state.
-- [ ] Passing route-primary, deploy/release, and gameplay proof alone is not
+- [x] HUD state matches gameplay state.
+- [x] Passing route-primary, deploy/release, and gameplay proof alone is not
   enough for public game status.
-- [ ] Racing routes have retained car-to-road topology evidence and a
+- [x] Racing routes have retained car-to-road topology evidence and a
   public-quality screenshot.
-- [ ] Platformer routes have retained character-to-surface evidence and a
+- [x] Platformer routes have retained character-to-surface evidence and a
   public-quality screenshot.
 
 ## Rendering, Animation, And WebGPU Gates
 
-- [ ] Material, lighting, shadow, and postprocess claims cite exact route pixels.
-- [ ] Animation claims use screenshot/video deltas in the animated subject
+- [x] Material, lighting, shadow, and postprocess claims cite exact route pixels.
+- [x] Animation claims use screenshot/video deltas in the animated subject
   region, not only counters or camera movement.
-- [ ] Skinned or morph claims are root-public only when the browser route imports
+- [x] Skinned or morph claims are root-public only when the browser route imports
   only public `@aura3d/engine` and the pixels prove the deformation.
-- [ ] WebGPU claims include adapter/backend, dispatch/render, fallback state,
+- [x] WebGPU claims include adapter/backend, dispatch/render, fallback state,
   telemetry, and screenshot evidence.
-- [ ] Performance or parity wording is absent unless the comparative report has
+- [x] Performance or parity wording is absent unless the comparative report has
   every required input and passes; a feature inventory is not performance
   evidence.
 
 ## Docs And Copy Gates
 
-- [ ] Docs do not reference deleted planning files as current standards.
-- [ ] Docs link to the canonical project docs in
+- [x] Docs do not reference deleted planning files as current standards.
+- [x] Docs link to the canonical project docs in
   `docs/project/documentation-index.md`.
-- [ ] `docs/project/site-map.md` links resolve.
-- [ ] README, marketing, route README, and route-health claims agree.
-- [ ] Prototype routes are not presented as public release candidates.
-- [ ] Turbo Drift Circuit and Skyline Runner are described as bounded prototype
+- [x] `docs/project/site-map.md` links resolve.
+- [x] README, marketing, route README, and route-health claims agree.
+- [x] Prototype routes are not presented as public release candidates.
+- [x] Turbo Drift Circuit and Skyline Runner are described as bounded prototype
   evidence, not production games or arbitrary GLB-to-game conversion proof.
-- [ ] Superseded Racing Game Layer Proof and Platformer Game Layer Proof routes
+- [x] Superseded Racing Game Layer Proof and Platformer Game Layer Proof routes
   remain excluded from current public website and release claims.
 
 ## Go-Live Gates
 
-- [ ] Hosted route claims have public HTTPS deployment checks.
-- [ ] `docs/project/release-artifacts.json` references final artifacts when
-  package artifacts are part of the release.
-- [ ] Release notes cite the exact evidence files and commands for the selected
+- [ ] Hosted 1.6 route claims have public HTTPS deployment checks. Complete only
+  after the verified production deployment reaches `https://aura3d.auraone.ai`.
+- [ ] `docs/project/release-artifacts.json` references the final package
+  artifacts from the exact release commit.
+- [x] Release notes cite the exact evidence files and commands for the selected
   track.
-- [ ] Rollback steps are available in `docs/project/release/deployment-rollback.md`.
+- [x] Rollback steps are available in `docs/project/release/deployment-rollback.md`.
