@@ -36,24 +36,31 @@ interface PackageProvenanceReport {
 }
 
 const reportPath = "tests/reports/package-provenance.json";
-const releaseManifestPath = "docs/project/release-artifacts.json";
-const versionedReleasePath = "tests/reports/versioned-release.json";
 const installSmokePath = "tests/reports/package-install-smoke.json";
 
 export function createPackageProvenanceReport(root = process.cwd()): PackageProvenanceReport {
-  const releaseManifest = readJson(join(root, releaseManifestPath));
-  const versionedRelease = readJson(join(root, versionedReleasePath));
   const installSmoke = readJson(join(root, installSmokePath));
   const packageInfo = readJson(join(root, "package.json"));
-  const tarball = findTarball(releaseManifest);
+  const packageName = typeof packageInfo?.name === "string" ? packageInfo.name : null;
+  const packageVersion = typeof packageInfo?.version === "string" ? packageInfo.version : null;
+  const tarballPath = typeof installSmoke?.tarballPath === "string" ? installSmoke.tarballPath : null;
+  const tarballFullPath = tarballPath ? join(root, tarballPath) : null;
+  const reportedSha = typeof installSmoke?.tarballSha256 === "string" ? installSmoke.tarballSha256 : null;
+  const actualSha = tarballFullPath && existsSync(tarballFullPath)
+    ? createHash("sha256").update(readFileSync(tarballFullPath)).digest("hex")
+    : null;
   const violations = [
-    ...(tarball ? [] : ["Release artifact manifest does not contain a tarball artifact."]),
-    ...(versionedRelease?.ok === true ? [] : ["Versioned release verification report is missing or failing."]),
     ...(installSmoke?.ok === true ? [] : ["External package install smoke report is missing or failing."]),
-    ...(typeof packageInfo?.version === "string" ? [] : ["Package version is unreadable."]),
+    ...(installSmoke?.packMode === "fresh-current-checkout-pack" ? [] : ["Package install smoke did not use a fresh current-checkout pack."]),
+    ...(packageName ? [] : ["Package name is unreadable."]),
+    ...(packageVersion ? [] : ["Package version is unreadable."]),
+    ...(installSmoke?.packageName === packageName ? [] : [`Install-smoke package name ${String(installSmoke?.packageName ?? "missing")} does not match ${packageName ?? "unreadable"}.`]),
+    ...(installSmoke?.packageVersion === packageVersion ? [] : [`Install-smoke package version ${String(installSmoke?.packageVersion ?? "missing")} does not match ${packageVersion ?? "unreadable"}.`]),
+    ...(tarballPath && tarballFullPath && existsSync(tarballFullPath) ? [] : ["Fresh install-smoke tarball is missing."]),
+    ...(reportedSha && actualSha === reportedSha ? [] : ["Fresh install-smoke tarball sha256 is missing or does not match the tarball bytes."])
   ];
-  const subjectName = typeof tarball?.pathOrUrl === "string" ? tarball.pathOrUrl : "unknown";
-  const subjectSha = typeof tarball?.sha256 === "string" ? tarball.sha256 : "";
+  const subjectName = tarballPath ?? "unknown";
+  const subjectSha = actualSha ?? "";
   const statement = {
     statementType: "https://slsa.dev/provenance" as const,
     predicateType: "https://slsa.dev/provenance" as const,
@@ -63,22 +70,20 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
     },
     builder: {
       id: "aura3d-local-release-verifier" as const,
-      version: typeof packageInfo?.version === "string" ? packageInfo.version : null
+      version: packageVersion
     },
     materials: [
-      material(releaseManifestPath),
-      material(versionedReleasePath),
       material(installSmokePath),
-      material("package.json")
+      material("package.json"),
+      ...(tarballPath ? [material(tarballPath)] : [])
     ].map((entry) => hashMaterial(root, entry)),
     buildType: "https://aura3d.local/build/package-tarball" as const,
     invocation: {
       configSource: "local-checkout",
       parameters: [
         "pnpm build",
-        "pnpm pack --pack-destination release-artifacts",
-        "pnpm verify:versioned-release",
-        "pnpm verify:package-install-smoke"
+        "pnpm verify:package-install-smoke:fresh",
+        "pnpm verify:package-provenance"
       ]
     }
   };
@@ -117,13 +122,6 @@ function hashMaterial(root: string, entry: { readonly uri: string }): { readonly
       sha256: createHash("sha256").update(readFileSync(path)).digest("hex")
     }
   };
-}
-
-function findTarball(manifest: Record<string, unknown> | null): Record<string, unknown> | null {
-  const artifacts = Array.isArray(manifest?.artifacts) ? manifest.artifacts : [];
-  return artifacts.find((entry): entry is Record<string, unknown> =>
-    typeof entry === "object" && entry !== null && !Array.isArray(entry) && entry.type === "tarball"
-  ) ?? null;
 }
 
 function readJson(path: string): Record<string, unknown> | null {
