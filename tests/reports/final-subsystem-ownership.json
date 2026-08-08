@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T21:58:29.242Z",
+  "generatedAt": "2026-08-08T22:01:23.431Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "03a3f1243b89ee583c49552420fd33e75f8d228c",
+  "sourceCommit": "129432073eb95e386a07cc456e9e3ad5fde210df",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -16,7 +16,7 @@
   ],
   "packageCount": 28,
   "subsystemCount": 37,
-  "sourceFilesClassified": 903,
+  "sourceFilesClassified": 901,
   "packages": [
     {
       "package": "animation",
@@ -443,8 +443,8 @@
       "published": true,
       "disposition": "AURA-MOAT",
       "source": {
-        "lines": 16584,
-        "bytes": 689031
+        "lines": 15823,
+        "bytes": 659537
       },
       "dist": {
         "jsFiles": 66,
@@ -670,7 +670,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 64,
+        "sourceFiles": 62,
         "testMentions": 23,
         "docsMentions": 7
       }
@@ -4568,17 +4568,15 @@
       "owner": "tests/tools",
       "decision": "Remove evidence-only source from the published runtime after consumer proof.",
       "files": [
-        "packages/assets/src/AssetBundleCacheFixtures.ts",
-        "packages/assets/src/ExternalParityGLTFCorpus.ts",
-        "packages/assets/src/SceneAnalysisFixtures.ts"
+        "packages/assets/src/ExternalParityGLTFCorpus.ts"
       ],
-      "lines": 793,
-      "bytes": 31791,
+      "lines": 65,
+      "bytes": 3389,
       "compiledCost": {
-        "compiledFiles": 3,
-        "rawBytes": 25248,
-        "gzipBytes": 6457,
-        "brotliBytes": 5660,
+        "compiledFiles": 1,
+        "rawBytes": 2137,
+        "gzipBytes": 674,
+        "brotliBytes": 584,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -4586,10 +4584,9 @@
         "packages/assets/src/browser-index.ts",
         "packages/assets/src/index.ts",
         "tests/reports/final-subsystem-ownership.json",
-        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tools/external-parity-gltf-corpus-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 6
+      "maintenanceReferenceCount": 5
     },
     {
       "id": "asset-index-general",
@@ -4814,8 +4811,8 @@
         "packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry.ts",
         "packages/assets/src/threejs-example-parity/index.ts"
       ],
-      "lines": 15791,
-      "bytes": 657240,
+      "lines": 15758,
+      "bytes": 656148,
       "compiledCost": {
         "compiledFiles": 61,
         "rawBytes": 539471,
@@ -4907,7 +4904,6 @@
         "examples/product-configurator/main.ts",
         "packages/assets/AGENTS.md",
         "packages/assets/README.md",
-        "packages/assets/src/SceneAnalysisFixtures.ts",
         "packages/assets/tests/assets.test.ts",
         "packages/aura3d-cli/AGENTS.md",
         "packages/aura3d-cli/src/asset-source-ast.ts",
@@ -4991,6 +4987,7 @@
         "tests/performance/asset-load-performance.ts",
         "tests/performance/system-baselines.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/public-example-boundary.test.ts",
         "tests/unit/apps/threejs-parity-product-configurator-policy.test.ts",
@@ -6076,6 +6073,7 @@
         "tests/browser/threejs-parity-transform-controls-harness.ts",
         "tests/browser/threejs-parity-transform-controls.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts",
         "tests/unit/controls/exported-controls-resolution.test.ts",
         "tests/unit/controls/interaction-controls.test.ts",
@@ -6098,7 +6096,7 @@
         "tools/three-compat-migration-readiness/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 67
+      "maintenanceReferenceCount": 68
     },
     {
       "id": "core-general",
@@ -6440,6 +6438,7 @@
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
         "tests/unit/animation-studio/prompt-universality.test.ts",
         "tests/unit/animation-studio/skeleton-overlay-strip.test.ts",
@@ -6502,7 +6501,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 200
+      "maintenanceReferenceCount": 201
     },
     {
       "id": "debug-general",
@@ -6732,9 +6731,11 @@
       },
       "maintenanceReferences": [
         "docs/api/public-api.md",
-        "packages/editor-runtime/src/index.ts"
+        "packages/editor-runtime/src/index.ts",
+        "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json"
       ],
-      "maintenanceReferenceCount": 2
+      "maintenanceReferenceCount": 4
     },
     {
       "id": "editor-general",
@@ -11248,6 +11249,7 @@
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/lazy-physics-world.test.ts",
         "tests/unit/apps/raycast-ccd-lab.test.ts",
@@ -11288,7 +11290,7 @@
         "tools/requirements-trace/index.ts",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 132
+      "maintenanceReferenceCount": 133
     },
     {
       "id": "physics-custom-physical-controllers",
@@ -11332,6 +11334,7 @@
         "tests/browser/runtime-external-parity.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/physics/backend-neutral-contract.test.ts",
         "tests/unit/physics/character-mesh-contact.test.ts",
         "tests/unit/physics/kinematic-fighting-controller.test.ts",
@@ -11344,7 +11347,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 31
+      "maintenanceReferenceCount": 32
     },
     {
       "id": "physics-evidence-descriptors",
@@ -13624,6 +13627,7 @@
         "tests/integration/scripting-scene-ecs.test.ts",
         "tests/reports/developer-friction.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/animation-studio/fidelity-tiering.test.ts",
         "tests/unit/animation-studio/prompt-to-scene.test.ts",
         "tests/unit/animation/humanoid-bone-inference.test.ts",
@@ -13715,7 +13719,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 519
+      "maintenanceReferenceCount": 520
     },
     {
       "id": "scripting-general",
@@ -13913,12 +13917,13 @@
       "maintenanceReferences": [
         "docs/api/public-api.md",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/tools/api-docs.test.ts",
         "tools/foundation-workflows-readiness/index.ts",
         "tools/production-runtime-literal-completion/index.ts",
         "tools/production-runtime-package-surface-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 6
+      "maintenanceReferenceCount": 7
     }
   ],
   "externalCandidates": [

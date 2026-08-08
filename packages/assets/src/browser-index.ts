@@ -10,21 +10,6 @@ export type { AssetLoadOptions, AssetManagerOptions } from "./AssetManager";
 export { AssetRegistry } from "./AssetRegistry";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { createAssetBundleCacheEvidence } from "./AssetBundleCacheFixtures";
-export type {
-  AssetBundleCacheEvidence,
-  AssetBundleCacheInput,
-  AssetBundleManifestEvidenceEntry
-} from "./AssetBundleCacheFixtures";
-export { createGLTFSceneAnalysisEvidence } from "./SceneAnalysisFixtures";
-export type {
-  GLTFObjectDetectionEvidence,
-  GLTFObjectTrackEvidence,
-  GLTFPoseEvidence,
-  GLTFPoseKeypointEvidence,
-  GLTFSceneAnalysisEvidence,
-  GLTFSceneAnalysisOptions
-} from "./SceneAnalysisFixtures";
 export { GLTFLoader, normalizeSkinWeights } from "./GLTFLoader";
 export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
 export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";

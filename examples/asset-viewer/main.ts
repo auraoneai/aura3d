@@ -3,11 +3,8 @@ import {
   GLTFLoader,
   createDracoDecoder,
   createMeshoptDecoder,
-  createAssetBundleCacheEvidence,
-  createGLTFSceneAnalysisEvidence,
   createGLTFRenderResources,
   inspectGLTFAsset,
-  type AssetBundleCacheEvidence,
   type GLTFAsset,
   type GLTFDracoDecodedPrimitive,
   type GLTFDracoDecoder,
@@ -16,8 +13,7 @@ import {
   type GLTFMeshoptDecoder,
   type GLTFMeshoptDecoderModule,
   type GLTFRenderResources,
-  type GLTFAssetInspectionReport,
-  type GLTFSceneAnalysisEvidence
+  type GLTFAssetInspectionReport
 } from "@aura3d/assets";
 import { AnimationMixer, SceneAnimationBridge, type AnimationAction, type LoopMode, type RootMotionSample } from "@aura3d/animation";
 import {
@@ -53,8 +49,6 @@ interface AssetViewerResult {
   readonly externalParityRenderPreset?: ExternalParityRenderPresetEvidence;
   readonly postprocess?: ExternalParityLdrPostprocessSummary;
   readonly environmentResources?: ExternalParityEnvironmentLightingBundle["resources"];
-  readonly assetBundleCache?: AssetBundleCacheEvidence;
-  readonly sceneAnalysis?: GLTFSceneAnalysisEvidence;
   readonly sourceKind?: "inline" | "external" | "custom" | "local";
   readonly url?: string;
   readonly meshCount?: number;
@@ -1446,23 +1440,6 @@ function summarize(
     postprocessEvidence: realScenePostprocessReadback,
     lodEvidence: false
   });
-  const assetBundleCache = createAssetBundleCacheEvidence({
-    assetId: asset.name || firstMesh?.name || "asset-viewer-gltf",
-    url,
-    meshCount: asset.meshes.length,
-    materialCount: asset.materials.length,
-    textureCount: asset.textures.length,
-    animationCount: asset.animations.length,
-    skinCount: asset.skins.length,
-    morphTargetCount: asset.meshes.reduce((sum, mesh) => sum + mesh.morphTargets.length, 0),
-    decodedTextureBytes: inspection.textures.reduce((sum, texture) => sum + (texture.runtime?.fallbackByteLength ?? 0), 0)
-  });
-  const sceneAnalysis = createGLTFSceneAnalysisEvidence({
-    asset,
-    url,
-    minCoverage: 0.25,
-    topCategories: 6
-  });
   return {
     id: "asset-viewer",
     status: "ready",
@@ -1489,19 +1466,6 @@ function summarize(
       environmentReflectionEvidence: true,
       brdfLutValidated: environmentResources.validation.brdfLutTexture,
       postprocessRealSceneReadback: realScenePostprocessReadback,
-      assetBundleManifest: assetBundleCache.productionReadiness.bundleManifest,
-      assetBundleDependencySorting: assetBundleCache.productionReadiness.dependencySorting,
-      assetCacheTelemetry: assetBundleCache.productionReadiness.cacheTelemetry,
-      assetCacheEvictions: assetBundleCache.cache.evictions,
-      sceneAnalysisTelemetry: sceneAnalysis.productionReadiness.semanticSegmentTelemetry,
-      sceneAnalysisSegments: sceneAnalysis.segments.length,
-      sceneAnalysisMaskHash: sceneAnalysis.mask.hash,
-      objectDetectionTelemetry: sceneAnalysis.cvSystem.detectionTelemetry,
-      objectTrackTelemetry: sceneAnalysis.cvSystem.trackingTelemetry,
-      poseTelemetry: sceneAnalysis.cvSystem.poseTelemetry,
-      objectDetections: sceneAnalysis.objectDetections.length,
-      objectTracks: sceneAnalysis.objectTracks.length,
-      poseKeypoints: sceneAnalysis.poses.reduce((sum, pose) => sum + pose.keypoints.length, 0),
       screenshotDiagnostics: true,
       lookControls: true,
       comparisonExport: true
@@ -1509,8 +1473,6 @@ function summarize(
     externalParityRenderPreset,
     postprocess,
     environmentResources,
-    assetBundleCache,
-    sceneAnalysis,
     sourceKind: kind,
     url,
     meshCount: asset.meshes.length,
@@ -1523,7 +1485,7 @@ function summarize(
     diagnostics,
     frameTiming,
     bounds: firstMesh?.geometry.bounds,
-    publicApis: ["AssetManager", "AssetBundleCacheEvidence", "GLTFLoader", "GLTFSceneAnalysisEvidence", "createGLTFRenderResources", "inspectGLTFAsset"],
+    publicApis: ["AssetManager", "GLTFLoader", "createGLTFRenderResources", "inspectGLTFAsset"],
     loaderDiagnostics: asset.loaderDiagnostics,
     inspection,
     warnings: inspection.warnings,

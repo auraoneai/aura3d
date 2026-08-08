@@ -1,0 +1,7 @@
+{
+  "$comment": "Closed R8 queue for ADR 0009's fabricated asset bundle/cache and computer-vision descriptor modules.",
+  "candidates": [
+    "packages/assets/src/AssetBundleCacheFixtures.ts",
+    "packages/assets/src/SceneAnalysisFixtures.ts"
+  ]
+}

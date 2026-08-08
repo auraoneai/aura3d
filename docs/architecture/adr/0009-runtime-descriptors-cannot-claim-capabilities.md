@@ -17,6 +17,13 @@ The first applied case removes `InputActionBindingFixtures`: the real
 `processInputValue` algorithm moves to `InputValueProcessors`, while the sample
 object that asserted action/rebinding parity is deleted.
 
+The asset batch removes `AssetBundleCacheFixtures` and `SceneAnalysisFixtures`.
+The asset viewer now reports only behavior it actually mounts: glTF loading,
+dependency resolution, inspection, render-resource creation, texture decoding,
+material variants, morph targets, animation controls, and captured WebGL pixels.
+It no longer turns deterministic metadata into cache, computer-vision,
+segmentation, detection, tracking, or pose capability claims.
+
 ## Evidence
 
 `tests/reports/public-runtime-descriptor-inventory/report.json` is the complete

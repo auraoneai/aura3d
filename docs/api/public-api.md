@@ -16,7 +16,7 @@ pnpm verify:api-docs
 | `@aura3d/animation` | `1.6.0` | `packages/animation/src/index.ts` | 46 |
 | `@aura3d/apps` | `1.6.0` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `1.6.0` | `packages/asset-index/src/index.ts` | 32 |
-| `@aura3d/assets` | `1.6.0` | `packages/assets/src/index.ts` | 82 |
+| `@aura3d/assets` | `1.6.0` | `packages/assets/src/index.ts` | 78 |
 | `@aura3d/assets/gltf-runtime` | `1.6.0` | `packages/assets/src/gltf-runtime.ts` | 4 |
 | `@aura3d/audio` | `1.6.0` | `packages/audio/src/index.ts` | 31 |
 | `@aura3d/cli` | `1.6.0` | `packages/aura3d-cli/src/index.ts` | 32 |
@@ -181,10 +181,6 @@ export function defaultAdapters(): SourceAdapter[] { return [ createAnimationSta
 ```ts
 export { AssetCache } from "./AssetCache";
 export type { AssetCacheSnapshot } from "./AssetCache";
-export { createAssetBundleCacheEvidence } from "./AssetBundleCacheFixtures";
-export type { AssetBundleCacheEvictionPolicy, AssetBundleCacheEvidence, AssetBundleCacheInput, AssetBundleManifestEvidenceEntry } from "./AssetBundleCacheFixtures";
-export { createGLTFSceneAnalysisEvidence } from "./SceneAnalysisFixtures";
-export type { GLTFComputerVisionBoundingBox, GLTFObjectDetectionEvidence, GLTFObjectTrackEvidence, GLTFPoseEvidence, GLTFPoseKeypointEvidence, GLTFSceneAnalysisEvidence, GLTFSceneAnalysisOptions, GLTFSemanticSegment } from "./SceneAnalysisFixtures";
 export { AssetDependencyGraph } from "./AssetDependencyGraph";
 export { inspectGLTFAsset } from "./AssetInspection";
 export type { GLTFAnimationInspection, GLTFAssetInspectionReport, GLTFDependencyInspection, GLTFMaterialInspection, GLTFMaterialTextureSlotInspection, GLTFMeshInspection, GLTFMorphTargetInspection, GLTFSceneHierarchyNodeInspection, GLTFSkinInspection, GLTFTextureInspection } from "./AssetInspection";

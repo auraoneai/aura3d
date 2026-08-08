@@ -528,6 +528,7 @@
     "ecs-scripting:compatibility": "pnpm exec tsx --tsconfig tsconfig.base.json tools/ecs-scripting-compatibility/index.ts",
     "descriptor-inventory": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-runtime-descriptor-inventory/index.ts",
     "descriptor-input-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/input-action-binding-fixtures.json --report tests/reports/descriptor-input-action-delete-final.json",
+    "descriptor-assets-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/asset-descriptor-fixtures.json --report tests/reports/descriptor-assets-delete-final.json",
     "audit:external-candidate-packages": "node tools/external-candidate-package-audit/index.mjs",
     "check:deletion-safety": "pnpm exec tsx --tsconfig tsconfig.base.json tools/deletion-safety/index.ts",
     "check:package-graph": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-graph/index.ts --dot docs/architecture/package-graph.dot",

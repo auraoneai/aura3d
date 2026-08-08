@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T21:59:11.374Z",
+  "generatedAt": "2026-08-08T22:01:28.953Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -11,13 +11,13 @@
     "*Reference"
   ],
   "summary": {
-    "modules": 36,
-    "lines": 11893,
+    "modules": 34,
+    "lines": 11165,
     "retainedRuntimeOrContracts": 6,
     "deleteAfterR8": 0,
-    "migrateThenDelete": 30,
+    "migrateThenDelete": 28,
     "unclassified": 0,
-    "booleanClaimModulesRejectedAsRuntimeProof": 25
+    "booleanClaimModulesRejectedAsRuntimeProof": 23
   },
   "modules": [
     {
@@ -35,58 +35,6 @@
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "transitioned"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/assets/src/AssetBundleCacheFixtures.ts",
-      "package": "assets",
-      "lines": 290,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/asset-viewer/main.ts",
-        "packages/assets/src/browser-index.ts",
-        "tests/browser/asset-viewer-browser.spec.ts",
-        "tests/unit/assets/asset-bundle-cache-fixtures.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "bundleManifest",
-        "dependencySorting",
-        "memoryBudgetEviction",
-        "cacheTelemetry",
-        "inFlightDeduplicationBoundary"
-      ],
-      "rejectsUnmountedBooleanClaims": true,
-      "disposition": "migrate-consumers-then-delete"
-    },
-    {
-      "path": "packages/assets/src/SceneAnalysisFixtures.ts",
-      "package": "assets",
-      "lines": 438,
-      "classification": "test-or-evidence-fixture",
-      "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [
-        "examples/asset-viewer/main.ts",
-        "packages/assets/src/browser-index.ts",
-        "tests/browser/asset-viewer-browser.spec.ts",
-        "tests/unit/assets/scene-analysis-fixtures.test.ts"
-      ],
-      "zeroNonBarrelSourceConsumers": false,
-      "booleanClaimFields": [
-        "classificationTelemetry",
-        "detectionTelemetry",
-        "trackingTelemetry",
-        "poseTelemetry",
-        "semanticSegmentTelemetry",
-        "deterministicMaskSummary",
-        "deterministicObjectTelemetry",
-        "deterministicTrackingTelemetry",
-        "skeletalPoseTelemetry",
-        "complexityBudgetTelemetry",
-        "browserAssetViewerEvidence"
       ],
       "rejectsUnmountedBooleanClaims": true,
       "disposition": "migrate-consumers-then-delete"

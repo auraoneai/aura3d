@@ -32,7 +32,7 @@ test.describe("asset viewer browser runtime", () => {
     expect(result?.sceneCount).toBe(1);
     expect(result?.renderGeometryCount).toBe(1);
     expect(result?.renderMaterialCount).toBe(1);
-    expect(result?.publicApis).toEqual(["AssetManager", "AssetBundleCacheEvidence", "GLTFLoader", "GLTFSceneAnalysisEvidence", "createGLTFRenderResources", "inspectGLTFAsset"]);
+    expect(result?.publicApis).toEqual(["AssetManager", "GLTFLoader", "createGLTFRenderResources", "inspectGLTFAsset"]);
     expect(result?.inspection?.meshes[0]?.topology).toBe("triangles");
     expect(result?.inspection?.sceneHierarchy.some((node) => node.hasRenderable)).toBe(true);
     expect(result?.warnings).toEqual([
@@ -84,7 +84,7 @@ test.describe("asset viewer browser runtime", () => {
     expect(result?.vertexCount).toBe(3);
     expect(result?.indexCount).toBe(3);
     expect(result?.materialCount).toBe(1);
-    expect(result?.publicApis).toEqual(["AssetManager", "AssetBundleCacheEvidence", "GLTFLoader", "GLTFSceneAnalysisEvidence", "createGLTFRenderResources", "inspectGLTFAsset"]);
+    expect(result?.publicApis).toEqual(["AssetManager", "GLTFLoader", "createGLTFRenderResources", "inspectGLTFAsset"]);
     expect(result?.inspection?.meshes[0]?.name).toBe("external-fixture-triangle");
     expect(result?.inspection?.materials[0]?.name).toBe("external-fixture-material");
     expect(result?.bounds?.min).toEqual([-0.5, -0.5, 0]);
@@ -281,7 +281,7 @@ test.describe("asset viewer browser runtime", () => {
     expect(result?.materialCount).toBeGreaterThanOrEqual(1);
     expect(result?.renderGeometryCount).toBe(1);
     expect(result?.renderMaterialCount).toBeGreaterThanOrEqual(1);
-    expect(result?.publicApis).toEqual(["AssetManager", "AssetBundleCacheEvidence", "GLTFLoader", "GLTFSceneAnalysisEvidence", "createGLTFRenderResources", "inspectGLTFAsset"]);
+    expect(result?.publicApis).toEqual(["AssetManager", "GLTFLoader", "createGLTFRenderResources", "inspectGLTFAsset"]);
 
     const status = await page.getByTestId("asset-viewer-status").textContent();
     expect(status).toContain("local-box.glb");

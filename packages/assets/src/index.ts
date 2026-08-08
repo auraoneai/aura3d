@@ -1,23 +1,5 @@
 export { AssetCache } from "./AssetCache";
 export type { AssetCacheSnapshot } from "./AssetCache";
-export { createAssetBundleCacheEvidence } from "./AssetBundleCacheFixtures";
-export type {
-  AssetBundleCacheEvictionPolicy,
-  AssetBundleCacheEvidence,
-  AssetBundleCacheInput,
-  AssetBundleManifestEvidenceEntry
-} from "./AssetBundleCacheFixtures";
-export { createGLTFSceneAnalysisEvidence } from "./SceneAnalysisFixtures";
-export type {
-  GLTFComputerVisionBoundingBox,
-  GLTFObjectDetectionEvidence,
-  GLTFObjectTrackEvidence,
-  GLTFPoseEvidence,
-  GLTFPoseKeypointEvidence,
-  GLTFSceneAnalysisEvidence,
-  GLTFSceneAnalysisOptions,
-  GLTFSemanticSegment
-} from "./SceneAnalysisFixtures";
 export { AssetDependencyGraph } from "./AssetDependencyGraph";
 export { inspectGLTFAsset } from "./AssetInspection";
 export type {
