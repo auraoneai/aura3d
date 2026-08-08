@@ -139,6 +139,18 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
 }
 
 function resolveWorkspaceSubpathTarget(distRoot: string, packageName: string, subpath: string): string | null {
+  const manifestPath = join(packageRoot, packageName, "package.json");
+  if (existsSync(manifestPath)) {
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as {
+      readonly exports?: Record<string, string | { readonly import?: string }>;
+    };
+    const exported = manifest.exports?.[`./${subpath}`];
+    const importTarget = typeof exported === "string" ? exported : exported?.import;
+    if (importTarget?.startsWith("./dist/")) {
+      const target = join(distRoot, packageName, importTarget.slice("./dist/".length));
+      if (existsSync(target)) return target;
+    }
+  }
   const direct = join(distRoot, packageName, `${subpath}.js`);
   if (existsSync(direct)) return direct;
   const index = join(distRoot, packageName, subpath, "index.js");
