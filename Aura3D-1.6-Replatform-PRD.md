@@ -3276,9 +3276,18 @@ exists", and fixing either failing condition breaks a test that must then be fli
 - [ ] **Two serial full runs** of the complete suite, both green. Not one run, not parallel.
       — **NOT GREEN:** two serial `npx vitest run tests/unit tests/integration --maxWorkers=1`
       runs produced identical results: **3,348 of 3,349 passing** across 448 files, with only
-      `showcase-route-gates.test.ts` failing because launch candidates still lack the required R5
-      human approval. Reproducibility is proven; the literal all-green gate remains blocked and
-      cannot be checked before that approval exists.
+      `showcase-route-gates.test.ts` failing because four release candidates still lack the required
+      independent human approval: `showcase-product-configurator`, `showcase-smart-city-control`,
+      `showcase-cinematic-architecture`, and `showcase-digital-twin-ops`. The current review packet
+      was regenerated from committed producer `0eddc4ed3720d4e10f629d1b7960b120623fd58a` after the
+      targeted settled-screenshot test passed **1/1** and the targeted interaction audit passed
+      **4/4**. `showcase-visual-review.json` validates with `fileOk: true`, all seven route records
+      have zero structural failures, and it remains an explicitly rejected baseline
+      (`reviewer: pending`, `overallVerdict: needs-work`). `build-and-check.mjs` consequently reports
+      **0/4 release candidates passed**, with human approval as the sole visual-review failure. The
+      three R5 prototype routes remain `needs-work`/`development-review` with their named visual
+      blockers intact. Reproducibility is proven; the literal all-green gate remains blocked and
+      cannot be checked before the four release-candidate approvals exist.
 - [x] Generated artifacts written to isolated temporary directories, then atomically
       promoted into `tests/reports/`. — the WS-0.2 R8 tool's own scratch handling was the last
       gap and is fixed: `mkdtempSync` does not create parents, so it threw at module scope and

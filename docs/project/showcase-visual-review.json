@@ -1,19 +1,19 @@
 {
   "schema": "aura3d-showcase-visual-review/2.0",
   "reviewer": {
-    "id": "gchahal1982@procure-net.com",
-    "name": "Gurbaksh Chahal",
-    "kind": "human"
+    "id": "pending-user-review",
+    "name": "Pending independent human review",
+    "kind": "pending"
   },
-  "reviewedAt": "2026-08-04T06:48:55.387Z",
-  "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
-  "overallVerdict": "pass",
-  "summary": "Independent human review of the hash-bound desktop and mobile screenshots for the four release-ready candidate routes; all four approved for public release at the recorded hashes. The three prototype-blocked game routes (Blockfall Reactor, Skyline Runner, Turbo Drift Circuit) were NOT approved: they remain needs-work with their retained blocking issues, because their gameTemplateStatus.requiredBeforePublic lists work beyond approval that is still open. Approval covers route presentation at these exact screenshot hashes only. It is not a rendering-quality or Three.js-parity claim; same-asset product render parity remains unproven.",
+  "reviewedAt": "2026-08-08T09:17:38.896Z",
+  "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
+  "overallVerdict": "needs-work",
+  "summary": "Hash-refreshed rejected baseline. These retained screenshots record the current machine-inspected state of each route for the active visual rebuild. No route has independent human approval, and this document cannot grant it.",
   "routes": [
     {
       "id": "showcase-product-configurator",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
       "sourceHash": "sha256-da4975e8593cc2a74177f7b013c4af75975efb54fe333c10af3bfc5546a8adaf",
       "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
       "screenshots": [
@@ -24,16 +24,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc"
+          "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
+          "perceptualSignature": "perceptual-8x8-5bit-20588cd18349ca59349ae6ca2f5a6bd9b7dc3cd2b17ce975b680d6932c381c30"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-3fa58a603212b8516222b4ac814b17f65c83b2e8c121a381e8f49a15de25e677"
+          "sha256": "sha256-3fa58a603212b8516222b4ac814b17f65c83b2e8c121a381e8f49a15de25e677",
+          "perceptualSignature": "perceptual-8x8-5bit-fa266bbc45768e7f4cacf2b2cb9ee4d123dd07a2700c5a03b1f6efc69e63eff7"
         },
         {
           "kind": "gameplay",
@@ -42,18 +44,20 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-582ff799f0a4500608dd92ff07fed09081ea67c5705f8c49d9774bbb71010095"
+          "sha256": "sha256-632125d4bbf50e38fe38fed1074458449fdc6a299db3f0ed74856a24bdbe963a",
+          "perceptualSignature": "perceptual-8x8-5bit-d3a5e7d2773543f778b150a0c418b7307a7c37c37a6c929c323e2c08334b81de"
         }
       ],
-      "verdict": "pass",
-      "blockingIssues": [],
-      "approvalScope": "public-release",
-      "notes": "Approved by the project owner against the recorded desktop and mobile screenshot hashes. Route-primary probe passes; staticGate and classification pass."
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
     },
     {
       "id": "showcase-smart-city-control",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
       "sourceHash": "sha256-2ff1662f7e1a3b1451113073b2cb96981935efe14997f118ec2f2855b807d5c9",
       "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
       "screenshots": [
@@ -64,16 +68,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-846ae861217933525176d3a686fe2e61ad4b9f48cdaced572a02ff952ca5a737"
+          "sha256": "sha256-1875933eb31ca7c5734bc002f902707f65132ff9ee8772e4630305cff805d705",
+          "perceptualSignature": "perceptual-8x8-5bit-9386ee816fa5a6fdfdce2f77d86b4a8e9701bb6c2f3a5b2aee8928bfc4aff6e2"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-d096fc0cbdd13d6a1ea88cd1c850bababd659eba6645a2c862acc38b621f9d58"
+          "sha256": "sha256-ce7a4b707017e9066b00cf484c9fa192eeb64d0d8598d1cfcb4369695c5af7bc",
+          "perceptualSignature": "perceptual-8x8-5bit-a44ba0e7413064b2d86c300de9f174fc3c34a4b6b596a81896d1fed7069dbf98"
         },
         {
           "kind": "gameplay",
@@ -82,19 +88,21 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-5e844a30d9054c663b08c767abac1598c9672c17ca282d5ec55793da13ddd5e2"
+          "sha256": "sha256-386d263f17bb48e241a4960a3c769f64c904da4cd1197dd523be3e68bbb2e54e",
+          "perceptualSignature": "perceptual-8x8-5bit-3aabc13d2d0c3b5a7a8c88ed52b6eb74142989820ab4f756d2ea435cc4cee243"
         }
       ],
-      "verdict": "pass",
-      "blockingIssues": [],
-      "approvalScope": "public-release",
-      "notes": "Approved by the project owner against the recorded desktop and mobile screenshot hashes. Route-primary probe passes; staticGate and classification pass."
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
     },
     {
       "id": "showcase-cinematic-architecture",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
-      "sourceHash": "sha256-319e51ee52a80144054ae9648937bac009fcb77f68516116c1212ee0c80e1695",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
+      "sourceHash": "sha256-4acb2355097d4105be4a4865232e57dad88443989f5dbf91df904fd91f1f85af",
       "routeHealthHash": "sha256-8f3852397e93e3bc0f62986b14ce2174bd1d3a91076268b2ee5afca0a317093a",
       "screenshots": [
         {
@@ -104,16 +112,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-7d1700ee84ebeac7708fd40e2d92c4db19f8bcd4df087274ceb6fc59a7e74d82"
+          "sha256": "sha256-05748c63e1f3631bdee1a0c32c4ac2c20e31d1faa83b67506f70cc2b30fe1425",
+          "perceptualSignature": "perceptual-8x8-5bit-ef3c774ff649772205a1876969b5f1dbde38c230bf026242f7e08f712672e382"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-cbb5378359a9176d4e7b1ce3ed8b94fb354ba0d3c3d2c5f88f3d10d1869b2580"
+          "sha256": "sha256-cbb5378359a9176d4e7b1ce3ed8b94fb354ba0d3c3d2c5f88f3d10d1869b2580",
+          "perceptualSignature": "perceptual-8x8-5bit-3fad279120eaa86b44ec0d4e39f74689cc13a2033a035cd7cee466a449498176"
         },
         {
           "kind": "gameplay",
@@ -122,18 +132,20 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-00178d57261f606b77f07d3eb39fb3424fda32c689017db2f55032a9ed3e71d3"
+          "sha256": "sha256-00178d57261f606b77f07d3eb39fb3424fda32c689017db2f55032a9ed3e71d3",
+          "perceptualSignature": "perceptual-8x8-5bit-ef3c774ff649772205a1876969b5f1dbde38c230bf026242f7e08f712672e382"
         }
       ],
-      "verdict": "pass",
-      "blockingIssues": [],
-      "approvalScope": "public-release",
-      "notes": "Approved by the project owner against the recorded desktop and mobile screenshot hashes. Route-primary probe passes; staticGate and classification pass."
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
     },
     {
       "id": "showcase-digital-twin-ops",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
       "sourceHash": "sha256-11a9ef69a33cd8eeb5bd608855916f92857967b3a43776e2b20d5cf9b3a09fe7",
       "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
       "screenshots": [
@@ -144,16 +156,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-769b727eef76db582875ae39e395830f5bda7eca524d3c9f22d71462df3f6b1f"
+          "sha256": "sha256-5030469686d52eabb798e7b595adf31dc7d6083296b0be7be35c35d5e1f9070a",
+          "perceptualSignature": "perceptual-8x8-5bit-a789826e9a1e08785538b34225c0bbf46d4cec730892dbc81087033c76358ef9"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-2590c496ff500445eaabbdd4194b72a7bc94f62d6c3fc83ee14c6c92aa1167c9"
+          "sha256": "sha256-7f69b2a0f3ecd59ece139a9a1c577bf7f56af16e3251949515d571be48f7d51b",
+          "perceptualSignature": "perceptual-8x8-5bit-bd10a865221842673adcc16881113b54f3f8d4c8d2337545c61631a5c82e9193"
         },
         {
           "kind": "gameplay",
@@ -162,19 +176,21 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-bb4b0308a3fe5b1f4b69607eecd6d8172ec5abd70cebaf8df6992d5b63ff50e3"
+          "sha256": "sha256-87ec558fc098d8d7497aa0770d63496d7a754136e68ad7bdc53df21d96db36ce",
+          "perceptualSignature": "perceptual-8x8-5bit-a789826e9a1e08785538b34225c0bbf46d4cec730892dbc81087033c76358ef9"
         }
       ],
-      "verdict": "pass",
-      "blockingIssues": [],
-      "approvalScope": "public-release",
-      "notes": "Approved by the project owner against the recorded desktop and mobile screenshot hashes. Route-primary probe passes; staticGate and classification pass."
+      "verdict": "needs-work",
+      "blockingIssues": [
+        "review:independent-human-approval-pending"
+      ],
+      "approvalScope": "development-review"
     },
     {
       "id": "showcase-blockfall-reactor",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
-      "sourceHash": "sha256-d5d2085528352320f82a46dc98df041ef3813c9607338fbd8b16c0414bc559d2",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
+      "sourceHash": "sha256-8801a40a17033cd3ddae00d98f151b19df088200b2789c8ab8e3cbfe8cb63eda",
       "routeHealthHash": "sha256-e9a7de51c4406f4e7e7961b4f60a5615e4648901b10eabd5df8acb66c82051ca",
       "screenshots": [
         {
@@ -184,16 +200,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-0042bdb49eecfc0a7cc24e9f44b45f65ea569d8c52cbb45be4e26b44ed77e48d"
+          "sha256": "sha256-d731f3efb6342ac5fd4eddeb7c8b554518dba78343cc24c9c47ed0c7d207e806",
+          "perceptualSignature": "perceptual-8x8-5bit-21cbbd4363d6bf766670d87ed5e687bc0a8f49cafb993ff4ab659bb43c4669fb"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-0788c5c7f0426af54c63cedfba5b8312eaa2c0c9394e5246f855c24283f49d5d"
+          "sha256": "sha256-0788c5c7f0426af54c63cedfba5b8312eaa2c0c9394e5246f855c24283f49d5d",
+          "perceptualSignature": "perceptual-8x8-5bit-054368830e8390856b7918e84071bd6f7249efda543381ad6f06b288d1e3d82d"
         },
         {
           "kind": "gameplay",
@@ -202,7 +220,8 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-6520887644f52faab2fc6a0546401d4a53c6c03aec8f2589766b8919b9931095"
+          "sha256": "sha256-4c6ce9fd594128092a4d51565acd8cb7a1de157428c719e3799943aeae932b39",
+          "perceptualSignature": "perceptual-8x8-5bit-32059861b3834a7f7250a3dc6f96b24b0cd6ec3e3b9484910dbeb9e24322afe5"
         }
       ],
       "verdict": "needs-work",
@@ -215,10 +234,10 @@
     },
     {
       "id": "showcase-skyline-runner",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
-      "sourceHash": "sha256-d5da4dcabb573761f40a45cec382f33ffaad003dd2acbd5204f13b02e43aca3a",
-      "routeHealthHash": "sha256-f946856968e39a84db5df664adf314c66fd2b143725b7eb5a24862afd11c74c6",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
+      "sourceHash": "sha256-bb31d94e53682f7dceef1472ecb37afd6bfb88ba9380273e7e45232cd1003125",
+      "routeHealthHash": "sha256-dbe6dbde2fd714689213a505522f7f0695d15b57e4e41e2e2e013c8cb39c260a",
       "screenshots": [
         {
           "kind": "desktop",
@@ -227,16 +246,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-067d19a7f4d4a7f291f15765bfea99b22f9744cf9b63d0924c7aa720d621aeb8"
+          "sha256": "sha256-b151996e17c05937d54da65dbac87bafaa717483e9dee3a0983310a1b2e7e9eb",
+          "perceptualSignature": "perceptual-8x8-5bit-598795cdbe3f2c5f329234f50dc79644d5c5716fc495d3a5317dcab7b16901c8"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-a4a5ad7441d49f21b799a55e862f87ff86e2d7b1d35ac3c4c1c657eeff2c7ca7"
+          "sha256": "sha256-35eae0f4b3aa253b0c7a0fd294cd779e7e99f83527fcffc21298757f3ddf7467",
+          "perceptualSignature": "perceptual-8x8-5bit-2baa5616c94f1d816a3bb42d6fec35ee03906daa3708c090db2c1dabfe2049a4"
         },
         {
           "kind": "gameplay",
@@ -245,7 +266,8 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-40f1cb6966d8aa7f4f6f259650e73a5e332b2a7732a8afd758caba7439379c26"
+          "sha256": "sha256-61827bf9f7c9b3d36f7a7ff31768aa25f5cbdc462187e610650adc29b295ad7d",
+          "perceptualSignature": "perceptual-8x8-5bit-00eef3f17b4dc52d083f4727b03121ab6ab325a7e02cf1c4a9810de7c865190a"
         }
       ],
       "verdict": "needs-work",
@@ -258,10 +280,10 @@
     },
     {
       "id": "showcase-turbo-drift-circuit",
-      "reviewedAt": "2026-08-04T06:48:55.387Z",
-      "sourceCommit": "7cb1fa510c8d5d27cca60bcb8f7bcd901251065a",
-      "sourceHash": "sha256-ee60e8da104a2b6a67c60f2a7a35a539328259bdd4e6d0af5bd01ce1923a6252",
-      "routeHealthHash": "sha256-56d46d8c37b0dc1cc888525b94dc7f95882b9689273bec221cb16d082f232788",
+      "reviewedAt": "2026-08-08T09:17:38.896Z",
+      "sourceCommit": "0eddc4ed3720d4e10f629d1b7960b120623fd58a",
+      "sourceHash": "sha256-676ba9404bb78cb9ca590b054554d1af134138daff33fcae1a08ca28c378ac88",
+      "routeHealthHash": "sha256-c3463e67c9736a80645c4f51f71b74c6d7ac02e375b545c0454f6d7ca1488356",
       "screenshots": [
         {
           "kind": "desktop",
@@ -270,16 +292,18 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-d93950912b37c3d0b79ed6871b7d61ca4d848dd753cdd408b8f6ec7b19a6c713"
+          "sha256": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f",
+          "perceptualSignature": "perceptual-8x8-5bit-36629d36c7bdde90f859bffd0928613e5bb7d698270ee71c2bf952ec5e5ded88"
         },
         {
           "kind": "mobile",
           "path": "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
           "viewport": {
             "width": 390,
-            "height": 844
+            "height": 740
           },
-          "sha256": "sha256-37b92941a440a007b93edf2ffb4046d93f24186019a00254524d488bccffc881"
+          "sha256": "sha256-bbe2fb75900e95db648903cd8d0da6fef47fcc7dd970de23db06b7037178ef82",
+          "perceptualSignature": "perceptual-8x8-5bit-1603e984b505a068d4383bad5967506302860914a999e5e663905e6ac26bd70e"
         },
         {
           "kind": "gameplay",
@@ -288,7 +312,8 @@
             "width": 1440,
             "height": 900
           },
-          "sha256": "sha256-9d4f58303e1fdafa7f44bab1e46a7431363eaa6b92d86a56b9598b4347ecb191"
+          "sha256": "sha256-2e8fe4fd57605bab790116f6efc8f990d30f309bb34785ab04d52129762cd283",
+          "perceptualSignature": "perceptual-8x8-5bit-b25c14ddf26f14d62ab4a1a9c107f184845ddf8c9332e450ba73939cd88bddba"
         }
       ],
       "verdict": "needs-work",
