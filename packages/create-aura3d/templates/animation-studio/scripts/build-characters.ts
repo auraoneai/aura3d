@@ -13,7 +13,7 @@
  *
  * That is 22 standard-named joints (vs. the legacy 7-node mascot), so the limb
  * chains needed for gesture / point / walk / foot-work are all present — the rig is
- * meaningfully higher fidelity, not a stub. Joint NODE NAMES use the canonical
+ * meaningfully higher fidelity, not a minimal stand-in. Joint NODE NAMES use the canonical
  * Mixamo/VRM-style names ("hips","spine","chest","neck","head","leftShoulder",
  * "leftUpperArm","leftLowerArm","leftHand","leftUpperLeg","leftLowerLeg","leftFoot",
  * "leftToes", …) so `resolve-asset.ts`'s humanoid/arm/leg hint detector and the

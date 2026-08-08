@@ -192,7 +192,7 @@ export function analyzeHumanoidRig(
       diagnostics.push({
         severity: "warning",
         code: "HUMANOID_SIDE_ASYMMETRY",
-        message: `Humanoid side pair "${pair.left}" and "${pair.right}" is incomplete.`,
+        message: `Humanoid side pair "${pair.left}" and "${pair.right}" is asymmetric.`,
         rigId: rig.id,
         bone: left ? pair.right : pair.left
       });

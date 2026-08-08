@@ -61,18 +61,16 @@ describe("§B.2 — developer friction is complete for both engines", () => {
 });
 
 describe("§B.3 — negative complexity", () => {
-  it("FAILS on both conditions: source lines not lower, R12 not zero", () => {
+  it("PASSES both conditions: source lines do not exceed baseline and R12 is zero", () => {
     const report = json<{
       readonly baseline: { readonly packageSourceLines: number };
       readonly current: { readonly packageSourceLines: number; readonly duplicateOwnershipViolations: number };
     }>("tests/reports/negative-complexity.json");
-    // Not lower — and the growth is recorded reasoning, not code. See §B.3 for the split.
     expect(
       report.current.packageSourceLines,
-      "source lines are now at or below baseline — flip this and update §B.3"
-    ).toBeGreaterThan(report.baseline.packageSourceLines);
-    // 2 of 5, both blocked on ADR 0002 rather than on effort.
-    expect(report.current.duplicateOwnershipViolations, "R12 reached 0 — flip this and update §B.3").toBe(2);
+      "package source lines exceed the frozen 1.6 baseline"
+    ).toBeLessThanOrEqual(report.baseline.packageSourceLines);
+    expect(report.current.duplicateOwnershipViolations, "R12 ownership violations regressed").toBe(0);
   });
 });
 

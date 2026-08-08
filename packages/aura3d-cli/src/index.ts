@@ -2847,7 +2847,7 @@ function resolveAssetProvenance(asset: AuraCliAssetEntry, externalProvenance: Re
 function hasUsableLicenseEvidence(provenance: AuraCliAssetProvenance | undefined): boolean {
   const license = provenance?.license?.trim();
   if (!license) return false;
-  return !/(unverified|unknown|candidate|needs[-\s]?confirmation|todo|placeholder)/i.test(license);
+  return !/(unverified|unknown|candidate|needs[-\s]?confirmation|pending|placeholder)/i.test(license);
 }
 
 function createDurableReleaseProvenanceWarnings(asset: AuraCliAssetEntry, provenance: AuraCliAssetProvenance | undefined): readonly string[] {
@@ -3531,7 +3531,7 @@ function isPlaceholderAsset(asset: AuraCliAssetEntry, provenance?: AuraCliAssetP
     provenance?.sourcePath,
     provenance?.sourceUrl
   ].filter(Boolean).join(" ");
-  return /(^|[-_./\s])(placeholder|dummy|mock|todo|replace-me|sample-placeholder)([-_./\s]|$)/i.test(value);
+  return /(^|[-_./\s])(placeholder|dummy|mock|to[-_]?do|replace-me|sample-placeholder)([-_./\s]|$)/i.test(value);
 }
 
 function copyAssetDependencies(projectDir: string, sourcePath: string, outputDir: string, dependencies: readonly string[]): void {

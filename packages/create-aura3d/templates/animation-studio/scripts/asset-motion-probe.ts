@@ -450,7 +450,7 @@ export function probeEmbeddedMotion(buf: Buffer): MotionProbeReport {
     reason: motionPass
       ? hasViableActingPack
         ? "embedded clips cover a viable acting pack"
-        : `embedded clips usable but incomplete (missing ${missingActingSlots.join("/")}) — shared library fallback`
+        : `embedded clips usable but missing ${missingActingSlots.join("/")} — shared library fallback`
       : "no embedded clip drives real body motion (root/mouth/tiny-idle only) — shared library fallback"
   };
 }

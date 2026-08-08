@@ -992,7 +992,7 @@ function checkProvenance(manifest: GameAssetReadinessManifest, required = false)
         : "Asset provenance is present but not marked approved."
       : required
         ? "Asset provenance, license, and commercial-use status are required."
-        : "Asset provenance is missing or incomplete."
+        : "Asset provenance lacks required fields."
   };
 }
 

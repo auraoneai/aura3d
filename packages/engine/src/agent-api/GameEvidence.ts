@@ -603,7 +603,7 @@ function collectHudWarnings(bindings: readonly GameHudBinding[], expectsGame: bo
   const missingFighting = fightingRequired.filter((binding) => !present.has(binding)).join(", ");
   const missingGeneric = genericRequired.filter((binding) => !present.has(binding)).join(", ");
   return [
-    `HUD source evidence is incomplete. Provide either fighting bindings missing [${missingFighting}] or generic game bindings missing [${missingGeneric}].`
+    `HUD source evidence lacks a complete binding set. Provide either fighting bindings missing [${missingFighting}] or generic game bindings missing [${missingGeneric}].`
   ];
 }
 

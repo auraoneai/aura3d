@@ -24,8 +24,12 @@ describe("environment ambient contribution", () => {
 
     expect(source).toContain(additive);
     expect(source).not.toContain(replaced);
-    // Every lit shader variant must carry the fix, not just the first one.
-    expect(source.split(additive).length - 1).toBeGreaterThanOrEqual(6);
+    // Every lit shader variant must carry the fix, not just the first one. Tie the
+    // assertion to the actual variant declarations so removing or adding a shader
+    // cannot silently make a copied numeric threshold stale.
+    const litShaderVariants = source.split("vec3 ambientEnvironment =").length - 1;
+    expect(litShaderVariants).toBeGreaterThan(0);
+    expect(source.split(additive).length - 1).toBe(litShaderVariants);
   });
 
   it("keeps the packaged direct-PBR shader in step with the fixed library source", () => {

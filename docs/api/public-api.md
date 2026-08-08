@@ -29,7 +29,7 @@ pnpm verify:api-docs
 | `@aura3d/editor-runtime` | `1.5.2` | `packages/editor-runtime/src/index.ts` | 82 |
 | `@aura3d/engine` | `1.5.2` | `packages/engine/src/index.ts` | 39 |
 | `@aura3d/environments` | `1.5.2` | `packages/environments/src/index.ts` | 10 |
-| `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 44 |
+| `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.5.2` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.5.2` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 32 |
@@ -713,6 +713,8 @@ export { GestureRecognizer } from "./GestureRecognizer";
 export type { Gesture } from "./GestureRecognizer";
 export { InputSnapshot } from "./InputSnapshot";
 export type { ButtonState, GamepadSnapshot, InputSnapshotOptions, PointerSnapshot, PointerTouch } from "./InputSnapshot";
+export { processInputValue, sampleInputActionBindingFixture } from "./InputActionBindingFixtures";
+export type { InputActionBindingFixture, InputValueProcessor } from "./InputActionBindingFixtures";
 export { InputPlayback, InputRecorder, parseInputRecording } from "./InputReplay";
 export type { InputPlaybackOptions, InputPlaybackSnapshot, InputRecording, InputRecordingMetadata, InputReplayEvent, InputReplayEventType } from "./InputReplay";
 export { InputSystem } from "./InputSystem";

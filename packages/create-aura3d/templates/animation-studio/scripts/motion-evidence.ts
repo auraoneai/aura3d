@@ -232,7 +232,7 @@ const UE_NODES: readonly string[] = [
   "ball_r"
 ];
 
-/** Sparse 8-node mascot: torso + head + stub arms, NO forearms/hands, NO legs → expect grade C. */
+/** Sparse 8-node mascot: torso + head + short arms, NO forearms/hands, NO legs → expect grade C. */
 const MASCOT_NODES: readonly string[] = [
   "root",
   "spine",

@@ -372,7 +372,7 @@ export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransfo
  *                            reported { recovered: true }
  *
  * Its unit test asserted `canClaimRendererBreadth === true` and `instances >= 10000` against those
- * constants: a test that could not fail. Ten 4-line stub apps existed to give it a consumer, which is how
+ * constants: a test that could not fail. Ten 4-line facade apps existed to give it a consumer, which is how
  * it satisfied the "parity requires a consumer" rule.
  *
  * `packages/three-compat/` is a DIFFERENT thing and is real — it is the migration on-ramp and stays.

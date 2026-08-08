@@ -8,6 +8,8 @@ export { GestureRecognizer } from "./GestureRecognizer";
 export type { Gesture } from "./GestureRecognizer";
 export { InputSnapshot } from "./InputSnapshot";
 export type { ButtonState, GamepadSnapshot, InputSnapshotOptions, PointerSnapshot, PointerTouch } from "./InputSnapshot";
+export { processInputValue, sampleInputActionBindingFixture } from "./InputActionBindingFixtures";
+export type { InputActionBindingFixture, InputValueProcessor } from "./InputActionBindingFixtures";
 export { InputPlayback, InputRecorder, parseInputRecording } from "./InputReplay";
 export type { InputPlaybackOptions, InputPlaybackSnapshot, InputRecording, InputRecordingMetadata, InputReplayEvent, InputReplayEventType } from "./InputReplay";
 export { InputSystem } from "./InputSystem";

@@ -149,7 +149,7 @@ function packageNameFor(name: string): string {
  * bundle: the CLI is a binary, `create-aura3d` is an `npx` scaffolder, `asset-index` is a
  * standalone service package, and `react` ships its own React-specific entrypoint.
  */
-const packagesWithoutRootSubpathExport = ["create-aura3d", "aura3d-cli", "asset-index", "react"] as const;
+const packagesWithoutRootSubpathExport = ["create-aura3d", "aura3d-cli", "asset-index", "react", "three-compat"] as const;
 
 function hasPath(root: string, relativePath: string): boolean {
   return existsSync(join(root, relativePath));

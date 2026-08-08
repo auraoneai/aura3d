@@ -28,7 +28,19 @@ interface ApprovedSubpathExport {
 
 const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSubpathExport>>> = {
   "@aura3d/assets": {
-    "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" }
+    "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" },
+    "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" }
+  },
+  "@aura3d/physics": {
+    "./solverless": { types: "./dist/solverless.d.ts", import: "./dist/solverless.js" },
+    "./world": { types: "./dist/world.d.ts", import: "./dist/world.js" }
+  },
+  "@aura3d/rendering": {
+    "./lean-runtime": { types: "./dist/lean-runtime.d.ts", import: "./dist/lean-runtime.js" },
+    "./webgpu": { types: "./dist/webgpu.d.ts", import: "./dist/webgpu.js" }
+  },
+  "@aura3d/scene": {
+    "./math": { types: "./dist/MathTypes.d.ts", import: "./dist/MathTypes.js" }
   },
   "@aura3d/engine-runtime": {
     "./advanced-runtime": { types: "./dist/advanced-runtime/index.d.ts", import: "./dist/advanced-runtime/index.js" },
@@ -36,8 +48,7 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
   },
   "@aura3d/three-compat": {
     "./controls": { types: "./dist/controls/index.d.ts", import: "./dist/controls/index.js" },
-    "./loaders": { types: "./dist/loaders/index.d.ts", import: "./dist/loaders/index.js" },
-    "./postprocessing": { types: "./dist/postprocessing/index.d.ts", import: "./dist/postprocessing/index.js" }
+    "./loaders": { types: "./dist/loaders/index.d.ts", import: "./dist/loaders/index.js" }
   }
 };
 

@@ -11,7 +11,7 @@ import {
  *   legs + feet. Safe for the full performance vocabulary (gesture, point, walk/run, foot work).
  * - **B** — partial humanoid: enough of the body to act (spine/head + both arms or both legs) but
  *   missing limbs/extremities; the director should avoid the motions that need the missing chain.
- * - **C** — mascot / sparse (~8 mappable nodes): a torso + head + stub arms; head/torso acting only,
+ * - **C** — mascot / sparse (~8 mappable nodes): a torso + head + short arms; head/torso acting only,
  *   no real limb motion.
  * - **D** — not suitable for body acting: no usable skeleton (root/props only).
  */
@@ -88,8 +88,8 @@ export function gradeRig(rig: HumanoidRigDefinition): RigQualityReport {
   const usableLegs = hasLegs && hasBothLowerLegs;
   if ((hasSpine || hasHead) && (usableArms || usableLegs) && mappedBoneCount >= 10) {
     reasons.push("partial humanoid: body acting possible but a limb chain or extremities are missing (B)");
-    if (!fullUpperBody) reasons.push("incomplete upper body (forearms/hands/neck)");
-    if (!fullLowerBody) reasons.push("incomplete lower body (lower legs/feet)");
+    if (!fullUpperBody) reasons.push("upper body lacks forearms/hands/neck");
+    if (!fullLowerBody) reasons.push("lower body lacks lower legs/feet");
     return { grade: "B", reasons, hasLegs, hasKnees, hasAnkles, hasFeet, mappedBoneCount };
   }
 

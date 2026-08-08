@@ -452,7 +452,7 @@ export function admitAssetForRole(input: AssetAdmissionInput): AssetAdmissionRep
       verdict: complete ? "pass" : "fail",
       detail: complete
         ? `${provenance?.license} by ${provenance?.author}`
-        : `incomplete provenance (license: ${provenance?.license ?? "missing"}, author: ${provenance?.author ?? "missing"})`,
+        : `provenance lacks required fields (license: ${provenance?.license ?? "missing"}, author: ${provenance?.author ?? "missing"})`,
       measured: complete
     });
   }

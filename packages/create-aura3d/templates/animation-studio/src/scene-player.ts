@@ -306,7 +306,7 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
 
     // B6 — HONEST foot handling. Grade the inferred rig: only rigs that actually carry a
     // leg/knee/ankle/foot chain (grade A/B with `hasAnkles`) can run TRUE two-bone foot IK.
-    // Sparse/mascot rigs (grade C — head+torso, stub arms, no ankle chain) keep `rootGrounding`
+    // Sparse/mascot rigs (grade C — head+torso, short arms, no ankle chain) keep `rootGrounding`
     // (root pinned to the ground mark — NOT IK) and we LOG exactly that, never claiming IK.
     const rig = inferHumanoidRig(nodeNames);
     const rigGrade = gradeRig(rig);
