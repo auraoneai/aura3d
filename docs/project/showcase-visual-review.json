@@ -5,14 +5,14 @@
     "name": "Pending independent human review",
     "kind": "pending"
   },
-  "reviewedAt": "2026-08-08T16:23:05.364Z",
+  "reviewedAt": "2026-08-08T16:37:16.282Z",
   "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
   "overallVerdict": "needs-work",
   "summary": "Hash-refreshed rejected baseline. These retained screenshots record the current machine-inspected state of each route for the active visual rebuild. No route has independent human approval, and this document cannot grant it.",
   "routes": [
     {
       "id": "showcase-product-configurator",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-da4975e8593cc2a74177f7b013c4af75975efb54fe333c10af3bfc5546a8adaf",
       "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
@@ -56,7 +56,7 @@
     },
     {
       "id": "showcase-smart-city-control",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-2ff1662f7e1a3b1451113073b2cb96981935efe14997f118ec2f2855b807d5c9",
       "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
@@ -100,7 +100,7 @@
     },
     {
       "id": "showcase-cinematic-architecture",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-4acb2355097d4105be4a4865232e57dad88443989f5dbf91df904fd91f1f85af",
       "routeHealthHash": "sha256-8f3852397e93e3bc0f62986b14ce2174bd1d3a91076268b2ee5afca0a317093a",
@@ -144,7 +144,7 @@
     },
     {
       "id": "showcase-digital-twin-ops",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-11a9ef69a33cd8eeb5bd608855916f92857967b3a43776e2b20d5cf9b3a09fe7",
       "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
@@ -188,7 +188,7 @@
     },
     {
       "id": "showcase-blockfall-reactor",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-8801a40a17033cd3ddae00d98f151b19df088200b2789c8ab8e3cbfe8cb63eda",
       "routeHealthHash": "sha256-e9a7de51c4406f4e7e7961b4f60a5615e4648901b10eabd5df8acb66c82051ca",
@@ -234,7 +234,7 @@
     },
     {
       "id": "showcase-skyline-runner",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-bb31d94e53682f7dceef1472ecb37afd6bfb88ba9380273e7e45232cd1003125",
       "routeHealthHash": "sha256-dbe6dbde2fd714689213a505522f7f0695d15b57e4e41e2e2e013c8cb39c260a",
@@ -280,7 +280,7 @@
     },
     {
       "id": "showcase-turbo-drift-circuit",
-      "reviewedAt": "2026-08-08T16:23:05.364Z",
+      "reviewedAt": "2026-08-08T16:37:16.282Z",
       "sourceCommit": "f83d6edcc334fb6a8a6b64d0fc0a30b65c03e338",
       "sourceHash": "sha256-676ba9404bb78cb9ca590b054554d1af134138daff33fcae1a08ca28c378ac88",
       "routeHealthHash": "sha256-c3463e67c9736a80645c4f51f71b74c6d7ac02e375b545c0454f6d7ca1488356",

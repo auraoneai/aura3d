@@ -11800,7 +11800,7 @@ export const assets = defineAuraAssets({
         "attribution": "Ankledot",
         "sha256": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "retrievedAt": "2026-06-17T12:16:20.895Z",
-        "checkedAt": "2026-07-31T08:03:40.246Z"
+        "checkedAt": "2026-06-17T12:16:20.895Z"
       },
       "sourcePath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
       "outputPath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
@@ -11851,9 +11851,9 @@ export const assets = defineAuraAssets({
         "route": "/apps/showcase-product-configurator/",
         "renderedProbe": {
           "url": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
+          "sha256": "sha256-d4974f55b2b692ef01b956b5f511e262d3bb38a355c128a994f1ced34661f4b2",
           "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-          "checkedAt": "2026-07-31T07:33:49.777Z",
+          "checkedAt": "2026-08-08T16:34:11.930Z",
           "route": "/apps/showcase-product-configurator/"
         }
       },
@@ -11880,13 +11880,13 @@ export const assets = defineAuraAssets({
         "kind": "browser-screenshot",
         "renderer": "@aura3d/engine createAuraApp route-primary probe",
         "route": "/apps/showcase-product-configurator/",
-        "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
+        "sha256": "sha256-d4974f55b2b692ef01b956b5f511e262d3bb38a355c128a994f1ced34661f4b2",
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "width": 1440,
         "height": 900,
         "nonBlankPixels": 714560,
         "colorBuckets": 52,
-        "checkedAt": "2026-07-31T07:33:49.777Z",
+        "checkedAt": "2026-08-08T16:34:11.930Z",
         "foregroundBounds": {
           "x": 576,
           "y": 293,

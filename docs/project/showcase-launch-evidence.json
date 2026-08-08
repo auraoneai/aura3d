@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-showcase-build-deploy/1.0",
-  "generatedAt": "2026-08-08T16:23:53.275Z",
+  "generatedAt": "2026-08-08T16:39:31.204Z",
   "gateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
@@ -12,7 +12,7 @@
     "allRoutesOk": false,
     "fileOk": true,
     "reviewer": "Pending independent human review",
-    "reviewedAt": "2026-08-08T16:23:05.364Z",
+    "reviewedAt": "2026-08-08T16:37:16.282Z",
     "overallVerdict": "needs-work",
     "failures": [
       "visual-review-overall-verdict:needs-work"
@@ -249,7 +249,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:26.926Z",
+            "generatedAt": "2026-08-08T16:34:11.930Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -264,7 +264,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -288,7 +288,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:26.926Z",
+          "generatedAt": "2026-08-08T16:34:11.930Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -334,7 +334,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-            "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
+            "sha256": "sha256-d4974f55b2b692ef01b956b5f511e262d3bb38a355c128a994f1ced34661f4b2",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -369,7 +369,7 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-                "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
+                "sha256": "sha256-d4974f55b2b692ef01b956b5f511e262d3bb38a355c128a994f1ced34661f4b2",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -528,7 +528,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:29.846Z",
+            "generatedAt": "2026-08-08T16:34:15.375Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -543,7 +543,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -567,7 +567,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:29.846Z",
+          "generatedAt": "2026-08-08T16:34:15.375Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -613,7 +613,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-            "sha256": "sha256-3541b6c85fb950ca52504a60bc4ed1d32553f8c6ee13448120c31ed77ad68b2b",
+            "sha256": "sha256-34f1a1ae706c3f90b53a4f1b03c144b1b430c3567ff08e2f0019ba47d28ba906",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -622,13 +622,13 @@
               "width": 1052,
               "height": 543
             },
-            "nonBlankPixels": 40720,
-            "colorBuckets": 30,
+            "nonBlankPixels": 38667,
+            "colorBuckets": 29,
             "foregroundBounds": {
-              "x": 576,
+              "x": 574,
               "y": 114,
-              "width": 311,
-              "height": 324
+              "width": 314,
+              "height": 323
             },
             "visible": true,
             "clipped": false,
@@ -647,7 +647,7 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-                "sha256": "sha256-3541b6c85fb950ca52504a60bc4ed1d32553f8c6ee13448120c31ed77ad68b2b",
+                "sha256": "sha256-34f1a1ae706c3f90b53a4f1b03c144b1b430c3567ff08e2f0019ba47d28ba906",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -656,13 +656,13 @@
                   "width": 1052,
                   "height": 543
                 },
-                "nonBlankPixels": 40720,
-                "colorBuckets": 30,
+                "nonBlankPixels": 38667,
+                "colorBuckets": 29,
                 "foregroundBounds": {
-                  "x": 576,
+                  "x": 574,
                   "y": 114,
-                  "width": 311,
-                  "height": 324
+                  "width": 314,
+                  "height": 323
                 },
                 "visible": true,
                 "clipped": false,
@@ -805,7 +805,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:32.930Z",
+            "generatedAt": "2026-08-08T16:34:18.487Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -820,7 +820,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -844,7 +844,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:32.930Z",
+          "generatedAt": "2026-08-08T16:34:18.487Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -882,7 +882,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-            "sha256": "sha256-ed9125733532ac5dd71ec9bc095d52f968b0f1b381ebde618b61c5783ec56e1f",
+            "sha256": "sha256-fb2399744aef38190891cdd8eff0b13dd7da73ce2ef518c3b54d7675c8a6e6bb",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -892,8 +892,8 @@
               "height": 900,
               "area": 1296000
             },
-            "nonBlankPixels": 49405,
-            "colorBuckets": 165,
+            "nonBlankPixels": 49480,
+            "colorBuckets": 163,
             "foregroundBounds": {
               "x": 574,
               "y": 141,
@@ -906,7 +906,7 @@
             "controlsInViewport": true,
             "readabilityScore": 92,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-560cecdb860d149500b8eb2cc36b34190dbbe256116556054875cdaee663e366",
+            "subjectSuppressedScreenshotSha256": "sha256-fd1452684336278344856f38e100f00df176db4a532f619dd46c2440e3c901a0",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -918,12 +918,12 @@
               "width": 569,
               "height": 639
             },
-            "subjectPixels": 49405,
-            "subjectColorBuckets": 165,
+            "subjectPixels": 49480,
+            "subjectColorBuckets": 163,
             "subjectClipped": false,
             "subjectReadabilityScore": 92,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-560cecdb860d149500b8eb2cc36b34190dbbe256116556054875cdaee663e366",
+            "subjectSuppressedScreenshotSha256": "sha256-fd1452684336278344856f38e100f00df176db4a532f619dd46c2440e3c901a0",
             "subjectTargetSize": 2.05,
             "cameraMode": "unprojected"
           },
@@ -937,7 +937,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-                "sha256": "sha256-ed9125733532ac5dd71ec9bc095d52f968b0f1b381ebde618b61c5783ec56e1f",
+                "sha256": "sha256-fb2399744aef38190891cdd8eff0b13dd7da73ce2ef518c3b54d7675c8a6e6bb",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -947,8 +947,8 @@
                   "height": 900,
                   "area": 1296000
                 },
-                "nonBlankPixels": 49405,
-                "colorBuckets": 165,
+                "nonBlankPixels": 49480,
+                "colorBuckets": 163,
                 "foregroundBounds": {
                   "x": 574,
                   "y": 141,
@@ -961,7 +961,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 92,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-560cecdb860d149500b8eb2cc36b34190dbbe256116556054875cdaee663e366",
+                "subjectSuppressedScreenshotSha256": "sha256-fd1452684336278344856f38e100f00df176db4a532f619dd46c2440e3c901a0",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -1101,7 +1101,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:35.956Z",
+            "generatedAt": "2026-08-08T16:34:21.495Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1116,7 +1116,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -1140,7 +1140,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:35.956Z",
+          "generatedAt": "2026-08-08T16:34:21.495Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1177,7 +1177,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-            "sha256": "sha256-253833eaf0d97dccbe8d9f3c8f24829dc5ad4b9c398ec64c93bb859e3d91b227",
+            "sha256": "sha256-49571aaae9c6fe6bb10995a8547d9c68a80a8501347e4f1c1e3f1d148382f5a8",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1187,13 +1187,13 @@
               "height": 900,
               "area": 1296000
             },
-            "nonBlankPixels": 24022,
-            "colorBuckets": 142,
+            "nonBlankPixels": 23973,
+            "colorBuckets": 143,
             "foregroundBounds": {
-              "x": 477,
-              "y": 266,
-              "width": 636,
-              "height": 444
+              "x": 473,
+              "y": 267,
+              "width": 640,
+              "height": 443
             },
             "visible": true,
             "clipped": false,
@@ -1201,24 +1201,24 @@
             "controlsInViewport": true,
             "readabilityScore": 78,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-1554498d4117384c016b73f6ae4e354ee82058922bf7edec1837844d79903a21",
+            "subjectSuppressedScreenshotSha256": "sha256-c9f50362f9440e3fd6d9d2cc8140799a6b79da02d59873c4c177f3e242fe5ff0",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "application",
             "subjectBounds": {
-              "x": 477,
-              "y": 266,
-              "width": 636,
-              "height": 444
+              "x": 473,
+              "y": 267,
+              "width": 640,
+              "height": 443
             },
-            "subjectPixels": 24022,
-            "subjectColorBuckets": 142,
+            "subjectPixels": 23973,
+            "subjectColorBuckets": 143,
             "subjectClipped": false,
             "subjectReadabilityScore": 78,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-1554498d4117384c016b73f6ae4e354ee82058922bf7edec1837844d79903a21",
+            "subjectSuppressedScreenshotSha256": "sha256-c9f50362f9440e3fd6d9d2cc8140799a6b79da02d59873c4c177f3e242fe5ff0",
             "projectedSubjectHeight": 254.977,
             "subjectTargetSize": 0.9347999999999999,
             "cameraMode": "orbit"
@@ -1233,7 +1233,7 @@
               "manifestHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-                "sha256": "sha256-253833eaf0d97dccbe8d9f3c8f24829dc5ad4b9c398ec64c93bb859e3d91b227",
+                "sha256": "sha256-49571aaae9c6fe6bb10995a8547d9c68a80a8501347e4f1c1e3f1d148382f5a8",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1243,13 +1243,13 @@
                   "height": 900,
                   "area": 1296000
                 },
-                "nonBlankPixels": 24022,
-                "colorBuckets": 142,
+                "nonBlankPixels": 23973,
+                "colorBuckets": 143,
                 "foregroundBounds": {
-                  "x": 477,
-                  "y": 266,
-                  "width": 636,
-                  "height": 444
+                  "x": 473,
+                  "y": 267,
+                  "width": 640,
+                  "height": 443
                 },
                 "visible": true,
                 "clipped": false,
@@ -1257,7 +1257,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 78,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-1554498d4117384c016b73f6ae4e354ee82058922bf7edec1837844d79903a21",
+                "subjectSuppressedScreenshotSha256": "sha256-c9f50362f9440e3fd6d9d2cc8140799a6b79da02d59873c4c177f3e242fe5ff0",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -1397,7 +1397,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:38.946Z",
+            "generatedAt": "2026-08-08T16:34:25.758Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1412,7 +1412,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -1436,7 +1436,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:38.946Z",
+          "generatedAt": "2026-08-08T16:34:25.758Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1477,7 +1477,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
-            "sha256": "sha256-7d1700ee84ebeac7708fd40e2d92c4db19f8bcd4df087274ceb6fc59a7e74d82",
+            "sha256": "sha256-e674aa601f1668f4e786952b80f42fb2760702f764c8b24e7710ff5bb7270173",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1486,7 +1486,7 @@
               "width": 1060,
               "height": 880
             },
-            "nonBlankPixels": 208309,
+            "nonBlankPixels": 208308,
             "colorBuckets": 465,
             "foregroundBounds": {
               "x": 147,
@@ -1511,7 +1511,7 @@
               "manifestHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
-                "sha256": "sha256-7d1700ee84ebeac7708fd40e2d92c4db19f8bcd4df087274ceb6fc59a7e74d82",
+                "sha256": "sha256-e674aa601f1668f4e786952b80f42fb2760702f764c8b24e7710ff5bb7270173",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1520,7 +1520,7 @@
                   "width": 1060,
                   "height": 880
                 },
-                "nonBlankPixels": 208309,
+                "nonBlankPixels": 208308,
                 "colorBuckets": 465,
                 "foregroundBounds": {
                   "x": 147,
@@ -1671,7 +1671,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:41.861Z",
+            "generatedAt": "2026-08-08T16:34:28.931Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1686,7 +1686,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -1710,7 +1710,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:41.861Z",
+          "generatedAt": "2026-08-08T16:34:28.931Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1756,7 +1756,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-            "sha256": "sha256-e34c97bd52ad8b1a172a96ce16c1c5f5142c4a6561d6d7ea73e40305f21dd161",
+            "sha256": "sha256-00bcd98124cc8a17e6ff57bda69022d4f20e391f435d0db39c3c9ed9b605863b",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1765,13 +1765,13 @@
               "width": 1084,
               "height": 785
             },
-            "nonBlankPixels": 179694,
-            "colorBuckets": 267,
+            "nonBlankPixels": 179667,
+            "colorBuckets": 265,
             "foregroundBounds": {
               "x": 165,
-              "y": 291,
+              "y": 298,
               "width": 766,
-              "height": 411
+              "height": 404
             },
             "visible": true,
             "clipped": false,
@@ -1790,7 +1790,7 @@
               "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-                "sha256": "sha256-e34c97bd52ad8b1a172a96ce16c1c5f5142c4a6561d6d7ea73e40305f21dd161",
+                "sha256": "sha256-00bcd98124cc8a17e6ff57bda69022d4f20e391f435d0db39c3c9ed9b605863b",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1799,13 +1799,13 @@
                   "width": 1084,
                   "height": 785
                 },
-                "nonBlankPixels": 179694,
-                "colorBuckets": 267,
+                "nonBlankPixels": 179667,
+                "colorBuckets": 265,
                 "foregroundBounds": {
                   "x": 165,
-                  "y": 291,
+                  "y": 298,
                   "width": 766,
-                  "height": 411
+                  "height": 404
                 },
                 "visible": true,
                 "clipped": false,
@@ -1953,7 +1953,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:44.834Z",
+            "generatedAt": "2026-08-08T16:34:32.400Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1968,7 +1968,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -1992,7 +1992,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:44.834Z",
+          "generatedAt": "2026-08-08T16:34:32.400Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2028,7 +2028,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-            "sha256": "sha256-a5a57257f7b6d2783b32a18f9ab0f24fe911aab0834a0e5b2fe57c613828aea4",
+            "sha256": "sha256-8b04d5cf1c79c6be66a38372a8be60644e4963f7bc98b023fcbdedfde9945629",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2038,13 +2038,13 @@
               "height": 900,
               "area": 959048.4375
             },
-            "nonBlankPixels": 71873,
-            "colorBuckets": 116,
+            "nonBlankPixels": 79270,
+            "colorBuckets": 126,
             "foregroundBounds": {
-              "x": 260,
-              "y": 103,
-              "width": 544,
-              "height": 561
+              "x": 256,
+              "y": 96,
+              "width": 554,
+              "height": 572
             },
             "visible": true,
             "clipped": false,
@@ -2052,24 +2052,24 @@
             "controlsInViewport": true,
             "readabilityScore": 100,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-1c6d805aa7bdde27617f04a7020a12550def8833b21b095d34354916f5dc0cc2",
+            "subjectSuppressedScreenshotSha256": "sha256-dda10a1c0d7807b393a8461f05d8d148a53a383ac715238b9fe08fd64f5a4645",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "application",
             "subjectBounds": {
-              "x": 260,
-              "y": 103,
-              "width": 544,
-              "height": 561
+              "x": 256,
+              "y": 96,
+              "width": 554,
+              "height": 572
             },
-            "subjectPixels": 71873,
-            "subjectColorBuckets": 116,
+            "subjectPixels": 79270,
+            "subjectColorBuckets": 126,
             "subjectClipped": false,
             "subjectReadabilityScore": 100,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-1c6d805aa7bdde27617f04a7020a12550def8833b21b095d34354916f5dc0cc2",
+            "subjectSuppressedScreenshotSha256": "sha256-dda10a1c0d7807b393a8461f05d8d148a53a383ac715238b9fe08fd64f5a4645",
             "subjectTargetSize": 0.9072,
             "cameraMode": "unprojected"
           },
@@ -2083,7 +2083,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-                "sha256": "sha256-a5a57257f7b6d2783b32a18f9ab0f24fe911aab0834a0e5b2fe57c613828aea4",
+                "sha256": "sha256-8b04d5cf1c79c6be66a38372a8be60644e4963f7bc98b023fcbdedfde9945629",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2093,13 +2093,13 @@
                   "height": 900,
                   "area": 959048.4375
                 },
-                "nonBlankPixels": 71873,
-                "colorBuckets": 116,
+                "nonBlankPixels": 79270,
+                "colorBuckets": 126,
                 "foregroundBounds": {
-                  "x": 260,
-                  "y": 103,
-                  "width": 544,
-                  "height": 561
+                  "x": 256,
+                  "y": 96,
+                  "width": 554,
+                  "height": 572
                 },
                 "visible": true,
                 "clipped": false,
@@ -2107,7 +2107,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 100,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-1c6d805aa7bdde27617f04a7020a12550def8833b21b095d34354916f5dc0cc2",
+                "subjectSuppressedScreenshotSha256": "sha256-dda10a1c0d7807b393a8461f05d8d148a53a383ac715238b9fe08fd64f5a4645",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2257,7 +2257,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:48.423Z",
+            "generatedAt": "2026-08-08T16:34:36.232Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -2272,7 +2272,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -2296,7 +2296,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:48.423Z",
+          "generatedAt": "2026-08-08T16:34:36.232Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2348,7 +2348,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-            "sha256": "sha256-cb750afb8b010beb24d2d0f0933406bc0dd92c0b72af236175921bf8352ed1c2",
+            "sha256": "sha256-c15d682ed08795b767f0ea3a880be21e9a465376d569438b415503f4a15a51a9",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2358,7 +2358,7 @@
               "height": 900,
               "area": 1296000
             },
-            "nonBlankPixels": 3801,
+            "nonBlankPixels": 3785,
             "colorBuckets": 84,
             "foregroundBounds": {
               "x": 96,
@@ -2372,7 +2372,7 @@
             "controlsInViewport": true,
             "readabilityScore": 67,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-27c27698add709b902df201c8bc017ebeba56047254211a882c9d503c4c24ad6",
+            "subjectSuppressedScreenshotSha256": "sha256-57fc521bf9e7e00b4e18d85f77be7e6b22fcd1442e9d68878ae0276cd649212d",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -2384,12 +2384,12 @@
               "width": 801,
               "height": 820
             },
-            "subjectPixels": 3801,
+            "subjectPixels": 3785,
             "subjectColorBuckets": 84,
             "subjectClipped": false,
             "subjectReadabilityScore": 67,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-27c27698add709b902df201c8bc017ebeba56047254211a882c9d503c4c24ad6",
+            "subjectSuppressedScreenshotSha256": "sha256-57fc521bf9e7e00b4e18d85f77be7e6b22fcd1442e9d68878ae0276cd649212d",
             "projectedPlaySpaceBounds": {
               "x": 572,
               "y": 72,
@@ -2414,7 +2414,7 @@
               "manifestHash": "sha256-679d52fe0c7bf99373fc873f3c3892548f6c5758ae9c81be91f09acae6a35a36",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-                "sha256": "sha256-cb750afb8b010beb24d2d0f0933406bc0dd92c0b72af236175921bf8352ed1c2",
+                "sha256": "sha256-c15d682ed08795b767f0ea3a880be21e9a465376d569438b415503f4a15a51a9",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2424,7 +2424,7 @@
                   "height": 900,
                   "area": 1296000
                 },
-                "nonBlankPixels": 3801,
+                "nonBlankPixels": 3785,
                 "colorBuckets": 84,
                 "foregroundBounds": {
                   "x": 96,
@@ -2438,7 +2438,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 67,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-27c27698add709b902df201c8bc017ebeba56047254211a882c9d503c4c24ad6",
+                "subjectSuppressedScreenshotSha256": "sha256-57fc521bf9e7e00b4e18d85f77be7e6b22fcd1442e9d68878ae0276cd649212d",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2698,7 +2698,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:52.192Z",
+            "generatedAt": "2026-08-08T16:34:40.681Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -2718,7 +2718,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -2742,7 +2742,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:52.192Z",
+          "generatedAt": "2026-08-08T16:34:40.681Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2794,7 +2794,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "sha256": "sha256-3b6463de4ac74152477824bf84e7de2016499dba72a630a0c8a51dd43dd7dc4d",
+            "sha256": "sha256-10dbc7bcedb8d781e85b50015c948bc16e51e4d0ecebf61358ae5c67194892f7",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2804,8 +2804,8 @@
               "height": 900,
               "area": 997200
             },
-            "nonBlankPixels": 11188,
-            "colorBuckets": 154,
+            "nonBlankPixels": 11184,
+            "colorBuckets": 153,
             "foregroundBounds": {
               "x": 215,
               "y": 395,
@@ -2818,7 +2818,7 @@
             "controlsInViewport": true,
             "readabilityScore": 56,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-fbae3d8eca2db08e6abc11a500a35235fa821253cf4453637243d2ec96054ee2",
+            "subjectSuppressedScreenshotSha256": "sha256-02b55fc0b2ba0b53316b5d16abbf12ad0e2f012abc8ecf688a5eda1cb0d0a7a8",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -2830,12 +2830,12 @@
               "width": 105,
               "height": 147
             },
-            "subjectPixels": 11188,
-            "subjectColorBuckets": 154,
+            "subjectPixels": 11184,
+            "subjectColorBuckets": 153,
             "subjectClipped": false,
             "subjectReadabilityScore": 56,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-fbae3d8eca2db08e6abc11a500a35235fa821253cf4453637243d2ec96054ee2",
+            "subjectSuppressedScreenshotSha256": "sha256-02b55fc0b2ba0b53316b5d16abbf12ad0e2f012abc8ecf688a5eda1cb0d0a7a8",
             "projectedPlaySpaceBounds": {
               "x": 191,
               "y": 474,
@@ -2860,7 +2860,7 @@
               "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-                "sha256": "sha256-3b6463de4ac74152477824bf84e7de2016499dba72a630a0c8a51dd43dd7dc4d",
+                "sha256": "sha256-10dbc7bcedb8d781e85b50015c948bc16e51e4d0ecebf61358ae5c67194892f7",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2870,8 +2870,8 @@
                   "height": 900,
                   "area": 997200
                 },
-                "nonBlankPixels": 11188,
-                "colorBuckets": 154,
+                "nonBlankPixels": 11184,
+                "colorBuckets": 153,
                 "foregroundBounds": {
                   "x": 215,
                   "y": 395,
@@ -2884,7 +2884,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 56,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-fbae3d8eca2db08e6abc11a500a35235fa821253cf4453637243d2ec96054ee2",
+                "subjectSuppressedScreenshotSha256": "sha256-02b55fc0b2ba0b53316b5d16abbf12ad0e2f012abc8ecf688a5eda1cb0d0a7a8",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -3149,7 +3149,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-08T15:33:55.988Z",
+            "generatedAt": "2026-08-08T16:34:47.242Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -3169,7 +3169,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-3128ccb732ed467e7bd27319ea8d43548395789d382baa70c2c44edfe193f652"
+                "hash": "sha256-242e17d5f8cd01ed2641d56f9241e4675345aa0c58164466806ab1c51417896d"
               },
               {
                 "kind": "route-gate-config",
@@ -3193,7 +3193,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-08T15:33:55.988Z",
+          "generatedAt": "2026-08-08T16:34:47.242Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3247,7 +3247,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-            "sha256": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f",
+            "sha256": "sha256-e77b7760f11bef64b7afc3646153f6b499c1265ed58abcf24becbade563d0595",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -3257,8 +3257,8 @@
               "height": 900,
               "area": 1009800
             },
-            "nonBlankPixels": 39770,
-            "colorBuckets": 81,
+            "nonBlankPixels": 39745,
+            "colorBuckets": 80,
             "foregroundBounds": {
               "x": 437,
               "y": 336,
@@ -3271,7 +3271,7 @@
             "controlsInViewport": true,
             "readabilityScore": 93,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-44a805de925ca93df24a4e2d85d2533e4666687ce78f6e6f9a56f4a22541c9fe",
+            "subjectSuppressedScreenshotSha256": "sha256-b1822dca61d550ac6b17d98aecfa2175ea17a43551b863ce447c5e943b10c306",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -3283,12 +3283,12 @@
               "width": 283,
               "height": 213
             },
-            "subjectPixels": 39770,
-            "subjectColorBuckets": 81,
+            "subjectPixels": 39745,
+            "subjectColorBuckets": 80,
             "subjectClipped": false,
             "subjectReadabilityScore": 93,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-44a805de925ca93df24a4e2d85d2533e4666687ce78f6e6f9a56f4a22541c9fe",
+            "subjectSuppressedScreenshotSha256": "sha256-b1822dca61d550ac6b17d98aecfa2175ea17a43551b863ce447c5e943b10c306",
             "projectedPlaySpaceBounds": {
               "x": 0,
               "y": 313,
@@ -3313,7 +3313,7 @@
               "manifestHash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-                "sha256": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f",
+                "sha256": "sha256-e77b7760f11bef64b7afc3646153f6b499c1265ed58abcf24becbade563d0595",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -3323,8 +3323,8 @@
                   "height": 900,
                   "area": 1009800
                 },
-                "nonBlankPixels": 39770,
-                "colorBuckets": 81,
+                "nonBlankPixels": 39745,
+                "colorBuckets": 80,
                 "foregroundBounds": {
                   "x": 437,
                   "y": 336,
@@ -3337,7 +3337,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 93,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-44a805de925ca93df24a4e2d85d2533e4666687ce78f6e6f9a56f4a22541c9fe",
+                "subjectSuppressedScreenshotSha256": "sha256-b1822dca61d550ac6b17d98aecfa2175ea17a43551b863ce447c5e943b10c306",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
