@@ -37,6 +37,7 @@ mkdirSync(tarballDir, { recursive: true });
 const tarballs = {
   engine: pack(".", tarballDir),
   react: pack("packages/react", tarballDir),
+  assetIndex: pack("packages/asset-index", tarballDir),
   cli: pack("packages/aura3d-cli", tarballDir),
   create: pack("packages/create-aura3d", tarballDir)
 };
@@ -165,7 +166,11 @@ function runCliInstall(): CommandResult {
     name: "aura3d-cli-clean-bin",
     private: true,
     type: "module",
-    dependencies: { "@aura3d/cli": `file:${tarballs.cli}` }
+    dependencies: {
+      "@aura3d/asset-index": `file:${tarballs.assetIndex}`,
+      "@aura3d/cli": `file:${tarballs.cli}`,
+      "create-aura3d": `file:${tarballs.create}`
+    }
   });
   return run("sh", ["-lc", "npm install --ignore-scripts --no-audit --no-fund --silent && npm exec aura3d -- --help"], dir);
 }
@@ -177,7 +182,10 @@ function runCreateInstall(): CommandResult {
     name: "aura3d-create-clean-bin",
     private: true,
     type: "module",
-    dependencies: { "create-aura3d": `file:${tarballs.create}` }
+    dependencies: {
+      "@aura3d/asset-index": `file:${tarballs.assetIndex}`,
+      "create-aura3d": `file:${tarballs.create}`
+    }
   });
   return run("sh", ["-lc", "npm install --ignore-scripts --no-audit --no-fund --silent && npm exec create-aura3d -- --help"], dir);
 }
@@ -190,7 +198,10 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
     name: `aura3d-${template}-clean-scaffold-runner`,
     private: true,
     type: "module",
-    dependencies: { "create-aura3d": `file:${tarballs.create}` }
+    dependencies: {
+      "@aura3d/asset-index": `file:${tarballs.assetIndex}`,
+      "create-aura3d": `file:${tarballs.create}`
+    }
   });
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], parent);
   const scaffold = run("npm", ["exec", "create-aura3d", "--", "demo", "--template", template], parent);
@@ -243,7 +254,9 @@ function patchScaffoldPackage(appDir: string): void {
   };
   parsed.devDependencies = {
     ...(parsed.devDependencies ?? {}),
-    "@aura3d/cli": `file:${tarballs.cli}`
+    "@aura3d/asset-index": `file:${tarballs.assetIndex}`,
+    "@aura3d/cli": `file:${tarballs.cli}`,
+    "create-aura3d": `file:${tarballs.create}`
   };
   writeFileSync(path, `${JSON.stringify(parsed, null, 2)}\n`);
 }
