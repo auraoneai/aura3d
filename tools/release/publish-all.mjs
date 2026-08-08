@@ -35,7 +35,8 @@
 //     child process only.
 
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
@@ -77,7 +78,7 @@ if (packages.length !== EXPECTED_PUBLIC_COUNT) {
 }
 
 const version = packages[0].manifest.version;
-const mismatched = packages.filter(({ manifest }) => manifest.name !== "@aura3d/asset-index" && manifest.version !== version);
+const mismatched = packages.filter(({ manifest }) => manifest.version !== version);
 if (mismatched.length > 0) {
   console.error(`Version lockstep violated (root is ${version}):`);
   for (const { manifest } of mismatched) console.error(`  - ${manifest.name}@${manifest.version}`);
@@ -94,6 +95,7 @@ const hadStudioNodeModules = existsSync(STUDIO_NODE_MODULES);
 if (hadStudioNodeModules) renameSync(STUDIO_NODE_MODULES, STUDIO_NODE_MODULES_ASIDE);
 
 const failures = [];
+const packedPackages = new Map();
 try {
   for (const { dir, manifest } of packages) {
     const label = `${manifest.name}@${manifest.version}`;
@@ -102,6 +104,8 @@ try {
       const packOutput = sh(`pnpm pack --pack-destination ${JSON.stringify(PACK_DIR)}`, { cwd: dir });
       const tarball = packOutput.split("\n").pop();
       if (!tarball || !existsSync(tarball)) throw new Error(`pack produced no tarball (output: ${packOutput})`);
+      const integrity = `sha512-${createHash("sha512").update(readFileSync(tarball)).digest("base64")}`;
+      packedPackages.set(manifest.name, { tarball, integrity });
       if (DRY_RUN) {
         console.log(`[dry-run] packed ${label} -> ${tarball}`);
       } else {
@@ -140,20 +144,62 @@ if (failures.length > 0) {
 // Trap 4: verify against the registry (skipped on dry runs).
 if (!DRY_RUN) {
   let verified = 0;
+  const registryResults = [];
   for (const { dir, manifest } of packages) {
     const expectedVersion = manifest.version;
+    const packed = packedPackages.get(manifest.name);
     try {
       const latest = sh(`npm view ${manifest.name} version`, { cwd: dir });
-      if (latest === expectedVersion) {
+      const registryIntegrity = sh(`npm view ${manifest.name}@${expectedVersion} dist.integrity`, { cwd: dir });
+      const versionMatches = latest === expectedVersion;
+      const integrityMatches = Boolean(packed) && registryIntegrity === packed.integrity;
+      registryResults.push({
+        name: manifest.name,
+        version: expectedVersion,
+        latest,
+        tarball: packed?.tarball ? packed.tarball.replace(`${ROOT}/`, "") : null,
+        localIntegrity: packed?.integrity ?? null,
+        registryIntegrity,
+        versionMatches,
+        integrityMatches
+      });
+      if (versionMatches && integrityMatches) {
         verified += 1;
       } else {
-        console.error(`registry mismatch: ${manifest.name} latest=${latest}, expected ${expectedVersion}`);
+        console.error(
+          `registry mismatch: ${manifest.name} latest=${latest}, expected=${expectedVersion}, integrity=${integrityMatches ? "match" : "MISMATCH"}`
+        );
       }
     } catch (error) {
+      registryResults.push({
+        name: manifest.name,
+        version: expectedVersion,
+        latest: null,
+        tarball: packed?.tarball ? packed.tarball.replace(`${ROOT}/`, "") : null,
+        localIntegrity: packed?.integrity ?? null,
+        registryIntegrity: null,
+        versionMatches: false,
+        integrityMatches: false,
+        error: String(error?.message ?? error)
+      });
       console.error(`registry check failed for ${manifest.name}: ${error?.message ?? error}`);
     }
   }
-  console.log(`\nregistry verification: ${verified}/${EXPECTED_PUBLIC_COUNT} packages at expected versions`);
+  writeFileSync(
+    join(PACK_DIR, "registry-verification.json"),
+    `${JSON.stringify({
+      schema: "aura3d-npm-registry-verification/1.0",
+      generatedAt: new Date().toISOString(),
+      commit: sh("git rev-parse HEAD"),
+      version,
+      expectedPackageCount: EXPECTED_PUBLIC_COUNT,
+      verifiedPackageCount: verified,
+      ok: verified === EXPECTED_PUBLIC_COUNT,
+      packages: registryResults
+    }, null, 2)}\n`,
+    "utf8"
+  );
+  console.log(`\nregistry verification: ${verified}/${EXPECTED_PUBLIC_COUNT} packages at expected versions and matching SHA-512 integrity`);
   if (verified !== EXPECTED_PUBLIC_COUNT) process.exit(1);
 }
 
