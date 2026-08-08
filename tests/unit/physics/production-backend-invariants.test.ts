@@ -38,11 +38,18 @@ import {
 const FIXED_DELTA = 1 / 60;
 
 /** Ground plane plus the world it lives in, the starting point for most invariants. */
-function groundedWorld(options: { readonly friction?: number; readonly solverIterations?: number } = {}) {
+function groundedWorld(
+  options: {
+    readonly friction?: number;
+    readonly solverIterations?: number;
+    /** Omit `solverIterations` entirely, so the case exercises the shipped default. */
+    readonly useDefaultSolverIterations?: boolean;
+  } = {}
+) {
   const world = new PhysicsWorld({
     gravity: [0, -9.81, 0],
     fixedDelta: FIXED_DELTA,
-    solverIterations: options.solverIterations ?? 8
+    ...(options.useDefaultSolverIterations === true ? {} : { solverIterations: options.solverIterations ?? 8 })
   });
   const ground = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   world.createCollider(ground, {
@@ -54,10 +61,18 @@ function groundedWorld(options: { readonly friction?: number; readonly solverIte
 
 describe("production backend invariant 1 — stacked-body stability", () => {
   it("holds a six-box stack in place instead of drifting or exploding", () => {
-    // The failure this catches is the classic one: a stack that looks fine for a few frames
-    // and then jitters apart, or sinks into the floor. Both are solver failures a route
-    // notices immediately, and neither shows up in a two-step test.
-    const { world } = groundedWorld({ friction: 0.9 });
+    /*
+     * The failure this catches is the classic one: a stack that looks fine for a few frames and
+     * then jitters apart, or sinks into the floor. Both are solver failures a route notices
+     * immediately, and neither shows up in a two-step test.
+     *
+     * **Deliberately does not pass `solverIterations`.** The defect this invariant found was the
+     * *default* being 1 against cannon's own 10 — and the first version of this test passed
+     * `solverIterations: 8`, so reverting the fix left it green. A test for a default has to use
+     * the default; pinning the value tested a configuration no route uses. Verified by reverting:
+     * with the default at 1 this case fails, with 10 it passes.
+     */
+    const { world } = groundedWorld({ friction: 0.9, useDefaultSolverIterations: true });
     const half = 0.2;
     const boxes = [];
     for (let index = 0; index < 6; index += 1) {

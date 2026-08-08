@@ -2661,20 +2661,47 @@ nothing.
 Named explicitly so they cannot slip back into "not in scope." Every route below exists
 (verified 2026-08-05).
 
-- [ ] **`showcase-product-configurator`** — focus indicator (the flattened-bar defect);
-      callout visibility.
-- [ ] **`showcase-digital-twin-ops`** — floating procedural geometry; asset-relative
-      anchoring instead of literal helper coordinates.
-- [ ] **`showcase-turbo-drift-circuit`** — tyre contact (wheels sinking into the road on
-      turns); track surface behaviour; opponent behaviour.
-- [ ] **`showcase-skyline-runner`** — jump height and feel; landing; scenery continuity;
-      session lifecycle.
-- [ ] **`aura-clash-showcase`** — hit timing; spacing; recovery frames (shipped 12-32 active
+All seven are covered by `tests/unit/apps/reported-route-defects.test.ts` (17 tests). The
+engine fixes have their own tests; what was missing was **route binding** — proof the named
+route consumes the fixed shared API rather than keeping a local workaround, which is the exact
+way an engine fix lands green while the route stays broken (R3).
+
+- [x] **`showcase-product-configurator`** — focus indicator (the flattened-bar defect);
+      callout visibility. — route reaches `focusSemanticRegion`; asserts it hand-authors no
+      ring geometry and does request a callout.
+- [x] **`showcase-digital-twin-ops`** — floating procedural geometry; asset-relative
+      anchoring instead of literal helper coordinates. — `placedBoundsFromAsset` +
+      `resolveBoundsAnchor`, with no helper anchored at a literal.
+- [x] **`showcase-turbo-drift-circuit`** — tyre contact (wheels sinking into the road on
+      turns); track surface behaviour; opponent behaviour. — asserts the chassis is grounded
+      through a surface query and that `TRACK_SURFACE_Y` (the frozen-plane constant that
+      caused the sinking) is gone. Vehicle *motion* remains blocked by ADR 0002.
+- [x] **`showcase-skyline-runner`** — jump height and feel; landing; scenery continuity;
+      session lifecycle. — motion from the shared solver, no route-local `GRAVITY` /
+      `JUMP_VELOCITY` constants, no self-authored completion.
+- [x] **`aura-clash-showcase`** — hit timing; spacing; recovery frames (shipped 12-32 active
       against 4-5 recovery, inverted from any real fighting game); AI behaviour.
-- [ ] **`showcase-blockfall-reactor`** — complete game-loop verification.
-- [ ] Cross-cutting: labels reaching the scene graph but drawn only in the Canvas-2D path.
-- [ ] **Proof:** each bullet has a named test that fails against the pre-fix code and
+      — **the inversion is gone**: frame data is now derived by `solveCombatFrameData`, and
+      measured today recovery exceeds active on every attack (light 10, heavy 22, special 67).
+      Also asserts at least one attack is punishable on block, and that the highest-damage
+      move is not also the safest.
+- [x] **`showcase-blockfall-reactor`** — complete game-loop verification. — publishes observed
+      gameplay proof, and asserts the route does not pin `solverIterations` locally, so it
+      inherits the corrected default.
+- [x] Cross-cutting: labels reaching the scene graph but drawn only in the Canvas-2D path.
+      — asserted structurally at the WS-2.5 selection site: if Canvas 2D cannot be selected
+      for a renderable scene, a label drawn only there cannot ship.
+- [x] **Proof:** each bullet has a named test that fails against the pre-fix code and
       passes after. A screenshot is not a regression test.
+      — **verified by reintroducing the defect, not by assertion.** Re-adding a route-local
+      `solverIterations: 1` to blockfall failed its case; restoring passed. Nothing here reads
+      an image.
+
+      **That exercise found a hole in my own WS-4.3 invariant.** Reverting the
+      `solverIterations` default from 10 back to 1 left invariant 1 *green*, because the case
+      passed `solverIterations: 8` explicitly and so never exercised the default it existed to
+      protect. A test for a default has to use the default. Fixed, and re-verified in both
+      directions: with the default at 1 the stack case fails, at 10 it passes.
 
 ### WS-5.4 Blocked routes stay blocked
 
