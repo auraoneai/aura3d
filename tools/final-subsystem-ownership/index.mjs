@@ -88,7 +88,9 @@ function npmLatest(name) {
   return JSON.parse(execFileSync("npm", ["view", `${name}@latest`, "name", "version", "dist.integrity", "license", "repository.url", "time.modified", "maintainers", "dependencies", "type", "types", "module", "main", "sideEffects", "--json"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 }));
 }
 
-const allTracked = trackedFiles();
+// `git ls-files` includes paths staged or unstaged for deletion. Evidence generators must be
+// runnable before the deletion commit, so inventory only files that still exist in the worktree.
+const allTracked = trackedFiles().filter((path) => existsSync(resolve(repoRoot, path)));
 const searchable = allTracked.filter((path) => /\.(?:ts|tsx|js|mjs|cjs|json|md|yml|yaml)$/.test(path) && !path.startsWith("tests/reports/final-competitive-baseline/")).map((path) => [path, readFileSync(resolve(repoRoot, path), "utf8")]);
 const identifierReferences = new Map();
 for (const [path, text] of searchable) {

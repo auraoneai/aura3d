@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T21:47:36.011Z",
+  "generatedAt": "2026-08-08T21:58:29.242Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "fc6cf5304516d02a7306f3115b5e1bf717efab71",
+  "sourceCommit": "03a3f1243b89ee583c49552420fd33e75f8d228c",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -1393,6 +1393,7 @@
           "tests/integration/production-runtime-create-aura3d.test.ts",
           "tests/integration/three-compat-create-aura3d.test.ts",
           "tests/reports/final-subsystem-ownership.json",
+          "tests/reports/public-runtime-descriptor-inventory/report.json",
           "tests/unit/agent-api/line-count-acceptance.test.ts",
           "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
           "tests/unit/agent-api/public-example-boundary.test.ts",
@@ -1577,7 +1578,7 @@
         "source": 127,
         "dynamicImport": 12,
         "route": 6,
-        "fixture": 62,
+        "fixture": 63,
         "cliOrGenerator": 63,
         "docs": 60,
         "externalConsumer": 5
@@ -1585,7 +1586,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 24,
-        "testMentions": 62,
+        "testMentions": 63,
         "docsMentions": 60
       }
     },
@@ -2303,6 +2304,7 @@
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/browser/input-browser-harness.ts",
+          "tests/reports/descriptor-input-action-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/controls/exported-controls-resolution.test.ts",
@@ -2336,7 +2338,7 @@
         "source": 34,
         "dynamicImport": 3,
         "route": 7,
-        "fixture": 14,
+        "fixture": 15,
         "cliOrGenerator": 6,
         "docs": 6,
         "externalConsumer": 0
@@ -2344,7 +2346,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 26,
-        "testMentions": 14,
+        "testMentions": 15,
         "docsMentions": 6
       }
     },
@@ -4479,6 +4481,7 @@
         "tests/performance/system-baselines.ts",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/runtime-node-handle.test.ts",
         "tests/unit/animation/animation-animation-runtime.test.ts",
@@ -4535,7 +4538,7 @@
         "tools/threejs-parity-threejs-inventory/index.ts",
         "tools/webgpu-feature-matrix/index.ts"
       ],
-      "maintenanceReferenceCount": 198
+      "maintenanceReferenceCount": 199
     },
     {
       "id": "apps-general",
@@ -4583,9 +4586,10 @@
         "packages/assets/src/browser-index.ts",
         "packages/assets/src/index.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tools/external-parity-gltf-corpus-readiness/index.ts"
       ],
-      "maintenanceReferenceCount": 5
+      "maintenanceReferenceCount": 6
     },
     {
       "id": "asset-index-general",
@@ -5147,9 +5151,10 @@
         "tests/browser/runtime-external-parity.spec.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tools/audio-backend-bakeoff/index.ts"
       ],
-      "maintenanceReferenceCount": 6
+      "maintenanceReferenceCount": 7
     },
     {
       "id": "aura3d-cli-general",
@@ -5800,9 +5805,11 @@
         "tests/performance/system-baselines.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/current-threejs-baseline.json",
+        "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/animation-episode-package.test.ts",
         "tests/unit/agent-api/animation-export-adapters.test.ts",
@@ -5988,7 +5995,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 787
+      "maintenanceReferenceCount": 789
     },
     {
       "id": "controls-general",
@@ -6431,6 +6438,7 @@
         "tests/fixtures/showcase-spec/turbo-drift-racing.json",
         "tests/fixtures/showcase-spec/webgpu-overclaim.json",
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
+        "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
         "tests/unit/animation-studio/prompt-universality.test.ts",
@@ -6494,7 +6502,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 199
+      "maintenanceReferenceCount": 200
     },
     {
       "id": "debug-general",
@@ -6724,10 +6732,9 @@
       },
       "maintenanceReferences": [
         "docs/api/public-api.md",
-        "packages/editor-runtime/src/index.ts",
-        "tests/reports/final-subsystem-ownership.json"
+        "packages/editor-runtime/src/index.ts"
       ],
-      "maintenanceReferenceCount": 3
+      "maintenanceReferenceCount": 2
     },
     {
       "id": "editor-general",
@@ -6903,6 +6910,7 @@
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
         "tests/browser/threejs-parity-transform-controls-harness.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/animation/animation-event-tracks.test.ts",
         "tests/unit/controls/interactive-transform-gizmo.test.ts",
         "tests/unit/editor/plugin-api.test.ts",
@@ -6933,7 +6941,7 @@
         "tools/requirements-trace/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 119
+      "maintenanceReferenceCount": 120
     },
     {
       "id": "engine-browser-media",
@@ -7696,6 +7704,7 @@
         "tests/reports/ecs-scripting-compatibility/report.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-test-classification/report.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/animation-export-adapters.test.ts",
         "tests/unit/agent-api/animation-performance-and-templates.test.ts",
@@ -7919,6 +7928,7 @@
         "tools/prompt-animation-package-smoke/index.ts",
         "tools/prompt-animation-readiness/index.ts",
         "tools/prompt-animation-viseme-sync/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/release-verification/index.ts",
         "tools/replicability-metrics/index.mjs",
         "tools/requirements-trace/index.ts",
@@ -7962,7 +7972,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 867
+      "maintenanceReferenceCount": 869
     },
     {
       "id": "engine-node-media-publishing",
@@ -8755,6 +8765,7 @@
         "tests/reports/install-to-first-cube.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/templates/vitest.config.ts",
         "tests/unit/agent-api/agent-api.test.ts",
@@ -9286,6 +9297,7 @@
         "tools/public-api-contract/index.ts",
         "tools/public-demo-deployment-artifacts/index.ts",
         "tools/public-demo-deployment-smoke/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/release-proof-guard.mjs",
         "tools/release-verification/index.ts",
         "tools/release/publish-all.mjs",
@@ -9378,7 +9390,7 @@
         "vitest.config.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 1338
+      "maintenanceReferenceCount": 1340
     },
     {
       "id": "input-general",
@@ -9470,7 +9482,9 @@
         "tests/browser/three-compat-controls.spec.ts",
         "tests/browser/three-compat-threejs-migration.spec.ts",
         "tests/browser/threejs-parity-orbit-controls.spec.ts",
+        "tests/fixtures/input-action-binding.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/controls/exported-controls-resolution.test.ts",
         "tests/unit/controls/interaction-controls.test.ts",
@@ -9486,6 +9500,7 @@
         "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
         "tests/unit/workstream5-runtime.test.ts",
         "tools/bundle-scenarios/entries/scenario-2-threejs.ts",
+        "tools/evidence-freshness/producer-registry.mjs",
         "tools/external-parity-codebase-root-readiness/index.ts",
         "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/adr-registry.json",
@@ -9497,7 +9512,7 @@
         "tools/three-compat-migration-readiness/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts"
       ],
-      "maintenanceReferenceCount": 72
+      "maintenanceReferenceCount": 75
     },
     {
       "id": "materials-general",
@@ -10245,6 +10260,7 @@
         "tests/reports/install-to-first-cube.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/templates/vitest.config.ts",
         "tests/unit/agent-api/agent-api.test.ts",
@@ -10776,6 +10792,7 @@
         "tools/public-api-contract/index.ts",
         "tools/public-demo-deployment-artifacts/index.ts",
         "tools/public-demo-deployment-smoke/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/release-proof-guard.mjs",
         "tools/release-verification/index.ts",
         "tools/release/publish-all.mjs",
@@ -10868,7 +10885,7 @@
         "vitest.config.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 1340
+      "maintenanceReferenceCount": 1342
     },
     {
       "id": "math-general",
@@ -11361,9 +11378,10 @@
         "packages/physics/src/world.ts",
         "tests/browser/runtime-external-parity.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/tools/deletion-safety.test.ts"
       ],
-      "maintenanceReferenceCount": 8
+      "maintenanceReferenceCount": 9
     },
     {
       "id": "physics-general",
@@ -11696,6 +11714,7 @@
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/canvas2d-is-diagnostic-only.test.ts",
         "tests/unit/agent-api/label-occlusion.test.ts",
@@ -11818,7 +11837,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 425
+      "maintenanceReferenceCount": 426
     },
     {
       "id": "physics-navigation-crowd-steering",
@@ -12870,6 +12889,7 @@
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/production-bridge-boundary.test.ts",
@@ -13092,6 +13112,7 @@
         "tools/production-runtime-truth/index.ts",
         "tools/production-runtime-webgpu-readiness/index.ts",
         "tools/public-api-contract/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/release-verification/index.ts",
         "tools/replicability-metrics/index.mjs",
         "tools/requirements-trace/index.ts",
@@ -13132,7 +13153,7 @@
         "tsconfig.base.json",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 898
+      "maintenanceReferenceCount": 900
     },
     {
       "id": "scene-general",
@@ -13773,6 +13794,7 @@
         "tests/browser/visual-scripting-105.spec.ts",
         "tests/integration/scripting-scene-ecs.test.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/game-runtime/behavior-retarget-stretch.test.ts",
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/scripting/behavior-tree.test.ts",
@@ -13789,7 +13811,7 @@
         "tools/visual-scripting-evidence/index.ts",
         "tools/visual-scripting-package-smoke/index.ts"
       ],
-      "maintenanceReferenceCount": 45
+      "maintenanceReferenceCount": 46
     },
     {
       "id": "three-compat-general",
@@ -13908,21 +13930,25 @@
       "modified": "2026-08-08T17:52:36.228Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git+https://github.com/dimforge/rapier.js.git",
+      "maintainers": [
+        "sebcrozet <developer@crozet.re>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
+        "types": "rapier.d.ts",
+        "module": "rapier.js",
         "main": null,
-        "sideEffects": null,
+        "sideEffects": [
+          "./*.js"
+        ],
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -13949,7 +13975,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "@dimforge/rapier3d-compat",
@@ -13959,21 +13985,25 @@
       "modified": "2026-08-08T17:54:11.553Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git+https://github.com/dimforge/rapier.js.git",
+      "maintainers": [
+        "sebcrozet <developer@crozet.re>"
+      ],
       "dependencies": {},
       "moduleShape": {
-        "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
-        "sideEffects": null,
+        "type": "module",
+        "types": "rapier.d.ts",
+        "module": "rapier.mjs",
+        "main": "rapier.cjs",
+        "sideEffects": [
+          "./snippets/*"
+        ],
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14002,7 +14032,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "cannon-es",
@@ -14012,21 +14042,27 @@
       "modified": "2022-08-12T16:46:01.002Z",
       "ageDays": 1457,
       "freshness": "dormant-risk",
-      "repository": null,
-      "maintainers": null,
+      "repository": "https://github.com/pmndrs/cannon-es.git",
+      "maintainers": [
+        "drcmda <drcmda@gmail.com>",
+        "marcofugaro <marco.fugaro@gmail.com>",
+        "codynova <codyrnova@gmail.com>",
+        "heyo_sean <harringtonsp1@gmail.com>",
+        "stockhuman <mikemingway@gmail.com>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
-        "sideEffects": null,
+        "types": "./dist/cannon-es.d.ts",
+        "module": "./dist/cannon-es.js",
+        "main": "./dist/cannon-es.cjs.js",
+        "sideEffects": false,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14055,7 +14091,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "recast-navigation",
@@ -14066,20 +14102,25 @@
       "ageDays": 185,
       "freshness": "active",
       "repository": null,
-      "maintainers": null,
-      "dependencies": {},
+      "maintainers": [
+        "isaacmason <isaac@isaacmason.com>"
+      ],
+      "dependencies": {
+        "@recast-navigation/core": "0.43.1",
+        "@recast-navigation/generators": "0.43.1"
+      },
       "moduleShape": {
-        "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
+        "type": "module",
+        "types": "./index.d.ts",
+        "module": "./index.mjs",
+        "main": "./index.mjs",
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14108,7 +14149,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "howler",
@@ -14118,21 +14159,23 @@
       "modified": "2023-09-19T14:59:40.275Z",
       "ageDays": 1054,
       "freshness": "aging",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git://github.com/goldfire/howler.js.git",
+      "maintainers": [
+        "goldfire <james@goldfirestudios.com>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
         "types": null,
         "module": null,
-        "main": null,
+        "main": "dist/howler.js",
         "sideEffects": null,
         "summary": "legacy main bundle; browser audio singleton behavior requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 2,
         "license": 3,
-        "types": null,
+        "types": 1,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14161,7 +14204,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "yuka",
@@ -14171,21 +14214,23 @@
       "modified": "2022-09-17T08:45:45.072Z",
       "ageDays": 1421,
       "freshness": "dormant-risk",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git+https://github.com/Mugen87/yuka.git",
+      "maintainers": [
+        "mugen87 <michael.herzog@human-interactive.org>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
         "types": null,
-        "module": null,
-        "main": null,
+        "module": "build/yuka.module.js",
+        "main": "build/yuka.js",
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": null,
+        "types": 1,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14214,7 +14259,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "bitecs",
@@ -14224,21 +14269,23 @@
       "modified": "2025-12-06T23:15:32.228Z",
       "ageDays": 245,
       "freshness": "active",
-      "repository": null,
-      "maintainers": null,
+      "repository": "https://github.com/NateTheGreatt/bitECS",
+      "maintainers": [
+        "natethegreatt <natelawl@gmail.com>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
+        "types": "./dist/core/index.d.ts",
+        "module": "./dist/core/index.min.mjs",
+        "main": "./dist/core/index.min.cjs",
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 1,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14267,7 +14314,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "miniplex",
@@ -14278,20 +14325,26 @@
       "ageDays": 1119,
       "freshness": "dormant-risk",
       "repository": null,
-      "maintainers": null,
-      "dependencies": {},
+      "maintainers": [
+        "hendrik.mans <hendrik@mans.de>"
+      ],
+      "dependencies": {
+        "@hmans/id": "^0.0.1",
+        "@hmans/queue": "^0.0.1",
+        "@miniplex/bucket": "2.0.0"
+      },
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
-        "sideEffects": null,
+        "types": "dist/miniplex.cjs.d.ts",
+        "module": "dist/miniplex.esm.js",
+        "main": "dist/miniplex.cjs.js",
+        "sideEffects": false,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14320,7 +14373,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     }
   ],
   "overlaps": [

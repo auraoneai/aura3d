@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T21:53:46.111Z",
+  "generatedAt": "2026-08-08T21:59:11.374Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -14,8 +14,8 @@
     "modules": 36,
     "lines": 11893,
     "retainedRuntimeOrContracts": 6,
-    "deleteAfterR8": 12,
-    "migrateThenDelete": 18,
+    "deleteAfterR8": 0,
+    "migrateThenDelete": 30,
     "unclassified": 0,
     "booleanClaimModulesRejectedAsRuntimeProof": 25
   },
@@ -27,8 +27,10 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
         "packages/animation/src/browser-index.ts",
-        "tests/browser/runtime-external-parity.spec.ts"
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -44,7 +46,10 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "packages/assets/src/browser-index.ts"
+        "examples/asset-viewer/main.ts",
+        "packages/assets/src/browser-index.ts",
+        "tests/browser/asset-viewer-browser.spec.ts",
+        "tests/unit/assets/asset-bundle-cache-fixtures.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -64,7 +69,10 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "packages/assets/src/browser-index.ts"
+        "examples/asset-viewer/main.ts",
+        "packages/assets/src/browser-index.ts",
+        "tests/browser/asset-viewer-browser.spec.ts",
+        "tests/unit/assets/scene-analysis-fixtures.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -90,6 +98,8 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
         "tools/audio-backend-bakeoff/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
@@ -107,7 +117,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
         "tools/audio-backend-bakeoff/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
@@ -128,6 +140,8 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/workstream5-input-audio-scripting-editor.test.ts",
         "tools/audio-backend-bakeoff/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
@@ -143,8 +157,11 @@
       "lines": 368,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "apps/editor/src/EditorShell.ts",
+        "tests/unit/workstream5-input-audio-scripting-editor.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "focusable",
         "disabled",
@@ -156,7 +173,7 @@
         "aaContrastPasses"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/engine/src/agent-api/AssetEvidence.ts",
@@ -172,6 +189,8 @@
         "apps/aura-clash-showcase/src/evidence/evidenceModel.ts",
         "apps/aura-clash-showcase/src/showcaseProofBoot.ts",
         "apps/showcase-data-galaxy/src/main.ts",
+        "archive/legacy-ai-runtime/tools/cinematic-asset-readiness/index.ts",
+        "packages/aura3d-cli/src/index.ts",
         "packages/create-aura3d/src/showcase-spec-evidence.ts",
         "packages/editor-runtime/src/ProjectSerializer.ts",
         "packages/editor-runtime/tests/editor-runtime.test.ts",
@@ -186,6 +205,8 @@
         "tests/unit/create-aura3d/showcase-platformer-spec.test.ts",
         "tests/unit/create-aura3d/showcase-spec-compiler.test.ts",
         "tools/editor-tools-evidence/index.ts",
+        "tools/external-parity-visual-quality/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/requirements-trace/index.ts",
         "tools/showcase-library/build-and-check.mjs",
         "tools/showcase-library/route-primary-probes.mjs"
@@ -212,14 +233,18 @@
       "publicBarrelExport": false,
       "nonBarrelSourceConsumers": [
         "apps/aura-clash-showcase/scripts/check-launch-evidence-manifest.mjs",
+        "packages/create-aura3d/templates/fighting-game/src/game/stage.ts",
         "packages/create-aura3d/templates/mini-game/src/main.ts",
         "packages/engine/src/agent-api/AuraAppHandle.ts",
         "packages/engine/src/agent-api/GameAppRuntime.ts",
         "packages/engine/src/agent-api/index.ts",
         "templates/mini-game/src/main.ts",
+        "tools/evidence/verify-agent-api-types.mjs",
         "tools/foundation-runtime/index.ts",
+        "tools/game-runtime-evidence/index.ts",
         "tools/game-runtime-prd-readiness/index.ts",
         "tools/game-runtime-readiness/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/replicability-metrics/index.mjs",
         "tools/showcase-library/showcase-game-release-retained-files.mjs"
       ],
@@ -294,7 +319,8 @@
         "tools/prompt-animation-auravoice-render/index.ts",
         "tools/prompt-animation-evidence/index.ts",
         "tools/prompt-animation-package-smoke/index.ts",
-        "tools/prompt-animation-readiness/index.ts"
+        "tools/prompt-animation-readiness/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -322,7 +348,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/input/gesture-haptics-fixtures.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -345,7 +373,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream5-input-audio-scripting-editor.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -372,7 +402,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -388,7 +420,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [],
@@ -402,7 +436,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [],
@@ -416,7 +452,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -433,7 +471,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "packages/physics/src/world.ts"
+        "examples/physics-sandbox/main.ts",
+        "packages/physics/src/world.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -449,7 +489,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/unit/tools/deletion-safety.test.ts"
+        "examples/game-slice/main.ts",
+        "tests/unit/tools/deletion-safety.test.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -470,7 +512,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/workstream4.physics-animation.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -485,8 +529,14 @@
       "lines": 241,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "benchmarks/external-parity/aura3d/interior-scene.ts",
+        "examples/architecture-viewer/main.ts",
+        "examples/external-interior-scene/ExternalInteriorScene.ts",
+        "tests/unit/rendering/architectural-material-catalog.test.ts",
+        "tools/external-parity-scene-readiness/index.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "interiorLightsEnabled",
         "enabled",
@@ -494,7 +544,7 @@
         "interiorLightsOn"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
@@ -502,13 +552,16 @@
       "lines": 155,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/architecture-viewer/main.ts",
+        "tests/unit/rendering/architectural-material-catalog.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "snapEnabled"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/CullingFixtures.ts",
@@ -516,8 +569,11 @@
       "lines": 280,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/large-world-streaming/main.ts",
+        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "bvhHierarchy",
         "frustumTraversal",
@@ -526,7 +582,7 @@
         "frameCoherency"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/EnvironmentPlatform.ts",
@@ -535,8 +591,16 @@
       "classification": "real-runtime-or-mounted-evidence",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
+        "apps/advanced-examples-gallery/src/dataGalaxyScene.ts",
+        "apps/advanced-examples-gallery/src/productConfiguratorScene.ts",
+        "apps/advanced-examples-gallery/src/rendererEnvironmentFogEvidence.ts",
+        "apps/advanced-examples-gallery/src/sceneBuilderPrimitives.ts",
+        "examples/product-configurator/main.ts",
         "packages/rendering/src/EnvironmentPreset.ts",
-        "tests/unit/tools/deletion-safety.test.ts"
+        "tests/unit/rendering/environment-lighting-reflection-platform.test.ts",
+        "tests/unit/rendering/environment-platform.test.ts",
+        "tests/unit/tools/deletion-safety.test.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -557,11 +621,124 @@
       "classification": "public-data-contract",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
+        "apps/advanced-examples-gallery/src/advancedRouteEvidence.ts",
+        "apps/advanced-examples-gallery/src/dataGalaxyEvidence.ts",
+        "apps/advanced-examples-gallery/src/dataGalaxyFocalSystem.ts",
+        "apps/advanced-examples-gallery/src/dataGalaxyScene.ts",
+        "apps/advanced-examples-gallery/src/fogCathedralEvidence.ts",
+        "apps/advanced-examples-gallery/src/math.ts",
+        "apps/advanced-examples-gallery/src/physicsSimulation.ts",
+        "apps/advanced-examples-gallery/src/proceduralRouteScenes.ts",
+        "apps/advanced-examples-gallery/src/productConfiguratorScene.ts",
+        "apps/advanced-examples-gallery/src/reactorPostScene.ts",
+        "apps/advanced-examples-gallery/src/roboticsLabEvidence.ts",
+        "apps/advanced-examples-gallery/src/sceneBuilderPrimitives.ts",
+        "apps/advanced-examples-gallery/src/smartCityEvidence.ts",
+        "apps/aura-clash-showcase/src/playable/animation/fighterSecondaryMotion.ts",
+        "apps/decals/src/decalPlacement.ts",
+        "apps/decals/src/main.ts",
+        "apps/public-scene/src/main.ts",
+        "apps/showcase-orbital-defense/src/main.ts",
+        "apps/skinning-ik/src/ikTargets.ts",
+        "apps/skinning-ik/src/main.ts",
+        "apps/stereo-effects/src/stereoControls.ts",
+        "archive/legacy-ai-runtime/packages/create-aura3d/templates/ai-cinematic-previs/src/main.ts",
+        "archive/legacy-ai-runtime/packages/create-aura3d/templates/ai-product-shot-generator/src/main.ts",
+        "archive/legacy-ai-runtime/packages/create-aura3d/templates/ai-scene-prompt-lab/src/main.ts",
+        "archive/legacy-ai-runtime/packages/create-aura3d/templates/ai-scene-runtime-basic/src/main.ts",
+        "archive/legacy-ai-runtime/templates/ai-cinematic-previs/src/main.ts",
+        "archive/legacy-ai-runtime/templates/ai-product-shot-generator/src/main.ts",
+        "archive/legacy-ai-runtime/templates/ai-scene-prompt-lab/src/main.ts",
+        "archive/legacy-ai-runtime/templates/ai-scene-runtime-basic/src/main.ts",
+        "packages/animation/src/Bone.ts",
+        "packages/animation/src/FootIk.ts",
+        "packages/animation/src/IK.ts",
+        "packages/animation/src/Inertialization.ts",
+        "packages/animation/src/Keyframe.ts",
+        "packages/animation/src/MotionMatchingFixtures.ts",
+        "packages/animation/src/RootMotion.ts",
+        "packages/animation/src/Skeleton.ts",
+        "packages/animation/src/SpringBones.ts",
+        "packages/animation/src/library/standardHumanoidClips.ts",
+        "packages/assets/src/GLTFAnimationRuntime.ts",
+        "packages/assets/src/GLTFLoader.ts",
+        "packages/assets/src/OBJLoader.ts",
+        "packages/controls/src/TransformControls.ts",
+        "packages/create-aura3d/src/showcase-spec-game-geometry-extractor.ts",
+        "packages/create-aura3d/templates/animation-studio/scripts/animation-scene.ts",
+        "packages/create-aura3d/templates/animation-studio/scripts/build-characters.ts",
+        "packages/create-aura3d/templates/animation-studio/scripts/hifi-cast-validate.ts",
+        "packages/create-aura3d/templates/animation-studio/scripts/skeleton-overlay.ts",
+        "packages/create-aura3d/templates/animation-studio/scripts/verify-extracted-overlay-cli.ts",
+        "packages/create-aura3d/templates/animation-studio/src/animation-episode-validator.ts",
+        "packages/create-aura3d/templates/animation-studio/src/director/director-heuristics.ts",
+        "packages/create-aura3d/templates/animation-studio/src/episode-document.ts",
+        "packages/create-aura3d/templates/animation-studio/src/examples/moon-garden.example.ts",
+        "packages/create-aura3d/templates/animation-studio/src/procedural-hdri.ts",
+        "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
+        "packages/create-aura3d/templates/animation-studio/src/set-templates.ts",
+        "packages/create-aura3d/templates/animation-studio/src/studio/scene-tool-registry.ts",
+        "packages/create-aura3d/templates/animation-studio/src/studio/scene-tools.ts",
+        "packages/engine/src/agent-api/GameSceneGeometryBindings.ts",
+        "packages/engine/src/agent-api/SceneGroundingUtils.ts",
+        "packages/engine/src/agent-api/SpatialAnchoring.ts",
+        "packages/engine/src/agent-api/lean-base.ts",
+        "packages/engine/src/animation-studio/animation-episode-validator.ts",
+        "packages/engine/src/animation-studio/director-heuristics.ts",
+        "packages/engine/src/animation-studio/episode-document.ts",
+        "packages/engine/src/animation-studio/scene-tools.ts",
+        "packages/engine/src/production-runtime/index.ts",
+        "packages/physics/src/CharacterController.ts",
+        "packages/physics/src/Collider.ts",
+        "packages/physics/src/CollisionEvents.ts",
+        "packages/physics/src/CollisionVolumes.ts",
+        "packages/physics/src/Constraint.ts",
+        "packages/physics/src/ECSPhysicsBridge.ts",
+        "packages/physics/src/HitboxWorld.ts",
+        "packages/physics/src/KinematicBody.ts",
+        "packages/physics/src/KinematicWorld.ts",
+        "packages/physics/src/MeshBVH.ts",
+        "packages/physics/src/NarrowPhase.ts",
+        "packages/physics/src/PhysicsDebugDraw.ts",
+        "packages/physics/src/PhysicsSandboxFixtures.ts",
+        "packages/physics/src/PhysicsWorld.ts",
+        "packages/physics/src/Raycast.ts",
+        "packages/physics/src/RigidBody.ts",
+        "packages/physics/src/ScenePhysicsBridge.ts",
+        "packages/physics/src/Shape.ts",
+        "packages/physics/src/SurfaceQuery.ts",
+        "packages/physics/src/TimeOfImpact.ts",
+        "packages/physics/src/index.ts",
+        "packages/physics/src/solverless.ts",
+        "packages/rendering/src/CameraFraming.ts",
+        "packages/rendering/src/EnvironmentPlatform.ts",
+        "packages/rendering/src/Geometry.ts",
+        "packages/rendering/src/Renderer.ts",
+        "packages/rendering/src/StereoCameraRig.ts",
+        "packages/scene/src/Bounds.ts",
+        "packages/scene/src/DirectionalLight.ts",
+        "packages/scene/src/Light.ts",
+        "packages/scene/src/MathTypes.ts",
+        "packages/scene/src/Object3D.ts",
+        "packages/scene/src/TransformNode.ts",
+        "packages/workflows/src/AnimationLabWorkflow.ts",
+        "tests/browser/fighting-game-runtime.spec.ts",
         "tests/browser/production-runtime-hd-materials.ts",
         "tests/browser/production-runtime-hd-product-hero.ts",
         "tests/browser/production-runtime-production-scene-tools.ts",
+        "tests/browser/spring-bones.spec.ts",
+        "tests/unit/animation/spring-bones.test.ts",
+        "tests/unit/create-aura3d/generated-source-assertions.ts",
+        "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
+        "tests/unit/rendering/pbr-reference.test.ts",
+        "tools/animation-spring-bone-readiness/index.ts",
+        "tools/bundle-scenarios/entries/scenario-3-threejs.ts",
         "tools/external-parity-pbr-gltf-readiness/index.ts",
-        "tools/external-parity-pbr-reference-readiness/index.ts"
+        "tools/external-parity-pbr-reference-readiness/index.ts",
+        "tools/physics-backend-bakeoff/index.ts",
+        "tools/product-studio-generate-products/index.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts",
+        "tools/threejs-parity-decals-parity/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -579,11 +756,14 @@
       "lines": 200,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [],
       "rejectsUnmountedBooleanClaims": false,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/VoxelWorldFixtures.ts",
@@ -591,15 +771,18 @@
       "lines": 280,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/large-world-streaming/main.ts",
+        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "animated",
         "transparent",
         "solid"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/WeatherFixtures.ts",
@@ -607,11 +790,14 @@
       "lines": 223,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/large-world-streaming/main.ts",
+        "tests/unit/rendering/procedural-texture-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [],
       "rejectsUnmountedBooleanClaims": false,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/rendering/src/cinematic/CinematicEvidence.ts",
@@ -620,8 +806,11 @@
       "classification": "real-runtime-or-mounted-evidence",
       "publicBarrelExport": false,
       "nonBarrelSourceConsumers": [
+        "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraCameraShotRuntime.ts",
+        "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraCharacterBlockingRuntime.ts",
         "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraCinematicRenderEvidence.ts",
         "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraCinematicSceneCompiler.ts",
+        "archive/legacy-ai-runtime/packages/engine/src/ai-runtime/AuraTimelineScrubber.ts",
         "packages/engine/src/threejs-example-parity/index.ts",
         "packages/rendering/src/cinematic/BloomPass.ts",
         "packages/rendering/src/cinematic/CinematicDepthComposition.ts",
@@ -637,7 +826,8 @@
         "packages/rendering/src/cinematic/VignettePass.ts",
         "packages/rendering/src/cinematic/WetReflectionApproximation.ts",
         "packages/rendering/src/cinematic/index.ts",
-        "tests/unit/rendering/cinematic-postprocess.test.ts"
+        "tests/unit/rendering/cinematic-postprocess.test.ts",
+        "tools/public-runtime-descriptor-inventory/index.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -658,7 +848,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/scripting/weapon-system.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [],
@@ -671,8 +863,11 @@
       "lines": 182,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/scripting/analytics-privacy-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "analyticsConsent",
         "marketingConsent",
@@ -689,7 +884,7 @@
         "providerBoundaryTelemetry"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/scripting/src/CloudServiceFixtures.ts",
@@ -697,8 +892,11 @@
       "lines": 225,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/scripting/cloud-service-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "offlineMode",
         "activated",
@@ -710,7 +908,7 @@
         "contentDeliveryTelemetry"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/scripting/src/CulturalBehaviorFixtures.ts",
@@ -718,8 +916,11 @@
       "lines": 262,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/scripting/cultural-behavior-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "approachAllowed",
         "audienceAdapted",
@@ -731,7 +932,7 @@
         "gestureBoundaryTelemetry"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/scripting/src/LearningAgentFixtures.ts",
@@ -739,8 +940,11 @@
       "lines": 184,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/scripting/learning-agent-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "featureExtractionTelemetry",
         "behaviorCloningTelemetry",
@@ -748,7 +952,7 @@
         "rewardBreakdownTelemetry"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     },
     {
       "path": "packages/scripting/src/NetworkReplicationFixtures.ts",
@@ -757,7 +961,9 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "tests/browser/runtime-external-parity.spec.ts"
+        "examples/game-slice/main.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
+        "tests/unit/scripting/weapon-system.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -777,7 +983,10 @@
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
       "nonBarrelSourceConsumers": [
-        "packages/scripting/src/ProceduralContentAdaptationFixtures.ts"
+        "examples/game-slice/main.ts",
+        "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
+        "tests/unit/scripting/player-behavior-telemetry-fixtures.test.ts",
+        "tests/unit/scripting/procedural-content-adaptation-fixtures.test.ts"
       ],
       "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
@@ -795,8 +1004,11 @@
       "lines": 205,
       "classification": "test-or-evidence-fixture",
       "publicBarrelExport": true,
-      "nonBarrelSourceConsumers": [],
-      "zeroNonBarrelSourceConsumers": true,
+      "nonBarrelSourceConsumers": [
+        "examples/game-slice/main.ts",
+        "tests/unit/scripting/procedural-content-adaptation-fixtures.test.ts"
+      ],
+      "zeroNonBarrelSourceConsumers": false,
       "booleanClaimFields": [
         "hasSecretAreas",
         "hasTimeLimit",
@@ -806,7 +1018,7 @@
         "adaptiveAiParameterTelemetry"
       ],
       "rejectsUnmountedBooleanClaims": true,
-      "disposition": "delete-after-r8"
+      "disposition": "migrate-consumers-then-delete"
     }
   ],
   "unclassified": [],

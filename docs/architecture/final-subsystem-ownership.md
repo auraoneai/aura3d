@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `fc6cf5304516d02a7306f3115b5e1bf717efab71`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `03a3f1243b89ee583c49552420fd33e75f8d228c`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -43,41 +43,41 @@ Every package source file is assigned exactly once. General rows inherit the pac
 
 | Subsystem | Package | Disposition | Files | Lines | Built gzip | Maintenance refs | Decision |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 198 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `animation-general` | `animation` | `AURA-CORE` | 44 | 7783 | 51730 | 199 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `apps-general` | `apps` | `AURA-MOAT` | 1 | 162 | 1190 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 3 | 793 | 6457 | 5 | Remove evidence-only source from the published runtime after consumer proof. |
+| `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 3 | 793 | 6457 | 6 | Remove evidence-only source from the published runtime after consumer proof. |
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `assets-general` | `assets` | `AURA-MOAT` | 61 | 15791 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1711 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `audio-evidence-fixtures` | `audio` | `EVIDENCE-ONLY` | 3 | 580 | 4538 | 6 | Move non-runtime fixtures out of the published audio package. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 787 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `audio-evidence-fixtures` | `audio` | `EVIDENCE-ONLY` | 3 | 580 | 4538 | 7 | Move non-runtime fixtures out of the published audio package. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 789 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 67 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 199 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 200 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 87 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 3 | Move fixtures out of the optional editor runtime. |
+| `editor-evidence-fixtures` | `editor-runtime` | `EVIDENCE-ONLY` | 1 | 368 | 3467 | 2 | Move fixtures out of the optional editor runtime. |
 | `editor-general` | `editor` | `OPTIONAL-PLUGIN` | 1 | 1 | 93 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `editor-runtime-general` | `editor-runtime` | `OPTIONAL-PLUGIN` | 45 | 7547 | 47379 | 119 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `editor-runtime-general` | `editor-runtime` | `OPTIONAL-PLUGIN` | 45 | 7547 | 47379 | 120 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `engine-browser-media` | `engine` | `BROWSER-STANDARD` | 4 | 521 | 3170 | 11 | Keep browser capture separate from Node encoding and publishing. |
-| `engine-general` | `engine` | `AURA-MOAT` | 105 | 54793 | 380791 | 867 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `engine-general` | `engine` | `AURA-MOAT` | 105 | 54793 | 380791 | 869 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `engine-node-media-publishing` | `engine` | `OPTIONAL-PLUGIN` | 9 | 1559 | 10660 | 18 | Remove Node/cloud/FFmpeg ownership from browser entries. |
-| `environments-general` | `environments` | `AURA-CORE` | 9 | 464 | 3050 | 1338 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `input-general` | `input` | `AURA-CORE` | 26 | 2369 | 13557 | 72 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1340 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `environments-general` | `environments` | `AURA-CORE` | 9 | 464 | 3050 | 1340 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `input-general` | `input` | `AURA-CORE` | 26 | 2369 | 13557 | 75 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1342 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 177 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 196 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 132 | Compare against current Rapier topology; exactly one physical solver may remain. |
 | `physics-custom-physical-controllers` | `physics` | `DEPRECATE-REMOVE` | 4 | 2184 | 17116 | 31 | Retain only until the optional-engine bake-off and migration proof identify replacements. |
-| `physics-evidence-descriptors` | `physics` | `EVIDENCE-ONLY` | 7 | 2281 | 14925 | 8 | Move out of the published runtime; never represent descriptors as solvers. |
-| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2451 | 16083 | 425 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-evidence-descriptors` | `physics` | `EVIDENCE-ONLY` | 7 | 2281 | 14925 | 9 | Move out of the published runtime; never represent descriptors as solvers. |
+| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2451 | 16083 | 426 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `physics-navigation-crowd-steering` | `physics` | `OPTIONAL-PLUGIN` | 3 | 1135 | 7650 | 27 | Bake off against Recast/Detour and maintained alternatives in Phase 2. |
 | `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `rendering-general` | `rendering` | `AURA-CORE` | 253 | 55125 | 381532 | 898 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `rendering-general` | `rendering` | `AURA-CORE` | 253 | 55125 | 381532 | 900 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `scene-general` | `scene` | `AURA-CORE` | 22 | 1708 | 10343 | 519 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 29 | 5837 | 39265 | 45 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 29 | 5837 | 39265 | 46 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `three-compat-general` | `three-compat` | `COMPATIBILITY-ONLY` | 20 | 1234 | 10185 | 19 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `workflows-general` | `workflows` | `AURA-MOAT` | 20 | 1174 | 8260 | 6 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 

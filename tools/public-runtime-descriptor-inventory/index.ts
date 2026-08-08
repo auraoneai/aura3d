@@ -18,13 +18,20 @@ const publicDataContract = new Set([
   "packages/rendering/src/PbrReference.ts"
 ]);
 
-function references(path: string): string[] {
+function exportedIdentifiers(source: string): readonly string[] {
+  return [...new Set([...source.matchAll(/\bexport\s+(?:declare\s+)?(?:async\s+)?(?:type|interface|class|function|const|let|var|enum)\s+([A-Za-z_$][\w$]*)/g)].map((match) => match[1]!))];
+}
+
+function references(path: string, candidateSource: string): string[] {
   const stem = basename(path).replace(/\.tsx?$/, "");
   const packageRoot = path.split("/").slice(0, 2).join("/");
+  const identifiers = exportedIdentifiers(candidateSource);
   return existingTracked.filter((candidate) => {
     if (candidate === path || !/\.(?:ts|tsx|js|mjs|cjs)$/.test(candidate) || candidate.startsWith("tests/reports/")) return false;
     const source = readFileSync(candidate, "utf8");
-    if (!source.includes(stem)) return false;
+    const referencesModule = source.includes(stem);
+    const referencesExport = identifiers.some((identifier) => new RegExp(`\\b${identifier}\\b`).test(source));
+    if (!referencesModule && !referencesExport) return false;
     if (candidate === `${packageRoot}/src/index.ts`) return false;
     return true;
   });
@@ -32,7 +39,7 @@ function references(path: string): string[] {
 
 const modules = candidates.map((path) => {
   const source = readFileSync(path, "utf8");
-  const refs = references(path);
+  const refs = references(path, source);
   const fixtureNamed = /Fixtures?\.tsx?$/.test(path);
   const packageSourceBarrel = `packages/${path.split("/")[1]}/src/index.ts`;
   const classification = runtimeContract.has(path)
