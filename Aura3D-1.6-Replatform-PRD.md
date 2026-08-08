@@ -1089,7 +1089,10 @@ implementation → before/after PNG evidence → focused browser test.
       → `MaterialBinding.ts`. — **not needed for primitives, still open for glTF assets.** The frame
       is derived from the geometric normal, which is correct for procedurally generated primitives
       that carry no tangent attribute. A glTF asset with authored tangents goes through the production
-      runtime and should use them; that remains open and is not claimed.
+      runtime and should use them; that remains open and is **not claimed** — the anisotropy parity
+      row stays `parity-unproven` for asset-authored tangents rather than being upgraded on the
+      strength of the primitive fix. `VertexFormat.P3N3T4T2` already carries a 4-component tangent,
+      so the remaining work is loader plumbing rather than a format change.
 - [x] **Create** a focused browser test for `anisotropy-strength-test` and
       `anisotropy-disc-test`. — delivered as WS-1.5's `check:material-structural-parity`, which
       measures the *behaviour* on a controlled sphere rather than pixel-diffing one asset. Preferred
@@ -2386,7 +2389,11 @@ assumed.
 
 #### WS-3.6d Per-package consolidation decisions
 
-- [ ] One decision, one commit, per package. Under R8 and R7.
+- [x] One decision, one commit, per package. Under R8 and R7. — **all five decided, and every one
+      came out "retain".** `core`/`apps` are dependencies of `engine`; `materials`/`environments`/
+      `editor` are public export subpaths whose removal would be breaking; `test-utils` is the only
+      unexported candidate and R8 blocks it with 8 references. Zero packages removed, which is why
+      §12 resolved to `1.6.0` rather than `2.0.0`.
 - [x] **`core` and `apps` are not candidates for removal in 1.6** — `engine` depends on both.
       Confirmed in WS-3.6c: `core` is a declared dependency of `ecs`, `scene`, `engine` and
       `apps`; both also resolve as public subpaths from an installed tarball.
@@ -2398,8 +2405,12 @@ assumed.
       references (3 release tools plus a `tsconfig.base.json` alias). Not a delete; a
       tool-edit decision. Deferred: it costs 4 file edits to remove 62 lines and buys no
       bundle, parity or friction improvement, so it loses to every remaining P2/P4 item.
-- [ ] **Proof:** `pnpm build && pnpm typecheck` after each; no public subpath disappears
+- [x] **Proof:** `pnpm build && pnpm typecheck` after each; no public subpath disappears
       without a `MIGRATION-1.6.md` entry.
+      — `build:raw` finalizes 27 packages and `typecheck:raw` is clean. **Exactly one root subpath
+      disappeared (`./three-compat`) and it has a `MIGRATION-1.6.md` entry**, verified by
+      `migration-matrix.test.ts` which recomputes the removed set from `package.json` at `v1.5.2`
+      — so a future silent removal fails a test rather than a review.
 
 ## PHASE 4 — Physics re-platform
 
