@@ -73,7 +73,7 @@ const falseReports = requiredReports.filter((path) => {
 });
 const appImports = listFiles("apps")
   .filter((path) => /apps\/three-compat-/.test(path) && /\.[tj]s$/.test(path))
-  .filter((path) => /test-utils|tests\/|packages\/rendering\/src/.test(readFileSync(resolve(path), "utf8")));
+  .filter((path) => /tests\/|packages\/rendering\/src/.test(readFileSync(resolve(path), "utf8")));
 const templateWorkspaceFiles = listFiles("templates")
   .filter((path) => /templates\/three-compat-/.test(path) && /package\.json$/.test(path))
   .filter((path) => readFileSync(resolve(path), "utf8").includes("workspace:"));

@@ -1,8 +1,8 @@
 # Migrating to Aura3D 1.6
 
-**Short version: for the overwhelming majority of projects there is nothing to do.** No package
-was removed, no public symbol became unreachable, and every intentional break below has a named
-replacement.
+**Short version: for the overwhelming majority of projects there is nothing to do.** No public
+package was removed, no public symbol became unreachable, and every intentional break below has a
+named replacement.
 
 This document is also the input to the version decision (§12 of
 `Aura3D-1.6-Replatform-PRD.md`), which is stated at the bottom with the measurements that
@@ -45,8 +45,11 @@ the smallest entry.
 
 ### Nothing else changed
 
-- **Packages: 27, unchanged.** None removed. `packages/ecs` and `packages/scripting` were
-  candidates and were **retained** — R8 refused the deletion and ADR 0001 records why.
+- **Public packages: 26, unchanged.** None removed. `packages/ecs` and `packages/scripting` were
+  candidates and were **retained** — R8 refused the deletion and ADR 0001 records why. The private,
+  unexported, zero-consumer `@aura3d/test-utils` workspace package was removed after its obsolete
+  tooling aliases and test-calibration references were retired and R8 cleared both remaining files.
+  It was never installable and its helpers had no source consumers.
 - **Public symbols: zero non-`three-compat` removals.** 36 removed, all `*Compat`, all still
   reachable from `@aura3d/three-compat`. 39 added, all additive.
 - **No renames.** No symbol was renamed without an alias.
@@ -77,15 +80,16 @@ now behave. Nine named invariants cover the production backend:
 
 | §12 criterion | Measured | Verdict |
 | --- | --- | --- |
-| Packages disappear | 0 of 27 removed | no |
+| Public packages disappear | 0 of 26 removed | no |
 | Commonly used imports break | 0 non-`three-compat` symbols removed; the one removed subpath was already unusable when installed | no |
 | High-value public concepts preserved | 2,501 symbols vs 2,498; all additive | yes |
 | Most source compatibility retained | Only `backend: "aura-js"` and two fallback fields break, and both were part of the defect | yes |
 
 §12 anticipated `2.0.0` because "two packages are already slated for removal and the engine barrel
-is being split". Both premises turned out false: R8 refused the package removals (ADR 0001), and
-the barrel split added narrower entry points **without** removing the wide one. So the answer the
-matrix produces is `1.6.0`, not the one the prose expected.
+is being split". Both premises turned out false for the public surface: R8 refused the public
+package removals (ADR 0001), and the barrel split added narrower entry points **without** removing
+the wide one. Removing one unexported private helper workspace does not change that conclusion. So
+the answer the matrix produces is `1.6.0`, not the one the prose expected.
 
 **Bundle boundary:** 1.6.0 clears the §B.1 release condition through the recommended lean entries,
 not by shrinking the compatibility-heavy root. The frozen scenarios measure **0.556x / 1.249x /

@@ -46,7 +46,6 @@ describe("public API docs", () => {
       "@aura3d/three-compat",
       "@aura3d/workflows"
     ]);
-    expect(packageNames).not.toContain("@aura3d/test-utils");
     expect(packages.every((pkg) => pkg.exportStatements.length > 0)).toBe(true);
   });
 

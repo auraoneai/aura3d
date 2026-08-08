@@ -4,11 +4,15 @@ Every file 1.6 deleted, with the commit that removed it and the exact command to
 
 ## Nothing you can install was removed
 
-**No package, and no reachable public symbol, was removed in 1.6.** §9 of the PRD anticipated this
-document covering removed *packages* — `packages/ecs` and `packages/scripting` were candidates —
-and R8 refused both deletions. ADR 0001 records why: both are published subpaths with live
-consumers, and one is proven through a real WebGL2 production path. `MIGRATION-1.6.md` has the
-measured migration matrix.
+**No public package, and no reachable public symbol, was removed in 1.6.** §9 of the PRD
+anticipated this document covering removed *packages* — `packages/ecs` and `packages/scripting`
+were candidates — and R8 refused both deletions. ADR 0001 records why: both are published subpaths
+with live consumers, and one is proven through a real WebGL2 production path.
+
+The one package-directory removal is `packages/test-utils`: a private, unexported workspace with
+zero source consumers. Its apparent blockers were obsolete tool aliases and deletion-test
+calibration references. After those were removed, R8 cleared its manifest and source file at all
+six evidence points. `MIGRATION-1.6.md` has the measured public-surface matrix.
 
 So what follows is documentation and tooling, not product surface.
 
@@ -27,6 +31,13 @@ git checkout <commit>^ -- <path>
 `<commit>^` is the parent of the deleting commit, i.e. the last revision where the file existed.
 
 ## Deleted files
+
+### Private zero-consumer workspace — 1.6 release preparation
+
+| Path | Retrieval | Why removed |
+| --- | --- | --- |
+| `packages/test-utils/package.json` | `git show c1c5c8a8:packages/test-utils/package.json` | Private, unexported package manifest with no product consumer |
+| `packages/test-utils/src/index.ts` | `git show c1c5c8a8:packages/test-utils/src/index.ts` | 62 lines of unused mock-clock and pixel-buffer helpers |
 
 ### Prompt scratch — `c9d6044a` (§7)
 

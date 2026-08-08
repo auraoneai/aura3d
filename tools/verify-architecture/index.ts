@@ -68,7 +68,7 @@ const publicPackages = [
   "debug"
 ] as const;
 
-const privatePackages = ["test-utils"] as const;
+const privatePackages = [] as const;
 const requiredPackages = [...publicPackages, ...privatePackages] as const;
 
 const requiredTestDirs = [

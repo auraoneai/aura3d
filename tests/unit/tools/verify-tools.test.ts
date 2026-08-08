@@ -132,15 +132,13 @@ describe("verification tools", () => {
       "workflows",
       "editor-runtime",
       "editor",
-      "debug",
-      "test-utils"
+      "debug"
     ];
     for (const packageName of packages) {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
       writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: expectedPackageName(packageName),
-        private: packageName === "test-utils" ? true : undefined
+        name: expectedPackageName(packageName)
       }));
     }
     writeFileSync(join(root, "packages", "rendering", "src", "Renderer.ts"), "export class Renderer {}\n");
@@ -149,7 +147,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "packages", "core", "src", "EventBus.ts"), "export class EventBus {}\n");
     writeFileSync(join(root, "packages", "scene", "src", "Hierarchy.ts"), "export class Hierarchy {}\n");
 
-    const exportsMap = Object.fromEntries(packages.filter((packageName) => packageName !== "test-utils").map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
+    const exportsMap = Object.fromEntries(packages.map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
     const scripts = Object.fromEntries([
       "typecheck",
       "build",
@@ -240,15 +238,13 @@ describe("verification tools", () => {
       "workflows",
       "editor-runtime",
       "editor",
-      "debug",
-      "test-utils"
+      "debug"
     ];
     for (const packageName of packages) {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
       writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: expectedPackageName(packageName),
-        private: packageName === "test-utils" ? true : undefined
+        name: expectedPackageName(packageName)
       }));
     }
     writeFileSync(join(root, "packages", "rendering", "src", "Renderer.ts"), "export class Renderer {}\n");
@@ -257,7 +253,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "packages", "core", "src", "EventBus.ts"), "export class EventBus {}\n");
     writeFileSync(join(root, "packages", "scene", "src", "Hierarchy.ts"), "export class Hierarchy {}\n");
 
-    const exportsMap = Object.fromEntries(packages.filter((packageName) => packageName !== "test-utils").map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
+    const exportsMap = Object.fromEntries(packages.map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
     const scripts = Object.fromEntries([
       "typecheck",
       "build",

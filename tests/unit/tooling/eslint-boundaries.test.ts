@@ -135,7 +135,7 @@ describe("tier source of truth", () => {
     // If these two ever diverge, one gate would permit what the other rejects. They must read the
     // same module — this asserts the module exists and is populated, and the import above is what
     // makes the sharing real.
-    expect(Object.keys(PACKAGE_TIERS).length).toBeGreaterThanOrEqual(27);
+    expect(Object.keys(PACKAGE_TIERS)).toHaveLength(26);
     expect(PACKAGE_TIERS.math).toBe(0);
     expect(PACKAGE_TIERS.engine).toBeGreaterThan(PACKAGE_TIERS.rendering);
   });

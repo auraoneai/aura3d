@@ -164,9 +164,6 @@
       "@aura3d/debug": [
         "packages/debug/src/index.ts"
       ],
-      "@aura3d/test-utils": [
-        "packages/test-utils/src/index.ts"
-      ],
       "@aura3d/engine/assets/asset-corpus": [
         "packages/assets/src/asset-corpus/index.ts"
       ],

@@ -69,7 +69,6 @@ digraph aura3d {
   "scene" -> "core";
   "scene" -> "math";
   "scripting" [label="scripting\ntier 0"];
-  "test-utils" [label="test-utils\ntier 0"];
   "three-compat" [label="three-compat\ntier 6"];
   "three-compat" -> "animation";
   "three-compat" -> "controls";

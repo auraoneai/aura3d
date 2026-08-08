@@ -367,8 +367,6 @@ importers:
 
   packages/scripting: {}
 
-  packages/test-utils: {}
-
   packages/three-compat:
     dependencies:
       '@aura3d/animation':

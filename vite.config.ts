@@ -66,7 +66,6 @@ const aliasEntries = [
   ["@aura3d/editor-runtime", "./packages/editor-runtime/src/index.ts"],
   ["@aura3d/editor", "./packages/editor/src/index.ts"],
   ["@aura3d/debug", "./packages/debug/src/index.ts"],
-  ["@aura3d/test-utils", "./packages/test-utils/src/index.ts"],
 ] as const;
 
 const alias = aliasEntries.map(([find, replacement]) => ({

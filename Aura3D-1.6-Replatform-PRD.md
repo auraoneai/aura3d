@@ -2474,25 +2474,25 @@ assumed.
 
 #### WS-3.6d Per-package consolidation decisions
 
-- [x] One decision, one commit, per package. Under R8 and R7. — **all five decided, and every one
-      came out "retain".** `core`/`apps` are dependencies of `engine`; `materials`/`environments`/
-      `editor` are public export subpaths whose removal would be breaking; `test-utils` is the only
-      unexported candidate and R8 blocks it with 8 references. Zero packages removed, which is why
-      §12 resolved to `1.6.0` rather than `2.0.0`.
+- [x] One decision, one commit, per package. Under R8 and R7. — `core`/`apps` are dependencies of
+      `engine`; `materials`/`environments`/`editor` are public export subpaths whose removal would
+      be breaking. The private `test-utils` workspace was removed on 2026-08-08 only after its
+      obsolete tooling aliases and deletion-test calibration references were retired and a fresh
+      R8 run cleared its manifest and source file at all six evidence points. **Zero public packages
+      removed**, which is why §12 remains `1.6.0` rather than `2.0.0`.
 - [x] **`core` and `apps` are not candidates for removal in 1.6** — `engine` depends on both.
       Confirmed in WS-3.6c: `core` is a declared dependency of `ecs`, `scene`, `engine` and
       `apps`; both also resolve as public subpaths from an installed tarball.
 - [x] `materials`, `environments`, `editor` are public exports: removal is a **breaking
       change** feeding §12, and requires a deprecation path, not a delete. Confirmed: 14,
       12 and 74 exports respectively resolve from an installed `@aura3d/engine`.
-- [x] `test-utils` (62, not exported) is the only straightforward candidate — **corrected by
-      WS-3.6c**: it is the only *unexported* package, but R8 blocks deletion with 8 blocking
-      references (3 release tools plus a `tsconfig.base.json` alias). Not a delete; a
-      tool-edit decision. Deferred: it costs 4 file edits to remove 62 lines and buys no
-      bundle, parity or friction improvement, so it loses to every remaining P2/P4 item.
+- [x] `test-utils` (62, private and not exported) was the only straightforward candidate. The
+      earlier eight blockers were not consumers: they were obsolete tool aliases and test
+      calibration references. Those references were removed, R8 was rerun, and both package files
+      cleared all six evidence points before deletion. No public export or installed import moved.
 - [x] **Proof:** `pnpm build && pnpm typecheck` after each; no public subpath disappears
       without a `MIGRATION-1.6.md` entry.
-      — `build:raw` finalizes 27 packages and `typecheck:raw` is clean. **Exactly one root subpath
+      — `build:raw` finalizes 26 public packages and `typecheck:raw` is clean. **Exactly one root subpath
       disappeared (`./three-compat`) and it has a `MIGRATION-1.6.md` entry**, verified by
       `migration-matrix.test.ts` which recomputes the removed set from `package.json` at `v1.5.2`
       — so a future silent removal fails a test rather than a review.
@@ -3149,7 +3149,7 @@ was caught before any `git rm`. The `Fixtures` suffix — not the code — was t
 | Audio DSP (`Reverb`, `Filter`) | 69 | **retain — inspection showed real behaviour** (WS-3.2) | inspected |
 | Fabricated perf gate | ~60 | delete, per WS-1.1 atomic order | — |
 | `core`, `apps`, `materials`, `environments`, `editor` | 3,363 | **not removal candidates — proven in WS-3.6c**: all five resolve as public subpaths from an installed tarball (22/3/14/12/74 exports); `engine` depends on `core` and `apps` | WS-3.6c |
-| `test-utils` | 62 | **not cleared** — the only unexported package, but R8 reports 8 blocking references (3 release tools + `tsconfig.base.json` alias). Deferred, not deleted | R8, WS-3.6c |
+| `test-utils` | 62 | **removed 2026-08-08** — private, unexported and zero-consumer. The former blockers were obsolete tool aliases/test calibration; after retiring them, R8 cleared both files at all six points | R8, WS-3.6d |
 | Markdown + loose scripts + `logs.txt` | ~994 KB | staged per §7, audits preserved | reference scan |
 | Rendering descriptor files | ~11,100 | **deferred to 1.7** except where they block bundle size, false claims, or package boundaries | §12 |
 
@@ -3158,7 +3158,7 @@ was caught before any `git rm`. The `Fixtures` suffix — not the code — was t
 Approval gate. Every box needs command output (R4). **No publishing action appears here.**
 
 - [x] `pnpm typecheck` · `pnpm test` · `pnpm build` — `typecheck:raw` clean; `build:raw` finalizes
-      27 packages; **3,348 of 3,349** unit+integration tests pass. The single failure is the R5
+      26 public packages; **3,348 of 3,349** unit+integration tests pass. The single failure is the R5
       human-approval gate below, and it must stay failing.
 - [x] `pnpm check:deletion-safety` — clean for every deleted file, reports committed
       — passes. The queue had to be **emptied first**: it still listed WS-3.5's 30 `*Fixtures.ts`
@@ -3387,11 +3387,13 @@ Not technical completion gates. **Do not perform any of these because §10 is gr
     exists (`MIGRATION-1.6.md`) and decided it, exactly as this row said it would — *"the matrix
     decides, not this sentence"*, and the sentence was wrong.
 
-    Measured: **0 of 27 packages removed** (R8 refused both candidates — ADR 0001), **0
+    Measured: **0 of 26 public packages removed** (R8 refused both public candidates — ADR 0001), **0
     non-`three-compat` public symbols removed**, surface 2,498 → 2,501. The one removed root
     subpath never resolved for an installed consumer, so removing it is a fix rather than a break.
     Both premises this row reasoned from — packages disappearing, the barrel being split
     destructively — turned out false: the split *added* narrow entry points and kept the wide one.
+    One private, unexported, zero-consumer test-helper workspace was removed after R8 cleared it;
+    that does not alter the installable surface or the semver conclusion.
 
     Recorded caveat: `1.6.0` means safe to upgrade, not automatic release approval. §B.1 is now met
     by the documented lean entries at 0.556x / 1.249x / 0.810x; the separate compatibility root

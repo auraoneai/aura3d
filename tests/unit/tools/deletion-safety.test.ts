@@ -85,11 +85,11 @@ describe("deletion-safety (R8)", () => {
 
   it("reports a prose mention without blocking on it", () => {
     /*
-     * The tool's own source comment names `test-utils/src/index.ts`. An early version classified
+     * The tool's own source comment names `rendering/src/OceanSurface.ts`. An early version classified
      * that as a runtime consumer and blocked on itself, which is unclearable. Prose is reported so
      * stale references get tidied, but it does not gate a deletion.
      */
-    const { report } = run(["packages/test-utils/src/index.ts"]);
+    const { report } = run(["packages/rendering/src/OceanSurface.ts"]);
     const files = report.files as readonly { readonly proseMentions?: readonly unknown[] }[];
     expect(Array.isArray(files[0]?.proseMentions)).toBe(true);
   }, 180_000);
@@ -208,7 +208,7 @@ describe("deletion-safety (R8)", () => {
   }, 180_000);
 
   it("proves a tracked working-tree deletion from its HEAD body", () => {
-    const candidate = "packages/test-utils/src/index.ts";
+    const candidate = "packages/rendering/src/OceanSurface.ts";
     const absolute = join(repoRoot, candidate);
     const held = `${absolute}.deletion-safety-test`;
     renameSync(absolute, held);

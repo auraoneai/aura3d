@@ -77,8 +77,7 @@ function auraSourceAlias(): Plugin {
     ["@aura3d/materials", "packages/materials/src/index.ts"],
     ["@aura3d/environments", "packages/environments/src/index.ts"],
     ["@aura3d/asset-index", "packages/asset-index/src/index.ts"],
-    ["@aura3d/three-compat", "packages/three-compat/src/index.ts"],
-    ["@aura3d/test-utils", "packages/test-utils/src/index.ts"]
+    ["@aura3d/three-compat", "packages/three-compat/src/index.ts"]
   ]);
   return {
     name: "aura3d-source-alias",

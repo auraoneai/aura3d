@@ -16,8 +16,7 @@ const packageOrder = [
   "scripting",
   "editor-runtime",
   "editor",
-  "debug",
-  "test-utils"
+  "debug"
 ] as const;
 
 type PackageName = (typeof packageOrder)[number];
@@ -36,8 +35,7 @@ const allowedImports: Record<PackageName, readonly PackageName[]> = {
   scripting: ["core", "math", "scene", "ecs"],
   "editor-runtime": ["core", "math", "scene", "ecs", "rendering", "physics", "animation", "assets", "input", "audio", "scripting"],
   editor: ["editor-runtime"],
-  debug: ["core", "math", "scene", "ecs", "rendering", "physics", "animation", "assets", "input", "audio", "scripting", "editor-runtime", "editor"],
-  "test-utils": ["core", "math", "scene", "ecs", "rendering", "physics", "animation", "assets", "input", "audio", "scripting", "editor-runtime", "editor", "debug"]
+  debug: ["core", "math", "scene", "ecs", "rendering", "physics", "animation", "assets", "input", "audio", "scripting", "editor-runtime", "editor"]
 };
 
 export interface BoundaryViolation {

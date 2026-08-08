@@ -191,7 +191,6 @@ function runtimeSourceFiles(): string[] {
     .map((path) => relative(root, path).replaceAll("\\", "/"))
     .filter((path) => /^packages\/[^/]+\/src\/.+\.ts$/.test(path))
     .filter((path) => !path.endsWith("/index.ts"))
-    .filter((path) => !path.startsWith("packages/test-utils/"))
     .sort();
 }
 

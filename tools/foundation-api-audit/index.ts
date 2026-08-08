@@ -94,9 +94,6 @@ export function createFoundationApiAuditReport(workspaceRoot = root): Foundation
     }
   ];
   const violations = auditedPackages.flatMap((pkg) => pkg.violations);
-  if (!privatePackages.includes("@aura3d/test-utils")) {
-    violations.push("@aura3d/test-utils must remain private and excluded from public package docs.");
-  }
   if (!auditedPackages.some((pkg) => pkg.packageName === "@aura3d/product-studio")) {
     violations.push("@aura3d/product-studio must be part of the Foundation public API surface.");
   }
@@ -144,7 +141,7 @@ function collectPrivatePackages(workspaceRoot: string): string[] {
 function rootSubpathFor(packageName: string): string | undefined {
   if (!packageName.startsWith("@aura3d/")) return undefined;
   const leaf = packageName.slice("@aura3d/".length);
-  if (leaf === "engine" || leaf === "test-utils") return undefined;
+  if (leaf === "engine") return undefined;
   return `./${leaf}`;
 }
 

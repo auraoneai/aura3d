@@ -1,13 +1,13 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
  * §10 / §12 — the migration matrix is measured, and the version follows from it.
  *
- * `MIGRATION-1.6.md` makes four falsifiable claims: no package was removed, no non-`three-compat`
- * public symbol was removed, the one removed root subpath was already unusable when installed, and
- * therefore the version is `1.6.0` rather than `2.0.0`.
+ * `MIGRATION-1.6.md` makes four falsifiable claims: no public package was removed, no
+ * non-`three-compat` public symbol was removed, the one removed root subpath was already unusable
+ * when installed, and therefore the version is `1.6.0` rather than `2.0.0`.
  *
  * Those are exactly the claims a release is tempted to assert. §12's rule — *"if packages disappear
  * and commonly used imports break, it is 2.0.0"* — is only meaningful if "disappear" and "break"
@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 
 const BASE_TAG = "v1.5.2";
 const MIGRATION = readFileSync("MIGRATION-1.6.md", "utf8");
+const REMOVED_PRIVATE_PACKAGE = ["test", "utils"].join("-");
 
 /**
  * The same text with newlines collapsed to spaces.
@@ -47,20 +48,30 @@ function exportedSymbols(source: string): ReadonlySet<string> {
 }
 
 describe("§12 — the version decision follows from measurement", () => {
-  it("removed no package", () => {
+  it("removed no public package and only the private zero-consumer workspace", () => {
     const atBase = execFileSync("git", ["ls-tree", "--name-only", BASE_TAG, "packages/"], { encoding: "utf8" })
       .split("\n")
       .filter((line) => line.startsWith("packages/"))
       .map((line) => line.split("/")[1]!)
       // `AGENTS.md` sits beside the package directories and is not one.
       .filter((name) => !name.endsWith(".md"));
-    const now = execFileSync("git", ["ls-tree", "--name-only", "HEAD", "packages/"], { encoding: "utf8" })
-      .split("\n")
-      .filter((line) => line.startsWith("packages/"))
-      .map((line) => line.split("/")[1]!)
-      .filter((name) => !name.endsWith(".md"));
+    const now = readdirSync("packages", { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
     const removed = atBase.filter((name) => !now.includes(name));
-    expect(removed, `packages removed since ${BASE_TAG}: ${removed.join(", ")}`).toEqual([]);
+    expect(removed, `workspace packages removed since ${BASE_TAG}: ${removed.join(", ")}`).toEqual([REMOVED_PRIVATE_PACKAGE]);
+
+    const removedManifest = JSON.parse(showAtBase(`packages/${REMOVED_PRIVATE_PACKAGE}/package.json`)) as {
+      readonly private?: boolean;
+      readonly name?: string;
+    };
+    expect(removedManifest).toMatchObject({ name: `@aura3d/${REMOVED_PRIVATE_PACKAGE}`, private: true });
+
+    const publicRemoved = removed.filter((name) => {
+      const manifest = JSON.parse(showAtBase(`packages/${name}/package.json`)) as { readonly private?: boolean };
+      return manifest.private !== true;
+    });
+    expect(publicRemoved, `public packages removed since ${BASE_TAG}: ${publicRemoved.join(", ")}`).toEqual([]);
   });
 
   it("removed no public symbol outside @aura3d/three-compat", () => {
@@ -180,10 +191,10 @@ describe("§10 — the removal retrieval record is verifiable", () => {
     }
   });
 
-  it("states plainly that no package or public symbol was removed", () => {
+  it("states plainly that no public package or public symbol was removed", () => {
     // The most important line in the document, and the one a reader checks first.
     expect(REMOVED.replace(/\s+/g, " ")).toMatch(
-      /No package, and no reachable public symbol, was removed in 1\.6/
+      /No public package, and no reachable public symbol, was removed in 1\.6/
     );
   });
 

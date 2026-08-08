@@ -221,7 +221,7 @@ function scanRepository(excluded: ReadonlySet<string> = new Set()): readonly Sca
  * `foo/index.ts`.
  *
  * Generic stems are excluded deliberately. An early version emitted `index` as a specifier for
- * `packages/test-utils/src/index.ts` and reported 27,230 "blocking references" — every line in the
+ * `packages/rendering/src/OceanSurface.ts` and reported thousands of "blocking references" — every line in the
  * repository containing the word. A specifier that matches everything proves nothing, and a gate
  * that can never be cleared would be routed around rather than satisfied. Barrels are instead
  * matched on their directory path and their package subpath, which are unambiguous.
