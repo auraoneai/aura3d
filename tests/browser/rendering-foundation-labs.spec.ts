@@ -554,7 +554,7 @@ test.describe("foundation renderer examples", () => {
   });
 
   test("shadow lab validates cascade metadata and projected shadow regions", async ({ page }, testInfo) => {
-    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_SHADOW_LAB__?.status === "ready" || window.__AURA3D_SHADOW_LAB__?.status === "error",
       undefined,
@@ -667,7 +667,7 @@ test.describe("foundation renderer examples", () => {
   });
 
   test("postprocess lab validates before and after pass pixels", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,

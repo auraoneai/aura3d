@@ -50,7 +50,7 @@ test.describe("glTF corpus gallery visual pixels", () => {
   });
 
   test("renders classified corpus cards with status color evidence", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/gltf-corpus-gallery/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/gltf-corpus-gallery/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_GLTF_CORPUS_GALLERY__?.status === "ready" || window.__AURA3D_GLTF_CORPUS_GALLERY__?.status === "error",
       undefined,

@@ -91,7 +91,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
   });
 
   test("postprocess lab publishes render-pass/shader overlay and CPU timing fallback", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,

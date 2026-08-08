@@ -27,7 +27,7 @@ test.describe("postprocess graph lab pixels", () => {
   });
 
   test("runs tone mapping, bloom, and FXAA in render-graph dependency order", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
       () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,

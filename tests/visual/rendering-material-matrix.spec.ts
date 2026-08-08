@@ -27,7 +27,7 @@ test.describe("material matrix visual pixels", () => {
   });
 
   test("renders base color, vertex color, normal map, metallic-roughness, occlusion, emissive, alpha mask, double-sided, UV transform, and alpha blend materials through WebGL2", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/material-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/material-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
       () => window.__AURA3D_MATERIAL_LAB__?.status === "ready" || window.__AURA3D_MATERIAL_LAB__?.status === "error",
       undefined,

@@ -52,10 +52,10 @@ test.describe("PBR material lab pixels", () => {
       ci: process.env.CI === "true"
     },
     sourceInputs: [
-      "examples/pbr-material-lab/index.html",
-      "examples/pbr-material-lab/main.ts",
-      "examples/pbr-camera-comparison/index.html",
-      "examples/pbr-camera-comparison/main.ts",
+      "tests/fixtures/visual-examples/pbr-material-lab/index.html",
+      "tests/fixtures/visual-examples/pbr-material-lab/main.ts",
+      "tests/fixtures/visual-examples/pbr-camera-comparison/index.html",
+      "tests/fixtures/visual-examples/pbr-camera-comparison/main.ts",
       "packages/rendering/src/EnvironmentMapResources.ts",
       "packages/rendering/src/PBRMaterial.ts",
       "packages/rendering/src/ForwardPass.ts",
@@ -70,7 +70,7 @@ test.describe("PBR material lab pixels", () => {
       "tests/reports/pbr-environment-validation.json",
       "tests/reports/visual-browser.json",
       "tests/reports/final-visual.json",
-      "examples/pbr-camera-comparison/index.html",
+      "tests/fixtures/visual-examples/pbr-camera-comparison/index.html",
       "docs/rendering/environment-lighting.md",
       "docs/project/product-studio-claim-registry.md"
     ],
@@ -101,7 +101,7 @@ test.describe("PBR material lab pixels", () => {
   });
 
   test("renders PBR material pixels with a bounded sampled environment-map approximation and documents that physically correct IBL is not claimed", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/pbr-material-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/pbr-material-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
       () => window.__AURA3D_PBR_MATERIAL_LAB__?.status === "ready" || window.__AURA3D_PBR_MATERIAL_LAB__?.status === "error",
       undefined,
@@ -152,7 +152,7 @@ test.describe("PBR material lab pixels", () => {
   });
 
   test("renders a perspective-camera PBR scene next to a Three.js reference scene for the bounded claim niche", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/pbr-camera-comparison/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/pbr-camera-comparison/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
       () => window.__AURA3D_PBR_CAMERA_COMPARISON__?.status === "ready" || window.__AURA3D_PBR_CAMERA_COMPARISON__?.status === "error",
       undefined,
@@ -311,8 +311,8 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
     gitSha: gitSha(),
     command: "pnpm exec playwright test tests/visual/pbr-environment-pixels.spec.ts",
     sourceInputs: [
-      "examples/pbr-camera-comparison/index.html",
-      "examples/pbr-camera-comparison/main.ts",
+      "tests/fixtures/visual-examples/pbr-camera-comparison/index.html",
+      "tests/fixtures/visual-examples/pbr-camera-comparison/main.ts",
       "tests/visual/pbr-environment-pixels.spec.ts",
       "packages/rendering/src/Renderer.ts",
       "packages/rendering/src/ForwardPass.ts",

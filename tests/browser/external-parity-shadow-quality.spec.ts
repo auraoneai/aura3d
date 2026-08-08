@@ -19,7 +19,7 @@ test.describe("ExternalParity shadow quality browser evidence", () => {
 
   test("proves shadow lab output plus ExternalParity contact/cascade/debug APIs", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_SHADOW_LAB__?.status === "ready", undefined, { timeout: 30_000 });
     const screenshotPath = "tests/reports/external-gallery/postprocess/shadow-quality.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/postprocess"), { recursive: true });

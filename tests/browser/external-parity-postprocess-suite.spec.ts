@@ -19,7 +19,7 @@ test.describe("ExternalParity postprocess suite browser evidence", () => {
 
   test("proves postprocess lab output plus ExternalParity bloom/SSAO/DOF/color-grade APIs", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready", undefined, { timeout: 30_000 });
     const screenshotPath = "tests/reports/external-gallery/postprocess/postprocess-suite.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/postprocess"), { recursive: true });
