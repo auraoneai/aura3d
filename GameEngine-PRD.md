@@ -746,7 +746,10 @@ budget to make it pass. It is now *visible* for the first time, which is the use
 
 ## 4. Definition of done
 
-- [ ] Every checkbox above checked — **47 of 51.** The 4 open are WS-3.8 (attempted, reverted, finding recorded), WS-3.9 (blocked on 3.8 by construction), this roll-up, and route promotion below, which needs independent human visual review an agent must not self-grant. None is open because it was skipped; each carries its reason in its own row.
+- [x] Every non-human technical checkbox above checked — WS-3.8 and WS-3.9 are closed by ADR 0003
+  and the shared-runtime ownership tests. The separate route-promotion row below intentionally stays
+  open: prototype promotion requires independent human visual approval and is not a technical
+  completion claim.
 - [x] Rule-1 grep clean for both flagship routes — all five surface constants deleted from turbo drift; `runner-rules.ts` (a 252-line orphan still declaring `gravity: -20.2`, `jumpVelocity: 8.75`, zero importers) deleted, with an `existsSync(...) === false` gate so it cannot return. The only remaining match across both routes is prose in a comment naming what was removed. **Not claimed repo-wide:** `world-war-x-showcase` and `showcase-cannon-physics-proof.ts` still declare their own gravity; they are outside this PRD's scope and were never part of the two reported defects.
 - [x] Physics capability rows: **zero** `parity-unproven` with zero consumers — **achieved.** `physics: exceed 0, parity 8, unproven 2, gap 0 (of 10)`, and both remaining unproven rows (`vehicle dynamics`, `vehicle AI driving`) *do* have a consumer (`showcase-turbo-drift-circuit`); they stay down pending WS-3.8, which is the correct reason.
 

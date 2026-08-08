@@ -3276,12 +3276,13 @@ exists", and fixing either failing condition breaks a test that must then be fli
       they compose the existing production renderer, GLB loader, input owner, and physics owner.
       The 10 files added since `v1.5.2` before this set all predate 1.6, which is why the measurement
       window matters.
-      Two ADRs exist for the decisions that did reach the lock (0001 retain ECS/scripting, 0002
-      racing force model).
-- [ ] **R12** none of the five duplicate-ownership rows has two live implementations
-      — **FAILS: 2 of 5.** The physics-solver row **closed in P4** (one-member union, second
-      integrator deleted). `vehicle motion` and `game runtime` remain, both the same underlying
-      cause, both blocked on ADR 0002.
+      Three ADRs exist for the decisions that did reach the lock: 0001 retains ECS/scripting, 0002
+      records the failed force-model substitution, and 0003 supersedes it with capability-based
+      shared runtime ownership.
+- [x] **R12** none of the five duplicate-ownership rows has two live implementations
+      — **PASSES: 0 of 5.** The physics-solver row closed in P4; ADR 0003 then assigned arcade
+      vehicle and platformer integration to shared `GameRuntime` owners by capability. The unused
+      force path was removed under R8, and ownership tests reject private continuous integrators.
 - [x] **§A** no capability on the "what Aura3D is NOT" list gained a hand-written
       implementation during 1.6
       — held, and it moved the right way: the nine added package source files are the R11-audited
