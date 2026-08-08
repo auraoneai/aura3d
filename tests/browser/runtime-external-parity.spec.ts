@@ -33,26 +33,6 @@ const report: ExternalParityRuntimeReport = {
       evidence: ["packages/physics/src/CharacterController.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic AI navigation pathfinding and agent-steering evidence to the ExternalParity game slice.",
-      evidence: ["packages/physics/src/Navigation.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
-      task: "Add deterministic arrive/steering behavior evidence to the ExternalParity game slice.",
-      evidence: ["packages/physics/src/Steering.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
-      task: "Add deterministic flee, pursuit, evade, and wander steering evidence to the ExternalParity game slice.",
-      evidence: ["packages/physics/src/Steering.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
-      task: "Add deterministic flocking, obstacle avoidance, wall avoidance, and steering-pipeline evidence to the ExternalParity game slice.",
-      evidence: ["packages/physics/src/Steering.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
-      task: "Add deterministic crowd formation and neighbor-avoidance evidence to the ExternalParity game slice.",
-      evidence: ["packages/physics/src/Crowd.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
-    },
-    {
       task: "Add deterministic AI perception and memory evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/Perception.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
@@ -184,23 +164,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.characterControllerJumpCount ?? 0)).toBeGreaterThanOrEqual(0);
     expect(Number(state?.metrics.physicsBodies ?? 0)).toBeGreaterThanOrEqual(6);
     expect(state?.featureEvidence?.oldBranchTwoBoneIkPort).toBe(true);
-    expect(state?.featureEvidence?.oldBranchAiNavigationPort).toBe(true);
-    expect(state?.featureEvidence?.oldBranchWeightedNavigationPort).toBe(true);
-    expect(state?.featureEvidence?.aiNavigationPathfinding).toBe(true);
-    expect(state?.featureEvidence?.aiNavigationAgent).toBe(true);
-    expect(state?.featureEvidence?.oldBranchSteeringPort).toBe(true);
-    expect(state?.featureEvidence?.aiSteeringArrive).toBe(true);
-    expect(state?.featureEvidence?.oldBranchAdvancedSteeringPort).toBe(true);
-    expect(state?.featureEvidence?.aiSteeringFleeForce).toBe(true);
-    expect(state?.featureEvidence?.aiSteeringPursuitPrediction).toBe(true);
-    expect(state?.featureEvidence?.aiSteeringEvadePrediction).toBe(true);
-    expect(state?.featureEvidence?.aiSteeringWanderTarget).toBe(true);
-    expect(state?.featureEvidence?.oldBranchFlockAvoidancePipelinePort).toBe(true);
-    expect(Number(state?.featureEvidence?.aiFlockingNeighbors ?? 0)).toBeGreaterThan(0);
-    expect(state?.featureEvidence?.aiObstacleAvoidanceDetected).toBe(true);
-    expect(state?.featureEvidence?.aiWallAvoidanceDetected).toBe(true);
-    expect(String(state?.featureEvidence?.aiSteeringPipelineSelected ?? "")).toMatch(/wall-avoidance|obstacle-avoidance|flocking|wander/);
-    expect(state?.featureEvidence?.oldBranchCrowdFormationPort).toBe(true);
     expect(state?.featureEvidence?.oldBranchPerceptionPort).toBe(true);
     expect(state?.featureEvidence?.oldBranchBehaviorTreePort).toBe(true);
     expect(state?.featureEvidence?.oldBranchDecisionTreePort).toBe(true);
@@ -226,61 +189,13 @@ test.describe("externalParity runtime systems", () => {
     expect(state?.featureEvidence?.virtualTouchJoystickDeadZone).toBe(true);
     expect(state?.featureEvidence?.virtualTouchJoystickClamped).toBe(true);
     expect(state?.featureEvidence?.virtualTouchJoystickRecentered).toBe(true);
-    expect(state?.metrics.oldBranchAiNavigationPort).toBe(true);
     expect(state?.metrics.oldBranchTwoBoneIkPort).toBe(true);
     expect(state?.metrics.twoBoneIkReached).toBe(true);
     expect(Number(state?.metrics.twoBoneIkEndDistance ?? 1)).toBeLessThan(0.01);
     expect(Number(state?.metrics.twoBoneIkUpperLength ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.twoBoneIkLowerLength ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.twoBoneIkPoleInfluence ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.oldBranchWeightedNavigationPort).toBe(true);
-    expect(state?.metrics.oldBranchSteeringPort).toBe(true);
     expect(state?.metrics.oldBranchBehaviorTreePort).toBe(true);
-    expect(state?.metrics.navigationPathStatus).toBe("success");
-    expect(state?.metrics.navigationPickupPathStatus).toBe("success");
-    expect(state?.metrics.navigationExitPathStatus).toBe("success");
-    expect(Number(state?.metrics.navigationGridCells ?? 0)).toBeGreaterThanOrEqual(40);
-    expect(Number(state?.metrics.navigationBlockedCells ?? 0)).toBeGreaterThanOrEqual(1);
-    expect(Number(state?.metrics.navigationWeightedCells ?? 0)).toBeGreaterThanOrEqual(1);
-    expect(state?.metrics.navigationDiagonalMovement).toBe(true);
-    expect(Number(state?.metrics.navigationPathCells ?? 0)).toBeGreaterThan(3);
-    expect(Number(state?.metrics.navigationPathWaypoints ?? 0)).toBeGreaterThanOrEqual(3);
-    expect(Number(state?.metrics.navigationPathLength ?? 0)).toBeGreaterThan(1);
-    expect(Number(state?.metrics.navigationPathCost ?? 0)).toBeGreaterThan(1);
-    expect(Number(state?.metrics.navigationPickupPathCost ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.navigationExitPathCost ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.navigationVisitedCells ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.navigationAgentState ?? "")).toMatch(/moving|arrived/);
-    expect(Number(state?.metrics.navigationAgentDistanceTraveled ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiSteeringDistanceTraveled ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiSteeringSpeed ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiSteeringDistanceToTarget ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.oldBranchAdvancedSteeringPort).toBe(true);
-    expect(Number(state?.metrics.aiFleeDistance ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiFleeForce ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiPursuitPredictionTime ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiEvadePredictionTime ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiWanderSeed ?? 0)).toBeGreaterThan(0);
-    expect(Math.abs(Number(state?.metrics.aiWanderTargetX ?? 0)) + Math.abs(Number(state?.metrics.aiWanderTargetY ?? 0))).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiWanderForce ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.oldBranchFlockAvoidancePipelinePort).toBe(true);
-    expect(Number(state?.metrics.aiFlockingNeighbors ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiFlockingForce ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.aiObstacleAvoidanceDetected).toBe(true);
-    expect(Number(state?.metrics.aiObstacleAvoidanceDistance ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiObstacleAvoidanceForce ?? 0)).toBeGreaterThan(0);
-    expect(state?.metrics.aiWallAvoidanceDetected).toBe(true);
-    expect(Number(state?.metrics.aiWallAvoidanceDistance ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiWallAvoidanceForce ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiSteeringPipelineForce ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.aiSteeringPipelineSelected ?? "")).toMatch(/wall-avoidance|obstacle-avoidance|flocking|wander/);
-    expect(state?.metrics.oldBranchCrowdFormationPort).toBe(true);
-    expect(Number(state?.metrics.aiCrowdAgents ?? 0)).toBeGreaterThanOrEqual(4);
-    expect(String(state?.metrics.aiCrowdFormation ?? "")).toMatch(/wedge|column/);
-    expect(Number(state?.metrics.aiCrowdNeighborPairs ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiCrowdAverageNeighbors ?? 0)).toBeGreaterThan(0);
-    expect(Number(state?.metrics.aiCrowdAverageSpeed ?? 0)).toBeGreaterThan(0);
-    expect(String(state?.metrics.aiCrowdSlots ?? "")).toContain("support-alpha");
     expect(state?.metrics.oldBranchPerceptionPort).toBe(true);
     expect(Number(state?.metrics.aiPerceptionMemoryCount ?? 0)).toBeGreaterThan(0);
     expect(String(state?.metrics.aiPerceptionStrongestMemory ?? "")).toMatch(/pickup|exit|hazard/);

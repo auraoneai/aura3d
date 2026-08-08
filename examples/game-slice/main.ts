@@ -4,26 +4,8 @@ import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, S
 import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleVirtualTouchJoystickFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
   CharacterController,
-  CrowdSimulation,
-  NavigationAgent,
-  NavigationGrid,
   PhysicsWorld,
-  Shape,
-  SteeringAgent,
-  arriveSteering,
-  blendSteeringForces,
-  evadeSteering,
-  fleeSteering,
-  flockingSteering,
-  obstacleAvoidanceSteering,
-  pursuitSteering,
-  wallAvoidanceSteering,
-  wanderSteering,
-  type NavigationAgentSnapshot,
-  type NavigationPath,
-  type NavigationPoint,
-  type CrowdSimulationSnapshot,
-  type SteeringAgentSnapshot
+  Shape
 } from "@aura3d/physics";
 import {
   Geometry,
@@ -310,28 +292,6 @@ async function run(): Promise<void> {
   });
   const player = character.body;
   const playerCollider = character.collider;
-  const navigationGrid = new NavigationGrid({
-    width: 10,
-    height: 5,
-    origin: [-1.6, -0.6],
-    cellSize: 0.32,
-    allowDiagonal: true,
-    blocked: [
-      [1, 1],
-      [4, 1],
-      [4, 2],
-      [6, 1]
-    ],
-    costs: [
-      { cell: [2, 1], cost: 1.8 },
-      { cell: [3, 1], cost: 2.1 },
-      { cell: [5, 2], cost: 2.4 },
-      { cell: [7, 1], cost: 1.6 }
-    ]
-  });
-  const navigationToPickup = navigationGrid.findPath(navigationPoint(playerStartPosition), navigationPoint(pickupPosition));
-  const navigationToExit = navigationGrid.findPath(navigationPoint(pickupPosition), navigationPoint(exitPosition));
-  const navigationRoute = combineNavigationPaths(navigationToPickup, navigationToExit);
   const heroReachIk = solveTwoBoneIk({
     root: [0, 0, 0],
     mid: [0.18, 0.28, 0],
@@ -339,14 +299,6 @@ async function run(): Promise<void> {
     target: [0.45, 0.38, 0],
     pole: [0, 0, 1]
   });
-  const navigationAgent = new NavigationAgent({ position: navigationPoint(playerStartPosition), speed: 0.62, waypointRadius: 0.035 });
-  navigationAgent.setPath(navigationRoute);
-  const steeringAgent = new SteeringAgent({ position: [-1.08, 0.08], maxSpeed: 0.8, maxForce: 1.2 });
-  const crowd = new CrowdSimulation({ neighborRadius: 0.72, maxNeighbors: 4, separationWeight: 1.6, alignmentWeight: 0.42, cohesionWeight: 0.36, formationWeight: 0.92 });
-  crowd.addAgent({ id: "support-alpha", position: [-0.95, 0.2], maxSpeed: 0.58, priority: 90 });
-  crowd.addAgent({ id: "support-beta", position: [-0.82, 0.02], maxSpeed: 0.58, priority: 75 });
-  crowd.addAgent({ id: "support-gamma", position: [-1.08, -0.06], maxSpeed: 0.58, priority: 65 });
-  crowd.addAgent({ id: "support-delta", position: [-0.68, 0.12], maxSpeed: 0.58, priority: 55 });
   const perceptionSensor = new PerceptionSensor({
     position: navigationPoint(playerStartPosition),
     forward: [1, 0],
@@ -357,7 +309,7 @@ async function run(): Promise<void> {
     forgetBelowConfidence: 0.05
   });
   const gameAiBlackboard = new Blackboard();
-  gameAiBlackboard.set("routeStatus", navigationRoute.status);
+  gameAiBlackboard.set("routeStatus", "direct-objective");
   gameAiBlackboard.set("target", "pickup");
   const gameAiBehaviorTree = createGameAiBehaviorTree(gameAiBlackboard);
   const gameAiDecisionTree = createGameAiDecisionTree(gameAiBlackboard);
@@ -564,45 +516,6 @@ async function run(): Promise<void> {
   let diagnostics: RenderDeviceDiagnostics | undefined;
   let running = true;
   let characterState = character.snapshot();
-  let navigationAgentState: NavigationAgentSnapshot = navigationAgent.snapshot();
-  let steeringAgentState: SteeringAgentSnapshot = steeringAgent.snapshot();
-  let crowdState: CrowdSimulationSnapshot = crowd.snapshot();
-  let crowdMaxNeighborPairs = 0;
-  let crowdMaxAverageNeighbors = 0;
-  let steeringArriveDistance = 0;
-  let steeringArrived = false;
-  let advancedSteeringFleeDistance = 0;
-  let advancedSteeringFleeForce = 0;
-  let advancedSteeringPursuitPredictionTime = 0;
-  let advancedSteeringPursuitPredictedX = 0;
-  let advancedSteeringPursuitPredictedY = 0;
-  let advancedSteeringEvadePredictionTime = 0;
-  let advancedSteeringEvadePredictedX = 0;
-  let advancedSteeringEvadePredictedY = 0;
-  let advancedSteeringWanderSeed = 17;
-  let advancedSteeringWanderTargetX = 0;
-  let advancedSteeringWanderTargetY = 0;
-  let advancedSteeringWanderForce = 0;
-  let oldBranchFlockAvoidancePipelinePort = false;
-  let aiFlockingNeighbors = 0;
-  let aiFlockingForce = 0;
-  let aiFlockingMaxForce = 0;
-  let aiObstacleDetected = false;
-  let aiObstacleAvoidanceDistance = 0;
-  let aiObstacleAvoidanceForce = 0;
-  let aiWallDetected = false;
-  let aiWallAvoidanceDistance = 0;
-  let aiWallAvoidanceForce = 0;
-  let aiSteeringPipelineForce = 0;
-  let aiSteeringPipelineSelected = "none";
-  let aiObstacleDetectedEver = false;
-  let aiObstacleAvoidanceClosestDistance = 0;
-  let aiObstacleAvoidanceMaxForce = 0;
-  let aiWallDetectedEver = false;
-  let aiWallAvoidanceClosestDistance = 0;
-  let aiWallAvoidanceMaxForce = 0;
-  let aiSteeringPipelineMaxForce = 0;
-  let aiSteeringPipelineSelectedEver = "none";
   let perceptionState: PerceptionSnapshot = perceptionSensor.scan([], 0);
   let gameAiBehaviorState: BehaviorTreeTickResult = gameAiBehaviorTree.tick(0);
   let gameAiDecision: DecisionTreeDecision = gameAiDecisionTree.decide({ values: { objectivePhase: "playing", collectedPickup: false } });
@@ -782,142 +695,6 @@ async function run(): Promise<void> {
       objectiveState.elapsedSeconds += dt;
     }
     characterState = character.step(dt);
-    navigationAgentState = navigationAgent.update(dt);
-    const steeringTarget = objectiveState.collectedPickup ? navigationPoint(exitPosition) : navigationPoint(pickupPosition);
-    const steering = arriveSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      target: steeringTarget,
-      maxSpeed: 0.8,
-      slowingRadius: 0.42,
-      tolerance: 0.035
-    });
-    steeringArriveDistance = steering.distance;
-    steeringArrived = steering.arrived;
-    const fleeSteeringState = fleeSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      threat: navigationPoint(hazardPosition),
-      maxSpeed: 0.8,
-      panicDistance: 3
-    });
-    const pursuitSteeringState = pursuitSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      targetPosition: steeringTarget,
-      targetVelocity: objectiveState.collectedPickup ? [0.08, -0.02] : [0.1, 0.03],
-      maxSpeed: 0.8,
-      maxPredictionTime: 1.4
-    });
-    const evadeSteeringState = evadeSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      threatPosition: navigationPoint(hazardPosition),
-      threatVelocity: [0.04, 0.02],
-      maxSpeed: 0.8,
-      maxPredictionTime: 1.2,
-      panicDistance: 3
-    });
-    const wanderSteeringState = wanderSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      maxSpeed: 0.8,
-      seed: Math.max(1, Math.round(objectiveState.elapsedSeconds * 60) + 17),
-      radius: 0.22,
-      distance: 0.38,
-      jitter: 0.08
-    });
-    advancedSteeringFleeDistance = fleeSteeringState.distance;
-    advancedSteeringFleeForce = Math.hypot(fleeSteeringState.force[0], fleeSteeringState.force[1]);
-    advancedSteeringPursuitPredictionTime = pursuitSteeringState.predictionTime;
-    advancedSteeringPursuitPredictedX = pursuitSteeringState.predictedTarget[0];
-    advancedSteeringPursuitPredictedY = pursuitSteeringState.predictedTarget[1];
-    advancedSteeringEvadePredictionTime = evadeSteeringState.predictionTime;
-    advancedSteeringEvadePredictedX = evadeSteeringState.predictedTarget[0];
-    advancedSteeringEvadePredictedY = evadeSteeringState.predictedTarget[1];
-    advancedSteeringWanderSeed = wanderSteeringState.seed;
-    advancedSteeringWanderTargetX = wanderSteeringState.wanderTarget[0];
-    advancedSteeringWanderTargetY = wanderSteeringState.wanderTarget[1];
-    advancedSteeringWanderForce = Math.hypot(wanderSteeringState.force[0], wanderSteeringState.force[1]);
-    steeringAgentState = steeringAgent.apply(steering.force, dt);
-    crowd.setFormation({
-      type: objectiveState.collectedPickup ? "column" : "wedge",
-      center: [clamp(player.position[0] - 0.22, -1.05, 1.05), clamp(player.position[1] + 0.22, -0.35, 0.65)],
-      forward: objectiveState.collectedPickup ? [1, 0] : [0.85, 0.25],
-      spacing: 0.18
-    });
-    crowdState = crowd.update(dt);
-    crowdMaxNeighborPairs = Math.max(crowdMaxNeighborPairs, crowdState.neighborPairs);
-    crowdMaxAverageNeighbors = Math.max(crowdMaxAverageNeighbors, crowdState.averageNeighbors);
-    const flockingSteeringState = flockingSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      neighbors: crowdState.agents.map((agent) => ({ position: agent.position, velocity: agent.velocity })),
-      maxSpeed: 0.8,
-      separationRadius: 0.38,
-      alignmentRadius: 1.8,
-      cohesionRadius: 1.8
-    });
-    const obstacleAvoidanceState = obstacleAvoidanceSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      obstacles: [
-        { id: "pickup", position: navigationPoint(pickupPosition), radius: 0.18 },
-        { id: "exit", position: navigationPoint(exitPosition), radius: 0.16 },
-        { id: "hazard", position: navigationPoint(hazardPosition), radius: 0.24 }
-      ],
-      maxSpeed: 0.8,
-      detectionDistance: 3,
-      agentRadius: 0.14
-    });
-    const wallAvoidanceState = wallAvoidanceSteering({
-      position: steeringAgentState.position,
-      velocity: steeringAgentState.velocity,
-      walls: [
-        { id: "right-arena-wall", start: [1.24, -0.72], end: [1.24, 0.72], normal: [-1, 0] },
-        { id: "left-arena-wall", start: [-1.24, -0.72], end: [-1.24, 0.72], normal: [1, 0] }
-      ],
-      maxSpeed: 0.8,
-      whiskerLength: 3,
-      avoidanceForce: 0.8
-    });
-    const steeringPipelineState = blendSteeringForces({
-      entries: [
-        { id: "wall-avoidance", force: wallAvoidanceState.force, priority: 80 },
-        { id: "obstacle-avoidance", force: obstacleAvoidanceState.force, priority: 70 },
-        { id: "flocking", force: flockingSteeringState.force, priority: 30, weight: 0.45 },
-        { id: "wander", force: wanderSteeringState.force, priority: 10, weight: 0.2 }
-      ],
-      mode: "priority",
-      maxForce: 1.2,
-      priorityThreshold: 0.001
-    });
-    oldBranchFlockAvoidancePipelinePort = true;
-    aiFlockingNeighbors = flockingSteeringState.neighborCount;
-    aiFlockingForce = Math.hypot(flockingSteeringState.force[0], flockingSteeringState.force[1]);
-    aiFlockingMaxForce = Math.max(aiFlockingMaxForce, aiFlockingForce);
-    aiObstacleDetected = obstacleAvoidanceState.obstacleDetected;
-    aiObstacleAvoidanceDistance = obstacleAvoidanceState.closestDistance;
-    aiObstacleAvoidanceForce = Math.hypot(obstacleAvoidanceState.force[0], obstacleAvoidanceState.force[1]);
-    aiWallDetected = wallAvoidanceState.wallDetected;
-    aiWallAvoidanceDistance = wallAvoidanceState.hitDistance;
-    aiWallAvoidanceForce = Math.hypot(wallAvoidanceState.force[0], wallAvoidanceState.force[1]);
-    aiSteeringPipelineForce = Math.hypot(steeringPipelineState.force[0], steeringPipelineState.force[1]);
-    aiSteeringPipelineSelected = steeringPipelineState.selectedIds.join(",") || "none";
-    if (aiObstacleDetected) {
-      aiObstacleDetectedEver = true;
-      aiObstacleAvoidanceClosestDistance = aiObstacleAvoidanceClosestDistance === 0 ? aiObstacleAvoidanceDistance : Math.min(aiObstacleAvoidanceClosestDistance, aiObstacleAvoidanceDistance);
-      aiObstacleAvoidanceMaxForce = Math.max(aiObstacleAvoidanceMaxForce, aiObstacleAvoidanceForce);
-    }
-    if (aiWallDetected) {
-      aiWallDetectedEver = true;
-      aiWallAvoidanceClosestDistance = aiWallAvoidanceClosestDistance === 0 ? aiWallAvoidanceDistance : Math.min(aiWallAvoidanceClosestDistance, aiWallAvoidanceDistance);
-      aiWallAvoidanceMaxForce = Math.max(aiWallAvoidanceMaxForce, aiWallAvoidanceForce);
-    }
-    if (aiSteeringPipelineSelected !== "none") {
-      aiSteeringPipelineSelectedEver = aiSteeringPipelineSelected;
-      aiSteeringPipelineMaxForce = Math.max(aiSteeringPipelineMaxForce, aiSteeringPipelineForce);
-    }
     if (characterState.jumpedThisFrame) {
       characterJumpCount += 1;
     }
@@ -987,7 +764,7 @@ async function run(): Promise<void> {
       { id: "exit", position: navigationPoint(exitPosition), priority: objectiveState.collectedPickup ? 1.2 : 0.55 },
       { id: "hazard", position: navigationPoint(hazardPosition), priority: 0.85 }
     ], dt);
-    const utilityContext = createGameAiUtilityContext(objectiveState, perceptionState, navigationAgentState, steeringArrived, steeringArriveDistance);
+    const utilityContext = createGameAiUtilityContext(objectiveState, perceptionState);
     gameAiUtilityScores = gameAiUtility.evaluate(utilityContext);
     gameAiUtilityDecision = gameAiUtilityScores[0];
     const gameAiWorldState = createGameAiWorldState(objectiveState, gameAiUtilityDecision);
@@ -995,8 +772,7 @@ async function run(): Promise<void> {
     gameAiHtnPlan = gameAiHtnPlanner.plan(gameAiHtnRootTask, gameAiWorldState, { utilityAction: gameAiUtilityDecision?.action ?? "none" });
     gameAiBlackboard.set("objectivePhase", objectiveState.phase);
     gameAiBlackboard.set("collectedPickup", objectiveState.collectedPickup);
-    gameAiBlackboard.set("navigationAgentState", navigationAgentState.state);
-    gameAiBlackboard.set("navigationDistanceTraveled", navigationAgentState.distanceTraveled);
+    gameAiBlackboard.set("navigationAgentState", objectiveState.collectedPickup ? "reaching-exit" : "collecting-pickup");
     gameAiBlackboard.set("perceivedTarget", perceptionState.strongestMemory?.id ?? "none");
     gameAiBlackboard.set("visibleTargets", perceptionState.visible.length);
     gameAiBlackboard.set("utilityAction", gameAiUtilityDecision?.action ?? "none");
@@ -1175,26 +951,6 @@ async function run(): Promise<void> {
         postprocessRealSceneReadback: postprocess.changedPixels > 0,
         physicsController: true,
         oldBranchTwoBoneIkPort: heroReachIk.reached && heroReachIk.endDistanceToTarget < 0.01 && heroReachIk.poleInfluence > 0,
-        oldBranchAiNavigationPort: true,
-        oldBranchWeightedNavigationPort: navigationGrid.allowDiagonal && navigationRoute.cost > 0,
-        aiNavigationPathfinding: navigationRoute.status === "success",
-        aiNavigationAgent: navigationAgentState.state === "moving" || navigationAgentState.state === "arrived",
-        oldBranchSteeringPort: true,
-        aiSteeringArrive: steeringAgentState.distanceTraveled > 0 && steeringArriveDistance > 0,
-        oldBranchAdvancedSteeringPort: true,
-        aiSteeringFleeForce: advancedSteeringFleeForce > 0,
-        aiSteeringPursuitPrediction: advancedSteeringPursuitPredictionTime > 0,
-        aiSteeringEvadePrediction: advancedSteeringEvadePredictionTime > 0,
-        aiSteeringWanderTarget: advancedSteeringWanderForce > 0,
-        oldBranchFlockAvoidancePipelinePort,
-        aiFlockingNeighbors,
-        aiObstacleAvoidanceDetected: aiObstacleDetectedEver,
-        aiWallAvoidanceDetected: aiWallDetectedEver,
-        aiSteeringPipelineSelected: aiSteeringPipelineSelectedEver,
-        oldBranchCrowdFormationPort: true,
-        aiCrowdFormation: crowdState.formationType,
-        aiCrowdAgents: crowdState.agentCount,
-        aiCrowdNeighborPairs: crowdMaxNeighborPairs,
         oldBranchPerceptionPort: true,
         aiPerceptionVisibleTargets: perceptionState.visible.length,
         aiPerceptionMemory: perceptionState.memories.length,
@@ -1298,69 +1054,6 @@ async function run(): Promise<void> {
         twoBoneIkUpperLength: Number(heroReachIk.upperLength.toFixed(6)),
         twoBoneIkLowerLength: Number(heroReachIk.lowerLength.toFixed(6)),
         twoBoneIkPoleInfluence: Number(heroReachIk.poleInfluence.toFixed(6)),
-        oldBranchAiNavigationPort: true,
-        oldBranchWeightedNavigationPort: navigationGrid.allowDiagonal && navigationRoute.cost > 0,
-        navigationGridCells: navigationGrid.width * navigationGrid.height,
-        navigationBlockedCells: 4,
-        navigationWeightedCells: 4,
-        navigationDiagonalMovement: navigationGrid.allowDiagonal,
-        navigationPathStatus: navigationRoute.status,
-        navigationPathCells: navigationRoute.cells.length,
-        navigationPathWaypoints: navigationRoute.waypoints.length,
-        navigationPathLength: navigationRoute.length,
-        navigationPathCost: navigationRoute.cost,
-        navigationPickupPathCost: navigationToPickup.cost,
-        navigationExitPathCost: navigationToExit.cost,
-        navigationVisitedCells: navigationRoute.visitedCells,
-        navigationPickupPathStatus: navigationToPickup.status,
-        navigationExitPathStatus: navigationToExit.status,
-        navigationAgentState: navigationAgentState.state,
-        navigationAgentWaypointIndex: navigationAgentState.waypointIndex,
-        navigationAgentRemainingWaypoints: navigationAgentState.remainingWaypoints,
-        navigationAgentDistanceTraveled: navigationAgentState.distanceTraveled,
-        navigationAgentX: navigationAgentState.position[0],
-        navigationAgentY: navigationAgentState.position[1],
-        oldBranchSteeringPort: true,
-        aiSteeringAgentX: steeringAgentState.position[0],
-        aiSteeringAgentY: steeringAgentState.position[1],
-        aiSteeringSpeed: steeringAgentState.speed,
-        aiSteeringDistanceToTarget: steeringArriveDistance,
-        aiSteeringDistanceTraveled: steeringAgentState.distanceTraveled,
-        aiSteeringArrived: steeringArrived,
-        oldBranchAdvancedSteeringPort: true,
-        aiFleeDistance: advancedSteeringFleeDistance,
-        aiFleeForce: Number(advancedSteeringFleeForce.toFixed(3)),
-        aiPursuitPredictionTime: advancedSteeringPursuitPredictionTime,
-        aiPursuitPredictedX: advancedSteeringPursuitPredictedX,
-        aiPursuitPredictedY: advancedSteeringPursuitPredictedY,
-        aiEvadePredictionTime: advancedSteeringEvadePredictionTime,
-        aiEvadePredictedX: advancedSteeringEvadePredictedX,
-        aiEvadePredictedY: advancedSteeringEvadePredictedY,
-        aiWanderSeed: advancedSteeringWanderSeed,
-        aiWanderTargetX: advancedSteeringWanderTargetX,
-        aiWanderTargetY: advancedSteeringWanderTargetY,
-        aiWanderForce: Number(advancedSteeringWanderForce.toFixed(3)),
-        oldBranchFlockAvoidancePipelinePort,
-        aiFlockingNeighbors,
-        aiFlockingForce: Number(aiFlockingMaxForce.toFixed(3)),
-        aiObstacleAvoidanceDetected: aiObstacleDetectedEver,
-        aiObstacleAvoidanceDistance: aiObstacleAvoidanceClosestDistance,
-        aiObstacleAvoidanceForce: Number(aiObstacleAvoidanceMaxForce.toFixed(3)),
-        aiWallAvoidanceDetected: aiWallDetectedEver,
-        aiWallAvoidanceDistance: aiWallAvoidanceClosestDistance,
-        aiWallAvoidanceForce: Number(aiWallAvoidanceMaxForce.toFixed(3)),
-        aiSteeringPipelineForce: Number(aiSteeringPipelineMaxForce.toFixed(3)),
-        aiSteeringPipelineSelected: aiSteeringPipelineSelectedEver,
-        oldBranchCrowdFormationPort: true,
-        aiCrowdAgents: crowdState.agentCount,
-        aiCrowdFormation: crowdState.formationType,
-        aiCrowdNeighborPairs: crowdMaxNeighborPairs,
-        aiCrowdAverageNeighbors: crowdMaxAverageNeighbors,
-        aiCrowdAverageSpeed: crowdState.averageSpeed,
-        aiCrowdMaxSpeed: crowdState.maxSpeed,
-        aiCrowdCenterX: crowdState.center[0],
-        aiCrowdCenterY: crowdState.center[1],
-        aiCrowdSlots: crowdState.agents.map((agent) => `${agent.id}:${agent.formationSlot[0].toFixed(2)},${agent.formationSlot[1].toFixed(2)}`).join("|"),
         oldBranchPerceptionPort: true,
         aiPerceptionVisibleTargets: perceptionState.visible.length,
         aiPerceptionMemoryCount: perceptionState.memories.length,
@@ -1888,34 +1581,10 @@ function isQuat(value: AnimationValue): value is readonly [number, number, numbe
   return Array.isArray(value) && value.length === 4 && value.every((entry) => typeof entry === "number");
 }
 
+type NavigationPoint = readonly [number, number];
+
 function navigationPoint(value: readonly [number, number, number]): NavigationPoint {
   return [value[0], value[1]];
-}
-
-function combineNavigationPaths(first: NavigationPath, second: NavigationPath): NavigationPath {
-  const status = first.status === "success" && second.status === "success"
-    ? "success"
-    : first.status === "failed" || second.status === "failed"
-      ? "failed"
-      : "partial";
-  const cells = [...first.cells, ...second.cells.slice(1)];
-  const waypoints = [...first.waypoints, ...second.waypoints.slice(1)];
-  return {
-    status,
-    cells,
-    waypoints,
-    length: navigationPathLength(waypoints),
-    cost: Number((first.cost + second.cost).toFixed(3)),
-    visitedCells: first.visitedCells + second.visitedCells
-  };
-}
-
-function navigationPathLength(points: readonly NavigationPoint[]): number {
-  let length = 0;
-  for (let index = 1; index < points.length; index += 1) {
-    length += Math.hypot(points[index]![0] - points[index - 1]![0], points[index]![1] - points[index - 1]![1]);
-  }
-  return Number(length.toFixed(3));
 }
 
 function createGameAiBehaviorTree(blackboard: Blackboard): BehaviorTree {
@@ -1933,11 +1602,11 @@ function createGameAiBehaviorTree(blackboard: Blackboard): BehaviorTree {
       new BehaviorAction("set-exit-intent", ({ blackboard }) => {
         blackboard.set("intent", "reach-exit");
         blackboard.set("target", "exit");
-        return blackboard.get("navigationAgentState") === "arrived" ? "success" : "running";
+        return blackboard.get("objectivePhase") === "won" ? "success" : "running";
       })
     ]),
     new BehaviorSequence("collect-pickup", [
-      new BehaviorCondition("route-ready", ({ blackboard }) => blackboard.get("routeStatus") === "success"),
+      new BehaviorCondition("objective-ready", ({ blackboard }) => blackboard.get("routeStatus") === "direct-objective"),
       new BehaviorAction("set-pickup-intent", ({ blackboard }) => {
         blackboard.set("intent", "collect-pickup");
         blackboard.set("target", "pickup");
@@ -2011,7 +1680,7 @@ function createGameAiUtility(): UtilityAI {
     considerations: [
       new UtilityConsideration({ name: "needs-pickup", input: ({ values }) => values?.collectedPickup !== true, curve: "boolean" }),
       new UtilityConsideration({ name: "pickup-signal", input: ({ values }) => Number(values?.pickupConfidence ?? 0) }),
-      new UtilityConsideration({ name: "route-ready", input: ({ values }) => values?.routeStatus === "success", curve: "boolean" })
+      new UtilityConsideration({ name: "objective-ready", input: ({ values }) => values?.routeStatus === "direct-objective", curve: "boolean" })
     ]
   }));
   ai.addAction(new UtilityAction({
@@ -2040,10 +1709,7 @@ function createGameAiUtilityContext(
     readonly phase: GameplayPhase;
     readonly collectedPickup: boolean;
   },
-  perceptionState: PerceptionSnapshot,
-  navigationAgentState: NavigationAgentSnapshot,
-  steeringArrived: boolean,
-  steeringDistance: number
+  perceptionState: PerceptionSnapshot
 ) {
   const pickupSignal = confidenceForTarget(perceptionState, "pickup");
   const exitSignal = confidenceForTarget(perceptionState, "exit");
@@ -2052,14 +1718,14 @@ function createGameAiUtilityContext(
     values: {
       objectivePhase: objectiveState.phase,
       collectedPickup: objectiveState.collectedPickup,
-      routeStatus: navigationAgentState.state === "idle" ? "idle" : "success",
+      routeStatus: "direct-objective",
       perceivedTarget: perceptionState.strongestMemory?.id ?? "none",
       pickupConfidence: objectiveState.collectedPickup ? 0.05 : Math.max(pickupSignal, 0.65),
-      exitConfidence: objectiveState.collectedPickup ? Math.max(exitSignal, steeringArrived ? 1 : 0.58) : Math.max(exitSignal * 0.35, 0.1),
+      exitConfidence: objectiveState.collectedPickup ? Math.max(exitSignal, 0.58) : Math.max(exitSignal * 0.35, 0.1),
       hazardConfidence: hazardSignal,
       hazardVisible: perceptionState.visible.some((hit) => hit.id === "hazard"),
-      hazardProximity: Math.max(0, Math.min(1, 1 - steeringDistance / 2.2)),
-      navigationProgress: Math.max(0, Math.min(1, navigationAgentState.distanceTraveled / 2.2))
+      hazardProximity: hazardSignal,
+      navigationProgress: objectiveState.collectedPickup ? 0.7 : 0.25
     }
   };
 }
