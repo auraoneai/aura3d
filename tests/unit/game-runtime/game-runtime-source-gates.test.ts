@@ -115,7 +115,7 @@ describe("game runtime source gates", () => {
   });
 
   it("exposes a generic collision world with sensor events, tags, and layer filters", () => {
-    const collision = game.collisionWorld({ backend: "aura-js", gravity: [0, 0, 0] });
+    const collision = game.collisionWorld({ backend: "cannon-es", gravity: [0, 0, 0] });
 
     collision.addBox("player", [0.5, 0.5, 0.5], {
       position: [0, 0, 0],
@@ -153,7 +153,7 @@ describe("game runtime source gates", () => {
   });
 
   it("supports collision sweeps and explicit solid resolution through the public game facade", () => {
-    const collision = game.collisionWorld({ backend: "aura-js", gravity: [0, 0, 0] });
+    const collision = game.collisionWorld({ backend: "cannon-es", gravity: [0, 0, 0] });
 
     collision.addBox("player", [0.5, 0.5, 0.5], {
       position: [0, 0, 0],
@@ -196,7 +196,7 @@ describe("game runtime source gates", () => {
           .runtime(game.runtimeNode("player", { tags: ["player"] }))
       )
     });
-    const collision = game.collisionWorld({ backend: "aura-js", gravity: [0, 0, 0] });
+    const collision = game.collisionWorld({ backend: "cannon-es", gravity: [0, 0, 0] });
     const events = game.eventLog({ label: "platformer events" });
     const player = collision.addBox("player", [0.5, 0.5, 0.5], { tags: ["player"], layer: 0b001, mask: 0b010 });
     collision.addSphere("coin", 0.35, { position: [0.7, 0, 0], sensor: true, tags: ["coin"], layer: 0b010, mask: 0b001 });

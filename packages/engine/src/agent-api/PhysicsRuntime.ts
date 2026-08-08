@@ -6,8 +6,8 @@
  *
  * `@aura3d/physics` already wraps a real engine. `PhysicsWorld` has `createRigidBody`,
  * `createCollider`, `createConstraint`, `step()` returning `CollisionEvent[]`,
- * `raycast`/`raycastAll`, configurable solver iterations and sleeping, over either
- * `cannon-es` or an `aura-js` fallback. `RigidBody` already has `applyForce`,
+ * `raycast`/`raycastAll`, configurable solver iterations and sleeping, over the one
+ * production `cannon-es` backend. `RigidBody` already has `applyForce`,
  * `applyTorque`, `applyImpulse`, `setVelocity`, `wake` and `sleep`.
  *
  * None of it was reachable. Across ~47k lines of the public agent API there were zero

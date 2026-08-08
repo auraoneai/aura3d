@@ -7,27 +7,26 @@ import { PhysicsWorld } from "@aura3d/physics";
  *
  * These tests also cover the defect that made the whole joint feature fictional.
  *
- * Defect class: **engine**. `PhysicsWorld.step()` has two branches. The `aura-js` branch
- * called `constraint.solve()` inside its substep loop. The `cannon-es` branch —
- * the default, selected whenever `backend` is not explicitly `"aura-js"` — never called it
- * at all. So on the backend every real consumer actually used, joints were a silent no-op:
- * a body on a `fixed` joint free-fell to y = -18.78 over two seconds instead of hanging at
- * y = 1. `joints / constraints` was listed as "unproven, 0 consumers", and the reason it
- * had no consumers is that it did not work.
+ * Defect class: **engine**. `PhysicsWorld.step()` used to have two branches. The removed
+ * `aura-js` branch called `constraint.solve()` inside its substep loop. The `cannon-es`
+ * branch — the default, selected whenever `backend` was not explicitly `"aura-js"` — never
+ * called it at all. So on the backend every real consumer actually used, joints were a
+ * silent no-op: a body on a `fixed` joint free-fell to y = -18.78 over two seconds instead
+ * of hanging at y = 1. `joints / constraints` was listed as "unproven, 0 consumers", and
+ * the reason it had no consumers is that it did not work.
  *
- * Every case below runs on **both** backends, because a joint that only holds on the
- * fallback backend is not a working joint.
+ * WS-4.3 removed the second solver, so there is no longer a branch on which a joint can
+ * pass while the shipped path ignores it. Every case below runs on the one production
+ * backend, which is the same code a route runs.
  */
-const BACKENDS = ["cannon-es", "aura-js"] as const;
-
-function runtimeFor(backend: (typeof BACKENDS)[number], gravity: readonly [number, number, number] = [0, -9.81, 0]) {
-  const world = new PhysicsWorld({ backend, gravity: [...gravity], enableSleeping: false, solverIterations: 8 });
+function runtimeFor(gravity: readonly [number, number, number] = [0, -9.81, 0]) {
+  const world = new PhysicsWorld({ backend: "cannon-es", gravity: [...gravity], enableSleeping: false, solverIterations: 8 });
   return createPhysicsRuntime(world);
 }
 
-describe.each(BACKENDS)("joints on the %s backend", (backend) => {
+describe("joints on the production backend", () => {
   it("a fixed joint holds a hanging body against gravity", () => {
-    const physics = runtimeFor(backend);
+    const physics = runtimeFor();
     physics.createBody({ name: "anchor", type: "static", shape: "box", position: [0, 2, 0], halfExtents: [0.1, 0.1, 0.1] });
     const hanging = physics.createBody({ name: "load", shape: "box", mass: 1, position: [0, 1, 0], halfExtents: [0.1, 0.1, 0.1] });
 
@@ -39,7 +38,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
   });
 
   it("a ball-socket joint holds position while leaving rotation free", () => {
-    const physics = runtimeFor(backend);
+    const physics = runtimeFor();
     physics.createBody({ name: "anchor", type: "static", shape: "box", position: [0, 2, 0], halfExtents: [0.1, 0.1, 0.1] });
     const pendulum = physics.createBody({ name: "bob", shape: "sphere", radius: 0.15, mass: 1, position: [0, 1.4, 0] });
 
@@ -57,7 +56,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
   });
 
   it("a slider joint permits motion along its axis and resists motion across it", () => {
-    const physics = runtimeFor(backend, [0, 0, 0]);
+    const physics = runtimeFor([0, 0, 0]);
     physics.createBody({ name: "rail", type: "static", shape: "box", position: [0, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
     const block = physics.createBody({ name: "block", shape: "box", mass: 1, position: [0.5, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
 
@@ -76,7 +75,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
   });
 
   it("a spring joint returns a displaced body toward its rest length", () => {
-    const physics = runtimeFor(backend, [0, 0, 0]);
+    const physics = runtimeFor([0, 0, 0]);
     physics.createBody({ name: "mount", type: "static", shape: "box", position: [0, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
     const platform = physics.createBody({ name: "platform", shape: "box", mass: 1, position: [0, 1, 0], halfExtents: [0.2, 0.05, 0.2] });
 
@@ -100,7 +99,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
   });
 
   it("a motorised hinge drives rotation and honours setMotorSpeed", () => {
-    const physics = runtimeFor(backend, [0, 0, 0]);
+    const physics = runtimeFor([0, 0, 0]);
     physics.createBody({ name: "frame", type: "static", shape: "box", position: [0, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
     const door = physics.createBody({ name: "door", shape: "box", mass: 1, position: [0.4, 0, 0], halfExtents: [0.4, 0.6, 0.05] });
 
@@ -124,7 +123,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
   });
 
   it("a hinge joint keeps its anchors together under load", () => {
-    const physics = runtimeFor(backend);
+    const physics = runtimeFor();
     physics.createBody({ name: "post", type: "static", shape: "box", position: [0, 2, 0], halfExtents: [0.1, 0.1, 0.1] });
     const arm = physics.createBody({ name: "arm", shape: "box", mass: 3, position: [0.5, 2, 0], halfExtents: [0.5, 0.05, 0.1] });
 
@@ -146,7 +145,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
      * body to cancel it. Measured before the fix, on a block given one along-axis impulse:
      * 0.478 off-axis in z and 0.780 in y — it left the rail entirely. At rest it held fine.
      */
-    const physics = runtimeFor(backend);
+    const physics = runtimeFor();
     physics.createBody({ name: "rail", type: "static", shape: "box", position: [1.2, 0.42, -1.1], halfExtents: [0.07, 0.07, 0.07] });
     const block = physics.createBody({ name: "block", shape: "box", mass: 1.6, position: [2.2, 0.42, -1.1], halfExtents: [0.15, 0.15, 0.15], linearDamping: 0.5 });
     physics.createJoint({ kind: "slider", bodyA: "rail", bodyB: "block", anchor: [1.2, 0.42, -1.1], axis: [1, 0, 0] });
@@ -164,7 +163,7 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
   });
 
   it("setEnabled(false) releases the joint", () => {
-    const physics = runtimeFor(backend);
+    const physics = runtimeFor();
     physics.createBody({ name: "anchor", type: "static", shape: "box", position: [0, 2, 0], halfExtents: [0.1, 0.1, 0.1] });
     const load = physics.createBody({ name: "load", shape: "box", mass: 1, position: [0, 1, 0], halfExtents: [0.1, 0.1, 0.1] });
     const joint = physics.createJoint({ kind: "fixed", bodyA: "anchor", bodyB: "load" });
@@ -183,7 +182,7 @@ describe("joint API surface", () => {
     const kinds: readonly AuraJointKind[] = ["fixed", "hinge", "slider", "ball-socket", "spring", "motorised-hinge"];
     expect(kinds.length).toBe(6);
     for (const kind of kinds) {
-      const physics = runtimeFor("cannon-es", [0, 0, 0]);
+      const physics = runtimeFor([0, 0, 0]);
       physics.createBody({ name: "a", type: "static", shape: "box", position: [0, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
       physics.createBody({ name: "b", shape: "box", mass: 1, position: [0.5, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
       const joint = physics.createJoint(
@@ -196,7 +195,7 @@ describe("joint API surface", () => {
   });
 
   it("rejects setMotorSpeed on a joint that has no motor", () => {
-    const physics = runtimeFor("cannon-es", [0, 0, 0]);
+    const physics = runtimeFor([0, 0, 0]);
     physics.createBody({ name: "a", type: "static", shape: "box", halfExtents: [0.1, 0.1, 0.1] });
     physics.createBody({ name: "b", shape: "box", mass: 1, position: [0.5, 0, 0], halfExtents: [0.1, 0.1, 0.1] });
     const joint = physics.createJoint({ kind: "hinge", bodyA: "a", bodyB: "b" });
@@ -204,7 +203,7 @@ describe("joint API surface", () => {
   });
 
   it("names the missing body instead of failing obscurely", () => {
-    const physics = runtimeFor("cannon-es");
+    const physics = runtimeFor();
     physics.createBody({ name: "a", shape: "box", mass: 1 });
     expect(() => physics.createJoint({ kind: "fixed", bodyA: "a", bodyB: "ghost" })).toThrow(/two existing bodies/);
   });

@@ -2391,19 +2391,32 @@ use them.
 ### WS-4.3 Implement the chosen architecture
 
 - [ ] Implement whatever WS-4.2 selected, behind the WS-4.1 contract.
-- [ ] Fix or remove the `aura-js` path — the joint no-op divergence must not survive in
-      any form.
-- [ ] Only if WS-4.2 chose multi-backend: add compatibility backends with dated
-      deprecations (R7). Otherwise do not build the abstraction.
+- [x] Fix or remove the `aura-js` path — the joint no-op divergence must not survive in
+      any form. **Removed, not fixed.** `PhysicsBackend` is a one-member union;
+      `disableCannonBackend` and the second integrator are deleted; `step()` no longer
+      branches. Passing `"aura-js"` throws by name. Enforced by
+      `tests/unit/physics/single-solver-ownership.test.ts` (7 assertions) and by the R12
+      physics row now counting union members instead of grepping a string. R12: 3/5 → 2/5.
+- [x] Only if WS-4.2 chose multi-backend: add compatibility backends with dated
+      deprecations (R7). Otherwise do not build the abstraction. **WS-4.2 chose one
+      backend, so no abstraction was built.**
 
 **"All 217 tests pass" (measured; this PRD previously said 138) is necessary but insufficient — those tests were written around the
 current solver's semantics and may encode its quirks.** Classify every existing physics
 test before migrating:
 
-- [ ] **Contract tests** — must survive unchanged; they define the public promise.
-- [ ] **Implementation-characterization tests** — may encode old-solver quirks; each is
+- [x] **Contract tests** — must survive unchanged; they define the public promise.
+      Measured: 114 of 114 rows `contract` in
+      `tests/reports/physics-test-classification/report.json`. All 19 surviving
+      `backend: "aura-js"` pins were rewritten to the production backend and pass unchanged.
+- [x] **Implementation-characterization tests** — may encode old-solver quirks; each is
       either rewritten as a contract test or deleted with a recorded reason. Never retained
-      as a constraint on the new backend by default.
+      as a constraint on the new backend by default. Measured: **0 characterization rows.**
+      The 7 originally-failing cases were retired into backend-neutral contracts in commit
+      `0ed7d1d3`; three fallback-only duplicates (a CCD tunnelling case and a force-
+      integration agreement case in `ccd-or-fast-body.test.ts`) were deleted after folding
+      their one unique assertion — the wrapper's own swept time of impact, which is Aura3D's
+      and therefore solver-independent — into the production case.
 - [ ] **New cross-backend physical invariants** — written fresh, must hold on any backend.
 - [ ] **Full-route behaviour tests** — end-to-end, per WS-5.3.
 

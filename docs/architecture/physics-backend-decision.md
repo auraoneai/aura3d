@@ -127,6 +127,24 @@ What ships instead:
   impossible. Keep the adaptive-substep CCD mitigation already shipped in
   `apps/common/src/cannon-physics-proof.ts` and move it below the public contract, because
   raw cannon-es tunnels and the contract must not.
+
+  **Done.** `PhysicsBackend` is now a one-member union, `disableCannonBackend` and the
+  second integrator (`resolveContact` / `applyImpulsePair` / `effectiveMaterial`, and
+  `step()`'s call to `RigidBody.integrate`) are deleted, and `PhysicsBackendSelection` no
+  longer has `fallback` or `jsFallbackAvailable` to report. Passing the removed
+  `"aura-js"` string now throws by name rather than quietly selecting a different solver,
+  and an inexpressible collider shape throws at `createCollider` instead of downgrading the
+  whole world mid-scene. Enforced by `tests/unit/physics/single-solver-ownership.test.ts`
+  (7 assertions, source-level and behavioural) and by the R12 physics row in
+  `tools/negative-complexity/index.ts`, which now counts the union's members rather than
+  grepping for a string — the earlier substring form would have been satisfied by this
+  paragraph. R12 violations: 3 of 5 → 2 of 5.
+
+  All 19 `backend: "aura-js"` test pins were rewritten to the production backend and pass
+  unchanged, which is what the WS-4.3 classification run predicted: 114 of 114 rows
+  `contract`, 0 `characterization`. `tools/physics-test-classification/index.ts` is retired
+  — its input was the pins themselves, so it can no longer run; the measured report at
+  `tests/reports/physics-test-classification/report.json` is retained as the evidence.
 - **Character controller** — stays ours by necessity; cannon-es ships none. It is now
   load-bearing rather than duplicated, so it needs the WS-4.3 grounding/slope/step tests.
 - **Vehicle** — cannon-es ships `RaycastVehicle` and `grep` proves we use none of it while

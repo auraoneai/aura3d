@@ -145,6 +145,21 @@ function countRoutes(): number {
 }
 
 /**
+ * Members of the `PhysicsBackend` union in `packages/physics/src/PhysicsWorld.ts`.
+ *
+ * This is the declaration that decides how many solvers a caller can select, so counting it
+ * measures the R12 physics row directly. Returns `-1` when the declaration cannot be found,
+ * which reports as a violation rather than passing silently on a renamed type.
+ */
+function countPhysicsBackends(): number {
+  const path = join(repoRoot, "packages/physics/src/PhysicsWorld.ts");
+  if (!existsSync(path)) return -1;
+  const match = /^export type PhysicsBackend = ([^;]+);/m.exec(readFileSync(path, "utf8"));
+  if (!match) return -1;
+  return match[1]!.split("|").filter((member) => member.trim().length > 0).length;
+}
+
+/**
  * R12 duplicate-ownership violations. Five named rows; each is resolved when one implementation
  * remains and the other is a thin adapter or gone.
  */
@@ -153,9 +168,25 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
   const contains = (path: string, needle: string): boolean => exists(path) && readFileSync(join(repoRoot, path), "utf8").includes(needle);
   const rows = [
     {
+      /*
+       * WS-4.3 resolved this row by deleting the second solver, so the check has to change
+       * shape or it would go green on a comment.
+       *
+       * The old form asked whether `PhysicsWorld.ts` contains the string `"aura-js"`. It
+       * still does — in the doc comment on `PhysicsBackend` that records *why* there is one
+       * backend, and in the error message thrown when a 1.5.x caller passes the removed
+       * value. Both are the fix, not the violation. A substring check cannot tell a
+       * surviving implementation from a tombstone.
+       *
+       * What actually constitutes the violation is a second *selectable* solver, so the
+       * check now reads the `PhysicsBackend` union — the one declaration that decides how
+       * many solvers a caller can ask for — and counts its members. One member, one owner.
+       * A substring check would also have been satisfied by the prose two paragraphs up in
+       * this very file, which is the trap being avoided.
+       */
       capability: "physics solver",
-      present: contains("packages/physics/src/PhysicsWorld.ts", '"aura-js"') && contains("packages/physics/src/PhysicsWorld.ts", "cannon-es"),
-      detail: "PhysicsWorld still declares both the cannon-es and aura-js backends"
+      present: countPhysicsBackends() !== 1,
+      detail: `PhysicsBackend declares ${countPhysicsBackends()} selectable solvers; R12 allows one`
     },
     {
       /*

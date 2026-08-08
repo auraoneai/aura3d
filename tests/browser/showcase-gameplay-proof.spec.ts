@@ -185,7 +185,7 @@ interface PhysicsRouteEvidence {
   readonly continuousCollisionProvider: string;
   readonly continuousCollisionSubSteps: number;
   readonly fastMoverDidNotTunnel: boolean;
-  readonly nativeAuraJsLimit: string;
+  readonly continuousCollisionOwnership: string;
 }
 
 const REPORT_DIR = resolve("tests/reports/showcase-gameplay");
@@ -646,9 +646,9 @@ function checkPhysicsBackend(
   check((physics?.continuousCollisionSubSteps ?? 0) > 1, blockers, `${label} did not exercise CCD substeps`);
   check(physics?.fastMoverDidNotTunnel === true, blockers, `${label} fast mover tunneled`);
   check(
-    physics?.nativeAuraJsLimit.includes("without box-box") === true,
+    physics?.continuousCollisionOwnership.includes("adaptive-substep wrapper") === true,
     blockers,
-    `${label} did not disclose the native aura-js limit`
+    `${label} did not disclose which layer owns fast-body protection`
   );
 }
 

@@ -235,9 +235,9 @@ export class RigidBody {
    * Force accumulated since the last step, in world space.
    *
    * Exposed because `applyForce` was silently a no-op on the default `cannon-es`
-   * backend: it accumulated here, and only `integrate()` — the `aura-js` fallback path
-   * — ever read it. The backend bridge needs to read the accumulator to forward it,
-   * which it cannot do while this is private.
+   * backend: it accumulated here, and only the since-removed second solver's integrator
+   * ever read it. The backend bridge needs to read the accumulator to forward it, which
+   * it cannot do while this is private.
    */
   pendingForce(): Vec3 {
     return [this.accumulatedForce[0], this.accumulatedForce[1], this.accumulatedForce[2]];

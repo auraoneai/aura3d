@@ -77,8 +77,12 @@ export function createShowcaseCannonPhysicsProof(routeId: string) {
       continuousCollisionSubSteps: backend.continuousCollision.lastSubSteps,
       continuousCollisionRequiredSubSteps: backend.continuousCollision.lastRequiredSubSteps,
       fastMoverDidNotTunnel: fastBody.position[0] < -0.1 && fastBody.velocity[0] <= 0,
-      nativeAuraJsLimit:
-        "The native aura-js backend remains without box-box narrow phase, angular contact response, or CCD."
+      // WS-4.3 removed the second solver, so there is no longer a fallback backend whose
+      // limits need disclosing. What still needs disclosing is which layer owns fast-body
+      // protection: cannon-es exposes no native swept TOI, so the guarantee above comes
+      // from Aura3D's adaptive-substep wrapper, not from the solver.
+      continuousCollisionOwnership:
+        "cannon-es exposes no native swept TOI; fast-body protection is Aura3D's adaptive-substep wrapper above the solver."
     }
   };
 }

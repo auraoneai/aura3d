@@ -2,8 +2,16 @@ import assert from "node:assert/strict";
 import { test } from "vitest";
 import { PhysicsWorld } from "../../../packages/physics/src/index.js";
 
+/*
+ * WS-4.3: these two cases were pinned to the removed `aura-js` solver, which is the only
+ * reason they passed. The `aura-js` branch called `constraint.solve()` inside its substep
+ * loop; the default `cannon-es` branch never called it at all, so on the backend every
+ * real consumer used, a constraint chain was a silent no-op. Both now run on the one
+ * production backend, so a green result here means joints hold in shipped code.
+ */
+
 test("fixed constraint chain remains bounded under repeated solver steps", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 8, backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 8, backend: "cannon-es" });
   const anchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   let previous = anchor;
   const bodies = [];
@@ -31,7 +39,7 @@ test("fixed constraint chain remains bounded under repeated solver steps", () =>
 });
 
 test("hinge, slider, and spring constraints stay finite and axis-bounded under stress", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, backend: "cannon-es" });
   const hingeAnchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const hingeBody = world.createRigidBody({ position: [2, 3, -1], velocity: [1, 8, -3] });
   world.createConstraint({

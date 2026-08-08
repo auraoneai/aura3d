@@ -91,35 +91,10 @@ test("Aura adaptive-substep CCD prevents a cannon-es fast mover from tunneling",
   assert.equal(ccd.lastRequiredSubSteps, 160);
   assert.equal(ccd.lastSubSteps, 160);
   assert.equal(ccd.limitExceeded, false);
-  assert.ok(fastBody.position[0] < -0.1, `expected body to remain before wall, got x=${fastBody.position[0]}`);
-  assert.ok(fastBody.velocity[0] <= 0, `expected impact response, got vx=${fastBody.velocity[0]}`);
-});
-
-test("Aura adaptive-substep CCD prevents a native fast mover from tunneling", () => {
-  const world = new PhysicsWorld({
-    backend: "aura-js",
-    gravity: [0, 0, 0],
-    solverIterations: 8,
-    enableSleeping: false,
-    continuousCollision: {
-      mode: "adaptive-substeps",
-      maxSubSteps: 256,
-      motionThreshold: 0.5
-    }
-  });
-  const wall = world.createRigidBody({ type: "static", position: [0, 0, 0] });
-  world.createCollider(wall, { shape: Shape.box(0.05, 1, 1) });
-  const fastBody = world.createRigidBody({ position: [-2, 0, 0], velocity: [240, 0, 0] });
-  world.createCollider(fastBody, { shape: Shape.box(0.05, 0.05, 0.05) });
-
-  world.step(1 / 60);
-
-  const ccd = world.snapshot().backend.continuousCollision;
-  assert.equal(ccd.active, true);
-  assert.equal(ccd.lastRequiredSubSteps, 160);
-  assert.equal(ccd.lastSubSteps, 160);
+  // Retained from the deleted fallback-pinned duplicate: the wrapper's own swept time of
+  // impact, which is Aura3D's and is therefore identical on any solver underneath it.
   assert.ok(Math.abs((ccd.lastTimeOfImpact ?? 0) - 1.9 / 240) < 1e-9);
-  assert.ok(fastBody.position[0] <= -0.1, `expected body to remain before wall, got x=${fastBody.position[0]}`);
+  assert.ok(fastBody.position[0] < -0.1, `expected body to remain before wall, got x=${fastBody.position[0]}`);
   assert.ok(fastBody.velocity[0] <= 0, `expected impact response, got vx=${fastBody.velocity[0]}`);
 });
 
@@ -159,9 +134,8 @@ test("timeOfImpact returns the first swept-bounds contact and rejects misses", (
  * call accelerated a body differently depending on how fast it already was.
  *
  * Exactly the family of the joint no-op and the `applyForce` drop: green tests on a path
- * users never take. The `backend` parameter is now explicit in the test name and both
- * production and fallback are asserted to agree, so the production path can no longer
- * regress behind a passing fallback assertion.
+ * users never take. WS-4.3 then removed the second solver outright, so there is no longer
+ * a fallback branch a passing assertion can hide behind — this case is the production path.
  */
 test("native CCD substeps preserve outer-step forces and interpolation history [production: cannon-es]", () => {
   const world = new PhysicsWorld({
@@ -258,25 +232,6 @@ test("continuous force application accumulates linearly across frames", () => {
     Math.abs(body.velocity[0] - 60) < 1e-6,
     `60 N for 1 s on 1 kg must reach 60 m/s, got ${body.velocity[0]}`
   );
-});
-
-test("the fallback backend agrees with production on force integration", () => {
-  // Retained cross-backend invariant: the original assertion, kept so the fallback cannot
-  // drift from production while `aura-js` still exists.
-  const world = new PhysicsWorld({
-    backend: "aura-js",
-    gravity: [0, 0, 0],
-    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 16, motionThreshold: 0.5 }
-  });
-  const body = world.createRigidBody({ position: [0, 0, 0], velocity: [60, 0, 0] });
-  world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
-  body.applyForce([60, 0, 0]);
-
-  world.step(1 / 60);
-
-  assert.equal(world.snapshot().backend.continuousCollision.lastSubSteps, 4);
-  assert.ok(Math.abs(body.velocity[0] - 61) < 1e-9);
-  assert.deepEqual(body.previousPosition, [0, 0, 0]);
 });
 
 test("adaptive-substep CCD rejects a step that exceeds its configured guarantee", () => {

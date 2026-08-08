@@ -4,7 +4,8 @@ import { PhysicsWorld, RigidBody, Shape } from "../../../packages/physics/src/in
 
 /**
  * WS-4.3 disposition: these were classified `characterization` by
- * `tools/physics-test-classification/index.ts` because they pinned `backend: "aura-js"`
+ * the WS-4.3 classification run (`tests/reports/physics-test-classification/report.json`)
+ * because they pinned `backend: "aura-js"`
  * and asserted that solver's exact behaviour. The *physical* intent is backend-neutral
  * and is retained here; only the fallback-specific arithmetic was dropped.
  *

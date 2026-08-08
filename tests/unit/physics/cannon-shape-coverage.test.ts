@@ -13,10 +13,10 @@ import { PhysicsWorld, Shape, type PhysicsShape } from "../../../packages/physic
  * `aura-js` branch. A developer who added one terrain collider to an otherwise
  * cannon-backed scene had every body in that scene quietly change solver.
  *
- * WS-4.2 selected `cannon-es` as the single production backend and WS-4.3 removes the
- * second solver, so a shape the production backend cannot express is no longer a
- * degradation — it is a hole. These assertions are the contract: every shape the public
- * API can construct is expressible on the production backend, and the fallback never fires.
+ * WS-4.2 selected `cannon-es` as the single production backend and WS-4.3 removed the
+ * second solver along with `disableCannonBackend` itself, so a shape the production backend
+ * cannot express is no longer a degradation — it throws. These assertions are the contract:
+ * every shape the public API can construct is expressible on the production backend.
  */
 
 const SHAPES: readonly (readonly [string, PhysicsShape])[] = [
@@ -60,12 +60,11 @@ for (const [kind, shape] of SHAPES) {
     world.step(1 / 60);
 
     const snapshot = world.snapshot();
-    assert.equal(
-      snapshot.backend.active,
-      "cannon-es",
-      `'${kind}' silently swapped the world onto ${snapshot.backend.active}: ${snapshot.backend.fallback ?? "no reason given"}`
-    );
-    assert.equal(snapshot.backend.fallback, undefined, `'${kind}' recorded a fallback reason`);
+    assert.equal(snapshot.backend.active, "cannon-es", `'${kind}' did not run on the production backend`);
+    // WS-4.3 removed `disableCannonBackend`, so a shape the solver cannot express now
+    // throws from `createCollider` instead of silently swapping solvers. Reaching this
+    // line at all is the proof: the collider was accepted.
+    assert.equal(snapshot.stats.colliders, 1, `'${kind}' was not registered as a collider`);
   });
 }
 
@@ -93,7 +92,7 @@ test("a mesh collider added mid-scene does not change the solver under the other
 
   const snapshot = world.snapshot();
   assert.equal(snapshot.backend.active, "cannon-es");
-  assert.equal(snapshot.backend.fallback, undefined);
+  assert.equal(snapshot.stats.colliders, 3, "the mid-scene mesh collider was not registered");
   // And the unrelated body is still being simulated, not frozen by the swap.
   const fallingSnapshot = snapshot.bodies.find((entry) => entry.id === falling.id);
   assert.ok(fallingSnapshot !== undefined);

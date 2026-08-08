@@ -166,8 +166,8 @@ async function auditLazyEntrypoints(rootEngine) {
   hasFunction("lazySystems.collect", lazySystems.collect);
 
   if (typeof physics.worldAsync === "function") {
-    const world = await physics.worldAsync({ backend: "aura-js" });
-    checks.push({ id: "physics.worldAsync runtime", pass: world.snapshot().backend.active === "aura-js" });
+    const world = await physics.worldAsync({ backend: "cannon-es" });
+    checks.push({ id: "physics.worldAsync runtime", pass: world.snapshot().backend.active === "cannon-es" });
   }
 
   for (const system of ["product-gltf-loader", "postprocess", "character-rig"]) {

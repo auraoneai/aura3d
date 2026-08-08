@@ -46,7 +46,7 @@ import { PhysicsDebugAdapter } from "../../packages/debug/src/PhysicsDebugAdapte
 
 test("physics replay is deterministic for repeated fixed input runs", () => {
   const run = () => {
-    const world = new PhysicsWorld({ gravity: [0, -10, 0], fixedDelta: 1 / 60, backend: "aura-js" });
+    const world = new PhysicsWorld({ gravity: [0, -10, 0], fixedDelta: 1 / 60, backend: "cannon-es" });
     const body = world.createRigidBody({ position: [0, 4, 0], velocity: [1, 0, 0] });
     world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
     const ground = world.createRigidBody({ type: "static", position: [0, -0.5, 0] });
@@ -74,7 +74,7 @@ test("physics replay is deterministic for repeated fixed input runs", () => {
 });
 
 test("physics broadphase prunes distant collider pairs deterministically", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const first = world.createRigidBody({ position: [0, 0, 0] });
   world.createCollider(first, { shape: Shape.box(1, 1, 1) });
   const second = world.createRigidBody({ position: [0.5, 0, 0] });
@@ -171,7 +171,7 @@ test("rigid bodies integrate angular velocity, torque, damping, and off-center i
 });
 
 test("dynamic body falls, collides with static ground, and emits begin then stay", () => {
-  const world = new PhysicsWorld({ gravity: [0, -10, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, -10, 0], backend: "cannon-es" });
   const body = world.createRigidBody({ position: [0, 2, 0] });
   world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
   const ground = world.createRigidBody({ type: "static", position: [0, -0.5, 0] });
@@ -186,7 +186,7 @@ test("dynamic body falls, collides with static ground, and emits begin then stay
 });
 
 test("physics emits contact end when overlapping bodies separate", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const bodyA = world.createRigidBody({ position: [0, 0, 0] });
   world.createCollider(bodyA, { shape: Shape.box(1, 1, 1) });
   const bodyB = world.createRigidBody({ type: "static", position: [0, 0, 0] });
@@ -225,7 +225,7 @@ test("settled dynamic bodies sleep deterministically and wake on impulse", () =>
 
 /**
  * WS-4.3 disposition: **characterization -> contract.** Two pins were solver artifacts:
- * `backend: "aura-js"` on the stack, and `maxContactPenetration === 0` exactly. Measured on
+ * `backend: "cannon-es"` on the stack, and `maxContactPenetration === 0` exactly. Measured on
  * the production backend the same 3-box stack settles with penetration 9.4e-4 and lateral
  * drift 3.2e-3 — physically correct for a soft-constraint solver, and rejected by an
  * exact-zero assertion. The energy figure (33 J) is *not* a solver artifact: it is
@@ -291,7 +291,7 @@ test("physics snapshot reports conservation sanity and stable stacking metrics",
 });
 
 test("collision filters and sensors emit bridgeable events without physical resolution", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const sensorBody = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   world.createCollider(sensorBody, { shape: Shape.box(1, 1, 1), sensor: true, filter: { layer: 0b001, mask: 0b010 } });
   const dynamicBody = world.createRigidBody({ position: [0, 0, 0], velocity: [1, 0, 0] });
@@ -309,7 +309,7 @@ test("collision filters and sensors emit bridgeable events without physical reso
 
 test("contact friction damps tangential sliding while preserving deterministic support", () => {
   const run = () => {
-    const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 6, enableSleeping: false, backend: "aura-js" });
+    const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 6, enableSleeping: false, backend: "cannon-es" });
     const box = world.createRigidBody({ position: [0, 0, 0], velocity: [4, 0, 0], friction: 0.8 });
     world.createCollider(box, { shape: Shape.box(0.5, 0.5, 0.5) });
     const floor = world.createRigidBody({ type: "static", position: [0, -0.75, 0], friction: 0.8 });
@@ -335,7 +335,7 @@ test("contact friction damps tangential sliding while preserving deterministic s
 
 /**
  * WS-4.3 disposition: **characterization -> contract.** Three pins were solver artifacts:
- * `backend: "aura-js"`, the exact `restitution: 1` rebound `vy === 2`, and
+ * `backend: "cannon-es"`, the exact `restitution: 1` rebound `vy === 2`, and
  * `slide(0) === 4` exactly. Measured on the production backend the perfectly elastic case
  * rebounds at 6.02 m/s (the soft-contact solver also resolves the initial overlap in the
  * same step) and frictionless sliding retains 4 m/s only to within solver tolerance. Pinning
@@ -563,7 +563,7 @@ test("capsule contacts use segment distance for spheres, boxes, and other capsul
 });
 
 test("physics emits contact end when a body is removed during contact", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const bodyA = world.createRigidBody({ position: [0, 0, 0] });
   world.createCollider(bodyA, { shape: Shape.box(1, 1, 1) });
   const bodyB = world.createRigidBody({ type: "static", position: [0, 0, 0] });
@@ -574,7 +574,7 @@ test("physics emits contact end when a body is removed during contact", () => {
 });
 
 test("raycast returns real closest hit and misses filtered rays", () => {
-  const world = new PhysicsWorld({ backend: "aura-js" });
+  const world = new PhysicsWorld({ backend: "cannon-es" });
   const body = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const collider = world.createCollider(body, { shape: Shape.sphere(1), filter: { layer: 0b10 } });
   const hit = world.raycast([0, 0, -5], [0, 0, 1], { mask: 0b10 });
@@ -591,7 +591,7 @@ test("raycast returns real closest hit and misses filtered rays", () => {
 });
 
 test("sphere casts sweep moving volumes against colliders without raycast stubs", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const boxBody = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const sphereBody = world.createRigidBody({ type: "static", position: [0, 0, 3] });
   const planeBody = world.createRigidBody({ type: "static", position: [0, 0, 0] });
@@ -643,7 +643,7 @@ test("physics shapes validate capsules, planes, and triangle meshes with finite 
 });
 
 test("mesh raycasts support front faces, optional backfaces, max distance, and closest hit ordering", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const nearBody = world.createRigidBody({ type: "static", position: [0, 0, 2] });
   const farBody = world.createRigidBody({ type: "static", position: [0, 0, 4] });
   const mesh = Shape.mesh([[-1, -1, 0], [1, -1, 0], [0, 1, 0]], [0, 1, 2]);
@@ -665,7 +665,7 @@ test("mesh raycasts support front faces, optional backfaces, max distance, and c
 });
 
 test("physics stepper accumulates fixed steps deterministically", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], fixedDelta: 0.1, backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], fixedDelta: 0.1, backend: "cannon-es" });
   const body = world.createRigidBody({ position: [0, 0, 0], velocity: [1, 0, 0] });
   const stepper = new PhysicsStepper(0.1, 4);
   assert.deepEqual(stepper.advance(0.05, world), { steps: 0, alpha: 0.5, droppedTime: 0 });
@@ -674,7 +674,7 @@ test("physics stepper accumulates fixed steps deterministically", () => {
 });
 
 test("fixed and hinge constraints solve deterministically in world steps", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const anchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const follower = world.createRigidBody({ position: [2, 0, 0] });
   const fixed = world.createConstraint({ type: "fixed", bodyA: anchor, bodyB: follower });
@@ -700,7 +700,7 @@ test("fixed and hinge constraints solve deterministically in world steps", () =>
 });
 
 test("slider and spring constraints solve along their configured axes without teleporting static anchors", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 4, backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 4, backend: "cannon-es" });
   const rail = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const sliderBody = world.createRigidBody({ position: [3, 2, -1], velocity: [5, 4, -3] });
   world.createConstraint({ type: "slider", bodyA: rail, bodyB: sliderBody, axis: [1, 0, 0] });
@@ -718,7 +718,7 @@ test("slider and spring constraints solve along their configured axes without te
 });
 
 test("scene and ECS physics bridges sync dynamic and kinematic transforms", () => {
-  const world = new PhysicsWorld({ gravity: [0, -10, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, -10, 0], backend: "cannon-es" });
   const dynamicBody = world.createRigidBody({ position: [0, 1, 0] });
   const kinematicBody = world.createRigidBody({ type: "kinematic", position: [0, 0, 0] });
   const sceneNode = { position: [0, 0, 0] as [number, number, number] };
@@ -739,7 +739,7 @@ test("scene and ECS physics bridges sync dynamic and kinematic transforms", () =
 });
 
 test("scene and ECS physics bridges can pull interpolated dynamic transforms", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const body = world.createRigidBody({ position: [0, 0, 0], velocity: [10, 0, 0] });
   world.step(0.1);
 
@@ -757,7 +757,7 @@ test("scene and ECS physics bridges can pull interpolated dynamic transforms", (
 });
 
 test("physics bridge ordering pushes kinematic transforms before stepping and pulls dynamics after stepping", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], backend: "cannon-es" });
   const dynamicBody = world.createRigidBody({ position: [0, 0, 0], velocity: [2, 0, 0] });
   const platformBody = world.createRigidBody({ type: "kinematic", position: [0, 0, 0] });
   const dynamicNode = { position: [0, 0, 0] as [number, number, number] };
@@ -775,7 +775,7 @@ test("physics bridge ordering pushes kinematic transforms before stepping and pu
 });
 
 test("physics debug draw and adapter expose stable line counts", () => {
-  const world = new PhysicsWorld({ backend: "aura-js" });
+  const world = new PhysicsWorld({ backend: "cannon-es" });
   const body = world.createRigidBody({ type: "static" });
   world.createCollider(body, { shape: Shape.box(1, 1, 1) });
   assert.equal(new PhysicsDebugDraw().buildLines(world).length, 12);

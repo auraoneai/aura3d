@@ -271,10 +271,11 @@ export function getPhysicsPlaygroundFrame(input: PhysicsPlaygroundInput): Physic
 
 function createWorld(): PhysicsWorld {
   return new PhysicsWorld({
-    // The gallery playground uses the deterministic in-house aura-js solver so the
-    // contact/broadphase stats surfaced in the HUD (and asserted by the parity test)
-    // are reproducible across runs and machines.
-    backend: "aura-js",
+    // WS-4.3: the second solver is gone, so this route runs the one production backend
+    // like every other route. The contact/broadphase stats surfaced in the HUD (and
+    // asserted by the parity test) come from Aura3D's own broadphase and narrow phase,
+    // which run on every backend, so they stay reproducible across runs and machines.
+    backend: "cannon-es",
     gravity: [0, -9.81, 0],
     fixedDelta: 1 / 60,
     solverIterations: 5,
