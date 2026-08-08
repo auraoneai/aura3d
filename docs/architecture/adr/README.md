@@ -17,7 +17,9 @@ This directory exists because the repository already contains a hand-written rig
 GOAP/HTN/behaviour-tree AI framework, an ECS, hand-written audio DSP and a video publishing
 pipeline — each introduced without answering those four questions, and each now being removed,
 replaced, or (where R8 and R1 refuse removal) **permanently maintained** at a cost far exceeding
-what the ADR would have cost. ADR 0001 is the worked example: two packages that would probably
+what the ADR would have cost. ADR 0002 is the second mode of the same failure: two
+implementations of vehicle motion, where migrating to the better one turns out to be blocked on
+a contract detail nobody wrote down. ADR 0001 is the worked example: two packages that would probably
 have been rejected as greenfield proposals cannot now be deleted, because they ship as public
 subpaths with a live consumer and satisfied production-path claims.
 
@@ -60,3 +62,4 @@ records why an existing one could not be removed.
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-retain-ecs-and-scripting.md) | Retain `packages/ecs` and `packages/scripting` as public game-kit-layer API | accepted |
+| [0002](0002-racing-kit-force-model-needs-a-route-length-scale.md) | `game.racing` cannot adopt the shared force model until `GameRacingRoute` states a length scale | accepted |

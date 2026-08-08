@@ -2559,17 +2559,41 @@ motion, so heading comes from steering input and the force model is bypassed.
 | Locomotion | `createGameLocomotionKit` | `GameGenreKits.ts` |
 | Fighting | `createFightingGameKit` | `game-kits/fighting.ts` |
 
-- [ ] Define the shared-runtime contract each must satisfy: consumes `PhysicsRuntime` and
+- [x] Define the shared-runtime contract each must satisfy: consumes `PhysicsRuntime` and
       `SurfaceQuery`; defines no private integrator; owns no route-local surface constant.
+      — defined, and **`game.racing` measurably fails the "no private integrator" clause.**
+      That is the finding, not an omission: see `docs/architecture/adr/0002-*`.
 - [ ] Rebuild each, one commit per kit: racing · platformer · falling blocks · locomotion ·
       fighting (`GameGenreKits.ts` 2,329, `game-kits/fighting.ts` 671,
       `GameRuntime.ts` 4,256, `PlatformerMotion.ts` 571).
+      — **racing is BLOCKED on ADR 0002 and reverted.** The rewire was written in full (model
+      owns heading/speed/lateral velocity, `drift` measured from rear slip angle rather than
+      counted while a key is held, new `GameRacingSnapshot.vehicle` carrying slip angles / yaw
+      rate / understeer / axle loads, `VehicleMotion` exposed on `./solverless` so the kit does
+      not drag the solver onto the critical path) and does not converge, because
+      **`GameRacingRoute` never states a length scale** and every tyre-model quantity is
+      scale-dependent. Measured at the correct arc-window corner radius of 1.005: 11 of 12
+      target-g × wheelbase configurations cannot hold the tightest corner at the route's
+      declared pace, and the one that can delivers 120 g. The shipped 4x pace is a *kinematic*
+      pace — reachable only by a car with no slip to saturate. Tuning constants until three
+      real tests pass would be exactly the pattern this PRD exists to end (R2), so the work is
+      reverted and the blocker is recorded.
 - [ ] Architecture test: each kit imports the shared runtime; none defines a private integrator.
-- [ ] Fix `solvePlatformerMotion`: `apex = max(minApex, geometry.maxRise * apexHeadroom)`
+      — deferred with the racing rebuild; it would fail on `game.racing` today, and R2 forbids
+      writing it to pass.
+- [x] Fix `solvePlatformerMotion`: `apex = max(minApex, geometry.maxRise * apexHeadroom)`
       collapses to `minApex` on level courses — this is the barely-there jump. Make apex
       intent-derived, not next-platform-derived.
+      — already landed at `1fc1b10e` / `5bc298e3`. Apex now takes an explicit `jumpHeight`,
+      then a height-scaled `feel` preset, then the geometry value only as a
+      backwards-compatible fallback, and the level is *validated* against the declared jump
+      rather than dictating it. Verified present in `PlatformerMotion.ts:294-340`; invariant 6
+      of the nine (`tests/unit/physics/production-backend-invariants.test.ts`) independently
+      asserts a jump reaches >50% of its ballistic ceiling `v²/2g`.
 - [ ] **Proof:** rows `vehicle dynamics`, `vehicle AI driving`,
       `platformer motion tuning` leave `parity-unproven` **with lineage tests** (R1).
+      — cannot be claimed while racing is blocked; `vehicle dynamics` stays `parity-unproven`
+      **truthfully**, which is R1 working as intended rather than a gap to paper over.
 
 ---
 
