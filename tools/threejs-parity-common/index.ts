@@ -17,6 +17,8 @@ export interface ThreeJsParityInventoryReport {
     readonly sameSceneAvailable: boolean;
     readonly visualStatus: string;
     readonly blockingFeatures: readonly string[];
+    readonly tests: readonly string[];
+    readonly screenshots: readonly string[];
   }[];
 }
 
