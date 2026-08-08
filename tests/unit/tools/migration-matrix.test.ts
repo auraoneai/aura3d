@@ -23,9 +23,8 @@ const MIGRATION = readFileSync("MIGRATION-1.6.md", "utf8");
 /**
  * The same text with newlines collapsed to spaces.
  *
- * Markdown prose wraps, so a phrase like "the bundle is not yet competitive" is split across two
- * source lines and a naive regex over the raw file misses it. Asserting against the raw text was
- * testing the line-wrap, not the claim.
+ * Markdown prose wraps, so assertions use collapsed whitespace instead of accidentally testing
+ * line wrapping.
  */
 const MIGRATION_FLAT = MIGRATION.replace(/\s+/g, " ");
 
@@ -106,11 +105,27 @@ describe("§12 — the version decision follows from measurement", () => {
     expect(MIGRATION_FLAT).toMatch(/Both premises turned out false/);
   });
 
-  it("does not let a minor version imply the release condition is met", () => {
-    // 1.6.0 says "safe to upgrade". It does not say "ready". §B.1 still fails on bundle size, and
-    // the migration document has to say so or the version number becomes a claim of its own.
-    expect(MIGRATION_FLAT).toMatch(/does \*\*not\*\* clear the §B\.1 release condition/);
-    expect(MIGRATION_FLAT).toMatch(/the bundle is not yet competitive/i);
+  it("binds the cleared bundle condition to measured lean entries, not the compatibility root", () => {
+    const report = JSON.parse(readFileSync("tests/reports/bundle-scenarios.json", "utf8")) as {
+      readonly pass: boolean;
+      readonly scenarios: ReadonlyArray<{
+        readonly ratio: number;
+        readonly maxRatio: number;
+        readonly pass: boolean;
+      }>;
+    };
+
+    expect(report.pass).toBe(true);
+    expect(report.scenarios).toHaveLength(3);
+    for (const scenario of report.scenarios) {
+      expect(scenario.pass).toBe(true);
+      expect(scenario.ratio).toBeLessThanOrEqual(scenario.maxRatio);
+      expect(MIGRATION_FLAT).toContain(`${scenario.ratio.toFixed(3)}x`);
+    }
+
+    expect(MIGRATION_FLAT).toMatch(/clears the §B\.1 release condition through the recommended lean entries/);
+    expect(MIGRATION_FLAT).toMatch(/not by shrinking the compatibility-heavy root/);
+    expect(MIGRATION_FLAT).toMatch(/not universal performance claims/);
   });
 });
 
