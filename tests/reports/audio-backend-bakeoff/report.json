@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.audio-backend-bakeoff/1.0",
-  "generatedAt": "2026-08-08T22:13:55.204Z",
+  "generatedAt": "2026-08-09T01:22:23.369Z",
   "pass": true,
   "decision": "Keep one direct Web Audio owner in @aura3d/audio; reject Howler because it would duplicate context, cache, playback, spatial, and unlock ownership required by the retained Aura semantic layer.",
   "consumers": [
@@ -53,8 +53,8 @@
       "chrome": {
         "pass": true,
         "stats": {
-          "startTime": "2026-08-08T21:33:41.719Z",
-          "duration": 39543.602,
+          "startTime": "2026-08-09T01:22:11.859Z",
+          "duration": 2315.155,
           "expected": 1,
           "skipped": 0,
           "unexpected": 0,
@@ -64,8 +64,8 @@
       "webkit": {
         "pass": true,
         "stats": {
-          "startTime": "2026-08-08T21:27:08.802Z",
-          "duration": 51550.193,
+          "startTime": "2026-08-09T01:22:17.451Z",
+          "duration": 2210.194,
           "expected": 1,
           "skipped": 0,
           "unexpected": 0,
