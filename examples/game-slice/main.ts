@@ -1487,15 +1487,17 @@ function selectPlayerAnimationState(
 
 function updateGameVisualAssetTransforms(visualAssets: LoadedGameVisualAssets | undefined, playerPosition: { readonly x: number; readonly y: number }, timeMs: number, animationState: PlayerAnimationState = "idle", animationTime = 0): void {
   if (!visualAssets) return;
-  const heroRoot = visualAssets.playerResources.scene.findByName("game-hero-runner-root")[0];
-  const arenaRoot = visualAssets.arenaResources.scene.findByName("game-arena-outpost-root")[0];
   const runBob = animationState === "run" ? Math.sin(timeMs * 0.018) * 0.026 : Math.sin(timeMs * 0.006) * 0.008;
   const jumpLift = animationState === "jump" ? 0.045 : 0;
   const victoryLift = animationState === "win" ? 0.035 + Math.sin(animationTime * 8) * 0.012 : 0;
   const failSquash = animationState === "fail" ? 0.82 : 1;
-  heroRoot?.transform.setPosition(playerPosition.x, playerPosition.y + 0.14 + runBob + jumpLift + victoryLift, 0.12).setScale(0.3, 0.3 * failSquash, 0.3);
+  visualAssets.playerResources.scene.root.transform
+    .setPosition(playerPosition.x, playerPosition.y + 0.14 + runBob + jumpLift + victoryLift, 0.12)
+    .setScale(0.3, 0.3 * failSquash, 0.3);
   poseHeroRunner(visualAssets, animationState, animationTime, timeMs);
-  arenaRoot?.transform.setPosition(0.08, 0.04, 0).setScale(0.54, 0.54, 0.54);
+  visualAssets.arenaResources.scene.root.transform
+    .setPosition(0, -0.56, -0.34)
+    .setScale(0.12, 0.12, 0.12);
 }
 
 function poseHeroRunner(visualAssets: LoadedGameVisualAssets, animationState: PlayerAnimationState, animationTime: number, timeMs: number): void {
@@ -1968,30 +1970,6 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
     {
       geometry: resources.showcaseGeometry,
       material: resources.skyGlowMaterial,
-      modelMatrix: modelMatrix(-1.28, 0.62, -0.48, 0.78, 2.42, 0.038),
-      label: "arena-left-cyan-lit-wall-field"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.nebulaMaterial,
-      modelMatrix: modelMatrix(-0.34, 0.58, -0.47, 0.88, 2.26, 0.038),
-      label: "arena-left-magenta-lit-wall-field"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.skylineMaterial,
-      modelMatrix: modelMatrix(0.58, 0.62, -0.46, 0.86, 2.3, 0.038),
-      label: "arena-right-teal-lit-wall-field"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.groundMaterial,
-      modelMatrix: modelMatrix(1.44, 0.58, -0.45, 0.62, 2.24, 0.038),
-      label: "arena-right-textured-service-wall-field"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.skyGlowMaterial,
       modelMatrix: modelMatrix(0, 1.54, -0.69, 2.65, 0.24, 0.035),
       label: "arena-overhead-glass-roof-band"
     },
@@ -2156,11 +2134,6 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
       label: "old-branch-layered-space-environment"
     },
     {
-      geometry: resources.arenaDetailGeometry,
-      material: resources.starfieldMaterial,
-      label: "arena-layered-surface-detail-lines"
-    },
-    {
       geometry: resources.showcaseGeometry,
       material: resources.skyGlowMaterial,
       modelMatrix: modelMatrix(-0.86, 0.16, -0.52, 0.38, 0.9, 0.06),
@@ -2216,54 +2189,6 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
     },
     ...gameSlicePolishItems(resources, timeMs),
     ...gameSliceForegroundSignalItems(resources, timeMs),
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoPanelMaterial,
-      modelMatrix: modelMatrix(-0.72, 0.18, 0.14, 0.62, 0.32, 0.035),
-      label: "arena-foreground-holographic-texture-left"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoTextureMaterials[0] ?? resources.holoTextureMaterial,
-      modelMatrix: modelMatrix(-0.68, 0.48, 0.205, 0.72, 0.34, 0.026),
-      label: "arena-foreground-starfield-texture-left"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoPanelMaterial,
-      modelMatrix: modelMatrix(0.1, 0.34, 0.145, 0.58, 0.28, 0.035),
-      label: "arena-foreground-holographic-texture-center"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoTextureMaterials[1] ?? resources.holoTextureMaterial,
-      modelMatrix: modelMatrix(0.1, 0.72, 0.21, 0.68, 0.28, 0.026),
-      label: "arena-foreground-starfield-texture-center"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoPanelMaterial,
-      modelMatrix: modelMatrix(0.86, 0.08, 0.15, 0.54, 0.34, 0.035),
-      label: "arena-foreground-holographic-texture-right"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoTextureMaterials[2] ?? resources.holoTextureMaterial,
-      modelMatrix: modelMatrix(0.88, 0.42, 0.215, 0.64, 0.32, 0.026),
-      label: "arena-foreground-starfield-texture-right"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoTextureMaterials[3] ?? resources.holoTextureMaterial,
-      modelMatrix: modelMatrix(-0.08, -0.18, 0.22, 0.92, 0.18, 0.026),
-      label: "arena-foreground-starfield-texture-lower"
-    },
-    {
-      geometry: resources.showcaseGeometry,
-      material: resources.holoPaletteMaterial,
-      modelMatrix: modelMatrix(0.04, 0.18, 0.235, 1.12, 0.3, 0.024),
-      label: "arena-foreground-generated-palette-hologram"
-    },
     {
       geometry: resources.showcaseGeometry,
       material: resources.groundMaterial,
@@ -2328,23 +2253,22 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
 
   if (visualAssets) {
     appendGLTFSceneRenderItems(items, visualAssets.arenaResources, "game-asset-arena");
-    appendGLTFSceneRenderItems(items, visualAssets.playerResources, "game-asset-player");
     appendGLTFMeshRenderItem(items, visualAssets.arenaResources, "game-arena-outpost-blue-trim", "arena-blue-trim", modelMatrix(platformX * 0.38, -0.5, 0.08, 1.2, 0.22, 0.34), "game-asset-moving-platform");
     const skinnedTime = (timeMs * 0.001) % Math.max(0.001, visualAssets.skinnedHeroClip.duration);
     items.push({
       geometry: visualAssets.skinnedHeroGeometry,
       material: visualAssets.skinnedHeroMaterial,
-      modelViewProjectionMatrix: gameSkinnedHeroDisplayMatrix(playerPosition.x, playerPosition.y),
+      modelMatrix: gameSkinnedHeroDisplayMatrix(playerPosition.x, playerPosition.y),
       skinning: buildSkinningPalette(sampleAnimatedSkeleton(visualAssets.skinnedHeroSkin.skeleton, visualAssets.skinnedHeroClip, skinnedTime), 64),
       label: "game-asset-lit-skinned-hero"
     });
-  } else {
-    items.push(
+  }
+  items.push(
       {
         geometry: resources.playerGeometry,
         material: resources.playerMaterial,
         modelMatrix: modelMatrix(playerPosition.x, playerPosition.y, 0, 0.55, 0.55, 0.55),
-        label: `physics-player-${playerX.toFixed(2)}-${playerY.toFixed(2)}`,
+        label: `physics-player-collider-debug-${playerX.toFixed(2)}-${playerY.toFixed(2)}`,
       },
       {
         geometry: resources.platformGeometry,
@@ -2376,8 +2300,7 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
         modelMatrix: modelMatrix(0, -0.74, 0.02, 10, 0.06, 0.08),
         label: "arena-floor",
       },
-    );
-  }
+  );
 
   items.push(
     {
@@ -2414,12 +2337,6 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
       label: `particle-sparks-${particlePositions.length}`,
     });
   }
-  items.push({
-    geometry: resources.arenaDetailGeometry,
-    material: resources.starfieldMaterial,
-    modelMatrix: modelMatrix(0, 0, 0.55, 1, 1, 1),
-    label: "arena-foreground-surface-detail-overlay"
-  });
   return compactGamePresentationItems(items);
 }
 
@@ -2427,6 +2344,7 @@ function compactGamePresentationItems(items: readonly RenderItem[]): RenderItem[
   return items.filter((item) => {
     const label = item.label ?? "";
     if (label.startsWith("game-asset-")) return true;
+    if (label.startsWith("physics-player-collider-debug")) return true;
     if (label.startsWith("contact-shadow-proxy")) return true;
     if (label.startsWith("particle-sparks")) return true;
     if (label === "animated-pickup") return true;
