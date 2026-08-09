@@ -6,11 +6,10 @@ import { startExampleDevServer } from "../browser/example-dev-server";
 
 type ProductStateName =
   | "__AURA3D_PRODUCT_DEMO__"
-  | "__AURA3D_ARCHITECTURE_DEMO__"
-  | "__AURA3D_GAME_DEMO__";
+  | "__AURA3D_ARCHITECTURE_DEMO__";
 
 type ProductDemo = {
-  id: "product-configurator" | "architecture-viewer" | "game-slice";
+  id: "product-configurator" | "architecture-viewer";
   stateName: ProductStateName;
   canvasSelector: string;
   interactions: (page: Page, canvasSelector: string) => Promise<void>;
@@ -65,18 +64,6 @@ const demos: readonly ProductDemo[] = [
       await page.waitForFunction(() => (globalThis as Record<string, any>).__AURA3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
     },
     budget: { averageFrameMs: 1_500, p95FrameMs: 2_500, maxFrameMs: 3_500, readyMs: 5_000 },
-  },
-  {
-    id: "game-slice",
-    stateName: "__AURA3D_GAME_DEMO__",
-    canvasSelector: "[data-testid='game-slice-canvas']",
-    interactions: async (page, selector) => {
-      await page.locator(selector).focus();
-      await page.keyboard.press("Space");
-      await page.locator(selector).click({ position: { x: 220, y: 260 } });
-      await page.waitForFunction(() => ((globalThis as Record<string, any>).__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
-    },
-    budget: { averageFrameMs: 1_000, p95FrameMs: 1_500, maxFrameMs: 2_500, readyMs: 5_000 },
   },
 ] as const;
 

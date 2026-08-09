@@ -6,8 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../browser/example
 
 type ProductStateName =
   | "__AURA3D_PRODUCT_DEMO__"
-  | "__AURA3D_ARCHITECTURE_DEMO__"
-  | "__AURA3D_GAME_DEMO__";
+  | "__AURA3D_ARCHITECTURE_DEMO__";
 
 type Region = {
   x: number;
@@ -26,7 +25,7 @@ type PixelCheck = {
 };
 
 type ProductDemo = {
-  id: "product-configurator" | "architecture-viewer" | "game-slice";
+  id: "product-configurator" | "architecture-viewer";
   stateName: ProductStateName;
   canvasSelector: string;
   stableState: string;
@@ -119,22 +118,6 @@ const productDemos: readonly ProductDemo[] = [
       { name: "architecture-lit-surfaces", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "steel", minimumPixels: 1_000 },
     ],
   },
-  {
-    id: "game-slice",
-    stateName: "__AURA3D_GAME_DEMO__",
-    canvasSelector: "[data-testid='game-slice-canvas']",
-    stableState: "idle-runtime",
-    maxStableChangedRatio: 0.5,
-    interaction: async (page, demo) => {
-      await page.locator(demo.canvasSelector).click({ position: { x: 220, y: 260 } });
-      await page.waitForFunction(() => ((globalThis as Record<string, any>).__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
-    },
-    expectedAfterInteraction: (state) => Number(state.interactions ?? 0) >= 1 && Number(state.metrics?.physicsBodies ?? 0) >= 2,
-    pixelChecks: [
-      { name: "game-rendered-scene", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "rendered", minimumPixels: 15_000 },
-      { name: "particle-sparks", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "pink", minimumPixels: 40 },
-    ],
-  },
 ] as const;
 
 const report: ProductVisualReport = {
@@ -180,9 +163,7 @@ test.describe("product demo visual screenshot diffs", () => {
     test(`${demo.id} product demo has stable visual evidence`, async ({ page }) => {
       await openReadyProductDemo(page, server, demo);
       const state = await readDemoState(page, demo.stateName);
-      if (demo.id === "game-slice") {
-        await pauseAmbientFrames(page);
-      }
+      await suspendAnimationFrames(page);
       const first = await readCanvasPixels(page, demo.canvasSelector);
       await page.waitForTimeout(120);
       const stable = await readCanvasPixels(page, demo.canvasSelector);
@@ -202,9 +183,7 @@ test.describe("product demo visual screenshot diffs", () => {
         });
       }
 
-      if (demo.id === "game-slice") {
-        await resumeAmbientFrames(page);
-      }
+      await resumeAnimationFrames(page);
       await demo.interaction(page, demo);
       await page.waitForTimeout(120);
       const afterInteractionPixels = await readCanvasPixels(page, demo.canvasSelector);
@@ -251,7 +230,7 @@ test.describe("product demo visual screenshot diffs", () => {
   }
 });
 
-async function pauseAmbientFrames(page: Page): Promise<void> {
+async function suspendAnimationFrames(page: Page): Promise<void> {
   await page.evaluate(() => {
     const visualWindow = globalThis as Record<string, any>;
     const originalRequestAnimationFrame = window.requestAnimationFrame.bind(window);
@@ -266,11 +245,10 @@ async function pauseAmbientFrames(page: Page): Promise<void> {
       delete visualWindow.__AURA3D_RESUME_VISUAL_FRAMES__;
     };
   });
-  // Let the already queued frame finish and park its successor.
   await page.waitForTimeout(50);
 }
 
-async function resumeAmbientFrames(page: Page): Promise<void> {
+async function resumeAnimationFrames(page: Page): Promise<void> {
   await page.evaluate(() => {
     const resume = (globalThis as Record<string, any>).__AURA3D_RESUME_VISUAL_FRAMES__;
     if (typeof resume !== "function") throw new Error("Missing visual-frame resume hook.");

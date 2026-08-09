@@ -13,7 +13,7 @@ test.describe("game runtime keyboard operation browser source", () => {
   });
 
   test("keyboard input drives combat events, effects, and HUD bindings without query selectors", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await installKeyboardHarness(page);
 
     await page.keyboard.down("KeyJ");

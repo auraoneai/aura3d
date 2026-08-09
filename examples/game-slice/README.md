@@ -1,61 +1,49 @@
-# Game Slice Demo
+# Internal Runtime Systems Fixture Source
 
 ## Purpose
 
-This demo is an early game-slice proof that multiple public Aura3D systems can run together in a browser app. It uses the WebGL2 renderer for visible output while stepping physics, animation, input, particles, and audio-state APIs.
+This source is retained only to exercise multiple Aura3D runtime systems together in browser tests. It was removed from the public examples, static exports, deployment manifests, product-demo validation, performance baselines, and visual-quality claims because the audited scene did not show a readable player or meet game-quality presentation standards.
+
+It is not a public example, product demo, flagship game, or evidence of visual parity with Three.js.
 
 ## Run
 
 ```sh
-pnpm exec playwright test tests/browser/product-demos.spec.ts -g game-slice
+pnpm exec playwright test tests/browser/fighting-game-runtime.spec.ts tests/browser/game-runtime-mutability.spec.ts tests/browser/game-runtime-visual.spec.ts tests/browser/runtime-character-controller.spec.ts tests/browser/runtime-systems.spec.ts tests/game-runtime/keyboard-operation-browser.spec.ts
 ```
 
-The product demo spec also runs source validation from `tools/demo-validation/product-demo-source-validation.ts`. That guard requires this example to use the public renderer path, expose runtime state, keep this README complete, and avoid 2D-canvas or static-screenshot substitutes.
-
-For browser inspection, serve the repository with the example dev server and open:
+The browser-only entry point is:
 
 ```text
-/examples/game-slice/index.html
+/tests/fixtures/runtime-game-slice/index.html
 ```
+
+There is deliberately no `examples/game-slice/index.html`; that prevents gallery discovery and public static export.
 
 ## Systems Used
 
-- `Renderer` with the `webgl2` backend
-- `PhysicsWorld`
-- `AnimationMixer`
-- `ParticleSystem`
-- `InputSystem`
-- `AudioSystem`
-
-## Learning Path
-
-Read `main.ts` as the source of truth for how the slice is assembled; tests only verify the behavior already visible in the app.
-
-1. `Renderer.create({ backend: "webgl2" })` creates the WebGL2 output path.
-2. `InputSystem`, `AudioSystem`, `PhysicsWorld`, `ParticleSystem`, and `AnimationMixer` are initialized together near startup.
-3. The canvas `pointerdown` handler and focused keyboard input update the same interaction state shown in the app.
-4. The animation and physics loop updates runtime state before each `renderer.render` call.
-5. `window.__AURA3D_GAME_DEMO__` exposes physics body count, live particle count, input snapshot status, audio state, draw calls, and renderer diagnostics.
-
-Use the status panel or DevTools to inspect `window.__AURA3D_GAME_DEMO__` while clicking the viewport or pressing Space on the focused canvas.
+- WebGL2 rendering runtime
+- Physics and character-controller APIs
+- Animation runtime
+- Particles
+- Input and replay systems
+- Audio state
+- Scripting and AI runtime systems
 
 ## Expected Output
 
-A WebGL2-rendered player marker and pickups animate while physics and particle counts update. Pressing or clicking the viewport changes input metrics and updates `window.__AURA3D_GAME_DEMO__`.
+The fixture reaches its runtime-ready state and exposes deterministic state used by the browser suites. Its pixels remain diagnostic test output and are not accepted as release-quality game presentation.
 
 ## Acceptance Target
 
-- `window.__AURA3D_GAME_DEMO__.status` is `ready`.
-- `renderer` is `webgl2`.
-- `metrics.rendererBacked` is `true`.
-- `diagnostics.drawCalls` is greater than zero.
-- `diagnostics.contextLost` is `false` and `diagnostics.lastError` is `null`.
-- Runtime metrics include physics bodies, live particles, input snapshot state, and locked audio state.
-- Pointer input increments interaction count.
-- Keyboard input through the focused canvas increments interaction count through `InputSystem`.
+- Browser runtime tests reach their expected state without page errors.
+- Keyboard, pointer, and touch input change runtime state.
+- Physics, combat, scripting, audio, particles, and controller assertions pass.
+- No public demo manifest, product-demo suite, visual audit, deployment list, or readiness claim includes this fixture.
 
 ## Known Limits
 
-- This is a bounded product slice, not a complete game template.
-- The visuals use procedural geometry instead of authored art assets.
-- Audio is initialized and reported without forcing autoplay.
+- The player is not visually readable in the current renderer output.
+- The environment is synthetic runtime test content, not authored game art.
+- Passing behavioral tests does not reinstate this source as a public example.
+- A future public game example must be built and visually audited as a new release-quality experience.

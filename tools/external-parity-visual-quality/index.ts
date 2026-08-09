@@ -9,7 +9,6 @@ const requiredScreenshots: readonly RequiredScreenshot[] = [
   { id: "product-configurator", path: "tests/reports/external-parity-example-screenshots/product-configurator.png", source: "manifest", minNonBlankPixels: 12_000, minColorBuckets: 4, minOccupiedAreaRatio: 0.18, minOccupiedQuadrants: 3, minImageColorBuckets: 18, minMeanLuma: 48, maxDarkPixelRatio: 0.42, maxDominantBucketRatio: 0.5, minEdgePixelRatio: 0.03, maxFlatPixelRatio: 0.74, minLocalContrastRatio: 0.08, minCanvasColorBuckets: 64, minCanvasEdgePixelRatio: 0.025, maxCanvasDominantBucketRatio: 0.34, maxCanvasFlatPixelRatio: 0.72, minCanvasLocalContrastRatio: 0.085 },
   { id: "product-visual-parity-aura3d", path: "tests/reports/external-parity-product-visual-parity/aura3d-product.png", source: "standalone", minImageColorBuckets: 24, minMeanLuma: 80, maxDarkPixelRatio: 0.2, maxDominantBucketRatio: 0.62, minEdgePixelRatio: 0.025, maxFlatPixelRatio: 0.72, minLocalContrastRatio: 0.09 },
   { id: "architecture-viewer", path: "tests/reports/external-parity-example-screenshots/architecture-viewer.png", source: "manifest", minNonBlankPixels: 12_000, minColorBuckets: 10, minOccupiedAreaRatio: 0.18, minOccupiedQuadrants: 3, minImageColorBuckets: 22, minMeanLuma: 52, maxDarkPixelRatio: 0.44, maxDominantBucketRatio: 0.5, minEdgePixelRatio: 0.04, maxFlatPixelRatio: 0.68, minLocalContrastRatio: 0.12, minCanvasColorBuckets: 120, minCanvasEdgePixelRatio: 0.045, maxCanvasDominantBucketRatio: 0.28, maxCanvasFlatPixelRatio: 0.64, minCanvasLocalContrastRatio: 0.14 },
-  { id: "game-slice", path: "tests/reports/external-parity-example-screenshots/game-slice.png", source: "manifest", minNonBlankPixels: 12_000, minColorBuckets: 6, minOccupiedAreaRatio: 0.18, minOccupiedQuadrants: 3, minImageColorBuckets: 24, minMeanLuma: 42, maxDarkPixelRatio: 0.34, maxDominantBucketRatio: 0.5, minEdgePixelRatio: 0.05, maxFlatPixelRatio: 0.68, minLocalContrastRatio: 0.12, minCanvasColorBuckets: 220, minCanvasEdgePixelRatio: 0.045, maxCanvasDominantBucketRatio: 0.28, maxCanvasFlatPixelRatio: 0.68, minCanvasLocalContrastRatio: 0.12 },
   { id: "asset-viewer", path: "tests/reports/external-parity-example-screenshots/asset-viewer.png", source: "asset-viewer" },
   { id: "material-showroom", path: "tests/reports/external-parity-example-screenshots/material-showroom.png", source: "rendering", validationName: "material-showroom-external-parity-preset", minImageColorBuckets: 24, minMeanLuma: 70, maxDarkPixelRatio: 0.5, maxDominantBucketRatio: 0.48, minEdgePixelRatio: 0.037, maxFlatPixelRatio: 0.66, minLocalContrastRatio: 0.11 },
   { id: "postprocess-lab", path: "tests/reports/external-parity-example-screenshots/postprocess-lab.png", source: "rendering", validationName: "postprocess-lab-external-parity-preset", minImageColorBuckets: 10, minMeanLuma: 18, maxDarkPixelRatio: 0.82, maxDominantBucketRatio: 0.78, minEdgePixelRatio: 0.03, maxFlatPixelRatio: 0.76, minLocalContrastRatio: 0.07 },
@@ -722,14 +721,6 @@ function validateStaticSceneComposition(root: string) {
       maxDebugWordCount: 8,
       maxUnlitToPbrRatio: 0.45,
       maxPrimitiveFactoryCount: 10,
-    },
-    {
-      id: "game-slice",
-      path: "examples/game-slice/main.ts",
-      maxDepthDisabledMaterials: 5,
-      maxDebugWordCount: 10,
-      maxUnlitToPbrRatio: 0.55,
-      maxPrimitiveFactoryCount: 8,
     },
     {
       id: "material-showroom",

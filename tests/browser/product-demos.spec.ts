@@ -6,7 +6,7 @@ import { validateProductDemoSources } from "../../tools/demo-validation/product-
 
 type DemoDefinition = {
   id: string;
-  stateName: "__AURA3D_PRODUCT_DEMO__" | "__AURA3D_ARCHITECTURE_DEMO__" | "__AURA3D_GAME_DEMO__";
+  stateName: "__AURA3D_PRODUCT_DEMO__" | "__AURA3D_ARCHITECTURE_DEMO__";
   canvasSelector: string;
 };
 
@@ -20,11 +20,6 @@ const productDemos: readonly DemoDefinition[] = [
     id: "architecture-viewer",
     stateName: "__AURA3D_ARCHITECTURE_DEMO__",
     canvasSelector: "[data-testid='architecture-viewer-canvas']",
-  },
-  {
-    id: "game-slice",
-    stateName: "__AURA3D_GAME_DEMO__",
-    canvasSelector: "[data-testid='game-slice-canvas']",
   },
 ] as const;
 
@@ -339,34 +334,6 @@ test.describe("productStudio product demos", () => {
     expect(state.metrics.selectionDiagnostics).toBe(true);
   });
 
-  test("game slice responds to pointer input while stepping runtime systems", async ({ page }) => {
-    await openProductDemo(page, server, productDemos[2]);
-
-    await page.locator(productDemos[2].canvasSelector).click({ position: { x: 220, y: 260 } });
-    await page.waitForFunction(() => (window.__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
-    const state = await readDemoState(page, "__AURA3D_GAME_DEMO__");
-
-    expect(state.interactions).toBeGreaterThanOrEqual(1);
-    expect(Number(state.metrics.physicsBodies)).toBeGreaterThanOrEqual(2);
-    expect(Number(state.metrics.liveParticles)).toBeGreaterThan(0);
-    expect(state.metrics.inputSnapshot).toBe(true);
-    expect(["locked", "running"]).toContain(state.metrics.audioState);
-    expect(state.metrics.contactShadowProxy).toBe(true);
-    expect(state.metrics.shadowMode).toBe("contact-shadow-proxy");
-  });
-
-  test("game slice responds to keyboard input through the input system", async ({ page }) => {
-    await openProductDemo(page, server, productDemos[2]);
-
-    await page.locator(productDemos[2].canvasSelector).focus();
-    await page.keyboard.press("Space");
-    await page.waitForFunction(() => (window.__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
-    const state = await readDemoState(page, "__AURA3D_GAME_DEMO__");
-
-    expect(state.interactions).toBeGreaterThanOrEqual(1);
-    expect(state.metrics.inputSnapshot).toBe(true);
-    expect(Number(state.metrics.physicsBodies)).toBeGreaterThanOrEqual(2);
-  });
 });
 
 async function collectPageErrors(page: Page, run: () => Promise<void>): Promise<string[]> {

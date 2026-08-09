@@ -179,7 +179,12 @@ function discoverIndexFiles(root: string): string[] {
 
 function clearPriorExampleCaptures(): void {
   for (const entry of readdirSync(REPORT_ROOT, { withFileTypes: true })) {
-    if (!entry.isFile() || !/^examples--.+--(?:page|canvas)\.png$/.test(entry.name)) continue;
+    if (!entry.isFile() || !(/^(?:examples--.+--(?:page|canvas)\.png|report-.+\.json)$/.test(entry.name))) continue;
     unlinkSync(resolve(REPORT_ROOT, entry.name));
+  }
+  const reportParent = dirname(REPORT_ROOT);
+  for (const entry of readdirSync(reportParent, { withFileTypes: true })) {
+    if (!entry.isFile() || !/^contact-sheet-.+\.png$/.test(entry.name)) continue;
+    unlinkSync(resolve(reportParent, entry.name));
   }
 }

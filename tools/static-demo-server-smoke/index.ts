@@ -36,7 +36,6 @@ const reportPath = "tests/reports/static-demo-server-smoke.json";
 const requiredDemos = [
   "product-configurator",
   "architecture-viewer",
-  "game-slice",
   "large-world-streaming",
 ] as const;
 
@@ -170,7 +169,6 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
   const canvasTestId = {
     "product-configurator": "product-configurator-canvas",
     "architecture-viewer": "architecture-viewer-canvas",
-    "game-slice": "game-slice-canvas",
     "large-world-streaming": "large-world-canvas",
   }[demoId];
   return canvasTestId ? [canvasTestId] : [];

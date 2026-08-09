@@ -32,7 +32,7 @@ test.describe("runtime systems", () => {
 
   test("game slice wires physics, animation, input bindings, particles, audio, and scripting", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='unlock-audio']").click();

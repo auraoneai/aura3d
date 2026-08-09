@@ -42,7 +42,7 @@ test.describe("fighting game runtime", () => {
   });
 
   test("public fighting kit resolves input, kinematic bodies, hitboxes, camera, and effects in browser", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
 
     const result = await evaluateFightingRuntime(page);
 

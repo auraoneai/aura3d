@@ -76,7 +76,7 @@ test.describe("game runtime visual evidence", () => {
 
   test("loads the typed player and generated arena with contact-shadow runtime evidence", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => (window as GameDemoWindow).__AURA3D_GAME_DEMO__?.status === "ready",
       undefined,
@@ -151,7 +151,7 @@ test.describe("game runtime visual evidence", () => {
     await expect(page.locator("[data-testid='game-slice-canvas']")).toBeVisible();
     await writeGameRuntimeBrowserProof(page, "tests/reports/game-runtime/combat-visual-evidence.json", {
       proofIds: [...browserRuntimeEvidenceProofIds],
-      route: "/examples/game-slice/index.html",
+      route: "/tests/fixtures/runtime-game-slice/index.html",
       metrics: {
         visualState: state,
         pixelStats,

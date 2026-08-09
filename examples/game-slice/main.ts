@@ -503,6 +503,8 @@ async function run(): Promise<void> {
   let interactions = 0;
   let pickups = 0;
   let triggerEvents = 0;
+  let raycastObserved = false;
+  let shapeCastObserved = false;
   let objectiveEvents = 0;
   let restartCount = 0;
   let currentBinding: BindingPreset = "space";
@@ -860,6 +862,8 @@ async function run(): Promise<void> {
     const particleCulling = summarizeParticleCulling(particleBatch);
     const raycastHit = physics.raycast([player.position[0], player.position[1] + 0.7, 0], [0, -1, 0], { maxDistance: 2 });
     const shapeCastHit = physics.sphereCast([player.position[0] - 0.45, player.position[1] + 0.1, 0], 0.12, [1, 0, 0], { maxDistance: 2, includeSensors: true });
+    raycastObserved ||= raycastHit !== undefined;
+    shapeCastObserved ||= shapeCastHit !== undefined;
     audioState.sourceState = pickupSource?.state ?? audioState.sourceState;
     audioListenerNode.transform.setPosition(clamp(player.position[0], -1.1, 1.1), clamp(player.position[1], -0.2, 1), 3);
     pickupAudioNode.transform.setPosition(pickup.position[0], pickup.position[1], pickup.position[2]);
@@ -1256,8 +1260,8 @@ async function run(): Promise<void> {
         platformX: Number(platform.position[0].toFixed(3)),
         pickups,
         triggerEvents,
-        raycastHit: raycastHit !== undefined,
-        shapeCastHit: shapeCastHit !== undefined,
+        raycastHit: raycastObserved,
+        shapeCastHit: shapeCastObserved,
         animationClipName: "pickup-pulse",
         animationPlayback: true,
         playerAnimationStateMachine: true,
@@ -1394,8 +1398,8 @@ async function run(): Promise<void> {
 async function loadGameVisualAssets(): Promise<LoadedGameVisualAssets> {
   const loader = new GLTFLoader();
   const playerUrl = new URL(assets.showcaseExpressiveRobot.url, window.location.origin).toString();
-  const arenaUrl = new URL("../../fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf", window.location.href).toString();
-  const skinnedHeroUrl = new URL("../../fixtures/threejs-parity/assets/character/soldier.glb", window.location.href).toString();
+  const arenaUrl = new URL("../../fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf", document.baseURI).toString();
+  const skinnedHeroUrl = new URL("../../fixtures/threejs-parity/assets/character/soldier.glb", document.baseURI).toString();
   const [playerAsset, arenaAsset, skinnedHeroAsset] = await Promise.all([
     loader.load({ url: playerUrl }, new LoadContext()),
     loader.load({ url: arenaUrl }, new LoadContext()),

@@ -12,8 +12,8 @@ import {
 /**
  * Flagship linear-HDR IBL states.
  *
- * The three flagship IDs the HDR/IBL readiness audit requires —
- * `product-configurator`, `architecture-viewer`, and `game-slice` — previously lived as
+ * The two public flagship IDs the HDR/IBL readiness audit requires —
+ * `product-configurator` and `architecture-viewer` — previously lived as
  * large `examples/*` routes that a docs/examples consolidation deleted (commit
  * f44dd136 removed ~70k lines, including a 1,616-line architecture viewer and a
  * 4,335-line game slice). Their evidence producers were left behind, so the audit's
@@ -28,7 +28,7 @@ import {
  */
 
 interface FlagshipDefinition {
-  readonly id: "product-configurator" | "architecture-viewer" | "game-slice";
+  readonly id: "product-configurator" | "architecture-viewer";
   readonly label: string;
   /** Environment appropriate to the flagship's subject matter. */
   readonly preset: ExternalParityEnvironmentPreset;
@@ -39,8 +39,7 @@ interface FlagshipDefinition {
 
 const FLAGSHIPS: readonly FlagshipDefinition[] = [
   { id: "product-configurator", label: "Product studio", preset: "studio", metallic: 1, roughness: 0.12, baseColor: [0.93, 0.94, 0.96, 1] },
-  { id: "architecture-viewer", label: "Architectural daylight", preset: "daylight", metallic: 0.15, roughness: 0.55, baseColor: [0.82, 0.8, 0.76, 1] },
-  { id: "game-slice", label: "Gameplay stage", preset: "gameplay", metallic: 0.75, roughness: 0.3, baseColor: [0.6, 0.72, 0.9, 1] }
+  { id: "architecture-viewer", label: "Architectural daylight", preset: "daylight", metallic: 0.15, roughness: 0.55, baseColor: [0.82, 0.8, 0.76, 1] }
 ];
 
 interface FlagshipEntry {

@@ -56,7 +56,6 @@ const reportPath = "tests/reports/external-demo-validation.json";
 const defaultRequiredDemoIds = [
   "product-configurator",
   "architecture-viewer",
-  "game-slice",
   "large-world-streaming",
 ] as const;
 

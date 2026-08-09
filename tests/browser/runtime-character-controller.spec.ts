@@ -20,7 +20,7 @@ test.describe("runtime character controller", () => {
 
   test("game slice drives player movement and jump through the authored-unit arcade controller", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();
@@ -92,7 +92,7 @@ test.describe("runtime character controller", () => {
 
   test("game slice follows the player with a third-person camera path", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();
@@ -125,7 +125,7 @@ test.describe("runtime character controller", () => {
 
   test("game slice loads the typed GLB player and generated arena with contact shadow evidence", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true, undefined, { timeout: 15_000 });
 
@@ -158,7 +158,7 @@ test.describe("runtime character controller", () => {
 
   test("game slice resolves win and fail objective states from gameplay movement", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();

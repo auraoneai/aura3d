@@ -114,7 +114,7 @@ test.describe("externalParity runtime systems", () => {
 
   test("game slice produces externalParity runtime systems, restart, screenshot, and report evidence", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true, undefined, { timeout: 15_000 });
 
@@ -391,7 +391,7 @@ test.describe("externalParity runtime systems", () => {
       pointerControls: window.__AURA3D_EDITOR_APP__?.getState().viewportCamera.pointerControls
     }));
 
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
     await page.locator("[data-testid='game-slice-canvas']").dispatchEvent("touchstart");
     await page.locator("[data-testid='game-slice-canvas']").dispatchEvent("pointerdown", { clientX: 160, clientY: 120, button: 0, pointerId: 44, pointerType: "touch" });

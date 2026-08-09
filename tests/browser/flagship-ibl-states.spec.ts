@@ -85,8 +85,7 @@ test.describe("flagship linear-HDR IBL states", () => {
     // All three flagship ids the readiness audit names must be present.
     expect(state.entries.map((entry) => entry.id)).toEqual([
       "product-configurator",
-      "architecture-viewer",
-      "game-slice"
+      "architecture-viewer"
     ]);
 
     for (const entry of state.entries) {

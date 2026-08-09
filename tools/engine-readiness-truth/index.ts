@@ -5,7 +5,6 @@ const reportPath = "tests/reports/engine-readiness-truth.json";
 const quarantinedExamples = [
   "product-configurator",
   "architecture-viewer",
-  "game-slice",
   "material-showroom",
   "postprocess-lab",
   "shadow-lab",

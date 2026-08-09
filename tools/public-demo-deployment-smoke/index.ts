@@ -51,7 +51,6 @@ const exportReportPath = "tests/reports/external-demo-static-export.json";
 const requiredDemos = [
   "product-configurator",
   "architecture-viewer",
-  "game-slice",
   "large-world-streaming",
 ] as const;
 const sourceFiles = [

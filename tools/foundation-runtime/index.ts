@@ -15,6 +15,7 @@ const baseReport = createSubsystemReport(root, {
   sourceFiles: [
     "docs/project/implementation-plan.md",
     "examples/game-slice/main.ts",
+    "tests/fixtures/runtime-game-slice/index.html",
     "examples/physics-sandbox/main.ts",
     "examples/animated-character/main.ts",
     "examples/character-animation-viewer/main.ts",
@@ -24,7 +25,6 @@ const baseReport = createSubsystemReport(root, {
     "tests/browser/animated-character-browser.spec.ts",
     "tests/browser/character-animation-viewer.spec.ts",
     "tests/browser/runtime-character-controller.spec.ts",
-    "tests/browser/product-demos.spec.ts",
     "tests/browser/physics-sandbox-browser.spec.ts",
     "tests/reports/foundation-animation-browser.json",
     "tests/reports/foundation-runtime-browser.json",
@@ -33,11 +33,11 @@ const baseReport = createSubsystemReport(root, {
   ],
   checks: [
     {
-      id: "game-slice-runtime",
-      description: "Game slice exists and has browser evidence.",
-      passed: pathExists(root, "examples/game-slice/index.html") && reportOk(root, "tests/reports/product-demo-validation.json"),
-      evidencePaths: ["examples/game-slice/index.html", "tests/reports/product-demo-validation.json"],
-      blocker: "Game-slice runtime evidence is missing or failing.",
+      id: "runtime-systems-fixture",
+      description: "The internal runtime-systems fixture exists and has browser evidence.",
+      passed: pathExists(root, "tests/fixtures/runtime-game-slice/index.html") && runtimeEvidence?.ok === true,
+      evidencePaths: ["tests/fixtures/runtime-game-slice/index.html", "tests/reports/foundation-runtime-browser.json"],
+      blocker: "Internal runtime-systems fixture evidence is missing or failing.",
     },
     {
       id: "physics-sandbox",

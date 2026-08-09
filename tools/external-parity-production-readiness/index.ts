@@ -226,7 +226,6 @@ export function validatePublicDemoDeploymentSmokeEvidence(
 const requiredDemos = [
   "product-configurator",
   "architecture-viewer",
-  "game-slice",
   "large-world-streaming",
 ] as const;
 

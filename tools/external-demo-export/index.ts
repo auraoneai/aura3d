@@ -69,7 +69,6 @@ interface PublicDeploymentManifest {
 const demoIds = [
   "product-configurator",
   "architecture-viewer",
-  "game-slice",
   "large-world-streaming",
 ] as const;
 const reportPath = "tests/reports/external-demo-static-export.json";
@@ -338,7 +337,6 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
   const canvasTestId = {
     "product-configurator": "product-configurator-canvas",
     "architecture-viewer": "architecture-viewer-canvas",
-    "game-slice": "game-slice-canvas",
     "large-world-streaming": "large-world-canvas",
   }[demoId];
   return canvasTestId ? [canvasTestId] : [];

@@ -114,7 +114,7 @@ function hasFlagshipHdrIblEvidence(report: Record<string, unknown> | null): bool
   for (const entry of report.entries) {
     if (isRecord(entry) && typeof entry.id === "string") entries.set(entry.id, entry);
   }
-  return ["product-configurator", "architecture-viewer", "game-slice"].every((id) => {
+  return ["product-configurator", "architecture-viewer"].every((id) => {
     const entry = entries.get(id);
     const featureEvidence = isRecord(entry?.featureEvidence) ? entry.featureEvidence : {};
     const metrics = isRecord(entry?.metrics) ? entry.metrics : {};

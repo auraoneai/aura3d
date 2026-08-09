@@ -4,14 +4,12 @@ import { fileURLToPath } from "node:url";
 
 const productExamples = [
   "product-configurator",
-  "architecture-viewer",
-  "game-slice"
+  "architecture-viewer"
 ] as const;
 
 const productInteractionSpecs = [
   "product configurator cycles material variants on pointer input",
-  "architecture viewer updates selected zone and measurement on pointer input",
-  "game slice responds to keyboard input through the input system"
+  "architecture viewer updates selected zone and measurement on pointer input"
 ] as const;
 
 type JsonRecord = Record<string, unknown>;

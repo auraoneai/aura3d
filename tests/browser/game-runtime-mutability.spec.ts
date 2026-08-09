@@ -15,7 +15,7 @@ type GameDemoWindow = Window & {
 
 const typedGlbRuntimeNodeMutationDeclaration = {
   proofId: "typedGlbRuntimeNodeMutation",
-  route: "/examples/game-slice/index.html",
+  route: "/tests/fixtures/runtime-game-slice/index.html",
   typedAssetApiPattern:
     "import { assets } from \"./src/aura-assets\"; model(assets.fighter).runtime(game.runtimeNode(\"player\", { tags: [\"fighter\", \"runtime-mutable\"] }))",
   requiredSourceAssertions: [
@@ -51,7 +51,7 @@ test.describe("game runtime mutability", () => {
 
   test("mutates the runtime player through frame-loop input without recreating the route", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/runtime-game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await waitForGameReady(page);
     await page.locator("[data-testid='game-slice-canvas']").focus();
 
