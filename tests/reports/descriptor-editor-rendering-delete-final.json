@@ -1,6 +1,6 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:53:05.957Z",
+  "generatedAt": "2026-08-09T01:31:28.977Z",
   "pass": true,
   "checks": [
     {
@@ -65,9 +65,9 @@
     {
       "path": "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 369,
-      "lastCommit": "0fa7d680fe4f906d1725899f2ba0b9e0e13f99be",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
         "LocalizationAccessibilityFixtures.ts",
@@ -211,9 +211,9 @@
     {
       "path": "packages/rendering/src/ArchitecturalLightingFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 242,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/rendering/src/ArchitecturalLightingFixtures.ts",
         "ArchitecturalLightingFixtures.ts",
@@ -357,9 +357,9 @@
     {
       "path": "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 156,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/rendering/src/ArchitecturalMeasurementFixtures.ts",
         "ArchitecturalMeasurementFixtures.ts",
@@ -503,9 +503,9 @@
     {
       "path": "packages/rendering/src/CullingFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 281,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/rendering/src/CullingFixtures.ts",
         "CullingFixtures.ts",
@@ -649,9 +649,9 @@
     {
       "path": "packages/rendering/src/SpaceEnvironmentFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 201,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/rendering/src/SpaceEnvironmentFixtures.ts",
         "SpaceEnvironmentFixtures.ts",
@@ -795,9 +795,9 @@
     {
       "path": "packages/rendering/src/VoxelWorldFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 281,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/rendering/src/VoxelWorldFixtures.ts",
         "VoxelWorldFixtures.ts",
@@ -941,9 +941,9 @@
     {
       "path": "packages/rendering/src/WeatherFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 224,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "ba07fefe3455cc996c685f6c48e90974d63a178b",
       "moduleSpecifiers": [
         "packages/rendering/src/WeatherFixtures.ts",
         "WeatherFixtures.ts",

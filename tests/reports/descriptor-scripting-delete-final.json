@@ -1,47 +1,47 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:26:22.376Z",
+  "generatedAt": "2026-08-09T01:31:07.255Z",
   "pass": true,
   "checks": [
     {
       "id": "r8:packages/scripting/src/AdaptiveDifficultyFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/AdaptiveDifficultyFixtures.ts: all six R8 points empty across 5032 scanned files (324 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/AdaptiveDifficultyFixtures.ts: all six R8 points empty across 5018 scanned files (323 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/AnalyticsPrivacyFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/AnalyticsPrivacyFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/AnalyticsPrivacyFixtures.ts: all six R8 points empty across 5018 scanned files (229 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/CloudServiceFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/CloudServiceFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/CloudServiceFixtures.ts: all six R8 points empty across 5018 scanned files (229 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/CulturalBehaviorFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/CulturalBehaviorFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/CulturalBehaviorFixtures.ts: all six R8 points empty across 5018 scanned files (229 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/LearningAgentFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/LearningAgentFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/LearningAgentFixtures.ts: all six R8 points empty across 5018 scanned files (229 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/NetworkReplicationFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/NetworkReplicationFixtures.ts: all six R8 points empty across 5032 scanned files (324 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/NetworkReplicationFixtures.ts: all six R8 points empty across 5018 scanned files (323 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: all six R8 points empty across 5032 scanned files (117 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts: all six R8 points empty across 5018 scanned files (117 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
       "pass": true,
-      "detail": "packages/scripting/src/ProceduralContentAdaptationFixtures.ts: all six R8 points empty across 5032 scanned files (442 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/scripting/src/ProceduralContentAdaptationFixtures.ts: all six R8 points empty across 5018 scanned files (229 non-blocking prose mention(s) to tidy)"
     }
   ],
   "failures": [],
@@ -57,7 +57,7 @@
   ],
   "expandedFileCount": 8,
   "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
-  "scannedFiles": 5032,
+  "scannedFiles": 5018,
   "points": [
     "runtime-consumer",
     "generated-registry-consumer",
@@ -71,9 +71,9 @@
     {
       "path": "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 325,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
         "AdaptiveDifficultyFixtures.ts",
@@ -84,7 +84,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 324,
+      "proseMentionCount": 323,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -217,9 +217,9 @@
     {
       "path": "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 183,
-      "lastCommit": "336dd1ca31c69585d5e9dea149561265a2da395c",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
         "AnalyticsPrivacyFixtures.ts",
@@ -230,7 +230,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 442,
+      "proseMentionCount": 229,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -363,9 +363,9 @@
     {
       "path": "packages/scripting/src/CloudServiceFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 226,
-      "lastCommit": "336dd1ca31c69585d5e9dea149561265a2da395c",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/CloudServiceFixtures.ts",
         "CloudServiceFixtures.ts",
@@ -376,7 +376,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 442,
+      "proseMentionCount": 229,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -509,9 +509,9 @@
     {
       "path": "packages/scripting/src/CulturalBehaviorFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 263,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/CulturalBehaviorFixtures.ts",
         "CulturalBehaviorFixtures.ts",
@@ -522,7 +522,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 442,
+      "proseMentionCount": 229,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -655,9 +655,9 @@
     {
       "path": "packages/scripting/src/LearningAgentFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 185,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/LearningAgentFixtures.ts",
         "LearningAgentFixtures.ts",
@@ -668,7 +668,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 442,
+      "proseMentionCount": 229,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -801,9 +801,9 @@
     {
       "path": "packages/scripting/src/NetworkReplicationFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 441,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/NetworkReplicationFixtures.ts",
         "NetworkReplicationFixtures.ts",
@@ -814,7 +814,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 324,
+      "proseMentionCount": 323,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -947,9 +947,9 @@
     {
       "path": "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 258,
-      "lastCommit": "336dd1ca31c69585d5e9dea149561265a2da395c",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
         "PlayerBehaviorTelemetryFixtures.ts",
@@ -1093,9 +1093,9 @@
     {
       "path": "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 206,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "876f80044f97230feab1afd6d7efb6171c840daa",
       "moduleSpecifiers": [
         "packages/scripting/src/ProceduralContentAdaptationFixtures.ts",
         "ProceduralContentAdaptationFixtures.ts",
@@ -1106,7 +1106,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 442,
+      "proseMentionCount": 229,
       "proseMentions": [
         {
           "point": "prose-mention",

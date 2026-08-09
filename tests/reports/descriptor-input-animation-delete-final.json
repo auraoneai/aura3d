@@ -1,22 +1,22 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:40:34.737Z",
+  "generatedAt": "2026-08-09T01:31:20.839Z",
   "pass": true,
   "checks": [
     {
       "id": "r8:packages/animation/src/MotionMatchingFixtures.ts",
       "pass": true,
-      "detail": "packages/animation/src/MotionMatchingFixtures.ts: all six R8 points empty across 5019 scanned files (6722 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/animation/src/MotionMatchingFixtures.ts: all six R8 points empty across 5018 scanned files (6721 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/input/src/GestureHapticsFixtures.ts",
       "pass": true,
-      "detail": "packages/input/src/GestureHapticsFixtures.ts: all six R8 points empty across 5019 scanned files (33 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/input/src/GestureHapticsFixtures.ts: all six R8 points empty across 5018 scanned files (32 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/input/src/XRFixtures.ts",
       "pass": true,
-      "detail": "packages/input/src/XRFixtures.ts: all six R8 points empty across 5019 scanned files (33 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/input/src/XRFixtures.ts: all six R8 points empty across 5018 scanned files (32 non-blocking prose mention(s) to tidy)"
     }
   ],
   "failures": [],
@@ -27,7 +27,7 @@
   ],
   "expandedFileCount": 3,
   "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
-  "scannedFiles": 5019,
+  "scannedFiles": 5018,
   "points": [
     "runtime-consumer",
     "generated-registry-consumer",
@@ -41,9 +41,9 @@
     {
       "path": "packages/animation/src/MotionMatchingFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 255,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "66f26ff34a9a9b79199f6930987147926e8bc52a",
       "moduleSpecifiers": [
         "packages/animation/src/MotionMatchingFixtures.ts",
         "MotionMatchingFixtures.ts",
@@ -54,7 +54,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 6722,
+      "proseMentionCount": 6721,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -187,9 +187,9 @@
     {
       "path": "packages/input/src/GestureHapticsFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 180,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "66f26ff34a9a9b79199f6930987147926e8bc52a",
       "moduleSpecifiers": [
         "packages/input/src/GestureHapticsFixtures.ts",
         "GestureHapticsFixtures.ts",
@@ -200,7 +200,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 33,
+      "proseMentionCount": 32,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -333,9 +333,9 @@
     {
       "path": "packages/input/src/XRFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 204,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "66f26ff34a9a9b79199f6930987147926e8bc52a",
       "moduleSpecifiers": [
         "packages/input/src/XRFixtures.ts",
         "XRFixtures.ts",
@@ -346,7 +346,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 33,
+      "proseMentionCount": 32,
       "proseMentions": [
         {
           "point": "prose-mention",

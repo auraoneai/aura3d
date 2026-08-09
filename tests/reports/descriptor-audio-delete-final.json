@@ -1,22 +1,22 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:20:52.199Z",
+  "generatedAt": "2026-08-09T01:30:58.233Z",
   "pass": true,
   "checks": [
     {
       "id": "r8:packages/audio/src/AdaptiveMusicFixtures.ts",
       "pass": true,
-      "detail": "packages/audio/src/AdaptiveMusicFixtures.ts: all six R8 points empty across 5044 scanned files (26 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/audio/src/AdaptiveMusicFixtures.ts: all six R8 points empty across 5018 scanned files (26 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/audio/src/AudioEffectsAnalysisFixtures.ts",
       "pass": true,
-      "detail": "packages/audio/src/AudioEffectsAnalysisFixtures.ts: all six R8 points empty across 5044 scanned files (32 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/audio/src/AudioEffectsAnalysisFixtures.ts: all six R8 points empty across 5018 scanned files (32 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/audio/src/SpatialAudioFixtures.ts",
       "pass": true,
-      "detail": "packages/audio/src/SpatialAudioFixtures.ts: all six R8 points empty across 5044 scanned files (26 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/audio/src/SpatialAudioFixtures.ts: all six R8 points empty across 5018 scanned files (26 non-blocking prose mention(s) to tidy)"
     }
   ],
   "failures": [],
@@ -27,7 +27,7 @@
   ],
   "expandedFileCount": 3,
   "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
-  "scannedFiles": 5044,
+  "scannedFiles": 5018,
   "points": [
     "runtime-consumer",
     "generated-registry-consumer",
@@ -41,9 +41,9 @@
     {
       "path": "packages/audio/src/AdaptiveMusicFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 133,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "7647e5233996af380c2a272a55560aa5f84b2e9e",
       "moduleSpecifiers": [
         "packages/audio/src/AdaptiveMusicFixtures.ts",
         "AdaptiveMusicFixtures.ts",
@@ -187,9 +187,9 @@
     {
       "path": "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 312,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "7647e5233996af380c2a272a55560aa5f84b2e9e",
       "moduleSpecifiers": [
         "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
         "AudioEffectsAnalysisFixtures.ts",
@@ -333,9 +333,9 @@
     {
       "path": "packages/audio/src/SpatialAudioFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 138,
-      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "lastCommit": "7647e5233996af380c2a272a55560aa5f84b2e9e",
       "moduleSpecifiers": [
         "packages/audio/src/SpatialAudioFixtures.ts",
         "SpatialAudioFixtures.ts",

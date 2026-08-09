@@ -65,10 +65,18 @@ const modules = candidates.map((path) => {
   };
 });
 const unclassified = modules.filter((entry) => entry.classification === "misleading-descriptor-review");
+const publicRuntimeFixtures = modules.filter((entry) => entry.classification === "test-or-evidence-fixture");
+const unmountedBooleanClaimModules = modules.filter((entry) =>
+  entry.booleanClaimFields.length > 0
+  && entry.classification !== "real-runtime-or-mounted-evidence"
+  && entry.classification !== "public-data-contract"
+);
 const report = {
   schema: "aura3d.public-runtime-descriptor-inventory/1.0",
   generatedAt: new Date().toISOString(),
-  pass: unclassified.length === 0,
+  pass: unclassified.length === 0
+    && publicRuntimeFixtures.length === 0
+    && unmountedBooleanClaimModules.length === 0,
   patterns: ["*Fixture", "*Fixtures", "*Evidence", "*Capability", "*Platform", "*Reference"],
   summary: {
     modules: modules.length,
@@ -77,10 +85,14 @@ const report = {
     deleteAfterR8: modules.filter((entry) => entry.disposition === "delete-after-r8").length,
     migrateThenDelete: modules.filter((entry) => entry.disposition === "migrate-consumers-then-delete").length,
     unclassified: unclassified.length,
+    publicRuntimeFixtures: publicRuntimeFixtures.length,
+    unmountedBooleanClaimModules: unmountedBooleanClaimModules.length,
     booleanClaimModulesRejectedAsRuntimeProof: modules.filter((entry) => entry.rejectsUnmountedBooleanClaims).length
   },
   modules,
   unclassified,
+  publicRuntimeFixtures: publicRuntimeFixtures.map((entry) => entry.path),
+  unmountedBooleanClaimModules: unmountedBooleanClaimModules.map((entry) => entry.path),
   rule: "A fixture object's boolean fields never establish runtime capability. Only mounted behavior and derived evidence may support a public claim.",
   claimBoundary: "Inventory and deletion queue only; retained runtime contracts still require their own mounted browser evidence."
 };

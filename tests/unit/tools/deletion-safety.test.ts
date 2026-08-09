@@ -231,8 +231,19 @@ describe("deletion-safety (R8)", () => {
   }, 180_000);
 
   it("keeps a deletion proof reproducible after the deletion commit", () => {
-    const candidate = "packages/assets/src/AssetBundleCacheFixtures.ts";
-    const { report } = run([candidate]);
+    /*
+     * Reuse a closed deletion manifest instead of spelling one of its candidates in this test.
+     * The manifest is an input to the proof, not a consumer, and the CLI excludes the active
+     * manifest from its repository scan. A literal historical candidate here made this calibration
+     * test manufacture the only live-looking reference to the file it was proving deleted.
+     */
+    const manifestPath = "tools/deletion-safety/asset-descriptor-fixtures.json";
+    const manifest = JSON.parse(readFileSync(join(repoRoot, manifestPath), "utf8")) as {
+      readonly candidates: readonly string[];
+    };
+    const candidate = manifest.candidates[0];
+    expect(candidate).toBeDefined();
+    const { report } = run(["--manifest", manifestPath]);
     const files = report.files as readonly {
       readonly path: string;
       readonly exists: boolean;

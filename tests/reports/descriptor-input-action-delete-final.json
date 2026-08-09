@@ -1,12 +1,12 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:04:15.448Z",
+  "generatedAt": "2026-08-09T01:30:50.577Z",
   "pass": true,
   "checks": [
     {
       "id": "r8:packages/input/src/InputActionBindingFixtures.ts",
       "pass": true,
-      "detail": "packages/input/src/InputActionBindingFixtures.ts: all six R8 points empty across 5045 scanned files (81 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/input/src/InputActionBindingFixtures.ts: all six R8 points empty across 5018 scanned files (81 non-blocking prose mention(s) to tidy)"
     }
   ],
   "failures": [],
@@ -15,7 +15,7 @@
   ],
   "expandedFileCount": 1,
   "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
-  "scannedFiles": 5045,
+  "scannedFiles": 5018,
   "points": [
     "runtime-consumer",
     "generated-registry-consumer",

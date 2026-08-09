@@ -1,42 +1,42 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:33:02.986Z",
+  "generatedAt": "2026-08-09T01:31:16.800Z",
   "pass": true,
   "checks": [
     {
       "id": "r8:packages/physics/src/ClothFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/ClothFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/ClothFixtures.ts: all six R8 points empty across 5018 scanned files (33 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/physics/src/FireSmokeFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/FireSmokeFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/FireSmokeFixtures.ts: all six R8 points empty across 5018 scanned files (33 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/physics/src/FluidFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/FluidFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/FluidFixtures.ts: all six R8 points empty across 5018 scanned files (33 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/physics/src/FractureFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/FractureFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/FractureFixtures.ts: all six R8 points empty across 5018 scanned files (33 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/physics/src/PhysicsSandboxFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/PhysicsSandboxFixtures.ts: all six R8 points empty across 5027 scanned files (27 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/PhysicsSandboxFixtures.ts: all six R8 points empty across 5018 scanned files (27 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/physics/src/PlatformerFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/PlatformerFixtures.ts: all six R8 points empty across 5027 scanned files (27 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/PlatformerFixtures.ts: all six R8 points empty across 5018 scanned files (27 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/physics/src/SoftBodyFixtures.ts",
       "pass": true,
-      "detail": "packages/physics/src/SoftBodyFixtures.ts: all six R8 points empty across 5027 scanned files (34 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/physics/src/SoftBodyFixtures.ts: all six R8 points empty across 5018 scanned files (33 non-blocking prose mention(s) to tidy)"
     }
   ],
   "failures": [],
@@ -51,7 +51,7 @@
   ],
   "expandedFileCount": 7,
   "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
-  "scannedFiles": 5027,
+  "scannedFiles": 5018,
   "points": [
     "runtime-consumer",
     "generated-registry-consumer",
@@ -65,9 +65,9 @@
     {
       "path": "packages/physics/src/ClothFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 360,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/ClothFixtures.ts",
         "ClothFixtures.ts",
@@ -78,7 +78,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 34,
+      "proseMentionCount": 33,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -211,9 +211,9 @@
     {
       "path": "packages/physics/src/FireSmokeFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 383,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/FireSmokeFixtures.ts",
         "FireSmokeFixtures.ts",
@@ -224,7 +224,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 34,
+      "proseMentionCount": 33,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -357,9 +357,9 @@
     {
       "path": "packages/physics/src/FluidFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 302,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/FluidFixtures.ts",
         "FluidFixtures.ts",
@@ -370,7 +370,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 34,
+      "proseMentionCount": 33,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -503,9 +503,9 @@
     {
       "path": "packages/physics/src/FractureFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 278,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/FractureFixtures.ts",
         "FractureFixtures.ts",
@@ -516,7 +516,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 34,
+      "proseMentionCount": 33,
       "proseMentions": [
         {
           "point": "prose-mention",
@@ -649,9 +649,9 @@
     {
       "path": "packages/physics/src/PhysicsSandboxFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 395,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/PhysicsSandboxFixtures.ts",
         "PhysicsSandboxFixtures.ts",
@@ -795,9 +795,9 @@
     {
       "path": "packages/physics/src/PlatformerFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 206,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/PlatformerFixtures.ts",
         "PlatformerFixtures.ts",
@@ -941,9 +941,9 @@
     {
       "path": "packages/physics/src/SoftBodyFixtures.ts",
       "exists": false,
-      "source": "head",
+      "source": "history",
       "lines": 364,
-      "lastCommit": "ef3e078b17ef08ce8d7b6a3602f7a1404e791fbf",
+      "lastCommit": "ff7abcc9f97028a20f82818166ab7581d1a787b2",
       "moduleSpecifiers": [
         "packages/physics/src/SoftBodyFixtures.ts",
         "SoftBodyFixtures.ts",
@@ -954,7 +954,7 @@
       "clear": true,
       "intraCandidateReferences": 0,
       "blocking": {},
-      "proseMentionCount": 34,
+      "proseMentionCount": 33,
       "proseMentions": [
         {
           "point": "prose-mention",

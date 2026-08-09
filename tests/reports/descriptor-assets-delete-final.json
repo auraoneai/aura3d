@@ -1,17 +1,17 @@
 {
   "schema": "deletion-safety-r8",
-  "generatedAt": "2026-08-08T22:04:13.146Z",
+  "generatedAt": "2026-08-09T01:30:54.327Z",
   "pass": true,
   "checks": [
     {
       "id": "r8:packages/assets/src/AssetBundleCacheFixtures.ts",
       "pass": true,
-      "detail": "packages/assets/src/AssetBundleCacheFixtures.ts: all six R8 points empty across 5045 scanned files (6715 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/assets/src/AssetBundleCacheFixtures.ts: all six R8 points empty across 5018 scanned files (6715 non-blocking prose mention(s) to tidy)"
     },
     {
       "id": "r8:packages/assets/src/SceneAnalysisFixtures.ts",
       "pass": true,
-      "detail": "packages/assets/src/SceneAnalysisFixtures.ts: all six R8 points empty across 5045 scanned files (6107 non-blocking prose mention(s) to tidy)"
+      "detail": "packages/assets/src/SceneAnalysisFixtures.ts: all six R8 points empty across 5018 scanned files (6107 non-blocking prose mention(s) to tidy)"
     }
   ],
   "failures": [],
@@ -21,7 +21,7 @@
   ],
   "expandedFileCount": 2,
   "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
-  "scannedFiles": 5045,
+  "scannedFiles": 5018,
   "points": [
     "runtime-consumer",
     "generated-registry-consumer",

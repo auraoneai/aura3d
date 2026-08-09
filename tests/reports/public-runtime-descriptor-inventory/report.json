@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-09T00:54:38.313Z",
+  "generatedAt": "2026-08-09T01:32:36.840Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -17,6 +17,8 @@
     "deleteAfterR8": 0,
     "migrateThenDelete": 0,
     "unclassified": 0,
+    "publicRuntimeFixtures": 0,
+    "unmountedBooleanClaimModules": 0,
     "booleanClaimModulesRejectedAsRuntimeProof": 0
   },
   "modules": [
@@ -391,6 +393,8 @@
     }
   ],
   "unclassified": [],
+  "publicRuntimeFixtures": [],
+  "unmountedBooleanClaimModules": [],
   "rule": "A fixture object's boolean fields never establish runtime capability. Only mounted behavior and derived evidence may support a public claim.",
   "claimBoundary": "Inventory and deletion queue only; retained runtime contracts still require their own mounted browser evidence."
 }
