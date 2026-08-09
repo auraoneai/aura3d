@@ -192,7 +192,7 @@ const INSTANCE_MATRIX_ATTRIBUTE_NAMES = [
 ] as const;
 
 export class ForwardPass extends BaseRenderPass {
-  private static readonly shaderCaches = new WeakMap<RenderDevice, WeakMap<ShaderLibrary, Map<string, ShaderModule>>>();
+  private static readonly shaderCaches = new WeakMap<RenderDevice, WeakMap<ShaderLibrary, ShaderCacheRecord>>();
   private readonly materialBinding = new MaterialBinding();
   private readonly shaderLibrary: ShaderLibrary;
   private readonly skinningPaletteUploads = new SkinningPaletteUploadManager();
@@ -394,18 +394,28 @@ class SkinningPaletteUploadManager {
   }
 }
 
+interface ShaderCacheRecord {
+  revision: number;
+  readonly modules: Map<string, ShaderModule>;
+}
+
 function getForwardPassShaderCache(device: RenderDevice, library: ShaderLibrary): Map<string, ShaderModule> {
   let libraryCaches = ForwardPass["shaderCaches"].get(device);
   if (!libraryCaches) {
-    libraryCaches = new WeakMap<ShaderLibrary, Map<string, ShaderModule>>();
+    libraryCaches = new WeakMap<ShaderLibrary, ShaderCacheRecord>();
     ForwardPass["shaderCaches"].set(device, libraryCaches);
   }
-  let shaderCache = libraryCaches.get(library);
-  if (!shaderCache) {
-    shaderCache = new Map<string, ShaderModule>();
-    libraryCaches.set(library, shaderCache);
+  let record = libraryCaches.get(library);
+  const revision = library.getRevision();
+  if (!record) {
+    record = { revision, modules: new Map<string, ShaderModule>() };
+    libraryCaches.set(library, record);
+  } else if (record.revision !== revision) {
+    for (const module of record.modules.values()) module.dispose();
+    record.modules.clear();
+    record.revision = revision;
   }
-  return shaderCache;
+  return record.modules;
 }
 
 function applyOutputColorSpaceUniform(

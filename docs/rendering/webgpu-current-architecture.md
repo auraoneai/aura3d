@@ -31,7 +31,9 @@ so this document does not imply that every root-safe app uses WebGPU.
 
 ## Unsupported and partial rows
 
-- Aura3D does not claim TSL/node-material parity here. Public shader and
+- Aura3D does not claim general TSL/node-material parity. The selected
+  `PortableShaderMaterial` extension contract is proven separately in
+  `docs/rendering/portable-custom-materials.md`. Public shader and
   backend-neutral material authoring is WS-3.3.
 - This gate does not claim WebGPU versions of every PBR extension, shadow,
   postprocess, skinning, morph, WebXR, or device-loss behavior. Those features

@@ -24,7 +24,9 @@ export class ShaderModule {
         label: this.source.label,
         marker: this.source.marker,
         vertex: this.source.vertex,
-        fragment: this.source.fragment
+        fragment: this.source.fragment,
+        ...(this.source.webgpu ? { webgpu: this.source.webgpu } : {}),
+        ...(this.source.portableBindings ? { portableBindings: this.source.portableBindings } : {})
       });
     }
     return this.program;

@@ -41,7 +41,7 @@ pnpm verify:api-docs
 | `@aura3d/physics/world` | `1.6.0` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.6.0` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.6.0` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `1.6.0` | `packages/rendering/src/index.ts` | 264 |
+| `@aura3d/rendering` | `1.6.0` | `packages/rendering/src/index.ts` | 266 |
 | `@aura3d/rendering/lean-runtime` | `1.6.0` | `packages/rendering/src/lean-runtime.ts` | 10 |
 | `@aura3d/rendering/webgpu` | `1.6.0` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `1.6.0` | `packages/scene/src/index.ts` | 21 |
@@ -1084,6 +1084,8 @@ export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransfo
 export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
 export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
+export { PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
+export type { PortableShaderCompilationResult, PortableShaderMaterialOptions, PortableShaderSources, PortableShaderStagePair, PortableShaderUniform } from "./PortableShaderMaterial";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
 export { ShaderPreprocessor } from "./ShaderPreprocessor";

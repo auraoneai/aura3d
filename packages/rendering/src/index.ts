@@ -448,6 +448,14 @@ export type {
 } from "./production-runtime";
 
 export { ShaderModule } from "./ShaderModule";
+export { PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
+export type {
+  PortableShaderCompilationResult,
+  PortableShaderMaterialOptions,
+  PortableShaderSources,
+  PortableShaderStagePair,
+  PortableShaderUniform
+} from "./PortableShaderMaterial";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
 export { ShaderPreprocessor } from "./ShaderPreprocessor";

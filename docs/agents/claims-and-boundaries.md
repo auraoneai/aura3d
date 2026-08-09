@@ -17,7 +17,7 @@ Use one of these labels for every public claim:
 | --- | --- | --- |
 | `createAuraApp` root safe API | A browser route imports only public `@aura3d/engine` APIs and mounts through `createAuraApp(...)`. | Build, route-health or equivalent diagnostics, typed asset manifest, browser screenshot, and claim-specific pixel or runtime assertion. |
 | `production-runtime` | Capability exists in production-runtime packages or adapters, but is not necessarily exposed by root agent APIs. | Package tests or browser tests for that package, plus wording that does not imply root support. |
-| `rendering` internals | Capability exists in lower-level renderer modules. | Renderer tests or internal demos, with explicit internal-only wording. |
+| `rendering` package | Capability exists in the public lower-level `@aura3d/rendering` package but is not necessarily exposed by root agent APIs. | Public package exports plus renderer unit/browser evidence, with explicit package-level wording. |
 | CLI asset pipeline | Capability belongs to asset search, add, resolve, validation, provenance, type generation, screenshots, or deploy checks. | CLI command output, `aura.assets.json`, generated `src/aura-assets.ts`, source/license metadata, and validation reports. |
 | Template-only scaffold | A template starts a project or route but does not itself prove production capability. | Template generation smoke test and honest scaffold wording. |
 | Prototype | A route or API illustrates direction but lacks release-quality evidence. | Prototype label on route/docs and no flagship or production wording. |
@@ -59,6 +59,12 @@ proves the exact result:
 - production-quality character, racing, platformer, falling-block, or generic
   collision/gameplay kits;
 - generic physics/collision behavior not exported and tested from the root API.
+
+`PortableShaderMaterial` is a supported `@aura3d/rendering` package extension
+API for paired GLSL/WGSL custom materials. Its real WebGL2/WebGPU evidence does
+not make custom shader authoring a root `createAuraApp` claim and does not prove
+general TSL/node-material parity. See
+`docs/rendering/portable-custom-materials.md`.
 
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
 has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,

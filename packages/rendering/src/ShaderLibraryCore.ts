@@ -1,4 +1,5 @@
 import { ShaderPreprocessor, type ShaderPreprocessOptions } from "./ShaderPreprocessor";
+import type { PortableShaderBinding } from "./RenderDevice";
 export { DEFAULT_PBR_SHADER_MARKER, DEFAULT_PBR_SHADER_NAME } from "./PBRMaterial";
 import { DEFAULT_PBR_SHADER_MARKER, DEFAULT_PBR_SHADER_NAME } from "./PBRMaterial";
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
@@ -8,6 +9,11 @@ export interface ShaderSourcePair {
   readonly marker: string;
   readonly vertex: string;
   readonly fragment: string;
+  readonly webgpu?: {
+    readonly vertex: string;
+    readonly fragment: string;
+  };
+  readonly portableBindings?: readonly PortableShaderBinding[];
   readonly variants?: readonly ShaderVariantDescriptor[];
 }
 
@@ -21,6 +27,11 @@ export interface CompiledShaderSource {
   readonly marker: string;
   readonly vertex: string;
   readonly fragment: string;
+  readonly webgpu?: {
+    readonly vertex: string;
+    readonly fragment: string;
+  };
+  readonly portableBindings?: readonly PortableShaderBinding[];
 }
 
 export class ShaderLibrary {
@@ -28,6 +39,7 @@ export class ShaderLibrary {
   private readonly chunks = new Map<string, string>();
   private readonly preprocessor = new ShaderPreprocessor();
   private readonly variantCache = new Map<string, CompiledShaderSource>();
+  private revision = 0;
 
   register(shader: ShaderSourcePair): void {
     if (this.shaders.has(shader.name)) {
@@ -37,6 +49,31 @@ export class ShaderLibrary {
     this.assertVariants(shader);
     this.shaders.set(shader.name, shader);
     this.variantCache.clear();
+    this.revision += 1;
+  }
+
+  replace(shader: ShaderSourcePair): void {
+    if (!this.shaders.has(shader.name)) {
+      throw new Error(`Shader is not registered: ${shader.name}`);
+    }
+    this.assertMarker(shader);
+    this.assertVariants(shader);
+    this.shaders.set(shader.name, shader);
+    this.variantCache.clear();
+    this.revision += 1;
+  }
+
+  unregister(name: string): boolean {
+    const removed = this.shaders.delete(name);
+    if (removed) {
+      this.variantCache.clear();
+      this.revision += 1;
+    }
+    return removed;
+  }
+
+  getRevision(): number {
+    return this.revision;
   }
 
   registerChunk(name: string, source: string): void {
@@ -45,6 +82,7 @@ export class ShaderLibrary {
     }
     this.chunks.set(name, source);
     this.variantCache.clear();
+    this.revision += 1;
   }
 
   get(name: string): ShaderSourcePair {
@@ -64,7 +102,14 @@ export class ShaderLibrary {
     if (!vertex.includes(shader.marker) || !fragment.includes(shader.marker)) {
       throw new Error(`Shader marker ${shader.marker} was not preserved for ${name}`);
     }
-    return { label: name, marker: shader.marker, vertex, fragment };
+    return {
+      label: name,
+      marker: shader.marker,
+      vertex,
+      fragment,
+      ...(shader.webgpu ? { webgpu: shader.webgpu } : {}),
+      ...(shader.portableBindings ? { portableBindings: shader.portableBindings } : {})
+    };
   }
 
   compileVariant(name: string, variantName: string, options: ShaderPreprocessOptions = {}): CompiledShaderSource {
@@ -101,6 +146,12 @@ export class ShaderLibrary {
     }
     if (!shader.vertex.includes(shader.marker) || !shader.fragment.includes(shader.marker)) {
       throw new Error(`Shader ${shader.name} must include marker ${shader.marker} in both stages`);
+    }
+    if (shader.webgpu && (!shader.webgpu.vertex.includes(shader.marker) || !shader.webgpu.fragment.includes(shader.marker))) {
+      throw new Error(`Shader ${shader.name} must include marker ${shader.marker} in both WebGPU stages`);
+    }
+    if ((shader.webgpu === undefined) !== (shader.portableBindings === undefined)) {
+      throw new Error(`Portable shader ${shader.name} must provide both webgpu sources and portableBindings`);
     }
   }
 

@@ -22,7 +22,8 @@ package's `src/` is not a hatch, it is a leak.
 | Drive the renderer directly | `@aura3d/engine/rendering` | `Renderer` |
 | Build geometry | `@aura3d/engine/rendering` | `Geometry`, `VertexBuffer`, `IndexBuffer`, `VertexFormat` |
 | Build materials | `@aura3d/engine/rendering` | `PBRMaterial`, `UnlitMaterial`, `TexturedPBRMaterial`, ... |
-| Write a custom shader | `@aura3d/engine/rendering` | `ShaderModule`, `ShaderLibrary`, `createDefaultShaderLibrary` |
+| Write a renderer-integrated portable custom material | `@aura3d/rendering` | `PortableShaderMaterial`, `ShaderLibrary`, `Renderer` |
+| Write a low-level custom shader/pass | `@aura3d/engine/rendering` | `ShaderModule`, `ShaderLibrary`, `createDefaultShaderLibrary` |
 | Write a custom postprocess pass | `@aura3d/engine/rendering` | `ShaderModule` + the `PostProcessPass` helpers |
 | Physics without the app | `@aura3d/engine/physics` · `@aura3d/engine/physics/world` | `PhysicsWorld`, `Shape`, `PhysicsStepper` |
 | Geometry queries without a solver | `@aura3d/engine/physics/solverless` | `buildMeshBVH`, `createMeshSurfaceQuery` |
@@ -35,7 +36,12 @@ surface — one import specifier changed per symbol.**
 
 ## Custom shader
 
-`ShaderModule` takes GLSL sources directly and reflects their attributes and uniforms:
+Use `PortableShaderMaterial` for a renderer-integrated material that must run on
+WebGL2 and WebGPU with typed bindings, native diagnostics, live replacement,
+and disposal. See `docs/rendering/portable-custom-materials.md`.
+
+`ShaderModule` remains the lower-level escape hatch. It takes GLSL sources
+directly and reflects their attributes and uniforms:
 
 ```ts
 import { ShaderModule } from "@aura3d/engine/rendering";

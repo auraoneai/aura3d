@@ -77,6 +77,8 @@ const packageEntryPoints = new Map<string, string>([
   ["flatbuffers", "/node_modules/.pnpm/flatbuffers@25.9.23/node_modules/flatbuffers/mjs/flatbuffers.js"],
   ["ktx-parse", "/node_modules/.pnpm/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
   ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],
+  ["three/webgpu", "/node_modules/three/build/three.webgpu.js"],
+  ["three/tsl", "/node_modules/three/build/three.tsl.js"],
   ["three", "/node_modules/three/build/three.module.js"],
   ["tslib", "/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.mjs"],
 ]);

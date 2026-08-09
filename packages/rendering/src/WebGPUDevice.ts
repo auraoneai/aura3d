@@ -1,6 +1,7 @@
 import {
   type BufferUsage,
   type DrawCommand,
+  type PortableShaderBinding,
   type RenderBuffer,
   type RenderDevice,
   RenderDeviceError,
@@ -10,6 +11,7 @@ import {
   type RenderTarget,
   type RenderTargetDescriptor,
   type ShaderReflection,
+  type ShaderCompilationDiagnostic,
   type ShaderSources,
   type UniformValue,
   viewBytes
@@ -68,7 +70,7 @@ export interface WebGPUDeviceLike {
   readonly queue: WebGPUQueueLike;
   readonly lost?: Promise<WebGPUDeviceLostInfoLike>;
   createBuffer(descriptor: WebGPUBufferDescriptorLike): WebGPUBufferLike;
-  createShaderModule?(descriptor: { readonly label?: string; readonly code: string }): unknown;
+  createShaderModule?(descriptor: { readonly label?: string; readonly code: string }): WebGPUShaderModuleLike;
   createRenderPipeline?(descriptor: WebGPURenderPipelineDescriptorLike): WebGPURenderPipelineLike;
   createBindGroup?(descriptor: WebGPUBindGroupDescriptorLike): WebGPUBindGroupLike;
   createTexture?(descriptor: WebGPUTextureDescriptorLike): WebGPUTextureLike;
@@ -80,6 +82,18 @@ export interface WebGPUDeviceLike {
 export interface WebGPUDeviceLostInfoLike {
   readonly reason?: string;
   readonly message?: string;
+}
+
+export interface WebGPUShaderModuleLike {
+  readonly [key: string]: unknown;
+  getCompilationInfo?(): Promise<{
+    readonly messages: readonly {
+      readonly type: "error" | "warning" | "info";
+      readonly message: string;
+      readonly lineNum?: number;
+      readonly linePos?: number;
+    }[];
+  }>;
 }
 
 export interface WebGPUQueueLike {
@@ -306,6 +320,7 @@ type NativeUniformLayout =
   | "generated-instanced-pbr"
   | "generated-skinned-unlit"
   | "generated-morph-unlit"
+  | "portable"
   | "passthrough";
 
 class WebGPUShaderProgram implements RenderShaderProgram {
@@ -319,7 +334,8 @@ class WebGPUShaderProgram implements RenderShaderProgram {
     public readonly reflection: ShaderReflection,
     public readonly modules: readonly unknown[],
     public readonly entryPoints: readonly [string, string],
-    public readonly nativeUniformLayout: NativeUniformLayout
+    public readonly nativeUniformLayout: NativeUniformLayout,
+    public readonly portableBindings: readonly PortableShaderBinding[]
   ) {}
 
   dispose(): void {
@@ -551,10 +567,36 @@ export class WebGPUDevice implements RenderDevice {
       reflectShaderSources(sources),
       modules,
       nativeSources.entryPoints,
-      nativeSources.uniformLayout
+      nativeSources.uniformLayout,
+      nativeSources.portableBindings ?? []
     );
     this.shaders.add(shader);
     return shader;
+  }
+
+  async getShaderCompilationDiagnostics(sources: ShaderSources): Promise<readonly ShaderCompilationDiagnostic[]> {
+    this.assertAlive();
+    if (!this.device.createShaderModule) return [];
+    const native = createNativeShaderSources(sources);
+    const stages = [
+      { stage: "vertex" as const, code: native.vertex },
+      { stage: "fragment" as const, code: native.fragment }
+    ];
+    const diagnostics: ShaderCompilationDiagnostic[] = [];
+    for (const candidate of stages) {
+      const module = this.device.createShaderModule({ label: `${sources.label}-${candidate.stage}-diagnostics`, code: candidate.code });
+      const info = await module.getCompilationInfo?.();
+      for (const message of info?.messages ?? []) {
+        diagnostics.push({
+          stage: candidate.stage,
+          severity: message.type,
+          message: message.message,
+          ...(message.lineNum === undefined ? {} : { line: message.lineNum }),
+          ...(message.linePos === undefined ? {} : { column: message.linePos })
+        });
+      }
+    }
+    return diagnostics;
   }
 
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
@@ -1333,6 +1375,9 @@ export class WebGPUDevice implements RenderDevice {
       shader.renderPipelines.set(pipelineKey, pipeline);
     }
     const encoder = this.device.createCommandEncoder({ label: `${command.label ?? "draw"}-encoder` });
+    const portableResources = shader.nativeUniformLayout === "portable"
+      ? this.createNativePortableBindings(command, shader.portableBindings)
+      : null;
     const uniformBuffer = usesNativeDrawUniforms(shader.nativeUniformLayout) ? this.createNativeDrawUniformBuffer(command) : null;
     const sampledTexture = shader.nativeUniformLayout === "generated-texture" ? this.createNativeSampledTextureBinding(uniformBaseColorTextureBinding(command.uniforms)) : null;
     const materialTextures = usesNativePbrTextureBindings(shader.nativeUniformLayout) ? this.createNativePbrTextureBindings(command) : null;
@@ -1344,12 +1389,13 @@ export class WebGPUDevice implements RenderDevice {
       uniformBuffer?.destroy();
       return;
     }
-    const bindGroup = uniformBuffer && pipeline.getBindGroupLayout && this.device.createBindGroup
+    if (shader.nativeUniformLayout === "portable" && !portableResources) return;
+    const bindGroup = (uniformBuffer || portableResources) && pipeline.getBindGroupLayout && this.device.createBindGroup
       ? this.device.createBindGroup({
           label: `${command.label ?? "draw"}-draw-bind-group`,
           layout: pipeline.getBindGroupLayout(0),
-          entries: [
-            { binding: 0, resource: { buffer: uniformBuffer } },
+          entries: portableResources?.entries ?? [
+            { binding: 0, resource: { buffer: uniformBuffer! } },
             ...(sampledTexture ? [
               { binding: 1, resource: sampledTexture.sampler },
               { binding: 2, resource: sampledTexture.view }
@@ -1403,6 +1449,7 @@ export class WebGPUDevice implements RenderDevice {
       if (!pass.setIndexBuffer || !pass.drawIndexed) {
         pass.end();
         uniformBuffer?.destroy();
+        portableResources?.buffer.destroy();
         this.lastError = "Native WebGPU indexed draw skipped because the render-pass encoder does not expose indexed draw APIs.";
         return;
       }
@@ -1416,11 +1463,16 @@ export class WebGPUDevice implements RenderDevice {
     this.device.queue.submit([encoder.finish()]);
     if (this.activeRenderTarget) this.activeRenderTarget.nativeNeedsClear = false;
     uniformBuffer?.destroy();
+    portableResources?.buffer.destroy();
     this.nativeSubmissions += 1;
     if (sampledTexture) this.nativeTextureBindings += 1;
     if (shader.nativeUniformLayout === "generated-basic") this.nativeGeneratedBasicSubmissions += 1;
     if (shader.nativeUniformLayout === "generated-texture") this.nativeGeneratedTextureSubmissions += 1;
     if (shader.nativeUniformLayout === "passthrough") this.nativePassthroughSubmissions += 1;
+    if (shader.nativeUniformLayout === "portable") {
+      this.nativePassthroughSubmissions += 1;
+      this.nativeTextureBindings += portableResources?.actualTextureCount ?? 0;
+    }
     if (shader.nativeUniformLayout === "generated-pbr" || shader.nativeUniformLayout === "generated-textured-pbr" || shader.nativeUniformLayout === "generated-instanced-pbr") this.nativePbrSubmissions += 1;
     if (shader.nativeUniformLayout === "generated-instanced-pbr") this.nativeInstancedSubmissions += 1;
     if (shader.nativeUniformLayout === "generated-skinned-unlit") this.nativeSkinnedSubmissions += 1;
@@ -1692,6 +1744,48 @@ export class WebGPUDevice implements RenderDevice {
     });
     this.device.queue.writeBuffer(buffer, 0, data);
     return buffer;
+  }
+
+  private createNativePortableBindings(
+    command: DrawCommand,
+    bindings: readonly PortableShaderBinding[]
+  ): {
+    readonly buffer: WebGPUBufferLike;
+    readonly entries: readonly WebGPUBindGroupEntryLike[];
+    readonly actualTextureCount: number;
+  } | null {
+    if (!this.device.createBindGroup) return null;
+    const numericBindings = bindings.filter((binding) => binding.kind !== "texture2d");
+    const layout = portableUniformLayout(numericBindings);
+    const bytes = new ArrayBuffer(Math.max(16, layout.byteLength));
+    const view = new DataView(bytes);
+    for (const field of layout.fields) {
+      writePortableUniform(view, field.byteOffset, field.binding.kind, command.uniforms?.get(field.binding.name));
+    }
+    const buffer = this.device.createBuffer({
+      label: `${command.label ?? "draw"}-portable-uniforms`,
+      size: bytes.byteLength,
+      usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST
+    });
+    this.device.queue.writeBuffer(buffer, 0, new Uint8Array(bytes));
+    const entries: WebGPUBindGroupEntryLike[] = [{ binding: 0, resource: { buffer } }];
+    let bindingIndex = 1;
+    let actualTextureCount = 0;
+    for (const descriptor of bindings) {
+      if (descriptor.kind !== "texture2d") continue;
+      const actual = this.createNativeSampledTextureBinding(uniformTextureBinding(command.uniforms, descriptor.name));
+      const sampled = actual ?? (descriptor.required === false
+        ? this.createNativeFallbackSampledTextureBinding("portable-white", [255, 255, 255, 255], "linear")
+        : null);
+      if (!sampled) {
+        buffer.destroy();
+        return null;
+      }
+      if (actual?.actual) actualTextureCount += 1;
+      entries.push({ binding: bindingIndex++, resource: sampled.sampler });
+      entries.push({ binding: bindingIndex++, resource: sampled.view });
+    }
+    return { buffer, entries, actualTextureCount };
   }
 
   private currentCanvasView(): unknown | null {
@@ -1977,7 +2071,7 @@ function webgpuMaxAnisotropy(
 }
 
 function usesNativeDrawUniforms(layout: NativeUniformLayout): boolean {
-  return layout !== "passthrough";
+  return layout !== "passthrough" && layout !== "portable";
 }
 
 function usesNativePbrTextureBindings(layout: NativeUniformLayout): boolean {
@@ -2490,7 +2584,17 @@ function createNativeShaderSources(sources: ShaderSources): {
   readonly fragment: string;
   readonly entryPoints: readonly [string, string];
   readonly uniformLayout: NativeUniformLayout;
+  readonly portableBindings?: readonly PortableShaderBinding[];
 } {
+  if (sources.webgpu && sources.portableBindings) {
+    return {
+      vertex: injectPortableBindings(sources.webgpu.vertex, sources.portableBindings),
+      fragment: injectPortableBindings(sources.webgpu.fragment, sources.portableBindings),
+      entryPoints: [inferWGSLVertexEntryPoint(sources.webgpu.vertex) ?? "vs_main", inferWGSLFragmentEntryPoint(sources.webgpu.fragment) ?? "fs_main"],
+      uniformLayout: "portable",
+      portableBindings: sources.portableBindings
+    };
+  }
   const vertexEntry = inferWGSLVertexEntryPoint(sources.vertex) ?? "vs_main";
   const fragmentEntry = inferWGSLFragmentEntryPoint(sources.fragment) ?? "fs_main";
   if (/\@(vertex|fragment|compute)\b/.test(sources.vertex) || /\@(vertex|fragment|compute)\b/.test(sources.fragment)) {
@@ -2529,6 +2633,105 @@ function createNativeShaderSources(sources: ShaderSources): {
     entryPoints: [vertexEntry, fragmentEntry],
     uniformLayout: "generated-basic"
   };
+}
+
+const PORTABLE_BINDINGS_MARKER = "/* @aura3d-bindings */";
+
+function injectPortableBindings(source: string, bindings: readonly PortableShaderBinding[]): string {
+  if (!source.includes(PORTABLE_BINDINGS_MARKER)) {
+    throw new RenderDeviceError(
+      `Portable WGSL source must include ${PORTABLE_BINDINGS_MARKER}`,
+      "PORTABLE_SHADER_BINDINGS_MARKER_MISSING"
+    );
+  }
+  const numeric = bindings.filter((binding) => binding.kind !== "texture2d");
+  const fields = numeric.map((binding) => `  ${binding.name}: ${portableWGSLType(binding.kind)},`).join("\n");
+  let textureBinding = 1;
+  const textures = bindings
+    .filter((binding) => binding.kind === "texture2d")
+    .map((binding) => {
+      const sampler = textureBinding++;
+      const texture = textureBinding++;
+      return `@group(0) @binding(${sampler}) var ${binding.name}Sampler: sampler;\n@group(0) @binding(${texture}) var ${binding.name}Texture: texture_2d<f32>;`;
+    })
+    .join("\n");
+  return source.replace(
+    PORTABLE_BINDINGS_MARKER,
+    `struct Aura3DPortableUniforms {\n${fields}\n};\n@group(0) @binding(0) var<uniform> aura: Aura3DPortableUniforms;\n${textures}`
+  );
+}
+
+function portableWGSLType(kind: PortableShaderBinding["kind"]): string {
+  switch (kind) {
+    case "float": return "f32";
+    case "vec2": return "vec2<f32>";
+    case "vec3": return "vec3<f32>";
+    case "vec4": return "vec4<f32>";
+    case "mat4": return "mat4x4<f32>";
+    case "texture2d": throw new Error("Texture bindings are not uniform-struct fields");
+  }
+}
+
+interface PortableUniformField {
+  readonly binding: PortableShaderBinding;
+  readonly byteOffset: number;
+}
+
+function portableUniformLayout(bindings: readonly PortableShaderBinding[]): {
+  readonly fields: readonly PortableUniformField[];
+  readonly byteLength: number;
+} {
+  let byteOffset = 0;
+  let structAlignment = 16;
+  const fields = bindings.map((binding) => {
+    const alignment = portableUniformAlignment(binding.kind);
+    byteOffset = alignTo(byteOffset, alignment);
+    const field = { binding, byteOffset };
+    byteOffset += portableUniformSize(binding.kind);
+    structAlignment = Math.max(structAlignment, alignment);
+    return field;
+  });
+  return { fields, byteLength: alignTo(byteOffset, structAlignment) };
+}
+
+function portableUniformAlignment(kind: PortableShaderBinding["kind"]): number {
+  switch (kind) {
+    case "float": return 4;
+    case "vec2": return 8;
+    case "vec3":
+    case "vec4":
+    case "mat4": return 16;
+    case "texture2d": return 0;
+  }
+}
+
+function portableUniformSize(kind: PortableShaderBinding["kind"]): number {
+  switch (kind) {
+    case "float": return 4;
+    case "vec2": return 8;
+    case "vec3": return 12;
+    case "vec4": return 16;
+    case "mat4": return 64;
+    case "texture2d": return 0;
+  }
+}
+
+function writePortableUniform(
+  view: DataView,
+  byteOffset: number,
+  kind: PortableShaderBinding["kind"],
+  value: UniformValue | undefined
+): void {
+  if (kind === "texture2d") return;
+  const numbers = typeof value === "number"
+    ? [value]
+    : value && !(value instanceof TextureBinding)
+      ? Array.from(value)
+      : [];
+  const count = portableUniformSize(kind) / 4;
+  for (let index = 0; index < count; index += 1) {
+    view.setFloat32(byteOffset + index * 4, Number(numbers[index] ?? 0), true);
+  }
 }
 
 function nativeUniformStruct(): string {

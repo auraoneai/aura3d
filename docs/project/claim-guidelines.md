@@ -95,7 +95,9 @@ Do not claim these until the named gates pass:
 - "Native WebGPU particles/rendering" is allowed only for the named SDK workload
   and six evidence routes in
   `tests/reports/webgpu-current-architecture/report.json`. Root-default WebGPU,
-  TSL, WebXR, and feature-complete WebGPU remain blocked.
+  general TSL/node-material parity, WebXR, and feature-complete WebGPU remain
+  blocked. The narrower paired-source `PortableShaderMaterial` claim is allowed
+  only with `tests/reports/portable-custom-materials/report.json`.
 - "A showcase route is flagship quality." Blocked until
   `docs/project/showcase/quality-gates.md` passes for that route.
 - "A game route is production playable." Blocked unless keyboard input changes

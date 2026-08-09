@@ -38,8 +38,8 @@ the workload program; comparing Aura3D only with one path would be incomplete.
 | Surface | Current r185 baseline | Comparison requirement |
 | --- | --- | --- |
 | Standard/physical materials | built-in mesh standard and physical material families | Same glTF assets, maps, extension values, environment, lights, and camera |
-| WebGL custom shaders | `ShaderMaterial`, `RawShaderMaterial`, `onBeforeCompile` | Aura3D public installed-package shader escape hatch |
-| Modern material graph | node materials and TSL from `three/tsl` | Authored custom-material workload with GLSL/WGSL backend truth |
+| WebGL custom shaders | `ShaderMaterial`, `RawShaderMaterial`, `onBeforeCompile` | Aura3D public `PortableShaderMaterial` and lower-level `ShaderModule` escape hatch; selected workload evidence in `tests/reports/portable-custom-materials/report.json` |
+| Modern material graph | node materials and TSL from `three/tsl` | Selected paired GLSL/WGSL workload is proven against r185 TSL; general node-graph parity remains unclaimed |
 | WebGL postprocess | `EffectComposer` and official passes | Same ordered effect intent and quality |
 | WebGPU postprocess | node-composed postprocessing, MRT-aware pass combination | Same output features and explicit unsupported rows |
 | Current advanced effects | r185 official WebGPU/node examples include modern depth-of-field, SSGI, SSS, and other node effects | Inventory and compare only claimed Aura3D effects; do not turn absence into parity |

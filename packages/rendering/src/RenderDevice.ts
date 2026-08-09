@@ -30,6 +30,21 @@ export interface ShaderSources {
   readonly vertex: string;
   readonly fragment: string;
   readonly marker: string;
+  /** Native WGSL stages for a public portable shader. GLSL remains the reflection source. */
+  readonly webgpu?: {
+    readonly vertex: string;
+    readonly fragment: string;
+  };
+  /** Schema used to build and bind a portable WebGPU draw group. */
+  readonly portableBindings?: readonly PortableShaderBinding[];
+}
+
+export type PortableShaderBindingKind = "float" | "vec2" | "vec3" | "vec4" | "mat4" | "texture2d";
+
+export interface PortableShaderBinding {
+  readonly name: string;
+  readonly kind: PortableShaderBindingKind;
+  readonly required?: boolean;
 }
 
 export interface RenderShaderProgram extends DisposableResource {
@@ -37,6 +52,14 @@ export interface RenderShaderProgram extends DisposableResource {
   readonly label: string;
   readonly marker: string;
   readonly reflection: ShaderReflection;
+}
+
+export interface ShaderCompilationDiagnostic {
+  readonly stage: "vertex" | "fragment";
+  readonly severity: "error" | "warning" | "info";
+  readonly message: string;
+  readonly line?: number;
+  readonly column?: number;
 }
 
 export interface RenderTargetDescriptor {
@@ -242,6 +265,8 @@ export interface RenderDevice {
   updateBuffer(buffer: RenderBuffer, byteOffset: number, data: ArrayBufferView): void;
   readBuffer(buffer: RenderBuffer, byteOffset?: number, byteLength?: number): Uint8Array;
   createShaderProgram(sources: ShaderSources): RenderShaderProgram;
+  /** Optional native asynchronous validation, currently implemented by WebGPU. */
+  getShaderCompilationDiagnostics?(sources: ShaderSources): Promise<readonly ShaderCompilationDiagnostic[]>;
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget;
   setRenderTarget(target: RenderTarget | null): void;
   writeRenderTargetPixels?(target: RenderTarget, pixels: Uint8Array): void;
