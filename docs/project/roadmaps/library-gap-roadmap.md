@@ -35,10 +35,9 @@ Primary files to inspect or change:
 
 Current bounded progress and remaining work:
 
-- a production bridge exists for eligible typed-GLB sources, with named root
-  bridge tests; broaden the supported descriptor/feature matrix before treating
-  it as root-default renderer parity;
-- decide default production runtime versus explicit `renderer: "production"`;
+- safe public primitives and typed-GLB sources now use production-runtime by
+  default, with named root browser and lifecycle tests; broaden the supported
+  feature matrix before treating backend selection as renderer-feature parity;
 - preserve typed asset safety and reject raw string asset IDs;
 - keep typed GLB actor exposure and route evidence asset-specific;
 - document fallback behavior;
@@ -169,8 +168,8 @@ Required work:
 
 - public quality profiles (`renderer.qualityProfiles()` and
   `createAuraApp({ renderer })` diagnostics are implemented; a production
-  bridge exists for eligible typed-GLB scenes, while root feature-parity proof
-  remains pending);
+  production runtime is now the default for safe renderable scenes, while root
+  feature-parity proof remains pending);
 - material capability diagnostics (`material.capabilityDiagnostics(...)` is
   implemented for root claim boundaries; rendering-internal RGBE/PMREM and
   bounded transmission proof does not establish root material parity);

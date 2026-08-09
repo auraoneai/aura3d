@@ -345,11 +345,16 @@ describe("agent API", () => {
     expect(diagnostics.warnings.join(" ")).toContain("scene plan only");
   });
 
-  test("reports production renderer profile support while keeping ineligible scenes on safe fallback", () => {
+  test("routes the default and explicit production profiles through the production renderer", () => {
     const profiles = renderer.qualityProfiles();
     expect(Object.keys(profiles).sort()).toEqual(["cinematic", "experimental-webgpu", "production", "safe-basic"]);
     expect(renderer.qualityProfile("production")).toMatchObject({
       id: "production",
+      status: "supported",
+      rendererMode: "production"
+    });
+    expect(renderer.qualityProfile("safe-basic")).toMatchObject({
+      id: "safe-basic",
       status: "supported",
       rendererMode: "production"
     });
@@ -365,8 +370,8 @@ describe("agent API", () => {
       fallbackMode: "safe-basic",
       qualityProfile: { id: "production", status: "supported" }
     });
-    expect(diagnostics.renderer!.warnings.join(" ")).toContain("will use safe-basic fallback");
-    expect(diagnostics.renderer!.warnings.join(" ")).toContain("requires at least one typed GLB");
+    expect(diagnostics.renderer!.warnings.join(" ")).toContain("will use the production renderer");
+    expect(diagnostics.renderer!.warnings.join(" ")).not.toContain("requires at least one typed GLB");
     app.dispose();
   });
 

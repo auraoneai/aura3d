@@ -7,6 +7,8 @@ const requiredFiles = [
   "docs/project/status/known-limits.md",
   "docs/project/claim-guidelines.md",
   "docs/project/verification-evidence.md",
+  "docs/project/architecture/create-aura-app-production-bridge.md",
+  "tests/reports/public-renderer-normal-path/report.json",
   "tools/production-runtime-truth/index.ts",
   "tools/production-runtime-progress/index.ts",
   "tools/production-runtime-three-compat-failure-audit/index.ts"
@@ -19,7 +21,7 @@ const blockedClaims = [
   read("docs/project/claim-guidelines.md")
 ].join("\n");
 const requiredPlanPolicies = [
-  { id: "root-production-bridge-gap", pattern: /default production-runtime renderer bridge for `createAuraApp`/i },
+  { id: "root-production-normal-path", pattern: /production-runtime rendering by default/i },
   { id: "root-webgl2-path", pattern: /root WebGL2 path/i },
   { id: "typed-gltf-path", pattern: /typed asset manifests[\s\S]*static GLB\/glTF mesh loading/i },
   { id: "browser-evidence-boundary", pattern: /browser evidence/i },
@@ -27,12 +29,11 @@ const requiredPlanPolicies = [
 ] as const;
 const requiredStatusPatterns = [
   /evidence/i,
-  /report/i,
-  /verification/i
+  /requirements trace gate/i,
+  /gate result/i
 ] as const;
 const requiredBlockedPolicies = [
   { id: "framework-replacement", pattern: /Aura3D is a Three\.js\/Babylon\/Unity\/Unreal replacement/i },
-  { id: "root-production-default", pattern: /Root `createAuraApp` uses the production renderer by default/i },
   { id: "native-webgpu", pattern: /Native WebGPU particles\/rendering/i },
   { id: "flagship-quality", pattern: /A showcase route is flagship quality/i },
   { id: "performance-superiority", pattern: /Aura3D matches or exceeds Three\.js performance/i }
@@ -46,6 +47,7 @@ const progressClaimsComplete = /^Current status:\s*complete$/m.test(progress);
 const completionAuditPasses = reportPasses("tests/reports/production-runtime-completion-audit.json");
 const progressNotPrematureComplete = !progressClaimsComplete || completionAuditPasses;
 const threeCompatFailureAuditPasses = reportPasses("tests/reports/production-runtime-three-compat-visual-failure-audit.json");
+const publicRendererNormalPathPasses = reportPasses("tests/reports/public-renderer-normal-path/report.json");
 const checks = [
   { id: "required-files", pass: missing.length === 0, detail: missing.join(", ") || "all required retained production-runtime evidence files exist" },
   { id: "plan-policies", pass: missingPlanPolicies.length === 0, detail: missingPlanPolicies.join(", ") || "production renderer plan is covered by retained docs" },
@@ -53,7 +55,8 @@ const checks = [
   { id: "blocked-claims", pass: missingBlockedPolicies.length === 0, detail: missingBlockedPolicies.join(", ") || "blocked claims are preserved" },
   { id: "milestone-coverage", pass: progressHasAllMilestones, detail: "retained completion docs describe release verification progress" },
   { id: "not-premature-complete", pass: progressNotPrematureComplete, detail: "progress is not complete before completion audit passes" },
-  { id: "three-compat-failure-audit", pass: threeCompatFailureAuditPasses, detail: "Three.js compatibility visual failure audit report passes" }
+  { id: "three-compat-failure-audit", pass: threeCompatFailureAuditPasses, detail: "Three.js compatibility visual failure audit report passes" },
+  { id: "public-renderer-normal-path", pass: publicRendererNormalPathPasses, detail: "default production renderer selection and public lifecycle evidence report passes" }
 ];
 const report = {
   schema: "a3d-production-runtime-truth",

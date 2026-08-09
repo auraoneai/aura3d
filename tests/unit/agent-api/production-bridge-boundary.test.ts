@@ -21,7 +21,7 @@ function extractFunctionBody(source: string, name: string): string {
 }
 
 describe("createAuraApp production bridge boundary", () => {
-  it("keeps the eligible typed-GLB production path on the ProductionRuntimeRenderer bridge", () => {
+  it("keeps every eligible authored scene on the ProductionRuntimeRenderer bridge", () => {
     const source = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/index.ts"), "utf8");
     const sceneRenderer = extractFunctionBody(source, "createProductionSceneRenderer");
     const runtimeRenderer = extractFunctionBody(source, "createProductionRuntimeSceneRenderer");
@@ -32,14 +32,18 @@ describe("createAuraApp production bridge boundary", () => {
 
     expect(sceneRenderer).toContain("analyzeProductionBridgeEligibility");
     expect(sceneRenderer).toContain("createProductionRuntimeSceneRenderer");
-    expect(sceneRenderer).toContain("Production bridge skipped:");
+    expect(sceneRenderer).toContain("production renderer rejected this scene");
     expect(sceneRenderer).toContain("Production bridge failed and safe-basic fallback rendered instead:");
 
     expect(runtimeRenderer).toContain("createTypedGLBActor");
+    expect(runtimeRenderer).toContain("modelNodes.length > 0");
     expect(runtimeRenderer).toContain("ProductionRuntimeRenderer.create");
     expect(runtimeRenderer).toContain("renderInteractiveFrame");
     expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot)");
     expect(runtimeRenderer).toContain("productionRuntimeLights");
+    expect(runtimeRenderer).toContain("productionRenderer.resize");
+    expect(runtimeRenderer).toContain("productionRenderer.onDeviceLost");
+    expect(runtimeRenderer).toContain("productionRenderer.onDeviceRestored");
 
     expect(inputBuilder).toContain("entry.actor.collectRenderItems");
     expect(inputBuilder).toContain("applyProductionActorAnimation");

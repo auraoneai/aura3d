@@ -676,7 +676,9 @@ gates, and docs/release completion remain reopened until the tasks above pass.
 
 ### What Aura3D does not yet deliver through the public root path
 
-- A root `createAuraApp` renderer that uses the full production renderer by default.
+- Complete renderer-feature parity through the now-default root production
+  renderer; backend selection and lifecycle are proven separately and do not
+  establish full PBR/WebGPU/effects parity.
 - Unsupported: full PBR material parity across public examples.
 - HDR/IBL/environment lighting, PMREM-style filtering, production tone mapping, and high-quality shadows.
 - Pixel-backed bloom, SSAO, DOF, FXAA/TAA, color grading, or real postprocess evidence through the public safe route.

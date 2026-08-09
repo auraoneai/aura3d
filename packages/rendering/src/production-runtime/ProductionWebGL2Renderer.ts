@@ -191,10 +191,10 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
 
   private validateImportedAsset(input: ProductionRendererInput): void {
     if (input.metadata.primitiveCount <= 0 || input.metadata.meshCount <= 0) {
-      throw new Error("Production imported-asset render path requires real glTF mesh primitives.");
+      throw new Error("Production render path requires at least one real mesh primitive.");
     }
     if (input.metadata.materialCount <= 0) {
-      throw new Error("Production imported-asset render path requires real material data.");
+      throw new Error("Production render path requires at least one real material.");
     }
   }
 

@@ -39,6 +39,7 @@ test.describe("lean public entries", () => {
     const result = await page.evaluate(() => window.__AURA_LEAN_CORE__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.diagnostics?.backend).toBe("webgl2");
+    expect(result?.diagnostics?.runtimeBackend).toBe("production-runtime");
     expect(result?.diagnostics?.drawCalls ?? 0).toBeGreaterThan(0);
     expect(result?.diagnostics?.errors).toEqual([]);
     expect((await page.locator("#scene").screenshot()).byteLength).toBeGreaterThan(1_000);
@@ -81,6 +82,7 @@ test.describe("lean public entries", () => {
     const result = await page.evaluate(() => window.__AURA_LEAN_GAME__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.diagnostics?.backend).toBe("webgl2");
+    expect(result?.diagnostics?.runtimeBackend).toBe("production-runtime");
     expect(result?.diagnostics?.drawCalls ?? 0).toBeGreaterThan(0);
     expect(result?.after ?? 0).toBeGreaterThan(result?.before ?? 0);
   });
@@ -115,6 +117,7 @@ test.describe("lean public entries", () => {
     const result = await page.evaluate(() => window.__AURA_LEAN_PRODUCT__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.diagnostics?.backend).toBe("webgl2");
+    expect(result?.diagnostics?.runtimeBackend).toBe("production-runtime");
     expect(result?.diagnostics?.drawCalls ?? 0).toBeGreaterThan(0);
   });
 });
@@ -124,19 +127,19 @@ declare global {
     __AURA_LEAN_CORE__?: {
       readonly status: "ready" | "error";
       readonly error?: string;
-      readonly diagnostics?: { readonly backend: string; readonly drawCalls: number; readonly errors: readonly string[] };
+      readonly diagnostics?: { readonly backend: string; readonly runtimeBackend: string; readonly drawCalls: number; readonly errors: readonly string[] };
     };
     __AURA_LEAN_GAME__?: {
       readonly status: "ready" | "error";
       readonly error?: string;
       readonly before?: number;
       readonly after?: number;
-      readonly diagnostics?: { readonly backend: string; readonly drawCalls: number };
+      readonly diagnostics?: { readonly backend: string; readonly runtimeBackend: string; readonly drawCalls: number };
     };
     __AURA_LEAN_PRODUCT__?: {
       readonly status: "ready" | "error";
       readonly error?: string;
-      readonly diagnostics?: { readonly backend: string; readonly drawCalls: number };
+      readonly diagnostics?: { readonly backend: string; readonly runtimeBackend: string; readonly drawCalls: number };
     };
   }
 }

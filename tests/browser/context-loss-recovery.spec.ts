@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
@@ -45,6 +47,8 @@ test.describe("context loss recovery", () => {
     // A healthy app renders and reports no loss.
     expect(probe.beforeLoss.litPixels).toBeGreaterThan(1_000);
     expect(probe.beforeLoss.deviceLost).toBe(false);
+    expect(probe.runtimeBackend).toBe("production-runtime");
+    expect(probe.rendererMode).toBe("production");
 
     /*
      * WEBGL_lose_context is the only script-driven way to provoke a real loss. If a browser does not
@@ -67,6 +71,25 @@ test.describe("context loss recovery", () => {
     expect(probe.restoredCount).toBeGreaterThanOrEqual(1);
     expect(probe.deviceLost).toBe(false);
 
+    const lifecycleEvidence = {
+      schema: "aura3d-public-context-lifecycle/1.0",
+      generatedAt: new Date().toISOString(),
+      pass: probe.runtimeBackend === "production-runtime"
+        && probe.rendererMode === "production"
+        && probe.beforeLoss.litPixels > 1_000
+        && probe.lostCount >= 1
+        && probe.restoredCount >= 1
+        && !probe.deviceLost
+        && Object.values(probe.apiPresent).every(Boolean),
+      probe
+    };
+    mkdirSync(resolve("tests/reports/public-renderer-normal-path"), { recursive: true });
+    writeFileSync(
+      resolve("tests/reports/public-renderer-normal-path/context-lifecycle.json"),
+      `${JSON.stringify(lifecycleEvidence, null, 2)}\n`
+    );
+    expect(lifecycleEvidence.pass).toBe(true);
+
     // Unsubscribing detaches: a second loss after unsubscribe must not increment.
     const lostCountBeforeUnsubscribe = probe.lostCount;
     await page.getByRole("button", { name: "Unsubscribe loss listener" }).click();
@@ -87,6 +110,8 @@ declare global {
       readonly lostCount: number;
       readonly restoredCount: number;
       readonly deviceLost: boolean;
+      readonly runtimeBackend: string | undefined;
+      readonly rendererMode: string;
       readonly lossSubscriptionActive: boolean;
       readonly apiPresent: { readonly onDeviceLost: boolean; readonly onDeviceRestored: boolean; readonly deviceLost: boolean };
       readonly error?: string;

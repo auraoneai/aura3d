@@ -38,9 +38,11 @@ grounding contract and diagnostics are implemented and screenshot-proven.
 ## Renderer Boundary
 
 `createAuraApp` accepts public renderer selection metadata. This is deliberately
-claim-safe: it records the requested mode/profile in diagnostics, uses the
-production bridge only for eligible typed-GLB scenes, and reports safe-basic
-fallback when the scene cannot use that bridge.
+claim-safe: every renderable scene made from public safe nodes uses the production
+runtime by default, diagnostics record the requested mode/profile and mounted
+backend, and raw/remote model URLs are rejected from that path with typed-asset
+migration guidance. `safe-basic` remains an explicit compatibility mode, not the
+default renderer.
 
 ```ts
 const app = createAuraApp("#app", {
@@ -58,11 +60,13 @@ console.log(app.diagnostics().renderer?.warnings);
 
 Current profiles:
 
-- `safe-basic`: supported root `createAuraApp` WebGL2 safe path.
-- `production`: supported request profile for eligible scenes that contain typed
-  GLB assets from generated Aura assets. It still falls back for ineligible
-  scenes and does not prove full PBR, HDR, shadow, postprocess, WebGPU, or
-  skinned-animation parity without route-specific browser evidence.
+- `safe-basic`: conservative public feature profile on the production renderer;
+  an explicit `mode: "safe-basic"` selects the compatibility WebGL2 renderer.
+- `production`: supported production-runtime profile for public primitives and
+  generated typed GLB assets. Unsafe/raw model URLs are rejected rather than
+  silently rendered by a different backend. Selecting this profile does not
+  prove full PBR, HDR, shadow, postprocess, WebGPU, or skinned-animation parity
+  without route-specific browser evidence.
 - `cinematic`: explicit request profile for future high-DPI/postprocess/shadow
   proof; currently fallback-only through the root path.
 - `experimental-webgpu`: diagnostics-only request profile unless adapter,
@@ -70,12 +74,15 @@ Current profiles:
 
 The root app path still decides its runtime internally:
 
-- Browser canvas plus renderable scene nodes use the public WebGL2 agent runtime.
-- Eligible typed-GLB scenes with `renderer.mode === "production"` can route
-  through the production-runtime bridge; inspect `app.diagnostics().renderer`
-  for the actual backend, fallback state, warnings, and feature evidence.
-- Non-renderable/headless paths use canvas/headless fallback behavior for source
-  diagnostics and deterministic tests.
+- Browser canvas plus renderable safe scene nodes use `production-runtime` by
+  default; inspect `app.diagnostics().renderer.runtime.backend` for mounted
+  evidence.
+- Explicit `mode: "safe-basic"` uses the compatibility WebGL2 renderer. A real
+  production initialization failure may use that reported fallback, but the
+  route cannot continue claiming production-renderer evidence.
+- Canvas2D is a schematic diagnostic for non-renderable/headless inspection
+  only. A renderable scene without WebGL2 errors instead of painting a plausible
+  fake 3D frame.
 - Advanced production-runtime and postprocess APIs live in lower-level packages
   such as `@aura3d/rendering` or lazy helpers; importing those is not the same
   as proving the root safe API renders the feature.

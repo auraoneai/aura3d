@@ -35,7 +35,7 @@ test.describe("createAuraApp production bridge contract", () => {
     expect(errors).toEqual([]);
   });
 
-  test("reports safe-basic fallback honestly when production runtime is unavailable", async ({ page }) => {
+  test("rejects unsafe/raw assets from the production renderer with migration guidance", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(`${server.origin}/tests/browser/createAuraApp-production-bridge-harness.html?mode=forced-fallback`, { waitUntil: "domcontentloaded" });
@@ -44,12 +44,13 @@ test.describe("createAuraApp production bridge contract", () => {
     const evidence = await page.evaluate(() => (window as any).__AURA3D_PRODUCTION_BRIDGE_CONTRACT__);
 
     expect(evidence?.renderer?.requestedMode).toBe("production");
-    expect(evidence?.renderer?.mode).toBe("safe-basic");
-    expect(evidence?.renderer?.runtimeBackend).toBe("webgl2-agent-runtime");
-    expect(evidence?.renderer?.fallbackUsed).toBe(true);
-    expect(evidence?.renderer?.warnings.join("\n")).toContain("unsafeModelUrl");
+    expect(evidence?.renderer?.mode).toBe("rejected");
+    expect(evidence?.renderer?.runtimeBackend).not.toBe("webgl2-agent-runtime");
+    expect(evidence?.renderer?.fallbackUsed).toBe(false);
+    expect(evidence?.renderer?.errors.join("\n")).toContain("unsafeModelUrl");
+    expect(evidence?.renderer?.errors.join("\n")).toContain("generated typed aura-assets");
     expect(evidence?.claims).not.toContain("production-renderer-active");
-    expect(evidence?.pixels?.typedModelVisible).toBe(true);
+    expect(evidence?.pixels?.typedModelVisible).toBe(false);
     expect(errors).toEqual([]);
   });
 

@@ -211,6 +211,8 @@ export function scene(): AuraLeanSceneBuilder { return new AuraLeanSceneBuilder(
 
 export interface AuraLeanAppDiagnostics {
   readonly backend: "initializing" | "webgl2" | "error";
+  /** Selected renderer owner; successful public lean entries mount the production runtime. */
+  readonly runtimeBackend: "unmounted" | "production-runtime";
   readonly drawCalls: number;
   readonly errors: readonly string[];
 }
@@ -286,7 +288,7 @@ export function createAuraAppWithRenderer(target: AuraLeanAppTarget, options: Au
   let disposed = false;
   let previousFrameTime = 0;
   const frameCallbacks = new Set<(deltaSeconds: number) => void>();
-  let state: AuraLeanAppDiagnostics = { backend: "initializing", drawCalls: 0, errors: [] };
+  let state: AuraLeanAppDiagnostics = { backend: "initializing", runtimeBackend: "unmounted", drawCalls: 0, errors: [] };
 
   const readyPromise = initialize();
 
@@ -305,7 +307,7 @@ export function createAuraAppWithRenderer(target: AuraLeanAppTarget, options: Au
       renderFrame();
       if (options.autoStart !== false) frameHandle = requestAnimationFrame(loop);
     } catch (error) {
-      state = { backend: "error", drawCalls: 0, errors: [error instanceof Error ? error.message : String(error)] };
+      state = { backend: "error", runtimeBackend: "unmounted", drawCalls: 0, errors: [error instanceof Error ? error.message : String(error)] };
       throw error;
     }
   }
@@ -347,7 +349,7 @@ export function createAuraAppWithRenderer(target: AuraLeanAppTarget, options: Au
         extensionsUsed: []
       }
     });
-    state = { backend: "webgl2", drawCalls: result.diagnostics.drawCalls, errors: [] };
+    state = { backend: "webgl2", runtimeBackend: "production-runtime", drawCalls: result.diagnostics.drawCalls, errors: [] };
   }
 
   return {

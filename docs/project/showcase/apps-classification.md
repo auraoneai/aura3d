@@ -55,7 +55,7 @@ still not be a public release candidate.
 
 ## Retained Engine Evidence
 
-The 51 rows added below are Three.js-parity and product-surface routes restored from git history
+The 59 rows added below are Three.js-parity and product-surface routes restored from git history
 (they were deleted by the docs/examples consolidation while 52 browser specs still drove them).
 They are labelled `retained engine evidence` deliberately: that is the most restrictive useful
 label, and under the Policy section below it cannot be presented as a public showcase example.
@@ -69,6 +69,14 @@ separate decision that requires passing the current evidence gates — it is not
 | `loader-instancing` | retained engine evidence — CurrentRoutes Loader Instancing |
 | `loader-ktx2` | retained engine evidence — CurrentRoutes Loader KTX2 |
 | `materials-transmission` | retained engine evidence — CurrentRoutes Materials Transmission |
+| `camera-multiple-views` | retained engine evidence — CurrentRoutes Multiple Cameras |
+| `controls-trackball` | retained engine evidence — CurrentRoutes Trackball Controls |
+| `geometry-drawrange` | retained engine evidence — CurrentRoutes Geometry Draw Range |
+| `loader-gltf-variants` | retained engine evidence — CurrentRoutes glTF Material Variants |
+| `loader-obj` | retained engine evidence — CurrentRoutes OBJ Loader |
+| `postprocessing-depth-outline` | retained engine evidence — CurrentRoutes Depth-Aware Outline |
+| `texture-anisotropy` | retained engine evidence — CurrentRoutes Texture Anisotropy |
+| `webxr-interactions` | retained engine evidence — CurrentRoutes injected WebXR interaction diagnostic |
 | `animation-keyframes` | retained engine evidence — CurrentRoutes Animation Keyframes |
 | `animation-multiple` | retained engine evidence — CurrentRoutes Animation Multiple |
 | `animation-studio-pro` | retained engine evidence — Animation Studio Pro |

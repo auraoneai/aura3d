@@ -81,7 +81,15 @@ async function main(): Promise<void> {
   const app = createAuraApp(working, { scene: built(), autoStart: false, resize: false });
   await app.ready();
   app.step(1 / 60);
-  const control = { backend: app.diagnostics().backend, litPixels: litPixels(working) };
+  const controlDiagnostics = app.diagnostics();
+  const control = {
+    backend: controlDiagnostics.backend,
+    litPixels: litPixels(working),
+    drawCalls: controlDiagnostics.drawCalls,
+    errors: controlDiagnostics.errors,
+    warnings: controlDiagnostics.renderer?.warnings ?? [],
+    runtimeBackend: controlDiagnostics.renderer?.runtime.backend
+  };
   app.dispose();
 
   (window as unknown as { __canvas2dProbe: unknown }).__canvas2dProbe = {

@@ -62,7 +62,11 @@ test.describe("starter examples", () => {
       await page.goto(`${server.origin}${route}`);
       await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
       const drawCalls = Number(await page.locator("body").getAttribute("data-aura3d-draw-calls"));
+      const runtimeBackend = await page.locator("body").getAttribute("data-aura3d-runtime-backend");
+      const rendererMode = await page.locator("body").getAttribute("data-aura3d-renderer-mode");
       expect(drawCalls).toBeGreaterThan(0);
+      expect(runtimeBackend).toBe("production-runtime");
+      expect(rendererMode).toBe("production");
       const canvas = page.locator("canvas");
       const screenshotPath = resolve(screenshotDir, `${slug}.png`);
       const profile = await readCanvasProfile(page);
@@ -73,6 +77,8 @@ test.describe("starter examples", () => {
         route,
         slug,
         drawCalls,
+        runtimeBackend,
+        rendererMode,
         screenshot: screenshotPath,
         screenshotBytes: screenshot.byteLength,
         screenshotSha256: createHash("sha256").update(screenshot).digest("hex"),

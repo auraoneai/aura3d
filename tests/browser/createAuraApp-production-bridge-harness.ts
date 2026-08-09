@@ -28,6 +28,7 @@ interface BridgeEvidence {
     readonly backend: string;
     readonly drawCalls: number;
     readonly warnings: readonly string[];
+    readonly errors: readonly string[];
   };
   readonly assets: {
     readonly primary: readonly string[];
@@ -98,32 +99,38 @@ async function run(nextMode: BridgeMode): Promise<void> {
       .add(model(heroAsset, { name: "Production bridge hero", scale: 0.82 }).runtime({ id: "hero" }))
       .add(lights.studio())
   });
-  await waitForAppDraw(app);
+  if (useUnsafeFallback) {
+    await app.ready();
+    app.step(1 / 60);
+  } else {
+    await waitForAppDraw(app);
+  }
   const diagnostics = app.diagnostics();
   const pixelStats = readCanvasPixels(app.canvas);
   const runtimeBackend = diagnostics.renderer?.runtime.backend;
-  const fallbackUsed = runtimeBackend !== "production-runtime";
+  const fallbackUsed = !useUnsafeFallback && runtimeBackend !== "production-runtime";
   window.__AURA3D_PRODUCTION_BRIDGE_CONTRACT__ = {
     imports: ["@aura3d/engine", "../../src/aura-assets"],
     renderer: {
       requestedMode: "production",
-      mode: fallbackUsed ? "safe-basic" : "production",
+      mode: useUnsafeFallback ? "rejected" : fallbackUsed ? "safe-basic" : "production",
       runtimeBackend,
       fallbackUsed,
       backend: diagnostics.backend,
       drawCalls: diagnostics.drawCalls,
-      warnings: diagnostics.renderer?.warnings ?? []
+      warnings: diagnostics.renderer?.warnings ?? [],
+      errors: diagnostics.errors
     },
     assets: {
       primary: useUnsafeFallback ? ["unsafeModelUrl(assets.robotcand.url)"] : ["assets.robotcand"],
       importedEvidence: app.nodes.require("hero").snapshot().importedAssetEvidence
     },
     pixels: {
-      typedModelVisible: pixelStats.nonBlackPixels > 1200 && diagnostics.drawCalls > 0,
+      typedModelVisible: !useUnsafeFallback && pixelStats.nonBlackPixels > 1200 && diagnostics.drawCalls > 0,
       primitiveSubstitute: false,
       stats: pixelStats
     },
-    claims: fallbackUsed ? [] : ["production-renderer-active", "typed-glb-production-bridge"]
+    claims: useUnsafeFallback || fallbackUsed ? [] : ["production-renderer-active", "typed-glb-production-bridge"]
   };
 }
 
@@ -157,7 +164,8 @@ async function runQualityProfileComparison(): Promise<BridgeEvidence> {
       fallbackUsed: productionDiagnostics.renderer?.runtime.backend !== "production-runtime",
       backend: productionDiagnostics.backend,
       drawCalls: productionDiagnostics.drawCalls,
-      warnings: productionDiagnostics.renderer?.warnings ?? []
+      warnings: productionDiagnostics.renderer?.warnings ?? [],
+      errors: productionDiagnostics.errors
     },
     assets: {
       primary: ["assets.robotcand"],

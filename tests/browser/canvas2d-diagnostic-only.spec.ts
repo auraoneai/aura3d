@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
@@ -35,7 +37,7 @@ test.describe("canvas2d is diagnostic-only", () => {
     const probe = await page.evaluate(() => (window as unknown as {
       __canvas2dProbe: {
         readonly denied: { readonly threw: boolean; readonly message: string; readonly asyncErrors: readonly string[]; readonly backend: string; readonly litPixels: number };
-        readonly control: { readonly backend: string; readonly litPixels: number };
+        readonly control: { readonly backend: string; readonly litPixels: number; readonly drawCalls: number; readonly errors: readonly string[]; readonly runtimeBackend: string | undefined };
       };
     }).__canvas2dProbe);
 
@@ -60,6 +62,27 @@ test.describe("canvas2d is diagnostic-only", () => {
      * the assertion above true and is exactly the failure mode worth guarding.
      */
     expect(probe.control.backend).toBe("webgl2");
-    expect(probe.control.litPixels).toBeGreaterThan(1_000);
+    expect(probe.control.litPixels, JSON.stringify(probe.control, null, 2)).toBeGreaterThan(1_000);
+    expect(probe.control.runtimeBackend).toBe("production-runtime");
+    expect(probe.control.drawCalls).toBeGreaterThan(0);
+    expect(probe.control.errors).toEqual([]);
+
+    const evidence = {
+      schema: "aura3d-canvas2d-diagnostic-only/1.0",
+      generatedAt: new Date().toISOString(),
+      pass: refused
+        && probe.denied.backend !== "canvas2d"
+        && probe.denied.litPixels < 1_000
+        && probe.control.runtimeBackend === "production-runtime"
+        && probe.control.drawCalls > 0
+        && probe.control.litPixels > 1_000,
+      probe
+    };
+    mkdirSync(resolve("tests/reports/public-renderer-normal-path"), { recursive: true });
+    writeFileSync(
+      resolve("tests/reports/public-renderer-normal-path/canvas2d-boundary.json"),
+      `${JSON.stringify(evidence, null, 2)}\n`
+    );
+    expect(evidence.pass).toBe(true);
   });
 });

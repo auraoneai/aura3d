@@ -21,6 +21,9 @@ only `@aura3d/engine`, import generated typed assets, and pass browser evidence:
   `src/aura-assets.ts`;
 - safe asset usage through `model(assets.assetName)`;
 - basic route mounting through `createAuraApp`;
+- production-runtime rendering by default for safe authored primitives and
+  generated typed GLB assets, with backend identity published in diagnostics and
+  route-health markers;
 - static GLB/glTF mesh loading in the root WebGL2 path;
 - base-color material and texture rendering in the root path;
 - non-skinned glTF node animation in root screenshots;
@@ -40,7 +43,6 @@ only `@aura3d/engine`, import generated typed assets, and pass browser evidence:
 These must not be presented as broadly shipped root `createAuraApp` capability
 until library work and browser evidence close the gap:
 
-- default production-runtime renderer bridge for `createAuraApp`;
 - full production renderer parity through the public root safe API;
 - full PBR material parity, HDR/IBL lighting, PMREM-style filtering, production
   tone mapping, high-quality shadows, and broad postprocess support;

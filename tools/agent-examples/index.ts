@@ -8,6 +8,15 @@ const retainedEvidence = [
   "loader-instancing",
   "loader-ktx2",
   "materials-transmission",
+  "camera-multiple-views",
+  "context-loss-recovery",
+  "controls-trackball",
+  "geometry-drawrange",
+  "loader-gltf-variants",
+  "loader-obj",
+  "postprocessing-depth-outline",
+  "texture-anisotropy",
+  "webxr-interactions",
   // Three.js-parity and product-surface routes restored from git history (defect 67).
   // Classified `retained engine evidence` in docs/project/showcase/apps-classification.md.
   "animation-keyframes",
@@ -172,6 +181,11 @@ const checks: ReleaseCheck[] = [
   existsCheck("docs/project/showcase/apps-classification.md", "apps classification"),
   existsCheck("tests/reports/agent-examples-playwright.json", "example route health screenshot report"),
   {
+    id: "starter-examples-use-production-runtime",
+    pass: Boolean(routeHealth && routeHealth.routes.length === examples.length && routeHealth.routes.every((entry) => entry.runtimeBackend === "production-runtime" && entry.rendererMode === "production")),
+    detail: routeHealth ? routeHealth.routes.map((entry) => `${entry.slug}:${entry.rendererMode ?? "missing"}/${entry.runtimeBackend ?? "missing"}`).join(", ") : "missing route-health screenshot report"
+  },
+  {
     id: "starter-example-screenshots-written",
     pass: examples.every((example) => {
       const route = routeHealth?.routes.find((entry) => entry.slug === example);
@@ -219,6 +233,8 @@ writeReport("tests/reports/agent-examples.json", "aura3d-agent-examples", checks
 interface RouteHealthReport {
   readonly routes: readonly {
     readonly slug?: string;
+    readonly runtimeBackend?: string;
+    readonly rendererMode?: string;
     readonly screenshot?: string;
     readonly screenshotBytes?: number;
     readonly screenshotSha256?: string;

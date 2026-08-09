@@ -82,8 +82,11 @@ Do not claim these until the named gates pass:
 - "Aura3D is a Three.js/Babylon/Unity/Unreal replacement." Use scoped
   comparison language only after
   `docs/project/superiority-evidence-workflow.md` passes.
-- "Root `createAuraApp` uses the production renderer by default." Blocked by
-  `docs/project/roadmaps/library-gap-roadmap.md`.
+- "Root `createAuraApp` uses the production renderer by default" is allowed only
+  with the narrower boundary proven by
+  `tests/reports/public-renderer-normal-path/report.json`: safe authored
+  renderable scenes mount `production-runtime`; this is not a claim of complete
+  Three.js renderer-feature parity.
 - "Public examples have full PBR, HDR/IBL, production shadows, or cinematic
   postprocess." Blocked unless exact route screenshots prove those pixels.
 - "Root examples generically support skinned GLB animation or morph targets."

@@ -19,6 +19,8 @@ interface ContextLossRecoveryProbe {
   readonly lostCount: number;
   readonly restoredCount: number;
   readonly deviceLost: boolean;
+  readonly runtimeBackend: string | undefined;
+  readonly rendererMode: string;
   readonly lossSubscriptionActive: boolean;
   readonly apiPresent: {
     readonly onDeviceLost: boolean;
@@ -94,6 +96,8 @@ async function main(): Promise<void> {
       lostCount,
       restoredCount,
       deviceLost: app.deviceLost(),
+      runtimeBackend: app.diagnostics().renderer.runtime.backend,
+      rendererMode: app.diagnostics().renderer.rendererMode,
       lossSubscriptionActive,
       apiPresent: {
         onDeviceLost: typeof app.onDeviceLost === "function",
@@ -148,6 +152,8 @@ void main().catch((error: unknown) => {
     lostCount: 0,
     restoredCount: 0,
     deviceLost: false,
+    runtimeBackend: undefined,
+    rendererMode: "error",
     lossSubscriptionActive: false,
     apiPresent: { onDeviceLost: false, onDeviceRestored: false, deviceLost: false },
     error: message

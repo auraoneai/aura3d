@@ -3210,7 +3210,7 @@ const rendererQualityProfiles: Readonly<Record<AuraRendererQualityProfileId, Aur
     kind: "aura-renderer-quality-profile",
     id: "safe-basic",
     label: "Safe Basic",
-    rendererMode: "safe-basic",
+    rendererMode: "production",
     status: "supported",
     antialiasing: "msaa",
     pixelRatio: 1,
@@ -3219,7 +3219,7 @@ const rendererQualityProfiles: Readonly<Record<AuraRendererQualityProfileId, Aur
     requestedFeatures: ["typed models", "primitives", "basic particles", "base-color textures", "runtime nodes"],
     supportedInRoot: ["typed models", "primitives", "basic particles", "base-color textures", "runtime nodes"],
     blockedInRoot: ["production PBR parity", "skinned animation mixer", "native WebGPU compute", "postprocess pass chain"],
-    claimBoundary: "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+    claimBoundary: "Root createAuraApp uses the production renderer with the conservative safe-basic feature profile. Claims still require route-specific browser evidence."
   },
   production: {
     kind: "aura-renderer-quality-profile",
@@ -3303,7 +3303,6 @@ function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode[]): Au
   const primitiveCount = nodes.filter((node) => node.kind === "primitive").length;
   const effectCount = nodes.filter((node) => node.kind === "effect").length;
   const reasons: string[] = [];
-  if (typedModelCount < 1) reasons.push("production bridge requires at least one typed GLB from generated aura-assets");
   if (unsafeModelCount > 0) reasons.push("unsafeModelUrl and remote/raw model URLs are blocked from the production bridge");
   if (inlineModelCount > 0) reasons.push("inline model definitions without manifest hashes are blocked from the production bridge");
   return {
@@ -3403,10 +3402,10 @@ function createRendererDiagnosticReport(
   if (postprocessRequested && !runtime?.mounted) warnings.push("renderer diagnostics are a scene plan only; call createAuraApp(...).diagnostics() after the first render for pixel-backed pass status");
   if (postprocessRequested && runtime?.mounted && !runtimePostprocess?.pixelBacked) warnings.push("postprocess was requested but the runtime composer did not initialize a pixel-backed pass");
   if (rendererSelection.mode === "production" && !runtime?.mounted && productionEligibility.eligible) {
-    warnings.push(`Renderer profile "${rendererSelection.profile.id}" can use the typed-GLB production bridge after createAuraApp mounts; inspect app.diagnostics().renderer.runtime for pixel-backed status.`);
+    warnings.push(`Renderer profile "${rendererSelection.profile.id}" will use the production renderer after createAuraApp mounts; inspect app.diagnostics().renderer.runtime for pixel-backed status.`);
   }
   if (rendererSelection.mode === "production" && !productionEligibility.eligible) {
-    warnings.push(`Renderer profile "${rendererSelection.profile.id}" will use safe-basic fallback for this scene: ${productionEligibility.reasons.join("; ")}.`);
+    warnings.push(`Renderer profile "${rendererSelection.profile.id}" cannot mount this scene on the production renderer: ${productionEligibility.reasons.join("; ")}.`);
   }
   if (rendererSelection.profile.status === "fallback-only") {
     warnings.push(`Renderer profile "${rendererSelection.profile.id}" is a request profile; public claims require route-specific runtime diagnostics and screenshot proof.`);
@@ -10802,6 +10801,27 @@ async function startProductionRender(
   diagnosticsState.renderer = renderer.diagnostics;
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);
+  const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
+  const pixelRatio = options.pixelRatio ?? rendererSelection.profile.pixelRatio ?? devicePixelRatioSafe();
+  const resizeRenderer = (): void => {
+    if (options.resize === false) return;
+    const parentRect = canvas.parentElement?.getBoundingClientRect();
+    const cssWidth = parentRect?.width || canvas.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 960) || 960;
+    const cssHeight = parentRect?.height || canvas.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
+    const width = Math.max(320, Math.round(cssWidth * pixelRatio));
+    const height = Math.max(220, Math.round(cssHeight * pixelRatio));
+    if (canvas.width === width && canvas.height === height) return;
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${cssHeight}px`;
+    canvas.width = width;
+    canvas.height = height;
+    renderer.resize?.(width, height);
+  };
+  const resizeObserver = options.resize !== false && typeof ResizeObserver !== "undefined" && canvas.parentElement
+    ? new ResizeObserver(resizeRenderer)
+    : undefined;
+  resizeObserver?.observe(canvas.parentElement!);
+  if (options.resize !== false && typeof window !== "undefined") window.addEventListener("resize", resizeRenderer);
 
   let disposed = false;
   let animationHandle = 0;
@@ -10879,6 +10899,8 @@ async function startProductionRender(
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      resizeObserver?.disconnect();
+      if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
       labelLayer?.dispose();
       renderer.dispose();
     }
@@ -10924,9 +10946,10 @@ async function createProductionSceneRenderer(
   const flattened = groups.flatten(snapshot.nodes);
   const eligibility = analyzeProductionBridgeEligibility(flattened);
   if (!eligibility.eligible) {
-    return await createWebGLSceneRenderer(canvas, snapshot, rendererOptions, [
-      `Production bridge skipped: ${eligibility.reasons.join("; ")}.`
-    ], runtimeNodes);
+    throw new AuraRuntimeError(
+      "backend-fallback",
+      `Aura3D production renderer rejected this scene: ${eligibility.reasons.join("; ")}. Suggested fix: import models through generated typed aura-assets.`
+    );
   }
 
   try {
@@ -11517,18 +11540,22 @@ async function createProductionRuntimeSceneRenderer(
    * Loaded here rather than imported at module scope (WS-2.2). This function is only reached when the
    * scene contains a typed GLB, so the glTF loader is downloaded exactly when it is needed.
    */
-  const { createTypedGLBActor } = await import("../production-runtime/TypedGLBActor.js");
-  const actorEntries: ProductionRuntimeActorEntry[] = await Promise.all(modelNodes.map(async (node, index) => ({
-    node,
-    actor: await createTypedGLBActor({
-      asset: node.asset,
-      id: node.runtime?.id ?? node.asset.id ?? `model-${index + 1}`,
-      name: node.name ?? node.asset.id ?? `model-${index + 1}`,
-      width: canvas.width,
-      height: canvas.height,
-      ...(node.material?.color ? { tint: { baseColor: colorToRgba(node.material.color) } } : {})
-    })
-  })));
+  const actorEntries: ProductionRuntimeActorEntry[] = modelNodes.length > 0
+    ? await (async () => {
+        const { createTypedGLBActor } = await import("../production-runtime/TypedGLBActor.js");
+        return await Promise.all(modelNodes.map(async (node, index) => ({
+          node,
+          actor: await createTypedGLBActor({
+            asset: node.asset,
+            id: node.runtime?.id ?? node.asset.id ?? `model-${index + 1}`,
+            name: node.name ?? node.asset.id ?? `model-${index + 1}`,
+            width: canvas.width,
+            height: canvas.height,
+            ...(node.material?.color ? { tint: { baseColor: colorToRgba(node.material.color) } } : {})
+          })
+        })));
+      })()
+    : [];
   const primitiveEntries = createProductionRuntimePrimitiveEntries(flattened);
   const productionRenderer = await ProductionRuntimeRenderer.create({
     canvas,
@@ -11617,6 +11644,18 @@ async function createProductionRuntimeSceneRenderer(
     viewProjection(time) {
       return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
     },
+    resize(width, height) {
+      productionRenderer.resize(width, height);
+    },
+    onDeviceLost(listener) {
+      return productionRenderer.onDeviceLost(listener);
+    },
+    onDeviceRestored(listener) {
+      return productionRenderer.onDeviceRestored(listener);
+    },
+    deviceLost() {
+      return productionRenderer.deviceLost();
+    },
     dispose() {
       productionRenderer.dispose();
       for (const { actor } of actorEntries) actor.pipeline.dispose();
@@ -11685,7 +11724,7 @@ function createProductionRuntimeRendererInput(
   return {
     source,
     camera: cameraLike,
-    metadata: createProductionRuntimeMetadata(actorEntries)
+    metadata: createProductionRuntimeMetadata(actorEntries, primitiveEntries)
   };
 }
 
@@ -11947,16 +11986,21 @@ function createRuntimeEvidenceFromTypedGLBActor(
   });
 }
 
-function createProductionRuntimeMetadata(actorEntries: readonly ProductionRuntimeActorEntry[]): ProductionImportedAssetRenderMetadata {
+function createProductionRuntimeMetadata(
+  actorEntries: readonly ProductionRuntimeActorEntry[],
+  primitiveEntries: readonly ProductionRuntimePrimitiveEntry[]
+): ProductionImportedAssetRenderMetadata {
   const metadata = actorEntries.map((entry) => entry.actor.pipeline.metadata);
   const primary = metadata[0];
+  const primitiveCount = primitiveEntries.length;
+  const typedPrimitiveCount = sumProductionMetadata(metadata, "primitiveCount");
   return {
-    assetId: metadata.length === 1 ? primary?.assetId ?? "typed-glb" : `typed-glb-batch-${metadata.length}`,
-    assetUri: metadata.length === 1 ? primary?.assetUri ?? "aura3d://typed-glb" : "aura3d://scene/typed-glb-batch",
+    assetId: metadata.length === 0 ? "aura-primitives" : metadata.length === 1 ? primary?.assetId ?? "typed-glb" : `typed-glb-batch-${metadata.length}`,
+    assetUri: metadata.length === 0 ? "aura3d://scene/primitives" : metadata.length === 1 ? primary?.assetUri ?? "aura3d://typed-glb" : "aura3d://scene/typed-glb-batch",
     ...(metadata.length === 1 && primary?.assetName ? { assetName: primary.assetName } : metadata.length > 1 ? { assetName: "Aura3D typed GLB scene batch" } : {}),
-    meshCount: sumProductionMetadata(metadata, "meshCount"),
-    primitiveCount: sumProductionMetadata(metadata, "primitiveCount"),
-    materialCount: sumProductionMetadata(metadata, "materialCount"),
+    meshCount: sumProductionMetadata(metadata, "meshCount") + primitiveCount,
+    primitiveCount: typedPrimitiveCount + primitiveCount,
+    materialCount: sumProductionMetadata(metadata, "materialCount") + primitiveCount,
     textureCount: sumProductionMetadata(metadata, "textureCount"),
     imageCount: sumProductionMetadata(metadata, "imageCount"),
     animationCount: sumProductionMetadata(metadata, "animationCount"),
@@ -12342,6 +12386,8 @@ interface WebGLSceneRenderer {
    * away from the geometry it annotates.
    */
   viewProjection(time: number): Float32Array;
+  /** Resize renderer-owned attachments after the canvas backing store changes. */
+  resize?(width: number, height: number): void;
   /**
    * WS-2.6 — device-loss hooks, when this renderer is backed by a real WebGL2 device.
    *
@@ -12600,7 +12646,7 @@ async function createWebGLSceneRenderer(
         fallbackPasses: hasRuntimePostProcessEffects(requestedEffectNodes) ? ["webgl2-direct-render"] : []
       },
       warnings: [
-        "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge.",
+        "Aura3D WebGL2 agent runtime is an explicit safe-basic fallback; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless the production runtime proves them.",
         ...runtimeWarnings
       ]
     },
@@ -12611,11 +12657,9 @@ async function createWebGLSceneRenderer(
    * WS-2.6 — context-loss listeners for the agent-runtime path.
    *
    * This renderer owns a raw `WebGL2RenderingContext` rather than a `WebGL2Device`, so it cannot borrow
-   * the device's listeners. It must attach its own, and it must: a primitive-only scene is not eligible
-   * for the production bridge (`analyzeProductionBridgeEligibility` requires a typed GLB), so this is the
-   * path most scenes actually take. Wiring only the production renderer would have delivered a
-   * device-loss API that does nothing for the common case — measured while writing the WS-2.6 test,
-   * which reported zero events until this was added.
+   * the device's listeners. It must attach its own so the explicit `safe-basic` compatibility path has
+   * the same public lifecycle contract as the default production path. Before this was added, selecting
+   * that compatibility mode produced a device-loss API that never emitted an event.
    */
   let contextLost = false;
   const deviceLostListeners = new Set<() => void>();
@@ -15149,6 +15193,8 @@ function markRouteState(status: "ready" | "error", snapshot: AuraSceneSnapshot, 
   if (typeof document !== "undefined") {
     document.body.dataset.aura3dReady = status === "ready" ? "true" : "error";
     document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
+    document.body.dataset.aura3dRuntimeBackend = diagnostics.renderer.runtime.backend;
+    document.body.dataset.aura3dRendererMode = diagnostics.renderer.rendererMode;
   }
   if (typeof window !== "undefined") {
     (window as unknown as { __AURA3D_ROUTE_READY__?: unknown }).__AURA3D_ROUTE_READY__ = {

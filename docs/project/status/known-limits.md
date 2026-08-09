@@ -9,8 +9,9 @@ guide or README must include the narrower wording.
 
 ## Root `createAuraApp` Renderer Limits
 
-- The public root path does not yet default to the full production-runtime
-  renderer.
+- The public root path defaults to `production-runtime` for renderable safe
+  authored scenes. This proves backend selection and lifecycle plumbing, not
+  every renderer feature.
 - Root screenshots currently prove basic GLB rendering, base-color material and
   texture paths, scene composition, simple effects, runtime transforms, and
   non-skinned node animation on tested routes.
@@ -19,8 +20,8 @@ guide or README must include the narrower wording.
   broad postprocess likewise require path-specific evidence.
 - Bloom, SSAO, DOF, FXAA/TAA, color grading, cinematic fog, and similar effects
   require exact route screenshot proof before public use.
-- Internal renderer or production-runtime evidence does not prove root
-  `createAuraApp` behavior until the bridge and public tests exist.
+- Internal renderer evidence still does not prove root `createAuraApp` feature
+  support unless a root-only browser route proves that exact behavior.
 
 ## Animation Limits
 
