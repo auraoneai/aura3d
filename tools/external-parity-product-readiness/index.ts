@@ -10,7 +10,7 @@ interface Check {
 }
 
 const requiredFiles = [
-  "fixtures/external-parity/products/premium-product/manifest.json",
+  "examples/external-product-configurator/headphones.manifest.json",
   "apps/product-studio-pro/index.html",
   "apps/product-studio-pro/src/main.ts",
   "examples/external-product-configurator/index.html",
@@ -54,43 +54,24 @@ for (const file of requiredFiles) {
   check(`file:${file}`, existsSync(resolve(file)), `${file} must exist.`);
 }
 
-const manifest = readJson("fixtures/external-parity/products/premium-product/manifest.json");
-const source = isObj(manifest?.source) ? manifest.source : {};
-check("fixture-schema", manifest?.schema === "a3d-external-parity-premium-product", "Premium product fixture must use the External parity schema.");
-check("fixture-product-id", manifest?.id === "premium-boom-box" && manifest?.category === "consumer-audio", "Premium product fixture must identify the product and category.");
-check(
-  "fixture-external-source",
-  source.kind === "external-gltf-reference" &&
-    source.repository === "https://github.com/KhronosGroup/glTF-Sample-Assets" &&
-    source.revision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" &&
-    source.path === "Models/BoomBox/glTF-Binary/BoomBox.glb" &&
-    typeof source.uri === "string" &&
-    source.uri.includes("BoomBox.glb") &&
-    typeof source.sha256 === "string" &&
-    source.sha256.length === 64 &&
-    source.license === "CC0-1.0" &&
-    typeof source.provenance === "string",
-  "Premium product fixture must pin an external Khronos glTF asset with revision, URI, SHA-256, license, and provenance."
-);
-check(
-  "fixture-proof-boundary",
-  typeof manifest?.claimBoundary === "string" &&
-    manifest.claimBoundary.includes("same-scene Three.js visual parity"),
-  "Premium product fixture must state that same-scene Three.js visual parity remains required."
-);
+const manifest = readJson("examples/external-product-configurator/headphones.manifest.json");
+check("fixture-schema", manifest?.schema === "a3d-product-manifest/1", "Headphones must use the current product-manifest schema.");
+check("fixture-product-id", manifest?.id === "showcaseHeadphones" && manifest?.category === "consumer-audio", "Product fixture must identify the typed headphones and category.");
+check("fixture-typed-url", manifest?.gltf === "/aura-assets/showcaseHeadphones.40b1fdf7.glb", "Product fixture must bind the exact generated catalog URL.");
 
 const shared = readText("examples/external-product-configurator/ExternalProductConfigurator.ts");
 check(
   "public-workflow-example",
   includesAll(shared, [
     "createProductConfiguratorWorkflow",
-    "premium-boom-box",
-    "KhronosGroup/glTF-Sample-Assets",
+    "assets.showcaseHeadphones",
+    "productAsset.hash",
+    "productAsset.metadata?.provenance",
     "__A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__",
     "featureChecklist",
-    "External parity release still requires"
+    "root createAuraApp product parity is not claimed"
   ]),
-  "Product configurator example must call the public workflow, use the pinned external product, expose diagnostics, and preserve proof boundaries."
+  "Product configurator example must call the public workflow, use the exact typed catalog product, expose provenance diagnostics, and preserve proof boundaries."
 );
 check(
   "example-entry-no-app-side-effect",
@@ -138,10 +119,10 @@ check(
 check(
   "browser-proof-boundary",
   typeof browser?.productBoundary === "string" &&
-    browser.productBoundary.includes("installable SDK/templates") &&
-    browser.productBoundary.includes("same-scene Three.js parity") &&
+    browser.productBoundary.includes("typed, provenance-backed headphones asset") &&
+    browser.productBoundary.includes("root createAuraApp product parity is not claimed") &&
     arr(browser.requiredNextProof).includes("same-scene Three.js rendered comparison"),
-  "Browser report must preserve release and Three.js parity boundaries."
+  "Browser report must preserve the public-surface and Three.js comparison boundaries."
 );
 
 const pass = checks.every((entry) => entry.pass);
@@ -150,8 +131,8 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "External parity Milestone 7 flagship product configurator proof is ready as a real product workflow/app milestone. Full release still requires installable SDK/templates and same-scene Three.js parity."
-    : "External parity Milestone 7 flagship product configurator proof is incomplete.",
+    ? "The production-runtime product workflow and app render an exact typed, provenance-backed catalog asset with visible variant evidence."
+    : "The production-runtime typed product workflow proof is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };
@@ -171,8 +152,10 @@ function statePasses(state: Obj, id: string): boolean {
   const checklist = arr(state.featureChecklist);
   return state.id === id &&
     state.status === "ready" &&
-    state.productId === "premium-boom-box" &&
-    state.sourceLicense === "CC0-1.0" &&
+    state.productId === "showcaseHeadphones" &&
+    state.assetHash === "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833" &&
+    typeof state.sourceLicense === "string" && state.sourceLicense.includes("CC-BY-4.0") &&
+    typeof state.sourceAuthor === "string" && state.sourceAuthor.includes("Ankledot") &&
     state.publicWorkflow === true &&
     state.workflowKind === "product-configurator" &&
     Number(state.meshCount ?? 0) > 0 &&
@@ -183,8 +166,7 @@ function statePasses(state: Obj, id: string): boolean {
     checklist.includes("lighting-presets") &&
     checklist.includes("camera-presets") &&
     checklist.includes("export-ready") &&
-    typeof state.externalSource === "string" &&
-    state.externalSource.includes("KhronosGroup/glTF-Sample-Assets") &&
+    state.typedAssetUrl === "/aura-assets/showcaseHeadphones.40b1fdf7.glb" &&
     typeof state.claimBoundary === "string" &&
-    state.claimBoundary.includes("External parity release still requires");
+    state.claimBoundary.includes("root createAuraApp product parity is not claimed");
 }

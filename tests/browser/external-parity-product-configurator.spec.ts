@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
@@ -10,7 +11,9 @@ type ProductState = {
   readonly id?: string;
   readonly status?: string;
   readonly productId?: string;
+  readonly assetHash?: string;
   readonly sourceLicense?: string;
+  readonly sourceAuthor?: string;
   readonly publicWorkflow?: boolean;
   readonly workflowKind?: string;
   readonly meshCount?: number;
@@ -20,7 +23,7 @@ type ProductState = {
   readonly materialMode?: string;
   readonly lighting?: string;
   readonly featureChecklist?: readonly string[];
-  readonly externalSource?: string;
+  readonly typedAssetUrl?: string;
   readonly claimBoundary?: string;
 };
 
@@ -42,7 +45,7 @@ test.describe("ExternalParity flagship product configurator", () => {
 
     await page.goto(`${server.origin}/examples/external-product-configurator/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForProductState(page, "external-product-configurator");
-    await page.locator("[data-testid='hr4-product-canvas']").screenshot({ path: `${screenshotDir}/external-product-configurator.png` });
+    const initialPng = await page.locator("[data-testid='hr4-product-canvas']").screenshot({ path: `${screenshotDir}/external-product-configurator.png` });
 
     await page.getByTestId("hr4-product-material").selectOption("contrast");
     await expect.poll(() => productState(page).then((state) => state?.materialMode), { timeout: 30_000 }).toBe("contrast");
@@ -54,7 +57,9 @@ test.describe("ExternalParity flagship product configurator", () => {
     });
     const variantState = await productState(page);
     if (!variantState) throw new Error("Missing product configurator variant state.");
-    await page.locator("[data-testid='hr4-product-canvas']").screenshot({ path: `${screenshotDir}/external-product-configurator-variant.png` });
+    const variantPng = await page.locator("[data-testid='hr4-product-canvas']").screenshot({ path: `${screenshotDir}/external-product-configurator-variant.png` });
+    const initialHash = createHash("sha256").update(initialPng).digest("hex");
+    const variantHash = createHash("sha256").update(variantPng).digest("hex");
 
     await page.goto(`${server.origin}/apps/product-studio-pro/index.html`, { waitUntil: "domcontentloaded" });
     const appState = await waitForProductState(page, "product-studio-pro");
@@ -66,14 +71,16 @@ test.describe("ExternalParity flagship product configurator", () => {
         statePasses(variantState) &&
         statePasses(appState) &&
         variantState.materialMode === "contrast" &&
-        variantState.lighting === "hero-contrast",
+        variantState.lighting === "hero-contrast" &&
+        initialHash !== variantHash,
       generatedAt: new Date().toISOString(),
       screenshots: [
         `${screenshotDir}/external-product-configurator.png`,
         `${screenshotDir}/external-product-configurator-variant.png`,
         `${screenshotDir}/product-studio-pro.png`
       ],
-      productBoundary: "Milestone 7 proves a real product-configurator workflow and app using a pinned external Khronos asset. Full ExternalParity release still requires installable SDK/templates and same-scene Three.js parity.",
+      productBoundary: "Production-runtime product workflow proof uses the exact typed, provenance-backed headphones asset; root createAuraApp product parity is not claimed by this route.",
+      visualHashes: { initial: initialHash, variant: variantHash },
       requiredNextProof: [
         "create-aura3d installable product template",
         "packed-package external consumer proof",
@@ -95,6 +102,7 @@ test.describe("ExternalParity flagship product configurator", () => {
     expect(statePasses(appState)).toBe(true);
     expect(variantState.materialMode).toBe("contrast");
     expect(variantState.lighting).toBe("hero-contrast");
+    expect(variantHash).not.toBe(initialHash);
     expect(report.ok).toBe(true);
   });
 });
@@ -120,8 +128,10 @@ async function productState(page: Page): Promise<ProductState | undefined> {
 function statePasses(state: ProductState): boolean {
   const checklist = state.featureChecklist ?? [];
   return state.status === "ready" &&
-    state.productId === "premium-boom-box" &&
-    state.sourceLicense === "CC0-1.0" &&
+    state.productId === "showcaseHeadphones" &&
+    state.assetHash === "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833" &&
+    state.sourceLicense?.includes("CC-BY-4.0") === true &&
+    state.sourceAuthor?.includes("Ankledot") === true &&
     state.publicWorkflow === true &&
     state.workflowKind === "product-configurator" &&
     Number(state.meshCount ?? 0) > 0 &&
@@ -132,10 +142,9 @@ function statePasses(state: ProductState): boolean {
     checklist.includes("lighting-presets") &&
     checklist.includes("camera-presets") &&
     checklist.includes("export-ready") &&
-    typeof state.externalSource === "string" &&
-    state.externalSource.includes("KhronosGroup/glTF-Sample-Assets") &&
+    state.typedAssetUrl === "/aura-assets/showcaseHeadphones.40b1fdf7.glb" &&
     typeof state.claimBoundary === "string" &&
-    state.claimBoundary.includes("ExternalParity release still requires");
+    state.claimBoundary.includes("root createAuraApp product parity is not claimed");
 }
 
 function captureErrors(page: Page): string[] {

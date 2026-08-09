@@ -1,0 +1,9 @@
+{
+  "schema": "a3d-product-manifest/1",
+  "id": "showcaseHeadphones",
+  "title": "Studio Headphones",
+  "category": "consumer-audio",
+  "gltf": "/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+  "parts": [],
+  "materials": []
+}

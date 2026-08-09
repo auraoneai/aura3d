@@ -1,5 +1,6 @@
 import { Renderer } from "@aura3d/rendering";
 import { createProductConfiguratorWorkflow } from "@aura3d/workflows";
+import { assets } from "../../src/aura-assets.js";
 
 declare global {
   interface Window {
@@ -7,7 +8,7 @@ declare global {
   }
 }
 
-const productUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoomBox/glTF-Binary/BoomBox.glb";
+const productAsset = assets.showcaseHeadphones;
 
 export async function mountExternalProductConfigurator(id: string): Promise<void> {
   const root = document.getElementById("app");
@@ -36,11 +37,11 @@ export async function mountExternalProductConfigurator(id: string): Promise<void
     disposePrevious?.();
     const workflow = await createProductConfiguratorWorkflow({
       asset: {
-        id: "premium-boom-box",
-        title: "Premium Boom Box",
+        id: productAsset.id,
+        title: "Studio Headphones",
         category: "consumer-audio",
-        url: productUrl,
-        manifestUrl: `${location.origin}/fixtures/product-studio/products/speaker/manifest.json`
+        url: productAsset.url,
+        manifestUrl: `${location.origin}/examples/external-product-configurator/headphones.manifest.json`
       },
       materialMode: material.value as "asset" | "contrast" | "metal-check",
       lighting: lighting.value as "catalog-softbox" | "hero-contrast" | "inspection-bay",
@@ -52,7 +53,9 @@ export async function mountExternalProductConfigurator(id: string): Promise<void
       id,
       status: "ready",
       productId: workflow.asset.id,
-      sourceLicense: "CC0-1.0",
+      assetHash: productAsset.hash,
+      sourceLicense: productAsset.metadata?.provenance?.license ?? productAsset.license,
+      sourceAuthor: productAsset.metadata?.provenance?.author ?? productAsset.author,
       publicWorkflow: true,
       workflowKind: workflow.kind,
       meshCount: workflow.asset.gltf.meshes.length,
@@ -62,8 +65,8 @@ export async function mountExternalProductConfigurator(id: string): Promise<void
       materialMode: material.value,
       lighting: lighting.value,
       featureChecklist: workflow.diagnostics.featureChecklist,
-      externalSource: productUrl,
-      claimBoundary: "Milestone 7 product proof only; ExternalParity release still requires package/templates and Three.js parity."
+      typedAssetUrl: productAsset.url,
+      claimBoundary: "Production-runtime product workflow proof using one typed, provenance-backed catalog asset; root createAuraApp product parity is not claimed by this route."
     };
     window.__A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__ = state;
     status.textContent = JSON.stringify(state, null, 2);
