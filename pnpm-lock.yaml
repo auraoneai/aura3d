@@ -104,6 +104,9 @@ importers:
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.15
+      '@types/stats.js':
+        specifier: 0.17.4
+        version: 0.17.4
       '@types/three':
         specifier: 0.185.4
         version: 0.185.4
@@ -140,6 +143,9 @@ importers:
       size-limit:
         specifier: ^12.1.0
         version: 12.1.0
+      stats.js:
+        specifier: 0.17.0
+        version: 0.17.0
       three:
         specifier: 0.185.1
         version: 0.185.1
