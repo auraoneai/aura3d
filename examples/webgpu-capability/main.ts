@@ -76,13 +76,16 @@ async function probeWebGPU(canvas: HTMLCanvasElement, context: CanvasRenderingCo
     };
   }
 
+  const probeCanvas = document.createElement("canvas");
+  probeCanvas.width = canvas.width;
+  probeCanvas.height = canvas.height;
   try {
-    const device = await createRenderDevice({ backend: "webgpu", canvas });
-    device.beginFrame(canvas.width, canvas.height);
+    const device = await createRenderDevice({ backend: "webgpu", canvas: probeCanvas });
+    device.beginFrame(probeCanvas.width, probeCanvas.height);
     device.clear([0.02, 0.09, 0.11, 1]);
     device.endFrame();
     const diagnostics = device.getDiagnostics();
-    const centerPixel = Array.from(device.readPixels(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1));
+    const centerPixel = Array.from(device.readPixels(Math.floor(probeCanvas.width / 2), Math.floor(probeCanvas.height / 2), 1, 1));
     drawAvailable(context, canvas, device.info.renderer);
     device.dispose();
     return {
