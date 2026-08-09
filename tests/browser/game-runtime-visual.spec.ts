@@ -74,7 +74,7 @@ test.describe("game runtime visual evidence", () => {
     await server.close();
   });
 
-  test("renders generated player and arena assets with contact-shadow runtime evidence", async ({ page }) => {
+  test("loads the typed player and generated arena with contact-shadow runtime evidence", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
@@ -102,7 +102,7 @@ test.describe("game runtime visual evidence", () => {
     expect(state.productionLikePlayerModel).toBe(true);
     expect(state.productionLikeArenaAsset).toBe(true);
     expect(state.primitivePlayerFallback).toBe(false);
-    expect(String(state.visualAssetPlayerUrl)).toContain(".gltf");
+    expect(String(state.visualAssetPlayerUrl)).toContain("/aura-assets/showcaseExpressiveRobot.047f5e5f.glb");
     expect(String(state.visualAssetArenaUrl)).toContain(".gltf");
     expect(Number(state.visualAssetPlayerMeshes)).toBeGreaterThanOrEqual(5);
     expect(Number(state.visualAssetArenaMeshes)).toBeGreaterThanOrEqual(6);

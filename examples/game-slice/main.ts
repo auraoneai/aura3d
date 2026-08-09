@@ -78,6 +78,7 @@ import {
   type UtilityActionScore
 } from "@aura3d/scripting";
 import { Scene, type PerspectiveCamera } from "@aura3d/scene";
+import { assets } from "../../src/aura-assets";
 
 type DemoStatus = {
   id: string;
@@ -204,7 +205,7 @@ const hazardPosition: readonly [number, number, number] = [-1.34, -0.12, 0];
 const objectiveTimeLimitSeconds = 18;
 const playerAnimationStates: readonly PlayerAnimationState[] = ["idle", "run", "jump", "win", "fail"] as const;
 const externalParityScreenshotPath = "tests/reports/external-parity-example-screenshots/game-slice.png";
-const claimBoundary = "ExternalParity game slice evidence is limited to this generated local glTF arena/player, lit skinned ExternalParity hero render item, bounded directional shadow-map metrics with visible receiver darkening, contact-shadow proxy, and browser-proven runtime loop; production forward-pass shadow sampling is not claimed.";
+const claimBoundary = "Prototype-blocked game-slice evidence is limited to a typed showcaseExpressiveRobot load, the generated local glTF arena, a submitted lit skinned ExternalParity hero item, bounded directional shadow-map metrics with visible receiver darkening, contact-shadow proxy, and the browser-proven runtime loop. The current visual audit does not show a readable player, so game-quality, production forward-pass shadow sampling, and Three.js parity are not claimed.";
 
 declare global {
   interface Window {
@@ -920,9 +921,9 @@ async function run(): Promise<void> {
       interactions,
       diagnostics,
       errors: runtimeErrors,
-      visualClaim: "Interactive runtime slice with generated glTF player and arena assets, a lit skinned ExternalParity hero render item, contact-shadow proxy, physics movement/triggers, third-person follow camera, objective win/fail loop, animation, input bindings, particles, audio unlock/playback state, and behavior scripts.",
+      visualClaim: "Interactive runtime slice (prototype-blocked) with a typed player load, generated glTF arena, submitted lit skinned ExternalParity hero render item, contact-shadow proxy, physics movement/triggers, third-person follow camera, objective win/fail loop, animation, input bindings, particles, audio unlock/playback state, and behavior scripts; the current frame has no human-approved readable player.",
       knownLimits: [
-        "Generated local glTF fixtures are production-like validation assets, not externally licensed production art.",
+        "The arena remains a generated local glTF validation asset, and the typed player is loaded but not readable in the current visual-audit frame.",
         "The game slice includes one bounded lit skinned ExternalParity hero render item; broad character animation parity remains unclaimed here.",
         "The game slice uses bounded directional shadow-map metrics plus a contact-shadow proxy because production forward-pass shadow sampling and point/spot shadow maps remain unclaimed here."
       ],
@@ -1392,7 +1393,7 @@ async function run(): Promise<void> {
 
 async function loadGameVisualAssets(): Promise<LoadedGameVisualAssets> {
   const loader = new GLTFLoader();
-  const playerUrl = new URL("../../fixtures/workflow-assets/assets/animated-character/animated-character.gltf", window.location.href).toString();
+  const playerUrl = new URL(assets.showcaseExpressiveRobot.url, window.location.origin).toString();
   const arenaUrl = new URL("../../fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf", window.location.href).toString();
   const skinnedHeroUrl = new URL("../../fixtures/threejs-parity/assets/character/soldier.glb", window.location.href).toString();
   const [playerAsset, arenaAsset, skinnedHeroAsset] = await Promise.all([
@@ -1492,9 +1493,8 @@ function updateGameVisualAssetTransforms(visualAssets: LoadedGameVisualAssets | 
   const victoryLift = animationState === "win" ? 0.035 + Math.sin(animationTime * 8) * 0.012 : 0;
   const failSquash = animationState === "fail" ? 0.82 : 1;
   visualAssets.playerResources.scene.root.transform
-    .setPosition(playerPosition.x, playerPosition.y + 0.14 + runBob + jumpLift + victoryLift, 0.12)
-    .setScale(0.3, 0.3 * failSquash, 0.3);
-  poseHeroRunner(visualAssets, animationState, animationTime, timeMs);
+    .setPosition(playerPosition.x, playerPosition.y + runBob + jumpLift + victoryLift, 0.12)
+    .setScale(18, 18 * failSquash, 18);
   visualAssets.arenaResources.scene.root.transform
     .setPosition(0, -0.56, -0.34)
     .setScale(0.12, 0.12, 0.12);
@@ -1859,7 +1859,7 @@ function createGameRenderResources(): GameRenderResources {
     ],
     holoPaletteMaterial: new TexturedUnlitMaterial({ name: "arena-holographic-generated-palette-texture", texture: paletteTexture, color: [1, 1, 1, 0.86], textureTransform: { scale: [3.2, 1.6], offset: [0.11, 0.23] }, renderState: { depthTest: true, depthWrite: false, blend: true, cullMode: "none" } }),
     groundMaterial: new TexturedPBRMaterial({ name: "arena-showcase-ground", baseColor: [0.34, 0.46, 0.54, 1], baseColorTexture: groundTexture, roughness: 0.55, metallic: 0.08, renderState: { cullMode: "none" } }),
-    backdropMaterial: new TexturedPBRMaterial({ name: "seeded-nebula-arena-lit-backdrop", baseColor: [0.34, 0.42, 0.52, 1], baseColorTexture: starfieldTexture, roughness: 0.7, metallic: 0.06, emissiveColor: [0.08, 0.16, 0.24], emissiveStrength: 1.05, renderState: { depthTest: false, depthWrite: false, cullMode: "none" } }),
+    backdropMaterial: new TexturedPBRMaterial({ name: "seeded-nebula-arena-lit-backdrop", baseColor: [0.025, 0.045, 0.075, 1], baseColorTexture: starfieldTexture, roughness: 0.9, metallic: 0, emissiveColor: [0.015, 0.035, 0.07], emissiveStrength: 0.6, renderState: { depthTest: true, depthWrite: true, cullMode: "none" } }),
     nebulaMaterial: new PBRMaterial({ name: "seeded-nebula-violet-lit-panel", baseColor: [0.22, 0.16, 0.34, 1], roughness: 0.58, metallic: 0.08, emissiveColor: [0.16, 0.06, 0.28], emissiveStrength: 0.9, renderState: { cullMode: "none" } }),
     skyGlowMaterial: new PBRMaterial({ name: "seeded-nebula-teal-lit-panel", baseColor: [0.08, 0.38, 0.42, 1], roughness: 0.42, metallic: 0.12, emissiveColor: [0.02, 0.28, 0.34], emissiveStrength: 1.0, renderState: { cullMode: "none" } }),
     skylineMaterial: new PBRMaterial({ name: "arena-showcase-slate-skyline", baseColor: [0.16, 0.24, 0.28, 1], roughness: 0.42, metallic: 0.18, emissiveColor: [0.02, 0.18, 0.22], emissiveStrength: 0.55, renderState: { cullMode: "none" } }),
@@ -1965,8 +1965,6 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
       modelMatrix: modelMatrix(0, 0.78, -0.74, 3.9, 2.9, 0.045),
       label: "arena-showcase-backdrop"
     },
-    ...gameBackdropTileItems(resources),
-    ...gameArenaSurfaceVariationItems(resources, timeMs),
     {
       geometry: resources.showcaseGeometry,
       material: resources.skyGlowMaterial,
@@ -2188,7 +2186,6 @@ function buildRenderItems(resources: GameRenderResources, visualAssets: LoadedGa
       label: "arena-background-horizon-light"
     },
     ...gameSlicePolishItems(resources, timeMs),
-    ...gameSliceForegroundSignalItems(resources, timeMs),
     {
       geometry: resources.showcaseGeometry,
       material: resources.groundMaterial,
@@ -2344,11 +2341,9 @@ function compactGamePresentationItems(items: readonly RenderItem[]): RenderItem[
   return items.filter((item) => {
     const label = item.label ?? "";
     if (label.startsWith("game-asset-")) return true;
-    if (label.startsWith("physics-player-collider-debug")) return true;
     if (label.startsWith("contact-shadow-proxy")) return true;
     if (label.startsWith("particle-sparks")) return true;
     if (label === "animated-pickup") return true;
-    if (label.startsWith("arena-")) return true;
     if (label === "arena-showcase-backdrop") return true;
     if (label === "seeded-starfield-nebula-background" || label === "old-branch-layered-space-environment") return true;
     if (label === "arena-showcase-ground" || label === "arena-foreground-left-catwalk" || label === "arena-foreground-right-catwalk" || label === "arena-neon-depth-rails") return true;
@@ -2689,12 +2684,14 @@ function appendGLTFSceneRenderItems(items: RenderItem[], resources: GLTFRenderRe
     const geometry = resources.geometryLibrary.get(renderable.geometry);
     const material = resources.materialLibrary.get(renderable.material);
     if (!geometry || !material) continue;
+    const morphTargets = resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
       geometry,
       material,
       modelMatrix: node.transform.worldMatrix,
       label: `${labelPrefix}-${node.name}`,
-      ...(renderable.morphWeights.length > 0 ? { morphWeights: renderable.morphWeights } : {}),
+      ...(renderable.skinning ? { skinning: renderable.skinning } : {}),
+      ...(renderable.morphWeights.length > 0 && morphTargets ? { morphTargets, morphWeights: renderable.morphWeights } : {}),
     });
   }
 }

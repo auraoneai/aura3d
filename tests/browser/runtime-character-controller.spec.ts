@@ -123,7 +123,7 @@ test.describe("runtime character controller", () => {
     await expect(page.locator("[data-testid='game-slice-canvas']")).toBeVisible();
   });
 
-  test("game slice renders generated glTF player and arena assets with contact shadow evidence", async ({ page }) => {
+  test("game slice loads the typed GLB player and generated arena with contact shadow evidence", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
@@ -142,7 +142,7 @@ test.describe("runtime character controller", () => {
     expect(state.productionLikePlayerModel).toBe(true);
     expect(state.productionLikeArenaAsset).toBe(true);
     expect(state.primitivePlayerFallback).toBe(false);
-    expect(String(state.visualAssetPlayerUrl)).toContain("/fixtures/workflow-assets/assets/animated-character/animated-character.gltf");
+    expect(String(state.visualAssetPlayerUrl)).toContain("/aura-assets/showcaseExpressiveRobot.047f5e5f.glb");
     expect(String(state.visualAssetArenaUrl)).toContain("/fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf");
     expect(Number(state.visualAssetPlayerMeshes)).toBeGreaterThanOrEqual(5);
     expect(Number(state.visualAssetArenaMeshes)).toBeGreaterThanOrEqual(6);
