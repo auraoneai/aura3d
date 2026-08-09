@@ -111,7 +111,7 @@ async function run(): Promise<void> {
     canvas,
     width: canvas.width,
     height: canvas.height,
-    clearColor: [0.44, 0.52, 0.62, 1],
+    clearColor: [0.012, 0.02, 0.032, 1],
     antialias: true,
     preserveDrawingBuffer: true
   });
@@ -909,7 +909,7 @@ function formatRaceTime(milliseconds: number): string {
 }
 
 function matrix(tx: number, ty: number, tz: number, sx: number, sy: number, sz: number, yaw: number, pitch: number, roll: number): Float32Array {
-  const compositionScale = 0.56;
+  const compositionScale = 0.72;
   const translatedX = tx * compositionScale;
   const translatedY = ty * compositionScale - 0.02;
   const translatedZ = tz * compositionScale;
@@ -954,19 +954,7 @@ function installStyles(): void {
     :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #2a3542; color: #f6f7fb; }
     body { margin: 0; min-height: 100vh; overflow: hidden; background: #2a3542; }
     .racing-showcase { position: relative; min-height: 100vh; background: #2a3542; }
-    .racing-showcase::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      background:
-        linear-gradient(180deg, rgba(5, 8, 12, 0.2), rgba(5, 8, 12, 0) 18%, rgba(5, 8, 12, 0.24)),
-        repeating-linear-gradient(90deg, rgba(244, 250, 255, 0.55) 0 1px, transparent 1px 24px),
-        repeating-linear-gradient(0deg, rgba(244, 250, 255, 0.45) 0 1px, transparent 1px 22px);
-      opacity: 0.72;
-    }
-    canvas { position: relative; z-index: 0; width: 100vw; height: 100vh; display: block; background: radial-gradient(circle at 48% 20%, #7d96b2 0, #405164 48%, #202934 100%); }
+    canvas { position: relative; z-index: 0; width: 100vw; height: 100vh; display: block; background: #050b12; }
     .race-panel { z-index: 2; position: absolute; pointer-events: none; background: rgba(5, 10, 16, 0.72); border: 1px solid rgba(100, 180, 255, 0.34); border-radius: 8px; color: #f6f7fb; backdrop-filter: blur(8px); }
     .race-panel-primary { left: 24px; top: 22px; width: 188px; padding: 13px 14px; display: grid; gap: 5px; }
     .race-panel-primary strong { font-size: 34px; line-height: 0.95; color: #ffd35a; letter-spacing: 0; }

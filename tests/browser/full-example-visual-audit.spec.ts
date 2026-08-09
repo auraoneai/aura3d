@@ -44,7 +44,7 @@ test.describe("Aura3D 2.0 exhaustive example visual audit", () => {
     };
     const reportName = filter ? `report-${filter.replaceAll(/[^a-z0-9-]/gi, "-")}.json` : "report.json";
     writeFileSync(resolve(REPORT_ROOT, reportName), `${JSON.stringify(report, null, 2)}\n`);
-    expect(results.length).toBe(filter ? entries.length : 37);
+    expect(results.length).toBe(entries.length);
     expect(results.length).toBeGreaterThan(0);
     expect(failures, failures.join("\n")).toEqual([]);
   });

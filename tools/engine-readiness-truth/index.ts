@@ -6,7 +6,6 @@ const quarantinedExamples = [
   "product-configurator",
   "architecture-viewer",
   "game-slice",
-  "racing-showcase",
   "material-showroom",
   "postprocess-lab",
   "shadow-lab",

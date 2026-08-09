@@ -196,8 +196,7 @@ function readClassificationLabels(): ReadonlyMap<string, string> {
  *
  * This is the signal that classifies `examples/*`. The classification document covers `apps/`
  * only, and 23 examples matched nothing — but many are load-bearing: `examples/physics-sandbox`
- * and `examples/racing-showcase` are each driven by browser specs and named in
- * `tools/foundation-runtime` and `tools/external-parity-visual-quality`. A route that a
+ * is driven by browser specs and named in `tools/foundation-runtime`. A route that a
  * retained spec navigates to is public-facing behaviour under test, so it is at least Tier 2:
  * it must build, run and demonstrate the API accurately.
  *

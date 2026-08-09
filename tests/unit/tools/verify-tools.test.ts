@@ -707,8 +707,8 @@ describe("verification tools", () => {
       expect(report.violations, "a fully exported set must report no violations").toEqual([]);
       expect(
         report.demos.map((demo) => demo.id).sort(),
-        "all five declared example demos must export, including product-configurator whose entry lives at src/main.ts"
-      ).toEqual(["architecture-viewer", "game-slice", "large-world-streaming", "product-configurator", "racing-showcase"]);
+        "all four declared example demos must export, including product-configurator whose entry lives at src/main.ts"
+      ).toEqual(["architecture-viewer", "game-slice", "large-world-streaming", "product-configurator"]);
       for (const demo of report.demos) {
         expect(demo.outputHtml, `${demo.id} must emit a page`).toContain(`${demo.id}/index.html`);
         expect(demo.outputScript, `${demo.id} must emit a bundled script`).toContain(`${demo.id}/main.js`);

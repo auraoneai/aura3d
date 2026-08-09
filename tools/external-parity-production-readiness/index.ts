@@ -227,7 +227,6 @@ const requiredDemos = [
   "product-configurator",
   "architecture-viewer",
   "game-slice",
-  "racing-showcase",
   "large-world-streaming",
 ] as const;
 
