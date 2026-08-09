@@ -13,12 +13,17 @@ interface LoseContextExtension {
 }
 
 interface ContextLossRecoveryProbe {
-  readonly status: "ready" | "lost" | "restored" | "error";
+  readonly status: "ready" | "lost" | "recovering" | "restored" | "error";
   readonly extensionAvailable: boolean;
-  readonly beforeLoss: { readonly litPixels: number; readonly deviceLost: boolean };
+  readonly beforeLoss: { readonly litPixels: number; readonly pixelHash: string; readonly deviceLost: boolean };
+  readonly afterRestore: { readonly litPixels: number; readonly pixelHash: string; readonly runtimeMounted: boolean };
   readonly lostCount: number;
   readonly restoredCount: number;
+  readonly recoveryCount: number;
   readonly deviceLost: boolean;
+  readonly pausedOnLoss: boolean;
+  readonly resourcesRecreated: boolean;
+  readonly sceneRestored: boolean;
   readonly runtimeBackend: string | undefined;
   readonly rendererMode: string;
   readonly lossSubscriptionActive: boolean;
@@ -49,6 +54,22 @@ function litPixels(canvas: HTMLCanvasElement): number {
     if (data[index]! > 24 || data[index + 1]! > 24 || data[index + 2]! > 24) count += 1;
   }
   return count;
+}
+
+function pixelHash(canvas: HTMLCanvasElement): string {
+  const probe = document.createElement("canvas");
+  probe.width = canvas.width;
+  probe.height = canvas.height;
+  const context = probe.getContext("2d");
+  if (!context) return "00000000";
+  context.drawImage(canvas, 0, 0);
+  const data = context.getImageData(0, 0, probe.width, probe.height).data;
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < data.length; index += 1) {
+    hash ^= data[index] ?? 0;
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
 async function main(): Promise<void> {
@@ -83,9 +104,14 @@ async function main(): Promise<void> {
 
   let lostCount = 0;
   let restoredCount = 0;
+  let recoveryCount = 0;
   let lossSubscriptionActive = true;
   let lifecycleStatus: ContextLossRecoveryProbe["status"] = "ready";
-  let beforeLoss = { litPixels: 0, deviceLost: false };
+  let beforeLoss = { litPixels: 0, pixelHash: "00000000", deviceLost: false };
+  let afterRestore = { litPixels: 0, pixelHash: "00000000", runtimeMounted: false };
+  let pausedOnLoss = false;
+  let resourcesRecreated = false;
+  let sceneRestored = false;
   let extension: LoseContextExtension | null = null;
 
   const publish = (): void => {
@@ -93,9 +119,14 @@ async function main(): Promise<void> {
       status: lifecycleStatus,
       extensionAvailable: Boolean(extension),
       beforeLoss,
+      afterRestore,
       lostCount,
       restoredCount,
+      recoveryCount,
       deviceLost: app.deviceLost(),
+      pausedOnLoss,
+      resourcesRecreated,
+      sceneRestored,
       runtimeBackend: app.diagnostics().renderer.runtime.backend,
       rendererMode: app.diagnostics().renderer.rendererMode,
       lossSubscriptionActive,
@@ -109,7 +140,9 @@ async function main(): Promise<void> {
   };
 
   const unsubscribeLost = app.onDeviceLost(() => {
+    app.pause();
     lostCount += 1;
+    pausedOnLoss = app.runtime.paused;
     lifecycleStatus = "lost";
     loseButton.disabled = true;
     restoreButton.disabled = false;
@@ -117,15 +150,42 @@ async function main(): Promise<void> {
   });
   app.onDeviceRestored(() => {
     restoredCount += 1;
-    lifecycleStatus = "restored";
-    loseButton.disabled = false;
-    restoreButton.disabled = true;
+    lifecycleStatus = "recovering";
     publish();
+    void (async () => {
+      // Context restoration invalidates the old WebGL objects. Re-mounting the same public scene
+      // disposes the old controller and creates a fresh device, programs, buffers, and textures.
+      app.setScene(built);
+      await app.ready();
+      app.resume();
+      app.step(1 / 60);
+      const diagnostics = app.diagnostics();
+      afterRestore = {
+        litPixels: litPixels(canvas),
+        pixelHash: pixelHash(canvas),
+        runtimeMounted: diagnostics.renderer?.runtime.mounted === true
+      };
+      recoveryCount += 1;
+      resourcesRecreated = diagnostics.renderer.runtime.backend === "production-runtime"
+        && diagnostics.renderer.runtime.mounted
+        && afterRestore.litPixels > 1_000;
+      sceneRestored = afterRestore.litPixels > 1_000
+        && beforeLoss.pixelHash !== "00000000"
+        && afterRestore.pixelHash === beforeLoss.pixelHash;
+      lifecycleStatus = "restored";
+      loseButton.disabled = false;
+      restoreButton.disabled = true;
+      publish();
+    })();
   });
 
   await app.ready();
   app.step(1 / 60);
-  beforeLoss = { litPixels: litPixels(canvas), deviceLost: app.deviceLost() };
+  beforeLoss = {
+    litPixels: litPixels(canvas),
+    pixelHash: pixelHash(canvas),
+    deviceLost: app.deviceLost()
+  };
   extension = canvas.getContext("webgl2")?.getExtension("WEBGL_lose_context") as LoseContextExtension | null;
 
   loseButton.disabled = !extension;
@@ -148,10 +208,15 @@ void main().catch((error: unknown) => {
   window.__AURA3D_CONTEXT_LOSS_RECOVERY__ = {
     status: "error",
     extensionAvailable: false,
-    beforeLoss: { litPixels: 0, deviceLost: false },
+    beforeLoss: { litPixels: 0, pixelHash: "00000000", deviceLost: false },
+    afterRestore: { litPixels: 0, pixelHash: "00000000", runtimeMounted: false },
     lostCount: 0,
     restoredCount: 0,
+    recoveryCount: 0,
     deviceLost: false,
+    pausedOnLoss: false,
+    resourcesRecreated: false,
+    sceneRestored: false,
     runtimeBackend: undefined,
     rendererMode: "error",
     lossSubscriptionActive: false,

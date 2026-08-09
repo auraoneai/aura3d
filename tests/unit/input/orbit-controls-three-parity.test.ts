@@ -125,9 +125,16 @@ function wheelEvent(options: Partial<WheelEvent> = {}): WheelEvent {
 class FakeDomElement {
   readonly style: Record<string, string> = {};
   private readonly listeners = new Map<string, Set<(event: Event) => void>>();
-  private readonly root = {
-    addEventListener: () => {},
-    removeEventListener: () => {}
+  private readonly documentListeners = new Map<string, Set<(event: Event) => void>>();
+  readonly ownerDocument = {
+    addEventListener: (type: string, listener: (event: Event) => void) => {
+      const listeners = this.documentListeners.get(type) ?? new Set();
+      listeners.add(listener);
+      this.documentListeners.set(type, listeners);
+    },
+    removeEventListener: (type: string, listener: (event: Event) => void) => {
+      this.documentListeners.get(type)?.delete(listener);
+    }
   };
 
   constructor(readonly clientWidth: number, readonly clientHeight: number) {}
@@ -146,8 +153,8 @@ class FakeDomElement {
 
   releasePointerCapture(): void {}
 
-  getRootNode(): typeof this.root {
-    return this.root;
+  getRootNode(): typeof this.ownerDocument {
+    return this.ownerDocument;
   }
 
   getBoundingClientRect(): { left: number; top: number; width: number; height: number } {
@@ -156,6 +163,7 @@ class FakeDomElement {
 
   dispatch(type: string, event: Event): void {
     for (const listener of this.listeners.get(type) ?? []) listener(event);
+    for (const listener of this.documentListeners.get(type) ?? []) listener(event);
   }
 
   listenerCount(type: string): number {

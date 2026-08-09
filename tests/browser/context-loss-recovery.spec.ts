@@ -63,13 +63,20 @@ test.describe("context loss recovery", () => {
     probe = await page.evaluate(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__!);
     expect(probe.lostCount).toBeGreaterThanOrEqual(1);
     expect(probe.deviceLost).toBe(true);
+    expect(probe.pausedOnLoss).toBe(true);
 
     // Restoration is observable and clears the flag.
     await page.getByRole("button", { name: "Restore WebGL context" }).click();
     await page.waitForFunction(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__?.status === "restored");
     probe = await page.evaluate(() => window.__AURA3D_CONTEXT_LOSS_RECOVERY__!);
     expect(probe.restoredCount).toBeGreaterThanOrEqual(1);
+    expect(probe.recoveryCount).toBeGreaterThanOrEqual(1);
     expect(probe.deviceLost).toBe(false);
+    expect(probe.resourcesRecreated, JSON.stringify(probe)).toBe(true);
+    expect(probe.sceneRestored).toBe(true);
+    expect(probe.afterRestore.litPixels).toBeGreaterThan(1_000);
+    expect(probe.afterRestore.pixelHash).toBe(probe.beforeLoss.pixelHash);
+    expect(probe.afterRestore.runtimeMounted).toBe(true);
 
     const lifecycleEvidence = {
       schema: "aura3d-public-context-lifecycle/1.0",
@@ -79,6 +86,12 @@ test.describe("context loss recovery", () => {
         && probe.beforeLoss.litPixels > 1_000
         && probe.lostCount >= 1
         && probe.restoredCount >= 1
+        && probe.recoveryCount >= 1
+        && probe.pausedOnLoss
+        && probe.resourcesRecreated
+        && probe.sceneRestored
+        && probe.afterRestore.litPixels > 1_000
+        && probe.afterRestore.pixelHash === probe.beforeLoss.pixelHash
         && !probe.deviceLost
         && Object.values(probe.apiPresent).every(Boolean),
       probe
@@ -104,12 +117,17 @@ test.describe("context loss recovery", () => {
 declare global {
   interface Window {
     __AURA3D_CONTEXT_LOSS_RECOVERY__?: {
-      readonly status: "ready" | "lost" | "restored" | "error";
+      readonly status: "ready" | "lost" | "recovering" | "restored" | "error";
       readonly extensionAvailable: boolean;
-      readonly beforeLoss: { readonly litPixels: number; readonly deviceLost: boolean };
+      readonly beforeLoss: { readonly litPixels: number; readonly pixelHash: string; readonly deviceLost: boolean };
+      readonly afterRestore: { readonly litPixels: number; readonly pixelHash: string; readonly runtimeMounted: boolean };
       readonly lostCount: number;
       readonly restoredCount: number;
+      readonly recoveryCount: number;
       readonly deviceLost: boolean;
+      readonly pausedOnLoss: boolean;
+      readonly resourcesRecreated: boolean;
+      readonly sceneRestored: boolean;
       readonly runtimeBackend: string | undefined;
       readonly rendererMode: string;
       readonly lossSubscriptionActive: boolean;

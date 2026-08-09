@@ -1,3 +1,4 @@
+import { FirstPersonControls } from "@aura3d/controls";
 import { InputSystem } from "@aura3d/input";
 
 interface PointerLockResult {
@@ -15,6 +16,15 @@ interface InputBrowserResult {
   readonly pointerButtonDown: boolean;
   readonly touchCountDuringDown: number;
   readonly touchCountAfterUp: number;
+  readonly gamepadAxis: number;
+  readonly gamepadButtonPressed: boolean;
+  readonly firstPersonMoved: boolean;
+  readonly accessibility: {
+    readonly focusable: boolean;
+    readonly role: string | null;
+    readonly label: string | null;
+    readonly describedBy: string | null;
+  };
   readonly pointerLock: PointerLockResult;
   readonly error?: string;
 }
@@ -45,6 +55,13 @@ try {
   surface.focus();
   surface.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, code: "KeyW" }));
   const keyboardBeforeBlur = input.update().key("KeyW").down;
+  const firstPersonCamera = {
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 }
+  };
+  const firstPerson = new FirstPersonControls(firstPersonCamera, { moveSpeed: 2 });
+  firstPerson.applyInput(input.snapshot, 0.5);
+  const firstPersonMoved = Math.hypot(firstPersonCamera.position.x, firstPersonCamera.position.z) > 0.9;
 
   surface.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
   const keyboardAfterBlur = input.update().key("KeyW").down;
@@ -56,6 +73,21 @@ try {
 
   surface.dispatchEvent(pointerEvent("pointerup", { clientX: 12, clientY: 16, pointerId: 7, pointerType: "touch", button: 0 }));
   const touchCountAfterUp = input.update().pointer.touches.length;
+  const gamepadSnapshot = input.update([{
+    id: "browser-proof-gamepad",
+    index: 0,
+    connected: true,
+    axes: [0.75, 0],
+    buttons: [{ pressed: true, value: 1 }]
+  }]);
+  const gamepadAxis = gamepadSnapshot.gamepads[0]?.axes[0] ?? 0;
+  const gamepadButtonPressed = gamepadSnapshot.gamepadButton(0, 0).pressed;
+  const accessibility = {
+    focusable: surface.tabIndex === 0,
+    role: surface.getAttribute("role"),
+    label: surface.getAttribute("aria-label"),
+    describedBy: surface.getAttribute("aria-describedby")
+  };
 
   publish({
     status: "running",
@@ -64,6 +96,10 @@ try {
     pointerButtonDown,
     touchCountDuringDown,
     touchCountAfterUp,
+    gamepadAxis,
+    gamepadButtonPressed,
+    firstPersonMoved,
+    accessibility,
     pointerLock: {
       available: typeof surface.requestPointerLock === "function",
       requested: false,
@@ -82,6 +118,10 @@ try {
         pointerButtonDown,
         touchCountDuringDown,
         touchCountAfterUp,
+        gamepadAxis,
+        gamepadButtonPressed,
+        firstPersonMoved,
+        accessibility,
         pointerLock: { available, requested: false, settled: true, granted: false }
       });
       return;
@@ -100,6 +140,10 @@ try {
         pointerButtonDown,
         touchCountDuringDown,
         touchCountAfterUp,
+        gamepadAxis,
+        gamepadButtonPressed,
+        firstPersonMoved,
+        accessibility,
         pointerLock: {
           available,
           requested: true,
@@ -133,6 +177,10 @@ try {
     pointerButtonDown: false,
     touchCountDuringDown: 0,
     touchCountAfterUp: 0,
+    gamepadAxis: 0,
+    gamepadButtonPressed: false,
+    firstPersonMoved: false,
+    accessibility: { focusable: false, role: null, label: null, describedBy: null },
     pointerLock: { available: false, requested: false, settled: false, granted: false },
     error: error instanceof Error ? error.message : String(error)
   });

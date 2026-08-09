@@ -33,7 +33,7 @@ still not be a public release candidate.
 | `/apps/shadow-cascade-evidence/` | internal diagnostic | Cascaded PCF shadow evidence route; supplies the foundation shadow rows. |
 | `/apps/flagship-ibl-states/` | internal diagnostic | Linear-HDR IBL state evidence route for environment-lighting proof. |
 | `/apps/hdr-render-target-check/` | internal diagnostic | HDR render-target readback check; retained float-target evidence. |
-| `/apps/context-loss-recovery/` | internal diagnostic | Root-safe WebGL context-loss/restoration subscription evidence; does not claim automatic GPU-resource recreation. |
+| `/apps/context-loss-recovery/` | internal diagnostic | Root-safe WebGL context-loss/restoration evidence; pauses on loss and explicitly remounts the retained scene to recreate renderer-owned resources. This is app-driven, not universal transparent recovery. |
 
 ## Showcase Slate
 

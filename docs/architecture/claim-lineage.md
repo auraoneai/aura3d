@@ -97,5 +97,7 @@ Neither proves a test executed the public path and observed the claimed behaviou
    covered. WS-2.6 closed the root-API gap, and the final 1.6 completion pass added
    `apps/context-loss-recovery` as an actual retained consumer. Its browser test provokes a real
    loss/restoration cycle through the public app API, so the generated row now reaches `parity`
-   without relaxing the consumer rule. Automatic GPU-resource recreation remains explicitly
-   unclaimed.
+   without relaxing the consumer rule. WS-3.9 extends that retained consumer to pause on loss and
+   explicitly remount the same scene after restoration; a fresh production runtime renders the same
+   framebuffer hash. Universal transparent recovery of arbitrary caller-owned resources remains
+   explicitly unclaimed.

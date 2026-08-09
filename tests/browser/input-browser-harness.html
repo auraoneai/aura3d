@@ -5,7 +5,8 @@
     <title>Aura3D Input Browser Harness</title>
   </head>
   <body>
-    <canvas id="input-surface" width="64" height="64" tabindex="0"></canvas>
+    <p id="input-instructions">Use keyboard, pointer, touch, or gamepad controls to navigate the 3D viewport.</p>
+    <canvas id="input-surface" width="64" height="64" tabindex="0" role="application" aria-label="Aura3D interactive 3D viewport" aria-describedby="input-instructions"></canvas>
     <button id="lock-target" type="button">Lock Pointer</button>
     <script type="module" src="./input-browser-harness.ts"></script>
   </body>

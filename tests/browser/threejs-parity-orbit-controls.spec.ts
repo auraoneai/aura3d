@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -74,6 +74,13 @@ test.describe("ThreejsParity OrbitControls route parity evidence", () => {
     expect(after.target[0]).not.toBeCloseTo(before.target[0], 4);
     mkdirSync(dirname(resolve(SCREENSHOT_PATH)), { recursive: true });
     await page.screenshot({ path: SCREENSHOT_PATH, fullPage: false });
+    writeFileSync(resolve(SCREENSHOT_PATH.replace(/\.png$/, ".json")), `${JSON.stringify({
+      schema: "aura3d.orbit-controls-browser/1.0",
+      generatedAt: new Date().toISOString(),
+      pass: true,
+      before,
+      after
+    }, null, 2)}\n`);
     expect(pageErrors).toEqual([]);
   });
 });

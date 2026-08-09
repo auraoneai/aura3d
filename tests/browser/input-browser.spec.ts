@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 test.describe("input browser runtime", () => {
@@ -29,9 +31,38 @@ test.describe("input browser runtime", () => {
     expect(result?.pointerButtonDown).toBe(true);
     expect(result?.touchCountDuringDown).toBe(1);
     expect(result?.touchCountAfterUp).toBe(0);
+    expect(result?.gamepadAxis).toBeCloseTo(0.75);
+    expect(result?.gamepadButtonPressed).toBe(true);
+    expect(result?.firstPersonMoved).toBe(true);
+    expect(result?.accessibility).toEqual({
+      focusable: true,
+      role: "application",
+      label: "Aura3D interactive 3D viewport",
+      describedBy: "input-instructions"
+    });
     expect(result?.pointerLock.available).toBe(true);
     expect(result?.pointerLock.requested).toBe(true);
     expect(result?.pointerLock.settled).toBe(true);
+    mkdirSync(resolve("tests/reports/controls-picking-xr-context"), { recursive: true });
+    writeFileSync(resolve("tests/reports/controls-picking-xr-context/input-modalities.json"), `${JSON.stringify({
+      schema: "aura3d.input-modalities/1.0",
+      generatedAt: new Date().toISOString(),
+      pass: result?.status === "ready"
+        && result.keyboardBeforeBlur
+        && !result.keyboardAfterBlur
+        && result.pointerButtonDown
+        && result.touchCountDuringDown === 1
+        && result.touchCountAfterUp === 0
+        && result.gamepadAxis === 0.75
+        && result.gamepadButtonPressed
+        && result.firstPersonMoved
+        && result.accessibility.focusable
+        && result.accessibility.role === "application"
+        && Boolean(result.accessibility.label)
+        && Boolean(result.accessibility.describedBy)
+        && result.pointerLock.settled,
+      result
+    }, null, 2)}\n`);
   });
 });
 
@@ -44,6 +75,15 @@ declare global {
       readonly pointerButtonDown: boolean;
       readonly touchCountDuringDown: number;
       readonly touchCountAfterUp: number;
+      readonly gamepadAxis: number;
+      readonly gamepadButtonPressed: boolean;
+      readonly firstPersonMoved: boolean;
+      readonly accessibility: {
+        readonly focusable: boolean;
+        readonly role: string | null;
+        readonly label: string | null;
+        readonly describedBy: string | null;
+      };
       readonly pointerLock: {
         readonly available: boolean;
         readonly requested: boolean;

@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -193,6 +193,15 @@ test.describe("CurrentRoutes parity evidence", () => {
       const screenshotPath = resolve(routeCase.screenshot);
       mkdirSync(dirname(screenshotPath), { recursive: true });
       await page.screenshot({ path: screenshotPath, fullPage: true });
+      writeFileSync(screenshotPath.replace(/\.png$/, ".json"), `${JSON.stringify({
+        schema: "aura3d.current-route-runtime-evidence/1.0",
+        generatedAt: new Date().toISOString(),
+        pass: true,
+        name: routeCase.name,
+        route: routeCase.route,
+        renderer: routeCase.renderer,
+        runtime
+      }, null, 2)}\n`);
     });
   }
 });

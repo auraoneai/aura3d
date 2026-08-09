@@ -1,6 +1,6 @@
 # Controls, Interaction, And Picking
 
-Version: 1.0.5
+Version: 1.6
 
 `@aura3d/controls` owns camera controls, transform controls, selection, picking helpers, annotation picking, and interaction-mode adapters. The package is exported from `@aura3d/engine/controls`.
 
@@ -41,20 +41,30 @@ This split matters for product and advanced-gallery routes: annotation hotspots 
 
 Focused coverage lives in:
 
+- `tests/unit/controls/exported-controls-resolution.test.ts`
+- `tests/unit/input/orbit-controls-three-parity.test.ts`
+- `tests/unit/rendering/interactive-cubes-three-parity.test.ts`
+- `tests/unit/rendering/interactive-points-three-parity.test.ts`
 - `tests/unit/controls/three-compat-controls.test.ts`
-- `tests/browser/three-compat-controls.spec.ts`
-- `tests/browser/advanced-examples-gallery.spec.ts`
-- `tools/three-compat-controls-readiness/index.ts`
+- `tests/browser/threejs-parity-orbit-controls.spec.ts`
+- `tests/browser/threejs-parity-transform-controls.spec.ts`
+- `tests/browser/input-browser.spec.ts`
+- `tests/browser/current-routes-parity-evidence.spec.ts`
 
 Useful commands:
 
 ```sh
 pnpm three-compat:controls
-pnpm advanced-gallery:pipeline
+pnpm renderer:controls-picking-xr-context
 ```
 
 ## Current Limits
 
 - Imported GLB part selection is evidence-bound. Do not imply triangle-level authored-asset picking unless the route/test proves that exact path.
 - XR controller sampling and AR hit-test behavior are route/app evidence surfaces, not a blanket package claim.
+- The current XR receipt uses injected sessions only; it is not physical-device,
+  compositor, or hardware-renderer evidence.
 - Controls compatibility with low-level renderer code is scoped to supported adapters and tested workflows.
+
+See `docs/rendering/controls-picking-xr-context.md` for the current r185,
+rendered-route, input-modality, injected-XR, and context-restoration receipt.

@@ -101,6 +101,15 @@ Robot Expressive comparisons against actual Three.js r185 do not prove
 automatic arbitrary-rig retargeting, full-body IK, or universal animation
 parity.
 
+Controls, picking, XR, and recovery evidence is bounded in
+`docs/rendering/controls-picking-xr-context.md`. Rendered routes and focused
+package tests prove the named orbit, trackball, first-person, input, picking,
+and transform-gizmo behaviors. WebXR proof uses injected sessions and must not
+be presented as physical-device or compositor evidence. Context recovery is a
+root app-owned pause and explicit scene remount after restoration; it is not a
+blanket guarantee that every lower-level consumer or external GPU resource is
+recreated transparently.
+
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
 has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,
 convex-hull GJK/EPA, triangle-backed mesh/heightfield contacts, and
