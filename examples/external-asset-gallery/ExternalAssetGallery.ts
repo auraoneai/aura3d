@@ -13,11 +13,13 @@ export async function mountExternalAssetGallery(id: string): Promise<void> {
   const root = document.getElementById("app");
   if (!root) throw new Error("Missing #app root.");
   root.innerHTML = `
-    <main style="display:grid;grid-template-columns:360px 1fr;height:100vh;background:#101317;color:#f5f1e8;font-family:Inter,system-ui,sans-serif">
-      <aside style="border-right:1px solid #303843;padding:18px;overflow:auto">
-        <h1 style="font-size:20px;margin:0 0 14px">Asset Studio Pro</h1>
-        <label>Asset <select data-testid="hr4-asset-select"></select></label>
-        <pre data-testid="hr4-asset-status" style="white-space:pre-wrap;background:#171d24;padding:12px;margin-top:16px;max-height:42vh;overflow:auto">loading</pre>
+    <main style="display:grid;grid-template-columns:340px 1fr;height:100vh;background:#101317;color:#f5f1e8;font-family:Inter,system-ui,sans-serif">
+      <aside style="border-right:1px solid #303843;padding:22px;overflow:auto;background:#0d1116">
+        <span style="display:inline-flex;padding:5px 8px;border:1px solid #486581;border-radius:999px;color:#9bc9ee;font-size:11px;font-weight:750;letter-spacing:.06em;text-transform:uppercase">Corpus diagnostic</span>
+        <h1 style="font-size:22px;margin:14px 0 8px">glTF Coverage Index</h1>
+        <p style="margin:0 0 20px;color:#aeb7c2;line-height:1.45">Manifest, license, and feature inventory. The canvas is a coverage map—not a rendered model preview or Three.js parity result.</p>
+        <label style="display:grid;gap:7px;color:#c8d2de">Corpus record <select data-testid="hr4-asset-select" style="padding:8px;background:#171d24;color:#f5f1e8;border:1px solid #3b4654"></select></label>
+        <pre data-testid="hr4-asset-status" style="white-space:pre-wrap;background:#171d24;padding:14px;margin-top:16px;border:1px solid #303843;border-radius:8px;line-height:1.55;overflow:auto">loading</pre>
       </aside>
       <section style="display:grid;grid-template-rows:1fr 190px;min-width:0">
         <canvas data-testid="hr4-asset-canvas" width="1280" height="720" style="width:100%;height:100%;display:block;background:#14181e"></canvas>
@@ -75,7 +77,14 @@ export async function mountExternalAssetGallery(id: string): Promise<void> {
       claimBoundary
     };
     window.__AURA3D_ASSET_STUDIO__ = state;
-    status.textContent = JSON.stringify(state, null, 2);
+    status.textContent = [
+      `record     ${diagnostics.id}`,
+      `license    ${diagnostics.license}`,
+      `features   ${diagnostics.features.join(", ")}`,
+      `provenance ${diagnostics.provenance}`,
+      "render     not rendered — coverage record only",
+      `corpus     ${state.assetCount} records / ${state.pass} expected-pass`,
+    ].join("\n");
   }
 
   select.addEventListener("change", render);
@@ -128,6 +137,8 @@ function drawAssetPreview(context: CanvasRenderingContext2D, canvas: HTMLCanvasE
     context.fillText(features[index] ?? "", x + 14, y + 43);
   }
   context.fillStyle = "#f8f3e7";
+  context.font = "700 16px system-ui";
+  context.fillText("FEATURE COVERAGE — NOT A MODEL RENDER", 160, 140);
   context.font = "42px system-ui";
   context.fillText(asset.id, 160, 645);
   context.font = "22px system-ui";
