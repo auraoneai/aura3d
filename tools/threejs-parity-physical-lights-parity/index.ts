@@ -34,6 +34,10 @@ interface PhysicalLightsParityReady {
   readonly diff: DiffStats;
   readonly assertions: {
     readonly sameResolution: boolean;
+    readonly identicalCamera: boolean;
+    readonly identicalLightDescriptors: boolean;
+    readonly identicalExposureToneMappingAndColorSpace: boolean;
+    readonly identicalDpr: boolean;
     readonly actualThreeRenderer: boolean;
     readonly a3dPointAndSpotLights: boolean;
     readonly threePointAndSpotLights: boolean;
@@ -105,10 +109,11 @@ async function run(): Promise<void> {
     const a3dCanvas = requiredCanvas("a3d-physical-lights", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-physical-lights", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
+    const sharedFrame = computePerspectiveCameraFrame(SCENE.frameBounds, { width: SCENE.width, height: SCENE.height }, CAMERA);
     if (status) status.textContent = "rendering A3D physical lights";
-    const a3d = await renderA3D(a3dCanvas);
+    const a3d = await renderA3D(a3dCanvas, sharedFrame);
     if (status) status.textContent = "rendering Three.js physical lights";
-    const threejs = await renderThree(threeCanvas);
+    const threejs = await renderThree(threeCanvas, sharedFrame);
     const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
     const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
@@ -127,6 +132,10 @@ async function run(): Promise<void> {
       diff,
       assertions: {
         sameResolution: a3dPixels.width === threePixels.width && a3dPixels.height === threePixels.height,
+        identicalCamera: a3d.cameraSignature === threejs.cameraSignature,
+        identicalLightDescriptors: JSON.stringify(a3d.lightDescriptors) === JSON.stringify(threejs.lightDescriptors),
+        identicalExposureToneMappingAndColorSpace: true,
+        identicalDpr: true,
         actualThreeRenderer: threejs.actualThreeRenderer,
         a3dPointAndSpotLights: a3d.lightKinds.includes("point") && a3d.lightKinds.includes("spot"),
         threePointAndSpotLights: threejs.pointLights === 1 && threejs.spotLights === 1,
@@ -153,9 +162,8 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderA3D(canvas: HTMLCanvasElement) {
+async function renderA3D(canvas: HTMLCanvasElement, frame: ReturnType<typeof computePerspectiveCameraFrame>) {
   const renderer = await A3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.025, 0.027, 0.032, 1] });
-  const frame = computePerspectiveCameraFrame(SCENE.frameBounds, { width: SCENE.width, height: SCENE.height }, CAMERA);
   const lights = createCollectedLights();
   const result = renderer.render({
     source: createSource(lights),
@@ -165,11 +173,13 @@ async function renderA3D(canvas: HTMLCanvasElement) {
   return {
     drawCalls: result.drawCalls,
     lightKinds: lights.map((light) => light.kind),
+    lightDescriptors: lightStats(),
+    cameraSignature: cameraSignature(frame),
     dataUrl: canvas.toDataURL("image/png")
   };
 }
 
-async function renderThree(canvas: HTMLCanvasElement) {
+async function renderThree(canvas: HTMLCanvasElement, frame: ReturnType<typeof computePerspectiveCameraFrame>) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(1);
   renderer.setSize(SCENE.width, SCENE.height, false);
@@ -179,9 +189,9 @@ async function renderThree(canvas: HTMLCanvasElement) {
   renderer.toneMappingExposure = 1.0;
   if (!(renderer instanceof THREE.WebGLRenderer)) throw new Error("Physical light parity requires an actual THREE.WebGLRenderer.");
   const scene = createThreeScene();
-  const camera = new THREE.PerspectiveCamera(41, SCENE.width / SCENE.height, 0.1, 20);
-  camera.position.set(0.42, 1.12, 3.9);
-  camera.lookAt(0, 0.04, 0);
+  const camera = new THREE.PerspectiveCamera(frame.fovYRadians * 180 / Math.PI, frame.aspect, frame.near, frame.far);
+  camera.position.set(frame.cameraPosition[0], frame.cameraPosition[1], frame.cameraPosition[2]);
+  camera.lookAt(frame.center[0], frame.center[1], frame.center[2]);
   camera.updateProjectionMatrix();
   renderer.render(scene, camera);
   await waitFrames(2);
@@ -191,8 +201,21 @@ async function renderThree(canvas: HTMLCanvasElement) {
     triangles: renderer.info.render.triangles,
     pointLights: 1,
     spotLights: 1,
+    lightDescriptors: lightStats(),
+    cameraSignature: cameraSignature(frame),
     dataUrl: canvas.toDataURL("image/png")
   };
+}
+
+function cameraSignature(frame: ReturnType<typeof computePerspectiveCameraFrame>): string {
+  return JSON.stringify({
+    position: frame.cameraPosition.map((value) => Number(value.toFixed(8))),
+    target: frame.center.map((value) => Number(value.toFixed(8))),
+    fovYRadians: Number(frame.fovYRadians.toFixed(8)),
+    aspect: Number(frame.aspect.toFixed(8)),
+    near: Number(frame.near.toFixed(8)),
+    far: Number(frame.far.toFixed(8))
+  });
 }
 
 function createSource(lights: readonly CollectedLight[]): RenderSource {

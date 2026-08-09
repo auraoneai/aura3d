@@ -44,7 +44,7 @@ test.describe("runtime PBR shadow-map artifact", () => {
       parity?: { claim?: string };
       scene?: { shadowMap?: { requested?: boolean; size?: number; pcfSamples?: number } };
       shadowed?: {
-        diagnostics: { drawCalls: number; lastError: string | null; renderTargets?: number };
+        diagnostics: { drawCalls: number; lastError: string | null; renderTargets?: number; shadowRenderTargetsAllocated?: number };
         pixelStats: { shadowPatchLuma: number; litPatchLuma: number; contactDarkening: number; nonBlackPixels: number; uniqueColorBuckets: number };
       };
       unshadowed?: {
@@ -61,7 +61,8 @@ test.describe("runtime PBR shadow-map artifact", () => {
     expect(result.scene?.shadowMap).toMatchObject({ requested: true, size: 2048, pcfSamples: 16 });
     expect(result.shadowed?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(3);
     expect(result.shadowed?.diagnostics.lastError).toBeNull();
-    expect(result.shadowed?.diagnostics.renderTargets ?? 0).toBe(0);
+    expect(result.shadowed?.diagnostics.renderTargets ?? 0).toBeGreaterThanOrEqual(1);
+    expect(result.shadowed?.diagnostics.shadowRenderTargetsAllocated ?? 0).toBeGreaterThanOrEqual(1);
     expect(result.unshadowed?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(2);
     expect(result.unshadowed?.diagnostics.lastError).toBeNull();
     expect(result.shadowed?.pixelStats.nonBlackPixels ?? 0).toBeGreaterThan(180_000);

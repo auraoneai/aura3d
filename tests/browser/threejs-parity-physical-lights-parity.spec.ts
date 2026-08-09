@@ -60,6 +60,10 @@ test.describe("physical lights same-scene parity", () => {
     expect(result.schema).toBe("a3d-threejs-parity-physical-lights-parity");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
+    expect(result.assertions.identicalCamera).toBe(true);
+    expect(result.assertions.identicalLightDescriptors).toBe(true);
+    expect(result.assertions.identicalExposureToneMappingAndColorSpace).toBe(true);
+    expect(result.assertions.identicalDpr).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.a3dPointAndSpotLights).toBe(true);
     expect(result.assertions.threePointAndSpotLights).toBe(true);
@@ -124,7 +128,9 @@ function assertA3DShaderUsesRangeFalloffAndInverseSquare(): void {
 }
 
 function assertNoThreeJsInA3DLightRuntimeSource(): void {
-  const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
+  // Keep the namespace checks case-sensitive so prose such as "Three.js
+  // behaviour" cannot be mistaken for a `THREE.*` runtime dependency.
+  const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./;
   for (const sourcePath of [
     "apps/lights-spotlight/src/main.ts",
     "packages/rendering/src/LightUniforms.ts",
@@ -169,6 +175,10 @@ type PhysicalLightsParityResult =
       readonly diff: { readonly meanDelta: number; readonly structuralSimilarityProxy: number };
       readonly assertions: {
         readonly sameResolution: boolean;
+        readonly identicalCamera: boolean;
+        readonly identicalLightDescriptors: boolean;
+        readonly identicalExposureToneMappingAndColorSpace: boolean;
+        readonly identicalDpr: boolean;
         readonly actualThreeRenderer: boolean;
         readonly a3dPointAndSpotLights: boolean;
         readonly threePointAndSpotLights: boolean;

@@ -1,4 +1,4 @@
-import { mkdirSync, statSync } from "node:fs";
+import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -41,6 +41,14 @@ test.describe("rectangular area-light browser pixels", () => {
     mkdirSync(dirname(screenshotPath), { recursive: true });
     await page.screenshot({ path: screenshotPath, fullPage: true });
     expect(statSync(screenshotPath).size).toBeGreaterThan(10_000);
+    const reportPath = resolve("tests/reports/lighting-environment-color/rect-area-light.json");
+    mkdirSync(dirname(reportPath), { recursive: true });
+    writeFileSync(reportPath, `${JSON.stringify({
+      schema: "aura3d.rect-area-light/1.0",
+      generatedAt: new Date().toISOString(),
+      screenshot: "tests/reports/environment-platform/rect-area-light-browser.png",
+      ...result
+    }, null, 2)}\n`);
   });
 });
 

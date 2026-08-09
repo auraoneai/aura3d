@@ -90,7 +90,9 @@ test.describe("runtime contact shadow parity artifact", () => {
     expect(result.a3d?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(30);
     expect(result.a3d?.diagnostics.lastError, JSON.stringify(result.a3d, null, 2)).toBeNull();
     expect(result.a3d?.diagnostics.nativeShadowMapBindings ?? 0).toBeGreaterThan(0);
-    expect(result.a3d?.diagnostics.disposedRenderTargets ?? 0).toBeGreaterThanOrEqual(1);
+    // Diagnostics are captured before renderer disposal, so the live renderer-
+    // owned shadow target must be allocated rather than already disposed.
+    expect(result.a3d?.diagnostics.renderTargets ?? 0).toBeGreaterThanOrEqual(1);
     expect(result.a3d?.contactShadows).toHaveLength(3);
     expect(result.a3d?.contactShadows.every((contact) => contact.mode === "directional-multi-lobe-receiver-contact")).toBe(true);
     expect(result.a3d?.contactShadows.every((contact) => contact.parity === "not-full-contact-shadow")).toBe(true);

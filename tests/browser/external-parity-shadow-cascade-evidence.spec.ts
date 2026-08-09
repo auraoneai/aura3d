@@ -55,6 +55,8 @@ test.describe("ExternalParity cascaded PCF shadow browser evidence", () => {
     // Negative control: same lighting and same receiver, shadows enabled, caster removed.
     // Any darkening here is the receiver shadowing itself, not a rendered occluder.
     const acneControl = await measureCasterFreeAcne(page);
+    const peterPanningControl = await measureCasterShadowContact(page);
+    const stabilityAndAtlas = await measureCascadeStabilityAndAtlas(page);
 
     mkdirSync(dirname(resolve(screenshotPath)), { recursive: true });
     await page.screenshot({ path: screenshotPath, fullPage: true });
@@ -76,6 +78,8 @@ test.describe("ExternalParity cascaded PCF shadow browser evidence", () => {
       checks: evidence?.checks,
       metrics: evidence?.metrics,
       acneControl,
+      peterPanningControl,
+      stabilityAndAtlas,
       errors
     }, null, 2)}\n`);
 
@@ -114,6 +118,17 @@ test.describe("ExternalParity cascaded PCF shadow browser evidence", () => {
     // Acne control. The pre-fix renderer measured 15.31 here.
     expect(acneControl.meanDarkening).toBeLessThan(3);
     expect(acneControl.comparedPixels).toBeGreaterThan(5_000);
+    expect(peterPanningControl.darkenedReceiverPixels).toBeGreaterThan(200);
+    expect(peterPanningControl.contactGapPixels).toBeLessThanOrEqual(4);
+
+    // Sub-texel camera movement must retain all snapped cascade centres, while
+    // a multi-texel move must eventually advance them. The actual public CSM
+    // pipeline must also allocate every cascade into a non-overlapping atlas.
+    expect(stabilityAndAtlas.subTexelStableCascades).toBe(4);
+    expect(stabilityAndAtlas.multiTexelMovedCascades).toBeGreaterThanOrEqual(1);
+    expect(stabilityAndAtlas.atlasAllocationCount).toBe(4);
+    expect(stabilityAndAtlas.atlasNonOverlapping).toBe(true);
+    expect(stabilityAndAtlas.atlasUtilization).toBeGreaterThan(0.5);
   });
 });
 
@@ -144,6 +159,219 @@ interface AcneControl {
   readonly meanDarkening: number;
   readonly comparedPixels: number;
   readonly description: string;
+}
+
+interface PeterPanningControl {
+  readonly contactGapPixels: number;
+  readonly darkenedReceiverPixels: number;
+  readonly casterPixels: number;
+  readonly description: string;
+}
+
+/**
+ * Renders a box seated exactly on the receiver, then locates its red image-space
+ * silhouette and the shadow-only darkening outside that silhouette. A large
+ * positive bias detaches the projected shadow (peter-panning), leaving a visible
+ * pixel gap between the caster bounds and the first shadowed receiver pixel.
+ */
+async function measureCasterShadowContact(page: Page): Promise<PeterPanningControl> {
+  return page.evaluate(async () => {
+    const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
+    const sceneModule = await import("/packages/scene/src/index.ts") as typeof import("../../packages/scene/src");
+    const { Geometry, PBRMaterial, Renderer } = rendering;
+    const width = 520;
+    const height = 390;
+    const scaleTranslate = (scale: readonly number[], translate: readonly number[]): Float32Array => new Float32Array([
+      scale[0]!, 0, 0, 0,
+      0, scale[1]!, 0, 0,
+      0, 0, scale[2]!, 0,
+      translate[0]!, translate[1]!, translate[2]!, 1
+    ]);
+    const floor = new PBRMaterial({
+      name: "peter-control-receiver",
+      baseColor: [0.62, 0.64, 0.68, 1],
+      metallic: 0,
+      roughness: 0.82,
+      environmentIntensity: 0.1
+    });
+    const caster = new PBRMaterial({
+      name: "peter-control-caster",
+      baseColor: [0.9, 0.08, 0.035, 1],
+      metallic: 0,
+      roughness: 0.55,
+      environmentIntensity: 0.1
+    });
+    const renderFrame = async (castShadow: boolean): Promise<Uint8Array> => {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.style.display = "none";
+      document.body.append(canvas);
+      const renderer = await Renderer.create({
+        canvas,
+        width,
+        height,
+        backend: "webgl2",
+        preserveDrawingBuffer: true,
+        clearColor: [0.03, 0.04, 0.06, 1],
+        requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets"]
+      });
+      const light = new sceneModule.DirectionalLight("peter-control-key");
+      light.castsShadow = castShadow;
+      light.intensity = 3.1;
+      renderer.render({
+        renderItems: [
+          {
+            label: "peter-control-receiver-plane",
+            geometry: Geometry.litCube(1),
+            material: floor,
+            modelMatrix: scaleTranslate([6.4, 0.08, 5.2], [0, -0.6, 0])
+          },
+          {
+            label: "peter-control-seated-caster",
+            geometry: Geometry.litCube(1),
+            material: caster,
+            modelMatrix: scaleTranslate([0.75, 0.75, 0.75], [0, -0.185, 0])
+          }
+        ],
+        collectedLights: [{
+          kind: "directional",
+          color: [1, 0.97, 0.9],
+          intensity: 3.1,
+          position: [5.1, 3, 2.2],
+          direction: [-0.86, -0.52, -0.34],
+          range: 0,
+          spotAngle: 0,
+          penumbra: 0,
+          castsShadow: castShadow,
+          layerMask: 0xffffffff,
+          source: light
+        }],
+        shadow: castShadow ? { size: 1024, bias: 0.0015, pcfSamples: 16, pcfRadius: 1.5, strength: 0.72, filter: "pcf" } : false,
+        camera: { position: [4.6, 3.4, 5.4], target: [0, -0.3, 0], fovDegrees: 45, near: 0.1, far: 80 }
+      });
+      const pixels = renderer.device.readPixels(0, 0, width, height);
+      renderer.dispose();
+      canvas.remove();
+      return pixels;
+    };
+    const lit = await renderFrame(false);
+    const shadowed = await renderFrame(true);
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+    let casterPixels = 0;
+    for (let pixel = 0; pixel < width * height; pixel += 1) {
+      const offset = pixel * 4;
+      const r = lit[offset] ?? 0;
+      const g = lit[offset + 1] ?? 0;
+      const b = lit[offset + 2] ?? 0;
+      if (r <= 70 || r <= g * 1.25 || r <= b * 1.25) continue;
+      const x = pixel % width;
+      const y = Math.floor(pixel / width);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+      casterPixels += 1;
+    }
+    if (casterPixels === 0) throw new Error("Peter-panning control could not locate the seated red caster");
+    let contactGapPixels = Number.POSITIVE_INFINITY;
+    let darkenedReceiverPixels = 0;
+    for (let pixel = 0; pixel < width * height; pixel += 1) {
+      const offset = pixel * 4;
+      const litRgb = (lit[offset] ?? 0) + (lit[offset + 1] ?? 0) + (lit[offset + 2] ?? 0);
+      const shadowedRgb = (shadowed[offset] ?? 0) + (shadowed[offset + 1] ?? 0) + (shadowed[offset + 2] ?? 0);
+      if (litRgb <= 45 || shadowedRgb <= 45 || litRgb - shadowedRgb < 18) continue;
+      const x = pixel % width;
+      const y = Math.floor(pixel / width);
+      if (x >= minX && x <= maxX && y >= minY && y <= maxY) continue;
+      darkenedReceiverPixels += 1;
+      const dx = x < minX ? minX - x : x > maxX ? x - maxX : 0;
+      const dy = y < minY ? minY - y : y > maxY ? y - maxY : 0;
+      contactGapPixels = Math.min(contactGapPixels, Math.hypot(dx, dy));
+    }
+    return {
+      contactGapPixels: Number(contactGapPixels.toFixed(3)),
+      darkenedReceiverPixels,
+      casterPixels,
+      description: "A red box is seated exactly on the receiver. The reported gap is the minimum image-space distance from its silhouette bounds to shadow-only receiver darkening."
+    };
+  });
+}
+
+interface StabilityAndAtlasControl {
+  readonly subTexelStableCascades: number;
+  readonly multiTexelMovedCascades: number;
+  readonly atlasAllocationCount: number;
+  readonly atlasNonOverlapping: boolean;
+  readonly atlasUtilization: number;
+  readonly stableTexelSnapping: boolean;
+}
+
+async function measureCascadeStabilityAndAtlas(page: Page): Promise<StabilityAndAtlasControl> {
+  return page.evaluate(async () => {
+    const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
+    const cascades = new rendering.CascadedShadowMaps({
+      cascadeCount: 4,
+      near: 0.1,
+      far: 80,
+      lambda: 0.62,
+      size: 1024,
+      filter: "pcf",
+      pcfSamples: 16
+    });
+    const baseCamera = {
+      position: [0, 3, 4] as const,
+      target: [0, 1, -20] as const,
+      fovYRadians: Math.PI / 3,
+      aspect: 16 / 9
+    };
+    const fit = (offset: number) => cascades.computeStableCameraFits({
+      camera: {
+        ...baseCamera,
+        position: [baseCamera.position[0] + offset, baseCamera.position[1], baseCamera.position[2]],
+        target: [baseCamera.target[0] + offset, baseCamera.target[1], baseCamera.target[2]]
+      },
+      lightDirection: [0.35, -0.8, -0.48],
+      casters: []
+    });
+    const base = fit(0);
+    const minimumTexel = Math.min(...base.map((entry) => entry.texelSize));
+    const subTexel = fit(minimumTexel * 0.001);
+    const multiTexel = fit(Math.max(...base.map((entry) => entry.texelSize)) * 3);
+    const sameSnappedCenter = (left: (typeof base)[number], right: (typeof base)[number]) =>
+      Math.abs(left.snappedCenterLightSpace[0] - right.snappedCenterLightSpace[0]) < 1e-9
+      && Math.abs(left.snappedCenterLightSpace[1] - right.snappedCenterLightSpace[1]) < 1e-9;
+    const pipeline = rendering.createExternalParityCascadedShadowPipeline({
+      cameraNear: 0.1,
+      cameraFar: 80,
+      cascadeCount: 4,
+      mapSize: 512,
+      atlasSize: 1024,
+      pcfRadius: 1.5
+    });
+    const allocations = pipeline.atlas.allocations;
+    const overlaps = (left: (typeof allocations)[number], right: (typeof allocations)[number]) =>
+      left.x < right.x + right.width
+      && left.x + left.width > right.x
+      && left.y < right.y + right.height
+      && left.y + left.height > right.y;
+    const atlasNonOverlapping = allocations.every((left, leftIndex) =>
+      allocations.every((right, rightIndex) => leftIndex === rightIndex || !overlaps(left, right))
+    );
+    const result = {
+      subTexelStableCascades: base.filter((entry, index) => sameSnappedCenter(entry, subTexel[index]!)).length,
+      multiTexelMovedCascades: base.filter((entry, index) => !sameSnappedCenter(entry, multiTexel[index]!)).length,
+      atlasAllocationCount: allocations.length,
+      atlasNonOverlapping,
+      atlasUtilization: pipeline.atlas.utilization,
+      stableTexelSnapping: pipeline.stableTexelSnapping
+    };
+    cascades.dispose();
+    return result;
+  });
 }
 
 /**

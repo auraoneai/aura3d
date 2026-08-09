@@ -74,6 +74,14 @@ transmission, full textured PBR, skinning, morphs, or every glTF extension a
 root `createAuraApp` claim, and it does not prove universal Three.js ecosystem
 parity.
 
+Lighting/environment evidence follows the same rule. The current comparison in
+`docs/rendering/lighting-environment-color.md` proves selected
+production-runtime light, shadow, HDR/IBL, PMREM, background, and display-color
+workloads. Finite rectangular lights and the bounded receiver-contact
+approximation are rendering/runtime claims, not automatic root
+`createAuraApp` claims; the latter is not a general screen-space or ray-traced
+contact-shadow system.
+
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
 has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,
 convex-hull GJK/EPA, triangle-backed mesh/heightfield contacts, and
