@@ -297,9 +297,7 @@ export function createPostProcessCapabilityReport(device: RenderDevice): PostPro
       "ssr-with-depth-binding",
       "taa",
       "outline",
-      "fxaa",
-      "stereo-anaglyph",
-      "stereo-parallax-barrier"
+      "fxaa"
     ],
     unsupportedEffects,
     supportsRenderTargets,

@@ -80,6 +80,10 @@ test.describe("UnrealBloomPass same-scene parity", () => {
     expect(result.threejs.postprocess.actualRenderPass).toBe(true);
     expect(result.threejs.postprocess.actualUnrealBloomPass).toBe(true);
     expect(result.threejs.postprocess.threshold).toBeCloseTo(0.08, 5);
+    expect(result.a3d.postprocess.renderTargets).toBe(2);
+    expect(result.a3d.postprocess.frameCost.samples).toBeGreaterThanOrEqual(10);
+    expect(result.threejs.postprocess.renderTargets).toBeGreaterThanOrEqual(13);
+    expect(result.threejs.postprocess.frameCost.samples).toBeGreaterThanOrEqual(10);
     expect(result.a3d.pixels.nonBlackPixels).toBeGreaterThan(20_000);
     expect(result.threejs.pixels.nonBlackPixels).toBeGreaterThan(20_000);
     expect(result.a3d.pixels.brightPixels).toBeGreaterThan(4_000);
@@ -169,7 +173,7 @@ type UnrealBloomParityResult =
       readonly purpose: string;
       readonly a3d: {
         readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: boolean };
-        readonly postprocess: { readonly chain: readonly string[]; readonly threshold: number; readonly radius: number };
+        readonly postprocess: { readonly chain: readonly string[]; readonly threshold: number; readonly radius: number; readonly renderTargets: number; readonly frameCost: { readonly samples: number; readonly medianMs: number; readonly p95Ms: number } };
         readonly pixels: { readonly nonBlackPixels: number; readonly brightPixels: number; readonly haloPixels: number; readonly uniqueColorBuckets: number };
       };
       readonly threejs: {
@@ -179,6 +183,8 @@ type UnrealBloomParityResult =
           readonly actualRenderPass: boolean;
           readonly actualUnrealBloomPass: boolean;
           readonly threshold: number;
+          readonly renderTargets: number;
+          readonly frameCost: { readonly samples: number; readonly medianMs: number; readonly p95Ms: number };
         };
         readonly pixels: { readonly nonBlackPixels: number; readonly brightPixels: number; readonly haloPixels: number; readonly uniqueColorBuckets: number };
       };

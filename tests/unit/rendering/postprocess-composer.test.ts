@@ -139,8 +139,7 @@ describe("PostProcessComposer", () => {
       "depth-of-field-with-depth-binding",
       "ssao-with-depth-binding",
       "fxaa",
-      "taa",
-      "stereo-parallax-barrier"
+      "taa"
     ]));
     expect(report.supportsRenderTargets).toBe(true);
     expect(report.supportsPresentation).toBe(true);
@@ -151,5 +150,52 @@ describe("PostProcessComposer", () => {
       expect.objectContaining({ name: "hdr-render-target-postprocess", requiredCapability: "hdr-render-targets" }),
       expect.objectContaining({ name: "hdr-float-readback-postprocess", requiredCapability: "float-readback" })
     ]));
+  });
+
+  it("composes the complete advertised pass catalog through one typed public path", () => {
+    const device = new MockRenderDevice();
+    const width = 5;
+    const height = 5;
+    const source = device.createRenderTarget({ width, height, label: "catalog-source" }) as RenderTarget & { colorPixels: Uint8Array };
+    const output = device.createRenderTarget({ width, height, label: "catalog-output" });
+    for (let index = 0; index < width * height; index += 1) {
+      source.colorPixels[index * 4] = index % 2 === 0 ? 245 : 25;
+      source.colorPixels[index * 4 + 1] = index % 3 === 0 ? 180 : 42;
+      source.colorPixels[index * 4 + 2] = index % 5 === 0 ? 220 : 18;
+      source.colorPixels[index * 4 + 3] = 255;
+    }
+    const depth = createDepthTextureBinding({ label: "catalog-depth", width, height, data: new Float32Array(width * height).map((_, index) => index % 2 === 0 ? 0.25 : 0.75) });
+    const velocity = new Float32Array(width * height * 2).fill(1.5);
+    const history = new Uint8Array(source.colorPixels).reverse();
+    const composer = new PostProcessComposer({ device, width, height, label: "catalog-composer" });
+    const diagnostics = composer.render({
+      source,
+      target: output,
+      passes: [
+        { name: "bloom" },
+        { name: "tone-mapping", options: { operator: "aces" } },
+        { name: "tone-mapping-preset", preset: "cinematic" },
+        { name: "color-grade", options: { contrast: 1.1 } },
+        { name: "chromatic-aberration", options: { strength: 1 } },
+        { name: "film-grain", options: { seed: 16 } },
+        { name: "depth-of-field", options: { depth, maxRadius: 1 } },
+        { name: "motion-blur", options: { velocity, samples: 3 } },
+        { name: "ssao", options: { depth, radius: 1 } },
+        { name: "ssr", options: { depth, maxDistance: 2 } },
+        { name: "taa", options: { history, blend: 0.2 } },
+        { name: "outline" },
+        { name: "fxaa" }
+      ]
+    });
+
+    expect(diagnostics.passCount).toBe(13);
+    expect(diagnostics.lastPasses).toEqual([
+      "bloom", "tone-mapping", "tone-mapping-preset", "color-grade", "chromatic-aberration", "film-grain", "depth-of-field", "motion-blur", "ssao", "ssr", "taa", "outline", "fxaa"
+    ]);
+    expect(diagnostics.pingPongTargets).toBe(2);
+    composer.dispose();
+    source.dispose();
+    output.dispose();
+    expect(device.getDiagnostics()).toMatchObject({ renderTargets: 0, textures: 0 });
   });
 });

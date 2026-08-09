@@ -24,12 +24,12 @@ interface ThreeJsParityUnrealBloomParityReady {
   readonly scene: typeof SCENE;
   readonly a3d: {
     readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: true };
-    readonly postprocess: { readonly chain: readonly string[]; readonly threshold: number; readonly radius: number; readonly intensity: number };
+    readonly postprocess: { readonly chain: readonly string[]; readonly threshold: number; readonly radius: number; readonly intensity: number; readonly renderTargets: number; readonly frameCost: FrameCost };
     readonly pixels: PixelStats;
   };
   readonly threejs: {
     readonly renderer: { readonly actualThreeRenderer: true; readonly drawCalls: number; readonly triangles: number };
-    readonly postprocess: { readonly actualEffectComposer: true; readonly actualRenderPass: true; readonly actualUnrealBloomPass: true; readonly threshold: number; readonly radius: number; readonly strength: number };
+    readonly postprocess: { readonly actualEffectComposer: true; readonly actualRenderPass: true; readonly actualUnrealBloomPass: true; readonly threshold: number; readonly radius: number; readonly strength: number; readonly renderTargets: number; readonly frameCost: FrameCost };
     readonly pixels: PixelStats;
   };
   readonly diff: DiffStats;
@@ -73,6 +73,8 @@ interface DiffStats {
   readonly structuralSimilarityProxy: number;
 }
 
+interface FrameCost { readonly samples: number; readonly medianMs: number; readonly p95Ms: number }
+
 const SCENE = {
   id: "threejs-parity-unreal-bloom",
   width: 720,
@@ -111,7 +113,7 @@ async function run(): Promise<void> {
       scene: SCENE,
       a3d: {
         renderer: { drawCalls: a3d.drawCalls, actualA3DRenderer: true },
-        postprocess: { chain: a3d.chain, threshold: SCENE.bloom.threshold, radius: SCENE.bloom.radius, intensity: SCENE.bloom.intensity },
+        postprocess: { chain: a3d.chain, threshold: SCENE.bloom.threshold, radius: SCENE.bloom.radius, intensity: SCENE.bloom.intensity, renderTargets: a3d.renderTargets, frameCost: a3d.frameCost },
         pixels: a3dStats
       },
       threejs: {
@@ -122,7 +124,9 @@ async function run(): Promise<void> {
           actualUnrealBloomPass: threejs.actualUnrealBloomPass,
           threshold: SCENE.bloom.threshold,
           radius: SCENE.bloom.threeRadius,
-          strength: SCENE.bloom.threeStrength
+          strength: SCENE.bloom.threeStrength,
+          renderTargets: threejs.renderTargets,
+          frameCost: threejs.frameCost
         },
         pixels: threeStats
       },
@@ -174,9 +178,10 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     antialias: true,
     clearColor: SCENE.clearColor
   });
-  const diagnostics = renderer.render({
+  const renderItems = createA3DItems();
+  let diagnostics = renderer.render({
     cameraPolicy: "identity",
-    renderItems: createA3DItems(),
+    renderItems,
     postprocess: {
       bloom: { threshold: SCENE.bloom.threshold, intensity: SCENE.bloom.intensity, radius: SCENE.bloom.radius },
       toneMapping: {
@@ -189,11 +194,28 @@ async function renderA3D(canvas: HTMLCanvasElement) {
       fxaa: true
     }
   });
+  const timings: number[] = [];
+  for (let index = 0; index < 14; index += 1) {
+    const started = performance.now();
+    diagnostics = renderer.render({
+      cameraPolicy: "identity",
+      renderItems,
+      postprocess: {
+        bloom: { threshold: SCENE.bloom.threshold, intensity: SCENE.bloom.intensity, radius: SCENE.bloom.radius },
+        toneMapping: { exposure: SCENE.toneMapping.exposure, gamma: 1, operator: SCENE.toneMapping.operator, inputColorSpace: "linear", outputColorSpace: "srgb" },
+        fxaa: true
+      }
+    });
+    timings.push(performance.now() - started);
+  }
   await waitFrames(2);
+  const dataUrl = canvas.toDataURL("image/png");
   return {
     drawCalls: diagnostics.drawCalls,
     chain: ["bloom", "tone-mapping", "fxaa"] as const,
-    dataUrl: canvas.toDataURL("image/png")
+    renderTargets: 2,
+    frameCost: summarizeFrameCost(timings.slice(3)),
+    dataUrl
   };
 }
 
@@ -219,7 +241,16 @@ async function renderThree(canvas: HTMLCanvasElement) {
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
   composer.render();
+  const timings: number[] = [];
+  for (let index = 0; index < 14; index += 1) {
+    const started = performance.now();
+    composer.render();
+    const gl = renderer.getContext();
+    gl.finish();
+    timings.push(performance.now() - started);
+  }
   await waitFrames(2);
+  const renderTargets = 2 + 1 + bloomPass.renderTargetsHorizontal.length + bloomPass.renderTargetsVertical.length;
   return {
     actualThreeRenderer: true as const,
     actualEffectComposer: composer instanceof EffectComposer,
@@ -227,7 +258,18 @@ async function renderThree(canvas: HTMLCanvasElement) {
     actualUnrealBloomPass: bloomPass instanceof UnrealBloomPass,
     drawCalls: renderer.info.render.calls,
     triangles: renderer.info.render.triangles,
+    renderTargets,
+    frameCost: summarizeFrameCost(timings.slice(3)),
     dataUrl: canvas.toDataURL("image/png")
+  };
+}
+
+function summarizeFrameCost(values: readonly number[]): FrameCost {
+  const sorted = [...values].sort((a, b) => a - b);
+  return {
+    samples: values.length,
+    medianMs: Number((sorted[Math.floor(sorted.length / 2)] ?? 0).toFixed(4)),
+    p95Ms: Number((sorted[Math.floor(sorted.length * 0.95)] ?? 0).toFixed(4))
   };
 }
 
