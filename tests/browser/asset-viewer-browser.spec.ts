@@ -50,6 +50,23 @@ test.describe("asset viewer browser runtime", () => {
     await expect(page.getByTestId("asset-viewer-canvas")).toBeVisible();
   });
 
+  test("presents the default asset visibly and centered in the composited viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${server.origin}/examples/asset-viewer/`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForTimeout(250);
+
+    const viewport = page.getByTestId("asset-viewer-canvas");
+    const stats = await compositedScreenshotStats(page, await viewport.screenshot());
+
+    expect(stats.colorBuckets).toBeGreaterThan(100);
+    expect(stats.subjectPixels).toBeGreaterThan(20_000);
+    expect(stats.subjectCenterX).toBeGreaterThan(stats.width * 0.35);
+    expect(stats.subjectCenterX).toBeLessThan(stats.width * 0.65);
+    expect(stats.subjectCenterY).toBeGreaterThan(stats.height * 0.3);
+    expect(stats.subjectCenterY).toBeLessThan(stats.height * 0.7);
+  });
+
   test("loads a deterministic external glTF URL with an external buffer through public asset APIs", async ({ page }) => {
     const fixture = createExternalTriangleFixture();
     await page.route(`${server.origin}/fixtures/asset-viewer/external-triangle.gltf`, async (route) => {
@@ -1071,6 +1088,45 @@ async function nonBlankCanvasPixels(page: import("@playwright/test").Page, selec
     }
     return pixels;
   }, selector);
+}
+
+async function compositedScreenshotStats(page: import("@playwright/test").Page, screenshot: Buffer) {
+  return page.evaluate(async (base64) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${base64}`;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error("Asset viewer screenshot decode context unavailable.");
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const buckets = new Set<string>();
+    let subjectPixels = 0;
+    let subjectX = 0;
+    let subjectY = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const red = pixels[index] ?? 0;
+      const green = pixels[index + 1] ?? 0;
+      const blue = pixels[index + 2] ?? 0;
+      buckets.add(`${red >> 3}:${green >> 3}:${blue >> 3}`);
+      if (red > 24 || green > 24 || blue > 24) {
+        const pixel = index / 4;
+        subjectPixels += 1;
+        subjectX += pixel % canvas.width;
+        subjectY += Math.floor(pixel / canvas.width);
+      }
+    }
+    return {
+      width: canvas.width,
+      height: canvas.height,
+      colorBuckets: buckets.size,
+      subjectPixels,
+      subjectCenterX: subjectPixels > 0 ? subjectX / subjectPixels : 0,
+      subjectCenterY: subjectPixels > 0 ? subjectY / subjectPixels : 0
+    };
+  }, screenshot.toString("base64"));
 }
 
 async function nonBlankWebGLPixels(page: import("@playwright/test").Page, selector: string): Promise<number> {

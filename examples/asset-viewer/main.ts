@@ -28,6 +28,7 @@ import {
   type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 import { Camera, type Light } from "@aura3d/scene";
+import { quatFromEuler } from "@aura3d/scene/math";
 import { installExampleStyles } from "../shared/exampleHarness.js";
 
 const KHRONOS_BOX_GLB =
@@ -790,6 +791,14 @@ async function boot(): Promise<void> {
       lastResult = result;
       loadPhase = "status-text";
       status.textContent = assetViewerStatusText(result);
+      // The inspector and control trees are populated after the first GPU
+      // submission, which changes the stage's final layout. Present once more
+      // on the next animation frame so the browser composites the WebGL
+      // backbuffer at that settled size instead of leaving only the stage
+      // background visible until the user interacts.
+      requestAnimationFrame(() => {
+        if (loaded?.handle === handle) rerenderLoaded();
+      });
     } catch (error) {
       const message = `${loadPhase}: ${assetViewerErrorMessage(error)}`;
       const result: AssetViewerResult = {
@@ -1949,7 +1958,7 @@ function renderLoadedAsset(
     centerY + Math.sin(cameraState.orbitPitch) * cameraDistance + cameraState.panY * spanY,
     centerZ + Math.cos(cameraState.orbitYaw) * cameraDistance
   );
-  camera.transform.setRotation(...quatFromEuler(cameraState.orbitPitch, cameraState.orbitYaw, 0));
+  camera.transform.setRotation(...quatFromEuler(-cameraState.orbitPitch, cameraState.orbitYaw, 0));
 
   const key = getOrCreateLight(scene, "directional", "asset-viewer-key");
   key.intensity = 2.4;
@@ -2053,6 +2062,7 @@ function renderDiagnosticOverlay(overlay: HTMLCanvasElement, asset: GLTFAsset, r
     return;
   }
   context.clearRect(0, 0, overlay.width, overlay.height);
+  overlay.style.display = renderMode === "shaded" ? "none" : "block";
   if (renderMode === "shaded") {
     return;
   }
@@ -2184,21 +2194,6 @@ function getOrCreateLight(scene: GLTFRenderResources["scene"], kind: "directiona
   const light = scene.createLight(kind, name);
   scene.root.addChild(light);
   return light;
-}
-
-function quatFromEuler(pitch: number, yaw: number, roll: number): [number, number, number, number] {
-  const cy = Math.cos(yaw * 0.5);
-  const sy = Math.sin(yaw * 0.5);
-  const cp = Math.cos(pitch * 0.5);
-  const sp = Math.sin(pitch * 0.5);
-  const cr = Math.cos(roll * 0.5);
-  const sr = Math.sin(roll * 0.5);
-  return [
-    sr * cp * cy - cr * sp * sy,
-    cr * sp * cy + sr * cp * sy,
-    cr * cp * sy - sr * sp * cy,
-    cr * cp * cy + sr * sp * sy
-  ];
 }
 
 function materialSwatch(index: number): string {

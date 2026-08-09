@@ -118,6 +118,13 @@ async function inspectExample(browser: Browser, origin: string, indexFile: strin
         status: record.status,
         drawCalls: record.drawCalls,
         frameCount: record.frameCount ?? record.frames,
+        renderer: record.renderer,
+        visualClaim: record.visualClaim,
+        sourceKind: record.sourceKind,
+        url: record.url,
+        bounds: record.bounds,
+        diagnostics: record.diagnostics,
+        postprocess: record.postprocess,
         errors: record.errors,
         error: record.error
       };
