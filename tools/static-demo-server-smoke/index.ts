@@ -35,7 +35,6 @@ const exportReportPath = "tests/reports/external-demo-static-export.json";
 const reportPath = "tests/reports/static-demo-server-smoke.json";
 const requiredDemos = [
   "product-configurator",
-  "large-world-streaming",
 ] as const;
 
 export async function createStaticDemoServerSmokeReport(root = process.cwd()): Promise<StaticDemoServerSmokeReport> {
@@ -167,7 +166,6 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
   const demoId = relativePath.split("/", 1)[0] ?? "";
   const canvasTestId = {
     "product-configurator": "product-configurator-canvas",
-    "large-world-streaming": "large-world-canvas",
   }[demoId];
   return canvasTestId ? [canvasTestId] : [];
 }

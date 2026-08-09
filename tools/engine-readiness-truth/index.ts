@@ -7,7 +7,6 @@ const quarantinedExamples = [
   "material-showroom",
   "postprocess-lab",
   "shadow-lab",
-  "large-world-streaming",
   "portfolio"
 ];
 

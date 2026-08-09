@@ -55,7 +55,6 @@ const defaultManifestPath = "docs/examples/external-demo-urls.json";
 const reportPath = "tests/reports/external-demo-validation.json";
 const defaultRequiredDemoIds = [
   "product-configurator",
-  "large-world-streaming",
 ] as const;
 
 export async function validateExternalDemos(root = process.cwd(), manifestPath = process.env.A3D_EXTERNAL_DEMO_MANIFEST ?? defaultManifestPath): Promise<ExternalDemoValidationReport> {
