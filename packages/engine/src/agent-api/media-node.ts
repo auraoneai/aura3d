@@ -42,3 +42,15 @@ export type {
   FfmpegRunResult,
   RunFfmpeg
 } from "./FfmpegFrameEncoder.js";
+
+// Offline encoding, filesystem-shaped artifacts, cloud rendering, and publishing
+// integrations share this explicit non-browser entry. Browser capture/encoding stays
+// on the root API through MediaRecorder and WebCodecs adapters.
+export * from "./PngSequenceEncoder.js";
+export * from "./AudioMuxer.js";
+export * from "./VideoExportPipeline.js";
+export * from "./CaptionExporter.js";
+export * from "./YouTubeMetadataGenerator.js";
+export * from "./YouTubeUploadAdapter.js";
+export * from "./PublishingPipeline.js";
+export * from "./CloudRenderAdapter.js";

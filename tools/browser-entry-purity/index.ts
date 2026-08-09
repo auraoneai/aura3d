@@ -67,6 +67,18 @@ const NODE_ENTRIES = [
   { id: "environments-node", path: "packages/environments/src/node.ts", label: "@aura3d/environments/node", expects: "node:fs, node:path, node:crypto" }
 ] as const;
 
+const OFFLINE_MEDIA_MODULES = [
+  "FfmpegFrameEncoder.ts",
+  "PngSequenceEncoder.ts",
+  "AudioMuxer.ts",
+  "VideoExportPipeline.ts",
+  "CaptionExporter.ts",
+  "YouTubeMetadataGenerator.ts",
+  "YouTubeUploadAdapter.ts",
+  "PublishingPipeline.ts",
+  "CloudRenderAdapter.ts"
+] as const;
+
 function auraSourceAlias(): Plugin {
   const aliases = new Map([
     ["@aura3d/engine", "packages/engine/src/agent-api/index.ts"],
@@ -122,7 +134,10 @@ interface PurityResult {
   readonly detail: string;
 }
 
-async function checkEntry(entry: { readonly id: string; readonly label: string; readonly path: string }): Promise<PurityResult> {
+async function checkEntry(
+  entry: { readonly id: string; readonly label: string; readonly path: string },
+  options: { readonly rejectOfflineMedia?: boolean } = {}
+): Promise<PurityResult> {
   if (!existsSync(resolve(entry.path))) {
     return { id: entry.id, label: entry.label, path: entry.path, pure: false, reachableNodeBuiltins: [], detail: `entry does not exist: ${entry.path}` };
   }
@@ -132,7 +147,7 @@ async function checkEntry(entry: { readonly id: string; readonly label: string; 
      * Node builtin, so an unresolvable one becomes a build error naming the specifier and the importer —
      * which is exactly the evidence this gate needs.
      */
-    await build({
+    const result = await build({
       absWorkingDir: process.cwd(),
       entryPoints: [entry.path],
       bundle: true,
@@ -141,8 +156,24 @@ async function checkEntry(entry: { readonly id: string; readonly label: string; 
       platform: "browser",
       target: "es2022",
       logLevel: "silent",
+      metafile: true,
       plugins: [auraSourceAlias()]
     });
+    if (options.rejectOfflineMedia) {
+      const reachedOfflineMedia = Object.keys(result.metafile.inputs)
+        .filter((path) => OFFLINE_MEDIA_MODULES.some((name) => path.endsWith(`/${name}`)))
+        .sort();
+      if (reachedOfflineMedia.length > 0) {
+        return {
+          id: entry.id,
+          label: entry.label,
+          path: entry.path,
+          pure: false,
+          reachableNodeBuiltins: [],
+          detail: `${entry.label}: reaches offline media/publishing modules ${reachedOfflineMedia.join(", ")}; import them through @aura3d/engine/media-node instead.`
+        };
+      }
+    }
     return { id: entry.id, label: entry.label, path: entry.path, pure: true, reachableNodeBuiltins: [], detail: `${entry.label}: no node: builtin is reachable` };
   } catch (error) {
     const messages = (error as { readonly errors?: readonly { readonly text?: string; readonly notes?: readonly { readonly text?: string }[] }[] }).errors ?? [];
@@ -163,7 +194,7 @@ async function checkEntry(entry: { readonly id: string; readonly label: string; 
 }
 
 async function main(): Promise<void> {
-  const results = await Promise.all(BROWSER_ENTRIES.map(checkEntry));
+  const results = await Promise.all(BROWSER_ENTRIES.map((entry) => checkEntry(entry, { rejectOfflineMedia: true })));
   const nodeResults = await Promise.all(NODE_ENTRIES.map(async (entry) => {
     const result = await checkEntry(entry);
     /*

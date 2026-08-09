@@ -1,17 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
-  createCloudRenderAdapter,
-  createCloudRenderJobRequest,
   createExternalPhonemeAnalyzerAdapter,
   createThumbnailArtifact,
-  createYouTubeUploadPackage,
-  createYouTubeUploadAdapter,
-  validateYouTubeUploadPackage,
   type AnimationEpisodePackageManifest,
   type AnimationRenderOutputPackageMetadata,
   type AnimationRenderQueueArtifact,
-  type PublishingPackageArtifact
 } from "../../../packages/engine/src";
+import {
+  createCloudRenderAdapter,
+  createCloudRenderJobRequest,
+  createYouTubeUploadPackage,
+  createYouTubeUploadAdapter,
+  validateYouTubeUploadPackage,
+  type PublishingPackageArtifact
+} from "../../../packages/engine/src/agent-api/media-node";
 
 const generatedAt = "2026-06-06T00:00:00.000Z";
 

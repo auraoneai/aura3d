@@ -8,28 +8,22 @@ import {
   createAnimationRenderOutputPackageMetadata,
   createAnimationRenderQueue,
   createAudioDrivenVisemeTrack,
-  createAudioMuxer,
   createCameraPathFromPreset,
   createEpisodeStructure,
   createFrameEncoder,
   createPerformanceCaptureSession,
-  createPublishPackage,
   createPromptAnimationEpisodePlan,
   createPromptAnimationEpisodeReadiness,
-  createPublishingPackage,
   createSceneSequencer,
   createSceneSequencerPlayback,
   createShotCompositionGuide,
   createShotTransitionPlan,
   createThumbnailArtifact,
-  createVideoExportPipeline,
   createVisemeTimelineTrack,
   createWaveformVisualization,
   defineCaptionTrack,
   defineAuraAssets,
   defineAnimationAssetManifest,
-  exportCaptionTrackSrt,
-  exportCaptionTrackVtt,
   sampleCameraPath,
   sampleSceneSequencer,
   sampleShotTransition,
@@ -42,6 +36,14 @@ import {
   type AnimationRenderQueueArtifact,
   type ShotTimelineArtifact
 } from "../../../packages/engine/src";
+import {
+  createAudioMuxer,
+  createPublishPackage,
+  createPublishingPackage,
+  createVideoExportPipeline,
+  exportCaptionTrackSrt,
+  exportCaptionTrackVtt
+} from "../../../packages/engine/src/agent-api/media-node";
 
 const generatedAt = "2026-06-06T00:00:00.000Z";
 const typedAssets = defineAuraAssets({

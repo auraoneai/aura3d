@@ -503,7 +503,9 @@ publish-ready from source declarations alone.
 
 ## 1.1 engine animation, render, and publishing APIs
 
-Aura3D 1.1 adds public `@aura3d/engine` exports that turn the prompt-animation
+Aura3D exposes browser capture APIs from `@aura3d/engine` and isolates offline
+encoding, filesystem-shaped artifacts, cloud rendering, and publishing behind
+`@aura3d/engine/media-node`. Together they turn the prompt-animation
 contracts into rendered episode packages with honest, capability-probed
 boundaries. Each section below documents real exported symbols. The cloud,
 upload, phoneme, and capture adapters are optional integration seams: when they
@@ -517,19 +519,22 @@ import {
   createAnimationEpisodePackageManifest,
   createAnimationMotionQualityReport,
   createAnimationRouteProof,
-  createCloudRenderAdapter,
   createExternalPhonemeAnalyzerAdapter,
   createFrameEncoder,
   createPerformanceCaptureSession,
   createSceneSequencer,
-  createVideoExportPipeline,
   createWebCodecsFrameEncoderAdapter,
-  createYouTubeUploadAdapter,
   AssetLibraryBrowser,
   validateAnimationEpisodePackage,
   validateAnimationMotionQuality,
   validateAnimationRouteProof
 } from "@aura3d/engine";
+
+import {
+  createCloudRenderAdapter,
+  createVideoExportPipeline,
+  createYouTubeUploadAdapter
+} from "@aura3d/engine/media-node";
 ```
 
 ### Animation episode package writer and validator

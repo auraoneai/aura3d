@@ -1,17 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   createAudioDrivenVisemeTrack,
-  createAudioMuxer,
   createCameraPathFromPreset,
   createEpisodeStructure,
   createFrameEncoder,
-  createPublishPackage,
   createRenderProgressTracker,
   createSceneSequencer,
   createShotTimeline,
   createThumbnailArtifact,
   createVisemeTimelineTrack,
-  exportCaptionTrackSrt,
   sampleCameraPath,
   sampleSceneSequencer,
   sampleVisemeTimelineTrack,
@@ -19,6 +16,11 @@ import {
   type AnimationRenderOutputPackageMetadata,
   type EncodedVideoArtifact
 } from "../../../packages/engine/src/agent-api/index";
+import {
+  createAudioMuxer,
+  createPublishPackage,
+  exportCaptionTrackSrt
+} from "../../../packages/engine/src/agent-api/media-node";
 
 describe("Aura3D 1.0.7 agent-api production artifacts", () => {
   it("encodes frame summaries, muxes audio stems, and tracks render progress", async () => {

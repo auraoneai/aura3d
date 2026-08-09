@@ -3,9 +3,6 @@ import {
   createBrowserFrameCaptureAdapter,
   createInMemoryFrameEncoderAdapter,
   createMediaRecorderFrameEncoderAdapter,
-  createPngSequenceEncoderAdapter,
-  createPngSequenceManifest,
-  createVideoExportPipeline,
   createWebCodecsFrameEncoderAdapter,
   probeMediaRecorderFrameEncoder,
   probeWebCodecsFrameEncoder,
@@ -13,6 +10,11 @@ import {
   type AnimationRenderQueueArtifact,
   type FrameEncoderAdapter
 } from "../../../packages/engine/src";
+import {
+  createPngSequenceEncoderAdapter,
+  createPngSequenceManifest,
+  createVideoExportPipeline
+} from "../../../packages/engine/src/agent-api/media-node";
 
 const generatedAt = "2026-06-06T00:00:00.000Z";
 

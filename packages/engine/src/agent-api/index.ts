@@ -159,8 +159,6 @@ export * from "./WebCodecsFrameEncoder.js";
  * Node consumers import `@aura3d/engine/media-node`. Enforced by `tools/browser-entry-purity`, which
  * bundles every browser entry with no `node:` externals so a reachable builtin fails the build.
  */
-export * from "./PngSequenceEncoder.js";
-export * from "./AudioMuxer.js";
 export {
   GameInspector,
   createGameInspector
@@ -186,7 +184,6 @@ export type {
   GameAudioOptions
 } from "../game/GameAudio.js";
 export * from "./RenderProgressTracker.js";
-export * from "./VideoExportPipeline.js";
 export * from "./AudioVisemeAnalyzer.js";
 export * from "./ExternalPhonemeAnalyzer.js";
 export * from "./WaveformVisualizer.js";
@@ -198,12 +195,7 @@ export * from "./CameraPresetLibrary.js";
 export * from "./ShotCompositionRules.js";
 export * from "./CameraChoreographer.js";
 export * from "./CameraPathEditor.js";
-export * from "./CaptionExporter.js";
 export * from "./ThumbnailGenerator.js";
-export * from "./YouTubeMetadataGenerator.js";
-export * from "./YouTubeUploadAdapter.js";
-export * from "./PublishingPipeline.js";
-export * from "./CloudRenderAdapter.js";
 export * from "./BatchEpisodeRenderer.js";
 export * from "./AnimationAssetManifest.js";
 export * from "./SceneGroundingUtils.js";
