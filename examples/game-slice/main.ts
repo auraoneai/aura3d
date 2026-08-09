@@ -3,7 +3,7 @@ import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset,
 import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio } from "@aura3d/audio";
 import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleVirtualTouchJoystickFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
-  CharacterController,
+  ArcadeCharacterController,
   PhysicsWorld,
   Shape
 } from "@aura3d/physics";
@@ -281,14 +281,14 @@ async function run(): Promise<void> {
   const physics = new PhysicsWorld({ gravity: [0, -9.81, 0], fixedDelta: 1 / 60, solverIterations: 3 });
   const ground = physics.createRigidBody({ type: "static", position: [0, -0.72, 0] });
   physics.createCollider(ground, { shape: Shape.plane([0, 1, 0], -0.72) });
-  const character = new CharacterController(physics, {
+  const character = new ArcadeCharacterController(physics, {
     position: playerStartPosition,
     radius: 0.22,
     halfHeight: 0.24,
     maxSpeed: 3.2,
     acceleration: 42,
     jumpSpeed: 1.8,
-    groundProbeDistance: 0.16,
+    groundY: -0.68,
   });
   const player = character.body;
   const playerCollider = character.collider;
@@ -718,7 +718,7 @@ async function run(): Promise<void> {
         objectiveEvents += 1;
         objectiveState.collectedPickup = true;
         objectiveState.step = "reach-exit";
-        player.applyImpulse([-0.5, 0.3, 0]);
+        character.motion.applyKnockback([-0.5, 0.3, 0]);
         if (audioState.unlocked && pickupSource) {
           pickupSource.play();
           audioState.plays += 1;
@@ -1238,6 +1238,7 @@ async function run(): Promise<void> {
         contactShadowProxy: true,
         shadowMode: "contact-shadow-proxy",
         characterController: true,
+        characterControllerMode: "authored-unit-arcade",
         characterControllerBodyId: player.id,
         characterControllerColliderId: playerCollider.id,
         characterControllerColliderKind: playerCollider.shape.kind,

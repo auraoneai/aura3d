@@ -18,7 +18,7 @@ test.describe("runtime character controller", () => {
     await server.close();
   });
 
-  test("game slice drives player movement and jump through the physics CharacterController", async ({ page }) => {
+  test("game slice drives player movement and jump through the authored-unit arcade controller", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
@@ -75,6 +75,7 @@ test.describe("runtime character controller", () => {
 
     expect(errors).toEqual([]);
     expect(after.characterController).toBe(true);
+    expect(after.characterControllerMode).toBe("authored-unit-arcade");
     expect(after.characterControllerColliderKind).toBe("capsule");
     expect(Number(after.characterControllerRadius)).toBeCloseTo(0.22);
     expect(Number(after.characterControllerHalfHeight)).toBeCloseTo(0.24);

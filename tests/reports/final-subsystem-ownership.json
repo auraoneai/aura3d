@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-09T00:08:58.546Z",
+  "generatedAt": "2026-08-09T00:14:01.491Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "d69c2c22056031b2c0abf4d2a40e7d78636f43ee",
+  "sourceCommit": "3207b30b9e35c7317e60d3c7e6c1d44373a92168",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -16,7 +16,7 @@
   ],
   "packageCount": 28,
   "subsystemCount": 34,
-  "sourceFilesClassified": 875,
+  "sourceFilesClassified": 876,
   "packages": [
     {
       "package": "animation",
@@ -2657,8 +2657,8 @@
       "published": true,
       "disposition": "COMPATIBILITY-ONLY",
       "source": {
-        "lines": 8561,
-        "bytes": 330077
+        "lines": 8695,
+        "bytes": 334921
       },
       "dist": {
         "jsFiles": 40,
@@ -2833,7 +2833,7 @@
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 25,
+        "sourceFiles": 26,
         "testMentions": 28,
         "docsMentions": 31
       }
@@ -11098,12 +11098,13 @@
       "owner": "Aura3D authored-unit arcade runtime",
       "decision": "Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation.",
       "files": [
+        "packages/physics/src/ArcadeCharacterController.ts",
         "packages/physics/src/ArcadeVehicleTelemetry.ts",
         "packages/physics/src/KinematicBody.ts",
         "packages/physics/src/KinematicWorld.ts"
       ],
-      "lines": 1466,
-      "bytes": 55902,
+      "lines": 1597,
+      "bytes": 60627,
       "compiledCost": {
         "compiledFiles": 2,
         "rawBytes": 25980,
@@ -11112,22 +11113,26 @@
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
+        "1.6-FINAL-PRD-Finishes.md",
         "docs/api/public-api.md",
         "docs/architecture/final-subsystem-ownership.md",
         "docs/physics/runtime.md",
         "docs/project/plans/engine-game-parity-execution-plan.md",
+        "examples/game-slice/main.ts",
         "packages/engine/src/agent-api/index.ts",
         "packages/physics/src/CharacterController.ts",
         "packages/physics/src/index.ts",
         "packages/physics/src/world.ts",
+        "tests/browser/runtime-external-parity.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/physics/kinematic-fighting-controller.test.ts",
+        "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/index.mjs",
         "tools/product-remediation/build-physics-audit.mjs"
       ],
-      "maintenanceReferenceCount": 14
+      "maintenanceReferenceCount": 18
     },
     {
       "id": "physics-cannon-adapter",
@@ -11320,14 +11325,11 @@
         "docs/architecture/final-subsystem-ownership.md",
         "docs/physics/runtime.md",
         "docs/project/plans/aura3d-threejs-ecosystem-parity.md",
-        "examples/game-slice/main.ts",
         "packages/animation/src/LocomotionKit.ts",
         "packages/engine/src/agent-api/index.ts",
         "packages/physics/src/index.ts",
         "packages/physics/src/solverless.ts",
         "packages/physics/src/world.ts",
-        "tests/browser/runtime-character-controller.spec.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -11335,7 +11337,6 @@
         "tests/unit/physics/character-mesh-contact.test.ts",
         "tests/unit/physics/kinematic-fighting-controller.test.ts",
         "tests/unit/physics/production-backend-invariants.test.ts",
-        "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/index.mjs",
         "tools/foundation-runtime/index.ts",
         "tools/negative-complexity/index.ts",
@@ -11344,7 +11345,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 29
+      "maintenanceReferenceCount": 25
     },
     {
       "id": "physics-general",
@@ -11363,8 +11364,8 @@
         "packages/physics/src/solverless.ts",
         "packages/physics/src/world.ts"
       ],
-      "lines": 2440,
-      "bytes": 86376,
+      "lines": 2443,
+      "bytes": 86495,
       "compiledCost": {
         "compiledFiles": 9,
         "rawBytes": 70908,

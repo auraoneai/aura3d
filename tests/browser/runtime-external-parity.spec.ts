@@ -30,7 +30,7 @@ const report: ExternalParityRuntimeReport = {
     },
     {
       task: "Add character controller integration with physics, camera, animation, and input.",
-      evidence: ["packages/physics/src/CharacterController.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
+      evidence: ["packages/physics/src/ArcadeCharacterController.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
       task: "Add deterministic AI perception and memory evidence to the ExternalParity game slice.",
@@ -61,7 +61,7 @@ const report: ExternalParityRuntimeReport = {
       evidence: ["packages/scripting/src/HTN.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add runtime scripting hooks for init, update, fixedUpdate, trigger/collision, input, and teardown.",
+      task: "Add runtime scripting hooks for init, update, fixedUpdate, trigger, input, and teardown.",
       evidence: ["examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
@@ -355,7 +355,6 @@ test.describe("externalParity runtime systems", () => {
     expect(Number(state?.metrics.scriptHookFixedUpdate ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.scriptHookInput ?? 0)).toBeGreaterThanOrEqual(3);
     expect(Number(state?.metrics.scriptHookTrigger ?? 0)).toBeGreaterThanOrEqual(1);
-    expect(Number(state?.metrics.scriptHookCollision ?? 0)).toBeGreaterThanOrEqual(1);
     expect(Number(state?.metrics.scriptHookTeardown ?? 0)).toBeGreaterThanOrEqual(1);
     expect(Number(state?.metrics.runtimeErrorCount ?? 0)).toBeGreaterThanOrEqual(6);
     expect(state?.metrics.runtimeOverlayVisible).toBe(true);

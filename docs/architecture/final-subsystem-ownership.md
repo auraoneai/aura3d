@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `d69c2c22056031b2c0abf4d2a40e7d78636f43ee`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `3207b30b9e35c7317e60d3c7e6c1d44373a92168`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -27,7 +27,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/materials` | `AURA-CORE` | 339 | 5 | 2 | 2760 | yes |
 | `@aura3d/math` | `AURA-CORE` | 1220 | 49 | 1 | 8067 | yes |
 | `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 239 | 7 | 1 | 0 | yes |
-| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 8561 | 47 | 3 | 102048 | yes |
+| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 8695 | 47 | 3 | 102048 | yes |
 | `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 160 | 6 | 1 | 2329 | yes |
 | `@aura3d/product-studio` | `AURA-MOAT` | 696 | 29 | 1 | 4893 | yes |
 | `@aura3d/react` | `EXTERNAL-ADAPTER` | 173 | 14 | 1 | 1182 | yes |
@@ -65,10 +65,10 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1341 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 177 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 239 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-authored-arcade-motion` | `physics` | `AURA-MOAT` | 3 | 1466 | 5075 | 14 | Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation. |
+| `physics-authored-arcade-motion` | `physics` | `AURA-MOAT` | 4 | 1597 | 5075 | 18 | Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation. |
 | `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 133 | Compare against current Rapier topology; exactly one physical solver may remain. |
-| `physics-custom-physical-controller` | `physics` | `DEPRECATE-REMOVE` | 1 | 718 | 7706 | 29 | Retain only until the optional-engine migration proof identifies replacements. |
-| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2440 | 16083 | 429 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-custom-physical-controller` | `physics` | `DEPRECATE-REMOVE` | 1 | 718 | 7706 | 25 | Retain only until the optional-engine migration proof identifies replacements. |
+| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2443 | 16083 | 429 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
