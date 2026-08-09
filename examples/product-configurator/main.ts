@@ -911,23 +911,11 @@ function buildRenderItems(productModel: ProductModelRuntime, externalParityProdu
   appendProductHeadbandSegments(items, body, hinge, zoom, yaw, pitch);
   appendProductStudioWallTiles(items, { body, accent, hinge, stage }, zoom);
   appendProductHeroStudio(items, { body, accent, hinge, cushion, grip, led, stage }, zoom, yaw, pitch);
-  items.push(
-    {
-      geometry: productSurfaceDetailGeometry,
-      material: trimLine,
-      modelMatrix: matrix(0, 0, 0.24, zoom, zoom, zoom, yaw, pitch, 0),
-      label: "headphone-product-surface-seams"
-    },
-    {
-      geometry: productStageDetailGeometry,
-      material: stageLine,
-      modelMatrix: matrix(0, 0.02, 0.3, 1.72 * zoom, 1.32 * zoom, zoom, 0, 0, 0),
-      label: "product-studio-panel-and-floor-lines"
-    }
-  );
   appendProductStudioHighlights(items, stageLine, zoom);
   if (explodedView || lodInspectMode === "on") {
     items.push(
+      { geometry: productSurfaceDetailGeometry, material: trimLine, modelMatrix: matrix(0, 0, 0.24, zoom, zoom, zoom, yaw, pitch, 0), label: "headphone-product-surface-seams" },
+      { geometry: productStageDetailGeometry, material: stageLine, modelMatrix: matrix(0, 0.02, 0.3, 1.72 * zoom, 1.32 * zoom, zoom, 0, 0, 0), label: "product-studio-panel-and-floor-lines" },
       { geometry: geometry("generated-headphone-headband-arc"), material: guide, modelMatrix: matrix(0, 0, 0, zoom, zoom, zoom, yaw, pitch, 0), label: "headband-design-arc" },
       { geometry: geometry("generated-headphone-dimension-guides"), material: guide, modelMatrix: matrix(0, 0, 0, zoom, zoom, zoom, yaw, pitch, 0), label: "fit-dimension-guides" },
       { geometry: productSwatchGeometry, material: grip, modelMatrix: matrix(-0.82, -0.68, 0.18, 0.14 * zoom, 0.08 * zoom, 0.025 * zoom, yaw, pitch, 0), label: "procedural-grip-texture-swatch" },
@@ -954,12 +942,6 @@ function buildRenderItems(productModel: ProductModelRuntime, externalParityProdu
   }
   if (lodInspectMode === "on") appendProductLodInspect(items, guide, lodSelection, zoom, yaw, pitch);
   appendExternalParityProductAssetRenderItems(items, externalParityProductAsset, yaw, pitch, zoom, explodedView);
-  items.push({
-    geometry: productStageDetailGeometry,
-    material: stageLine,
-    modelMatrix: matrix(0, 0.02, 0.46, 1.86 * zoom, 1.38 * zoom, zoom, 0, 0, 0),
-    label: "product-studio-foreground-detail-overlay"
-  });
   for (const item of items) {
     item.modelMatrix[12] += panX;
     item.modelMatrix[13] += panY;
@@ -999,13 +981,12 @@ function appendProductStudioWallTiles(
 }
 
 function appendExternalParityProductAssetRenderItems(items: RenderItem[], externalParityProductAsset: LoadedExternalParityProductAsset, yaw: number, pitch: number, zoom: number, explodedView: boolean): void {
-  const speakerNode = externalParityProductAsset.resources.scene.findByName("speaker-body-node")[0];
-  const speakerY = explodedView ? -0.34 : -0.46;
-  speakerNode?.transform
-    .setPosition(-0.78, speakerY, 0.38)
+  const cameraY = explodedView ? -0.34 : -0.46;
+  externalParityProductAsset.resources.scene.root.transform
+    .setPosition(-0.78, cameraY, 0.38)
     .setScale(0.18 * zoom, 0.18 * zoom, 0.18 * zoom)
     .setRotation(0, Math.sin(yaw * 0.5), Math.sin(pitch * 0.5) * 0.18, Math.cos(yaw * 0.5));
-  appendGLTFSceneRenderItems(items, externalParityProductAsset.resources, "external-parity-product-speaker");
+  appendGLTFSceneRenderItems(items, externalParityProductAsset.resources, "external-parity-product-camera");
 }
 
 function appendProductHeroStudio(
