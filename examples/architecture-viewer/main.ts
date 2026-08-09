@@ -849,7 +849,7 @@ function buildRenderItems(selectedZoneIndex: number, sectionView: boolean, camer
   const sectionHatchGuide = new UnlitMaterial({ name: "section-cut-crosshatch-lines", color: [0.78, 0.86, 0.9, 0.34], renderState: { depthTest: true, depthWrite: false, blend: true, cullMode: "none" } });
   const selectedGuide = new UnlitMaterial({ name: "selected-zone-outline-lines", color: [0.2, 0.95, 1, 0.72], renderState: { depthTest: true, depthWrite: false, blend: true, cullMode: "none" } });
   const walkGuide = new UnlitMaterial({ name: "walk-camera-path-lines", color: [0.4, 1, 0.68, 1], renderState: { depthTest: true, depthWrite: false, cullMode: "none" } });
-  const gallerySeams = new UnlitMaterial({ name: "architecture-gallery-backdrop-panel-seams", color: [0.1, 0.18, 0.22, 0.56], renderState: { depthTest: false, depthWrite: false, blend: true, cullMode: "none" } });
+  const gallerySeams = new UnlitMaterial({ name: "architecture-gallery-backdrop-panel-seams", color: [0.1, 0.18, 0.22, 0.32], renderState: { depthTest: true, depthWrite: false, blend: true, cullMode: "none" } });
   const galleryBackdrop = createArchitecturalMaterial("limestone");
   const galleryBase = createArchitecturalMaterial("concrete");
   const materialSamplePalette = createArchitectureMaterialSamplePalette();
@@ -1141,21 +1141,6 @@ function buildRenderItems(selectedZoneIndex: number, sectionView: boolean, camer
       label: "measurement-dimension-lines",
     });
   }
-
-  items.push(
-    {
-      geometry: architectureGeometry.galleryPanelLines,
-      material: gallerySeams,
-      modelMatrix: matrix(0.05, 0.08, 0.42, 1.38, 1.35, 1, 0),
-      label: "architecture-gallery-foreground-panel-line-overlay",
-    },
-    {
-      geometry: architectureGeometry.detailGuides,
-      material: detailGuide,
-      modelMatrix: matrix(0, 0, 0.44, zoom, zoom, zoom, yaw),
-      label: "architecture-foreground-door-railing-line-overlay",
-    }
-  );
 
   for (const item of items) {
     item.modelMatrix[12] += panX;
