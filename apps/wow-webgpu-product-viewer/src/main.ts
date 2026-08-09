@@ -1,14 +1,13 @@
 import {
-  createCurrentRoutesInteractiveRenderer,
-  type CurrentRoutesInteractiveRenderer
-} from "/packages/rendering/src/threejs-example-parity/index.ts";
+  ProductionRuntimeRenderer
+} from "@aura3d/engine/rendering/production-runtime";
 import {
   createCameraFrame,
   createGroundedStage,
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment
-} from "/packages/engine/src/threejs-example-parity/FlagshipFoundation.ts";
+} from "@aura3d/engine/production-runtime";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
 const requestedBackend = new URLSearchParams(location.search).get("backend") === "auto" ? "auto" : "webgpu";
@@ -77,7 +76,7 @@ void startWebGPUShowcase({
       shadowLightDirection: [-0.42, -0.82, -0.38]
     });
     stage.update({ backgroundBlur: 0.18, backgroundVisible: true });
-    let renderer: CurrentRoutesInteractiveRenderer = await createCurrentRoutesInteractiveRenderer({
+    let renderer = await ProductionRuntimeRenderer.create({
       backend: requestedBackend,
       canvas,
       width: renderSize.width,
@@ -120,7 +119,7 @@ void startWebGPUShowcase({
           shadow: false,
           postprocess: false
         });
-        const result = await renderer.renderFrame({
+        const result = await renderer.renderFrameAsync({
           source: input.source,
           camera: camera.camera,
           metadata: {

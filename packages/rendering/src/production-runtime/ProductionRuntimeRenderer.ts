@@ -67,9 +67,32 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
       // added async plumbing. The win is real only for a splitting-capable consumer bundler.
       // Kept because the static `import` also forced `instanceof` checks below to retain the
       // class at runtime, which defeated the split unconditionally.
-      const { ProductionWebGPURenderer } = await import("./ProductionWebGPURenderer.js");
-      return new ProductionRuntimeRenderer(await ProductionWebGPURenderer.create(options), "webgpu", selection);
+      try {
+        const { ProductionWebGPURenderer } = await import("./ProductionWebGPURenderer.js");
+        return new ProductionRuntimeRenderer(await ProductionWebGPURenderer.create(options), "webgpu", selection);
+      } catch (error) {
+        if (selection.requestedBackend !== "auto") {
+          throw new Error(
+            `Explicit WebGPU renderer initialization failed and will not silently use WebGL2: ${rendererInitializationError(error)}`,
+            { cause: error }
+          );
+        }
+        return ProductionRuntimeRenderer.createWebGL2(options, {
+          requestedBackend: "auto",
+          selectedBackend: "webgl2",
+          asyncRequired: false,
+          fallback: true,
+          reason: `backend='auto' attempted WebGPU, initialization failed, and WebGL2 was selected: ${rendererInitializationError(error)}`
+        });
+      }
     }
+    return ProductionRuntimeRenderer.createWebGL2(options, selection);
+  }
+
+  private static async createWebGL2(
+    options: ProductionRuntimeRendererOptions,
+    selection: ProductionRuntimeRendererBackendSelection
+  ): Promise<ProductionRuntimeRenderer> {
     const { backend: _backend, ...webgl2Options } = options;
     return new ProductionRuntimeRenderer(
       await ProductionWebGL2Renderer.create({
@@ -141,6 +164,14 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
   dispose(): void {
     this.renderer.dispose();
   }
+}
+
+function rendererInitializationError(error: unknown): string {
+  if (error instanceof Error) {
+    const code = "code" in error && typeof error.code === "string" ? ` [${error.code}]` : "";
+    return `${error.name}${code}: ${error.message}`;
+  }
+  return String(error);
 }
 
 export function createProductionRuntimeRenderer(options: ProductionRuntimeRendererOptions): Promise<ProductionRuntimeRenderer> {

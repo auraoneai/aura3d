@@ -1,5 +1,5 @@
-import { composeMat4 } from "/packages/scene/src/index.ts";
-import { Geometry, PBRMaterial, Renderer, createLightingDefault, type RenderItem } from "/packages/rendering/src/index.ts";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, PBRMaterial, Renderer, createLightingDefault, type RenderItem } from "@aura3d/rendering";
 import { rotationYQuat, simpleBounds } from "/apps/wow-common/src/simple-showcase.ts";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 

@@ -75,14 +75,19 @@ guide or README must include the narrower wording.
   fallback state, telemetry, and pixels.
 - A route named "WebGPU" must demote itself when running in WebGL or simulated
   fallback mode.
+- The six named WebGPU evidence routes and the production SDK imported-asset
+  workload have bounded native proof in
+  `tests/reports/webgpu-current-architecture/report.json`. This does not
+  generalize to root-default WebGPU, TSL, WebXR, or every renderer feature.
 
 ## Evidence Limits
 
 - The retained 54-row Three.js comparison and its bundle/developer-friction
   measurements use `three@0.165.0`. They are historical regression evidence,
   not evidence of parity with the locked current `three@0.185.1` ecosystem.
-- The current r185 comparison program, including WebGPU/TSL/node-material and
-  realistic companion-stack workloads, is incomplete. Aura3D therefore makes
+- The current r185 comparison program now includes the bounded WebGPU
+  architecture row, but TSL/node-material and realistic companion-stack
+  workloads remain incomplete. Aura3D therefore makes
   no current broad head-to-head, replacement, or ecosystem-parity claim.
 - `tests/reports/` artifacts may be local or ignored; they must be regenerated
   in release runs or attached as immutable artifacts.

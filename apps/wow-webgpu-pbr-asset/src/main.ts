@@ -1,11 +1,11 @@
-import { Renderer } from "/packages/rendering/src/index.ts";
+import { Renderer } from "@aura3d/rendering";
 import {
   createCameraFrame,
   createGroundedStage,
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment
-} from "/packages/engine/src/threejs-example-parity/FlagshipFoundation.ts";
+} from "@aura3d/engine/production-runtime";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
 const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";

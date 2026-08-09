@@ -386,6 +386,10 @@ export class WebGPUDevice implements RenderDevice {
   private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
   private lastError: string | null = null;
   private nativeSubmissions = 0;
+  private nativeRenderPipelinesCreated = 0;
+  private nativeRenderPasses = 0;
+  private nativeTextureUploads = 0;
+  private nativeTextureReadbacks = 0;
   private nativeTextureBindings = 0;
   private nativeGeneratedBasicSubmissions = 0;
   private nativeGeneratedTextureSubmissions = 0;
@@ -668,6 +672,7 @@ export class WebGPUDevice implements RenderDevice {
         { bytesPerRow: webgpuTarget.width * 4, rowsPerImage: webgpuTarget.height },
         { width: webgpuTarget.width, height: webgpuTarget.height, depthOrArrayLayers: 1 }
       );
+      this.nativeTextureUploads += 1;
       webgpuTarget.nativeNeedsClear = false;
     }
   }
@@ -803,6 +808,7 @@ export class WebGPUDevice implements RenderDevice {
         output.set(mapped.subarray(sourceOffset, sourceOffset + unpaddedBytesPerRow), destOffset);
       }
       unmap.call(readback);
+      this.nativeTextureReadbacks += 1;
       return output;
     } finally {
       readback.destroy();
@@ -898,6 +904,7 @@ export class WebGPUDevice implements RenderDevice {
         }
       }
       unmap.call(readback);
+      this.nativeTextureReadbacks += 1;
       return output;
     } finally {
       readback.destroy();
@@ -1054,6 +1061,10 @@ export class WebGPUDevice implements RenderDevice {
       ["presentationFormat", this.presentationFormat],
       ["drawCalls", this.drawCalls],
       ["nativeSubmissions", this.nativeSubmissions],
+      ["nativeRenderPipelinesCreated", this.nativeRenderPipelinesCreated],
+      ["nativeRenderPasses", this.nativeRenderPasses],
+      ["nativeTextureUploads", this.nativeTextureUploads],
+      ["nativeTextureReadbacks", this.nativeTextureReadbacks],
       ["nativeTextureBindings", this.nativeTextureBindings],
       ["nativeGeneratedBasicSubmissions", this.nativeGeneratedBasicSubmissions],
       ["nativeGeneratedTextureSubmissions", this.nativeGeneratedTextureSubmissions],
@@ -1091,6 +1102,10 @@ export class WebGPUDevice implements RenderDevice {
       disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
       disposedTextures: [...this.renderTargets].reduce((total, target) => total + (target.colorTexture.disposed ? 1 : 0) + (target.depthTexture?.disposed ? 1 : 0), 0),
       nativeSubmissions: this.nativeSubmissions,
+      nativeRenderPipelinesCreated: this.nativeRenderPipelinesCreated,
+      nativeRenderPasses: this.nativeRenderPasses,
+      nativeTextureUploads: this.nativeTextureUploads,
+      nativeTextureReadbacks: this.nativeTextureReadbacks,
       nativeTextureBindings: this.nativeTextureBindings,
       nativeGeneratedBasicSubmissions: this.nativeGeneratedBasicSubmissions,
       nativeGeneratedTextureSubmissions: this.nativeGeneratedTextureSubmissions,
@@ -1314,6 +1329,7 @@ export class WebGPUDevice implements RenderDevice {
             }
           : {})
       });
+      this.nativeRenderPipelinesCreated += 1;
       shader.renderPipelines.set(pipelineKey, pipeline);
     }
     const encoder = this.device.createCommandEncoder({ label: `${command.label ?? "draw"}-encoder` });
@@ -1379,6 +1395,7 @@ export class WebGPUDevice implements RenderDevice {
           }
         : {})
     });
+    this.nativeRenderPasses += 1;
     pass.setPipeline(pipeline);
     pass.setVertexBuffer(0, vertexBuffer.handle);
     if (bindGroup) pass.setBindGroup?.(0, bindGroup);
@@ -1442,6 +1459,7 @@ export class WebGPUDevice implements RenderDevice {
           }
         : {})
     });
+    this.nativeRenderPasses += 1;
     pass.end();
     this.device.queue.submit([encoder.finish()]);
     target.nativeNeedsClear = false;
@@ -1472,6 +1490,7 @@ export class WebGPUDevice implements RenderDevice {
             { bytesPerRow: level.bytesPerRow, rowsPerImage: level.height },
             { width: level.width, height: level.height, depthOrArrayLayers: 1 }
           );
+          this.nativeTextureUploads += 1;
         });
         resource = { texture: nativeTexture, view: nativeTexture.createView() };
       } else {
@@ -1496,6 +1515,7 @@ export class WebGPUDevice implements RenderDevice {
             { bytesPerRow: level.width * levelBytesPerPixel, rowsPerImage: level.height },
             { width: level.width, height: level.height, depthOrArrayLayers: 1 }
           );
+          this.nativeTextureUploads += 1;
         }
         resource = { texture: nativeTexture, view: nativeTexture.createView() };
       }
@@ -1591,6 +1611,7 @@ export class WebGPUDevice implements RenderDevice {
         { bytesPerRow: 4, rowsPerImage: 1 },
         { width: 1, height: 1, depthOrArrayLayers: 1 }
       );
+      this.nativeTextureUploads += 1;
       resource = { texture: nativeTexture, view: nativeTexture.createView() };
       this.nativeSampledTextures.set(`fallback:${key}` as unknown as Texture, resource);
     }

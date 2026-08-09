@@ -1,4 +1,4 @@
-import type { RenderDeviceDiagnostics } from "/packages/rendering/src/index.ts";
+import type { RenderDeviceDiagnostics } from "@aura3d/rendering";
 import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 export type WebGPUShowcaseStatus = "loading" | "ready" | "running" | "unsupported" | "error";

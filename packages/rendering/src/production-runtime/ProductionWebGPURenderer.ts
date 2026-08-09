@@ -154,12 +154,15 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
           excludedTransmissionItems: backdrop.excludedTransmissionItems
         };
       }
-      const diagnostics = await this.renderer.renderAsync({ source: { ...input.source, renderTarget: target }, camera: input.camera });
+      await this.renderer.renderAsync({ source: { ...input.source, renderTarget: target }, camera: input.camera });
       this.renderer.device.setRenderTarget(target);
       const pixelBytes = readPixelsAsync
         ? await readPixelsAsync.call(this.renderer.device, 0, 0, this.width, this.height)
         : this.renderer.device.readPixels(0, 0, this.width, this.height);
       const pixels = analyzePixels(pixelBytes, this.width, this.height);
+      // Snapshot after native texture-to-buffer readback so diagnostics describe
+      // the complete proof transaction rather than stopping one GPU operation early.
+      const diagnostics = this.getDiagnostics();
       const features = this.getFeatures(diagnostics, input, pixels);
       return this.createProof(input, diagnostics, features, pixels, transmissionBackdropCapture);
     } finally {

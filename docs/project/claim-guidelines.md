@@ -92,8 +92,10 @@ Do not claim these until the named gates pass:
 - "Root examples generically support skinned GLB animation or morph targets."
   Blocked as a broad claim. A named route may make the narrower claim only when
   root-only screenshot pairs prove pose/morph changes for its exact typed asset.
-- "Native WebGPU particles/rendering." Blocked unless adapter/backend,
-  dispatch/render, fallback state, telemetry, and pixels are all verified.
+- "Native WebGPU particles/rendering" is allowed only for the named SDK workload
+  and six evidence routes in
+  `tests/reports/webgpu-current-architecture/report.json`. Root-default WebGPU,
+  TSL, WebXR, and feature-complete WebGPU remain blocked.
 - "A showcase route is flagship quality." Blocked until
   `docs/project/showcase/quality-gates.md` passes for that route.
 - "A game route is production playable." Blocked unless keyboard input changes

@@ -110,6 +110,10 @@ test.describe("runtime WebGPU public SDK production path", () => {
           && result.summary.pass
           && missing.length === 0
           && (result.proof.diagnostics.nativePbrSubmissions ?? 0) > 0
+          && (result.proof.diagnostics.nativeRenderPipelinesCreated ?? 0) > 0
+          && (result.proof.diagnostics.nativeRenderPasses ?? 0) > 0
+          && (result.proof.diagnostics.nativeTextureUploads ?? 0) > 0
+          && (result.proof.diagnostics.nativeTextureReadbacks ?? 0) > 0
           && (result.proof.diagnostics.nativeTextureBindings ?? 0) > 0
           && (result.proof.diagnostics.nativeEnvironmentBindings ?? 0) > 0
           && result.proof.pixels.nonBlackPixels > 120_000
@@ -188,6 +192,10 @@ test.describe("runtime WebGPU public SDK production path", () => {
     expect(report.summary.pass).toBe(true);
     expect(report.proof.backend).toBe("webgpu");
     expect(report.proof.diagnostics.nativePbrSubmissions).toBeGreaterThan(0);
+    expect(report.proof.diagnostics.nativeRenderPipelinesCreated).toBeGreaterThan(0);
+    expect(report.proof.diagnostics.nativeRenderPasses).toBeGreaterThan(0);
+    expect(report.proof.diagnostics.nativeTextureUploads).toBeGreaterThan(0);
+    expect(report.proof.diagnostics.nativeTextureReadbacks).toBeGreaterThan(0);
     expect(report.proof.diagnostics.nativeTextureBindings).toBeGreaterThan(0);
     expect(report.proof.diagnostics.nativeEnvironmentBindings).toBeGreaterThan(0);
     expect(report.proof.pixels.nonBlackPixels).toBeGreaterThan(120_000);

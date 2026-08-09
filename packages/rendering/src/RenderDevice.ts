@@ -181,6 +181,14 @@ export interface RenderDeviceDiagnostics {
   readonly textureFallbacks?: number;
   readonly textureFallbackBytes?: number;
   readonly nativeSubmissions?: number;
+  /** Native GPU render pipelines created by this device (cache misses, not draw calls). */
+  readonly nativeRenderPipelinesCreated?: number;
+  /** Native GPU render passes begun, including renderer-owned clear passes. */
+  readonly nativeRenderPasses?: number;
+  /** Native queue.writeTexture uploads, counted per uploaded mip/texture. */
+  readonly nativeTextureUploads?: number;
+  /** Successful native texture-to-buffer mapped readbacks. */
+  readonly nativeTextureReadbacks?: number;
   readonly nativeTextureBindings?: number;
   readonly nativeGeneratedBasicSubmissions?: number;
   readonly nativeGeneratedTextureSubmissions?: number;

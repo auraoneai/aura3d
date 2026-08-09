@@ -1,6 +1,6 @@
 # WebGPU Availability And Fallback Behavior
 
-Version: 1.4.5
+Version: next major candidate
 
 Aura3D has WebGPU package implementation, production-runtime, template, proof-test, and bounded root route surfaces. Browser/device availability remains conditional, so a named WebGPU route must either prove `a3d-webgpu` or show a structured unsupported state. The route, feature, and report inventory lives in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 
@@ -21,7 +21,10 @@ Aura3D has WebGPU package implementation, production-runtime, template, proof-te
 ## Current Behavior
 
 - WebGPU helpers probe `navigator.gpu` when browser support exists.
-- Aura3D does not silently replace a failed WebGPU request with a success claim; the failure must surface as an explicit diagnostic.
+- `backend: "auto"` prefers WebGPU and falls back to WebGL2 when WebGPU
+  initialization is unavailable. Diagnostics retain the native cause/code.
+- Explicit `backend: "webgpu"` never silently substitutes WebGL2; failure is an
+  actionable error.
 - Expected diagnostic codes include `WEBGPU_RUNTIME_MISSING`, `WEBGPU_ADAPTER_MISSING`, `WEBGPU_DEVICE_REQUEST_FAILED`, `WEBGPU_CANVAS_CONTEXT_MISSING`, and `WEBGPU_CANVAS_CONTEXT_INVALID`.
 - Explicit WebGPU routes use `backend: "webgpu"` and must not silently fall back to WebGL2.
 - Auto-selection routes may use `backend: "auto"` only when the selected backend and reason are published in diagnostics.
@@ -40,14 +43,14 @@ await renderer.renderAsync(scene);
 Automatic backend selection through the production runtime:
 
 ```ts
-const renderer = new ProductionRuntimeRenderer({
+const renderer = await ProductionRuntimeRenderer.create({
   backend: "auto",
+  canvas,
   width: 1280,
   height: 720
 });
 
-const diagnostics = renderer.getDiagnostics();
-console.log(diagnostics.backendSelection.selected, diagnostics.backendSelection.reason);
+console.log(renderer.backendSelection.selectedBackend, renderer.backendSelection.reason);
 ```
 
 Use `renderAsync()` for WebGPU paths that need asynchronous submission/readback behavior. Keep synchronous `render()` usage scoped to paths that are proven to work without readback.
@@ -59,12 +62,15 @@ Useful focused checks:
 ```sh
 pnpm exec vitest run tests/unit/rendering/webgpu-render-to-texture-proof.test.ts tests/unit/rendering/production-runtime-webgpu-renderer.test.ts
 pnpm exec playwright test tests/browser/production-runtime-webgpu-capability.spec.ts tests/browser/rendering-webgpu.spec.ts
+pnpm renderer:webgpu-architecture
 pnpm webgpu:route-health
 pnpm webgpu
 ```
 
 ## Boundaries
 
-This does not claim full real-hardware WebGPU support, universal browser
-availability, root-default WebGPU, or WebGPU parity for features whose proof is
-emulated/package-only.
+The current architecture gate does retain real-hardware adapter/device, native
+pipeline, upload, pass, readback, compute, fallback, error, and six-route
+evidence on Chromium/Apple Metal. It does not claim universal browser
+availability, root-default WebGPU, TSL parity, or WebGPU parity for every
+renderer feature. See `webgpu-current-architecture.md`.
