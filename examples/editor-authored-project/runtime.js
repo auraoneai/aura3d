@@ -1,4 +1,5 @@
 const status = document.querySelector("#aura3d-export-status");
+const details = document.querySelector("#aura3d-export-details");
 const canvas = document.querySelector("#aura3d-export");
 const context = canvas.getContext("2d");
 const project = await fetch("./project.json").then((response) => response.json());
@@ -31,6 +32,22 @@ for (const [index, node] of project.scene.nodes.entries()) {
   context.fillStyle = "#edf2f7";
   context.font = "15px ui-sans-serif, system-ui, sans-serif";
   context.fillText(node.name, x - 42, y + 62);
+}
+
+const detailRows = [
+  ["Project", project.metadata.name],
+  ["Nodes", String(project.scene.nodes.length)],
+  ["Imported assets", String(project.assets.length)],
+  ["Workflow", project.metadata.provenance.workflow],
+  ["Runtime", project.metadata.provenance.runtimePackage],
+  ["Evidence", project.metadata.provenance.evidenceHash],
+];
+for (const [label, value] of detailRows) {
+  const term = document.createElement("dt");
+  const description = document.createElement("dd");
+  term.textContent = label;
+  description.textContent = value;
+  details.append(term, description);
 }
 
 status.textContent = `Loaded ${project.metadata.name}: ${project.scene.nodes.length} nodes`;
