@@ -223,7 +223,7 @@ const defaultControls: PostprocessControls = {
   bloom: true,
   fxaa: true,
   toneMapper: "reinhard",
-  exposure: 1.7,
+  exposure: 1.1,
   whitePoint: 1,
   inputColorSpace: "linear",
   outputColorSpace: "srgb",
@@ -409,8 +409,8 @@ function renderPostprocessLab(options: {
     bloomPass = new BloomPass({
       source: currentTarget,
       target: bloom,
-      threshold: 0.72,
-      intensity: 0.9,
+      threshold: 0.48,
+      intensity: 0.12,
       radius: 2,
       readResource: currentResource,
       writeResource: "bloom-color"
@@ -458,7 +458,7 @@ function renderPostprocessLab(options: {
     sharpening: controls.sharpening
   });
   ldr.colorPixels.set(colorGrading.pixels);
-  const chromaticAberration = chromaticAberrationPixels(ldr.colorPixels, ldr.width, ldr.height, { strength: 0.75 });
+  const chromaticAberration = chromaticAberrationPixels(ldr.colorPixels, ldr.width, ldr.height, { strength: 1.5 });
   const filmGrain = filmGrainPixels(ldr.colorPixels, ldr.width, ldr.height, { intensity: 0.055, seed: 2307, monochrome: false });
   const depthOfField = depthOfFieldPixels(ldr.colorPixels, ldr.width, ldr.height, {
     depth: depthTexture,
@@ -700,6 +700,25 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
   const asset = await loader.load({ url: productSceneUrl }, new LoadContext({ baseUrl: window.location.origin }));
   const resources = await createGLTFRenderResources(asset);
   try {
+    const camera = resources.scene.createPerspectiveCamera({
+      name: "postprocess-source-camera",
+      fovYRadians: Math.PI / 4,
+      aspect: 96 / 54,
+      near: 0.1,
+      far: 40
+    });
+    camera.transform.setPosition(0, 0.08, 5.8);
+    resources.scene.root.addChild(camera);
+    const key = resources.scene.createLight("directional", "postprocess-source-key");
+    key.intensity = 1.35;
+    key.color = [1, 0.92, 0.78];
+    resources.scene.root.addChild(key);
+    const fill = resources.scene.createLight("point", "postprocess-source-fill");
+    fill.intensity = 0.8;
+    fill.range = 12;
+    fill.color = [0.58, 0.76, 1];
+    fill.transform.setPosition(-2.4, 2.1, 3.2);
+    resources.scene.root.addChild(fill);
     const inspection = inspectGLTFAsset(asset, resources);
     const renderItemCount = resources.scene.collectRenderables().length;
     const diagnostics = renderer.render({
@@ -720,7 +739,7 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
         }
       }
     });
-    const pixels = amplifyRealScenePixels(renderer.device.readPixels(0, 0, 96, 54));
+    const pixels = renderer.device.readPixels(0, 0, 96, 54);
     return {
       source: "external-parity-product-gltf-webgl2-readback",
       assetUrl: productSceneUrl,
@@ -756,22 +775,6 @@ function summarizeRealSceneInput(realScene: RealScenePostprocessInput & { readon
     colorBuckets: realScene.colorBuckets,
     samplePixel: realScene.samplePixel
   };
-}
-
-function amplifyRealScenePixels(pixels: Uint8Array): Uint8Array {
-  const amplified = new Uint8Array(pixels.length);
-  for (let index = 0; index < pixels.length; index += 4) {
-    const r = pixels[index] ?? 0;
-    const g = pixels[index + 1] ?? 0;
-    const b = pixels[index + 2] ?? 0;
-    const signal = Math.max(r, g, b);
-    const modelBoost = signal > 0 ? 7.5 : 1;
-    amplified[index] = Math.min(255, Math.round(r * modelBoost + (signal > 0 ? 28 : 0)));
-    amplified[index + 1] = Math.min(255, Math.round(g * modelBoost + (signal > 0 ? 28 : 0)));
-    amplified[index + 2] = Math.min(255, Math.round(b * modelBoost + (signal > 0 ? 34 : 0)));
-    amplified[index + 3] = pixels[index + 3] ?? 255;
-  }
-  return amplified;
 }
 
 function createDebugOverlayIssues(device: MockRenderDevice): readonly RenderDebugIssue[] {
@@ -830,8 +833,8 @@ function fillHdrInput(target: RenderTarget & { colorPixels: Uint8Array }, realSc
       const r = realScenePixels[sourceIndex] ?? 0;
       const g = realScenePixels[sourceIndex + 1] ?? 0;
       const b = realScenePixels[sourceIndex + 2] ?? 0;
-      const highlight = Math.hypot(x - 56, y - 20) < 8 ? 176 : 0;
-      const rim = x > 70 && x < 74 && y > 14 && y < 42 ? 78 : 0;
+      const highlight = Math.hypot(x - 56, y - 20) < 8 ? 36 : 0;
+      const rim = x > 70 && x < 74 && y > 14 && y < 42 ? 24 : 0;
       const edgeOccluder = x > 23 && x < 78 && y > 30 && y < 33;
       const verticalCalibrationEdge = x > 34 && x < 37 && y > 12 && y < 40;
       target.colorPixels[index] = edgeOccluder
@@ -1071,7 +1074,7 @@ function createShell(): {
             <option value="neutral">Neutral</option>
           </select>
         </label>
-        <label>Exposure <input data-testid="postprocess-exposure" type="range" min="0.6" max="2.4" step="0.05" value="1.7" /></label>
+        <label>Exposure <input data-testid="postprocess-exposure" type="range" min="0.6" max="2.4" step="0.05" value="1.1" /></label>
         <label>White point <input data-testid="postprocess-white-point" type="range" min="0.7" max="1.8" step="0.05" value="1" /></label>
         <label>Contrast <input data-testid="postprocess-contrast" type="range" min="0.5" max="1.8" step="0.05" value="1.12" /></label>
         <label>Temperature <input data-testid="postprocess-temperature" type="range" min="-0.8" max="0.8" step="0.05" value="0.12" /></label>

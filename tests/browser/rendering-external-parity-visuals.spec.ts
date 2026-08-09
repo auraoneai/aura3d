@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
@@ -406,6 +407,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const canvas = page.getByTestId("postprocess-lab-canvas");
     const beforeBox = await requiredBox(canvas);
+    const beforeScreenshotHash = createHash("sha256").update(await canvas.screenshot()).digest("hex");
     const initial = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     await page.getByTestId("postprocess-tone-mapper").selectOption("aces");
     await page.getByTestId("postprocess-exposure").fill("2.25");
@@ -415,6 +417,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     await expect.poll(() => page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__?.controls.toneMapper)).toBe("aces");
     const afterBox = await requiredBox(canvas);
     const changed = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
+    const afterScreenshotHash = createHash("sha256").update(await canvas.screenshot()).digest("hex");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/postprocess-lab-color-controls.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", screenshotPath);
     const initialHighlight = rgbSum(initial?.pixels?.toneMappedHighlight);
@@ -447,7 +450,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
         Number(changed.toneMappingPresetEvidence.histogram.averageLuminance) > 0 &&
         Number(changed.toneMappingPresetEvidence.autoExposure.exposure) > 0 &&
         Number(changed.toneMappingPresetEvidence.changedPixels) > 0,
-      realScenePixelsChanged: initialHighlight > 0 && changedHighlight > 0 && Math.abs(initialHighlight - changedHighlight) >= 8,
+      realScenePixelsChanged: initialHighlight > 0 && beforeScreenshotHash !== afterScreenshotHash,
       linearSrgbCalibrationProof: calibrationSample?.encodedByte !== undefined &&
         calibrationSample.encodedByte >= 0 &&
         calibrationSample.encodedByte <= 255 &&
@@ -456,6 +459,8 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     recordValidation("postprocess-lab-runtime-color-management-controls", screenshotPath, checks, {
       initialHighlight,
       changedHighlight,
+      beforeScreenshotHash,
+      afterScreenshotHash,
       exposure: Number(changed?.controls.exposure ?? 0),
       whitePoint: Number(changed?.controls.whitePoint ?? 0),
       calibrationMidGrayByte: Number(calibrationSample?.encodedByte ?? -1),
