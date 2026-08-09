@@ -8,7 +8,6 @@ import {
   Texture,
   TextureBinding,
   TexturedPBRMaterial,
-  UnlitMaterial,
   bloomPixels,
   createEnvironmentMapResourceSet,
   createPhysicalMaterialPreset,
@@ -213,11 +212,6 @@ function createShowroomScene(aspect: number, preset: MaterialShowroomEnvironment
   scene.root.addChild(backPanel);
   scene.addRenderable(backPanel, new Renderable({ geometry: "geometry:textured-cube", material: "material:showroom-back-panel" }));
 
-  const grid = scene.createNode("showroom-gallery-scale-grid");
-  grid.transform.setPosition(0, 0, 0.08);
-  scene.root.addChild(grid);
-  scene.addRenderable(grid, new Renderable({ geometry: "geometry:gallery-grid", material: "material:showroom-grid-lines" }));
-
   const entries = [
     ["dielectric-gloss", -3.05, 0.72, "material:dielectric-gloss", "geometry:textured-cube"],
     ["dielectric-rough", -1.0, 0.72, "material:dielectric-rough", "geometry:textured-cube"],
@@ -262,8 +256,7 @@ function createShowroomScene(aspect: number, preset: MaterialShowroomEnvironment
     scene,
     geometryLibrary: {
       "geometry:sphere": Geometry.uvSphere(0.58, 72, 36),
-      "geometry:textured-cube": Geometry.texturedCube(0.94),
-      "geometry:gallery-grid": Geometry.lineSegments(materialShowroomGalleryGridLines())
+      "geometry:textured-cube": Geometry.texturedCube(0.94)
     },
     materialLibrary: {
       "material:dielectric-gloss": new TexturedPBRMaterial({ name: "dielectric-gloss", baseColor: [0.88, 0.78, 0.63, 1], baseColorTexture: fixtures.marble.texture, metallic: 0, roughness: 0.12 }),
@@ -295,33 +288,9 @@ function createShowroomScene(aspect: number, preset: MaterialShowroomEnvironment
       "material:showroom-backplate-2": new PBRMaterial({ name: "showroom-backplate-olive", baseColor: [0.2, 0.32, 0.2, 1], metallic: 0.04, roughness: 0.74 }),
       "material:showroom-backplate-3": new PBRMaterial({ name: "showroom-backplate-violet", baseColor: [0.28, 0.19, 0.42, 1], metallic: 0.05, roughness: 0.7 }),
       "material:showroom-backplate-4": new PBRMaterial({ name: "showroom-backplate-cyan", baseColor: [0.1, 0.33, 0.38, 1], metallic: 0.08, roughness: 0.72 }),
-      "material:showroom-backplate-5": new PBRMaterial({ name: "showroom-backplate-oxide", baseColor: [0.42, 0.18, 0.14, 1], metallic: 0.06, roughness: 0.76 }),
-      "material:showroom-grid-lines": new UnlitMaterial({ name: "showroom-scale-grid-lines", color: [0.98, 0.9, 0.74, 0.72], renderState: { depthTest: false, depthWrite: false, blend: true, cullMode: "none" } })
+      "material:showroom-backplate-5": new PBRMaterial({ name: "showroom-backplate-oxide", baseColor: [0.42, 0.18, 0.14, 1], metallic: 0.06, roughness: 0.76 })
     }
   };
-}
-
-function materialShowroomGalleryGridLines(): readonly (readonly [number, number, number])[] {
-  const lines: Array<readonly [number, number, number]> = [];
-  for (let x = -8; x <= 8.01; x += 0.18) {
-    lines.push([x, -2.48, 0], [x, 2.04, 0]);
-  }
-  for (let y = -2.36; y <= 2.05; y += 0.18) {
-    lines.push([-8.1, y, 0], [8.1, y, 0]);
-  }
-  for (let index = 0; index < 76; index += 1) {
-    const x = -7.86 + (index % 19) * 0.84;
-    const y = -2.26 + Math.floor(index / 19) * 0.54 + (index % 3) * 0.05;
-    lines.push([x, y, 0], [x + 0.2, y + 0.12, 0]);
-    lines.push([x + 0.2, y + 0.12, 0], [x + 0.36, y - 0.04, 0]);
-    lines.push([x + 0.08, y + 0.18, 0], [x + 0.32, y + 0.26, 0]);
-  }
-  for (const x of [-6.2, -4.1, -2.05, 0, 2.05, 4.1, 6.2]) {
-    lines.push([x - 0.5, -2.46, 0], [x + 0.5, -2.46, 0]);
-    lines.push([x - 0.5, -2.46, 0], [x - 0.5, -2.23, 0]);
-    lines.push([x + 0.5, -2.46, 0], [x + 0.5, -2.23, 0]);
-  }
-  return lines;
 }
 
 function createEnvironmentLighting(preset: MaterialShowroomEnvironmentPreset): { readonly lighting: EnvironmentLightingOptions; readonly resources: NonNullable<MaterialShowroomState["environmentResources"]> } {
