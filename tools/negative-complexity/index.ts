@@ -200,12 +200,6 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
       detail: "The custom physical CharacterController and Rapier kinematic character-controller adapter overlap until the major migration and R8 deletion complete. Authored-unit arcade platforming is a separate contract."
     },
     {
-      capability: "physical vehicle controller",
-      present: exists("packages/physics/src/VehicleDynamics.ts")
-        && contains("packages/physics-rapier/src/index.ts", "RapierVehicleControllerHandle"),
-      detail: "The custom physical VehicleDynamics controller and Rapier dynamic raycast vehicle adapter overlap until the major migration and R8 deletion complete. Authored-unit arcade racing is a separate contract."
-    },
-    {
       /*
        * WS-3.1 — the definition of this violation is corrected, not the code, and the reasoning matters.
        *

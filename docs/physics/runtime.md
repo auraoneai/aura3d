@@ -17,7 +17,8 @@ Version: 1.4.5
 | Character and movement helpers | `CharacterController.ts`, `KinematicBody.ts`, `KinematicWorld.ts` |
 | Scene/ECS bridges | `ScenePhysicsBridge.ts`, `ECSPhysicsBridge.ts` |
 | Debug visualization | `PhysicsDebugDraw.ts`, `packages/debug/src/PhysicsDebugAdapter.ts` |
-| Higher-level helpers | `VehicleDynamics.ts`; optional navigation/crowds live in `@aura3d/navigation-recast` |
+| Authored-unit arcade helpers | `ArcadeVehicleTelemetry.ts`; these sample telemetry and forces but do not integrate a physical vehicle |
+| Optional ecosystem owners | Physical vehicles use `@aura3d/physics-rapier`; navigation/crowds use `@aura3d/navigation-recast` |
 | Optional production solver | `@aura3d/physics-rapier` (explicit adapter over `@dimforge/rapier3d-compat`) |
 
 ## Runtime Model

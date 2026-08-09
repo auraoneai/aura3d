@@ -14,7 +14,7 @@ import {
   type ExternalParityLdrPostprocessSummary,
   type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
-import { sampleArcadeVehicleDynamics, samplePacejkaTireForces, sampleRacingAiDriver, sampleVehicleDamage, sampleVehicleDrivetrain, sampleVehicleEffectEmitters } from "@aura3d/physics";
+import { sampleArcadeVehicleTelemetry, samplePacejkaTireForces, sampleRacingAiDriver, sampleVehicleDamage, sampleVehicleDrivetrain, sampleVehicleEffectEmitters } from "@aura3d/physics";
 import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
 type RacingShowcaseState = {
@@ -649,7 +649,7 @@ function raceTelemetry(elapsed: number): RaceTelemetry {
   const throttleRamp = Math.min(1, raceElapsedSeconds / 0.4);
   const finishEase = state === "finished" ? 0.45 : 1;
   const steering = Math.sin(raceElapsedSeconds * 1.25) * 0.58;
-  const dynamics = sampleArcadeVehicleDynamics({
+  const dynamics = sampleArcadeVehicleTelemetry({
     elapsedSeconds: raceElapsedSeconds,
     throttle: state === "countdown" ? 0 : throttleRamp * finishEase,
     steer: steering,

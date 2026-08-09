@@ -1,4 +1,4 @@
-export interface ArcadeVehicleDynamicsInput {
+export interface ArcadeVehicleTelemetryInput {
   readonly elapsedSeconds: number;
   readonly throttle?: number;
   readonly brake?: number;
@@ -12,7 +12,7 @@ export interface ArcadeVehicleDynamicsInput {
   readonly driftFactor?: number;
 }
 
-export interface ArcadeVehicleDynamicsSample {
+export interface ArcadeVehicleTelemetrySample {
   readonly speedKph: number;
   readonly rpm: number;
   readonly nitro: number;
@@ -157,7 +157,7 @@ export interface VehicleDamageSample {
   readonly disabled: boolean;
 }
 
-export function sampleArcadeVehicleDynamics(input: ArcadeVehicleDynamicsInput): ArcadeVehicleDynamicsSample {
+export function sampleArcadeVehicleTelemetry(input: ArcadeVehicleTelemetryInput): ArcadeVehicleTelemetrySample {
   const elapsed = finiteNonNegative(input.elapsedSeconds, "elapsedSeconds");
   const throttle = clamp(input.throttle ?? 1, -1, 1);
   const brake = clamp(input.brake ?? 0, 0, 1);
@@ -417,7 +417,7 @@ export function samplePacejkaTireForces(input: PacejkaTireForceInput): PacejkaTi
 
 function validateGearRatios(values: readonly number[]): readonly number[] {
   if (values.length === 0) {
-    throw new RangeError("VehicleDynamics gearRatios must contain at least one ratio.");
+    throw new RangeError("Arcade vehicle telemetry gearRatios must contain at least one ratio.");
   }
   return values.map((value, index) => positive(value, `gearRatios[${index}]`));
 }
@@ -489,21 +489,21 @@ function suspensionFor(steer: number, speedRatio: number, driftSlip: number): re
 
 function finite(value: number, label: string): number {
   if (!Number.isFinite(value)) {
-    throw new RangeError(`VehicleDynamics ${label} must be finite.`);
+    throw new RangeError(`Arcade vehicle telemetry ${label} must be finite.`);
   }
   return value;
 }
 
 function finiteNonNegative(value: number, label: string): number {
   if (!Number.isFinite(value) || value < 0) {
-    throw new RangeError(`VehicleDynamics ${label} must be finite and non-negative.`);
+    throw new RangeError(`Arcade vehicle telemetry ${label} must be finite and non-negative.`);
   }
   return value;
 }
 
 function positive(value: number, label: string): number {
   if (!Number.isFinite(value) || value <= 0) {
-    throw new RangeError(`VehicleDynamics ${label} must be finite and positive.`);
+    throw new RangeError(`Arcade vehicle telemetry ${label} must be finite and positive.`);
   }
   return value;
 }

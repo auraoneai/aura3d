@@ -4,7 +4,7 @@ import {
   CharacterController,
   PhysicsWorld,
   Shape,
-  sampleArcadeVehicleDynamics
+  sampleArcadeVehicleTelemetry
 } from "../../../packages/physics/src/index.js";
 
 /**
@@ -461,9 +461,9 @@ describe("production backend invariant 8 — vehicle suspension", () => {
     // The turbo-drift symptom was wheels sunk into the road. A suspension that reports the
     // same four numbers in every state is indistinguishable from no suspension at all, so
     // the invariant is that it *responds* to load — and stays inside its travel while doing so.
-    const straight = sampleArcadeVehicleDynamics({ elapsedSeconds: 4, throttle: 1, steer: 0 });
-    const cornering = sampleArcadeVehicleDynamics({ elapsedSeconds: 4, throttle: 1, steer: 1 });
-    const drifting = sampleArcadeVehicleDynamics({ elapsedSeconds: 4, throttle: 1, steer: 1, handbrake: true });
+    const straight = sampleArcadeVehicleTelemetry({ elapsedSeconds: 4, throttle: 1, steer: 0 });
+    const cornering = sampleArcadeVehicleTelemetry({ elapsedSeconds: 4, throttle: 1, steer: 1 });
+    const drifting = sampleArcadeVehicleTelemetry({ elapsedSeconds: 4, throttle: 1, steer: 1, handbrake: true });
 
     for (const [label, sample] of [["straight", straight], ["cornering", cornering], ["drifting", drifting]] as const) {
       for (const [corner, compression] of sample.suspensionCompression.entries()) {

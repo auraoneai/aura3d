@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-09T00:02:00.647Z",
+  "generatedAt": "2026-08-09T00:08:58.546Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "b415d8397235ada386b4f3d7556d2d2004bbd919",
+  "sourceCommit": "d69c2c22056031b2c0abf4d2a40e7d78636f43ee",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -15,7 +15,7 @@
     "external-consumer and clean-room tests"
   ],
   "packageCount": 28,
-  "subsystemCount": 33,
+  "subsystemCount": 34,
   "sourceFilesClassified": 875,
   "packages": [
     {
@@ -2066,7 +2066,7 @@
       "disposition": "AURA-MOAT",
       "source": {
         "lines": 56873,
-        "bytes": 2329597
+        "bytes": 2329604
       },
       "dist": {
         "jsFiles": 125,
@@ -2630,6 +2630,7 @@
           "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
           "docs/architecture/final-subsystem-ownership.md",
           "docs/architecture/package-ownership.md",
+          "docs/migration/navigation-recast-2.0.md",
           "docs/physics/runtime.md"
         ],
         "externalConsumer": []
@@ -2640,14 +2641,14 @@
         "route": 0,
         "fixture": 8,
         "cliOrGenerator": 2,
-        "docs": 7,
+        "docs": 8,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
         "testMentions": 8,
-        "docsMentions": 7
+        "docsMentions": 8
       }
     },
     {
@@ -2656,8 +2657,8 @@
       "published": true,
       "disposition": "COMPATIBILITY-ONLY",
       "source": {
-        "lines": 8559,
-        "bytes": 329920
+        "lines": 8561,
+        "bytes": 330077
       },
       "dist": {
         "jsFiles": 40,
@@ -2761,6 +2762,7 @@
           "tests/reports/browser-entry-purity.json",
           "tests/reports/descriptor-physics-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
+          "tests/reports/navigation-legacy-delete-final.json",
           "tests/reports/optional-rapier-physics/report.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/animation/physics-capsule-locomotion.test.ts",
@@ -2805,6 +2807,7 @@
           "docs/architecture/package-ownership.md",
           "docs/concepts/physics.md",
           "docs/examples/advanced-gallery.md",
+          "docs/migration/navigation-recast-2.0.md",
           "docs/physics/runtime.md",
           "docs/project/audits/engine-parity-gap-audit.md",
           "docs/project/plans/aura3d-package-architecture.md",
@@ -2823,16 +2826,16 @@
         "source": 47,
         "dynamicImport": 8,
         "route": 11,
-        "fixture": 27,
+        "fixture": 28,
         "cliOrGenerator": 6,
-        "docs": 30,
+        "docs": 31,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 25,
-        "testMentions": 27,
-        "docsMentions": 30
+        "testMentions": 28,
+        "docsMentions": 31
       }
     },
     {
@@ -5794,6 +5797,7 @@
         "tests/reports/developer-friction.json",
         "tests/reports/developer-startup/report.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/agent-api/agent-api.test.ts",
         "tests/unit/agent-api/animation-episode-package.test.ts",
@@ -5979,7 +5983,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 792
+      "maintenanceReferenceCount": 793
     },
     {
       "id": "controls-general",
@@ -6431,6 +6435,7 @@
         "tests/reports/descriptor-physics-delete-final.json",
         "tests/reports/descriptor-scripting-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
         "tests/unit/animation-studio/prompt-universality.test.ts",
@@ -6494,7 +6499,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 207
+      "maintenanceReferenceCount": 208
     },
     {
       "id": "debug-general",
@@ -7057,7 +7062,7 @@
         "packages/engine/src/threejs-example-parity/index.ts"
       ],
       "lines": 54793,
-      "bytes": 2242669,
+      "bytes": 2242676,
       "compiledCost": {
         "compiledFiles": 105,
         "rawBytes": 1722551,
@@ -7308,6 +7313,7 @@
         "docs/architecture/adr/0006-browser-audio-stays-web-audio-owned.md",
         "docs/architecture/adr/0007-ecs-and-scripting-are-optional-compatibility-layers.md",
         "docs/architecture/claim-lineage.md",
+        "docs/architecture/final-subsystem-ownership.md",
         "docs/architecture/meshbvh-responsibilities.md",
         "docs/architecture/physics-backend-decision.md",
         "docs/architecture/text-requirements.md",
@@ -7851,6 +7857,7 @@
         "tools/external-parity-visual-quality/index.ts",
         "tools/final-competitive-baseline/index.mjs",
         "tools/final-demo-validation/product-demo-validation.ts",
+        "tools/final-subsystem-ownership/index.mjs",
         "tools/foundation-asset-corpus/index.ts",
         "tools/foundation-benchmarks/index.ts",
         "tools/foundation-editor/index.ts",
@@ -7936,7 +7943,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 869
+      "maintenanceReferenceCount": 871
     },
     {
       "id": "engine-node-media-publishing",
@@ -11085,6 +11092,44 @@
       "maintenanceReferenceCount": 0
     },
     {
+      "id": "physics-authored-arcade-motion",
+      "package": "physics",
+      "disposition": "AURA-MOAT",
+      "owner": "Aura3D authored-unit arcade runtime",
+      "decision": "Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation.",
+      "files": [
+        "packages/physics/src/ArcadeVehicleTelemetry.ts",
+        "packages/physics/src/KinematicBody.ts",
+        "packages/physics/src/KinematicWorld.ts"
+      ],
+      "lines": 1466,
+      "bytes": 55902,
+      "compiledCost": {
+        "compiledFiles": 2,
+        "rawBytes": 25980,
+        "gzipBytes": 5075,
+        "brotliBytes": 4508,
+        "caveat": "concatenated built modules before application tree-shaking"
+      },
+      "maintenanceReferences": [
+        "docs/api/public-api.md",
+        "docs/architecture/final-subsystem-ownership.md",
+        "docs/physics/runtime.md",
+        "docs/project/plans/engine-game-parity-execution-plan.md",
+        "packages/engine/src/agent-api/index.ts",
+        "packages/physics/src/CharacterController.ts",
+        "packages/physics/src/index.ts",
+        "packages/physics/src/world.ts",
+        "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/navigation-legacy-delete-final.json",
+        "tests/reports/public-runtime-descriptor-inventory/report.json",
+        "tests/unit/physics/kinematic-fighting-controller.test.ts",
+        "tools/final-subsystem-ownership/index.mjs",
+        "tools/product-remediation/build-physics-audit.mjs"
+      ],
+      "maintenanceReferenceCount": 14
+    },
+    {
       "id": "physics-cannon-adapter",
       "package": "physics",
       "disposition": "EXTERNAL-ADAPTER",
@@ -11206,6 +11251,7 @@
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
         "tests/templates/template-verification.test.ts",
         "tests/unit/agent-api/lazy-physics-world.test.ts",
@@ -11247,40 +11293,33 @@
         "tools/requirements-trace/index.ts",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 132
+      "maintenanceReferenceCount": 133
     },
     {
-      "id": "physics-custom-physical-controllers",
+      "id": "physics-custom-physical-controller",
       "package": "physics",
       "disposition": "DEPRECATE-REMOVE",
       "owner": "selected optional physics engine",
-      "decision": "Retain only until the optional-engine bake-off and migration proof identify replacements.",
+      "decision": "Retain only until the optional-engine migration proof identifies replacements.",
       "files": [
-        "packages/physics/src/CharacterController.ts",
-        "packages/physics/src/KinematicBody.ts",
-        "packages/physics/src/KinematicWorld.ts",
-        "packages/physics/src/VehicleDynamics.ts"
+        "packages/physics/src/CharacterController.ts"
       ],
-      "lines": 2184,
-      "bytes": 86858,
+      "lines": 718,
+      "bytes": 30997,
       "compiledCost": {
-        "compiledFiles": 4,
-        "rawBytes": 75419,
-        "gzipBytes": 17116,
-        "brotliBytes": 14926,
+        "compiledFiles": 1,
+        "rawBytes": 29513,
+        "gzipBytes": 7706,
+        "brotliBytes": 6682,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
-        "Aura3D-1.6-Architecture-Decision.md",
         "Aura3D-1.6-Replatform-PRD.md",
         "GameEngine-PRD.md",
         "docs/api/public-api.md",
-        "docs/architecture/adr/0002-racing-kit-force-model-needs-a-route-length-scale.md",
         "docs/architecture/final-subsystem-ownership.md",
-        "docs/architecture/physics-backend-decision.md",
         "docs/physics/runtime.md",
         "docs/project/plans/aura3d-threejs-ecosystem-parity.md",
-        "docs/project/plans/engine-game-parity-execution-plan.md",
         "examples/game-slice/main.ts",
         "packages/animation/src/LocomotionKit.ts",
         "packages/engine/src/agent-api/index.ts",
@@ -11305,7 +11344,7 @@
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 33
+      "maintenanceReferenceCount": 29
     },
     {
       "id": "physics-general",
@@ -11324,8 +11363,8 @@
         "packages/physics/src/solverless.ts",
         "packages/physics/src/world.ts"
       ],
-      "lines": 2438,
-      "bytes": 86260,
+      "lines": 2440,
+      "bytes": 86376,
       "compiledCost": {
         "compiledFiles": 9,
         "rawBytes": 70908,
@@ -11438,6 +11477,7 @@
         "docs/concepts/scene-vs-ecs.md",
         "docs/examples/world-war-x-showcase.md",
         "docs/guides/build-a-browser-game.md",
+        "docs/migration/navigation-recast-2.0.md",
         "docs/physics/runtime.md",
         "docs/project/audits/engine-parity-gap-audit.md",
         "docs/project/aura3d-140-release-candidate.md",
@@ -11637,6 +11677,7 @@
         "tests/reports/browser-entry-purity.json",
         "tests/reports/descriptor-editor-rendering-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
+        "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
         "tests/reports/public-runtime-descriptor-inventory/report.json",
@@ -11762,7 +11803,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 427
+      "maintenanceReferenceCount": 429
     },
     {
       "id": "physics-rapier-general",
@@ -14245,11 +14286,19 @@
       "capability": "physical integration",
       "owners": [
         "cannon-es via PhysicsWorld",
-        "KinematicBody/KinematicWorld",
         "CharacterController",
-        "VehicleDynamics"
+        "optional Rapier adapter"
       ],
-      "status": "duplicate custom physical controller ownership; Phase 2 removal candidate"
+      "status": "duplicate physical ownership remains until the major migration"
+    },
+    {
+      "capability": "authored-unit arcade motion",
+      "owners": [
+        "KinematicBody/KinematicWorld",
+        "ArcadeVehicleTelemetry",
+        "GameRuntime"
+      ],
+      "status": "non-physical capability with one semantic owner split into low-level and public layers"
     },
     {
       "capability": "navigation and crowd",

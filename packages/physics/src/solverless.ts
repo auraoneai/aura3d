@@ -20,7 +20,7 @@
  *
  * ## What is deliberately absent
  *
- * `PhysicsWorld`, `NarrowPhase`, `CharacterController`, `HitboxWorld`, `VehicleDynamics` and the
+ * `PhysicsWorld`, `NarrowPhase`, `CharacterController`, `HitboxWorld`, arcade vehicle telemetry and the
  * fixture modules. Anything that simulates. `@aura3d/physics` still exports all of them, and
  * `createAuraApp` loads the world through `await import("@aura3d/physics")` when a scene actually
  * declares a body — so behaviour is unchanged and only the download moves.

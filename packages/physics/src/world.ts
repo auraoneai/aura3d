@@ -11,14 +11,14 @@
  *
  * So the solver is imported statically, but from **here** rather than from `@aura3d/physics`. The
  * barrel is a chain of `export *` covering `HitboxWorld`, `CharacterController`, `KinematicBody`,
- * `VehicleDynamics`, `NarrowPhase` and six fixture modules; importing it to get one class dragged all
+ * arcade vehicle telemetry, `NarrowPhase` and six fixture modules; importing it to get one class dragged all
  * of them in. This entry exposes the solver and nothing else.
  *
  * Measured on scenario 1 (one cube, no bodies), the eager physics chunk:
  *
  *   via the barrel      77,081 B gzip   (cannon-es 83,869 raw + HitboxWorld 14,379 + KinematicBody
  *                                        8,975 + CharacterController 8,531 + NarrowPhase 8,488 +
- *                                        VehicleDynamics 8,125 + compatibility controllers + ...)
+ *                                        arcade telemetry 8,125 + compatibility controllers + ...)
  *   via this entry      the solver only
  *
  * `cannon-es` itself stays on the critical path, and that is the honest remaining cost of a synchronous

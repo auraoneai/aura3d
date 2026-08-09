@@ -24,7 +24,7 @@ import {
  * Static on purpose. `app.physics` is documented and tested as live synchronously for every app, so
  * `createAuraApp` cannot await a solver, and R7 forbids breaking that to save bytes. What this does
  * avoid is the barrel: `@aura3d/physics` is a chain of `export *` that also carries `HitboxWorld`,
- * `CharacterController`, `KinematicBody`, `VehicleDynamics`, `NarrowPhase` and six fixture modules, all
+ * `CharacterController`, `KinematicBody`, arcade vehicle telemetry, `NarrowPhase` and six fixture modules, all
  * of which arrived just to reach one class.
  */
 import { PhysicsWorld } from "@aura3d/physics/world";

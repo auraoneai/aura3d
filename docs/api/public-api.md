@@ -856,7 +856,7 @@ export * from "./CharacterController.js";
 export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
-export * from "./VehicleDynamics.js";
+export * from "./ArcadeVehicleTelemetry.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
 export * from "./ScenePhysicsBridge.js";

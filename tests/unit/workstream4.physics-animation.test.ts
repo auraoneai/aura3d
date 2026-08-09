@@ -8,7 +8,7 @@ import {
   PhysicsWorld,
   ScenePhysicsBridge,
   Shape,
-  sampleArcadeVehicleDynamics,
+  sampleArcadeVehicleTelemetry,
   samplePacejkaTireForces,
   sampleVehicleDamage,
   sampleVehicleEffectEmitters,
@@ -961,14 +961,14 @@ test("scene animation bridge applies morph weight tracks to render targets", () 
 });
 
 test("arcade vehicle dynamics exposes bounded speed, nitro, drift, and suspension state", () => {
-  const cruise = sampleArcadeVehicleDynamics({
+  const cruise = sampleArcadeVehicleTelemetry({
     elapsedSeconds: 2.4,
     throttle: 1,
     steer: 0.35,
     nitro: true,
     maxSpeedKph: 240
   });
-  const drifting = sampleArcadeVehicleDynamics({
+  const drifting = sampleArcadeVehicleTelemetry({
     elapsedSeconds: 2.4,
     throttle: 1,
     steer: 0.75,
@@ -985,7 +985,7 @@ test("arcade vehicle dynamics exposes bounded speed, nitro, drift, and suspensio
   assert.ok(drifting.driftSlip > cruise.driftSlip);
   assert.ok(drifting.grip < cruise.grip);
   assert.ok(drifting.suspensionCompression[1] > drifting.suspensionCompression[0]);
-  assert.throws(() => sampleArcadeVehicleDynamics({ elapsedSeconds: -1 }), /elapsedSeconds/);
+  assert.throws(() => sampleArcadeVehicleTelemetry({ elapsedSeconds: -1 }), /elapsedSeconds/);
 });
 
 test("pacejka tire model exposes combined slip forces and aligning torque", () => {
