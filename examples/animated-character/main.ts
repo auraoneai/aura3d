@@ -38,9 +38,9 @@ declare global {
 
 const metadata: ExampleMetadata = {
   id: "animated-character",
-  title: "Animated Character",
-  purpose: "Drive a procedural character rig with AnimationMixer layers and a state machine.",
-  acceptance: "Hip and hand animation samples update every frame, and a two-joint skinning palette is produced.",
+  title: "Animation Rig Diagnostic",
+  purpose: "Inspect AnimationMixer layers, state transitions, and a deliberately abstract two-joint palette.",
+  acceptance: "Diagnostic hip/hand samples update every frame and publish a two-joint palette; this route makes no rendered-character claim.",
 };
 
 if (typeof document !== "undefined") {

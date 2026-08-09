@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("animated character examples", () => {
+test.describe("animation rig diagnostics", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -14,7 +14,7 @@ test.describe("animated character examples", () => {
     await server.close();
   });
 
-  test("runs an animated procedural character with mixer layers and skinning palette data", async ({ page }) => {
+  test("runs the abstract mixer-layer and skinning-palette diagnostic", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/animated-character/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(

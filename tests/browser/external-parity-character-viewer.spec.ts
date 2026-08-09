@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
@@ -10,12 +11,10 @@ type CharacterState = {
   readonly id?: string;
   readonly status?: string;
   readonly productSurface?: string;
-  readonly fixture?: string;
   readonly characterId?: string;
-  readonly sourceAsset?: string;
-  readonly sourceRepository?: string;
-  readonly sourceRevision?: string;
+  readonly assetHash?: string;
   readonly sourceLicense?: string;
+  readonly sourceAuthor?: string;
   readonly licenseReviewRequired?: boolean;
   readonly clipCount?: number;
   readonly skeletonJointCount?: number;
@@ -24,6 +23,8 @@ type CharacterState = {
   readonly playPause?: boolean;
   readonly playing?: boolean;
   readonly normalizedTime?: number;
+  readonly drawCalls?: number;
+  readonly litPixels?: number;
   readonly featureChecklist?: readonly string[];
   readonly claimBoundary?: string;
 };
@@ -41,26 +42,32 @@ test.describe("ExternalParity character viewer", () => {
 
     await page.goto(`${server.origin}/examples/external-character-viewer/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForCharacterState(page, "external-character-viewer");
-    await page.locator("[data-testid='hr4-character-canvas']").screenshot({ path: `${screenshotDir}/external-character-viewer.png` });
+    const initialPng = await page.locator("[data-testid='hr4-character-canvas']").screenshot({ path: `${screenshotDir}/external-character-viewer.png` });
 
-    await page.getByTestId("hr4-character-timeline").fill("72");
+    await page.getByTestId("hr4-character-timeline").fill("1.44");
     await expect.poll(() => characterState(page).then((state) => Math.round((state?.normalizedTime ?? 0) * 100)), { timeout: 30_000 }).toBe(72);
+    await expect.poll(() => characterState(page).then((state) => state?.playing), { timeout: 30_000 }).toBe(false);
+    await page.getByTestId("hr4-character-play").click();
+    await expect.poll(() => characterState(page).then((state) => state?.playing), { timeout: 30_000 }).toBe(true);
     await page.getByTestId("hr4-character-play").click();
     await expect.poll(() => characterState(page).then((state) => state?.playing), { timeout: 30_000 }).toBe(false);
     const scrubState = await characterState(page);
     if (!scrubState) throw new Error("Missing scrubbed character state.");
-    await page.locator("[data-testid='hr4-character-canvas']").screenshot({ path: `${screenshotDir}/external-character-viewer-scrubbed.png` });
+    const scrubbedPng = await page.locator("[data-testid='hr4-character-canvas']").screenshot({ path: `${screenshotDir}/external-character-viewer-scrubbed.png` });
+    const initialHash = createHash("sha256").update(initialPng).digest("hex");
+    const scrubbedHash = createHash("sha256").update(scrubbedPng).digest("hex");
 
     await page.goto(`${server.origin}/apps/animation-studio-pro/index.html`, { waitUntil: "domcontentloaded" });
     const appState = await waitForCharacterState(page, "animation-studio-pro");
     await page.locator("[data-testid='hr4-character-canvas']").screenshot({ path: `${screenshotDir}/animation-studio-pro.png` });
 
     const report = {
-      ok: errors.length === 0 && statePasses(exampleState, "external-character-viewer") && statePasses(scrubState, "external-character-viewer") && statePasses(appState, "animation-studio-pro") && scrubState.playing === false,
+      ok: errors.length === 0 && statePasses(exampleState, "external-character-viewer") && statePasses(scrubState, "external-character-viewer") && statePasses(appState, "animation-studio-pro") && scrubState.playing === false && initialHash !== scrubbedHash,
       generatedAt: new Date().toISOString(),
       screenshots: [`${screenshotDir}/external-character-viewer.png`, `${screenshotDir}/external-character-viewer-scrubbed.png`, `${screenshotDir}/animation-studio-pro.png`],
-      productBoundary: "Milestone 11 proves Character Viewer ExternalParity and Animation Studio Pro timeline state. Full ExternalParity release still requires real skinned glTF rendered animation parity against Three.js and license review.",
-      requiredNextProof: ["real skinned glTF character render", "same character animation in Three.js", "visual diff for animation poses", "license review"],
+      productBoundary: "Root createAuraApp proof uses one exact typed, provenance-backed skinned GLB with browser-visible timeline pose changes; universal Three.js animation parity is not claimed.",
+      visualHashes: { initial: initialHash, scrubbed: scrubbedHash },
+      requiredNextProof: ["same character animation in current Three.js", "masked pose comparison", "cross-clip visual review"],
       errors,
       states: { example: exampleState, scrubbed: scrubState, app: appState }
     };
@@ -71,6 +78,7 @@ test.describe("ExternalParity character viewer", () => {
     expect(statePasses(scrubState, "external-character-viewer")).toBe(true);
     expect(statePasses(appState, "animation-studio-pro")).toBe(true);
     expect(scrubState.playing).toBe(false);
+    expect(scrubbedHash).not.toBe(initialHash);
   });
 });
 
@@ -93,19 +101,21 @@ function statePasses(state: CharacterState, id: string): boolean {
   return state.id === id &&
     state.status === "ready" &&
     state.productSurface === "animation-studio-pro" &&
-    state.fixture === "fixtures/external-parity/characters/animated-character/manifest.json" &&
-    state.characterId === "animated-character-cesium-man" &&
-    state.sourceAsset === "cesium-man" &&
-    state.sourceRevision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" &&
-    state.licenseReviewRequired === true &&
-    Number(state.clipCount ?? 0) >= 1 &&
+    state.characterId === "showcaseExpressiveRobot" &&
+    state.assetHash === "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319" &&
+    state.sourceLicense === "CC0-1.0" &&
+    state.sourceAuthor === "Aura3D fixture" &&
+    state.licenseReviewRequired === false &&
+    Number(state.clipCount ?? 0) >= 14 &&
     Number(state.skeletonJointCount ?? 0) >= 10 &&
     Number(state.skinnedMeshCount ?? 0) >= 1 &&
+    Number(state.drawCalls ?? 0) >= 1 &&
+    Number(state.litPixels ?? 0) > 20_000 &&
     state.timelineScrub === true &&
     state.playPause === true &&
-    checklist.includes("character-fixture") &&
+    checklist.includes("typed-character-asset") &&
     checklist.includes("timeline-scrub") &&
-    checklist.includes("clip-diagnostics") &&
+    checklist.includes("named-clip-diagnostics") &&
     typeof state.claimBoundary === "string" &&
     state.claimBoundary.includes("Three.js");
 }

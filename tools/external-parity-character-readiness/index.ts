@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }
 const requiredFiles = [
-  "fixtures/external-parity/characters/animated-character/manifest.json",
+  "src/aura-assets.ts",
   "apps/animation-studio-pro/index.html",
   "apps/animation-studio-pro/src/main.ts",
   "examples/external-character-viewer/index.html",
@@ -23,12 +23,8 @@ const isObj = (value: unknown): value is Obj => Boolean(value) && typeof value =
 const includesAll = (source: string, phrases: readonly string[]) => phrases.every((phrase) => source.includes(phrase));
 
 for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} must exist.`);
-const fixture = json("fixtures/external-parity/characters/animated-character/manifest.json");
-const source = isObj(fixture?.source) ? fixture.source : {};
-check("fixture-schema", fixture?.schema === "a3d-external-parity-character" && fixture.id === "animated-character-cesium-man", "Character fixture must use External parity schema.");
-check("fixture-source", source.corpusAssetId === "cesium-man" && source.revision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" && source.licenseReviewRequired === true, "Character fixture must pin Cesium Man source and license review.");
-check("fixture-boundary", typeof fixture?.claimBoundary === "string" && fixture.claimBoundary.includes("Three.js"), "Character fixture must preserve Three.js parity boundary.");
-check("viewer-source", includesAll(text("examples/external-character-viewer/ExternalCharacterViewer.ts"), ["timeline-scrub", "play-pause", "__A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__", "real skinned glTF rendered animation parity"]), "Character viewer must expose timeline/play state and proof boundary.");
+check("typed-asset", includesAll(text("src/aura-assets.ts"), ["showcaseExpressiveRobot", "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"]), "Generated assets must bind the exact expressive robot hash.");
+check("viewer-source", includesAll(text("examples/external-character-viewer/ExternalCharacterViewer.ts"), ["createAuraApp", "assets.showcaseExpressiveRobot", "timeline-scrub", "play-pause", "__A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__", "universal Three.js animation parity is not claimed"]), "Character viewer must render the typed GLB through the root API and expose timeline/play evidence with a scoped boundary.");
 check("app-entry-no-example-side-effect", text("examples/external-character-viewer/main.ts").includes("mountExternalCharacterViewer(\"external-character-viewer\")") && text("apps/animation-studio-pro/src/main.ts").includes("ExternalCharacterViewer") && !text("apps/animation-studio-pro/src/main.ts").includes("external-character-viewer/main"), "Animation Studio Pro must import side-effect-free shared module.");
 
 const browser = json("tests/reports/external-parity-character-viewer-browser.json");
@@ -40,10 +36,10 @@ const screenshots = arr(browser?.screenshots);
 const expectedScreenshots = ["tests/reports/external-gallery/characters/external-character-viewer.png", "tests/reports/external-gallery/characters/external-character-viewer-scrubbed.png", "tests/reports/external-gallery/characters/animation-studio-pro.png"];
 check("browser-report", browser?.ok === true && statePasses(example, "external-character-viewer") && statePasses(scrubbed, "external-character-viewer") && statePasses(app, "animation-studio-pro") && scrubbed.playing === false, "Browser report must prove example, scrubbed state, and app.");
 check("browser-screenshots", expectedScreenshots.every((path) => screenshots.includes(path) && exists(path)), "Browser report must include character screenshots.");
-check("browser-boundary", typeof browser?.productBoundary === "string" && browser.productBoundary.includes("real skinned glTF rendered animation parity"), "Browser report must preserve real animation parity boundary.");
+check("browser-boundary", typeof browser?.productBoundary === "string" && browser.productBoundary.includes("universal Three.js animation parity is not claimed"), "Browser report must preserve the scoped animation parity boundary.");
 
 const pass = checks.every((entry) => entry.pass);
-const report = { schema: "a3d-external-parity-character-readiness", generatedAt: new Date().toISOString(), pass, summary: pass ? "External parity Milestone 11 character product surface is ready. Real skinned glTF/Three.js animation parity remains required." : "External parity Milestone 11 character proof is incomplete.", checkedFiles: requiredFiles, checks };
+const report = { schema: "a3d-external-parity-character-readiness", generatedAt: new Date().toISOString(), pass, summary: pass ? "The root character surface renders the exact typed expressive robot with named clips and browser-visible timeline changes." : "The typed root character proof is incomplete.", checkedFiles: requiredFiles, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-character-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-character-readiness.json"), `${JSON.stringify(report, null, 2)}\n`);
 if (!pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }
@@ -51,5 +47,5 @@ console.log(JSON.stringify(report, null, 2));
 
 function statePasses(state: Obj, id: string): boolean {
   const checklist = arr(state.featureChecklist);
-  return state.id === id && state.status === "ready" && state.productSurface === "animation-studio-pro" && state.fixture === "fixtures/external-parity/characters/animated-character/manifest.json" && state.characterId === "animated-character-cesium-man" && state.sourceAsset === "cesium-man" && state.sourceRevision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" && state.licenseReviewRequired === true && Number(state.clipCount ?? 0) >= 1 && Number(state.skeletonJointCount ?? 0) >= 10 && Number(state.skinnedMeshCount ?? 0) >= 1 && state.timelineScrub === true && state.playPause === true && checklist.includes("character-fixture") && checklist.includes("timeline-scrub") && checklist.includes("clip-diagnostics") && typeof state.claimBoundary === "string" && state.claimBoundary.includes("Three.js");
+  return state.id === id && state.status === "ready" && state.productSurface === "animation-studio-pro" && state.characterId === "showcaseExpressiveRobot" && state.assetHash === "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319" && state.sourceLicense === "CC0-1.0" && state.licenseReviewRequired === false && Number(state.clipCount ?? 0) >= 14 && Number(state.skeletonJointCount ?? 0) >= 10 && Number(state.skinnedMeshCount ?? 0) >= 1 && Number(state.drawCalls ?? 0) >= 1 && Number(state.litPixels ?? 0) > 20_000 && state.timelineScrub === true && state.playPause === true && checklist.includes("typed-character-asset") && checklist.includes("timeline-scrub") && checklist.includes("named-clip-diagnostics") && typeof state.claimBoundary === "string" && state.claimBoundary.includes("Three.js");
 }
