@@ -389,7 +389,7 @@ function createPrimitiveEntry(node: AuraLeanPrimitiveSpec): { readonly node: Aur
     node,
     geometry: node.primitive === "sphere" ? Geometry.uvSphere(0.5, 32, 16) : Geometry.litCube(1),
     material: new PBRMaterial({
-      baseColor: color4(spec.color ?? "#d7dee8"),
+      baseColor: linearColor4(spec.color ?? "#d7dee8"),
       roughness: clamp(spec.roughness ?? 0.58),
       metallic: clamp(spec.metallic ?? spec.metalness ?? 0),
       clearcoatFactor: clamp(spec.clearcoat ?? 0)
@@ -411,6 +411,15 @@ function color4(value: string): readonly [number, number, number, number] {
     return [((number >> 16) & 255) / 255, ((number >> 8) & 255) / 255, (number & 255) / 255, 1];
   }
   return [0.1, 0.1, 0.1, 1];
+}
+
+function linearColor4(value: string): readonly [number, number, number, number] {
+  const [red, green, blue, alpha] = color4(value);
+  return [srgbToLinear(red), srgbToLinear(green), srgbToLinear(blue), alpha];
+}
+
+function srgbToLinear(value: number): number {
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
 function clamp(value: number): number { return Math.max(0, Math.min(1, value)); }

@@ -9,6 +9,7 @@ import {
 } from "@aura3d/assets/gltf-runtime";
 import {
   createAuraAppWithRenderer,
+  createAuraLeanModelMatrix,
   type AuraLeanApp,
   type AuraLeanAppTarget,
   type AuraLeanCreateAppOptions,
@@ -16,6 +17,7 @@ import {
   type AuraLeanModelSpec,
   type AuraLeanSceneSnapshot
 } from "./lean-base.js";
+import { multiplyMat4, type Mat4 } from "@aura3d/scene/math";
 
 export * from "./lean-base.js";
 
@@ -38,7 +40,23 @@ export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreate
       }
     },
     renderItems(): readonly RenderItem[] {
-      return pipelines.flatMap(({ pipeline }) => collectRenderItems(pipeline.source));
+      return pipelines.flatMap(({ node, pipeline }) => {
+        const placement = createAuraLeanModelMatrix(node.position, node.scale);
+        return collectRenderItems(pipeline.source).map((renderItem) => {
+          const {
+            normalMatrix: _sourceNormalMatrix,
+            modelViewProjectionMatrix: _sourceModelViewProjectionMatrix,
+            ...item
+          } = renderItem;
+          return {
+            ...item,
+            modelMatrix: renderItem.modelMatrix
+              ? multiplyMat4(Array.from(placement) as Mat4, Array.from(renderItem.modelMatrix) as Mat4)
+              : placement,
+            includeInAutoFrame: false
+          };
+        });
+      });
     },
     dispose() {
       for (const entry of pipelines) entry.pipeline.dispose();
