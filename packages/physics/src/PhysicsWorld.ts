@@ -406,6 +406,19 @@ export class PhysicsWorld {
     };
   }
 
+  /** Release the selected native solver and every world-owned handle. Idempotent. */
+  dispose(): void {
+    this.rapierWorld.dispose();
+    this.rapierJointsByConstraint.clear();
+    this.rapierCollidersByAuraId.clear();
+    this.rapierBodiesByAuraId.clear();
+    this.constraintsList.length = 0;
+    this.collidersById.clear();
+    this.bodiesById.clear();
+    this.bodyColliders.clear();
+    this.lastEvents = [];
+  }
+
   private detectContacts(): Contact[] {
     const potentialPairs = this.collectPotentialPairs();
     this.lastBroadphasePairs = potentialPairs.length;

@@ -535,6 +535,7 @@
     "descriptor-physics-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/physics-descriptor-fixtures.json --report tests/reports/descriptor-physics-delete-final.json",
     "descriptor-input-animation-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/input-animation-descriptor-fixtures.json --report tests/reports/descriptor-input-animation-delete-final.json",
     "descriptor-editor-rendering-r8": "pnpm check:deletion-safety -- --manifest tools/deletion-safety/editor-rendering-descriptor-fixtures.json --report tests/reports/descriptor-editor-rendering-delete-final.json",
+    "physics:major-version-gate": "pnpm build:raw && pnpm exec tsx --tsconfig tsconfig.base.json tools/physics-major-version-gate/index.ts",
     "audit:external-candidate-packages": "node tools/external-candidate-package-audit/index.mjs",
     "check:deletion-safety": "pnpm exec tsx --tsconfig tsconfig.base.json tools/deletion-safety/index.ts",
     "check:package-graph": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-graph/index.ts --dot docs/architecture/package-graph.dot",

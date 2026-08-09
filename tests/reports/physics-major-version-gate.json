@@ -1,0 +1,113 @@
+{
+  "schema": "aura3d.physics-major-version-gate/1.0",
+  "generatedAt": "2026-08-09T01:44:51.349Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "breaking-change-detected",
+      "pass": true,
+      "detail": "13 v1.5.2 physics barrel modules removed: CharacterController, ClothFixtures, Crowd, FireSmokeFixtures, FluidFixtures, FractureFixtures, NarrowPhase, Navigation, PhysicsSandboxFixtures, PlatformerFixtures, SoftBodyFixtures, Steering, VehicleDynamics"
+    },
+    {
+      "id": "major-version-required",
+      "pass": true,
+      "detail": "breaking physical-backend migration requires 2.0.0; current development manifests remain 1.6.0 / 1.6.0 / 1.6.0"
+    },
+    {
+      "id": "removed-module-migration-coverage",
+      "pass": true,
+      "detail": "13 of 13 removed barrel modules named in docs/migration/physics-rapier-2.0.md"
+    },
+    {
+      "id": "packed-migration-smoke",
+      "pass": true,
+      "detail": "clean npm consumer installed aura3d-physics-1.6.0.tgz and aura3d-physics-rapier-1.6.0.tgz; {\"rejectedLegacy\":true,\"compatibilityBackend\":\"rapier\",\"nativeAdapter\":true}"
+    }
+  ],
+  "failures": [],
+  "baseTag": "v1.5.2",
+  "currentVersions": {
+    "root": "1.6.0",
+    "physics": "1.6.0",
+    "physicsRapier": "1.6.0"
+  },
+  "requiredNextVersion": "2.0.0",
+  "releaseBlockedUntilMajorBump": true,
+  "beforeModules": [
+    "CharacterController",
+    "ClothFixtures",
+    "Collider",
+    "CollisionEvents",
+    "CollisionVolumes",
+    "Constraint",
+    "Constraints",
+    "Crowd",
+    "ECSPhysicsBridge",
+    "FireSmokeFixtures",
+    "FluidFixtures",
+    "FractureFixtures",
+    "HitboxWorld",
+    "KinematicBody",
+    "KinematicWorld",
+    "NarrowPhase",
+    "Navigation",
+    "PhysicsDebugDraw",
+    "PhysicsSandboxFixtures",
+    "PhysicsStepper",
+    "PhysicsWorld",
+    "PlatformerFixtures",
+    "Raycast",
+    "RigidBody",
+    "ScenePhysicsBridge",
+    "Shape",
+    "SoftBodyFixtures",
+    "Steering",
+    "TimeOfImpact",
+    "VehicleDynamics"
+  ],
+  "afterModules": [
+    "ArcadeCharacterController",
+    "ArcadeVehicleTelemetry",
+    "Collider",
+    "CollisionEvents",
+    "CollisionVolumes",
+    "Constraint",
+    "Constraints",
+    "ECSPhysicsBridge",
+    "FightingCharacterController",
+    "HitboxWorld",
+    "KinematicBody",
+    "KinematicWorld",
+    "MeshBVH",
+    "PhysicsDebugDraw",
+    "PhysicsStepper",
+    "PhysicsWorld",
+    "Raycast",
+    "RigidBody",
+    "ScenePhysicsBridge",
+    "Shape",
+    "SurfaceQuery",
+    "TimeOfImpact"
+  ],
+  "removedModules": [
+    "CharacterController",
+    "ClothFixtures",
+    "Crowd",
+    "FireSmokeFixtures",
+    "FluidFixtures",
+    "FractureFixtures",
+    "NarrowPhase",
+    "Navigation",
+    "PhysicsSandboxFixtures",
+    "PlatformerFixtures",
+    "SoftBodyFixtures",
+    "Steering",
+    "VehicleDynamics"
+  ],
+  "migrationPath": "docs/migration/physics-rapier-2.0.md",
+  "packedMigration": {
+    "pass": true,
+    "detail": "clean npm consumer installed aura3d-physics-1.6.0.tgz and aura3d-physics-rapier-1.6.0.tgz; {\"rejectedLegacy\":true,\"compatibilityBackend\":\"rapier\",\"nativeAdapter\":true}"
+  },
+  "decision": "Preserving the package name while removing public modules and changing solver/init semantics is a major migration. Do not publish these changes as 1.6.x."
+}

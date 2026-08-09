@@ -4,6 +4,28 @@ The next major Aura3D release makes `@aura3d/physics-rapier` the selected
 optional physical-simulation owner. Authored-unit arcade motion remains in
 `@aura3d/physics`, but it is not interchangeable with rigid-body simulation.
 
+This is a major-version migration. The 1.5.2 package exposed implementation,
+navigation, simulated-capability, and controller modules from its root barrel;
+removing those exports while changing the physical solver and initialization
+semantics cannot honestly ship as a 1.6-compatible minor.
+
+## Removed 1.5.2 root modules
+
+| Removed module | Replacement or disposition |
+| --- | --- |
+| `CharacterController` | Use the physical Rapier controller or an explicitly authored-unit controller, as described below. |
+| `Navigation`, `Steering`, `Crowd` | Use `@aura3d/navigation-recast`; static navmeshes should be generated offline and linked as typed navigation assets. |
+| `VehicleDynamics` | Use the Rapier dynamic raycast vehicle for physical simulation, or `ArcadeVehicleTelemetry`/the public racing kit for authored-unit arcade motion. |
+| `NarrowPhase` | No public replacement. Contact generation belongs to the sole selected Rapier physical owner. |
+| `PlatformerFixtures`, `PhysicsSandboxFixtures` | No runtime replacement. These deterministic descriptor fixtures did not establish mounted behavior. Use real route/runtime evidence. |
+| `ClothFixtures`, `SoftBodyFixtures`, `FractureFixtures`, `FluidFixtures`, `FireSmokeFixtures` | No runtime replacement. Aura3D does not claim these simulations until an executable selected owner and mounted browser evidence exist. |
+
+`PhysicsWorld` remains the compatibility-shaped Aura3D contract for bodies,
+colliders, constraints, queries, fixed stepping, scene bridges, and debug draw,
+but now delegates physical behavior to Rapier. `backend: "auto"` and
+`backend: "rapier"` are valid. The old `"aura-js"` and `"cannon-es"` values
+throw with migration guidance instead of silently selecting a different solver.
+
 ## Character movement
 
 The former rigid-body `CharacterController` export has been removed. Choose the
@@ -53,6 +75,9 @@ objects.
 - Arcade browser proof: `tests/browser/runtime-character-controller.spec.ts`
 - R8 deletion proof: `tests/reports/physical-character-controller-delete-final.json`
 
-The Cannon-backed world migration is still in progress. This document must be
-expanded with its body/collider/joint/query mapping before the major release is
-published.
+The clean-package migration gate packs `@aura3d/physics` and
+`@aura3d/physics-rapier`, installs both tarballs into an empty npm consumer,
+proves the removed backend value fails loudly, steps and disposes the
+compatibility-shaped world on Rapier, and independently creates, steps, and
+disposes the native optional adapter. The coordinated package version must be
+`2.0.0` before publication.
