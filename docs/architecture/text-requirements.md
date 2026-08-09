@@ -1,6 +1,9 @@
 # Text rendering — requirements before implementation (WS-2.7)
 
-**Status:** requirement + decision record. Written *before* any implementation, as WS-2.7 requires.
+**Status:** historical requirement + decision record for WS-2.7. Its 1.6
+decision about DOM annotations remains active; its deferral of lit geometry
+text was superseded by the later WS-3.7 requirement and implementation. See
+`docs/rendering/geometry-instancing-lod-text.md`.
 
 The PRD's instruction is the reason this document exists:
 
@@ -102,8 +105,13 @@ Concretely:
 
 ## What the parity row may claim
 
-The row stays **`gap` for "3D text"** — we are not shipping a text renderer and must not imply we are.
-It gains an accurate note distinguishing what is delivered from what is not, so the next reader does
-not close it by pointing at the DOM layer, and does not "fix" it by building `TextGeometry`.
+At the WS-2.7 decision point, the row stayed **`gap` for "3D text"** because no
+text renderer was shipped. WS-3.7 later added a bounded root-safe extruded
+bitmap-glyph mesh surface after the final PRD explicitly made depth-bearing 3D
+text a release obligation. That later work does not invalidate this document's
+central decision: accessible world labels remain DOM UI and must not be
+replaced or relabeled as mesh text. The new mesh surface is intentionally
+limited to its documented uppercase alphanumeric glyph catalog and is not a
+general font, shaping, or SDF/MSDF system.
 
 Occlusion is tracked as its own claim with its own test, because it is the capability that changed.

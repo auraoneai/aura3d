@@ -163,7 +163,7 @@ Category by category, from `tests/reports/aura3d-threejs-ecosystem-parity.json`:
 | Incoherent prototype collection | **No longer accurate for the interaction layer.** 87/87 public controls and 47/47 keyboard bindings verified by operation across 13 routes with zero console errors. | `tests/reports/showcase-interaction-audit/` |
 | Coherent application framework | **Yes, for authoring and interaction.** A clean-room developer builds a working configurator in 137 authored lines and a digital twin in 142, importing exactly one package with zero private imports and zero hand-rolled engine systems. | `tests/reports/clean-room-projects/` |
 | Credible game engine | **Not yet.** Vehicle grounding, suspension, AI driving, platformer motion and combat frame data are now correct and machine-checked, but the four game routes remain `prototype-blocked` pending visual review. Correct physics is not the same as a good game. | `tests/reports/turbo-vehicle-grounding/`, `tests/reports/skyline-platformer-motion/` |
-| Practical Three.js ecosystem parity | **No, and not claimed.** 6 exceed, 37 parity, 10 unproven, 3 gap across 56 capabilities. Behind on ecosystem breadth, shader authoring, 3D text, LOD and instancing through the public API, and escape-hatch ergonomics. | `docs/project/plans/aura3d-threejs-ecosystem-parity.md` |
+| Practical Three.js ecosystem parity | **No, and not claimed.** This historical inventory remains behind on ecosystem breadth and escape-hatch ergonomics. WS-3.7 subsequently surfaced bounded root-safe instancing, distance LOD, custom geometry, and mesh text; current status and limitations are recorded in `docs/rendering/geometry-instancing-lod-text.md`. | `docs/project/plans/aura3d-threejs-ecosystem-parity.md` |
 | Beyond Three.js in specific categories | **Yes, six.** All in simulation correctness and tooling, none in rendering: scene graph authoring, focus/selection, vehicle dynamics, vehicle AI, platformer motion solving, interaction testing. | same |
 
 The honest shape of the advantage: Aura3D removes integration decisions and provides
@@ -428,8 +428,11 @@ Not minimised:
 6. **Aura Clash integrates gravity by hand** and carries a dead hit-resolution system
    (`fighters/HitboxSystem.ts`, `state/HitRegistry.ts`) that nothing calls.
 7. **Frame-time and memory budgets are not independently measured.** Draw calls are.
-8. **Three parity gaps**: context-loss recovery, 3D text, shader authoring through the
-   safe API. Plus LOD and instancing present internally but not surfaced.
+8. **Historical Three parity gaps at this plan's decision point**: context-loss
+   recovery, 3D text, shader authoring through the safe API, plus LOD and
+   instancing present internally but not surfaced. WS-3.7 later closed the
+   bounded root-surface portions for mesh text, LOD, and instancing; it did not
+   establish arbitrary-font or complete ecosystem parity.
 9. **`build-and-check` fails four release-candidate routes** on a pre-existing
    probe-metric mismatch, unrelated to this work.
 10. **10 parity rows remain `parity-unproven`** — not proven by the generator's

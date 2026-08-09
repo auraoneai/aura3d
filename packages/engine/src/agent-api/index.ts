@@ -52,6 +52,7 @@ import {
   createExternalParityEnvironmentLighting,
   Geometry,
   IndexBuffer,
+  InstancedPBRMaterial,
   PBRMaterial,
   ProductionRuntimeRenderer,
   VertexBuffer,
@@ -103,6 +104,16 @@ import {
   type WorldLabel,
   type WorldLabelLayer
 } from "./WorldLabelRenderer.js";
+import {
+  createAuraText3DGeometry,
+  defineAuraCustomGeometry,
+  selectAuraRootLodLevel,
+  type AuraCustomGeometrySpec,
+  type AuraText3DGeometry,
+  type AuraText3DOptions
+} from "./RootGeometry.js";
+
+export * from "./RootGeometry.js";
 
 export * from "./SpatialAnchoring.js";
 export * from "./PhysicsRuntime.js";
@@ -1044,6 +1055,26 @@ export interface AuraPrimitiveOptions extends AuraTransformSpec {
   readonly castShadow?: boolean;
   readonly receiveShadow?: boolean;
   readonly physics?: AuraNodePhysicsSpec;
+  readonly instances?: readonly AuraTransformSpec[];
+  readonly instanceColors?: readonly AuraColor[];
+  readonly geometry?: AuraCustomGeometrySpec;
+  readonly text3D?: Omit<AuraText3DGeometry, "geometry">;
+  readonly lod?: AuraRootLodSpec;
+}
+
+export type AuraBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+
+export interface AuraRootLodLevelSpec {
+  readonly name: string;
+  readonly maxDistance?: number;
+  readonly primitive?: AuraBuiltinPrimitive;
+  readonly geometry?: AuraCustomGeometrySpec;
+  readonly material?: AuraMaterialSpec;
+}
+
+export interface AuraRootLodSpec {
+  readonly levels: readonly AuraRootLodLevelSpec[];
+  readonly hysteresis?: number;
 }
 
 export interface AuraAnimationSpec {
@@ -1263,7 +1294,7 @@ export interface AuraModelNode extends AuraTransformSpec {
 
 export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly kind: "primitive";
-  readonly primitive: "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+  readonly primitive: AuraBuiltinPrimitive | "custom";
   readonly name?: string;
   readonly material?: AuraMaterialSpec;
   readonly size?: number | AuraVec3;
@@ -1273,6 +1304,11 @@ export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly interaction?: AuraInteractionSpec;
   readonly physics?: AuraNodePhysicsSpec;
   readonly runtime?: AuraRuntimeNodeSpec;
+  readonly instances?: readonly AuraTransformSpec[];
+  readonly instanceColors?: readonly AuraColor[];
+  readonly geometry?: AuraCustomGeometrySpec;
+  readonly text3D?: Omit<AuraText3DGeometry, "geometry">;
+  readonly lod?: AuraRootLodSpec;
 }
 
 export interface AuraGroupNode extends AuraTransformSpec {
@@ -1517,6 +1553,11 @@ export interface AuraRendererDiagnosticReport {
     readonly postprocessVerified: boolean;
     readonly passNames: readonly string[];
     readonly warnings: readonly string[];
+    readonly nativeInstancedSubmissions: number;
+    readonly submittedObjects: number;
+    readonly visibleObjects: number;
+    readonly culledObjects: number;
+    readonly frustumTestedObjects: number;
   };
   readonly environment: {
     readonly enabled: boolean;
@@ -1724,7 +1765,12 @@ function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraP
     size: options.size,
     castShadow: options.castShadow ?? (primitiveName !== "plane" && options.material?.emissive === undefined),
     receiveShadow: options.receiveShadow ?? true,
-    physics: options.physics
+    physics: options.physics,
+    instances: options.instances,
+    instanceColors: options.instanceColors,
+    geometry: options.geometry,
+    text3D: options.text3D,
+    lod: options.lod
   });
 }
 
@@ -1763,6 +1809,44 @@ export const primitives = {
   capsule: (options?: AuraPrimitiveOptions) => primitive("capsule", options),
   torus: (options?: AuraPrimitiveOptions) => primitive("torus", options)
 } as const;
+
+function instancedPrimitive(primitiveName: AuraBuiltinPrimitive, options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
+  if (options.transforms.length === 0) throw new Error("Aura3D instancing requires at least one transform.");
+  if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
+  return primitive(primitiveName, { ...options, instances: options.transforms, instanceColors: options.colors });
+}
+
+export const instances = {
+  box: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("box", options),
+  sphere: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("sphere", options),
+  plane: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("plane", options),
+  cylinder: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("cylinder", options),
+  capsule: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("capsule", options),
+  torus: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torus", options)
+} as const;
+
+export const geometry = {
+  define: defineAuraCustomGeometry,
+  custom: (spec: AuraCustomGeometrySpec, options: Omit<AuraPrimitiveOptions, "geometry"> = {}) => primitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) })
+} as const;
+
+export function text3D(text: string, options: AuraText3DOptions & Omit<AuraPrimitiveOptions, "geometry" | "text3D"> = {}): AuraNodeBuilder<AuraPrimitiveNode> {
+  const built = createAuraText3DGeometry(text, options);
+  return primitive("custom", { ...options, geometry: built.geometry, text3D: { text: built.text, glyphCount: built.glyphCount, unsupportedCharacters: built.unsupportedCharacters, method: built.method } });
+}
+
+export function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | "geometry"> & { readonly levels: readonly AuraRootLodLevelSpec[]; readonly hysteresis?: number }): AuraNodeBuilder<AuraPrimitiveNode> {
+  if (options.levels.length === 0) throw new Error("Aura3D distance LOD requires at least one level.");
+  selectAuraRootLodLevel(0, options.levels, undefined, options.hysteresis ?? 0);
+  const first = options.levels[0]!;
+  if (!first.primitive && !first.geometry) throw new Error("Every Aura3D LOD level requires a primitive or custom geometry.");
+  return primitive(first.geometry ? "custom" : first.primitive!, {
+    ...options,
+    geometry: first.geometry,
+    material: first.material ?? options.material,
+    lod: { levels: options.levels, hysteresis: options.hysteresis }
+  });
+}
 
 export const groups = {
   create: group,
@@ -3363,6 +3447,7 @@ interface AuraRendererRuntimeObservation {
     readonly shadowRenderTargetsAllocated?: number;
   };
   readonly warnings?: readonly string[];
+  readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects">;
 }
 
 function createRendererDiagnosticReport(
@@ -3498,7 +3583,12 @@ function createRendererDiagnosticReport(
       backend: runtime?.backend ?? "scene-plan",
       postprocessVerified: runtimePostprocess?.pixelBacked ?? false,
       passNames: runtimePostprocess?.actualPasses ?? [],
-      warnings: runtime?.warnings ?? []
+      warnings: runtime?.warnings ?? [],
+      nativeInstancedSubmissions: runtime?.deviceDiagnostics?.nativeInstancedSubmissions ?? 0,
+      submittedObjects: runtime?.deviceDiagnostics?.submittedObjects ?? 0,
+      visibleObjects: runtime?.deviceDiagnostics?.visibleObjects ?? 0,
+      culledObjects: runtime?.deviceDiagnostics?.culledObjects ?? 0,
+      frustumTestedObjects: runtime?.deviceDiagnostics?.frustumTestedObjects ?? 0
     },
     environment: {
       enabled: environmentStatus.enabled,
@@ -10705,7 +10795,7 @@ function createSceneLabelOcclusionTest(
      * A model's real bounds come from its asset, which is not loaded synchronously here; the declared
      * scale is the honest approximation and is what the scene author controls.
      */
-    const localBounds = node.kind === "primitive" ? primitiveGeometryBounds(node.primitive) : undefined;
+    const localBounds = node.kind === "primitive" ? primitiveGeometryBounds(node) : undefined;
     const halfLocal: readonly [number, number, number] = localBounds
       ? [
           Math.max(1e-4, (localBounds.max[0] - localBounds.min[0]) / 2),
@@ -10974,9 +11064,15 @@ interface ProductionRuntimeActorState {
 
 interface ProductionRuntimePrimitiveEntry {
   readonly node: AuraPrimitiveNode;
+  readonly resources: readonly ProductionRuntimePrimitiveResource[];
+  currentLodIndex: number;
+}
+
+interface ProductionRuntimePrimitiveResource {
   readonly geometry: Geometry;
-  readonly material: PBRMaterial;
+  readonly material: PBRMaterial | InstancedPBRMaterial;
   readonly bounds: GltfBounds;
+  readonly name: string;
 }
 
 interface ProductionRuntimePrimitiveState {
@@ -11611,7 +11707,8 @@ async function createProductionRuntimeSceneRenderer(
           .filter((feature) => feature.state !== "supported")
           .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
         ...runtimeWarnings
-      ]
+      ],
+      deviceDiagnostics: latestDeviceDiagnostics
     },
     rendererOptions
   );
@@ -11659,9 +11756,11 @@ async function createProductionRuntimeSceneRenderer(
     dispose() {
       productionRenderer.dispose();
       for (const { actor } of actorEntries) actor.pipeline.dispose();
-      for (const { geometry, material } of primitiveEntries) {
-        geometry.dispose();
-        material.dispose();
+      for (const { resources } of primitiveEntries) {
+        for (const { geometry, material } of resources) {
+          geometry.dispose();
+          material.dispose();
+        }
       }
     }
   };
@@ -11679,6 +11778,8 @@ function createProductionRuntimeRendererInput(
   collectedLights: readonly CollectedLight[]
 ): ProductionRendererInput {
   const items: RenderItem[] = [];
+  const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+  const cameraPosition = resolveCameraEye(snapshot, snapshot.camera, time, runtimeNodes);
   for (const entry of actorEntries) {
     const currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     const currentNode = currentState.node;
@@ -11698,16 +11799,16 @@ function createProductionRuntimeRendererInput(
   for (const entry of primitiveEntries) {
     const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     if (!currentState.visible) continue;
+    const resource = selectProductionPrimitiveResource(entry, currentState.node, cameraPosition);
     items.push({
-      geometry: entry.geometry,
-      material: entry.material,
-      modelMatrix: createModelMatrix(currentState.node, entry.bounds, false, time),
+      geometry: resource.geometry,
+      material: resource.material,
+      modelMatrix: createModelMatrix(currentState.node, resource.bounds, false, time),
       label: currentState.node.name ?? `aura-primitive-${currentState.node.primitive}`,
-      includeInAutoFrame: false
+      includeInAutoFrame: false,
+      ...(currentState.node.instances ? { instanceTransforms: createProductionInstanceTransforms(currentState.node.instances, currentState.node), instanceColors: createProductionInstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
     });
   }
-  const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
-  const cameraPosition = resolveCameraEye(snapshot, snapshot.camera, time, runtimeNodes);
   const source: RenderSource = {
     collectRenderItems: () => items,
     cameraPolicy: "require",
@@ -11731,12 +11832,51 @@ function createProductionRuntimeRendererInput(
 function createProductionRuntimePrimitiveEntries(nodes: readonly AuraSceneNode[]): ProductionRuntimePrimitiveEntry[] {
   return nodes
     .filter((node): node is AuraPrimitiveNode => node.kind === "primitive")
-    .map((node) => ({
-      node,
-      geometry: createProductionPrimitiveGeometry(node),
-      material: createProductionPrimitiveMaterial(node),
-      bounds: primitiveGeometryBounds(node.primitive)
-    }));
+    .map((node) => ({ node, resources: createProductionPrimitiveResources(node), currentLodIndex: 0 }));
+}
+
+function createProductionPrimitiveResources(node: AuraPrimitiveNode): readonly ProductionRuntimePrimitiveResource[] {
+  const levels = node.lod?.levels;
+  if (!levels?.length) {
+    return [{ geometry: createProductionPrimitiveGeometry(node), material: createProductionPrimitiveMaterial(node), bounds: primitiveGeometryBounds(node), name: node.name ?? node.primitive }];
+  }
+  return levels.map((level, index) => {
+    if (!level.primitive && !level.geometry) throw new Error(`Aura3D LOD level ${index} requires primitive or custom geometry.`);
+    const levelNode: AuraPrimitiveNode = {
+      ...node,
+      primitive: level.geometry ? "custom" : level.primitive!,
+      geometry: level.geometry,
+      material: level.material ?? node.material,
+      lod: undefined
+    };
+    return { geometry: createProductionPrimitiveGeometry(levelNode), material: createProductionPrimitiveMaterial(levelNode), bounds: primitiveGeometryBounds(levelNode), name: level.name };
+  });
+}
+
+function selectProductionPrimitiveResource(entry: ProductionRuntimePrimitiveEntry, node: AuraPrimitiveNode, cameraPosition: AuraVec3): ProductionRuntimePrimitiveResource {
+  if (!node.lod?.levels.length) return entry.resources[0]!;
+  const position = node.position ?? [0, 0, 0];
+  const distance = Math.hypot(cameraPosition[0] - position[0], cameraPosition[1] - position[1], cameraPosition[2] - position[2]);
+  const selection = selectAuraRootLodLevel(distance, node.lod.levels, entry.currentLodIndex, node.lod.hysteresis ?? 0);
+  entry.currentLodIndex = selection.levelIndex;
+  return entry.resources[selection.levelIndex] ?? entry.resources[entry.resources.length - 1]!;
+}
+
+function createProductionInstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode): Float32Array {
+  const matrices = new Float32Array(transforms.length * 16);
+  transforms.forEach((transform, index) => {
+    const localNode: AuraPrimitiveNode = { kind: "primitive", primitive: node.primitive, ...transform };
+    matrices.set(createModelMatrix(localNode, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, false, 0), index * 16);
+  });
+  return matrices;
+}
+
+function createProductionInstanceColors(colors: readonly AuraColor[] | undefined, count: number): Float32Array | undefined {
+  if (!colors) return undefined;
+  if (colors.length !== count) throw new Error("Aura3D instance color count must match instance transform count.");
+  const values = new Float32Array(count * 4);
+  colors.forEach((color, index) => values.set(colorToRgba(color), index * 4));
+  return values;
 }
 
 function resolveProductionPrimitiveRuntimeState(
@@ -11789,7 +11929,7 @@ function resolveProductionPrimitiveRuntimeState(
  * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
  * arrived. The plumbing defect concealed the shading defect.
  */
-function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial {
+function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial {
   const materialSpec = node.material;
   const baseColor = colorToRgba(materialSpec?.color ?? materialSpec?.emissive ?? "#d7dee8");
   const opacity = clamp01(materialSpec?.opacity ?? baseColor[3] ?? 1);
@@ -11820,6 +11960,30 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
   const environmentIntensity = declaresExtension
     ? Math.max(0.35, requestedEnvironmentIntensity)
     : requestedEnvironmentIntensity;
+  /*
+   * Native instance submission requires the renderer's instanced shader contract. The ordinary
+   * PBR shader intentionally has no instance matrix inputs and ForwardPass therefore expands it.
+   * Keep the full extension material for declarations that need its broader BRDF surface; the
+   * root-safe instanced path selects the purpose-built lit material when every requested property
+   * is represented by that shader. This makes the one-draw claim real without silently dropping
+   * clearcoat/transmission/etc. (those continue to render correctly via expansion).
+   */
+  if (node.instances && !declaresExtension && transmission === 0 && materialSpec?.thickness === undefined && materialSpec?.ior === undefined && materialSpec?.attenuationColor === undefined && materialSpec?.attenuationDistance === undefined) {
+    return new InstancedPBRMaterial({
+      name: `a3d-production-instanced-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
+      baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
+      metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
+      roughness: clamp01(materialSpec?.roughness ?? 0.58),
+      emissiveColor,
+      emissiveStrength: Math.max(0, materialSpec?.emissiveIntensity ?? (materialSpec?.emissive ? 1.35 : 0)),
+      environmentIntensity,
+      renderState: {
+        blend: opacity < 0.999,
+        depthWrite: opacity >= 0.999,
+        cullMode: node.primitive === "plane" || opacity < 0.999 ? "none" : "back"
+      }
+    });
+  }
   return new PBRMaterial({
     name: `a3d-production-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
     baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
@@ -11852,20 +12016,58 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
 }
 
 function createProductionPrimitiveGeometry(node: AuraPrimitiveNode): Geometry {
+  if (node.geometry) return createProductionGeometryFromCustomSpec(node.geometry);
+  if (node.primitive === "custom") throw new Error("Aura3D custom primitive requires geometry.");
   return createProductionGeometryFromPrimitiveMesh(createProductionPrimitiveMesh(node.primitive));
 }
 
-function primitiveGeometryBounds(primitive: AuraPrimitiveNode["primitive"]): GltfBounds {
+function primitiveGeometryBounds(nodeOrPrimitive: AuraPrimitiveNode | AuraBuiltinPrimitive): GltfBounds {
+  if (typeof nodeOrPrimitive === "object" && nodeOrPrimitive.geometry) return customGeometryBounds(nodeOrPrimitive.geometry);
+  const primitive = typeof nodeOrPrimitive === "string" ? nodeOrPrimitive : nodeOrPrimitive.primitive;
+  if (primitive === "custom") throw new Error("Aura3D custom primitive requires geometry.");
   return createProductionPrimitiveMesh(primitive).bounds;
 }
 
-function createProductionPrimitiveMesh(primitive: AuraPrimitiveNode["primitive"]): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
   if (primitive === "sphere") return createSphereGeometry();
   if (primitive === "capsule") return createCapsuleApproxGeometry();
   if (primitive === "torus") return createTorusGeometry();
   if (primitive === "box") return createBoxGeometry();
   if (primitive === "cylinder") return createCylinderGeometry();
   return createPlaneGeometry();
+}
+
+function createProductionGeometryFromCustomSpec(spec: AuraCustomGeometrySpec): Geometry {
+  const normalized = defineAuraCustomGeometry(spec);
+  const normals = normalized.normals ?? calculateCustomGeometryNormals(normalized);
+  const vertexCount = normalized.positions.length;
+  const vertices = new VertexBuffer(VertexFormat.P3N3, vertexCount);
+  normalized.positions.forEach((position, index) => {
+    vertices.setAttribute(index, "position", position);
+    vertices.setAttribute(index, "normal", normals[index] ?? [0, 1, 0]);
+  });
+  return new Geometry(vertices, new IndexBuffer(normalized.indices, vertexCount), "triangles", customGeometryBounds(normalized));
+}
+
+function customGeometryBounds(spec: AuraCustomGeometrySpec): GltfBounds {
+  if (spec.bounds) return { min: spec.bounds.min, max: spec.bounds.max };
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  spec.positions.forEach((position) => { for (let axis = 0; axis < 3; axis += 1) { min[axis] = Math.min(min[axis], position[axis]!); max[axis] = Math.max(max[axis], position[axis]!); } });
+  return { min, max };
+}
+
+function calculateCustomGeometryNormals(spec: AuraCustomGeometrySpec): readonly AuraVec3[] {
+  const totals = Array.from({ length: spec.positions.length }, () => [0, 0, 0] as [number, number, number]);
+  for (let offset = 0; offset < spec.indices.length; offset += 3) {
+    const ia = spec.indices[offset]!, ib = spec.indices[offset + 1]!, ic = spec.indices[offset + 2]!;
+    const a = spec.positions[ia]!, b = spec.positions[ib]!, c = spec.positions[ic]!;
+    const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]] as const;
+    const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]] as const;
+    const normal = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]] as const;
+    for (const index of [ia, ib, ic]) for (let axis = 0; axis < 3; axis += 1) totals[index]![axis] += normal[axis]!;
+  }
+  return totals.map((normal) => { const length = Math.hypot(...normal) || 1; return [normal[0] / length, normal[1] / length, normal[2] / length] as const; });
 }
 
 function createProductionGeometryFromPrimitiveMesh(mesh: { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds }): Geometry {

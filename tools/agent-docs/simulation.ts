@@ -79,9 +79,13 @@ function writeAgentSimulationScreenshotSpec(targetDir: string): void {
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(60_000);
+
 test("agent docs hello-world scene renders the typed robot asset", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
+  // Match the scaffold's route-health budget. The typed GLB production bridge can legitimately
+  // spend more than 15 seconds compiling/loading in a cold single-worker verification run.
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const profile = await canvas.evaluate((element) => {

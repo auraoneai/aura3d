@@ -38,7 +38,8 @@ The root safe API can be claimed for:
   `camera`, `lights`, `material`, `effects`, `prefabs`, `sceneKits`,
   `primitives`, `group`, `groups`, `timeline`, `interactions`, `physics`,
   `labels`, `environments`, `game`, `games`, `charts`, `character`, `city`,
-  `product`, `solar`, `particles`, and `ui`, when those imports are actually
+  `product`, `solar`, `particles`, `ui`, `instances`, `distanceLod`, `text3D`,
+  and `geometry`, when those imports are actually
   exported and tested from root `@aura3d/engine`;
 - browser route mounting through one `createAuraApp(...)` call per route;
 - runtime node mutation and frame updates through public app/runtime methods;
@@ -81,6 +82,15 @@ workloads. Finite rectangular lights and the bounded receiver-contact
 approximation are rendering/runtime claims, not automatic root
 `createAuraApp` claims; the latter is not a general screen-space or ray-traced
 contact-shadow system.
+
+Geometry evidence is also bounded. The root-only browser and large-scene
+receipt in `docs/rendering/geometry-instancing-lod-text.md` proves native lit
+instancing for supported instanced materials, camera-distance LOD with
+hysteresis, a documented uppercase alphanumeric extruded mesh-text catalog,
+custom indexed triangle geometry, CPU camera-frustum culling, and a static
+bounds BVH. It does not prove one-draw support for every advanced material,
+arbitrary font loading or shaping, SDF/MSDF text, or GPU occlusion/Hi-Z. DOM
+world labels remain accessible UI and must not be described as 3D mesh text.
 
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
 has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,
