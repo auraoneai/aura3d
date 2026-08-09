@@ -578,15 +578,14 @@ describe("verification tools", () => {
   it("final demo validator requires browser, visual, interaction, and performance evidence", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
-    const productExamples = ["product-configurator", "architecture-viewer"];
+    const productExamples = ["product-configurator"];
     writeFileSync(join(root, "tests", "reports", "browser.json"), JSON.stringify({
       stats: { unexpected: 0 },
       errors: [],
       suites: [{
         specs: [
           ...productExamples.map((id) => ({ title: `${id} product demo reaches ready in Chromium`, ok: true, tests: [] })),
-          { title: "product configurator cycles material variants on pointer input", ok: true, tests: [] },
-          { title: "architecture viewer updates selected zone and measurement on pointer input", ok: true, tests: [] }
+          { title: "product configurator cycles material variants on pointer input", ok: true, tests: [] }
         ]
       }]
     }));
@@ -623,13 +622,13 @@ describe("verification tools", () => {
       visualPixelExamples: productExamples
     });
 
-    writeFileSync(join(root, "tests", "reports", "visual.json"), JSON.stringify({ ok: true, browserChecks: 1, violations: [] }));
+    writeFileSync(join(root, "tests", "reports", "visual.json"), JSON.stringify({ ok: true, browserChecks: 0, violations: [] }));
     const failed = validateFinalDemos(root);
     expect(failed).toMatchObject({ ok: false });
     expect(failed.upstreamReports.find((report) => report.name === "visual")).toMatchObject({
       path: "tests/reports/visual.json",
       ok: false,
-      reason: "ok=true, browserChecks=1"
+      reason: "ok=true, browserChecks=0"
     });
   });
 
@@ -706,8 +705,8 @@ describe("verification tools", () => {
       expect(report.violations, "a fully exported set must report no violations").toEqual([]);
       expect(
         report.demos.map((demo) => demo.id).sort(),
-        "all three declared example demos must export, including product-configurator whose entry lives at src/main.ts"
-      ).toEqual(["architecture-viewer", "large-world-streaming", "product-configurator"]);
+        "all declared example demos must export, including product-configurator whose entry lives at src/main.ts"
+      ).toEqual(["large-world-streaming", "product-configurator"]);
       for (const demo of report.demos) {
         expect(demo.outputHtml, `${demo.id} must emit a page`).toContain(`${demo.id}/index.html`);
         expect(demo.outputScript, `${demo.id} must emit a bundled script`).toContain(`${demo.id}/main.js`);

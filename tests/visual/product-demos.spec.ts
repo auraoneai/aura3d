@@ -4,9 +4,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../browser/example-dev-server";
 
-type ProductStateName =
-  | "__AURA3D_PRODUCT_DEMO__"
-  | "__AURA3D_ARCHITECTURE_DEMO__";
+type ProductStateName = "__AURA3D_PRODUCT_DEMO__";
 
 type Region = {
   x: number;
@@ -25,7 +23,7 @@ type PixelCheck = {
 };
 
 type ProductDemo = {
-  id: "product-configurator" | "architecture-viewer";
+  id: "product-configurator";
   stateName: ProductStateName;
   canvasSelector: string;
   stableState: string;
@@ -101,21 +99,6 @@ const productDemos: readonly ProductDemo[] = [
     pixelChecks: [
       { name: "configurator-rendered-product", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "rendered", minimumPixels: 700 },
       { name: "configurator-steel-highlight", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "steel", minimumPixels: 700 },
-    ],
-  },
-  {
-    id: "architecture-viewer",
-    stateName: "__AURA3D_ARCHITECTURE_DEMO__",
-    canvasSelector: "[data-testid='architecture-viewer-canvas']",
-    stableState: "atrium-default",
-    interaction: async (page, demo) => {
-      await page.locator(demo.canvasSelector).click({ position: { x: 220, y: 240 } });
-      await page.waitForFunction(() => (globalThis as Record<string, any>).__AURA3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
-    },
-    expectedAfterInteraction: (state) => state.selectedZone === "gallery" && state.measurements?.areaSqm === 310,
-    pixelChecks: [
-      { name: "architecture-rendered-masses", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "rendered", minimumPixels: 1_400 },
-      { name: "architecture-lit-surfaces", region: { x: 0, y: 0, width: 640, height: 640 }, matcher: "steel", minimumPixels: 1_000 },
     ],
   },
 ] as const;

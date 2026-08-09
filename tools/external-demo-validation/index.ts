@@ -55,7 +55,6 @@ const defaultManifestPath = "docs/examples/external-demo-urls.json";
 const reportPath = "tests/reports/external-demo-validation.json";
 const defaultRequiredDemoIds = [
   "product-configurator",
-  "architecture-viewer",
   "large-world-streaming",
 ] as const;
 

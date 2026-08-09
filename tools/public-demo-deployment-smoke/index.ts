@@ -50,7 +50,6 @@ const deploymentRunbookPath = "tests/reports/public-demo-deployment-runbook.md" 
 const exportReportPath = "tests/reports/external-demo-static-export.json";
 const requiredDemos = [
   "product-configurator",
-  "architecture-viewer",
   "large-world-streaming",
 ] as const;
 const sourceFiles = [

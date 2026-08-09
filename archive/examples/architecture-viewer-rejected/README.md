@@ -1,5 +1,12 @@
 # Architecture Viewer Demo
 
+> Archived and rejected for Aura3D 2.0. Personal inspection found a clipped,
+> unreadable city/procedural-cube composition rather than a coherent
+> architectural interior. The source also uses a raw fixture URL and direct
+> `GLTFLoader` path that is not permitted in current public examples. It is
+> retained only as historical evidence; do not publish, export, or cite it as
+> current architecture capability.
+
 ## Purpose
 
 This demo is a foundation architecture-viewer product slice. It renders a generated production-like civic gallery room fixture through Aura3D's public WebGL2 renderer, supports room-element selection, camera modes, section-view toggling, projected contact-shadow receiver decals, and reports hierarchy, measurement, known-limit, and frame diagnostics.

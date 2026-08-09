@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export type ProductDemoId = "product-configurator" | "architecture-viewer";
+export type ProductDemoId = "product-configurator";
 
 export interface ProductDemoSourceValidationResult {
   readonly ok: boolean;
@@ -11,12 +11,10 @@ export interface ProductDemoSourceValidationResult {
 
 const productDemos: readonly ProductDemoId[] = [
   "product-configurator",
-  "architecture-viewer",
 ];
 
 const runtimeStateByDemo: Record<ProductDemoId, string> = {
   "product-configurator": "__AURA3D_PRODUCT_DEMO__",
-  "architecture-viewer": "__AURA3D_ARCHITECTURE_DEMO__",
 };
 
 const requiredReadmeSections = [

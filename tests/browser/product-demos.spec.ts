@@ -6,7 +6,7 @@ import { validateProductDemoSources } from "../../tools/demo-validation/product-
 
 type DemoDefinition = {
   id: string;
-  stateName: "__AURA3D_PRODUCT_DEMO__" | "__AURA3D_ARCHITECTURE_DEMO__";
+  stateName: "__AURA3D_PRODUCT_DEMO__";
   canvasSelector: string;
 };
 
@@ -15,11 +15,6 @@ const productDemos: readonly DemoDefinition[] = [
     id: "product-configurator",
     stateName: "__AURA3D_PRODUCT_DEMO__",
     canvasSelector: "[data-testid='product-configurator-canvas']",
-  },
-  {
-    id: "architecture-viewer",
-    stateName: "__AURA3D_ARCHITECTURE_DEMO__",
-    canvasSelector: "[data-testid='architecture-viewer-canvas']",
   },
 ] as const;
 
@@ -202,100 +197,6 @@ test.describe("productStudio product demos", () => {
     expect(state.featureEvidence).toBeUndefined();
   });
 
-  test("architecture viewer updates selected zone and measurement on pointer input", async ({ page }) => {
-    await openProductDemo(page, server, productDemos[1]);
-
-    await page.locator(productDemos[1].canvasSelector).click({ position: { x: 220, y: 240 } });
-    await page.waitForFunction(() => window.__AURA3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
-    const state = await readDemoState(page, "__AURA3D_ARCHITECTURE_DEMO__");
-
-    expect(state.selectedZone).toBe("gallery");
-    expect(state.interactions).toBe(1);
-    expect(state.measurements.areaSqm).toBe(310);
-    expect(state.measurements.spanMeters).toBeGreaterThan(17);
-    expect(state.measurements.source).toBe("model-element-metadata");
-    expect(state.measurements.elementId).toBe("room-gallery-l1");
-    expect(state.featureEvidence.architecturalMeasurementSet).toBe(true);
-    expect(state.measurements.snapPointCount).toBeGreaterThanOrEqual(16);
-    expect(state.measurements.computedDistanceMeters).toBe(12);
-    expect(state.measurements.computedAreaSqm).toBe(144);
-    expect(state.measurements.computedAngleDegrees).toBeCloseTo(90, 3);
-    expect(state.measurements.computedHeightMeters).toBe(2.1);
-    expect(state.measurements.distanceLabel).toBe("12.00 m");
-    expect(state.measurements.areaLabel).toBe("144.00 m2");
-    expect(state.measurements.angleLabel).toBe("90.00 deg");
-    expect(state.measurements.heightLabel).toBe("2.10 m");
-    expect(state.measurements.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(state.selectedElement).toMatchObject({
-      id: "room-gallery-l1",
-      kind: "room",
-      level: "L1",
-    });
-    expect(state.model.source).toContain("fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf");
-    expect(state.model.elements).toContain("north-curtain-wall-panel-1");
-    expect(state.model.elements).toContain("mezzanine-stair-tread-9");
-    expect(state.metrics.zones).toBe(3);
-    expect(state.metrics.selectedAreaSqm).toBe(310);
-    expect(state.metrics.productionLikeArchitectureModel).toBe(true);
-    expect(state.metrics.localArchitectureFixture).toBe(true);
-    expect(state.metrics.actualElementSelection).toBe(true);
-    expect(state.metrics.selectedElementId).toBe("room-gallery-l1");
-    expect(state.metrics.measurementSource).toBe("model-element-metadata");
-    expect(state.metrics.architecturalMeasurementSet).toBe(true);
-    expect(state.metrics.measurementToolSnapPoints).toBeGreaterThanOrEqual(16);
-    expect(state.metrics.measurementToolDistanceMeters).toBe(12);
-    expect(state.metrics.measurementToolAreaSqm).toBe(144);
-    expect(state.metrics.measurementToolAngleDegrees).toBeCloseTo(90, 3);
-    expect(state.metrics.measurementToolHeightMeters).toBe(2.1);
-    expect(state.metrics.measurementToolHash).toMatch(/^[0-9a-f]{8}$/);
-    expect(state.featureEvidence.architecturalLightingState).toBe(true);
-    expect(state.architecturalLighting.preset).toBe("noon");
-    expect(state.architecturalLighting.interiorLights).toHaveLength(10);
-    expect(state.architecturalLighting.activeInteriorLightCount).toBe(0);
-    expect(state.architecturalLighting.hash).toMatch(/^[0-9a-f]{8}$/);
-    expect(state.metrics.architecturalLightingState).toBe(true);
-    expect(state.metrics.lightingControllerPreset).toBe("noon");
-    expect(state.metrics.lightingControllerInteriorLights).toBe(10);
-    expect(state.metrics.lightingControllerActiveInteriorLights).toBe(0);
-    expect(state.metrics.lightingControllerKelvinMin).toBe(2700);
-    expect(state.metrics.lightingControllerKelvinMax).toBe(5000);
-    expect(Number(state.metrics.architecturalElements)).toBeGreaterThanOrEqual(40);
-    expect(Number(state.metrics.curtainWallPanels)).toBe(9);
-    expect(Number(state.metrics.curtainWallMullions)).toBe(12);
-    expect(Number(state.metrics.stairTreads)).toBe(9);
-    expect(state.metrics.contactShadowAlternative).toBe(true);
-    expect(Number(state.metrics.contactShadowCount)).toBeGreaterThanOrEqual(12);
-    expect(Number(state.metrics.shadowReceiverElements)).toBeGreaterThanOrEqual(3);
-
-    await writeProductDemoScreenshot(page, "tests/reports/architecture-viewer-product-demo.png");
-  });
-
-  test("architecture viewer exposes orbit, pan, zoom, focus, reset, keyboard, and touch controls", async ({ page }) => {
-    await openProductDemo(page, server, productDemos[1]);
-    const canvas = page.locator(productDemos[1].canvasSelector);
-
-    await dispatchButtonClick(page, "button[data-view-control='pan']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.panX)).toBeGreaterThan(0);
-
-    await page.keyboard.press("=");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.zoom)).toBeGreaterThan(1);
-
-    const beforeYaw = await page.evaluate(() => Number(window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.yaw ?? 0));
-    await dispatchSyntheticPointerDrag(page, productDemos[1].canvasSelector, "touch", false);
-    await expect.poll(() => page.evaluate(() => Number(window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.yaw ?? 0))).not.toBe(beforeYaw);
-
-    await dispatchButtonClick(page, "button[data-view-control='focus']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.zoom)).toBeGreaterThan(1.1);
-    await dispatchButtonClick(page, "button[data-view-control='reset']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.panX)).toBe(0);
-
-    const state = await readDemoState(page, "__AURA3D_ARCHITECTURE_DEMO__");
-    expect(state.metrics.fitToBounds).toBe(true);
-    expect(state.metrics.resetView).toBe(true);
-    expect(state.metrics.touchControls).toBe(true);
-    expect(state.metrics.selectionDiagnostics).toBe(true);
-  });
-
 });
 
 async function collectPageErrors(page: Page, run: () => Promise<void>): Promise<string[]> {
@@ -419,50 +320,4 @@ async function canvasWebGLStats(page: Page, canvasSelector: string): Promise<{
       highlightEnergy: Number(highlightEnergy.toFixed(3))
     };
   }, canvasSelector);
-}
-
-async function dispatchSyntheticPointerDrag(
-  page: Page,
-  selector: string,
-  pointerType: "mouse" | "touch",
-  shiftKey: boolean,
-): Promise<void> {
-  await page.evaluate(
-    ({ selector: targetSelector, pointerType: inputPointerType, shiftKey: inputShiftKey }) => {
-      const canvas = document.querySelector<HTMLElement>(targetSelector);
-      if (!canvas) throw new Error(`Missing canvas ${targetSelector}`);
-      const rect = canvas.getBoundingClientRect();
-      const base = {
-        bubbles: true,
-        cancelable: true,
-        pointerId: inputPointerType === "touch" ? 42 : 7,
-        pointerType: inputPointerType,
-        shiftKey: inputShiftKey,
-      };
-      canvas.dispatchEvent(new PointerEvent("pointerdown", {
-        ...base,
-        clientX: rect.left + rect.width * 0.48,
-        clientY: rect.top + rect.height * 0.48,
-      }));
-      canvas.dispatchEvent(new PointerEvent("pointermove", {
-        ...base,
-        clientX: rect.left + rect.width * 0.62,
-        clientY: rect.top + rect.height * 0.44,
-      }));
-      canvas.dispatchEvent(new PointerEvent("pointerup", {
-        ...base,
-        clientX: rect.left + rect.width * 0.62,
-        clientY: rect.top + rect.height * 0.44,
-      }));
-    },
-    { selector, pointerType, shiftKey },
-  );
-}
-
-async function dispatchButtonClick(page: Page, selector: string): Promise<void> {
-  await page.evaluate((targetSelector) => {
-    const button = document.querySelector<HTMLButtonElement>(targetSelector);
-    if (!button) throw new Error(`Missing button ${targetSelector}`);
-    button.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-  }, selector);
 }

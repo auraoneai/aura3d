@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const productExamples = ["product-configurator", "architecture-viewer"] as const;
+const productExamples = ["product-configurator"] as const;
 
 type ProductExample = (typeof productExamples)[number];
 type JsonRecord = Record<string, unknown>;

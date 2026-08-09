@@ -3,13 +3,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const productExamples = [
-  "product-configurator",
-  "architecture-viewer"
+  "product-configurator"
 ] as const;
 
 const productInteractionSpecs = [
-  "product configurator cycles material variants on pointer input",
-  "architecture viewer updates selected zone and measurement on pointer input"
+  "product configurator cycles material variants on pointer input"
 ] as const;
 
 type JsonRecord = Record<string, unknown>;
