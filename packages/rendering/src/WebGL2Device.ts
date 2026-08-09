@@ -163,6 +163,7 @@ interface WebGL2FullscreenPresentationStateSnapshot {
 interface WebGL2BloomPingPongResources {
   readonly width: number;
   readonly height: number;
+  readonly hdr: boolean;
   readonly textures: readonly [WebGLTexture, WebGLTexture];
   readonly framebuffers: readonly [WebGLFramebuffer, WebGLFramebuffer];
 }
@@ -794,13 +795,6 @@ export class WebGL2Device implements RenderDevice {
         format: source.colorTexture.format
       });
     }
-    if (source.colorTexture.format !== "rgba8" && bloomPass) {
-      throw new RenderDeviceError("WebGL2 native LUT bloom accepts rgba8 input; HDR bloom must use the renderer float-bloom path before tone mapping.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
-        targetId: source.id,
-        format: source.colorTexture.format,
-        pass: "bloom"
-      });
-    }
     if (source.colorTexture.format !== "rgba8" && (depthOfFieldPass || motionBlurPass || ssaoPass || ssrPass || taaPass || outlinePass) && !tonePass) {
       throw new RenderDeviceError("WebGL2 byte-kernel postprocess requires rgba8 input or a preceding tone-mapping pass.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
@@ -849,10 +843,11 @@ export class WebGL2Device implements RenderDevice {
     const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
+    const sourceIsHdr = source.colorTexture.format !== "rgba8";
     const bloomResources = bloomOptions || depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions
-      ? this.ensureBloomPingPongResources(source.width, source.height)
+      ? this.ensureBloomPingPongResources(source.width, source.height, sourceIsHdr && Boolean(bloomOptions))
       : undefined;
-    if (bloomOptions) {
+    if (bloomOptions && !sourceIsHdr) {
       this.ensureBloomLutTextures(bloomOptions);
     }
     if (outlineOptions) {
@@ -871,7 +866,7 @@ export class WebGL2Device implements RenderDevice {
       let ldrSourceHandle = source.colorHandle;
       let temporarySourceIndex: -1 | 0 | 1 = -1;
       if (bloomOptions && bloomResources) {
-        ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
+        ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray, sourceIsHdr);
         temporarySourceIndex = 1;
       }
       if ((depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions) && bloomResources) {
@@ -1502,9 +1497,9 @@ export class WebGL2Device implements RenderDevice {
     }
   }
 
-  private ensureBloomPingPongResources(width: number, height: number): WebGL2BloomPingPongResources {
+  private ensureBloomPingPongResources(width: number, height: number, hdr = false): WebGL2BloomPingPongResources {
     const current = this.bloomPingPongResources;
-    if (current && current.width === width && current.height === height) {
+    if (current && current.width === width && current.height === height && current.hdr === hdr) {
       return current;
     }
     this.disposeBloomPingPongResources();
@@ -1533,7 +1528,7 @@ export class WebGL2Device implements RenderDevice {
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA8, width, height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, hdr ? this.gl.RGBA16F : this.gl.RGBA8, width, height, 0, this.gl.RGBA, hdr ? this.gl.HALF_FLOAT : this.gl.UNSIGNED_BYTE, null);
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, texture, 0);
         const status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
@@ -1549,6 +1544,7 @@ export class WebGL2Device implements RenderDevice {
       const resources: WebGL2BloomPingPongResources = {
         width,
         height,
+        hdr,
         textures: [textures[0]!, textures[1]!],
         framebuffers: [framebuffers[0]!, framebuffers[1]!]
       };
@@ -1756,11 +1752,12 @@ export class WebGL2Device implements RenderDevice {
     sourceTexture: WebGLTexture,
     resources: WebGL2BloomPingPongResources,
     options: NativeBloomOptions,
-    vertexArray: WebGLVertexArrayObject
+    vertexArray: WebGLVertexArrayObject,
+    hdr: boolean
   ): WebGLTexture {
     const brightLut = this.bloomBrightLutTexture;
     const compositeLut = this.bloomCompositeLutTexture;
-    if (!brightLut || !compositeLut) {
+    if (!hdr && (!brightLut || !compositeLut)) {
       throw new RenderDeviceError("WebGL2 bloom lookup textures were not initialized", "WEBGL_ALLOCATION_FAILED");
     }
     const [textureA, textureB] = resources.textures;
@@ -1772,9 +1769,11 @@ export class WebGL2Device implements RenderDevice {
     this.gl.useProgram(brightProgram);
     this.gl.bindVertexArray(vertexArray);
     this.bindFullscreenTexture(0, sourceTexture);
-    this.bindFullscreenTexture(1, brightLut);
+    if (brightLut) this.bindFullscreenTexture(1, brightLut);
     this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_source"), 0);
     this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
+    this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
+    this.gl.uniform1f(this.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
 
     const blurProgram = this.ensureBloomBlurProgram();
@@ -1785,6 +1784,7 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform2i(this.gl.getUniformLocation(blurProgram, "u_size"), resources.width, resources.height);
     this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_radius"), options.radius);
     this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_horizontal"), 1);
+    this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_hdr"), hdr ? 1 : 0);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebufferA);
@@ -1797,10 +1797,12 @@ export class WebGL2Device implements RenderDevice {
     this.gl.useProgram(compositeProgram);
     this.bindFullscreenTexture(0, sourceTexture);
     this.bindFullscreenTexture(1, textureA);
-    this.bindFullscreenTexture(2, compositeLut);
+    if (compositeLut) this.bindFullscreenTexture(2, compositeLut);
     this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_source"), 0);
     this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_blurred"), 1);
     this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_compositeLut"), 2);
+    this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_hdr"), hdr ? 1 : 0);
+    this.gl.uniform1f(this.gl.getUniformLocation(compositeProgram, "u_intensity"), options.intensity);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return textureB;
   }
@@ -2182,6 +2184,8 @@ precision highp float;
 precision highp int;
 uniform sampler2D u_source;
 uniform sampler2D u_brightLut;
+uniform int u_hdr;
+uniform float u_threshold;
 out vec4 outColor;
 
 uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
@@ -2190,6 +2194,12 @@ uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
+  if (u_hdr == 1) {
+    vec4 source = texelFetch(u_source, pixel, 0);
+    float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
+    outColor = luma >= u_threshold ? source : vec4(0.0);
+    return;
+  }
   uvec4 source = byteTexel(u_source, pixel);
   uint colorIndex = (source.r << 16u) | (source.g << 8u) | source.b;
   uint byteIndex = colorIndex >> 3u;
@@ -2225,6 +2235,7 @@ uniform sampler2D u_source;
 uniform ivec2 u_size;
 uniform int u_radius;
 uniform int u_horizontal;
+uniform int u_hdr;
 out vec4 outColor;
 
 uvec4 sourceByte(ivec2 coordinate) {
@@ -2234,6 +2245,16 @@ uvec4 sourceByte(ivec2 coordinate) {
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
+  if (u_hdr == 1) {
+    vec4 sum = vec4(0.0);
+    for (int offset = -16; offset <= 16; offset += 1) {
+      if (abs(offset) > u_radius) continue;
+      ivec2 sampleCoordinate = pixel + (u_horizontal == 1 ? ivec2(offset, 0) : ivec2(0, offset));
+      sum += texelFetch(u_source, clamp(sampleCoordinate, ivec2(0), u_size - ivec2(1)), 0);
+    }
+    outColor = sum / float(u_radius * 2 + 1);
+    return;
+  }
   uvec4 sum = uvec4(0u);
   for (int offset = -16; offset <= 16; offset += 1) {
     if (abs(offset) > u_radius) {
@@ -2264,6 +2285,8 @@ precision highp int;
 uniform sampler2D u_source;
 uniform sampler2D u_blurred;
 uniform sampler2D u_compositeLut;
+uniform int u_hdr;
+uniform float u_intensity;
 out vec4 outColor;
 
 uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
@@ -2276,6 +2299,12 @@ float compositeChannel(uint source, uint blurred) {
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
+  if (u_hdr == 1) {
+    vec4 source = texelFetch(u_source, pixel, 0);
+    vec3 blurred = texelFetch(u_blurred, pixel, 0).rgb;
+    outColor = vec4(source.rgb + blurred * u_intensity, source.a);
+    return;
+  }
   uvec4 source = byteTexel(u_source, pixel);
   uvec4 blurred = byteTexel(u_blurred, pixel);
   outColor = vec4(

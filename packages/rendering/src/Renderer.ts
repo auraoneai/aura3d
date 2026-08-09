@@ -991,6 +991,8 @@ export class Renderer {
     outputTarget?: RenderTarget,
     forceCpuDeterministic = false
   ): boolean {
+    const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
+    if (nativeHdrBloom && (forceCpuDeterministic || !this.device.presentLdrPostprocess)) return false;
     if (!canFuseLdrPostprocess(current, passes)) return false;
     if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
     // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
@@ -1122,6 +1124,8 @@ export class Renderer {
     outputTarget?: RenderTarget,
     forceCpuDeterministic = false
   ): Promise<boolean> {
+    const nativeHdrBloom = isHdrRenderTarget(current) && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping";
+    if (nativeHdrBloom && (forceCpuDeterministic || !this.device.presentLdrPostprocess)) return false;
     if (!canFuseLdrPostprocess(current, passes)) return false;
     if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
     // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
@@ -2026,8 +2030,8 @@ function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions
 
 function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): boolean {
   const sourceIsHdr = isHdrRenderTarget(source);
-  return passes.length > 1
-    && (!sourceIsHdr || passes[0]?.name === "tone-mapping")
+  return passes.length > 0
+    && (!sourceIsHdr || passes[0]?.name === "tone-mapping" || (passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping"))
     && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa" || pass.name === "outline" || pass.name === "fxaa")
     && passes.every((pass, index) => {
       const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);

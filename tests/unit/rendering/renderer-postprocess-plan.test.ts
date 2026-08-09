@@ -83,7 +83,7 @@ describe("renderer postprocess plan diagnostics", () => {
     ]);
   });
 
-  it("keeps HDR bloom out of the LDR native fusion contract", () => {
+  it("keeps HDR bloom and tone mapping on the native GPU presentation path", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.72, intensity: 0.4, radius: 2 },
       toneMapping: { exposure: 1.08, operator: "filmic" },
@@ -96,10 +96,11 @@ describe("renderer postprocess plan diagnostics", () => {
 
     expect(plan).toMatchObject({
       passNames: ["bloom", "tone-mapping", "fxaa"],
-      executionMode: "renderer-owned-pass-chain-readback",
-      canFuseLdr: false,
-      readbackPassNames: ["bloom", "tone-mapping", "fxaa"]
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
     });
+    expect(plan.passes.every((pass) => !pass.usesReadback)).toBe(true);
   });
 
   it("routes LDR outline through native fusion after color grading without readback", () => {
@@ -317,8 +318,8 @@ describe("renderer postprocess plan diagnostics", () => {
       source: "Renderer.postprocessPlan",
       passCount: 1,
       passNames: ["tone-mapping"],
-      executionMode: "renderer-owned-pass-chain-readback",
-      canFuseLdr: false,
+      executionMode: "renderer-owned-fused-ldr-readback",
+      canFuseLdr: true,
       missingInputs: []
     });
     expect(diagnostics.postprocessPlan?.passes).toEqual([

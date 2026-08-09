@@ -364,6 +364,35 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
+  it("routes HDR bloom before tone mapping through the device-native presentation path", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 3, height: 2, clearColor: [2.4, 0.42, 0.12, 1] });
+    (renderer.device.info.capabilities as string[]).push("hdr-render-targets");
+    const calls: { readonly passNames: readonly string[]; readonly sourceFormat: string }[] = [];
+    renderer.device.presentLdrPostprocess = (source, options) => {
+      calls.push({ passNames: options.passes.map((pass) => pass.name), sourceFormat: source.colorTexture.format });
+      renderer.device.presentRenderTarget?.(source);
+    };
+
+    const diagnostics = renderer.render({
+      renderItems: [],
+      postprocess: {
+        targetFormat: "rgba16f",
+        bloom: { threshold: 0.74, intensity: 0.4, radius: 2 },
+        toneMapping: { exposure: 1.08, whitePoint: 1.34, gamma: 2.2, operator: "aces" },
+        fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.55 }
+      }
+    });
+
+    expect(calls).toEqual([{ passNames: ["bloom", "tone-mapping", "fxaa"], sourceFormat: "rgba16f" }]);
+    expect(diagnostics.postprocessPlan).toMatchObject({
+      passNames: ["bloom", "tone-mapping", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
+    });
+    renderer.dispose();
+  });
+
   it("routes LDR outline after color grading through the device-native fused presentation path", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 3, height: 2, clearColor: [0.9, 0.42, 0.12, 1] });
     const calls: readonly string[][] = [];

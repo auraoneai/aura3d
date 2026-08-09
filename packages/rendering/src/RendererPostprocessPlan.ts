@@ -173,7 +173,7 @@ export function createRendererPostprocessPlanDiagnostics(
   const targetFormat = context.targetFormat ?? sourceTargetFormat;
   const forceCpuDeterministic = postprocess.execution === "cpu-deterministic";
   const requiresNativeSpatialPass = passes.some((pass) => pass.name === "volumetric-light" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa");
-  const canFuseLdr = canFuseLdrPostprocessPlan(sourceTargetFormat, passes)
+  const canFuseLdr = canFuseLdrPostprocessPlan(sourceTargetFormat, passes, context.nativeLdrPostprocess === true)
     && (forceCpuDeterministic || context.nativeLdrPostprocess === true || !requiresNativeSpatialPass);
   const executionMode = passes.length === 0
     ? "none"
@@ -220,9 +220,9 @@ export function createRendererPostprocessPlanDiagnostics(
   };
 }
 
-function canFuseLdrPostprocessPlan(sourceTargetFormat: RendererPostprocessTargetFormat, passes: readonly RendererPostProcessPassPlan[]): boolean {
-  return passes.length > 1
-    && (sourceTargetFormat === "rgba8" || passes[0]?.name === "tone-mapping")
+function canFuseLdrPostprocessPlan(sourceTargetFormat: RendererPostprocessTargetFormat, passes: readonly RendererPostProcessPassPlan[], nativePostprocess: boolean): boolean {
+  return passes.length > 0
+    && (sourceTargetFormat === "rgba8" || passes[0]?.name === "tone-mapping" || (nativePostprocess && passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping"))
     && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa" || pass.name === "outline" || pass.name === "fxaa")
     && passes.every((pass, index) => {
       const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);
