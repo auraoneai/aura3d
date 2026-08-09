@@ -1,16 +1,22 @@
-# Asset Viewer
+# Asset Viewer Source Fixture
+
+> The public route entry point was removed for Aura3D 2.0. This lower-level
+> loader/inspector source intentionally accepts custom fixture URLs and remains
+> available to asset, compression, animation, drag/drop, and renderer contract
+> tests through `/tests/fixtures/asset-viewer/`. It is not the typed public asset
+> workflow or a release gallery example.
 
 The asset viewer is a renderer-backed browser slice for loading a real external glTF/GLB model through public Aura3D asset and rendering APIs.
 
 ## Run
 
-Open:
+Use the internal browser host:
 
 ```text
-examples/asset-viewer/index.html
+/tests/fixtures/asset-viewer/index.html
 ```
 
-The browser test pins a public Khronos sample model URL and verifies loader metadata plus render-resource creation:
+The browser tests use checked-in/local fixtures and verify loader metadata plus render-resource creation:
 
 ```sh
 pnpm exec playwright test tests/browser/asset-viewer-browser.spec.ts
@@ -25,4 +31,4 @@ pnpm exec playwright test tests/browser/asset-viewer-browser.spec.ts
 
 ## Current Boundary
 
-This is a focused external-model loading proof. It does not claim broad glTF corpus parity, compressed texture parity, production material import parity, or visual parity against Three.js/Babylon.js loaders.
+This is an internal focused loader contract. It does not claim broad glTF corpus parity, typed public asset authoring, production material import parity, or visual parity against Three.js/Babylon.js loaders.

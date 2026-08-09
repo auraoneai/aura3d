@@ -27,10 +27,10 @@ const report = createSubsystemReport(root, {
   checks: [
     {
       id: "asset-viewer",
-      description: "Asset viewer example exists.",
-      passed: pathExists(root, "examples/asset-viewer/index.html"),
-      evidencePaths: ["examples/asset-viewer/index.html"],
-      blocker: "examples/asset-viewer is missing.",
+      description: "Internal asset-viewer browser host exists for loader contracts.",
+      passed: pathExists(root, "tests/fixtures/asset-viewer/index.html"),
+      evidencePaths: ["tests/fixtures/asset-viewer/index.html"],
+      blocker: "Internal asset-viewer browser host is missing.",
     },
     {
       id: "foundation-corpus-fixtures",

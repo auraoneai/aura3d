@@ -43,7 +43,7 @@ test.describe("ExternalParity flagship product configurator", () => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), screenshotDir), { recursive: true });
 
-    await page.goto(`${server.origin}/examples/external-product-configurator/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-product-configurator/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForProductState(page, "external-product-configurator");
     const initialPng = await page.locator("[data-testid='hr4-product-canvas']").screenshot({ path: `${screenshotDir}/external-product-configurator.png` });
 

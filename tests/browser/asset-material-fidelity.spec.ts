@@ -127,7 +127,7 @@ test.describe("asset material fidelity browser evidence", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/material-fidelity.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     try {
       await page.waitForFunction(
         () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
@@ -280,7 +280,7 @@ test.describe("asset material fidelity browser evidence", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/foundation-visual-materials.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     try {
       await page.waitForFunction(
         () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",

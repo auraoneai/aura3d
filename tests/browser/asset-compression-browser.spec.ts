@@ -41,7 +41,7 @@ test.describe("asset viewer compression decode evidence", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/meshopt-triangle.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -130,7 +130,7 @@ test.describe("asset viewer compression decode evidence", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/draco-triangle.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -219,7 +219,7 @@ test.describe("asset viewer compression decode evidence", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/ktx2-basis-texture.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,

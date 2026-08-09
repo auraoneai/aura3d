@@ -13,7 +13,7 @@ const requiredFiles = [
   "examples/external-product-configurator/headphones.manifest.json",
   "apps/product-studio-pro/index.html",
   "apps/product-studio-pro/src/main.ts",
-  "examples/external-product-configurator/index.html",
+  "tests/fixtures/external-product-configurator/index.html",
   "examples/external-product-configurator/main.ts",
   "examples/external-product-configurator/ExternalProductConfigurator.ts",
   "benchmarks/external-parity/aura3d/product-configurator.ts",

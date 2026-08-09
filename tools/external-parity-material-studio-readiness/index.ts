@@ -19,7 +19,7 @@ const requiredFiles = [
   "fixtures/external-parity/materials/textures/ceramic-stone.json",
   "apps/material-studio-pro/index.html",
   "apps/material-studio-pro/src/main.ts",
-  "examples/external-material-studio/index.html",
+  "tests/fixtures/external-material-studio/index.html",
   "examples/external-material-studio/main.ts",
   "examples/external-material-studio/ExternalMaterialStudio.ts",
   "benchmarks/external-parity/aura3d/material-studio.ts",

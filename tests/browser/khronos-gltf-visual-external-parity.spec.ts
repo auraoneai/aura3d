@@ -105,7 +105,7 @@ async function renderKhronosAsset(
   asset: KhronosCorpusManifest["assets"][number]
 ): Promise<KhronosVisualValidation> {
   const url = localKhronosUrl(origin, asset) ?? asset.source.uri;
-  await page.goto(`${origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
     undefined,

@@ -369,7 +369,7 @@ test.describe("externalParity runtime systems", () => {
   });
 
   test("asset viewer, editor, and game slice expose mobile touch controls", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/asset-viewer/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 30_000 });
     await dispatchTouchDrag(page, "[data-testid='asset-viewer-canvas']", false);
     await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("touch");

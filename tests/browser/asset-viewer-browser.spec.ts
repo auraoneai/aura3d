@@ -14,7 +14,7 @@ test.describe("asset viewer browser runtime", () => {
   });
 
   test("loads a glTF model through public asset APIs and publishes viewer metadata", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -52,7 +52,7 @@ test.describe("asset viewer browser runtime", () => {
 
   test("presents the default asset visibly and centered in the composited viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`${server.origin}/examples/asset-viewer/`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
     await page.waitForTimeout(250);
 
@@ -85,7 +85,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/external-triangle.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -130,7 +130,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/multi-node-material.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -173,7 +173,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/interleaved-stride.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
@@ -207,7 +207,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/material-variant.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await expect(page.getByTestId("asset-viewer-material-variant")).toBeVisible();
@@ -247,7 +247,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/morph-target.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await expect(page.getByTestId("asset-viewer-morph-controls")).toBeVisible();
@@ -280,7 +280,7 @@ test.describe("asset viewer browser runtime", () => {
       });
     });
 
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=external&url=${encodeURIComponent(localExternalGlb)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=external&url=${encodeURIComponent(localExternalGlb)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -313,7 +313,7 @@ test.describe("asset viewer browser runtime", () => {
 
     for (const asset of corpusAssets) {
       const url = `${server.origin}${asset.path}`;
-      await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(
         () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
         undefined,
@@ -357,7 +357,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/textured-triangle.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -398,7 +398,7 @@ test.describe("asset viewer browser runtime", () => {
       });
     });
 
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
@@ -448,7 +448,7 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     const url = `${server.origin}/fixtures/asset-viewer/animated-textured-triangle.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
     expect(await nonBlankWebGLPixels(page, "[data-testid='asset-viewer-canvas']")).toBeGreaterThan(1000);
     expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_ROOT_MOTION_ACTIVE");
@@ -520,7 +520,7 @@ test.describe("asset viewer browser runtime", () => {
 
   test("loads dropped multi-file glTF with local buffer dependencies", async ({ page }) => {
     const fixture = createExternalTriangleFixture();
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await page.evaluate(
@@ -550,7 +550,7 @@ test.describe("asset viewer browser runtime", () => {
 
   test("loads dropped local GLB document", async ({ page }) => {
     const glb = createTriangleGlbFixture();
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await page.evaluate((glbBytes) => {
@@ -574,7 +574,7 @@ test.describe("asset viewer browser runtime", () => {
 
   test("loads dropped multi-file glTF with local image dependencies", async ({ page }) => {
     const fixture = createTexturedTriangleFixture();
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await page.evaluate(

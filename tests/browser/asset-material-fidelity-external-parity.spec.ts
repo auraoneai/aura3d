@@ -140,7 +140,7 @@ test.describe("external-parity asset material fidelity report", () => {
 
   test("loads the material fidelity corpus asset and reports supported material features", async ({ page }) => {
     const url = `${server.origin}/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf`;
-    await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
         const snapshot = (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerMaterialSnapshot }).__AURA3D_ASSET_VIEWER__;

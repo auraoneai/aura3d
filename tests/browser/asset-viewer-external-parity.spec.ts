@@ -470,7 +470,7 @@ test.describe("asset viewer external parity corpus browser evidence", () => {
 
 async function validateAsset(page: Page, origin: string, asset: ExternalParityAssetManifestEntry): Promise<AssetViewerExternalParityValidation> {
   const url = `${origin}/${asset.localPath}`;
-  await page.goto(`${origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${origin}/tests/fixtures/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => {
       const snapshot = (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;

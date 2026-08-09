@@ -43,7 +43,7 @@ test.describe("ExternalParity Material Studio Pro", () => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), screenshotDir), { recursive: true });
 
-    await page.goto(`${server.origin}/examples/external-material-studio/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-material-studio/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForMaterialState(page, "external-material-studio");
     await page.locator("[data-testid='hr4-material-canvas']").screenshot({ path: `${screenshotDir}/external-material-studio.png` });
 
