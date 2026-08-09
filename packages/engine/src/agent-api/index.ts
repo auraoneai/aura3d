@@ -11807,7 +11807,7 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
    * this whole workstream exists to remove.
    */
   const sheenColor = materialSpec?.sheenColor
-    ? colorToRgb(materialSpec.sheenColor)
+    ? colorToRgb(materialSpec.sheenColor).map((channel) => channel * sheen) as [number, number, number]
     : ([sheen, sheen, sheen] as const);
   /*
    * The extension lobes are environment-driven. With `environmentIntensity: 0` a declared clearcoat,
@@ -13979,7 +13979,10 @@ function createSphereGeometry(): { readonly positions: Float32Array; readonly no
     for (let column = 0; column < columns; column += 1) {
       const a = row * (columns + 1) + column;
       const b = a + columns + 1;
-      indices.push(a, b, a + 1, b, b + 1, a + 1);
+      // Counter-clockwise from outside the sphere. The previous order wound
+      // inward while the vertex normals pointed outward, so gl_FrontFacing
+      // flipped correct normals inward and every NdotV material term collapsed.
+      indices.push(a, a + 1, b, b, a + 1, b + 1);
     }
   }
   return {

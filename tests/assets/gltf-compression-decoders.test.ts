@@ -453,6 +453,7 @@ describe("glTF compression decoder hooks", () => {
 
     try {
       await expect(createGLTFRenderResources(asset, {
+        failOnMissingTexture: true,
         imageDecoder() {
           decodeCount += 1;
           if (decodeCount === 2) {

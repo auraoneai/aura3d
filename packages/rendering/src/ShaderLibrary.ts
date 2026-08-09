@@ -2382,14 +2382,50 @@ vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   float sampledSpecularScale = materialEnvironmentSpecularScale * mix(0.18, 1.0, faceOnSpecularGate);
   return proceduralSpecular * proceduralSpecularScale + sampledSpecular * sampledSpecularScale;
 }
-vec3 a3dTexturedPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
+vec3 a3dTexturedPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor, float nDotV) {
   float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
-  float phase = clamp((thickness - 100.0) / 1100.0, 0.0, 1.0) * 6.2831853;
+  float opticalThicknessPhase = clamp((thickness - 100.0) / 1100.0, 0.0, 1.0) * 6.2831853;
   float iorShift = clamp((iridescenceIor - 1.0) / 2.0, 0.0, 1.0) * 0.65;
-  return clamp(0.5 + 0.5 * cos(phase + iorShift + vec3(0.0, 2.0943951, 4.1887902)), vec3(0.0), vec3(1.0));
+  float viewPhase = pow(1.0 - clamp(nDotV, 0.0, 1.0), 1.25) * (3.2 + iridescenceIor * 1.4);
+  float phase = opticalThicknessPhase + iorShift + viewPhase;
+  return clamp(0.5 + 0.5 * cos(phase + vec3(0.0, 2.0943951, 4.1887902)), vec3(0.0), vec3(1.0));
+}
+float a3dTexturedPbrCharlieSheen(float nDotH, float sheenRoughness) {
+  float alpha = max(0.07, sheenRoughness * sheenRoughness);
+  float inverseAlpha = 1.0 / alpha;
+  float sin2h = max(1.0 - nDotH * nDotH, 0.0078125);
+  return (2.0 + inverseAlpha) * pow(sin2h, inverseAlpha * 0.5) / (2.0 * A3D_PI);
+}
+float a3dTexturedPbrAnisotropicDistribution(
+  vec3 normal,
+  vec3 halfVector,
+  vec4 tangentFrame,
+  float roughness,
+  float anisotropy,
+  float rotation
+) {
+  vec3 N = normalize(normal);
+  vec3 authoredTangent = normalize(tangentFrame.xyz);
+  vec3 authoredBitangent = normalize(cross(N, authoredTangent)) * (tangentFrame.w < 0.0 ? -1.0 : 1.0);
+  float c = cos(rotation);
+  float s = sin(rotation);
+  vec3 T = normalize(authoredTangent * c + authoredBitangent * s);
+  vec3 B = normalize(authoredBitangent * c - authoredTangent * s);
+  float alpha = max(0.035, roughness * roughness);
+  float aspect = sqrt(max(0.08, 1.0 - clamp(anisotropy, 0.0, 0.98) * 0.92));
+  float alphaT = max(0.012, alpha / aspect);
+  float alphaB = max(0.012, alpha * aspect);
+  float tDotH = dot(T, halfVector);
+  float bDotH = dot(B, halfVector);
+  float nDotH = max(dot(N, halfVector), 0.0);
+  float denominator = tDotH * tDotH / (alphaT * alphaT)
+    + bDotH * bDotH / (alphaB * alphaB)
+    + nDotH * nDotH;
+  return 1.0 / max(A3D_PI * alphaT * alphaB * denominator * denominator, A3D_EPSILON);
 }
 vec3 a3dTexturedPbrExtensionDirectLight(
   vec3 normal,
+  vec4 tangentFrame,
   vec3 viewDirection,
   vec3 lightDirection,
   vec3 lightColor,
@@ -2418,17 +2454,21 @@ vec3 a3dTexturedPbrExtensionDirectLight(
   float clearcoatD = a3dDistributionGGX(nDotH, clearcoatRough);
   float clearcoatG = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
   vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;
-  float sheenStrength = (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(a3dSaturate(1.0 - vDotH), 5.0);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.18;
-  vec3 anisotropyAxis = normalize(vec3(cos(anisotropyRotation), 0.0, sin(anisotropyRotation)));
-  float anisotropyBand = pow(abs(dot(H, anisotropyAxis)), mix(28.0, 6.0, clearcoatRough));
-  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);
-  vec3 iridescenceColor = a3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
+  float sheenDistribution = a3dTexturedPbrCharlieSheen(nDotH, sheenRoughness);
+  float sheenVisibility = 1.0 / max(4.0 * (nDotV + nDotL - nDotV * nDotL), A3D_EPSILON);
+  float sheenGrazing = pow(1.0 - nDotV, 12.0);
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0))
+    * (sheenDistribution * sheenVisibility * 0.012 + sheenGrazing * 0.18);
+  float anisotropicDistribution = a3dTexturedPbrAnisotropicDistribution(N, H, tangentFrame, clearcoatRough, anisotropy, anisotropyRotation);
+  float anisotropyShape = anisotropicDistribution / (anisotropicDistribution + 3.0);
+  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyShape * 0.72);
+  vec3 iridescenceColor = a3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor, nDotV);
   vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.12;
   return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
 }
 vec3 a3dTexturedPbrExtensionEnvironmentLight(
   vec3 normal,
+  vec4 tangentFrame,
   vec3 viewDirection,
   vec3 specularRadiance,
   float clearcoat,
@@ -2447,10 +2487,17 @@ vec3 a3dTexturedPbrExtensionEnvironmentLight(
   float faceOn = smoothstep(0.18, 0.68, nDotV);
   vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn), vec3(mix(0.08, 0.95, faceOn)));
   vec3 clearcoatLobe = boundedSpecularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0) * 0.045;
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(a3dSaturate(1.0 - nDotV), 5.0) * 0.12;
-  float anisotropyBand = 0.5 + 0.5 * cos(anisotropyRotation * 2.0);
-  vec3 anisotropyLobe = boundedSpecularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
-  vec3 iridescenceColor = a3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0))
+    * pow(a3dSaturate(1.0 - nDotV), 8.0)
+    * mix(1.4, 0.75, clamp(sheenRoughness, 0.0, 1.0));
+  vec3 N = normalize(normal);
+  vec3 V = normalize(viewDirection);
+  vec3 environmentDirection = normalize(vec3(0.42, 0.78, 0.46));
+  vec3 environmentHalf = normalize(V + environmentDirection);
+  float anisotropicDistribution = a3dTexturedPbrAnisotropicDistribution(N, environmentHalf, tangentFrame, clearcoatRoughness, anisotropy, anisotropyRotation);
+  float anisotropyShape = anisotropicDistribution / (anisotropicDistribution + 3.0);
+  vec3 anisotropyLobe = boundedSpecularRadiance * clamp(anisotropy, 0.0, 1.0) * anisotropyShape * 0.72;
+  vec3 iridescenceColor = a3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor, nDotV);
   vec3 iridescenceLobe = boundedSpecularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.09;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
@@ -2637,8 +2684,9 @@ void main() {
     roughness,
     specular,
     specularColor
-  ) + a3dTexturedPbrExtensionEnvironmentLight(
+  ) * mix(1.0, 0.18, anisotropy) + a3dTexturedPbrExtensionEnvironmentLight(
     clearcoatNormalDirection,
+    v_tangent,
     viewDirection,
     extensionEnvironmentSpecular,
     clearcoat,
@@ -2683,7 +2731,15 @@ void main() {
       vec2 backdropOffset = normalize(texturedRefractionDirection.xy + vec2(0.0001)) * u_transmissionBackdropRefractionScale * mix(1.25, 0.55, roughness) * clamp(u_ior - 1.0, 0.0, 2.5);
       float backdropLod = clamp((roughness + volumeThickness * 0.08) * max(u_transmissionBackdropMipCount - 1.0, 0.0), 0.0, max(u_transmissionBackdropMipCount - 1.0, 0.0));
       vec3 backdropRadiance = a3dTexturedPbrDecodeSrgb(textureLod(u_transmissionBackdropTexture, clamp(backdropUv + backdropOffset, vec2(0.001), vec2(0.999)), backdropLod).rgb);
-      texturedRefractionRadiance = mix(texturedRefractionRadiance, backdropRadiance * texturedTransmissionAmount * mix(1.0, 1.22, texturedBackdropWeight), texturedBackdropWeight);
+      // Scene-color refraction travels through the same participating volume as
+      // environment refraction. Omitting texturedVolumeTint here made thickness,
+      // attenuationDistance, and attenuationColor byte-identical whenever the
+      // renderer-owned backdrop path was active.
+      texturedRefractionRadiance = mix(
+        texturedRefractionRadiance,
+        backdropRadiance * texturedVolumeTint * texturedTransmissionAmount * mix(1.0, 1.22, texturedBackdropWeight),
+        texturedBackdropWeight
+      );
     }
 #endif
     shaded = mix(shaded, shaded * 0.72 + texturedRefractionRadiance, texturedTransmissionAmount * mix(0.08, 0.58, texturedFallbackEnvironmentTransmissionEnergy));
@@ -2752,9 +2808,11 @@ void main() {
     float directExtensionNdotV = clamp(dot(clearcoatNormalDirection, viewDirection), 0.0, 1.0);
     float directExtensionGrazingGate = mix(0.18, 1.0, smoothstep(0.12, 0.58, directExtensionNdotV));
     float directExtensionSpecularScale = sqrt(clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0)) * directExtensionGrazingGate;
-    shaded += a3dPbrDirectLight(mappedNormal, viewDirection, lightDirection, colorIntensity.rgb, directLightIntensity, base, metallic, roughness, specular, specularColor);
+    shaded += a3dPbrDirectLight(mappedNormal, viewDirection, lightDirection, colorIntensity.rgb, directLightIntensity, base, metallic, roughness, specular, specularColor)
+      * mix(1.0, 0.18, anisotropy);
     shaded += a3dTexturedPbrExtensionDirectLight(
       clearcoatNormalDirection,
+      v_tangent,
       viewDirection,
       lightDirection,
       colorIntensity.rgb,

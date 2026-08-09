@@ -83,7 +83,7 @@ async function run(): Promise<void> {
       id: asset.id,
       expectedExtension: asset.expectedExtension,
       expectedFeature: asset.expectedFeature,
-      parity: { claim: "bounded-eleven-extension-material-delta-coverage" },
+      parity: { claim: "combined-card-eleven-extension-delta-coverage" },
       a3d: {
         diagnostics: a3d.proof.diagnostics,
         importedAsset: a3d.proof.importedAsset,
@@ -113,8 +113,8 @@ async function run(): Promise<void> {
     schema: "a3d-runtime-material-extension-parity",
     purpose: "same-extension A3D vs Three.js material delta gate",
     parity: {
-      claim: "bounded-eleven-extension-material-delta-coverage",
-      reason: "This compares eleven dedicated material-extension assets against a same-camera Three.js PMREM reference. It is bounded visual-delta coverage, not broad material-extension ecosystem parity."
+      claim: "combined-card-eleven-extension-delta-coverage",
+      reason: "This renders the same combined eleven-extension material card under eleven report labels against a same-camera Three.js PMREM reference. It proves same-asset combined-card coverage and loader metadata, not isolated per-feature behavior or broad material-extension ecosystem parity."
     },
     scene: {
       setupAlignment: "same-hdri-pmrem-neutral-stage-calibrated-baseline-luma",
@@ -125,6 +125,7 @@ async function run(): Promise<void> {
     hdr: hdrPipeline.diagnostics,
     cases,
     openGaps: [
+      "Every row uses the same combined material card; rows are metadata views, not dedicated isolated feature fixtures.",
       "This is a bounded eleven-extension sample, not broad material-extension ecosystem parity.",
       "High-IOR thick-glass samples now exercise a bounded renderer-owned scene-color readback path for transmission backdrop sampling, but full screen-space refraction parity remains open.",
       "Transmission, diffuse transmission, and volume deltas still need physically stricter scene-specific acceptance thresholds.",

@@ -34,6 +34,31 @@ describe("root plane winding", () => {
   });
 });
 
+describe("root sphere winding", () => {
+  it("winds the procedural sphere outward so geometric and vertex normals agree", () => {
+    const source = readFileSync(resolve("packages/engine/src/agent-api/index.ts"), "utf8");
+    const startIndex = source.indexOf("function createSphereGeometry()");
+    expect(startIndex, "createSphereGeometry must exist in the root agent API").toBeGreaterThan(-1);
+    const body = source.slice(startIndex, source.indexOf("\n}", startIndex));
+
+    // Each grid quad is emitted counter-clockwise from outside. The inverse
+    // order made the visible surface back-facing while its authored normals
+    // pointed outward; the shader then flipped those normals inward and NdotV
+    // collapsed to zero for sheen, Fresnel, iridescence, and clearcoat.
+    expect(body).toContain("indices.push(a, a + 1, b, b, a + 1, b + 1);");
+    expect(body).not.toContain("indices.push(a, b, a + 1, b, b + 1, a + 1);");
+
+    // Independently verify one representative front-facing cell from the same
+    // 12x16 parametric sphere definition. Its geometric normal must point in
+    // the same hemisphere as the outward vertex normal.
+    const first = spherePoint(5, 4);
+    const second = spherePoint(5, 5);
+    const third = spherePoint(6, 4);
+    const geometricNormal = cross(subtract(second, first), subtract(third, first));
+    expect(dot(geometricNormal, first)).toBeGreaterThan(0);
+  });
+});
+
 describe("root shadow diagnostics honesty", () => {
   it("does not report shadows as enabled from an unmounted scene plan", () => {
     // The report used to publish `shadows.enabled: true` unconditionally, which is
@@ -136,4 +161,14 @@ function cross(
     first[2] * second[0] - first[0] * second[2],
     first[0] * second[1] - first[1] * second[0]
   ];
+}
+
+function dot(first: readonly number[], second: readonly number[]): number {
+  return first[0]! * second[0]! + first[1]! * second[1]! + first[2]! * second[2]!;
+}
+
+function spherePoint(row: number, column: number): readonly [number, number, number] {
+  const theta = row / 12 * Math.PI;
+  const phi = column / 16 * Math.PI * 2;
+  return [Math.sin(theta) * Math.cos(phi), Math.cos(theta), Math.sin(theta) * Math.sin(phi)];
 }

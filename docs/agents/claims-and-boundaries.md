@@ -66,6 +66,14 @@ not make custom shader authoring a root `createAuraApp` claim and does not prove
 general TSL/node-material parity. See
 `docs/rendering/portable-custom-materials.md`.
 
+PBR/glTF evidence is also path-specific. The bounded current-Three.js receipt
+in `docs/rendering/pbr-gltf-correctness.md` proves selected root primitive
+behaviors, production-runtime textured materials and transmission, and
+package-level loader semantics. It does not make production-runtime
+transmission, full textured PBR, skinning, morphs, or every glTF extension a
+root `createAuraApp` claim, and it does not prove universal Three.js ecosystem
+parity.
+
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
 has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,
 convex-hull GJK/EPA, triangle-backed mesh/heightfield contacts, and

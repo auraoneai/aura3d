@@ -312,16 +312,49 @@ vec3 a3dApplyAdvancedPbrLobes(
   float dispersionAmount = clamp(dispersion / 100.0, 0.0, 1.0);
   vec3 dispersionTint = mix(vec3(1.0), vec3(1.04, 0.98, 0.94), dispersionAmount * transmission);
   float sheenEnergy = max(max(sheenLobe.r, sheenLobe.g), sheenLobe.b);
-  float layerEnergy = clamp(clearcoat * 0.08 + sheenEnergy * 0.26 + anisotropy * 0.035 + iridescence * 0.03, 0.0, 0.28);
+  // Sheen is a grazing-angle lobe. A large constant attenuation here suppresses
+  // the rim response before the view-dependent lobe is applied, so retain only
+  // the small energy-compensation term needed by this fallback path.
+  float layerEnergy = clamp(clearcoat * 0.08 + sheenEnergy * 0.04 + anisotropy * 0.035 + iridescence * 0.03, 0.0, 0.28);
   vec3 layeredBase = transmitted * dispersionTint * (1.0 - layerEnergy);
   return max(vec3(0.0), layeredBase);
 }
 
-vec3 a3dPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
+vec3 a3dPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor, float nDotV) {
   float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
-  float phase = clamp((thickness - 100.0) / 1100.0, 0.0, 1.0) * 6.2831853;
+  float opticalThicknessPhase = clamp((thickness - 100.0) / 1100.0, 0.0, 1.0) * 6.2831853;
   float iorShift = clamp((iridescenceIor - 1.0) / 2.0, 0.0, 1.0) * 0.65;
-  return clamp(0.5 + 0.5 * cos(phase + iorShift + vec3(0.0, 2.0943951, 4.1887902)), vec3(0.0), vec3(1.0));
+  // Thin-film path length grows at grazing angles. Making that phase explicit
+  // produces the required spectral migration instead of a fixed RGB tint whose
+  // brightness alone changes with Fresnel.
+  float viewPhase = pow(1.0 - clamp(nDotV, 0.0, 1.0), 1.25) * (3.2 + iridescenceIor * 1.4);
+  float phase = opticalThicknessPhase + iorShift + viewPhase;
+  return clamp(0.5 + 0.5 * cos(phase + vec3(0.0, 2.0943951, 4.1887902)), vec3(0.0), vec3(1.0));
+}
+
+float a3dPbrAnisotropicDistribution(vec3 N, vec3 H, float roughness, float anisotropy, float rotation) {
+  float c = cos(rotation);
+  float s = sin(rotation);
+  vec3 T = normalize(vec3(c, s, 0.0));
+  vec3 B = normalize(vec3(-s, c, 0.0));
+  vec3 delta = N - H;
+  float amount = clamp(anisotropy, 0.0, 1.0);
+  float baseWidth = mix(0.075, 0.24, clamp(roughness, 0.0, 1.0));
+  float majorWidth = mix(baseWidth, baseWidth * 2.8, amount);
+  float minorWidth = mix(baseWidth, baseWidth * 0.28, amount);
+  float majorDelta = dot(delta, T);
+  float minorDelta = dot(delta, B);
+  return exp(-0.5 * (
+    majorDelta * majorDelta / max(majorWidth * majorWidth, 0.0001)
+    + minorDelta * minorDelta / max(minorWidth * minorWidth, 0.0001)
+  ));
+}
+
+float a3dPbrCharlieSheen(float nDotH, float sheenRoughness) {
+  float alpha = max(0.07, sheenRoughness * sheenRoughness);
+  float inverseAlpha = 1.0 / alpha;
+  float sin2h = max(1.0 - nDotH * nDotH, 0.0078125);
+  return (2.0 + inverseAlpha) * pow(sin2h, inverseAlpha * 0.5) / (2.0 * A3D_PI);
 }
 
 vec3 a3dPbrExtensionDirectLight(
@@ -354,12 +387,14 @@ vec3 a3dPbrExtensionDirectLight(
   float clearcoatD = a3dDistributionGGX(nDotH, clearcoatRough);
   float clearcoatG = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
   vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;
-  float sheenStrength = (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(a3dSaturate(1.0 - vDotH), 5.0);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.18;
-  vec3 anisotropyAxis = normalize(vec3(cos(anisotropyRotation), 0.0, sin(anisotropyRotation)));
-  float anisotropyBand = pow(abs(dot(H, anisotropyAxis)), mix(28.0, 6.0, clearcoatRough));
-  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);
-  vec3 iridescenceColor = a3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
+  float sheenDistribution = a3dPbrCharlieSheen(nDotH, sheenRoughness);
+  float sheenVisibility = 1.0 / max(4.0 * (nDotV + nDotL - nDotV * nDotL), A3D_EPSILON);
+  float sheenGrazing = pow(1.0 - nDotV, 12.0);
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0))
+    * (sheenDistribution * sheenVisibility * 0.012 + sheenGrazing * 0.18);
+  float anisotropicDistribution = a3dPbrAnisotropicDistribution(N, H, clearcoatRough, anisotropy, anisotropyRotation);
+  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropicDistribution * 0.72);
+  vec3 iridescenceColor = a3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor, nDotV);
   vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.22;
   return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
 }
@@ -382,10 +417,37 @@ vec3 a3dPbrExtensionEnvironmentLight(
   float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
   float clearcoatGloss = pow(1.0 - clamp(clearcoatRoughness, 0.18, 1.0), 2.0);
   vec3 clearcoatLobe = specularRadiance * clamp(clearcoat, 0.0, 1.0) * (0.018 + clearcoatGloss * 0.055);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(a3dSaturate(1.0 - nDotV), 5.0) * 0.12;
-  float anisotropyBand = 0.5 + 0.5 * cos(anisotropyRotation * 2.0);
-  vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
-  vec3 iridescenceColor = a3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0))
+    * pow(a3dSaturate(1.0 - nDotV), 8.0)
+    * mix(1.4, 0.75, clamp(sheenRoughness, 0.0, 1.0));
+  vec3 N = normalize(normal);
+  vec3 V = normalize(viewDirection);
+  // A deterministic dominant environment direction gives aggregate environment
+  // radiance a half-vector on which tangent-frame rotation can act. Sampled HDR
+  // paths still provide the radiance; this term controls only lobe shape.
+  vec3 environmentDirection = normalize(vec3(0.42, 0.78, 0.46));
+  vec3 environmentHalf = normalize(V + environmentDirection);
+  float rotationCos = cos(anisotropyRotation);
+  float rotationSin = sin(anisotropyRotation);
+  // This procedural primitive path has no authored tangent attribute. Use its
+  // stable object/world XY frame instead of a per-fragment view frame: the
+  // latter rotates as V changes across a curved surface and erases the visible
+  // response to anisotropyRotation. Textured glTF materials use their authored
+  // tangent frame in the dedicated path.
+  vec3 majorAxis = normalize(vec3(rotationCos, rotationSin, 0.0));
+  vec3 minorAxis = normalize(vec3(-rotationSin, rotationCos, 0.0));
+  vec3 normalDelta = N - environmentHalf;
+  float majorDelta = dot(normalDelta, majorAxis);
+  float minorDelta = dot(normalDelta, minorAxis);
+  float anisotropyAmount = clamp(anisotropy, 0.0, 1.0);
+  float majorWidth = mix(0.09, 0.42, anisotropyAmount);
+  float minorWidth = mix(0.09, 0.009, anisotropyAmount);
+  float anisotropyShape = exp(-0.5 * (
+    majorDelta * majorDelta / max(majorWidth * majorWidth, 0.0001)
+    + minorDelta * minorDelta / max(minorWidth * minorWidth, 0.0001)
+  ));
+  vec3 anisotropyLobe = specularRadiance * anisotropyAmount * anisotropyShape * 6.0;
+  vec3 iridescenceColor = a3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor, nDotV);
   vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(a3dSaturate(1.0 - nDotV), 1.5) * 0.1;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }

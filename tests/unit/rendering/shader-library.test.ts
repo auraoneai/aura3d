@@ -378,7 +378,11 @@ describe("ShaderLibrary", () => {
     expect(fragmentSource).toContain("* transmission");
     expect(fragmentSource).toContain("clearcoatGloss");
     expect(fragmentSource).toContain("anisotropyDirection");
-    expect(fragmentSource).toContain("float layerEnergy = clamp(clearcoat * 0.08 + sheenEnergy * 0.26 + anisotropy * 0.035 + iridescence * 0.03, 0.0, 0.28);");
+    expect(fragmentSource).toContain("float layerEnergy = clamp(clearcoat * 0.08 + sheenEnergy * 0.04 + anisotropy * 0.035 + iridescence * 0.03, 0.0, 0.28);");
+    expect(fragmentSource).toContain("float a3dPbrCharlieSheen(");
+    expect(fragmentSource).toContain("float sheenVisibility = 1.0 / max(4.0 * (nDotV + nDotL - nDotV * nDotL), A3D_EPSILON);");
+    expect(fragmentSource).toContain("float viewPhase = pow(1.0 - clamp(nDotV, 0.0, 1.0), 1.25)");
+    expect(fragmentSource).toContain("float a3dPbrAnisotropicDistribution(");
     expect(fragmentSource).toContain("vec3 specularLobe = clamp(specularColorFactor, vec3(0.0), vec3(1.0))");
     expect(fragmentSource).not.toContain("specular * 0.06");
     expect(fragmentSource).toContain("vec3 layeredBase = transmitted * dispersionTint * (1.0 - layerEnergy);");
@@ -440,6 +444,7 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("float texturedCausticEnergy = u_transmissionCausticStrength");
     expect(compiled.fragment).toContain("float backdropLod = clamp((roughness + volumeThickness * 0.08)");
     expect(compiled.fragment).toContain("vec3 backdropRadiance = a3dTexturedPbrDecodeSrgb(textureLod(u_transmissionBackdropTexture");
+    expect(compiled.fragment).toContain("backdropRadiance * texturedVolumeTint * texturedTransmissionAmount");
   });
 
   it("applies sampler wrap modes to every core textured PBR material slot", () => {
@@ -576,8 +581,13 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).not.toContain("max(materialEnvironmentSpecularScale, 0.72)");
     expect(compiled.fragment).not.toContain("return (proceduralSpecular * mix(0.16, 1.0, grazingSpecularGate) + sampledSpecular) * materialEnvironmentSpecularScale;");
     expect(compiled.fragment).toContain("vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;");
-    expect(compiled.fragment).toContain("vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.18;");
-    expect(compiled.fragment).toContain("vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);");
+    expect(compiled.fragment).toContain("float a3dTexturedPbrCharlieSheen(");
+    expect(compiled.fragment).toContain("float a3dTexturedPbrAnisotropicDistribution(");
+    expect(compiled.fragment).toContain("vec3 authoredTangent = normalize(tangentFrame.xyz);");
+    expect(compiled.fragment).toContain("vec3 authoredBitangent = normalize(cross(N, authoredTangent)) * (tangentFrame.w < 0.0 ? -1.0 : 1.0);");
+    expect(compiled.fragment).toContain("float anisotropicDistribution = a3dTexturedPbrAnisotropicDistribution(N, H, tangentFrame, clearcoatRough, anisotropy, anisotropyRotation);");
+    expect(compiled.fragment).toContain("clearcoatNormalDirection,\n    v_tangent,\n    viewDirection");
+    expect(compiled.fragment).toContain("float viewPhase = pow(1.0 - clamp(nDotV, 0.0, 1.0), 1.25)");
     expect(compiled.fragment).toContain("vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.12;");
     expect(compiled.fragment).toContain("vec3 extensionEnvironmentSpecular = a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0));");
     expect(compiled.fragment).toContain("vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn), vec3(mix(0.08, 0.95, faceOn)));");

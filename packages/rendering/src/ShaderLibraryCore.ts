@@ -613,7 +613,7 @@ void main() {
     u_roughness,
     u_specularFactor,
     u_specularColorFactor
-  ) + u_emissiveColor * u_emissiveStrength;
+  ) * mix(1.0, 0.18, clamp(u_anisotropyStrength, 0.0, 1.0)) + u_emissiveColor * u_emissiveStrength;
   shaded += a3dPbrExtensionEnvironmentLight(
     normal,
     viewDirection,
@@ -702,7 +702,7 @@ void main() {
       u_roughness,
       u_specularFactor,
       u_specularColorFactor
-    );
+    ) * mix(1.0, 0.18, clamp(u_anisotropyStrength, 0.0, 1.0));
     shaded += a3dPbrExtensionDirectLight(
       normal,
       viewDirection,

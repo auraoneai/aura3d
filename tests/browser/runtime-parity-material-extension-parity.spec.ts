@@ -81,14 +81,14 @@ test.describe("runtime material extension parity artifact", () => {
 
     expect(result.status, result.error).toBe("ready");
     expect(result.schema).toBe("a3d-runtime-material-extension-parity");
-    expect(result.parity?.claim).toBe("bounded-eleven-extension-material-delta-coverage");
+    expect(result.parity?.claim).toBe("combined-card-eleven-extension-delta-coverage");
     expect(result.cases).toHaveLength(11);
 
     const reportDir = "tests/reports/runtime-parity/material-extension-parity";
     mkdirSync(resolve(reportDir), { recursive: true });
     const cases = [];
     for (const entry of result.cases ?? []) {
-      expect(entry.parity.claim).toBe("bounded-eleven-extension-material-delta-coverage");
+      expect(entry.parity.claim).toBe("combined-card-eleven-extension-delta-coverage");
       expect(entry.a3d.extensionsUsed).toContain(entry.expectedExtension);
       expect(entry.a3d.materialFeatures).toContain(entry.expectedFeature);
       expect(entry.a3d.unsupportedExtensions).not.toContain(entry.expectedExtension);

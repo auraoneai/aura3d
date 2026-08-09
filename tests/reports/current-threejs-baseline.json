@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.current-threejs-baseline/1.0",
-  "generatedAt": "2026-08-09T02:15:23.368Z",
+  "generatedAt": "2026-08-09T03:11:47.716Z",
   "pass": true,
   "mode": "online-registry-verification",
   "contextPath": "benchmark/context/threejs-r185.1-20260808.json",
   "contextSha256": "3ad155ede7c82e58f4f7898fd014d333285e7e6c296eaa09ff68c6b1b0c6829b",
   "inventoryPath": "docs/project/parity/threejs-r185-surface-inventory.md",
-  "inventorySha256": "312a52870e2505efae31fe70f7fff40d3f7ec1d423ab62b318ac0fdc12b09715",
+  "inventorySha256": "470e84df0e312d65b77ab4e99c5779278f13fe5e36404c43e33f3c5abd1a547e",
   "historicalVersion": "0.165.0",
   "currentInputs": {
     "context": "0.185.1",

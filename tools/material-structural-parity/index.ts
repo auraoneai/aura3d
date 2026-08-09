@@ -282,7 +282,6 @@ function bundleSource(): string {
   return `
     import { createAuraApp, scene, primitives, material, camera, lights } from "@aura3d/engine";
     ${pixelAnalysis()}
-
     /**
      * Render a scene and measure it BEFORE disposing the app.
      *
@@ -293,12 +292,15 @@ function bundleSource(): string {
      * therefore runs while the app is still mounted, and every gate additionally asserts non-trivial
      * luminance so a blank frame can never be reported as a physical finding.
      */
-    async function renderAndMeasure(canvas, spec, cameraSpec, measure) {
+    async function renderAndMeasure(canvas, spec, cameraSpec, measure, subjectKind) {
       const built = scene()
         .background("#000000")
         .camera(camera.perspective(cameraSpec ?? { position: [0, 0, 2.6], target: [0, 0, 0], fov: 40 }));
       built.add(lights.directional({ name: "key", intensity: 3.2, color: "#ffffff" }).position(1.6, 1.8, 2.4));
-      built.add(primitives.sphere({ name: "subject", material: spec }).position(0, 0, 0).scale([1, 1, 1]));
+      const subject = subjectKind === "plane"
+        ? primitives.plane({ name: "subject", material: spec }).position(0, 0, 0).scale([2.2, 1, 2.2])
+        : primitives.sphere({ name: "subject", material: spec }).position(0, 0, 0).scale([1, 1, 1]);
+      built.add(subject);
       /*
        * The production profile, explicitly.
        *
@@ -373,7 +375,7 @@ function bundleSource(): string {
         const none = await measure(material.pbr({ color: "#3a3f4a", roughness: 0.85, metalness: 0, sheen: 0 }));
         const half = await measure(material.pbr({ color: "#3a3f4a", roughness: 0.85, metalness: 0, sheen: 0.5, sheenRoughness: 0.3, sheenColor: "#ffffff" }));
         const full = await measure(material.pbr({ color: "#3a3f4a", roughness: 0.85, metalness: 0, sheen: 1, sheenRoughness: 0.3, sheenColor: "#ffffff" }));
-        return { none, half, full, dataUrl: full.dataUrl };
+        return { none, half, full, dataUrl: full.dataUrl, noneDataUrl: none.dataUrl, halfDataUrl: half.dataUrl };
       },
 
       /**
@@ -397,7 +399,13 @@ function bundleSource(): string {
             iridescence: 1,
             iridescenceIOR: 1.8,
             iridescenceThicknessRange: [200, 700]
-          }), { position: [Math.sin(radians) * distance, 0, Math.cos(radians) * distance], target: [0, 0, 0], fov: 40 }, (c) => hueStats(c));
+          }), {
+            // Incidence angle relative to the plane's +Y normal. The tiny X
+            // offset avoids a look-at/up singularity at the zero-degree sample.
+            position: [0.001, Math.cos(radians) * distance, Math.sin(radians) * distance],
+            target: [0, 0, 0],
+            fov: 40
+          }, (c) => hueStats(c), "plane");
           lastDataUrl = measured.dataUrl;
           samples.push({ angleDegrees, ...measured });
         }
@@ -532,6 +540,10 @@ function assessSheen(payload: { readonly none: SheenBand; readonly half: SheenBa
       rimRatioSheen0: Number(noneRatio.toFixed(5)),
       rimRatioSheen0_5: Number(halfRatio.toFixed(5)),
       rimRatioSheen1: Number(fullRatio.toFixed(5)),
+      centreSheen0: payload.none.centre,
+      grazingSheen0: payload.none.grazing,
+      centreSheen0_5: payload.half.centre,
+      grazingSheen0_5: payload.half.grazing,
       grazingSheen1: payload.full.grazing,
       centreSheen1: payload.full.centre,
       silhouettePixels: payload.full.silhouettePixels,
@@ -782,8 +794,10 @@ async function run(): Promise<void> {
     writePng("tests/reports/material-structural-parity/anisotropy.png", anisotropy.dataUrl);
     results.push(assessAnisotropy(anisotropy));
 
-    const sheen = await measure<Parameters<typeof assessSheen>[0] & { readonly dataUrl: string }>("sheen");
+    const sheen = await measure<Parameters<typeof assessSheen>[0] & { readonly dataUrl: string; readonly noneDataUrl: string; readonly halfDataUrl: string }>("sheen");
     writePng("tests/reports/material-structural-parity/sheen.png", sheen.dataUrl);
+    writePng("tests/reports/material-structural-parity/sheen-none.png", sheen.noneDataUrl);
+    writePng("tests/reports/material-structural-parity/sheen-half.png", sheen.halfDataUrl);
     results.push(assessSheen(sheen));
 
     const iridescence = await measure<Parameters<typeof assessIridescence>[0] & { readonly dataUrl: string }>("iridescence");
