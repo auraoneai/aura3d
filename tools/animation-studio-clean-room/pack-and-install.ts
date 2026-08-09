@@ -259,7 +259,7 @@ export function runTarballCleanRoom(root = process.cwd(), options: PackInstallOp
       deps[dep] = `file:${tgz}`;
       mapped.push(`${dep} -> ${relative(stageRoot, tgz)}`);
     }
-    // Also pin the indirect closure (math/scene/rendering and the engine's @loaders/cannon
+    // Also pin the indirect closure (math/scene/rendering and the engine's loaders/physics
     // are real deps) as resolvable file deps so npm can satisfy the 1.2.0 ranges the sibling
     // tarballs declare among themselves without reaching the registry for unpublished names.
     const overrides = (pkg.overrides ?? {}) as Record<string, string>;

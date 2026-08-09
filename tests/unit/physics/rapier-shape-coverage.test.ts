@@ -4,17 +4,17 @@ import { PhysicsWorld, Shape, type PhysicsShape } from "../../../packages/physic
 
 /**
  * Defect class: **engine**, same family as the joint no-op recorded in
- * `PhysicsWorld.stepCannon` and the `applyForce` drop recorded in `syncCannonFromAura`.
+ * `PhysicsWorld.stepRapier` and the `applyForce` drop recorded in `syncRapierFromAura`.
  *
- * `toCannonShape` handled only box / sphere / capsule / plane. The remaining three public
+ * `toRapierShape` handled only box / sphere / capsule / plane. The remaining three public
  * `Shape` factories — `Shape.mesh`, `Shape.convexHull`, `Shape.heightfield` — returned
- * `undefined`, which `addCannonCollider` turned into `disableCannonBackend(...)`. That call
+ * `undefined`, which `addRapierCollider` turned into `disableRapierBackend(...)`. That call
  * does not throw and does not warn: it silently moved the **entire world** onto the
  * `aura-js` branch. A developer who added one terrain collider to an otherwise
- * cannon-backed scene had every body in that scene quietly change solver.
+ * rapier-backed scene had every body in that scene quietly change solver.
  *
- * WS-4.2 selected `cannon-es` as the single production backend and WS-4.3 removed the
- * second solver along with `disableCannonBackend` itself, so a shape the production backend
+ * WS-4.2 selected `rapier-es` as the single production backend and WS-4.3 removed the
+ * second solver along with `disableRapierBackend` itself, so a shape the production backend
  * cannot express is no longer a degradation — it throws. These assertions are the contract:
  * every shape the public API can construct is expressible on the production backend.
  */
@@ -53,15 +53,15 @@ const SHAPES: readonly (readonly [string, PhysicsShape])[] = [
 
 for (const [kind, shape] of SHAPES) {
   test(`production backend expresses the public '${kind}' shape without falling back`, () => {
-    const world = new PhysicsWorld({ backend: "cannon-es", gravity: [0, -9.81, 0] });
+    const world = new PhysicsWorld({ backend: "rapier", gravity: [0, -9.81, 0] });
     const body = world.createRigidBody({ type: "static", position: [0, 0, 0] });
     world.createCollider(body, { shape });
 
     world.step(1 / 60);
 
     const snapshot = world.snapshot();
-    assert.equal(snapshot.backend.active, "cannon-es", `'${kind}' did not run on the production backend`);
-    // WS-4.3 removed `disableCannonBackend`, so a shape the solver cannot express now
+    assert.equal(snapshot.backend.active, "rapier", `'${kind}' did not run on the production backend`);
+    // WS-4.3 removed `disableRapierBackend`, so a shape the solver cannot express now
     // throws from `createCollider` instead of silently swapping solvers. Reaching this
     // line at all is the proof: the collider was accepted.
     assert.equal(snapshot.stats.colliders, 1, `'${kind}' was not registered as a collider`);
@@ -69,16 +69,16 @@ for (const [kind, shape] of SHAPES) {
 }
 
 test("a mesh collider added mid-scene does not change the solver under the other bodies", () => {
-  // The real-world shape of the defect: a scene is running on cannon-es, one terrain
+  // The real-world shape of the defect: a scene is running on rapier-es, one terrain
   // collider is added, and every unrelated body changes solver.
-  const world = new PhysicsWorld({ backend: "cannon-es", gravity: [0, -9.81, 0] });
+  const world = new PhysicsWorld({ backend: "rapier", gravity: [0, -9.81, 0] });
   const floor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   world.createCollider(floor, { shape: Shape.box(10, 0.5, 10) });
   const falling = world.createRigidBody({ position: [0, 4, 0], mass: 1 });
   world.createCollider(falling, { shape: Shape.sphere(0.5) });
 
   for (let index = 0; index < 10; index += 1) world.step(1 / 60);
-  assert.equal(world.snapshot().backend.active, "cannon-es");
+  assert.equal(world.snapshot().backend.active, "rapier");
 
   const terrain = world.createRigidBody({ type: "static", position: [30, 0, 0] });
   world.createCollider(terrain, {
@@ -91,7 +91,7 @@ test("a mesh collider added mid-scene does not change the solver under the other
   for (let index = 0; index < 10; index += 1) world.step(1 / 60);
 
   const snapshot = world.snapshot();
-  assert.equal(snapshot.backend.active, "cannon-es");
+  assert.equal(snapshot.backend.active, "rapier");
   assert.equal(snapshot.stats.colliders, 3, "the mid-scene mesh collider was not registered");
   // And the unrelated body is still being simulated, not frozen by the swap.
   const fallingSnapshot = snapshot.bodies.find((entry) => entry.id === falling.id);

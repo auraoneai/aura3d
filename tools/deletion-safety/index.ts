@@ -172,6 +172,11 @@ function scanRepository(excluded: ReadonlySet<string> = new Set()): readonly Sca
     for (const entry of entries) {
       if (SKIP_DIRECTORIES.has(entry)) continue;
       const child = join(absolute, entry);
+      // This directory is an immutable before-state capture, not a live consumer or
+      // retained current-state schema. Its purpose is to preserve names that existed at
+      // the baseline, so treating those historical names as deletion blockers would make
+      // every measured cleanup impossible by construction.
+      if (relative(repoRoot, child).startsWith("tests/reports/final-competitive-baseline/")) continue;
       let stats;
       try {
         stats = statSync(child);

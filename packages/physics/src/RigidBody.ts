@@ -51,17 +51,14 @@ export class RigidBody {
    * The principal moments the caller explicitly asked for, or `undefined` when the body
    * accepted the mass-derived default.
    *
-   * Retained because a backend that derives inertia from collider geometry (cannon-es
-   * does, in `Body.updateMassProperties`) has no other way to learn that the descriptor
-   * declared something different. Without this, `inertia` was accepted, validated, and
-   * silently discarded on the default backend -- the same defect class as the `applyForce`
-   * and joint no-ops.
+   * Retained because the selected Rapier backend derives inertia from collider geometry
+   * unless the descriptor explicitly supplies principal moments. The bridge uses this
+   * value to preserve that public descriptor contract.
    */
   readonly declaredInertia?: Vec3;
   sleeping: boolean;
   private accumulatedForce: [number, number, number];
   private accumulatedTorque: [number, number, number];
-  private sleepTimer = 0;
 
   constructor(id: number, descriptor: RigidBodyDescriptor = {}) {
     if (!Number.isInteger(id) || id <= 0) {
@@ -180,20 +177,6 @@ export class RigidBody {
     this.applyAngularImpulse(crossVec3(subVec3(worldPoint, this.position), impulse));
   }
 
-  /**
-   * Applies a solver-owned contact impulse without resetting an already
-   * accumulating sleep timer. PhysicsWorld performs threshold-based waking
-   * after the full linear/angular velocity update.
-   */
-  applyContactImpulseAtPoint(impulse: Vec3, worldPoint: Vec3): void {
-    validateFiniteVec3(impulse, "contact impulse");
-    validateFiniteVec3(worldPoint, "contact impulse point");
-    if (this.type !== "dynamic") return;
-    this.velocity = addVec3(this.velocity, scaleVec3(impulse, this.inverseMass));
-    const angularImpulse = crossVec3(subVec3(worldPoint, this.position), impulse);
-    this.angularVelocity = addVec3(this.angularVelocity, this.multiplyInverseInertiaWorld(angularImpulse));
-  }
-
   multiplyInverseInertiaWorld(value: Vec3): Vec3 {
     validateFiniteVec3(value, "inverse inertia input");
     if (this.type !== "dynamic") return [0, 0, 0];
@@ -203,41 +186,10 @@ export class RigidBody {
     return rotateVec3ByQuat(localResponse, this.rotation);
   }
 
-  integrate(dt: number, gravity: Vec3, clearForces = true): void {
-    if (!Number.isFinite(dt) || dt <= 0) {
-      throw new Error("dt must be a finite positive number.");
-    }
-    if (this.type !== "dynamic" || this.sleeping) {
-      if (clearForces) {
-        this.clearForces();
-      }
-      this.previousPosition = cloneVec3(this.position);
-      this.previousRotation = cloneQuat(this.rotation);
-      return;
-    }
-    this.previousPosition = cloneVec3(this.position);
-    this.previousRotation = cloneQuat(this.rotation);
-    const acceleration = addVec3(gravity, scaleVec3(this.accumulatedForce, this.inverseMass));
-    this.velocity = addVec3(this.velocity, scaleVec3(acceleration, dt));
-    this.angularVelocity = addVec3(this.angularVelocity, scaleVec3(multiplyVec3(this.accumulatedTorque, this.inverseInertia), dt));
-    const dampingFactor = Math.max(0, 1 - this.linearDamping * dt);
-    const angularDampingFactor = Math.max(0, 1 - this.angularDamping * dt);
-    this.velocity = scaleVec3(this.velocity, dampingFactor);
-    this.angularVelocity = scaleVec3(this.angularVelocity, angularDampingFactor);
-    this.position = addVec3(this.position, scaleVec3(this.velocity, dt));
-    this.rotation = integrateRotation(this.rotation, this.angularVelocity, dt);
-    if (clearForces) {
-      this.clearForces();
-    }
-  }
-
   /**
    * Force accumulated since the last step, in world space.
    *
-   * Exposed because `applyForce` was silently a no-op on the default `cannon-es`
-   * backend: it accumulated here, and only the since-removed second solver's integrator
-   * ever read it. The backend bridge needs to read the accumulator to forward it, which
-   * it cannot do while this is private.
+   * The Rapier bridge reads this value on every step and forwards it to the native body.
    */
   pendingForce(): Vec3 {
     return [this.accumulatedForce[0], this.accumulatedForce[1], this.accumulatedForce[2]];
@@ -263,7 +215,6 @@ export class RigidBody {
       return;
     }
     this.sleeping = false;
-    this.sleepTimer = 0;
   }
 
   sleep(): void {
@@ -274,18 +225,6 @@ export class RigidBody {
     this.angularVelocity = vec3();
     this.clearForces();
     this.sleeping = true;
-  }
-
-  resetSleepTimer(): void {
-    this.sleepTimer = 0;
-  }
-
-  accumulateSleepTime(dt: number): number {
-    if (!Number.isFinite(dt) || dt < 0) {
-      throw new Error("sleep dt must be finite and non-negative.");
-    }
-    this.sleepTimer += dt;
-    return this.sleepTimer;
   }
 
   snapshot(): RigidBodySnapshot {
@@ -340,30 +279,5 @@ function crossVec3(a: Vec3, b: Vec3): [number, number, number] {
     a[1] * b[2] - a[2] * b[1],
     a[2] * b[0] - a[0] * b[2],
     a[0] * b[1] - a[1] * b[0]
-  ];
-}
-
-function integrateRotation(rotation: Quat, angularVelocity: Vec3, dt: number): [number, number, number, number] {
-  const speed = Math.hypot(angularVelocity[0], angularVelocity[1], angularVelocity[2]);
-  if (speed <= 1e-12) {
-    return cloneQuat(rotation);
-  }
-  const halfAngle = speed * dt * 0.5;
-  const sinHalf = Math.sin(halfAngle);
-  const delta: Quat = [
-    angularVelocity[0] / speed * sinHalf,
-    angularVelocity[1] / speed * sinHalf,
-    angularVelocity[2] / speed * sinHalf,
-    Math.cos(halfAngle)
-  ];
-  return normalizeQuat(multiplyQuat(delta, rotation));
-}
-
-function multiplyQuat(a: Quat, b: Quat): [number, number, number, number] {
-  return [
-    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
-    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
-    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
-    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   ];
 }

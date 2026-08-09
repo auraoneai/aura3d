@@ -645,18 +645,18 @@ function checkPhysicsBackend(
   blockers: string[],
   label: string
 ): void {
-  check(physics?.selection === "cannon-es", blockers, `${label} did not select cannon-es`);
+  check(physics?.selection === "rapier", blockers, `${label} did not select Rapier`);
   check(physics?.angularContactResponse === true, blockers, `${label} did not prove angular contact response`);
   check(physics?.continuousCollisionActive === true, blockers, `${label} did not activate continuous-collision protection`);
   check(
-    physics?.continuousCollisionProvider === "aura3d-adaptive-substep-wrapper",
+    physics?.continuousCollisionProvider === "rapier-native-ccd+adaptive-substeps",
     blockers,
     `${label} mislabeled the CCD provider`
   );
   check((physics?.continuousCollisionSubSteps ?? 0) > 1, blockers, `${label} did not exercise CCD substeps`);
   check(physics?.fastMoverDidNotTunnel === true, blockers, `${label} fast mover tunneled`);
   check(
-    physics?.continuousCollisionOwnership.includes("adaptive-substep wrapper") === true,
+    physics?.continuousCollisionOwnership.includes("Rapier native CCD") === true,
     blockers,
     `${label} did not disclose which layer owns fast-body protection`
   );

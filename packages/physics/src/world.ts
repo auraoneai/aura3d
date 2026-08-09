@@ -9,22 +9,9 @@
  * working semantics to chase a byte count, and an async-only `app.physics` would break every existing
  * caller.
  *
- * So the solver is imported statically, but from **here** rather than from `@aura3d/physics`. The
- * barrel is a chain of `export *` covering `HitboxWorld`, `CharacterController`, `KinematicBody`,
- * arcade vehicle telemetry, `NarrowPhase` and six fixture modules; importing it to get one class dragged all
- * of them in. This entry exposes the solver and nothing else.
- *
- * Measured on scenario 1 (one cube, no bodies), the eager physics chunk:
- *
- *   via the barrel      77,081 B gzip   (cannon-es 83,869 raw + HitboxWorld 14,379 + KinematicBody
- *                                        8,975 + CharacterController 8,531 + NarrowPhase 8,488 +
- *                                        arcade telemetry 8,125 + compatibility controllers + ...)
- *   via this entry      the solver only
- *
- * `cannon-es` itself stays on the critical path, and that is the honest remaining cost of a synchronous
- * `app.physics`. Removing it requires deciding whether the public contract may become async — which is
- * a **P4** question, not a P2 one, and one the physics bake-off has to answer anyway because Rapier is
- * WASM and therefore asynchronous by construction.
+ * The selected Rapier solver is imported statically from this narrow entry instead of the
+ * compatibility barrel. This preserves synchronous `app.physics` construction after the
+ * adapter module's one-time WASM initialization without pulling unrelated arcade or query APIs.
  */
 export { PhysicsWorld } from "./PhysicsWorld.js";
 export type {

@@ -20,22 +20,22 @@ describe("final subsystem ownership", () => {
     expect(internalEngine.zeroSourceConsumers).toBe(false);
   });
 
-  it("isolates evidence descriptors and custom physical controllers from the retained adapter", () => {
+  it("records the sole Rapier physical adapter after displaced implementations were removed", () => {
     const report = JSON.parse(readFileSync("tests/reports/final-subsystem-ownership.json", "utf8"));
     const dispositions = Object.fromEntries(report.subsystems.map((entry: { id: string; disposition: string }) => [entry.id, entry.disposition]));
-    expect(dispositions["physics-evidence-descriptors"]).toBe("EVIDENCE-ONLY");
-    expect(dispositions["physics-custom-physical-controllers"]).toBe("DEPRECATE-REMOVE");
-    expect(dispositions["physics-cannon-adapter"]).toBe("EXTERNAL-ADAPTER");
+    expect(dispositions["physics-evidence-descriptors"]).toBeUndefined();
+    expect(dispositions["physics-custom-physical-controllers"]).toBeUndefined();
+    expect(dispositions["physics-rapier-contract"]).toBe("EXTERNAL-ADAPTER");
   });
 
   it("pins current external metadata without selecting an implementation", () => {
     const report = JSON.parse(readFileSync("tests/reports/final-subsystem-ownership.json", "utf8"));
-    expect(report.externalCandidates).toHaveLength(8);
+    expect(report.externalCandidates).toHaveLength(7);
     expect(report.externalCandidates.find((entry: { name: string }) => entry.name === "yuka").freshness).toBe("dormant-risk");
-    expect(report.externalCandidates.find((entry: { name: string }) => entry.name === "cannon-es").freshness).toBe("dormant-risk");
+    expect(report.externalCandidates.find((entry: { name: string }) => entry.name === "@dimforge/rapier3d-compat").freshness).toBe("active");
     expect(report.externalCandidates.every((entry: { packageAudit?: unknown }) => Boolean(entry.packageAudit))).toBe(true);
     expect(report.externalCandidates.every((entry: { packageAudit: { security: { vulnerable: boolean } } }) => entry.packageAudit.security.vulnerable === false)).toBe(true);
-    expect(report.claimBoundary).toContain("no deletion");
+    expect(report.claimBoundary).toContain("selected ownership");
   });
 
   it("requires an ADR for every new package source file after the Phase 1 lock", () => {

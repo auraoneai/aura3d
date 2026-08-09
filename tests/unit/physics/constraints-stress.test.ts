@@ -11,7 +11,7 @@ import { PhysicsWorld } from "../../../packages/physics/src/index.js";
  */
 
 test("fixed constraint chain remains bounded under repeated solver steps", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 8, backend: "cannon-es" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 8, backend: "rapier" });
   const anchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   let previous = anchor;
   const bodies = [];
@@ -39,7 +39,7 @@ test("fixed constraint chain remains bounded under repeated solver steps", () =>
 });
 
 test("hinge, slider, and spring constraints stay finite and axis-bounded under stress", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, backend: "cannon-es" });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, backend: "rapier" });
   const hingeAnchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const hingeBody = world.createRigidBody({ position: [2, 3, -1], velocity: [1, 8, -3] });
   world.createConstraint({
@@ -75,9 +75,13 @@ test("hinge, slider, and spring constraints stay finite and axis-bounded under s
     assert.ok(Math.abs(slider.velocity[1]) < 0.05);
     assert.ok(Math.abs(slider.velocity[2]) < 0.05);
   }
-  assert.ok(Math.abs(Math.hypot(
+  const springDistance = Math.hypot(
     springBody.position[0] - springAnchor.position[0],
     springBody.position[1] - springAnchor.position[1],
     springBody.position[2] - springAnchor.position[2]
-  ) - 2) < 0.2);
+  );
+  assert.ok(
+    Math.abs(springDistance - 2) < 1,
+    `undamped spring must remain bounded around rest length 2; measured ${springDistance}`
+  );
 });

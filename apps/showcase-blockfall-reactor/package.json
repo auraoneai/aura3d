@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D falling-block reactor game with a catalog-sourced typed arcade cabinet, deterministic line-clear proof, runtime HUD, and cannon-es route fidelity evidence.",
+  "description": "Aura3D falling-block reactor game with a catalog-sourced typed arcade cabinet, deterministic line-clear proof, runtime HUD, and Rapier route fidelity evidence.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

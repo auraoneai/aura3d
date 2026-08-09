@@ -81,9 +81,9 @@ const ENGINE_CAUSES: Readonly<Record<string, readonly { readonly symptom: string
     {
       symptom: "stacked blocks shove each other apart",
       cause:
-        "solverIterations defaulted to 1 and was written straight onto cannon's solver, which defaults to 10 — so every " +
+        "solverIterations defaulted to 1 and was written straight onto the displaced solver, whose default was 10 — so every " +
         "route ran a tenth of the constraint quality the backend ships with. A 6-box stack collapsed completely.",
-      disposition: "FIXED — default is now cannon's own 10 (4252ecbe); invariant 1 asserts a 6-box stack holds"
+      disposition: "SUPERSEDED — Rapier is now the sole physical owner and the 6-box stack invariant remains executable"
     }
   ]
 };

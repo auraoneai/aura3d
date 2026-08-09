@@ -10,15 +10,15 @@ importers:
 
   .:
     dependencies:
+      '@dimforge/rapier3d-compat':
+        specifier: 0.20.0
+        version: 0.20.0
       '@loaders.gl/core':
         specifier: 4.4.1
         version: 4.4.1
       '@loaders.gl/textures':
         specifier: 4.4.1
         version: 4.4.1(@loaders.gl/core@4.4.1)
-      cannon-es:
-        specifier: 0.20.0
-        version: 0.20.0
     devDependencies:
       '@aura3d/animation':
         specifier: workspace:*
@@ -86,9 +86,6 @@ importers:
       '@babylonjs/loaders':
         specifier: ^7.16.1
         version: 7.16.1(@babylonjs/core@7.16.1)(babylonjs-gltf2interface@7.16.1)
-      '@dimforge/rapier3d-compat':
-        specifier: 0.20.0
-        version: 0.20.0
       '@playwright/test':
         specifier: ^1.52.0
         version: 1.59.1
@@ -327,9 +324,9 @@ importers:
 
   packages/physics:
     dependencies:
-      cannon-es:
-        specifier: 0.20.0
-        version: 0.20.0
+      '@aura3d/physics-rapier':
+        specifier: workspace:*
+        version: link:../physics-rapier
 
   packages/physics-rapier:
     dependencies:
@@ -1548,9 +1545,6 @@ packages:
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
-
-  cannon-es@0.20.0:
-    resolution: {integrity: sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==}
 
   chai@5.3.3:
     resolution: {integrity: sha512-4zNhdJD/iOjSH0A05ea+Ke6MU5mmpQcbQsSOkgdaUMJ9zTlDTD/GYlwohmIE2u0gaxHYiVHEn1Fw9mZ/ktJWgw==}
@@ -3150,8 +3144,6 @@ snapshots:
   cac@6.7.14: {}
 
   callsites@3.1.0: {}
-
-  cannon-es@0.20.0: {}
 
   chai@5.3.3:
     dependencies:

@@ -185,13 +185,13 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
        * this very file, which is the trap being avoided.
        */
       capability: "physical simulation",
-      present: countPhysicsBackends() !== 1 || (
-        exists("packages/physics/src/PhysicsWorld.ts")
-        && exists("packages/physics-rapier/src/index.ts")
-        && contains("packages/physics/src/PhysicsWorld.ts", "from \"cannon-es\"")
-        && contains("packages/physics-rapier/src/index.ts", "@dimforge/rapier3d-compat")
-      ),
-      detail: `PhysicsBackend declares ${countPhysicsBackends()} selectable legacy-package solver(s), while the selected optional Rapier adapter ${exists("packages/physics-rapier/src/index.ts") ? "exists" : "does not exist"}. Cannon-backed PhysicsWorld and Rapier cannot both remain production owners.`
+      present:
+        countPhysicsBackends() !== 1
+        || !exists("packages/physics-rapier/src/index.ts")
+        || !contains("packages/physics/src/PhysicsWorld.ts", "from \"@aura3d/physics-rapier\"")
+        || !contains("packages/physics-rapier/src/index.ts", "@dimforge/rapier3d-compat")
+        || contains("packages/physics/package.json", "cannon-es"),
+      detail: `PhysicsBackend declares ${countPhysicsBackends()} selectable solver(s); PhysicsWorld ${contains("packages/physics/src/PhysicsWorld.ts", "from \"@aura3d/physics-rapier\"") ? "delegates" : "does not delegate"} through the selected Rapier adapter, and the legacy solver dependency ${contains("packages/physics/package.json", "cannon-es") ? "remains" : "is absent"}.`
     },
     {
       /*

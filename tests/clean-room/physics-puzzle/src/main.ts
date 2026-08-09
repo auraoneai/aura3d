@@ -6,7 +6,7 @@
  *
  * Worth stating plainly, because it is why `joints / constraints` sat at "unproven, 0
  * consumers" for so long: until this release joints did not work at all on the default
- * `cannon-es` backend. `PhysicsWorld.stepCannon` never called `constraint.solve()`, so a
+ * legacy backend. The displaced runtime never called the public constraint solver, so a
  * body on a `fixed` joint free-fell instead of hanging. Nothing built here was buildable
  * before that fix.
  */

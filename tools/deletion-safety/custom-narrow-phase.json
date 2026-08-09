@@ -1,0 +1,8 @@
+{
+  "$comment": "Closed R8 queue. The displaced JavaScript physical narrow phase cleared all six points across 5,016 files before removal; proof is tests/reports/custom-narrow-phase-delete-final.json.",
+  "removedCandidates": [
+    "packages/physics/src/NarrowPhase.ts",
+    "tests/unit/physics/native-narrow-phase.test.ts"
+  ],
+  "candidates": []
+}

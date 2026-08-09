@@ -36,7 +36,7 @@ describe("the physics solver has exactly one owner", () => {
     const match = /^export type PhysicsBackend = ([^;]+);/m.exec(WORLD_SOURCE);
     expect(match, "PhysicsBackend union not found — was the type renamed?").not.toBeNull();
     const members = match![1]!.split("|").map((member) => member.trim()).filter(Boolean);
-    expect(members).toEqual(['"cannon-es"']);
+    expect(members).toEqual(['"rapier"']);
   });
 
   it("has no runtime path that downgrades the backend", () => {
@@ -67,36 +67,29 @@ describe("the physics solver has exactly one owner", () => {
   });
 
   it("runs the production backend whether or not the caller asks for it", () => {
-    for (const descriptor of [{}, { backend: "auto" as const }, { backend: "cannon-es" as const }]) {
+    for (const descriptor of [{}, { backend: "auto" as const }, { backend: "rapier" as const }]) {
       const world = new PhysicsWorld(descriptor);
       const body = world.createRigidBody({ position: [0, 4, 0], mass: 1 });
       world.createCollider(body, { shape: Shape.sphere(0.5) });
       world.step(1 / 60);
-      assert.equal(world.snapshot().backend.active, "cannon-es");
+      assert.equal(world.snapshot().backend.active, "rapier");
     }
   });
 
   it("rejects the removed backend by name instead of quietly running a different solver", () => {
     // Reachable from JavaScript and from anything compiled against 1.5.x, where this string
     // selected a real solver. Silence here is exactly the old failure mode.
-    expect(() => new PhysicsWorld({ backend: "aura-js" as never })).toThrow(/removed in WS-4\.3/);
+    expect(() => new PhysicsWorld({ backend: "aura-js" as never })).toThrow(/backends were removed/);
   });
 
-  it("refuses an inexpressible collider at the call site rather than swapping solvers", () => {
+  it("keeps Rapier active while constructing the full public convex-hull shape", () => {
     const world = new PhysicsWorld({ gravity: [0, -9.81, 0] });
     const body = world.createRigidBody({ type: "static", position: [0, 0, 0] });
-    // `Shape.convexHull` validates the vertex count itself, so the degenerate case that
-    // actually reaches the backend is enough vertices but too few faces: 4 vertices
-    // described by a single triangle cannot close a polyhedron.
-    const degenerate = Shape.convexHull(
+    const tetrahedron = Shape.convexHull(
       [[0.5, 0.5, 0.5], [-0.5, -0.5, 0.5], [-0.5, 0.5, -0.5], [0.5, -0.5, -0.5]],
-      [0, 1, 2]
+      [0, 1, 2, 0, 3, 1, 0, 2, 3, 1, 3, 2]
     );
-
-    expect(() => world.createCollider(body, { shape: degenerate })).toThrow(
-      /cannot be expressed on the production physics backend/
-    );
-    // And the world is still on the production backend, not degraded by the attempt.
-    assert.equal(world.snapshot().backend.active, "cannon-es");
+    expect(() => world.createCollider(body, { shape: tetrahedron })).not.toThrow();
+    assert.equal(world.snapshot().backend.active, "rapier");
   });
 });

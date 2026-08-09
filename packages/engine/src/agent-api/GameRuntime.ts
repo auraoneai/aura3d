@@ -1,9 +1,9 @@
 /*
- * WS-2.2 — cannon-free values from the solverless entry; the solver itself arrives on demand.
+ * Solver-free values from the geometry/query entry; physical simulation is isolated.
  *
  * `Shape` is pure data, so it comes statically. `PhysicsWorld` is loaded by
  * `loadGameCollisionSolver()` below, because importing it here made every consumer of the game
- * runtime — including a scene with no bodies — download `cannon-es`.
+ * runtime — including a scene with no bodies — download or initialize Rapier.
  */
 import { Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
 // Static, from the narrow entry: createGameCollisionWorld is synchronous public API. See world.ts.

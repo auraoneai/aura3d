@@ -5,13 +5,11 @@
  *
  * `createAuraApp` needs a handful of physics values at module scope: `Shape` to translate a declared
  * collider, `PhysicsStepper` to drive a fixed timestep, `ScenePhysicsBridge` to push transforms, and
- * `PhysicsDebugDraw` to draw colliders. Every one of those files is **cannon-free** — they import
- * `PhysicsWorld` as a *type* only.
+ * `PhysicsDebugDraw` to draw colliders. These files import `PhysicsWorld` as a *type* only.
  *
  * But they were reached through `@aura3d/physics`, whose barrel is a chain of `export *`, and one of
- * those re-exports is `PhysicsWorld` — which imports `cannon-es`. So a scene with **no bodies at all**
- * downloaded the whole solver. Measured on scenario 1 (one cube, no physics): a **77,081-byte gzip
- * chunk** on the critical path, of which `cannon-es` is 83,869 bytes raw.
+ * those re-exports is `PhysicsWorld`, which reaches the selected Rapier adapter. A scene with no
+ * physical bodies must not download or initialize that solver.
  *
  * This is *not* the same defect as eager construction. `createAuraApp` already constructs its world
  * lazily and carries a comment recording that eager construction cost 85 KB — that fix was correct and
@@ -20,10 +18,8 @@
  *
  * ## What is deliberately absent
  *
- * `PhysicsWorld`, `NarrowPhase`, `CharacterController`, `HitboxWorld`, arcade vehicle telemetry and the
- * fixture modules. Anything that simulates. `@aura3d/physics` still exports all of them, and
- * `createAuraApp` loads the world through `await import("@aura3d/physics")` when a scene actually
- * declares a body — so behaviour is unchanged and only the download moves.
+ * `PhysicsWorld`, physical controllers, `HitboxWorld`, arcade vehicle telemetry, and fixture
+ * modules. This entry owns geometry/query helpers only; physical simulation uses `./world`.
  */
 export { Shape } from "./Shape.js";
 export type { BoxShape, Bounds, CapsuleShape, ConvexHullShape, HeightfieldShape, MeshShape, PhysicsShape, PlaneShape, SphereShape, Vec3 } from "./Shape.js";

@@ -1,11 +1,10 @@
 /*
  * WS-2.2 — module-scope physics values come from the SOLVERLESS entry.
  *
- * `Shape`, `PhysicsStepper`, `ScenePhysicsBridge` and `PhysicsDebugDraw` are all cannon-free: each
+ * `Shape`, `PhysicsStepper`, `ScenePhysicsBridge` and `PhysicsDebugDraw` are solver-free: each
  * imports `PhysicsWorld` as a *type* only. But reaching them through `@aura3d/physics` — a chain of
- * `export *` that includes `PhysicsWorld` — dragged in `cannon-es`, so a scene with no bodies at all
- * downloaded the whole solver. Measured on a one-cube scene: a 77,081-byte gzip chunk on the critical
- * path, 83,869 bytes of `cannon-es` raw.
+ * `export *` that includes `PhysicsWorld` — dragged in the physical adapter, so a scene with no
+ * bodies still downloaded the solver.
  *
  * This is a different defect from eager construction, which was already fixed (see `:9832`). A lazy
  * `new PhysicsWorld()` still leaves a static `import`, and a bundler keeps the module either way.
@@ -121,7 +120,7 @@ export * from "./PhysicsRuntime.js";
  *
  * These are geometry queries: `MeshBVH` and `SurfaceQuery` import only `Shape`'s types. Re-exporting
  * them from `@aura3d/physics` made this barrel a static consumer of the whole solver, so grounding a
- * wheel on a mesh cost a developer `cannon-es`. Same symbols, same public names.
+ * wheel on a mesh reached the physical solver. Same symbols, same public names.
  */
 export {
   buildMeshBVH,
@@ -5410,7 +5409,7 @@ function createMiniGolfStateController(): AuraMiniGolfStateController {
     const worldSnapshot = world.snapshot();
     return {
       physicsBackend: worldSnapshot.backend.active,
-      deterministicReplayId: `mini-golf-cannon-v1-${shots}-${score}-${collisions}-${resets}`,
+      deterministicReplayId: `mini-golf-rapier-v2-${shots}-${score}-${collisions}-${resets}`,
       replayFrame: worldSnapshot.stats.steps,
       captureTime: Number((worldSnapshot.stats.steps * world.fixedDelta).toFixed(3)),
       shots,
@@ -8504,7 +8503,7 @@ function createSceneKitLazyLoadingPlan(id: AuraSceneKitId): AuraSceneKitLazyLoad
     systems.push({ system, trigger, loadedByDefault: false, evidence });
   };
   if (id === "physicsPlayground" || id === "miniGolf") {
-    add("physics-backend", `${id} physics state construction`, "Cannon-backed physics is optional scene-kit work and not required for static material/chart/product scenes");
+    add("physics-backend", `${id} physics state construction`, "Rapier-backed physics is isolated scene-kit work and is not required for static material, chart, or product scenes");
   }
   if (id === "productViewer") {
     add("product-gltf-loader", "typed product model render path", "GLTF loading is tied to typed model scenes and excluded from procedural-only scene kits");
@@ -9828,11 +9827,11 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    *
    * `app.physics` must be live for every app — a route that spawns bodies at runtime should be no
    * harder to write than one that declares them. But constructing the world eagerly made **every**
-   * app pay for the solver, and `PhysicsWorld` pulls in `cannon-es`.
+   * app pay for the selected physical solver.
    *
    * Measured cost of the eager version: a minimal `createAuraApp` scene containing one box bundled to
-   * **350 KB gzip**, of which 85 KB was `cannon-es` that the scene never touched. That is the single
-   * largest avoidable item in the `core-agent-api` budget overrun.
+   * The eager version made the physical runtime part of every route's startup path, including
+   * routes that never created a body.
    *
    * Lazily constructing it changes no behaviour — `app.physics` still returns a working runtime, and
    * a scene that declares `.physics({...})` still gets its bodies registered, because

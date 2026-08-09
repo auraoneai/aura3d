@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-09T01:18:42.949Z",
+  "harness": "tools/physics-backend-bakeoff/index.ts",
+  "purpose": "post-selection verification; displaced backends are intentionally not installed or executed",
+  "selectedBackend": "rapier",
+  "selectedProvider": "@dimforge/rapier3d-compat@0.20.0",
+  "frozenDecisionEvidence": {
+    "path": "tests/reports/physics-backend-bakeoff/report.json",
+    "generatedAt": "2026-08-08T22:12:12.150Z",
+    "selectedBackendAtDecisionTime": null
+  },
+  "measurements": {
+    "initMs": 5.067125000000004,
+    "msPerStepAt250Bodies": 1.1154111166666667,
+    "deterministicAcrossIdenticalRuns": true,
+    "nativeCcdStoppedFastBody": true,
+    "characterControllerAvailable": true,
+    "vehicleControllerAvailable": true
+  },
+  "pass": true
+}

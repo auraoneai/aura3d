@@ -1,8 +1,8 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `c35141d7fad37107ee49c77b73557606d07a2d94`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `9a010cb200b4aa4fb9a33d1d9d67e3da0be436ff`.
 
-Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
+Current selected ownership inventory after evidence-gated subsystem deletion; parity and release claims still require their independent gates.
 
 ## Package dispositions
 
@@ -27,8 +27,8 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/materials` | `AURA-CORE` | 339 | 5 | 2 | 2760 | yes |
 | `@aura3d/math` | `AURA-CORE` | 1220 | 49 | 1 | 8067 | yes |
 | `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 239 | 7 | 1 | 0 | yes |
-| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 8071 | 47 | 3 | 102048 | yes |
-| `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 186 | 6 | 1 | 2329 | yes |
+| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 6650 | 49 | 3 | 102048 | yes |
+| `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 351 | 9 | 1 | 4121 | yes |
 | `@aura3d/product-studio` | `AURA-MOAT` | 696 | 29 | 1 | 4893 | yes |
 | `@aura3d/react` | `EXTERNAL-ADAPTER` | 173 | 14 | 1 | 1182 | yes |
 | `@aura3d/rendering` | `AURA-CORE` | 54782 | 224 | 3 | 390609 | yes |
@@ -43,39 +43,39 @@ Every package source file is assigned exactly once. General rows inherit the pac
 
 | Subsystem | Package | Disposition | Files | Lines | Built gzip | Maintenance refs | Decision |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `animation-general` | `animation` | `AURA-CORE` | 43 | 7527 | 49680 | 198 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `animation-general` | `animation` | `AURA-CORE` | 43 | 7527 | 49680 | 201 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `apps-general` | `apps` | `AURA-MOAT` | 1 | 162 | 1190 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 1 | 65 | 674 | 4 | Remove evidence-only source from the published runtime after consumer proof. |
-| `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 112 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `assets-general` | `assets` | `AURA-MOAT` | 61 | 15758 | 102750 | 228 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1696 | 8464 | 30 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8757 | 77735 | 791 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 66 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 122 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 206 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 32 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 83 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `asset-evidence-fixtures` | `assets` | `EVIDENCE-ONLY` | 1 | 65 | 674 | 5 | Remove evidence-only source from the published runtime after consumer proof. |
+| `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `assets-general` | `assets` | `AURA-MOAT` | 61 | 15758 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1696 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8757 | 77735 | 792 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 68 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 209 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 82 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-general` | `editor` | `OPTIONAL-PLUGIN` | 1 | 1 | 93 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `editor-runtime-general` | `editor-runtime` | `OPTIONAL-PLUGIN` | 45 | 7537 | 47379 | 117 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `engine-browser-media` | `engine` | `BROWSER-STANDARD` | 4 | 521 | 3170 | 10 | Keep browser capture separate from Node encoding and publishing. |
-| `engine-general` | `engine` | `AURA-MOAT` | 105 | 54793 | 380791 | 868 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `engine-node-media-publishing` | `engine` | `OPTIONAL-PLUGIN` | 9 | 1559 | 10660 | 17 | Remove Node/cloud/FFmpeg ownership from browser entries. |
-| `environments-general` | `environments` | `AURA-CORE` | 9 | 464 | 3050 | 1336 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `input-general` | `input` | `AURA-CORE` | 24 | 1983 | 10744 | 73 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1338 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 176 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `editor-runtime-general` | `editor-runtime` | `OPTIONAL-PLUGIN` | 45 | 7537 | 47379 | 120 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `engine-browser-media` | `engine` | `BROWSER-STANDARD` | 4 | 521 | 3170 | 11 | Keep browser capture separate from Node encoding and publishing. |
+| `engine-general` | `engine` | `AURA-MOAT` | 105 | 54793 | 380791 | 871 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `engine-node-media-publishing` | `engine` | `OPTIONAL-PLUGIN` | 9 | 1559 | 10660 | 18 | Remove Node/cloud/FFmpeg ownership from browser entries. |
+| `environments-general` | `environments` | `AURA-CORE` | 9 | 464 | 3050 | 1335 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `input-general` | `input` | `AURA-CORE` | 24 | 1983 | 10744 | 74 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1337 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 174 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 239 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-authored-arcade-motion` | `physics` | `AURA-MOAT` | 4 | 1597 | 5075 | 17 | Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation. |
-| `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 129 | Compare against current Rapier topology; exactly one physical solver may remain. |
-| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 10 | 2537 | 16083 | 427 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 186 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 14 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-authored-arcade-motion` | `physics` | `AURA-MOAT` | 4 | 1597 | 5075 | 22 | Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation. |
+| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 10 | 2536 | 16083 | 428 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `physics-rapier-contract` | `physics` | `EXTERNAL-ADAPTER` | 11 | 2517 | 27274 | 129 | Keep backend-neutral public descriptors over the sole Rapier physical solver. |
+| `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 351 | 4121 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `rendering-general` | `rendering` | `AURA-CORE` | 252 | 54782 | 370830 | 898 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `scene-general` | `scene` | `AURA-CORE` | 22 | 1708 | 10343 | 518 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 21 | 3692 | 25121 | 44 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `three-compat-general` | `three-compat` | `COMPATIBILITY-ONLY` | 20 | 1234 | 10185 | 18 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `workflows-general` | `workflows` | `AURA-MOAT` | 20 | 1174 | 8260 | 5 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `scene-general` | `scene` | `AURA-CORE` | 22 | 1708 | 10343 | 520 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 21 | 3692 | 25121 | 45 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `three-compat-general` | `three-compat` | `COMPATIBILITY-ONLY` | 20 | 1234 | 10185 | 19 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `workflows-general` | `workflows` | `AURA-MOAT` | 20 | 1174 | 8260 | 7 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 
 ## External-candidate maintenance lock
 
@@ -85,7 +85,6 @@ A metadata score is not a selection. Runtime, bundle, determinism, disposal, wor
 | --- | --- | --- | --- | --- | --- | --- |
 | `@dimforge/rapier3d` | `0.20.0` | Apache-2.0 | 2026-08-08 | active | `sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==` | medium until adapter boundary is proven; tarball 985990 B; all-export browser gzip requires explicit WASM loader (✘ [ERROR] No loader is configured for ".wasm" files: node_modules/@dimforge/rapier3d/rapier_wasm3d_bg.wasm      node_modules/@dimforge/rapier3d/rapier_wasm3d.js:2:22:       2 │ import * as wasm from "./rapier_wasm3d_bg.wasm";         ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~); isolated npm audit 0 vulnerabilities |
 | `@dimforge/rapier3d-compat` | `0.20.0` | Apache-2.0 | 2026-08-08 | active | `sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==` | medium until adapter boundary is proven; tarball 3316431 B; all-export browser gzip 1088423 B; isolated npm audit 0 vulnerabilities |
-| `cannon-es` | `0.20.0` | MIT | 2022-08-12 | dormant-risk | `sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==` | high; tarball 164649 B; all-export browser gzip 62507 B; isolated npm audit 0 vulnerabilities |
 | `recast-navigation` | `0.43.1` | MIT | 2026-02-04 | active | `sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A==` | medium until adapter boundary is proven; tarball 9302 B; all-export browser gzip 258473 B; isolated npm audit 0 vulnerabilities |
 | `howler` | `2.2.4` | MIT | 2023-09-19 | aging | `sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==` | medium until adapter boundary is proven; tarball 72709 B; all-export browser gzip 15336 B; isolated npm audit 0 vulnerabilities |
 | `yuka` | `0.7.8` | MIT | 2022-09-17 | dormant-risk | `sha512-G/pFcMZh2Azz7Yy500NSV1jQ0Ru7h9hTNyEW+HjRXcdzjJIyp/3mCGspnx7VJVP06zxORqK6mkl5TywLqVUnVg==` | high; tarball 204105 B; all-export browser gzip 64295 B; isolated npm audit 0 vulnerabilities |
@@ -98,7 +97,7 @@ The machine report retains the complete per-package paths for source, dynamic-im
 
 Known overlap queues:
 
-- **physical integration:** duplicate solver ownership remains until the major migration. Owners: cannon-es via PhysicsWorld, optional Rapier adapter.
+- **physical integration:** single selected owner; PhysicsWorld is the backend-neutral public contract. Owners: @dimforge/rapier3d-compat through @aura3d/physics-rapier.
 - **authored-unit arcade motion:** non-physical capability with one semantic owner split into low-level and public layers. Owners: KinematicBody/KinematicWorld, ArcadeVehicleTelemetry, GameRuntime.
 - **navigation and crowd:** single selected owner after the major-version migration. Owners: optional Recast/Detour adapter.
 - **audio context/mixing/effects:** potential duplicate browser ownership; Phase 2 characterization required. Owners: AudioContextManager, AudioMixer/Bus, effects wrappers, route/browser unlock handlers.

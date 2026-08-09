@@ -275,7 +275,7 @@ function createWorld(): PhysicsWorld {
     // like every other route. The contact/broadphase stats surfaced in the HUD (and
     // asserted by the parity test) come from Aura3D's own broadphase and narrow phase,
     // which run on every backend, so they stay reproducible across runs and machines.
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, -9.81, 0],
     fixedDelta: 1 / 60,
     solverIterations: 5,

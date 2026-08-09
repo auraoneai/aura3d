@@ -18,7 +18,7 @@ import {
   type VehicleSurface
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
-import { createShowcaseCannonPhysicsProof } from "../../common/src/cannon-physics-proof";
+import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
 import { createTurboOpponentAi } from "./opponent-ai";
 
@@ -356,7 +356,7 @@ function createCarChassis(): VehicleChassis {
 const playerChassis = createCarChassis();
 const opponentChassis = createCarChassis();
 
-const physicsProof = createShowcaseCannonPhysicsProof("turbo-drift-circuit");
+const physicsProof = createShowcaseRapierPhysicsProof("turbo-drift-circuit");
 
 let raceSnapshot = racingState.snapshot();
 let opponentRaceStarted = false;
@@ -708,7 +708,7 @@ const mountedEvidence = {
   systems: {
     input: "game.input",
     simulation: "game.racing",
-    physics: "game.collisionWorld:cannon-es",
+    physics: "game.collisionWorld:Rapier",
     geometry: "certified-racing-topology",
     camera: "game.racingCameraRig",
     // The two systems that replace route-local vehicle behaviour.
@@ -717,7 +717,7 @@ const mountedEvidence = {
   },
   /** Populated per frame; see `observedVehicleGrounding`. */
   vehicleChassis: undefined as unknown,
-  claimBoundary: "Bounded asset-topology racing presentation with route-selected cannon-es collision fidelity proof and a route-local deterministic opponent controller; no advanced vehicle dynamics, reusable racing AI, or automatic GLB-to-game claim.",
+  claimBoundary: "Bounded asset-topology racing presentation with route-selected Rapier collision fidelity proof and a route-local deterministic opponent controller; no advanced vehicle dynamics, reusable racing AI, or automatic GLB-to-game claim.",
   frameCount: 0,
   speed: raceSnapshot.speed,
   lap: raceSnapshot.lap,

@@ -60,7 +60,7 @@ import {
   type CellPoint,
   type PieceKind
 } from "./rules";
-import { createShowcaseCannonPhysicsProof } from "../../common/src/cannon-physics-proof";
+import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import "./styles.css";
 
 type BlockfallWindow = Window & {
@@ -282,12 +282,12 @@ const replayEvidence = createPublicReplayEvidence();
 const sixtySecondReplayProof = createSixtySecondReplayProof();
 const lineClearProof = createPublicLineClearProof();
 const fallingBlocksKitContractProof = createFallingBlocksKitContractProof();
-const physicsProof = createShowcaseCannonPhysicsProof("blockfall-reactor");
+const physicsProof = createShowcaseRapierPhysicsProof("blockfall-reactor");
 const sourceEvidence = {
   kind: "aura3d-showcase-blockfall-reactor-source" as const,
   route: window.location.pathname,
   appId: "showcase-blockfall-reactor",
-  claimBoundary: "Aura3D falling-block development showcase with a catalog-sourced typed arcade cabinet, public game.fallingBlocks gameplay state, route-selected cannon-es fidelity proof, and retained gameplay proof.",
+  claimBoundary: "Aura3D falling-block development showcase with a catalog-sourced typed arcade cabinet, public game.fallingBlocks gameplay state, route-selected Rapier fidelity proof, and retained gameplay proof.",
   publicEngineApi: ["createGameApp", "scene", "model", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
   prohibitedApiAvoided: {
     importsThree: false,

@@ -57,7 +57,7 @@ const routeHealth = {
       "public game.fallingBlocks gameplay state",
       "keyboard and touch interaction proof",
       "deterministic line-clear scoring proof",
-      "route-selected cannon-es fidelity proof"
+      "route-selected Rapier fidelity proof"
     ],
     notAllowed: [
       "reusable falling-block game kit",
@@ -82,7 +82,7 @@ const routeHealth = {
     deployCommand: `pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset ${assetId}`
   },
   physics: {
-    backend: "cannon-es",
+    backend: "rapier",
     scope: "route-selected showcase fidelity proof"
   }
 };

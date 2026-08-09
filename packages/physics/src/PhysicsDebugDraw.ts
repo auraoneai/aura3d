@@ -109,7 +109,7 @@ export class PhysicsDebugDraw {
         if (!a || !b) continue;
         // The segment between the two bodies a joint connects. A joint that has come apart is
         // visible as a segment that keeps growing, which is exactly the failure mode that made
-        // the silent no-op on the cannon backend so hard to spot.
+        // the former silent backend divergence so hard to spot.
         lines.push({ from: a.position, to: b.position, color: [0.9, 0.4, 1], category: "joint" });
       }
     }

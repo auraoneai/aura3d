@@ -31,6 +31,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/engine", "/packages/engine/src/index.ts"],
   ["@aura3d/product-studio", "/packages/product-studio/src/index.ts"],
   ["@aura3d/physics", "/packages/physics/src/index.ts"],
+  ["@aura3d/physics-rapier", "/packages/physics-rapier/src/index.ts"],
   /*
    * WS-2.2/2.3 subpaths. Without these, any harness importing the public entry fails at runtime with
    * "Failed to resolve module specifier" — the browser has no bare-specifier resolution, so every
@@ -72,7 +73,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@probe.gl/log", "/node_modules/.pnpm/@probe.gl+log@4.1.1/node_modules/@probe.gl/log/dist/index.js"],
   ["@probe.gl/stats", "/node_modules/.pnpm/@probe.gl+stats@4.1.1/node_modules/@probe.gl/stats/dist/index.js"],
   ["apache-arrow", "/node_modules/.pnpm/apache-arrow@21.1.0/node_modules/apache-arrow/Arrow.dom.mjs"],
-  ["cannon-es", "/node_modules/cannon-es/dist/cannon-es.js"],
+  ["@dimforge/rapier3d-compat", "/node_modules/@dimforge/rapier3d-compat/dist/rapier.mjs"],
   ["flatbuffers", "/node_modules/.pnpm/flatbuffers@25.9.23/node_modules/flatbuffers/mjs/flatbuffers.js"],
   ["ktx-parse", "/node_modules/.pnpm/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
   ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],

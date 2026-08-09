@@ -17,7 +17,7 @@ import * as physics from "../../../packages/physics/src/index.js";
  * a hypothetical. It stays bounded only while the solver is invisible from outside.
  *
  * So this asserts the property rather than the grep: exactly one file in the package may
- * import the solver, and no `Cannon*` symbol may appear in any exported declaration.
+ * import the typed Rapier adapter, and no backend handle may appear in an exported declaration.
  */
 
 const PHYSICS_SRC = join(process.cwd(), "packages/physics/src");
@@ -33,19 +33,19 @@ function read(file: string): string {
 /**
  * The single file allowed to import the solver.
  *
- * One entry, by design. `cannon-es` being importable from exactly one file of ~12.6k is the
- * measured fact the WS-4.2 decision rests on; a second entry here would quietly retire it.
+ * One entry, by design. The adapter being importable from exactly one file keeps the public
+ * contract independent from its physical-simulation provider.
  */
 const SOLVER_IMPORT_OWNER = "PhysicsWorld.ts";
 
 describe("the public physics contract does not name its backend", () => {
   it("keeps the barrel itself free of the backend", () => {
     // The PRD's stated proof, retained as the floor rather than the ceiling.
-    expect(read("index.ts")).not.toContain("cannon-es");
+    expect(read("index.ts")).not.toContain("physics-rapier");
   });
 
   it("imports the solver in exactly one file", () => {
-    const importers = sourceFiles().filter((file) => /^\s*import[\s\S]*?from\s+"cannon-es"/m.test(read(file)));
+    const importers = sourceFiles().filter((file) => /^\s*import[\s\S]*?from\s+"@aura3d\/physics-rapier"/m.test(read(file)));
     expect(importers).toEqual([SOLVER_IMPORT_OWNER]);
   });
 
@@ -58,7 +58,7 @@ describe("the public physics contract does not name its backend", () => {
         // module-local bridge function or a comment is an implementation detail; one in an
         // `export`ed signature is reachable by a caller and is the actual violation.
         if (!/^\s*export\s/.test(line)) continue;
-        const match = /\bCannon[A-Z]\w*/.exec(line);
+        const match = /\bRapier(?:Body|Collider|Joint|Physics)\w*/.exec(line);
         if (match) leaks.push(`${file}:${index + 1} exports ${match[0]}`);
       }
     }

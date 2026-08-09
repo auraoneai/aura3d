@@ -7,7 +7,7 @@
  * `@aura3d/physics` already wraps a real engine. `PhysicsWorld` has `createRigidBody`,
  * `createCollider`, `createConstraint`, `step()` returning `CollisionEvent[]`,
  * `raycast`/`raycastAll`, configurable solver iterations and sleeping, over the one
- * production `cannon-es` backend. `RigidBody` already has `applyForce`,
+ * production Rapier adapter. `RigidBody` already has `applyForce`,
  * `applyTorque`, `applyImpulse`, `setVelocity`, `wake` and `sleep`.
  *
  * None of it was reachable. Across ~47k lines of the public agent API there were zero
@@ -27,7 +27,7 @@
  * than silently doing nothing.
  */
 
-// WS-2.2: cannon-free values only. `PhysicsWorld` stays a type below, so this file is not a
+// Solver-free values only. `PhysicsWorld` stays a type below, so this file is not a
 // static consumer of the solver — the world is handed to it, never constructed here.
 import { PhysicsDebugDraw, Shape, type PhysicsShape } from "@aura3d/physics/solverless";
 import type {

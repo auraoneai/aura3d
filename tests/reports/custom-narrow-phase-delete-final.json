@@ -1,0 +1,126 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-09T00:55:21.598Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/physics/src/NarrowPhase.ts",
+      "pass": true,
+      "detail": "packages/physics/src/NarrowPhase.ts: all six R8 points empty across 5016 scanned files (8 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:tests/unit/physics/native-narrow-phase.test.ts",
+      "pass": true,
+      "detail": "tests/unit/physics/native-narrow-phase.test.ts: all six R8 points empty across 5016 scanned files (2 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/physics/src/NarrowPhase.ts",
+    "tests/unit/physics/native-narrow-phase.test.ts"
+  ],
+  "expandedFileCount": 2,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5016,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/physics/src/NarrowPhase.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 643,
+      "lastCommit": "6341b63a805dbb6e7e285c64c1c8ec62e8abfd1c",
+      "moduleSpecifiers": [
+        "packages/physics/src/NarrowPhase.ts",
+        "NarrowPhase.ts",
+        "NarrowPhase",
+        "@aura3d/physics/src/NarrowPhase",
+        "@aura3d/physics/NarrowPhase"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 8,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "packages/engine/src/agent-api/index.ts:27",
+          "detail": "* `CharacterController`, `KinematicBody`, arcade vehicle telemetry, `NarrowPhase` and six fixture modules, all"
+        },
+        {
+          "point": "prose-mention",
+          "at": "packages/physics/src/solverless.ts:23",
+          "detail": "* `PhysicsWorld`, `NarrowPhase`, `CharacterController`, `HitboxWorld`, arcade vehicle telemetry and the"
+        },
+        {
+          "point": "prose-mention",
+          "at": "packages/physics/src/world.ts:14",
+          "detail": "* arcade vehicle telemetry, `NarrowPhase` and six fixture modules; importing it to get one class dragged all"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2021",
+          "detail": "\"./NarrowPhase.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18356",
+          "detail": "\"path\": \"dist/packages/physics/src/NarrowPhase.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:25796",
+          "detail": "\"path\": \"dist/physics/NarrowPhase.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:18356",
+          "detail": "\"path\": \"dist/packages/physics/src/NarrowPhase.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:25796",
+          "detail": "\"path\": \"dist/physics/NarrowPhase.js\","
+        }
+      ],
+      "proseMentionsTruncated": false
+    },
+    {
+      "path": "tests/unit/physics/native-narrow-phase.test.ts",
+      "exists": false,
+      "source": "head",
+      "lines": 134,
+      "lastCommit": "0ed7d1d3aef755094def36fcf52113a5d92c603e",
+      "moduleSpecifiers": [
+        "tests/unit/physics/native-narrow-phase.test.ts",
+        "native-narrow-phase.test.ts",
+        "native-narrow-phase.test"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 2,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:36756",
+          "detail": "\"path\": \"dist/tests/unit/physics/native-narrow-phase.test.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:36756",
+          "detail": "\"path\": \"dist/tests/unit/physics/native-narrow-phase.test.js\","
+        }
+      ],
+      "proseMentionsTruncated": false
+    }
+  ]
+}

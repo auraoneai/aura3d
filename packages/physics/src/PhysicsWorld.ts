@@ -1,41 +1,26 @@
 import {
-  Body as CannonBody,
-  Box as CannonBox,
-  ContactMaterial as CannonContactMaterial,
-  ConvexPolyhedron as CannonConvexPolyhedron,
-  Cylinder as CannonCylinder,
-  Heightfield as CannonHeightfield,
-  Material as CannonMaterial,
-  Plane as CannonPlane,
-  Quaternion as CannonQuaternion,
-  Sphere as CannonSphere,
-  Trimesh as CannonTrimesh,
-  Vec3 as CannonVec3,
-  World as CannonWorld
-} from "cannon-es";
+  createRapierPhysicsSync,
+  type RapierBodyHandle,
+  type RapierColliderHandle,
+  type RapierJointHandle,
+  type RapierPhysicsWorld
+} from "@aura3d/physics-rapier";
 import { Collider, type ColliderDescriptor } from "./Collider.js";
 import { CollisionEventQueue, type CollisionEvent, type Contact } from "./CollisionEvents.js";
 import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
-import { buildNativeNarrowPhaseContact } from "./NarrowPhase.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
 import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, validateFiniteVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
 import { timeOfImpact } from "./TimeOfImpact.js";
 
-/**
- * Standard gravity, used as the floor for cannon's friction reference magnitude so that a
- * zero-gravity or low-gravity world still honours declared surface friction.
- */
-const STANDARD_GRAVITY = 9.81;
-
 export type PhysicsContinuousCollisionDescriptor = {
   /**
    * Bounds the travel of every moving collider by splitting a requested step.
-   * The wrapper protects both the native and cannon-es backends.
+   * The wrapper bounds motion in addition to Rapier's native CCD.
    */
   readonly mode: "adaptive-substeps";
   /**
-   * Maximum internal Cannon steps allowed for one public `step()` call.
+   * Maximum internal Rapier steps allowed for one public `step()` call.
    * The default overflow policy throws rather than silently losing the CCD
    * guarantee.
    */
@@ -51,7 +36,7 @@ export type PhysicsContinuousCollisionDescriptor = {
 export type PhysicsContinuousCollisionSelection = {
   readonly active: boolean;
   readonly mode: "disabled" | "adaptive-substeps";
-  readonly provider: "none" | "aura3d-adaptive-substep-wrapper";
+  readonly provider: "none" | "rapier-native-ccd+adaptive-substeps";
   readonly maxSubSteps: number;
   readonly motionThreshold: number;
   readonly onSubstepLimit: "error" | "clamp";
@@ -69,7 +54,9 @@ export type PhysicsWorldDescriptor = {
   readonly fixedDelta?: number;
   readonly solverIterations?: number;
   readonly enableSleeping?: boolean;
+  /** @deprecated Rapier owns its native sleep thresholds. Retained for source compatibility. */
   readonly sleepVelocityThreshold?: number;
+  /** @deprecated Rapier owns its native sleep delay. Retained for source compatibility. */
   readonly sleepDelay?: number;
   readonly continuousCollision?: PhysicsContinuousCollisionDescriptor;
 };
@@ -77,21 +64,18 @@ export type PhysicsWorldDescriptor = {
 /**
  * The one production solver.
  *
- * WS-4.2 ran the backend bake-off and selected a single backend
- * (`docs/architecture/physics-backend-decision.md`). WS-4.3 removed the second
- * `"aura-js"` solver that used to sit behind this union.
+ * The backend bake-off and subsequent 1.6 replatform selected Rapier as the single
+ * physical owner. The former in-house and Cannon paths have been removed.
  *
  * Keeping two solvers was not a safety net, it was the defect generator: every
- * behaviour that only one branch implemented shipped as a silent divergence. Joints were
- * solved on `aura-js` and were a **no-op** on the default `cannon-es` path; `applyForce`
- * accumulated on `aura-js` and was **dropped** on `cannon-es`; collider materials,
- * declared inertia and three of the seven public shape kinds were `aura-js`-only. The
- * unit suite was green throughout, because the tests pinned the branch that worked.
+ * behaviour implemented by only one branch shipped as a silent divergence. The stable
+ * public descriptors now delegate joints, forces, contacts, sleep, CCD, and all supported
+ * collider shapes to the same selected adapter.
  *
  * One solver means a passing test and a shipped route execute the same code. Per R12 this
  * capability now has exactly one owner.
  */
-export type PhysicsBackend = "cannon-es";
+export type PhysicsBackend = "rapier";
 export type PhysicsBackendPreference = PhysicsBackend | "auto";
 
 export type PhysicsBackendSelection = {
@@ -126,21 +110,11 @@ export type PhysicsSnapshot = {
   readonly stats: PhysicsStepStats;
 };
 
-/**
- * A cannon `Material` whose own `friction`/`restitution` are deliberately held at the `-1`
- * "unspecified" sentinel so cannon resolves every pair through a registered ContactMaterial
- * instead of silently multiplying the two materials together. The declared Aura values are
- * carried alongside so newly interned surfaces can still be paired against existing ones.
- */
-type AuraCannonMaterial = CannonMaterial & { auraFriction: number; auraRestitution: number };
-
 export class PhysicsWorld {
   readonly gravity: [number, number, number];
   readonly fixedDelta: number;
   private readonly solverIterations: number;
   private readonly enableSleeping: boolean;
-  private readonly sleepVelocityThreshold: number;
-  private readonly sleepDelay: number;
   private readonly continuousCollision: NormalizedContinuousCollisionDescriptor;
   private readonly bodiesById = new Map<number, RigidBody>();
   private readonly collidersById = new Map<number, Collider>();
@@ -149,12 +123,10 @@ export class PhysicsWorld {
   private readonly eventQueue = new CollisionEventQueue();
   private readonly requestedBackend: PhysicsBackendPreference;
   private backendSelection: PhysicsBackendSelection;
-  private readonly cannonWorld: CannonWorld;
-  private readonly cannonBodiesByAuraId = new Map<number, CannonBody>();
-  // Interned by `${friction}|${restitution}` so two colliders declaring the same surface
-  // share one cannon Material, and each unordered pair gets exactly one ContactMaterial.
-  private readonly cannonMaterialsByKey = new Map<string, AuraCannonMaterial>();
-  private readonly cannonContactMaterialPairs = new Set<string>();
+  private readonly rapierWorld: RapierPhysicsWorld;
+  private readonly rapierBodiesByAuraId = new Map<number, RapierBodyHandle>();
+  private readonly rapierCollidersByAuraId = new Map<number, RapierColliderHandle>();
+  private readonly rapierJointsByConstraint = new Map<Constraint, RapierJointHandle>();
   private nextBodyId = 1;
   private nextColliderId = 1;
   private lastEvents: readonly CollisionEvent[] = [];
@@ -167,32 +139,9 @@ export class PhysicsWorld {
     this.requestedBackend = descriptor.backend ?? "auto";
     this.gravity = cloneVec3(descriptor.gravity ?? [0, -9.81, 0]);
     this.fixedDelta = descriptor.fixedDelta ?? 1 / 60;
-    /*
-     * Default solver iterations: cannon's own default, not 1.
-     *
-     * Defect class: engine. This defaulted to `1` and is then written straight onto
-     * `world.solver.iterations`, which cannon initialises to **10** (`GSSolver`,
-     * `cannon-es.js:9878`). So *every* world that did not explicitly pass the option — which
-     * is every route, because `game.collisionWorld()` and `createRuntimeScenePhysics` do not
-     * — ran a 1-iteration Gauss-Seidel solve and silently got a tenth of the constraint
-     * quality cannon ships with. cannon's own docs on that field: "the more iterations, the
-     * more correct simulation... if you have a large gravity force in your world, you will
-     * need more iterations."
-     *
-     * Measured on a 6-box stack at 0.9 friction, 5 seconds, defaults otherwise: at 1 and 4
-     * iterations the stack **completely collapses** — all six boxes end flat on the ground at
-     * y=0.70 having slid up to 3.4 units — while at 8 they hold and at 20 they barely move
-     * (0.099 max drift). The visible symptom is "boxes shove each other apart", which reads
-     * as a solver defect but was a default.
-     *
-     * A route author who never heard of `solverIterations` should get a solver that can hold
-     * a stack. 10 matches the backend's own default, so this restores the behaviour cannon
-     * was designed around rather than inventing a number.
-     */
+    // Keep the established public default while configuring Rapier's native solver.
     this.solverIterations = descriptor.solverIterations ?? 10;
     this.enableSleeping = descriptor.enableSleeping ?? true;
-    this.sleepVelocityThreshold = descriptor.sleepVelocityThreshold ?? 0.02;
-    this.sleepDelay = descriptor.sleepDelay ?? 0.5;
     this.continuousCollision = normalizeContinuousCollisionDescriptor(descriptor.continuousCollision);
     if (!Number.isFinite(this.fixedDelta) || this.fixedDelta <= 0) {
       throw new Error("fixedDelta must be a finite positive number.");
@@ -200,37 +149,31 @@ export class PhysicsWorld {
     if (!Number.isInteger(this.solverIterations) || this.solverIterations <= 0) {
       throw new Error("solverIterations must be a positive integer.");
     }
-    if (!Number.isFinite(this.sleepVelocityThreshold) || this.sleepVelocityThreshold < 0) {
+    if (descriptor.sleepVelocityThreshold !== undefined && (!Number.isFinite(descriptor.sleepVelocityThreshold) || descriptor.sleepVelocityThreshold < 0)) {
       throw new Error("sleepVelocityThreshold must be finite and non-negative.");
     }
-    if (!Number.isFinite(this.sleepDelay) || this.sleepDelay < 0) {
+    if (descriptor.sleepDelay !== undefined && (!Number.isFinite(descriptor.sleepDelay) || descriptor.sleepDelay < 0)) {
       throw new Error("sleepDelay must be finite and non-negative.");
     }
-    if (this.requestedBackend !== "auto" && this.requestedBackend !== "cannon-es") {
+    if (this.requestedBackend !== "auto" && this.requestedBackend !== "rapier") {
       // Reached from JavaScript callers and from code compiled against 1.5.x, where
       // `"aura-js"` was a selectable backend. Failing loudly is the point: the previous
       // behaviour of that string was "quietly run a different solver".
       throw new Error(
-        `Unknown physics backend '${String(this.requestedBackend)}'. Aura3D 1.6 has one ` +
-          "production solver, 'cannon-es'; the 'aura-js' backend was removed in WS-4.3 " +
+        `Unknown physics backend '${String(this.requestedBackend)}'. Aura3D 2.0 has one ` +
+          "production solver, 'rapier'; the legacy 'aura-js' and 'cannon-es' backends were removed " +
           "(see docs/architecture/physics-backend-decision.md). Omit `backend` or pass " +
-          "'cannon-es'."
+          "'rapier'."
       );
     }
     this.backendSelection = {
       requested: this.requestedBackend,
-      active: "cannon-es",
+      active: "rapier",
       deterministic: true,
       continuousCollision: this.continuousCollisionSelection(true)
     };
-    this.cannonWorld = new CannonWorld({
-      gravity: toCannonVec3(this.gravity),
-      allowSleep: this.enableSleeping
-    });
-    (this.cannonWorld.solver as { iterations?: number }).iterations = this.solverIterations;
-    this.cannonWorld.defaultContactMaterial.friction = 0.5;
-    this.cannonWorld.defaultContactMaterial.restitution = 0;
-    this.applyCannonFrictionGravity();
+    this.rapierWorld = createRapierPhysicsSync({ gravity: this.gravity });
+    this.rapierWorld.unsafeRapierWorld().integrationParameters.numSolverIterations = this.solverIterations;
   }
 
   createRigidBody(descriptor: RigidBodyDescriptor = {}): RigidBody {
@@ -238,9 +181,21 @@ export class PhysicsWorld {
     this.nextBodyId += 1;
     this.bodiesById.set(body.id, body);
     this.bodyColliders.set(body.id, new Set());
-    const cannonBody = this.createCannonBody(body);
-    this.cannonBodiesByAuraId.set(body.id, cannonBody);
-    this.cannonWorld.addBody(cannonBody);
+    const rapierBody = this.rapierWorld.createRigidBody({
+      type: body.type === "static" ? "fixed" : body.type === "kinematic" ? "kinematic-position" : "dynamic",
+      position: body.position,
+      rotation: body.rotation,
+      linearVelocity: body.velocity,
+      angularVelocity: body.angularVelocity,
+      linearDamping: body.linearDamping,
+      angularDamping: body.angularDamping,
+      ccd: body.type === "dynamic",
+      canSleep: this.enableSleeping,
+      ...(body.type === "dynamic" ? { mass: body.mass } : {}),
+      ...(body.declaredInertia ? { principalAngularInertia: body.declaredInertia } : {})
+    });
+    if (body.sleeping) rapierBody.sleep();
+    this.rapierBodiesByAuraId.set(body.id, rapierBody);
     return body;
   }
 
@@ -253,7 +208,17 @@ export class PhysicsWorld {
     this.nextColliderId += 1;
     this.collidersById.set(collider.id, collider);
     this.bodyColliders.get(bodyId)?.add(collider.id);
-    this.addCannonCollider(collider);
+    const rapierBody = this.rapierBodiesByAuraId.get(bodyId);
+    if (!rapierBody) throw new Error(`Missing Rapier body for Aura body ${bodyId}.`);
+    const rapierCollider = this.rapierWorld.createCollider(rapierBody, {
+      shape: collider.shape,
+      density: 0,
+      friction: collider.material.friction,
+      restitution: collider.material.restitution,
+      sensor: collider.sensor,
+      collisionGroups: encodeRapierCollisionGroups(collider.filter.layer, collider.filter.mask)
+    });
+    this.rapierCollidersByAuraId.set(collider.id, rapierCollider);
     return collider;
   }
 
@@ -263,6 +228,7 @@ export class PhysicsWorld {
     }
     const constraint = new Constraint(descriptor);
     this.constraintsList.push(constraint);
+    this.rapierJointsByConstraint.set(constraint, this.createRapierJoint(constraint));
     return constraint;
   }
 
@@ -278,33 +244,7 @@ export class PhysicsWorld {
     this.gravity[0] = gravity[0];
     this.gravity[1] = gravity[1];
     this.gravity[2] = gravity[2];
-    this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
-    this.applyCannonFrictionGravity();
-  }
-
-  /**
-   * Keep cannon's friction reference force independent of world gravity magnitude.
-   *
-   * Defect class: engine. cannon-es bounds a contact's friction impulse by
-   * `mu * reducedMass * |world.frictionGravity ?? world.gravity|`
-   * (`cannon-es/dist/cannon-es.js`, `mug` in `createFrictionEquationsFromContact`). With
-   * `frictionGravity` left undefined, a world built with `gravity: [0, 0, 0]` produced
-   * `mug = 0`, so *every* declared `material.friction` was silently discarded: a box given
-   * `velocity: [4, 0, 0]` on a `friction: 1` floor still read `vx === 3.996651` after 5 steps
-   * of a zero-gravity world (measured on raw upstream cannon-es 0.20.0; the same fixture
-   * reads `vx === 1.689911` once `frictionGravity` is pinned), and no combination of
-   * penetration depth or `solverIterations` changed it. Zero-g and low-g worlds are a supported public configuration
-   * (`setGravity`), so friction cannot be a function of how much gravity a scene happens to
-   * declare — the tangential bound belongs to the contact, not to the level design.
-   *
-   * The reference magnitude is therefore pinned to standard gravity whenever the world's own
-   * gravity is too small to bound friction, and tracks world gravity once it is larger, so
-   * high-gravity worlds keep their stronger grip.
-   */
-  private applyCannonFrictionGravity(): void {
-    const magnitude = lengthVec3(this.gravity);
-    const reference = Math.max(magnitude, STANDARD_GRAVITY);
-    this.cannonWorld.frictionGravity = new CannonVec3(0, -reference, 0);
+    this.rapierWorld.setGravity(this.gravity);
   }
 
   getBody(id: number): RigidBody | undefined {
@@ -342,14 +282,17 @@ export class PhysicsWorld {
     }
     this.bodyColliders.delete(id);
     this.bodiesById.delete(id);
-    const cannonBody = this.cannonBodiesByAuraId.get(id);
-    if (cannonBody) {
-      this.cannonWorld.removeBody(cannonBody);
-      this.cannonBodiesByAuraId.delete(id);
+    const rapierBody = this.rapierBodiesByAuraId.get(id);
+    if (rapierBody) {
+      this.rapierWorld.removeBody(rapierBody);
+      this.rapierBodiesByAuraId.delete(id);
     }
     for (let index = this.constraintsList.length - 1; index >= 0; index -= 1) {
       const constraint = this.constraintsList[index]!;
       if (constraint.bodyA.id === id || constraint.bodyB.id === id) {
+        const joint = this.rapierJointsByConstraint.get(constraint);
+        if (joint) joint.remove();
+        this.rapierJointsByConstraint.delete(constraint);
         this.constraintsList.splice(index, 1);
       }
     }
@@ -362,6 +305,9 @@ export class PhysicsWorld {
     }
     this.bodyColliders.get(collider.bodyId)?.delete(id);
     this.collidersById.delete(id);
+    const rapierCollider = this.rapierCollidersByAuraId.get(id);
+    if (rapierCollider) rapierCollider.remove();
+    this.rapierCollidersByAuraId.delete(id);
     const removalEvents = this.eventQueue.removeCollider(id);
     if (removalEvents.length > 0) {
       this.lastEvents = [...this.lastEvents, ...removalEvents].sort((a, b) => a.pairKey.localeCompare(b.pairKey) || a.type.localeCompare(b.type));
@@ -465,10 +411,40 @@ export class PhysicsWorld {
     this.lastBroadphasePairs = potentialPairs.length;
     const contacts: Contact[] = [];
     for (const [a, bodyA, b, bodyB] of potentialPairs) {
-      const contact = buildContact(a, bodyA, b, bodyB);
-      if (contact) {
-        contacts.push(contact);
+      const colliderA = this.rapierCollidersByAuraId.get(a.id)?.unsafeRapierCollider();
+      const colliderB = this.rapierCollidersByAuraId.get(b.id)?.unsafeRapierCollider();
+      if (!colliderA || !colliderB) continue;
+      if (a.sensor || b.sensor) {
+        if (!this.rapierWorld.unsafeRapierWorld().intersectionPair(colliderA, colliderB)) continue;
+        const separation = subVec3(bodyB.position, bodyA.position);
+        const normal = lengthVec3(separation) > 1e-9 ? normalizeVec3(separation) : [0, 1, 0] as const;
+        contacts.push({ colliderA: a.id, colliderB: b.id, bodyA: bodyA.id, bodyB: bodyB.id, normal, penetration: 0, sensor: true });
+        continue;
       }
+      let best: Contact | undefined;
+      this.rapierWorld.unsafeRapierWorld().contactPair(colliderA, colliderB, (manifold, flipped) => {
+        const normalValue = manifold.normal();
+        const direction = flipped ? -1 : 1;
+        const normal: Vec3 = [normalValue.x * direction, normalValue.y * direction, normalValue.z * direction];
+        const count = Math.max(manifold.numSolverContacts(), manifold.numContacts());
+        for (let index = 0; index < count; index += 1) {
+          const distance = index < manifold.numSolverContacts() ? manifold.solverContactDist(index) : manifold.contactDist(index);
+          const penetration = Math.max(0, -distance);
+          const pointValue = index < manifold.numSolverContacts() ? manifold.solverContactPoint(index) : undefined;
+          const candidate: Contact = {
+            colliderA: a.id,
+            colliderB: b.id,
+            bodyA: bodyA.id,
+            bodyB: bodyB.id,
+            normal,
+            penetration,
+            ...(pointValue ? { point: [pointValue.x, pointValue.y, pointValue.z] as Vec3 } : {}),
+            sensor: false
+          };
+          if (!best || candidate.penetration > best.penetration) best = candidate;
+        }
+      });
+      if (best) contacts.push(best);
     }
     contacts.sort((a, b) => a.colliderA - b.colliderA || a.colliderB - b.colliderB);
     return contacts;
@@ -533,212 +509,89 @@ export class PhysicsWorld {
     return pairs;
   }
 
-  private updateSleeping(dt: number, contacts: readonly Contact[]): void {
-    if (!this.enableSleeping) {
-      return;
-    }
-    const contactBodyIds = new Set<number>();
-    for (const contact of contacts) {
-      if (!contact.sensor) {
-        contactBodyIds.add(contact.bodyA);
-        contactBodyIds.add(contact.bodyB);
-      }
-    }
-    const gravityMagnitudeSquared = dotVec3(this.gravity, this.gravity);
-    const thresholdSquared = this.sleepVelocityThreshold * this.sleepVelocityThreshold;
-    for (const body of this.bodyValues()) {
-      if (body.type !== "dynamic") {
-        continue;
-      }
-      if (body.speedSquared() > thresholdSquared) {
-        body.resetSleepTimer();
-        continue;
-      }
-      const supportedOrUnaccelerated = contactBodyIds.has(body.id) || gravityMagnitudeSquared <= thresholdSquared;
-      if (!supportedOrUnaccelerated) {
-        body.resetSleepTimer();
-        continue;
-      }
-      if (body.accumulateSleepTime(dt) >= this.sleepDelay) {
-        body.sleep();
-      }
-    }
+  private createRapierJoint(constraint: Constraint): RapierJointHandle {
+    const bodyA = this.rapierBodiesByAuraId.get(constraint.bodyA.id);
+    const bodyB = this.rapierBodiesByAuraId.get(constraint.bodyB.id);
+    if (!bodyA || !bodyB) throw new Error("Cannot create a Rapier joint for missing bodies.");
+    return this.rapierWorld.createJoint({
+      type: constraint.type,
+      localAnchorA:
+        constraint.type === "fixed"
+        && constraint.localAnchorA.every((value) => value === 0)
+        && constraint.localAnchorB.every((value) => value === 0)
+          ? constraint.restOffset
+          : constraint.localAnchorA,
+      localAnchorB: constraint.localAnchorB,
+      axis: constraint.axis,
+      restLength: constraint.restLength,
+      stiffness: constraint.stiffness,
+      damping: constraint.damping,
+      motorSpeed: constraint.motorSpeed(),
+      maxMotorTorque: Number.isFinite(constraint.maxMotorTorque) ? constraint.maxMotorTorque : Number.MAX_VALUE,
+      ...(constraint.limits ? { limits: constraint.limits } : {})
+    }, bodyA, bodyB);
   }
 
-  private createCannonBody(body: RigidBody): CannonBody {
-    const cannonBody = new CannonBody({
-      type: body.type === "static" ? CannonBody.STATIC : body.type === "kinematic" ? CannonBody.KINEMATIC : CannonBody.DYNAMIC,
-      mass: body.type === "dynamic" ? body.mass : 0,
-      position: toCannonVec3(body.position),
-      velocity: toCannonVec3(body.velocity),
-      quaternion: new CannonQuaternion(body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]),
-      angularVelocity: toCannonVec3(body.angularVelocity),
-      linearDamping: body.linearDamping,
-      angularDamping: body.angularDamping,
-      allowSleep: this.enableSleeping,
-      sleepSpeedLimit: this.sleepVelocityThreshold,
-      sleepTimeLimit: this.sleepDelay
-    });
-    if (body.sleeping) cannonBody.sleep();
-    applyDeclaredCannonInertia(body, cannonBody);
-    return cannonBody;
-  }
-
-  private addCannonCollider(collider: Collider): void {
-    const body = this.bodiesById.get(collider.bodyId);
-    const cannonBody = this.cannonBodiesByAuraId.get(collider.bodyId);
-    if (!body || !cannonBody) return;
-    const resolved = toCannonShape(collider.shape);
-    if (!resolved || resolved.length === 0) {
-      /*
-       * A shape the production solver cannot express is a hole, not a degradation.
-       *
-       * This used to call `disableCannonBackend`, which swapped the **entire world**
-       * onto the second solver without throwing or warning: adding one terrain collider
-       * silently changed the solver under every unrelated body in the scene. With one
-       * backend there is nowhere to degrade to, so the only honest outcome is to refuse
-       * the collider at the call site that created it. `toCannonShape` covers all seven
-       * public `Shape` kinds; this fires only on a degenerate payload, such as a convex
-       * hull with fewer than four faces.
-       */
-      throw new Error(
-        `Collider shape '${collider.shape.kind}' cannot be expressed on the production ` +
-          "physics backend. Check the shape payload: a convex hull needs at least 4 " +
-          "vertices and 4 faces, and a mesh needs a non-empty index list."
-      );
+  private synchronizeRapierJoints(): void {
+    for (const constraint of this.constraintsList) {
+      const existing = this.rapierJointsByConstraint.get(constraint);
+      if (!constraint.isEnabled()) {
+        if (existing) existing.remove();
+        this.rapierJointsByConstraint.delete(constraint);
+        continue;
+      }
+      const joint = existing ?? this.createRapierJoint(constraint);
+      this.rapierJointsByConstraint.set(constraint, joint);
+      if (constraint.type === "motorised-hinge") {
+        joint.configureMotor(
+          constraint.motorSpeed(),
+          Number.isFinite(constraint.maxMotorTorque) ? constraint.maxMotorTorque : Number.MAX_VALUE
+        );
+      }
     }
-    cannonBody.collisionFilterGroup = collider.filter.layer;
-    cannonBody.collisionFilterMask = collider.filter.mask;
-    cannonBody.isTrigger = cannonBody.isTrigger || collider.sensor;
-    // Defect class: engine. The collider's `material` was validated, stored, and read by the
-    // removed second solver, but never handed to cannon -- so on the production backend every
-    // surface used `defaultContactMaterial` (friction 0.3, restitution 0). A collider
-    // declaring `restitution: 1` did not bounce and `friction: 1` did not grip.
-    const surface = this.internCannonMaterial(collider.material.friction, collider.material.restitution);
-    cannonBody.material = surface;
-    for (const part of resolved) {
-      part.shape.material = surface;
-      cannonBody.addShape(part.shape, part.offset, part.orientation);
-    }
-    cannonBody.updateMassProperties();
-    // `updateMassProperties` recomputes inertia from the collider geometry and overwrites
-    // anything set at construction, so a declared inertia has to be re-applied after every
-    // shape addition, not only once.
-    applyDeclaredCannonInertia(body, cannonBody);
-    syncCannonFromAura(body, cannonBody);
-  }
-
-  private internCannonMaterial(friction: number, restitution: number): AuraCannonMaterial {
-    const key = `${friction}|${restitution}`;
-    const existing = this.cannonMaterialsByKey.get(key);
-    if (existing) return existing;
-    // Defect class: engine. cannon's `Material.friction`/`.restitution` are documented as
-    // overriding any matching ContactMaterial whenever they are non-negative
-    // (`cannon-es.js` Material, and the two override sites below). Two code paths read them:
-    //   - `Narrowphase.createContactEquation` / `createFrictionEquationsFromContact`
-    //     (~:10430, ~:10450) replace the pair's values with `matA.x * matB.x`;
-    //   - `World.step`'s contact loop (~:12694) overwrites `c.restitution` the same way.
-    // Both bypass `addContactMaterial` entirely, so registering the pair was necessary but
-    // not sufficient: cannon multiplied restitution behind our back. A `restitution: 1`
-    // collider landing on the default `0` ground resolved to `1 * 0 = 0` and did not bounce.
-    // Carrying the declared numbers as negative sentinels is cannon's own documented escape:
-    // a negative value means "unspecified for this material", which is the only way to make
-    // the ContactMaterial authoritative. The real values live on the pairings registered
-    // below; `auraFriction`/`auraRestitution` retain them for pairing new surfaces later.
-    const created = new CannonMaterial({ friction: -1, restitution: -1 }) as AuraCannonMaterial;
-    created.auraFriction = friction;
-    created.auraRestitution = restitution;
-    this.cannonMaterialsByKey.set(key, created);
-    // cannon resolves a pair from an explicit ContactMaterial when one exists and silently
-    // falls back to `defaultContactMaterial` when it does not. Register the pairing against
-    // every known surface -- including itself -- so no declared pair hits the default.
-    for (const other of this.cannonMaterialsByKey.values()) {
-      const pairKey = created.id <= other.id ? `${created.id}:${other.id}` : `${other.id}:${created.id}`;
-      if (this.cannonContactMaterialPairs.has(pairKey)) continue;
-      this.cannonContactMaterialPairs.add(pairKey);
-      this.cannonWorld.addContactMaterial(
-        new CannonContactMaterial(created, other, {
-          // Friction multiplies (so a frictionless surface stays frictionless against
-          // anything) and restitution takes the maximum (so one elastic surface is enough
-          // to bounce). This is the combination rule the public API documents.
-          friction: created.auraFriction * other.auraFriction,
-          restitution: Math.max(created.auraRestitution, other.auraRestitution)
-        })
-      );
-    }
-    return created;
   }
 
   private stepProduction(dt: number): readonly CollisionEvent[] {
-    this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
-    /*
-     * Drain each body's force/torque accumulator once per outer step, then re-apply the
-     * same value at the top of every substep below.
-     *
-     * Defect class: engine. `cannon-es` zeroes `body.force`/`body.torque` at the end of
-     * every `World.step`, so forwarding the accumulator once before an N-substep frame
-     * applied it for `dt/N` seconds instead of `dt`. With CCD active at 60 fps and 4
-     * substeps, a 60 N force on a 1 kg body produced dv = 0.25 instead of 1.0 — forces
-     * were quietly scaled by 1/N, and N varies with body speed, so the same call
-     * accelerated differently depending on how fast the body already was.
-     *
-     * A force applied once is still applied once, for exactly one outer step of
-     * simulated time, which is the accumulate-then-clear contract `applyForce` documents.
-     */
+    this.rapierWorld.setGravity(this.gravity);
     const stepForces = new Map<number, { readonly force: Vec3; readonly torque: Vec3 }>();
     for (const body of this.bodyValues()) {
-      const cannonBody = this.cannonBodiesByAuraId.get(body.id);
-      if (!cannonBody) continue;
+      const rapierBody = this.rapierBodiesByAuraId.get(body.id);
+      if (!rapierBody) continue;
       const force = body.pendingForce();
       const torque = body.pendingTorque();
       if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0 || torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
         stepForces.set(body.id, { force, torque });
         body.clearForces();
       }
-      syncCannonTransformFromAura(body, cannonBody);
+      syncRapierFromAura(body, rapierBody);
     }
+    this.synchronizeRapierJoints();
     const continuousStep = this.planContinuousCollisionStep(dt);
     this.lastContinuousCollisionStep = continuousStep;
     this.assertContinuousCollisionPlan(continuousStep);
-    const subSteps = continuousStep.subSteps;
-    const subDelta = dt / subSteps;
-    for (let index = 0; index < subSteps; index += 1) {
+    const subDelta = dt / continuousStep.subSteps;
+    for (let index = 0; index < continuousStep.subSteps; index += 1) {
       for (const [bodyId, pending] of stepForces) {
-        const cannonBody = this.cannonBodiesByAuraId.get(bodyId);
-        if (cannonBody) applyCannonForces(cannonBody, pending.force, pending.torque);
+        const raw = this.rapierBodiesByAuraId.get(bodyId)?.unsafeRapierBody();
+        if (!raw) continue;
+        raw.resetForces(false);
+        raw.resetTorques(false);
+        raw.addForce(toRapierVector(pending.force), true);
+        raw.addTorque(toRapierVector(pending.torque), true);
       }
-      this.cannonWorld.step(subDelta);
-      // Solve constraints inside the substep loop, and mirror the result back into the
-      // cannon bodies before the next substep.
-      //
-      // Defect class: engine. Before this, the cannon step never called
-      // `constraint.solve()`, so on the default backend every joint was a silent no-op — a
-      // body on a `fixed` joint free-fell to y=-18.8 over two seconds instead of hanging.
-      // The since-removed second solver always solved them, which is why the joint unit
-      // tests passed while the shipped default backend ignored joints entirely.
-      if (this.constraintsList.length > 0) {
-        for (const body of this.bodyValues()) {
-          const cannonBody = this.cannonBodiesByAuraId.get(body.id);
-          if (cannonBody) syncAuraFromCannon(cannonBody, body);
-        }
-        for (let iteration = 0; iteration < this.solverIterations; iteration += 1) {
-          for (const constraint of this.constraintsList) constraint.solve();
-        }
-        for (const body of this.bodyValues()) {
-          const cannonBody = this.cannonBodiesByAuraId.get(body.id);
-          // Transform-only: the accumulators were already drained into `stepForces`
-          // above, and re-applying them here would double-count within one substep.
-          if (cannonBody) syncCannonTransformFromAura(body, cannonBody);
-        }
-      }
+      this.rapierWorld.step(subDelta);
+    }
+    for (const bodyId of stepForces.keys()) {
+      const raw = this.rapierBodiesByAuraId.get(bodyId)?.unsafeRapierBody();
+      raw?.resetForces(false);
+      raw?.resetTorques(false);
     }
     for (const body of this.bodyValues()) {
-      const cannonBody = this.cannonBodiesByAuraId.get(body.id);
-      if (cannonBody) syncAuraFromCannon(cannonBody, body);
+      const rapierBody = this.rapierBodiesByAuraId.get(body.id);
+      if (rapierBody) syncAuraFromRapier(rapierBody, body);
     }
     const contacts = this.detectContacts();
     this.lastEvents = this.eventQueue.update(contacts);
-    this.updateSleeping(dt, contacts);
     this.steps += 1;
     return this.lastEvents;
   }
@@ -849,7 +702,7 @@ export class PhysicsWorld {
     return {
       active,
       mode: active ? "adaptive-substeps" : "disabled",
-      provider: active ? "aura3d-adaptive-substep-wrapper" : "none",
+      provider: active ? "rapier-native-ccd+adaptive-substeps" : "none",
       maxSubSteps: this.continuousCollision.maxSubSteps,
       motionThreshold: this.continuousCollision.motionThreshold,
       onSubstepLimit: this.continuousCollision.onSubstepLimit,
@@ -936,194 +789,41 @@ function colliderBoundingRadius(shape: PhysicsShape): number {
   return 0;
 }
 
-function toCannonVec3(value: Vec3): CannonVec3 {
-  return new CannonVec3(value[0], value[1], value[2]);
+function toRapierVector(value: Vec3): { x: number; y: number; z: number } {
+  return { x: value[0], y: value[1], z: value[2] };
 }
 
-function fromCannonVec3(value: CannonVec3): [number, number, number] {
-  return [value.x, value.y, value.z];
+function encodeRapierCollisionGroups(layer: number, mask: number): number {
+  return (((layer & 0xffff) << 16) | (mask & 0xffff)) >>> 0;
 }
 
-/** Mirror Aura transform/velocity state onto a backend body without touching force state. */
-function syncCannonTransformFromAura(body: RigidBody, cannonBody: CannonBody): void {
-  cannonBody.position.set(body.position[0], body.position[1], body.position[2]);
-  cannonBody.velocity.set(body.velocity[0], body.velocity[1], body.velocity[2]);
-  cannonBody.quaternion.set(body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]);
-  cannonBody.angularVelocity.set(body.angularVelocity[0], body.angularVelocity[1], body.angularVelocity[2]);
-  if (body.sleeping) cannonBody.sleep();
-  else cannonBody.wakeUp();
+/** Mirror the public Aura body state onto its sole physical-simulation owner. */
+function syncRapierFromAura(body: RigidBody, rapierBody: RapierBodyHandle): void {
+  const raw = rapierBody.unsafeRapierBody();
+  raw.setTranslation(toRapierVector(body.position), false);
+  raw.setRotation({ x: body.rotation[0], y: body.rotation[1], z: body.rotation[2], w: body.rotation[3] }, false);
+  raw.setLinvel(toRapierVector(body.velocity), false);
+  raw.setAngvel(toRapierVector(body.angularVelocity), false);
+  raw.setLinearDamping(body.linearDamping);
+  raw.setAngularDamping(body.angularDamping);
+  if (body.sleeping) raw.sleep();
+  else if (raw.isSleeping()) raw.wakeUp();
 }
 
-/**
- * Set (not add) the backend force/torque for the substep that is about to run.
- *
- * `set` rather than `+=` because `cannon-es` clears both at the end of each `World.step`,
- * so each substep starts from zero and must receive the full outer-step value.
- */
-function applyCannonForces(cannonBody: CannonBody, force: Vec3, torque: Vec3): void {
-  cannonBody.force.set(force[0], force[1], force[2]);
-  cannonBody.torque.set(torque[0], torque[1], torque[2]);
-}
-
-function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
-  syncCannonTransformFromAura(body, cannonBody);
-  /*
-   * Forward accumulated force and torque to the backend.
-   *
-   * `RigidBody.applyForce`/`applyTorque` accumulate into private accumulators that only
-   * the since-removed second solver's integrator read. On the default `cannon-es` backend
-   * this sync copied position, velocity and rotation but dropped the accumulators, so
-   * **`applyForce` was silently a no-op**: a developer could
-   * call it every frame and the body would never accelerate. Impulses worked, because
-   * those mutate velocity directly, which made the gap look like a physics quirk rather
-   * than a missing bridge.
-   *
-   * Cleared on the Aura side after forwarding, so a force applied once is applied once —
-   * matching the accumulate-then-clear contract `integrate()` already implements.
-   */
-  const force = body.pendingForce();
-  if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0) {
-    cannonBody.applyForce(toCannonVec3(force));
-  }
-  const torque = body.pendingTorque();
-  if (torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
-    cannonBody.torque.set(
-      cannonBody.torque.x + torque[0],
-      cannonBody.torque.y + torque[1],
-      cannonBody.torque.z + torque[2]
-    );
-  }
-  if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0 || torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
-    body.clearForces();
-  }
-}
-
-/**
- * Forward an explicitly declared principal inertia to the backend.
- *
- * Defect class: engine, and the same class as the joint and `applyForce` no-ops.
- * `RigidBodyDescriptor.inertia` was validated (rejecting non-positive moments), stored as
- * `inverseInertia`, and read by the `aura-js` integrator -- but never handed to cannon.
- * cannon derives inertia from collider geometry in `updateMassProperties`, and a body with
- * no collider gets **zero** inertia, hence zero inverse inertia. The observable result was
- * that `applyTorque` did nothing at all on the default backend and a declared inertia
- * tensor was silently ignored when it did: a caller could ask for `inertia: [2, 4, 8]`,
- * get no error, and watch the body refuse to spin.
- *
- * Only applied when the descriptor asked for it. Bodies that took the mass-derived default
- * keep cannon's geometry-derived tensor, which is the more physically accurate of the two.
- */
-function applyDeclaredCannonInertia(body: RigidBody, cannonBody: CannonBody): void {
-  const declared = body.declaredInertia;
-  if (!declared || body.type !== "dynamic") return;
-  cannonBody.inertia.set(declared[0], declared[1], declared[2]);
-  cannonBody.invInertia.set(1 / declared[0], 1 / declared[1], 1 / declared[2]);
-  cannonBody.updateInertiaWorld(true);
-}
-
-function syncAuraFromCannon(cannonBody: CannonBody, body: RigidBody): void {
+/** Publish Rapier's solved transform and velocity through the stable Aura wrapper. */
+function syncAuraFromRapier(rapierBody: RapierBodyHandle, body: RigidBody): void {
+  const raw = rapierBody.unsafeRapierBody();
+  const position = raw.translation();
+  const rotation = raw.rotation();
+  const velocity = raw.linvel();
+  const angularVelocity = raw.angvel();
   body.previousPosition = cloneVec3(body.position);
   body.previousRotation = [body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]];
-  body.position = fromCannonVec3(cannonBody.position);
-  body.velocity = fromCannonVec3(cannonBody.velocity);
-  body.angularVelocity = fromCannonVec3(cannonBody.angularVelocity);
-  body.rotation = [cannonBody.quaternion.x, cannonBody.quaternion.y, cannonBody.quaternion.z, cannonBody.quaternion.w];
-  body.sleeping = cannonBody.sleepState === CannonBody.SLEEPING;
-}
-
-type CannonShapePart = {
-  readonly shape: CannonBox | CannonSphere | CannonPlane | CannonCylinder | CannonTrimesh | CannonConvexPolyhedron | CannonHeightfield;
-  readonly offset?: CannonVec3;
-  readonly orientation?: CannonQuaternion;
-};
-
-/**
- * Express a public `Shape` as one or more backend sub-shapes.
- *
- * Returns a list rather than a single shape because a capsule is not a primitive here: see
- * the capsule branch for why a compound is required rather than preferred.
- */
-function toCannonShape(shape: PhysicsShape): readonly CannonShapePart[] | undefined {
-  if (shape.kind === "box") return [{ shape: new CannonBox(toCannonVec3(shape.halfExtents)) }];
-  if (shape.kind === "sphere") return [{ shape: new CannonSphere(shape.radius) }];
-  if (shape.kind === "capsule") {
-    /*
-     * A capsule is a cylinder plus a hemisphere at each end, built as a compound.
-     *
-     * Defect class: engine. This used to be a single `CannonCylinder` of the capsule's full
-     * height, and a cylinder has **flat ends with a hard rim**. On flat ground the two are
-     * indistinguishable, which is why it survived; on any incline the rim catches instead of
-     * the rounded cap rolling over, and that is a different shape with different contact
-     * behaviour.
-     *
-     * Measured with a character capsule (r=0.24, halfHeight=0.38) on a plane tilted 22.5
-     * degrees: the body came to rest with its base **0.099 units above the surface**, held
-     * off by the rim, and held there — so the ground probe (reach 0.204 from a point 0.12
-     * inside the capsule) found nothing, `grounded` stayed `false` forever, and with it
-     * `slopeAngle` stayed 0 and `onSteepSlope` could never fire. A character on a ramp could
-     * not jump, could not step, and reported flat ground.
-     *
-     * A route author sees "the character floats and slides down every slope". The cause is
-     * that the collider they asked for was never built.
-     */
-    const cylinderHeight = shape.halfHeight * 2;
-    const parts: CannonShapePart[] = [{ shape: new CannonSphere(shape.radius), offset: new CannonVec3(0, shape.halfHeight, 0) }];
-    parts.push({ shape: new CannonSphere(shape.radius), offset: new CannonVec3(0, -shape.halfHeight, 0) });
-    if (cylinderHeight > 1e-6) {
-      // cannon's Cylinder is built along +Z, so it needs rotating onto +Y to be the barrel
-      // of a Y-up capsule. Omitting this produced a shape lying on its side.
-      const upright = new CannonQuaternion();
-      upright.setFromAxisAngle(new CannonVec3(1, 0, 0), -Math.PI / 2);
-      parts.push({ shape: new CannonCylinder(shape.radius, shape.radius, cylinderHeight, 12), orientation: upright });
-    }
-    return parts;
-  }
-  if (shape.kind === "plane") {
-    const orientation = new CannonQuaternion();
-    orientation.setFromVectors(new CannonVec3(0, 0, 1), toCannonVec3(shape.normal));
-    return [{
-      shape: new CannonPlane(),
-      offset: toCannonVec3(scaleVec3(shape.normal, shape.constant)),
-      orientation
-    }];
-  }
-  if (shape.kind === "mesh") {
-    // cannon-es Trimesh takes flat vertex/index arrays. Concave triangle soup is supported
-    // for static and kinematic colliders; dynamic trimesh-vs-trimesh is a documented
-    // cannon-es limitation. Before this, `mesh` fell through to `undefined` and tripped
-    // `disableCannonBackend`, silently swapping the whole world onto the second solver --
-    // the same divergence class as the joint no-op recorded in `stepProduction`. WS-4.3
-    // removed that escape hatch: an inexpressible shape now throws at the call site.
-    const vertices: number[] = [];
-    for (const vertex of shape.vertices) vertices.push(vertex[0], vertex[1], vertex[2]);
-    return [{ shape: new CannonTrimesh(vertices, [...shape.indices]) }];
-  }
-  if (shape.kind === "convex-hull") {
-    const vertices = shape.vertices.map((vertex) => new CannonVec3(vertex[0], vertex[1], vertex[2]));
-    const faces: number[][] = [];
-    for (let index = 0; index + 2 < shape.indices.length; index += 3) {
-      const a = shape.indices[index];
-      const b = shape.indices[index + 1];
-      const c = shape.indices[index + 2];
-      if (a === undefined || b === undefined || c === undefined) continue;
-      faces.push([a, b, c]);
-    }
-    if (vertices.length < 4 || faces.length < 4) return undefined;
-    return [{ shape: new CannonConvexPolyhedron({ vertices, faces }) }];
-  }
-  if (shape.kind === "heightfield") {
-    // Aura stores heights row-major; cannon-es Heightfield indexes data[x][y].
-    const data: number[][] = [];
-    for (let column = 0; column < shape.columns; column += 1) {
-      const strip: number[] = [];
-      for (let row = 0; row < shape.rows; row += 1) {
-        strip.push(shape.heights[row * shape.columns + column] ?? 0);
-      }
-      data.push(strip);
-    }
-    return [{ shape: new CannonHeightfield(data, { elementSize: shape.cellSize }) }];
-  }
-  return undefined;
+  body.position = [position.x, position.y, position.z];
+  body.rotation = [rotation.x, rotation.y, rotation.z, rotation.w];
+  body.velocity = [velocity.x, velocity.y, velocity.z];
+  body.angularVelocity = [angularVelocity.x, angularVelocity.y, angularVelocity.z];
+  body.sleeping = raw.isSleeping();
 }
 
 function totalKineticEnergy(bodies: readonly RigidBody[]): number {
@@ -1210,324 +910,4 @@ function pushPotentialPair(pairs: PotentialPair[], seen: Set<string>, a: Broadph
   }
   seen.add(key);
   pairs.push([first.collider, first.body, second.collider, second.body]);
-}
-
-function buildContact(a: Collider, bodyA: RigidBody, b: Collider, bodyB: RigidBody): Contact | undefined {
-  const ab = subVec3(bodyB.position, bodyA.position);
-  if (a.shape.kind === "plane" || b.shape.kind === "plane") {
-    const planeCollider = a.shape.kind === "plane" ? a : b;
-    const planeBody = a.shape.kind === "plane" ? bodyA : bodyB;
-    const otherCollider = a.shape.kind === "plane" ? b : a;
-    const otherBody = a.shape.kind === "plane" ? bodyB : bodyA;
-    if (planeCollider.shape.kind !== "plane") {
-      return undefined;
-    }
-    const radius = supportRadius(otherCollider);
-    const signedDistance = dotVec3(planeCollider.shape.normal, otherBody.position) + planeCollider.shape.constant + dotVec3(planeCollider.shape.normal, planeBody.position);
-    if (signedDistance > radius) {
-      return undefined;
-    }
-    const normal = a.shape.kind === "plane" ? planeCollider.shape.normal : scaleVec3(planeCollider.shape.normal, -1);
-    return {
-      colliderA: a.id,
-      colliderB: b.id,
-      bodyA: bodyA.id,
-      bodyB: bodyB.id,
-      normal,
-      penetration: radius - signedDistance,
-      sensor: a.sensor || b.sensor
-    };
-  }
-  if (a.shape.kind === "sphere" && b.shape.kind === "sphere") {
-    const distance = Math.hypot(ab[0], ab[1], ab[2]);
-    const radiusSum = a.shape.radius + b.shape.radius;
-    if (distance >= radiusSum) {
-      return undefined;
-    }
-    return {
-      colliderA: a.id,
-      colliderB: b.id,
-      bodyA: bodyA.id,
-      bodyB: bodyB.id,
-      normal: distance > 1e-9 ? [ab[0] / distance, ab[1] / distance, ab[2] / distance] : [1, 0, 0],
-      penetration: radiusSum - distance,
-      sensor: a.sensor || b.sensor
-    };
-  }
-  if ((a.shape.kind === "sphere" && b.shape.kind === "box") || (a.shape.kind === "box" && b.shape.kind === "sphere")) {
-    return buildSphereBoxContact(a, bodyA, b, bodyB);
-  }
-  if ((a.shape.kind === "capsule" && b.shape.kind === "sphere") || (a.shape.kind === "sphere" && b.shape.kind === "capsule")) {
-    return buildCapsuleSphereContact(a, bodyA, b, bodyB);
-  }
-  if ((a.shape.kind === "capsule" && b.shape.kind === "box") || (a.shape.kind === "box" && b.shape.kind === "capsule")) {
-    return buildCapsuleBoxContact(a, bodyA, b, bodyB);
-  }
-  if (a.shape.kind === "capsule" && b.shape.kind === "capsule") {
-    return buildCapsuleCapsuleContact(a, bodyA, b, bodyB);
-  }
-  const nativeContact = buildNativeNarrowPhaseContact(a, bodyA, b, bodyB);
-  if (nativeContact) {
-    return {
-      colliderA: a.id,
-      colliderB: b.id,
-      bodyA: bodyA.id,
-      bodyB: bodyB.id,
-      normal: nativeContact.normal,
-      penetration: nativeContact.penetration,
-      point: nativeContact.point,
-      sensor: a.sensor || b.sensor
-    };
-  }
-  const boundsA = a.bounds(bodyA.position);
-  const boundsB = b.bounds(bodyB.position);
-  const overlapX = Math.min(boundsA.max[0] - boundsB.min[0], boundsB.max[0] - boundsA.min[0]);
-  const overlapY = Math.min(boundsA.max[1] - boundsB.min[1], boundsB.max[1] - boundsA.min[1]);
-  const overlapZ = Math.min(boundsA.max[2] - boundsB.min[2], boundsB.max[2] - boundsA.min[2]);
-  if (overlapX <= 0 || overlapY <= 0 || overlapZ <= 0) {
-    return undefined;
-  }
-  let normal: Vec3 = [Math.sign(ab[0]) || 1, 0, 0];
-  let penetration = overlapX;
-  if (overlapY < penetration) {
-    normal = [0, Math.sign(ab[1]) || 1, 0];
-    penetration = overlapY;
-  }
-  if (overlapZ < penetration) {
-    normal = [0, 0, Math.sign(ab[2]) || 1];
-    penetration = overlapZ;
-  }
-  return {
-    colliderA: a.id,
-    colliderB: b.id,
-    bodyA: bodyA.id,
-    bodyB: bodyB.id,
-    normal,
-    penetration,
-    sensor: a.sensor || b.sensor
-  };
-}
-
-function buildSphereBoxContact(a: Collider, bodyA: RigidBody, b: Collider, bodyB: RigidBody): Contact | undefined {
-  const sphereCollider = a.shape.kind === "sphere" ? a : b;
-  const sphereBody = a.shape.kind === "sphere" ? bodyA : bodyB;
-  const boxCollider = a.shape.kind === "box" ? a : b;
-  const boxBody = a.shape.kind === "box" ? bodyA : bodyB;
-  if (sphereCollider.shape.kind !== "sphere" || boxCollider.shape.kind !== "box") {
-    return undefined;
-  }
-  const boxBounds = boxCollider.bounds(boxBody.position);
-  const closest: Vec3 = [
-    clamp(sphereBody.position[0], boxBounds.min[0], boxBounds.max[0]),
-    clamp(sphereBody.position[1], boxBounds.min[1], boxBounds.max[1]),
-    clamp(sphereBody.position[2], boxBounds.min[2], boxBounds.max[2])
-  ];
-  const fromBoxToSphere = subVec3(sphereBody.position, closest);
-  const distance = Math.hypot(fromBoxToSphere[0], fromBoxToSphere[1], fromBoxToSphere[2]);
-  if (distance >= sphereCollider.shape.radius) {
-    return undefined;
-  }
-  const normalFromBoxToSphere = distance > 1e-9 ? scaleVec3(fromBoxToSphere, 1 / distance) : axisFromBoxCenter(boxBody.position, sphereBody.position, boxCollider.shape.halfExtents);
-  const normal = a.shape.kind === "box" ? normalFromBoxToSphere : scaleVec3(normalFromBoxToSphere, -1);
-  return {
-    colliderA: a.id,
-    colliderB: b.id,
-    bodyA: bodyA.id,
-    bodyB: bodyB.id,
-    normal,
-    penetration: sphereCollider.shape.radius - distance,
-    sensor: a.sensor || b.sensor
-  };
-}
-
-function buildCapsuleSphereContact(a: Collider, bodyA: RigidBody, b: Collider, bodyB: RigidBody): Contact | undefined {
-  const capsuleCollider = a.shape.kind === "capsule" ? a : b;
-  const capsuleBody = a.shape.kind === "capsule" ? bodyA : bodyB;
-  const sphereCollider = a.shape.kind === "sphere" ? a : b;
-  const sphereBody = a.shape.kind === "sphere" ? bodyA : bodyB;
-  if (capsuleCollider.shape.kind !== "capsule" || sphereCollider.shape.kind !== "sphere") {
-    return undefined;
-  }
-  const closest = closestPointOnSegment(sphereBody.position, capsuleSegment(capsuleBody.position, capsuleCollider.shape.halfHeight));
-  const delta = subVec3(sphereBody.position, closest);
-  const distance = Math.hypot(delta[0], delta[1], delta[2]);
-  const radiusSum = capsuleCollider.shape.radius + sphereCollider.shape.radius;
-  if (distance >= radiusSum) {
-    return undefined;
-  }
-  const normalFromCapsuleToSphere = distance > 1e-9 ? scaleVec3(delta, 1 / distance) : [1, 0, 0] as Vec3;
-  const normal = a.shape.kind === "capsule" ? normalFromCapsuleToSphere : scaleVec3(normalFromCapsuleToSphere, -1);
-  return {
-    colliderA: a.id,
-    colliderB: b.id,
-    bodyA: bodyA.id,
-    bodyB: bodyB.id,
-    normal,
-    penetration: radiusSum - distance,
-    sensor: a.sensor || b.sensor
-  };
-}
-
-function buildCapsuleCapsuleContact(a: Collider, bodyA: RigidBody, b: Collider, bodyB: RigidBody): Contact | undefined {
-  if (a.shape.kind !== "capsule" || b.shape.kind !== "capsule") {
-    return undefined;
-  }
-  const closest = closestPointsBetweenSegments(
-    capsuleSegment(bodyA.position, a.shape.halfHeight),
-    capsuleSegment(bodyB.position, b.shape.halfHeight)
-  );
-  const delta = subVec3(closest.b, closest.a);
-  const distance = Math.hypot(delta[0], delta[1], delta[2]);
-  const radiusSum = a.shape.radius + b.shape.radius;
-  if (distance >= radiusSum) {
-    return undefined;
-  }
-  return {
-    colliderA: a.id,
-    colliderB: b.id,
-    bodyA: bodyA.id,
-    bodyB: bodyB.id,
-    normal: distance > 1e-9 ? scaleVec3(delta, 1 / distance) : [1, 0, 0],
-    penetration: radiusSum - distance,
-    sensor: a.sensor || b.sensor
-  };
-}
-
-function buildCapsuleBoxContact(a: Collider, bodyA: RigidBody, b: Collider, bodyB: RigidBody): Contact | undefined {
-  const capsuleCollider = a.shape.kind === "capsule" ? a : b;
-  const capsuleBody = a.shape.kind === "capsule" ? bodyA : bodyB;
-  const boxCollider = a.shape.kind === "box" ? a : b;
-  const boxBody = a.shape.kind === "box" ? bodyA : bodyB;
-  if (capsuleCollider.shape.kind !== "capsule" || boxCollider.shape.kind !== "box") {
-    return undefined;
-  }
-  const bounds = boxCollider.bounds(boxBody.position);
-  const closest = closestVerticalSegmentPointToAabb(capsuleBody.position, capsuleCollider.shape.halfHeight, bounds);
-  const fromBoxToCapsule = subVec3(closest.segmentPoint, closest.boxPoint);
-  const distance = Math.hypot(fromBoxToCapsule[0], fromBoxToCapsule[1], fromBoxToCapsule[2]);
-  if (distance >= capsuleCollider.shape.radius) {
-    return undefined;
-  }
-  const normalFromBoxToCapsule = distance > 1e-9 ? scaleVec3(fromBoxToCapsule, 1 / distance) : axisFromBoxCenter(boxBody.position, closest.segmentPoint, boxCollider.shape.halfExtents);
-  const normal = a.shape.kind === "box" ? normalFromBoxToCapsule : scaleVec3(normalFromBoxToCapsule, -1);
-  return {
-    colliderA: a.id,
-    colliderB: b.id,
-    bodyA: bodyA.id,
-    bodyB: bodyB.id,
-    normal,
-    penetration: capsuleCollider.shape.radius - distance,
-    sensor: a.sensor || b.sensor
-  };
-}
-
-type Segment = {
-  readonly start: Vec3;
-  readonly end: Vec3;
-};
-
-function capsuleSegment(position: Vec3, halfHeight: number): Segment {
-  return {
-    start: [position[0], position[1] - halfHeight, position[2]],
-    end: [position[0], position[1] + halfHeight, position[2]]
-  };
-}
-
-function closestPointOnSegment(point: Vec3, segment: Segment): Vec3 {
-  const ab = subVec3(segment.end, segment.start);
-  const lengthSquared = dotVec3(ab, ab);
-  if (lengthSquared <= 1e-9) {
-    return segment.start;
-  }
-  const t = clamp(dotVec3(subVec3(point, segment.start), ab) / lengthSquared, 0, 1);
-  return [
-    segment.start[0] + ab[0] * t,
-    segment.start[1] + ab[1] * t,
-    segment.start[2] + ab[2] * t
-  ];
-}
-
-function closestPointsBetweenSegments(a: Segment, b: Segment): { readonly a: Vec3; readonly b: Vec3 } {
-  const d1 = subVec3(a.end, a.start);
-  const d2 = subVec3(b.end, b.start);
-  const r = subVec3(a.start, b.start);
-  const aLength = dotVec3(d1, d1);
-  const bLength = dotVec3(d2, d2);
-  const d12 = dotVec3(d1, d2);
-  const d1r = dotVec3(d1, r);
-  const d2r = dotVec3(d2, r);
-  const denominator = aLength * bLength - d12 * d12;
-  let s = denominator <= 1e-9 ? 0 : clamp((d12 * d2r - bLength * d1r) / denominator, 0, 1);
-  let t = bLength <= 1e-9 ? 0 : (d12 * s + d2r) / bLength;
-  if (t < 0) {
-    t = 0;
-    s = aLength <= 1e-9 ? 0 : clamp(-d1r / aLength, 0, 1);
-  } else if (t > 1) {
-    t = 1;
-    s = aLength <= 1e-9 ? 0 : clamp((d12 - d1r) / aLength, 0, 1);
-  }
-  return {
-    a: [a.start[0] + d1[0] * s, a.start[1] + d1[1] * s, a.start[2] + d1[2] * s],
-    b: [b.start[0] + d2[0] * t, b.start[1] + d2[1] * t, b.start[2] + d2[2] * t]
-  };
-}
-
-function closestVerticalSegmentPointToAabb(position: Vec3, halfHeight: number, bounds: Bounds): { readonly segmentPoint: Vec3; readonly boxPoint: Vec3 } {
-  const segmentMinY = position[1] - halfHeight;
-  const segmentMaxY = position[1] + halfHeight;
-  let segmentY: number;
-  let boxY: number;
-  if (segmentMaxY < bounds.min[1]) {
-    segmentY = segmentMaxY;
-    boxY = bounds.min[1];
-  } else if (segmentMinY > bounds.max[1]) {
-    segmentY = segmentMinY;
-    boxY = bounds.max[1];
-  } else {
-    segmentY = clamp(position[1], Math.max(segmentMinY, bounds.min[1]), Math.min(segmentMaxY, bounds.max[1]));
-    boxY = segmentY;
-  }
-  const segmentPoint: Vec3 = [position[0], segmentY, position[2]];
-  const boxPoint: Vec3 = [
-    clamp(position[0], bounds.min[0], bounds.max[0]),
-    boxY,
-    clamp(position[2], bounds.min[2], bounds.max[2])
-  ];
-  return { segmentPoint, boxPoint };
-}
-
-function axisFromBoxCenter(boxPosition: Vec3, spherePosition: Vec3, halfExtents: Vec3): Vec3 {
-  const local = subVec3(spherePosition, boxPosition);
-  const distances: readonly [number, Vec3][] = [
-    [halfExtents[0] - Math.abs(local[0]), [Math.sign(local[0]) || 1, 0, 0]],
-    [halfExtents[1] - Math.abs(local[1]), [0, Math.sign(local[1]) || 1, 0]],
-    [halfExtents[2] - Math.abs(local[2]), [0, 0, Math.sign(local[2]) || 1]]
-  ];
-  return distances.reduce((best, candidate) => candidate[0] < best[0] ? candidate : best)[1];
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function supportRadius(collider: Collider): number {
-  switch (collider.shape.kind) {
-    case "box":
-      return collider.shape.halfExtents[1];
-    case "sphere":
-      return collider.shape.radius;
-    case "capsule":
-      return collider.shape.radius + collider.shape.halfHeight;
-    case "plane":
-      return 0;
-    case "mesh": {
-      const bounds = collider.bounds([0, 0, 0]);
-      return Math.max(Math.abs(bounds.min[1]), Math.abs(bounds.max[1]));
-    }
-    case "convex-hull":
-    case "heightfield": {
-      const bounds = collider.bounds([0, 0, 0]);
-      return Math.max(Math.abs(bounds.min[1]), Math.abs(bounds.max[1]));
-    }
-  }
 }

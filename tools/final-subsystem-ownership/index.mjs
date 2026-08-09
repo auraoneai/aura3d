@@ -34,7 +34,7 @@ const overrides = [
   { id: "physics-evidence-descriptors", package: "physics", match: /(?:Cloth|Fluid|Fracture|SoftBody|FireSmoke|Sandbox|Platformer).*Fixtures\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Move out of the published runtime; never represent descriptors as solvers." },
   { id: "physics-navigation-crowd-steering", package: "physics", match: /\/(?:Navigation|Crowd|Steering)\.ts$/, disposition: "OPTIONAL-PLUGIN", owner: "recast/steering adapter candidate", decision: "Bake off against Recast/Detour and maintained alternatives in Phase 2." },
   { id: "physics-authored-arcade-motion", package: "physics", match: /\/(?:KinematicBody|KinematicWorld|ArcadeCharacterController|ArcadeVehicleTelemetry)\.ts$/, disposition: "AURA-MOAT", owner: "Aura3D authored-unit arcade runtime", decision: "Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation." },
-  { id: "physics-cannon-adapter", package: "physics", match: /\/(?:PhysicsWorld|PhysicsStepper|RigidBody|Collider|Constraint|Constraints|CollisionEvents|Shape|Raycast|TimeOfImpact|SurfaceQuery|NarrowPhase)\.ts$/, disposition: "EXTERNAL-ADAPTER", owner: "current cannon-es adapter", decision: "Compare against current Rapier topology; exactly one physical solver may remain." },
+  { id: "physics-rapier-contract", package: "physics", match: /\/(?:PhysicsWorld|PhysicsStepper|RigidBody|Collider|Constraint|Constraints|CollisionEvents|Shape|Raycast|TimeOfImpact|SurfaceQuery)\.ts$/, disposition: "EXTERNAL-ADAPTER", owner: "Rapier adapter contract", decision: "Keep backend-neutral public descriptors over the sole Rapier physical solver." },
   { id: "audio-evidence-fixtures", package: "audio", match: /Fixtures\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Move non-runtime fixtures out of the published audio package." },
   { id: "audio-browser-runtime", package: "audio", match: /\.ts$/, disposition: "BROWSER-STANDARD", owner: "Web Audio or selected thin adapter", decision: "Select one playback owner; retain Aura-specific cue semantics only." },
   { id: "asset-evidence-fixtures", package: "assets", match: /(?:Fixtures|ExternalParity).*\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Remove evidence-only source from the published runtime after consumer proof." },
@@ -46,7 +46,6 @@ const overrides = [
 const externalLocks = {
   "@dimforge/rapier3d": ["0.20.0", "sha512-Tj5dwOG5kXgcN/JRgOLTk64UFBd9KkaCAsWHcmPXOcyuBX6Vo7/ptSwS6zW++NvZebjJOW9/njmIqTM4VsaUog==", "Apache-2.0", "2026-08-08T22:04:29.667Z"],
   "@dimforge/rapier3d-compat": ["0.20.0", "sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==", "Apache-2.0", "2026-08-08T22:07:07.640Z"],
-  "cannon-es": ["0.20.0", "sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==", "MIT", "2022-08-12T16:46:01.002Z"],
   "recast-navigation": ["0.43.1", "sha512-BVBQEHE6uqD36opJomVkI5TxMVZ8bBLdDn90mYtBUYJnNlqEuNFOL8DH8lLOksfVVaC+kjykYuS57P6MrxVB7A==", "MIT", "2026-02-04T13:50:20.423Z"],
   howler: ["2.2.4", "sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==", "MIT", "2023-09-19T14:59:40.275Z"],
   yuka: ["0.7.8", "sha512-G/pFcMZh2Azz7Yy500NSV1jQ0Ru7h9hTNyEW+HjRXcdzjJIyp/3mCGspnx7VJVP06zxORqK6mkl5TywLqVUnVg==", "MIT", "2022-09-17T08:45:45.072Z"],
@@ -186,7 +185,7 @@ const architectureLock = {
 };
 
 const overlaps = [
-  { capability: "physical integration", owners: ["cannon-es via PhysicsWorld", "optional Rapier adapter"], status: "duplicate solver ownership remains until the major migration" },
+  { capability: "physical integration", owners: ["@dimforge/rapier3d-compat through @aura3d/physics-rapier"], status: "single selected owner; PhysicsWorld is the backend-neutral public contract" },
   { capability: "authored-unit arcade motion", owners: ["KinematicBody/KinematicWorld", "ArcadeVehicleTelemetry", "GameRuntime"], status: "non-physical capability with one semantic owner split into low-level and public layers" },
   { capability: "navigation and crowd", owners: ["optional Recast/Detour adapter"], status: "single selected owner after the major-version migration" },
   { capability: "audio context/mixing/effects", owners: ["AudioContextManager", "AudioMixer/Bus", "effects wrappers", "route/browser unlock handlers"], status: "potential duplicate browser ownership; Phase 2 characterization required" },
@@ -203,7 +202,7 @@ if (architectureLock.missingAdrMappings.length > 0) failures.push(`new-package-s
 
 const report = {
   schema: "aura3d.final-subsystem-ownership/1.0", generatedAt: new Date().toISOString(), pass: failures.length === 0,
-  claimBoundary: "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
+  claimBoundary: "Current selected ownership inventory after evidence-gated subsystem deletion; parity and release claims still require their independent gates.",
   sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim(),
   graphCoverage: ["static source imports", "dynamic imports", "package exports", "CLI/tool/worker generators", "docs", "tests/fixtures/benchmarks", "routes/templates", "external-consumer and clean-room tests"],
   packageCount: packages.length, subsystemCount: subsystems.length, sourceFilesClassified: subsystems.reduce((sum, entry) => sum + entry.files.length, 0),

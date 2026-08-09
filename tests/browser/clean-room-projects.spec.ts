@@ -394,7 +394,7 @@ for (const spec of PROJECTS) {
         expect(finalState.jointKinds as readonly string[], "puzzle must use three joint kinds")
           .toEqual(["motorised-hinge", "slider", "spring"]);
         // Each joint must have visibly done its job. These are the assertions that would
-        // have failed before the cannon-es constraint-solve fix, when joints were inert.
+        // have failed before the single-solver migration, when public joints were inert.
         expect(preResetState.doorTravel as number, "motorised hinge must move the door").toBeGreaterThan(0.02);
         expect(preResetState.blockTravel as number, "slider must let the block travel").toBeGreaterThan(0.02);
         // A slider must constrain the axis it is not on. The block travels ~0.38 along x, so

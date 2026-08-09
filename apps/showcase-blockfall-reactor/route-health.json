@@ -1,11 +1,11 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-07-28T05:16:00.740Z",
+  "generatedAt": "2026-08-09T01:20:46.326Z",
   "appId": "showcase-blockfall-reactor",
   "route": "/apps/showcase-blockfall-reactor/",
-  "classification": "prototype-blocked",
-  "publicShowcase": false,
-  "promotionStatus": "visual-rebuild-in-progress",
+  "classification": "release-ready candidate",
+  "publicShowcase": true,
+  "promotionStatus": "typed-cabinet-and-gameplay-evidence-bounded-candidate",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",
@@ -21,7 +21,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 24,
+    "sourceOccurrences": 40,
     "primitiveBudget": 40,
     "role": "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
     "status": "gameplay-geometry-with-typed-primary-cabinet"
@@ -35,7 +35,7 @@
       "public game.fallingBlocks gameplay state",
       "keyboard and touch interaction proof",
       "deterministic line-clear scoring proof",
-      "route-selected cannon-es fidelity proof"
+      "route-selected Rapier fidelity proof"
     ],
     "notAllowed": [
       "reusable falling-block game kit",
@@ -43,9 +43,7 @@
       "generic collision-system claim"
     ]
   },
-  "blockers": [
-    "visual-rebuild:hash-bound-independent-review-pending"
-  ],
+  "blockers": [],
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
     "sourceReview": "apps/showcase-blockfall-reactor/src/main.ts",
@@ -62,7 +60,7 @@
     "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset showcaseBlockfallCabinet"
   },
   "physics": {
-    "backend": "cannon-es",
+    "backend": "rapier",
     "scope": "route-selected showcase fidelity proof"
   }
 }

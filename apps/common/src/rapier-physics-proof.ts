@@ -1,13 +1,9 @@
 import { game } from "@aura3d/engine";
 
-/**
- * Route-level proof for the Phase 2 physics-backend decision. cannon-es 0.20.0
- * supplies angular contact response; fast-body protection is Aura3D's explicit
- * adaptive-substep wrapper because cannon-es does not expose native swept TOI.
- */
-export function createShowcaseCannonPhysicsProof(routeId: string) {
+/** Route-level evidence that the selected Rapier physical runtime is actually executing. */
+export function createShowcaseRapierPhysicsProof(routeId: string) {
   const angularWorld = game.collisionWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, -9.81, 0],
     fixedDelta: 1 / 120,
     solverIterations: 10,
@@ -39,7 +35,7 @@ export function createShowcaseCannonPhysicsProof(routeId: string) {
   );
 
   const collisionWorld = game.collisionWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, 0, 0],
     fixedDelta: 1 / 60,
     solverIterations: 8,
@@ -64,8 +60,8 @@ export function createShowcaseCannonPhysicsProof(routeId: string) {
   return {
     collisionWorld,
     evidence: {
-      selection: "cannon-es" as const,
-      angularContactProvider: "cannon-es@0.20.0" as const,
+      selection: "rapier" as const,
+      angularContactProvider: "@dimforge/rapier3d-compat@0.20.0" as const,
       angularContactResponse:
         maxAngularSpeed > 0.25
         && 1 - Math.abs(quaternionDot) > 0.02
@@ -77,12 +73,8 @@ export function createShowcaseCannonPhysicsProof(routeId: string) {
       continuousCollisionSubSteps: backend.continuousCollision.lastSubSteps,
       continuousCollisionRequiredSubSteps: backend.continuousCollision.lastRequiredSubSteps,
       fastMoverDidNotTunnel: fastBody.position[0] < -0.1 && fastBody.velocity[0] <= 0,
-      // WS-4.3 removed the second solver, so there is no longer a fallback backend whose
-      // limits need disclosing. What still needs disclosing is which layer owns fast-body
-      // protection: cannon-es exposes no native swept TOI, so the guarantee above comes
-      // from Aura3D's adaptive-substep wrapper, not from the solver.
       continuousCollisionOwnership:
-        "cannon-es exposes no native swept TOI; fast-body protection is Aura3D's adaptive-substep wrapper above the solver."
+        "Rapier native CCD owns swept physical collision; Aura3D additionally bounds travel per public step for an explicit overflow guarantee."
     }
   };
 }

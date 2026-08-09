@@ -86,7 +86,6 @@ const CAPABILITIES = [
   { id: "triggers", symbols: ["CollisionVolume", "triggerVolume", "gameTriggerVolumes"], testSymbols: ["trigger", "Trigger"], agentApiSymbols: ["gameTriggerVolumes"] },
   { id: "collision layers", symbols: ["CollisionFilter"], testSymbols: ["collisionGroup", "collisionMask", "filter:"], agentApiSymbols: ["AuraNodePhysicsSpec"] },
   { id: "contact events", symbols: ["CollisionEvent", "CollisionEventQueue"], testSymbols: ["contacts", "collisionEvents", "\"contact\""], agentApiSymbols: ["createGameCollisionWorld"] },
-  { id: "penetration resolution", symbols: ["NativeNarrowPhaseContact", "buildNativeNarrowPhaseContact"], testSymbols: ["penetration", "narrowPhase", "narrow-phase"], agentApiSymbols: [] },
   { id: "friction", symbols: ["ColliderMaterial"], testSymbols: ["friction"], agentApiSymbols: [] },
   { id: "restitution", symbols: ["ColliderMaterial"], testSymbols: ["restitution"], agentApiSymbols: [] },
   { id: "raycasts", symbols: ["RaycastHit", "RaycastOptions"], testSymbols: ["raycast"], agentApiSymbols: ["raycastSceneTargets", "raycastPhysicsWorld", "groundProbe"] },

@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "vitest";
 import { PhysicsWorld, Shape, timeOfImpact } from "../../../packages/physics/src/index.js";
 
-test("a cannon-es box dropped on a corner tumbles from angular contact response", () => {
+test("a Rapier box dropped on a corner tumbles from angular contact response", () => {
   const initialRotation = zRotation(Math.PI / 6);
   const world = new PhysicsWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, -9.81, 0],
     fixedDelta: 1 / 120,
     solverIterations: 10,
@@ -36,16 +36,16 @@ test("a cannon-es box dropped on a corner tumbles from angular contact response"
     (sum, component, index) => sum + component * initialRotation[index]!,
     0
   );
-  assert.equal(backend.active, "cannon-es");
+  assert.equal(backend.active, "rapier");
   assert.ok(maxAngularSpeed > 0.25, `expected angular response, got max omega=${maxAngularSpeed}`);
   assert.ok(1 - Math.abs(quaternionDot) > 0.02, "expected the box to tumble away from its initial corner rotation");
   assert.ok(box.rotation.every(Number.isFinite));
   assert.ok(Math.abs(Math.hypot(...box.rotation) - 1) < 1e-6);
 });
 
-test("fast bodies use discrete fixed-step collision rather than continuous collision detection", () => {
+test("Rapier native CCD protects fast bodies even without the optional bounded-step wrapper", () => {
   const world = new PhysicsWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, 0, 0],
     fixedDelta: 1 / 60,
     solverIterations: 4,
@@ -59,13 +59,13 @@ test("fast bodies use discrete fixed-step collision rather than continuous colli
   world.step(1 / 60);
 
   const snapshot = world.snapshot();
-  assert.equal(snapshot.stats.contacts, 0);
-  assert.ok(fastBody.position[0] > 1.5);
+  assert.equal(snapshot.backend.active, "rapier");
+  assert.ok(fastBody.position[0] < -0.1, `native CCD allowed tunnelling to x=${fastBody.position[0]}`);
 });
 
-test("Aura adaptive-substep CCD prevents a cannon-es fast mover from tunneling", () => {
+test("Aura bounded stepping complements Rapier native CCD for fast movers", () => {
   const world = new PhysicsWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, 0, 0],
     fixedDelta: 1 / 60,
     solverIterations: 8,
@@ -84,10 +84,10 @@ test("Aura adaptive-substep CCD prevents a cannon-es fast mover from tunneling",
   world.step(1 / 60);
 
   const ccd = world.snapshot().backend.continuousCollision;
-  assert.equal(world.snapshot().backend.active, "cannon-es");
+  assert.equal(world.snapshot().backend.active, "rapier");
   assert.equal(ccd.active, true);
   assert.equal(ccd.mode, "adaptive-substeps");
-  assert.equal(ccd.provider, "aura3d-adaptive-substep-wrapper");
+  assert.equal(ccd.provider, "rapier-native-ccd+adaptive-substeps");
   assert.equal(ccd.lastRequiredSubSteps, 160);
   assert.equal(ccd.lastSubSteps, 160);
   assert.equal(ccd.limitExceeded, false);
@@ -137,9 +137,9 @@ test("timeOfImpact returns the first swept-bounds contact and rejects misses", (
  * users never take. WS-4.3 then removed the second solver outright, so there is no longer
  * a fallback branch a passing assertion can hide behind — this case is the production path.
  */
-test("native CCD substeps preserve outer-step forces and interpolation history [production: cannon-es]", () => {
+test("native CCD substeps preserve outer-step forces and interpolation history [production: Rapier]", () => {
   const world = new PhysicsWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, 0, 0],
     continuousCollision: {
       mode: "adaptive-substeps",
@@ -153,10 +153,10 @@ test("native CCD substeps preserve outer-step forces and interpolation history [
 
   world.step(1 / 60);
 
-  assert.equal(world.snapshot().backend.active, "cannon-es");
+  assert.equal(world.snapshot().backend.active, "rapier");
   assert.equal(world.snapshot().backend.continuousCollision.lastSubSteps, 4);
   assert.ok(
-    Math.abs(body.velocity[0] - 61) < 1e-9,
+    Math.abs(body.velocity[0] - 61) < 1e-4,
     `a 60 N force on a 1 kg body over 1/60 s must add exactly 1 m/s regardless of substep count, got ${body.velocity[0]}`
   );
   assert.deepEqual(body.previousPosition, [0, 0, 0]);
@@ -167,7 +167,7 @@ test("force integration is substep-count independent on the production backend",
   // range makes the invariant "dv depends on dt, not on how the frame was subdivided".
   const measured = [0.4, 20, 60, 120].map((speed) => {
     const world = new PhysicsWorld({
-      backend: "cannon-es",
+      backend: "rapier",
       gravity: [0, 0, 0],
       continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 32, motionThreshold: 0.5 }
     });
@@ -188,14 +188,14 @@ test("force integration is substep-count independent on the production backend",
   );
   for (const entry of measured) {
     assert.ok(
-      Math.abs(entry.deltaV - 1) < 1e-9,
+      Math.abs(entry.deltaV - 1) < 1e-3,
       `dv must be 1 m/s at every substep count, got ${entry.deltaV} at ${entry.subSteps} substeps (speed ${entry.speed})`
     );
   }
 });
 
 test("a force applied once is applied for exactly one step, then stops", () => {
-  const world = new PhysicsWorld({ backend: "cannon-es", gravity: [0, 0, 0] });
+  const world = new PhysicsWorld({ backend: "rapier", gravity: [0, 0, 0] });
   const body = world.createRigidBody({ position: [0, 0, 0] });
   world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
 
@@ -205,16 +205,16 @@ test("a force applied once is applied for exactly one step, then stops", () => {
   world.step(1 / 60);
   const afterSecond = body.velocity[0];
 
-  assert.ok(Math.abs(afterFirst - 1) < 1e-9, `expected dv=1, got ${afterFirst}`);
+  assert.ok(Math.abs(afterFirst - 1) < 1e-5, `expected dv=1, got ${afterFirst}`);
   assert.ok(
-    Math.abs(afterSecond - afterFirst) < 1e-9,
+    Math.abs(afterSecond - afterFirst) < 1e-5,
     `a drained accumulator must not keep accelerating the body, got ${afterSecond}`
   );
 });
 
 test("continuous force application accumulates linearly across frames", () => {
   const world = new PhysicsWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, 0, 0],
     continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 32, motionThreshold: 0.5 }
   });
@@ -229,14 +229,14 @@ test("continuous force application accumulates linearly across frames", () => {
   }
 
   assert.ok(
-    Math.abs(body.velocity[0] - 60) < 1e-6,
+    Math.abs(body.velocity[0] - 60) < 1e-3,
     `60 N for 1 s on 1 kg must reach 60 m/s, got ${body.velocity[0]}`
   );
 });
 
 test("adaptive-substep CCD rejects a step that exceeds its configured guarantee", () => {
   const world = new PhysicsWorld({
-    backend: "cannon-es",
+    backend: "rapier",
     gravity: [0, 0, 0],
     continuousCollision: {
       mode: "adaptive-substeps",

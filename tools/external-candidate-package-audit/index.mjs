@@ -13,7 +13,6 @@ const reportPath = resolve(repoRoot, "tests/reports/external-candidate-package-a
 const candidates = {
   "@dimforge/rapier3d": "0.20.0",
   "@dimforge/rapier3d-compat": "0.20.0",
-  "cannon-es": "0.20.0",
   "recast-navigation": "0.43.1",
   howler: "2.2.4",
   yuka: "0.7.8",

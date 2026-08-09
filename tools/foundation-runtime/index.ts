@@ -104,11 +104,11 @@ function createConditionalClaimBoundaries() {
   return [
     {
       feature: "continuous-collision-detection",
-      status: "blocked-unclaimed",
-      reason: "CCD is not implemented and no CCD advantage claim is allowed by foundation runtime docs."
+      status: "delivered-bounded",
+      reason: "Rapier native CCD is active for dynamic bodies; the optional Aura bounded-step policy adds an explicit overflow guarantee."
     },
     {
-      feature: "physics-benchmarks-against-rapier-ammo-cannon",
+      feature: "physics-benchmarks-against-current-alternatives",
       status: "blocked-unclaimed",
       reason: "Physics advantage benchmarks are required before physics superiority claims."
     },

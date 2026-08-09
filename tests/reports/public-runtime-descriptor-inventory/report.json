@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-09T00:19:36.373Z",
+  "generatedAt": "2026-08-09T00:54:38.313Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -299,7 +299,6 @@
         "packages/physics/src/KinematicBody.ts",
         "packages/physics/src/KinematicWorld.ts",
         "packages/physics/src/MeshBVH.ts",
-        "packages/physics/src/NarrowPhase.ts",
         "packages/physics/src/PhysicsDebugDraw.ts",
         "packages/physics/src/PhysicsWorld.ts",
         "packages/physics/src/Raycast.ts",
@@ -332,10 +331,8 @@
         "tests/unit/game-runtime/game-runtime-source-gates.test.ts",
         "tests/unit/rendering/pbr-reference.test.ts",
         "tools/animation-spring-bone-readiness/index.ts",
-        "tools/bundle-scenarios/entries/scenario-3-threejs.ts",
         "tools/external-parity-pbr-gltf-readiness/index.ts",
         "tools/external-parity-pbr-reference-readiness/index.ts",
-        "tools/physics-backend-bakeoff/index.ts",
         "tools/product-studio-generate-products/index.ts",
         "tools/public-runtime-descriptor-inventory/index.ts",
         "tools/threejs-parity-decals-parity/index.ts"

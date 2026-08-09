@@ -68,7 +68,6 @@ export * from "./Constraints.js";
 // --- 4. Raycast, shapecast, and geometry-level queries ---
 export * from "./Raycast.js";
 export * from "./TimeOfImpact.js";
-export * from "./NarrowPhase.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
 

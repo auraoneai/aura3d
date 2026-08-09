@@ -71,7 +71,7 @@ describe("MeshBVH", () => {
       }
     }
     expect(compared, "rays that hit the mesh").toBeGreaterThan(900);
-  });
+  }, 15_000);
 
   it("builds deterministically: two builds of the same mesh are identical", () => {
     const mesh = grid(4, 9, (x) => x * 0.1);

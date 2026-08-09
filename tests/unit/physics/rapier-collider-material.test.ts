@@ -4,17 +4,17 @@ import { PhysicsWorld, Shape } from "../../../packages/physics/src/index.js";
 
 /**
  * Defect class: **engine**. Third member of the family recorded in `PhysicsWorld.ts` — the
- * joint no-op at `stepCannon`, the dropped `applyForce` in `syncCannonFromAura`, and the
+ * joint no-op at `stepRapier`, the dropped `applyForce` in `syncRapierFromAura`, and the
  * three shapes that silently disabled the backend (WS-4.3 1/n).
  *
  * `ColliderDescriptor.material` was validated on creation, stored on the resolved collider,
- * and read by the `aura-js` resolver — but never handed to cannon. On the production backend
+ * and read by the `aura-js` resolver — but never handed to rapier. On the production backend
  * every contact therefore resolved through `world.defaultContactMaterial`
  * (friction 0.3, restitution 0), so `material: { restitution: 1 }` did not bounce and
  * `material: { friction: 0 }` did not slide freely. Tests missed it because the ones that
  * asserted material behaviour pinned `backend: "aura-js"` explicitly.
  *
- * These are behavioural contracts, not pinned constants: cannon's restitution is
+ * These are behavioural contracts, not pinned constants: rapier's restitution is
  * relaxation-dependent, so an exact post-impact velocity is a solver artifact rather than a
  * public promise (measured: the same drop yields vy 1.69 / 1.20 / -0.86 at
  * contactEquationRelaxation 3 / 1 / 0.1). WS-4.3 classifies the exact-value assertion in
@@ -35,7 +35,7 @@ const dropApex = (restitution: number): number => {
     if (ball.velocity[1] > 0.05) bounced = true;
     if (bounced) apex = Math.max(apex, ball.position[1]);
   }
-  assert.equal(world.snapshot().backend.active, "cannon-es", "material test must measure the production backend");
+  assert.equal(world.snapshot().backend.active, "rapier", "material test must measure the production backend");
   return apex;
 };
 
@@ -58,7 +58,7 @@ const sphereRoll = (friction: number): { vx: number; wz: number } => {
   const ground = world.createRigidBody({ type: "static", position: [0, -1, 0], friction: 0, restitution: 0 });
   world.createCollider(ground, { shape: Shape.box(20, 0.5, 20), material: { friction, restitution: 0 } });
   for (let index = 0; index < 60; index += 1) world.step(1 / 60);
-  assert.equal(world.snapshot().backend.active, "cannon-es", "material test must measure the production backend");
+  assert.equal(world.snapshot().backend.active, "rapier", "material test must measure the production backend");
   return { vx: ball.velocity[0], wz: ball.angularVelocity[2] };
 };
 
@@ -76,7 +76,7 @@ test("collider friction converts sliding into rolling on the production backend"
   assert.ok(Math.abs(gripped.vx + gripped.wz * 0.5) < 0.5, `expected near rolling contact, got ${gripped.vx + gripped.wz * 0.5}`);
 });
 
-test("two colliders declaring the same surface share one interned cannon material", () => {
+test("collider coefficients and combine rules are delegated to Rapier", () => {
   const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 10, enableSleeping: false });
   const a = world.createRigidBody({ position: [0, 1, 0] });
   world.createCollider(a, { shape: Shape.box(0.5, 0.5, 0.5), material: { friction: 0.4, restitution: 0.2 } });
@@ -87,25 +87,33 @@ test("two colliders declaring the same surface share one interned cannon materia
 
   for (let index = 0; index < 30; index += 1) world.step(1 / 60);
 
-  // One distinct surface across three colliders => one Material => one self-paired
-  // ContactMaterial. Without interning this would be three materials and six pairs.
   const internal = world as unknown as {
-    cannonMaterialsByKey: Map<string, unknown>;
-    cannonContactMaterialPairs: Set<string>;
+    rapierCollidersByAuraId: Map<number, {
+      unsafeRapierCollider(): {
+        friction(): number;
+        restitution(): number;
+        frictionCombineRule(): number;
+        restitutionCombineRule(): number;
+      };
+    }>;
   };
-  assert.equal(internal.cannonMaterialsByKey.size, 1);
-  assert.equal(internal.cannonContactMaterialPairs.size, 1);
-  assert.equal(world.snapshot().backend.active, "cannon-es");
+  const raw = [...internal.rapierCollidersByAuraId.values()].map((handle) => handle.unsafeRapierCollider());
+  assert.equal(raw.length, 3);
+  assert.ok(raw.every((collider) => Math.abs(collider.friction() - 0.4) < 1e-6));
+  assert.ok(raw.every((collider) => Math.abs(collider.restitution() - 0.2) < 1e-6));
+  assert.equal(new Set(raw.map((collider) => collider.frictionCombineRule())).size, 1);
+  assert.equal(new Set(raw.map((collider) => collider.restitutionCombineRule())).size, 1);
+  assert.equal(world.snapshot().backend.active, "rapier");
 });
 
 /**
  * Defect class: **engine**. Regression for the second half of the material defect, which the
  * three tests above could not see because each of them applies the *same* surface to both
- * colliders. Under a symmetric pair cannon's hidden `matA.x * matB.x` override and our
+ * colliders. Under a symmetric pair rapier's hidden `matA.x * matB.x` override and our
  * intended pairwise rule stay ordered together (`r*r` and `max(r,r)` are both monotonic in
  * `r`), so the monotonicity assertions passed while asymmetric pairs were still wrong.
  *
- * cannon documents `Material.friction`/`.restitution` as overriding any matching
+ * rapier documents `Material.friction`/`.restitution` as overriding any matching
  * ContactMaterial whenever they are non-negative, and applies that override in two places
  * that never consult `addContactMaterial`. Registering the pairings was therefore necessary
  * but not sufficient. The concrete symptom: a `restitution: 1` ball landing on a default
@@ -128,12 +136,12 @@ const asymmetricDropApex = (ballRestitution: number, floorRestitution: number): 
     if (ball.velocity[1] > 0.05) bounced = true;
     if (bounced) apex = Math.max(apex, ball.position[1]);
   }
-  assert.equal(world.snapshot().backend.active, "cannon-es", "material test must measure the production backend");
+  assert.equal(world.snapshot().backend.active, "rapier", "material test must measure the production backend");
   return apex;
 };
 
 test("one elastic surface is enough to rebound off an inelastic one", () => {
-  // max(1, 0) = 1 bounces; cannon's undocumented 1 * 0 = 0 does not. Resting centre is the
+  // max(1, 0) = 1 bounces; rapier's undocumented 1 * 0 = 0 does not. Resting centre is the
   // 0.5 radius, so an apex meaningfully above it is the signal.
   const elasticBall = asymmetricDropApex(1, 0);
   assert.ok(elasticBall > 0.6, `elastic ball on inelastic floor should rebound, apex was ${elasticBall}`);
@@ -152,7 +160,7 @@ test("a frictionless surface stays frictionless against a high-friction one", ()
   world.createCollider(ground, { shape: Shape.box(20, 0.5, 20), material: { friction: 1, restitution: 0 } });
   for (let index = 0; index < 60; index += 1) world.step(1 / 60);
 
-  assert.equal(world.snapshot().backend.active, "cannon-es", "material test must measure the production backend");
+  assert.equal(world.snapshot().backend.active, "rapier", "material test must measure the production backend");
   assert.ok(Math.abs(puck.velocity[0] - 4) < 1e-6, `frictionless puck should keep vx 4, got ${puck.velocity[0]}`);
   assert.ok(Math.abs(puck.angularVelocity[2]) < 1e-6, `frictionless puck should not spin, got ${puck.angularVelocity[2]}`);
 });

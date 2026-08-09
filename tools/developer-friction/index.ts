@@ -20,7 +20,7 @@
  *   developer effort and flatter Aura3D.
  * - **imports** — `import` statements, i.e. how many module names a developer must know.
  * - **dependencies** — distinct npm packages the developer must install. `three` and
- *   `cannon-es` are two installs; `@aura3d/engine` is one.
+ *   `@dimforge/rapier3d-compat` are two installs; `@aura3d/engine` is one.
  * - **typecheckMs** — median of three fresh `tsc --noEmit` processes on the scenario entry alone,
  *   so the number is compile time for what the developer wrote rather than for the monorepo. The
  *   individual samples are retained because process startup and filesystem cache make one run noisy.
