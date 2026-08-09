@@ -136,16 +136,19 @@ async function boot(): Promise<void> {
       canvas,
       width: CANVAS_WIDTH,
       height: CANVAS_HEIGHT,
-      clearColor: [0.015, 0.02, 0.026, 1],
+      clearColor: [0.035, 0.055, 0.09, 1],
       preserveDrawingBuffer: true
     });
     window.addEventListener("beforeunload", () => renderer.dispose());
 
-    let rayHit: RaycastHit | undefined;
-    let rayIgnoringShooter: RaycastHit | undefined;
-    let gapRay: RaycastHit | undefined;
-    let gapSphere: SphereCastHit | undefined;
-    let sweep: { hit: TimeOfImpactHit | undefined; wouldTunnel: boolean } | undefined;
+    let rayHit = world.raycast([0, 0.5, 0], [0, 0, -1], { maxDistance: 20 });
+    let rayIgnoringShooter = world.raycast([0, 0.5, 0], [0, 0, -1], {
+      maxDistance: 20,
+      ignoreBodies: [shooter.id]
+    });
+    let gapRay = world.raycast([0, 0.5, -1], [0, 0, -1], { maxDistance: 3 });
+    let gapSphere = world.sphereCast([0, 0.5, -1], 0.22, [0, 0, -1], { maxDistance: 3 });
+    let sweep: { hit: TimeOfImpactHit | undefined; wouldTunnel: boolean } | undefined = sweepFastBullet();
 
     const publish = (): void => {
       const state: RaycastCcdLabState = {
@@ -171,12 +174,16 @@ async function boot(): Promise<void> {
     const draw = (): void => {
       const items: RenderItem[] = [];
       // Corridor walls and posts as wireframe boxes, plus each query as a line.
-      pushBoxOutline(items, [0, 0.5, -6], [2.4, 1.2, 0.2], [0.42, 0.47, 0.55], "far-wall");
-      pushBoxOutline(items, [-0.42, 0.5, -3], [0.3, 1.2, 0.2], [0.42, 0.47, 0.55], "left-post");
-      pushBoxOutline(items, [0.42, 0.5, -3], [0.3, 1.2, 0.2], [0.42, 0.47, 0.55], "right-post");
-      if (rayIgnoringShooter) pushLine(items, [0, 0.5, 0], rayIgnoringShooter.point as [number, number, number], [0.35, 0.85, 1], "raycast");
-      if (gapRay === undefined) pushLine(items, [0, 0.5, -1], [0, 0.5, -4.6], [0.5, 0.55, 0.6], "ray-through-gap");
-      if (gapSphere) pushLine(items, [0, 0.5, -1], gapSphere.point as [number, number, number], [1, 0.78, 0.32], "spherecast");
+      pushBoxOutline(items, [0, 0.5, -6], [2.4, 1.2, 0.2], [0.68, 0.76, 0.88], "far-wall");
+      pushBoxOutline(items, [-0.42, 0.5, -3], [0.3, 1.2, 0.2], [0.68, 0.76, 0.88], "left-post");
+      pushBoxOutline(items, [0.42, 0.5, -3], [0.3, 1.2, 0.2], [0.68, 0.76, 0.88], "right-post");
+      if (rayIgnoringShooter) pushLine(items, [-0.08, 0.5, 0], [-0.08, 0.5, rayIgnoringShooter.point[2]], [0.2, 0.9, 1], "raycast");
+      if (gapRay === undefined) pushLine(items, [0.08, 0.5, -1], [0.08, 0.5, -4.6], [0.55, 0.64, 0.76], "ray-through-gap");
+      if (gapSphere) pushLine(items, [0.24, 0.5, -1], [0.24, 0.5, gapSphere.point[2]], [1, 0.7, 0.18], "spherecast");
+      if (sweep?.hit) {
+        const impactZ = -3.6 - 200 * sweep.hit.time;
+        pushLine(items, [-0.24, 0.5, -3.6], [-0.24, 0.5, impactZ], [1, 0.28, 0.45], "swept-impact");
+      }
       renderer.render(items);
     };
 
@@ -326,12 +333,20 @@ function pushBoxOutline(
 function installStyles(): void {
   const style = document.createElement("style");
   style.textContent = `
+    * { box-sizing: border-box; }
     body { margin: 0; background: #0b1018; color: #e8f0ff; font: 14px system-ui; }
-    .lab { display: grid; gap: 12px; padding: 16px; }
-    .lab canvas { width: ${CANVAS_WIDTH}px; height: ${CANVAS_HEIGHT}px; border-radius: 8px; background: #060a12; }
+    .lab { display: grid; grid-template-columns: minmax(0, ${CANVAS_WIDTH}px) 280px; gap: 16px; padding: 20px; }
+    .lab h1 { grid-column: 1 / -1; margin: 4px 0 10px; }
+    .lab canvas { width: 100%; height: ${CANVAS_HEIGHT}px; border: 1px solid #263750; border-radius: 10px; background: #091221; }
+    .lab__side { display: grid; align-content: start; gap: 14px; }
+    .lab__scope { margin: 0; color: #9aabc3; line-height: 1.5; }
+    .lab__legend { display: grid; gap: 10px; padding: 14px; border: 1px solid #263750; border-radius: 8px; background: #101a27; }
+    .lab__legend span { display: flex; align-items: center; gap: 9px; }
+    .lab__legend i { width: 22px; height: 3px; border-radius: 4px; background: var(--swatch); }
     .lab__controls { display: flex; gap: 8px; }
     .lab__controls button { padding: 8px 14px; border-radius: 6px; border: 1px solid #2b3a52; background: #14202f; color: inherit; cursor: pointer; }
     .lab__hud { white-space: pre-line; padding: 10px 12px; border-radius: 6px; background: #101a27; min-height: 4em; }
+    @media (max-width: 1080px) { .lab { grid-template-columns: 1fr; } .lab h1 { grid-column: 1; } .lab canvas { height: auto; aspect-ratio: 16 / 9; } }
   `;
   document.head.appendChild(style);
 }
@@ -341,12 +356,21 @@ function installShell(root: HTMLElement) {
     <section class="lab">
       <h1>Raycast &amp; CCD Lab</h1>
       <canvas id="lab-canvas" width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}"></canvas>
-      <div class="lab__controls">
-        <button id="fire" type="button">Raycast corridor</button>
-        <button id="gap" type="button">Ray vs spherecast through a gap</button>
-        <button id="sweep" type="button">Swept impact at 200 m/s</button>
+      <div class="lab__side">
+        <p class="lab__scope">Bounded Rapier-backed query visualization. This diagnostic compares a filtered ray, a finite-radius cast, and continuous time of impact; it makes no scene-rendering claim.</p>
+        <div class="lab__legend" aria-label="Query legend">
+          <span><i style="--swatch:#33e6ff"></i>Filtered corridor ray</span>
+          <span><i style="--swatch:#8ca3c2"></i>Zero-radius gap ray</span>
+          <span><i style="--swatch:#ffb32e"></i>Spherecast contact</span>
+          <span><i style="--swatch:#ff4773"></i>200 m/s swept impact</span>
+        </div>
+        <div class="lab__controls">
+          <button id="fire" type="button">Rerun ray</button>
+          <button id="gap" type="button">Rerun gap casts</button>
+          <button id="sweep" type="button">Rerun CCD</button>
+        </div>
+        <pre class="lab__hud" id="lab-hud">status ready</pre>
       </div>
-      <pre class="lab__hud" id="lab-hud">status ready</pre>
     </section>
   `;
   return {
