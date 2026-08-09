@@ -14,10 +14,10 @@ Version: 1.4.5
 | Constraints | `Constraint.ts`, `Constraints.ts` |
 | Queries | `Raycast.ts` |
 | Continuous queries | `TimeOfImpact.ts` |
-| Character and movement helpers | `CharacterController.ts`, `Navigation.ts`, `Steering.ts` |
+| Character and movement helpers | `CharacterController.ts`, `KinematicBody.ts`, `KinematicWorld.ts` |
 | Scene/ECS bridges | `ScenePhysicsBridge.ts`, `ECSPhysicsBridge.ts` |
 | Debug visualization | `PhysicsDebugDraw.ts`, `packages/debug/src/PhysicsDebugAdapter.ts` |
-| Higher-level helpers | `VehicleDynamics.ts`, `Crowd.ts` |
+| Higher-level helpers | `VehicleDynamics.ts`; optional navigation/crowds live in `@aura3d/navigation-recast` |
 | Optional production solver | `@aura3d/physics-rapier` (explicit adapter over `@dimforge/rapier3d-compat`) |
 
 ## Runtime Model

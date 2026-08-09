@@ -1,0 +1,365 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-08T23:43:42.805Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/physics/src/Navigation.ts",
+      "pass": true,
+      "detail": "packages/physics/src/Navigation.ts: all six R8 points empty across 5030 scanned files (19 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/Steering.ts",
+      "pass": true,
+      "detail": "packages/physics/src/Steering.ts: all six R8 points empty across 5030 scanned files (17 non-blocking prose mention(s) to tidy)"
+    },
+    {
+      "id": "r8:packages/physics/src/Crowd.ts",
+      "pass": true,
+      "detail": "packages/physics/src/Crowd.ts: all six R8 points empty across 5030 scanned files (16 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/physics/src/Navigation.ts",
+    "packages/physics/src/Steering.ts",
+    "packages/physics/src/Crowd.ts"
+  ],
+  "expandedFileCount": 3,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5030,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/physics/src/Navigation.ts",
+      "exists": true,
+      "source": "working-tree",
+      "lines": 322,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/physics/src/Navigation.ts",
+        "Navigation.ts",
+        "Navigation",
+        "@aura3d/physics/src/Navigation",
+        "@aura3d/physics/Navigation"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 19,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2031",
+          "detail": "\"./Navigation.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18372",
+          "detail": "\"path\": \"dist/packages/physics/src/Navigation.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:25812",
+          "detail": "\"path\": \"dist/physics/Navigation.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:7",
+          "detail": "\"id\": \"r8:packages/physics/src/Navigation.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:9",
+          "detail": "\"detail\": \"packages/physics/src/Navigation.ts: 5 blocking reference(s) — retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.json:5707; retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownershi"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:23",
+          "detail": "\"r8:packages/physics/src/Navigation.ts: packages/physics/src/Navigation.ts: 5 blocking reference(s) — retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.json:5707; retained-schema-or-report-dependency @ tests/rep"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:28",
+          "detail": "\"packages/physics/src/Navigation.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:46",
+          "detail": "\"path\": \"packages/physics/src/Navigation.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:52",
+          "detail": "\"packages/physics/src/Navigation.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:53",
+          "detail": "\"Navigation.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:54",
+          "detail": "\"Navigation\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:55",
+          "detail": "\"@aura3d/physics/src/Navigation\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:56",
+          "detail": "\"@aura3d/physics/Navigation\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:65",
+          "detail": "\"detail\": \"\\\"packages/physics/src/Navigation.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:70",
+          "detail": "\"detail\": \"\\\"packages/physics/src/Navigation.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:75",
+          "detail": "\"detail\": \"\\\"packages/physics/src/Navigation.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:80",
+          "detail": "\"detail\": \"\\\"packages/physics/src/Navigation.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:18372",
+          "detail": "\"path\": \"dist/packages/physics/src/Navigation.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:25812",
+          "detail": "\"path\": \"dist/physics/Navigation.js\","
+        }
+      ],
+      "proseMentionsTruncated": false
+    },
+    {
+      "path": "packages/physics/src/Steering.ts",
+      "exists": true,
+      "source": "working-tree",
+      "lines": 532,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/physics/src/Steering.ts",
+        "Steering.ts",
+        "Steering",
+        "@aura3d/physics/src/Steering",
+        "@aura3d/physics/Steering"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 1,
+      "blocking": {},
+      "proseMentionCount": 17,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2032",
+          "detail": "\"./Steering.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18612",
+          "detail": "\"path\": \"dist/packages/physics/src/Steering.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:26052",
+          "detail": "\"path\": \"dist/physics/Steering.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:12",
+          "detail": "\"id\": \"r8:packages/physics/src/Steering.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:14",
+          "detail": "\"detail\": \"packages/physics/src/Steering.ts: 2 blocking reference(s) — retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.json:11766; retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:24",
+          "detail": "\"r8:packages/physics/src/Steering.ts: packages/physics/src/Steering.ts: 2 blocking reference(s) — retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.json:11766; retained-schema-or-report-dependency @ tests/report"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:29",
+          "detail": "\"packages/physics/src/Steering.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:120",
+          "detail": "\"path\": \"packages/physics/src/Steering.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:126",
+          "detail": "\"packages/physics/src/Steering.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:127",
+          "detail": "\"Steering.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:128",
+          "detail": "\"Steering\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:129",
+          "detail": "\"@aura3d/physics/src/Steering\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:130",
+          "detail": "\"@aura3d/physics/Steering\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:139",
+          "detail": "\"detail\": \"\\\"packages/physics/src/Steering.ts\\\"\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:18612",
+          "detail": "\"path\": \"dist/packages/physics/src/Steering.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:26052",
+          "detail": "\"path\": \"dist/physics/Steering.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "docs/project/plans/engine-game-parity-execution-plan.md:145",
+          "detail": "| `packages/physics/src` | 29 | 9,140 | Dual-backend solver. `HitboxWorld.ts` 1,179 · `PhysicsWorld.ts` 986 · `KinematicBody.ts` 597 · `Steering.ts` 531 · `VehicleDynamics.ts` 524 |"
+        }
+      ],
+      "proseMentionsTruncated": false
+    },
+    {
+      "path": "packages/physics/src/Crowd.ts",
+      "exists": true,
+      "source": "working-tree",
+      "lines": 284,
+      "lastCommit": "19698382e192a16ec869ced87059e50a627699b1",
+      "moduleSpecifiers": [
+        "packages/physics/src/Crowd.ts",
+        "Crowd.ts",
+        "Crowd",
+        "@aura3d/physics/src/Crowd",
+        "@aura3d/physics/Crowd"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 16,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2033",
+          "detail": "\"./Crowd.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18196",
+          "detail": "\"path\": \"dist/packages/physics/src/Crowd.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:25636",
+          "detail": "\"path\": \"dist/physics/Crowd.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:17",
+          "detail": "\"id\": \"r8:packages/physics/src/Crowd.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:19",
+          "detail": "\"detail\": \"packages/physics/src/Crowd.ts: 2 blocking reference(s) — retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.json:11764; retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.js"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:25",
+          "detail": "\"r8:packages/physics/src/Crowd.ts: packages/physics/src/Crowd.ts: 2 blocking reference(s) — retained-schema-or-report-dependency @ tests/reports/final-subsystem-ownership.json:11764; retained-schema-or-report-dependency @ tests/reports/fina"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:30",
+          "detail": "\"packages/physics/src/Crowd.ts\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:184",
+          "detail": "\"path\": \"packages/physics/src/Crowd.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:190",
+          "detail": "\"packages/physics/src/Crowd.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:191",
+          "detail": "\"Crowd.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:192",
+          "detail": "\"Crowd\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:193",
+          "detail": "\"@aura3d/physics/src/Crowd\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:194",
+          "detail": "\"@aura3d/physics/Crowd\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/navigation-legacy-delete-preflight.json:203",
+          "detail": "\"detail\": \"\\\"packages/physics/src/Crowd.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:18196",
+          "detail": "\"path\": \"dist/packages/physics/src/Crowd.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:25636",
+          "detail": "\"path\": \"dist/physics/Crowd.js\","
+        }
+      ],
+      "proseMentionsTruncated": false
+    }
+  ]
+}

@@ -9,7 +9,7 @@ import type {
   AuraCliSkeletonInspection,
 } from "./asset-inspection-types.js";
 
-export type AuraCliAssetType = "model" | "texture" | "environment" | "audio";
+export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation";
 export type AuraAssetQuality = "ungraded" | "blocked" | "prototype" | "candidate" | "release";
 export type AuraCliAssetRole =
   | "character"

@@ -9,12 +9,19 @@ The package is absent from core, product, and arcade-game entries. It owns
 navmesh generation, path queries, serialization, Detour crowd simulation, and
 temporary-obstacle integration; it does not depend on Three.js.
 
+Projects migrating from the removed `@aura3d/physics` grid/crowd/steering
+surface should follow `docs/migration/navigation-recast-2.0.md`; the old and new
+APIs are not falsely aliased because their coordinate and world-geometry
+semantics differ.
+
 ## Public API
 
 - `createRecastNavigation()` initializes the WASM runtime once and returns a
   thin factory/query adapter.
 - `generateSolo()` creates a small-world navmesh from indexed triangle data.
 - `import()` restores an offline-generated navmesh.
+- `importAsset()` loads a CLI-generated `AuraAssetRef<"navigation">`, verifies
+  its SHA-256 hash, and imports the serialized navmesh.
 - `RecastNavMeshHandle` owns queries, serialization, and deterministic cleanup.
 - `rawModule` and `rawNavMesh` are public escape hatches for advanced Detour
   operations without private imports.

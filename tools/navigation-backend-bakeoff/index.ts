@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
-import { CrowdSimulation, NavigationGrid } from "../../packages/physics/src/index.js";
 import { createRecastNavigation } from "../../packages/navigation-recast/src/index.js";
 
 const outputPath = resolve("tests/reports/navigation-backend-bakeoff/report.json");
@@ -18,12 +17,12 @@ function elapsed(run: () => void, iterations = 1): number {
 function round(value: number): number { return Number(value.toFixed(4)); }
 function sha(bytes: Uint8Array): string { return createHash("sha256").update(bytes).digest("hex"); }
 
-const grid = new NavigationGrid({ width: 128, height: 128, allowDiagonal: true, blocked: Array.from({ length: 96 }, (_, y) => [64, y + 16] as const) });
-const auraQueryMs = elapsed(() => { grid.findPath([2, 2], [125, 125]); }, 100);
-const auraCrowd = new CrowdSimulation();
-for (let index = 0; index < 32; index += 1) auraCrowd.addAgent({ id: String(index), position: [(index % 8) * 0.2, Math.floor(index / 8) * 0.2] });
-auraCrowd.setFormation({ type: "wedge", center: [8, 8] });
-const auraCrowdStepMs32Agents = elapsed(() => { auraCrowd.update(1 / 60); }, 120);
+const retiredBaseline = {
+  measuredAt: "2026-08-08T21:13:45.786Z",
+  queryMs128Grid: 97.9992,
+  crowdStepMs32Agents: 0.3208,
+  note: "Frozen from the last committed pre-removal bake-off; it is historical comparison data, not a live runtime candidate."
+} as const;
 
 const initStart = performance.now();
 const navigation = await createRecastNavigation();
@@ -60,19 +59,18 @@ const report = {
   schema: "aura3d.navigation-backend-bakeoff/1.0",
   generatedAt: new Date().toISOString(),
   pass: browser.pass && deterministicSerializedBytes && serialized.byteLength > 0 && addObstacleUpdates > 0 && removeObstacleUpdates > 0,
-  decision: "Select exact recast-navigation@0.43.1 behind optional @aura3d/navigation-recast; retain Aura grid/crowd/steering only as compatibility until the major migration gate; reject Yuka as a second overlapping owner.",
+  decision: "Select exact recast-navigation@0.43.1 behind optional @aura3d/navigation-recast; remove the displaced in-house grid/crowd/steering implementation at the major migration gate; reject Yuka as a second overlapping owner.",
   claimBoundary: "Small synthetic workload and Chromium evidence; results do not claim universal scale or quality.",
   candidates: {
     auraLegacy: {
-      status: "compatibility-only",
-      queryMs128Grid: round(auraQueryMs),
-      crowdStepMs32Agents: round(auraCrowdStepMs32Agents),
+      status: "removed-at-major-boundary",
+      ...retiredBaseline,
       runtimeNavmeshGeneration: false,
       offlineNavmeshGeneration: false,
       serializedNavmesh: false,
       temporaryObstacles: false,
       workerContract: false,
-      note: "Grid A*, O(n²) neighbor crowd, and steering utilities are not a 3D navmesh/Detour stack."
+      runtimeCandidate: false
     },
     recast: {
       version: "0.43.1",

@@ -1,6 +1,6 @@
 # Final Subsystem Ownership
 
-Generated from `tools/final-subsystem-ownership/index.mjs` at commit `66f26ff34a9a9b79199f6930987147926e8bc52a`.
+Generated from `tools/final-subsystem-ownership/index.mjs` at commit `b415d8397235ada386b4f3d7556d2d2004bbd919`.
 
 Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.
 
@@ -13,7 +13,7 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/asset-index` | `AURA-MOAT` | 3438 | 35 | 1 | 24286 | yes |
 | `@aura3d/assets` | `AURA-MOAT` | 15823 | 88 | 3 | 109159 | yes |
 | `@aura3d/audio` | `BROWSER-STANDARD` | 1696 | 19 | 1 | 13124 | yes |
-| `@aura3d/cli` | `AURA-MOAT` | 8756 | 32 | 1 | 78405 | yes |
+| `@aura3d/cli` | `AURA-MOAT` | 8757 | 32 | 1 | 78405 | yes |
 | `@aura3d/controls` | `AURA-CORE` | 2389 | 14 | 1 | 14931 | yes |
 | `@aura3d/core` | `AURA-CORE` | 1186 | 52 | 1 | 7644 | yes |
 | `create-aura3d` | `AURA-MOAT` | 8574 | 127 | 1 | 69180 | yes |
@@ -26,8 +26,8 @@ Phase 1 ownership inventory and migration queue only; no deletion, dependency se
 | `@aura3d/input` | `AURA-CORE` | 1983 | 34 | 1 | 14695 | yes |
 | `@aura3d/materials` | `AURA-CORE` | 339 | 5 | 2 | 2760 | yes |
 | `@aura3d/math` | `AURA-CORE` | 1220 | 49 | 1 | 8067 | yes |
-| `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 196 | 7 | 1 | 0 | yes |
-| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 9698 | 47 | 3 | 102048 | yes |
+| `@aura3d/navigation-recast` | `EXTERNAL-ADAPTER` | 239 | 7 | 1 | 0 | yes |
+| `@aura3d/physics` | `COMPATIBILITY-ONLY` | 8559 | 47 | 3 | 102048 | yes |
 | `@aura3d/physics-rapier` | `EXTERNAL-ADAPTER` | 160 | 6 | 1 | 2329 | yes |
 | `@aura3d/product-studio` | `AURA-MOAT` | 696 | 29 | 1 | 4893 | yes |
 | `@aura3d/react` | `EXTERNAL-ADAPTER` | 173 | 14 | 1 | 1182 | yes |
@@ -49,10 +49,10 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `asset-index-general` | `asset-index` | `AURA-MOAT` | 20 | 3438 | 23414 | 113 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `assets-general` | `assets` | `AURA-MOAT` | 61 | 15758 | 102750 | 230 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `audio-browser-runtime` | `audio` | `BROWSER-STANDARD` | 16 | 1696 | 8464 | 31 | Select one playback owner; retain Aura-specific cue semantics only. |
-| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8756 | 77735 | 793 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `aura3d-cli-general` | `aura3d-cli` | `AURA-MOAT` | 31 | 8757 | 77735 | 792 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `controls-general` | `controls` | `AURA-CORE` | 15 | 2389 | 14931 | 68 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `core-general` | `core` | `AURA-CORE` | 15 | 1186 | 7644 | 123 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 206 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `create-aura3d-general` | `create-aura3d` | `AURA-MOAT` | 24 | 8574 | 69180 | 207 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `debug-general` | `debug` | `AURA-MOAT` | 16 | 1133 | 6632 | 33 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `ecs-general` | `ecs` | `COMPATIBILITY-ONLY` | 30 | 1480 | 10078 | 84 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `editor-general` | `editor` | `OPTIONAL-PLUGIN` | 1 | 1 | 93 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
@@ -64,15 +64,14 @@ Every package source file is assigned exactly once. General rows inherit the pac
 | `input-general` | `input` | `AURA-CORE` | 24 | 1983 | 10744 | 74 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `materials-general` | `materials` | `AURA-CORE` | 10 | 339 | 2760 | 1341 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `math-general` | `math` | `AURA-CORE` | 19 | 1220 | 8067 | 177 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 196 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `navigation-recast-general` | `navigation-recast` | `EXTERNAL-ADAPTER` | 1 | 239 | 0 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `physics-cannon-adapter` | `physics` | `EXTERNAL-ADAPTER` | 12 | 3937 | 32389 | 132 | Compare against current Rapier topology; exactly one physical solver may remain. |
-| `physics-custom-physical-controllers` | `physics` | `DEPRECATE-REMOVE` | 4 | 2184 | 17116 | 32 | Retain only until the optional-engine bake-off and migration proof identify replacements. |
-| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2442 | 16083 | 425 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `physics-navigation-crowd-steering` | `physics` | `OPTIONAL-PLUGIN` | 3 | 1135 | 7650 | 27 | Bake off against Recast/Detour and maintained alternatives in Phase 2. |
+| `physics-custom-physical-controllers` | `physics` | `DEPRECATE-REMOVE` | 4 | 2184 | 17116 | 33 | Retain only until the optional-engine bake-off and migration proof identify replacements. |
+| `physics-general` | `physics` | `COMPATIBILITY-ONLY` | 9 | 2438 | 16083 | 427 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `physics-rapier-general` | `physics-rapier` | `EXTERNAL-ADAPTER` | 1 | 160 | 2329 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `product-studio-general` | `product-studio` | `AURA-MOAT` | 13 | 696 | 4893 | 15 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `react-general` | `react` | `EXTERNAL-ADAPTER` | 1 | 173 | 1182 | 0 | Retain under the package disposition; reassess only with consumer and migration evidence. |
-| `rendering-general` | `rendering` | `AURA-CORE` | 252 | 54782 | 370830 | 899 | Retain under the package disposition; reassess only with consumer and migration evidence. |
+| `rendering-general` | `rendering` | `AURA-CORE` | 252 | 54782 | 370830 | 900 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `scene-general` | `scene` | `AURA-CORE` | 22 | 1708 | 10343 | 520 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `scripting-general` | `scripting` | `COMPATIBILITY-ONLY` | 21 | 3692 | 25121 | 45 | Retain under the package disposition; reassess only with consumer and migration evidence. |
 | `three-compat-general` | `three-compat` | `COMPATIBILITY-ONLY` | 20 | 1234 | 10185 | 19 | Retain under the package disposition; reassess only with consumer and migration evidence. |
@@ -100,7 +99,7 @@ The machine report retains the complete per-package paths for source, dynamic-im
 Known overlap queues:
 
 - **physical integration:** duplicate custom physical controller ownership; Phase 2 removal candidate. Owners: cannon-es via PhysicsWorld, KinematicBody/KinematicWorld, CharacterController, VehicleDynamics.
-- **navigation and steering:** overlap requires bake-off and consumer graph. Owners: Navigation, Crowd, Steering, route-local AI.
+- **navigation and crowd:** single selected owner after the major-version migration. Owners: optional Recast/Detour adapter.
 - **audio context/mixing/effects:** potential duplicate browser ownership; Phase 2 characterization required. Owners: AudioContextManager, AudioMixer/Bus, effects wrappers, route/browser unlock handlers.
 - **media encoding/publishing:** Node/browser ownership mixed in engine agent API. Owners: browser encoders, FFmpeg adapter, cloud/YouTube publishing.
 

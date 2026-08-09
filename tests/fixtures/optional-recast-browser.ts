@@ -29,7 +29,18 @@ async function run(): Promise<void> {
   const workerStart = performance.now();
   const built = await workerBuild();
   const workerRoundTripMs = performance.now() - workerStart;
-  const mesh = navigation.import(built.bytes);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", Uint8Array.from(built.bytes).buffer));
+  const hash = [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
+  const mesh = await navigation.importAsset({
+    kind: "aura-asset-ref",
+    id: "workerNavigation",
+    type: "navigation",
+    format: "navmesh",
+    url: "/aura-assets/worker.navmesh",
+    hash: `sha256-${hash}`
+  }, {
+    fetch: async () => ({ ok: true, status: 200, arrayBuffer: async () => Uint8Array.from(built.bytes).buffer })
+  });
   const path = mesh.computePath([-8, 0, -8], [8, 0, 8]);
   const crowd = mesh.createCrowd(64, 0.5);
   for (let index = 0; index < 32; index += 1) {
@@ -59,6 +70,7 @@ async function run(): Promise<void> {
   const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
   window.__auraRecastProof = {
     pass: path.success && moved && repeatedDisposals === 10,
+    typedAssetHashVerified: true,
     loadToReadyMs: performance.now() - (window.__auraRecastLoadStart ?? 0),
     initMs,
     workerGenerationMs: built.generationMs,

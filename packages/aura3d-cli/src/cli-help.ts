@@ -5,7 +5,7 @@ export function assetsAddHelp(): string {
   return `Usage: aura3d assets add ./model.glb --name robot [options]
 
 Options:
-  --type model|texture|environment|audio
+  --type model|texture|environment|audio|navigation
   --license CC0-1.0
   --license-name "CC0 1.0 Universal"
   --license-url URL
@@ -32,7 +32,7 @@ export function mainHelp(profileUsage: string): string {
   return `Aura3D CLI
 
 Commands:
-  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--retrieved-at ISO-8601] [--quality ungraded|blocked|prototype|candidate|release] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png] [--orientation-json tests/reports/asset.orientation.json]
+  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio|navigation] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--retrieved-at ISO-8601] [--quality ungraded|blocked|prototype|candidate|release] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png] [--orientation-json tests/reports/asset.orientation.json]
   aura3d assets scan ./assets
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json]

@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
+import { defineAuraAssets } from "@aura3d/engine";
 import { createRecastNavigation } from "@aura3d/navigation-recast";
 
 const plane = {
@@ -24,6 +26,31 @@ describe("optional Recast/Detour navigation adapter", () => {
     expect(imported.disposed).toBe(true);
     expect(mesh.disposed).toBe(true);
     expect(() => mesh.computePath([0, 0, 0], [1, 0, 1])).toThrow(/disposed/);
+  });
+
+  it("imports a CLI-compatible typed navigation asset and verifies its content hash", async () => {
+    const navigation = await createRecastNavigation();
+    const generated = navigation.generateSolo(plane, {});
+    const bytes = generated.serialize();
+    generated.dispose();
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    const assets = defineAuraAssets({
+      levelNavigation: {
+        type: "navigation",
+        format: "navmesh",
+        url: "/aura-assets/level.navmesh",
+        hash: `sha256-${hash}`
+      }
+    } as const);
+    const imported = await navigation.importAsset(assets.levelNavigation, {
+      fetch: async () => ({ ok: true, status: 200, arrayBuffer: async () => Uint8Array.from(bytes).buffer })
+    });
+    expect(imported.computePath([-4, 0, -4], [4, 0, 4]).success).toBe(true);
+    imported.dispose();
+
+    await expect(navigation.importAsset({ ...assets.levelNavigation, hash: `sha256-${"0".repeat(64)}` }, {
+      fetch: async () => ({ ok: true, status: 200, arrayBuffer: async () => Uint8Array.from(bytes).buffer })
+    })).rejects.toThrow(/SHA-256 verification/);
   });
 
   it("rejects non-finite query coordinates with an actionable error", async () => {

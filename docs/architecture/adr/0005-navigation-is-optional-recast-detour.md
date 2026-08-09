@@ -6,11 +6,11 @@
 
 ## Context
 
-Aura3D publishes grid A*, a quadratic neighbor-scan crowd simulator, and local
-steering algorithms from `@aura3d/physics`. They do not generate or query a 3D
-navmesh, serialize a Detour mesh, support tile-cache obstacles, or provide a
-worker-transfer contract. Those exports remain compatibility obligations, but
-they are not a credible current navigation stack.
+Aura3D previously published an in-house grid pathfinder, quadratic neighbor-scan
+crowd simulator, and local steering algorithms from `@aura3d/physics`. They did
+not generate or query a 3D navmesh, serialize a Detour mesh, support tile-cache
+obstacles, or provide a worker-transfer contract. Keeping them beside the
+selected adapter created overlapping subsystem ownership.
 
 ## The four R11 questions
 
@@ -33,20 +33,23 @@ run in a worker. Recast/Detour owns navmesh generation, path queries, crowds,
 and temporary obstacles. Yuka is not selected: its older package does not
 replace navmesh generation or Detour obstacle/crowd coverage.
 
-Legacy `Navigation`, `Crowd`, and `Steering` exports remain compatibility-only
-until the major-version migration gate and R8 deletion proof are complete. They
-cannot support current competitive navigation claims.
+The major-version migration removes the displaced in-house exports after their
+consumers move to Recast/Detour or route-local direct-objective logic and R8
+proves the deletion safe. They cannot support current competitive navigation
+claims, remain as a second implementation, or return as an undocumented
+compatibility layer.
 
 ## Consequences
 
 - Navigation adds no bytes or WASM when it is not installed.
 - Advanced Detour use goes through documented escape hatches, not private paths.
 - A second recommended navmesh, crowd, or obstacle owner is a gate failure.
-- Removing legacy exports is a major-version change unless proven otherwise.
+- The removal is a declared major-version breaking change with migration notes.
 
 ## Evidence
 
-The retained Phase 2 bake-off must cover generation, query, crowds, temporary
-obstacles, worker transfer, serialization/import, dynamic updates, memory,
-determinism, browser loading, disposal, and bundle cost before this workstream
-is checked complete.
+The retained bake-off covers generation, query, crowds, temporary obstacles,
+worker transfer, serialization/import, dynamic updates, memory, determinism,
+browser loading, disposal, and bundle cost. Historical measurements for the
+removed implementation are frozen in the committed report; current runs execute
+only the selected Recast/Detour candidate.

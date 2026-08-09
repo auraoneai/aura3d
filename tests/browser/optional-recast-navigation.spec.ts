@@ -46,7 +46,7 @@ test("optional Recast package loads, builds in a worker, queries, crowds, obstac
     await page.close();
   }
   await context.close();
-  const typed = samples as Array<{ pass: boolean; transferredBytes: number; repeatedDisposals: number; crowdStepMs32Agents: number }>;
+  const typed = samples as Array<{ pass: boolean; typedAssetHashVerified: boolean; transferredBytes: number; repeatedDisposals: number; crowdStepMs32Agents: number }>;
   const report = {
     schema: "aura3d.optional-recast-browser/1.0",
     generatedAt: new Date().toISOString(),
@@ -58,12 +58,13 @@ test("optional Recast package loads, builds in a worker, queries, crowds, obstac
     cold: typed[0],
     cached: typed[1],
     consoleErrors,
-    claimBoundary: "Optional Recast/Detour browser lifecycle, worker generation, query, crowd, and temporary-obstacle evidence only."
+    claimBoundary: "Optional Recast/Detour typed-asset integrity, browser lifecycle, worker generation, query, crowd, and temporary-obstacle evidence only."
   };
   mkdirSync(dirname(reportPath), { recursive: true });
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   expect(report.pass).toBe(true);
   expect(report.cold?.transferredBytes).toBeGreaterThan(0);
+  expect(report.cold?.typedAssetHashVerified).toBe(true);
   expect(report.cold?.repeatedDisposals).toBe(10);
   expect(report.cold?.crowdStepMs32Agents).toBeLessThan(16.7);
 });

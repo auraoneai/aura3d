@@ -1,0 +1,9 @@
+{
+  "$comment": "Closed R8 queue for the superseded grid-navigation, steering, and crowd implementations. The pre-deletion audit cleared all six R8 points across 5,030 files; the generated proof is tests/reports/navigation-legacy-delete-final.json.",
+  "$removedCandidates": [
+    "packages/physics/src/Navigation.ts",
+    "packages/physics/src/Steering.ts",
+    "packages/physics/src/Crowd.ts"
+  ],
+  "candidates": []
+}

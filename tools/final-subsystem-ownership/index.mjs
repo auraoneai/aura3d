@@ -187,7 +187,7 @@ const architectureLock = {
 
 const overlaps = [
   { capability: "physical integration", owners: ["cannon-es via PhysicsWorld", "KinematicBody/KinematicWorld", "CharacterController", "VehicleDynamics"], status: "duplicate custom physical controller ownership; Phase 2 removal candidate" },
-  { capability: "navigation and steering", owners: ["Navigation", "Crowd", "Steering", "route-local AI"], status: "overlap requires bake-off and consumer graph" },
+  { capability: "navigation and crowd", owners: ["optional Recast/Detour adapter"], status: "single selected owner after the major-version migration" },
   { capability: "audio context/mixing/effects", owners: ["AudioContextManager", "AudioMixer/Bus", "effects wrappers", "route/browser unlock handlers"], status: "potential duplicate browser ownership; Phase 2 characterization required" },
   { capability: "media encoding/publishing", owners: ["browser encoders", "FFmpeg adapter", "cloud/YouTube publishing"], status: "Node/browser ownership mixed in engine agent API" }
 ];

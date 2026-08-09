@@ -3559,7 +3559,8 @@ function inferAssetType(format: string): AuraCliAssetType {
   if (["png", "jpg", "jpeg", "webp", "ktx2"].includes(format)) return "texture";
   if (["hdr", "exr"].includes(format)) return "environment";
   if (["mp3", "wav", "ogg"].includes(format)) return "audio";
-  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, or ogg.`);
+  if (format === "navmesh") return "navigation";
+  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, ogg, or navmesh.`);
 }
 
 function hashFile(path: string): string {

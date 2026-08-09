@@ -206,12 +206,6 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
       detail: "The custom physical VehicleDynamics controller and Rapier dynamic raycast vehicle adapter overlap until the major migration and R8 deletion complete. Authored-unit arcade racing is a separate contract."
     },
     {
-      capability: "navigation and crowd",
-      present: ["packages/physics/src/Navigation.ts", "packages/physics/src/Crowd.ts", "packages/physics/src/Steering.ts"].some(exists)
-        && exists("packages/navigation-recast/src/index.ts"),
-      detail: "Legacy grid navigation/crowd/steering and the selected Recast/Detour adapter overlap until consumers migrate and the displaced algorithms pass R8 deletion."
-    },
-    {
       /*
        * WS-3.1 — the definition of this violation is corrected, not the code, and the reasoning matters.
        *

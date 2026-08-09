@@ -7,6 +7,17 @@ import { describe, expect, test } from "vitest";
 import { addAsset, bindGameRouteEvidence, certifyGameGeometry, initAgentFiles, inspectAsset, listAssets, readAssetManifest, readRenderedProbeMetadata, validateAssets, validateAnimationStudioAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
 
 describe("@aura3d/cli assets", () => {
+  test("adds serialized navmeshes as typed navigation assets", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "level.navmesh"), Buffer.from("serialized-recast-navmesh"));
+    const result = addAsset({ projectDir, file: "assets/level.navmesh", name: "levelNavigation" });
+    const asset = result.manifest?.assets.find((entry) => entry.id === "levelNavigation");
+    expect(asset).toMatchObject({ type: "navigation", format: "navmesh" });
+    const generated = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
+    expect(generated).toContain('type: "navigation"');
+    expect(generated).toContain('format: "navmesh"');
+  });
+
   test("screens game geometry without writing and certifies a passing hash-bound track", async () => {
     const projectDir = createProject();
     const sourceManifest = readAssetManifest(process.cwd());

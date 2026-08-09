@@ -20,6 +20,27 @@ export interface NavigationPathResult {
   readonly error?: string;
 }
 
+/** Structural match for `AuraAssetRef<"navigation">` without coupling this optional package to the engine barrel. */
+export interface NavigationAssetRef {
+  readonly kind: "aura-asset-ref";
+  readonly id: string;
+  readonly type: "navigation";
+  readonly format: "navmesh";
+  readonly url: string;
+  readonly hash?: string;
+}
+
+export interface NavigationAssetFetchResponse {
+  readonly ok: boolean;
+  readonly status: number;
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+export interface ImportNavigationAssetOptions {
+  readonly fetch?: (url: string) => Promise<NavigationAssetFetchResponse>;
+  readonly verifyHash?: boolean;
+}
+
 export interface NavigationCrowdAgentOptions {
   readonly radius?: number;
   readonly height?: number;
@@ -184,8 +205,30 @@ export class RecastNavigation {
     return new RecastNavMeshHandle(this.#module, result.navMesh);
   }
 
+  async importAsset(asset: NavigationAssetRef, options: ImportNavigationAssetOptions = {}): Promise<RecastNavMeshHandle> {
+    if (asset.kind !== "aura-asset-ref" || asset.type !== "navigation" || asset.format !== "navmesh") {
+      throw new TypeError("Recast navigation import requires a typed Aura navigation/navmesh asset reference.");
+    }
+    const fetchAsset = options.fetch ?? ((url: string) => fetch(url));
+    const response = await fetchAsset(asset.url);
+    if (!response.ok) throw new Error(`Navigation asset ${asset.id} failed to load (${response.status}) from ${asset.url}.`);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength === 0) throw new Error(`Navigation asset ${asset.id} is empty.`);
+    if (options.verifyHash !== false && asset.hash) await verifyNavigationAssetHash(asset, bytes);
+    return this.import(bytes);
+  }
+
   /** Stable typed escape hatch for Crowd, TileCache, and advanced Detour APIs. */
   get rawModule(): RecastModule { return this.#module; }
+}
+
+async function verifyNavigationAssetHash(asset: NavigationAssetRef, bytes: Uint8Array): Promise<void> {
+  const expected = asset.hash?.match(/^sha256-([a-f0-9]{64})$/i)?.[1]?.toLowerCase();
+  if (!expected) throw new Error(`Navigation asset ${asset.id} has an unsupported integrity value; expected sha256-<64 hex characters>.`);
+  if (!globalThis.crypto?.subtle) throw new Error(`Navigation asset ${asset.id} cannot verify SHA-256 because Web Crypto is unavailable.`);
+  const digest = new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", Uint8Array.from(bytes).buffer));
+  const actual = [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
+  if (actual !== expected) throw new Error(`Navigation asset ${asset.id} failed SHA-256 verification.`);
 }
 
 export async function createRecastNavigation(options: RecastNavigationOptions = {}): Promise<RecastNavigation> {

@@ -270,7 +270,7 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
   },
   "navigation-backend-bakeoff": {
     writes: PRODUCER_OWNERSHIP["navigation-backend-bakeoff"],
-    hashes: ["tests/reports/external-candidate-package-audit.json", "tests/reports/optional-recast-navigation/report.json", "pnpm-lock.yaml"]
+    hashes: ["tests/reports/external-candidate-package-audit.json", "tests/reports/optional-recast-navigation/report.json", "tools/navigation-backend-bakeoff/index.ts", "pnpm-lock.yaml"]
   },
   "optional-recast-browser": {
     writes: PRODUCER_OWNERSHIP["optional-recast-browser"],

@@ -43,10 +43,9 @@
  *    `PhysicsStepper` for accumulator-driven fixed-step loops, and the adaptive-substep
  *    CCD wrapper, which is Aura3D's because the solver exposes no native swept TOI.
  *
- * Above the solver and deliberately kept (WS-4.4/4.6): navigation, steering, crowds,
- * kinematic and hitbox worlds, debug drawing, and the ECS/scene bridges. Those are game
- * logic with no external equivalent, and they are unaffected by which solver runs
- * underneath — which is the same reason they survived the WS-4.3 removal untouched.
+ * Above the solver and deliberately kept: kinematic and hitbox worlds, debug drawing,
+ * and the ECS/scene bridges. Navigation and crowd ownership moved to the optional
+ * Recast/Detour adapter at the major-version boundary.
  */
 
 // --- 1. Bodies, and the shared math/shape vocabulary the whole contract speaks in ---
@@ -82,10 +81,7 @@ export * from "./VehicleDynamics.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
 
-// --- Above the solver: navigation, steering, bridges, diagnostics (WS-4.4/4.6) ---
-export * from "./Navigation.js";
-export * from "./Steering.js";
-export * from "./Crowd.js";
+// --- Above the solver: bridges and diagnostics ---
 export * from "./ScenePhysicsBridge.js";
 export * from "./ECSPhysicsBridge.js";
 export * from "./PhysicsDebugDraw.js";

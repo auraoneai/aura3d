@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-08T22:51:47.673Z",
+  "generatedAt": "2026-08-09T00:02:00.647Z",
   "pass": true,
   "claimBoundary": "Phase 1 ownership inventory and migration queue only; no deletion, dependency selection, parity, or release claim.",
-  "sourceCommit": "66f26ff34a9a9b79199f6930987147926e8bc52a",
+  "sourceCommit": "b415d8397235ada386b4f3d7556d2d2004bbd919",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -15,8 +15,8 @@
     "external-consumer and clean-room tests"
   ],
   "packageCount": 28,
-  "subsystemCount": 34,
-  "sourceFilesClassified": 878,
+  "subsystemCount": 33,
+  "sourceFilesClassified": 875,
   "packages": [
     {
       "package": "animation",
@@ -784,8 +784,8 @@
       "published": true,
       "disposition": "AURA-MOAT",
       "source": {
-        "lines": 8756,
-        "bytes": 386551
+        "lines": 8757,
+        "bytes": 386699
       },
       "dist": {
         "jsFiles": 32,
@@ -1873,6 +1873,7 @@
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/reports/browser-entry-purity.json",
+          "tests/reports/descriptor-editor-rendering-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/editor/plugin-api.test.ts",
@@ -1913,7 +1914,7 @@
         "source": 28,
         "dynamicImport": 5,
         "route": 11,
-        "fixture": 15,
+        "fixture": 16,
         "cliOrGenerator": 5,
         "docs": 15,
         "externalConsumer": 0
@@ -1921,7 +1922,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 15,
+        "testMentions": 16,
         "docsMentions": 15
       }
     },
@@ -2008,6 +2009,7 @@
           "tests/browser/example-dev-server.ts",
           "tests/browser/fixtures/workspace-vite-imports/main.ts",
           "tests/reports/browser-entry-purity.json",
+          "tests/reports/descriptor-editor-rendering-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/unit/controls/exported-controls-resolution.test.ts",
           "tests/unit/editor/plugin-api.test.ts",
@@ -2045,7 +2047,7 @@
         "source": 28,
         "dynamicImport": 5,
         "route": 11,
-        "fixture": 15,
+        "fixture": 16,
         "cliOrGenerator": 4,
         "docs": 13,
         "externalConsumer": 0
@@ -2053,7 +2055,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 45,
-        "testMentions": 15,
+        "testMentions": 16,
         "docsMentions": 13
       }
     },
@@ -2064,7 +2066,7 @@
       "disposition": "AURA-MOAT",
       "source": {
         "lines": 56873,
-        "bytes": 2329582
+        "bytes": 2329597
       },
       "dist": {
         "jsFiles": 125,
@@ -2573,8 +2575,8 @@
       "published": true,
       "disposition": "EXTERNAL-ADAPTER",
       "source": {
-        "lines": 196,
-        "bytes": 8167
+        "lines": 239,
+        "bytes": 10460
       },
       "dist": {
         "jsFiles": 0,
@@ -2624,9 +2626,11 @@
         "docs": [
           "1.6-FINAL-PRD-Finishes.md",
           "docs/api/public-api.md",
+          "docs/architecture/1.6-layers.md",
           "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
           "docs/architecture/final-subsystem-ownership.md",
-          "docs/architecture/package-ownership.md"
+          "docs/architecture/package-ownership.md",
+          "docs/physics/runtime.md"
         ],
         "externalConsumer": []
       },
@@ -2636,14 +2640,14 @@
         "route": 0,
         "fixture": 8,
         "cliOrGenerator": 2,
-        "docs": 5,
+        "docs": 7,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
         "testMentions": 8,
-        "docsMentions": 5
+        "docsMentions": 7
       }
     },
     {
@@ -2652,8 +2656,8 @@
       "published": true,
       "disposition": "COMPATIBILITY-ONLY",
       "source": {
-        "lines": 9698,
-        "bytes": 374949
+        "lines": 8559,
+        "bytes": 329920
       },
       "dist": {
         "jsFiles": 40,
@@ -2725,6 +2729,7 @@
           "Aura3D-1.6-Replatform-PRD.md",
           "docs/api/public-api.md",
           "packages/engine/src/agent-api/index.ts",
+          "packages/navigation-recast/README.md",
           "tests/unit/tools/package-install-smoke.test.ts",
           "tools/browser-entry-purity/index.ts",
           "tools/bundle-scenarios/index.ts",
@@ -2809,24 +2814,25 @@
           "examples/physics-sandbox/README.md",
           "examples/raycast-ccd-lab/README.md",
           "packages/create-aura3d/templates/character-controller/README.md",
+          "packages/navigation-recast/README.md",
           "packages/physics-rapier/README.md"
         ],
         "externalConsumer": []
       },
       "consumerCounts": {
         "source": 47,
-        "dynamicImport": 7,
+        "dynamicImport": 8,
         "route": 11,
         "fixture": 27,
         "cliOrGenerator": 6,
-        "docs": 29,
+        "docs": 30,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
-        "sourceFiles": 28,
+        "sourceFiles": 25,
         "testMentions": 27,
-        "docsMentions": 29
+        "docsMentions": 30
       }
     },
     {
@@ -3133,7 +3139,7 @@
       "disposition": "AURA-CORE",
       "source": {
         "lines": 54782,
-        "bytes": 2307275
+        "bytes": 2307232
       },
       "dist": {
         "jsFiles": 315,
@@ -3532,6 +3538,7 @@
           "tests/performance/production-runtime-performance-baselines.ts",
           "tests/performance/rendering-frame-budgets.ts",
           "tests/performance/system-baselines.ts",
+          "tests/reports/descriptor-editor-rendering-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/templates/template-verification.test.ts",
           "tests/unit/apps/advanced-gallery-route-policies.test.ts",
@@ -3614,7 +3621,7 @@
         "source": 224,
         "dynamicImport": 18,
         "route": 91,
-        "fixture": 58,
+        "fixture": 59,
         "cliOrGenerator": 29,
         "docs": 23,
         "externalConsumer": 0
@@ -3622,7 +3629,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 252,
-        "testMentions": 58,
+        "testMentions": 59,
         "docsMentions": 23
       }
     },
@@ -5169,8 +5176,8 @@
         "packages/aura3d-cli/src/pull-bridge/types.ts",
         "packages/aura3d-cli/src/pull-bridge/vector3.ts"
       ],
-      "lines": 8756,
-      "bytes": 386551,
+      "lines": 8757,
+      "bytes": 386699,
       "compiledCost": {
         "compiledFiles": 31,
         "rawBytes": 333698,
@@ -5704,7 +5711,6 @@
         "packages/physics/README.md",
         "packages/physics/package.json",
         "packages/physics/src/Constraint.ts",
-        "packages/physics/src/Navigation.ts",
         "packages/physics/src/index.ts",
         "packages/physics/src/solverless.ts",
         "packages/product-studio/package.json",
@@ -5780,6 +5786,7 @@
         "tests/reports/current-threejs-baseline.json",
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
+        "tests/reports/descriptor-editor-rendering-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/descriptor-input-animation-delete-final.json",
         "tests/reports/descriptor-physics-delete-final.json",
@@ -5845,7 +5852,6 @@
         "tests/unit/input/webxr-session-controller.test.ts",
         "tests/unit/package-dist/root-gates.test.ts",
         "tests/unit/physics/broadphase.test.ts",
-        "tests/unit/physics/navigation.test.ts",
         "tests/unit/physics/public-joints.test.ts",
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/rendering/current-routes-interactive-renderer-api.test.ts",
@@ -5923,10 +5929,10 @@
         "tools/external-parity-material-studio-readiness/index.ts",
         "tools/external-parity-product-readiness/index.ts",
         "tools/external-parity-production-readiness/index.ts",
-        "tools/external-parity-progress/index.ts",
         "tools/external-parity-runtime/index.ts",
         "tools/external-parity-template-readiness/index.ts",
         "tools/external-parity-threejs-visual-parity/index.ts",
+        "tools/external-parity-truth/index.ts",
         "tools/external-parity-unity-unreal-parity/index.ts",
         "tools/final-subsystem-ownership/index.mjs",
         "tools/foundation-api-audit/index.ts",
@@ -5973,7 +5979,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 793
+      "maintenanceReferenceCount": 792
     },
     {
       "id": "controls-general",
@@ -6419,6 +6425,7 @@
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
+        "tests/reports/descriptor-editor-rendering-delete-final.json",
         "tests/reports/descriptor-input-action-delete-final.json",
         "tests/reports/descriptor-input-animation-delete-final.json",
         "tests/reports/descriptor-physics-delete-final.json",
@@ -6487,7 +6494,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 206
+      "maintenanceReferenceCount": 207
     },
     {
       "id": "debug-general",
@@ -7050,7 +7057,7 @@
         "packages/engine/src/threejs-example-parity/index.ts"
       ],
       "lines": 54793,
-      "bytes": 2242654,
+      "bytes": 2242669,
       "compiledCost": {
         "compiledFiles": 105,
         "rawBytes": 1722551,
@@ -8440,7 +8447,6 @@
         "packages/materials/src/MaterialValidation.ts",
         "packages/materials/src/NodeMaterial.ts",
         "packages/physics/src/MeshBVH.ts",
-        "packages/physics/src/Navigation.ts",
         "packages/physics/src/ScenePhysicsBridge.ts",
         "packages/react/README.md",
         "packages/rendering/src/Renderer.ts",
@@ -8822,6 +8828,7 @@
         "tests/unit/input/input-service-ownership.test.ts",
         "tests/unit/materials/three-compat-material-library.test.ts",
         "tests/unit/navigation-recast/optional-boundary.test.ts",
+        "tests/unit/navigation-recast/recast-adapter.test.ts",
         "tests/unit/package-dist/package-dist-helpers.ts",
         "tests/unit/package-dist/root-gates.test.ts",
         "tests/unit/physics-rapier/optional-boundary.test.ts",
@@ -8832,16 +8839,13 @@
         "tests/unit/physics/ccd-or-fast-body.test.ts",
         "tests/unit/physics/constraints-stress.test.ts",
         "tests/unit/physics/coulomb-friction.test.ts",
-        "tests/unit/physics/crowd.test.ts",
         "tests/unit/physics/native-angular-contact.test.ts",
         "tests/unit/physics/native-narrow-phase.test.ts",
-        "tests/unit/physics/navigation.test.ts",
         "tests/unit/physics/production-backend-invariants.test.ts",
         "tests/unit/physics/public-physics-runtime.test.ts",
         "tests/unit/physics/scene-physics-bridge.test.ts",
         "tests/unit/physics/single-solver-ownership.test.ts",
         "tests/unit/physics/skyline-real-level-motion.test.ts",
-        "tests/unit/physics/steering.test.ts",
         "tests/unit/physics/stress-scenes.test.ts",
         "tests/unit/physics/turbo-drift-real-circuit-contact.test.ts",
         "tests/unit/product-studio/product-asset-loader.test.ts",
@@ -8931,6 +8935,7 @@
         "tests/unit/tools/showcase-manual-review-gate.test.ts",
         "tests/unit/tools/showcase-route-gates.test.ts",
         "tests/unit/tools/showcase-visual-review-freshness.test.ts",
+        "tests/unit/tools/threejs-parity-current-checklist.test.ts",
         "tests/unit/tools/threejs-parity-data-galaxy-generated-assets.test.ts",
         "tests/unit/tools/threejs-parity-product-configurator-generated-assets.test.ts",
         "tests/unit/tools/tutorial-docs.test.ts",
@@ -9320,10 +9325,12 @@
         "tools/threejs-parity-morphtargets-parity/index.ts",
         "tools/threejs-parity-package-smoke/index.ts",
         "tools/threejs-parity-runtime-import-audit/index.ts",
+        "tools/threejs-parity-same-scene-render/index.ts",
         "tools/threejs-parity-skinning-additive-parity/index.ts",
         "tools/threejs-parity-skinning-blending-parity/index.ts",
         "tools/threejs-parity-skinning-ik-parity/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts",
+        "tools/threejs-parity-visual-review/index.ts",
         "tools/verify-architecture/index.ts",
         "tools/verify-boundaries/index.ts",
         "tools/verify-exports/index.ts",
@@ -9930,7 +9937,6 @@
         "packages/materials/README.md",
         "packages/materials/package.json",
         "packages/physics/src/MeshBVH.ts",
-        "packages/physics/src/Navigation.ts",
         "packages/physics/src/ScenePhysicsBridge.ts",
         "packages/react/README.md",
         "packages/rendering/src/Renderer.ts",
@@ -10313,6 +10319,7 @@
         "tests/unit/input/input-service-ownership.test.ts",
         "tests/unit/materials/three-compat-material-library.test.ts",
         "tests/unit/navigation-recast/optional-boundary.test.ts",
+        "tests/unit/navigation-recast/recast-adapter.test.ts",
         "tests/unit/package-dist/package-dist-helpers.ts",
         "tests/unit/package-dist/root-gates.test.ts",
         "tests/unit/physics-rapier/optional-boundary.test.ts",
@@ -10323,16 +10330,13 @@
         "tests/unit/physics/ccd-or-fast-body.test.ts",
         "tests/unit/physics/constraints-stress.test.ts",
         "tests/unit/physics/coulomb-friction.test.ts",
-        "tests/unit/physics/crowd.test.ts",
         "tests/unit/physics/native-angular-contact.test.ts",
         "tests/unit/physics/native-narrow-phase.test.ts",
-        "tests/unit/physics/navigation.test.ts",
         "tests/unit/physics/production-backend-invariants.test.ts",
         "tests/unit/physics/public-physics-runtime.test.ts",
         "tests/unit/physics/scene-physics-bridge.test.ts",
         "tests/unit/physics/single-solver-ownership.test.ts",
         "tests/unit/physics/skyline-real-level-motion.test.ts",
-        "tests/unit/physics/steering.test.ts",
         "tests/unit/physics/stress-scenes.test.ts",
         "tests/unit/physics/turbo-drift-real-circuit-contact.test.ts",
         "tests/unit/product-studio/product-asset-loader.test.ts",
@@ -10422,6 +10426,7 @@
         "tests/unit/tools/showcase-manual-review-gate.test.ts",
         "tests/unit/tools/showcase-route-gates.test.ts",
         "tests/unit/tools/showcase-visual-review-freshness.test.ts",
+        "tests/unit/tools/threejs-parity-current-checklist.test.ts",
         "tests/unit/tools/threejs-parity-data-galaxy-generated-assets.test.ts",
         "tests/unit/tools/threejs-parity-product-configurator-generated-assets.test.ts",
         "tests/unit/tools/tutorial-docs.test.ts",
@@ -10811,10 +10816,12 @@
         "tools/threejs-parity-morphtargets-parity/index.ts",
         "tools/threejs-parity-package-smoke/index.ts",
         "tools/threejs-parity-runtime-import-audit/index.ts",
+        "tools/threejs-parity-same-scene-render/index.ts",
         "tools/threejs-parity-skinning-additive-parity/index.ts",
         "tools/threejs-parity-skinning-blending-parity/index.ts",
         "tools/threejs-parity-skinning-ik-parity/index.ts",
         "tools/threejs-parity-threejs-inventory/index.ts",
+        "tools/threejs-parity-visual-review/index.ts",
         "tools/verify-architecture/index.ts",
         "tools/verify-boundaries/index.ts",
         "tools/verify-exports/index.ts",
@@ -11065,8 +11072,8 @@
       "files": [
         "packages/navigation-recast/src/index.ts"
       ],
-      "lines": 196,
-      "bytes": 8167,
+      "lines": 239,
+      "bytes": 10460,
       "compiledCost": {
         "compiledFiles": 0,
         "rawBytes": 0,
@@ -11292,12 +11299,13 @@
         "tools/external-parity-runtime/index.ts",
         "tools/final-subsystem-ownership/index.mjs",
         "tools/foundation-runtime/index.ts",
+        "tools/negative-complexity/index.ts",
         "tools/physics-backend-bakeoff/index.ts",
         "tools/product-remediation/build-physics-audit.mjs",
         "tools/product-remediation/build-threejs-parity.mjs",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 32
+      "maintenanceReferenceCount": 33
     },
     {
       "id": "physics-general",
@@ -11316,8 +11324,8 @@
         "packages/physics/src/solverless.ts",
         "packages/physics/src/world.ts"
       ],
-      "lines": 2442,
-      "bytes": 86503,
+      "lines": 2438,
+      "bytes": 86260,
       "compiledCost": {
         "compiledFiles": 9,
         "rawBytes": 70908,
@@ -11584,6 +11592,7 @@
         "packages/rendering/src/ShaderLibrary.ts",
         "packages/rendering/src/SpecularPrefilter.ts",
         "packages/rendering/src/VertexFormat.ts",
+        "packages/rendering/src/VoxelWorld.ts",
         "packages/rendering/src/animation/AnimationToonMaterial.ts",
         "packages/scene/README.md",
         "packages/scene/tests/scene.test.ts",
@@ -11626,6 +11635,7 @@
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
         "tests/reports/browser-entry-purity.json",
+        "tests/reports/descriptor-editor-rendering-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/physics-backend-bakeoff/report.json",
         "tests/reports/physics-test-classification/report.json",
@@ -11752,58 +11762,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 425
-    },
-    {
-      "id": "physics-navigation-crowd-steering",
-      "package": "physics",
-      "disposition": "OPTIONAL-PLUGIN",
-      "owner": "recast/steering adapter candidate",
-      "decision": "Bake off against Recast/Detour and maintained alternatives in Phase 2.",
-      "files": [
-        "packages/physics/src/Crowd.ts",
-        "packages/physics/src/Navigation.ts",
-        "packages/physics/src/Steering.ts"
-      ],
-      "lines": 1135,
-      "bytes": 44786,
-      "compiledCost": {
-        "compiledFiles": 3,
-        "rawBytes": 35500,
-        "gzipBytes": 7650,
-        "brotliBytes": 6789,
-        "caveat": "concatenated built modules before application tree-shaking"
-      },
-      "maintenanceReferences": [
-        "1.6-FINAL-PRD-Finishes.md",
-        "Aura3D-1.6-Architecture-Decision.md",
-        "Aura3D-1.6-Replatform-PRD.md",
-        "apps/advanced-examples-gallery/src/authoredAssets.ts",
-        "apps/advanced-examples-gallery/src/productConfiguratorPolicy.ts",
-        "apps/aura-clash-showcase/src/GameConfig.ts",
-        "docs/api/public-api.md",
-        "docs/architecture/1.6-layers.md",
-        "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
-        "docs/architecture/adr/README.md",
-        "docs/architecture/final-subsystem-ownership.md",
-        "docs/physics/runtime.md",
-        "docs/project/parity/threejs-r185-surface-inventory.md",
-        "docs/project/plans/engine-game-parity-execution-plan.md",
-        "docs/project/plans/final-competitive-execution-ledger.md",
-        "packages/animation/src/CrowdAnimation.ts",
-        "packages/assets/src/CarConceptMaterialStability.ts",
-        "packages/engine/src/agent-api/GameGenreKits.ts",
-        "packages/engine/src/agent-api/VehicleChassis.ts",
-        "packages/engine/src/agent-api/VehicleDriverAi.ts",
-        "packages/navigation-recast/src/index.ts",
-        "packages/physics/src/index.ts",
-        "tests/browser/runtime-external-parity.spec.ts",
-        "tests/reports/final-subsystem-ownership.json",
-        "tests/unit/engine/racing-signed-track-offset.test.ts",
-        "tools/external-parity-runtime/index.ts",
-        "tools/final-subsystem-ownership/index.mjs"
-      ],
-      "maintenanceReferenceCount": 27
+      "maintenanceReferenceCount": 427
     },
     {
       "id": "physics-rapier-general",
@@ -12157,7 +12116,7 @@
         "packages/rendering/src/webgpu/WebGPUTexture.ts"
       ],
       "lines": 54782,
-      "bytes": 2307275,
+      "bytes": 2307232,
       "compiledCost": {
         "compiledFiles": 247,
         "rawBytes": 1965471,
@@ -12954,6 +12913,7 @@
         "tools/current-routes-runtime-import-audit/index.ts",
         "tools/current-routes-threejs-parity/index.ts",
         "tools/current-threejs-baseline/index.mjs",
+        "tools/deletion-safety/editor-rendering-descriptor-fixtures.json",
         "tools/deletion-safety/index.ts",
         "tools/demo-validation/product-demo-source-validation.ts",
         "tools/effects-vfx-visual-audit/index.ts",
@@ -13066,7 +13026,7 @@
         "tsconfig.base.json",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 899
+      "maintenanceReferenceCount": 900
     },
     {
       "id": "scene-general",
@@ -14292,14 +14252,11 @@
       "status": "duplicate custom physical controller ownership; Phase 2 removal candidate"
     },
     {
-      "capability": "navigation and steering",
+      "capability": "navigation and crowd",
       "owners": [
-        "Navigation",
-        "Crowd",
-        "Steering",
-        "route-local AI"
+        "optional Recast/Detour adapter"
       ],
-      "status": "overlap requires bake-off and consumer graph"
+      "status": "single selected owner after the major-version migration"
     },
     {
       "capability": "audio context/mixing/effects",

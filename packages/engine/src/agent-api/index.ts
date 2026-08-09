@@ -794,7 +794,7 @@ export * from "./AssetLibraryBrowser.js";
 
 export type AuraVec3 = readonly [number, number, number];
 export type AuraColor = `#${string}` | string;
-export type AuraAssetType = "model" | "texture" | "environment" | "audio";
+export type AuraAssetType = "model" | "texture" | "environment" | "audio" | "navigation";
 export type AuraModelFormat = "glb" | "gltf";
 export type AuraTextureFormat = "png" | "jpg" | "jpeg" | "webp" | "ktx2";
 export type AuraProceduralTextureKind =

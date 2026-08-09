@@ -34,8 +34,8 @@ pnpm verify:api-docs
 | `@aura3d/materials` | `1.6.0` | `packages/materials/src/index.ts` | 1 |
 | `@aura3d/materials/node` | `1.6.0` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `1.6.0` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/navigation-recast` | `1.6.0` | `packages/navigation-recast/src/index.ts` | 12 |
-| `@aura3d/physics` | `1.6.0` | `packages/physics/src/index.ts` | 25 |
+| `@aura3d/navigation-recast` | `1.6.0` | `packages/navigation-recast/src/index.ts` | 15 |
+| `@aura3d/physics` | `1.6.0` | `packages/physics/src/index.ts` | 22 |
 | `@aura3d/physics-rapier` | `1.6.0` | `packages/physics-rapier/src/index.ts` | 11 |
 | `@aura3d/physics/solverless` | `1.6.0` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `1.6.0` | `packages/physics/src/world.ts` | 2 |
@@ -820,6 +820,9 @@ export type RecastGenerators = typeof import("recast-navigation/generators");
 export interface NavigationTriangleSoup { readonly positions: readonly number[] | Float32Array;
 export interface RecastNavigationOptions { readonly moduleLoader?: () => Promise<RecastModule>;
 export interface NavigationPathResult { readonly success: boolean;
+export interface NavigationAssetRef { readonly kind: "aura-asset-ref";
+export interface NavigationAssetFetchResponse { readonly ok: boolean;
+export interface ImportNavigationAssetOptions { readonly fetch?: (url: string) => Promise<NavigationAssetFetchResponse>;
 export interface NavigationCrowdAgentOptions { readonly radius?: number;
 export class RecastNavMeshHandle { readonly #module: RecastModule;
 export class RecastCrowdHandle { readonly #crowd: Recast.Crowd;
@@ -856,9 +859,6 @@ export * from "./HitboxWorld.js";
 export * from "./VehicleDynamics.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
-export * from "./Navigation.js";
-export * from "./Steering.js";
-export * from "./Crowd.js";
 export * from "./ScenePhysicsBridge.js";
 export * from "./ECSPhysicsBridge.js";
 export * from "./PhysicsDebugDraw.js";
