@@ -1,6 +1,6 @@
 # Aura3D Animation Runtime, Events, And Viseme Sync
 
-Status: 1.1.0 scoped runtime-foundation guidance.
+Status: Aura3D 1.6 bounded root and package guidance.
 
 This page documents the safe agent pattern for skeletal animation, animation
 events, and viseme/blendshape sync. It is intentionally stricter than the
@@ -8,11 +8,11 @@ source API surface: agents may use the public APIs shown here, but release
 claims require browser-visible evidence, screenshots, JSON reports, and typed
 asset provenance.
 
-The examples below are public source/runtime API examples. They do not, by
-themselves, prove that root `createAuraApp` rendered skinned GLB deformation or
-GLB morph targets. Treat controller state, runtime-node pose snapshots, and
-morph weights as source evidence until a browser route importing only
-`@aura3d/engine` captures pixel-backed proof.
+The examples below do not prove a new asset or behavior by themselves.
+Aura3D's bounded root proof now covers the fixtures documented in
+`docs/rendering/animation.md`; controller state, runtime-node pose snapshots,
+and morph weights for any other fixture remain source evidence until a root-only
+browser route captures subject-region pixel proof.
 
 Use this page with:
 
@@ -22,7 +22,7 @@ Use this page with:
 
 ## Current Boundary
 
-The 1.1.0 source baseline already has:
+The 1.6 baseline has:
 
 - `createAuraApp(...)`, `app.onFrame(...)`, `app.step(dt)`, and runtime nodes.
 - `AnimationController` / `createAnimationController(...)` with named clips,
@@ -33,7 +33,7 @@ The 1.1.0 source baseline already has:
 - Prompt animation helpers for captions, AuraVoice bridge packages, viseme
   tracks, and deterministic evidence metadata.
 
-Aura3D 1.1.0 release claims must prove:
+Any broader Aura3D animation claim must prove:
 
 - Named GLB clips visibly deform skinned characters in a browser route.
 - Restarting an attack clip visibly resets the clip to frame zero.
@@ -42,9 +42,8 @@ Aura3D 1.1.0 release claims must prove:
 - Viseme/blendshape weights are sampled from typed timing data and rendered
   within one frame at 30 fps.
 
-Do not claim skeletal animation, clip blending, or GLB blendshape sync is
-release-ready from source metadata alone. Capture the evidence listed at the
-end of this page.
+Do not generalize the bounded skeletal, blending, or GLB morph evidence from
+source metadata alone. Capture the evidence listed at the end of this page.
 
 ## Safe Imports
 
@@ -156,9 +155,9 @@ app.onFrame(({ dt }) => {
 ```
 
 Current controller binding mirrors active clip, local time, speed, loop state,
-layer metadata, event source, and binding metadata onto the runtime node. 1.1.0
-renderer work must prove that the bound state also drives visible skinned GLB
-pose output and morph target output in browser evidence.
+layer metadata, event source, and binding metadata onto the runtime node. The
+1.6 bounded fixture proves that state drives visible skinned GLB pose output;
+new assets and behaviors still require their own browser evidence.
 
 ## Restart And Blend
 
@@ -377,13 +376,15 @@ const proof = {
 };
 ```
 
-The deterministic proof is necessary but not sufficient. 1.1.0 release gates
+The deterministic proof is necessary but not sufficient. Release gates
 also require browser screenshots proving visible character deformation, event
 effects, overlays, captions, and morph target changes.
 
 ## Release Evidence
 
-Animation-runtime release evidence should write reports under:
+The canonical 1.6 animation evidence writes reports under
+`tests/reports/animation-complete/` and `tests/reports/threejs-parity/`.
+Feature-specific routes may additionally write reports under:
 
 - `tests/reports/animation-runtime/unit.json`
 - `tests/reports/animation-runtime/browser.json`
@@ -405,4 +406,5 @@ Minimum proof ids:
 
 An animation route is not release-ready until source diagnostics, package
 smoke, browser rendering, screenshots, JSON evidence, typed asset provenance,
-and visual review all pass.
+and visual review all pass. Run `pnpm renderer:animation` for the canonical
+bounded root/package/current-Three/lifecycle receipt.

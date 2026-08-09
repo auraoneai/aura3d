@@ -51,7 +51,7 @@ export const assets = defineAuraAssets({
     writeWorkspaceViteConfig(appDir);
     writeWorkspacePlaywrightConfig(appDir);
     run("pnpm", ["exec", "vite", "build", "--config", resolve(appDir, "vite.config.ts")], appDir);
-    run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line"], appDir);
+    run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], appDir);
     const screenshotPath = resolve(appDir, "tests/reports/screenshot.png");
     const screenshotReport = JSON.parse(readFileSync(resolve(appDir, "tests/reports/screenshot.json"), "utf8")) as {
       readonly profile?: Record<string, unknown>;

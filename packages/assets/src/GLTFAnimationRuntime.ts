@@ -940,9 +940,11 @@ export class GLTFSceneAnimationMixerBinding {
   readonly runtime: GLTFSceneAnimationRuntime;
   readonly mixer: AnimationMixer;
   readonly actions: ReadonlyMap<string, AnimationAction>;
+  private readonly mutableActions = new Map<string, AnimationAction>();
   private readonly pendingValues = new Map<string, AnimationValue>();
   private elapsedTime = 0;
   private lastApply?: GLTFSceneAnimationApplyResult;
+  private disposed = false;
 
   constructor(options: GLTFSceneAnimationMixerOptions) {
     this.runtime = new GLTFSceneAnimationRuntime(options);
@@ -951,24 +953,24 @@ export class GLTFSceneAnimationMixerBinding {
         this.pendingValues.set(target, cloneAnimationValue(value));
       }
     }, options.mixer ?? {});
-    const actions = new Map<string, AnimationAction>();
     for (const clip of options.clips) {
       const action = new AnimationAction(clip).setWeight(0);
       this.mixer.addAction(action);
-      actions.set(clip.name, action);
+      this.mutableActions.set(clip.name, action);
     }
     const autoPlay = options.autoPlay === false ? undefined : options.autoPlay ?? options.clips[0]?.name;
     if (autoPlay) {
-      const action = actions.get(autoPlay);
+      const action = this.mutableActions.get(autoPlay);
       if (!action) {
         throw new Error(`glTF animation mixer autoPlay clip "${autoPlay}" was not found.`);
       }
       action.setWeight(1).play();
     }
-    this.actions = actions;
+    this.actions = this.mutableActions;
   }
 
   listClips(): readonly string[] {
+    this.assertAlive();
     return [...this.actions.keys()];
   }
 
@@ -1000,18 +1002,21 @@ export class GLTFSceneAnimationMixerBinding {
   }
 
   pause(name?: string): void {
+    this.assertAlive();
     for (const action of this.resolveActions(name)) {
       action.pause();
     }
   }
 
   resume(name?: string): void {
+    this.assertAlive();
     for (const action of this.resolveActions(name)) {
       if (action.weight > 0) action.play();
     }
   }
 
   stop(name?: string): void {
+    this.assertAlive();
     for (const action of this.resolveActions(name)) {
       action.stop().setWeight(0);
     }
@@ -1025,6 +1030,7 @@ export class GLTFSceneAnimationMixerBinding {
   }
 
   setTimeScale(timeScale: number): void {
+    this.assertAlive();
     if (!Number.isFinite(timeScale) || timeScale < 0) {
       throw new Error("glTF animation mixer timeScale must be finite and non-negative.");
     }
@@ -1053,6 +1059,7 @@ export class GLTFSceneAnimationMixerBinding {
   }
 
   applyClipSamples(samples: readonly GLTFSceneAnimationClipSample[]): GLTFSceneAnimationMixerUpdateResult {
+    this.assertAlive();
     this.pendingValues.clear();
     this.lastApply = this.runtime.applyClips(samples);
     this.elapsedTime = Math.max(this.elapsedTime, this.lastApply.time);
@@ -1060,6 +1067,7 @@ export class GLTFSceneAnimationMixerBinding {
   }
 
   update(deltaSeconds: number): GLTFSceneAnimationMixerUpdateResult {
+    this.assertAlive();
     if (!Number.isFinite(deltaSeconds) || deltaSeconds < 0) {
       throw new Error("glTF animation mixer delta must be finite and non-negative.");
     }
@@ -1075,6 +1083,7 @@ export class GLTFSceneAnimationMixerBinding {
   }
 
   getAction(name: string): AnimationAction | undefined {
+    this.assertAlive();
     return this.actions.get(name);
   }
 
@@ -1089,6 +1098,15 @@ export class GLTFSceneAnimationMixerBinding {
       actions: this.actionSnapshots(),
       ...(this.lastApply ? { lastApply: this.lastApply } : {})
     };
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.mixer.dispose();
+    this.mutableActions.clear();
+    this.pendingValues.clear();
+    this.lastApply = undefined;
+    this.disposed = true;
   }
 
   private configureAction(action: AnimationAction, options: GLTFSceneAnimationPlayOptions): void {
@@ -1125,11 +1143,16 @@ export class GLTFSceneAnimationMixerBinding {
   }
 
   private requireAction(name: string): AnimationAction {
+    this.assertAlive();
     const action = this.actions.get(name);
     if (!action) {
       throw new Error(`glTF animation action "${name}" was not found.`);
     }
     return action;
+  }
+
+  private assertAlive(): void {
+    if (this.disposed) throw new Error("glTF animation mixer binding has been disposed.");
   }
 }
 

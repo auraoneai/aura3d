@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
@@ -63,8 +63,20 @@ test.describe("createAuraApp morph target contract", () => {
       "morph-target-pixel-change"
     ]));
     expect(errors).toEqual([]);
+    writeJson("tests/reports/animation-complete/root-morph-targets.json", {
+      evidence,
+      baseline: { stats: baseline.stats },
+      morphed: { stats: morphed.stats },
+      neutral: { stats: neutral.stats },
+      morphDiff,
+      neutralDiff,
+      pageErrors: errors,
+      generatedAt: new Date().toISOString()
+    });
   });
 });
+
+function writeJson(path: string, value: unknown): void { mkdirSync(dirname(resolve(path)), { recursive: true }); writeFileSync(resolve(path), `${JSON.stringify(value, null, 2)}\n`); }
 
 async function captureMorphState(page: import("@playwright/test").Page, weights: Record<string, number>) {
   const evidence = await page.evaluate(async (nextWeights) => {

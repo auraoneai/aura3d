@@ -410,6 +410,14 @@ describe("GLTFSceneAnimationRuntime", () => {
     expect(binding.snapshot().actions.find((action) => action.clipName === "run")?.paused).toBe(false);
     binding.stop();
     expect(binding.snapshot().activeClipNames).toEqual([]);
+    binding.dispose();
+    expect(binding.actions.size).toBe(0);
+    expect(binding.mixer.snapshot()).toMatchObject({ actionCount: 0, layers: [], values: {} });
+    expect(() => binding.play("run")).toThrow(/disposed/);
+    expect(() => binding.update(1 / 60)).toThrow(/disposed/);
+    expect(() => binding.setTimeScale(1)).toThrow(/disposed/);
+    expect(() => binding.getAction("run")).toThrow(/disposed/);
+    expect(() => binding.dispose()).not.toThrow();
   });
 
   it("solves imported glTF skin joints with two-bone IK and refreshes skinning palettes", () => {

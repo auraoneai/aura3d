@@ -55,8 +55,8 @@ proves the exact result:
   high-quality shadows;
 - pixel-backed bloom, SSAO, DOF, FXAA/TAA, color grading, or other postprocess;
 - native WebGPU, compute dispatch, or WebGPU rendering;
-- skinned GLB animation in screenshots;
-- morph target rendering in screenshots;
+- skinned GLB animation or morph rendering beyond the bounded fixtures and
+  behaviors in `docs/rendering/animation.md`;
 - production-quality character, racing, platformer, falling-block, or generic
   collision/gameplay kits;
 - generic physics/collision behavior not exported and tested from the root API.
@@ -91,6 +91,15 @@ custom indexed triangle geometry, CPU camera-frustum culling, and a static
 bounds BVH. It does not prove one-draw support for every advanced material,
 arbitrary font loading or shaping, SDF/MSDF text, or GPU occlusion/Hi-Z. DOM
 world labels remain accessible UI and must not be described as 3D mesh text.
+
+Animation evidence is bounded in the same way. The receipt in
+`docs/rendering/animation.md` proves root typed-GLB skinned playback, named clip
+controls, and named morph-target deformation with a stable camera and
+subject-region pixels. Additive layers, root motion, events, explicit humanoid
+retargeting, and imported two-bone IK are package-level behaviors. The selected
+Robot Expressive comparisons against actual Three.js r185 do not prove
+automatic arbitrary-rig retargeting, full-body IK, or universal animation
+parity.
 
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
 has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,

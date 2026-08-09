@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const harnessSource = resolve(process.cwd(), "tests/browser/createAuraApp-animation-bridge-harness.ts");
+const reportDir = "tests/reports/animation-complete";
 
 test.describe("createAuraApp animation bridge contract", () => {
   let server: ExampleDevServer;
@@ -57,6 +58,7 @@ test.describe("createAuraApp animation bridge contract", () => {
       "skinned-glb-visible-animation"
     ]));
     expect(errors).toEqual([]);
+    writeJson(`${reportDir}/root-skinned-pose.json`, { ...evidence, pageErrors: errors, generatedAt: new Date().toISOString() });
   });
 
   test("public AnimationController controls drive the production GLB actor", async ({ page }) => {
@@ -82,6 +84,7 @@ test.describe("createAuraApp animation bridge contract", () => {
     expect(evidence?.animation?.pauseDiff?.changedSubjectPixels).toBeLessThan(20);
     expect(evidence?.animation?.diff?.changedSubjectPixels).toBeGreaterThan(80);
     expect(errors).toEqual([]);
+    writeJson(`${reportDir}/root-clip-controls.json`, { ...evidence, pageErrors: errors, generatedAt: new Date().toISOString() });
   });
 
   test("keyboard events switch a public runtime node from idle to run and hit clips", async ({ page }) => {
@@ -110,3 +113,5 @@ test.describe("createAuraApp animation bridge contract", () => {
     expect(errors).toEqual([]);
   });
 });
+
+function writeJson(path: string, value: unknown): void { mkdirSync(dirname(resolve(path)), { recursive: true }); writeFileSync(resolve(path), `${JSON.stringify(value, null, 2)}\n`); }

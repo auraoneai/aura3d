@@ -114,8 +114,8 @@ function createConditionalClaimBoundaries() {
     },
     {
       feature: "animation-retargeting",
-      status: "blocked-unclaimed",
-      reason: "Retargeting is not implemented and retargeting claims must remain blocked."
+      status: "delivered-bounded",
+      reason: "Explicit humanoid-map pose retargeting reconciles differing rest orientations, proportional translations, and facing axes; automatic arbitrary-rig retargeting remains unclaimed."
     },
     {
       feature: "webgpu-hardware-particles",
