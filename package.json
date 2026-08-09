@@ -264,7 +264,7 @@
     "engine-readiness:assets": "tsx --tsconfig tsconfig.base.json tools/engine-readiness-gltf-support/index.ts && pnpm exec playwright test tests/browser/rendering-canonical-scene.spec.ts --reporter=line",
     "engine-readiness:root": "pnpm engine-readiness:typecheck && pnpm engine-readiness:unit-rendering && pnpm engine-readiness:canonical-scene && pnpm engine-readiness:visual-quality && tsx --tsconfig tsconfig.base.json tools/engine-readiness-root-readiness/index.ts",
     "engine-readiness:reports": "pnpm engine-readiness:truth && pnpm engine-readiness:visual-quality && tsx --tsconfig tsconfig.base.json tools/engine-readiness-root-readiness/index.ts",
-    "engine-readiness:product-viewer": "pnpm exec playwright test tests/browser/product-viewer-engine-readiness.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/engine-readiness-product-viewer/index.ts",
+    "engine-readiness:product-viewer": "pnpm exec playwright test tests/browser/asset-viewer-browser.spec.ts --grep 'presents the default asset visibly' --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/engine-readiness-product-viewer/index.ts",
     "engine-readiness:package-smoke": "pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/engine-readiness-package-smoke/index.ts",
     "product-studio:generate-products": "pnpm exec tsx --tsconfig tsconfig.base.json tools/product-studio-generate-products/index.ts",
     "product-studio:truth": "pnpm exec tsx --tsconfig tsconfig.base.json tools/product-studio-truth/index.ts",

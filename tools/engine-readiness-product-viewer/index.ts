@@ -1,34 +1,33 @@
-import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-const screenshot = "tests/reports/legacy-product-viewer/product-viewer.png";
-const reportPath = "tests/reports/legacy-product-viewer/report.json";
+const reportPath = "tests/reports/engine-readiness-asset-viewer/report.json";
 
 const checks = [
   {
-    id: "screenshot-exists",
-    ok: existsSync(screenshot),
-    evidence: screenshot
+    id: "current-example-source",
+    ok: existsSync("examples/asset-viewer/main.ts"),
+    evidence: "examples/asset-viewer/main.ts"
   },
   {
-    id: "screenshot-nontrivial-size",
-    ok: existsSync(screenshot) && statSync(screenshot).size > 10_000,
-    evidence: screenshot
+    id: "current-browser-spec",
+    ok: existsSync("tests/browser/asset-viewer-browser.spec.ts"),
+    evidence: "tests/browser/asset-viewer-browser.spec.ts"
   },
   {
-    id: "example-source-uses-asset-sdk",
-    ok: existsSync("examples/legacy-product-viewer/main.ts"),
-    evidence: "examples/legacy-product-viewer/main.ts"
+    id: "typed-default-asset",
+    ok: existsSync("fixtures/product-studio/products/speaker/speaker.gltf"),
+    evidence: "fixtures/product-studio/products/speaker/speaker.gltf"
   },
   {
-    id: "browser-spec-exists",
-    ok: existsSync("tests/browser/product-viewer-engine-readiness.spec.ts"),
-    evidence: "tests/browser/product-viewer-engine-readiness.spec.ts"
+    id: "legacy-route-not-public",
+    ok: !existsSync("examples/legacy-product-viewer/index.html"),
+    evidence: "archive/examples/legacy-product-viewer"
   }
 ];
 
 const report = {
-  schemaVersion: "a3d-engine-readiness-legacy-product-viewer",
+  schemaVersion: "a3d-engine-readiness-current-asset-viewer",
   generatedAt: new Date().toISOString(),
   ok: checks.every((check) => check.ok),
   checks
