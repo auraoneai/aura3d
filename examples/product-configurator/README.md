@@ -1,18 +1,17 @@
-# Product Configurator Demo
+# Product Configurator
 
 ## Purpose
 
-This demo is a foundation product-app slice for Aura3D. It loads a generated local over-ear headphone glTF fixture, renders the model geometry through the public `@aura3d/rendering` WebGL2 path, and exposes runtime evidence for material variants, camera controls, environment controls, frame timing, draw calls, screenshot export state, and user interaction.
+This public workflow example renders the typed, provenance-backed `showcaseHeadphones` GLB through `createProductConfiguratorWorkflow`. It demonstrates three materially distinct finish modes, three visibly distinct lighting presets, three exposure levels, three bounds-derived camera frames, keyboard camera selection, and PNG capture without a second proxy product or manually assembled renderer stand-in.
 
 ## Run
 
 ```sh
-pnpm exec playwright test tests/browser/product-demos.spec.ts -g product-configurator
+pnpm exec playwright test tests/browser/product-demos.spec.ts -g "product configurator"
+pnpm exec playwright test tests/visual/product-demos.spec.ts -g product-configurator
 ```
 
-The product demo spec also runs source validation from `tools/demo-validation/product-demo-source-validation.ts`. That guard requires this example to use the public renderer path, expose runtime state, keep this README complete, and avoid 2D-canvas or static-screenshot substitutes.
-
-For manual inspection, serve the repository with the example dev server used by browser tests and open:
+For manual inspection, serve the repository with the browser-test development server and open:
 
 ```text
 /examples/product-configurator/index.html
@@ -20,49 +19,37 @@ For manual inspection, serve the repository with the example dev server used by 
 
 ## Systems Used
 
-- `Renderer` with the `webgl2` backend
-- `GLTFLoader`, `createGLTFRenderResources`, and `inspectGLTFAsset`
-- `Geometry`
-- `PBRMaterial`
-- `TexturedPBRMaterial`
-- `UnlitMaterial`
-- public package imports only
+- `createProductConfiguratorWorkflow` from `@aura3d/workflows`
+- `Renderer` from `@aura3d/rendering` with the `webgl2` backend
+- typed `assets.showcaseHeadphones` from the CLI-generated asset map
+- the product-studio package's material, lighting, floor, and bounds-derived camera owners
+- browser PNG capture through the rendered WebGL canvas
 
 ## Learning Path
 
-Read `main.ts` from top to bottom; it is intentionally a single-file app so a developer can understand the product flow without opening test files.
-
-1. `variants` defines the product material choices and the UI-facing variant ids.
-2. `loadProductModel` fetches `fixtures/workflow-assets/assets/product-camera/product-camera.gltf`, its manifest, and its source-generation evidence.
-3. `Renderer.create({ backend: "webgl2" })` creates the real engine renderer used by the canvas.
-4. `buildRenderItems` converts loaded glTF geometry resources and active material slot variants into render items using `PBRMaterial`, `TexturedPBRMaterial`, and `UnlitMaterial`.
-5. Swatch, camera, light, orbit/zoom, and export controls update page state through helpers including `setVariant` before `renderer.render` publishes `window.__AURA3D_PRODUCT_DEMO__`.
-6. Canvas pointer input, wheel input, swatch buttons, camera buttons, environment buttons, and screenshot export are real browser interactions, not synthetic test-only hooks.
-
-Use the displayed JSON status panel or `window.__AURA3D_PRODUCT_DEMO__` in DevTools to inspect the same runtime evidence the automated checks read: active variant, material slots, camera/environment presets, interaction count, export state, draw calls, renderer backend, generated glTF source evidence, known limits, and renderer diagnostics.
+1. `assets.showcaseHeadphones` supplies the immutable URL, content hash, license, author, and bounds.
+2. `createProductConfiguratorWorkflow` owns GLB loading, render-source construction, material modes, lighting presets, and camera framing.
+3. `Renderer.create({ backend: "webgl2" })` creates the visible renderer.
+4. Finish, lighting, camera, and exposure controls rebuild or resubmit the public workflow with explicit supported options through `renderer.render`.
+5. Canvas click cycles finishes; focused Left/Right/Home keys move between camera frames.
+6. `window.__AURA3D_PRODUCT_DEMO__` publishes only capabilities the route actually exercises.
 
 ## Expected Output
 
-A WebGL2-rendered generated headphone configurator appears with selectable material swatches, visible PBR finish changes, generated cushion texture detail, procedural environment reflection evidence, model-backed contact-shadow receiver geometry, camera presets, environment presets, orbit/zoom input, and a PNG export button. Clicking a swatch selects that material, clicking the canvas cycles the active material variant, and both paths update `window.__AURA3D_PRODUCT_DEMO__`.
+A complete over-ear headphone model is centered on a grounded studio floor. Graphite preserves the asset materials, Copper activates the metal-check workflow, and Ceramic activates the contrast workflow. Studio, Softbox, and Inspection produce visibly different subject-region lighting, while Low, Neutral, and High change tone-mapping exposure. Hero, Profile, and Detail reframe the asset from its measured bounds. No speaker, procedural headphone assembly, debug grid, tiled technical wall, or unrelated corpus object appears in the scene.
 
 ## Acceptance Target
 
 - `window.__AURA3D_PRODUCT_DEMO__.status` is `ready`.
-- `renderer` is `webgl2`.
-- `metrics.rendererBacked` is `true`.
-- `diagnostics.drawCalls` is greater than zero.
-- `diagnostics.contextLost` is `false` and `diagnostics.lastError` is `null`.
-- `visualClaim` and `knownLimits` are present in `window.__AURA3D_PRODUCT_DEMO__`.
-- Runtime asset metadata lists material slots and generated part counts.
-- `metrics.modelBacked` is `true`, `asset.source` is `generated-local-gltf`, and `asset.commercialImportedAsset` is `false`.
-- Runtime evidence lists glTF mesh/material/node counts loaded from `fixtures/workflow-assets/assets/product-camera`.
-- Pointer input changes the active material variant from `graphite` to `copper`.
-- The `ceramic` swatch button selects the `ceramic` variant and updates `aria-pressed`.
+- `renderer` is `webgl2`, `metrics.rendererBacked` is `true`, and draw calls are nonzero.
+- The state identifies `showcaseHeadphones` as a typed, provenance-backed asset and exposes its hash, license, author, and GLB counts.
+- All three finish, lighting, exposure, and camera controls change the workflow state; finish, lighting, and exposure changes alter rendered subject pixels.
+- The canvas keyboard path selects bounds-derived camera frames.
+- PNG capture returns a nontrivial data URL.
+- Browser, visual stability, interaction-diff, and exhaustive visual-audit checks pass.
 
 ## Known Limits
 
-- The product model is a generated local multi-part glTF asset, not an imported commercial glTF model.
-- Material variants are slot-level PBR parameters and one generated grip texture, not texture-compressed production material packs.
-- Environment lighting is procedural and bounded; HDR image-based-lighting parity is not claimed.
-- Contact shadows are model-backed translucent receiver geometry in this example; product shadow-map evidence remains bounded to renderer/shadow labs unless a real product shadow pass is added.
-- The demo is a product-app slice, not evidence for a broad "better than Three.js" claim.
+- The three finishes map to the public workflow's `asset`, `metal-check`, and `contrast` modes; this route does not mutate or author new glTF texture packs.
+- Export is PNG capture. Native USDZ and commerce/backend integration are not claimed.
+- This is one bounded product workflow and does not by itself prove universal visual, performance, or ecosystem parity with Three.js.

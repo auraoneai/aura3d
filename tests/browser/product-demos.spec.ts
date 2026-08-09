@@ -77,7 +77,8 @@ test.describe("productStudio product demos", () => {
     expect(after.activeVariant).toBe("copper");
     expect(after.interactions).toBeGreaterThanOrEqual(1);
     expect(after.metrics.materialVariants).toBe(3);
-    expect(after.metrics.renderItems).toBeGreaterThanOrEqual(4);
+    expect(after.metrics.workflowBacked).toBe(true);
+    expect(after.metrics.materialMode).toBe("metal-check");
   });
 
   test("product configurator swatch buttons select material variants", async ({ page }) => {
@@ -92,63 +93,43 @@ test.describe("productStudio product demos", () => {
     await expect(page.getByRole("button", { name: "ceramic" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("product configurator exposes generated glTF model, PBR, environment, contact shadow, and export evidence", async ({ page }) => {
+  test("every product finish materially changes subject-region pixels", async ({ page }) => {
+    await openProductDemo(page, server, productDemos[0]);
+    const graphite = await canvasWebGLStats(page, productDemos[0].canvasSelector);
+    await page.getByRole("button", { name: "Copper" }).click();
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.activeVariant === "copper");
+    const copper = await canvasWebGLStats(page, productDemos[0].canvasSelector);
+    await page.getByRole("button", { name: "Ceramic" }).click();
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.activeVariant === "ceramic");
+    const ceramic = await canvasWebGLStats(page, productDemos[0].canvasSelector);
+
+    const colorDistance = (left: typeof graphite, right: typeof graphite) =>
+      Math.abs(left.meanR - right.meanR) + Math.abs(left.meanG - right.meanG) + Math.abs(left.meanB - right.meanB);
+    expect(colorDistance(graphite, copper)).toBeGreaterThan(8);
+    expect(colorDistance(copper, ceramic)).toBeGreaterThan(8);
+    expect(colorDistance(graphite, ceramic)).toBeGreaterThan(8);
+    expect(new Set([graphite.colorBuckets, copper.colorBuckets, ceramic.colorBuckets]).size).toBeGreaterThan(1);
+  });
+
+  test("product configurator exposes a typed provenance-backed GLB through the public workflow and PNG export", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
     await page.getByRole("button", { name: "Export PNG" }).click();
     await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.export.requested === true);
     const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
-    expect(state.asset.source).toBe("generated-local-gltf");
-    expect(state.asset.url).toContain("/fixtures/workflow-assets/assets/product-camera/product-camera.gltf");
-    expect(state.asset.generator).toBe("tools/product-studio-generate-products/index.ts");
-    expect(state.asset.commercialImportedAsset).toBe(false);
-    expect(state.asset.generatedParts).toBeGreaterThanOrEqual(17);
-    expect(state.asset.meshCount).toBeGreaterThanOrEqual(6);
-    expect(state.asset.vertexCount).toBeGreaterThan(200);
-    expect(state.asset.indexCount).toBeGreaterThan(600);
-    expect(state.asset.sourceEvidence).toContain("fixtures/workflow-assets/assets/product-camera/manifest.json");
-    expect(state.metrics.modelBacked).toBe(true);
-    expect(state.metrics.modelSource).toBe("generated-local-gltf");
-    expect(state.metrics.gltfMeshes).toBeGreaterThanOrEqual(6);
-    expect(state.metrics.gltfMaterials).toBeGreaterThanOrEqual(4);
-    expect(state.metrics.gltfSceneNodes).toBeGreaterThanOrEqual(10);
-    expect(state.metrics.sourceEvidenceLoaded).toBe(true);
-    expect(state.metrics.environmentReflectionEvidence).toBe(true);
-    expect(state.metrics.environmentSpecularIntensity).toBeGreaterThan(0);
-    expect(state.metrics.visibleContactShadowAlternative).toBe(true);
-    expect(state.metrics.contactShadowMode).toBe("model-backed-translucent-receiver-geometry");
-    expect(state.featureEvidence.oldBranchEcommerceTurntablePort).toBe(true);
-    expect(state.featureEvidence.productTurntableAutoRotate).toBe(true);
-    expect(state.featureEvidence.productHotspotManager).toBe(true);
-    expect(state.featureEvidence.productLightingPresetManager).toBe(true);
-    expect(state.featureEvidence.productCapturePlan).toBe(true);
-    expect(state.featureEvidence.productBatchExportPlan).toBe(true);
-    expect(state.featureEvidence.productArExportBoundary).toBe(true);
-    expect(state.turntable.source).toBe("origin-master-ecommerce-turntable-adapted");
-    expect(state.turntable.sourceFiles).toEqual(expect.arrayContaining([
-      "master:src/ecommerce/turntable/TurntableController.ts",
-      "master:src/ecommerce/turntable/HotspotManager.ts",
-      "master:src/ecommerce/turntable/LightingPresetManager.ts",
-      "master:src/ecommerce/turntable/CaptureManager.ts",
-      "master:src/ecommerce/turntable/BatchProcessor.ts",
-      "master:src/ecommerce/turntable/ARExporter.ts",
-    ]));
-    expect(state.turntable.hotspots.length).toBeGreaterThanOrEqual(3);
-    expect(state.turntable.visibleHotspotCount).toBeGreaterThan(0);
-    expect(state.turntable.lighting.presets.length).toBeGreaterThanOrEqual(5);
-    expect(state.turntable.capture.screenshotViews).toEqual(expect.arrayContaining(["hero", "front", "detail", "exploded"]));
-    expect(state.turntable.capture.spinFrameCount).toBeGreaterThanOrEqual(72);
-    expect(state.turntable.capture.batchTasks).toEqual(expect.arrayContaining(["thumbnail", "screenshot", "360-spin", "ar-export"]));
-    expect(state.turntable.capture.arExportFormats).toEqual(["glb"]);
-    expect(state.turntable.capture.blockedExportClaims).toContain("native-USDZ-export");
-    expect(String(state.metrics.productTurntableHash)).toMatch(/^[0-9a-f]{8}$/);
-    expect(Number(state.metrics.productHotspotCount)).toBeGreaterThanOrEqual(3);
-    expect(Number(state.metrics.productCaptureSpinFrames)).toBeGreaterThanOrEqual(72);
-    expect(String(state.metrics.productBlockedExportClaims)).toContain("native-USDZ-export");
-    expect(state.knownLimits.join(" ")).toContain("generated local multi-part glTF asset");
-    expect(state.knownLimits.join(" ")).toContain("not an imported commercial model");
-    expect(state.knownLimits.join(" ")).toContain("Contact shadows are represented by model-backed translucent receiver geometry");
-    expect(state.knownLimits.join(" ")).toContain("Old ecommerce turntable");
+    expect(state.asset.id).toBe("showcaseHeadphones");
+    expect(state.asset.source).toBe("typed-provenance-backed-asset");
+    expect(state.asset.url).toContain("showcaseHeadphones");
+    expect(state.asset.hash).toMatch(/^sha256-/);
+    expect(state.asset.license).toContain("CC-BY-4.0");
+    expect(state.asset.author).toContain("Ankledot");
+    expect(state.asset.meshCount).toBeGreaterThan(0);
+    expect(state.asset.materialCount).toBeGreaterThan(0);
+    expect(state.metrics.workflowBacked).toBe(true);
+    expect(state.metrics.publicWorkflow).toBe("product-configurator");
+    expect(state.metrics.typedAsset).toBe(true);
+    expect(state.metrics.provenanceBacked).toBe(true);
+    expect(state.knownLimits.join(" ")).toContain("no second proxy product");
     expect(state.export.requested).toBe(true);
     expect(state.export.dataUrlBytes).toBeGreaterThan(1000);
 
@@ -165,79 +146,60 @@ test.describe("productStudio product demos", () => {
     const softboxStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
     await writeProductDemoScreenshot(page, "tests/reports/external-parity-example-screenshots/product-configurator-env-softbox.png");
 
-    await page.getByRole("button", { name: "Inspect" }).click();
+    await page.getByRole("button", { name: "Inspection" }).click();
     await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.environmentPreset === "inspection");
     await page.waitForTimeout(200);
     const inspectionStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
     await writeProductDemoScreenshot(page, "tests/reports/external-parity-example-screenshots/product-configurator-env-inspection.png");
+    await page.getByRole("button", { name: "High" }).click();
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.exposure === "high");
+    const highExposureStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
     const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
     expect(state.activeVariant).toBe("copper");
-    expect(state.featureEvidence.environmentReflectionEvidence).toBe(true);
-    expect(state.environmentResources.validation.brdfLutTexture).toBe(true);
-    expect(Number(state.metrics.environmentSpecularIntensity)).toBeGreaterThan(0);
+    expect(state.metrics.lightingMode).toBe("inspection-bay");
+    expect(state.metrics.materialMode).toBe("metal-check");
     expect(softboxStats.nonBlankPixels).toBeGreaterThan(300);
     expect(inspectionStats.nonBlankPixels).toBeGreaterThan(300);
     expect(inspectionStats.colorBuckets).toBeGreaterThanOrEqual(softboxStats.colorBuckets - 8);
     expect(Math.abs(inspectionStats.meanR - softboxStats.meanR) + Math.abs(inspectionStats.meanG - softboxStats.meanG) + Math.abs(inspectionStats.meanB - softboxStats.meanB)).toBeGreaterThan(3);
     expect(Math.abs(inspectionStats.highlightEnergy - softboxStats.highlightEnergy)).toBeGreaterThan(20);
+    expect(state.exposure).toBe("high");
+    expect(Number(state.metrics.exposure)).toBeGreaterThan(1.3);
+    expect(highExposureStats.meanR + highExposureStats.meanG + highExposureStats.meanB).toBeGreaterThan(inspectionStats.meanR + inspectionStats.meanG + inspectionStats.meanB + 4);
   });
 
-  test("product configurator exposes orbit, pan, zoom, focus, reset, keyboard, and touch controls", async ({ page }) => {
+  test("product configurator exposes bounds-derived hero, profile, detail, and keyboard camera controls", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
     const canvas = page.locator(productDemos[0].canvasSelector);
 
-    await dispatchButtonClick(page, "button[data-view-control='pan']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.panX)).toBeGreaterThan(0);
-
-    await page.keyboard.press("=");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.zoom)).toBeGreaterThan(1);
-
-    const beforeYaw = await page.evaluate(() => Number(window.__AURA3D_PRODUCT_DEMO__?.metrics.orbitYaw ?? 0));
-    await dispatchSyntheticPointerDrag(page, productDemos[0].canvasSelector, "touch", false);
-    await expect.poll(() => page.evaluate(() => Number(window.__AURA3D_PRODUCT_DEMO__?.metrics.orbitYaw ?? 0))).not.toBe(beforeYaw);
-
-    await dispatchButtonClick(page, "button[data-view-control='focus']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.zoom)).toBeGreaterThan(1.1);
-    await dispatchButtonClick(page, "button[data-view-control='reset']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.panX)).toBe(0);
+    await page.getByRole("button", { name: "Profile" }).click();
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.cameraPreset)).toBe("profile");
+    await page.getByRole("button", { name: "Detail" }).click();
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.cameraPreset)).toBe("detail");
+    await canvas.focus();
+    await page.keyboard.press("Home");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.cameraPreset)).toBe("hero");
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.cameraPreset)).toBe("profile");
 
     const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
-    expect(state.metrics.fitToBounds).toBe(true);
-    expect(state.metrics.resetView).toBe(true);
-    expect(state.metrics.touchControls).toBe(true);
-    expect(state.metrics.selectionDiagnostics).toBe(true);
+    expect(state.metrics.cameraPresets).toBe(3);
+    expect(state.metrics.cameraMode).toBe("side-profile");
+    expect(state.interactions).toBeGreaterThanOrEqual(4);
   });
 
-  test("product configurator exposes real-scene LOD selection, debug visibility, and diagnostics", async ({ page }) => {
+  test("product configurator reports only the public workflow capabilities it actually exercises", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
-
-    let state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
-    expect(state.lod.enabled).toBe(true);
-    expect(state.lod.levels).toEqual(["high", "medium", "low"]);
-    expect(state.lod.activeLevel).toBe("medium");
-    expect(state.metrics.lodActiveLevel).toBe("medium");
-    expect(Number(state.metrics.lodTriangles)).toBeGreaterThan(0);
-    expect(Number(state.metrics.lodEstimatedGeometryBytes)).toBeGreaterThan(0);
-    expect(state.lod.affectedObjects).toEqual(expect.arrayContaining([
-      "left-ear-cup-shell-lod-medium",
-      "right-ear-cup-shell-lod-medium",
-    ]));
-
-    await page.getByRole("button", { name: "LOD debug" }).click();
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.lod?.inspectVisible)).toBe(true);
-
-    await page.getByRole("button", { name: "Detail" }).click();
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.lod?.activeLevel)).toBe("high");
-
-    await dispatchButtonClick(page, "button[data-view-control='reset']");
-    await dispatchButtonClick(page, "button[data-view-control='zoom-out']");
-    await dispatchButtonClick(page, "button[data-view-control='zoom-out']");
-    await dispatchButtonClick(page, "button[data-view-control='zoom-out']");
-    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.lod?.activeLevel)).toBe("low");
-    state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
-    expect(state.lod.culledObjects).toBeGreaterThan(0);
-    expect(state.metrics.lodCulledObjects).toBeGreaterThan(0);
+    const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
+    expect(state.metrics.materialVariants).toBe(3);
+    expect(state.metrics.lightingPresets).toBe(3);
+    expect(state.metrics.cameraPresets).toBe(3);
+    expect(state.claimBoundary).toContain("does not claim a complete commerce backend");
+    expect(state.knownLimits.join(" ")).toContain("native USDZ");
+    expect(state.lod).toBeUndefined();
+    expect(state.turntable).toBeUndefined();
+    expect(state.featureEvidence).toBeUndefined();
   });
 
   test("architecture viewer updates selected zone and measurement on pointer input", async ({ page }) => {

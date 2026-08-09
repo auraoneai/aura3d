@@ -154,9 +154,18 @@ export async function runLargeSceneHarness(options: LargeSceneHarnessOptions = {
       canvasFrame: { width: canvas.width, height: canvas.height }
     };
 
-    renderer.dispose();
-    for (const texture of resources.textures) texture.dispose();
-    for (const geometry of resources.geometries) geometry.dispose();
+    let presentationFrame = 0;
+    const present = () => {
+      renderer.render({ scene, renderItems: finalBuild.renderItems });
+      presentationFrame = window.requestAnimationFrame(present);
+    };
+    presentationFrame = window.requestAnimationFrame(present);
+    window.addEventListener("pagehide", () => {
+      window.cancelAnimationFrame(presentationFrame);
+      renderer.dispose();
+      for (const texture of resources.textures) texture.dispose();
+      for (const geometry of resources.geometries) geometry.dispose();
+    }, { once: true });
 
     publish(result, options.statusElement);
     return result;
