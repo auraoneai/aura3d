@@ -16,3 +16,9 @@
 ## Verification
 
 Renderer resources, portable custom materials, vertex formats, shader libraries, shader markers, material binding, PBR lighting, render graph ordering/lifetime plans, deterministic tone-mapping/bloom/FXAA post-process passes, shadow pass/projection, lighting debug cascades, particle rendering, GPU particle spawn/update paths, WebGPU device-lost diagnostics, WebGL2 browser pixels, visual pixels, shader verification, and performance baselines are covered by `tests/unit/rendering/*.test.ts`, `tests/browser/portable-custom-materials.spec.ts`, `tests/browser/rendering-webgl2.spec.ts`, `tests/browser/shadow-browser.spec.ts`, `tests/browser/particle-browser.spec.ts`, `tests/browser/gpu-particle-backend.spec.ts`, `tests/visual/*.spec.ts`, and `tests/performance/system-baselines.ts`. Export and import consistency is covered by `pnpm verify:exports` and `pnpm verify:imports`.
+
+The supported low-level extension contract, lifecycle ownership, semantic-version
+compatibility policy, and two external-consumer proofs are documented in
+`docs/architecture/extension-points.md` and gated by
+`pnpm renderer:extension-escape-hatch`. `renderer.device` is a public readonly
+escape hatch; the renderer owns that device and disposes it.

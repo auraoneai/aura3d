@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
@@ -17,13 +18,16 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * The assertion that matters is the negative one: **zero `@aura3d/*\/src/*` deep imports.** An escape hatch
  * that requires reaching into a package's `src/` is not an escape hatch, it is a leak.
  */
-const PROJECT = "tests/clean-room/renderer-extension/src/main.ts";
+const LOW_LEVEL_PROJECT = "tests/clean-room/renderer-extension/src/main.ts";
+const PORTABLE_MATERIAL_PROJECT = "examples/custom-material-lab/main.ts";
+const REPORT_DIRECTORY = resolve("tests/reports/renderer-extension-escape-hatch");
 
 test.describe("renderer extension escape hatch", () => {
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
     server = await startExampleDevServer();
+    mkdirSync(REPORT_DIRECTORY, { recursive: true });
   });
 
   test.afterAll(async () => {
@@ -31,7 +35,7 @@ test.describe("renderer extension escape hatch", () => {
   });
 
   test("a custom postprocess pass is buildable from public exports with no deep imports", async ({ page }) => {
-    const source = readFileSync(PROJECT, "utf8");
+    const source = readFileSync(LOW_LEVEL_PROJECT, "utf8");
 
     // --- Static: the imports must all be published entry points -------------------------------
     const specifiers = [...source.matchAll(/from\s+["']([^"']+)["']/g)].map((match) => match[1]!);
@@ -42,10 +46,13 @@ test.describe("renderer extension escape hatch", () => {
       expect(specifier, `${specifier} imports Three.js directly`).not.toMatch(/^three(\/|$)/);
     }
     // The escape hatches this row names must actually be the ones used.
-    expect(source).toContain("createRenderDevice");
+    expect(source).toContain('from "@aura3d/rendering"');
     expect(source).toContain("Renderer");
     expect(source).toContain("Geometry");
     expect(source).toContain("ShaderModule");
+    expect(source).toContain("renderer.device.draw");
+    expect(source).not.toContain("createProgram(");
+    expect(source).not.toContain("class Renderer");
 
     // --- Runtime: it must actually run and the custom pass must change pixels -----------------
     const consoleErrors: string[] = [];
@@ -65,12 +72,15 @@ test.describe("renderer extension escape hatch", () => {
         readonly deviceKind: string;
         readonly customPassCompiled: boolean;
         readonly customPassApplied: boolean;
-        readonly litPixels: number;
+        readonly baselineLitPixels: number;
         readonly tintedPixels: number;
+        readonly rendererDrawCalls: number;
+        readonly callerResourcesDisposed: boolean;
+        readonly rendererDisposed: boolean;
       };
     }).__CLEAN_ROOM_RENDERER_EXTENSION__);
 
-    // A real device, reached through createRenderDevice.
+    // A real device, reached through the renderer's documented low-level seam.
     expect(state.deviceKind).toBe("webgl2");
     // The custom shader compiled and linked through ShaderModule's public sources.
     expect(state.customPassCompiled, "the custom pass must compile from public ShaderModule sources").toBe(true);
@@ -79,6 +89,51 @@ test.describe("renderer extension escape hatch", () => {
      * the pass actually ran, which is the difference between an export existing and an escape hatch working.
      */
     expect(state.customPassApplied, "the custom pass must visibly affect the framebuffer").toBe(true);
-    expect(state.tintedPixels).toBeGreaterThan(state.litPixels);
+    expect(state.baselineLitPixels).toBeGreaterThan(0);
+    expect(state.tintedPixels).toBeGreaterThan(0);
+    expect(state.rendererDrawCalls).toBeGreaterThanOrEqual(1);
+    expect(state.callerResourcesDisposed).toBe(true);
+    expect(state.rendererDisposed).toBe(true);
+    writeFileSync(resolve(REPORT_DIRECTORY, "low-level.json"), `${JSON.stringify({
+      schema: "aura3d.renderer-extension-integration/1.0",
+      generatedAt: new Date().toISOString(),
+      pass: true,
+      integration: "clean-room-low-level-pass",
+      state
+    }, null, 2)}\n`);
+  });
+
+  test("a second external integration renders portable materials without a renderer fork", async ({ page }) => {
+    const source = readFileSync(PORTABLE_MATERIAL_PROJECT, "utf8");
+    expect(source).toContain('from "@aura3d/rendering"');
+    expect(source).toContain("PortableShaderMaterial");
+    expect(source).toContain("Renderer.create");
+    expect(source).not.toMatch(/@aura3d\/[a-z0-9-]+\/src\//);
+    expect(source).not.toMatch(/packages\/rendering\/src\//);
+    expect(source).not.toMatch(/from\s+["']three(?:\/|["'])/);
+    expect(source).not.toContain("class Renderer");
+    expect(source).not.toContain("createProgram(");
+
+    await page.goto(`${server.origin}/examples/custom-material-lab/?backend=webgl2`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(
+      () => (window as unknown as { __AURA_PORTABLE_MATERIAL_LAB__?: { frame: number } }).__AURA_PORTABLE_MATERIAL_LAB__?.frame! >= 3,
+      undefined,
+      { timeout: 60_000 }
+    );
+    const state = await page.evaluate(() => (window as unknown as {
+      __AURA_PORTABLE_MATERIAL_LAB__: { readonly backend: string; readonly materialCount: number; readonly publicApiOnly: boolean; readonly diagnostics: { readonly drawCalls: number } };
+    }).__AURA_PORTABLE_MATERIAL_LAB__);
+    expect(state).toMatchObject({ backend: "webgl2", materialCount: 3, publicApiOnly: true });
+    expect(state.diagnostics.drawCalls).toBe(3);
+    const disposal = await page.evaluate(() => (window as unknown as { __AURA_PORTABLE_MATERIAL_DISPOSE__: () => unknown }).__AURA_PORTABLE_MATERIAL_DISPOSE__());
+    expect(disposal).toEqual({ materialsDisposed: true, rendererDisposed: true });
+    writeFileSync(resolve(REPORT_DIRECTORY, "portable-material.json"), `${JSON.stringify({
+      schema: "aura3d.renderer-extension-integration/1.0",
+      generatedAt: new Date().toISOString(),
+      pass: true,
+      integration: "portable-custom-material-lab",
+      state,
+      disposal
+    }, null, 2)}\n`);
   });
 });
