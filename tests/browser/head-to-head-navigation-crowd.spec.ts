@@ -1,0 +1,28 @@
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { expect, test, type Page } from "@playwright/test";
+import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+
+const REPORT_DIRECTORY = resolve("tests/reports/current-head-to-head/navigation-crowd");
+test.describe("current head-to-head navigation crowd", () => {
+  let server: ExampleDevServer;
+  test.beforeAll(async () => { server = await startExampleDevServer(); mkdirSync(REPORT_DIRECTORY, { recursive: true }); });
+  test.afterAll(async () => { await server.close(); });
+  test("runs the public Recast adapter against direct Recast and retains both crowd states", async ({ page }) => {
+    test.setTimeout(300_000); const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message)); page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+    await page.goto(`${server.origin}/benchmark/current-head-to-head/navigation-crowd/`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => Boolean(window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD__?.ready || window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD_ERROR__), undefined, { timeout: 240_000 }).catch(async (error) => { const probe = await page.evaluate(() => ({ state: window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD__, error: window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD_ERROR__ })); throw new Error(`${String(error)}\n${JSON.stringify(probe)}\n${errors.join(" | ")}`); });
+    expect(await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD_ERROR__) ?? errors.join(" | ")).toBeFalsy(); const before = await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD__);
+    expect(before).toMatchObject({ ready: true, workload: "navigation-crowd", viewport: { width: 1440, height: 900, dpr: 1 }, before: { aura: { publicPackageOnly: true, actualSelectedRecastAdapter: true, nativeCrowd: true }, three: { revision: "185", actualDirectRecast: true, nativeCrowd: true, actualRenderer: true, actualGLTFLoader: true } } });
+    const architectureHash = createHash("sha256").update(readFileSync(resolve(`public/aura-assets/${before.assets.architecture.url.split("/").pop()}`))).digest("hex"); const characterHash = createHash("sha256").update(readFileSync(resolve(`public/aura-assets/${before.assets.character.url.split("/").pop()}`))).digest("hex"); expect(architectureHash).toBe(before.assets.architecture.sha256); expect(characterHash).toBe(before.assets.character.sha256); expect(maxNestedDelta(before.before.aura.positions, before.before.three.positions)).toBeLessThan(1e-6); expect(maxNestedDelta(before.before.aura.path, before.before.three.path)).toBeLessThan(1e-6); expect(maxDelta(before.before.aura.backgroundPixel, before.before.three.backgroundPixel)).toBeLessThanOrEqual(3);
+    await capturePair(page, "before"); await page.locator("#advance").click(); await page.waitForFunction(() => Boolean(window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD__?.after), undefined, { timeout: 120_000 }); const after = await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD__);
+    expect(after.after.aura.hash).not.toBe(after.before.aura.hash); expect(after.after.three.hash).not.toBe(after.before.three.hash); expect(after.after.aura.positions[0][0], JSON.stringify(after.after)).toBeGreaterThan(after.before.aura.positions[0][0] + 3); expect(after.after.three.positions[0][0]).toBeGreaterThan(after.before.three.positions[0][0] + 3); expect(maxNestedDelta(after.after.aura.positions, after.after.three.positions)).toBeLessThan(1e-5); expect(maxDelta(after.after.aura.backgroundPixel, after.after.three.backgroundPixel)).toBeLessThanOrEqual(3);
+    await capturePair(page, "after"); const lifecycle = await page.evaluate(() => (window as any).__AURA_THREE_HEAD_TO_HEAD_NAVIGATION_CROWD_DISPOSE__()); expect(Object.values(lifecycle).every(Boolean), JSON.stringify(lifecycle)).toBe(true); expect(errors).toEqual([]);
+    writeFileSync(resolve(REPORT_DIRECTORY, "report.json"), `${JSON.stringify({ schema: "aura3d.current-head-to-head-workload/1.0", generatedAt: new Date().toISOString(), pass: true, assetSha256: { architecture: architectureHash, skinnedCharacter: characterHash }, before: after.before, after: after.after, lifecycle }, null, 2)}\n`);
+  });
+  test("uses public Aura navigation packages and direct current Recast on the control side", () => { const source = readFileSync(resolve("benchmark/current-head-to-head/navigation-crowd/main.ts"), "utf8"); expect(source).toContain('from "@aura3d/navigation-recast"'); expect(source).toContain('from "recast-navigation"'); expect(source).toContain('from "recast-navigation/generators"'); expect(source).not.toContain("packages/"); });
+});
+async function capturePair(page: Page, suffix: "before" | "after"): Promise<void> { const captures = await page.evaluate(() => ({ aura: document.querySelector<HTMLCanvasElement>("#aura")!.toDataURL("image/png"), three: document.querySelector<HTMLCanvasElement>("#three")!.toDataURL("image/png") })); for (const [engine, dataUrl] of Object.entries(captures)) writeFileSync(resolve(REPORT_DIRECTORY, `${engine}-${suffix}.png`), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64")); }
+function maxDelta(left: readonly number[], right: readonly number[]): number { return Math.max(...left.map((value, index) => Math.abs(value - (right[index] ?? 0)))); }
+function maxNestedDelta(left: readonly (readonly number[])[], right: readonly (readonly number[])[]): number { return Math.max(...left.map((value, index) => maxDelta(value, right[index] ?? []))); }

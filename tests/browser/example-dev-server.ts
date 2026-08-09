@@ -32,6 +32,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/product-studio", "/packages/product-studio/src/index.ts"],
   ["@aura3d/physics", "/packages/physics/src/index.ts"],
   ["@aura3d/physics-rapier", "/packages/physics-rapier/src/index.ts"],
+  ["@aura3d/navigation-recast", "/packages/navigation-recast/src/index.ts"],
   /*
    * WS-2.2/2.3 subpaths. Without these, any harness importing the public entry fails at runtime with
    * "Failed to resolve module specifier" — the browser has no bare-specifier resolution, so every
@@ -74,6 +75,11 @@ const packageEntryPoints = new Map<string, string>([
   ["@probe.gl/stats", "/node_modules/.pnpm/@probe.gl+stats@4.1.1/node_modules/@probe.gl/stats/dist/index.js"],
   ["apache-arrow", "/node_modules/.pnpm/apache-arrow@21.1.0/node_modules/apache-arrow/Arrow.dom.mjs"],
   ["@dimforge/rapier3d-compat", "/node_modules/@dimforge/rapier3d-compat/dist/rapier.mjs"],
+  ["recast-navigation/generators", "/node_modules/.pnpm/recast-navigation@0.43.1/node_modules/recast-navigation/generators.mjs"],
+  ["recast-navigation", "/node_modules/.pnpm/recast-navigation@0.43.1/node_modules/recast-navigation/index.mjs"],
+  ["@recast-navigation/generators", "/node_modules/.pnpm/@recast-navigation+generators@0.43.1/node_modules/@recast-navigation/generators/dist/index.mjs"],
+  ["@recast-navigation/core", "/node_modules/.pnpm/@recast-navigation+core@0.43.1/node_modules/@recast-navigation/core/dist/index.mjs"],
+  ["@recast-navigation/wasm", "/node_modules/.pnpm/@recast-navigation+wasm@0.43.1/node_modules/@recast-navigation/wasm/dist/recast-navigation.wasm-compat.js"],
   ["flatbuffers", "/node_modules/.pnpm/flatbuffers@25.9.23/node_modules/flatbuffers/mjs/flatbuffers.js"],
   ["ktx-parse", "/node_modules/.pnpm/node_modules/ktx-parse/dist/ktx-parse.modern.js"],
   ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],
