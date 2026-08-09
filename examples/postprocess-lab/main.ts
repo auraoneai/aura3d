@@ -47,12 +47,16 @@ import {
   type RenderTarget,
   type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
+import { assets } from "../../src/aura-assets";
 
 declare global {
   interface Window {
     __AURA3D_POSTPROCESS_LAB__?: PostprocessLabState;
   }
 }
+
+const PROCESS_WIDTH = 192;
+const PROCESS_HEIGHT = 108;
 
 interface PostprocessLabState {
   readonly id: "postprocess-lab";
@@ -178,13 +182,13 @@ interface PostprocessLabState {
 }
 
 const knownLimits = [
-  "This lab validates RenderGraph pass order by feeding a real WebGL2-rendered ExternalParity glTF scene into deterministic LDR postprocess targets.",
+  "This lab validates RenderGraph pass order by feeding a real WebGL2-rendered typed product GLB into deterministic LDR postprocess targets.",
   "Depth plumbing is a normalized depth texture resource with visualized readback; bounded DOF/outline/motion-blur/chromatic-aberration/film-grain/SSAO/SSR/TAA pixel primitives are audited but production parity is not claimed.",
   "The postprocess passes run on readback pixels from the ExternalParity product fixture; the final composition is still a bounded browser-audit lab, not a production full-frame compositor.",
 ] as const;
 
-const productSceneUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
-const claimBoundary = "ExternalParity postprocess-lab evidence is limited to bounded LDR tone mapping, bloom, FXAA, color grading, vignette, sharpening, depth visualization, DOF, Sobel outline, chromatic aberration, film grain, motion blur, SSAO, SSR, TAA, pass costs, and browser pixel checks on a WebGL2-rendered ExternalParity product glTF scene; HDR render-target parity and full postprocess-suite parity are not claimed.";
+const productSceneUrl = assets.showcaseHeadphones.url;
+const claimBoundary = "ExternalParity postprocess-lab evidence is limited to bounded LDR tone mapping, bloom, FXAA, color grading, vignette, sharpening, depth visualization, DOF, Sobel outline, chromatic aberration, film grain, motion blur, SSAO, SSR, TAA, pass costs, and browser pixel checks on the typed showcaseHeadphones GLB rendered through WebGL2; HDR render-target parity and full postprocess-suite parity are not claimed.";
 
 interface RealScenePostprocessInput {
   readonly source: "external-parity-product-gltf-webgl2-readback";
@@ -280,16 +284,16 @@ async function run(): Promise<void> {
   } = createShell();
   const realScene = await createRealScenePostprocessInput();
   const device = new MockRenderDevice();
-  const hdr = device.createRenderTarget({ width: 96, height: 54, label: "hdr-color" }) as RenderTarget & { colorPixels: Uint8Array };
-  const ldr = device.createRenderTarget({ width: 96, height: 54, label: "tone-mapped-color" }) as RenderTarget & { colorPixels: Uint8Array };
-  const bloom = device.createRenderTarget({ width: 96, height: 54, label: "bloom-color" }) as RenderTarget & { colorPixels: Uint8Array };
-  const fxaa = device.createRenderTarget({ width: 96, height: 54, label: "fxaa-color" }) as RenderTarget & { colorPixels: Uint8Array };
-  const depthViz = device.createRenderTarget({ width: 96, height: 54, label: "depth-visualization" }) as RenderTarget & { colorPixels: Uint8Array };
+  const hdr = device.createRenderTarget({ width: PROCESS_WIDTH, height: PROCESS_HEIGHT, label: "hdr-color" }) as RenderTarget & { colorPixels: Uint8Array };
+  const ldr = device.createRenderTarget({ width: PROCESS_WIDTH, height: PROCESS_HEIGHT, label: "tone-mapped-color" }) as RenderTarget & { colorPixels: Uint8Array };
+  const bloom = device.createRenderTarget({ width: PROCESS_WIDTH, height: PROCESS_HEIGHT, label: "bloom-color" }) as RenderTarget & { colorPixels: Uint8Array };
+  const fxaa = device.createRenderTarget({ width: PROCESS_WIDTH, height: PROCESS_HEIGHT, label: "fxaa-color" }) as RenderTarget & { colorPixels: Uint8Array };
+  const depthViz = device.createRenderTarget({ width: PROCESS_WIDTH, height: PROCESS_HEIGHT, label: "depth-visualization" }) as RenderTarget & { colorPixels: Uint8Array };
   const depthTexture = createDepthTextureBinding({
     label: "scene-depth",
-    width: 96,
-    height: 54,
-    data: createSceneDepthData(96, 54)
+    width: PROCESS_WIDTH,
+    height: PROCESS_HEIGHT,
+    data: createSceneDepthData(PROCESS_WIDTH, PROCESS_HEIGHT)
   });
 
   const render = () => {
@@ -409,9 +413,9 @@ function renderPostprocessLab(options: {
     bloomPass = new BloomPass({
       source: currentTarget,
       target: bloom,
-      threshold: 0.48,
-      intensity: 0.12,
-      radius: 2,
+      threshold: 0.55,
+      intensity: 0.045,
+      radius: 1,
       readResource: currentResource,
       writeResource: "bloom-color"
     });
@@ -425,7 +429,7 @@ function renderPostprocessLab(options: {
       source: currentTarget,
       target: fxaa,
       edgeThreshold: 0.025,
-      subpixelBlend: 0.85,
+      subpixelBlend: 0.42,
       readResource: currentResource,
       writeResource: "fxaa-color"
     }));
@@ -438,10 +442,10 @@ function renderPostprocessLab(options: {
     fallbackReason: "EXT_disjoint_timer_query_webgl2 unavailable in postprocess lab; using CPU timing fallback."
   });
 
-  device.beginFrame(96, 54);
+  device.beginFrame(PROCESS_WIDTH, PROCESS_HEIGHT);
   for (const pass of plan.passes) {
     const sample = timing.begin(pass.name);
-    pass.execute({ device, width: 96, height: 54 });
+    pass.execute({ device, width: PROCESS_WIDTH, height: PROCESS_HEIGHT });
     passCostsMs[pass.name] = sample.end().durationMs;
   }
   device.endFrame();
@@ -534,9 +538,9 @@ function renderPostprocessLab(options: {
   const depthResult = depthPass.getLastResult();
   const bloomResult = bloomPass?.getLastResult();
   const pixels = {
-    toneMappedHighlight: readTargetPixel(ldr, 48, 24),
-    bloomNeighbor: readTargetPixel(bloom, 45, 24),
-    depthNear: readTargetPixel(depthViz, 48, 24),
+    toneMappedHighlight: readTargetPixel(ldr, Math.round(PROCESS_WIDTH * 0.85), Math.round(PROCESS_HEIGHT * 0.28)),
+    bloomNeighbor: readTargetPixel(bloom, Math.round(PROCESS_WIDTH * 0.81), Math.round(PROCESS_HEIGHT * 0.28)),
+    depthNear: readTargetPixel(depthViz, PROCESS_WIDTH / 2, Math.round(PROCESS_HEIGHT * 0.44)),
     depthFar: readTargetPixel(depthViz, 1, 1),
     srgbMidGray: [colorCalibration.samples[1]!.encodedByte, colorCalibration.samples[1]!.encodedByte, colorCalibration.samples[1]!.encodedByte, 255],
     fxaaBeforeEdge: fxaaChangedPixel ? readTargetPixel(bloom, fxaaChangedPixel[0], fxaaChangedPixel[1]) : [0, 0, 0, 0],
@@ -684,15 +688,15 @@ function renderPostprocessLab(options: {
 
 async function createRealScenePostprocessInput(): Promise<RealScenePostprocessInput & { readonly pixels: Uint8Array }> {
   const sourceCanvas = document.createElement("canvas");
-  sourceCanvas.width = 96;
-  sourceCanvas.height = 54;
-  sourceCanvas.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:96px;height:54px;pointer-events:none;";
+  sourceCanvas.width = PROCESS_WIDTH;
+  sourceCanvas.height = PROCESS_HEIGHT;
+  sourceCanvas.style.cssText = `position:absolute;left:-9999px;top:-9999px;width:${PROCESS_WIDTH}px;height:${PROCESS_HEIGHT}px;pointer-events:none;`;
   document.body.append(sourceCanvas);
 
   const renderer = await Renderer.create({
     canvas: sourceCanvas,
-    width: 96,
-    height: 54,
+    width: PROCESS_WIDTH,
+    height: PROCESS_HEIGHT,
     backend: "webgl2",
     clearColor: [0.02, 0.024, 0.032, 1]
   });
@@ -700,10 +704,15 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
   const asset = await loader.load({ url: productSceneUrl }, new LoadContext({ baseUrl: window.location.origin }));
   const resources = await createGLTFRenderResources(asset);
   try {
+    const importedRoots = [...resources.scene.root.children];
+    const productRoot = resources.scene.createNode("typed-showcase-headphones-root");
+    resources.scene.root.addChild(productRoot);
+    for (const importedRoot of importedRoots) productRoot.addChild(importedRoot);
+    productRoot.transform.setPosition(0, -0.3, 0).setScale(0.0032, 0.0032, 0.0032);
     const camera = resources.scene.createPerspectiveCamera({
       name: "postprocess-source-camera",
       fovYRadians: Math.PI / 4,
-      aspect: 96 / 54,
+      aspect: PROCESS_WIDTH / PROCESS_HEIGHT,
       near: 0.1,
       far: 40
     });
@@ -739,11 +748,12 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
         }
       }
     });
-    const pixels = renderer.device.readPixels(0, 0, 96, 54);
+    const pixels = renderer.device.readPixels(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
+    const centerIndex = (Math.floor(PROCESS_HEIGHT / 2) * PROCESS_WIDTH + Math.floor(PROCESS_WIDTH / 2)) * 4;
     return {
       source: "external-parity-product-gltf-webgl2-readback",
       assetUrl: productSceneUrl,
-      assetName: "external-parity-product-speaker",
+      assetName: "showcaseHeadphones",
       meshCount: inspection.meshes.length,
       materialCount: inspection.materials.length,
       textureCount: inspection.textures.length,
@@ -751,7 +761,7 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
       drawCalls: diagnostics.drawCalls,
       nonDarkPixels: countNonDarkPixels(pixels),
       colorBuckets: countColorBuckets(pixels),
-      samplePixel: Array.from(pixels.slice((27 * 96 + 48) * 4, (27 * 96 + 48) * 4 + 4)),
+      samplePixel: Array.from(pixels.slice(centerIndex, centerIndex + 4)),
       pixels
     };
   } finally {
@@ -803,8 +813,8 @@ function createSceneDepthData(width: number, height: number): Float32Array {
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const gradient = 0.18 + (x / Math.max(1, width - 1)) * 0.42 + (y / Math.max(1, height - 1)) * 0.22;
-      const foreground = Math.hypot(x - 48, y - 24) < 10 ? 0.16 : gradient;
-      const stripe = x > 30 && x < 36 ? 0.48 : foreground;
+      const foreground = Math.hypot(x - width * 0.5, y - height * 0.44) < width * 0.104 ? 0.16 : gradient;
+      const stripe = x > width * 0.3125 && x < width * 0.375 ? 0.48 : foreground;
       data[y * width + x] = Math.max(0, Math.min(1, stripe));
     }
   }
@@ -833,10 +843,10 @@ function fillHdrInput(target: RenderTarget & { colorPixels: Uint8Array }, realSc
       const r = realScenePixels[sourceIndex] ?? 0;
       const g = realScenePixels[sourceIndex + 1] ?? 0;
       const b = realScenePixels[sourceIndex + 2] ?? 0;
-      const highlight = Math.hypot(x - 56, y - 20) < 8 ? 36 : 0;
-      const rim = x > 70 && x < 74 && y > 14 && y < 42 ? 24 : 0;
-      const edgeOccluder = x > 23 && x < 78 && y > 30 && y < 33;
-      const verticalCalibrationEdge = x > 34 && x < 37 && y > 12 && y < 40;
+      const highlight = Math.hypot(x - target.width * 0.85, y - target.height * 0.28) < target.width * 0.04 ? 36 : 0;
+      const rim = x > target.width * 0.88 && x < target.width * 0.9 && y > target.height * 0.18 && y < target.height * 0.46 ? 24 : 0;
+      const edgeOccluder = x > target.width * 0.78 && x < target.width * 0.94 && y > target.height * 0.68 && y < target.height * 0.71;
+      const verticalCalibrationEdge = x > target.width * 0.79 && x < target.width * 0.805 && y > target.height * 0.12 && y < target.height * 0.42;
       target.colorPixels[index] = edgeOccluder
         ? 8
         : Math.min(255, r + highlight + rim + (verticalCalibrationEdge ? 36 : 0));
@@ -864,7 +874,6 @@ function drawOutput(
   context.fillStyle = "#0e1317";
   context.fillRect(0, 0, canvas.width, canvas.height);
   drawSeededStarfield(context, canvas, starfield);
-  drawPresentationGrid(context, canvas);
   const finalImage = new ImageData(new Uint8ClampedArray(fxaa.colorPixels), fxaa.width, fxaa.height);
   const finalScratch = document.createElement("canvas");
   finalScratch.width = fxaa.width;
@@ -875,7 +884,6 @@ function drawOutput(
   context.strokeStyle = "rgba(110, 200, 255, 0.45)";
   context.lineWidth = 2;
   context.strokeRect(30, 68, 500, 282);
-  drawPanelGrid(context, 46, 84, 468, 250, 18, "rgba(110, 200, 255, 0.18)");
   context.drawImage(finalScratch, 54, 92, 452, 254);
   context.fillStyle = "#eff7fb";
   context.font = "700 18px ui-sans-serif, system-ui, sans-serif";
@@ -898,79 +906,11 @@ function drawOutput(
     context.strokeStyle = "rgba(110, 200, 255, 0.34)";
     context.lineWidth = 1;
     context.strokeRect(entry.x - 10, entry.y - 32, 166, 118);
-    drawPanelGrid(context, entry.x - 4, entry.y - 2, 154, 88, 14, "rgba(110, 200, 255, 0.2)");
     context.drawImage(scratch, entry.x, entry.y, 146, 82);
     context.fillStyle = "#d7e3ea";
     context.font = "700 13px ui-sans-serif, system-ui, sans-serif";
     context.fillText(entry.label, entry.x, entry.y - 12);
   }
-  drawForegroundScanlines(context, canvas);
-}
-
-function drawPresentationGrid(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
-  context.save();
-  context.strokeStyle = "rgba(92, 150, 190, 0.28)";
-  context.lineWidth = 1;
-  for (let x = 18; x < canvas.width; x += 18) {
-    context.beginPath();
-    context.moveTo(x, 18);
-    context.lineTo(x, canvas.height - 18);
-    context.stroke();
-  }
-  for (let y = 18; y < canvas.height; y += 18) {
-    context.beginPath();
-    context.moveTo(18, y);
-    context.lineTo(canvas.width - 18, y);
-    context.stroke();
-  }
-  context.strokeStyle = "rgba(255, 255, 255, 0.16)";
-  for (let index = 0; index < 18; index += 1) {
-    const x = 42 + index * 50;
-    context.beginPath();
-    context.moveTo(x, 382);
-    context.lineTo(x + 34, 426);
-    context.stroke();
-  }
-  context.restore();
-}
-
-function drawPanelGrid(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, step: number, color: string): void {
-  context.save();
-  context.strokeStyle = color;
-  context.lineWidth = 1;
-  for (let gridX = x; gridX <= x + width; gridX += step) {
-    context.beginPath();
-    context.moveTo(gridX, y);
-    context.lineTo(gridX, y + height);
-    context.stroke();
-  }
-  for (let gridY = y; gridY <= y + height; gridY += step) {
-    context.beginPath();
-    context.moveTo(x, gridY);
-    context.lineTo(x + width, gridY);
-    context.stroke();
-  }
-  context.restore();
-}
-
-function drawForegroundScanlines(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
-  context.save();
-  context.strokeStyle = "rgba(240, 248, 255, 0.18)";
-  context.lineWidth = 1;
-  for (let y = 12; y < canvas.height; y += 12) {
-    context.beginPath();
-    context.moveTo(14, y);
-    context.lineTo(canvas.width - 14, y);
-    context.stroke();
-  }
-  context.strokeStyle = "rgba(110, 200, 255, 0.22)";
-  for (let x = 16; x < canvas.width; x += 16) {
-    context.beginPath();
-    context.moveTo(x, 14);
-    context.lineTo(x + 34, canvas.height - 16);
-    context.stroke();
-  }
-  context.restore();
 }
 
 function drawSeededStarfield(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, data: Uint8Array): void {

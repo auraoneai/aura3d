@@ -446,7 +446,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
         changed.toneMappingPresetEvidence.path === "PostProcessPass.applyToneMappingPreset" &&
         includesAll(changed.toneMappingPresetEvidence.operators, ["aces", "filmic", "uncharted2", "agx", "neutral"]) &&
         changed.toneMappingPresetEvidence.histogram.binCount === 64 &&
-        changed.toneMappingPresetEvidence.histogram.pixelCount === 96 * 54 &&
+        changed.toneMappingPresetEvidence.histogram.pixelCount === 192 * 108 &&
         Number(changed.toneMappingPresetEvidence.histogram.averageLuminance) > 0 &&
         Number(changed.toneMappingPresetEvidence.autoExposure.exposure) > 0 &&
         Number(changed.toneMappingPresetEvidence.changedPixels) > 0,
