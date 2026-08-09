@@ -1,6 +1,6 @@
 import { AnimationAction, AnimationClip, AnimationLayer, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, type AnimationValue, type LoopMode } from "@aura3d/animation";
 import { GLTFLoader, LoadContext, type GLTFMeshAsset } from "@aura3d/assets";
-import { Geometry, IndexBuffer, Renderer, SkinnedUnlitMaterial, UnlitMaterial, VertexBuffer, VertexFormat } from "@aura3d/rendering";
+import { computePerspectiveCameraFrame, Geometry, IndexBuffer, Renderer, SkinnedUnlitMaterial, UnlitMaterial, VertexBuffer, VertexFormat } from "@aura3d/rendering";
 
 interface AnimationBrowserResult {
   readonly status: "ready" | "error";
@@ -322,7 +322,7 @@ async function renderExternalCharacterFrame(
     {
       geometry,
       material: new SkinnedUnlitMaterial({ name: "external-cesium-man-skinning", color: [0.16, 0.92, 0.54, 1] }),
-      modelViewProjectionMatrix: cesiumManDisplayMatrix(),
+      modelViewProjectionMatrix: cesiumManDisplayMatrix(mesh, canvas),
       skinning: buildSkinningPalette(skeleton, 64),
       label: `external-${canvasId}`
     }
@@ -391,13 +391,14 @@ function isQuat(value: AnimationValue): value is readonly [number, number, numbe
   return Array.isArray(value) && value.length === 4 && value.every((entry) => typeof entry === "number");
 }
 
-function cesiumManDisplayMatrix(): readonly number[] {
-  return [
-    4, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 1.08, 0, 0,
-    0, -0.84, 0, 1
-  ];
+function cesiumManDisplayMatrix(mesh: GLTFMeshAsset, canvas: HTMLCanvasElement): readonly number[] {
+  return computePerspectiveCameraFrame(mesh.geometry.bounds, { width: canvas.width, height: canvas.height }, {
+    paddingRatio: 0.18,
+    yawRadians: -0.18,
+    pitchRadians: -0.04,
+    nearPadding: 0.1,
+    farPadding: 2
+  }).viewProjectionMatrix;
 }
 
 function createSkinnedTriangle(): Geometry {
