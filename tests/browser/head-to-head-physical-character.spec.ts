@@ -1,0 +1,27 @@
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { expect, test, type Page } from "@playwright/test";
+import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+
+const REPORT_DIRECTORY = resolve("tests/reports/current-head-to-head/physical-character");
+test.describe("current head-to-head physical character", () => {
+  let server: ExampleDevServer;
+  test.beforeAll(async () => { server = await startExampleDevServer(); mkdirSync(REPORT_DIRECTORY, { recursive: true }); });
+  test.afterAll(async () => { await server.close(); });
+  test("runs the selected Rapier adapter against direct Rapier and retains both physical states", async ({ page }) => {
+    test.setTimeout(240_000); const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message)); page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+    await page.goto(`${server.origin}/benchmark/current-head-to-head/physical-character/`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => Boolean(window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER__?.ready || window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER_ERROR__), undefined, { timeout: 180_000 }).catch(async (error) => { const probe = await page.evaluate(() => ({ state: window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER__, error: window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER_ERROR__ })); throw new Error(`${String(error)}\n${JSON.stringify(probe)}\n${errors.join(" | ")}`); });
+    expect(await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER_ERROR__) ?? errors.join(" | ")).toBeFalsy(); const before = await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER__);
+    expect(before).toMatchObject({ ready: true, workload: "physical-character", viewport: { width: 1440, height: 900, dpr: 1 }, before: { aura: { publicPackageOnly: true, actualSelectedRapierAdapter: true, nativeCharacterController: true }, three: { revision: "185", actualDirectRapier: true, nativeCharacterController: true, actualRenderer: true, actualGLTFLoader: true } } });
+    const assetHash = createHash("sha256").update(readFileSync(resolve("public/aura-assets/showcaseAnimatedRunnerHero.9ff4ea51.glb"))).digest("hex"); expect(assetHash).toBe(before.asset.sha256); expect(maxDelta(before.before.aura.position, before.before.three.position)).toBeLessThan(1e-6); expect(maxDelta(before.before.aura.backgroundPixel, before.before.three.backgroundPixel)).toBeLessThanOrEqual(3);
+    await capturePair(page, "before"); await page.locator("#advance").click(); await page.waitForFunction(() => Boolean(window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER__?.after), undefined, { timeout: 120_000 }); const after = await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER__);
+    expect(after.after.aura.hash).not.toBe(after.before.aura.hash); expect(after.after.three.hash).not.toBe(after.before.three.hash); expect(after.after.aura.position[0], JSON.stringify(after.after)).toBeGreaterThan(after.before.aura.position[0] + 2); expect(after.after.three.position[0]).toBeGreaterThan(after.before.three.position[0] + 2); expect(maxDelta(after.after.aura.position, after.after.three.position)).toBeLessThan(1e-5); expect(after.after.aura.movement.totalCollisions).toBeGreaterThan(0); expect(after.after.three.movement.totalCollisions).toBeGreaterThan(0); expect(after.after.aura.movement.groundedFrames).toBeGreaterThan(0); expect(after.after.three.movement.groundedFrames).toBeGreaterThan(0); expect(maxDelta(after.after.aura.backgroundPixel, after.after.three.backgroundPixel)).toBeLessThanOrEqual(3);
+    await capturePair(page, "after"); const lifecycle = await page.evaluate(() => (window as any).__AURA_THREE_HEAD_TO_HEAD_PHYSICAL_CHARACTER_DISPOSE__()); expect(Object.values(lifecycle).every(Boolean), JSON.stringify(lifecycle)).toBe(true); expect(errors).toEqual([]);
+    writeFileSync(resolve(REPORT_DIRECTORY, "report.json"), `${JSON.stringify({ schema: "aura3d.current-head-to-head-workload/1.0", generatedAt: new Date().toISOString(), pass: true, assetSha256: assetHash, before: after.before, after: after.after, lifecycle }, null, 2)}\n`);
+  });
+  test("uses public Aura adapter packages and direct current Rapier on the control side", () => { const source = readFileSync(resolve("benchmark/current-head-to-head/physical-character/main.ts"), "utf8"); expect(source).toContain('from "@aura3d/physics-rapier"'); expect(source).toContain('from "@dimforge/rapier3d-compat"'); expect(source).toContain('from "@aura3d/engine"'); expect(source).not.toContain("packages/"); });
+});
+async function capturePair(page: Page, suffix: "before" | "after"): Promise<void> { const captures = await page.evaluate(() => ({ aura: document.querySelector<HTMLCanvasElement>("#aura")!.toDataURL("image/png"), three: document.querySelector<HTMLCanvasElement>("#three")!.toDataURL("image/png") })); for (const [engine, dataUrl] of Object.entries(captures)) writeFileSync(resolve(REPORT_DIRECTORY, `${engine}-${suffix}.png`), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64")); }
+function maxDelta(left: readonly number[], right: readonly number[]): number { return Math.max(...left.map((value, index) => Math.abs(value - (right[index] ?? 0)))); }
