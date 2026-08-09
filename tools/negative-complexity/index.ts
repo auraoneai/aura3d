@@ -194,12 +194,6 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
       detail: `PhysicsBackend declares ${countPhysicsBackends()} selectable legacy-package solver(s), while the selected optional Rapier adapter ${exists("packages/physics-rapier/src/index.ts") ? "exists" : "does not exist"}. Cannon-backed PhysicsWorld and Rapier cannot both remain production owners.`
     },
     {
-      capability: "physical character controller",
-      present: exists("packages/physics/src/CharacterController.ts")
-        && contains("packages/physics-rapier/src/index.ts", "RapierCharacterControllerHandle"),
-      detail: "The custom physical CharacterController and Rapier kinematic character-controller adapter overlap until the major migration and R8 deletion complete. Authored-unit arcade platforming is a separate contract."
-    },
-    {
       /*
        * WS-3.1 — the definition of this violation is corrected, not the code, and the reasoning matters.
        *

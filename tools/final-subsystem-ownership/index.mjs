@@ -33,7 +33,6 @@ const packageDisposition = {
 const overrides = [
   { id: "physics-evidence-descriptors", package: "physics", match: /(?:Cloth|Fluid|Fracture|SoftBody|FireSmoke|Sandbox|Platformer).*Fixtures\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Move out of the published runtime; never represent descriptors as solvers." },
   { id: "physics-navigation-crowd-steering", package: "physics", match: /\/(?:Navigation|Crowd|Steering)\.ts$/, disposition: "OPTIONAL-PLUGIN", owner: "recast/steering adapter candidate", decision: "Bake off against Recast/Detour and maintained alternatives in Phase 2." },
-  { id: "physics-custom-physical-controller", package: "physics", match: /\/CharacterController\.ts$/, disposition: "DEPRECATE-REMOVE", owner: "selected optional physics engine", decision: "Retain only until the optional-engine migration proof identifies replacements." },
   { id: "physics-authored-arcade-motion", package: "physics", match: /\/(?:KinematicBody|KinematicWorld|ArcadeCharacterController|ArcadeVehicleTelemetry)\.ts$/, disposition: "AURA-MOAT", owner: "Aura3D authored-unit arcade runtime", decision: "Keep explicitly non-physical deterministic motion and sampling; never present it as rigid-body simulation." },
   { id: "physics-cannon-adapter", package: "physics", match: /\/(?:PhysicsWorld|PhysicsStepper|RigidBody|Collider|Constraint|Constraints|CollisionEvents|Shape|Raycast|TimeOfImpact|SurfaceQuery|NarrowPhase)\.ts$/, disposition: "EXTERNAL-ADAPTER", owner: "current cannon-es adapter", decision: "Compare against current Rapier topology; exactly one physical solver may remain." },
   { id: "audio-evidence-fixtures", package: "audio", match: /Fixtures\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Move non-runtime fixtures out of the published audio package." },
@@ -187,7 +186,7 @@ const architectureLock = {
 };
 
 const overlaps = [
-  { capability: "physical integration", owners: ["cannon-es via PhysicsWorld", "CharacterController", "optional Rapier adapter"], status: "duplicate physical ownership remains until the major migration" },
+  { capability: "physical integration", owners: ["cannon-es via PhysicsWorld", "optional Rapier adapter"], status: "duplicate solver ownership remains until the major migration" },
   { capability: "authored-unit arcade motion", owners: ["KinematicBody/KinematicWorld", "ArcadeVehicleTelemetry", "GameRuntime"], status: "non-physical capability with one semantic owner split into low-level and public layers" },
   { capability: "navigation and crowd", owners: ["optional Recast/Detour adapter"], status: "single selected owner after the major-version migration" },
   { capability: "audio context/mixing/effects", owners: ["AudioContextManager", "AudioMixer/Bus", "effects wrappers", "route/browser unlock handlers"], status: "potential duplicate browser ownership; Phase 2 characterization required" },

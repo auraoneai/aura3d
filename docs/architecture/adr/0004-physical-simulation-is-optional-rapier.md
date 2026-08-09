@@ -85,8 +85,10 @@ cacheable is therefore part of the decision, not an implementation detail.
 - Installed-package, browser cold/cached load, WASM compile/init, worker,
   disposal, repeated-mount, query, controller, and real-route proofs remain
   required before the adapter can be called release-ready.
-- Cannon remains a migration source until consumers and tests move; it is not
-  deleted by this ADR.
+- Cannon remains a migration source until its consumers and tests move. The
+  displaced custom physical character controller has been removed after the
+  game slice moved to authored-unit arcade motion and the Rapier adapter gained
+  real constrained-movement, grounding, and collision evidence.
 - Each displaced file still requires the six-point R8 deletion proof.
 - Public docs must distinguish `arcade deterministic motion` from `physical
   simulation`.

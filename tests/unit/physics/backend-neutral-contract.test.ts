@@ -75,7 +75,7 @@ describe("the public physics contract does not name its backend", () => {
       // Value exports only: this reads the runtime surface, so a type-only symbol such as
       // the `MeshBVH` interface is represented by its constructor, `buildMeshBVH`.
       "raycast/shapecast": ["raycastCollider", "sphereCastCollider", "timeOfImpact", "buildMeshBVH", "raycastMesh", "createMeshSurfaceQuery"],
-      "character controller": ["CharacterController", "createFightingCharacterController"],
+      "authored-unit character movement": ["ArcadeCharacterController", "createFightingCharacterController"],
       vehicle: ["samplePacejkaTireForces", "sampleRacingAiDriver"],
       "deterministic stepping": ["PhysicsWorld", "PhysicsStepper"]
     };

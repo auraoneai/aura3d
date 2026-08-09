@@ -36,7 +36,7 @@ pnpm verify:api-docs
 | `@aura3d/math` | `1.6.0` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/navigation-recast` | `1.6.0` | `packages/navigation-recast/src/index.ts` | 15 |
 | `@aura3d/physics` | `1.6.0` | `packages/physics/src/index.ts` | 23 |
-| `@aura3d/physics-rapier` | `1.6.0` | `packages/physics-rapier/src/index.ts` | 11 |
+| `@aura3d/physics-rapier` | `1.6.0` | `packages/physics-rapier/src/index.ts` | 12 |
 | `@aura3d/physics/solverless` | `1.6.0` | `packages/physics/src/solverless.ts` | 13 |
 | `@aura3d/physics/world` | `1.6.0` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.6.0` | `packages/product-studio/src/index.ts` | 12 |
@@ -852,8 +852,8 @@ export * from "./TimeOfImpact.js";
 export * from "./NarrowPhase.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
-export * from "./CharacterController.js";
 export * from "./ArcadeCharacterController.js";
+export * from "./FightingCharacterController.js";
 export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
@@ -881,6 +881,7 @@ export interface RapierBodySpec { readonly type?: "dynamic" | "fixed" | "kinemat
 export interface RapierPhysicsOptions { readonly gravity?: PhysicsVec3;
 export class RapierBodyHandle { readonly #body: Rapier.RigidBody;
 export interface RapierRayHit { readonly body: RapierBodyHandle;
+export interface RapierCharacterMovement { readonly requested: PhysicsVec3;
 export class RapierCharacterControllerHandle { readonly #world: RapierPhysicsWorld;
 export class RapierVehicleControllerHandle { readonly #world: RapierPhysicsWorld;
 export class RapierPhysicsWorld { readonly #module: RapierModule;

@@ -97,7 +97,7 @@ const CAPABILITIES = [
   { id: "constraints", symbols: ["Constraint", "ConstraintDescriptor"], testSymbols: ["Constraint", "constraint"], agentApiSymbols: [] },
   { id: "debug visualization", symbols: ["PhysicsDebugDraw", "DebugLine"], testSymbols: ["DebugDraw", "debugGeometry", "colliderDebug"], agentApiSymbols: ["createGameColliderDebugGeometry"] },
   { id: "production diagnostics", symbols: ["PhysicsStepperResult", "PhysicsBackendSelection"], testSymbols: ["backend", "PhysicsWorld"], agentApiSymbols: ["createRuntimeScenePhysics"] },
-  { id: "character controller", symbols: ["CharacterController"], testSymbols: ["CharacterController", "kinematic-fighting-controller", "KinematicBody"], agentApiSymbols: ["createGameKinematicBody"] },
+  { id: "character movement", symbols: ["ArcadeCharacterController", "RapierCharacterControllerHandle"], testSymbols: ["kinematic-fighting-controller", "rapier-adapter", "KinematicBody"], agentApiSymbols: ["createGameKinematicBody"] },
   { id: "arcade vehicle telemetry", symbols: ["ArcadeVehicleTelemetrySample", "PacejkaTireForceSample"], testSymbols: ["createVehicleChassis", "vehicleChassisSpecFromBounds"], agentApiSymbols: ["createVehicleChassis"] },
   { id: "fixed-step stepping", symbols: ["PhysicsStepper"], testSymbols: ["createFrameLoop", "fixedDt"], agentApiSymbols: ["createFrameLoop"] },
   { id: "scene transform agreement", symbols: ["ScenePhysicsBridge", "ScenePhysicsBinding"], testSymbols: ["ScenePhysicsBridge", "scene-physics-bridge"], agentApiSymbols: ["createRuntimeScenePhysics"] }

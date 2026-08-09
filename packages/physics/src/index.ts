@@ -36,9 +36,9 @@
  *    ground-height sampling, swept `timeOfImpact`, `MeshBVH` and `SurfaceQuery` for
  *    geometry-level queries.
  * 5. **Character movement** — `ArcadeCharacterController` and
- *    `FightingCharacterController` are explicitly authored-unit motion. The
- *    legacy physical `CharacterController` remains only until the major Rapier
- *    migration completes.
+ *    `FightingCharacterController` are explicitly authored-unit motion.
+ *    Physical collision-constrained character movement belongs to the
+ *    selected optional Rapier adapter.
  * 6. **Vehicle** — `ArcadeVehicleTelemetry` provides non-integrating telemetry,
  *    Pacejka sampling, and drivetrain helpers. Physical vehicle ownership lives
  *    in the optional selected engine; public arcade pose/driver ownership lives
@@ -73,8 +73,8 @@ export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
 
 // --- 5. Character controllers ---
-export * from "./CharacterController.js";
 export * from "./ArcadeCharacterController.js";
+export * from "./FightingCharacterController.js";
 export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";

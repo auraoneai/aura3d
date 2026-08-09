@@ -15,7 +15,7 @@ Version: 1.4.5
 | Queries | `Raycast.ts` |
 | Continuous queries | `TimeOfImpact.ts` |
 | Authored-unit character movement | `ArcadeCharacterController.ts`, `KinematicBody.ts`, `KinematicWorld.ts` |
-| Legacy physical character compatibility | `CharacterController.ts` pending the major Rapier migration and R8 removal |
+| Physical character movement | `RapierCharacterControllerHandle` in optional `@aura3d/physics-rapier` |
 | Scene/ECS bridges | `ScenePhysicsBridge.ts`, `ECSPhysicsBridge.ts` |
 | Debug visualization | `PhysicsDebugDraw.ts`, `packages/debug/src/PhysicsDebugAdapter.ts` |
 | Authored-unit arcade helpers | `ArcadeVehicleTelemetry.ts`; these sample telemetry and forces but do not integrate a physical vehicle |

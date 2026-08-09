@@ -47,6 +47,25 @@ describe("optional Rapier physical adapter", () => {
     expect(world.disposed).toBe(true);
   });
 
+  it("computes grounded kinematic character movement against real colliders", async () => {
+    const world = await createRapierPhysics({ moduleLoader });
+    world.createBody({ type: "fixed", position: [0, -0.5, 0], shape: { kind: "box", halfExtents: [10, 0.5, 10] } });
+    const body = world.createBody({ type: "kinematic-position", position: [0, 1, 0], shape: { kind: "capsule", halfHeight: 0.5, radius: 0.25 } });
+    const character = world.createCharacterController(0.01).enableAutostep(0.4, 0.2).enableSnapToGround(0.2).setMaxSlopeClimbAngle(Math.PI / 4);
+    world.step();
+    const falling = character.move(body, [0, -1, 0]);
+    expect(falling.applied[1]).toBeGreaterThan(-1);
+    expect(falling.collisions).toBeGreaterThanOrEqual(1);
+    world.step();
+    const moving = character.move(body, [0.5, -0.05, 0]);
+    world.step();
+    expect(moving.applied[0]).toBeGreaterThan(0.45);
+    expect(body.position()[0]).toBeGreaterThan(0.45);
+    expect(moving.grounded).toBe(true);
+    character.dispose();
+    world.dispose();
+  });
+
   it("can repeatedly mount and dispose without retaining adapter state", async () => {
     for (let iteration = 0; iteration < 20; iteration += 1) {
       const world = await createRapierPhysics({ moduleLoader });

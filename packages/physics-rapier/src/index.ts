@@ -40,8 +40,9 @@ function vec(value: PhysicsVec3, label: string): { x: number; y: number; z: numb
 
 export class RapierBodyHandle {
   readonly #body: Rapier.RigidBody;
+  readonly #collider: Rapier.Collider;
   readonly #world: RapierPhysicsWorld;
-  constructor(world: RapierPhysicsWorld, body: Rapier.RigidBody) { this.#world = world; this.#body = body; }
+  constructor(world: RapierPhysicsWorld, body: Rapier.RigidBody, collider: Rapier.Collider) { this.#world = world; this.#body = body; this.#collider = collider; }
   get id(): number { return this.#body.handle; }
   position(): PhysicsVec3 { const p = this.#body.translation(); return [p.x, p.y, p.z]; }
   velocity(): PhysicsVec3 { const p = this.#body.linvel(); return [p.x, p.y, p.z]; }
@@ -55,6 +56,8 @@ export class RapierBodyHandle {
   remove(): void { this.#world.removeBody(this); }
   /** Stable typed escape hatch. The caller does not own or free this object. */
   unsafeRapierBody(): Rapier.RigidBody { return this.#body; }
+  /** Stable typed escape hatch. The body owns this collider's lifecycle. */
+  unsafeRapierCollider(): Rapier.Collider { return this.#collider; }
 }
 
 export interface RapierRayHit {
@@ -64,6 +67,14 @@ export interface RapierRayHit {
   readonly point: PhysicsVec3;
 }
 
+export interface RapierCharacterMovement {
+  readonly requested: PhysicsVec3;
+  readonly applied: PhysicsVec3;
+  readonly grounded: boolean;
+  readonly collisions: number;
+  readonly nextPosition: PhysicsVec3;
+}
+
 export class RapierCharacterControllerHandle {
   readonly #world: RapierPhysicsWorld;
   readonly raw: Rapier.KinematicCharacterController;
@@ -71,6 +82,21 @@ export class RapierCharacterControllerHandle {
   enableAutostep(maxHeight: number, minWidth: number, includeDynamicBodies = false): this { this.raw.enableAutostep(maxHeight, minWidth, includeDynamicBodies); return this; }
   enableSnapToGround(distance: number): this { this.raw.enableSnapToGround(distance); return this; }
   setMaxSlopeClimbAngle(radians: number): this { this.raw.setMaxSlopeClimbAngle(radians); return this; }
+  move(character: RapierBodyHandle, requested: PhysicsVec3): RapierCharacterMovement {
+    const desired = vec(requested, "character movement");
+    this.raw.computeColliderMovement(character.unsafeRapierCollider(), desired);
+    const movement = this.raw.computedMovement();
+    const current = character.unsafeRapierBody().translation();
+    const next = { x: current.x + movement.x, y: current.y + movement.y, z: current.z + movement.z };
+    character.unsafeRapierBody().setNextKinematicTranslation(next);
+    return {
+      requested: [...requested],
+      applied: [movement.x, movement.y, movement.z],
+      grounded: this.raw.computedGrounded(),
+      collisions: this.raw.numComputedCollisions(),
+      nextPosition: [next.x, next.y, next.z]
+    };
+  }
   dispose(): void { this.#world.removeCharacterController(this); }
 }
 
@@ -114,8 +140,8 @@ export class RapierPhysicsWorld {
     if (spec.friction !== undefined) collider.setFriction(finite(spec.friction, "friction"));
     if (spec.restitution !== undefined) collider.setRestitution(finite(spec.restitution, "restitution"));
     if (spec.sensor !== undefined) collider.setSensor(spec.sensor);
-    this.#world.createCollider(collider, body);
-    const handle = new RapierBodyHandle(this, body); this.#bodies.set(body.handle, handle); return handle;
+    const rawCollider = this.#world.createCollider(collider, body);
+    const handle = new RapierBodyHandle(this, body, rawCollider); this.#bodies.set(body.handle, handle); return handle;
   }
   removeBody(handle: RapierBodyHandle): void { this.#assertAlive(); const raw = handle.unsafeRapierBody(); this.#world.removeRigidBody(raw); this.#bodies.delete(raw.handle); }
   createFixedJoint(a: RapierBodyHandle, b: RapierBodyHandle): Rapier.ImpulseJoint {

@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.public-runtime-descriptor-inventory/1.0",
-  "generatedAt": "2026-08-08T22:51:53.267Z",
+  "generatedAt": "2026-08-09T00:19:36.373Z",
   "pass": true,
   "patterns": [
     "*Fixture",
@@ -289,7 +289,7 @@
         "packages/engine/src/animation-studio/episode-document.ts",
         "packages/engine/src/animation-studio/scene-tools.ts",
         "packages/engine/src/production-runtime/index.ts",
-        "packages/physics/src/CharacterController.ts",
+        "packages/physics/src/ArcadeCharacterController.ts",
         "packages/physics/src/Collider.ts",
         "packages/physics/src/CollisionEvents.ts",
         "packages/physics/src/CollisionVolumes.ts",

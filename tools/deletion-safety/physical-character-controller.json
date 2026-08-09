@@ -1,0 +1,5 @@
+{
+  "$comment": "Closed R8 queue. The displaced rigid-body character controller cleared all six R8 points across 5,028 files before removal; proof is tests/reports/physical-character-controller-delete-final.json.",
+  "$removedCandidates": ["packages/physics/src/CharacterController.ts"],
+  "candidates": []
+}

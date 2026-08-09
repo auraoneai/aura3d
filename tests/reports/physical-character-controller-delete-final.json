@@ -1,0 +1,176 @@
+{
+  "schema": "deletion-safety-r8",
+  "generatedAt": "2026-08-09T00:19:06.003Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "r8:packages/physics/src/CharacterController.ts",
+      "pass": true,
+      "detail": "packages/physics/src/CharacterController.ts: all six R8 points empty across 5028 scanned files (42 non-blocking prose mention(s) to tidy)"
+    }
+  ],
+  "failures": [],
+  "requestedCandidates": [
+    "packages/physics/src/CharacterController.ts"
+  ],
+  "expandedFileCount": 1,
+  "rule": "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
+  "scannedFiles": 5028,
+  "points": [
+    "runtime-consumer",
+    "generated-registry-consumer",
+    "documentation-generator-dependency",
+    "public-package-export-dependency",
+    "retained-schema-or-report-dependency",
+    "cli-discovery-dependency"
+  ],
+  "informationalPoint": "prose-mention",
+  "files": [
+    {
+      "path": "packages/physics/src/CharacterController.ts",
+      "exists": true,
+      "source": "working-tree",
+      "lines": 719,
+      "lastCommit": "4252ecbee1ae729574f918d3501f0dbc854b1d9e",
+      "moduleSpecifiers": [
+        "packages/physics/src/CharacterController.ts",
+        "CharacterController.ts",
+        "CharacterController",
+        "@aura3d/physics/src/CharacterController",
+        "@aura3d/physics/CharacterController"
+      ],
+      "clear": true,
+      "intraCandidateReferences": 0,
+      "blocking": {},
+      "proseMentionCount": 42,
+      "proseMentions": [
+        {
+          "point": "prose-mention",
+          "at": "packages/animation/src/LocomotionKit.ts:10",
+          "detail": "* core a `character-controller` template wires to a physics `CharacterController`, input, and"
+        },
+        {
+          "point": "prose-mention",
+          "at": "packages/engine/src/agent-api/index.ts:27",
+          "detail": "* `CharacterController`, `KinematicBody`, arcade vehicle telemetry, `NarrowPhase` and six fixture modules, all"
+        },
+        {
+          "point": "prose-mention",
+          "at": "packages/physics/src/index.ts:40",
+          "detail": "*    legacy physical `CharacterController` remains only until the major Rapier"
+        },
+        {
+          "point": "prose-mention",
+          "at": "packages/physics/src/solverless.ts:23",
+          "detail": "* `PhysicsWorld`, `NarrowPhase`, `CharacterController`, `HitboxWorld`, arcade vehicle telemetry and the"
+        },
+        {
+          "point": "prose-mention",
+          "at": "packages/physics/src/world.ts:13",
+          "detail": "* barrel is a chain of `export *` covering `HitboxWorld`, `CharacterController`, `KinematicBody`,"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-physics-audit.json:326",
+          "detail": "\"CharacterController\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:1751",
+          "detail": "\"CharacterController\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-product-inventory.json:2024",
+          "detail": "\"./CharacterController.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/aura3d-threejs-ecosystem-parity.json:1410",
+          "detail": "\"CharacterController\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:18084",
+          "detail": "\"path\": \"dist/packages/physics/src/CharacterController.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/final-package-size.json:25524",
+          "detail": "\"path\": \"dist/physics/CharacterController.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:18084",
+          "detail": "\"path\": \"dist/packages/physics/src/CharacterController.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/package-size.json:25524",
+          "detail": "\"path\": \"dist/physics/CharacterController.js\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:7",
+          "detail": "\"id\": \"r8:packages/physics/src/CharacterController.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:9",
+          "detail": "\"detail\": \"packages/physics/src/CharacterController.ts: 20 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:74; runtime-consumer @ tools/final-subsystem-ownership/index.mjs:190; runtime-consumer @ tools/foundation-ru"
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:13",
+          "detail": "\"r8:packages/physics/src/CharacterController.ts: packages/physics/src/CharacterController.ts: 20 blocking reference(s) — runtime-consumer @ packages/physics/src/index.ts:74; runtime-consumer @ tools/final-subsystem-ownership/index.mjs:190; "
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:16",
+          "detail": "\"packages/physics/src/CharacterController.ts\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:32",
+          "detail": "\"path\": \"packages/physics/src/CharacterController.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:38",
+          "detail": "\"packages/physics/src/CharacterController.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:39",
+          "detail": "\"CharacterController.ts\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:40",
+          "detail": "\"CharacterController\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:41",
+          "detail": "\"@aura3d/physics/src/CharacterController\","
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:42",
+          "detail": "\"@aura3d/physics/CharacterController\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:61",
+          "detail": "\"detail\": \"\\\"packages/physics/src/CharacterController.ts\\\",\""
+        },
+        {
+          "point": "prose-mention",
+          "at": "tests/reports/physical-character-controller-delete-preflight.json:66",
+          "detail": "\"detail\": \"passed: pathExists(root, \\\"packages/physics/src/CharacterController.ts\\\") && pathExists(root, \\\"tests/browser/runtime-character-controller.spec.ts\\\"),\""
+        }
+      ],
+      "proseMentionsTruncated": true
+    }
+  ]
+}

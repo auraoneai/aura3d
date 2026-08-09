@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { KinematicBody, type KinematicBodyEvent } from "../../../packages/physics/src/KinematicBody";
-import { createFightingCharacterController } from "../../../packages/physics/src/CharacterController";
+import { createFightingCharacterController } from "../../../packages/physics/src/FightingCharacterController";
 
 function eventsOfType<T extends KinematicBodyEvent["type"]>(
   events: readonly KinematicBodyEvent[],

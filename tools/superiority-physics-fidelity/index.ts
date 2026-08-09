@@ -6,7 +6,7 @@ const requiredFiles = [
   "packages/physics/src/RigidBody.ts",
   "packages/physics/src/Collider.ts",
   "packages/physics/src/Constraints.ts",
-  "packages/physics/src/CharacterController.ts",
+  "packages/physics-rapier/src/index.ts",
   "packages/physics/src/Raycast.ts",
   "examples/physics-sandbox/main.ts",
   "tests/performance/physics-comparison-baseline.ts"
