@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.ecs-scripting-compatibility/1.0",
-  "generatedAt": "2026-08-08T21:37:51.661Z",
+  "generatedAt": "2026-08-09T01:24:11.006Z",
   "pass": true,
   "decision": "Retain dedicated packages as optional compatibility/authoring layers; remove duplicate @aura3d/engine subpaths in 2.0; add no external adapter without a replacing workload.",
   "ecs": {
@@ -33,17 +33,18 @@
       "tests/unit/tools/verify-tools.test.ts",
       "tools/browser-entry-purity/index.ts",
       "tools/bundle-scenarios/index.ts",
+      "tools/ecs-scripting-compatibility/index.ts",
       "vite.config.ts",
       "vitest.config.ts"
     ]
   },
   "scripting": {
-    "sourceFiles": 29,
-    "sourceLines": 5837,
+    "sourceFiles": 21,
+    "sourceLines": 3692,
     "browserCost": {
-      "rawBytes": 104633,
-      "gzipBytes": 30704,
-      "brotliBytes": 27047,
+      "rawBytes": 70597,
+      "gzipBytes": 19791,
+      "brotliBytes": 17698,
       "caveat": "all-export browser bundle, not a tree-shaken application"
     },
     "consumers": [
@@ -60,6 +61,7 @@
       "tools/browser-entry-purity/index.ts",
       "tools/bundle-scenarios/index.ts",
       "tools/deletion-safety/index.ts",
+      "tools/ecs-scripting-compatibility/index.ts",
       "vite.config.ts",
       "vitest.config.ts"
     ]
@@ -130,6 +132,34 @@
       "security": {
         "vulnerable": false
       }
+    }
+  },
+  "externalRegistryUse": {
+    "@aura3d/ecs": {
+      "observedAt": "2026-08-09T01:24:12.018Z",
+      "latestVersion": "1.5.2",
+      "distTags": {
+        "latest": "1.5.2"
+      },
+      "lastYearDownloads": 2444,
+      "period": {
+        "start": "2025-08-07",
+        "end": "2026-08-06"
+      },
+      "caveat": "Registry downloads include CI, mirrors, and automated installs; they prove nonzero external distribution, not unique users or API-level usage."
+    },
+    "@aura3d/scripting": {
+      "observedAt": "2026-08-09T01:24:12.519Z",
+      "latestVersion": "1.5.2",
+      "distTags": {
+        "latest": "1.5.2"
+      },
+      "lastYearDownloads": 2656,
+      "period": {
+        "start": "2025-08-07",
+        "end": "2026-08-06"
+      },
+      "caveat": "Registry downloads include CI, mirrors, and automated installs; they prove nonzero external distribution, not unique users or API-level usage."
     }
   },
   "recommendedEntryAudit": {
