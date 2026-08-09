@@ -35,7 +35,7 @@ test.describe("editor exported project", () => {
   });
 
   test("runs the checked-in editor-authored app with imported asset, material, behavior, and export provenance", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/foundation-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/foundation-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
 
     const result = await page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__);

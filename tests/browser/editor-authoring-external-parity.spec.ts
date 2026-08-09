@@ -318,7 +318,7 @@ test.describe("ExternalParity editor authoring workflow", () => {
 
   test("runs the checked-in ExternalParity editor-authored app without editor code", async ({ page }) => {
     mkdirSync(screenshotDir, { recursive: true });
-    await page.goto(`${server.origin}/examples/external-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.status === "ready");
     await page.waitForFunction(() => ((window as any).__AURA3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
     const state = await exportedProjectState(page);

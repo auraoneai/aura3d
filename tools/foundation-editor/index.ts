@@ -15,7 +15,7 @@ const baseReport = createSubsystemReport(root, {
     "apps/editor/src/EditorShell.ts",
     "apps/editor/src/panels/TimelinePanel.ts",
     "packages/editor-runtime/src/StaticExportRuntime.ts",
-    "examples/foundation-editor-authored-app/index.html",
+    "tests/fixtures/foundation-editor-authored-app/index.html",
     "examples/foundation-editor-authored-app/project.json",
     "examples/foundation-editor-authored-app/runtime.js",
     "tests/browser/editor-authoring-foundation.spec.ts",
@@ -53,8 +53,8 @@ const baseReport = createSubsystemReport(root, {
     {
       id: "foundation-end-to-end-authoring-report",
       description: "foundation editor authoring report proves create/import/place/edit/play/save/reload/export/open workflow.",
-      passed: pathExists(root, "examples/foundation-editor-authored-app/index.html") && pathExists(root, "tests/browser/editor-authoring-foundation.spec.ts"),
-      evidencePaths: ["tests/browser/editor-authoring-foundation.spec.ts", "examples/foundation-editor-authored-app/index.html"],
+      passed: pathExists(root, "tests/fixtures/foundation-editor-authored-app/index.html") && pathExists(root, "tests/browser/editor-authoring-foundation.spec.ts"),
+      evidencePaths: ["tests/browser/editor-authoring-foundation.spec.ts", "tests/fixtures/foundation-editor-authored-app/index.html"],
       blocker: "The foundation end-to-end editor authoring workflow is not fully proven yet.",
     },
     {

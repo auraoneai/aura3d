@@ -156,7 +156,7 @@ if (isMain) {
           "tests/browser/editor-authoring-external-parity.spec.ts",
           "tests/browser/editor-prefab-workflow.spec.ts",
           "tests/reports/external-parity-editor-prefab-workflow.json",
-          "examples/external-editor-authored-app/index.html",
+          "tests/fixtures/external-editor-authored-app/index.html",
         ], "tests/reports/external-parity-editor-authoring.json"),
         screenshotPaths: Array.isArray(existing.screenshotPaths) ? existing.screenshotPaths.filter((path): path is string => typeof path === "string") : [],
       }),
