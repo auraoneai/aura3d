@@ -16,6 +16,7 @@ const requiredControlStack = context.workloads.find(
   (entry: { id: string }) => entry.id === "cinematic-architecture"
 )?.stack ?? [];
 const conditions = browser.before?.conditions;
+const captures = ["aura-before.png", "three-before.png", "aura-after.png", "three-after.png"];
 const checks = [
   {
     id: "current-three-r185",
@@ -34,8 +35,7 @@ const checks = [
     pass: browser.before?.viewport?.width === context.commonRenderContract.viewport.width
       && browser.before?.viewport?.height === context.commonRenderContract.viewport.height
       && browser.before?.viewport?.dpr === context.commonRenderContract.devicePixelRatio
-      && statSync(resolve("tests/reports/current-head-to-head/cinematic-architecture/aura.png")).size > 10_000
-      && statSync(resolve("tests/reports/current-head-to-head/cinematic-architecture/three.png")).size > 10_000
+      && captures.every((name) => statSync(resolve(`tests/reports/current-head-to-head/cinematic-architecture/${name}`)).size > 10_000)
   },
   {
     id: "same-camera-scale-lighting-intent",
@@ -74,6 +74,10 @@ const checks = [
     pass: browser.after?.interaction?.applied === true
       && browser.before?.aura?.pixelHash !== browser.after?.aura?.pixelHash
       && browser.before?.three?.pixelHash !== browser.after?.three?.pixelHash
+  },
+  {
+    id: "matched-background-output",
+    pass: maxChannelDelta(browser.before?.aura?.backgroundPixel, browser.before?.three?.backgroundPixel) <= 3
   }
 ];
 const failures = checks.filter((entry) => !entry.pass);
@@ -92,11 +96,11 @@ const report = {
     threeDrawCalls,
     auraToThreeDrawCallRatio: threeDrawCalls > 0 ? Number((auraDrawCalls / threeDrawCalls).toFixed(3)) : null,
     observedLosses: [
-      "Aura submits materially more draw calls for the same imported scene.",
-      "The retained Aura capture has a lighter background response than the retained Three.js capture under the shared authored color.",
-      "The retained Aura capture exposes detached/underside geometry below the city platform that is not visible in the Three.js control."
+      "Aura submits 1,513 draws versus Three.js 803 for the same imported scene.",
+      "All four retained frames were reopened after preserving matrix-backed glTF nodes exactly. Hierarchy, platform, cloud placement, camera framing, and background bytes now align; small material/lighting pixel differences remain.",
+      "The former giant-facade and detached-underside defects were caused by a lossy matrix-to-TRS round trip and are no longer present in the retained captures."
     ],
-    claimBoundary: "This proves a public typed-asset architecture render and deterministic camera-path interaction. It does not claim visual parity, draw-call parity, postprocess parity, or defect-free glTF hierarchy rendering."
+    claimBoundary: "This proves a public typed-asset architecture render, exact preservation of matrix-backed glTF node transforms for this asset, and deterministic camera-path interaction. It does not claim universal visual parity, draw-call parity, or postprocess parity."
   },
   browser
 };
@@ -108,4 +112,7 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(`Cinematic architecture head-to-head PASS: ${checks.length}/${checks.length} checks with explicit losses; ${output}`);
+}
+function maxChannelDelta(a: readonly number[] = [], b: readonly number[] = []): number {
+  return Math.max(...a.slice(0, 3).map((value, index) => Math.abs(value - (b[index] ?? 0))));
 }

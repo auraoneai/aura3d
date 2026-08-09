@@ -18,7 +18,8 @@ const checks = [
   { id: "public-realistic-stacks", pass: source.includes('from "@aura3d/engine"') && source.includes('from "three"') && source.includes('from "stats.js"') && source.includes("THREE.InstancedMesh") && source.includes("new THREE.LOD") && !source.includes("packages/") && browser.before?.aura?.publicPackageOnly === true && browser.before?.three?.actualRenderer === true && browser.before?.three?.actualInstancedMesh === true && browser.before?.three?.actualLod === true && browser.before?.three?.actualStatsJs === true },
   { id: "native-2500-instance-submission", pass: browser.before?.aura?.instanceCount === 2500 && browser.before?.aura?.nativeInstancedSubmissions > 0 && browser.before?.aura?.drawCalls < 100 && browser.before?.three?.instanceCount === 2500 && browser.before?.three?.drawCalls < 100 && browser.before?.three?.triangles > 25_000 },
   { id: "same-near-and-far-camera-distance", pass: browser.before?.aura?.cameraDistance === browser.before?.three?.cameraDistance && browser.after?.aura?.cameraDistance === browser.after?.three?.cameraDistance && browser.before?.aura?.cameraDistance < 20 && browser.after?.aura?.cameraDistance > 20 },
-  { id: "paired-lod-transition-changes-pixels", pass: browser.before?.aura?.lodLevel === 0 && browser.before?.three?.lodLevel === 0 && browser.after?.aura?.lodLevel === 1 && browser.after?.three?.lodLevel === 1 && browser.after?.interaction?.applied === true && browser.before?.aura?.pixelHash !== browser.after?.aura?.pixelHash && browser.before?.three?.pixelHash !== browser.after?.three?.pixelHash }
+  { id: "paired-lod-transition-changes-pixels", pass: browser.before?.aura?.lodLevel === 0 && browser.before?.three?.lodLevel === 0 && browser.after?.aura?.lodLevel === 1 && browser.after?.three?.lodLevel === 1 && browser.after?.interaction?.applied === true && browser.before?.aura?.pixelHash !== browser.after?.aura?.pixelHash && browser.before?.three?.pixelHash !== browser.after?.three?.pixelHash },
+  { id: "matched-background-output", pass: maxChannelDelta(browser.before?.aura?.backgroundPixel, browser.before?.three?.backgroundPixel) <= 3 }
 ];
 const failures = checks.filter((entry) => !entry.pass);
 const auraDrawCalls = browser.before?.aura?.drawCalls ?? 0;
@@ -38,7 +39,7 @@ const report = {
     observedLosses: [
       "Aura submits six draws versus Three.js three for the same frozen product hero, 2,500-instance field, and selected LOD object.",
       "Aura's public root instancing helper instances built-in primitives; it does not expose imported GLB mesh instancing, so the exact product asset is a shared non-instanced hero in this workload.",
-      "The retained Aura frames have a lighter background response than the Three.js control under the shared authored color intent."
+      "All four retained near/far frames were reopened after converting authored instance/material colors from sRGB to linear and adopting the current matrix-fitted ACES path. Background bytes and saturated instance colors now align closely; small highlight differences remain, and the far camera makes the selected LOD object too small for a polished public demonstration in either engine."
     ],
     claimBoundary: "This proves native primitive instancing and distance LOD through the public Aura root. It does not claim imported-model instancing parity, draw-call parity, performance non-inferiority, or visual parity."
   },
@@ -52,3 +53,4 @@ if (failures.length > 0) {
 } else {
   console.log(`Instancing/LOD head-to-head PASS: ${checks.length}/${checks.length} checks with explicit losses; ${output}`);
 }
+function maxChannelDelta(a: readonly number[] = [], b: readonly number[] = []): number { return Math.max(...a.slice(0, 3).map((value, index) => Math.abs(value - (b[index] ?? 0)))); }

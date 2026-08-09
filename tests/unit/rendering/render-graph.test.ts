@@ -207,6 +207,22 @@ describe("RenderGraph", () => {
     expect(neutral.calibration.monotonic).toBe(true);
   });
 
+  it("uses the RGB-coupled matrix-fitted ACES transform for HDR input", () => {
+    const result = toneMapFloatPixels(new Float32Array([0.25, 1.5, 4, 1]), 1, 1, {
+      exposure: 1,
+      whitePoint: 1,
+      gamma: 1,
+      operator: "aces",
+      outputColorSpace: "linear"
+    });
+
+    // Regression values from the matrix-fitted ACES transform used by current Three.js.
+    // A channel-by-channel scalar approximation produces materially different RGB here.
+    expect(Array.from(result.pixels)).toEqual([167, 216, 243, 255]);
+    expect(result.inputOverbrightPixels).toBe(1);
+    expect(result.maxInputValue).toBe(4);
+  });
+
   it("keeps filmic tone mapping from lifting near-black renderer clear colors", () => {
     const pixels = new Uint8Array([3, 4, 6, 255]);
     const result = toneMapPixels(pixels, 1, 1, {

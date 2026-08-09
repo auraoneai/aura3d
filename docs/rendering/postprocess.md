@@ -28,11 +28,11 @@ differs, so a measured delta is attributable to the pass.
 
 | Effect | Root status | Basis |
 | --- | --- | --- |
-| Tone mapping, colour grade, FXAA | Root-proven as an always-on pixel-backed chain | The production bridge submits them and the runtime reports them in `actualPasses` with `pixelBacked: true`. |
-| Bloom | Root-proven | The `bloom` pass runs and changes ~5.5% of the frame (mean channel delta ~5.9) versus an identical scene without `effects.bloom(...)`. |
-| Environment fog | Root-proven | `effects.fog(...)` now reaches the forward pass and changes ~66% of the frame (mean channel delta ~22). |
+| Tone mapping | Root-proven as a neutral always-on pixel-backed pass | The production bridge submits neutral tone mapping and the runtime reports `tone-mapping` in `actualPasses` with `pixelBacked: true`. |
+| Bloom | Root-proven | The `bloom` pass runs and changes 5.17% of the frame (mean channel delta 6.5714) versus an identical scene without `effects.bloom(...)`. Visual review also records that the probe's white bars clip aggressively, so this is execution proof rather than a polished quality example. |
+| Environment fog | Root-proven | `effects.fog(...)` reaches the forward pass and changes 68.82% of the frame (mean channel delta 15.5143). Visual review records that this probe setting nearly silhouettes the subject, so the screenshot is not used as a quality-parity claim. |
 | Ambient / contact occlusion (SSAO) | Partial | The `ssao` pass genuinely executes and `ambientOcclusionPass` is true, but the measured on/off change is near zero. The pass runs; its visible contribution in the probe scene is not provable, so it is not claimed. |
-| Outline, SSR, depth of field, motion blur, TAA | Unreachable from root | The public `effects` surface has no node that requests these passes, so they cannot be requested or proven through `createAuraApp`. They remain rendering-package passes. |
+| Color grading, FXAA, outline, SSR, depth of field, motion blur, TAA | Unreachable from root | The public `effects` surface has no node that requests these passes, so they cannot be requested or proven through `createAuraApp`. They remain rendering-package passes. The production bridge does not silently inject color grading or FXAA. |
 
 The pass set and `pixelBacked` status are also verified to survive canvas resize
 and device-pixel-ratio change across three distinct backing stores, so a resize

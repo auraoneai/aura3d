@@ -55,6 +55,7 @@ import {
   InstancedPBRMaterial,
   PBRMaterial,
   ProductionRuntimeRenderer,
+  srgbToLinearChannel,
   VertexBuffer,
   VertexFormat,
   type CameraLike,
@@ -11088,7 +11089,23 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   readonly evidence: string;
   readonly lighting: EnvironmentLightingOptions;
 } {
-  const names = groups.flatten(snapshot.nodes).map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
+  const nodes = groups.flatten(snapshot.nodes);
+  const ambientLights = nodes.filter((node): node is AuraLightNode => node.kind === "light" && node.light === "ambient" && node.intensity > 0);
+  if (ambientLights.length > 0) {
+    const intensity = ambientLights.reduce((total, light) => total + light.intensity, 0);
+    const color = ambientLights.reduce<readonly [number, number, number]>((sum, light) => {
+      const linear = colorToLinearRgb(light.color ?? "#ffffff");
+      const weight = light.intensity / intensity;
+      return [sum[0] + linear[0] * weight, sum[1] + linear[1] * weight, sum[2] + linear[2] * weight];
+    }, [0, 0, 0]);
+    return {
+      preset: "authored-ambient",
+      intensity,
+      evidence: `production bridge submitted ${ambientLights.length} authored ambient light${ambientLights.length === 1 ? "" : "s"} without an implicit environment map`,
+      lighting: { color, intensity, environmentMapIntensity: 0, environmentMapSpecularIntensity: 0 }
+    };
+  }
+  const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
   const category = resolveRendererSceneCategory(snapshot, names);
   const preset: Parameters<typeof createExternalParityEnvironmentLighting>[0] =
     category === "city-day" ? "daylight"
@@ -11120,7 +11137,7 @@ function createProductionRuntimeEnvironmentFog(snapshot: AuraSceneSnapshot): For
   if (!fog) return false;
   const density = clampNumber(fog.density ?? 0.12, 0, 1);
   const intensity = clampNumber(fog.intensity ?? 0.5, 0, 1);
-  const color = colorToRgb(fog.color ?? "#9fb7d9");
+  const color = colorToLinearRgb(fog.color ?? "#9fb7d9");
   return {
     // Exponential-squared reads as depth haze rather than a hard linear band, which
     // matches what the public helper documents.
@@ -11135,15 +11152,8 @@ function createProductionRuntimeEnvironmentFog(snapshot: AuraSceneSnapshot): For
 
 function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
-  const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
-  const category = resolveRendererSceneCategory(snapshot, names);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
-  const emissiveSubjects = nodes.filter((node) => {
-    if (!("material" in node) || !node.material) return false;
-    return Boolean(node.material.emissive) && (node.material.emissiveIntensity ?? 1) > 0;
-  }).length;
-  const darkScene = ["neon", "city-night", "space", "game"].includes(category);
-  const bloomRequested = Boolean(authoredBloom) || (darkScene && emissiveSubjects > 0);
+  const bloomRequested = Boolean(authoredBloom);
   // Root previously advertised `ssao` in `requestedPasses` whenever a scene added
   // effects.ambientOcclusion() or effects.contactOcclusion(), but never submitted
   // an `ssao` option to the renderer. The advertised pass could therefore never
@@ -11156,20 +11166,15 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "contact-occlusion"
   );
   const authoredOcclusion = authoredAmbientOcclusion ?? authoredContactOcclusion;
-  const exposure = category === "city-day" ? 1.02
-    : category === "material" || category === "product" ? 1.08
-      : category === "space" ? 1.18
-        : 1.12;
-  const saturation = category === "material" || category === "product" ? 1.01
-    : category === "city-day" ? 1.04
-      : 1.1;
   return {
-    targetFormat: "rgba8",
+    // Tone mapping requires unclamped linear input. RGBA8 quantized dark clear
+    // colors and clipped highlights before ACES, which produced washed-out output.
+    targetFormat: "rgba16f",
     ...(bloomRequested ? {
       bloom: {
-        threshold: clampNumber(authoredBloom?.threshold ?? (darkScene ? 0.68 : 0.78), 0, 1),
-        intensity: clampNumber(authoredBloom?.intensity ?? Math.min(0.5, 0.24 + emissiveSubjects * 0.035), 0, 2),
-        radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? (category === "space" ? 3 : 2))))
+        threshold: clampNumber(authoredBloom?.threshold ?? 0.78, 0, 1),
+        intensity: clampNumber(authoredBloom?.intensity ?? 0.3, 0, 2),
+        radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? 2)))
       }
     } : {}),
     ...(authoredOcclusion ? {
@@ -11185,22 +11190,11 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
       }
     } : {}),
     toneMapping: {
-      exposure,
-      whitePoint: category === "city-day" ? 1.28 : 1.18,
-      operator: "filmic",
+      exposure: 1,
+      whitePoint: 1,
+      operator: "aces",
       inputColorSpace: "linear",
       outputColorSpace: "srgb"
-    },
-    colorGrade: {
-      contrast: category === "material" || category === "product" ? 1.06 : 1.1,
-      saturation,
-      vibrance: darkScene ? 0.14 : 0.06,
-      vignette: category === "game" || category === "neon" ? 0.1 : 0.04,
-      sharpening: category === "material" || category === "product" ? 0.28 : 0.2
-    },
-    fxaa: {
-      edgeThreshold: category === "game" ? 0.07 : 0.09,
-      subpixelBlend: category === "material" || category === "product" ? 0.48 : 0.58
     }
   };
 }
@@ -11319,7 +11313,7 @@ function createProductionRuntimeLightDescriptors(
   authoredIndex: number
 ): readonly ProductionRuntimeLightDescriptor[] {
   const name = node.name?.trim() || `aura-authored-${node.light}-${authoredIndex + 1}`;
-  const color = colorToRgb(node.color ?? "#ffffff");
+  const color = colorToLinearRgb(node.color ?? "#ffffff");
   const intensity = nonNegativeFinite(node.intensity);
   const position = productionRuntimeLightPosition(node);
   const direction = productionRuntimeLightDirection(node, position);
@@ -11647,7 +11641,7 @@ async function createProductionRuntimeSceneRenderer(
             name: node.name ?? node.asset.id ?? `model-${index + 1}`,
             width: canvas.width,
             height: canvas.height,
-            ...(node.material?.color ? { tint: { baseColor: colorToRgba(node.material.color) } } : {})
+            ...(node.material?.color ? { tint: { baseColor: colorToLinearRgba(node.material.color) } } : {})
           })
         })));
       })()
@@ -11660,7 +11654,9 @@ async function createProductionRuntimeSceneRenderer(
     backend: "webgl2",
     antialias: true,
     preserveDrawingBuffer: true,
-    clearColor: colorToClearColor(snapshot.background)
+    // Background colors are display intent. Pre-invert the renderer's coupled
+    // matrix-fitted ACES transform so presentation preserves that authored color.
+    clearColor: colorToAcesInputClearColor(snapshot.background)
   });
   let latestDeviceDiagnostics: RenderDeviceDiagnostics = productionRenderer.getDiagnostics();
   let latestFeatures: readonly ProductionRendererFeature[] = productionRenderer.getFeatures();
@@ -11875,7 +11871,7 @@ function createProductionInstanceColors(colors: readonly AuraColor[] | undefined
   if (!colors) return undefined;
   if (colors.length !== count) throw new Error("Aura3D instance color count must match instance transform count.");
   const values = new Float32Array(count * 4);
-  colors.forEach((color, index) => values.set(colorToRgba(color), index * 4));
+  colors.forEach((color, index) => values.set(colorToLinearRgba(color), index * 4));
   return values;
 }
 
@@ -11931,9 +11927,9 @@ function resolveProductionPrimitiveRuntimeState(
  */
 function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial {
   const materialSpec = node.material;
-  const baseColor = colorToRgba(materialSpec?.color ?? materialSpec?.emissive ?? "#d7dee8");
+  const baseColor = colorToLinearRgba(materialSpec?.color ?? materialSpec?.emissive ?? "#d7dee8");
   const opacity = clamp01(materialSpec?.opacity ?? baseColor[3] ?? 1);
-  const emissiveColor = materialSpec?.emissive ? colorToRgb(materialSpec.emissive) : [0, 0, 0] as const;
+  const emissiveColor = materialSpec?.emissive ? colorToLinearRgb(materialSpec.emissive) : [0, 0, 0] as const;
   const clearcoat = clamp01(materialSpec?.clearcoat ?? 0);
   const sheen = clamp01(materialSpec?.sheen ?? 0);
   const iridescence = clamp01(materialSpec?.iridescence ?? 0);
@@ -11947,7 +11943,7 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
    * this whole workstream exists to remove.
    */
   const sheenColor = materialSpec?.sheenColor
-    ? colorToRgb(materialSpec.sheenColor).map((channel) => channel * sheen) as [number, number, number]
+    ? colorToLinearRgb(materialSpec.sheenColor).map((channel) => channel * sheen) as [number, number, number]
     : ([sheen, sheen, sheen] as const);
   /*
    * The extension lobes are environment-driven. With `environmentIntensity: 0` a declared clearcoat,
@@ -12004,7 +12000,7 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
     transmissionFactor: transmission,
     ...(materialSpec?.thickness === undefined ? {} : { volumeThicknessFactor: Math.max(0, materialSpec.thickness) }),
     ...(materialSpec?.ior === undefined ? {} : { ior: Math.max(1, materialSpec.ior) }),
-    ...(materialSpec?.attenuationColor ? { volumeAttenuationColor: colorToRgb(materialSpec.attenuationColor) } : {}),
+    ...(materialSpec?.attenuationColor ? { volumeAttenuationColor: colorToLinearRgb(materialSpec.attenuationColor) } : {}),
     ...(materialSpec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, materialSpec.attenuationDistance) }),
     environmentIntensity,
     renderState: {
@@ -12337,6 +12333,53 @@ function colorToClearColor(color: AuraColor): readonly [number, number, number, 
     return [((value >> 16) & 0xff) / 255, ((value >> 8) & 0xff) / 255, (value & 0xff) / 255, 1];
   }
   return [0.02, 0.025, 0.035, 1];
+}
+
+function colorToLinearClearColor(color: AuraColor): readonly [number, number, number, number] {
+  const [red, green, blue, alpha] = colorToClearColor(color);
+  return [srgbToLinearChannel(red), srgbToLinearChannel(green), srgbToLinearChannel(blue), alpha];
+}
+
+function colorToLinearRgba(color: AuraColor): readonly [number, number, number, number] {
+  return colorToLinearClearColor(color);
+}
+
+function colorToAcesInputClearColor(color: AuraColor): readonly [number, number, number, number] {
+  const [red, green, blue, alpha] = colorToLinearClearColor(color);
+  const fitted = multiplyMat3Vec3([
+    0.6430382486, 0.3111867518, 0.0457754574,
+    0.0592686904, 0.9314364869, 0.0092949157,
+    0.0059619013, 0.0639290157, 0.9301183842
+  ], [red, green, blue]).map(inverseAcesFit) as [number, number, number];
+  const input = multiplyMat3Vec3([
+    1.7647409720, -0.6757776782, -0.0889632938,
+    -0.1470278520, 1.1602515117, -0.0132236597,
+    -0.0363368301, -0.1624364369, 1.1987732670
+  ], fitted);
+  return [Math.max(0, input[0] * 0.6), Math.max(0, input[1] * 0.6), Math.max(0, input[2] * 0.6), alpha];
+}
+
+function inverseAcesFit(target: number): number {
+  const a = target * 0.983729 - 1;
+  const b = target * 0.432951 - 0.0245786;
+  const c = target * 0.238081 + 0.000090537;
+  const discriminant = Math.max(0, b * b - 4 * a * c);
+  const first = (-b + Math.sqrt(discriminant)) / (2 * a);
+  const second = (-b - Math.sqrt(discriminant)) / (2 * a);
+  return Math.max(0, first, second);
+}
+
+function multiplyMat3Vec3(matrix: readonly number[], vector: readonly [number, number, number]): [number, number, number] {
+  return [
+    matrix[0]! * vector[0] + matrix[1]! * vector[1] + matrix[2]! * vector[2],
+    matrix[3]! * vector[0] + matrix[4]! * vector[1] + matrix[5]! * vector[2],
+    matrix[6]! * vector[0] + matrix[7]! * vector[1] + matrix[8]! * vector[2]
+  ];
+}
+
+function colorToLinearRgb(color: AuraColor): readonly [number, number, number] {
+  const [red, green, blue] = colorToLinearClearColor(color);
+  return [red, green, blue];
 }
 
 function colorWithAlpha(color: AuraColor, alpha: number): string {

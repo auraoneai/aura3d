@@ -2632,8 +2632,28 @@ vec3 encodeColor(vec3 color) {
   return u_outputColorSpace == 1 ? vec3(linearToSrgb(linear.r), linearToSrgb(linear.g), linearToSrgb(linear.b)) : linear;
 }
 
-float aces(float value) {
-  return (value * (2.51 * value + 0.03)) / (value * (2.43 * value + 0.59) + 0.14);
+vec3 acesRrtAndOdtFit(vec3 value) {
+  vec3 numerator = value * (value + 0.0245786) - 0.000090537;
+  vec3 denominator = value * (0.983729 * value + 0.4329510) + 0.238081;
+  return numerator / denominator;
+}
+
+vec3 acesFilmic(vec3 color) {
+  // Match current Three.js ACESFilmicToneMapping. ACES is a coupled RGB
+  // transform; a scalar approximation shifts hue and washes saturated colors.
+  const mat3 acesInput = mat3(
+    vec3(0.59719, 0.07600, 0.02840),
+    vec3(0.35458, 0.90834, 0.13383),
+    vec3(0.04823, 0.01566, 0.83777)
+  );
+  const mat3 acesOutput = mat3(
+    vec3(1.60475, -0.10208, -0.00327),
+    vec3(-0.53108, 1.10813, -0.07276),
+    vec3(-0.07367, -0.00605, 1.07602)
+  );
+  vec3 acesColor = acesInput * (color / 0.6);
+  acesColor = acesRrtAndOdtFit(acesColor);
+  return clamp(acesOutput * acesColor, 0.0, 1.0);
 }
 
 float filmic(float value) {
@@ -2673,7 +2693,7 @@ float toneMapChannel(float value) {
   float exposed = max(0.0, value * u_exposure) / max(0.0001, u_whitePoint);
   if (u_toneOperator == 0) return min(1.0, exposed);
   if (u_toneOperator == 1) return exposed / (1.0 + exposed);
-  if (u_toneOperator == 2) return aces(exposed);
+  if (u_toneOperator == 2) return exposed;
   if (u_toneOperator == 3) return filmic(exposed);
   if (u_toneOperator == 4) return uncharted2(exposed);
   if (u_toneOperator == 5) return agx(exposed);
@@ -2683,7 +2703,9 @@ float toneMapChannel(float value) {
 vec3 applyToneMapping(vec3 color) {
   if (u_hasToneMapping == 0) return color;
   vec3 decoded = decodeColor(color);
-  vec3 mapped = vec3(toneMapChannel(decoded.r), toneMapChannel(decoded.g), toneMapChannel(decoded.b));
+  vec3 mapped = u_toneOperator == 2
+    ? acesFilmic(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint))
+    : vec3(toneMapChannel(decoded.r), toneMapChannel(decoded.g), toneMapChannel(decoded.b));
   return encodeColor(mapped);
 }
 

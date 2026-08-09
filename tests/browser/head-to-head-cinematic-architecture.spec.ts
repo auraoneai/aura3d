@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
 
 const PROJECT = resolve("benchmark/current-head-to-head/cinematic-architecture");
@@ -25,6 +25,7 @@ test.describe("current head-to-head cinematic architecture", () => {
     const before = await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_ARCHITECTURE__);
     expect(before).toMatchObject({ ready: true, workload: "cinematic-architecture", asset: { id: "showcaseSkylineCity", sha256: "2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338" }, viewport: { width: 1440, height: 900, dpr: 1 }, aura: { publicPackageOnly: true, pathStep: 0 }, three: { revision: "185", actualR3F: true, actualDrei: true, actualRenderer: true, pathStep: 0 } });
     expect(before.aura.drawCalls).toBeGreaterThan(100); expect(before.three.drawCalls).toBeGreaterThan(100); expect(before.three.triangles).toBeGreaterThan(10_000); expect(before.three.nodeCount).toBeGreaterThan(500);
+    expect(maxChannelDelta(before.aura.backgroundPixel, before.three.backgroundPixel), `Aura ${JSON.stringify(before.aura.backgroundPixel)} vs Three ${JSON.stringify(before.three.backgroundPixel)}`).toBeLessThanOrEqual(3);
     expect(before.aura.assetState).toMatchObject({
       id: "showcaseSkylineCity",
       status: "ready",
@@ -33,21 +34,27 @@ test.describe("current head-to-head cinematic architecture", () => {
         hash: "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338"
       }
     });
+    await capturePair(page, "before");
     const assetHash = createHash("sha256").update(readFileSync(resolve("public/aura-assets/showcaseSkylineCity.2f6624cd.glb"))).digest("hex"); expect(assetHash).toBe(before.asset.sha256);
     await page.locator("#advance-path").click(); await page.waitForFunction(() => window.__AURA_THREE_HEAD_TO_HEAD_ARCHITECTURE__?.aura?.pathStep === 1 && window.__AURA_THREE_HEAD_TO_HEAD_ARCHITECTURE__?.three?.pathStep === 1);
     const after = await page.evaluate(() => window.__AURA_THREE_HEAD_TO_HEAD_ARCHITECTURE__); expect(after.interaction).toEqual({ applied: true, from: 0, to: 1 }); expect(after.aura.pixelHash).not.toBe(before.aura.pixelHash); expect(after.three.pixelHash).not.toBe(before.three.pixelHash);
-    const captures = await page.evaluate(() => {
-      const aura = document.querySelector<HTMLCanvasElement>("#aura");
-      const three = document.querySelector<HTMLCanvasElement>("#root canvas");
-      if (!aura || !three) throw new Error("Both native renderer canvases are required for capture.");
-      return { aura: aura.toDataURL("image/png"), three: three.toDataURL("image/png") };
-    });
-    for (const [engine, dataUrl] of Object.entries(captures)) {
-      writeFileSync(
-        resolve(REPORT_DIRECTORY, `${engine}.png`),
-        Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64")
-      );
-    }
+    await capturePair(page, "after");
     writeFileSync(resolve(REPORT_DIRECTORY,"report.json"),`${JSON.stringify({schema:"aura3d.current-head-to-head-workload/1.0",generatedAt:new Date().toISOString(),pass:true,assetSha256:assetHash,before,after},null,2)}\n`);
   });
 });
+
+function maxChannelDelta(a: readonly number[], b: readonly number[]): number {
+  return Math.max(...a.slice(0, 3).map((value, index) => Math.abs(value - (b[index] ?? 0))));
+}
+
+async function capturePair(page: Page, suffix: "before" | "after"): Promise<void> {
+  const captures = await page.evaluate(() => {
+    const aura = document.querySelector<HTMLCanvasElement>("#aura");
+    const three = document.querySelector<HTMLCanvasElement>("#root canvas");
+    if (!aura || !three) throw new Error("Both native renderer canvases are required for capture.");
+    return { aura: aura.toDataURL("image/png"), three: three.toDataURL("image/png") };
+  });
+  for (const [engine, dataUrl] of Object.entries(captures)) {
+    writeFileSync(resolve(REPORT_DIRECTORY, `${engine}-${suffix}.png`), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
+  }
+}

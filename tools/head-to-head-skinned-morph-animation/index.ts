@@ -18,7 +18,8 @@ const checks = [
   { id: "public-realistic-stacks", pass: source.includes('from "@aura3d/engine"') && source.includes('from "three"') && source.includes("GLTFLoader") && source.includes("THREE.AnimationMixer") && !source.includes("packages/") && browser.before?.aura?.publicPackageOnly === true && browser.before?.aura?.runtimeBackend === "production-runtime" && browser.before?.three?.actualRenderer === true && browser.before?.three?.actualGLTFLoader === true && browser.before?.three?.actualAnimationMixer === true },
   { id: "native-skinned-animation", pass: browser.before?.aura?.clip === expectedClip(browser) && browser.before?.aura?.skinningPaletteUpdated === true && browser.before?.aura?.skinnedRenderItemCount > 0 && browser.before?.three?.clip === expectedClip(browser) && browser.before?.three?.skinnedMeshCount > 0 && browser.before?.three?.skeletonBoneCount > 20 },
   { id: "native-named-morph-target", pass: browser.before?.aura?.morphTargets?.includes("morph-expression-morph-1") && browser.before?.aura?.manifestToRuntimeMorphTarget?.manifest === "target-0" && browser.before?.aura?.manifestToRuntimeMorphTarget?.runtime === "morph-expression-morph-1" && browser.before?.aura?.morphRenderItemCount > 0 && browser.before?.aura?.activeMorphTargets?.["target-0"] === 0 && browser.after?.aura?.activeMorphTargets?.["target-0"] === 1 && browser.before?.three?.morphWeight === 0 && browser.after?.three?.morphWeight === 1 },
-  { id: "paired-pose-change", pass: browser.after?.interaction?.applied === true && browser.before?.aura?.sampleSeconds === browser.before?.three?.sampleSeconds && browser.after?.aura?.sampleSeconds === browser.after?.three?.sampleSeconds && browser.before?.aura?.pixelHash !== browser.after?.aura?.pixelHash && browser.before?.three?.pixelHash !== browser.after?.three?.pixelHash }
+  { id: "paired-pose-change", pass: browser.after?.interaction?.applied === true && browser.before?.aura?.sampleSeconds === browser.before?.three?.sampleSeconds && browser.after?.aura?.sampleSeconds === browser.after?.three?.sampleSeconds && browser.before?.aura?.pixelHash !== browser.after?.aura?.pixelHash && browser.before?.three?.pixelHash !== browser.after?.three?.pixelHash },
+  { id: "matched-background-output", pass: maxChannelDelta(browser.before?.aura?.backgroundPixel, browser.before?.three?.backgroundPixel) <= 3 && maxChannelDelta(browser.after?.aura?.backgroundPixel, browser.after?.three?.backgroundPixel) <= 3 }
 ];
 const failures = checks.filter((entry) => !entry.pass);
 const report = {
@@ -35,7 +36,7 @@ const report = {
     observedLosses: [
       "The frozen context separates its representative skinned character and morph-expression fixtures, so this workload proves both capabilities side by side rather than claiming one production character contains both authoring features.",
       "Aura submits 40 draws versus Three.js 20 for the same frozen skinned character and morph fixture.",
-      "The retained Aura frames have a lighter background/lighting response and slightly different character framing than the Three.js control under the shared authored intent.",
+      "After removing Aura's implicit studio environment/category grade, moving root tone mapping to an unclamped RGBA16F source, adopting the current matrix-fitted ACES transform, and preserving matrix-backed glTF nodes, both retained backgrounds are byte-identical and character/triangle color, hierarchy, and framing align closely. Small pose and highlight pixel differences remain.",
       "The retained captures are correctness evidence only; this workload does not establish visual parity, animation-authoring parity, blending parity, or performance non-inferiority."
     ],
     claimBoundary: "This proves deterministic skinned clip sampling and named morph-weight application through the public Aura root against real Three.js r185."
@@ -51,3 +52,4 @@ if (failures.length > 0) {
 
 function hashFile(path: string): string { return createHash("sha256").update(readFileSync(resolve(path))).digest("hex"); }
 function expectedClip(report: any): string { return report.before?.assets?.skinnedCharacter?.clip ?? ""; }
+function maxChannelDelta(left: readonly number[] | undefined, right: readonly number[] | undefined): number { if (!left || !right) return Number.POSITIVE_INFINITY; return Math.max(...left.slice(0, 3).map((value, index) => Math.abs(value - (right[index] ?? 0)))); }

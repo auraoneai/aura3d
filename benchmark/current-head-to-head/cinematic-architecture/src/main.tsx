@@ -113,6 +113,7 @@ async function startAura(): Promise<(step: number) => Promise<void>> {
       backend: app.backend,
       drawCalls: diagnostics.drawCalls,
       assetState: diagnostics.assets.find((asset) => asset.id === ASSET.id),
+      backgroundPixel: readBackgroundPixel(canvas),
       pixelHash: hashString(canvas.toDataURL("image/png")),
       pathStep: step
     };
@@ -167,6 +168,7 @@ function CameraPath({ object, step }: { object: THREE.Object3D; step: number }) 
         actualRenderer: gl instanceof THREE.WebGLRenderer,
         drawCalls: gl.info.render.calls,
         triangles: gl.info.render.triangles,
+        backgroundPixel: [pixels[0]!, pixels[1]!, pixels[2]!, pixels[3]!],
         pixelHash: hash(pixels),
         pathStep: step,
         nodeCount: countNodes(object)
@@ -236,4 +238,11 @@ function countNodes(root: THREE.Object3D): number {
   let count = 0;
   root.traverse(() => count++);
   return count;
+}
+function readBackgroundPixel(canvas: HTMLCanvasElement): readonly [number, number, number, number] {
+  const gl = canvas.getContext("webgl2");
+  if (!gl) throw new Error("Aura background proof requires the mounted WebGL2 context.");
+  const pixel = new Uint8Array(4);
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+  return [pixel[0]!, pixel[1]!, pixel[2]!, pixel[3]!];
 }

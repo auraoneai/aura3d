@@ -253,7 +253,7 @@ test.describe("createAuraApp root postprocess contract", () => {
       schema: "aura3d-root-postprocess-contract/1.0",
       generatedAt: new Date().toISOString(),
       imports: runnerInfo.imports,
-      claimBoundary: "Root createAuraApp runs a pixel-backed LDR postprocess chain (tone mapping, colour grade, FXAA) and adds measurable bloom and forward environment fog on the typed-GLB production bridge. The safe-basic WebGL2 path draws starter-level rain geometry with a measured on/off screenshot delta. SSAO executes when an occlusion effect is authored but its visible contribution is not proven. Outline, SSR, depth of field, motion blur, and TAA are not reachable through the public root effects surface and are not claimed. No HDR-dependent or WebGPU postprocess claim is made.",
+      claimBoundary: "Root createAuraApp runs neutral pixel-backed tone mapping and adds measurable bloom and forward environment fog on the typed-GLB production bridge. It does not silently inject color grading or FXAA when the author did not request them. The safe-basic WebGL2 path draws starter-level rain geometry with a measured on/off screenshot delta. SSAO executes when an occlusion effect is authored but its visible contribution is not proven. Color grading, FXAA, outline, SSR, depth of field, motion blur, and TAA are not reachable through the public root effects surface and are not claimed. No HDR-dependent or WebGPU postprocess claim is made.",
       renderer: {
         backend: baseline.capture.diagnostics.backend,
         runtimeBackend: baseline.capture.diagnostics.runtimeBackend,
@@ -270,7 +270,7 @@ test.describe("createAuraApp root postprocess contract", () => {
     expect(evidence.renderer.runtimeBackend).toBe("production-runtime");
     // The base chain must be pixel-backed, not a reported plan.
     expect(baseline.capture.diagnostics.postprocess.pixelBacked).toBe(true);
-    expect(evidence.renderer.baselineActualPasses).toEqual(expect.arrayContaining(["tone-mapping", "color-grade", "fxaa"]));
+    expect(evidence.renderer.baselineActualPasses).toEqual(["tone-mapping"]);
     expect(effectStatus(evidence, "bloom")).toBe("root-proven");
     expect(effectStatus(evidence, "fog")).toBe("root-proven");
     expect(effectStatus(evidence, "rain")).toBe("root-proven");
@@ -282,6 +282,8 @@ test.describe("createAuraApp root postprocess contract", () => {
     expect(effectStatus(evidence, "depth-of-field")).toBe("unreachable-from-root");
     expect(effectStatus(evidence, "motion-blur")).toBe("unreachable-from-root");
     expect(effectStatus(evidence, "taa")).toBe("unreachable-from-root");
+    expect(effectStatus(evidence, "color-grade")).toBe("unreachable-from-root");
+    expect(effectStatus(evidence, "fxaa")).toBe("unreachable-from-root");
     expect(evidence.resize.passesStableAcrossResize).toBe(true);
     expect(evidence.failures, JSON.stringify(evidence.failures, null, 2)).toEqual([]);
     expect(evidence.pass).toBe(true);

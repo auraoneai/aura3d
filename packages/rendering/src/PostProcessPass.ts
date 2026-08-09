@@ -626,9 +626,15 @@ export function toneMapPixels(
   }
   const output = new Uint8Array(pixels.byteLength);
   for (let index = 0; index < pixels.length; index += 4) {
-    output[index] = encodeToneMappedChannel(decodeColorByte(pixels[index]!, inputColorSpace), exposure, whitePoint, gamma, operator, outputColorSpace);
-    output[index + 1] = encodeToneMappedChannel(decodeColorByte(pixels[index + 1]!, inputColorSpace), exposure, whitePoint, gamma, operator, outputColorSpace);
-    output[index + 2] = encodeToneMappedChannel(decodeColorByte(pixels[index + 2]!, inputColorSpace), exposure, whitePoint, gamma, operator, outputColorSpace);
+    const decoded: [number, number, number] = [
+      decodeColorByte(pixels[index]!, inputColorSpace),
+      decodeColorByte(pixels[index + 1]!, inputColorSpace),
+      decodeColorByte(pixels[index + 2]!, inputColorSpace)
+    ];
+    const mapped = operator === "aces" ? acesFilmicRgb(decoded, exposure, whitePoint) : undefined;
+    output[index] = mapped ? encodeColorByte(mapped[0], gamma, outputColorSpace) : encodeToneMappedChannel(decoded[0], exposure, whitePoint, gamma, operator, outputColorSpace);
+    output[index + 1] = mapped ? encodeColorByte(mapped[1], gamma, outputColorSpace) : encodeToneMappedChannel(decoded[1], exposure, whitePoint, gamma, operator, outputColorSpace);
+    output[index + 2] = mapped ? encodeColorByte(mapped[2], gamma, outputColorSpace) : encodeToneMappedChannel(decoded[2], exposure, whitePoint, gamma, operator, outputColorSpace);
     output[index + 3] = pixels[index + 3]!;
   }
   return {
@@ -676,9 +682,10 @@ export function toneMapFloatPixels(
     const a = finiteHdrChannel(pixels[index + 3]!, index + 3);
     if (r > 1 || g > 1 || b > 1) inputOverbrightPixels += 1;
     maxInputValue = Math.max(maxInputValue, r, g, b);
-    output[index] = encodeToneMappedChannel(r, exposure, whitePoint, gamma, operator, outputColorSpace);
-    output[index + 1] = encodeToneMappedChannel(g, exposure, whitePoint, gamma, operator, outputColorSpace);
-    output[index + 2] = encodeToneMappedChannel(b, exposure, whitePoint, gamma, operator, outputColorSpace);
+    const mapped = operator === "aces" ? acesFilmicRgb([r, g, b], exposure, whitePoint) : undefined;
+    output[index] = mapped ? encodeColorByte(mapped[0], gamma, outputColorSpace) : encodeToneMappedChannel(r, exposure, whitePoint, gamma, operator, outputColorSpace);
+    output[index + 1] = mapped ? encodeColorByte(mapped[1], gamma, outputColorSpace) : encodeToneMappedChannel(g, exposure, whitePoint, gamma, operator, outputColorSpace);
+    output[index + 2] = mapped ? encodeColorByte(mapped[2], gamma, outputColorSpace) : encodeToneMappedChannel(b, exposure, whitePoint, gamma, operator, outputColorSpace);
     output[index + 3] = clampByte(a * 255);
   }
   return {
@@ -2455,6 +2462,25 @@ function encodeColorByte(value: number, gamma: number, colorSpace: PostProcessCo
 
 function aces(value: number): number {
   return (value * (2.51 * value + 0.03)) / (value * (2.43 * value + 0.59) + 0.14);
+}
+
+function acesFilmicRgb(color: readonly [number, number, number], exposure: number, whitePoint: number): [number, number, number] {
+  const scale = exposure / Math.max(0.0001, whitePoint) / 0.6;
+  const input: [number, number, number] = [color[0] * scale, color[1] * scale, color[2] * scale];
+  const aces: [number, number, number] = [
+    0.59719 * input[0] + 0.35458 * input[1] + 0.04823 * input[2],
+    0.07600 * input[0] + 0.90834 * input[1] + 0.01566 * input[2],
+    0.02840 * input[0] + 0.13383 * input[1] + 0.83777 * input[2]
+  ].map(acesRrtAndOdtFit) as [number, number, number];
+  return [
+    Math.max(0, Math.min(1, 1.60475 * aces[0] - 0.53108 * aces[1] - 0.07367 * aces[2])),
+    Math.max(0, Math.min(1, -0.10208 * aces[0] + 1.10813 * aces[1] - 0.00605 * aces[2])),
+    Math.max(0, Math.min(1, -0.00327 * aces[0] - 0.07276 * aces[1] + 1.07602 * aces[2]))
+  ];
+}
+
+function acesRrtAndOdtFit(value: number): number {
+  return (value * (value + 0.0245786) - 0.000090537) / (value * (0.983729 * value + 0.4329510) + 0.238081);
 }
 
 function filmic(value: number): number {

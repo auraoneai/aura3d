@@ -60,6 +60,7 @@ test.describe("current head-to-head skinned and morph animation", () => {
     expect(before.three.morphMeshCount).toBeGreaterThan(0);
     expect(before.three.morphTargetCount).toBeGreaterThan(0);
     expect(before.three.triangles).toBeGreaterThan(1_000);
+    expect(maxChannelDelta(before.aura.backgroundPixel, before.three.backgroundPixel), `Aura ${JSON.stringify(before.aura.backgroundPixel)} vs Three ${JSON.stringify(before.three.backgroundPixel)}`).toBeLessThanOrEqual(3);
     await capturePair(page, "before");
 
     await page.locator("#advance").click();
@@ -84,6 +85,7 @@ test.describe("current head-to-head skinned and morph animation", () => {
 });
 
 function hashFile(path: string): string { return createHash("sha256").update(readFileSync(resolve(path))).digest("hex"); }
+function maxChannelDelta(left: readonly number[], right: readonly number[]): number { return Math.max(...left.slice(0, 3).map((value, index) => Math.abs(value - (right[index] ?? 0)))); }
 async function capturePair(page: Page, suffix: "before" | "after"): Promise<void> {
   const captures = await page.evaluate(() => {
     const aura = document.querySelector<HTMLCanvasElement>("#aura");

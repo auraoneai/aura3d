@@ -127,7 +127,15 @@ async function run(): Promise<void> {
       },
       {
         effect: "taa",
-        reason: "No public root effect requests temporal antialiasing; root FXAA is submitted by the bridge but TAA is not reachable through createAuraApp."
+        reason: "No public root effect requests temporal antialiasing; it is not reachable through createAuraApp."
+      },
+      {
+        effect: "color-grade",
+        reason: "No public root effect requests color grading. The production bridge no longer injects an unrequested grade, so color grading remains a rendering-package pass."
+      },
+      {
+        effect: "fxaa",
+        reason: "No public root effect requests FXAA. The production bridge no longer injects unrequested FXAA, so it remains a rendering-package pass."
       }
     ]
   };

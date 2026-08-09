@@ -121,6 +121,7 @@ async function createAura(): Promise<(pose: keyof typeof POSES) => Promise<void>
       missingMorphTargets: morphEvidence?.missingMorphTargets ?? [],
       morphRenderItemCount: morphEvidence?.morphRenderItemCount ?? 0,
       sampleSeconds: sample.seconds,
+      backgroundPixel: readBackgroundPixel(canvas),
       pixelHash: hashString(canvas.toDataURL("image/png"))
     };
     runtime.stages.aura = `rendered-${pose}`;
@@ -202,6 +203,7 @@ async function createThree(): Promise<(pose: keyof typeof POSES) => void> {
       drawCalls: renderer.info.render.calls,
       triangles: renderer.info.render.triangles,
       sampleSeconds: sample.seconds,
+      backgroundPixel: [pixels[0]!, pixels[1]!, pixels[2]!, pixels[3]!],
       pixelHash: hash(pixels)
     };
     runtime.stages.three = `rendered-${pose}`;
@@ -244,6 +246,7 @@ function readThreeMorphWeight(meshes: readonly THREE.Mesh[]): number | null {
   return index === undefined ? null : mesh.morphTargetInfluences[index] ?? null;
 }
 function requiredCanvas(id: string): HTMLCanvasElement { const canvas = document.querySelector<HTMLCanvasElement>(`#${id}`); if (!canvas) throw new Error(`Missing ${id} canvas.`); return canvas; }
+function readBackgroundPixel(canvas: HTMLCanvasElement): readonly [number, number, number, number] { const gl = canvas.getContext("webgl2"); if (!gl) throw new Error("Aura background proof requires the mounted WebGL2 context."); const pixel = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel); return [pixel[0]!, pixel[1]!, pixel[2]!, pixel[3]!]; }
 function nextPaint(): Promise<void> { return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))); }
 function hash(bytes: Uint8Array): string { let value = 2166136261; for (const byte of bytes) { value ^= byte; value = Math.imul(value, 16777619) >>> 0; } return value.toString(16).padStart(8, "0"); }
 function hashString(value: string): string { return hash(new TextEncoder().encode(value)); }

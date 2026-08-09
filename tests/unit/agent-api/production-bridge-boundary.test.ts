@@ -57,10 +57,11 @@ describe("createAuraApp production bridge boundary", () => {
     expect(collectedLights).toContain("createProductionRuntimeFallbackLights");
     expect(collectedLights).toContain("createProductionRuntimeCollectedLight");
 
-    expect(postprocess).toContain("resolveRendererSceneCategory(snapshot, names)");
     expect(postprocess).toContain("authoredBloom");
-    expect(postprocess).toContain("emissiveSubjects");
     expect(postprocess).toContain("bloomRequested");
+    expect(postprocess).toContain('operator: "aces"');
+    expect(postprocess).not.toContain("colorGrade");
+    expect(postprocess).not.toContain("fxaa");
     expect(shadows).toContain("resolveRendererSceneCategory(snapshot, names)");
     expect(shadows).toContain("sceneRadius");
     expect(shadows).toContain("collectedLights.find");

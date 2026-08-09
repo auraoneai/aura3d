@@ -122,6 +122,7 @@ async function startAura(): Promise<(far: boolean) => Promise<void>> {
       assetState: diagnostics.assets.find((asset) => asset.id === ASSET.id),
       lodLevel: selectAuraRootLodLevel(distance, LOD_LEVELS, undefined, 0.5).levelIndex,
       cameraDistance: Number(distance.toFixed(3)),
+      backgroundPixel: readBackgroundPixel(canvas),
       pixelHash: hashString(canvas.toDataURL("image/png"))
     };
     runtime.stages.aura = far ? "rendered-far" : "rendered-near";
@@ -208,6 +209,7 @@ async function createThree(): Promise<(far: boolean) => void> {
       triangles: renderer.info.render.triangles,
       lodLevel: lod.getCurrentLevel(),
       cameraDistance: Number(camera.position.distanceTo(lod.position).toFixed(3)),
+      backgroundPixel: [pixels[0]!, pixels[1]!, pixels[2]!, pixels[3]!],
       pixelHash: hash(pixels)
     };
     runtime.stages.three = far ? "rendered-far" : "rendered-near";
@@ -235,6 +237,7 @@ function createTransforms(): AuraTransformSpec[] {
   return result;
 }
 function requiredCanvas(id: string): HTMLCanvasElement { const canvas = document.querySelector<HTMLCanvasElement>(`#${id}`); if (!canvas) throw new Error(`Missing ${id} canvas.`); return canvas; }
+function readBackgroundPixel(canvas: HTMLCanvasElement): readonly [number, number, number, number] { const gl = canvas.getContext("webgl2"); if (!gl) throw new Error("Aura background proof requires the mounted WebGL2 context."); const pixel = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel); return [pixel[0]!, pixel[1]!, pixel[2]!, pixel[3]!]; }
 function nextPaint(): Promise<void> { return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))); }
 function vectorDistance(a: readonly number[], b: readonly number[]): number { return Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!); }
 function reportError(error: unknown): void { window.__AURA_THREE_HEAD_TO_HEAD_INSTANCING_LOD_ERROR__ = error instanceof Error ? error.stack ?? error.message : String(error); }

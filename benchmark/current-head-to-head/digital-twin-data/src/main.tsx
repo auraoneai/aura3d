@@ -136,6 +136,7 @@ async function startAura(): Promise<(incident: boolean) => Promise<void>> {
       assetState: diagnostics.assets.find((asset) => asset.id === ASSET.id),
       telemetry: telemetry(incident),
       visibleDataBinding: incident ? "red-zone-and-beacon" : "green-zone",
+      backgroundPixel: readBackgroundPixel(canvas),
       pixelHash: hashString(canvas.toDataURL("image/png"))
     };
     runtime.auraStage = incident ? "rendered-incident" : "rendered-normal";
@@ -199,6 +200,7 @@ function CameraAndEvidence({ object, incident }: { object: THREE.Object3D; incid
         nodeCount: countNodes(object),
         telemetry: telemetry(incident),
         visibleDataBinding: incident ? "red-zone-and-beacon" : "green-zone",
+        backgroundPixel: [pixels[0]!, pixels[1]!, pixels[2]!, pixels[3]!],
         pixelHash: hash(pixels)
       };
       runtime.threeStage = incident ? "rendered-incident" : "rendered-normal";
@@ -240,3 +242,4 @@ function nextPaint(): Promise<void> { return new Promise((resolve) => requestAni
 function hash(pixels: Uint8Array): string { let value = 2166136261; for (let index = 0; index < pixels.length; index += 97) { value ^= pixels[index]!; value = Math.imul(value, 16777619); } return (value >>> 0).toString(16).padStart(8, "0"); }
 function hashString(value: string): string { let result = 2166136261; for (let index = 0; index < value.length; index += 17) { result ^= value.charCodeAt(index); result = Math.imul(result, 16777619); } return (result >>> 0).toString(16).padStart(8, "0"); }
 function countNodes(root: THREE.Object3D): number { let count = 0; root.traverse(() => count++); return count; }
+function readBackgroundPixel(canvas: HTMLCanvasElement): readonly [number, number, number, number] { const gl = canvas.getContext("webgl2"); if (!gl) throw new Error("Aura background proof requires the mounted WebGL2 context."); const pixel = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel); return [pixel[0]!, pixel[1]!, pixel[2]!, pixel[3]!]; }

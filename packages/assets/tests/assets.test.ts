@@ -227,6 +227,31 @@ test("GLTFLoader loads a binary GLB fixture with a BIN chunk", async () => {
   assert.equal(asset.createScene().findByName("glb-node").length, 1);
 });
 
+test("GLTFLoader preserves matrix-backed node shear and reflection without a lossy TRS round trip", async () => {
+  const matrix = [
+    1, 0, 0, 0,
+    0.35, 1, 0, 0,
+    0, 0, -1, 0,
+    2, 3, 4, 1
+  ];
+  const gltf = {
+    asset: { version: "2.0" },
+    nodes: [{ name: "matrix-node", matrix }],
+    scenes: [{ nodes: [0] }],
+    scene: 0
+  };
+  const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
+  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const scene = asset.createScene();
+  scene.updateWorldTransforms();
+  const node = scene.findByName("matrix-node")[0];
+
+  assert(node);
+  assert.equal(node.transform.matrixAutoUpdate, false);
+  assert.deepEqual(node.transform.localMatrix, matrix);
+  assert.deepEqual(node.transform.worldMatrix, matrix);
+});
+
 test("OBJLoader parses bounded geometry into the glTF render-resource path", async () => {
   const obj = [
     "v -0.5 -0.5 0",

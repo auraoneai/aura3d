@@ -3572,10 +3572,18 @@ function createScene(
     }
 
     const node = createSceneNodeForGLTFNode(scene, source, index, nodeNameForIndex(index), cameras, lights);
-    const transform = resolveNodeTransform(source, index);
-    node.transform.setPosition(transform.translation[0], transform.translation[1], transform.translation[2]);
-    node.transform.setRotation(transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3]);
-    node.transform.setScale(transform.scale[0], transform.scale[1], transform.scale[2]);
+    if (source.matrix !== undefined) {
+      // A glTF matrix can contain reflection or shear that cannot survive a TRS
+      // decompose/recompose round trip. Preserve the authored matrix exactly;
+      // current Three.js does the same. The glTF spec requires animated nodes to
+      // use TRS properties, so matrix-backed nodes do not need auto recomposition.
+      node.transform.setLocalMatrix(resolveNodeMatrix(source.matrix, index), { decompose: true, matrixAutoUpdate: false });
+    } else {
+      const transform = resolveNodeTransform(source, index);
+      node.transform.setPosition(transform.translation[0], transform.translation[1], transform.translation[2]);
+      node.transform.setRotation(transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3]);
+      node.transform.setScale(transform.scale[0], transform.scale[1], transform.scale[2]);
+    }
     if (source.mesh !== undefined) {
       attachMeshPrimitives(scene, node, source.mesh, index, meshes, skins, source.skin, nodeWorldMatrices.get(index), nodeInstanceTransforms.get(index), materialKeyForRenderable);
     }

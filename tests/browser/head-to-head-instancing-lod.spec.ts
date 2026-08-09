@@ -45,6 +45,7 @@ test.describe("current head-to-head instancing and LOD", () => {
     expect(before.aura.drawCalls).toBeLessThan(100);
     expect(before.three.drawCalls).toBeLessThan(100);
     expect(before.three.triangles).toBeGreaterThan(25_000);
+    expect(maxChannelDelta(before.aura.backgroundPixel, before.three.backgroundPixel), `Aura ${JSON.stringify(before.aura.backgroundPixel)} vs Three ${JSON.stringify(before.three.backgroundPixel)}`).toBeLessThanOrEqual(3);
     expect(before.aura.cameraDistance).toBeLessThan(20);
     expect(before.three.cameraDistance).toBeLessThan(20);
     await expect(page.locator("#stats-js-panel")).toBeAttached();
@@ -78,4 +79,8 @@ async function capturePair(page: Page, suffix: "near" | "far"): Promise<void> {
   for (const [engine, dataUrl] of Object.entries(captures)) {
     writeFileSync(resolve(REPORT_DIRECTORY, `${engine}-${suffix}.png`), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
   }
+}
+
+function maxChannelDelta(a: readonly number[], b: readonly number[]): number {
+  return Math.max(...a.slice(0, 3).map((value, index) => Math.abs(value - (b[index] ?? 0))));
 }

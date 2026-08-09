@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
 
 const PROJECT = resolve("benchmark/current-head-to-head/digital-twin-data");
@@ -43,6 +43,8 @@ test.describe("current head-to-head digital twin data application", () => {
     expect(before.three.drawCalls).toBeGreaterThan(25);
     expect(before.three.triangles).toBeGreaterThan(10_000);
     expect(before.three.nodeCount).toBeGreaterThan(100);
+    expect(maxChannelDelta(before.aura.backgroundPixel, before.three.backgroundPixel), `Aura ${JSON.stringify(before.aura.backgroundPixel)} vs Three ${JSON.stringify(before.three.backgroundPixel)}`).toBeLessThanOrEqual(3);
+    await capturePair(page, "before");
     const assetHash = createHash("sha256").update(readFileSync(resolve("public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb"))).digest("hex");
     expect(assetHash).toBe(before.asset.sha256);
 
@@ -56,15 +58,23 @@ test.describe("current head-to-head digital twin data application", () => {
     expect(after.three.pixelHash).not.toBe(before.three.pixelHash);
     await expect(page.locator("#telemetry")).toHaveText("incident · 37.0 C · 1 incident");
 
-    const captures = await page.evaluate(() => {
-      const aura = document.querySelector<HTMLCanvasElement>("#aura");
-      const three = document.querySelector<HTMLCanvasElement>("#root canvas");
-      if (!aura || !three) throw new Error("Both native renderer canvases are required for capture.");
-      return { aura: aura.toDataURL("image/png"), three: three.toDataURL("image/png") };
-    });
-    for (const [engine, dataUrl] of Object.entries(captures)) {
-      writeFileSync(resolve(REPORT_DIRECTORY, `${engine}.png`), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
-    }
+    await capturePair(page, "after");
     writeFileSync(resolve(REPORT_DIRECTORY, "report.json"), `${JSON.stringify({ schema: "aura3d.current-head-to-head-workload/1.0", generatedAt: new Date().toISOString(), pass: true, assetSha256: assetHash, before, after }, null, 2)}\n`);
   });
 });
+
+function maxChannelDelta(a: readonly number[], b: readonly number[]): number {
+  return Math.max(...a.slice(0, 3).map((value, index) => Math.abs(value - (b[index] ?? 0))));
+}
+
+async function capturePair(page: Page, suffix: "before" | "after"): Promise<void> {
+  const captures = await page.evaluate(() => {
+    const aura = document.querySelector<HTMLCanvasElement>("#aura");
+    const three = document.querySelector<HTMLCanvasElement>("#root canvas");
+    if (!aura || !three) throw new Error("Both native renderer canvases are required for capture.");
+    return { aura: aura.toDataURL("image/png"), three: three.toDataURL("image/png") };
+  });
+  for (const [engine, dataUrl] of Object.entries(captures)) {
+    writeFileSync(resolve(REPORT_DIRECTORY, `${engine}-${suffix}.png`), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
+  }
+}
