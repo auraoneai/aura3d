@@ -529,6 +529,7 @@
     "head-to-head:physical-vehicle": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-physical-vehicle.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-physical-vehicle/index.ts",
     "head-to-head:navigation-crowd": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-navigation-crowd.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-navigation-crowd/index.ts",
     "head-to-head:webgpu-tsl": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-webgpu-tsl.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-webgpu-tsl/index.ts",
+    "head-to-head:xr-interaction": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-xr-interaction.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-xr-interaction/index.ts",
     "check:devtools": "pnpm exec vitest run tests/unit/agent-api/devtools.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-devtools/index.ts",
     "check:deployment": "pnpm exec vitest run tests/unit/aura3d-cli/deployment.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-deployment/index.ts",
     "check:engine-layer-ratio": "pnpm exec tsx --tsconfig tsconfig.base.json tools/engine-layer-ratio/index.ts",

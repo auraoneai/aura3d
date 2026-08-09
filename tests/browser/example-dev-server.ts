@@ -92,6 +92,7 @@ const packageEntryPoints = new Map<string, string>([
   ["three/addons/postprocessing/OutputPass.js", "/node_modules/three/examples/jsm/postprocessing/OutputPass.js"],
   ["three/addons/postprocessing/RenderPass.js", "/node_modules/three/examples/jsm/postprocessing/RenderPass.js"],
   ["three/addons/postprocessing/UnrealBloomPass.js", "/node_modules/three/examples/jsm/postprocessing/UnrealBloomPass.js"],
+  ["three/addons/webxr/XRButton.js", "/node_modules/three/examples/jsm/webxr/XRButton.js"],
   ["three/webgpu", "/node_modules/three/build/three.webgpu.js"],
   ["three/tsl", "/node_modules/three/build/three.tsl.js"],
   ["three", "/node_modules/three/build/three.module.js"],
