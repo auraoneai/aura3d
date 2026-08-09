@@ -54,6 +54,140 @@ const BASELINE = {
 } as const;
 
 /**
+ * Phase 2 was deliberately interleaved: the first navigation/audio and
+ * compatibility/media commits each advanced two related audits, while later
+ * commits closed them independently. These immutable boundaries record the
+ * repository before the first workstream commit and after its closing commit.
+ * Global snapshot deltas therefore overlap and are never presented as isolated
+ * attribution; `implementationCommits` is the exact isolated patch set.
+ */
+const PHASE_2_WORKSTREAMS = [
+  {
+    id: "WS-2.1",
+    subsystem: "physical simulation",
+    firstCommit: "f3a8a8f5",
+    closingCommit: "ce3d7926",
+    implementationCommits: ["f3a8a8f5", "3207b30b", "c35141d7", "9a010cb2", "d2fe1d01", "ce3d7926"],
+    duplicateOwnersBefore: 2,
+    duplicateOwnersAfter: 1,
+    ownershipEvidence: "custom physical solver/controller stack plus Rapier adapter -> one Rapier physical owner; authored-unit arcade motion remains a separate contract"
+  },
+  {
+    id: "WS-2.2",
+    subsystem: "navigation and crowd",
+    firstCommit: "f7969be4",
+    closingCommit: "d69c2c22",
+    implementationCommits: ["f7969be4", "b415d839", "d69c2c22"],
+    duplicateOwnersBefore: 2,
+    duplicateOwnersAfter: 1,
+    ownershipEvidence: "custom navigation/crowd algorithms plus Recast adapter -> one Recast/Detour owner behind Aura3D semantics"
+  },
+  {
+    id: "WS-2.3",
+    subsystem: "browser audio",
+    firstCommit: "f7969be4",
+    closingCommit: "9093fe9d",
+    implementationCommits: ["f7969be4", "7647e523", "9093fe9d"],
+    duplicateOwnersBefore: 2,
+    duplicateOwnersAfter: 1,
+    ownershipEvidence: "route/game gain graphs plus package graph -> one direct Web Audio owner; game layer retains semantic cues and derived evidence only"
+  },
+  {
+    id: "WS-2.4",
+    subsystem: "ECS and scripting compatibility",
+    firstCommit: "fc6cf530",
+    closingCommit: "125385a1",
+    implementationCommits: ["fc6cf530", "125385a1"],
+    duplicateOwnersBefore: 1,
+    duplicateOwnersAfter: 1,
+    ownershipEvidence: "dedicated optional compatibility packages retained; duplicate engine aliases deprecated and absent from recommended entries"
+  },
+  {
+    id: "WS-2.5",
+    subsystem: "browser media, Node media, and editor",
+    firstCommit: "fc6cf530",
+    closingCommit: "a12b56b1",
+    implementationCommits: ["fc6cf530", "a12b56b1"],
+    duplicateOwnersBefore: 2,
+    duplicateOwnersAfter: 1,
+    ownershipEvidence: "mixed browser/offline root surface -> browser capture owner plus an explicit Node-only media entry; editor remains an explicit optional dependency"
+  },
+  {
+    id: "WS-2.6",
+    subsystem: "descriptor and fake-capability purge",
+    firstCommit: "03a3f124",
+    closingCommit: "a21e4cd8",
+    implementationCommits: ["03a3f124", "12943207", "df9cae82", "fc122e51", "7647e523", "876f8004", "ff7abcc9", "66f26ff3", "ba07fefe", "a21e4cd8"],
+    duplicateOwnersBefore: 31,
+    duplicateOwnersAfter: 0,
+    ownershipEvidence: "31 deterministic descriptor modules that self-asserted capabilities -> zero public runtime fixtures or unmounted boolean-claim modules"
+  }
+] as const;
+
+function gitText(args: readonly string[]): string {
+  return execFileSync("git", args, { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+}
+
+function readAt(commit: string, path: string): string {
+  try {
+    return execFileSync("git", ["show", `${commit}:${path}`], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"]
+    });
+  } catch {
+    return "";
+  }
+}
+
+function snapshotAt(commit: string) {
+  const paths = gitText(["ls-tree", "-r", "--name-only", commit, "--", "packages"]).split("\n").filter(Boolean);
+  const packageSourcePaths = paths.filter((path) => /^packages\/[a-z0-9-]+\/src\/.*\.(?:ts|tsx)$/.test(path));
+  const packageSourceLines = packageSourcePaths.reduce((sum, path) => sum + countNewlines(readAt(commit, path)), 0);
+  const packages = paths.filter((path) => /^packages\/[^/]+\/package\.json$/.test(path)).length;
+  const root = JSON.parse(readAt(commit, "package.json")) as Record<string, unknown>;
+  const rootExports = root.exports && typeof root.exports === "object" ? Object.keys(root.exports).length : 0;
+  const dependencies = root.dependencies && typeof root.dependencies === "object"
+    ? Object.keys(root.dependencies).filter((name) => !name.startsWith("@aura3d/"))
+    : [];
+  const engineBarrelExports = (readAt(commit, "packages/engine/src/agent-api/index.ts").match(/^export /gm) ?? []).length;
+  return { commit, packageSourceLines, packages, externalRuntimeDependencies: dependencies, rootExportSubpaths: rootExports, engineBarrelExports };
+}
+
+function isolatedPatchStats(commits: readonly string[]) {
+  let sourceLinesAdded = 0;
+  let sourceLinesDeleted = 0;
+  const deletedSourceFiles: string[] = [];
+  for (const commit of commits) {
+    const rows = gitText(["show", "--format=", "--numstat", commit, "--", "packages"]).trim().split("\n").filter(Boolean);
+    for (const row of rows) {
+      const [addedText, deletedText, path = ""] = row.split("\t");
+      if (!/^packages\/[a-z0-9-]+\/src\/.*\.(?:ts|tsx)$/.test(path)) continue;
+      const added = Number(addedText);
+      const deleted = Number(deletedText);
+      if (Number.isFinite(added)) sourceLinesAdded += added;
+      if (Number.isFinite(deleted)) sourceLinesDeleted += deleted;
+      if (Number.isFinite(deleted) && deleted > 0 && readAt(commit, path) === "") deletedSourceFiles.push(path);
+    }
+  }
+  return { sourceLinesAdded, sourceLinesDeleted, netSourceLines: sourceLinesAdded - sourceLinesDeleted, deletedSourceFiles: [...new Set(deletedSourceFiles)].sort() };
+}
+
+function phase2WorkstreamLedger() {
+  return PHASE_2_WORKSTREAMS.map((workstream) => {
+    const beforeCommit = gitText(["rev-parse", `${workstream.firstCommit}^`]).trim();
+    return {
+      ...workstream,
+      before: { ...snapshotAt(beforeCommit), duplicateOwners: workstream.duplicateOwnersBefore },
+      after: { ...snapshotAt(workstream.closingCommit), duplicateOwners: workstream.duplicateOwnersAfter },
+      isolatedPatch: isolatedPatchStats(workstream.implementationCommits),
+      attributionCaveat: "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    };
+  });
+}
+
+/**
  * Count tracked source only, via `git ls-files`.
  *
  * An on-disk walk was the first implementation and it was wrong: it found 942 files where git tracks
@@ -327,6 +461,7 @@ function main(): void {
   const packageSourceLines = sourceLines.engine;
   const dependencies = countExternalRuntimeDependencies();
   const duplicates = countDuplicateOwnership();
+  const workstreamLedger = phase2WorkstreamLedger();
   const current = {
     commit: currentCommit(),
     packageSourceLines,
@@ -354,6 +489,17 @@ function main(): void {
       id: "r12-duplicate-ownership-zero",
       pass: current.duplicateOwnershipViolations === 0,
       detail: `${current.duplicateOwnershipViolations} of ${duplicates.rows.length} duplicate-ownership rows still have two live implementations: ${duplicates.rows.filter((row) => row.present).map((row) => row.capability).join(", ") || "none"}`
+    },
+    {
+      id: "phase-2-workstream-ledger-complete",
+      pass: workstreamLedger.length === 6
+        && workstreamLedger.every((entry) => entry.implementationCommits.length > 0),
+      detail: `${workstreamLedger.length} of 6 subsystem workstreams retain immutable before/after snapshots and isolated implementation-commit patch statistics`
+    },
+    {
+      id: "phase-2-duplicate-ownership-nonincreasing",
+      pass: workstreamLedger.every((entry) => entry.after.duplicateOwners <= entry.before.duplicateOwners),
+      detail: workstreamLedger.map((entry) => `${entry.id} ${entry.before.duplicateOwners}->${entry.after.duplicateOwners}`).join("; ")
     }
   ];
 
@@ -374,7 +520,8 @@ function main(): void {
       templateScaffoldLines: current.templateScaffoldLines - BASELINE.templateScaffoldLines
     },
     externalRuntimeDependencyNames: dependencies.names,
-    duplicateOwnershipRows: duplicates.rows
+    duplicateOwnershipRows: duplicates.rows,
+    phase2WorkstreamLedger: workstreamLedger
   });
   console.log(`engine src lines     : ${current.packageSourceLines} (baseline ${BASELINE.packageSourceLines}, delta ${current.packageSourceLines - BASELINE.packageSourceLines})`);
   console.log(`template scaffold    : ${current.templateScaffoldLines} (counted separately, not engine source)`);

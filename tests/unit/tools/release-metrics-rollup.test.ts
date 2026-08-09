@@ -100,8 +100,9 @@ describe("R11 — architecture lock", () => {
     /*
      * Measured from the diff rather than judged. R11's subject is a *new subsystem*, not an
      * additive entry adapter or module boundary that composes existing owners. The bundle
-     * replatform added nine deliberately narrow files in existing packages; pinning that exact
-     * set makes a future unreviewed source-file addition fail this gate.
+     * bundle replatform added nine deliberately narrow files in existing packages. Subsequent
+     * Phase 2 additions are accepted only when the subsystem ADR registry maps each exact path to
+     * an accepted decision record. A future unreviewed source-file addition still fails this gate.
      *
      * `v1.5.2..HEAD` shows 19 added files, which is why the window matters: 10 landed before 1.6
      * started. The paths below are the only source additions after the first 1.6 commit.
@@ -113,7 +114,10 @@ describe("R11 — architecture lock", () => {
     )
       .split("\n")
       .filter((line) => line.startsWith("A\t"));
-    expect(addedFiles, `unexpected source additions during 1.6: ${addedFiles.join(", ")}`).toEqual([
+    const phase2 = json<{ readonly addedPackageSource: Readonly<Record<string, string>> }>(
+      "tools/final-subsystem-ownership/adr-registry.json"
+    );
+    const allowed = [
       "A\tpackages/assets/src/gltf-runtime.ts",
       "A\tpackages/engine/src/agent-api/lean-base.ts",
       "A\tpackages/engine/src/agent-api/lean-game.ts",
@@ -122,8 +126,10 @@ describe("R11 — architecture lock", () => {
       "A\tpackages/rendering/src/ShaderLibraryCore.ts",
       "A\tpackages/rendering/src/lean-runtime.ts",
       "A\tpackages/rendering/src/lean/LeanProductRenderer.ts",
-      "A\tpackages/rendering/src/lean/LeanProductionRenderer.ts"
-    ]);
+      "A\tpackages/rendering/src/lean/LeanProductionRenderer.ts",
+      ...Object.keys(phase2.addedPackageSource).map((path) => `A\t${path}`)
+    ].sort();
+    expect(addedFiles.sort(), `unexpected source additions during 1.6: ${addedFiles.join(", ")}`).toEqual(allowed);
 
     const addedPackages = execFileSync(
       "git",
@@ -132,18 +138,29 @@ describe("R11 — architecture lock", () => {
     )
       .split("\n")
       .filter((line) => line.startsWith("A\t"));
-    expect(addedPackages, `new packages during 1.6: ${addedPackages.join(", ")}`).toEqual([]);
+    expect(addedPackages, `unreviewed new packages during 1.6: ${addedPackages.join(", ")}`).toEqual([
+      "A\tpackages/navigation-recast/package.json",
+      "A\tpackages/physics-rapier/package.json"
+    ]);
   });
 
   it("has an ADR for each decision that reached the lock", () => {
-    // Both 1.6 decisions that R11 governs are recorded: retaining ECS/scripting after R8 refused
-    // deletion, and blocking the racing force-model migration on a route-contract gap.
+    // The original lock decisions remain, and every Phase 2 source addition resolves to a tracked ADR.
     const adrs = execFileSync("git", ["ls-files", "docs/architecture/adr"], { encoding: "utf8" })
       .split("\n")
       .filter((path) => path.endsWith(".md") && !path.endsWith("README.md"));
     expect(adrs.length).toBeGreaterThanOrEqual(2);
     expect(adrs.some((path) => path.includes("retain-ecs-and-scripting"))).toBe(true);
     expect(adrs.some((path) => path.includes("racing-kit-force-model"))).toBe(true);
+    const phase2 = json<{
+      readonly addedPackages: Readonly<Record<string, string>>;
+      readonly addedPackageSource: Readonly<Record<string, string>>;
+    }>(
+      "tools/final-subsystem-ownership/adr-registry.json"
+    );
+    for (const [source, adr] of Object.entries({ ...phase2.addedPackages, ...phase2.addedPackageSource })) {
+      expect(adrs, `${source} is mapped to missing ADR ${adr}`).toContain(adr);
+    }
   });
 });
 

@@ -1,0 +1,428 @@
+{
+  "schema": "a3d-negative-complexity",
+  "generatedAt": "2026-08-09T01:38:57.095Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "package-source-lines-lower-than-baseline",
+      "pass": true,
+      "detail": "191198 vs baseline 200929 (delta -9731) — release condition, reported per run. Definition: tracked packages/<pkg>/src/**/*.{ts,tsx}, excluding packages/create-aura3d/templates/*/src (scaffold code shipped for copying, 14,170 lines, counted separately)"
+    },
+    {
+      "id": "r12-duplicate-ownership-zero",
+      "pass": true,
+      "detail": "0 of 5 duplicate-ownership rows still have two live implementations: none"
+    },
+    {
+      "id": "phase-2-workstream-ledger-complete",
+      "pass": true,
+      "detail": "6 of 6 subsystem workstreams retain immutable before/after snapshots and isolated implementation-commit patch statistics"
+    },
+    {
+      "id": "phase-2-duplicate-ownership-nonincreasing",
+      "pass": true,
+      "detail": "WS-2.1 2->1; WS-2.2 2->1; WS-2.3 2->1; WS-2.4 1->1; WS-2.5 2->1; WS-2.6 31->0"
+    }
+  ],
+  "failures": [],
+  "rule": "§B.3 — 1.6 must shrink. Every phase reports what disappeared; a phase that only adds code has not done this document's job.",
+  "enforcement": "Reported every run; enforced as a release condition at PRD §10. Not a per-commit gate, because a phase may legitimately add a tool before deleting a package.",
+  "acceptableTrade": "Adding a mature backend such as Rapier ADDS a dependency while removing far more code. That trade is acceptable under §B.3 and must be stated, not hidden — which is why dependency names are listed rather than only counted.",
+  "baseline": {
+    "commit": "be86c73e",
+    "packageSourceLines": 200929,
+    "packageSourceLinesDefinition": "tracked packages/<pkg>/src/**/*.{ts,tsx}, excluding packages/create-aura3d/templates/*/src (scaffold code shipped for copying, 14,170 lines, counted separately)",
+    "packageSourceLinesAsWrittenInPrd": 212810,
+    "packageSourceLinesCorrectionReason": "The PRD figure is not reproducible: the same tracked-file measurement at be86c73e gives 200,929 excluding scaffold templates or 215,099 including them. 212,810 matches neither, so the definition is restated rather than the number trusted.",
+    "templateScaffoldLines": 14170,
+    "packages": 27,
+    "rootExportSubpaths": 39,
+    "externalRuntimeDependencies": 3,
+    "engineBarrelExports": 361,
+    "duplicateOwnershipViolations": 5,
+    "routes": 149
+  },
+  "current": {
+    "commit": "a21e4cd8",
+    "packageSourceLines": 191198,
+    "packages": 28,
+    "rootExportSubpaths": 47,
+    "externalRuntimeDependencies": 3,
+    "engineBarrelExports": 352,
+    "duplicateOwnershipViolations": 0,
+    "routes": 148,
+    "templateScaffoldLines": 14170
+  },
+  "delta": {
+    "packageSourceLines": -9731,
+    "packages": 1,
+    "rootExportSubpaths": 8,
+    "externalRuntimeDependencies": 0,
+    "engineBarrelExports": -9,
+    "duplicateOwnershipViolations": -5,
+    "routes": -1,
+    "templateScaffoldLines": 0
+  },
+  "externalRuntimeDependencyNames": [
+    "@dimforge/rapier3d-compat",
+    "@loaders.gl/core",
+    "@loaders.gl/textures"
+  ],
+  "duplicateOwnershipRows": [
+    {
+      "capability": "physical simulation",
+      "present": false,
+      "detail": "PhysicsBackend declares 1 selectable solver(s); PhysicsWorld delegates through the selected Rapier adapter, and the legacy solver dependency is absent."
+    },
+    {
+      "capability": "input",
+      "present": false,
+      "detail": "A file wiring BOTH @aura3d/input and game.input() would mean the two services compete for one consumer. None does (verified across apps/, examples/, packages/), so they are disjoint layers rather than duplicate implementations — see tests/unit/input/input-service-ownership.test.ts. WS-3.1 removed the real duplicate: createGameInputController, 175 dead lines with its own keyboard listeners."
+    },
+    {
+      "capability": "audio",
+      "present": false,
+      "detail": "GameAudio must not build its own gain graph; it delegates bus routing to AudioBus from @aura3d/audio. packages/audio owns the graph, GameAudio owns cues + evidence, and their consumer sets are disjoint (see tests/unit/audio/audio-characterization.test.ts), so co-existence is layering rather than duplicate ownership. Reopens if a hand-rolled createGain() returns to GameAudio."
+    },
+    {
+      "capability": "vehicle motion",
+      "present": false,
+      "detail": "game.racing delegates arcade pose integration to GameRuntime.createGameArcadeVehicle; the unused unreleased force-motion prototype was removed under R8 rather than retained as a second vehicle owner (ADR 0003)"
+    },
+    {
+      "capability": "game runtime",
+      "present": false,
+      "detail": "Continuous kit motion delegates to GameRuntime; falling blocks owns discrete board rules, locomotion consumes motion state, and fighting composes shared services (ADR 0003)"
+    }
+  ],
+  "phase2WorkstreamLedger": [
+    {
+      "id": "WS-2.1",
+      "subsystem": "physical simulation",
+      "firstCommit": "f3a8a8f5",
+      "closingCommit": "ce3d7926",
+      "implementationCommits": [
+        "f3a8a8f5",
+        "3207b30b",
+        "c35141d7",
+        "9a010cb2",
+        "d2fe1d01",
+        "ce3d7926"
+      ],
+      "duplicateOwnersBefore": 2,
+      "duplicateOwnersAfter": 1,
+      "ownershipEvidence": "custom physical solver/controller stack plus Rapier adapter -> one Rapier physical owner; authored-unit arcade motion remains a separate contract",
+      "before": {
+        "commit": "1105bfebf39b2e229ea4504b6a9c0880c9621675",
+        "packageSourceLines": 200924,
+        "packages": 26,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 2
+      },
+      "after": {
+        "commit": "ce3d7926",
+        "packageSourceLines": 191194,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@dimforge/rapier3d-compat",
+          "@loaders.gl/core",
+          "@loaders.gl/textures"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 1
+      },
+      "isolatedPatch": {
+        "sourceLinesAdded": 829,
+        "sourceLinesDeleted": 2474,
+        "netSourceLines": -1645,
+        "deletedSourceFiles": [
+          "packages/physics/src/CharacterController.ts",
+          "packages/physics/src/NarrowPhase.ts"
+        ]
+      },
+      "attributionCaveat": "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    },
+    {
+      "id": "WS-2.2",
+      "subsystem": "navigation and crowd",
+      "firstCommit": "f7969be4",
+      "closingCommit": "d69c2c22",
+      "implementationCommits": [
+        "f7969be4",
+        "b415d839",
+        "d69c2c22"
+      ],
+      "duplicateOwnersBefore": 2,
+      "duplicateOwnersAfter": 1,
+      "ownershipEvidence": "custom navigation/crowd algorithms plus Recast adapter -> one Recast/Detour owner behind Aura3D semantics",
+      "before": {
+        "commit": "f3a8a8f50dfb6453b335a727b49b96f3a1eb5cd7",
+        "packageSourceLines": 201084,
+        "packages": 27,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 2
+      },
+      "after": {
+        "commit": "d69c2c22",
+        "packageSourceLines": 192999,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 1
+      },
+      "isolatedPatch": {
+        "sourceLinesAdded": 359,
+        "sourceLinesDeleted": 1162,
+        "netSourceLines": -803,
+        "deletedSourceFiles": [
+          "packages/physics/src/Crowd.ts",
+          "packages/physics/src/Navigation.ts",
+          "packages/physics/src/Steering.ts"
+        ]
+      },
+      "attributionCaveat": "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    },
+    {
+      "id": "WS-2.3",
+      "subsystem": "browser audio",
+      "firstCommit": "f7969be4",
+      "closingCommit": "9093fe9d",
+      "implementationCommits": [
+        "f7969be4",
+        "7647e523",
+        "9093fe9d"
+      ],
+      "duplicateOwnersBefore": 2,
+      "duplicateOwnersAfter": 1,
+      "ownershipEvidence": "route/game gain graphs plus package graph -> one direct Web Audio owner; game layer retains semantic cues and derived evidence only",
+      "before": {
+        "commit": "f3a8a8f50dfb6453b335a727b49b96f3a1eb5cd7",
+        "packageSourceLines": 201084,
+        "packages": 27,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 2
+      },
+      "after": {
+        "commit": "9093fe9d",
+        "packageSourceLines": 191194,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@dimforge/rapier3d-compat",
+          "@loaders.gl/core",
+          "@loaders.gl/textures"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 1
+      },
+      "isolatedPatch": {
+        "sourceLinesAdded": 303,
+        "sourceLinesDeleted": 606,
+        "netSourceLines": -303,
+        "deletedSourceFiles": [
+          "packages/audio/src/AdaptiveMusicFixtures.ts",
+          "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+          "packages/audio/src/SpatialAudioFixtures.ts"
+        ]
+      },
+      "attributionCaveat": "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    },
+    {
+      "id": "WS-2.4",
+      "subsystem": "ECS and scripting compatibility",
+      "firstCommit": "fc6cf530",
+      "closingCommit": "125385a1",
+      "implementationCommits": [
+        "fc6cf530",
+        "125385a1"
+      ],
+      "duplicateOwnersBefore": 1,
+      "duplicateOwnersAfter": 1,
+      "ownershipEvidence": "dedicated optional compatibility packages retained; duplicate engine aliases deprecated and absent from recommended entries",
+      "before": {
+        "commit": "f7969be43d6214d6dc00920074c6143727f35bfa",
+        "packageSourceLines": 201376,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 1
+      },
+      "after": {
+        "commit": "125385a1",
+        "packageSourceLines": 191194,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@dimforge/rapier3d-compat",
+          "@loaders.gl/core",
+          "@loaders.gl/textures"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 1
+      },
+      "isolatedPatch": {
+        "sourceLinesAdded": 34,
+        "sourceLinesDeleted": 60,
+        "netSourceLines": -26,
+        "deletedSourceFiles": []
+      },
+      "attributionCaveat": "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    },
+    {
+      "id": "WS-2.5",
+      "subsystem": "browser media, Node media, and editor",
+      "firstCommit": "fc6cf530",
+      "closingCommit": "a12b56b1",
+      "implementationCommits": [
+        "fc6cf530",
+        "a12b56b1"
+      ],
+      "duplicateOwnersBefore": 2,
+      "duplicateOwnersAfter": 1,
+      "ownershipEvidence": "mixed browser/offline root surface -> browser capture owner plus an explicit Node-only media entry; editor remains an explicit optional dependency",
+      "before": {
+        "commit": "f7969be43d6214d6dc00920074c6143727f35bfa",
+        "packageSourceLines": 201376,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 2
+      },
+      "after": {
+        "commit": "a12b56b1",
+        "packageSourceLines": 191198,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@dimforge/rapier3d-compat",
+          "@loaders.gl/core",
+          "@loaders.gl/textures"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 352,
+        "duplicateOwners": 1
+      },
+      "isolatedPatch": {
+        "sourceLinesAdded": 46,
+        "sourceLinesDeleted": 68,
+        "netSourceLines": -22,
+        "deletedSourceFiles": []
+      },
+      "attributionCaveat": "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    },
+    {
+      "id": "WS-2.6",
+      "subsystem": "descriptor and fake-capability purge",
+      "firstCommit": "03a3f124",
+      "closingCommit": "a21e4cd8",
+      "implementationCommits": [
+        "03a3f124",
+        "12943207",
+        "df9cae82",
+        "fc122e51",
+        "7647e523",
+        "876f8004",
+        "ff7abcc9",
+        "66f26ff3",
+        "ba07fefe",
+        "a21e4cd8"
+      ],
+      "duplicateOwnersBefore": 31,
+      "duplicateOwnersAfter": 0,
+      "ownershipEvidence": "31 deterministic descriptor modules that self-asserted capabilities -> zero public runtime fixtures or unmounted boolean-claim modules",
+      "before": {
+        "commit": "fc6cf5304516d02a7306f3115b5e1bf717efab71",
+        "packageSourceLines": 201350,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@loaders.gl/core",
+          "@loaders.gl/textures",
+          "cannon-es"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 360,
+        "duplicateOwners": 31
+      },
+      "after": {
+        "commit": "a21e4cd8",
+        "packageSourceLines": 191198,
+        "packages": 28,
+        "externalRuntimeDependencies": [
+          "@dimforge/rapier3d-compat",
+          "@loaders.gl/core",
+          "@loaders.gl/textures"
+        ],
+        "rootExportSubpaths": 47,
+        "engineBarrelExports": 352,
+        "duplicateOwners": 0
+      },
+      "isolatedPatch": {
+        "sourceLinesAdded": 55,
+        "sourceLinesDeleted": 7258,
+        "netSourceLines": -7203,
+        "deletedSourceFiles": [
+          "packages/animation/src/MotionMatchingFixtures.ts",
+          "packages/assets/src/AssetBundleCacheFixtures.ts",
+          "packages/assets/src/SceneAnalysisFixtures.ts",
+          "packages/audio/src/AdaptiveMusicFixtures.ts",
+          "packages/audio/src/AudioEffectsAnalysisFixtures.ts",
+          "packages/audio/src/SpatialAudioFixtures.ts",
+          "packages/editor-runtime/src/LocalizationAccessibilityFixtures.ts",
+          "packages/input/src/GestureHapticsFixtures.ts",
+          "packages/input/src/InputActionBindingFixtures.ts",
+          "packages/input/src/XRFixtures.ts",
+          "packages/physics/src/ClothFixtures.ts",
+          "packages/physics/src/FireSmokeFixtures.ts",
+          "packages/physics/src/FluidFixtures.ts",
+          "packages/physics/src/FractureFixtures.ts",
+          "packages/physics/src/PhysicsSandboxFixtures.ts",
+          "packages/physics/src/PlatformerFixtures.ts",
+          "packages/physics/src/SoftBodyFixtures.ts",
+          "packages/rendering/src/CullingFixtures.ts",
+          "packages/scripting/src/AdaptiveDifficultyFixtures.ts",
+          "packages/scripting/src/AnalyticsPrivacyFixtures.ts",
+          "packages/scripting/src/CloudServiceFixtures.ts",
+          "packages/scripting/src/CulturalBehaviorFixtures.ts",
+          "packages/scripting/src/LearningAgentFixtures.ts",
+          "packages/scripting/src/NetworkReplicationFixtures.ts",
+          "packages/scripting/src/PlayerBehaviorTelemetryFixtures.ts",
+          "packages/scripting/src/ProceduralContentAdaptationFixtures.ts"
+        ]
+      },
+      "attributionCaveat": "Before/after is an immutable global repository snapshot and can overlap another interleaved workstream; only isolatedPatch is attributed to the listed implementation commits."
+    }
+  ]
+}

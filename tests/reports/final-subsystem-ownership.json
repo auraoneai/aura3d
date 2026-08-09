@@ -1,9 +1,9 @@
 {
   "schema": "aura3d.final-subsystem-ownership/1.0",
-  "generatedAt": "2026-08-09T01:11:23.485Z",
+  "generatedAt": "2026-08-09T01:41:07.272Z",
   "pass": true,
   "claimBoundary": "Current selected ownership inventory after evidence-gated subsystem deletion; parity and release claims still require their independent gates.",
-  "sourceCommit": "9a010cb200b4aa4fb9a33d1d9d67e3da0be436ff",
+  "sourceCommit": "a21e4cd89ca75a9c7763d0b30e19f1e58bfd135b",
   "graphCoverage": [
     "static source imports",
     "dynamic imports",
@@ -29,9 +29,9 @@
       },
       "dist": {
         "jsFiles": 47,
-        "rawBytes": 238013,
-        "gzipBytes": 53722,
-        "brotliBytes": 44877,
+        "rawBytes": 237923,
+        "gzipBytes": 53713,
+        "brotliBytes": 44881,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -450,9 +450,9 @@
       },
       "dist": {
         "jsFiles": 66,
-        "rawBytes": 565273,
-        "gzipBytes": 109159,
-        "brotliBytes": 85962,
+        "rawBytes": 564957,
+        "gzipBytes": 109119,
+        "brotliBytes": 85952,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -689,9 +689,9 @@
       },
       "dist": {
         "jsFiles": 19,
-        "rawBytes": 55766,
-        "gzipBytes": 13124,
-        "brotliBytes": 11342,
+        "rawBytes": 58541,
+        "gzipBytes": 13798,
+        "brotliBytes": 11927,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -789,9 +789,9 @@
       },
       "dist": {
         "jsFiles": 32,
-        "rawBytes": 337531,
-        "gzipBytes": 78405,
-        "brotliBytes": 63812,
+        "rawBytes": 337659,
+        "gzipBytes": 78444,
+        "brotliBytes": 63834,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -1768,6 +1768,7 @@
           "tools/ecs-scripting-compatibility/index.ts"
         ],
         "docs": [
+          "1.6-FINAL-PRD-Finishes.md",
           "docs/api/public-api.md",
           "docs/architecture/adr/0007-ecs-and-scripting-are-optional-compatibility-layers.md",
           "docs/architecture/final-subsystem-ownership.md",
@@ -1782,14 +1783,14 @@
         "route": 0,
         "fixture": 20,
         "cliOrGenerator": 3,
-        "docs": 5,
+        "docs": 6,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 30,
         "testMentions": 20,
-        "docsMentions": 5
+        "docsMentions": 6
       }
     },
     {
@@ -1937,9 +1938,9 @@
       },
       "dist": {
         "jsFiles": 47,
-        "rawBytes": 244510,
-        "gzipBytes": 50811,
-        "brotliBytes": 41605,
+        "rawBytes": 244413,
+        "gzipBytes": 50781,
+        "brotliBytes": 41584,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2027,6 +2028,7 @@
           "tools/threejs-parity-threejs-inventory/index.ts"
         ],
         "docs": [
+          "1.6-FINAL-PRD-Finishes.md",
           "Aura3D-1.6-Replatform-PRD.md",
           "CHANGELOG.md",
           "docs/animation/believable-motion.md",
@@ -2049,14 +2051,14 @@
         "route": 11,
         "fixture": 16,
         "cliOrGenerator": 4,
-        "docs": 13,
+        "docs": 14,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 45,
         "testMentions": 16,
-        "docsMentions": 13
+        "docsMentions": 14
       }
     },
     {
@@ -2065,14 +2067,14 @@
       "published": false,
       "disposition": "AURA-MOAT",
       "source": {
-        "lines": 56873,
-        "bytes": 2329604
+        "lines": 56876,
+        "bytes": 2329656
       },
       "dist": {
         "jsFiles": 125,
-        "rawBytes": 1857400,
-        "gzipBytes": 409090,
-        "brotliBytes": 305848,
+        "rawBytes": 1859152,
+        "gzipBytes": 409498,
+        "brotliBytes": 306254,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2167,10 +2169,10 @@
         "bytes": 19993
       },
       "dist": {
-        "jsFiles": 8,
-        "rawBytes": 12251,
-        "gzipBytes": 3050,
-        "brotliBytes": 2672,
+        "jsFiles": 9,
+        "rawBytes": 12311,
+        "gzipBytes": 3057,
+        "brotliBytes": 2681,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2240,10 +2242,10 @@
         "bytes": 68337
       },
       "dist": {
-        "jsFiles": 27,
-        "rawBytes": 69513,
-        "gzipBytes": 14695,
-        "brotliBytes": 12634,
+        "jsFiles": 28,
+        "rawBytes": 70435,
+        "gzipBytes": 14749,
+        "brotliBytes": 12700,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2367,10 +2369,10 @@
         "bytes": 14096
       },
       "dist": {
-        "jsFiles": 9,
-        "rawBytes": 10898,
-        "gzipBytes": 2760,
-        "brotliBytes": 2449,
+        "jsFiles": 10,
+        "rawBytes": 10508,
+        "gzipBytes": 2765,
+        "brotliBytes": 2453,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2579,10 +2581,10 @@
         "bytes": 10460
       },
       "dist": {
-        "jsFiles": 0,
-        "rawBytes": 0,
-        "gzipBytes": 0,
-        "brotliBytes": 0,
+        "jsFiles": 1,
+        "rawBytes": 8195,
+        "gzipBytes": 2197,
+        "brotliBytes": 1899,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2657,14 +2659,14 @@
       "published": true,
       "disposition": "COMPATIBILITY-ONLY",
       "source": {
-        "lines": 6650,
-        "bytes": 247014
+        "lines": 6560,
+        "bytes": 242891
       },
       "dist": {
-        "jsFiles": 40,
-        "rawBytes": 440228,
-        "gzipBytes": 102048,
-        "brotliBytes": 82132,
+        "jsFiles": 43,
+        "rawBytes": 427114,
+        "gzipBytes": 98627,
+        "brotliBytes": 74946,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2762,6 +2764,7 @@
           "tests/integration/physics-animation-scene-ecs.test.ts",
           "tests/performance/system-baselines.ts",
           "tests/reports/browser-entry-purity.json",
+          "tests/reports/custom-narrow-phase-delete-final.json",
           "tests/reports/descriptor-physics-delete-final.json",
           "tests/reports/final-subsystem-ownership.json",
           "tests/reports/navigation-legacy-delete-final.json",
@@ -2832,7 +2835,7 @@
         "source": 49,
         "dynamicImport": 8,
         "route": 11,
-        "fixture": 29,
+        "fixture": 30,
         "cliOrGenerator": 8,
         "docs": 32,
         "externalConsumer": 0
@@ -2840,7 +2843,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 25,
-        "testMentions": 29,
+        "testMentions": 30,
         "docsMentions": 32
       }
     },
@@ -2850,14 +2853,14 @@
       "published": true,
       "disposition": "EXTERNAL-ADAPTER",
       "source": {
-        "lines": 351,
-        "bytes": 20080
+        "lines": 355,
+        "bytes": 20386
       },
       "dist": {
         "jsFiles": 1,
-        "rawBytes": 16115,
-        "gzipBytes": 4121,
-        "brotliBytes": 3659,
+        "rawBytes": 16433,
+        "gzipBytes": 4254,
+        "brotliBytes": 3760,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -2870,6 +2873,7 @@
       "consumers": {
         "source": [
           "packages/physics/src/PhysicsWorld.ts",
+          "tests/browser/example-dev-server.ts",
           "tests/browser/optional-rapier-physics.spec.ts",
           "tests/unit/physics-rapier/optional-boundary.test.ts",
           "tests/unit/physics-rapier/rapier-adapter.test.ts",
@@ -2885,6 +2889,7 @@
         ],
         "route": [],
         "fixture": [
+          "tests/browser/example-dev-server.ts",
           "tests/browser/optional-rapier-physics.spec.ts",
           "tests/reports/browser-entry-purity.json",
           "tests/reports/final-subsystem-ownership.json",
@@ -2909,10 +2914,10 @@
         "externalConsumer": []
       },
       "consumerCounts": {
-        "source": 9,
+        "source": 10,
         "dynamicImport": 2,
         "route": 0,
-        "fixture": 7,
+        "fixture": 8,
         "cliOrGenerator": 3,
         "docs": 6,
         "externalConsumer": 0
@@ -2920,7 +2925,7 @@
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 1,
-        "testMentions": 7,
+        "testMentions": 8,
         "docsMentions": 6
       }
     },
@@ -3157,10 +3162,10 @@
         "bytes": 2307232
       },
       "dist": {
-        "jsFiles": 315,
-        "rawBytes": 2143580,
-        "gzipBytes": 390609,
-        "brotliBytes": 278070,
+        "jsFiles": 320,
+        "rawBytes": 2175875,
+        "gzipBytes": 391558,
+        "brotliBytes": 278220,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -3982,9 +3987,9 @@
       },
       "dist": {
         "jsFiles": 31,
-        "rawBytes": 193434,
-        "gzipBytes": 39403,
-        "brotliBytes": 33143,
+        "rawBytes": 192772,
+        "gzipBytes": 39269,
+        "brotliBytes": 33081,
         "caveat": "sum of built JS, not a tree-shaken application workload"
       },
       "publicExports": [
@@ -4042,6 +4047,7 @@
           "tools/ecs-scripting-compatibility/index.ts"
         ],
         "docs": [
+          "1.6-FINAL-PRD-Finishes.md",
           "docs/api/editor-visual-scripting.md",
           "docs/api/public-api.md",
           "docs/architecture/adr/0007-ecs-and-scripting-are-optional-compatibility-layers.md",
@@ -4057,14 +4063,14 @@
         "route": 2,
         "fixture": 12,
         "cliOrGenerator": 4,
-        "docs": 6,
+        "docs": 7,
         "externalConsumer": 0
       },
       "zeroSourceConsumers": false,
       "maintenanceCost": {
         "sourceFiles": 21,
         "testMentions": 12,
-        "docsMentions": 6
+        "docsMentions": 7
       }
     },
     {
@@ -4361,9 +4367,9 @@
       "bytes": 269457,
       "compiledCost": {
         "compiledFiles": 43,
-        "rawBytes": 215987,
-        "gzipBytes": 49680,
-        "brotliBytes": 41479,
+        "rawBytes": 215897,
+        "gzipBytes": 49668,
+        "brotliBytes": 41497,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -4846,9 +4852,9 @@
       "bytes": 656148,
       "compiledCost": {
         "compiledFiles": 61,
-        "rawBytes": 539471,
-        "gzipBytes": 102750,
-        "brotliBytes": 81356,
+        "rawBytes": 539155,
+        "gzipBytes": 102708,
+        "brotliBytes": 81277,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -5113,9 +5119,9 @@
       "bytes": 55494,
       "compiledCost": {
         "compiledFiles": 16,
-        "rawBytes": 39278,
-        "gzipBytes": 8464,
-        "brotliBytes": 7539,
+        "rawBytes": 42053,
+        "gzipBytes": 9119,
+        "brotliBytes": 8088,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -5196,9 +5202,9 @@
       "bytes": 386699,
       "compiledCost": {
         "compiledFiles": 31,
-        "rawBytes": 333698,
-        "gzipBytes": 77735,
-        "brotliBytes": 63713,
+        "rawBytes": 333826,
+        "gzipBytes": 77773,
+        "brotliBytes": 63795,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -5716,6 +5722,7 @@
         "packages/engine/src/agent-api/PublishingPipeline.ts",
         "packages/engine/src/agent-api/VisemeController.ts",
         "packages/engine/src/agent-api/index.ts",
+        "packages/engine/src/agent-api/media-node.ts",
         "packages/environments/package.json",
         "packages/input/README.md",
         "packages/input/package.json",
@@ -5799,6 +5806,7 @@
         "tests/performance/system-baselines.ts",
         "tests/reports/audio-backend-bakeoff/report.json",
         "tests/reports/current-threejs-baseline.json",
+        "tests/reports/custom-narrow-phase-delete-final.json",
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-editor-rendering-delete-final.json",
@@ -5995,7 +6003,7 @@
         "workers/asset-index-cron/src/index.ts",
         "workers/asset-index-cron/tsconfig.json"
       ],
-      "maintenanceReferenceCount": 792
+      "maintenanceReferenceCount": 794
     },
     {
       "id": "controls-general",
@@ -6439,6 +6447,7 @@
         "tests/fixtures/showcase-spec/turbo-drift-racing.json",
         "tests/fixtures/showcase-spec/webgpu-overclaim.json",
         "tests/fixtures/showcase-spec/webgpu-particle-lab.json",
+        "tests/reports/custom-narrow-phase-delete-final.json",
         "tests/reports/descriptor-assets-delete-final.json",
         "tests/reports/descriptor-audio-delete-final.json",
         "tests/reports/descriptor-editor-rendering-delete-final.json",
@@ -6512,7 +6521,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 209
+      "maintenanceReferenceCount": 210
     },
     {
       "id": "debug-general",
@@ -6795,9 +6804,9 @@
       "bytes": 278971,
       "compiledCost": {
         "compiledFiles": 45,
-        "rawBytes": 223490,
-        "gzipBytes": 47379,
-        "brotliBytes": 38858,
+        "rawBytes": 223393,
+        "gzipBytes": 47350,
+        "brotliBytes": 38814,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -6946,6 +6955,7 @@
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
+        "1.6-FINAL-PRD-Finishes.md",
         "Aura3D-1.6-Architecture-Decision.md",
         "Aura3D-1.6-Replatform-PRD.md",
         "docs/api/prompt-animation.md",
@@ -6958,7 +6968,7 @@
         "tests/unit/runtime-edge-coverage.test.ts",
         "tools/final-subsystem-ownership/index.mjs"
       ],
-      "maintenanceReferenceCount": 11
+      "maintenanceReferenceCount": 12
     },
     {
       "id": "engine-general",
@@ -7073,13 +7083,13 @@
         "packages/engine/src/threejs-example-parity/FlagshipFoundation.ts",
         "packages/engine/src/threejs-example-parity/index.ts"
       ],
-      "lines": 54793,
-      "bytes": 2242676,
+      "lines": 54796,
+      "bytes": 2242728,
       "compiledCost": {
         "compiledFiles": 105,
-        "rawBytes": 1722551,
-        "gzipBytes": 380791,
-        "brotliBytes": 295118,
+        "rawBytes": 1724303,
+        "gzipBytes": 381190,
+        "brotliBytes": 295464,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -8025,10 +8035,10 @@
       "lines": 464,
       "bytes": 19993,
       "compiledCost": {
-        "compiledFiles": 8,
-        "rawBytes": 12251,
-        "gzipBytes": 3050,
-        "brotliBytes": 2672,
+        "compiledFiles": 9,
+        "rawBytes": 12311,
+        "gzipBytes": 3057,
+        "brotliBytes": 2681,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -8750,6 +8760,9 @@
         "tests/templates/template-verification.test.ts",
         "tests/templates/vitest.config.ts",
         "tests/unit/agent-api/agent-api.test.ts",
+        "tests/unit/agent-api/animation-export-adapters.test.ts",
+        "tests/unit/agent-api/animation-production-pipeline.test.ts",
+        "tests/unit/agent-api/animation-stretch-adapters.test.ts",
         "tests/unit/agent-api/aura-app-handle.test.ts",
         "tests/unit/agent-api/canvas2d-is-diagnostic-only.test.ts",
         "tests/unit/agent-api/ffmpeg-frame-encoder.test.ts",
@@ -8760,6 +8773,7 @@
         "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
         "tests/unit/agent-api/public-example-boundary.test.ts",
         "tests/unit/agent-api/runtime-node-handle.test.ts",
+        "tests/unit/animation-engine/aura3d107-agent-api.test.ts",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
         "tests/unit/animation-studio/fidelity-tiering.test.ts",
         "tests/unit/animation-studio/hifi-cast-validate.test.ts",
@@ -8858,6 +8872,8 @@
         "tests/unit/physics/coulomb-friction.test.ts",
         "tests/unit/physics/native-angular-contact.test.ts",
         "tests/unit/physics/public-physics-runtime.test.ts",
+        "tests/unit/physics/rapier-collider-material.test.ts",
+        "tests/unit/physics/rapier-shape-coverage.test.ts",
         "tests/unit/physics/scene-physics-bridge.test.ts",
         "tests/unit/physics/single-solver-ownership.test.ts",
         "tests/unit/physics/skyline-real-level-motion.test.ts",
@@ -9368,7 +9384,7 @@
         "vitest.config.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 1335
+      "maintenanceReferenceCount": 1341
     },
     {
       "id": "input-general",
@@ -9405,10 +9421,10 @@
       "lines": 1983,
       "bytes": 68337,
       "compiledCost": {
-        "compiledFiles": 23,
-        "rawBytes": 51307,
-        "gzipBytes": 10744,
-        "brotliBytes": 9470,
+        "compiledFiles": 24,
+        "rawBytes": 52229,
+        "gzipBytes": 10958,
+        "brotliBytes": 9648,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -9510,10 +9526,10 @@
       "lines": 339,
       "bytes": 14096,
       "compiledCost": {
-        "compiledFiles": 9,
-        "rawBytes": 10898,
-        "gzipBytes": 2760,
-        "brotliBytes": 2449,
+        "compiledFiles": 10,
+        "rawBytes": 10508,
+        "gzipBytes": 2765,
+        "brotliBytes": 2453,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -10237,6 +10253,9 @@
         "tests/templates/template-verification.test.ts",
         "tests/templates/vitest.config.ts",
         "tests/unit/agent-api/agent-api.test.ts",
+        "tests/unit/agent-api/animation-export-adapters.test.ts",
+        "tests/unit/agent-api/animation-production-pipeline.test.ts",
+        "tests/unit/agent-api/animation-stretch-adapters.test.ts",
         "tests/unit/agent-api/aura-app-handle.test.ts",
         "tests/unit/agent-api/canvas2d-is-diagnostic-only.test.ts",
         "tests/unit/agent-api/ffmpeg-frame-encoder.test.ts",
@@ -10247,6 +10266,7 @@
         "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
         "tests/unit/agent-api/public-example-boundary.test.ts",
         "tests/unit/agent-api/runtime-node-handle.test.ts",
+        "tests/unit/animation-engine/aura3d107-agent-api.test.ts",
         "tests/unit/animation-studio/clip-decision-log.test.ts",
         "tests/unit/animation-studio/fidelity-tiering.test.ts",
         "tests/unit/animation-studio/hifi-cast-validate.test.ts",
@@ -10345,6 +10365,8 @@
         "tests/unit/physics/coulomb-friction.test.ts",
         "tests/unit/physics/native-angular-contact.test.ts",
         "tests/unit/physics/public-physics-runtime.test.ts",
+        "tests/unit/physics/rapier-collider-material.test.ts",
+        "tests/unit/physics/rapier-shape-coverage.test.ts",
         "tests/unit/physics/scene-physics-bridge.test.ts",
         "tests/unit/physics/single-solver-ownership.test.ts",
         "tests/unit/physics/skyline-real-level-motion.test.ts",
@@ -10855,7 +10877,7 @@
         "vitest.config.ts",
         "workers/asset-index-cron/src/store.ts"
       ],
-      "maintenanceReferenceCount": 1337
+      "maintenanceReferenceCount": 1343
     },
     {
       "id": "math-general",
@@ -11083,10 +11105,10 @@
       "lines": 239,
       "bytes": 10460,
       "compiledCost": {
-        "compiledFiles": 0,
-        "rawBytes": 0,
-        "gzipBytes": 0,
-        "brotliBytes": 0,
+        "compiledFiles": 1,
+        "rawBytes": 8195,
+        "gzipBytes": 2197,
+        "brotliBytes": 1899,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [],
@@ -11107,10 +11129,10 @@
       "lines": 1597,
       "bytes": 60627,
       "compiledCost": {
-        "compiledFiles": 2,
-        "rawBytes": 25980,
-        "gzipBytes": 5075,
-        "brotliBytes": 4508,
+        "compiledFiles": 4,
+        "rawBytes": 49784,
+        "gzipBytes": 11038,
+        "brotliBytes": 9688,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -11124,8 +11146,8 @@
         "packages/engine/src/agent-api/index.ts",
         "packages/physics/src/FightingCharacterController.ts",
         "packages/physics/src/index.ts",
-        "packages/physics/src/world.ts",
         "tests/browser/runtime-external-parity.spec.ts",
+        "tests/reports/custom-narrow-phase-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/physical-character-controller-delete-final.json",
@@ -11133,11 +11155,12 @@
         "tests/unit/physics/backend-neutral-contract.test.ts",
         "tests/unit/physics/kinematic-fighting-controller.test.ts",
         "tools/external-parity-runtime/index.ts",
+        "tools/final-subsystem-ownership/adr-registry.json",
         "tools/final-subsystem-ownership/index.mjs",
         "tools/foundation-runtime/index.ts",
         "tools/product-remediation/build-physics-audit.mjs"
       ],
-      "maintenanceReferenceCount": 22
+      "maintenanceReferenceCount": 23
     },
     {
       "id": "physics-general",
@@ -11157,13 +11180,13 @@
         "packages/physics/src/solverless.ts",
         "packages/physics/src/world.ts"
       ],
-      "lines": 2536,
-      "bytes": 91140,
+      "lines": 2519,
+      "bytes": 89903,
       "compiledCost": {
-        "compiledFiles": 9,
-        "rawBytes": 70908,
-        "gzipBytes": 16083,
-        "brotliBytes": 13895,
+        "compiledFiles": 10,
+        "rawBytes": 74406,
+        "gzipBytes": 16956,
+        "brotliBytes": 14571,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -11470,6 +11493,7 @@
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
         "tests/reports/browser-entry-purity.json",
+        "tests/reports/custom-narrow-phase-delete-final.json",
         "tests/reports/descriptor-editor-rendering-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/navigation-legacy-delete-final.json",
@@ -11531,6 +11555,8 @@
         "tests/unit/physics/physics-runtime.test.ts",
         "tests/unit/physics/public-joints.test.ts",
         "tests/unit/physics/public-physics-runtime.test.ts",
+        "tests/unit/physics/rapier-collider-material.test.ts",
+        "tests/unit/physics/rapier-shape-coverage.test.ts",
         "tests/unit/physics/scene-physics-bridge.test.ts",
         "tests/unit/physics/single-solver-ownership.test.ts",
         "tests/unit/physics/stress-scenes.test.ts",
@@ -11574,6 +11600,7 @@
         "tools/external-parity-editor/index.ts",
         "tools/external-parity-production-readiness/index.ts",
         "tools/external-parity-unity-unreal-parity/index.ts",
+        "tools/final-subsystem-ownership/adr-registry.json",
         "tools/game-runtime-prd-readiness/index.ts",
         "tools/game-runtime-readiness/index.ts",
         "tools/marketing-truth/index.ts",
@@ -11596,7 +11623,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 428
+      "maintenanceReferenceCount": 432
     },
     {
       "id": "physics-rapier-contract",
@@ -11617,16 +11644,17 @@
         "packages/physics/src/SurfaceQuery.ts",
         "packages/physics/src/TimeOfImpact.ts"
       ],
-      "lines": 2517,
-      "bytes": 95247,
+      "lines": 2444,
+      "bytes": 92361,
       "compiledCost": {
         "compiledFiles": 11,
-        "rawBytes": 119549,
-        "gzipBytes": 27274,
-        "brotliBytes": 23160,
+        "rawBytes": 79133,
+        "gzipBytes": 17336,
+        "brotliBytes": 14948,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
+        "1.6-FINAL-PRD-Finishes.md",
         "Aura3D-1.6-Architecture-Decision.md",
         "Aura3D-1.6-Replatform-PRD.md",
         "GameEngine-PRD.md",
@@ -11711,13 +11739,13 @@
         "tests/browser/fixtures/workspace-vite-imports/main.ts",
         "tests/browser/physics-browser-harness.ts",
         "tests/browser/physics-browser.spec.ts",
-        "tests/clean-room/physics-puzzle/src/main.ts",
         "tests/clean-room/physics-sandbox/src/main.ts",
         "tests/clean-room/product-configurator/src/main.ts",
         "tests/integration/physics-animation-scene-ecs.test.ts",
         "tests/performance/physics-animation-baseline.ts",
         "tests/performance/physics-comparison-baseline.ts",
         "tests/performance/system-baselines.ts",
+        "tests/reports/custom-narrow-phase-delete-final.json",
         "tests/reports/final-subsystem-ownership.json",
         "tests/reports/navigation-legacy-delete-final.json",
         "tests/reports/physical-character-controller-delete-final.json",
@@ -11737,6 +11765,8 @@
         "tests/unit/physics/physics-runtime.test.ts",
         "tests/unit/physics/public-joints.test.ts",
         "tests/unit/physics/public-physics-runtime.test.ts",
+        "tests/unit/physics/rapier-collider-material.test.ts",
+        "tests/unit/physics/rapier-shape-coverage.test.ts",
         "tests/unit/physics/scene-physics-bridge.test.ts",
         "tests/unit/physics/single-solver-ownership.test.ts",
         "tests/unit/physics/stress-scenes.test.ts",
@@ -11757,7 +11787,7 @@
         "tools/requirements-trace/index.ts",
         "tools/superiority-physics-fidelity/index.ts"
       ],
-      "maintenanceReferenceCount": 129
+      "maintenanceReferenceCount": 132
     },
     {
       "id": "physics-rapier-general",
@@ -11768,13 +11798,13 @@
       "files": [
         "packages/physics-rapier/src/index.ts"
       ],
-      "lines": 351,
-      "bytes": 20080,
+      "lines": 355,
+      "bytes": 20386,
       "compiledCost": {
         "compiledFiles": 1,
-        "rawBytes": 16115,
-        "gzipBytes": 4121,
-        "brotliBytes": 3659,
+        "rawBytes": 16433,
+        "gzipBytes": 4254,
+        "brotliBytes": 3760,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [],
@@ -12113,10 +12143,10 @@
       "lines": 54782,
       "bytes": 2307232,
       "compiledCost": {
-        "compiledFiles": 247,
-        "rawBytes": 1965471,
-        "gzipBytes": 370830,
-        "brotliBytes": 264880,
+        "compiledFiles": 252,
+        "rawBytes": 1997766,
+        "gzipBytes": 378203,
+        "brotliBytes": 270370,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -12781,6 +12811,7 @@
         "tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts",
         "tests/unit/environments/three-compat-environments.test.ts",
         "tests/unit/game-runtime/runtime-node-frame-loop-source-contract.test.ts",
+        "tests/unit/physics/rapier-collider-material.test.ts",
         "tests/unit/public-api-contracts.test.ts",
         "tests/unit/react-adapter/react-adapter.test.ts",
         "tests/unit/rendering/animation-rendering.test.ts",
@@ -13019,7 +13050,7 @@
         "tsconfig.base.json",
         "vitest.config.ts"
       ],
-      "maintenanceReferenceCount": 898
+      "maintenanceReferenceCount": 899
     },
     {
       "id": "scene-general",
@@ -13617,9 +13648,9 @@
       "bytes": 152491,
       "compiledCost": {
         "compiledFiles": 21,
-        "rawBytes": 126979,
-        "gzipBytes": 25121,
-        "brotliBytes": 21652,
+        "rawBytes": 126317,
+        "gzipBytes": 24989,
+        "brotliBytes": 21529,
         "caveat": "concatenated built modules before application tree-shaking"
       },
       "maintenanceReferences": [
@@ -13789,21 +13820,25 @@
       "modified": "2026-08-08T22:04:29.667Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git+https://github.com/dimforge/rapier.git",
+      "maintainers": [
+        "sebcrozet <developer@crozet.re>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
+        "types": "rapier.d.ts",
+        "module": "rapier.js",
         "main": null,
-        "sideEffects": null,
+        "sideEffects": [
+          "./*.js"
+        ],
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -13830,7 +13865,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "@dimforge/rapier3d-compat",
@@ -13840,21 +13875,23 @@
       "modified": "2026-08-08T22:07:07.640Z",
       "ageDays": 0,
       "freshness": "active",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git+https://github.com/dimforge/rapier.git",
+      "maintainers": [
+        "sebcrozet <developer@crozet.re>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
-        "sideEffects": null,
+        "types": "dist/rapier.d.ts",
+        "module": "dist/rapier.mjs",
+        "main": "dist/rapier.cjs",
+        "sideEffects": false,
         "summary": "ESM/WASM; initialization and lazy-load topology require Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -13883,7 +13920,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "recast-navigation",
@@ -13894,20 +13931,25 @@
       "ageDays": 185,
       "freshness": "active",
       "repository": null,
-      "maintainers": null,
-      "dependencies": {},
+      "maintainers": [
+        "isaacmason <isaac@isaacmason.com>"
+      ],
+      "dependencies": {
+        "@recast-navigation/core": "0.43.1",
+        "@recast-navigation/generators": "0.43.1"
+      },
       "moduleShape": {
-        "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
+        "type": "module",
+        "types": "./index.d.ts",
+        "module": "./index.mjs",
+        "main": "./index.mjs",
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -13936,7 +13978,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "howler",
@@ -13946,21 +13988,23 @@
       "modified": "2023-09-19T14:59:40.275Z",
       "ageDays": 1054,
       "freshness": "aging",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git://github.com/goldfire/howler.js.git",
+      "maintainers": [
+        "goldfire <james@goldfirestudios.com>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
         "types": null,
         "module": null,
-        "main": null,
+        "main": "dist/howler.js",
         "sideEffects": null,
         "summary": "legacy main bundle; browser audio singleton behavior requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 2,
         "license": 3,
-        "types": null,
+        "types": 1,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -13989,7 +14033,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "yuka",
@@ -13999,21 +14043,23 @@
       "modified": "2022-09-17T08:45:45.072Z",
       "ageDays": 1421,
       "freshness": "dormant-risk",
-      "repository": null,
-      "maintainers": null,
+      "repository": "git+https://github.com/Mugen87/yuka.git",
+      "maintainers": [
+        "mugen87 <michael.herzog@human-interactive.org>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
         "types": null,
-        "module": null,
-        "main": null,
+        "module": "build/yuka.module.js",
+        "main": "build/yuka.js",
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": null,
+        "types": 1,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14042,7 +14088,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "bitecs",
@@ -14052,21 +14098,23 @@
       "modified": "2025-12-06T23:15:32.228Z",
       "ageDays": 245,
       "freshness": "active",
-      "repository": null,
-      "maintainers": null,
+      "repository": "https://github.com/NateTheGreatt/bitECS",
+      "maintainers": [
+        "natethegreatt <natelawl@gmail.com>"
+      ],
       "dependencies": {},
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
+        "types": "./dist/core/index.d.ts",
+        "module": "./dist/core/index.min.mjs",
+        "main": "./dist/core/index.min.cjs",
         "sideEffects": null,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 3,
         "license": 1,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14095,7 +14143,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     },
     {
       "name": "miniplex",
@@ -14106,20 +14154,26 @@
       "ageDays": 1119,
       "freshness": "dormant-risk",
       "repository": null,
-      "maintainers": null,
-      "dependencies": {},
+      "maintainers": [
+        "hendrik.mans <hendrik@mans.de>"
+      ],
+      "dependencies": {
+        "@hmans/id": "^0.0.1",
+        "@hmans/queue": "^0.0.1",
+        "@miniplex/bucket": "2.0.0"
+      },
       "moduleShape": {
         "type": null,
-        "types": null,
-        "module": null,
-        "main": null,
-        "sideEffects": null,
+        "types": "dist/miniplex.cjs.d.ts",
+        "module": "dist/miniplex.esm.js",
+        "main": "dist/miniplex.cjs.js",
+        "sideEffects": false,
         "summary": "package metadata locked; runtime shape requires Phase 2 measurement"
       },
       "scoring": {
         "maintenance": 0,
         "license": 3,
-        "types": null,
+        "types": 3,
         "deterministicBehavior": "Phase 2 workload measurement required",
         "disposalOwnership": "Phase 2 repeated-mount measurement required",
         "browserNodeWorkerSupport": "Phase 2 bundle/runtime measurement required",
@@ -14148,7 +14202,7 @@
           "vulnerable": false
         }
       },
-      "onlineLockMatches": null
+      "onlineLockMatches": true
     }
   ],
   "overlaps": [
@@ -14201,6 +14255,8 @@
     "adrMappings": {
       "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
       "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+      "packages/physics/src/ArcadeCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
+      "packages/physics/src/FightingCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
       "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
       "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
       "packages/input/src/InputValueProcessors.ts": "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md"

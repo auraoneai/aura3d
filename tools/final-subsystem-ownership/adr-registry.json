@@ -1,9 +1,15 @@
 {
   "$schema": "aura3d.final-subsystem-adr-registry/1.0",
   "baselineCommit": "ce01b95f6a200175b3db7d47f30f8e6fea911018",
+  "addedPackages": {
+    "packages/navigation-recast/package.json": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+    "packages/physics-rapier/package.json": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md"
+  },
   "addedPackageSource": {
     "packages/physics-rapier/src/index.ts": "docs/architecture/adr/0004-physical-simulation-is-optional-rapier.md",
     "packages/navigation-recast/src/index.ts": "docs/architecture/adr/0005-navigation-is-optional-recast-detour.md",
+    "packages/physics/src/ArcadeCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
+    "packages/physics/src/FightingCharacterController.ts": "docs/architecture/adr/0003-game-kits-use-shared-runtime-by-capability.md",
     "packages/materials/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
     "packages/environments/src/node.ts": "docs/architecture/adr/0008-browser-roots-and-node-utilities-are-separated.md",
     "packages/input/src/InputValueProcessors.ts": "docs/architecture/adr/0009-runtime-descriptors-cannot-claim-capabilities.md"
