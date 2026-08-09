@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, relative, resolve } from "node:path";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -24,6 +24,7 @@ test.describe("Aura3D 2.0 exhaustive example visual audit", () => {
     const filter = process.env.A3D_VISUAL_AUDIT_FILTER;
     const allEntries = discoverIndexFiles(SOURCE_ROOT);
     const entries = filter ? allEntries.filter((entry) => relative(SOURCE_ROOT, entry).includes(filter)) : allEntries;
+    if (!filter) clearPriorExampleCaptures();
     const results = [];
     for (const indexFile of entries) {
       results.push(await inspectExample(browser, server.origin, indexFile));
@@ -174,4 +175,11 @@ function discoverIndexFiles(root: string): string[] {
   };
   visit(root);
   return files.sort();
+}
+
+function clearPriorExampleCaptures(): void {
+  for (const entry of readdirSync(REPORT_ROOT, { withFileTypes: true })) {
+    if (!entry.isFile() || !/^examples--.+--(?:page|canvas)\.png$/.test(entry.name)) continue;
+    unlinkSync(resolve(REPORT_ROOT, entry.name));
+  }
 }
