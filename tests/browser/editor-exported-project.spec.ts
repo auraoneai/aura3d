@@ -13,7 +13,7 @@ test.describe("editor exported project", () => {
   });
 
   test("runs the checked-in editor-authored static project without loading the editor app", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/editor-authored-project/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/editor-authored-project/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
 
     const result = await page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__);
@@ -72,7 +72,7 @@ test.describe("editor exported project", () => {
   });
 
   test("runs the checked-in editor-authored game export with objective and follow camera evidence", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/editor-authored-game/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/editor-authored-game/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.status === "ready");
 
     const initial = await page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__);

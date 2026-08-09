@@ -45,10 +45,10 @@ const baseReport = createSubsystemReport(root, {
     },
     {
       id: "editor-authored-export",
-      description: "Editor-authored exported app example exists.",
-      passed: pathExists(root, "examples/editor-authored-project/index.html"),
-      evidencePaths: ["examples/editor-authored-project/index.html"],
-      blocker: "Editor-authored exported app example is missing.",
+      description: "Internal editor-authored static-export serialization fixture exists.",
+      passed: pathExists(root, "tests/fixtures/editor-authored-project/index.html"),
+      evidencePaths: ["tests/fixtures/editor-authored-project/index.html"],
+      blocker: "Internal editor-authored static-export fixture is missing.",
     },
     {
       id: "foundation-end-to-end-authoring-report",
