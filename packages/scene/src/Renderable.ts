@@ -1,5 +1,12 @@
 import { ValidationError } from "@aura3d/core";
 
+/**
+ * Scene-contract ceiling for a renderable joint palette. WebGL2 routes palettes
+ * above the 96-joint uniform-array threshold through the renderer's RGBA32F
+ * data-texture path, whose validated capacity is 1,024 joints.
+ */
+export const MAX_RENDERABLE_SKINNING_JOINTS = 1024;
+
 export interface RenderableDescriptor {
   geometry: string;
   material: string;
@@ -38,8 +45,8 @@ export class Renderable {
     this.castShadow = descriptor.castShadow ?? true;
     this.receiveShadow = descriptor.receiveShadow ?? true;
     if (descriptor.skinning !== undefined) {
-      if (!Number.isInteger(descriptor.skinning.jointCount) || descriptor.skinning.jointCount <= 0 || descriptor.skinning.jointCount > 96) {
-        throw new ValidationError("RENDERABLE_SKINNING", "Renderable skinning jointCount must be an integer in [1, 96].");
+      if (!Number.isInteger(descriptor.skinning.jointCount) || descriptor.skinning.jointCount <= 0 || descriptor.skinning.jointCount > MAX_RENDERABLE_SKINNING_JOINTS) {
+        throw new ValidationError("RENDERABLE_SKINNING", `Renderable skinning jointCount must be an integer in [1, ${MAX_RENDERABLE_SKINNING_JOINTS}].`);
       }
       if (descriptor.skinning.matrices.length !== descriptor.skinning.jointCount * 16 || !Array.from(descriptor.skinning.matrices).every(Number.isFinite)) {
         throw new ValidationError("RENDERABLE_SKINNING", "Renderable skinning matrices must contain one finite mat4 per joint.");

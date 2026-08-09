@@ -1,5 +1,5 @@
 import { AnimationAction, AnimationClip, AnimationMixer, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
-import { invertMat4, multiplyMat4, Renderable, Scene, transformPoint, type Mat4, type SceneNode, type Vec3 } from "@aura3d/scene";
+import { invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Mat4, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
 export interface GLTFSceneAnimationRuntimeOptions {
@@ -783,7 +783,7 @@ export class GLTFSceneAnimationRuntime {
         if (!renderable.skinning) continue;
         const mesh = meshesByName.get(renderable.geometry);
         const skin = mesh?.skinIndex === undefined ? undefined : this.options.asset.skins[mesh.skinIndex];
-        if (!mesh || !skin || skin.joints.length > 96) continue;
+        if (!mesh || !skin || skin.joints.length > MAX_RENDERABLE_SKINNING_JOINTS) continue;
         this.skinningBindings.push({ node, renderable, mesh, skin });
       }
     }

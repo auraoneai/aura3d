@@ -6,6 +6,7 @@ import {
   PerspectiveCamera,
   PointLight,
   Renderable,
+  MAX_RENDERABLE_SKINNING_JOINTS,
   Scene,
   SpotLight
 } from "@aura3d/scene";
@@ -151,5 +152,16 @@ describe("scene bounds, lights, and renderable contracts", () => {
   it("rejects incomplete renderable handles", () => {
     expect(() => new Renderable({ geometry: "", material: "mat" })).toThrow(/geometry/i);
     expect(() => new Renderable({ geometry: "geo", material: "" })).toThrow(/material/i);
+    const overUniformPalette = new Renderable({
+      geometry: "skinned-geo",
+      material: "skinned-mat",
+      skinning: { jointCount: 137, matrices: new Float32Array(137 * 16) }
+    });
+    expect(overUniformPalette.skinning?.jointCount).toBe(137);
+    expect(() => new Renderable({
+      geometry: "oversized-skinned-geo",
+      material: "skinned-mat",
+      skinning: { jointCount: MAX_RENDERABLE_SKINNING_JOINTS + 1, matrices: new Float32Array((MAX_RENDERABLE_SKINNING_JOINTS + 1) * 16) }
+    })).toThrow(new RegExp(`\\[1, ${MAX_RENDERABLE_SKINNING_JOINTS}\\]`));
   });
 });

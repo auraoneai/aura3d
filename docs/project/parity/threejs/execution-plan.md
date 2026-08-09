@@ -87,9 +87,11 @@ Deliverables:
 
 Historical retained goal: remove the old uniform-array cap by uploading the
 matrix palette as a float data texture and support `JOINTS_1` / `WEIGHTS_1` as
-real extra influences. This construction track is removed from the active
-release by `scope-decisions.md`; the current bounded contract is 96 joints and
-four influences.
+real extra influences. The earlier exclusion was superseded and the work is now
+implemented, as recorded in `scope-decisions.md`: WebGL2 keeps a 96-joint
+uniform-array fast path, routes larger palettes through an RGBA32F data texture
+up to the validated 1,024-joint ceiling, and consumes up to eight influences
+from `JOINTS_0`/`WEIGHTS_0` plus `JOINTS_1`/`WEIGHTS_1`.
 
 Deliverables:
 - Palette upload path selects uniform arrays or a data texture, with the choice in diagnostics.
