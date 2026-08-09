@@ -43,7 +43,7 @@ test.describe("Asset Studio Pro", () => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), screenshotDir), { recursive: true });
 
-    await page.goto(`${server.origin}/examples/external-asset-gallery/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-asset-gallery/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForAssetState(page, "external-asset-gallery");
     await page.locator("[data-testid='hr4-asset-canvas']").screenshot({ path: `${screenshotDir}/external-asset-gallery.png` });
 

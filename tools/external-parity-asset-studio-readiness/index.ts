@@ -6,7 +6,7 @@ interface Check { readonly id: string; readonly pass: boolean; readonly detail: 
 const requiredFiles = [
   "apps/asset-studio-pro/index.html",
   "apps/asset-studio-pro/src/main.ts",
-  "examples/external-asset-gallery/index.html",
+  "tests/fixtures/external-asset-gallery/index.html",
   "examples/external-asset-gallery/main.ts",
   "examples/external-asset-gallery/ExternalAssetGallery.ts",
   "fixtures/external-parity/gltf-corpus/manifest.json",

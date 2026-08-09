@@ -19,7 +19,7 @@ test.describe("ExternalParity interactive showcase", () => {
   test("supports camera, selection, and variant interaction in example and app", async ({ page }) => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), screenshotDir), { recursive: true });
-    await page.goto(`${server.origin}/examples/external-interactive-showcase/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-interactive-showcase/index.html`, { waitUntil: "domcontentloaded" });
     const example = await waitForState(page, "external-interactive-showcase");
     await page.locator("[data-testid='hr4-interactive-canvas']").screenshot({ path: `${screenshotDir}/external-interactive-showcase.png` });
     await page.getByTestId("hr4-interactive-camera").fill("42");

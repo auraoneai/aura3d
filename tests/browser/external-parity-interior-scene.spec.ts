@@ -45,7 +45,7 @@ test.describe("ExternalParity interior scene", () => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), screenshotDir), { recursive: true });
 
-    await page.goto(`${server.origin}/examples/external-interior-scene/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-interior-scene/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForInteriorState(page, "external-interior-scene");
     await page.locator("[data-testid='hr4-scene-canvas']").screenshot({ path: `${screenshotDir}/external-interior-scene.png` });
 

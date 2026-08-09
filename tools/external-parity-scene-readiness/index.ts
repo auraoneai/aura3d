@@ -8,7 +8,7 @@ const requiredFiles = [
   "fixtures/external-parity/scenes/interior-gallery/manifest.json",
   "apps/scene-studio-pro/index.html",
   "apps/scene-studio-pro/src/main.ts",
-  "examples/external-interior-scene/index.html",
+  "tests/fixtures/external-interior-scene/index.html",
   "examples/external-interior-scene/main.ts",
   "examples/external-interior-scene/ExternalInteriorScene.ts",
   "benchmarks/external-parity/aura3d/interior-scene.ts",

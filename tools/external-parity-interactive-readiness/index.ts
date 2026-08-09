@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 
 type Obj = Record<string, unknown>;
 const checks: { id: string; pass: boolean; detail: string }[] = [];
-const required = ["apps/interactive-showcase-pro/index.html", "apps/interactive-showcase-pro/src/main.ts", "examples/external-interactive-showcase/index.html", "examples/external-interactive-showcase/main.ts", "examples/external-interactive-showcase/ExternalInteractiveShowcase.ts", "tests/browser/external-parity-interactive-showcase.spec.ts", "tests/reports/external-parity-interactive-showcase-browser.json"] as const;
+const required = ["apps/interactive-showcase-pro/index.html", "apps/interactive-showcase-pro/src/main.ts", "tests/fixtures/external-interactive-showcase/index.html", "examples/external-interactive-showcase/main.ts", "examples/external-interactive-showcase/ExternalInteractiveShowcase.ts", "tests/browser/external-parity-interactive-showcase.spec.ts", "tests/reports/external-parity-interactive-showcase-browser.json"] as const;
 const exists = (path: string) => existsSync(resolve(path));
 const text = (path: string) => readFileSync(resolve(path), "utf8");
 const json = (path: string): Obj => JSON.parse(text(path)) as Obj;
