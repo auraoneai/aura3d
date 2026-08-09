@@ -156,7 +156,7 @@ function estimateGeometryBytes(geometryLibrary: Record<string, Geometry>): numbe
 function createStressScene(objectCount: number, materialCount: number, lightCount: number) {
   const scene = new Scene();
   const camera = scene.createPerspectiveCamera({ fovYRadians: Math.PI / 4, aspect: canvasWidth / canvasHeight, near: 0.1, far: 34 });
-  camera.transform.setPosition(0, 0, 14);
+  camera.transform.setPosition(0, 0, 10.5);
   scene.root.addChild(camera);
 
   for (let index = 0; index < lightCount; index += 1) {
@@ -176,10 +176,10 @@ function createStressScene(objectCount: number, materialCount: number, lightCoun
     const column = index % 20;
     const hiddenBand = index >= Math.floor(objectCount * 0.72);
     const x = hiddenBand ? 42 + (index % 8) * 1.4 : (column - 9.5) * 0.72;
-    const y = hiddenBand ? 0 : 2.5 - row * 0.58;
+    const y = hiddenBand ? 0 : 1.5 - row * 0.9;
     const z = hiddenBand ? -8 : -((row % 6) * 0.16);
     node.transform.setPosition(x, y, z);
-    node.transform.setScale(0.45, 0.45, 0.45);
+    node.transform.setScale(0.64, 0.64, 0.64);
     scene.root.addChild(node);
     scene.addRenderable(node, new Renderable({
       geometry: index % 5 === 0 ? "geometry:cube" : "geometry:sphere",
