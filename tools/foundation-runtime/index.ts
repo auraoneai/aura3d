@@ -75,10 +75,12 @@ const baseReport = createSubsystemReport(root, {
     },
     {
       id: "runtime-conditional-claim-boundaries",
-      description: "Runtime-only-if-claimed features are explicitly blocked unless implemented.",
-      passed: conditionalClaimBoundaries.every((entry) => entry.status === "blocked-unclaimed"),
+      description: "Conditional runtime features are either bounded-delivered with an explicit scope or blocked-unclaimed with a reason.",
+      passed: conditionalClaimBoundaries.every((entry) =>
+        (entry.status === "delivered-bounded" || entry.status === "blocked-unclaimed") && entry.reason.trim().length > 24
+      ),
       evidencePaths: ["docs/project/implementation-plan.md", "tests/reports/foundation-runtime-systems.json"],
-      blocker: "Runtime conditional claim boundaries are missing.",
+      blocker: "A runtime conditional feature lacks either a bounded-delivered scope or an explicit blocked-unclaimed reason.",
     },
     {
       id: "foundation-integrated-game-scene",

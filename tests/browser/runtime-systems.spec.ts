@@ -6,12 +6,14 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportPath = resolve(process.cwd(), "tests/reports/foundation-runtime-browser.json");
 
 type RuntimeReport = {
+  ok: boolean;
   readonly generatedAt: string;
   readonly gameSlice?: unknown;
   readonly physicsSandbox?: unknown;
 };
 
 const report: RuntimeReport = {
+  ok: false,
   generatedAt: new Date().toISOString(),
 };
 
@@ -26,6 +28,7 @@ test.describe("runtime systems", () => {
 
   test.afterAll(async () => {
     await server.close();
+    report.ok = Boolean(report.gameSlice && report.physicsSandbox);
     await mkdir(dirname(reportPath), { recursive: true });
     await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });

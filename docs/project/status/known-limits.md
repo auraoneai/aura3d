@@ -26,11 +26,15 @@ guide or README must include the narrower wording.
 ## Animation Limits
 
 - Non-skinned glTF node animation can be claimed only for routes that prove it.
-- Skinned GLB animation is not a root-public screenshot claim until a browser
-  route imports only `@aura3d/engine`, plays a real skinned asset, and produces
-  meaningful pixel deltas in the character region.
-- Morph target rendering and viseme/lip-sync claims require route-specific
-  pixel evidence.
+- Root skinned-animation evidence is bounded to routes that import only
+  `@aura3d/engine`, play a typed real skinned asset, and retain meaningful
+  character-region pixel deltas. The character animation viewer currently
+  proves that contract for one CC0 Robot Expressive GLB, not arbitrary rigs.
+- Morph rendering uses direct uniforms for small target sets and a
+  texture-backed position-and-normal delta plan for larger sets, with a
+  device-limit-driven CPU fallback. The character animation viewer proves the
+  three named Robot Expressive facial targets; broader facial rigs and
+  viseme/lip-sync behavior still require route-specific pixel evidence.
 - Counters, metadata, or camera movement are not enough to prove animated
   character motion.
 
