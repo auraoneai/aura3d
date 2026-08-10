@@ -221,7 +221,11 @@ const racingState = game.racing({
   steerRate: certifiedSteerRate
 });
 
-const opponentStartProgress = 0.12;
+// Start the rival inside the chase camera's opening sightline with enough lead
+// to prevent the launch acceleration from putting two collisionless visual
+// chassis in the same space. The old 0.12 hid it almost five scene units away;
+// 0.018 made it visible but let the player overlap it within the first second.
+const opponentStartProgress = 0.05;
 const opponentState = game.racing({
   route,
   startProgress: opponentStartProgress,
@@ -375,6 +379,15 @@ const observedVehicleGrounding = {
 };
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
 const initialOpponentPose = racingScene.toScenePose(opponentAi.snapshot(), 0.25);
+const chaseDistance = Math.max(heroFraming.distance, CAR_SCENE_HEIGHT * 5.2);
+const chaseHeight = Math.max(heroFraming.height, CAR_SCENE_HEIGHT * 2.1);
+const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
+// Keep the complete near-circuit decision space inside the chase frame. At 52°
+// the player still read well, but the projected track occupied 83.7% of the
+// viewport and correctly failed the public composition gate as a proof-harness
+// view. Sixty-two degrees retains a genre-appropriate ~19% hero height while
+// restoring visible road context around the subject.
+const chaseFov = 62;
 const racingCamera = game.racingCameraRig({
   sceneBinding: racingScene,
   focus: raceSnapshot,
@@ -387,41 +400,21 @@ const racingCamera = game.racingCameraRig({
   },
   targetNode: "racing-player-car",
   /*
-   * Chase framing serves the racing read, bounded by the gate that applies to this frame.
-   *
-   * The previous distance of 1.15 came from trying to satisfy `readabilityRuleForRole` floors -- the
-   * `vehicle` widthRatio 0.18 and the `track` 0.35/0.25/0.12 set. Those are evaluated by the asset CLI
-   * against each asset's **isolated release probe**, not against this camera, so pulling the chase
-   * camera in could never satisfy them; it only cropped the circuit down to a strip of asphalt and
-   * filled the frame with the car's rear bumper.
-   *
-   * The gate that governs this frame is `routePrimaryProbeThresholds`
-   * (`minForegroundWidth: 96`, `minForegroundHeight: 72`, `minReadabilityScore: 35`), which the subject
-   * clears comfortably. 2.6 restores the racing read: the car as foreground subject with the road
-   * receding, the horizon visible, and the opponent legible up the track.
+   * `resolveChaseFraming` solves subject occupancy, but its asset-derived eye
+   * height is only 0.31 scene units for this low car. That is a valid product
+   * probe angle and a bad racing camera: it places the lens below the circuit's
+   * catch fencing, so the fence fills the frame and the car is seen through it.
+   * A chase camera is a gameplay system, not an isolated asset probe. Keep the
+   * derived distance/side framing, but enforce a road-visibility floor above the
+   * modelled barriers. The floor is relative to the car's rendered height so it
+   * remains valid if the typed vehicle changes.
    */
-  /*
-   * Distance and height are both derived from `heroFraming`, so they satisfy the declared occupancy
-   * contract for whatever asset is bound rather than being tuned to one car.
-   *
-   * Two hand-tuned heights preceded this and both were wrong for structural reasons worth keeping on
-   * record: 0.72 looked *down* onto the roof so the body hid the wheel line, and 0.30 sat at roughly
-   * the wheels' own top edge, which made the car read as sunk into the road. `eyeHeightFraction: 0.9`
-   * expresses the actual requirement -- just above mid-body -- as a proportion of the subject, which is
-   * the form that survives an asset swap.
-   *
-   * The distance is solved from the occupancy contract, not chosen: at this FOV, holding the car at
-   * ~32% of frame height is what keeps the circuit, horizon and opponent legible around it. An earlier
-   * 1.15 came from trying to satisfy `readabilityRuleForRole` floors, which are evaluated by the asset
-   * CLI against each asset's *isolated release probe* and can never be satisfied by this camera; it
-   * only cropped the frame down to the car's rear bumper.
-   */
-  distance: heroFraming.distance,
-  height: heroFraming.height,
+  distance: chaseDistance,
+  height: chaseHeight,
   // Derived, not tuned: see `requireLowerSideFeatureVisibility` above.
   sideOffset: heroFraming.sideOffset,
-  lookAhead: 1.35,
-  fov: 54
+  lookAhead: chaseLookAhead,
+  fov: chaseFov
 });
 setupRacingPanel();
 
@@ -544,7 +537,7 @@ const app = createAuraApp("#app", {
       density: Number((0.032 * (5.4 / SCENE_SIZE)).toFixed(5)),
       intensity: 0.32
     }))
-    .add(lights.ambient({ name: "circuit sky fill", color: "#cfe6f2", intensity: 0.78 }))
+    .add(lights.ambient({ name: "circuit sky fill", color: "#e1f1fa", intensity: 1.08 }))
     .add(lights.directional({ name: "circuit daylight key", color: "#fff2dc", intensity: 2.1 })
       .position(-0.83 * SCENE_SIZE, 1.2 * SCENE_SIZE, 0.65 * SCENE_SIZE))
     .add(lights.directional({ name: "circuit cool rim", color: "#bfe4ff", intensity: 0.72 })
@@ -697,6 +690,11 @@ function raceStateEvidence(previousProgress = raceSnapshot.progress) {
  * only when the matching rendered feedback was driven by real mounted state.
  */
 const observedRenderedFeedback = { driftRendered: false, highSpeedRendered: false, offTrackRendered: false };
+// Certified routes immediately constrain a boundary-crossing car back onto the
+// retained road. Preserve the resulting recovery beat long enough for a player
+// to perceive it; otherwise the one-frame `offTrack` state can be mechanically
+// true while the HUD has already returned to "Road locked".
+let recoveryFeedbackSeconds = 0;
 /** Ordered checkpoint gates observed from mounted kit events. */
 const observedCheckpointGates: number[] = [];
 const initialRaceStateEvidence = raceStateEvidence();
@@ -717,7 +715,7 @@ const mountedEvidence = {
   },
   /** Populated per frame; see `observedVehicleGrounding`. */
   vehicleChassis: undefined as unknown,
-  claimBoundary: "Bounded asset-topology racing presentation with route-selected Rapier collision fidelity proof and a route-local deterministic opponent controller; no advanced vehicle dynamics, reusable racing AI, or automatic GLB-to-game claim.",
+  claimBoundary: "Bounded arcade-handling asset-topology racing presentation with route-selected Rapier collision fidelity proof and a reusable deterministic opponent driver; does not claim a physical tyre, suspension, drivetrain, or motorsport simulation.",
   frameCount: 0,
   speed: raceSnapshot.speed,
   lap: raceSnapshot.lap,
@@ -744,6 +742,8 @@ const mountedEvidence = {
     eventTypes: [] as string[]
   },
   raceDesign: {
+    handlingModel: "explicit-arcade-game.racing-with-surface-grounded-presentation-chassis",
+    physicalVehicleSimulationClaimed: false,
     authoredLapSeconds,
     certifiedMaxSpeed,
     gameplayPaceMultiplier,
@@ -773,11 +773,11 @@ const mountedEvidence = {
     mode: "chase",
     targetNode: "racing-player-car",
     source: "game.racingCameraRig",
-    distance: 2.6,
-    height: 0.46,
-    sideOffset: 0.08,
-    lookAhead: 1.35,
-    fov: 54
+    distance: chaseDistance,
+    height: chaseHeight,
+    sideOffset: heroFraming.sideOffset,
+    lookAhead: chaseLookAhead,
+    fov: chaseFov
   },
   subjectFraming: subjectFramingEvidence(),
   renderedFeedback: {
@@ -786,7 +786,8 @@ const mountedEvidence = {
     speedFraction: 0,
     ribbonLength: 0,
     source: "game.racing drift + speed state",
-    offTrack: false
+    offTrack: false,
+    recoveryVisible: false
   },
   observedRenderedFeedback: { ...observedRenderedFeedback },
   /**
@@ -865,6 +866,7 @@ app.onFrame(({ dt }) => {
   input.update(step);
   if (input.pressed("reset")) {
     raceSnapshot = racingState.reset(0);
+    recoveryFeedbackSeconds = 0;
     opponentRaceStarted = false;
     const resetOpponent = opponentAi.reset();
     mountedEvidence.gameplay.resetWorks = true;
@@ -908,6 +910,9 @@ app.onFrame(({ dt }) => {
     drift: input.held("drift"),
     steer: input.axis("steer")
   });
+  recoveryFeedbackSeconds = raceSnapshot.offTrack
+    ? 0.9
+    : Math.max(0, recoveryFeedbackSeconds - step);
   const playerPose = racingScene.toScenePose(raceSnapshot);
   /*
    * The chassis resolves the car's height and attitude from the surface under each
@@ -993,7 +998,8 @@ app.onFrame(({ dt }) => {
     speedFraction: round(speedFraction),
     ribbonLength: round(ribbonLength),
     source: "game.racing drift + speed state",
-    offTrack: raceSnapshot.offTrack
+    offTrack: raceSnapshot.offTrack,
+    recoveryVisible: recoveryFeedbackSeconds > 0
   };
   observedRenderedFeedback.driftRendered ||= driftVisible;
   observedRenderedFeedback.highSpeedRendered ||= speedFraction > 0.6;
@@ -1056,7 +1062,34 @@ app.onFrame(({ dt }) => {
 function setupRacingPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) return;
-  panel.innerHTML = "<span class=\"panel__label\">Certified circuit</span>\n<h1>Turbo Drift Circuit</h1>\n<p class=\"panel__lede\">A mesh-bound time trial with a typed race car, six checkpoint gates, and a certified multi-lap pace.</p>\n<section class=\"metrics-row\" aria-label=\"Live race metrics\">\n  <article class=\"metric\"><span>Speed · km/h</span><strong id=\"speed-value\">0</strong></article>\n  <article class=\"metric\"><span>Lap</span><strong id=\"lap-value\">1</strong></article>\n  <article class=\"metric\"><span>Gate</span><strong id=\"checkpoint-value\">0</strong></article>\n  <article class=\"metric\"><span>Status</span><strong id=\"status-value\">Ready</strong></article>\n</section>\n<section class=\"panel__section\" aria-label=\"Track contract\"><h2>Track contract</h2><span class=\"panel__value\" id=\"alignment-value\">Road locked</span><p class=\"claim\">The visible circuit model and racing route share the same hash-bound topology transform.</p></section>\n<section class=\"panel__section\" aria-label=\"Race controls\"><h2>Drive</h2><div class=\"control-cluster\"><button id=\"throttle-control\" type=\"button\">Throttle</button><button id=\"brake-control\" type=\"button\">Brake</button><button id=\"left-control\" type=\"button\">Steer left</button><button id=\"right-control\" type=\"button\">Steer right</button><button id=\"drift-control\" type=\"button\">Handbrake</button><button id=\"reset-control\" type=\"button\">Reset race</button></div><ul class=\"controls-list\"><li><kbd>W</kbd> Throttle</li><li><kbd>A / D</kbd> Steer</li><li><kbd>Space</kbd> Handbrake drift</li><li><kbd>R</kbd> Reset</li></ul></section>";
+  panel.innerHTML = `
+    <header class="race-brand">
+      <span class="panel__label"><i aria-hidden="true"></i> Tsukuba velocity trial</span>
+      <h1>Turbo Drift Circuit</h1>
+      <p class="panel__lede">Arcade handling. Four laps, six gates, one rival—carry speed through the apex and break the line.</p>
+    </header>
+    <section class="metrics-row" aria-label="Live race metrics">
+      <article class="metric metric--speed"><span>km/h</span><strong id="speed-value">0</strong></article>
+      <article class="metric"><span>Lap</span><strong id="lap-value">1</strong></article>
+      <article class="metric"><span>Gate</span><strong id="checkpoint-value">0</strong></article>
+      <article class="metric metric--status"><span>Race</span><strong id="status-value">Ready</strong></article>
+    </section>
+    <section class="track-contract" aria-label="Track contract">
+      <span id="alignment-status" class="contract-status" data-state="locked"><i aria-hidden="true"></i><strong id="alignment-value">Road locked</strong></span>
+      <p>The circuit and racing line share the certified mesh topology.</p>
+    </section>
+    <section class="race-controls" aria-label="Race controls">
+      <h2>Drive</h2>
+      <div class="control-cluster">
+        <button id="throttle-control" type="button"><b aria-hidden="true">↑</b><span>Throttle</span></button>
+        <button id="brake-control" type="button"><b aria-hidden="true">↓</b><span>Brake</span></button>
+        <button id="left-control" type="button"><b aria-hidden="true">←</b><span>Left</span></button>
+        <button id="right-control" type="button"><b aria-hidden="true">→</b><span>Right</span></button>
+        <button id="drift-control" type="button"><b aria-hidden="true">◆</b><span>Drift</span></button>
+        <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
+      </div>
+      <ul class="controls-list"><li><kbd>W S</kbd> Drive</li><li><kbd>A D</kbd> Steer</li><li><kbd>Space</kbd> Drift</li><li><kbd>R</kbd> Reset</li></ul>
+    </section>`;
   // Reusable binding layer; see the note in Skyline's panel setup for why this was extracted.
   bindGameTouchControls({
     hold: [
@@ -1094,7 +1127,10 @@ function updateRacingHud(): void {
   hud.lap.textContent = String(raceSnapshot.lap);
   hud.checkpoint.textContent = String(raceSnapshot.checkpoint);
   hud.status.textContent = racingStatusLabel();
-  hud.alignment.textContent = mountedEvidence.raceState.roadAlignment.onRoad ? "Road locked" : "Recovering";
+  const recoveryVisible = mountedEvidence.renderedFeedback.recoveryVisible === true;
+  hud.alignment.textContent = recoveryVisible ? "Auto recovery" : "Road locked";
+  const alignmentStatus = document.getElementById("alignment-status");
+  if (alignmentStatus) alignmentStatus.dataset.state = recoveryVisible ? "recovering" : "locked";
 }
 function requireElement(id: string): HTMLElement {
   const element = document.getElementById(id);

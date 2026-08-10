@@ -385,7 +385,7 @@ const reactorScene = scene()
     effects.neonBloom({ intensity: reducedFlash ? 0.12 : 0.26 }),
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    lights.ambient({ name: "low arcade room wash", color: "#8f7ba4", intensity: 0.11 }),
+    lights.ambient({ name: "low arcade room wash", color: "#b69acb", intensity: 0.28 }),
     lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
     lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.58 : 1.05 }).position(2.4, 2.1, 2.6),
     lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 0.72 }).position(-2.15, 3.3, 1.35),
@@ -462,7 +462,11 @@ let lastVisualChecksum = "";
  * observed game event, so the visible pulse is game state rather than decoration.
  */
 const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
-const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.45 };
+// Keep the line-clear sweep visible long enough to read during real play and
+// during retained capture. At 0.45 s the renderer could finish encoding the
+// named frame after the burst had already disappeared, leaving a technically
+// correct line count but no visible feedback for the event.
+const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.9 };
 let lastObservedLevel = 1;
 let burstRowY = BOARD_CENTER_Y;
 /** Rendered beats that were actually observed at least once this session. */
@@ -896,7 +900,10 @@ function syncHud(): void {
   pauseButton.textContent = state.paused ? "Resume" : "Pause";
   ui.setPressed(pauseButton, state.paused);
   holdPiece.innerHTML = renderMiniPiece(summary.hold);
-  nextQueue.innerHTML = summary.next.map((kind) => `<div class="next-item">${renderMiniPiece(kind)}<b>${kind}</b></div>`).join("");
+  // Each queue item needs its own four-column mini grid. The old markup put the
+  // sixteen cells directly in a flex item, so the preview collapsed into an
+  // apparently empty panel with a column of piece letters outside its edge.
+  nextQueue.innerHTML = summary.next.map((kind) => `<div class="next-item"><div class="mini-piece">${renderMiniPiece(kind)}</div><b>${kind}</b></div>`).join("");
   document.body.dataset.aura3dReady = "true";
   document.body.dataset.blockfallState = state.gameOver ? "game-over" : state.paused ? "paused" : "running";
 }

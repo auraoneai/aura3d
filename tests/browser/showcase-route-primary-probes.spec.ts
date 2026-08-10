@@ -825,7 +825,10 @@ async function routePrimaryAnalysisCrop(page: Page, canvasCrop: PngCrop): Promis
         const style = getComputedStyle(element);
         const rect = element.getBoundingClientRect();
         return !element.querySelector("canvas") && rect.width >= 2 && rect.height >= 2 &&
-          style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01;
+          style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01 &&
+          // Transparent full-viewport layout wrappers are not visual blockers;
+          // their painted child cards are discovered independently.
+          style.pointerEvents !== "none";
       })
       .map((element) => {
         const rect = element.getBoundingClientRect();
@@ -868,7 +871,12 @@ async function foregroundOccludedByUi(page: Page, foregroundBounds: PngCrop): Pr
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       return rect.width >= 2 && rect.height >= 2 && style.display !== "none" &&
-        style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01;
+        style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01 &&
+        // Full-screen HUD layout wrappers (for example `#panel`) often have
+        // pointer-events:none and paint nothing themselves; only their child
+        // cards are interactive/visible. Counting the transparent wrapper as
+        // an occluder makes every subject inside the viewport look covered.
+        style.pointerEvents !== "none";
     };
     const intersectionArea = (rect: DOMRect): number => {
       const width = Math.max(0, Math.min(bounds.x + bounds.width, rect.right) - Math.max(bounds.x, rect.left));

@@ -16,7 +16,12 @@ import {
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { gameGeometryContract } from "./generated/game-geometry";
-import { SKYLINE_CHARACTER_HEIGHT, createSkylineLevel, skylineMotion } from "./level";
+import {
+  SKYLINE_CHARACTER_HEIGHT,
+  SKYLINE_CHARACTER_WIDTH,
+  createSkylineLevel,
+  skylineMotion
+} from "./level";
 import { createRunnerChallenge } from "./runner-challenge";
 
 const input = game.input({
@@ -231,12 +236,12 @@ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
   span: sceneSpan,
   // Read back from the binding, so a world-model offset is included rather than assumed away.
   gameplayDepth: platformerScene.worldZ,
-  foregroundProps: [{ id: "rock", weight: 1, scaleBias: 0.5 }],
-  midgroundProps: [
-    { id: "tree", weight: 5, scaleBias: 0.5 },
-    { id: "rock", weight: 2, scaleBias: 0.6 }
-  ],
-  backgroundProps: [{ id: "tree", weight: 3, scaleBias: 0.85 }, { id: "rock", weight: 1, scaleBias: 1.0 }],
+  // One stylized prop vocabulary keeps this Kenney world coherent. The previous
+  // photogrammetry-derived orange rocks were individually valid assets but read
+  // as pasted-in photographs beside the flat-shaded trees and platforms.
+  foregroundProps: [{ id: "tree", weight: 1, scaleBias: 0.42 }],
+  midgroundProps: [{ id: "tree", weight: 1, scaleBias: 0.52 }],
+  backgroundProps: [{ id: "tree", weight: 1, scaleBias: 0.82 }],
   /*
    * Keep the hero's start area clear in every layer that can sit near the play plane.
    *
@@ -260,13 +265,11 @@ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
 /**
  * Scene nodes for the planned composition, using typed assets.
  *
- * Scale is expressed via `targetHeight` so each prop is normalized from its own manifest bounds rather
- * than from a raw multiplier -- `propPineTree` is ~10.9 units tall natively and `propRockB` ~2.2, so a
- * shared numeric scale would size them incoherently.
+ * Scale is expressed via `targetHeight` so each conifer is normalized from its
+ * typed manifest bounds rather than from a raw model multiplier.
  */
 const compositionNodes = compositionPlan.placements.map((placement, index) => {
   const groundY = platformerScene.toScenePoint({ x: 0, y: 0 })[1];
-  const isTree = placement.prop === "tree";
   /*
    * `propConifer` rather than `propPineTree` for the tree vocabulary.
    *
@@ -276,9 +279,9 @@ const compositionNodes = compositionPlan.placements.map((placement, index) => {
    * one material and 14 nodes, and its flat-shaded silhouette also matches the Kenney world's art style
    * far better than a photoreal tree did. Screened by isolated render, not by file size alone.
    */
-  const asset = isTree ? assets.propConifer : assets.propRockB;
+  const asset = assets.propConifer;
   // Atmosphere thins distant layers so depth reads by value, not only by detail.
-  const targetHeight = placement.scale * (isTree ? 0.62 : 0.34);
+  const targetHeight = placement.scale * 0.62;
   return model(asset, {
     name: `composition-${placement.prop}-${index}`,
     scaleMode: "fit",
@@ -350,18 +353,22 @@ const skyBackdrop = planSkyBackdrop({
   belowHorizonHeight: 14,
   belowHorizonBands: skyBandCountForRamp(...GROUND_RAMP)
 });
-const skyBackdropNodes = skyBackdrop.bands.map((band) => primitives.box({
-  name: `skyline ${band.side} band ${band.index}`,
-  material: material.emissive({
-    name: `graded dusk ${band.side} ${band.index}`,
-    // Horizon haze outward, interpolated by the plan's own blend factor. The ground ramp shares the
-    // horizon colour so the two sides meet without a seam, then descends cooler and darker.
-    color: blendSkyBandColor(...(band.side === "sky" ? SKY_RAMP : GROUND_RAMP), band.blend),
-    emissive: blendSkyBandColor(...(band.side === "sky" ? SKY_EMISSIVE_RAMP : GROUND_EMISSIVE_RAMP), band.blend),
-    emissiveIntensity: band.emissiveIntensity,
-    roughness: 0.9
-  })
-}).position(0, band.centerY, band.z).scale([band.width, band.height, 0.2]));
+const skyBackdropNodes = skyBackdrop.bands.map((band) => {
+  const colorRamp = band.side === "sky" ? SKY_RAMP : GROUND_RAMP;
+  const emissiveRamp = band.side === "sky" ? SKY_EMISSIVE_RAMP : GROUND_EMISSIVE_RAMP;
+  return primitives.box({
+    name: `skyline ${band.side} band ${band.index}`,
+    material: material.emissive({
+      name: `graded dusk ${band.side} ${band.index}`,
+      // Horizon haze outward, interpolated by the plan's own blend factor. The ground ramp shares the
+      // horizon colour so the two sides meet without a seam, then descends cooler and darker.
+      color: blendSkyBandColor(colorRamp[0], colorRamp[1], band.blend),
+      emissive: blendSkyBandColor(emissiveRamp[0], emissiveRamp[1], band.blend),
+      emissiveIntensity: band.emissiveIntensity,
+      roughness: 0.9
+    })
+  }).position(0, band.centerY, band.z).scale([band.width, band.height, 0.2]);
+});
 
 // Side-scroller framing target: the hero reads at roughly one-eighth of frame
 // height with the immediate traversal path visible ahead, so the world carries
@@ -422,10 +429,13 @@ const platformerCamera = game.platformerCameraRig({
    * 95px. Silhouette width scales inversely with distance, so 4.4 -> 4.1 lifts ~97px to ~104px and buys real margin
    * without returning to the over-zoomed "oversized mascot" framing an earlier pass produced at 3.2.
    */
-  distance: compactViewport ? 6.0 : 4.1,
-  height: compactViewport ? 0.72 : 0.62,
-  lookAhead: compactViewport ? 1.35 : 1.05,
-  fov: compactViewport ? 52 : 42
+  // Portrait needs a closer, nearly centered follow view. The former 1.35-unit
+  // look-ahead pushed the hero half outside the left edge while distance 6.0
+  // reduced the playable band to a thin strip across the middle of the phone.
+  distance: compactViewport ? 4.6 : 4.1,
+  height: compactViewport ? 0.58 : 0.62,
+  lookAhead: compactViewport ? 0.32 : 1.05,
+  fov: compactViewport ? 48 : 42
 });
 setupPlatformerPanel();
 
@@ -495,7 +505,7 @@ const app = createAuraApp("#app", {
       name: "platformer-readable-character",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetHeight: 0.52,
+      targetHeight: SKYLINE_CHARACTER_HEIGHT,
       castShadow: true,
       receiveShadow: true
     })
@@ -735,8 +745,13 @@ function rememberAnimationState(): void {
 }
 function playerSurfaceAlignment() {
   const standingSurface = platforms.find((surface) => {
-    const minX = surface.x - 0.04;
-    const maxX = surface.x + surface.width + 0.04;
+    // Match game.platformer's horizontal-overlap contact rule. Testing only
+    // the player's centre made a visibly supported edge landing read
+    // "Airborne" in the HUD while the gameplay solver correctly reported it
+    // grounded.
+    const halfPlayerWidth = SKYLINE_CHARACTER_WIDTH / 2;
+    const minX = surface.x - halfPlayerWidth - 0.04;
+    const maxX = surface.x + surface.width + halfPlayerWidth + 0.04;
     const surfaceTop = surface.y + surface.height;
     return state.player.x >= minX && state.player.x <= maxX && Math.abs(state.player.y - surfaceTop) <= 0.12;
   });
@@ -1139,7 +1154,36 @@ app.onFrame(({ dt }) => {
 function setupPlatformerPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) return;
-  panel.innerHTML = "<span class=\"label\">Certified surface route</span>\n<h1>Skyline Runner</h1>\n<p class=\"claim\">Build flow through jumps and collection chains, bank checkpoint split bonuses, and finish the mesh-derived course.</p>\n<section class=\"panel-metrics\" aria-label=\"Live runner metrics\"><div class=\"metrics-row\"><article><span>X</span><strong id=\"x-value\">0.00</strong></article><article><span>Score</span><strong id=\"score-value\">0</strong></article><article><span>Flow</span><strong id=\"challenge-value\">0</strong></article><article><span>Deaths</span><strong id=\"death-value\">0</strong></article><article><span>Checkpoint</span><strong id=\"checkpoint-value\">start</strong></article></div><div class=\"objective\" id=\"surface-value\">Finding surface…</div></section>\n<section aria-label=\"Runner controls\"><h2>Run the route</h2><div class=\"button-grid\"><button id=\"left-control\" type=\"button\">Move left</button><button id=\"right-control\" type=\"button\">Move right</button><button id=\"jump-control\" type=\"button\">Jump</button><button id=\"reset-control\" type=\"button\">Reset</button></div><ul class=\"controls-list\"><li>Use A / D or arrow keys to move.</li><li>Press W, Up, or Space to jump.</li><li>Chain collectibles before the finish for the challenge objective.</li><li>Press R to restart from the beginning.</li></ul></section>\n<section aria-label=\"Geometry contract\"><h2>Surface contract</h2><p class=\"claim\">The visible world and player contacts share the same hash-bound mesh extraction transform.</p></section>";
+  panel.innerHTML = `
+    <header class="runner-brand">
+      <span class="label"><i aria-hidden="true"></i> Verdant relay</span>
+      <h1>Skyline Runner</h1>
+      <p class="claim">Keep the flow alive. Chain three sky shards and carry the charge through the summit gate.</p>
+    </header>
+    <section class="panel-metrics" aria-label="Live runner metrics">
+      <div class="metrics-row">
+        <article><span>Distance</span><strong id="x-value">0.00</strong></article>
+        <article><span>Score</span><strong id="score-value">0</strong></article>
+        <article class="metric--flow"><span>Flow chain</span><strong id="challenge-value">0</strong></article>
+        <article><span>Falls</span><strong id="death-value">0</strong></article>
+        <article class="metric--checkpoint"><span>Relay</span><strong id="checkpoint-value">start</strong></article>
+      </div>
+      <div class="objective" id="surface-value">Finding surface…</div>
+    </section>
+    <section class="runner-controls" aria-label="Runner controls">
+      <h2>Traverse</h2>
+      <div class="button-grid">
+        <button id="left-control" type="button" aria-label="Move left"><b aria-hidden="true">←</b><span>Left</span></button>
+        <button id="right-control" type="button" aria-label="Move right"><b aria-hidden="true">→</b><span>Right</span></button>
+        <button id="jump-control" type="button"><b aria-hidden="true">↑</b><span>Jump</span></button>
+        <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
+      </div>
+      <ul class="controls-list"><li><kbd>A D</kbd> Run</li><li><kbd>Space</kbd> Jump</li><li><kbd>R</kbd> Restart</li></ul>
+    </section>
+    <section class="route-contract" aria-label="Geometry contract">
+      <span class="contract-status"><i aria-hidden="true"></i> Surface locked</span>
+      <p>The rendered trail and character contacts share the certified mesh transform.</p>
+    </section>`;
   /*
    * On-screen controls come from the reusable binding layer.
    *
@@ -1162,7 +1206,10 @@ function updatePlatformerHud(): void {
   hud.x.textContent = round(state.player.x).toFixed(2);
   hud.score.textContent = String(challengeEvidence.challengeScore);
   hud.deaths.textContent = String(state.deaths);
-  hud.checkpoint.textContent = state.checkpointId;
+  const relayLabel = state.checkpointId === "start"
+    ? "start"
+    : state.checkpointId.replace(/^asset-checkpoint-/, "") + "/06";
+  hud.checkpoint.textContent = relayLabel;
   hud.challenge.textContent = `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`;
   const alignment = playerSurfaceAlignment();
   const objective = challengeEvidence.objectiveMet ? "Flow objective complete" : "Chain 3 collectibles, then finish";

@@ -14,7 +14,14 @@ import { game, solvePlatformerMotion } from "@aura3d/engine";
  * Declared once so the jump and the player cannot disagree: a feel preset is scaled by this,
  * and `platformerSceneBinding` is given the same value.
  */
-export const SKYLINE_CHARACTER_HEIGHT = 0.52;
+// Gameplay framing, not the isolated asset-probe size. At 0.52 the mascot
+// occupied nearly a fifth of the finished 16:10 frame and visually flattened
+// the traversal world into a backdrop. The smaller hero still clears the route
+// readability floor while letting the next platforms, shards, and relay gate
+// read as the primary decision space.
+export const SKYLINE_CHARACTER_HEIGHT = 0.44;
+/** Width of the certified hero collider at the rendered target height. */
+export const SKYLINE_CHARACTER_WIDTH = SKYLINE_CHARACTER_HEIGHT * 0.45;
 import { gameGeometryContract } from "./generated/game-geometry";
 
 /**
@@ -36,6 +43,10 @@ import { gameGeometryContract } from "./generated/game-geometry";
 export const skylineMotion = solvePlatformerMotion(gameGeometryContract.level.platforms ?? [], {
   feel: "responsive",
   characterHeight: SKYLINE_CHARACTER_HEIGHT,
+  // Preserve the redesigned jump as a deliberate 2.4-character-height move.
+  // Reducing the rendered hero for world readability must not quietly reduce
+  // the jump back to the barely-there arc this route was rebuilt to remove.
+  jumpHeight: SKYLINE_CHARACTER_HEIGHT * 2.4,
   gapMargin: 1.5,
   /*
    * The reported session "ends in 20-30 seconds": the 16.6-unit course crosses in about 14
@@ -58,6 +69,10 @@ export function createSkylineLevel() {
     minCheckpoints: 6,
     level: {
       ...gameGeometryContract.level,
+      // Keep collision and presentation in one scale contract. Without this,
+      // game.platformer falls back to its 0.45 x 1.0 default collider even
+      // though the rendered hero is only 0.44 units tall.
+      playerSize: [SKYLINE_CHARACTER_WIDTH, SKYLINE_CHARACTER_HEIGHT],
       gravity: skylineMotion.gravity,
       jumpVelocity: skylineMotion.jumpVelocity,
       moveSpeed: skylineMotion.moveSpeed,

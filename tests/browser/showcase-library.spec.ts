@@ -1201,7 +1201,11 @@ test.describe("showcase library", () => {
     await page.keyboard.up("Space");
     await page.keyboard.up("KeyD");
     await page.keyboard.up("KeyW");
-    await page.waitForTimeout(380);
+    // Sample the completed throttle/steer/drift burst before drag erases the
+    // speed delta being proved. The previous 380 ms coast measured deceleration
+    // after input, making this short interaction gate timing-dependent even
+    // though the longer gameplay proof consistently reaches race pace.
+    await page.waitForTimeout(40);
     const turboAfter = await readEvidence(page, turbo.globalName);
     const turboAfterCapture = await captureInteractionScreenshot(page, turbo.appId, "after-keys");
     captures.push(withoutBuffer(turboAfterCapture));

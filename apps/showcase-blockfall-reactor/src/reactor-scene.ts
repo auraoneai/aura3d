@@ -47,7 +47,7 @@ const marqueeGlyphMaterial = material.neon({ name: "blockfall marquee glyph bloc
 const reactorCapMaterial = material.neon({ name: "reactor critical cap", color: "#ffb35a", emissive: "#ffd05d", emissiveIntensity: 0.9, roughness: 0.2 });
 
 const roomFloorMaterial = material.pbr({ name: "arcade room floor", color: "#0a0410", roughness: 0.44, metallic: 0.26 });
-const roomWallMaterial = material.pbr({ name: "arcade room wall", color: "#0b0611", roughness: 0.9, metallic: 0.02 });
+const roomWallMaterial = material.pbr({ name: "arcade room wall", color: "#21102c", roughness: 0.88, metallic: 0.02 });
 const roomTrimMaterial = material.neon({ name: "arcade room neon trim", color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 0.85, roughness: 0.2 });
 const roomTrimCoolMaterial = material.neon({ name: "arcade room cool neon trim", color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.8, roughness: 0.2 });
 // Arcade-room context. These were near-black (#0a0614 / #06040d), which measured as a
@@ -55,8 +55,8 @@ const roomTrimCoolMaterial = material.neon({ name: "arcade room cool neon trim",
 // acceptance criterion rejects: the props existed but read as void. Raised to a lit-room
 // value so they register as neighbouring cabinets while staying clearly subordinate to the
 // hero cabinet and its live well.
-const neighbourCabinetMaterial = material.pbr({ name: "neighbouring cabinet silhouette", color: "#241a38", roughness: 0.8, metallic: 0.1 });
-const neighbourFarCabinetMaterial = material.pbr({ name: "far neighbouring cabinet silhouette", color: "#191129", roughness: 0.86, metallic: 0.06 });
+const neighbourCabinetMaterial = material.pbr({ name: "neighbouring cabinet silhouette", color: "#3a2450", roughness: 0.76, metallic: 0.1 });
+const neighbourFarCabinetMaterial = material.pbr({ name: "far neighbouring cabinet silhouette", color: "#281838", roughness: 0.84, metallic: 0.06 });
 const neighbourCoolScreenMaterial = material.emissive({ name: "neighbouring cool screen glow", color: "#123a4d", emissive: "#3fc6de", emissiveIntensity: 0.82, roughness: 0.34, opacity: 0.9 });
 const neighbourWarmScreenMaterial = material.emissive({ name: "neighbouring warm screen glow", color: "#3d1b37", emissive: "#cc46a0", emissiveIntensity: 0.76, roughness: 0.34, opacity: 0.9 });
 
@@ -157,9 +157,12 @@ export function createBoardShell(): AuraNodeInput[] {
     // The cabinet GLB marquee texture reads "GAME OVER / RESTART?", which
     // contradicts a running game. The camera frames below it and the route
     // supplies a clean lit header shroud directly above the playfield.
-    primitives.box({ name: "blockfall reactor header shroud", material: marqueePanelMaterial }).position(0, BOARD_CENTER_Y + 2.52, 0.14).scale([2.4, 0.62, 0.12]),
+    // The typed cabinet's fixed "GAME OVER / RESTART?" marquee sits higher than
+    // the live board. A taller shroud covers it at both desktop and the wider
+    // mobile FOV so a running session never announces the opposite state.
+    primitives.box({ name: "blockfall reactor header shroud", material: marqueePanelMaterial }).position(0, BOARD_CENTER_Y + 2.92, 0.14).scale([2.56, 1.18, 0.12]),
     primitives.box({ name: "blockfall reactor header light bar", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 1.15 }) }).position(0, BOARD_CENTER_Y + 2.23, 0.21).scale([2.36, 0.048, 0.048]),
-    primitives.box({ name: "blockfall reactor header accent bar", material: marqueeGlyphMaterial }).position(0, BOARD_CENTER_Y + 2.52, 0.21).scale([1.42, 0.09, 0.03]),
+    primitives.box({ name: "blockfall reactor header accent bar", material: marqueeGlyphMaterial }).position(0, BOARD_CENTER_Y + 2.82, 0.21).scale([1.42, 0.09, 0.03]),
     primitives.box({ name: "left load-bearing board rail", material: railMaterial, castShadow: true }).position(-1.24, BOARD_CENTER_Y, 0.08).scale([0.05, 4.22, 0.11]),
     primitives.box({ name: "right load-bearing board rail", material: railMaterial, castShadow: true }).position(1.24, BOARD_CENTER_Y, 0.08).scale([0.05, 4.22, 0.11]),
     primitives.box({ name: "top board rail", material: railMaterial, castShadow: true }).position(0, BOARD_CENTER_Y + 2.13, 0.08).scale([1.48, 0.052, 0.11]),

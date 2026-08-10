@@ -43,6 +43,7 @@ interface TurboRenderedFeedback {
   readonly speedFraction?: number;
   readonly ribbonLength?: number;
   readonly offTrack?: boolean;
+  readonly recoveryVisible?: boolean;
 }
 
 interface TurboEvidence {
@@ -227,8 +228,12 @@ test.describe("showcase gameplay proof", () => {
     // Drift: the handbrake is what builds real slip in game.racing.
     await page.keyboard.down("KeyD");
     await page.keyboard.down("Space");
-    await page.waitForTimeout(750);
-    const drifting = await readTurbo(page);
+    await page.waitForTimeout(160);
+    let drifting = await readTurbo(page);
+    for (let sample = 0; sample < 12 && drifting.renderedFeedback?.driftVisible !== true; sample += 1) {
+      await page.waitForTimeout(50);
+      drifting = await readTurbo(page);
+    }
     if (drifting.renderedFeedback?.driftVisible === true) {
       turboCaptures.drift = await capture(page, "showcase-turbo-drift-circuit", "drift");
     }
@@ -252,19 +257,26 @@ test.describe("showcase gameplay proof", () => {
       turboCaptures.checkpoint = await capture(page, "showcase-turbo-drift-circuit", "checkpoint");
     }
 
-    // Off-track: drive off the road and capture the retained penalty state.
+    // Off-track: drive across the certified boundary and capture only after the
+    // route has made that transient clamp/recovery state visibly legible.
     await page.keyboard.down("KeyW");
     await page.keyboard.down("KeyA");
     let offTrack = gated;
-    for (let sample = 0; sample < 40 && offTrack.renderedFeedback?.offTrack !== true; sample += 1) {
+    for (let sample = 0; sample < 40 && (
+      offTrack.renderedFeedback?.offTrack !== true ||
+      offTrack.renderedFeedback?.recoveryVisible !== true
+    ); sample += 1) {
       await page.waitForTimeout(180);
       offTrack = await readTurbo(page);
     }
-    await page.keyboard.up("KeyA");
-    await page.keyboard.up("KeyW");
-    if (offTrack.renderedFeedback?.offTrack === true) {
+    if (
+      offTrack.renderedFeedback?.offTrack === true &&
+      offTrack.renderedFeedback?.recoveryVisible === true
+    ) {
       turboCaptures["off-track"] = await capture(page, "showcase-turbo-drift-circuit", "off-track");
     }
+    await page.keyboard.up("KeyA");
+    await page.keyboard.up("KeyW");
 
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(260);
@@ -358,16 +370,27 @@ test.describe("showcase gameplay proof", () => {
       timeout: 2_000,
       message: "runner should move right while alive before the opening jump"
     }).toBeGreaterThan((before.diagnostics?.snapshot?.x ?? 0) + 0.35);
+    // Freeze the genuinely reached traversal state before capturing it. Keeping
+    // Right held while Chromium encodes the screenshot can carry the runner off
+    // the finite opening platform and respawn it, replacing the state the poll
+    // just proved with the reset position. This does not relax the movement
+    // assertion above; it makes the named traversal evidence deterministic.
+    await page.keyboard.up("KeyD");
     const traversing = await readSkyline(page);
     // Traversal: the runner is moving right along the course.
     skylineCaptures.traversal = await capture(page, "showcase-skyline-runner", "traversal");
-    await page.keyboard.press("Space");
-    await page.waitForTimeout(120);
+    await page.keyboard.down("KeyD");
+    await page.keyboard.down("Space");
+    await expect.poll(async () => (await readSkyline(page)).diagnostics?.snapshot?.grounded, {
+      timeout: 1_000,
+      message: "runner should become airborne for the named jump capture"
+    }).toBe(false);
     // Jump: capture while the runner is genuinely airborne.
     const airborne = await readSkyline(page);
     if (airborne.diagnostics?.snapshot?.grounded === false) {
       skylineCaptures.jump = await capture(page, "showcase-skyline-runner", "jump");
     }
+    await page.keyboard.up("Space");
     await page.waitForTimeout(240);
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(580);
@@ -760,7 +783,19 @@ function collectPageErrors(page: Page): string[] {
 }
 
 async function waitForTurbo(page: Page): Promise<TurboEvidence> {
-  await expect.poll(() => page.evaluate(() => window.__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__?.status), { timeout: 60_000 }).toBeTruthy();
+  await expect.poll(() => page.evaluate(() => {
+    const evidence = window.__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__;
+    const renderSize = evidence?.diagnostics?.renderSize;
+    return evidence !== undefined
+      && Number(evidence.frameCount) > 0
+      && Number(evidence.diagnostics?.drawCalls) > 0
+      && Array.isArray(renderSize)
+      && Number(renderSize[0]) > 0
+      && Number(renderSize[1]) > 0;
+  }), {
+    timeout: 60_000,
+    message: "Turbo should complete a non-empty Aura3D render before first-load capture"
+  }).toBe(true);
   return readTurbo(page);
 }
 
@@ -773,7 +808,19 @@ async function waitForRacing(
 }
 
 async function waitForSkyline(page: Page): Promise<SkylineEvidence> {
-  await expect.poll(() => page.evaluate(() => window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.frameCount), { timeout: 60_000 }).toBeGreaterThanOrEqual(0);
+  await expect.poll(() => page.evaluate(() => {
+    const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
+    const renderSize = evidence?.diagnostics?.renderSize;
+    return evidence !== undefined
+      && Number(evidence.frameCount) > 0
+      && Number(evidence.diagnostics?.drawCalls) > 0
+      && Array.isArray(renderSize)
+      && Number(renderSize[0]) > 0
+      && Number(renderSize[1]) > 0;
+  }), {
+    timeout: 60_000,
+    message: "Skyline should complete a non-empty Aura3D render before first-load capture"
+  }).toBe(true);
   return readSkyline(page);
 }
 
@@ -786,7 +833,19 @@ async function waitForPlatformer(
 }
 
 async function waitForBlockfall(page: Page): Promise<BlockfallEvidence> {
-  await expect.poll(() => page.evaluate(() => window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__?.frameCount), { timeout: 60_000 }).toBeGreaterThanOrEqual(0);
+  await expect.poll(() => page.evaluate(() => {
+    const evidence = window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__;
+    const renderSize = evidence?.diagnostics?.renderSize;
+    return evidence !== undefined
+      && Number(evidence.frameCount) > 0
+      && Number(evidence.diagnostics?.drawCalls) > 0
+      && Array.isArray(renderSize)
+      && Number(renderSize[0]) > 0
+      && Number(renderSize[1]) > 0;
+  }), {
+    timeout: 60_000,
+    message: "Blockfall should complete a non-empty Aura3D render before first-load capture"
+  }).toBe(true);
   return readBlockfall(page);
 }
 
