@@ -692,8 +692,8 @@ function raceStateEvidence(previousProgress = raceSnapshot.progress) {
 const observedRenderedFeedback = { driftRendered: false, highSpeedRendered: false, offTrackRendered: false };
 // Certified routes immediately constrain a boundary-crossing car back onto the
 // retained road. Preserve the resulting recovery beat long enough for a player
-// to perceive it; otherwise the one-frame `offTrack` state can be mechanically
-// true while the HUD has already returned to "Road locked".
+// to perceive it and read the status; otherwise the one-frame `offTrack` state
+// can be mechanically true while the HUD has already returned to "Road locked".
 let recoveryFeedbackSeconds = 0;
 /** Ordered checkpoint gates observed from mounted kit events. */
 const observedCheckpointGates: number[] = [];
@@ -911,7 +911,7 @@ app.onFrame(({ dt }) => {
     steer: input.axis("steer")
   });
   recoveryFeedbackSeconds = raceSnapshot.offTrack
-    ? 0.9
+    ? 5
     : Math.max(0, recoveryFeedbackSeconds - step);
   const playerPose = racingScene.toScenePose(raceSnapshot);
   /*

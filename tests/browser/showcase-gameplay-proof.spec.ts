@@ -225,13 +225,19 @@ test.describe("showcase gameplay proof", () => {
     if (atSpeed.speed > before.speed + 0.04) {
       turboCaptures["high-speed-chase"] = await capture(page, "showcase-turbo-drift-circuit", "high-speed-chase");
     }
+    // The first ordered gate is normally credited during this clean launch.
+    // Bind the checkpoint evidence to that actual event before the intentional
+    // drift changes the car's line and composition.
+    if (atSpeed.kitContractProof?.checkpointAdvances === true) {
+      turboCaptures.checkpoint = await capture(page, "showcase-turbo-drift-circuit", "checkpoint");
+    }
     // Drift: the handbrake is what builds real slip in game.racing.
-    await page.keyboard.down("KeyD");
+    await page.keyboard.down("KeyA");
     await page.keyboard.down("Space");
-    await page.waitForTimeout(160);
+    await page.waitForTimeout(40);
     let drifting = await readTurbo(page);
-    for (let sample = 0; sample < 12 && drifting.renderedFeedback?.driftVisible !== true; sample += 1) {
-      await page.waitForTimeout(50);
+    for (let sample = 0; sample < 4 && drifting.renderedFeedback?.driftVisible !== true; sample += 1) {
+      await page.waitForTimeout(25);
       drifting = await readTurbo(page);
     }
     if (drifting.renderedFeedback?.driftVisible === true) {
@@ -239,7 +245,7 @@ test.describe("showcase gameplay proof", () => {
     }
     await page.keyboard.up("Space");
     await page.waitForTimeout(400);
-    await page.keyboard.up("KeyD");
+    await page.keyboard.up("KeyA");
     await page.keyboard.up("KeyW");
     await page.waitForTimeout(300);
     const after = await readTurbo(page);
@@ -253,25 +259,33 @@ test.describe("showcase gameplay proof", () => {
       gated = await readTurbo(page);
     }
     await page.keyboard.up("KeyW");
-    if (gated.kitContractProof?.checkpointAdvances === true) {
+    if (gated.kitContractProof?.checkpointAdvances === true && turboCaptures.checkpoint === undefined) {
       turboCaptures.checkpoint = await capture(page, "showcase-turbo-drift-circuit", "checkpoint");
     }
 
     // Off-track: drive across the certified boundary and capture only after the
-    // route has made that transient clamp/recovery state visibly legible.
+    // route has made that transient clamp/recovery state visibly legible. Start
+    // this scenario from a reset race so the capture proves recovery rather than
+    // inheriting an arbitrary post-drift camera position beside track scenery.
+    await page.keyboard.press("KeyR");
+    await page.waitForTimeout(260);
     await page.keyboard.down("KeyW");
     await page.keyboard.down("KeyA");
     let offTrack = gated;
+    let recoveryStatus = await page.locator("#alignment-status").getAttribute("data-state");
     for (let sample = 0; sample < 40 && (
       offTrack.renderedFeedback?.offTrack !== true ||
-      offTrack.renderedFeedback?.recoveryVisible !== true
+      offTrack.renderedFeedback?.recoveryVisible !== true ||
+      recoveryStatus !== "recovering"
     ); sample += 1) {
       await page.waitForTimeout(180);
       offTrack = await readTurbo(page);
+      recoveryStatus = await page.locator("#alignment-status").getAttribute("data-state");
     }
     if (
       offTrack.renderedFeedback?.offTrack === true &&
-      offTrack.renderedFeedback?.recoveryVisible === true
+      offTrack.renderedFeedback?.recoveryVisible === true &&
+      recoveryStatus === "recovering"
     ) {
       turboCaptures["off-track"] = await capture(page, "showcase-turbo-drift-circuit", "off-track");
     }
