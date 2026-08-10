@@ -1546,6 +1546,8 @@ export interface AuraRendererDiagnosticReport {
     readonly requestedPasses: readonly string[];
     readonly actualPasses: readonly string[];
     readonly fallbackPasses: readonly string[];
+    /** Device-observed render-target format used by the mounted composer. */
+    readonly targetFormat?: "rgba8" | "rgba16f" | "rgba32f";
     readonly evidence: string;
   };
   readonly runtime: {
@@ -3430,6 +3432,7 @@ interface AuraRendererRuntimeObservation {
     readonly pixelBacked: boolean;
     readonly actualPasses: readonly string[];
     readonly fallbackPasses: readonly string[];
+    readonly targetFormat?: "rgba8" | "rgba16f" | "rgba32f";
   };
   readonly environment?: {
     readonly enabled: boolean;
@@ -3587,6 +3590,7 @@ function createRendererDiagnosticReport(
       requestedPasses,
       actualPasses: runtimePostprocess?.actualPasses ?? [],
       fallbackPasses: runtimePostprocess?.fallbackPasses ?? [],
+      targetFormat: runtimePostprocess?.targetFormat,
       evidence: postprocessEvidence
     },
     runtime: {
@@ -11335,7 +11339,8 @@ function createProductionRuntimePostprocessObservation(
     contactOcclusionReceiver: actualPasses.includes("contact-shadow"),
     pixelBacked,
     actualPasses,
-    fallbackPasses: pixelBacked ? [] : ["direct-render"]
+    fallbackPasses: pixelBacked ? [] : ["direct-render"],
+    targetFormat: diagnostics.postprocessTargetFormat
   };
 }
 

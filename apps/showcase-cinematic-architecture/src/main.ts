@@ -5,6 +5,7 @@ import {
   createAuraApp,
   createCinematicKit,
   effects,
+  environments,
   interactions,
   lights,
   model,
@@ -267,6 +268,9 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
 
   return scene()
     .background(mood.background)
+    .add(nextControls.mood === "nocturne"
+      ? environments.nightCinematic({ name: "architectural night cinematic HDR IBL", intensity: 0.82, color: mood.fill })
+      : environments.studio({ name: "architectural daylight studio HDR IBL", intensity: nextControls.mood === "dawn" ? 0.92 : 1.04, color: mood.key }))
     .add(model(assets.showcaseSkylineCity, {
       name: "typed architectural district city asset",
       castShadow: true,
@@ -355,6 +359,7 @@ function updateControlUi(): void {
 
 function publishEvidence(forcedStatus?: RouteStatus): void {
   const diagnostics = app.diagnostics();
+  const rendererDiagnostics = diagnostics.renderer ?? renderer.diagnostics(app.scene);
   const auraEvidence = collectAuraSceneEvidence(app.scene);
   const snapshot = app.scene;
   const nodeNames = snapshot.nodes.map((node) => "name" in node ? node.name ?? "" : "");
@@ -417,7 +422,9 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
       "engine.createArchitectureKit floor/room focus, sun direction, material variants",
       "engine.createCinematicKit shot sequencing, transitions, export plan",
       "typed architecture district model(assets.showcaseSkylineCity)",
-      "bounded root fog, bloom, and contact-occlusion requests",
+      "production PBR material path and generated HDR IBL environment",
+      "sampled PCF shadow map",
+      "pixel-backed rgba16f SSAO, bloom, ACES tone mapping, and sRGB output",
       "camera choreography",
       "bounded public lighting",
       "orbit interaction",
@@ -426,12 +433,13 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
     claimBoundary: {
       accepted: [
         "Typed architecture district asset staged as the primary environment subject.",
-        "Public createAuraApp route uses bounded lighting, fog, bloom, contact occlusion, camera path controls, and orbit controls around a typed city architecture asset.",
+        "Public createAuraApp production runtime renders the typed architecture asset through its PBR material path with generated HDR IBL, sampled PCF shadows, explicit exposure/ACES tone mapping, and a scoped pixel-backed SSAO/bloom stack.",
+        "Public camera-path controls visibly change the production-rendered composition while orbit controls remain available.",
         "Evidence object is published on window for route-health and visual review tooling."
       ],
       notClaimed: [
-        "No HDR, IBL, broad postprocess, PBR parity, or final architectural-visualization fidelity is claimed.",
-        "The selected fog, bloom, and contact-occlusion requests are bounded to this route and its current screenshots.",
+        "The claim is bounded to this route's generated-HDR public environment preset, imported glTF PBR path, sampled shadow map, and observed pixel-backed passes; it is not universal PBR/HDR/postprocess parity with Three.js.",
+        "The selected fog, SSAO, bloom, exposure, tone mapping, and IBL settings are bounded to this route and its current screenshots.",
         "No final launch acceptance is claimed until screenshot, visual review, route health, and deploy checks run.",
         "No primitive staging is presented as the architecture subject."
       ]
@@ -444,7 +452,10 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
       hazeDensity: Number((0.006 + controls.haze / 100 * 0.012).toFixed(3))
     },
     aura: auraEvidence,
-    renderer: renderer.diagnostics(app.scene),
+    // Mounted diagnostics are required here: scene-plan diagnostics can describe
+    // authored requests, but cannot prove that HDR targets, passes, or shadow-map
+    // sampling reached the device.
+    renderer: rendererDiagnostics,
     routeHealth: {
       backend: app.backend,
       fps: diagnostics.fps,

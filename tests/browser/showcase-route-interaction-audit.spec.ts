@@ -505,7 +505,14 @@ for (const route of ROUTES) {
         { label: "phone", width: 390, height: 780 }
       ]) {
         await page.setViewportSize({ width: variant.width, height: variant.height });
-        await page.waitForTimeout(450);
+        /*
+         * A responsive route may rebuild a typed GLB production renderer when it
+         * crosses a compact-layout breakpoint. The former 450 ms delay captured
+         * Cinematic Architecture's canvas while its 772 render items were still
+         * reloading, producing a black phone artifact even though the assertions
+         * remained green. Wait long enough for that real renderer swap to finish.
+         */
+        await page.waitForTimeout(2_500);
         const variantPath = join(REPORT_DIR, `${route.id}-${variant.label}.png`);
         const bytes = await page.screenshot({ path: variantPath });
         viewportVariants.push({
@@ -517,7 +524,7 @@ for (const route of ROUTES) {
         });
       }
       await page.setViewportSize(VIEWPORT);
-      await page.waitForTimeout(320);
+      await page.waitForTimeout(2_000);
 
       /*
        * Frame sequence, in place of a video file.

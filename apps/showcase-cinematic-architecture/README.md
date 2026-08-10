@@ -15,10 +15,11 @@ CLI-backed architectural district presentation for the Aura3D portfolio build.
   than a public architecture demo.
 - Primitive status: route-level primitive staging was removed from the current
   primary composition after human review rejected the blockout-looking result.
-- Claim status: bounded to typed architecture staging, public `createAuraApp`
-  lighting, scoped fog/bloom/contact-occlusion requests, camera choreography,
-  and deploy proof. Do not claim final architectural photography quality, HDR,
-  IBL, shadow parity, or broad postprocess parity.
+- Claim status: bounded browser proof now covers the typed architecture asset
+  on the public production PBR path, generated HDR IBL, device-observed sampled
+  PCF shadows, explicit exposure/ACES/sRGB color management, a pixel-backed
+  `rgba16f` SSAO/bloom/tone-mapping stack, and camera choreography. It does not
+  claim universal Three.js parity or final photoreal architectural fidelity.
 
 ## Route
 
@@ -39,10 +40,12 @@ CLI-backed architectural district presentation for the Aura3D portfolio build.
 - Public `@aura3d/engine` route mount through `createAuraApp`
 - Typed CLI-resolved architecture model through `model(assets.showcaseSkylineCity)`
 - `camera.path` and `camera.dolly` choreography
+- `environments.studio` and `environments.nightCinematic` generated HDR IBL
 - `lights.ambient`, `lights.directional`, `lights.point`, and `lights.rect`
-- `effects.fog`, `effects.bloom`, and `effects.ambientOcclusion`, bounded to the
-  current route and screenshot evidence
-- `collectAuraSceneEvidence` and renderer diagnostics published to the route evidence global
+- `effects.fog`, `effects.bloom`, and `effects.ambientOcclusion`, with the latter
+  two observed as pixel-backed `rgba16f` renderer passes
+- mounted app diagnostics—not scene-plan diagnostics—published to the route
+  evidence global, including native shadow bindings and actual pass names
 
 ## Asset Provenance
 
@@ -74,7 +77,9 @@ The route publishes:
 ## Claim Boundary
 
 This route demonstrates a typed, catalog-resolved city architecture asset staged
-inside an Aura3D scene. The current presentation is a bounded architectural
-district tour: it proves readable typed asset staging, camera choreography,
-selected root effects, and route evidence, but it does not claim final
-architectural visualization fidelity or unsupported renderer features.
+inside an Aura3D scene. The current presentation is a bounded, stylized
+architectural district tour: retained browser evidence proves the imported GLB
+production PBR path, generated HDR environment lighting, rendered and sampled
+shadow maps, explicit exposure/ACES/sRGB output, pixel-backed SSAO/bloom/tone
+mapping, responsive composition, and camera choreography. Those facts do not
+establish universal feature parity with Three.js or photoreal visualization.
