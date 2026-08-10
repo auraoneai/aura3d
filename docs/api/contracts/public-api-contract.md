@@ -1,6 +1,6 @@
 # Public API Contract
 
-Generated: 2026-08-10T02:00:46.795Z
+Generated reproducibly by `pnpm check:public-api` from packed current source.
 
 ## Summary
 

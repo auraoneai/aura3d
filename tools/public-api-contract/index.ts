@@ -261,7 +261,7 @@ function writePublicApiMarkdown(checks: readonly ReleaseCheck[], engineExports: 
   const lines = [
     "# Public API Contract",
     "",
-    `Generated: ${new Date().toISOString()}`,
+    "Generated reproducibly by `pnpm check:public-api` from packed current source.",
     "",
     "## Summary",
     "",
