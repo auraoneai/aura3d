@@ -74,6 +74,9 @@ export const PRODUCER_OWNERSHIP = Object.freeze({
   "final-competitive-baseline": [
     "tests/reports/final-competitive-baseline/<artifact>"
   ],
+  "flagship-visual-comparison": [
+    "tests/reports/flagship-visual-comparison/<artifact>"
+  ],
   "external-candidate-package-audit": [
     "tests/reports/external-candidate-package-audit.json"
   ],
@@ -242,6 +245,12 @@ export const PRODUCER_ORDERING_GRAPH = Object.freeze({
     writes: PRODUCER_OWNERSHIP["final-competitive-baseline"],
     hashes: []
   },
+  "flagship-visual-comparison": {
+    writes: PRODUCER_OWNERSHIP["flagship-visual-comparison"],
+    hashes: [
+      "tests/reports/final-competitive-baseline/manifest.json"
+    ]
+  },
   "external-candidate-package-audit": {
     writes: PRODUCER_OWNERSHIP["external-candidate-package-audit"],
     hashes: []
@@ -342,6 +351,7 @@ export const DOCUMENTED_PRODUCER_ORDER = Object.freeze([
   "asset-screening",
   // Immutable program inputs; generation is one-time and later invocations verify.
   "final-competitive-baseline",
+  "flagship-visual-comparison",
   "current-threejs-baseline",
   "external-candidate-package-audit",
   "final-subsystem-ownership",

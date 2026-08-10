@@ -548,6 +548,8 @@
     "current-threejs:baseline": "node tools/current-threejs-baseline/index.mjs --online",
     "final-competitive:baseline": "node tools/final-competitive-baseline/index.mjs",
     "final-competitive:baseline:verify": "node tools/final-competitive-baseline/index.mjs --verify",
+    "final-competitive:flagship-visual-comparison": "node tools/flagship-visual-comparison/index.mjs",
+    "final-competitive:flagship-visual-comparison:verify": "node tools/flagship-visual-comparison/index.mjs --verify",
     "final-subsystem:ownership": "node tools/final-subsystem-ownership/index.mjs --online",
     "check:final-subsystem-ownership": "node tools/final-subsystem-ownership/index.mjs --check",
     "navigation-backend:bakeoff": "pnpm exec tsx --tsconfig tsconfig.base.json tools/navigation-backend-bakeoff/index.ts",
