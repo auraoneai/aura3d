@@ -1,7 +1,7 @@
 # Aura3D Product Boundaries
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 canonical product boundary
+Status: Aura3D 2.0.0 canonical product boundary
 
 Aura3D is a developer SDK, asset pipeline, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. It is not a hidden
@@ -88,7 +88,7 @@ They are not public release candidates until they pass
 
 Turbo Drift Circuit and Skyline Runner have bounded geometry, gameplay, and
 automated visual-QA evidence but remain `prototype-blocked`. They cannot be
-promoted in 1.6.0 and do not establish production-game or arbitrary-GLB
+promoted in 2.0.0 and do not establish production-game or arbitrary-GLB
 conversion capability. The superseded Racing Game Layer Proof and Platformer
 Game Layer Proof routes remain excluded from current public claims.
 

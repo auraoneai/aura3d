@@ -1,7 +1,7 @@
 # Marketing Site
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 marketing release-candidate requirements
+Status: Aura3D 2.0.0 marketing release-candidate requirements
 
 The marketing site must be claim-safe. It can sell Aura3D's current strengths,
 but it cannot imply unsupported root renderer, animation, game, or WebGPU

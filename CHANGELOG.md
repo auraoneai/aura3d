@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 1.6.0
+Version: 2.0.0
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release candidate is `1.6.0` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current source release candidate is `2.0.0` across the release-line package manifests. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-07-27): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -14,6 +14,31 @@ Comparison wording for the 1.6.0 entry is historical and limited to the named
 `three@0.165.0` workloads and reports. It must not be described as current or
 broadened into universal engine or ecosystem superiority. The current
 `three@0.185.1` program is tracked by `1.6-FINAL-PRD-Finishes.md`.
+
+## 2.0.0 (release candidate; unpublished)
+
+Competitive replatform and public-surface consolidation:
+
+- narrows the public example inventory to retained routes with explicit claim
+  boundaries, while moving duplicate, contract-only, misleading, or visually
+  rejected hosts into internal fixtures or archive records;
+- keeps typed GLB assets and the safe `createAuraApp` root API as the public
+  authoring path while labeling lower-level rendering-package diagnostics as
+  such;
+- repairs material, PBR-variant, postprocess, renderer-stress, large-scene,
+  character-animation, and product-configurator presentation defects found by
+  per-route canvas and full-page inspection;
+- removes the distorted `game-slice`, racing, fake editor-output, fake asset
+  gallery, primitive interior, duplicate product/material/character, public
+  WebGPU capability, HDR contract, and shadow contract routes from the public
+  example surface without deleting their useful internal contract tests;
+- changes the major version because the final program consolidates ownership,
+  removes or internalizes public-facing surfaces, and changes the supported
+  competitive contract rather than presenting that work as a minor upgrade;
+- remains release-gated: `2.0.0` is not published and no current universal
+  Three.js ecosystem-parity claim is approved until the final unfiltered visual
+  audit, same-workload current-Three.js comparisons, complete release suites,
+  package smoke tests, website deployment checks, and human review records pass.
 
 ## 1.6.0 (2026-08-08)
 

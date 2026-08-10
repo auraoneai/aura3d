@@ -1,6 +1,6 @@
 # Controls, Picking, WebXR, And Context Recovery
 
-Status: Aura3D 1.6 bounded interaction and lifecycle receipt.
+Status: Aura3D 2.0 bounded interaction and lifecycle receipt.
 
 The canonical proof combines public control/input packages, rendered diagnostic
 routes, the root `createAuraApp` lifecycle API, and selected comparisons against

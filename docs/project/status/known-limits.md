@@ -140,17 +140,17 @@ guide or README must include the narrower wording.
 
 ## Physics Backend Limits
 
-- `@aura3d/physics` has one production solver owner: `cannon-es@0.20.0`.
-  The removed `aura-js` backend is not a fallback and must not be described as
-  available in 1.6.0.
+- `@aura3d/physics` has one production solver owner in the 2.0 candidate:
+  `@dimforge/rapier3d-compat@0.20.0`. Removed Cannon and custom-solver paths are
+  not fallbacks and must not be described as current production owners.
 - The public contract has named production-backend invariants for stacking,
   fixed joints, adaptive-substep tunnelling protection, sleeping/waking,
   repeatability, grounding, slope/step movement, suspension response, and
   browser lifecycle. Those bounded fixtures do not establish universal physics
   or arbitrary-mesh game-engine parity.
-- The adaptive-substep continuous-collision mitigation is an Aura3D wrapper;
-  it is not native Cannon swept-TOI support.
-- Capsule grounding and rotated ray/sphere queries are corrected in 1.6.0. A
+- Capsule grounding, CCD, and rotated ray/sphere queries use the selected
+  Rapier adapter and remain bounded by their named browser and package tests.
+- Capsule grounding and rotated ray/sphere queries are corrected in 2.0.0. A
   project that compensated for the earlier flat-ended capsule or axis-aligned
   query behavior should remove and retest that workaround.
 - Racing uses shared authored-unit arcade motion, not a physical tyre model.

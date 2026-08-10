@@ -1,5 +1,9 @@
 # Aura3D 1.6 Re-platform PRD
 
+> Historical decision record. The active release target is 2.0.0 and the live
+> completion ledger is `1.6-FINAL-PRD-Finishes.md`; do not use this document's
+> former 1.6 version decision as current release approval.
+
 > **Completion-standard amendment — 2026-08-08:** comparison measurements in
 > this document use the historical frozen `three@0.165.0` target unless a row
 > explicitly names another version. They do not establish current-market parity

@@ -1,7 +1,7 @@
 # Release Tracks
 
 Date: 2026-08-08
-Status: 1.6.0 release-candidate tracks
+Status: 2.0.0 release-candidate tracks
 
 Aura3D releases are split into independent tracks. Passing one track does not
 grant claims for another.
@@ -36,7 +36,8 @@ Required gates:
 - `pnpm verify:package-install-smoke:fresh`
 - `pnpm verify:package-provenance`
 - `npm pack --dry-run --json`
-- `node tools/release/publish-all.mjs --dry-run` for the 26-package monorepo
+- `node tools/release/publish-all.mjs --dry-run` for every public package in the
+  generated 2.0.0 publish inventory
   release, with npm auth stored outside the repository
 
 ## Track 2: Showcase Candidate Release
@@ -72,10 +73,11 @@ Required gates:
 - copy review against `docs/project/claim-guidelines.md`.
 - `node tools/showcase-library/build-and-check.mjs`
 
-Current status for this track: four non-game route-library candidates have current automated
-evidence and await a recorded human visual verdict. Blockfall Reactor, Turbo Drift Circuit, and
-Skyline Runner remain `prototype-blocked` and cannot be promoted. Aura Clash is tracked separately
-as a development showcase. Data Galaxy and WebGPU Particle Lab remain internal diagnostics.
+Current status for this track: the retained public `examples/` inventory is 13
+routes with per-route claim boundaries and human source/canvas/page
+dispositions. The final unfiltered audit after the latest presentation repairs
+must still complete green. Internalized routes and prototype-blocked showcases
+cannot be promoted by this track.
 
 ## Track 3: Marketing Launch Release
 

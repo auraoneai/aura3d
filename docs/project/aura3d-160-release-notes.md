@@ -1,5 +1,8 @@
 # Aura3D 1.6.0 Release Notes
 
+> Historical release record. The current source release candidate is 2.0.0;
+> see `aura3d-200-release-notes.md`.
+
 Date: 2026-08-08
 Status: release candidate; npm, GitHub, tag, and production deployment pending
 

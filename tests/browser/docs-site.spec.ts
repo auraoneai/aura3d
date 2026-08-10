@@ -10,7 +10,7 @@ const pathBPattern = new RegExp([
   ["prompt", "to", "scene"].join("-")
 ].join("|"), "i");
 const versionCyclePattern = new RegExp([
-  `\\b${"V"}[234]\\b`,
+  `\\b${"V"}[234]\\b(?!\\.\\d)`,
   ["Path", "A"].join(" "),
   ["Path", "B"].join(" ")
 ].join("|"), "i");

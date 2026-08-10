@@ -1,6 +1,6 @@
 # ECS and scripting compatibility migration
 
-## Aura3D 1.6
+## Aura3D 2.0
 
 `@aura3d/ecs` and `@aura3d/scripting` are optional packages. Existing
 `@aura3d/engine/ecs` and `@aura3d/engine/scripting` compatibility imports remain

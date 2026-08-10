@@ -1,6 +1,6 @@
 # Portable Custom Materials
 
-Status: supported public `@aura3d/rendering` extension API in Aura3D 1.6.
+Status: supported public `@aura3d/rendering` extension API in Aura3D 2.0.
 
 `PortableShaderMaterial` is the supported custom-material path for selected
 WebGL2/WebGPU workloads. One material owns paired GLSL ES 3.00 and WGSL stages,

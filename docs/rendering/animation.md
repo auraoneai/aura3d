@@ -1,6 +1,6 @@
 # Animation, Retargeting, IK, And Lifecycle
 
-Status: Aura3D 1.6 bounded animation receipt.
+Status: Aura3D 2.0 bounded animation receipt.
 
 Aura3D has browser-visible root animation proof and broader package-level
 animation behavior. The two surfaces are deliberately described separately so

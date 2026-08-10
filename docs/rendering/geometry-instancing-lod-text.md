@@ -1,6 +1,6 @@
 # Geometry, instancing, LOD, culling, and text
 
-Aura3D 1.6 exposes a bounded geometry and scene-scaling surface through the
+Aura3D 2.0 exposes a bounded geometry and scene-scaling surface through the
 `createAuraApp` root safe API. The canonical proof is:
 
 ```sh

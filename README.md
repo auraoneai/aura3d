@@ -87,37 +87,43 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 1.6.0
+## Current Release: Aura3D 2.0.0
 
-Aura3D 1.6.0 is the current source release candidate across all 26 public
-packages. It adds workload-specific lean entries, consolidates production
-physics on one solver owner, preserves the broad compatibility root, and
-restores scoped browser evidence for nine selected routes.
+Aura3D 2.0.0 is the current source release candidate across the release-line
+packages. It is a major-version competitive replatform: public authoring is
+centered on typed assets and the safe root API, commodity subsystems have one
+declared owner, duplicate or misleading public hosts have been internalized,
+and every retained example is subject to separate canvas and full-page review.
+It has not yet been published to npm or promoted as a completed universal
+Three.js replacement.
 
-### What ships in 1.6.0
+### What ships in 2.0.0
 
-- **Recommended lean entries.** New apps can use `@aura3d/engine/lean`,
-  `@aura3d/engine/lean-product`, or `@aura3d/engine/lean-game`. The broad root
-  remains available for compatibility.
-- **One production physics owner.** `cannon-es` owns rigid-body stepping. The
-  divergent `aura-js` backend is removed, the solver default is restored to ten
-  iterations, capsules are true capsules, and ray/sphere queries respect body
-  rotation.
-- **Compatibility fixtures retained.** Published 1.5.2 input action-binding
-  fixture exports remain reachable through deprecated aliases.
-- **Historical scoped comparison closure.** The selected `three@0.165.0`
-  inventory is 54/54 matched with zero high-priority rows open under that frozen
-  protocol. Seven named same-asset animation comparisons pass, and the
-  100-reload lifecycle fixture reports zero tracked leaks. These results do not
-  establish current parity with the locked `three@0.185.1` ecosystem.
-- **Restored evidence routes.** glTF variants, OBJ loading, anisotropy,
-  depth/outline postprocess, trackball controls, draw ranges, picking, multiple
-  camera views, and injected WebXR interaction semantics are built into the
-  public website. The WebXR preview is explanatory 2D UI, not headset or native
-  renderer proof.
-- **Prototype status preserved.** Blockfall Reactor, Skyline Runner, and Turbo
-  Drift Circuit remain `prototype-blocked` and cannot be promoted by this
-  package release.
+- **One public owner per capability.** Duplicate product, material, character,
+  physics, shadow, HDR, WebGPU, editor-output, and contract-only hosts are no
+  longer presented as separate public products. Reusable implementation and
+  browser contracts remain testable through internal fixtures.
+- **Typed real assets on public routes.** Named characters and products use
+  manifest-backed GLB assets. Primitive-only, Canvas2D, CSS, raw-URL, and
+  screenshot-only substitutes are not accepted as proof of rendered subjects.
+- **Retained examples are explicitly bounded.** Character Animation Viewer and
+  Product Configurator are real-asset public workflows. Material Showroom,
+  Postprocess Lab, Renderer Stress Lab, Large Scene, particles, raycast/CCD, and
+  state-machine routes are labeled diagnostics rather than inflated into game,
+  production-renderer, WebGPU, or ecosystem-parity claims.
+- **Visual defects are release defects.** The audit has corrected clipped and
+  aspect-distorted material swatches, low-resolution postprocess enlargement,
+  non-presenting large-scene frames, unconstrained telemetry pages, unreadable
+  stress framing, obscuring overlays, and PBR variant geometry/framing. A route
+  is accepted only after its current source, canvas image, and full-page image
+  are reviewed together.
+- **Current comparison target.** Historical `three@0.165.0` receipts remain
+  historical. The 2.0 program locks current comparison work to
+  `three@0.185.1` and requires same-workload, same-asset evidence; unfinished
+  rows stay unfinished instead of being generalized into parity.
+- **Release remains gated.** npm/GitHub publication, website promotion, and
+  deprecation of older releases happen only after the final PRD gates pass.
+  See `1.6-FINAL-PRD-Finishes.md` for the live evidence ledger.
 
 ### What shipped in 1.5.2
 
@@ -266,14 +272,15 @@ Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd
 Install after the npm publication completes:
 
 ```bash
-npm install @aura3d/engine@1.6.0
+npm install @aura3d/engine@2.0.0
 # or scaffold an app
-npx create-aura3d@1.6.0 my-product --template product-viewer
+npx create-aura3d@2.0.0 my-product --template product-viewer
 ```
 
-Detailed 1.6 release notes are in
-[`docs/project/aura3d-160-release-notes.md`](docs/project/aura3d-160-release-notes.md),
-with retained claim boundaries and release evidence under `docs/project/`.
+The current 2.0 candidate notes are in
+[`docs/project/aura3d-200-release-notes.md`](docs/project/aura3d-200-release-notes.md),
+with the executable migration guide in [`MIGRATION-2.0.md`](MIGRATION-2.0.md)
+and retained claim boundaries and release evidence under `docs/project/`.
 
 ## Aura3D 1.1.0 asset catalog
 
@@ -297,7 +304,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.6.0 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 2.0.0 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.

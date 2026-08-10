@@ -82,7 +82,7 @@ try {
       "Wall-clock time from npm install start through fresh project creation, production build, " +
       "Vite readiness, and a browser-verified non-blank rendered cube.",
     methodology: {
-      releaseCandidate: "actual pnpm-packed @aura3d/engine 1.6.0 tarball from the measured commit",
+      releaseCandidate: "actual pnpm-packed @aura3d/engine 2.0.0 tarball from the measured commit",
       comparison: `three@${threeVersion} from the public npm registry`,
       commonTooling: `vite@${viteVersion}`,
       samplesPerEnginePerState: sampleCount,
@@ -105,7 +105,7 @@ try {
       npmRegistry: "https://registry.npmjs.org/"
     },
     artifacts: {
-      aura3d: { version: "1.6.0", source: "release-candidate-tarball", sha256: auraTarballSha256 },
+      aura3d: { version: "2.0.0", source: "release-candidate-tarball", sha256: auraTarballSha256 },
       threejs: { version: threeVersion, source: "npm-registry" }
     },
     samples,

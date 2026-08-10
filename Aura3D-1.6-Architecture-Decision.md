@@ -1,5 +1,9 @@
 # Aura3D 1.6 Architecture Decision
 
+> Historical architecture input. Aura3D 2.0 uses this record as background,
+> while `1.6-FINAL-PRD-Finishes.md` and current claim-boundary documentation
+> govern the final public surface and release decision.
+
 **Date:** 2026-08-05
 **Basis:** `main` at `be86c73e`, 66 commits past `v1.5.2`, working tree clean.
 **Method:** every number below came from a command against this worktree or from a

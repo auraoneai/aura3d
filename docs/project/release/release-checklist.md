@@ -1,11 +1,11 @@
 # Aura3D Release Checklist
 
-Version: 1.6.0
+Version: 2.0.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 release-candidate gate checklist
+Status: Aura3D 2.0.0 release-candidate gate checklist
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained
@@ -24,10 +24,10 @@ against `three@0.165.0` remain recorded but cannot close the current
   not mixed without passing each track's gates.
 - [x] All public claims follow `docs/project/claim-guidelines.md` and
   `docs/project/launch-positioning.md`.
-- [x] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
+- [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
-- [x] The current release-candidate summary in
-  `docs/project/aura3d-160-release-notes.md` matches the commands being run for
+- [ ] The current release-candidate summary in
+  `docs/project/aura3d-200-release-notes.md` matches the commands being run for
   this release.
 
 ## Package Gates
@@ -39,15 +39,17 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] No focused retained-evidence test is failing; the current
   `showcase-route-gates` failure is the deliberate missing-human-verdict gate,
   not stale evidence or an allowlisted failure.
-- [x] `pnpm test:integration` passes when integration behavior changed.
-- [x] `pnpm test:browser` passes when browser routes changed; the final canonical
-  invocation passed 37/37.
+- [ ] `pnpm test:integration` passes from the final 2.0 release commit.
+- [ ] `pnpm test:browser` and the final unfiltered 13-route visual audit pass
+  from the final 2.0 release commit. The latest unfiltered audit was invalidated
+  by dev-server navigation timeouts during machine-wide browser saturation.
 - [ ] `pnpm build` passes; finalization covers 28 packages, including the optional physical-simulation and navigation adapters.
 - [x] `pnpm verify:api-docs -- --write` has been run after export changes.
-- [x] `pnpm verify:package-install-smoke:fresh` passes.
-- [x] `pnpm verify:package-provenance` passes.
-- [x] `pnpm exec vitest run tests/unit/package-dist --reporter=dot` passes.
-- [x] Package dry-run or pack verification succeeds for packages being
+- [ ] `pnpm verify:package-install-smoke:fresh` passes for 2.0.0 tarballs.
+- [ ] `pnpm verify:package-provenance` passes for 2.0.0 tarballs.
+- [ ] `pnpm exec vitest run tests/unit/package-dist --reporter=dot` passes from
+  the final 2.0 release commit.
+- [ ] Package dry-run or pack verification succeeds for packages being
   published.
 - [x] Publishing uses `node tools/release/publish-all.mjs` with npm auth stored
   outside the repository, never committed in `.npmrc`.

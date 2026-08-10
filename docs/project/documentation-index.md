@@ -1,7 +1,7 @@
 # Documentation Index
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 documentation index
+Status: Aura3D 2.0.0 documentation index
 
 ## Directory Taxonomy
 
@@ -66,15 +66,18 @@ These requested documents stay beside the code or evidence they explain:
 
 ## Active Plans And Audits
 
-- Aura3D 1.6 governing PRD: `Aura3D-1.6-Replatform-PRD.md`
-- Aura3D 1.6 migration and version decision: `MIGRATION-1.6.md`
+- Aura3D 2.0 final governing PRD: `1.6-FINAL-PRD-Finishes.md`
+- Aura3D 2.0 migration guide: `MIGRATION-2.0.md`
+- Aura3D 2.0 release handoff: `HANDOFF-2.0.md`
+- Historical Aura3D 1.6 replatform PRD: `Aura3D-1.6-Replatform-PRD.md`
+- Historical Aura3D 1.6 migration decision: `MIGRATION-1.6.md`
 - Engine parity gap audit: `docs/project/audits/engine-parity-gap-audit.md`
 - Three.js comparison status: `docs/project/threejs-superiority-status.md`
 
 The final remaining-work, recovery remediation, engine/game parity, and Three.js
 execution plans are retained as implementation history. Their completed or
-superseded tasks are not current release requirements; the 1.6 PRD and canonical
-release checklist own the current gate state.
+superseded tasks are not current release requirements; the final 2.0 PRD and
+canonical release checklist own the current gate state.
 
 ## Release Docs
 
@@ -88,7 +91,8 @@ release checklist own the current gate state.
 - Aura3D 1.4.3 release notes: `docs/project/aura3d-143-release-notes.md`
 - Aura3D 1.4.4 release notes: `docs/project/aura3d-144-release-notes.md`
 - Aura3D 1.4.5 release notes: `docs/project/aura3d-145-release-notes.md`
-- Aura3D 1.6.0 release notes: `docs/project/aura3d-160-release-notes.md`
+- Aura3D 2.0.0 release notes: `docs/project/aura3d-200-release-notes.md`
+- Aura3D 1.6.0 historical release notes: `docs/project/aura3d-160-release-notes.md`
 - Verification evidence: `docs/project/verification-evidence.md`
 - Requirements trace: `docs/project/requirements-trace.md`
 - Completion audit: `docs/project/completion-audit.md`

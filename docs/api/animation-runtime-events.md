@@ -1,6 +1,6 @@
 # Aura3D Animation Runtime, Events, And Viseme Sync
 
-Status: Aura3D 1.6 bounded root and package guidance.
+Status: Aura3D 2.0 bounded root and package guidance.
 
 This page documents the safe agent pattern for skeletal animation, animation
 events, and viseme/blendshape sync. It is intentionally stricter than the

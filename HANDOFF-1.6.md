@@ -1,5 +1,8 @@
 # Aura3D 1.6 release handoff
 
+> Historical handoff only. It does not authorize a 1.6 or 2.0 publication. Use
+> `HANDOFF-2.0.md` and the final PRD for the current release process.
+
 Date: 2026-08-08
 Status: superseded handoff snapshot; release candidate remains incomplete
 

@@ -152,7 +152,7 @@ const noInternalDeepImport = {
 };
 
 export default {
-  meta: { name: "eslint-plugin-aura3d-boundaries", version: "1.6.0" },
+  meta: { name: "eslint-plugin-aura3d-boundaries", version: "2.0.0" },
   rules: {
     "no-upward-package-import": noUpwardPackageImport,
     "no-internal-deep-import": noInternalDeepImport

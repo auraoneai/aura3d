@@ -1,5 +1,8 @@
 # Migrating to Aura3D 1.6
 
+> Historical migration guide for the 1.6 line. Use `MIGRATION-2.0.md` for the
+> current 2.0 release candidate.
+
 **Short version: for the overwhelming majority of projects there is nothing to do.** No public
 package was removed, no public symbol became unreachable, and every intentional break below has a
 named replacement.

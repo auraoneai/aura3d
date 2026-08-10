@@ -1,7 +1,7 @@
 # Aura3D Current State
 
 Date: 2026-08-08
-Status: Aura3D 1.6.0 release-candidate baseline; final competitive replatform incomplete
+Status: Aura3D 2.0.0 release-candidate baseline; final competitive replatform incomplete
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -66,28 +66,30 @@ The package track can be considered for release when package tests, API docs,
 packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
-Current automated route evidence has been regenerated for the 1.6.0 candidate.
-Its four eligible non-game routes are retained as the immutable visual "before"
-baseline and are **not visually approved**. Their current review verdict is
-`needs-work`; route health, fresh screenshots, and interactions do not prove a
-material visual rebuild. A recorded human verdict is still required after that
-rebuild before the aggregate showcase gate can pass. Blockfall Reactor, Turbo Drift
-Circuit, and Skyline Runner remain `prototype-blocked` and cannot be promoted.
-Aura Clash remains a development showcase without a flagship-quality claim.
+The current public `examples/` inventory contains 13 retained routes after
+duplicate, contract-only, misleading, or visually rejected hosts were archived
+or moved to internal fixtures. Each retained route has been inspected at source,
+canvas, and full-page level and assigned a bounded disposition. The final
+unfiltered audit after the last presentation fixes is still required: its most
+recent attempt regenerated all captures but was invalidated by six dev-server
+navigation timeouts during unrelated machine-wide Playwright saturation.
+Automated screenshots or a previous green run are not substituted for that
+missing final receipt.
 
 Current retained result:
 
-- configured public route-library candidates: four remain eligible for current
-  review; no aggregate public-release pass is claimed until the human gate is
-  recorded;
-- internal diagnostics: 2 retained and not counted as public failures;
-- game-layer diagnostics: 2 retained as contract/debug harnesses, not public examples;
-- prototype-blocked routes: 3;
-- showcase index: handled as an index/catalog route.
+- public `examples/` routes: 13 retained, with real-asset workflows and bounded
+  diagnostics distinguished explicitly;
+- internalized hosts: still executable where useful for browser contracts, but
+  excluded from the public route inventory and visual-parity claims;
+- removed public game/racing hosts: not counted as release games or parity
+  evidence;
+- current same-workload Three.js comparisons: incomplete and unable to support
+  a universal ecosystem-parity claim.
 
-Current route-library release status: automated technical baseline retained,
-material rebuild incomplete, human approval absent. The July 19 manual review
-does not approve the current candidate. The former comparison suite is frozen
+Current route-library release status: per-route repairs and human dispositions
+are recorded in the final PRD, but the final clean unfiltered audit and all
+current comparison rows remain release blockers. The former comparison suite is frozen
 against `three@0.165.0` and is historical only. The current target is
 `three@0.185.1`; no current broad parity, performance, head-to-head, replacement,
 or ecosystem claim is permitted until `1.6-FINAL-PRD-Finishes.md` passes.
@@ -134,4 +136,4 @@ No route may move to public-ready based only on boot success, nonblank screensho
 - Release tracks: `docs/project/release-tracks.md`
 - Launch positioning: `docs/project/launch-positioning.md`
 - Game layer rebuild plan: `docs/project/aura3d-game-layer-rebuild-plan.md`
-- Aura3D 1.6.0 release notes: `docs/project/aura3d-160-release-notes.md`
+- Aura3D 2.0.0 release notes: `docs/project/aura3d-200-release-notes.md`

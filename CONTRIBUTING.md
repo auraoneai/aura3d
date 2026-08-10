@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Version: 1.6.0
+Version: 2.0.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
