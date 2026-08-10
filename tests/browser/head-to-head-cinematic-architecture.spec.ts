@@ -3,13 +3,14 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
+import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 const PROJECT = resolve("benchmark/current-head-to-head/cinematic-architecture");
 const REPORT_DIRECTORY = resolve("tests/reports/current-head-to-head/cinematic-architecture");
 
 test.describe("current head-to-head cinematic architecture", () => {
   let server: ViteDevServer; let origin: string;
-  test.beforeAll(async () => { server = await createServer({ root: PROJECT, logLevel: "error" }); await server.listen(0); origin = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0] ?? ""; mkdirSync(REPORT_DIRECTORY, { recursive: true }); });
+  test.beforeAll(async () => { server = await createServer({ root: PROJECT, logLevel: "error", resolve: { alias: [...installedAuraPackageAliases()] } }); await server.listen(0); origin = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0] ?? ""; mkdirSync(REPORT_DIRECTORY, { recursive: true }); });
   test.afterAll(async () => { await server.close(); });
 
   test("renders the exact skyline GLB through public Aura3D and idiomatic R3F/drei, then advances both cameras", async ({ page }) => {

@@ -3,7 +3,7 @@ import type { PortableShaderBinding, RenderDevice, RenderShaderProgram, UniformV
 import { ShaderLibrary, type ShaderSourcePair } from "./ShaderLibraryCore";
 import { ShaderModule } from "./ShaderModule";
 import { reflectShaderSources } from "./ShaderReflection";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding, TextureBinding } from "./TextureBinding";
 
 const WGSL_BINDINGS_MARKER = "/* @aura3d-bindings */";
 const BUILTIN_BINDINGS: readonly PortableShaderBinding[] = [
@@ -232,9 +232,9 @@ function validatePortableShaderSources(
 
 function portableUniformValueDiagnostic(descriptor: MaterialUniformDescriptor, value: UniformValue): string | null {
   if (descriptor.kind === "texture2d") {
-    return value instanceof TextureBinding ? null : `Portable uniform ${descriptor.name} must be texture2d`;
+    return isTextureBinding(value) ? null : `Portable uniform ${descriptor.name} must be texture2d`;
   }
-  if (value instanceof TextureBinding) return `Portable uniform ${descriptor.name} must be ${descriptor.kind}, got texture2d`;
+  if (isTextureBinding(value)) return `Portable uniform ${descriptor.name} must be ${descriptor.kind}, got texture2d`;
   const values = typeof value === "number" ? [value] : Array.from(value);
   const expected = descriptor.kind === "float" ? 1
     : descriptor.kind === "vec2" ? 2

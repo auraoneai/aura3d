@@ -1,6 +1,6 @@
 import { Material, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding, TextureBinding } from "./TextureBinding";
 
 export const DEFAULT_PBR_SHADER_NAME = "aura3d/pbr-direct";
 export const DEFAULT_PBR_SHADER_MARKER = "@aura3d-shader:pbr-direct";
@@ -307,7 +307,7 @@ export class PBRMaterial extends Material {
 
   get environmentMapTexture(): TextureBinding | null {
     const value = this.getParameter("u_environmentMapTexture");
-    return value instanceof TextureBinding && value.texture ? value : null;
+    return isTextureBinding(value) && value.texture ? value : null;
   }
 
   set environmentMapIntensity(value: number) {
@@ -353,7 +353,7 @@ export class PBRMaterial extends Material {
 
   get environmentBrdfLutTexture(): TextureBinding | null {
     const value = this.getParameter("u_environmentBrdfLutTexture");
-    return value instanceof TextureBinding && value.texture ? value : null;
+    return isTextureBinding(value) && value.texture ? value : null;
   }
 }
 

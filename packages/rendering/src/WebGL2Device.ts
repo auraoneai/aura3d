@@ -16,7 +16,7 @@ import {
   type ShaderSources,
 } from "./RenderDevice";
 import { Texture, isCompressedTextureFormat, isFloatColorTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TexturePixelData } from "./Texture";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding, TextureBinding } from "./TextureBinding";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { type VertexAttribute, type VertexFormat } from "./VertexFormat";
 import { WebGL2StateCache } from "./WebGL2StateCache";
@@ -2871,7 +2871,7 @@ void main() {
       if (location === null) {
         throw new RenderDeviceError("Material tried to bind a missing shader uniform", "MISSING_UNIFORM", { name });
       }
-      if (value instanceof TextureBinding) {
+      if (isTextureBinding(value)) {
         this.uploadTextureUniform(location, value, textureUnit);
         textureUnit += 1;
       } else if (typeof value === "number") {

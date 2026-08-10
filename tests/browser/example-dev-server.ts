@@ -1,8 +1,9 @@
 import { createServer, type Server } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { extname, join, normalize, resolve } from "node:path";
+import { extname, join, normalize, relative, resolve } from "node:path";
 import ts from "typescript";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
+import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 export interface ExampleDevServer {
   readonly origin: string;
@@ -101,6 +102,14 @@ const packageEntryPoints = new Map<string, string>([
   ["three", "/node_modules/three/build/three.module.js"],
   ["tslib", "/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.mjs"],
 ]);
+
+for (const entry of installedAuraPackageAliases()) {
+  const repositoryRelative = relative(process.cwd(), entry.replacement).replaceAll("\\", "/");
+  if (repositoryRelative.startsWith("../")) {
+    throw new Error(`Installed comparison package is outside the served repository: ${entry.replacement}`);
+  }
+  packageEntryPoints.set(entry.find, `/${repositoryRelative}`);
+}
 
 export async function startExampleDevServer(root = process.cwd()): Promise<ExampleDevServer> {
   const server = createServer((request, response) => {

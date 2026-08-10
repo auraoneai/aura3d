@@ -34,7 +34,8 @@ import {
   TexturedPBRMaterial,
   UniformLayout,
   createClusteredForwardLighting,
-  createDefaultShaderLibrary
+  createDefaultShaderLibrary,
+  isTextureBinding
 } from "../../../packages/rendering/src";
 
 describe("PBR material and direct light contracts", () => {
@@ -816,6 +817,14 @@ describe("PBR material and direct light contracts", () => {
       warnings: []
     });
     expect(present.validate().ok).toBe(true);
+  });
+
+  it("recognizes texture bindings across finalized package copies", () => {
+    const binding = new TextureBinding({ name: "cross-package" });
+    const peerCopy = Object.assign(Object.create(null), binding, { validate: () => binding.validate() });
+
+    expect(peerCopy).not.toBeInstanceOf(TextureBinding);
+    expect(isTextureBinding(peerCopy)).toBe(true);
   });
 
   it("validates PBR texture color-space contracts", () => {

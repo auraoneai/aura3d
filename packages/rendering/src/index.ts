@@ -358,7 +358,7 @@ export { Sampler } from "./Sampler";
 export type { SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
 export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
-export { TextureBinding } from "./TextureBinding";
+export { isTextureBinding, TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
 /*
  * WS-3.4 — `./threejs-compatibility` is deleted, not re-exported from somewhere else.

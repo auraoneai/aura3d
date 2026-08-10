@@ -1,6 +1,6 @@
 import { Material } from "./Material";
 import { type UniformValue } from "./RenderDevice";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding, TextureBinding } from "./TextureBinding";
 
 export class MaterialInstance {
   private readonly overrides = new Map<string, UniformValue>();
@@ -52,7 +52,7 @@ function cloneUniformValue(value: UniformValue): UniformValue {
   if (typeof value === "number") {
     return value;
   }
-  if (value instanceof TextureBinding) {
+  if (isTextureBinding(value)) {
     return value;
   }
   return ArrayBuffer.isView(value) ? new (value.constructor as Float32ArrayConstructor)(value as Float32Array) : [...value];

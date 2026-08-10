@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
+import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 const PROJECT = resolve("benchmark/current-head-to-head/skinned-morph-animation");
 const REPORT_DIRECTORY = resolve("tests/reports/current-head-to-head/skinned-morph-animation");
@@ -11,7 +12,7 @@ test.describe("current head-to-head skinned and morph animation", () => {
   let server: ViteDevServer;
   let origin: string;
   test.beforeAll(async () => {
-    server = await createServer({ root: PROJECT, logLevel: "error" });
+    server = await createServer({ root: PROJECT, logLevel: "error", resolve: { alias: [...installedAuraPackageAliases()] } });
     await server.listen(0);
     origin = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0] ?? "";
     mkdirSync(REPORT_DIRECTORY, { recursive: true });

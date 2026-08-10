@@ -20,7 +20,7 @@ import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
 import { reflectShaderSources } from "./ShaderReflection";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { Texture, bytesPerPixel, isCompressedTextureFormat, type TextureFormat } from "./Texture";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding, TextureBinding } from "./TextureBinding";
 import { type VertexFormat } from "./VertexFormat";
 
 const BUFFER_USAGE = {
@@ -2142,7 +2142,7 @@ function uniformColor(uniforms: DrawCommand["uniforms"]): readonly [number, numb
 function uniformBaseColorTextureBinding(uniforms: DrawCommand["uniforms"]): TextureBinding | null {
   if (!uniforms) return null;
   const direct = uniforms.get("u_texture") ?? uniforms.get("u_baseColorTexture") ?? uniforms.get("baseColorTexture");
-  if (direct instanceof TextureBinding && direct.texture && !direct.texture.disposed && direct.validate().ok) {
+  if (isTextureBinding(direct) && direct.texture && !direct.texture.disposed && direct.validate().ok) {
     return direct;
   }
   return null;
@@ -2150,7 +2150,7 @@ function uniformBaseColorTextureBinding(uniforms: DrawCommand["uniforms"]): Text
 
 function uniformTextureBinding(uniforms: DrawCommand["uniforms"], name: string): TextureBinding | null {
   const value = uniforms?.get(name);
-  return value instanceof TextureBinding && value.texture && !value.texture.disposed && value.validate().ok ? value : null;
+  return isTextureBinding(value) && value.texture && !value.texture.disposed && value.validate().ok ? value : null;
 }
 
 function uniformNumber(value: UniformValue | undefined, fallback: number): number {
@@ -2206,7 +2206,7 @@ function uniformForwardShadow(uniforms: DrawCommand["uniforms"]): ForwardShadowU
   if (typeof enabled !== "number" || enabled < 0.5) return null;
   const texture = uniforms.get("u_shadowMapTexture");
   const matrix = uniformMat4(uniforms.get("u_shadowMapMatrix")) ?? identityMatrix();
-  if (!(texture instanceof TextureBinding) || !texture.texture || texture.texture.disposed || !texture.validate().ok) {
+  if (!isTextureBinding(texture) || !texture.texture || texture.texture.disposed || !texture.validate().ok) {
     return null;
   }
   const strengthValue = uniforms.get("u_shadowMapStrength");
@@ -2725,7 +2725,7 @@ function writePortableUniform(
   if (kind === "texture2d") return;
   const numbers = typeof value === "number"
     ? [value]
-    : value && !(value instanceof TextureBinding)
+    : value && !isTextureBinding(value)
       ? Array.from(value)
       : [];
   const count = portableUniformSize(kind) / 4;

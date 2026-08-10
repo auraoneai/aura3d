@@ -5,6 +5,7 @@ import {
 } from "./tools/naming-taxonomy/contextualAliases";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { ViteDevServer } from "vite";
+import { installedAuraPackageAliases } from "./tests/browser/installed-package-resolve";
 
 const aliasEntries = [
   ["@aura3d/lean/product", "./packages/lean/src/product.ts"],
@@ -71,10 +72,13 @@ const aliasEntries = [
   ["@aura3d/debug", "./packages/debug/src/index.ts"],
 ] as const;
 
-const alias = aliasEntries.map(([find, replacement]) => ({
-  find,
-  replacement: new URL(replacement, import.meta.url).pathname,
-}));
+const installedAliases = installedAuraPackageAliases();
+const alias = installedAliases.length > 0
+  ? [...installedAliases]
+  : aliasEntries.map(([find, replacement]) => ({
+      find,
+      replacement: new URL(replacement, import.meta.url).pathname,
+    }));
 
 export default {
   resolve: {

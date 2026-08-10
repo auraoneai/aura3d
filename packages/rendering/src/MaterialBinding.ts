@@ -1,7 +1,7 @@
 import { Material } from "./Material";
 import { MaterialInstance } from "./MaterialInstance";
 import { type RenderShaderProgram, type UniformValue } from "./RenderDevice";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding } from "./TextureBinding";
 
 export interface MaterialBindingResult {
   readonly shader: RenderShaderProgram;
@@ -47,7 +47,7 @@ export class MaterialBinding {
       }
     }
     for (const [name, value] of uniforms) {
-      if (value instanceof TextureBinding) {
+      if (isTextureBinding(value)) {
         const validation = value.validate();
         diagnostics.push(...validation.diagnostics);
         warnings.push(...validation.warnings);
@@ -96,9 +96,9 @@ function validateUniformSchemaValue(name: string, kind: string, value: UniformVa
     return null;
   }
   if (kind === "texture2d" || kind === "textureCube") {
-    return value instanceof TextureBinding ? null : `Material uniform ${name} must be ${kind}`;
+    return isTextureBinding(value) ? null : `Material uniform ${name} must be ${kind}`;
   }
-  if (value instanceof TextureBinding) {
+  if (isTextureBinding(value)) {
     return `Material uniform ${name} must be ${kind}, got texture binding`;
   }
   const numbers = typeof value === "number"

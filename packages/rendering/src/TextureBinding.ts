@@ -1,6 +1,8 @@
 import { Sampler } from "./Sampler";
 import { Texture, type TextureColorSpace, type TextureDimension } from "./Texture";
 
+const TEXTURE_BINDING_BRAND = Symbol.for("@aura3d/rendering/TextureBinding");
+
 export interface TextureBindingDescriptor {
   readonly name: string;
   readonly texture?: Texture | null;
@@ -25,6 +27,7 @@ export interface TextureBindingValidation {
 }
 
 export class TextureBinding {
+  public readonly [TEXTURE_BINDING_BRAND] = true;
   public readonly name: string;
   public readonly texture: Texture | null;
   public readonly sampler: Sampler;
@@ -88,4 +91,20 @@ export class TextureBinding {
       scaledX * sin + scaledY * cos + this.offset[1]
     ];
   }
+}
+
+/**
+ * Recognizes texture bindings across duplicated package instances.
+ *
+ * The compatibility `@aura3d/engine` package contains a finalized copy of the
+ * renderer, while modular consumers can create render resources through the
+ * standalone `@aura3d/assets` package. `instanceof` is false across those two
+ * module instances even though both objects implement the same public
+ * contract. A global symbol keeps the public packages interoperable without
+ * weakening validation to arbitrary duck typing.
+ */
+export function isTextureBinding(value: unknown): value is TextureBinding {
+  return typeof value === "object"
+    && value !== null
+    && (value as Record<PropertyKey, unknown>)[TEXTURE_BINDING_BRAND] === true;
 }
