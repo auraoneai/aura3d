@@ -524,6 +524,7 @@
     "head-to-head:smart-city": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-smart-city.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-smart-city/index.ts",
     "smart-city:optimization": "pnpm build:raw && pnpm exec playwright test tests/browser/showcase-smart-city-optimization.spec.ts --reporter=line",
     "cinematic-architecture:rendering": "pnpm build:raw && pnpm exec playwright test tests/browser/showcase-cinematic-architecture-rendering.spec.ts --reporter=line",
+    "digital-twin:operations": "pnpm build:raw && pnpm exec playwright test tests/browser/showcase-digital-twin-operations.spec.ts --reporter=line",
     "head-to-head:cinematic-architecture": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-cinematic-architecture.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-cinematic-architecture/index.ts",
     "head-to-head:digital-twin-data": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-digital-twin-data.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-digital-twin-data/index.ts",
     "head-to-head:instancing-lod": "pnpm current-threejs:baseline && pnpm build:raw && pnpm exec playwright test tests/browser/head-to-head-instancing-lod.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/head-to-head-instancing-lod/index.ts",

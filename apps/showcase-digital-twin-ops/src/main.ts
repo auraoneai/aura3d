@@ -10,6 +10,7 @@ import {
   focusSemanticRegion,
   game,
   interactions,
+  labels,
   lights,
   material,
   model,
@@ -42,6 +43,9 @@ interface DigitalTwinEvidence {
   readonly frameCount: number;
   readonly mode: OpsMode;
   readonly selectedZone: ZoneId;
+  readonly isolatedZone?: ZoneId;
+  readonly timeControl: { readonly paused: boolean; readonly step: number; readonly steps: number };
+  readonly accessibilitySummary: string;
   readonly uptime: number;
   readonly throughput: number;
   readonly energyMw: number;
@@ -50,6 +54,13 @@ interface DigitalTwinEvidence {
   readonly controls: readonly string[];
   readonly systems: readonly string[];
   readonly runtimeNodeIds: readonly string[];
+  readonly renderedLabels: readonly { readonly visible: boolean }[];
+  readonly eventLog: readonly string[];
+  readonly camera: {
+    readonly position: readonly number[];
+    readonly target: readonly number[];
+    readonly focusedZone?: ZoneId;
+  };
   readonly motionProof: {
     readonly conveyorSegmentX: number;
     readonly robotArmRadians: number;
@@ -77,6 +88,9 @@ const controls = [
   "Zone buttons select assembly, packaging, energy, or dock",
   "Inject Alert creates deterministic incident evidence",
   "Clear Alerts returns the workcell to normal",
+  "Focus Zone frames the selected equipment region",
+  "Isolate Zone applies visible and telemetry-backed operational isolation",
+  "Pause or resume time and advance the deterministic eight-step simulation",
   "Orbit interaction inspects the typed workcell"
 ] as const;
 
@@ -89,6 +103,8 @@ const systems = [
   "zone selection feedback comes from the reusable focus system (engine.focusSemanticRegion)",
   "spatial invariants are published so helper placement is verified against the asset's bounds rather than judged by eye",
   "Aura3D runtime nodes provide visible conveyor and scanner motion proof",
+  "public world callouts label all four asset-relative equipment zones",
+  "isolation and deterministic time controls change scene/runtime state rather than only dashboard text",
   "route-health evidence global and deploy gates remain required before public claims"
 ] as const;
 
@@ -183,6 +199,11 @@ function zoneCenter(zone: ZoneId): readonly [number, number, number] {
 
 let mode: OpsMode = "normal";
 let selectedZone: ZoneId = "assembly";
+let isolatedZone: ZoneId | undefined;
+let timePaused = false;
+let simulationStep = 0;
+const SIMULATION_STEPS = 8;
+const SECONDS_PER_STEP = 2;
 /**
  * Live camera pose.
  *
@@ -232,6 +253,8 @@ let workcell = app.nodes.require("ops-typed-welding-workcell");
 let conveyor = app.nodes.require("ops-conveyor-motion");
 let sensor = app.nodes.require("ops-sensor-sweep");
 let selectedRing = app.nodes.require("ops-selected-zone-ring");
+let isolationRing = app.nodes.require("ops-isolation-zone-ring");
+let zoneAlarmRing = app.nodes.require("ops-zone-alarm-ring");
 let alarmBeacon = app.nodes.require("ops-alarm-beacon");
 let movingWorkpieces = Array.from({ length: 3 }, (_, index) => ({
   id: `ops-moving-workpiece-${index + 1}`,
@@ -244,6 +267,8 @@ function rebindRuntimeNodes(): void {
   conveyor = app.nodes.require("ops-conveyor-motion");
   sensor = app.nodes.require("ops-sensor-sweep");
   selectedRing = app.nodes.require("ops-selected-zone-ring");
+  isolationRing = app.nodes.require("ops-isolation-zone-ring");
+  zoneAlarmRing = app.nodes.require("ops-zone-alarm-ring");
   alarmBeacon = app.nodes.require("ops-alarm-beacon");
   movingWorkpieces = Array.from({ length: 3 }, (_, index) => ({
     id: `ops-moving-workpiece-${index + 1}`,
@@ -267,12 +292,15 @@ window.addEventListener("resize", () => {
   publishEvidence("ready");
 });
 
-app.onFrame(({ dt, time }) => {
+app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   frameCount += 1;
-  uptime += step;
-  updateTelemetry(step);
-  syncRuntime(time);
+  if (!timePaused) {
+    uptime += step;
+    simulationStep = Math.floor(uptime / SECONDS_PER_STEP) % SIMULATION_STEPS;
+    updateTelemetry(step);
+  }
+  syncRuntime(uptime);
   if (frameCount < 4 || frameCount % 12 === 0) {
     syncUi();
     publishEvidence("running");
@@ -323,6 +351,9 @@ function createWorkcellPresentation(): AuraNodeInput[] {
     // The zone selection ring comes from the reusable focus system, so it cannot
     // be flattened into a bar by a nonuniform scale in the torus ring plane.
     ...zoneSelectionNodes("assembly"),
+    ...isolationIndicatorNodes(),
+    ...alarmIndicatorNodes(),
+    ...zoneWorldLabels(),
     primitives.box({ name: "short conveyor motion marker", material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.64, opacity: 0.62 }) })
       .position(belt.min[0], belt.center[1], belt.center[2])
       .scale([belt.size[0] * 0.2, 0.009, belt.size[2] * 0.6])
@@ -363,6 +394,52 @@ function zoneSelectionNodes(zone: ZoneId): AuraNodeInput[] {
     name: node.kind === "primitive" ? "selected zone evidence ring" : (node as { name?: string }).name,
     runtime: { id: "ops-selected-zone-ring", mutable: true, tags: ["zone", "runtime", "selection"] }
   })) as AuraNodeInput[];
+}
+
+function isolationIndicatorNodes(): AuraNodeInput[] {
+  const focus = focusSemanticRegion(workcellBounds(), zoneRegions.assembly, {
+    color: "#f2b15a",
+    indicators: ["ring"],
+    callout: false,
+    cameraFocus: false,
+    namePrefix: "isolated zone evidence"
+  });
+  return focus.nodes.map((node) => ({
+    ...node,
+    name: "isolated zone evidence ring",
+    runtime: { id: "ops-isolation-zone-ring", mutable: true, tags: ["zone", "runtime", "isolation"] }
+  })) as AuraNodeInput[];
+}
+
+function alarmIndicatorNodes(): AuraNodeInput[] {
+  const focus = focusSemanticRegion(workcellBounds(), zoneRegions.assembly, {
+    color: "#f2715c",
+    indicators: ["ring"],
+    callout: false,
+    cameraFocus: false,
+    namePrefix: "zone alarm evidence"
+  });
+  return focus.nodes.map((node) => ({
+    ...node,
+    name: "zone alarm evidence ring",
+    runtime: { id: "ops-zone-alarm-ring", mutable: true, tags: ["zone", "runtime", "alarm"] }
+  })) as AuraNodeInput[];
+}
+
+function zoneWorldLabels(): AuraNodeInput[] {
+  return zoneOrder.map((zone) => {
+    const center = zoneCenter(zone);
+    const bounds = workcellBounds();
+    return labels.callout(zoneLabels[zone], zone, {
+      name: `${zone} equipment world label`,
+      position: [center[0] + bounds.size[0] * 0.08, center[1] + bounds.size[1] * 0.15, center[2]],
+      anchorWorldPosition: center,
+      size: Math.max(0.12, Math.max(...bounds.size) * 0.07),
+      offscreenPolicy: "hide",
+      collisionAvoidance: true,
+      occlusionAware: true
+    }).toJSON();
+  });
 }
 
 function createWorkpieces(): AuraNodeInput[] {
@@ -420,6 +497,8 @@ function spatialEvidence() {
   const belt = conveyorLine();
   const claims: HelperPlacementClaim[] = [
     { id: "selected zone ring", position: zoneCenter(selectedZone), relation: "inside" },
+    ...(isolatedZone ? [{ id: "isolated zone ring", position: zoneCenter(isolatedZone), relation: "inside" as const }] : []),
+    ...(zones.some((zone) => zone.incidents > 0) ? [{ id: "zone alarm ring", position: zoneCenter(selectedZone), relation: "inside" as const }] : []),
     { id: "conveyor motion marker", position: [belt.min[0], belt.center[1], belt.center[2]], relation: "inside" },
     { id: "optical scanner sweep", position: resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 }).center, relation: "inside" },
     {
@@ -440,6 +519,7 @@ function spatialEvidence() {
   digitalTwinKit.reset();
   digitalTwinKit.selectEquipment(selectedZone);
   digitalTwinKit.setMode(mode);
+  for (let step = 0; step < simulationStep; step += 1) digitalTwinKit.advanceTimeline();
   if (focusedZone !== undefined) digitalTwinKit.toggleFocus();
   const kitFrame = digitalTwinKit.frame();
   return {
@@ -477,48 +557,70 @@ function createZones(): ZoneState[] {
 
 function updateTelemetry(dt: number): void {
   const incidentBias = mode === "incident" ? 1.55 : mode === "maintenance" ? 0.72 : 1;
-  throughput = Math.round(1260 + Math.sin(uptime * 0.42) * 70 - (mode === "maintenance" ? 160 : 0) - (mode === "incident" ? 250 : 0));
+  throughput = Math.round(1260 + Math.sin(uptime * 0.42) * 70 - (mode === "maintenance" ? 160 : 0) - (mode === "incident" ? 250 : 0) - (isolatedZone ? 220 : 0));
   energyMw = Number((4.72 + Math.sin(uptime * 0.27) * 0.24 + (mode === "incident" ? 0.48 : 0)).toFixed(2));
   zones = zones.map((zone, index) => {
     const selectedBoost = zone.id === selectedZone ? 8 : 0;
     return {
       ...zone,
-      load: Math.round(clamp(zone.load + Math.sin(uptime * (0.22 + index * 0.03)) * 0.14 + selectedBoost * dt * 0.07, 30, 98)),
-      temperature: Number(clamp(zone.temperature + Math.sin(uptime * 0.18 + index) * 0.014 * incidentBias, 25, 82).toFixed(1))
+      load: zone.id === isolatedZone ? 0 : Math.round(clamp(zone.load + Math.sin(uptime * (0.22 + index * 0.03)) * 0.14 + selectedBoost * dt * 0.07, 30, 98)),
+      temperature: Number((zone.id === isolatedZone
+        ? clamp(zone.temperature - dt * 0.35, 25, 82)
+        : clamp(zone.temperature + Math.sin(uptime * 0.18 + index) * 0.014 * incidentBias, 25, 82)).toFixed(1))
     };
   });
 }
 
 function syncRuntime(time: number): void {
-  const beltSpeed = mode === "maintenance" ? 0.36 : mode === "incident" ? 0.95 : 0.68;
-  const conveyorX = -0.46 + ((time * beltSpeed) % 0.66);
+  const bounds = workcellBounds();
+  const belt = conveyorLine();
+  const conveyorIsolated = isolatedZone === "packaging" || isolatedZone === "dock";
+  const beltSpeed = conveyorIsolated ? 0 : mode === "maintenance" ? 0.36 : mode === "incident" ? 0.95 : 0.68;
+  const conveyorX = belt.min[0] + ((time * beltSpeed) % Math.max(0.001, belt.size[0]));
   const robotArmRadians = Math.sin(time * 1.15) * 0.18;
   const typedRobotYaw = -0.18 + Math.sin(time * 0.64) * 0.045;
   const sensorSweepRadians = Math.sin(time * 1.02) * 0.72;
   const workpieceProof = movingWorkpieces.map((entry, index) => {
-    const laneProgress = (time * beltSpeed + index * 0.22) % 0.64;
-    const x = -0.28 + laneProgress;
-    const z = 0.44 + Math.sin(time * 1.2 + index) * 0.01;
+    const laneProgress = (time * beltSpeed + index * belt.size[0] / movingWorkpieces.length) % Math.max(0.001, belt.size[0]);
+    const x = belt.min[0] + laneProgress;
+    const z = belt.center[2] + Math.sin(time * 1.2 + index) * belt.size[2] * 0.08;
     entry.node
-      .setPosition(x, 0.115, z)
+      .setVisible(!conveyorIsolated)
+      .setPosition(x, belt.center[1], z)
       .setRotation(0, time * (0.45 + index * 0.05), 0)
-      .setScale([0.064, 0.032 + Math.sin(time * 2 + index) * 0.003, 0.052]);
+      .setScale([bounds.size[0] * 0.048, bounds.size[1] * (0.038 + Math.sin(time * 2 + index) * 0.003), bounds.size[2] * 0.06]);
     return { id: entry.id, x: Number(x.toFixed(3)), z: Number(z.toFixed(3)) };
   });
   beltPulseNodes.forEach((node, index) => {
-    const pulseX = -0.45 + ((time * beltSpeed * 1.2 + index * 0.15) % 0.66);
-    node.setPosition(pulseX, 0.086, 0.52).setScale([0.07, 0.006, 0.024]);
+    const pulseX = belt.min[0] + ((time * beltSpeed * 1.2 + index * belt.size[0] / beltPulseNodes.length) % Math.max(0.001, belt.size[0]));
+    node
+      .setPosition(pulseX, belt.center[1] - bounds.size[1] * 0.02, belt.max[2])
+      .setScale([bounds.size[0] * 0.053, bounds.size[1] * 0.007, bounds.size[2] * 0.028]);
   });
-  conveyor.setPosition(conveyorX, 0.11, 0.44);
-  workcell.setPosition(-0.08, 0.058 + Math.sin(time * 0.7) * 0.002, -0.04).setRotation(0, typedRobotYaw, 0).setScale(1);
-  sensor.setRotation(0, sensorSweepRadians, 0);
+  conveyor.setPosition(conveyorX, belt.center[1], belt.center[2]);
+  workcell
+    .setPosition(WORKCELL_POSITION[0], WORKCELL_POSITION[1] + Math.sin(time * 0.7) * 0.002, WORKCELL_POSITION[2])
+    .setRotation(0, typedRobotYaw, 0)
+    .setScale(1);
+  sensor.setVisible(isolatedZone !== "energy").setRotation(0, sensorSweepRadians, 0);
   // Ring radius pulses uniformly in the torus ring plane (X and Y) with the tube
   // thickness held on Z, so the pulse cannot degenerate into a bar.
   const ringBase = Math.max(...workcellBounds().size) * 0.16;
   const ringRadius = ringBase + Math.sin(time * 2.2) * ringBase * 0.075;
   selectedRing.setPosition(...zoneCenter(selectedZone)).setScale([ringRadius, ringRadius, ringRadius * 0.09]);
+  const isolationRadius = ringBase * 1.18;
+  isolationRing
+    .setVisible(isolatedZone !== undefined)
+    .setPosition(...zoneCenter(isolatedZone ?? selectedZone))
+    .setScale([isolationRadius, isolationRadius, isolationRadius * 0.08]);
   const alarmVisible = mode === "incident" || zones.some((zone) => zone.incidents > 0);
-  alarmBeacon.setVisible(alarmVisible).setScale(alarmVisible ? 0.052 + Math.abs(Math.sin(time * 6.4)) * 0.04 : 0.035);
+  const alarmRadius = ringBase * (0.76 + Math.abs(Math.sin(time * 6.4)) * 0.14);
+  zoneAlarmRing
+    .setVisible(alarmVisible)
+    .setPosition(...zoneCenter(selectedZone))
+    .setScale([alarmRadius, alarmRadius, alarmRadius * 0.1]);
+  const alarmScale = Math.max(...bounds.size) * (0.036 + (alarmVisible ? Math.abs(Math.sin(time * 6.4)) * 0.025 : 0));
+  alarmBeacon.setVisible(alarmVisible).setScale(alarmScale);
   lastMotionProof = {
     conveyorSegmentX: Number(conveyorX.toFixed(3)),
     robotArmRadians: Number(robotArmRadians.toFixed(3)),
@@ -554,6 +656,15 @@ function renderConsole(): void {
         <button type="button" id="clear-alerts">Clear Alerts</button>
         <button type="button" id="focus-zone">Focus Zone</button>
       </div>
+    </section>
+    <section class="console__section">
+      <h2>Operations</h2>
+      <div class="mode-bar">
+        <button type="button" id="isolate-zone" aria-pressed="false">Isolate Zone</button>
+        <button type="button" id="toggle-time" aria-pressed="false">Pause Time</button>
+        <button type="button" id="advance-time">Advance +2s</button>
+      </div>
+      <p id="ops-accessible-summary" class="claim" role="status" aria-live="polite"></p>
     </section>
     <section class="console__section">
       <h2>Evidence</h2>
@@ -603,6 +714,31 @@ function renderConsole(): void {
   });
   consoleEl.querySelector<HTMLButtonElement>("#focus-zone")?.addEventListener("click", () => {
     focusSelectedZone();
+  });
+  consoleEl.querySelector<HTMLButtonElement>("#isolate-zone")?.addEventListener("click", () => {
+    isolatedZone = isolatedZone === selectedZone ? undefined : selectedZone;
+    eventLog = [isolatedZone
+      ? `${zoneLabels[isolatedZone]} zone isolated; its sample load is zero and connected motion is inhibited.`
+      : `${zoneLabels[selectedZone]} zone returned to service.`, ...eventLog].slice(0, 7);
+    syncRuntime(uptime);
+    syncUi();
+    publishEvidence("ready");
+  });
+  consoleEl.querySelector<HTMLButtonElement>("#toggle-time")?.addEventListener("click", () => {
+    timePaused = !timePaused;
+    eventLog = [`Simulation time ${timePaused ? "paused" : "resumed"} at step ${simulationStep + 1}/${SIMULATION_STEPS}.`, ...eventLog].slice(0, 7);
+    syncUi();
+    publishEvidence("ready");
+  });
+  consoleEl.querySelector<HTMLButtonElement>("#advance-time")?.addEventListener("click", () => {
+    timePaused = true;
+    uptime += SECONDS_PER_STEP;
+    simulationStep = (simulationStep + 1) % SIMULATION_STEPS;
+    updateTelemetry(SECONDS_PER_STEP);
+    syncRuntime(uptime);
+    eventLog = [`Simulation advanced to step ${simulationStep + 1}/${SIMULATION_STEPS}.`, ...eventLog].slice(0, 7);
+    syncUi();
+    publishEvidence("ready");
   });
 }
 
@@ -669,12 +805,19 @@ function syncUi(): void {
   document.querySelectorAll<HTMLButtonElement>("[data-zone]").forEach((button) => {
     button.setAttribute("aria-pressed", String(button.dataset.zone === selectedZone));
   });
+  const isolateButton = document.querySelector<HTMLButtonElement>("#isolate-zone");
+  isolateButton?.setAttribute("aria-pressed", String(isolatedZone === selectedZone));
+  if (isolateButton) isolateButton.textContent = isolatedZone === selectedZone ? "Restore Zone" : "Isolate Zone";
+  const timeButton = document.querySelector<HTMLButtonElement>("#toggle-time");
+  timeButton?.setAttribute("aria-pressed", String(timePaused));
+  if (timeButton) timeButton.textContent = timePaused ? "Resume Time" : "Pause Time";
 
   const diagnostics = app.diagnostics();
   setText("#ops-runtime-nodes", app.nodes.ids().length);
   setText("#ops-draw-calls", diagnostics.drawCalls);
   setText("#ops-backend", app.backend);
   setText("#ops-mode", mode);
+  setText("#ops-accessible-summary", accessibilitySummary());
   const log = document.querySelector<HTMLElement>("#ops-event-log");
   if (log) {
     log.innerHTML = eventLog.map((item, index) => `<li><time>${String(index + 1).padStart(2, "0")}</time><b>${escapeHtml(item)}</b></li>`).join("");
@@ -689,6 +832,9 @@ function publishEvidence(status: DigitalTwinEvidence["status"]): void {
     frameCount,
     mode,
     selectedZone,
+    isolatedZone,
+    timeControl: { paused: timePaused, step: simulationStep, steps: SIMULATION_STEPS },
+    accessibilitySummary: accessibilitySummary(),
     uptime: Number(uptime.toFixed(2)),
     throughput,
     energyMw,
@@ -699,6 +845,7 @@ function publishEvidence(status: DigitalTwinEvidence["status"]): void {
     controls,
     systems,
     runtimeNodeIds: app.nodes.ids(),
+    renderedLabels: (diagnostics.labels ?? []).map((label) => ({ visible: label.visible })),
     motionProof: lastMotionProof,
     claimBoundary: "Digital-twin operations showcase using the typed robotic welding workcell GLB plus deterministic browser-side sample telemetry. It does not claim real facility data, PLC connectivity, validated safety logic, or production digital-twin integration.",
     spatialInvariants: spatialEvidence(),
@@ -716,6 +863,11 @@ function publishEvidence(status: DigitalTwinEvidence["status"]): void {
 function zoneSummary(zoneId: ZoneId): string {
   const zone = zones.find((candidate) => candidate.id === zoneId);
   return zone ? `${zone.load}% load | ${zone.temperature.toFixed(1)} C` : "pending";
+}
+
+function accessibilitySummary(): string {
+  const alerts = zones.reduce((sum, zone) => sum + zone.incidents, 0);
+  return `${zoneLabels[selectedZone]} selected${focusedZone === selectedZone ? " and camera focused" : ""}; ${isolatedZone ? `${zoneLabels[isolatedZone]} isolated` : "no zone isolated"}; mode ${mode}; ${alerts} alert${alerts === 1 ? "" : "s"}; simulation ${timePaused ? "paused" : "running"} at step ${simulationStep + 1} of ${SIMULATION_STEPS}; ${zoneSummary(selectedZone)}.`;
 }
 
 function isZone(value: string | undefined): value is ZoneId {
