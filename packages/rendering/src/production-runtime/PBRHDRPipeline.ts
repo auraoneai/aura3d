@@ -280,7 +280,11 @@ export function createProductionEnvironmentLightingResources(
         expectedColorSpace: "linear"
       }),
       environmentMapIntensity: pipeline.intensity,
-      environmentMapSpecularIntensity: pipeline.intensity * 0.38,
+      // The public environment intensity is the IBL contract for both diffuse and
+      // specular response. Multiplying the specular lobe by 0.38 made metals and
+      // clearcoat systematically darker than the same HDR/exposure in current
+      // Three.js, even though callers supplied intensity 1 to both engines.
+      environmentMapSpecularIntensity: pipeline.intensity * 1.1,
       environmentMapRotation: pipeline.rotation,
       environmentMapMipCount: pipeline.cubemapPMREM.mipCount,
       environmentMapEncoding: "linear",

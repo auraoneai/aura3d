@@ -23,6 +23,10 @@ declare global {
       };
       readonly materials?: readonly string[];
       readonly pixels?: Record<string, readonly number[]>;
+      readonly reflectionMetrics?: {
+        readonly metalGloss: { readonly sampledPixels: number; readonly p99Luma: number; readonly highlightRange: number; readonly uniqueLumaBuckets: number };
+        readonly metalRough: { readonly p99Luma: number };
+      };
       readonly postprocess?: {
         readonly source: "webgl2-material-showroom-emissive-readback";
         readonly path: "PostProcessPass.bloomPixels";
@@ -433,8 +437,10 @@ test.describe("foundation renderer examples", () => {
         result.environmentResources.brdfLutSize[0] === 32 &&
         result.environmentResources.maxLinearValue > 0,
       metallicReflectionVisible:
-        channel(pixels.metalGloss, 0) > channel(pixels.metalRough, 2) &&
-        channel(pixels.metalGloss, 0) + channel(pixels.metalGloss, 1) > channel(pixels.dielectricRough, 0),
+        (result?.reflectionMetrics?.metalGloss.sampledPixels ?? 0) > 1_000 &&
+        (result?.reflectionMetrics?.metalGloss.highlightRange ?? 0) > 30 &&
+        (result?.reflectionMetrics?.metalGloss.p99Luma ?? 0) > (result?.reflectionMetrics?.metalRough.p99Luma ?? Number.POSITIVE_INFINITY) &&
+        (result?.reflectionMetrics?.metalGloss.uniqueLumaBuckets ?? 0) >= 8,
       realSceneBloomBrightPixels:
         result?.postprocess?.source === "webgl2-material-showroom-emissive-readback" &&
         result.postprocess.path === "PostProcessPass.bloomPixels" &&
@@ -456,12 +462,16 @@ test.describe("foundation renderer examples", () => {
         textureBytes: result?.diagnostics?.textureBytes ?? 0,
         environmentSpecularMipCount: result?.environmentResources?.specularMipCount ?? 0,
         environmentMaxLinearValue: result?.environmentResources?.maxLinearValue ?? 0,
+        metalGlossP99Luma: result?.reflectionMetrics?.metalGloss.p99Luma ?? 0,
+        metalGlossHighlightRange: result?.reflectionMetrics?.metalGloss.highlightRange ?? 0,
+        metalRoughP99Luma: result?.reflectionMetrics?.metalRough.p99Luma ?? 0,
+        metalGlossUniqueLumaBuckets: result?.reflectionMetrics?.metalGloss.uniqueLumaBuckets ?? 0,
         showroomBloomBrightPixels: result?.postprocess?.brightPixelCount ?? 0,
         showroomBloomMaxNeighborBoost: result?.postprocess?.maxNeighborBoost ?? 0
       },
       checks
     });
-    expect(checks, JSON.stringify(pixels)).toEqual({
+    expect(checks, JSON.stringify({ pixels, reflectionMetrics: result?.reflectionMetrics })).toEqual({
       dielectricGloss: true,
       dielectricRough: true,
       metalGloss: true,

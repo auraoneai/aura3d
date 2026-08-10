@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <title>Current Three.js same-asset material laboratory</title>
+    <style>
+      html, body { margin: 0; min-height: 100%; background: #05070b; color: #edf7f8; font: 14px Inter, system-ui, sans-serif; }
+      header { display: flex; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid #26343e; }
+      header strong { margin-right: auto; }
+      button { border: 1px solid #37505c; border-radius: 4px; background: #10212a; color: #c5d9de; padding: 8px 10px; cursor: pointer; }
+      button[aria-pressed="true"] { background: #e7b85b; color: #102027; border-color: #e7b85b; }
+      main { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #26343e; }
+      figure { margin: 0; position: relative; background: #05070b; }
+      figcaption { position: absolute; z-index: 2; top: 12px; left: 12px; padding: 6px 8px; background: #05070bcc; border: 1px solid #37505c; letter-spacing: .12em; font: 700 11px ui-monospace, monospace; }
+      canvas { display: block; width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Frozen headphone · matched material states</strong>
+      <button data-mode="satin" aria-pressed="true">Satin</button>
+      <button data-mode="chrome" aria-pressed="false">Chrome</button>
+      <button data-mode="gold" aria-pressed="false">Gold</button>
+      <button data-mode="rubber" aria-pressed="false">Rubber</button>
+      <button data-mode="clearcoat" aria-pressed="false">Clearcoat</button>
+      <button data-mode="emissive" aria-pressed="false">Emissive</button>
+    </header>
+    <main>
+      <figure><figcaption>AURA3D</figcaption><canvas id="aura" width="1440" height="900"></canvas></figure>
+      <figure><figcaption>THREE.JS r185</figcaption><canvas id="three" width="1440" height="900"></canvas></figure>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -52,6 +52,11 @@ interface MaterialShowroomState {
   readonly oldBranchPhysicalMaterialPresets?: readonly string[];
   readonly proceduralTextureFixtures?: readonly { readonly id: string; readonly hash: string; readonly semantic: string }[];
   readonly pixels?: Record<string, readonly number[]>;
+  readonly reflectionMetrics?: {
+    readonly metalGloss: MaterialRegionMetrics;
+    readonly metalRough: MaterialRegionMetrics;
+    readonly dielectricRough: MaterialRegionMetrics;
+  };
   readonly postprocess?: {
     readonly source: "webgl2-material-showroom-emissive-readback";
     readonly path: "PostProcessPass.bloomPixels";
@@ -69,6 +74,16 @@ interface MaterialShowroomState {
 }
 
 type MaterialShowroomEnvironmentPreset = "studio" | "overcast" | "sunset";
+
+interface MaterialRegionMetrics {
+  readonly sampledPixels: number;
+  readonly p10Luma: number;
+  readonly medianLuma: number;
+  readonly p90Luma: number;
+  readonly p99Luma: number;
+  readonly highlightRange: number;
+  readonly uniqueLumaBuckets: number;
+}
 
 const materialNames = [
   "dielectric-gloss",
@@ -134,6 +149,7 @@ async function run(): Promise<void> {
       environmentLighting: environmentLighting.lighting
     });
     const pixels = readMaterialPixels(renderer);
+    const reflectionMetrics = readReflectionMetrics(renderer);
     const postprocess = renderPostprocessPreview(renderer, previewCanvas);
     window.__AURA3D_MATERIAL_SHOWROOM__ = {
       status: "ready",
@@ -168,6 +184,7 @@ async function run(): Promise<void> {
       oldBranchPhysicalMaterialPresets: listPhysicalMaterialPresets().map((entry) => entry.name),
       proceduralTextureFixtures: materialShowroomProceduralTextureSummaries(),
       pixels,
+      reflectionMetrics,
       postprocess,
       materialKnownLimits: materialKnownLimits(),
       knownLimits: knownLimits(),
@@ -501,6 +518,45 @@ function readMaterialPixels(renderer: Renderer): Record<string, readonly number[
     physicalEye: findPixel(renderer, { x: 835, y: 150, width: 115, height: 115 }, (p) => channel(p, 0) + channel(p, 1) + channel(p, 2) > 150 && channel(p, 3) === 255),
     physicalTerrain: findPixel(renderer, { x: 8, y: 45, width: 115, height: 110 }, (p) => channel(p, 1) > 18 && channel(p, 0) > 14 && channel(p, 1) >= channel(p, 2) && channel(p, 3) === 255),
     physicalToon: findPixel(renderer, { x: 835, y: 45, width: 115, height: 110 }, (p) => channel(p, 0) > 50 && channel(p, 1) > 24 && channel(p, 0) > channel(p, 2) && channel(p, 3) === 255)
+  };
+}
+
+function readReflectionMetrics(renderer: Renderer): NonNullable<MaterialShowroomState["reflectionMetrics"]> {
+  return {
+    metalGloss: analyzeMaterialRegion(renderer, { x: 490, y: 320, width: 120, height: 110 }),
+    metalRough: analyzeMaterialRegion(renderer, { x: 610, y: 320, width: 120, height: 110 }),
+    dielectricRough: analyzeMaterialRegion(renderer, { x: 370, y: 320, width: 120, height: 110 })
+  };
+}
+
+function analyzeMaterialRegion(
+  renderer: Renderer,
+  region: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }
+): MaterialRegionMetrics {
+  const pixels = renderer.device.readPixels(region.x, region.y, region.width, region.height);
+  const lumas: number[] = [];
+  const buckets = new Set<number>();
+  for (let index = 0; index < pixels.length; index += 4) {
+    if (pixels[index + 3] !== 255) continue;
+    const luma = (pixels[index]! * 0.2126) + (pixels[index + 1]! * 0.7152) + (pixels[index + 2]! * 0.0722);
+    if (luma < 18) continue;
+    lumas.push(luma);
+    buckets.add(Math.floor(luma / 8));
+  }
+  lumas.sort((left, right) => left - right);
+  const percentile = (ratio: number) => Number((lumas[Math.min(lumas.length - 1, Math.floor(lumas.length * ratio))] ?? 0).toFixed(3));
+  const p10Luma = percentile(0.1);
+  const medianLuma = percentile(0.5);
+  const p90Luma = percentile(0.9);
+  const p99Luma = percentile(0.99);
+  return {
+    sampledPixels: lumas.length,
+    p10Luma,
+    medianLuma,
+    p90Luma,
+    p99Luma,
+    highlightRange: Number((p99Luma - medianLuma).toFixed(3)),
+    uniqueLumaBuckets: buckets.size
   };
 }
 

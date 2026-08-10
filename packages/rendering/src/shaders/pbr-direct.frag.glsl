@@ -231,7 +231,7 @@ vec3 a3dApplyAdvancedPbrLobes(
   float iridescenceThicknessMaximum,
   float dispersion
 ) {
-  float clearcoatRoughness = max(clamp(clearcoatRoughnessFactor, 0.0, 1.0), 0.18);
+  float clearcoatRoughness = max(clamp(clearcoatRoughnessFactor, 0.0, 1.0), 0.04);
   float clearcoat = clamp(clearcoatFactor, 0.0, 1.0);
   float transmission = clamp(transmissionFactor, 0.0, 1.0);
   float diffuseTransmission = clamp(diffuseTransmissionFactor, 0.0, 1.0) * (1.0 - transmission);
@@ -341,11 +341,11 @@ vec3 a3dPbrExtensionDirectLight(
   float nDotV = max(a3dSaturate(dot(N, V)), A3D_EPSILON);
   float nDotH = a3dSaturate(dot(N, H));
   float vDotH = a3dSaturate(dot(V, H));
-  float clearcoatRough = clamp(clearcoatRoughness, 0.18, 1.0);
+  float clearcoatRough = clamp(clearcoatRoughness, 0.04, 1.0);
   vec3 clearcoatF = a3dFresnelSchlick(vec3(0.04), vDotH);
   float clearcoatD = a3dDistributionGGX(nDotH, clearcoatRough);
   float clearcoatG = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
-  vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;
+  vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0);
   float sheenDistribution = a3dPbrCharlieSheen(nDotH, sheenRoughness);
   float sheenVisibility = 1.0 / max(4.0 * (nDotV + nDotL - nDotV * nDotL), A3D_EPSILON);
   float sheenGrazing = pow(1.0 - nDotV, 12.0);
@@ -373,8 +373,8 @@ vec3 a3dPbrExtensionEnvironmentLight(
   float iridescenceThicknessMaximum
 ) {
   float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
-  float clearcoatGloss = pow(1.0 - clamp(clearcoatRoughness, 0.18, 1.0), 2.0);
-  vec3 clearcoatLobe = specularRadiance * clamp(clearcoat, 0.0, 1.0) * (0.018 + clearcoatGloss * 0.055);
+  float clearcoatGloss = pow(1.0 - clamp(clearcoatRoughness, 0.04, 1.0), 2.0);
+  vec3 clearcoatLobe = specularRadiance * clamp(clearcoat, 0.0, 1.0) * (0.04 + clearcoatGloss * 0.12);
   vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0))
     * pow(a3dSaturate(1.0 - nDotV), 8.0)
     * mix(1.4, 0.75, clamp(sheenRoughness, 0.0, 1.0));
@@ -737,11 +737,16 @@ void main() {
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, roughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, roughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, roughness);
+  float clearcoatEnvironmentRoughness = clamp(u_clearcoatRoughnessFactor, 0.04, 1.0);
+  float clearcoatEnvironmentLod = clearcoatEnvironmentRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
+  vec3 clearcoatSampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, clearcoatEnvironmentLod)));
+  clearcoatSampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, clearcoatEnvironmentRoughness);
+  vec3 extensionSpecular = proceduralSpecular + mix(sampledSpecular, clearcoatSampledSpecular, clamp(u_clearcoatFactor, 0.0, 1.0));
   vec3 shaded = a3dPbrEnvironmentLightSplitSum(
     normal,
     viewDirection,
     environmentDiffuse,
-    proceduralSpecular + sampledSpecular,
+    extensionSpecular,
     mix(vec2(1.0, 0.0), brdfLut, step(0.0001, u_environmentBrdfLutEnabled)),
     materialBase,
     u_metallic,

@@ -89,6 +89,7 @@ const packageEntryPoints = new Map<string, string>([
   ["three/addons/loaders/GLTFLoader.js", "/node_modules/three/examples/jsm/loaders/GLTFLoader.js"],
   ["three/addons/loaders/DRACOLoader.js", "/node_modules/three/examples/jsm/loaders/DRACOLoader.js"],
   ["three/addons/loaders/KTX2Loader.js", "/node_modules/three/examples/jsm/loaders/KTX2Loader.js"],
+  ["three/addons/loaders/RGBELoader.js", "/node_modules/three/examples/jsm/loaders/RGBELoader.js"],
   ["three/addons/controls/OrbitControls.js", "/node_modules/three/examples/jsm/controls/OrbitControls.js"],
   ["three/addons/environments/RoomEnvironment.js", "/node_modules/three/examples/jsm/environments/RoomEnvironment.js"],
   ["three/addons/libs/meshopt_decoder.module.js", "/node_modules/three/examples/jsm/libs/meshopt_decoder.module.js"],
