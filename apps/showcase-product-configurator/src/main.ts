@@ -5,6 +5,7 @@ import {
   createAuraApp,
   createAuraRouteHealthSnapshot,
   createProductConfiguratorKit,
+  environments,
   focusSemanticRegion,
   group,
   interactions,
@@ -123,9 +124,9 @@ const productScale = normalizedModelScale(0.4841);
 const PRODUCT_POSITION: readonly [number, number, number] = [0, 0.46, -0.22];
 
 const variants: Record<VariantId, { readonly label: string; readonly color: string; readonly accent: string }> = {
-  graphite: { label: "Graphite Studio", color: "#252627", accent: "#cdbd99" },
-  ceramic: { label: "Ceramic Pearl", color: "#eee8db", accent: "#2f3334" },
-  copper: { label: "Copper Limited", color: "#a85634", accent: "#f2c06d" }
+  graphite: { label: "Graphite Studio", color: "#555d66", accent: "#cdbd99" },
+  ceramic: { label: "Ceramic Pearl", color: "#efe9dd", accent: "#2f3334" },
+  copper: { label: "Copper Limited", color: "#d4764c", accent: "#f2c06d" }
 };
 
 const finishes: Record<FinishId, { readonly label: string; readonly roughness: number; readonly metallic: number; readonly clearcoat: number; readonly accentMaterial: AuraMaterialSpec }> = {
@@ -274,6 +275,13 @@ app.onFrame(() => {
 bindControls();
 renderControls();
 renderMetrics();
+let compactCameraLayout = window.innerWidth < 1120;
+window.addEventListener("resize", () => {
+  const nextCompactLayout = window.innerWidth < 1120;
+  if (nextCompactLayout === compactCameraLayout) return;
+  compactCameraLayout = nextCompactLayout;
+  updateScene(`viewport:${nextCompactLayout ? "compact" : "wide"}`);
+});
 
 function buildConfiguratorScene(nextState: ConfiguratorState) {
   const activeVariant = variants[nextState.variant];
@@ -292,6 +300,11 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
 
   const builder = scene()
     .background("#050607")
+    .add(environments.productHero({
+      name: "authored product hero HDR environment",
+      intensity: 1.72,
+      color: "#fff4e6"
+    }))
     .addMany(compactProductStageNodes(nextState))
     .add(nextState.turntable
       ? productModel.animate({ clip: "turntable", speed: 0.36, duration: 9, captureTime: 0.36 })
@@ -573,16 +586,33 @@ function productMaterialFor(nextState: ConfiguratorState): AuraMaterialSpec {
 }
 
 function cameraFor(nextState: ConfiguratorState) {
+  const compactViewport = window.innerWidth < 1120;
   if (nextState.exploded) {
-    return camera.perspective({ position: [1.42, 1.2, 2.52], target: [0, 0.82, -0.24], fov: 27 });
+    return camera.perspective({
+      position: compactViewport ? [1.62, 1.28, 3.72] : [1.42, 1.2, 2.52],
+      target: [0, 0.82, -0.24],
+      fov: compactViewport ? 30 : 27
+    });
   }
   if (nextState.focus === "headband") {
-    return camera.perspective({ position: [0.72, 1.46, 2.34], target: [0, 1.0, -0.22], fov: 24 });
+    return camera.perspective({
+      position: compactViewport ? [0.92, 1.55, 3.58] : [0.72, 1.46, 2.34],
+      target: [0, 1.0, -0.22],
+      fov: compactViewport ? 29 : 24
+    });
   }
   if (nextState.focus !== "overview") {
-    return camera.perspective({ position: [1.04, 0.98, 2.28], target: [0, 0.62, -0.16], fov: 24 });
+    return camera.perspective({
+      position: compactViewport ? [1.24, 1.04, 3.5] : [1.04, 0.98, 2.28],
+      target: [0, 0.62, -0.16],
+      fov: compactViewport ? 29 : 24
+    });
   }
-  return camera.perspective({ position: [0.82, 0.88, 2.7], target: [0, 0.72, -0.22], fov: 24 });
+  return camera.perspective({
+    position: compactViewport ? [0.94, 0.96, 3.72] : [0.82, 0.88, 2.7],
+    target: [0, 0.72, -0.22],
+    fov: compactViewport ? 29 : 24
+  });
 }
 
 function focusYaw(focus: FocusId): number {

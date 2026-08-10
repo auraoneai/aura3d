@@ -40,6 +40,12 @@ export interface TypedGLBActorTintOptions {
   readonly baseColor: readonly [number, number, number, number];
   readonly emissiveColor?: readonly [number, number, number];
   readonly emissiveStrength?: number;
+  readonly roughness?: number;
+  readonly metallic?: number;
+  readonly clearcoat?: number;
+  readonly clearcoatRoughness?: number;
+  /** Replace authored color/surface textures when a public material override is requested. */
+  readonly replaceSurfaceTextures?: boolean;
 }
 
 export interface TypedGLBActorTransformOptions {
@@ -314,28 +320,38 @@ function typedGLBActorMorphTargetAliases(
 function tintTypedGLBActorMaterials(pipeline: ProductionGLTFRenderPipeline, tint: TypedGLBActorTintOptions): void {
   const emissive = tint.emissiveColor ?? [tint.baseColor[0], tint.baseColor[1], tint.baseColor[2]] as const;
   for (const material of pipeline.resources.materialLibrary.values()) {
-    applyMaterialTint(material, tint.baseColor, emissive, tint.emissiveStrength ?? 0.28);
+    applyMaterialTint(material, tint, emissive);
   }
 }
 
 function applyMaterialTint(
   material: Material,
-  baseColor: readonly [number, number, number, number],
-  emissive: readonly [number, number, number],
-  emissiveStrength: number
+  tint: TypedGLBActorTintOptions,
+  emissive: readonly [number, number, number]
 ): void {
   const jointMaterial = /joint/i.test(material.name);
   const color = jointMaterial
-    ? [Math.max(0.02, baseColor[0] * 0.22), Math.max(0.02, baseColor[1] * 0.24), Math.max(0.02, baseColor[2] * 0.28), 1] as const
-    : baseColor;
+    ? [Math.max(0.02, tint.baseColor[0] * 0.22), Math.max(0.02, tint.baseColor[1] * 0.24), Math.max(0.02, tint.baseColor[2] * 0.28), 1] as const
+    : tint.baseColor;
   const glow = jointMaterial
     ? [emissive[0] * 0.28, emissive[1] * 0.28, emissive[2] * 0.28] as const
     : emissive;
   material.setParameter("u_baseColor", color);
   material.setParameter("u_baseColorFactor", color);
+  if (tint.replaceSurfaceTextures) {
+    material.setParameter("u_baseColorTextureEnabled", 0);
+    material.setParameter("u_metallicRoughnessTextureEnabled", 0);
+  }
   material.setParameter("u_emissiveColor", glow);
   material.setParameter("u_emissiveFactor", glow);
+  const emissiveStrength = tint.emissiveStrength ?? 0.28;
   material.setParameter("u_emissiveStrength", jointMaterial ? Math.min(0.08, emissiveStrength) : emissiveStrength);
-  material.setParameter("u_roughness", jointMaterial ? 0.72 : 0.38);
-  material.setParameter("u_metallic", jointMaterial ? 0.08 : 0.16);
+  material.setParameter("u_roughness", jointMaterial ? Math.max(0.72, tint.roughness ?? 0.38) : tint.roughness ?? 0.38);
+  material.setParameter("u_metallic", jointMaterial ? Math.min(0.08, tint.metallic ?? 0.16) : tint.metallic ?? 0.16);
+  if (!jointMaterial && tint.clearcoat !== undefined) {
+    material.setParameter("u_clearcoatFactor", tint.clearcoat);
+  }
+  if (!jointMaterial && tint.clearcoatRoughness !== undefined) {
+    material.setParameter("u_clearcoatRoughnessFactor", tint.clearcoatRoughness);
+  }
 }

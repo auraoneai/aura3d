@@ -11093,6 +11093,40 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   readonly lighting: EnvironmentLightingOptions;
 } {
   const nodes = groups.flatten(snapshot.nodes);
+  const authoredEnvironment = nodes.find((node): node is AuraEnvironmentNode => node.kind === "environment");
+  if (authoredEnvironment) {
+    const presetByEnvironment: Record<AuraEnvironmentNode["environment"], Parameters<typeof createExternalParityEnvironmentLighting>[0]> = {
+      "studio": "studio",
+      "material-lab": "inspection",
+      "product-hero": "softbox",
+      "night-cinematic": "evening",
+      "metal-studio": "exhibit",
+      "glass-studio": "softbox"
+    };
+    const preset = presetByEnvironment[authoredEnvironment.environment];
+    const bundle = createExternalParityEnvironmentLighting(preset);
+    const intensity = nonNegativeFinite(authoredEnvironment.intensity);
+    const proceduralMap = bundle.lighting.proceduralMap;
+    return {
+      preset: authoredEnvironment.environment,
+      intensity,
+      evidence: `production bridge submitted the authored ${authoredEnvironment.environment} environment through generated HDR ${preset} lighting`,
+      lighting: {
+        ...bundle.lighting,
+        color: authoredEnvironment.color ? colorToLinearRgb(authoredEnvironment.color) : bundle.lighting.color,
+        intensity: bundle.lighting.intensity * intensity,
+        ...(proceduralMap ? {
+          proceduralMap: {
+            ...proceduralMap,
+            intensity: proceduralMap.intensity * intensity,
+            specularIntensity: proceduralMap.specularIntensity * intensity
+          }
+        } : {}),
+        environmentMapIntensity: (bundle.lighting.environmentMapIntensity ?? 0) * intensity,
+        environmentMapSpecularIntensity: (bundle.lighting.environmentMapSpecularIntensity ?? 0) * intensity
+      }
+    };
+  }
   const ambientLights = nodes.filter((node): node is AuraLightNode => node.kind === "light" && node.light === "ambient" && node.intensity > 0);
   if (ambientLights.length > 0) {
     const intensity = ambientLights.reduce((total, light) => total + light.intensity, 0);
@@ -11644,7 +11678,20 @@ async function createProductionRuntimeSceneRenderer(
             name: node.name ?? node.asset.id ?? `model-${index + 1}`,
             width: canvas.width,
             height: canvas.height,
-            ...(node.material?.color ? { tint: { baseColor: colorToLinearRgba(node.material.color) } } : {})
+            ...(node.material?.color ? {
+              tint: {
+                baseColor: colorToLinearRgba(node.material.color),
+                replaceSurfaceTextures: true,
+                ...(node.material.emissive ? { emissiveColor: colorToLinearRgb(node.material.emissive) } : {}),
+                ...(node.material.emissiveIntensity === undefined ? {} : { emissiveStrength: node.material.emissiveIntensity }),
+                ...(node.material.roughness === undefined ? {} : { roughness: clamp01(node.material.roughness) }),
+                ...(node.material.metallic === undefined && node.material.metalness === undefined
+                  ? {}
+                  : { metallic: clamp01(node.material.metallic ?? node.material.metalness ?? 0) }),
+                ...(node.material.clearcoat === undefined ? {} : { clearcoat: clamp01(node.material.clearcoat) }),
+                ...(node.material.clearcoatRoughness === undefined ? {} : { clearcoatRoughness: clamp01(node.material.clearcoatRoughness) })
+              }
+            } : {})
           })
         })));
       })()

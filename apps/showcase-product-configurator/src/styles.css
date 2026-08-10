@@ -326,7 +326,7 @@ pre[hidden] {
     min-height: 100dvh;
     overflow: auto;
     padding: 16px;
-    padding-top: min(54dvh, 420px);
+    padding-top: min(72dvh, 800px);
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
