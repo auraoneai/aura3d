@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("animation channel storyboard caption renders", async ({ page }) => {
   await page.goto("/");
+  await page.waitForFunction(() => Boolean((window as any).__AURA3D_ANIMATION_TEMPLATE__));
   await expect(page.getByText(/Aura3D animation channel|moon|robot/i)).toBeVisible();
 });
 
@@ -9,6 +10,7 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
   page
 }) => {
   await page.goto("/");
+  await page.waitForFunction(() => Boolean((window as any).__AURA3D_ANIMATION_TEMPLATE__));
 
   const routeProof = (await page.evaluate(() => {
     const template = (window as unknown as {

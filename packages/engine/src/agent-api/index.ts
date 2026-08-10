@@ -4802,7 +4802,9 @@ export const prefabs = {
 	    const rimMaterial = material.emissive({ color: "#dbeafe", emissive: "#93c5fd", emissiveIntensity: 0.18, opacity: 0.42 });
     const nodes: AuraSceneNode[] = [
       primitives.plane({ name: "seamless matte product hero floor", material: floorMaterial }).position(0, -0.018, -0.62).scale([3.6, 1, 2.6]).toJSON(),
-      primitives.plane({ name: "distant seamless product photography backdrop", material: backdropMaterial }).position(0, 1.22, -2.28).rotate(-0.08, 0, 0).scale([3.6, 1, 1.8]).toJSON(),
+      primitives.plane({ name: "vertical seamless product photography backdrop", material: backdropMaterial }).position(0, 1.22, -2.28).rotate(1.5708, 0, 0).scale([6.2, 1, 2.15]).toJSON(),
+      primitives.box({ name: "cool cyan studio reflection panel", material: material.emissive({ color: "#20bfe8", emissive: "#20bfe8", emissiveIntensity: 0.46 }) }).position(-2.35, 1.14, -2.18).scale([0.24, 1.38, 0.035]).toJSON(),
+      primitives.box({ name: "warm amber studio reflection panel", material: material.emissive({ color: "#f0a43c", emissive: "#f0a43c", emissiveIntensity: 0.42 }) }).position(2.35, 1.14, -2.18).scale([0.24, 1.38, 0.035]).toJSON(),
       primitives.cylinder({ name: "low matte hero product plinth", material: plinthMaterial }).position(0, 0.255, -0.65).scale([1.46, 0.26, 1.46]).toJSON(),
       primitives.cylinder({ name: "soft product contact shadow from footprint", material: shadowMaterial }).position(0, 0.292, -0.65).scale([1.06, 0.01, 0.66]).toJSON(),
       primitives.box({ name: "subtle turntable orbit cue on product plinth", material: material.emissive({ color: "#93c5fd", emissive: "#38bdf8", emissiveIntensity: 0.22, opacity: 0.38 }) }).position(0, 0.52, -0.65).scale([1.02, 0.012, 1.02]).toJSON(),

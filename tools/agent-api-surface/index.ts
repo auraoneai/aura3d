@@ -3,6 +3,7 @@ import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../ch
 
 const rootPackage = JSON.parse(readFileSync("package.json", "utf8")) as {
   name?: string;
+  version?: string;
   exports?: Record<string, string | Record<string, string>>;
 };
 const enginePackage = JSON.parse(readFileSync("packages/engine/package.json", "utf8")) as { private?: boolean };
@@ -13,6 +14,8 @@ const reactPackage = JSON.parse(readFileSync("packages/react/package.json", "utf
 };
 const publicApiDocs = readFileSync("docs/api/public-api.md", "utf8");
 const rootEngineExport = rootPackage.exports?.["."];
+const releaseMajor = rootPackage.version?.match(/^(\d+)\./)?.[1];
+const expectedEnginePeer = releaseMajor ? `^${releaseMajor}.0.0` : undefined;
 
 const checks: ReleaseCheck[] = [
   existsCheck("packages/engine/src/agent-api/index.ts", "agent api source"),
@@ -34,10 +37,11 @@ const checks: ReleaseCheck[] = [
   {
     id: "react-adapter-engine-peer",
     pass:
-      reactPackage.peerDependencies?.["@aura3d/engine"] === "^1.0.0" &&
+      expectedEnginePeer !== undefined &&
+      reactPackage.peerDependencies?.["@aura3d/engine"] === expectedEnginePeer &&
       reactPackage.devDependencies?.["@aura3d/engine"] === "workspace:*" &&
       reactPackage.dependencies?.["@aura3d/engine-runtime"] === undefined,
-    detail: "React adapter declares @aura3d/engine as public peer and keeps local workspace resolution in devDependencies"
+    detail: `React adapter declares @aura3d/engine ${expectedEnginePeer ?? "<invalid root version>"} as public peer and keeps local workspace resolution in devDependencies`
   }
 ];
 

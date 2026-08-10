@@ -1,11 +1,11 @@
 # Public API Contract
 
-Generated: 2026-08-09T02:39:34.880Z
+Generated: 2026-08-10T02:00:46.795Z
 
 ## Summary
 
 - Checks passing: 7/7
-- Engine exports: 474
+- Engine exports: 481
 - React exports: 8
 - Docs named imports checked: 43
 

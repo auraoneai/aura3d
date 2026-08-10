@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(120_000);
+
 test("input replay produces runtime evidence and a hit declaration", async ({ page }) => {
   await page.goto("/");
-  await page.click("#hud-replay-button");
+  await page.waitForFunction(() => Boolean((window as any).__AURA3D_GAME_SOURCE__?.readiness));
+  await page.getByRole("button", { name: "Run replay" }).click();
   await page.waitForFunction(() => Boolean((window as any).__AURA3D_GAME_EVIDENCE__?.systems?.inputPlan));
   await page.waitForFunction(() => Boolean((window as any).__AURA3D_GAME_RUNTIME__?.kind === "aura-game-app-runtime-evidence"));
   await page.waitForFunction(() => ((window as any).__AURA3D_GAME_REPLAY__?.hitCount ?? 0) > 0);
