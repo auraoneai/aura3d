@@ -14,7 +14,9 @@ const pathBTerms = [
   "@aura3d/" + "ai-scene"
 ].map((term) => new RegExp(escapeRegExp(term)));
 const versionCycleTerms = [
-  new RegExp(`\\b${"V"}[234]\\b`, "i"),
+  // Ban internal cycle labels such as "V2" while allowing an explicit public
+  // semver such as "v2.0.0" in package and release metadata.
+  new RegExp(`\\b${"V"}[234]\\b(?!\\.)`, "i"),
   new RegExp(["Path", "A"].join(" "), "i"),
   new RegExp(["Path", "B"].join(" "), "i")
 ];
