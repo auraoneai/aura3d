@@ -272,23 +272,23 @@ test.describe("foundation renderer examples", () => {
       },
       {
         task: "Shadow lab visual test verifies cascade metadata and projected shadow pixels.",
-        evidence: ["examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Stable shadow camera/projection fitting.",
-        evidence: ["packages/rendering/src/CascadedShadowMaps.ts", "examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/CascadedShadowMaps.ts", "tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Shadow debug view for cascades, casters, receivers, frustum, and map resolution.",
-        evidence: ["packages/rendering/src/CascadedShadowMaps.ts", "examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/CascadedShadowMaps.ts", "tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "examples/shadow-lab visibly shows shadow quality controls.",
-        evidence: ["examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "PCF or equivalent filtering.",
-        evidence: ["packages/rendering/src/ShadowMap.ts", "packages/rendering/src/CascadedShadowMaps.ts", "examples/shadow-lab/main.ts", "tests/unit/rendering/shadow-pass.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
+        evidence: ["packages/rendering/src/ShadowMap.ts", "packages/rendering/src/CascadedShadowMaps.ts", "tests/fixtures/visual-examples/shadow-lab/main.ts", "tests/unit/rendering/shadow-pass.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
         task: "Postprocess lab before/after visual test verifies tone mapping, bloom, FXAA, and presentation pixels.",
@@ -830,7 +830,7 @@ test.describe("foundation renderer examples", () => {
   });
 
   test("WebGPU capability example records graceful unavailable state instead of crashing", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_WEBGPU_CAPABILITY__?.status === "ready",
       undefined,

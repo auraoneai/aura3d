@@ -17,6 +17,7 @@ const baseReport = createSubsystemReport(root, {
     "examples/game-slice/main.ts",
     "tests/fixtures/runtime-game-slice/index.html",
     "examples/physics-sandbox/main.ts",
+    "tests/fixtures/physics-sandbox/index.html",
     "examples/animated-character/main.ts",
     "examples/character-animation-viewer/main.ts",
     "packages/physics/src/ArcadeCharacterController.ts",
@@ -41,10 +42,10 @@ const baseReport = createSubsystemReport(root, {
     },
     {
       id: "physics-sandbox",
-      description: "Physics sandbox exists.",
-      passed: pathExists(root, "examples/physics-sandbox/index.html"),
-      evidencePaths: ["examples/physics-sandbox/index.html"],
-      blocker: "Physics sandbox example is missing.",
+      description: "Internal physics sandbox contract fixture exists.",
+      passed: pathExists(root, "tests/fixtures/physics-sandbox/index.html"),
+      evidencePaths: ["tests/fixtures/physics-sandbox/index.html", "examples/physics-sandbox/main.ts"],
+      blocker: "Physics sandbox contract fixture is missing.",
     },
     {
       id: "character-animation",

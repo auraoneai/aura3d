@@ -19,7 +19,7 @@ test.describe("physics sandbox example", () => {
       if (message.type() === "error") errors.push(message.text());
     });
 
-    await page.goto(`${server.origin}/examples/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_PHYSICS_SANDBOX__?.status === "ready" || window.__AURA3D_PHYSICS_SANDBOX__?.status === "error",
       undefined,

@@ -67,7 +67,7 @@ const sourceFiles = [
   "tools/external-parity-shadow-map-readiness/index.ts",
   "packages/rendering/src/ShadowPass.ts",
   "packages/rendering/src/ShadowMap.ts",
-  "examples/shadow-lab/main.ts",
+  "tests/fixtures/visual-examples/shadow-lab/main.ts",
 ] as const;
 
 export async function createExternalParityShadowVisualParityReport(root = process.cwd()): Promise<ExternalParityShadowVisualParityReport> {

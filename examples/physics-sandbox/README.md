@@ -1,10 +1,17 @@
 # Physics Sandbox
 
-Interactive renderer-backed physics sandbox for the product studio physics track.
+Internal renderer-backed physics contract fixture for rigid-body, collider,
+constraint, sensor, cast, sleeping-body, and debug-line coverage.
 
 ## Run
 
-Run the repository dev server used by the browser tests and open `examples/physics-sandbox/index.html`.
+Run the repository dev server used by the browser tests and open
+`tests/fixtures/physics-sandbox/index.html`.
+
+This is not a public 2.0 showcase route. Personal visual review found that its
+generated rectangles, dense overlapping debug lines, and raw multi-screen JSON
+are useful for deterministic browser assertions but duplicate the more focused
+and readable public `examples/raycast-ccd-lab` diagnostic.
 
 ## Systems Used
 

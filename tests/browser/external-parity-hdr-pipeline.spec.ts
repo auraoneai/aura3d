@@ -19,7 +19,7 @@ test.describe("ExternalParity HDR pipeline browser evidence", () => {
 
   test("proves browser HDR target readback, tone mapping, exposure, and color management state", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/hdr-render-target-check/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/hdr-render-target-check/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_HDR_RENDER_TARGET_CHECK__?.status === "ready", undefined, { timeout: 30_000 });
 
     const state = await page.evaluate(() => window.__AURA3D_HDR_RENDER_TARGET_CHECK__);
@@ -31,7 +31,7 @@ test.describe("ExternalParity HDR pipeline browser evidence", () => {
         state.featureEvidence.sampleOverOne === true &&
         state.featureEvidence.hdrPostprocessToneMapping === true,
       generatedAt: new Date().toISOString(),
-      source: "examples/hdr-render-target-check/index.html",
+      source: "tests/fixtures/visual-examples/hdr-render-target-check/index.html",
       productBoundary: "Browser evidence for the ExternalParity HDR pipeline milestone only. This is not flagship visual completion.",
       requiredNextProof: [
         "real HDR/IBL environments",

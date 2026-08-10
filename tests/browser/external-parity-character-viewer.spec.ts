@@ -40,7 +40,7 @@ test.describe("ExternalParity character viewer", () => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), screenshotDir), { recursive: true });
 
-    await page.goto(`${server.origin}/examples/external-character-viewer/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/external-character-viewer/index.html`, { waitUntil: "domcontentloaded" });
     const exampleState = await waitForCharacterState(page, "external-character-viewer");
     const initialPng = await page.locator("[data-testid='hr4-character-canvas']").screenshot({ path: `${screenshotDir}/external-character-viewer.png` });
 

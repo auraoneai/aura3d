@@ -95,7 +95,7 @@ if (isMain) {
           "packages/rendering/src/WebGPUDevice.ts",
           "examples/material-showroom/main.ts",
           "examples/postprocess-lab/main.ts",
-          "examples/shadow-lab/main.ts",
+          "tests/fixtures/visual-examples/shadow-lab/main.ts",
           "examples/webgpu-capability/main.ts",
           "tests/browser/webgpu-parity.spec.ts",
           "tests/reports/external-parity-webgpu-parity.json",

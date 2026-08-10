@@ -142,7 +142,7 @@ test.describe("runtime systems", () => {
 
   test("physics sandbox exposes foundation scene coverage and stability metrics", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_PHYSICS_SANDBOX__?.status === "ready", undefined, { timeout: 20_000 });
 
     for (const scene of ["constraints", "triggers", "raycasts", "shape-casts", "sleeping", "stress"]) {

@@ -151,7 +151,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("shadow lab publishes ExternalParity preset evidence and visible shadow screenshot", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/shadow-lab.png";
     await captureScreenshot(page, "body", screenshotPath);
@@ -207,7 +207,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     });
     const page = await context.newPage();
     try {
-      await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${server.origin}/tests/fixtures/visual-examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
       await waitForState(page, "__AURA3D_SHADOW_LAB__");
       const dprScreenshot = "tests/reports/external-parity-example-screenshots/shadow-lab-dpr2.png";
       await captureScreenshot(page, "body", dprScreenshot);
@@ -255,7 +255,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("forward pass samples a bound shadow map texture in real WebGL2 rendering", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/forward-shadow-map-check/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/forward-shadow-map-check/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_FORWARD_SHADOW_MAP_CHECK__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/forward-shadow-map-check.png";
     await captureScreenshot(page, "[data-testid='forward-shadow-map-canvas']", screenshotPath);
@@ -554,7 +554,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
     const postprocessToggleScreenshot = "tests/reports/external-parity-example-screenshots/postprocess-lab-toggle-bloom-off.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", postprocessToggleScreenshot);
 
-    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const shadowCanvas = page.getByTestId("shadow-lab-canvas");
     const shadowBefore = await requiredBox(shadowCanvas);
@@ -596,7 +596,7 @@ test.describe("ExternalParity renderer visual quality evidence", () => {
   });
 
   test("webgpu capability example publishes supported and blocked visual evidence", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tests/fixtures/visual-examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_WEBGPU_CAPABILITY__?.status === "ready", undefined, { timeout: 30_000 });
     const screenshotPath = "tests/reports/external-parity-example-screenshots/webgpu-capability.png";
     await captureScreenshot(page, "[data-testid='webgpu-capability-canvas']", screenshotPath);

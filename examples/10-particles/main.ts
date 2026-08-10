@@ -11,9 +11,9 @@ import { createExample, installExampleStyles, type ExampleMetadata } from "../sh
 
 const metadata: ExampleMetadata = {
   id: "10-particles",
-  title: "10 Particles",
-  purpose: "Run a deterministic CPU particle fountain through public effects APIs.",
-  acceptance: "A seeded fountain is visible and particle stats expose live/spawn/upload counts.",
+  title: "CPU Particle Fountain Diagnostic",
+  purpose: "Visualize deterministic CPU particle simulation through the @aura3d/rendering internals surface.",
+  acceptance: "A seeded CPU fountain is visible and its diagnostics expose live, spawn, and upload counts; this route makes no GPU-particle or root-API claim.",
 };
 
 if (typeof document !== "undefined") {

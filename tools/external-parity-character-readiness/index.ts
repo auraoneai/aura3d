@@ -7,8 +7,8 @@ const requiredFiles = [
   "src/aura-assets.ts",
   "apps/animation-studio-pro/index.html",
   "apps/animation-studio-pro/src/main.ts",
-  "examples/external-character-viewer/index.html",
-  "examples/external-character-viewer/main.ts",
+  "tests/fixtures/external-character-viewer/index.html",
+  "tests/fixtures/external-character-viewer/main.ts",
   "examples/external-character-viewer/ExternalCharacterViewer.ts",
   "tests/browser/external-parity-character-viewer.spec.ts",
   "tests/reports/external-parity-character-viewer-browser.json"
@@ -25,7 +25,7 @@ const includesAll = (source: string, phrases: readonly string[]) => phrases.ever
 for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} must exist.`);
 check("typed-asset", includesAll(text("src/aura-assets.ts"), ["showcaseExpressiveRobot", "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"]), "Generated assets must bind the exact expressive robot hash.");
 check("viewer-source", includesAll(text("examples/external-character-viewer/ExternalCharacterViewer.ts"), ["createAuraApp", "assets.showcaseExpressiveRobot", "timeline-scrub", "play-pause", "__A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__", "universal Three.js animation parity is not claimed"]), "Character viewer must render the typed GLB through the root API and expose timeline/play evidence with a scoped boundary.");
-check("app-entry-no-example-side-effect", text("examples/external-character-viewer/main.ts").includes("mountExternalCharacterViewer(\"external-character-viewer\")") && text("apps/animation-studio-pro/src/main.ts").includes("ExternalCharacterViewer") && !text("apps/animation-studio-pro/src/main.ts").includes("external-character-viewer/main"), "Animation Studio Pro must import side-effect-free shared module.");
+check("app-entry-no-fixture-side-effect", text("tests/fixtures/external-character-viewer/main.ts").includes("mountExternalCharacterViewer(\"external-character-viewer\")") && text("apps/animation-studio-pro/src/main.ts").includes("ExternalCharacterViewer") && !text("apps/animation-studio-pro/src/main.ts").includes("tests/fixtures"), "Animation Studio Pro must import the side-effect-free shared module while the redundant standalone host remains test-only.");
 
 const browser = json("tests/reports/external-parity-character-viewer-browser.json");
 const states = isObj(browser?.states) ? browser.states : {};

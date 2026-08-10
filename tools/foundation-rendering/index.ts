@@ -127,8 +127,8 @@ const baseReport = createSubsystemReport(root, {
     {
       id: "webgpu-example-graceful-unavailable",
       description: "WebGPU capability example records a visible unavailable state instead of crashing when WebGPU is absent.",
-      passed: pathExists(root, "examples/webgpu-capability/index.html") && pathExists(root, "examples/webgpu-capability/main.ts"),
-      evidencePaths: ["examples/webgpu-capability/index.html", "examples/webgpu-capability/main.ts", "tests/browser/rendering-foundation-labs.spec.ts"],
+      passed: pathExists(root, "tests/fixtures/visual-examples/webgpu-capability/index.html") && pathExists(root, "examples/webgpu-capability/main.ts"),
+      evidencePaths: ["tests/fixtures/visual-examples/webgpu-capability/index.html", "examples/webgpu-capability/main.ts", "tests/browser/rendering-foundation-labs.spec.ts"],
       blocker: "WebGPU capability example is missing or not covered by browser tests.",
     },
     {
