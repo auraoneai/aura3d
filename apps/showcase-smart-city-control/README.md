@@ -21,7 +21,8 @@ one release-validated typed command vehicle primary asset.
 ## Source Anchors
 
 - `sceneKits.cityBlock(...)` for the city base, streets, buildings, windows, props, and day/night state.
-- `city.visualQA(...)` and `city.instancing(...)` for city-specific QA and repeated-family evidence.
+- `city.visualQA(...)` and `city.instancing(...)` for city-specific QA and native repeated-tower-family evidence.
+- `distanceLod(...)` for the communications tower's far simplified and near detailed geometry.
 - `primitives.*`, `labels.*`, `lights.*`, `effects.*`, `interactions.*`, `camera.*`, and `timeline.*` for district overlays, traffic/data pulses, telemetry labels, day/night controls, and flythrough modes.
 
 ## Controls
@@ -47,9 +48,10 @@ The route publishes `window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__` with:
 - `diagnostics`
 
 Claim boundary: this is a procedural Aura3D public API showcase using city scene
-kits, a typed vehicle asset, visual QA, instancing evidence, procedural overlays,
-labels, controls, and runtime telemetry. It does not claim real GIS data,
-imported city geometry, or traffic simulation fidelity.
+kits, a typed vehicle asset, native tower instancing, distance LOD, runtime
+frustum-culling diagnostics, procedural overlays, labels, controls, and runtime
+telemetry. It does not claim real GIS data, imported city geometry, GPU
+occlusion culling, or traffic simulation fidelity.
 
 ## Asset Strategy
 
@@ -64,6 +66,10 @@ telemetry cues are procedural Aura3D scene nodes.
 - Release asset probe: `tests/reports/showcase-release-asset-probes/showcaseCityVehicle.json`.
 - Release asset screenshot: `tests/reports/showcase-release-asset-probes/showcaseCityVehicle.png`.
 - Deploy/release check: `checkDeploy` with `--release --source apps/showcase-smart-city-control/src --asset showcaseCityVehicle` passes with no failures or warnings.
+- Public-route optimization proof: `pnpm smart-city:optimization` records the
+  command/flythrough LOD transition, production-runtime native instancing, and
+  observed frustum culling in
+  `tests/reports/2.0-smart-city-optimization/report.json`.
 
 ## Local Route
 
