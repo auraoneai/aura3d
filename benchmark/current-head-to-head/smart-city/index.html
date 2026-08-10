@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Current smart-city comparison</title>
+    <style>
+      html, body { margin: 0; background: #080b12; color: #fff; font: 14px system-ui; }
+      header { padding: 8px; }
+      .shell { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .shell canvas { display: block; width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <header><button id="change-city-state" type="button">Switch to day and select industrial district</button></header>
+    <div class="shell"><canvas id="aura" width="1440" height="900"></canvas><canvas id="three" width="1440" height="900"></canvas></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
