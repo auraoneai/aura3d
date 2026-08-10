@@ -9,7 +9,7 @@ capability.
 
 ## Current Showcase Gallery State
 
-The 1.6 website build publishes four non-game route-library candidates awaiting
+The 2.0 website build publishes four non-game route-library candidates awaiting
 current human review:
 
 - Product Configurator

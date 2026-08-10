@@ -33,8 +33,9 @@ only `@aura3d/engine`, import generated typed assets, and pass browser evidence:
 - frame updates, app pause/resume/step, and deterministic runtime tests;
 - basic game input helpers and fighting-game helper surfaces where the APIs are
   exported from root `@aura3d/engine`;
-- recommended `lean`, `lean-product`, and `lean-game` public entries for new
-  applications that do not need the compatibility-heavy root barrel;
+- recommended `@aura3d/lean`, `@aura3d/lean/product`, and
+  `@aura3d/lean/game` public entries for new applications that do not need the
+  compatibility-heavy `@aura3d/engine` root barrel;
 - screenshots, diagnostics, deployment checks, and route-health style evidence
   when generated from current tests.
 
@@ -83,12 +84,15 @@ Current retained result:
   excluded from the public route inventory and visual-parity claims;
 - removed public game/racing hosts: not counted as release games or parity
   evidence;
-- current same-workload Three.js comparisons: incomplete and unable to support
-  a universal ecosystem-parity claim.
+- current same-workload Three.js comparison: all 15 bounded workloads pass from
+  freshly packed and installed 2.0.0 tarballs, while visual differences remain
+  disclosed and the result does not support a universal ecosystem-parity claim.
 
 Current route-library release status: per-route repairs, human dispositions,
-and the clean unfiltered audit are recorded in the final PRD. Current
-same-workload comparison rows and the remaining release tracks are still open.
+and the clean unfiltered audit are recorded in the final PRD. The exact
+installed-package same-workload run and internal per-file visual ledger are
+current; clean-machine reproduction, repeated performance sampling, independent
+human review, and the remaining release tracks are still open.
 The former comparison suite is frozen
 against `three@0.165.0` and is historical only. The current target is
 `three@0.185.1`; no current broad parity, performance, head-to-head, replacement,

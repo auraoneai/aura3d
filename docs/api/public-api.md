@@ -31,6 +31,9 @@ pnpm verify:api-docs
 | `@aura3d/environments` | `2.0.0` | `packages/environments/src/index.ts` | 5 |
 | `@aura3d/environments/node` | `2.0.0` | `packages/environments/src/node.ts` | 6 |
 | `@aura3d/input` | `2.0.0` | `packages/input/src/index.ts` | 42 |
+| `@aura3d/lean` | `2.0.0` | `packages/lean/src/index.ts` | 2 |
+| `@aura3d/lean/game` | `2.0.0` | `packages/lean/src/game.ts` | 5 |
+| `@aura3d/lean/product` | `2.0.0` | `packages/lean/src/product.ts` | 2 |
 | `@aura3d/materials` | `2.0.0` | `packages/materials/src/index.ts` | 1 |
 | `@aura3d/materials/node` | `2.0.0` | `packages/materials/src/node.ts` | 3 |
 | `@aura3d/math` | `2.0.0` | `packages/math/src/index.ts` | 18 |
@@ -750,6 +753,48 @@ export { ThirdPersonFollowControls } from "./controls/ThirdPersonFollowControls"
 export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFollowControls";
 ```
 
+## @aura3d/lean
+
+- Version: `2.0.0`
+- Package manifest: `packages/lean/package.json`
+- Public entrypoint: `packages/lean/src/index.ts`
+
+### Export Declarations
+
+```ts
+export * from "./base.js";
+export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanApp { return createAuraAppWithRenderer(target, { ...options, rendererFactory: LeanProductionRenderer });
+```
+
+## @aura3d/lean/game
+
+- Version: `2.0.0`
+- Package manifest: `packages/lean/package.json`
+- Public entrypoint: `packages/lean/src/game.ts`
+
+### Export Declarations
+
+```ts
+export * from "./product.js";
+export type * from "./ArcadeRuntime.js";
+export interface AuraLeanGameApp extends AuraLeanApp { input(options: LeanGameInputOptions): LeanGameInputController;
+export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanGameApp { const base = createProductApp(target, options);
+export const game = { input: createLeanGameInput, platformer: createLeanPlatformer, runtime: "lean-deterministic-arcade" } as const;
+```
+
+## @aura3d/lean/product
+
+- Version: `2.0.0`
+- Package manifest: `packages/lean/package.json`
+- Public entrypoint: `packages/lean/src/product.ts`
+
+### Export Declarations
+
+```ts
+export * from "./base.js";
+export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanApp { const pipelines: Array<{ readonly node: AuraLeanModelSpec; readonly pipeline: ProductionGLTFRenderPipeline }> = [];
+```
+
 ## @aura3d/materials
 
 - Version: `2.0.0`
@@ -1079,7 +1124,7 @@ export { Sampler } from "./Sampler";
 export type { SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
 export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
-export { TextureBinding } from "./TextureBinding";
+export { isTextureBinding, TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
 export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
 export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";

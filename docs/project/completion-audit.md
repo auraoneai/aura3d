@@ -34,7 +34,7 @@ subsystem ownership work, and material flagship rebuild in
 - All 43 Tier 1/2 routes pass the current real-browser health gate.
 - The selected historical `three@0.165.0` 54-row inventory is matched with zero high-priority rows
   open, bounded by the comparison-status document.
-- The public website source and build include the 1.6 content update and nine
+- The public website source and build include the 2.0 content update and nine
   restored, separately scoped evidence routes.
 
 ## Still Open

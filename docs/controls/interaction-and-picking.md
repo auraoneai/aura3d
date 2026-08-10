@@ -1,6 +1,6 @@
 # Controls, Interaction, And Picking
 
-Version: 1.6
+Version: 2.0
 
 `@aura3d/controls` owns camera controls, transform controls, selection, picking helpers, annotation picking, and interaction-mode adapters. The package is exported from `@aura3d/engine/controls`.
 

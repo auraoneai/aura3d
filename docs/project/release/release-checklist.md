@@ -149,7 +149,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 
 - [ ] Every applicable checkbox in `1.6-FINAL-PRD-Finishes.md` is complete and
   its exact-commit evidence ledger is current.
-- [ ] Hosted 1.6 route claims have public HTTPS deployment checks. Complete only
+- [ ] Hosted 2.0 route claims have public HTTPS deployment checks. Complete only
   after the verified production deployment reaches `https://aura3d.auraone.ai`.
 - [ ] `docs/project/release-artifacts.json` references the final package
   artifacts from the exact release commit.

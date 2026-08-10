@@ -767,14 +767,15 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped 1.6 package gates and historical
-`three@0.165.0` comparison gates pass locally. The current `three@0.185.1`
-competitive program and material flagship rebuild remain incomplete; the
-aggregate route-library gate is also non-passing. Blockfall Reactor, Turbo Drift Circuit, and
+Expected current state — The 2.0.0 package candidate and exact installed-package
+comparison against `three@0.185.1` pass their bounded local checks across 15
+workloads. That comparison is not a universal parity claim: clean-machine,
+repeated-performance, independent-human, publication, and production-origin
+gates remain open. Blockfall Reactor, Turbo Drift Circuit, and
 Skyline Runner remain `prototype-blocked`; their typed assets, mounted gameplay,
 and bounded route evidence are technical proof, not promotion. Aura Clash is
-tracked separately as a development showcase. Historical comparison wording must
-name `three@0.165.0`; no current broad parity or replacement claim is made.
+tracked separately as a development showcase. The former `three@0.165.0`
+comparison is historical only; no broad parity or replacement claim is made.
 
 ## Contributing
 
