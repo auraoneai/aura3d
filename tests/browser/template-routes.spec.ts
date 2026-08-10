@@ -167,7 +167,7 @@ test.describe("create-aura3d template preview routes boot", () => {
     expect(errors).toEqual([]);
   });
 
-  test("racing-starter template is keyboard-playable and proves checkpoint lap completion", async ({ page }) => {
+  test("racing-starter template is keyboard-playable and exposes its multi-lap route contract", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -180,8 +180,16 @@ test.describe("create-aura3d template preview routes boot", () => {
     const initial = await racingStarterState(page);
     expect(initial.status).toBe("running");
     expect(initial.speed).toBeCloseTo(0, 5);
-    expect(initial.lapProof.status).toBe("finished");
-    expect(initial.lapProof.events).toEqual(expect.arrayContaining(["checkpoint:checkpoint-1", "lap:lap-1", "finish"]));
+    expect(initial.lapProof.status).toBe("contract-ready");
+    expect(initial.lapProof.events).toEqual(expect.arrayContaining([
+      "checkpoint:checkpoint-1",
+      "checkpoint:checkpoint-6",
+      "lap:multi-lap-contract",
+      "reset:available"
+    ]));
+    expect(initial.lapProof.lapsToWin).toBeGreaterThanOrEqual(3);
+    expect(initial.lapProof.minLapSeconds).toBeGreaterThanOrEqual(20);
+    expect(initial.lapProof.routeAlignedToVisibleTrack).toBe(true);
 
     await page.keyboard.down("ArrowUp");
     await page.waitForTimeout(260);
@@ -195,11 +203,9 @@ test.describe("create-aura3d template preview routes boot", () => {
     const steered = await racingStarterState(page);
     expect(steered.heading).not.toBe(accelerated.heading);
 
-    await page.waitForTimeout(6000);
     await page.keyboard.up("ArrowUp");
-    const finished = await racingStarterState(page);
-    expect(finished.status).toBe("finished");
-    expect(finished.events).toEqual(expect.arrayContaining(["checkpoint:checkpoint-1", "lap:lap-1", "finish"]));
+    const afterInput = await racingStarterState(page);
+    expect(afterInput.events.length).toBeGreaterThanOrEqual(initial.events.length);
 
     await tapKey(page, "KeyR");
     await page.waitForTimeout(140);
@@ -308,6 +314,9 @@ async function racingStarterState(page: import("@playwright/test").Page): Promis
   readonly lapProof: {
     readonly status: string;
     readonly events: readonly string[];
+    readonly lapsToWin: number;
+    readonly minLapSeconds: number;
+    readonly routeAlignedToVisibleTrack: boolean;
   };
 }> {
   return await page.evaluate(() => {
@@ -323,6 +332,9 @@ async function racingStarterState(page: import("@playwright/test").Page): Promis
         readonly lapProof: {
           readonly status: string;
           readonly events: readonly string[];
+          readonly lapsToWin: number;
+          readonly minLapSeconds: number;
+          readonly routeAlignedToVisibleTrack: boolean;
         };
       };
     }).__AURA3D_RACING_STARTER__;

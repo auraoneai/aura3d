@@ -5,7 +5,7 @@ Machine-enforced by `pnpm check:package-graph` (`tools/package-graph/index.ts`),
 `tests/reports/package-graph.json` and `docs/architecture/package-graph.dot`. **This document is
 descriptive; the tool is authoritative.** If they disagree, the tool is right and this file is stale.
 
-Measured 2026-08-08 · 28 workspace packages · graph acyclic · 0 undeclared dependencies · 0 layer violations.
+Measured 2026-08-09 · 29 workspace packages · graph acyclic · 0 undeclared dependencies · 0 layer violations.
 
 ## How the graph is measured
 
@@ -36,7 +36,7 @@ and fails the gate.
 | 1 | Core data model | `core`, `scene` |
 | 2 | Subsystems over the data model | `animation`, `rendering`, `input`, `audio`, `ecs` |
 | 3 | Subsystems composing other subsystems | `assets`, `controls`, `materials`, `environments`, `debug`, `editor-runtime` |
-| 4 | Product surfaces | `product-studio`, `apps`, `workflows`, `editor` |
+| 4 | Product surfaces | `product-studio`, `apps`, `workflows`, `editor`, `lean` |
 | 5 | Aggregate runtime | `engine` |
 | 6 | Consumers of the aggregate / standalone tools | `react`, `three-compat`, `aura3d-cli`, `create-aura3d` |
 
@@ -71,7 +71,8 @@ Nothing may depend on tier 5 or 6 except tier 6.
 | `apps` | 4 | 162 | `@aura3d/apps` | application shell contracts. **`engine` depends on it** | `core`, `rendering`, `workflows` |
 | `workflows` | 4 | 1,174 | `@aura3d/workflows` | composed authoring workflows, production example runtime | `animation`, `assets`, `product-studio`, `rendering`, `scene` |
 | `editor` | 4 | 1 | `@aura3d/editor` | placeholder aggregate over `editor-runtime` | `editor-runtime` |
-| `engine` | 5 | 56,172 | `@aura3d/engine` (root) | agent API, game runtime, kits, production runtime. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `physics`, `product-studio`, `rendering`, `scene`, `workflows` |
+| `lean` | 4 | 971 | `@aura3d/lean`, `/product`, `/game` | dependency-isolated WebGL2 primitive, typed-product, and solver-free deterministic arcade runtime | `assets`, `rendering`, `scene` |
+| `engine` | 5 | 56,172 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus deprecated lean aliases. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `lean`, `physics`, `product-studio`, `rendering`, `scene`, `workflows` |
 | `react` | 6 | 173 | `@aura3d/react` | React bindings | `engine` |
 | `three-compat` | 6 | 1,185 | `@aura3d/three-compat` | Three.js migration surface | `animation`, `controls`, `debug`, `rendering` |
 | `aura3d-cli` | 6 | 8,756 | `@aura3d/cli` | asset pipeline CLI | `asset-index` |

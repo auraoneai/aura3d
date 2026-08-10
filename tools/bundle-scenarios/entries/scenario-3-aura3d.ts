@@ -4,7 +4,7 @@
  * Input, deterministic arcade motion, and game loop. Physical simulation is a
  * separate opt-in comparison because lean-game must not silently install a solver.
  */
-import { createAuraApp, camera, game, lights, material, primitives, scene } from "@aura3d/engine/lean-game";
+import { createAuraApp, camera, game, lights, material, primitives, scene } from "@aura3d/lean/game";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const app = createAuraApp(canvas, {

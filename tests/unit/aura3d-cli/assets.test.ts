@@ -7,6 +7,35 @@ import { describe, expect, test } from "vitest";
 import { addAsset, bindGameRouteEvidence, certifyGameGeometry, initAgentFiles, inspectAsset, listAssets, readAssetManifest, readRenderedProbeMetadata, validateAssets, validateAnimationStudioAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
 
 describe("@aura3d/cli assets", () => {
+  test("keeps generated typed assets on the dependency-isolated lean API", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "package.json"), JSON.stringify({
+      type: "module",
+      dependencies: { "@aura3d/lean": "2.0.0" }
+    }));
+    writeFileSync(join(projectDir, "assets", "level.navmesh"), Buffer.from("serialized-recast-navmesh"));
+
+    addAsset({ projectDir, file: "assets/level.navmesh", name: "levelNavigation" });
+
+    const generated = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
+    expect(generated).toContain('from "@aura3d/lean"');
+    expect(generated).not.toContain('from "@aura3d/engine"');
+  });
+
+  test("prefers the compatibility engine asset brand when a project declares both APIs", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "package.json"), JSON.stringify({
+      type: "module",
+      dependencies: { "@aura3d/engine": "2.0.0", "@aura3d/lean": "2.0.0" }
+    }));
+    writeFileSync(join(projectDir, "assets", "level.navmesh"), Buffer.from("serialized-recast-navmesh"));
+
+    addAsset({ projectDir, file: "assets/level.navmesh", name: "levelNavigation" });
+
+    const generated = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
+    expect(generated).toContain('from "@aura3d/engine"');
+  });
+
   test("adds serialized navmeshes as typed navigation assets", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "assets", "level.navmesh"), Buffer.from("serialized-recast-navmesh"));

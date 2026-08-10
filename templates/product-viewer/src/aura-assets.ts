@@ -1,4 +1,4 @@
-import { defineAuraAssets } from "@aura3d/engine/lean-product";
+import { defineAuraAssets } from "@aura3d/lean/product";
 
 export const assets = defineAuraAssets({
   product: {

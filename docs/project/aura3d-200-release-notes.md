@@ -13,6 +13,18 @@ prototype work.
 
 ## Public-surface changes
 
+- New applications use the independent `@aura3d/lean` package. Its core,
+  `/product`, and `/game` exports provide primitive WebGL2 scenes, typed
+  GLB/glTF product loading, and solver-free deterministic arcade motion. The
+  package's measured transitive Aura closure excludes the compatibility
+  engine, physics/Rapier, navigation, editor, and Node-media ownership.
+- The historical `@aura3d/engine/lean*` subpaths remain as deprecated
+  compatibility aliases. The broad `@aura3d/engine` package remains available
+  for applications that intentionally need its compatibility surface.
+- Product-viewer and mini-game scaffolds install `@aura3d/lean` directly. The
+  asset CLI preserves that topology when it regenerates `src/aura-assets.ts`;
+  it selects the engine asset brand only when the project explicitly declares
+  `@aura3d/engine`.
 - The public `examples/` inventory is reduced to retained routes that have a
   declared owner and an honest claim boundary.
 - Duplicate or contract-only product, material, character, physics, shadow,
@@ -49,6 +61,14 @@ Automated capture is not human acceptance. The final unfiltered 13-route audit
 after the last repairs is green with zero failures, and every retained route has
 an evidence-backed source/canvas/page disposition. Independent comparison,
 full-suite, packaging, website, and publication gates remain open.
+
+The generated-template gate currently passes 149/149 checks across all 19
+scaffolds. Clean npm-tarball lifecycle evidence passes 35/35 checks for the
+product, cinematic, and mini-game starters, including route health, static
+preview, screenshots, asset replacement, regenerated types, negative asset
+tests, and installed dependency-isolation assertions for both lean starters.
+These checks establish the stated scaffold contracts; they do not by
+themselves establish photorealism or universal Three.js parity.
 
 ## Three.js comparison boundary
 

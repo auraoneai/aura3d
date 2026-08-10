@@ -24,6 +24,7 @@
     "dist/editor-runtime",
     "dist/environments",
     "dist/input",
+    "dist/lean",
     "dist/materials",
     "dist/math",
     "dist/physics",

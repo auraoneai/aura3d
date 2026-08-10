@@ -14,9 +14,11 @@ evidence is missing or stale.
 
 ## Highlights
 
-- New `@aura3d/engine/lean`, `@aura3d/engine/lean-product`, and
-  `@aura3d/engine/lean-game` entries give new applications workload-specific
-  paths without removing the broad compatibility root.
+- Historical `@aura3d/engine/lean*` entries introduced workload-specific paths
+  without removing the broad compatibility root. In 2.0, new applications use
+  the independent `@aura3d/lean`, `@aura3d/lean/product`, and
+  `@aura3d/lean/game` package entries; the engine paths remain deprecated
+  compatibility aliases.
 - The frozen bundle scenarios measure the recommended entries at **0.582x,
   1.248x, and 0.832x** their equivalent Three.js stacks, within the unchanged
   **1.25x, 1.25x, and 1.50x** limits. These are build-scenario measurements,

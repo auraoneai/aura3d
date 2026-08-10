@@ -42,6 +42,7 @@ export const PACKAGE_TIERS: Record<string, number> = {
   apps: 4,
   workflows: 4,
   editor: 4,
+  lean: 4,
   // 5 — aggregates. Nothing may depend on these except other aggregates.
   engine: 5,
   react: 6,

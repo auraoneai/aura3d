@@ -93,7 +93,7 @@ A metadata score is not a selection. Runtime, bundle, determinism, disposal, wor
 
 ## Consumer and removal truth
 
-The machine report retains the complete per-package paths for source, dynamic-import, route, fixture, generator/CLI, docs, and installed-consumer evidence. A package with zero direct source consumers is not deletable when its public exports, generators, docs, fixtures, or external-consumer proofs remain. All 28 packages publish at least one export, so none is a `DELETE-NOW` package in this inventory.
+The machine report retains the complete per-package paths for source, dynamic-import, route, fixture, generator/CLI, docs, and installed-consumer evidence. A package with zero direct source consumers is not deletable when its public exports, generators, docs, fixtures, or external-consumer proofs remain. All 29 packages publish at least one export, including the independent `@aura3d/lean` workload package, so none is a `DELETE-NOW` package in this inventory.
 
 Known overlap queues:
 

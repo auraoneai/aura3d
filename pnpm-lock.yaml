@@ -289,6 +289,9 @@ importers:
       '@aura3d/ecs':
         specifier: workspace:*
         version: link:../ecs
+      '@aura3d/lean':
+        specifier: workspace:*
+        version: link:../lean
       '@aura3d/physics':
         specifier: workspace:*
         version: link:../physics
@@ -316,6 +319,18 @@ importers:
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
+      '@aura3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+
+  packages/lean:
+    dependencies:
+      '@aura3d/assets':
+        specifier: workspace:*
+        version: link:../assets
+      '@aura3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
       '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene

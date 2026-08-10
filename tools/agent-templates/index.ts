@@ -74,13 +74,13 @@ const checks: ReleaseCheck[] = [
     existsCheck(`packages/create-aura3d/templates/${template}/${templateEntry(template)}`, `${template} main`),
     existsCheck(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, `${template} route health test`),
     templateSmokeSpecCheck(template),
-    fileIncludes(`packages/create-aura3d/templates/${template}/${templateApiFile(template)}`, ["@aura3d/engine"], `${template} public Aura3D api`)
+    fileIncludes(`packages/create-aura3d/templates/${template}/${templateApiFile(template)}`, [templatePublicPackage(template)], `${template} public Aura3D api`)
   ]),
   ...rootPackagedTemplates.flatMap((template) => [
     existsCheck(`templates/${template}/package.json`, `${template} packaged root template package`),
     existsCheck(`templates/${template}/playwright.config.ts`, `${template} packaged root template Playwright config`),
     existsCheck(`templates/${template}/src/main.ts`, `${template} packaged root template main`),
-    fileIncludes(`templates/${template}/src/main.ts`, ["@aura3d/engine"], `${template} packaged root Aura3D api`)
+    fileIncludes(`templates/${template}/src/main.ts`, [templatePublicPackage(template)], `${template} packaged root Aura3D api`)
   ]),
   ...promptPlanTemplates.flatMap((template) => [
     fileIncludes(`templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`),
@@ -88,10 +88,10 @@ const checks: ReleaseCheck[] = [
   ]),
   fileIncludes("templates/mini-game/src/main.ts", ["createAuraApp", "game.platformer"], "mini-game packaged root game api"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["createAuraApp", "game.platformer"], "mini-game public game api"),
-  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/engine/lean-product"], "product-viewer packaged root lean-product entry"),
-  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/engine/lean-product"], "product-viewer public lean-product entry"),
-  fileIncludes("templates/mini-game/src/main.ts", ["@aura3d/engine/lean-game"], "mini-game packaged root lean-game entry"),
-  fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["@aura3d/engine/lean-game"], "mini-game public lean-game entry"),
+  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/lean/product"], "product-viewer packaged root lean-product entry"),
+  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/lean/product"], "product-viewer public lean-product entry"),
+  fileIncludes("templates/mini-game/src/main.ts", ["@aura3d/lean/game"], "mini-game packaged root lean-game entry"),
+  fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["@aura3d/lean/game"], "mini-game public lean-game entry"),
   ...rootPackagedTemplates.flatMap((template) => [
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, ["tests/reports/route-health.json"], `${template} route health report`),
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`)
@@ -241,6 +241,12 @@ function templateEntry(template: string): string {
 // mounts (the entry itself is a thin bootstrap with no direct engine import).
 function templateApiFile(template: string): string {
   return template === "animation-studio" ? "src/scene-player.ts" : "src/main.ts";
+}
+
+function templatePublicPackage(template: string): string {
+  if (template === "product-viewer") return "@aura3d/lean/product";
+  if (template === "mini-game") return "@aura3d/lean/game";
+  return "@aura3d/engine";
 }
 
 function writeWorkspacePlaywrightConfig(targetDir: string): void {

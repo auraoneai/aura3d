@@ -8,7 +8,7 @@ import {
   scene,
   type AuraLeanNodeBuilder,
   type LeanPlatformerEvent
-} from "@aura3d/engine/lean-game";
+} from "@aura3d/lean/game";
 import { assets } from "./aura-assets";
 
 declare global {
@@ -180,6 +180,6 @@ function publishEvidence(state: ReturnType<typeof platformer.snapshot>): void {
     collected: state.collected,
     player: { x: state.player.x, y: state.player.y, grounded: state.player.grounded },
     events: [...routeEvents],
-    evidence: { entry: "@aura3d/engine/lean-game", physics: "solver-free deterministic arcade", typedAssets: Object.keys(assets).length }
+    evidence: { entry: "@aura3d/lean/game", physics: "solver-free deterministic arcade", typedAssets: Object.keys(assets).length }
   };
 }

@@ -37,8 +37,9 @@ export function writeAssetManifest(projectDir: string, manifest: AuraCliAssetMan
 export function writeTypedAssets(projectDir: string, manifest = readAssetManifest(projectDir)): string {
   const path = resolve(projectDir, manifest.typegen);
   mkdirSync(dirname(path), { recursive: true });
+  const publicAssetApi = resolveTypedAssetApi(projectDir);
   const lines = [
-    "import { defineAuraAssets } from \"@aura3d/engine\";",
+    `import { defineAuraAssets } from ${JSON.stringify(publicAssetApi)};`,
     "",
     "export const assets = defineAuraAssets({",
     ...manifest.assets.map((asset) => {
@@ -90,6 +91,25 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
   ];
   writeFileSync(path, lines.join("\n"));
   return path;
+}
+
+function resolveTypedAssetApi(projectDir: string): "@aura3d/lean" | "@aura3d/engine" {
+  const packagePath = resolve(projectDir, "package.json");
+  if (!existsSync(packagePath)) return "@aura3d/engine";
+  try {
+    const manifest = JSON.parse(readFileSync(packagePath, "utf8")) as {
+      readonly dependencies?: Record<string, string>;
+      readonly devDependencies?: Record<string, string>;
+    };
+    const hasEngine = manifest.dependencies?.["@aura3d/engine"] !== undefined
+      || manifest.devDependencies?.["@aura3d/engine"] !== undefined;
+    if (hasEngine) return "@aura3d/engine";
+    const hasLean = manifest.dependencies?.["@aura3d/lean"] !== undefined
+      || manifest.devDependencies?.["@aura3d/lean"] !== undefined;
+    return hasLean ? "@aura3d/lean" : "@aura3d/engine";
+  } catch {
+    return "@aura3d/engine";
+  }
 }
 
 export function listAssets(options: { readonly projectDir?: string } = {}): readonly AuraCliAssetEntry[] {

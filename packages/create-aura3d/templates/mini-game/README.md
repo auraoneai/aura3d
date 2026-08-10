@@ -6,8 +6,9 @@ health checks.
 Status: playable starter, not a production game claim. This template uses a
 typed player asset, the public `game.platformer(...)` kit, runtime nodes, HUD
 evidence, keyboard input, reset, scoring, and screenshot tests. It proves the
-starter boots and responds to keyboard input through the root `@aura3d/engine`
-safe API; it does not prove production art direction, skinned animation,
+starter boots and responds to keyboard input through `@aura3d/lean/game`'s
+solver-free deterministic arcade API; it does not install or claim a physical
+simulation solver and does not prove production art direction, skinned animation,
 advanced PBR, WebGPU, postprocess, or commercial game polish.
 
 Before presenting a route from this template as production-quality, replace any

@@ -57,10 +57,14 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
-  packageJson.dependencies = {
-    ...(packageJson.dependencies ?? {}),
-    "@aura3d/engine": options.packageVersion ?? packageJson.dependencies?.["@aura3d/engine"] ?? "1.4.5"
-  };
+  const dependencies = { ...(packageJson.dependencies ?? {}) };
+  const auraDependencies = Object.keys(dependencies).filter((name) => name.startsWith("@aura3d/"));
+  if (auraDependencies.length === 0) {
+    dependencies["@aura3d/engine"] = options.packageVersion ?? "2.0.0";
+  } else if (options.packageVersion) {
+    for (const dependency of auraDependencies) dependencies[dependency] = options.packageVersion;
+  }
+  packageJson.dependencies = dependencies;
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
   return {
     targetDir,

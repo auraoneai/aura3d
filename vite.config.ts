@@ -7,6 +7,9 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { ViteDevServer } from "vite";
 
 const aliasEntries = [
+  ["@aura3d/lean/product", "./packages/lean/src/product.ts"],
+  ["@aura3d/lean/game", "./packages/lean/src/game.ts"],
+  ["@aura3d/lean", "./packages/lean/src/index.ts"],
   ["@aura3d/engine/lean-product", "./packages/engine/src/agent-api/lean-product.ts"],
   ["@aura3d/engine/lean-game", "./packages/engine/src/agent-api/lean-game.ts"],
   ["@aura3d/engine/lean", "./packages/engine/src/agent-api/lean.ts"],

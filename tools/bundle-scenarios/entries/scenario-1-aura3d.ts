@@ -5,7 +5,7 @@
  * no compressed textures, no physics. This is the smallest thing a developer can build, and it is the
  * number that decides whether they keep reading.
  */
-import { createAuraApp, camera, material, primitives, scene } from "@aura3d/engine/lean";
+import { createAuraApp, camera, material, primitives, scene } from "@aura3d/lean";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const app = createAuraApp(canvas, {

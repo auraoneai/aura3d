@@ -52,8 +52,8 @@ const BROWSER_EXTERNAL_NODE_BUILTINS = [] as const;
 const targets: readonly BundleTarget[] = [
   {
     id: "core-agent-api",
-    label: "@aura3d/engine/lean core primitive critical path",
-    entryPoint: "packages/engine/src/agent-api/lean.ts",
+    label: "@aura3d/lean core primitive critical path",
+    entryPoint: "packages/lean/src/index.ts",
     budget: 80_000,
     external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js"]
   },
@@ -119,6 +119,9 @@ function createAliasPlugin(external: readonly string[]): Plugin {
     name: "aura3d-source-alias",
     setup(buildApi) {
     const aliases = new Map([
+      ["@aura3d/lean", "./packages/lean/src/index.ts"],
+      ["@aura3d/lean/product", "./packages/lean/src/product.ts"],
+      ["@aura3d/lean/game", "./packages/lean/src/game.ts"],
       ["@aura3d/engine", "./packages/engine/src/agent-api/index.ts"],
       ["@aura3d/engine/lean", "./packages/engine/src/agent-api/lean.ts"],
       ["@aura3d/engine/lean-product", "./packages/engine/src/agent-api/lean-product.ts"],
@@ -357,7 +360,7 @@ function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
     "The `compatibility-root-observation` target retains the compatibility-heavy root as an",
     "informational measurement rather than pretending its bytes disappeared. WS-2.2 explicitly",
     "keeps that root intact for existing consumers; the unchanged 80,000 B new-app budget applies",
-    "to `@aura3d/engine/lean`. New product and game apps use `/lean-product` or `/lean-game`. Those",
+    "to `@aura3d/lean`. New product and game apps use `@aura3d/lean/product` or `@aura3d/lean/game`. Those",
     "entries pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`,",
     "including a real GLB loader and the solver-free deterministic arcade runtime. Physical simulation",
     "remains an explicit optional-package workload rather than entering the game starter critical path.",

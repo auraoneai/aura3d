@@ -289,7 +289,7 @@ export interface AuraLeanModelRuntime {
 export interface AuraLeanCreateAppOptions {
   readonly scene: AuraLeanSceneBuilder | AuraLeanSceneSnapshot;
   readonly autoStart?: boolean;
-  /** Adapter seam used by `@aura3d/engine/lean-product`; absent from core/game downloads. */
+  /** Adapter seam used by `@aura3d/lean/product`; absent from the core entry. */
   readonly modelRuntime?: AuraLeanModelRuntime;
 }
 

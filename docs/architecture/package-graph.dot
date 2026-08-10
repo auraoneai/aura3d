@@ -41,6 +41,7 @@ digraph aura3d {
   "engine" -> "audio";
   "engine" -> "core";
   "engine" -> "ecs";
+  "engine" -> "lean";
   "engine" -> "physics";
   "engine" -> "product-studio";
   "engine" -> "rendering";
@@ -51,6 +52,10 @@ digraph aura3d {
   "input" [label="input\ntier 2"];
   "input" -> "math";
   "input" -> "scene";
+  "lean" [label="lean\ntier 4"];
+  "lean" -> "assets";
+  "lean" -> "rendering";
+  "lean" -> "scene";
   "materials" [label="materials\ntier 3"];
   "materials" -> "assets";
   "materials" -> "rendering";

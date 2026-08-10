@@ -1,8 +1,23 @@
 {
   "schema": "a3d-browser-entry-purity",
-  "generatedAt": "2026-08-09T01:26:13.664Z",
+  "generatedAt": "2026-08-10T04:17:51.196Z",
   "pass": true,
   "checks": [
+    {
+      "id": "browser-entry:lean",
+      "pass": true,
+      "detail": "@aura3d/lean: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:lean-product",
+      "pass": true,
+      "detail": "@aura3d/lean/product: no node: builtin is reachable"
+    },
+    {
+      "id": "browser-entry:lean-game",
+      "pass": true,
+      "detail": "@aura3d/lean/game: no node: builtin is reachable"
+    },
     {
       "id": "browser-entry:engine-agent-api",
       "pass": true,
@@ -177,6 +192,30 @@
   "failures": [],
   "rule": "WS-2.3 — no `node:` import may be reachable from any browser entry, and no browser-only API from a Node entry. Enforced by bundling each entry with NO node: externals, so a reachable builtin becomes a resolution failure naming the specifier. tools/bundle-size marks four node: specifiers external to make its measurement succeed; that is a workaround for reachability, not proof of its absence — which is why this gate exists separately.",
   "browserEntries": [
+    {
+      "id": "lean",
+      "label": "@aura3d/lean",
+      "path": "packages/lean/src/index.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/lean: no node: builtin is reachable"
+    },
+    {
+      "id": "lean-product",
+      "label": "@aura3d/lean/product",
+      "path": "packages/lean/src/product.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/lean/product: no node: builtin is reachable"
+    },
+    {
+      "id": "lean-game",
+      "label": "@aura3d/lean/game",
+      "path": "packages/lean/src/game.ts",
+      "pure": true,
+      "reachableNodeBuiltins": [],
+      "detail": "@aura3d/lean/game: no node: builtin is reachable"
+    },
     {
       "id": "engine-agent-api",
       "label": "@aura3d/engine (root public entry)",

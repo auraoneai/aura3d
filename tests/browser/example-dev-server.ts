@@ -10,6 +10,9 @@ export interface ExampleDevServer {
 }
 
 const packageEntryPoints = new Map<string, string>([
+  ["@aura3d/lean/product", "/packages/lean/src/product.ts"],
+  ["@aura3d/lean/game", "/packages/lean/src/game.ts"],
+  ["@aura3d/lean", "/packages/lean/src/index.ts"],
   ["@aura3d/math", "/packages/math/src/index.ts"],
   ["@aura3d/core", "/packages/core/src/index.ts"],
   ["@aura3d/scene/math", "/packages/scene/src/MathTypes.ts"],

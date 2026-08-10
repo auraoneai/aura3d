@@ -1,5 +1,5 @@
 /**
- * Deterministic, solver-free arcade services for `@aura3d/engine/lean-game`.
+ * Deterministic, solver-free arcade services for `@aura3d/lean/game`.
  *
  * This module deliberately owns no rigid-body world. Games that need physical
  * simulation opt into `@aura3d/physics-rapier`; the lean game entry provides

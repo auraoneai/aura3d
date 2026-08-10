@@ -34,6 +34,12 @@ const targets: readonly PackageTarget[] = [
     requiredFiles: ["README.md", "package.json", "dist/engine/index.js", "dist/engine/agent-api/index.js", "templates/product-viewer/package.json", "templates/cinematic-scene/package.json", "templates/mini-game/package.json"]
   },
   {
+    id: "lean",
+    dir: "packages/lean",
+    expectedName: "@aura3d/lean",
+    requiredFiles: ["README.md", "package.json", "dist/index.js", "dist/index.d.ts", "dist/product.js", "dist/product.d.ts", "dist/game.js", "dist/game.d.ts"]
+  },
+  {
     id: "react",
     dir: "packages/react",
     expectedName: "@aura3d/react",

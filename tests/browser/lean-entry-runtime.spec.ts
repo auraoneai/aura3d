@@ -19,7 +19,7 @@ test.describe("lean public entries", () => {
       <!doctype html><style>html,body{margin:0;background:#05070b}canvas{width:320px;height:240px}</style>
       <canvas id="scene" width="320" height="240"></canvas>
       <script type="module">
-        import { createAuraApp, camera, material, primitives, scene } from "${server.origin}/packages/engine/src/agent-api/lean.js";
+        import { createAuraApp, camera, material, primitives, scene } from "${server.origin}/packages/lean/src/index.js";
         const canvas = document.querySelector("#scene");
         const app = createAuraApp(canvas, {
           autoStart: false,
@@ -51,7 +51,7 @@ test.describe("lean public entries", () => {
       <!doctype html><style>html,body{margin:0}canvas{width:320px;height:240px}</style>
       <canvas id="scene" width="320" height="240"></canvas>
       <script type="module">
-        import { createAuraApp, camera, game, material, primitives, scene } from "${server.origin}/packages/engine/src/agent-api/lean-game.js";
+        import { createAuraApp, camera, game, material, primitives, scene } from "${server.origin}/packages/lean/src/game.js";
         const app = createAuraApp(document.querySelector("#scene"), {
           scene: scene().camera(camera.perspective({ position: [0, 5, 8], target: [0, 1, 0] }))
             .add(primitives.box({ name: "player", material: material.pbr({ color: "#4fd1c5" }) })
@@ -100,7 +100,7 @@ test.describe("lean public entries", () => {
       <!doctype html><style>html,body{margin:0}canvas{width:320px;height:240px}</style>
       <canvas id="scene" width="320" height="240"></canvas>
       <script type="module">
-        import { createAuraApp, camera, model, scene } from "${server.origin}/packages/engine/src/agent-api/lean-product.js";
+        import { createAuraApp, camera, model, scene } from "${server.origin}/packages/lean/src/product.js";
         const app = createAuraApp(document.querySelector("#scene"), {
           autoStart: false,
           scene: scene().camera(camera.orbit({ target: [0, 0, 0], distance: 3 }))

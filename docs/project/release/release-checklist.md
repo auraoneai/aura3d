@@ -44,7 +44,7 @@ against `three@0.165.0` remain recorded but cannot close the current
   unfiltered visual-audit component is current and green: 13 routes, zero
   failures, with human dispositions recorded; the complete browser suite still
   requires its release-commit run.
-- [ ] `pnpm build` passes; finalization covers 28 packages, including the optional physical-simulation and navigation adapters.
+- [ ] `pnpm build` passes; finalization covers 29 packages, including the independent lean workload package and optional physical-simulation and navigation adapters.
 - [x] `pnpm verify:api-docs -- --write` has been run after export changes.
 - [ ] `pnpm verify:package-install-smoke:fresh` passes for 2.0.0 tarballs.
 - [ ] `pnpm verify:package-provenance` passes for 2.0.0 tarballs.

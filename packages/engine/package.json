@@ -26,6 +26,7 @@
     "@aura3d/audio": "workspace:*",
     "@aura3d/core": "workspace:*",
     "@aura3d/ecs": "workspace:*",
+    "@aura3d/lean": "workspace:*",
     "@aura3d/physics": "workspace:*",
     "@aura3d/product-studio": "workspace:*",
     "@aura3d/rendering": "workspace:*",

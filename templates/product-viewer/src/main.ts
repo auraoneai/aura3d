@@ -7,7 +7,7 @@ import {
   model,
   primitives,
   scene
-} from "@aura3d/engine/lean-product";
+} from "@aura3d/lean/product";
 import { assets } from "./aura-assets";
 
 const productScene = scene()

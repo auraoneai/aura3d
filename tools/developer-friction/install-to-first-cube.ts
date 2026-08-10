@@ -268,7 +268,7 @@ function writeProjectFiles(engine: Engine, directory: string): void {
 }
 
 function auraSource(): string {
-  return `import { camera, createAuraApp, material, primitives, scene } from "@aura3d/engine/lean";
+  return `import { camera, createAuraApp, material, primitives, scene } from "@aura3d/lean";
 const canvas = document.querySelector("canvas");
 const app = createAuraApp(canvas, { autoStart: false, scene: scene().background("#0b0f16").camera(camera.perspective({ position: [2.4, 1.8, 3.2], target: [0, 0, 0], fov: 45 })).add(primitives.box({ material: material.pbr({ color: "#c8d3e0", roughness: 0.4 }) })) });
 await app.ready();

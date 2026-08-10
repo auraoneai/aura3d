@@ -24,6 +24,9 @@ const REPORT_PATH = "tests/reports/browser-entry-purity.json";
 
 /** Entry points a browser consumer is documented to import. */
 const BROWSER_ENTRIES = [
+  { id: "lean", path: "packages/lean/src/index.ts", label: "@aura3d/lean" },
+  { id: "lean-product", path: "packages/lean/src/product.ts", label: "@aura3d/lean/product" },
+  { id: "lean-game", path: "packages/lean/src/game.ts", label: "@aura3d/lean/game" },
   { id: "engine-agent-api", path: "packages/engine/src/agent-api/index.ts", label: "@aura3d/engine (root public entry)" },
   { id: "engine-lean", path: "packages/engine/src/agent-api/lean.ts", label: "@aura3d/engine/lean" },
   { id: "engine-lean-product", path: "packages/engine/src/agent-api/lean-product.ts", label: "@aura3d/engine/lean-product" },
@@ -81,6 +84,9 @@ const OFFLINE_MEDIA_MODULES = [
 
 function auraSourceAlias(): Plugin {
   const aliases = new Map([
+    ["@aura3d/lean", "packages/lean/src/index.ts"],
+    ["@aura3d/lean/product", "packages/lean/src/product.ts"],
+    ["@aura3d/lean/game", "packages/lean/src/game.ts"],
     ["@aura3d/engine", "packages/engine/src/agent-api/index.ts"],
     ["@aura3d/engine/media-node", "packages/engine/src/agent-api/media-node.ts"],
     ["@aura3d/rendering", "packages/rendering/src/index.ts"],

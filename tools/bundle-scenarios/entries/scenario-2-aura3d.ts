@@ -4,7 +4,7 @@
  * glTF loading, PBR, orbit controls, lighting, environment. The most common real first project, and
  * the one where Aura3D's integrated environment presets and asset handling should start paying off.
  */
-import { createAuraApp, camera, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/engine/lean-product";
+import { createAuraApp, camera, environments, interactions, lights, material, model, primitives, scene } from "@aura3d/lean/product";
 
 const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 const app = createAuraApp(canvas, {

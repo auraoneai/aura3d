@@ -32,7 +32,7 @@ npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
 Render it from normal TypeScript:
 
 ```ts
-import { createAuraApp, environments, model, scene } from "@aura3d/engine/lean-product";
+import { createAuraApp, environments, model, scene } from "@aura3d/lean/product";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
@@ -72,6 +72,9 @@ developer can keep owning after the AI has written the first pass.
 
 ## Packages
 
+- `@aura3d/lean`: recommended browser runtime for lean core, typed-product,
+  and deterministic arcade workloads without physics, navigation, editor, or
+  Node-media dependencies.
 - `@aura3d/engine`: public TypeScript runtime for browser 3D scenes and apps.
 - `create-aura3d`: one-command Vite scaffolds for Aura3D projects.
 - `@aura3d/cli`: typed GLB/glTF asset workflow, catalog search, validation,

@@ -13,6 +13,9 @@ const docs = [
   "docs/templates/create-aura3d-templates.md"
 ].filter((path) => existsSync(path));
 const knownPackages = new Set([
+  "@aura3d/lean",
+  "@aura3d/lean/product",
+  "@aura3d/lean/game",
   "@aura3d/engine",
   "@aura3d/engine/lean",
   "@aura3d/engine/lean-product",

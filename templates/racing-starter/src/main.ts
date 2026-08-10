@@ -120,7 +120,7 @@ const raceEventLabels: string[] = [];
 app.onFrame(({ dt }: { readonly dt: number }) => {
   input.update(dt);
   if (input.pressed("reset")) {
-    racing.reset(0.04);
+    racing.reset(0);
     routeEvents.push({ type: "reset", label: "reset" });
     raceEventLabels.push("reset");
     objective = "Clear six gates across a 3-lap typed-asset route.";

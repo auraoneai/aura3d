@@ -15,7 +15,7 @@
 //     over a file that can silently drop a final line without trailing newline,
 //     which left @aura3d/workflows unpublished in 1.3.0).
 //  4. registry verification     — after publishing, every package is checked against
-//     the registry; the expected count is asserted (28).
+//     the registry; the expected count is asserted (29).
 //
 // Usage:
 //   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs [--dry-run]
@@ -29,7 +29,7 @@
 //       NPM_OTP=123456 node tools/release/publish-all.mjs
 //
 //     A single OTP is accepted for a short window, which is normally long enough for
-//     all 28 packages; if it expires mid-run, re-run with a fresh code and the
+//     all 29 packages; if it expires mid-run, re-run with a fresh code and the
 //     "already published" branch below skips whatever already landed. The OTP is read
 //     from the environment and never logged: `--otp` is appended to the argv of the
 //     child process only.
@@ -45,7 +45,7 @@ const DRY_RUN = process.argv.includes("--dry-run");
 const NPM_OTP = process.env.NPM_OTP?.trim() ?? "";
 const OTP_ARG = NPM_OTP ? ` --otp ${JSON.stringify(NPM_OTP)}` : "";
 const PACK_DIR = join(ROOT, "tests", "reports", "release-tarballs");
-const EXPECTED_PUBLIC_COUNT = 28;
+const EXPECTED_PUBLIC_COUNT = 29;
 
 function sh(command, options = {}) {
   // 64MB buffer: `pnpm pack` of the engine prints thousands of npm-notice lines,

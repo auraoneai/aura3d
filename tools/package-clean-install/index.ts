@@ -36,6 +36,13 @@ mkdirSync(tarballDir, { recursive: true });
 
 const tarballs = {
   engine: pack(".", tarballDir),
+  lean: pack("packages/lean", tarballDir),
+  assets: pack("packages/assets", tarballDir),
+  animation: pack("packages/animation", tarballDir),
+  rendering: pack("packages/rendering", tarballDir),
+  scene: pack("packages/scene", tarballDir),
+  core: pack("packages/core", tarballDir),
+  math: pack("packages/math", tarballDir),
   react: pack("packages/react", tarballDir),
   assetIndex: pack("packages/asset-index", tarballDir),
   cli: pack("packages/aura3d-cli", tarballDir),
@@ -80,6 +87,9 @@ const checks: ReleaseCheck[] = [
     check(`${result.template}-missing-manifest-actionable`, !result.missingManifest.ok && includesAll(result.missingManifest.output, ["Missing aura.assets.json", "Suggested fix"]), result.missingManifest.output),
     screenshotProfileCheck(result)
   ]),
+  ...templateResults
+    .filter((result) => result.template === "product-viewer" || result.template === "mini-game")
+    .map((result) => leanTemplateIsolationCheck(result.template)),
   check(
     "starter-screenshot-files-distinct",
     new Set(templateResults.map((result) => result.screenshotSha256)).size === templates.length,
@@ -121,7 +131,10 @@ function runEngineInstall(): CommandResult {
     name: "aura3d-engine-clean-import",
     private: true,
     type: "module",
-    dependencies: { "@aura3d/engine": `file:${tarballs.engine}` },
+    dependencies: {
+      "@aura3d/engine": `file:${tarballs.engine}`,
+      ...leanClosureTarballDependencies()
+    },
     devDependencies: { typescript: "^5.8.3" }
   });
   writeTsconfig(dir);
@@ -147,6 +160,7 @@ function runReactInstall(): CommandResult {
     dependencies: {
       "@aura3d/engine": `file:${tarballs.engine}`,
       "@aura3d/react": `file:${tarballs.react}`,
+      ...leanClosureTarballDependencies(),
       react: "^19.0.0"
     },
     devDependencies: { "@types/react": "^19.0.0", typescript: "^5.8.3" }
@@ -248,10 +262,14 @@ function patchScaffoldPackage(appDir: string): void {
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
   };
-  parsed.dependencies = {
-    ...(parsed.dependencies ?? {}),
-    "@aura3d/engine": `file:${tarballs.engine}`
-  };
+  const usesLean = parsed.dependencies?.["@aura3d/lean"] !== undefined;
+  parsed.dependencies = usesLean
+    ? { ...(parsed.dependencies ?? {}), ...leanClosureTarballDependencies() }
+    : {
+        ...(parsed.dependencies ?? {}),
+        "@aura3d/engine": `file:${tarballs.engine}`,
+        ...leanClosureTarballDependencies()
+      };
   parsed.devDependencies = {
     ...(parsed.devDependencies ?? {}),
     "@aura3d/asset-index": `file:${tarballs.assetIndex}`,
@@ -259,6 +277,18 @@ function patchScaffoldPackage(appDir: string): void {
     "create-aura3d": `file:${tarballs.create}`
   };
   writeFileSync(path, `${JSON.stringify(parsed, null, 2)}\n`);
+}
+
+function leanClosureTarballDependencies(): Record<string, string> {
+  return {
+    "@aura3d/lean": `file:${tarballs.lean}`,
+    "@aura3d/assets": `file:${tarballs.assets}`,
+    "@aura3d/animation": `file:${tarballs.animation}`,
+    "@aura3d/rendering": `file:${tarballs.rendering}`,
+    "@aura3d/scene": `file:${tarballs.scene}`,
+    "@aura3d/core": `file:${tarballs.core}`,
+    "@aura3d/math": `file:${tarballs.math}`
+  };
 }
 
 function patchScaffoldPlaywrightConfig(appDir: string, port: number): void {
@@ -413,6 +443,32 @@ function screenshotProfileCheck(result: TemplateResult): ReleaseCheck {
     `${result.template}-dev-screenshot-profile-visual-cues`,
     result.screenshotBytes > 1000 && result.previewScreenshotBytes > 1000 && profileResult.pass,
     `dev=${result.screenshotBytes}, profile=${JSON.stringify(profile)}, preview=${result.previewScreenshotBytes}, ${profileResult.detail}`
+  );
+}
+
+function leanTemplateIsolationCheck(template: string): ReleaseCheck {
+  const appDir = resolve(workspace, "templates", template, "demo");
+  const manifest = JSON.parse(readFileSync(resolve(appDir, "package.json"), "utf8")) as {
+    readonly dependencies?: Record<string, string>;
+  };
+  const lockText = readFileSync(resolve(appDir, "package-lock.json"), "utf8");
+  const forbidden = [
+    "@aura3d/engine",
+    "@aura3d/physics",
+    "@aura3d/physics-rapier",
+    "@aura3d/navigation-recast",
+    "@aura3d/editor",
+    "@aura3d/editor-runtime",
+    "@dimforge/rapier3d-compat"
+  ].filter((name) => lockText.includes(`\"${name}\"`) || lockText.includes(`node_modules/${name}`));
+  const hasLean = manifest.dependencies?.["@aura3d/lean"] !== undefined
+    && existsSync(resolve(appDir, "node_modules/@aura3d/lean/package.json"));
+  return check(
+    `${template}-installed-lean-dependency-isolation`,
+    hasLean && forbidden.length === 0,
+    hasLean
+      ? `forbidden installed dependencies: ${forbidden.join(", ")}`
+      : "@aura3d/lean is not declared and installed"
   );
 }
 
