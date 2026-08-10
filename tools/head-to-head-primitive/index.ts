@@ -13,7 +13,26 @@ const checks = [
   { id: "meaningful-output", pass: browser.aura?.drawCalls === 3 && browser.three?.drawCalls === 3 && browser.aura?.litPixels > 25_000 && browser.three?.litPixels > 25_000 }
 ];
 const failures = checks.filter((entry) => !entry.pass);
-const report = { schema: "aura3d.current-head-to-head-primitive/1.0", generatedAt: new Date().toISOString(), pass: failures.length === 0, workload: "primitive-scene", checks, failures, browser };
+const report = {
+  schema: "aura3d.current-head-to-head-primitive/1.0",
+  generatedAt: new Date().toISOString(),
+  pass: failures.length === 0,
+  workload: "primitive-scene",
+  verdict: "both-render-frozen-primitive-contract-with-visible-aura-lighting-loss",
+  checks,
+  failures,
+  comparison: {
+    auraDrawCalls: browser.aura?.drawCalls,
+    threeDrawCalls: browser.three?.drawCalls,
+    observedLosses: [
+      "Personal inspection of both retained captures confirms aligned camera, geometry, background, and intended blue/red/gray authored palette after converting Aura material and light inputs from sRGB to linear and disabling its additional procedural environment.",
+      "The images are not pixel-equivalent: Aura's floor and sphere remain visibly brighter because the selected Aura and Three lighting/material pipelines do not produce identical irradiance and tone response.",
+      "This correctness workload has no frozen multi-session performance measurement, so performance non-inferiority is unproven."
+    ],
+    claimBoundary: "Public low-level @aura3d/rendering primitive PBR workload against current Three.js r185. It proves meaningful output under the frozen scene contract, not root createAuraApp, visual parity, physical-lighting parity, or performance parity."
+  },
+  browser
+};
 const output = resolve("tests/reports/current-head-to-head/primitive-scene/aggregate.json");
 mkdirSync(dirname(output), { recursive: true }); writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
 if (failures.length) { console.error(`Primitive head-to-head UNPROVEN: ${failures.map((entry) => entry.id).join(", ")}`); process.exitCode = 1; }

@@ -29,15 +29,15 @@ async function run(): Promise<void> {
   const projection = perspectiveMat4(CONTRACT.camera.fovYDegrees * Math.PI / 180, aspect, CONTRACT.camera.near, CONTRACT.camera.far);
   const viewProjection = multiplyMat4(projection, view);
 
-  const auraRenderer = await Renderer.create({ backend: "webgl2", canvas: auraCanvas, width: 1440, height: 900, antialias: true, preserveDrawingBuffer: true, clearColor: [0.018, 0.024, 0.04, 1] });
+  const auraRenderer = await Renderer.create({ backend: "webgl2", canvas: auraCanvas, width: 1440, height: 900, antialias: true, preserveDrawingBuffer: true, clearColor: [...linearRgb(0x05060a), 1] });
   const cube = Geometry.litCube(1);
   const sphere = Geometry.uvSphere(0.5, 48, 24);
   const floor = Geometry.litCube(1);
-  const blue = new PBRMaterial({ name: "primitive-blue", baseColor: [0.08, 0.34, 0.92, 1], metallic: 0.2, roughness: 0.32, environmentIntensity: 0.35 });
-  const orange = new PBRMaterial({ name: "primitive-orange", baseColor: [0.95, 0.28, 0.07, 1], metallic: 0.05, roughness: 0.48, environmentIntensity: 0.35 });
-  const ground = new PBRMaterial({ name: "primitive-ground", baseColor: [0.24, 0.27, 0.32, 1], metallic: 0, roughness: 0.78, environmentIntensity: 0.35 });
+  const blue = matchedMaterial("primitive-blue", 0x1457eb, 0.2, 0.32);
+  const orange = matchedMaterial("primitive-orange", 0xf24712, 0.05, 0.48);
+  const ground = matchedMaterial("primitive-ground", 0x3d454f, 0, 0.78);
   const key = new DirectionalLight("head-to-head-key");
-  key.color = [1, 0.906, 0.796];
+  key.color = linearRgb(0xfff4e6);
   key.intensity = CONTRACT.lighting.keyIntensity;
   const light: CollectedLight = { kind: "directional", color: key.color, intensity: key.intensity, position: CONTRACT.lighting.keyPosition, direction: [-8, -13, -10], range: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: key };
   const auraDiagnostics = auraRenderer.render({
@@ -71,3 +71,30 @@ async function run(): Promise<void> {
 function requiredCanvas(id: string): HTMLCanvasElement { const value = document.getElementById(id); if (!(value instanceof HTMLCanvasElement)) throw new Error(`Missing ${id} canvas`); return value; }
 function nextFrame(): Promise<void> { return new Promise((resolve) => requestAnimationFrame(() => resolve())); }
 function litPixels(pixels: Uint8Array): number { let count = 0; for (let i = 0; i < pixels.length; i += 4) if (pixels[i]! + pixels[i + 1]! + pixels[i + 2]! > 45) count++; return count; }
+
+function matchedMaterial(name: string, color: number, metallic: number, roughness: number): PBRMaterial {
+  return new PBRMaterial({
+    name,
+    baseColor: [...linearRgb(color), 1],
+    metallic,
+    roughness,
+    environmentColor: [1, 1, 1],
+    environmentIntensity: CONTRACT.lighting.ambientIntensity,
+    proceduralEnvironmentMap: {
+      skyColor: [0, 0, 0],
+      horizonColor: [0, 0, 0],
+      groundColor: [0, 0, 0],
+      specularColor: [0, 0, 0],
+      intensity: 0,
+      specularIntensity: 0
+    }
+  });
+}
+
+function linearRgb(hex: number): [number, number, number] {
+  return [16, 8, 0].map((shift) => srgbToLinear(((hex >> shift) & 0xff) / 255)) as [number, number, number];
+}
+
+function srgbToLinear(value: number): number {
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
