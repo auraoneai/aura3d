@@ -32,7 +32,7 @@ and fails the gate.
 
 | Tier | Meaning | Packages |
 |---|---|---|
-| 0 | Foundation — zero Aura3D dependencies | `math`, `navigation-recast`, `physics`, `physics-rapier`, `scripting`, `asset-index` |
+| 0 | Foundation and low-level optional adapters — no upward Aura3D dependencies | `math`, `navigation-recast`, `physics`, `physics-rapier`, `scripting`, `asset-index` |
 | 1 | Core data model | `core`, `scene` |
 | 2 | Subsystems over the data model | `animation`, `rendering`, `input`, `audio`, `ecs` |
 | 3 | Subsystems composing other subsystems | `assets`, `controls`, `materials`, `environments`, `debug`, `editor-runtime` |
@@ -50,7 +50,7 @@ Nothing may depend on tier 5 or 6 except tier 6.
 |---|---|---|---|---|---|
 | `math` | 0 | 1,220 | `@aura3d/math` | vectors, matrices, quaternions, curves | — |
 | `navigation-recast` | 0 | 196 | `@aura3d/navigation-recast` | optional Recast/Detour navmesh, path-query, crowd, and tile-cache adapter | — |
-| `physics` | 0 | 12,715 | `@aura3d/physics` | solver, collision, joints, character, vehicle. **Internals re-platformed by P4** | — |
+| `physics` | 0 | 12,715 | `@aura3d/physics` | solver, collision, joints, character, vehicle. **Internals re-platformed by P4** | `physics-rapier` |
 | `physics-rapier` | 0 | 160 | `@aura3d/physics-rapier` | optional async Rapier physical-simulation adapter; separate WASM | — |
 | `scripting` | 0 | 5,837 | `@aura3d/scripting` | GOAP / HTN / behaviour trees / utility AI. **Zero consumers — WS-3.3** | — |
 | `asset-index` | 0 | 3,438 | `@aura3d/asset-index` | asset catalogue index and search | — |
@@ -90,7 +90,7 @@ manifest is a consumer-visible change and belongs in WS-3.6d, not here.
 
 ## The rule that matters
 
-> A package may import only from a strictly lower tier, only through a package `exports` subpath,
+> A package may import only from the same or a lower tier, only through a package `exports` subpath,
 > and only what its own manifest declares.
 
 Deep imports (`@aura3d/*/src/*`) are already blocked by ESLint. Upward imports are blocked by

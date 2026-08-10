@@ -57,6 +57,7 @@ digraph aura3d {
   "math" [label="math\ntier 0"];
   "navigation-recast" [label="navigation-recast\ntier 0"];
   "physics" [label="physics\ntier 0"];
+  "physics" -> "physics-rapier";
   "physics-rapier" [label="physics-rapier\ntier 0"];
   "product-studio" [label="product-studio\ntier 4"];
   "product-studio" -> "assets";

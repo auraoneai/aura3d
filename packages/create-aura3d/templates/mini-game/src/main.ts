@@ -108,27 +108,39 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     objective = "Collect coins, avoid spikes, reach the goal";
   }
 
-  const state = platformer.step(dt, {
-    moveX: input.axis("moveX"),
-    jumpPressed: input.buffered("jump"),
-    jumpHeld: input.held("jump"),
-    dashPressed: input.pressed("dash"),
-    fastFall: input.held("down")
-  });
-
-  for (const event of state.events) {
-    routeEvents.push({
-      type: event.type,
-      label: event.id ? `${event.type}:${event.id}` : event.type,
-      targetId: event.id,
-      severity: event.type === "complete" || event.type === "collect" ? "success" : event.type === "hazard" || event.type === "fall" ? "warning" : "info",
-      frame: event.frame,
-      time: event.time
+  const moveX = input.axis("moveX");
+  const jumpPressed = input.buffered("jump");
+  const jumpHeld = input.held("jump");
+  const dashPressed = input.pressed("dash");
+  const fastFall = input.held("down");
+  let remaining = Math.min(0.25, Math.max(0, dt));
+  let firstSubstep = true;
+  let state = platformer.snapshot();
+  do {
+    const substep = Math.min(0.05, remaining || 1 / 60);
+    state = platformer.step(substep, {
+      moveX,
+      jumpPressed: firstSubstep && jumpPressed,
+      jumpHeld,
+      dashPressed: firstSubstep && dashPressed,
+      fastFall
     });
-    if (event.type === "checkpoint") objective = "Checkpoint reached. Finish the route.";
-    if (event.type === "complete") objective = "Finished. Press R to replay.";
-    if (event.type === "respawn") objective = "Respawned. Take the safer route.";
-  }
+    for (const event of state.events) {
+      routeEvents.push({
+        type: event.type,
+        label: event.id ? `${event.type}:${event.id}` : event.type,
+        targetId: event.id,
+        severity: event.type === "complete" || event.type === "collect" ? "success" : event.type === "hazard" || event.type === "fall" ? "warning" : "info",
+        frame: event.frame,
+        time: event.time
+      });
+      if (event.type === "checkpoint") objective = "Checkpoint reached. Finish the route.";
+      if (event.type === "complete") objective = "Finished. Press R to replay.";
+      if (event.type === "respawn") objective = "Respawned. Take the safer route.";
+    }
+    remaining -= substep;
+    firstSubstep = false;
+  } while (remaining > 0.000_001);
 
   player.setPosition(state.player.x, state.player.y + 0.54, 0);
   lift.setPosition(level.movingPlatforms[0].x + level.movingPlatforms[0].width / 2, movingLiftY(state.time), 0);
