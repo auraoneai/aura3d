@@ -58,11 +58,11 @@ declare global {
 
 const screenshotPath = "tests/reports/external-parity-example-screenshots/pbr-extension-texture-variants.png" as const;
 const variantCenters: Record<VariantId, { readonly x: number; readonly y: number }> = {
-  clearcoat: { x: 80, y: 270 },
-  "transmission-volume": { x: 240, y: 270 },
+  clearcoat: { x: 150, y: 270 },
+  "transmission-volume": { x: 370, y: 270 },
   "clearcoat-transmission-volume": { x: 400, y: 270 },
-  "specular-sheen-anisotropy": { x: 560, y: 270 },
-  iridescence: { x: 720, y: 270 },
+  "specular-sheen-anisotropy": { x: 590, y: 270 },
+  iridescence: { x: 810, y: 270 },
   "specular-sheen-anisotropy-iridescence": { x: 880, y: 270 }
 };
 
@@ -94,7 +94,12 @@ async function run(): Promise<void> {
   installStyles();
   const shell = document.createElement("main");
   shell.innerHTML = `
-    <canvas data-testid="pbr-extension-texture-variants-canvas" width="960" height="540" aria-label="PBR extension texture variant WebGL scene"></canvas>
+    <section class="variant-stage">
+      <canvas data-testid="pbr-extension-texture-variants-canvas" width="960" height="540" aria-label="PBR extension texture variant WebGL scene"></canvas>
+      <div class="variant-labels" aria-hidden="true">
+        <span>Clearcoat</span><span>Transmission + volume</span><span>Specular + sheen + anisotropy</span><span>Iridescence</span>
+      </div>
+    </section>
     <pre data-testid="pbr-extension-texture-variants-status">booting</pre>
   `;
   document.body.append(shell);
@@ -129,10 +134,10 @@ async function run(): Promise<void> {
 
   const materials = createMaterials();
   const entries: readonly [VariantId, number, TexturedPBRMaterial][] = [
-    ["clearcoat", -4, materials.clearcoat],
-    ["transmission-volume", -2.4, materials.transmissionVolume],
-    ["specular-sheen-anisotropy", 0.8, materials.specularSheenAnisotropy],
-    ["iridescence", 2.4, materials.iridescence]
+    ["clearcoat", -3.3, materials.clearcoat],
+    ["transmission-volume", -1.1, materials.transmissionVolume],
+    ["specular-sheen-anisotropy", 1.1, materials.specularSheenAnisotropy],
+    ["iridescence", 3.3, materials.iridescence]
   ];
   for (const [id, x, material] of entries) {
     const node = scene.createNode(`pbr-extension-${id}`);
@@ -140,12 +145,12 @@ async function run(): Promise<void> {
     node.transform.setRotation(0.16, 0.32, 0, 1);
     node.transform.setScale(1.05, 1.05, 1.05);
     scene.root.addChild(node);
-    scene.addRenderable(node, new Renderable({ geometry: "geometry:textured-cube", material: `material:${id}` }));
+    scene.addRenderable(node, new Renderable({ geometry: "geometry:textured-sphere", material: `material:${id}` }));
   }
 
   const diagnostics = renderer.render({
     scene,
-    geometryLibrary: { "geometry:textured-cube": Geometry.texturedCube(1.1) },
+    geometryLibrary: { "geometry:textured-sphere": Geometry.uvSphere(0.78, 48, 24, { textured: true }) },
     materialLibrary: new Map(entries.map(([id, , material]) => [`material:${id}`, material])),
     environmentLighting: createExternalParityEnvironmentLighting("studio").lighting
   });
@@ -339,13 +344,18 @@ function installStyles(): void {
   const style = document.createElement("style");
   style.textContent = `
     :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #06080b; color: #f7f8fb; }
-    body { margin: 0; min-height: 100vh; background: #06080b; }
-    main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 100vh; }
-    canvas { width: 100%; height: 100vh; display: block; background: #06080b; }
-    pre { margin: 0; padding: 16px; overflow: auto; border-left: 1px solid #263342; background: #0a1017; color: #b8f7d0; font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
+    body { margin: 0; height: 100vh; overflow: hidden; background: #06080b; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; height: 100vh; overflow: hidden; }
+    .variant-stage { position: relative; align-self: center; min-width: 0; }
+    canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; background: #06080b; }
+    .variant-labels { position: absolute; inset: auto 18px 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; pointer-events: none; }
+    .variant-labels span { padding: 8px 10px; border: 1px solid #2b3d4d; border-radius: 7px; background: #09121ddd; color: #d9e9f5; text-align: center; font-size: 11px; }
+    pre { box-sizing: border-box; align-self: stretch; min-height: 0; max-height: 100vh; margin: 0; padding: 16px; overflow: auto; border-left: 1px solid #263342; background: #0a1017; color: #b8f7d0; font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
     @media (max-width: 820px) {
       main { grid-template-columns: 1fr; grid-template-rows: minmax(360px, 64vh) minmax(0, 36vh); }
-      canvas { height: 64vh; }
+      .variant-stage { align-self: start; }
+      canvas { width: 100%; height: auto; max-height: 64vh; }
+      .variant-labels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       pre { border-left: 0; border-top: 1px solid #263342; }
     }
   `;
