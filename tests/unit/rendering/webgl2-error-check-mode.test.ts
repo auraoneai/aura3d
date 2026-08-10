@@ -31,6 +31,14 @@ describe("WebGL2 error-check mode default", () => {
     expect(deviceSource).toContain("this.lastError = this.readError();");
   });
 
+  it("starts a replacement device with a clean error boundary after context restoration", () => {
+    const drain = deviceSource.indexOf("Drain only errors that predate this device");
+    const firstCapabilityQuery = deviceSource.indexOf("this.maxVertexAttributes = gl.getParameter");
+    expect(drain).toBeGreaterThan(-1);
+    expect(firstCapabilityQuery).toBeGreaterThan(drain);
+    expect(deviceSource).toContain("index < 16 && gl.getError() !== gl.NO_ERROR");
+  });
+
   it("documents why the default changed so it is not silently reverted", () => {
     expect(deviceSource).toMatch(/synchronous CPU\/GPU sync/);
     expect(deviceSource).toMatch(/getError/);

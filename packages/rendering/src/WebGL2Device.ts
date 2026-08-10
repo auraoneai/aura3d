@@ -317,6 +317,16 @@ export class WebGL2Device implements RenderDevice {
     private readonly errorCheckMode: WebGL2ErrorCheckMode
   ) {
     this.gl = gl;
+    // A browser returns the same WebGL2 context object after `webglcontextrestored`.
+    // The controller that owned it before the loss is disposed before a replacement
+    // device mounts, and Chromium can leave an INVALID_OPERATION from that stale
+    // resource teardown in the context's error queue. A fresh device must establish
+    // its own error boundary; otherwise its first valid uniform upload or presentation
+    // is blamed for an error produced by the previous owner.
+    for (let index = 0; index < 16 && gl.getError() !== gl.NO_ERROR; index += 1) {
+      // Drain only errors that predate this device. Normal frame/strict checks still
+      // report every error generated after construction.
+    }
     this.maxVertexAttributes = gl.getParameter(gl.MAX_VERTEX_ATTRIBS) as number;
     this.anisotropicFilteringExtension = gl.getExtension("EXT_texture_filter_anisotropic") as TextureFilterAnisotropicExtension | null;
     this.maxTextureAnisotropy = this.anisotropicFilteringExtension
