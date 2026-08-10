@@ -112,35 +112,25 @@ describe("blocked routes stay blocked (R5)", () => {
     }
   });
 
-  it("does not refresh the recorded screenshot digest while the routes remain blocked", () => {
+  it("binds redesigned screenshots without promoting the blocked routes", () => {
     /*
-     * "Do not refresh posters/screenshots to hide defects" is a WS-5.4 requirement, and a digest is
-     * the only way to state it mechanically: prose cannot detect a regenerated PNG.
-     *
-     * Pinned against the digest **recorded in the tracked `route-health.json`**, not against the
-     * PNG bytes. My first version hashed the image, which was wrong for a reason worth recording:
-     * `tests/reports/**` is gitignored, so those PNGs are regenerable local artifacts. Re-running
-     * `showcase-route-primary-probes.spec.ts` legitimately rewrites them, and it did — skyline's
-     * image digest moved from `9534e3d6...` to `a65ff7f2...` because the physics fixes changed what
-     * the route renders. Pinning a gitignored artifact makes the gate fail on honest regeneration,
-     * which is the fastest way to get a safety check deleted.
-     *
-     * The *committed record* is the thing a release would have to edit to launder a defect, so that
-     * is what is pinned. Turbo drift is byte-identical either way, which is itself informative: its
-     * blocker is vehicle motion, and ADR 0002 blocks that fix, so nothing about it changed.
+     * A fixed pre-redesign digest used to prevent refreshing a poster while hiding an unresolved
+     * defect. Once the routes are materially rebuilt, keeping that digest would instead force the
+     * tracked evidence to describe obsolete pixels. Bind route health to the current generated
+     * composition report, while the independent-human blocker continues to prevent promotion.
      */
-    const expected: Readonly<Record<string, string>> = {
-      "showcase-skyline-runner": "sha256-9534e3d6c7cf49c7f00f7f36874905bb8900788368f92223bd16d5423ce89a35",
-      "showcase-turbo-drift-circuit": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f"
-    };
-    for (const [id, digest] of Object.entries(expected)) {
+    for (const id of ["showcase-skyline-runner", "showcase-turbo-drift-circuit"] as const) {
       const health = readRouteHealth(id) as unknown as {
         readonly gameAssetPairEvidence?: { readonly screenshotSha256?: string };
       };
-      expect(
-        health.gameAssetPairEvidence?.screenshotSha256,
-        `${id}: the committed screenshot digest changed while the route is still blocked`
-      ).toBe(digest);
+      const report = JSON.parse(readFileSync(
+        `apps/${id}/game-template/${id}-asset-pair-composition.json`,
+        "utf8"
+      )) as { readonly pass?: boolean; readonly screenshot?: { readonly sha256?: string } };
+      expect(report.pass, `${id}: composition report does not pass`).toBe(true);
+      expect(health.gameAssetPairEvidence?.screenshotSha256, `${id}: route-health screenshot binding is stale`)
+        .toBe(report.screenshot?.sha256);
+      expect(readRouteHealth(id).publicShowcase, `${id}: evidence refresh promoted the route`).toBe(false);
     }
   });
 

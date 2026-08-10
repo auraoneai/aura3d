@@ -55,7 +55,15 @@ describe("current showcase claims", () => {
      * human reviewer rather than a placeholder.
      */
     expect(Date.parse(review.reviewedAt ?? "")).toBeGreaterThan(Date.parse("2026-07-19T23:59:59Z"));
-    expect(review.reviewer?.kind).toBe("human");
-    expect(review.reviewer?.id ?? "").not.toMatch(/pending|unassigned|unknown|machine|bot|automated/i);
+    if (review.overallVerdict === "pass") {
+      expect(review.reviewer?.kind).toBe("human");
+      expect(review.reviewer?.id ?? "").not.toMatch(/pending|unassigned|unknown|machine|bot|automated/i);
+    } else {
+      // A freshly hash-bound rejected baseline is the honest state until a
+      // human signs the exact frames; it must not masquerade as approval.
+      expect(review.overallVerdict).toBe("needs-work");
+      expect(review.reviewer?.kind).toBe("pending");
+      expect(review.reviewer?.id ?? "").toMatch(/pending/i);
+    }
   });
 });

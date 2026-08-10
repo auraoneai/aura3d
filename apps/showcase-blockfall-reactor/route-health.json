@@ -3,9 +3,9 @@
   "generatedAt": "2026-08-09T01:20:46.326Z",
   "appId": "showcase-blockfall-reactor",
   "route": "/apps/showcase-blockfall-reactor/",
-  "classification": "release-ready candidate",
-  "publicShowcase": true,
-  "promotionStatus": "typed-cabinet-and-gameplay-evidence-bounded-candidate",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "blocked-pending-independent-human-visual-review",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",
@@ -43,7 +43,9 @@
       "generic collision-system claim"
     ]
   },
-  "blockers": [],
+  "blockers": [
+    "visual-review:independent-human-approval-pending"
+  ],
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
     "sourceReview": "apps/showcase-blockfall-reactor/src/main.ts",
