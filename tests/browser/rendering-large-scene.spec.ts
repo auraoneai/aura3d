@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+
+const LARGE_WORLD_REPORT_ROOT = resolve("tests/reports/2.0-visual-audit/examples");
 
 test.describe("rendering large scene WebGL2 harness", () => {
   test.setTimeout(120_000);
@@ -74,36 +78,70 @@ test.describe("rendering large scene WebGL2 harness", () => {
     expect(ta).toBe(255);
   });
 
-  test("example page renders the large-scene WebGL2 workload", async ({ page }) => {
+  test("public example presents native root instancing and camera-sensitive distance LOD as a coherent large world", async ({ page }) => {
+    mkdirSync(LARGE_WORLD_REPORT_ROOT, { recursive: true });
     await page.goto(`${server.origin}/examples/rendering-large-scene/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__AURA3D_LARGE_SCENE_TEST__?.status === "ready" || window.__AURA3D_LARGE_SCENE_TEST__?.status === "error",
+      () => window.__AURA3D_LARGE_WORLD__?.status === "ready" || window.__AURA3D_LARGE_WORLD__?.status === "error",
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__AURA3D_LARGE_SCENE_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_LARGE_WORLD__);
     expect(result?.status, result?.error).toBe("ready");
-    expect(result?.renderer).toBe("webgl2");
-    expect(result?.staticMeshes).toBe(5_000);
-    expect(result?.instances).toBe(10_000);
-    expect(result?.lod?.enabled).toBe(true);
-    expect(result?.batching?.enabled).toBe(true);
-    expect(result?.cameraTiming?.stable).toBe(true);
-    expect(result?.diagnostics?.drawCalls ?? 0).toBeLessThan(320);
-    expect(result?.diagnostics?.lastError).toBeNull();
+    expect(result?.claim).toBe("createAuraApp-root-instancing-and-distance-lod-example");
+    expect(result?.instanceCount).toBe(2_500);
+    expect(result?.instanceFamilies).toBe(1);
+    expect(result?.nativeInstancedSubmissions ?? 0).toBeGreaterThan(0);
+    expect(result?.runtimeBackend).toBe("production-runtime");
+    expect(result?.activeLod).toBeTruthy();
+    expect(result?.drawCalls ?? 0).toBeGreaterThan(0);
+    expect(result?.errors).toEqual([]);
+    await expect(page.getByRole("heading", { name: "Data Highlands" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Near detail" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Far LOD" })).toBeVisible();
 
-    const [r = 0, g = 0, b = 0, a = 0] = result?.centerPixel ?? [];
-    expect(r).toBeGreaterThan(170);
-    expect(g).toBeGreaterThan(20);
-    expect(g).toBeLessThan(80);
-    expect(b).toBeLessThan(50);
-    expect(a).toBe(255);
+    const overviewLod = result?.activeLod;
+    await page.getByRole("button", { name: "Near detail" }).click();
+    await page.waitForFunction(() => window.__AURA3D_LARGE_WORLD__?.status === "ready" && window.__AURA3D_LARGE_WORLD__.view === "near" && window.__AURA3D_LARGE_WORLD__.revision === 1);
+    const near = await page.evaluate(() => window.__AURA3D_LARGE_WORLD__);
+    expect(near?.activeLod).toBe("near detailed cylindrical tower");
+    expect(near?.nativeInstancedSubmissions ?? 0).toBeGreaterThan(0);
+    expect(near?.errors).toEqual([]);
+    await page.waitForTimeout(250);
+    await page.screenshot({ path: resolve(LARGE_WORLD_REPORT_ROOT, "examples--rendering-large-scene--near-page.png"), fullPage: true });
+    await page.locator("canvas").screenshot({ path: resolve(LARGE_WORLD_REPORT_ROOT, "examples--rendering-large-scene--near-canvas.png") });
+
+    await page.getByRole("button", { name: "Far LOD" }).click();
+    await page.waitForFunction(() => window.__AURA3D_LARGE_WORLD__?.status === "ready" && window.__AURA3D_LARGE_WORLD__.view === "far" && window.__AURA3D_LARGE_WORLD__.revision === 2);
+    const far = await page.evaluate(() => window.__AURA3D_LARGE_WORLD__);
+    expect(far?.activeLod).toBe("far simplified box tower");
+    expect(far?.activeLod).not.toBe(near?.activeLod);
+    expect(far?.nativeInstancedSubmissions ?? 0).toBeGreaterThan(0);
+    expect(far?.errors).toEqual([]);
+    expect(overviewLod).toBeTruthy();
+    await page.waitForTimeout(250);
+    await page.screenshot({ path: resolve(LARGE_WORLD_REPORT_ROOT, "examples--rendering-large-scene--far-page.png"), fullPage: true });
+    await page.locator("canvas").screenshot({ path: resolve(LARGE_WORLD_REPORT_ROOT, "examples--rendering-large-scene--far-canvas.png") });
   });
 });
 
 declare global {
   interface Window {
+    __AURA3D_LARGE_WORLD__?: {
+      readonly status: "loading" | "ready" | "error";
+      readonly claim: "createAuraApp-root-instancing-and-distance-lod-example";
+      readonly view: "overview" | "near" | "far";
+      readonly revision: number;
+      readonly instanceCount: number;
+      readonly instanceFamilies: number;
+      readonly nativeInstancedSubmissions?: number;
+      readonly activeLod?: string;
+      readonly drawCalls?: number;
+      readonly runtimeBackend?: string;
+      readonly errors: readonly string[];
+      readonly error?: string;
+    };
     __AURA3D_LARGE_SCENE_TEST__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2";
