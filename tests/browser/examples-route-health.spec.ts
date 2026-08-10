@@ -69,8 +69,8 @@ test.describe("starter examples", () => {
       expect(rendererMode).toBe("production");
       const canvas = page.locator("canvas");
       const screenshotPath = resolve(screenshotDir, `${slug}.png`);
-      const profile = await readCanvasProfile(page);
       const screenshot = await canvas.screenshot({ path: screenshotPath });
+      const profile = await readCanvasProfile(page);
       asserts(profile);
       expect(screenshot.byteLength).toBeGreaterThan(1000);
       results.push({
