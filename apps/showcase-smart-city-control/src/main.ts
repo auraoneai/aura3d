@@ -5,6 +5,7 @@ import {
   createSmartCityKit,
   collectAuraSceneEvidence,
   createAuraApp,
+  distanceLod,
   effects,
   game,
   interactions,
@@ -408,6 +409,24 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
       name: "core infrastructure data pulse",
       material: material.neon({ color: "#f4c35d", emissive: "#f4c35d", emissiveIntensity: 2.5 })
     }).position(...coreSpire.center).scale(CITY_EXTENT * 0.037).runtime(game.runtimeNode("city-data-pulse-core")),
+    distanceLod({
+      name: "core communications tower distance LOD",
+      levels: [
+        {
+          name: "near detailed communications cylinder",
+          maxDistance: 12,
+          primitive: "cylinder",
+          material: material.pbr({ color: "#dfffee", roughness: 0.28, metallic: 0.42 })
+        },
+        {
+          name: "far simplified communications box",
+          primitive: "box",
+          material: material.pbr({ color: "#b7f7d1", roughness: 0.62, metallic: 0.08 })
+        }
+      ],
+      hysteresis: 0.6
+    }).position(coreSpire.center[0], bounds.floorY + CITY_HEIGHT * 0.19, coreSpire.center[2])
+      .scale([CITY_EXTENT * 0.018, CITY_HEIGHT * 0.38, CITY_EXTENT * 0.018]),
     primitives.sphere({
       name: "flythrough inspection drone",
       material: material.neon({ color: "#f8fbff", emissive: "#b7f7d1", emissiveIntensity: 1.8 })
@@ -643,7 +662,7 @@ function publishEvidence(status: ShowcaseStatus): void {
     },
     controls: { ...controls },
     systems: activeBuild.systems,
-    claimBoundary: "Procedural Aura3D public API showcase using sceneKits.cityBlock, a typed vehicle asset, city visual QA, city instancing evidence, district overlays, labels, controls, and runtime telemetry. It does not claim real GIS data, imported city geometry, or traffic simulation fidelity.",
+    claimBoundary: "Procedural Aura3D public API showcase using sceneKits.cityBlock, a typed vehicle asset, native tower instancing, distance LOD, runtime frustum-culling diagnostics, district overlays, labels, controls, and runtime telemetry. It does not claim real GIS data, imported city geometry, GPU occlusion culling, or traffic simulation fidelity.",
     telemetry,
     diagnostics: {
       ...activeBuild.diagnostics,
@@ -653,7 +672,8 @@ function publishEvidence(status: ShowcaseStatus): void {
         fps: appDiagnostics.fps,
         renderSize: appDiagnostics.renderSize,
         warnings: appDiagnostics.warnings,
-        errors: appDiagnostics.errors
+        errors: appDiagnostics.errors,
+        rendererRuntime: appDiagnostics.renderer.runtime
       } : {})
     },
     updatedAt: new Date().toISOString()

@@ -1559,6 +1559,11 @@ export interface AuraRendererDiagnosticReport {
     readonly visibleObjects: number;
     readonly culledObjects: number;
     readonly frustumTestedObjects: number;
+    readonly lodSelections: readonly {
+      readonly nodeName: string;
+      readonly levelIndex: number;
+      readonly levelName: string;
+    }[];
   };
   readonly environment: {
     readonly enabled: boolean;
@@ -3449,6 +3454,11 @@ interface AuraRendererRuntimeObservation {
   };
   readonly warnings?: readonly string[];
   readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects">;
+  readonly lodSelections?: readonly {
+    readonly nodeName: string;
+    readonly levelIndex: number;
+    readonly levelName: string;
+  }[];
 }
 
 function createRendererDiagnosticReport(
@@ -3589,7 +3599,8 @@ function createRendererDiagnosticReport(
       submittedObjects: runtime?.deviceDiagnostics?.submittedObjects ?? 0,
       visibleObjects: runtime?.deviceDiagnostics?.visibleObjects ?? 0,
       culledObjects: runtime?.deviceDiagnostics?.culledObjects ?? 0,
-      frustumTestedObjects: runtime?.deviceDiagnostics?.frustumTestedObjects ?? 0
+      frustumTestedObjects: runtime?.deviceDiagnostics?.frustumTestedObjects ?? 0,
+      lodSelections: runtime?.lodSelections ?? []
     },
     environment: {
       enabled: environmentStatus.enabled,
@@ -11771,7 +11782,14 @@ async function createProductionRuntimeSceneRenderer(
           .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
         ...runtimeWarnings
       ],
-      deviceDiagnostics: latestDeviceDiagnostics
+      deviceDiagnostics: latestDeviceDiagnostics,
+      lodSelections: primitiveEntries
+        .filter((entry) => Boolean(entry.node.lod?.levels.length))
+        .map((entry) => ({
+          nodeName: entry.node.name ?? "unnamed distance LOD",
+          levelIndex: entry.currentLodIndex,
+          levelName: entry.resources[entry.currentLodIndex]?.name ?? `level-${entry.currentLodIndex}`
+        }))
     },
     rendererOptions
   );
