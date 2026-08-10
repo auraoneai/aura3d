@@ -908,7 +908,16 @@ describe("agent API", () => {
     const lampGlowPools = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("night lamp glow pool"));
     const vehicles = nodes.filter((node) => node.kind === "primitive" && node.name?.includes(" car body"));
 
-    expect(towers).toHaveLength(20);
+    expect(towers).toHaveLength(1);
+    const towerFamily = towers[0];
+    expect(towerFamily).toMatchObject({
+      name: "city tower native instanced family",
+      instances: expect.arrayContaining([expect.objectContaining({ position: expect.any(Array), scale: expect.any(Array) })]),
+      instanceColors: expect.any(Array)
+    });
+    if (!towerFamily || towerFamily.kind !== "primitive") throw new Error("Expected the city tower family to be a primitive instance node");
+    expect(towerFamily.instances).toHaveLength(20);
+    expect(towerFamily.instanceColors).toHaveLength(20);
     expect(windowColumns).toHaveLength(80);
     expect(oldWindowBands).toHaveLength(0);
     expect(crosswalkStripes.length).toBeGreaterThanOrEqual(20);

@@ -4207,11 +4207,13 @@ export interface AuraCityStateChangeEvidence {
 
 export interface AuraCityInstancingPlan {
   readonly kind: "aura-city-instancing-plan";
-  readonly rendererPath: "auraWebGL2PrimitiveBatches";
+  readonly rendererPath: "productionRuntimeNativeInstancing";
   readonly windows: number;
   readonly props: number;
   readonly roadMarkings: number;
   readonly lights: number;
+  readonly nativeInstanceGroups: number;
+  readonly nativeInstances: number;
   readonly groups: readonly string[];
   readonly instanced: boolean;
 }
@@ -4657,6 +4659,8 @@ export const prefabs = {
       ...makeCityCrosswalk("zebra crosswalk west", -0.72, 0, "eastWest"),
       ...makeCityCrosswalk("zebra crosswalk east", 0.72, 0, "eastWest")
     ];
+    const cityTowerTransforms: AuraTransformSpec[] = [];
+    const cityTowerColors: AuraColor[] = [];
     const xSlots = [-4.25, -2.58, -0.95, 1.45, 3.3];
     const zSlots = [-4, -1.45, 1.3, 3.65];
     for (let index = 0; index < blocks; index += 1) {
@@ -4668,15 +4672,19 @@ export const prefabs = {
       const color = night
         ? (index % 3 === 0 ? "#1e293b" : index % 3 === 1 ? "#2d3340" : "#172233")
         : (index % 3 === 0 ? "#8ea2aa" : index % 3 === 1 ? "#b89b72" : "#668094");
-      nodes.push(primitives.box({
-        name: `city tower ${index + 1}`,
-        material: material.pbr({ color, roughness: 0.68, metallic: 0.06 })
-      }).position(x, height / 2, z).scale([1.08, height, 1.08]).toJSON());
+      cityTowerTransforms.push({ position: [x, height / 2, z], scale: [1.08, height, 1.08] });
+      cityTowerColors.push(color);
       if (options.litWindows !== false) {
         nodes.push(...makeBuildingWindowRows(x, z, height, index, timeOfDay));
       }
       nodes.push(...makeBuildingDetails(x, z, height, index, timeOfDay));
     }
+    nodes.push(instances.box({
+      name: "city tower native instanced family",
+      transforms: cityTowerTransforms,
+      colors: cityTowerColors,
+      material: material.pbr({ color: "#ffffff", roughness: 0.68, metallic: 0.06 })
+    }).toJSON());
     const lampPositions: AuraVec3[] = [
       [-1.15, 0, 0.85], [1.15, 0, 0.85], [-1.15, 0, -0.85], [1.15, 0, -0.85],
       [-3.85, 0, -2.05], [-2.95, 0, 2.05], [2.05, 0, -2.05], [3.05, 0, 2.05],
@@ -7825,12 +7833,16 @@ function cityScene(options: AuraCityBlockOptions & { readonly cameraPreset?: Aur
 }
 
 function collectCityInstancingPlan(nodes: readonly AuraSceneNode[]): AuraCityInstancingPlan {
-  const names = groups.flatten(nodes).map((node) => "name" in node ? node.name ?? "" : "");
+  const flattened = groups.flatten(nodes);
+  const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
+  const nativeInstanceNodes = flattened.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && Boolean(node.instances?.length));
+  const nativeInstances = nativeInstanceNodes.reduce((total, node) => total + (node.instances?.length ?? 0), 0);
   const windows = names.filter((name) => name.includes("window column")).length;
   const props = names.filter((name) => name.includes("bench") || name.includes("tree") || name.includes("sign") || name.includes("car body") || name.includes("traffic signal")).length;
   const roadMarkings = names.filter((name) => name.includes("lane marking") || name.includes("road stripe") || name.includes("crosswalk") || name.includes("turn arrow") || name.includes("bike lane")).length;
   const lights = names.filter((name) => name.includes("street lamp") || name.includes("headlight") || name.includes("lamp glow") || name.includes("city glow")).length;
   const groupsList = [
+    nativeInstanceNodes.some((node) => node.name?.includes("city tower")) ? "city towers" : "",
     windows >= 8 ? "window columns" : "",
     props >= 6 ? "street props" : "",
     roadMarkings >= 8 ? "road markings" : "",
@@ -7838,13 +7850,15 @@ function collectCityInstancingPlan(nodes: readonly AuraSceneNode[]): AuraCityIns
   ].filter(Boolean);
   return {
     kind: "aura-city-instancing-plan",
-    rendererPath: "auraWebGL2PrimitiveBatches",
+    rendererPath: "productionRuntimeNativeInstancing",
     windows,
     props,
     roadMarkings,
     lights,
+    nativeInstanceGroups: nativeInstanceNodes.length,
+    nativeInstances,
     groups: groupsList,
-    instanced: windows >= 8 && props >= 6 && roadMarkings >= 8 && lights >= 6
+    instanced: nativeInstanceNodes.length > 0 && nativeInstances > 0
   };
 }
 
@@ -7859,7 +7873,10 @@ function changedCityNodeNames(previous: readonly AuraSceneNode[], next: readonly
 function validateCityVisualQA(nodes: readonly AuraSceneNode[], options: { readonly changed?: AuraCityStateChangeEvidence } = {}): AuraCityVisualQAResult {
   const flattened = groups.flatten(nodes);
   const names = flattened.map((node) => "name" in node ? node.name ?? "" : "");
-  const buildings = names.filter((name) => name.includes("city tower")).length;
+  const buildings = flattened.reduce((total, node) => {
+    if (!("name" in node) || !node.name?.includes("city tower")) return total;
+    return total + (node.kind === "primitive" && node.instances?.length ? node.instances.length : 1);
+  }, 0);
   const windows = names.filter((name) => name.includes("window column")).length;
   const streets = names.filter((name) => name.includes("road") || name.includes("street") || name.includes("avenue")).length;
   const crosswalks = names.filter((name) => name.includes("crosswalk")).length;

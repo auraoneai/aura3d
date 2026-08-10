@@ -162,6 +162,7 @@ async function startThree(): Promise<(stateId: CityStateId) => void> {
       cityNodeCount: nodes.length,
       drawCalls: renderer.info.render.calls,
       triangles: renderer.info.render.triangles,
+      instancedMeshCount: countInstances(world),
       assetNodeCount: countNodes(vehicle),
       backgroundPixel: topLeftPixel(pixels),
       pixelHash: hash(pixels)
@@ -171,7 +172,7 @@ async function startThree(): Promise<(stateId: CityStateId) => void> {
   };
 }
 
-function primitiveMesh(node: AuraSceneNode): THREE.Mesh {
+function primitiveMesh(node: AuraSceneNode): THREE.Object3D {
   if (node.kind !== "primitive") throw new Error(`Expected primitive city node, received ${node.kind}`);
   const geometry = node.primitive === "box"
     ? new THREE.BoxGeometry(1, 1, 1)
@@ -190,6 +191,28 @@ function primitiveMesh(node: AuraSceneNode): THREE.Mesh {
     transparent: (spec.opacity ?? 1) < 1,
     opacity: spec.opacity ?? 1
   });
+  if (node.instances?.length) {
+    const mesh = new THREE.InstancedMesh(geometry, material, node.instances.length);
+    const matrix = new THREE.Matrix4();
+    const quaternion = new THREE.Quaternion();
+    const vectorScale = new THREE.Vector3();
+    node.instances.forEach((transform, index) => {
+      const rotation = transform.rotation ?? [0, 0, 0];
+      quaternion.setFromEuler(new THREE.Euler(...rotation));
+      const scale = transform.scale ?? 1;
+      if (typeof scale === "number") vectorScale.setScalar(scale);
+      else vectorScale.set(...scale);
+      matrix.compose(new THREE.Vector3(...(transform.position ?? [0, 0, 0])), quaternion, vectorScale);
+      mesh.setMatrixAt(index, matrix);
+      const color = node.instanceColors?.[index];
+      if (color) mesh.setColorAt(index, new THREE.Color(color));
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    mesh.name = node.name;
+    mesh.userData.benchmarkOwned = true;
+    return mesh;
+  }
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = node.name;
   mesh.userData.benchmarkOwned = true;
@@ -255,4 +278,5 @@ function topLeftPixel(pixels: Uint8Array): readonly [number, number, number, num
 function hash(pixels: Uint8Array): string { let value = 2166136261; for (let index = 0; index < pixels.length; index += 97) { value ^= pixels[index]!; value = Math.imul(value, 16777619); } return (value >>> 0).toString(16).padStart(8, "0"); }
 function hashString(value: string): string { let result = 2166136261; for (let index = 0; index < value.length; index += 17) { result ^= value.charCodeAt(index); result = Math.imul(result, 16777619); } return (result >>> 0).toString(16).padStart(8, "0"); }
 function countNodes(root: THREE.Object3D): number { let count = 0; root.traverse(() => count++); return count; }
+function countInstances(root: THREE.Object3D): number { let count = 0; root.traverse((entry) => { if (entry instanceof THREE.InstancedMesh) count += entry.count; }); return count; }
 function reportError(error: unknown): void { window.__AURA_THREE_HEAD_TO_HEAD_SMART_CITY_ERROR__ = error instanceof Error ? error.stack ?? error.message : String(error); }

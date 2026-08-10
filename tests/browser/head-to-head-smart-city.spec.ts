@@ -39,6 +39,8 @@ test.describe("current head-to-head smart city", () => {
     });
     expect(before.aura.cityNodeCount).toBe(before.three.cityNodeCount);
     expect(before.aura.cityNodeCount).toBeGreaterThan(200);
+    expect(before.aura.nativeInstancedSubmissions).toBeGreaterThan(0);
+    expect(before.three.instancedMeshCount).toBe(8);
     expect(before.aura.assetState).toMatchObject({ id: "showcaseCityVehicle", status: "ready", provenance: { source: "typed-aura-assets-manifest" } });
     expect(before.three.assetNodeCount).toBeGreaterThanOrEqual(5);
     expect(maxChannelDelta(before.aura.backgroundPixel, before.three.backgroundPixel)).toBeLessThanOrEqual(3);
