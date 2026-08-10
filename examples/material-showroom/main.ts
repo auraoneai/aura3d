@@ -184,7 +184,8 @@ async function run(): Promise<void> {
 
 function createShowroomScene(aspect: number, preset: MaterialShowroomEnvironmentPreset) {
   const scene = new Scene();
-  const camera = scene.createOrthographicCamera({ left: -4.15 * aspect, right: 4.15 * aspect, bottom: -2.22, top: 2.08, near: 0.1, far: 30, resizeMode: "preserve-frustum" });
+  const horizontalExtent = Math.max(7.9, 4.45 * aspect);
+  const camera = scene.createOrthographicCamera({ left: -horizontalExtent, right: horizontalExtent, bottom: -2.9, top: 2.5, near: 0.1, far: 30, resizeMode: "preserve-frustum" });
   camera.transform.setPosition(0, 0, 8);
   scene.root.addChild(camera);
 
@@ -679,7 +680,7 @@ function installStyles(): void {
   style.textContent = `
     html, body, #app { margin: 0; min-height: 100%; background: #2d2924; color: #edf3f5; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
     main { min-height: 100vh; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: radial-gradient(circle at 50% 18%, #6a5e50 0, #3d362f 48%, #2d2924 100%); }
-    canvas { width: 100%; height: min(82vh, 760px); display: block; background: transparent; }
+    canvas { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; background: transparent; }
     .postprocess-preview { display: none; }
     section { border-top: 1px solid #2c363b; background: rgba(18, 24, 29, 0.96); padding: 1rem 1.25rem; display: grid; grid-template-columns: 14rem minmax(18rem, 1fr) minmax(12rem, 16rem); gap: 1rem; align-items: start; }
     h1, p, label, pre { margin: 0; }
@@ -688,7 +689,7 @@ function installStyles(): void {
     label { display: grid; gap: 0.35rem; color: #cad3d8; font-size: 0.875rem; }
     select { min-height: 2.25rem; border: 1px solid #34424d; border-radius: 6px; background: #101820; color: #eef2f6; padding: 0 0.65rem; font: inherit; }
     pre { display: none; }
-    @media (max-width: 760px) { section { grid-template-columns: 1fr; } canvas { height: 62vh; } }
+    @media (max-width: 760px) { section { grid-template-columns: 1fr; } canvas { width: 100%; height: auto; max-height: 62vh; } }
   `;
   document.head.append(style);
 }

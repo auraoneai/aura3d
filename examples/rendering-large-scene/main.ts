@@ -46,16 +46,17 @@ function installStyles(): void {
   const style = document.createElement("style");
   style.textContent = `
     html, body, #app { margin: 0; min-height: 100%; background: #101316; color: #eef4f7; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-    main { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 24rem; }
+    main { height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 24rem; overflow: hidden; }
     canvas { width: 100%; height: 100vh; display: block; background: #050608; }
-    aside { border-left: 1px solid #2a333a; background: #171d22; padding: 1.25rem; display: grid; align-content: start; gap: 1rem; }
+    aside { min-height: 0; border-left: 1px solid #2a333a; background: #171d22; padding: 1.25rem; display: grid; grid-template-rows: auto auto minmax(0, 1fr); align-content: start; gap: 1rem; }
     h1, p { margin: 0; }
     p { color: #bdc9d1; line-height: 1.45; }
-    pre { margin: 0; white-space: pre-wrap; color: #b9e9bc; font-size: 0.78rem; line-height: 1.4; }
+    pre { min-height: 0; margin: 0; overflow: auto; white-space: pre-wrap; color: #b9e9bc; font-size: 0.78rem; line-height: 1.4; }
     @media (max-width: 780px) {
-      main { grid-template-columns: 1fr; }
+      main { height: auto; min-height: 100vh; grid-template-columns: 1fr; overflow: visible; }
       canvas { height: 62vh; }
       aside { border-left: 0; border-top: 1px solid #2a333a; }
+      pre { max-height: 28rem; }
     }
   `;
   document.head.append(style);

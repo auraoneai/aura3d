@@ -55,8 +55,8 @@ declare global {
   }
 }
 
-const PROCESS_WIDTH = 192;
-const PROCESS_HEIGHT = 108;
+const PROCESS_WIDTH = 384;
+const PROCESS_HEIGHT = 216;
 
 interface PostprocessLabState {
   readonly id: "postprocess-lab";
