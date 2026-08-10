@@ -79,7 +79,7 @@ async function inspectExample(browser: Browser, origin: string, indexFile: strin
       return status === "ready" || status === "running" || status === "error" || status === "unsupported";
     });
     return readyBody || publishedRuntime;
-  }, undefined, { timeout: 15_000 }).catch(() => undefined);
+  }, undefined, { timeout: 60_000 }).catch(() => undefined);
   await page.waitForTimeout(750);
   const pagePath = resolve(REPORT_ROOT, `${slug}--page.png`);
   const pageBytes = await page.screenshot({ path: pagePath, fullPage: true }).catch(() => Buffer.alloc(0));
