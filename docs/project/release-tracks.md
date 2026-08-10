@@ -76,8 +76,9 @@ Required gates:
 Current status for this track: the retained public `examples/` inventory is 13
 routes with per-route claim boundaries and human source/canvas/page
 dispositions. The final unfiltered audit after the latest presentation repairs
-must still complete green. Internalized routes and prototype-blocked showcases
-cannot be promoted by this track.
+passed with exactly 13 routes and zero failures. Internalized routes and
+prototype-blocked showcases cannot be promoted by this track, and this result
+does not close the independent package, comparison, or marketing tracks.
 
 ## Track 3: Marketing Launch Release
 

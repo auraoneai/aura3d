@@ -69,12 +69,11 @@ showcase route public-ready.
 The current public `examples/` inventory contains 13 retained routes after
 duplicate, contract-only, misleading, or visually rejected hosts were archived
 or moved to internal fixtures. Each retained route has been inspected at source,
-canvas, and full-page level and assigned a bounded disposition. The final
-unfiltered audit after the last presentation fixes is still required: its most
-recent attempt regenerated all captures but was invalidated by six dev-server
-navigation timeouts during unrelated machine-wide Playwright saturation.
-Automated screenshots or a previous green run are not substituted for that
-missing final receipt.
+canvas, and full-page level and assigned a bounded disposition. The final clean
+unfiltered audit after the last presentation fixes passed in 1.3 minutes on
+2026-08-09 with exactly 13 routes, zero failures, and fresh canvas/full-page
+captures. The material, postprocess, and large-scene pairs were personally
+reopened from that run before the audit disposition was closed.
 
 Current retained result:
 
@@ -87,9 +86,10 @@ Current retained result:
 - current same-workload Three.js comparisons: incomplete and unable to support
   a universal ecosystem-parity claim.
 
-Current route-library release status: per-route repairs and human dispositions
-are recorded in the final PRD, but the final clean unfiltered audit and all
-current comparison rows remain release blockers. The former comparison suite is frozen
+Current route-library release status: per-route repairs, human dispositions,
+and the clean unfiltered audit are recorded in the final PRD. Current
+same-workload comparison rows and the remaining release tracks are still open.
+The former comparison suite is frozen
 against `three@0.165.0` and is historical only. The current target is
 `three@0.185.1`; no current broad parity, performance, head-to-head, replacement,
 or ecosystem claim is permitted until `1.6-FINAL-PRD-Finishes.md` passes.

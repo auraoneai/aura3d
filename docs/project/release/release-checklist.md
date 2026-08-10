@@ -40,9 +40,10 @@ against `three@0.165.0` remain recorded but cannot close the current
   `showcase-route-gates` failure is the deliberate missing-human-verdict gate,
   not stale evidence or an allowlisted failure.
 - [ ] `pnpm test:integration` passes from the final 2.0 release commit.
-- [ ] `pnpm test:browser` and the final unfiltered 13-route visual audit pass
-  from the final 2.0 release commit. The latest unfiltered audit was invalidated
-  by dev-server navigation timeouts during machine-wide browser saturation.
+- [ ] `pnpm test:browser` passes from the final 2.0 release commit. The final
+  unfiltered visual-audit component is current and green: 13 routes, zero
+  failures, with human dispositions recorded; the complete browser suite still
+  requires its release-commit run.
 - [ ] `pnpm build` passes; finalization covers 28 packages, including the optional physical-simulation and navigation adapters.
 - [x] `pnpm verify:api-docs -- --write` has been run after export changes.
 - [ ] `pnpm verify:package-install-smoke:fresh` passes for 2.0.0 tarballs.

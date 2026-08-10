@@ -45,9 +45,10 @@ Repairs completed in the current candidate include:
 - explicit diagnostic labeling for particles, state machines, custom
   materials, raycast/CCD, stress, and large-scene workloads.
 
-Automated capture is not human acceptance. The release remains blocked until a
-fresh unfiltered audit completes green after the last repairs and every current
-capture has an evidence-backed disposition.
+Automated capture is not human acceptance. The final unfiltered 13-route audit
+after the last repairs is green with zero failures, and every retained route has
+an evidence-backed source/canvas/page disposition. Independent comparison,
+full-suite, packaging, website, and publication gates remain open.
 
 ## Three.js comparison boundary
 
