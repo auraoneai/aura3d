@@ -65,12 +65,14 @@ const installedManifests = readdirSync(resolve(workspace, "node_modules/@aura3d"
   .map((name) => resolve(workspace, "node_modules/@aura3d", name, "package.json"))
   .filter(existsSync)
   .map((path) => JSON.parse(readFileSync(path, "utf8")) as { readonly name: string; readonly version: string })
+  .map(({ name, version }) => ({ name, version }))
   .sort((left, right) => left.name.localeCompare(right.name));
 const createManifest = JSON.parse(readFileSync(resolve(workspace, "node_modules/create-aura3d/package.json"), "utf8")) as {
   readonly name: string;
   readonly version: string;
 };
-const installedPackages = [...installedManifests, createManifest].sort((left, right) => left.name.localeCompare(right.name));
+const installedPackages = [...installedManifests, { name: createManifest.name, version: createManifest.version }]
+  .sort((left, right) => left.name.localeCompare(right.name));
 if (installedPackages.length !== 29 || installedPackages.some((entry) => entry.version !== "2.0.0")) {
   throw new Error(`Installed package inventory is not the exact 29-package 2.0.0 set: ${JSON.stringify(installedPackages)}`);
 }
@@ -80,12 +82,10 @@ run("pnpm", ["exec", "playwright", "test", ...specs, "--reporter=line", "--worke
 for (const tool of aggregateTools) {
   run("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", `tools/${tool}/index.ts`], root, environment);
 }
-run("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/head-to-head-current-aggregate/index.ts"], root, environment);
 
 const commit = run("git", ["rev-parse", "HEAD"], root).trim();
 const lockSha256 = sha256(resolve(root, "pnpm-lock.yaml"));
-const aggregateSha256 = sha256(resolve(root, "tests/reports/current-head-to-head/aggregate.json"));
-const report = {
+const reportBase = {
   schema: "aura3d.current-head-to-head-installed-reproduction/1.0",
   generatedAt: new Date().toISOString(),
   pass: true,
@@ -100,8 +100,13 @@ const report = {
   specs,
   aggregateTools,
   aggregatePath: "tests/reports/current-head-to-head/aggregate.json",
-  aggregateSha256,
   claimBoundary: "All 15 retained browser workloads resolved Aura3D public imports from fresh 2.0.0 npm tarballs installed in an isolated project. Current Three.js and companion controls remain the repository-locked public packages. This does not substitute for a clean-VM rerun, independent human review, or the complete performance-sampling contract."
+};
+writeFileSync(reportPath, `${JSON.stringify(reportBase, null, 2)}\n`);
+run("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/head-to-head-current-aggregate/index.ts"], root, environment);
+const report = {
+  ...reportBase,
+  aggregateSha256: sha256(resolve(root, "tests/reports/current-head-to-head/aggregate.json"))
 };
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 console.log(`Installed-package head-to-head PASS: ${specs.length}/15 workloads, ${installedPackages.length}/29 Aura packages; ${reportPath}`);

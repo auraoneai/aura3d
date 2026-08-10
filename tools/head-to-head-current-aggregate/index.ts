@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
@@ -35,6 +36,7 @@ const json = <T>(path: string): T => JSON.parse(readFileSync(resolve(root, path)
 const sha256 = (path: string): string => createHash("sha256").update(readFileSync(resolve(root, path))).digest("hex");
 const contextPath = "benchmark/context/threejs-r185.1-20260808.json";
 const baselinePath = "tests/reports/current-threejs-baseline.json";
+const installedPath = "tests/reports/current-head-to-head-installed/report.json";
 const context = json<{
   readonly three: { readonly version: string; readonly tag: string; readonly npmIntegrity: string; readonly releaseCommit: string };
   readonly environment: Record<string, unknown>;
@@ -42,6 +44,17 @@ const context = json<{
   readonly assets: Record<string, { readonly path: string; readonly sha256: string }>;
 }>(contextPath);
 const baseline = json<{ readonly pass: boolean; readonly three: { readonly version: string } }>(baselinePath);
+const installed = json<{
+  readonly pass: boolean;
+  readonly mode: string;
+  readonly commit: string;
+  readonly lockSha256: string;
+  readonly packageCount: number;
+  readonly workloadCount: number;
+  readonly packages: readonly { readonly name: string; readonly version: string }[];
+  readonly tarballs: readonly { readonly file: string; readonly sha256: string }[];
+}>(installedPath);
+const currentCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 const aggregates = WORKLOADS.map((workload) => ({
   workload,
   path: `tests/reports/current-head-to-head/${workload}/aggregate.json`,
@@ -55,7 +68,21 @@ const checks = [
   { id: "every-workload-has-explicit-verdict", pass: aggregates.every(({ report }) => typeof report.verdict === "string" && report.verdict.length > 0) },
   { id: "every-workload-discloses-losses", pass: aggregates.every(({ report }) => (report.comparison?.observedLosses?.length ?? 0) > 0) },
   { id: "every-workload-has-claim-boundary", pass: aggregates.every(({ report }) => typeof report.comparison?.claimBoundary === "string" && report.comparison.claimBoundary.length > 0) },
-  { id: "frozen-asset-bytes-still-match", pass: Object.values(context.assets).every((asset) => sha256(asset.path) === asset.sha256) }
+  { id: "frozen-asset-bytes-still-match", pass: Object.values(context.assets).every((asset) => sha256(asset.path) === asset.sha256) },
+  {
+    id: "fresh-installed-2.0-packages-prove-all-workloads",
+    pass: installed.pass === true
+      && installed.mode === "fresh-local-tarballs-installed-by-npm"
+      && installed.commit === currentCommit
+      && installed.lockSha256 === sha256("pnpm-lock.yaml")
+      && installed.packageCount === 29
+      && installed.workloadCount === 15
+      && installed.packages.length === 29
+      && new Set(installed.packages.map(({ name }) => name)).size === 29
+      && installed.packages.every(({ version }) => version === "2.0.0")
+      && installed.tarballs.length === 29
+      && installed.tarballs.every(({ sha256: digest }) => /^[a-f0-9]{64}$/.test(digest))
+  }
 ];
 const failures = checks.filter((entry) => !entry.pass);
 
@@ -90,7 +117,6 @@ const losses = aggregates.flatMap(({ workload, report }) =>
 );
 
 const unproven = [
-  "Installed-package fairness: the workloads currently resolve public workspace packages, not npm-packed and independently installed Aura3D 2.0 artifacts.",
   "The complete 120-warmup/600-frame/five-session CPU/GPU/wall performance contract is not collected for all 15 workloads.",
   "Install/scaffold time, authored lines, dependency/lockfile size, gzip/brotli, parse/compile/init, first-valid-frame, GPU timers, memory, accessibility, deployment complexity, and escape-hatch complexity are not complete for every workload.",
   "Real-device XR remains unproven; the XR workload uses an injected session-like object.",
@@ -105,7 +131,6 @@ const notComparable = [
 ];
 
 const replicationBlockers = [
-  "Run every workload from packed and freshly installed Aura3D 2.0 packages.",
   "Execute the published rerun recipe on at least one clean machine or clean VM profile.",
   "Retain an independent human inspection record for the final same-scene gallery."
 ];
@@ -116,12 +141,15 @@ const report = {
   pass: failures.length === 0,
   comparisonComplete: failures.length === 0 && replicationBlockers.length === 0 && unproven.length === 0,
   universalScore: null,
-  claimBoundary: "Passing means the 15 selected correctness gates and their explicit bounded verdicts are internally complete. It does not mean universal parity, market parity, performance non-inferiority, installed-package fairness, or release readiness.",
+  claimBoundary: "Passing means the 15 selected correctness gates and their explicit bounded verdicts are internally complete and reproduced from fresh npm tarballs installed in an isolated project. It does not mean universal parity, market parity, performance non-inferiority, clean-machine replication, independent human approval, or release readiness.",
   frozenInputs: {
     contextPath,
     contextSha256: sha256(contextPath),
     baselinePath,
     baselineSha256: sha256(baselinePath),
+    installedPath,
+    installedCommit: installed.commit,
+    installedLockSha256: installed.lockSha256,
     three: context.three,
     sampling: context.commonRenderContract.sampling,
     nonInferiority: context.commonRenderContract.nonInferiority,
