@@ -28,7 +28,7 @@ const rootPackagedProductionTemplates = [
   "production-asset-inspector",
   "production-material-studio"
 ] as const;
-const promptPlanTemplates = ["product-viewer", "cinematic-scene"] as const;
+const promptPlanTemplates = ["cinematic-scene"] as const;
 const heldBackTemplateDirs = [
   "asset-gallery",
   "interactive-scene",
@@ -88,6 +88,10 @@ const checks: ReleaseCheck[] = [
   ]),
   fileIncludes("templates/mini-game/src/main.ts", ["createAuraApp", "game.platformer"], "mini-game packaged root game api"),
   fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["createAuraApp", "game.platformer"], "mini-game public game api"),
+  fileIncludes("templates/product-viewer/src/main.ts", ["@aura3d/engine/lean-product"], "product-viewer packaged root lean-product entry"),
+  fileIncludes("packages/create-aura3d/templates/product-viewer/src/main.ts", ["@aura3d/engine/lean-product"], "product-viewer public lean-product entry"),
+  fileIncludes("templates/mini-game/src/main.ts", ["@aura3d/engine/lean-game"], "mini-game packaged root lean-game entry"),
+  fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["@aura3d/engine/lean-game"], "mini-game public lean-game entry"),
   ...rootPackagedTemplates.flatMap((template) => [
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, ["tests/reports/route-health.json"], `${template} route health report`),
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`)
@@ -172,7 +176,7 @@ function runScaffoldSmoke(): {
       const scaffold = createA3DProject({
         targetDir,
         template: template as CreateA3DTemplate,
-        packageVersion: "1.0.0",
+        packageVersion: "2.0.0",
         rootDir: resolve("packages/create-aura3d")
       });
       writeWorkspaceViteConfig(targetDir);

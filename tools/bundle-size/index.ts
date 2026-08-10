@@ -317,7 +317,7 @@ function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
   const lines = [
     "# Aura3D Bundle Sizes",
     "",
-    `Generated from \`tests/reports/bundle-size.json\` on ${new Date().toISOString().slice(0, 10)}.`,
+    "Generated reproducibly by `pnpm check:bundle-size` from the current source and `tests/reports/bundle-size.json`.",
     "",
     "Measurement method: esbuild ESM splitting, minify, statically reachable critical-path",
     "chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenated gzip members.",
@@ -359,7 +359,9 @@ function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
     "keeps that root intact for existing consumers; the unchanged 80,000 B new-app budget applies",
     "to `@aura3d/engine/lean`. New product and game apps use `/lean-product` or `/lean-game`. Those",
     "entries pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`,",
-    "including a real GLB loader and the production physics solver. This report keeps the separate",
+    "including a real GLB loader and the solver-free deterministic arcade runtime. Physical simulation",
+    "remains an explicit optional-package workload rather than entering the game starter critical path.",
+    "This report keeps the separate",
     "root/template debt visible. Do not raise either set of budgets to manufacture a pass.",
     ""
   ];

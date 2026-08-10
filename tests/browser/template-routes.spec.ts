@@ -83,7 +83,14 @@ test.describe("create-aura3d template preview routes boot", () => {
     page.on("pageerror", (e) => errors.push(e.message));
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(`${server.origin}/templates/mini-game/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => document.body.dataset.aura3dReady === "true", undefined, { timeout: 45_000 });
+    await expect.poll(
+      () => page.evaluate(() => document.body.dataset.aura3dError
+        ? `error: ${document.body.dataset.aura3dError}`
+        : document.body.dataset.aura3dReady === "true"
+          ? "ready"
+          : `pending:${document.querySelector("canvas")?.dataset.aura3dModelStage ?? "no-stage"}`),
+      { timeout: 45_000 }
+    ).toBe("ready");
     await page.waitForFunction(() => Boolean((window as unknown as { __AURA3D_MINI_GAME__?: unknown }).__AURA3D_MINI_GAME__), undefined, {
       timeout: 20_000
     });
@@ -118,6 +125,45 @@ test.describe("create-aura3d template preview routes boot", () => {
 
     await mkdir(resolve(process.cwd(), "tests/reports/templates"), { recursive: true });
     await page.screenshot({ path: resolve(process.cwd(), "tests/reports/templates/mini-game-playable.png"), fullPage: false });
+    expect(errors).toEqual([]);
+  });
+
+  test("product-viewer template fills the viewport with a rendered typed product", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(`${server.origin}/templates/product-viewer/index.html`, { waitUntil: "domcontentloaded" });
+    await expect.poll(
+      () => page.evaluate(() => document.body.dataset.aura3dError
+        ? `error: ${document.body.dataset.aura3dError}`
+        : document.body.dataset.aura3dReady === "true"
+          ? "ready"
+          : `pending:${document.querySelector("canvas")?.dataset.aura3dModelStage ?? "no-stage"}`),
+      { timeout: 45_000 }
+    ).toBe("ready");
+
+    const proof = await page.evaluate(() => {
+      const canvas = document.querySelector("canvas");
+      const diagnostics = (window as unknown as {
+        __AURA3D_ROUTE_READY__?: { diagnostics?: { backend?: string; runtimeBackend?: string; drawCalls?: number } };
+      }).__AURA3D_ROUTE_READY__?.diagnostics;
+      return {
+        clientWidth: canvas?.clientWidth ?? 0,
+        clientHeight: canvas?.clientHeight ?? 0,
+        renderWidth: canvas?.width ?? 0,
+        renderHeight: canvas?.height ?? 0,
+        diagnostics
+      };
+    });
+    expect(proof.clientWidth).toBe(1280);
+    expect(proof.clientHeight).toBe(720);
+    expect(proof.renderWidth).toBeGreaterThanOrEqual(1280);
+    expect(proof.renderHeight).toBeGreaterThanOrEqual(720);
+    expect(proof.diagnostics).toMatchObject({ backend: "webgl2", runtimeBackend: "production-runtime" });
+    expect(proof.diagnostics?.drawCalls).toBeGreaterThan(3);
+
+    await mkdir(resolve(process.cwd(), "tests/reports/templates"), { recursive: true });
+    await page.screenshot({ path: resolve(process.cwd(), "tests/reports/templates/product-viewer-lean.png"), fullPage: false });
     expect(errors).toEqual([]);
   });
 

@@ -1,79 +1,52 @@
-import { PhysicsWorld } from "@aura3d/physics/world";
-import { createGameInput, type GameInputController, type GameInputOptions } from "./GameRuntime.js";
-import { createPhysicsRuntime, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
 import {
-  createAuraApp as createLeanApp,
+  createAuraApp as createProductApp,
   type AuraLeanApp,
   type AuraLeanAppTarget,
-  type AuraLeanCreateAppOptions,
-  type AuraLeanPrimitiveSpec,
-  type AuraLeanSceneSnapshot,
-  type AuraLeanVec3
-} from "./lean.js";
+  type AuraLeanCreateAppOptions
+} from "./lean-product.js";
+import {
+  createLeanGameInput,
+  createLeanPlatformer,
+  type LeanGameInputController,
+  type LeanGameInputOptions
+} from "./LeanArcadeRuntime.js";
 
-export * from "./lean.js";
-
-export interface AuraLeanGameCreateAppOptions extends AuraLeanCreateAppOptions {
-  readonly physics?: { readonly gravity?: AuraLeanVec3 };
-}
+export * from "./lean-product.js";
+export type * from "./LeanArcadeRuntime.js";
 
 export interface AuraLeanGameApp extends AuraLeanApp {
-  readonly physics: AuraPhysicsRuntime;
-  input(options: GameInputOptions): GameInputController;
+  input(options: LeanGameInputOptions): LeanGameInputController;
 }
 
-export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanGameCreateAppOptions): AuraLeanGameApp {
-  const snapshot: AuraLeanSceneSnapshot = "toJSON" in options.scene ? options.scene.toJSON() : options.scene;
-  const world = new PhysicsWorld({ gravity: [...(options.physics?.gravity ?? [0, -9.81, 0])] });
-  const physics = createPhysicsRuntime(world);
-  const bodies = new Map<AuraLeanPrimitiveSpec, ReturnType<AuraPhysicsRuntime["createBody"]>>();
-  for (const node of snapshot.nodes) {
-    if (node.kind !== "primitive" || !node.physics) continue;
-    bodies.set(node, physics.createBody({
-      name: node.name,
-      type: node.physics.type ?? "dynamic",
-      shape: node.primitive === "sphere" ? "sphere" : "box",
-      position: node.position,
-      halfExtents: [Math.abs(node.scale[0]) * 0.5, Math.abs(node.scale[1]) * 0.5, Math.abs(node.scale[2]) * 0.5],
-      radius: Math.max(Math.abs(node.scale[0]), Math.abs(node.scale[1]), Math.abs(node.scale[2])) * 0.5,
-      mass: node.physics.mass
-    }));
-  }
-
-  const base = createLeanApp(canvas, { ...options, scene: snapshot });
-  const inputs = new Set<GameInputController>();
-  const frameCallbacks = new Set<(deltaSeconds: number) => void>();
-  const stopSimulation = base.onFrame((deltaSeconds) => {
+/**
+ * Creates the deterministic arcade entry. Physical simulation is intentionally
+ * absent: add `@aura3d/physics-rapier` explicitly when a game claims rigid-body,
+ * character-controller, or vehicle physics.
+ */
+export function createAuraApp(target: AuraLeanAppTarget, options: AuraLeanCreateAppOptions): AuraLeanGameApp {
+  const base = createProductApp(target, options);
+  const inputs = new Set<LeanGameInputController>();
+  const stopInputUpdates = base.onFrame((deltaSeconds) => {
     for (const input of inputs) input.update(deltaSeconds);
-    for (const callback of frameCallbacks) callback(deltaSeconds);
-    physics.step(deltaSeconds);
-    for (const [node, body] of bodies) {
-      (node as { position: AuraLeanVec3 }).position = body.position();
-    }
   });
-
   return {
-    ready: base.ready,
-    diagnostics: base.diagnostics,
-    physics,
+    ...base,
     input(inputOptions) {
-      const input = createGameInput(inputOptions);
+      const input = createLeanGameInput(inputOptions);
       inputs.add(input);
       return input;
     },
-    onFrame(callback) {
-      frameCallbacks.add(callback);
-      return () => frameCallbacks.delete(callback);
-    },
     dispose() {
-      stopSimulation();
+      stopInputUpdates();
       for (const input of inputs) input.dispose();
       inputs.clear();
-      frameCallbacks.clear();
       base.dispose();
     }
   };
 }
 
-/** Namespace retained for source-compatible feature discovery without importing the broad game kit barrel. */
-export const game = { runtime: "lean-production-physics" } as const;
+export const game = {
+  input: createLeanGameInput,
+  platformer: createLeanPlatformer,
+  runtime: "lean-deterministic-arcade"
+} as const;

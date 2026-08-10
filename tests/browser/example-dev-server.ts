@@ -177,6 +177,8 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     candidates.push(join(root, "examples", "00-basic-triangle", "index.html"));
   } else if (normalizedPath.startsWith("aura-assets/") || normalizedPath.startsWith("/aura-assets/")) {
     candidates.push(join(root, "public", normalizedPath.replace(/^[/\\]?/, "")));
+    candidates.push(join(root, "templates", "product-viewer", "public", normalizedPath.replace(/^[/\\]?/, "")));
+    candidates.push(join(root, "packages", "create-aura3d", "templates", "product-viewer", "public", normalizedPath.replace(/^[/\\]?/, "")));
     candidates.push(join(root, "templates", "mini-game", "public", normalizedPath.replace(/^[/\\]?/, "")));
     candidates.push(join(root, "packages", "create-aura3d", "templates", "mini-game", "public", normalizedPath.replace(/^[/\\]?/, "")));
   } else if (loadersBrowserMappedPath) {

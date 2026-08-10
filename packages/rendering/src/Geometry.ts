@@ -183,6 +183,22 @@ export class Geometry {
     return new Geometry(vertices, new IndexBuffer([0, 1, 2], 3));
   }
 
+  /** Unit XZ floor plane with upward-facing normals. */
+  static litPlane(): Geometry {
+    const vertices = new VertexBuffer(VertexFormat.P3N3, 4);
+    const corners: readonly (readonly [number, number, number])[] = [
+      [-0.5, 0, -0.5],
+      [0.5, 0, -0.5],
+      [0.5, 0, 0.5],
+      [-0.5, 0, 0.5]
+    ];
+    corners.forEach((position, index) => {
+      vertices.setAttribute(index, "position", position);
+      vertices.setAttribute(index, "normal", [0, 1, 0]);
+    });
+    return new Geometry(vertices, new IndexBuffer([0, 2, 1, 0, 3, 2], 4));
+  }
+
   static litCube(size = 1): Geometry {
     if (size <= 0) {
       throw new Error("Lit cube size must be positive");

@@ -1,20 +1,20 @@
 # Aura3D Bundle Sizes
 
-Generated from `tests/reports/bundle-size.json` on 2026-08-10.
+Generated reproducibly by `pnpm check:bundle-size` from the current source and `tests/reports/bundle-size.json`.
 
 Measurement method: esbuild ESM splitting, minify, statically reachable critical-path
 chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenated gzip members.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine/lean core primitive critical path` | 291,502 | 71,346 | 80,000 | pass |
-| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 997,361 | 232,105 | 80,000 | informational |
+| `@aura3d/engine/lean core primitive critical path` | 292,670 | 71,733 | 80,000 | pass |
+| `@aura3d/engine compatibility root (informational, not the new-app entry)` | 997,569 | 232,147 | 80,000 | informational |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 948 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 710 | 20,000 | pass |
-| `cinematic presets/effects helpers` | 49,614 | 13,578 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 980,203 | 227,015 | 250,000 | pass |
-| `cinematic-scene starter app before user assets` | 980,203 | 227,015 | 250,000 | pass |
-| `mini-game starter app before user assets` | 980,203 | 227,015 | 250,000 | pass |
+| `cinematic presets/effects helpers` | 49,822 | 13,662 | 45,000 | pass |
+| `product-viewer starter app before user assets` | 825,810 | 186,482 | 250,000 | pass |
+| `cinematic-scene starter app before user assets` | 980,411 | 227,067 | 250,000 | pass |
+| `mini-game starter app before user assets` | 834,041 | 189,612 | 250,000 | pass |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
@@ -33,5 +33,7 @@ informational measurement rather than pretending its bytes disappeared. WS-2.2 e
 keeps that root intact for existing consumers; the unchanged 80,000 B new-app budget applies
 to `@aura3d/engine/lean`. New product and game apps use `/lean-product` or `/lean-game`. Those
 entries pass the canonical Three.js-relative budgets in `tests/reports/bundle-scenarios.json`,
-including a real GLB loader and the production physics solver. This report keeps the separate
+including a real GLB loader and the solver-free deterministic arcade runtime. Physical simulation
+remains an explicit optional-package workload rather than entering the game starter critical path.
+This report keeps the separate
 root/template debt visible. Do not raise either set of budgets to manufacture a pass.

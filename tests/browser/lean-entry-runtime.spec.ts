@@ -45,23 +45,28 @@ test.describe("lean public entries", () => {
     expect((await page.locator("#scene").screenshot()).byteLength).toBeGreaterThan(1_000);
   });
 
-  test("drives input, the shared production solver, and the frame loop from the lean game entry", async ({ page }) => {
+  test("drives solver-free deterministic arcade input and motion from the lean game entry", async ({ page }) => {
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
     await page.setContent(`
       <!doctype html><style>html,body{margin:0}canvas{width:320px;height:240px}</style>
       <canvas id="scene" width="320" height="240"></canvas>
       <script type="module">
-        import { createAuraApp, camera, material, primitives, scene } from "${server.origin}/packages/engine/src/agent-api/lean-game.js";
+        import { createAuraApp, camera, game, material, primitives, scene } from "${server.origin}/packages/engine/src/agent-api/lean-game.js";
         const app = createAuraApp(document.querySelector("#scene"), {
-          physics: { gravity: [0, -9.81, 0] },
           scene: scene().camera(camera.perspective({ position: [0, 5, 8], target: [0, 1, 0] }))
             .add(primitives.box({ name: "player", material: material.pbr({ color: "#4fd1c5" }) })
-              .position(0, 2, 0).physics({ type: "dynamic", mass: 1 }))
+              .position(0, 0.35, 0).runtime("player"))
         });
         const input = app.input({ actions: { jump: ["Space"] }, autoListen: false });
-        const body = app.physics.bodies.require("player");
-        const before = body.position()[1];
-        app.onFrame(() => { if (input.pressed("jump")) body.applyImpulse([0, 5, 0]); });
+        const platformer = game.platformer({ platforms: [{ id: "ground", x: -4, y: 0, width: 8, height: 0.35 }] });
+        const player = app.nodes.require("player");
+        const before = platformer.snapshot().player.y;
+        let after = before;
+        app.onFrame((dt) => {
+          const state = platformer.step(dt, { jumpPressed: input.pressed("jump") });
+          after = state.player.y;
+          player.setPosition(state.player.x, state.player.y + 0.5, 0);
+        });
         input.press("Space");
         try {
           await app.ready();
@@ -69,7 +74,8 @@ test.describe("lean public entries", () => {
             window.__AURA_LEAN_GAME__ = {
               status: "ready",
               before,
-              after: body.position()[1],
+              after,
+              runtime: game.runtime,
               diagnostics: app.diagnostics()
             };
           }, 240);
@@ -85,6 +91,7 @@ test.describe("lean public entries", () => {
     expect(result?.diagnostics?.runtimeBackend).toBe("production-runtime");
     expect(result?.diagnostics?.drawCalls ?? 0).toBeGreaterThan(0);
     expect(result?.after ?? 0).toBeGreaterThan(result?.before ?? 0);
+    expect(result?.runtime).toBe("lean-deterministic-arcade");
   });
 
   test("loads and draws a real GLB through the lean product entry", async ({ page }) => {
@@ -134,6 +141,7 @@ declare global {
       readonly error?: string;
       readonly before?: number;
       readonly after?: number;
+      readonly runtime?: string;
       readonly diagnostics?: { readonly backend: string; readonly runtimeBackend: string; readonly drawCalls: number };
     };
     __AURA_LEAN_PRODUCT__?: {

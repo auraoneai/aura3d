@@ -26,7 +26,9 @@ export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreate
   const modelRuntime: AuraLeanModelRuntime = {
     async initialize(target, snapshot) {
       const nodes = snapshot.nodes.filter((node): node is AuraLeanModelSpec => node.kind === "model");
+      target.dataset.aura3dModelStage = nodes.length === 0 ? "no-models" : "loading-models";
       for (const node of nodes) {
+        target.dataset.aura3dModelStage = `loading:${node.asset.id}`;
         pipelines.push({
           node,
           pipeline: await loadProductionGLTFRenderPipeline({
@@ -37,10 +39,12 @@ export function createAuraApp(canvas: AuraLeanAppTarget, options: AuraLeanCreate
             height: target.height
           })
         });
+        target.dataset.aura3dModelStage = `loaded:${node.asset.id}`;
       }
+      target.dataset.aura3dModelStage = "ready";
     },
     renderItems(): readonly RenderItem[] {
-      return pipelines.flatMap(({ node, pipeline }) => {
+      return pipelines.filter(({ node }) => node.visible !== false).flatMap(({ node, pipeline }) => {
         const placement = createAuraLeanModelMatrix(node.position, node.scale);
         return collectRenderItems(pipeline.source).map((renderItem) => {
           const {

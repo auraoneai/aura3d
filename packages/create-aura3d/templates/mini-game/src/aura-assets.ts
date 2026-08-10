@@ -1,4 +1,4 @@
-import { defineAuraAssets } from "@aura3d/engine";
+import { defineAuraAssets } from "@aura3d/engine/lean-game";
 
 export const assets = defineAuraAssets({
   playerModel: {

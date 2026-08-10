@@ -1,27 +1,33 @@
-import { createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
+import {
+  camera,
+  createAuraApp,
+  environments,
+  interactions,
+  material,
+  model,
+  primitives,
+  scene
+} from "@aura3d/engine/lean-product";
 import { assets } from "./aura-assets";
 
-const plan = definePromptPlan({
-  sceneType: "product-viewer",
-  subject: { asset: assets.product, label: "studio product" },
-  style: "premium studio product inspection with visible fit and turntable cues",
-  environment: "studio sweep, round plinth, contact shadow, softboxes, reflection cards",
-  camera: { preset: "product-orbit" },
-  lighting: { preset: "studio-softbox" },
-  effects: ["bloom"],
-  interaction: "orbit",
-  acceptanceCriteria: [
-    "product is centered, normalized, and seated on the plinth",
-    "softboxes, reflection cards, and contact shadow shape the asset",
-    "turntable and orbit cues are visible without reading diagnostics"
-  ],
-  negativeCriteria: [
-    "Do not use string asset ids or invented product URLs",
-    "Do not ship a lone GLB without plinth, contact, fit, and rotation evidence"
-  ]
-} as const);
+const productScene = scene()
+  .background("#071018")
+  .add(primitives.plane({ name: "studio floor", material: material.pbr({ color: "#22313b", roughness: 0.32, metallic: 0.08 }) })
+    .position(0, -0.05, -0.62).scale([6.2, 1, 5.2]))
+  .add(primitives.box({ name: "product plinth", material: material.clearcoatPaint({ color: "#dce7ed", roughness: 0.2, metallic: 0.18 }) })
+    .position(0, 0.06, -0.62).scale([1.82, 0.18, 1.4]))
+  .add(model(assets.product, { name: "typed studio product" }).position(0, 1.08, -0.62).scale(0.66))
+  .add(environments.studio())
+  .add(interactions.orbit())
+  .camera(camera.perspective({ position: [2.65, 2.05, 4.55], target: [0, 1.02, -0.62], fov: 32 }));
 
-createAuraApp("#app", {
-  diagnostics: { overlay: true, assetPanel: true, performancePanel: true },
-  scene: promptPlanToScene(plan)
+const app = createAuraApp("#app", { scene: productScene });
+void app.ready().then(() => {
+  const diagnostics = app.diagnostics();
+  document.body.dataset.aura3dReady = "true";
+  document.body.dataset.aura3dRuntimeBackend = diagnostics.runtimeBackend;
+  document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
+  (window as unknown as { __AURA3D_ROUTE_READY__?: unknown }).__AURA3D_ROUTE_READY__ = { ready: true, diagnostics };
+}).catch((error: unknown) => {
+  document.body.dataset.aura3dError = error instanceof Error ? error.message : String(error);
 });

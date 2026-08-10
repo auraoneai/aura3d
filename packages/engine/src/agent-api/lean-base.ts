@@ -32,15 +32,23 @@ export interface AuraLeanPrimitiveSpec {
   readonly position: AuraLeanVec3;
   readonly scale: AuraLeanVec3;
   readonly physics?: AuraLeanPhysicsSpec;
+  readonly runtimeId?: string;
+  readonly visible?: boolean;
 }
 
-export interface AuraLeanModelAsset {
-  readonly id: string;
+export interface AuraLeanAssetDefinition {
+  readonly type: "model" | "texture" | "audio" | "video" | "environment";
+  readonly format: string;
   readonly url: string;
-  readonly type: "model";
-  readonly format: "glb" | "gltf";
   readonly hash?: string;
   readonly bounds?: AuraLeanVec3;
+  readonly metadata?: Readonly<Record<string, unknown>>;
+}
+
+export interface AuraLeanModelAsset extends AuraLeanAssetDefinition {
+  readonly id: string;
+  readonly type: "model";
+  readonly format: "glb" | "gltf";
 }
 
 export interface AuraLeanModelSpec {
@@ -49,6 +57,8 @@ export interface AuraLeanModelSpec {
   readonly name?: string;
   readonly position: AuraLeanVec3;
   readonly scale: AuraLeanVec3;
+  readonly runtimeId?: string;
+  readonly visible?: boolean;
 }
 
 export interface AuraLeanPhysicsSpec {
@@ -79,6 +89,7 @@ export class AuraLeanNodeBuilder {
   private positionValue: AuraLeanVec3 = [0, 0, 0];
   private scaleValue: AuraLeanVec3 = [1, 1, 1];
   private physicsValue: AuraLeanPhysicsSpec | undefined;
+  private runtimeIdValue: string | undefined;
 
   constructor(private readonly primitiveValue: Omit<AuraLeanPrimitiveSpec, "position" | "scale">) {}
 
@@ -97,12 +108,18 @@ export class AuraLeanNodeBuilder {
     return this;
   }
 
+  runtime(id: string): this {
+    this.runtimeIdValue = id;
+    return this;
+  }
+
   toJSON(): AuraLeanPrimitiveSpec {
     return {
       ...this.primitiveValue,
       position: this.positionValue,
       scale: this.scaleValue,
-      ...(this.physicsValue ? { physics: this.physicsValue } : {})
+      ...(this.physicsValue ? { physics: this.physicsValue } : {}),
+      ...(this.runtimeIdValue ? { runtimeId: this.runtimeIdValue } : {})
     };
   }
 }
@@ -110,6 +127,7 @@ export class AuraLeanNodeBuilder {
 export class AuraLeanModelBuilder {
   private positionValue: AuraLeanVec3 = [0, 0, 0];
   private scaleValue: AuraLeanVec3 = [1, 1, 1];
+  private runtimeIdValue: string | undefined;
 
   constructor(private readonly asset: AuraLeanModelAsset, private readonly name?: string) {}
 
@@ -123,8 +141,20 @@ export class AuraLeanModelBuilder {
     return this;
   }
 
+  runtime(id: string): this {
+    this.runtimeIdValue = id;
+    return this;
+  }
+
   toJSON(): AuraLeanModelSpec {
-    return { kind: "model", asset: this.asset, position: this.positionValue, scale: this.scaleValue, ...(this.name ? { name: this.name } : {}) };
+    return {
+      kind: "model",
+      asset: this.asset,
+      position: this.positionValue,
+      scale: this.scaleValue,
+      ...(this.name ? { name: this.name } : {}),
+      ...(this.runtimeIdValue ? { runtimeId: this.runtimeIdValue } : {})
+    };
   }
 }
 
@@ -145,6 +175,11 @@ export class AuraLeanSceneBuilder {
 
   add(value: AuraLeanNodeBuilder | AuraLeanModelBuilder | AuraLeanIntentSpec): this {
     this.nodes.push(value instanceof AuraLeanNodeBuilder || value instanceof AuraLeanModelBuilder ? value.toJSON() : value);
+    return this;
+  }
+
+  addMany(values: readonly (AuraLeanNodeBuilder | AuraLeanModelBuilder | AuraLeanIntentSpec)[]): this {
+    for (const value of values) this.add(value);
     return this;
   }
 
@@ -196,6 +231,16 @@ export function model(asset: AuraLeanModelAsset, options: { readonly name?: stri
   return new AuraLeanModelBuilder(asset, options.name);
 }
 
+type AuraLeanAssetMap<T extends Record<string, AuraLeanAssetDefinition>> = {
+  readonly [K in keyof T]: T[K] & { readonly id: Extract<K, string> };
+};
+
+export function defineAuraAssets<const T extends Record<string, AuraLeanAssetDefinition>>(definitions: T): AuraLeanAssetMap<T> {
+  return Object.fromEntries(
+    Object.entries(definitions).map(([id, definition]) => [id, { ...definition, id }])
+  ) as AuraLeanAssetMap<T>;
+}
+
 const intent = (kind: AuraLeanIntentSpec["kind"]): AuraLeanIntentSpec => ({ kind });
 
 export const lights = {
@@ -221,7 +266,18 @@ export interface AuraLeanApp {
   ready(): Promise<void>;
   diagnostics(): AuraLeanAppDiagnostics;
   onFrame(callback: (deltaSeconds: number) => void): () => void;
+  readonly nodes: AuraLeanNodeRegistry;
   dispose(): void;
+}
+
+export interface AuraLeanRuntimeNode {
+  setPosition(x: number, y: number, z: number): void;
+  setScale(value: number | AuraLeanVec3): void;
+  setVisible(visible: boolean): void;
+}
+
+export interface AuraLeanNodeRegistry {
+  require(id: string): AuraLeanRuntimeNode;
 }
 
 export interface AuraLeanModelRuntime {
@@ -323,7 +379,7 @@ export function createAuraAppWithRenderer(target: AuraLeanAppTarget, options: Au
 
   function renderFrame(): void {
     if (!renderer) return;
-    const items: RenderItem[] = entries.map((entry) => ({
+    const items: RenderItem[] = entries.filter((entry) => entry.node.visible !== false).map((entry) => ({
       geometry: entry.geometry,
       material: entry.material,
       modelMatrix: createAuraLeanModelMatrix(entry.node.position, entry.node.scale),
@@ -359,6 +415,7 @@ export function createAuraAppWithRenderer(target: AuraLeanAppTarget, options: Au
       frameCallbacks.add(callback);
       return () => frameCallbacks.delete(callback);
     },
+    nodes: createNodeRegistry(snapshot),
     dispose() {
       disposed = true;
       cancelAnimationFrame(frameHandle);
@@ -373,12 +430,39 @@ export function createAuraAppWithRenderer(target: AuraLeanAppTarget, options: Au
   };
 }
 
+function createNodeRegistry(snapshot: AuraLeanSceneSnapshot): AuraLeanNodeRegistry {
+  const nodes = snapshot.nodes.filter(
+    (node): node is AuraLeanPrimitiveSpec | AuraLeanModelSpec => node.kind === "primitive" || node.kind === "model"
+  );
+  return {
+    require(id) {
+      const node = nodes.find((candidate) => candidate.runtimeId === id || candidate.name === id);
+      if (!node) {
+        throw new Error(`Aura3D lean runtime node "${id}" was not found. Expected a primitive or model with .runtime("${id}") or name "${id}".`);
+      }
+      const mutable = node as {
+        position: AuraLeanVec3;
+        scale: AuraLeanVec3;
+        visible?: boolean;
+      };
+      return {
+        setPosition(x, y, z) { mutable.position = [x, y, z]; },
+        setScale(value) { mutable.scale = typeof value === "number" ? [value, value, value] : value; },
+        setVisible(visible) { mutable.visible = visible; }
+      };
+    }
+  };
+}
+
 function resolveCanvas(target: AuraLeanAppTarget): HTMLCanvasElement {
   const element = typeof target === "string" ? document.querySelector(target) : target;
   if (!element) throw new Error(`Aura3D lean entry could not find target "${String(target)}".`);
   if (element instanceof HTMLCanvasElement) return element;
   const canvas = document.createElement("canvas");
   canvas.dataset.aura3dCanvas = "true";
+  canvas.style.display = "block";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
   element.append(canvas);
   return canvas;
 }
@@ -387,7 +471,11 @@ function createPrimitiveEntry(node: AuraLeanPrimitiveSpec): { readonly node: Aur
   const spec = node.material ?? {};
   return {
     node,
-    geometry: node.primitive === "sphere" ? Geometry.uvSphere(0.5, 32, 16) : Geometry.litCube(1),
+    geometry: node.primitive === "sphere"
+      ? Geometry.uvSphere(0.5, 32, 16)
+      : node.primitive === "plane"
+        ? Geometry.litPlane()
+        : Geometry.litCube(1),
     material: new PBRMaterial({
       baseColor: linearColor4(spec.color ?? "#d7dee8"),
       roughness: clamp(spec.roughness ?? 0.58),
