@@ -2,12 +2,15 @@ import {
   camera,
   checkSpatialInvariants,
   city,
+  clearFocus,
   createSmartCityKit,
   collectAuraSceneEvidence,
   createAuraApp,
   distanceLod,
   effects,
+  focusObject,
   game,
+  groups,
   interactions,
   fitSizeToRegion,
   labels,
@@ -22,7 +25,7 @@ import {
   timeline,
   ui
 } from "@aura3d/engine";
-import type { AuraCameraSpec, AuraNodeInput, AuraSceneSnapshot, SemanticRegion } from "@aura3d/engine";
+import type { AuraCameraSpec, AuraNodeInput, AuraSceneNode, AuraSceneSnapshot, FocusResult, SemanticRegion } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
@@ -158,6 +161,7 @@ interface SmartCityEvidence {
     readonly lastChanged: string;
     readonly runtimeNodeIds: readonly string[];
     readonly selectedDistrict: SmartCityDistrict;
+    readonly selectedBuildingId?: string;
     readonly cameraMode: SmartCityCameraMode;
   };
   readonly controls: SmartCityControls;
@@ -259,9 +263,12 @@ app.onFrame(({ frame, time }) => {
 function buildSmartCityScene(): SceneBuild {
   const kit = sceneKits.cityBlock({
     blocks: 8,
-    timeOfDay: controls.timeOfDay,
-    camera: smartCityCamera(controls.cameraMode, controls.timeOfDay)
+    timeOfDay: controls.timeOfDay
   });
+  const buildingFocus = createSelectedBuildingFocus(kit.nodes);
+  const activeCamera = controls.cameraMode === "command" && buildingFocus.camera
+    ? widenBuildingFocusCamera(buildingFocus.camera)
+    : smartCityCamera(controls.cameraMode, controls.timeOfDay);
   const qaState = city.createState({ blocks: 20, litWindows: true, timeOfDay: controls.timeOfDay });
   const changedNodes = qaState.toggleTimeOfDay();
   const qa = city.visualQA(changedNodes, { changed: qaState.lastChange });
@@ -293,7 +300,8 @@ function buildSmartCityScene(): SceneBuild {
     }))
     .add(interactions.hover({ target: `${controls.district} district control overlay`, selected: `${controls.district} district control overlay` }))
     .addMany(createSmartCityOverlayNodes())
-    .camera(smartCityCamera(controls.cameraMode, controls.timeOfDay))
+    .addMany(buildingFocus.nodes)
+    .camera(activeCamera)
     .timeline(timeline.loop({ seconds: controls.cameraMode === "flythrough" ? 9 : 12, captureTime: 0.44 }));
 
   const snapshot = builder.toJSON();
@@ -307,6 +315,7 @@ function buildSmartCityScene(): SceneBuild {
     "city.visualQA day-night state proof",
     "city.instancing repeated city families",
     "district overlay selection",
+    buildingFocus.targetId ? `selected building focus ${buildingFocus.targetId}` : "selected building focus cleared",
     controls.traffic ? "traffic pulses enabled" : "traffic pulses throttled",
     "runtime telemetry pulse nodes",
     "camera and flythrough modes",
@@ -320,6 +329,12 @@ function buildSmartCityScene(): SceneBuild {
       sceneKit: kit.diagnostics,
       cityQA: qa,
       cityInstancing: city.instancing(kit.nodes),
+      buildingFocus: {
+        targetId: buildingFocus.targetId,
+        cameraFocused: Boolean(buildingFocus.camera && controls.cameraMode === "command"),
+        accessibilityLabel: buildingFocus.accessibilityLabel,
+        invariants: buildingFocus.invariants
+      },
       runtimeNodeIds,
       /*
        * Spatial invariants over every helper element, derived from the city footprint.
@@ -354,6 +369,58 @@ function buildSmartCityScene(): SceneBuild {
       district: controls.district
     }
   };
+}
+
+function widenBuildingFocusCamera(intent: NonNullable<FocusResult["camera"]>): AuraCameraSpec {
+  const distanceScale = window.innerWidth < 700 ? 2.4 : 1.85;
+  const offset = [
+    intent.position[0] - intent.target[0],
+    intent.position[1] - intent.target[1],
+    intent.position[2] - intent.target[2]
+  ] as const;
+  return {
+    mode: "perspective",
+    position: [
+      intent.target[0] + offset[0] * distanceScale,
+      intent.target[1] + offset[1] * distanceScale,
+      intent.target[2] + offset[2] * distanceScale
+    ],
+    target: intent.target,
+    fov: 44
+  };
+}
+
+function createSelectedBuildingFocus(nodes: readonly AuraSceneNode[]): FocusResult {
+  if (controls.district === "all") return clearFocus();
+  const towerFamily = groups.flatten(nodes).find((node) => node.kind === "primitive" && node.name === "city tower native instanced family");
+  if (!towerFamily || towerFamily.kind !== "primitive" || !towerFamily.instances?.length) {
+    throw new Error("Smart City building focus requires the native city tower instance family.");
+  }
+  const indexByDistrict: Record<Exclude<SmartCityDistrict, "all">, number> = {
+    core: 2,
+    north: 4,
+    harbor: 7,
+    industrial: 3
+  };
+  const index = indexByDistrict[controls.district];
+  const transform = towerFamily.instances[index];
+  if (!transform?.position) throw new Error(`Smart City building focus is missing tower instance ${index}.`);
+  const scale = transform.scale ?? 1;
+  const size = typeof scale === "number" ? [scale, scale, scale] as const : scale;
+  return focusObject({
+    id: `${controls.district}-tower-${index + 1}`,
+    label: `${controls.district[0]!.toUpperCase()}${controls.district.slice(1)} operations tower`,
+    center: transform.position,
+    size,
+    rotation: transform.rotation
+  }, {
+    indicators: ["ring", "bounding-box"],
+    color: districtColor(controls.district),
+    callout: true,
+    cameraFocus: true,
+    compactViewport: window.innerWidth < 700,
+    namePrefix: `${controls.district} selected building`
+  });
 }
 
 function createSmartCityOverlayNodes(): AuraNodeInput[] {
@@ -658,6 +725,7 @@ function publishEvidence(status: ShowcaseStatus): void {
       lastChanged,
       runtimeNodeIds,
       selectedDistrict: controls.district,
+      ...(controls.district === "all" ? {} : { selectedBuildingId: (activeBuild.diagnostics.buildingFocus as { readonly targetId: string }).targetId }),
       cameraMode: controls.cameraMode
     },
     controls: { ...controls },

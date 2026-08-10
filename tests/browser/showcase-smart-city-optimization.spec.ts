@@ -17,11 +17,30 @@ test("proves the public Smart City route changes LOD and performs native frustum
     await page.goto(`${server.origin}/apps/showcase-smart-city-control/`);
     await waitForOptimizationEvidence(page, "command");
     const command = await readEvidence(page);
+    const commandPerformance = await measureRepeatedFramePerformance(page);
     await page.locator("#aura-stage").screenshot({ path: resolve(REPORT_DIRECTORY, "command-canvas.png") });
+
+    await page.locator("[data-district='core']").click();
+    await page.waitForFunction(() => {
+      const evidence = window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__;
+      return evidence?.interactionState.selectedBuildingId === "core-tower-3"
+        && evidence.diagnostics?.buildingFocus?.cameraFocused === true
+        && evidence.diagnostics?.buildingFocus?.invariants?.passes === true;
+    });
+    const focusedBuilding = await page.evaluate(() => {
+      const evidence = window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__!;
+      return {
+        selectedBuildingId: evidence.interactionState.selectedBuildingId,
+        focus: evidence.diagnostics.buildingFocus,
+        cameraMode: evidence.interactionState.cameraMode
+      };
+    });
+    await page.locator("#aura-stage").screenshot({ path: resolve(REPORT_DIRECTORY, "focused-building-canvas.png") });
 
     await page.locator("[data-camera='flythrough']").click();
     await waitForOptimizationEvidence(page, "flythrough");
     const flythrough = await readEvidence(page);
+    const flythroughPerformance = await measureRepeatedFramePerformance(page);
     await page.locator("#aura-stage").screenshot({ path: resolve(REPORT_DIRECTORY, "flythrough-canvas.png") });
 
     expect(command.runtime.backend).toBe("production-runtime");
@@ -35,6 +54,20 @@ test("proves the public Smart City route changes LOD and performs native frustum
     expect(command.lod).toMatchObject({ nodeName: "core communications tower distance LOD" });
     expect(flythrough.lod).toMatchObject({ nodeName: "core communications tower distance LOD" });
     expect(command.lod.levelIndex).not.toBe(flythrough.lod.levelIndex);
+    expect(focusedBuilding).toMatchObject({
+      selectedBuildingId: "core-tower-3",
+      cameraMode: "command",
+      focus: {
+        targetId: "core-tower-3",
+        cameraFocused: true,
+        invariants: { passes: true }
+      }
+    });
+    for (const sample of [...commandPerformance, ...flythroughPerformance]) {
+      expect(sample.frames).toBe(45);
+      expect(sample.p50Ms).toBeLessThan(35);
+      expect(sample.p95Ms).toBeLessThan(80);
+    }
     expect(pageErrors).toEqual([]);
 
     writeFileSync(resolve(REPORT_DIRECTORY, "report.json"), `${JSON.stringify({
@@ -43,13 +76,18 @@ test("proves the public Smart City route changes LOD and performs native frustum
       pass: true,
       viewport: VIEWPORT,
       command,
+      commandPerformance,
+      focusedBuilding,
       flythrough,
+      flythroughPerformance,
       assertions: {
         publicRoute: true,
         productionRuntime: true,
         nativeInstancing: true,
         distanceLodTransition: true,
         frustumCulling: true,
+        selectedBuildingFocus: true,
+        repeatedLargeScenePerformance: true,
         gpuOcclusionCullingClaimed: false
       },
       pageErrors
@@ -70,6 +108,34 @@ async function waitForOptimizationEvidence(page: import("@playwright/test").Page
       && runtime.lodSelections?.length > 0
       && runtime.frustumTestedObjects > 0;
   }, cameraMode, { timeout: 90_000 });
+}
+
+async function measureRepeatedFramePerformance(page: import("@playwright/test").Page): Promise<readonly {
+  readonly frames: number;
+  readonly p50Ms: number;
+  readonly p95Ms: number;
+  readonly maxMs: number;
+}[]> {
+  return await page.evaluate(async () => {
+    const rounds = [];
+    for (let round = 0; round < 3; round += 1) {
+      const samples: number[] = [];
+      let previous = await new Promise<number>((resolveFrame) => requestAnimationFrame(resolveFrame));
+      for (let frame = 0; frame < 45; frame += 1) {
+        const current = await new Promise<number>((resolveFrame) => requestAnimationFrame(resolveFrame));
+        samples.push(current - previous);
+        previous = current;
+      }
+      samples.sort((left, right) => left - right);
+      rounds.push({
+        frames: samples.length,
+        p50Ms: Number(samples[Math.floor(samples.length * 0.5)]!.toFixed(3)),
+        p95Ms: Number(samples[Math.floor(samples.length * 0.95)]!.toFixed(3)),
+        maxMs: Number(samples[samples.length - 1]!.toFixed(3))
+      });
+    }
+    return rounds;
+  });
 }
 
 async function readEvidence(page: import("@playwright/test").Page): Promise<{
