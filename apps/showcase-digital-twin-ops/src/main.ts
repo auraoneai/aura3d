@@ -106,7 +106,7 @@ const zoneLabels: Record<ZoneId, string> = {
  * scene is derived from the asset's placed bounds rather than repeated literals.
  */
 const WORKCELL_POSITION: readonly [number, number, number] = [-0.08, 0.058, -0.04];
-const WORKCELL_TARGET_MAX_DIMENSION = 1.32;
+const WORKCELL_TARGET_MAX_DIMENSION = 2.35;
 
 /**
  * Operational zones as normalized regions of the workcell's own bounds.
@@ -191,12 +191,15 @@ let selectedZone: ZoneId = "assembly";
  * the control's documented action -- framing the selected zone -- actually happens
  * and is observable in evidence.
  */
-const OVERVIEW_CAMERA = {
-  position: [1.72, 1.0, 2.62] as readonly [number, number, number],
-  target: [-0.04, 0.26, 0.02] as readonly [number, number, number],
-  fov: 38
-} as const;
-let cameraPose: { position: readonly [number, number, number]; target: readonly [number, number, number]; fov: number } = { ...OVERVIEW_CAMERA };
+function overviewCamera(): { position: readonly [number, number, number]; target: readonly [number, number, number]; fov: number } {
+  const compactViewport = window.innerWidth < 680;
+  return {
+    position: compactViewport ? [4.8, 2.55, 6.5] : [3.4, 2.05, 4.8],
+    target: [-0.04, 0.5, 0.02],
+    fov: compactViewport ? 45 : 37
+  };
+}
+let cameraPose: { position: readonly [number, number, number]; target: readonly [number, number, number]; fov: number } = overviewCamera();
 let focusedZone: ZoneId | undefined;
 let frameCount = 0;
 let uptime = 0;
@@ -252,6 +255,17 @@ function rebindRuntimeNodes(): void {
 renderConsole();
 syncUi();
 publishEvidence("ready");
+let compactCameraLayout = window.innerWidth < 680;
+window.addEventListener("resize", () => {
+  const nextCompactLayout = window.innerWidth < 680;
+  if (nextCompactLayout === compactCameraLayout) return;
+  compactCameraLayout = nextCompactLayout;
+  focusedZone = undefined;
+  cameraPose = overviewCamera();
+  app.setScene(buildOpsScene());
+  rebindRuntimeNodes();
+  publishEvidence("ready");
+});
 
 app.onFrame(({ dt, time }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
@@ -600,7 +614,7 @@ function renderConsole(): void {
  */
 function focusSelectedZone(): void {
   if (focusedZone === selectedZone) {
-    cameraPose = { ...OVERVIEW_CAMERA };
+    cameraPose = overviewCamera();
     focusedZone = undefined;
     eventLog = ["Camera returned to workcell overview.", ...eventLog].slice(0, 7);
   } else {

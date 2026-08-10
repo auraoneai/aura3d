@@ -11,8 +11,8 @@ one release-validated typed command vehicle primary asset.
 - Asset status: `assets.showcaseCityVehicle` passes retained route-primary
   evidence and release/deploy validation as the primary command vehicle.
   The city itself remains procedural.
-- Primitive status: district masts, overlays, city blocks, telemetry cues, and
-  command visuals are procedural supporting context.
+- Primitive status: low district beacons, overlays, city blocks, telemetry
+  cues, and command visuals are procedural supporting context.
 - Claim status: bounded to sample city-control telemetry and typed vehicle
   presentation. It must not claim GIS data, traffic simulation fidelity,
   production digital-twin/control behavior, or an asset-backed city-scale
@@ -30,7 +30,7 @@ one release-validated typed command vehicle primary asset.
 - Camera: Command, Overview, Street, Flythrough.
 - Day/Night: toggles operations lighting and scene-kit day/night state.
 - Traffic: toggles live or throttled traffic pulse state.
-- Alert Level: updates telemetry, district mast height, and evidence state.
+- Alert Level: updates telemetry, low district-beacon height, and evidence state.
 
 ## Evidence
 
@@ -46,7 +46,10 @@ The route publishes `window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__` with:
 - `telemetry`
 - `diagnostics`
 
-Claim boundary: this is a procedural Aura3D public API showcase using city scene kits, visual QA, instancing evidence, procedural overlays, labels, controls, and runtime telemetry. It does not claim real GIS data, external assets, or traffic simulation fidelity.
+Claim boundary: this is a procedural Aura3D public API showcase using city scene
+kits, a typed vehicle asset, visual QA, instancing evidence, procedural overlays,
+labels, controls, and runtime telemetry. It does not claim real GIS data,
+imported city geometry, or traffic simulation fidelity.
 
 ## Asset Strategy
 

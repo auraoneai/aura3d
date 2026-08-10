@@ -41,8 +41,8 @@ import "./styles.css";
  * the footprint the route stages against, once, so every district, overlay, telemetry
  * pulse and label is derived from it rather than each carrying its own literal.
  */
-const CITY_EXTENT = 3.8;
-const CITY_HEIGHT = 1.9;
+const CITY_EXTENT = 11.4;
+const CITY_HEIGHT = 5;
 
 /** The city's placed bounds, so helpers can be anchored to it. */
 function cityBounds() {
@@ -104,7 +104,7 @@ const VEHICLE_STATION_FOOTPRINT_REGION: SemanticRegion = {
   u: 0.47,
   v: 0.54,
   w: 0.58,
-  extent: [0.3, 0.12, 0.3]
+  extent: [0.12, 0.08, 0.12]
 };
 
 /** Bounds-derived world size for the hero vehicle. Never a hardcoded multiplier. */
@@ -198,6 +198,13 @@ app = createAuraApp("#aura-stage", {
 });
 
 bindControls();
+let compactCameraLayout = window.innerWidth < 700;
+window.addEventListener("resize", () => {
+  const nextCompactLayout = window.innerWidth < 700;
+  if (nextCompactLayout === compactCameraLayout) return;
+  compactCameraLayout = nextCompactLayout;
+  applyScene(`viewport:${nextCompactLayout ? "compact" : "wide"}`);
+});
 updateControlState();
 publishEvidence("ready");
 
@@ -450,24 +457,25 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
     { district: "industrial" as const, label: "Industrial", color: "#ff7a59" }
   ];
 
-  // Mast height and label offset scale with the city, and each label anchors to its own
-  // mast so the leader line points at the mast rather than at a fixed world point.
-  const mastHeight = CITY_HEIGHT * 0.48 + controls.alertLevel * 0.003;
+  // Keep district beacons close to the mapped streets. The former height used
+  // almost half of the full scene bound and produced four free-standing poles
+  // taller than the buildings after the city bound was corrected.
+  const mastHeight = CITY_HEIGHT * 0.11 + controls.alertLevel * 0.001;
   for (const anchor of anchors) {
     const position = districtAnchor(anchor.district);
-    const mastCentreY = CITY_HEIGHT * 0.39;
-    nodes.push(
-      primitives.box({
+    const mastCentreY = bounds.floorY + mastHeight / 2;
+    nodes.push(primitives.box({
         name: `${anchor.district} district status mast`,
         material: material.neon({ color: anchor.color, emissive: anchor.color, emissiveIntensity: controls.district === anchor.district ? 1.6 : 0.52, opacity: 0.74 })
-      }).position(position[0], mastCentreY, position[1]).scale([CITY_EXTENT * 0.014, mastHeight, CITY_EXTENT * 0.014]),
-      labels.anchor(anchor.label, `${anchor.district} district status mast`, {
+      }).position(position[0], mastCentreY, position[1]).scale([CITY_EXTENT * 0.009, mastHeight, CITY_EXTENT * 0.009]));
+    if (controls.district === anchor.district) {
+      nodes.push(labels.anchor(anchor.label, `${anchor.district} district status mast`, {
         name: `${anchor.district} district label`,
-        position: [position[0], mastCentreY + mastHeight * 0.75, position[1]],
+        position: [position[0], mastCentreY + mastHeight * 0.82, position[1]],
         anchorWorldPosition: [position[0], mastCentreY + mastHeight / 2, position[1]],
         size: 0.14
-      })
-    );
+      }));
+    }
   }
 
   if (controls.cameraMode === "flythrough") {
@@ -508,32 +516,42 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
 }
 
 function smartCityCamera(mode: SmartCityCameraMode, timeOfDay: SmartCityTimeOfDay): AuraCameraSpec {
+  const bounds = cityBounds();
+  const target = [bounds.center[0], bounds.min[1] + bounds.size[1] * 0.2, bounds.center[2]] as const;
+  const compactViewport = window.innerWidth < 700;
   if (mode === "overview") {
-    return city.cameraPreset("overview", timeOfDay);
+    return camera.isometric({
+      position: compactViewport ? [11.2, 10.4, 12.4] : [8.6, 8.2, 9.4],
+      target,
+      orthographicSize: compactViewport ? 9.8 : 7.2
+    });
   }
   if (mode === "street") {
-    return city.cameraPreset("street-level", timeOfDay);
+    return camera.perspective({
+      position: compactViewport ? [-10.4, 3.5, 12.8] : [-7.8, 2.7, 8.8],
+      target: [0.2, 1.05, -0.35],
+      fov: 46
+    });
   }
   if (mode === "flythrough") {
-    return camera.flythrough({
-      from: [-5.5, 1.45, 4.2],
-      to: [3.4, 2.0, -3.8],
-      target: [0, 0.72, 0],
+    return camera.path({
+      from: compactViewport ? [-12.8, 5.6, 14.2] : [-9.4, 4.8, 10.2],
+      to: compactViewport ? [11.4, 4.8, 13.2] : [8.2, 3.6, 8.8],
+      target,
       seconds: 9,
-      captureTime: 0.46,
-      fov: 47
+      captureTime: 4.5,
+      fov: 44
     });
   }
   // The command view frames the whole city from its bounds instead of a hardcoded
   // eye position. The previous fixed position with fov 30 sat inside the city and
   // zoomed until the scene overflowed every frame edge, which is what the
   // route-primary probe reports as `primary-foreground-clipped`.
-  const bounds = cityBounds();
   return camera.autoFrame({
     bounds: { min: bounds.min, max: bounds.max },
-    target: [bounds.center[0], bounds.min[1] + bounds.size[1] * 0.42, bounds.center[2]],
-    padding: 1.15,
-    fov: 38
+    target,
+    padding: compactViewport ? 2.35 : timeOfDay === "night" ? 1.62 : 1.68,
+    fov: 42
   });
 }
 
@@ -625,7 +643,7 @@ function publishEvidence(status: ShowcaseStatus): void {
     },
     controls: { ...controls },
     systems: activeBuild.systems,
-    claimBoundary: "Procedural Aura3D public API showcase using sceneKits.cityBlock, city visual QA, city instancing evidence, district overlays, labels, controls, and runtime telemetry. It does not claim real GIS data, external assets, or traffic simulation fidelity.",
+    claimBoundary: "Procedural Aura3D public API showcase using sceneKits.cityBlock, a typed vehicle asset, city visual QA, city instancing evidence, district overlays, labels, controls, and runtime telemetry. It does not claim real GIS data, imported city geometry, or traffic simulation fidelity.",
     telemetry,
     diagnostics: {
       ...activeBuild.diagnostics,

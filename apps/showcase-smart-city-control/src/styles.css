@@ -326,7 +326,7 @@ h1 {
   }
 
   .shell {
-    min-height: 1040px;
+    min-height: calc(100vh + 420px);
   }
 
   .commandbar,
@@ -340,14 +340,16 @@ h1 {
   }
 
   .controls {
-    top: 310px;
-    bottom: auto;
+    position: fixed;
+    top: auto;
+    bottom: 12px;
     left: 12px;
   }
 
   .telemetry {
+    top: calc(100vh + 18px);
     right: 12px;
-    bottom: 12px;
+    bottom: auto;
     left: 12px;
     width: auto;
   }

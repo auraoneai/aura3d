@@ -918,9 +918,9 @@ test.describe("showcase library", () => {
       mood: "nocturne",
       cameraPath: "balcony",
       haze: 100,
-      hazeDensity: 0.048
+      hazeDensity: 0.018
     });
-    expect(Number(architectureAfter.telemetry?.lightShafts), "Architecture route should keep light-shaft composition telemetry").toBeGreaterThan(0);
+    expect(Number(architectureAfter.telemetry?.effectNodes), "Architecture route should keep scoped effect telemetry").toBeGreaterThanOrEqual(3);
     expect(Number(architectureAfter.routeHealth?.drawCalls), "Architecture route should keep renderer telemetry").toBeGreaterThan(0);
     expectCanvasInteractionDelta(architectureDiff, architectureRoute.appId, { changedRatio: 0.02, meanChannelDelta: 1.0, strongChangedRatio: 0.004 });
     interactions.push({ appId: architectureRoute.appId, before: architectureBefore.controls, after: architectureAfter.controls, telemetry: architectureAfter.telemetry, screenshotDelta: architectureDiff });

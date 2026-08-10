@@ -4,12 +4,11 @@ import {
   createArchitectureKit,
   createAuraApp,
   createCinematicKit,
+  effects,
   interactions,
   lights,
-  material,
   model,
   placedBounds,
-  primitives,
   renderer,
   scene,
   timeline
@@ -42,7 +41,7 @@ interface ArchitectureEvidence {
     readonly cameraPath: CameraPathId;
     readonly haze: number;
     readonly hazeDensity: number;
-    readonly lightShafts: number;
+    readonly effectNodes: number;
     readonly drawCalls: number;
   };
   /** Evidence for the reusable kits this route configures. */
@@ -56,7 +55,7 @@ interface ArchitectureEvidence {
     readonly foregroundNodes: number;
     readonly midgroundNodes: number;
     readonly backgroundNodes: number;
-    readonly lightShafts: number;
+    readonly effectNodes: number;
     readonly hazeDensity: number;
   };
   readonly aura: ReturnType<typeof collectAuraSceneEvidence>;
@@ -148,11 +147,11 @@ const cameraPaths: Record<CameraPathId, {
     createCamera: () => {
       const compactViewport = window.innerWidth < 700;
       return camera.path({
-        from: compactViewport ? [1.0, 0.42, 2.08] : [1.74, 0.72, 2.72],
-        to: compactViewport ? [0.8, 0.36, 1.74] : [1.34, 0.58, 2.28],
-        target: compactViewport ? [0.04, -0.18, -0.62] : [0.08, -0.2, -0.62],
+        from: compactViewport ? [1.72, 0.72, 4.12] : [1.74, 0.72, 2.72],
+        to: compactViewport ? [1.42, 0.62, 3.72] : [1.34, 0.58, 2.28],
+        target: compactViewport ? [0.14, -0.16, -0.62] : [0.08, -0.2, -0.62],
         seconds: 9,
-        fov: compactViewport ? 31 : 32,
+        fov: compactViewport ? 40 : 32,
         captureTime: 0.35
       });
     }
@@ -163,11 +162,11 @@ const cameraPaths: Record<CameraPathId, {
     createCamera: () => {
       const compactViewport = window.innerWidth < 700;
       return camera.dolly({
-        from: compactViewport ? [0.96, 0.4, 2.0] : [1.62, 0.68, 2.62],
-        to: compactViewport ? [0.62, 0.34, 1.68] : [1.04, 0.52, 2.06],
-        target: compactViewport ? [0.04, -0.18, -0.62] : [0.08, -0.2, -0.62],
+        from: compactViewport ? [1.68, 0.7, 4.04] : [1.62, 0.68, 2.62],
+        to: compactViewport ? [1.28, 0.58, 3.58] : [1.04, 0.52, 2.06],
+        target: compactViewport ? [0.14, -0.16, -0.62] : [0.08, -0.2, -0.62],
         seconds: 11,
-        fov: compactViewport ? 31 : 32,
+        fov: compactViewport ? 40 : 32,
         captureTime: 0.58
       });
     }
@@ -178,11 +177,11 @@ const cameraPaths: Record<CameraPathId, {
     createCamera: () => {
       const compactViewport = window.innerWidth < 700;
       return camera.path({
-        from: compactViewport ? [-0.86, 0.42, 2.0] : [-1.36, 0.68, 2.62],
-        to: compactViewport ? [-0.48, 0.34, 1.68] : [-0.82, 0.52, 2.08],
-        target: compactViewport ? [0.04, -0.18, -0.62] : [0.08, -0.2, -0.62],
+        from: compactViewport ? [-1.5, 0.72, 4.08] : [-1.36, 0.68, 2.62],
+        to: compactViewport ? [-1.14, 0.6, 3.62] : [-0.82, 0.52, 2.08],
+        target: compactViewport ? [0.14, -0.16, -0.62] : [0.08, -0.2, -0.62],
         seconds: 8,
-        fov: compactViewport ? 31 : 32,
+        fov: compactViewport ? 40 : 32,
         captureTime: 0.48
       });
     }
@@ -246,6 +245,13 @@ const app = createAuraApp("#aura-scene", {
 let latestEvidence: ArchitectureEvidence | undefined;
 
 bindControls();
+let compactCameraLayout = window.innerWidth < 700;
+window.addEventListener("resize", () => {
+  const nextCompactLayout = window.innerWidth < 700;
+  if (nextCompactLayout === compactCameraLayout) return;
+  compactCameraLayout = nextCompactLayout;
+  rebuildScene(`viewport:${nextCompactLayout ? "compact" : "wide"}`);
+});
 publishEvidence("loading");
 setInterval(() => publishEvidence(), 450);
 app.onFrame(() => {
@@ -270,7 +276,24 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
     })
       .position(0.2, compactViewport ? -0.28 : -0.36, -0.62)
       .rotate(0, -0.28, 0))
-    .addMany(createArchitecturePresentation(mood, haze))
+    .add(effects.fog({
+      name: "architectural depth haze",
+      density: 0.006 + haze * 0.012,
+      color: mood.fog,
+      intensity: 0.08 + haze * 0.2
+    }))
+    .add(effects.bloom({
+      name: "architectural practical bloom",
+      intensity: 0.06 + haze * 0.1,
+      threshold: 0.82,
+      radius: 0.24,
+      color: mood.bloom
+    }))
+    .add(effects.ambientOcclusion({
+      name: "architectural contact occlusion",
+      intensity: 0.34,
+      radius: 0.68
+    }))
     .add(lights.ambient({ name: "low gallery ambient fill", intensity: 0.2 + haze * 0.06, color: mood.fog }))
     .add(lights.directional({ name: "high museum key light", position: [-2.4, 4.8, 2.4], intensity: 2.15, color: mood.key }))
     .add(lights.point({ name: "warm street-level practical", position: [-1.75, 0.92, 1.18], intensity: 1.45, color: mood.accent }))
@@ -279,41 +302,6 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
     .add(interactions.orbit())
     .camera(cameraPaths[nextControls.cameraPath].createCamera())
     .timeline(timeline.loop({ seconds: cameraPaths[nextControls.cameraPath].seconds, captureTime: 0.52 }));
-}
-
-/**
- * Bounded haze-driven light shafts around the typed city asset.
- *
- * Deliberately minimal: this route's typed city is the subject and its
- * route-primary probe requires an unclipped foreground, so background/midground
- * staging masses are intentionally NOT added here. Depth comes from the fog
- * effect and lighting hierarchy instead. `composition.*Nodes` counts therefore
- * report zero, which is the honest value.
- */
-function createArchitecturePresentation(mood: typeof moods[MoodId], haze: number) {
-  const compactViewport = window.innerWidth < 700;
-  const depth = compactViewport ? 0.82 : 1;
-  const shaftMaterial = material.emissive({
-    color: mood.key,
-    emissive: mood.key,
-    intensity: 0.3 + haze * 0.4,
-    opacity: 0.05 + haze * 0.12
-  });
-
-  return [
-    primitives.box({ name: "west light shaft", material: shaftMaterial })
-      .position(-0.42 * depth, 0.16, -0.5)
-      .rotate(0, 0.18, 0.22)
-      .scale([0.016, 0.44, 0.016]),
-    primitives.box({ name: "central light shaft", material: shaftMaterial })
-      .position(0.12, 0.2, -0.62)
-      .rotate(0, -0.08, 0.14)
-      .scale([0.018, 0.5, 0.018]),
-    primitives.box({ name: "east light shaft", material: shaftMaterial })
-      .position(0.5 * depth, 0.15, -0.44)
-      .rotate(0, -0.24, -0.18)
-      .scale([0.016, 0.42, 0.016])
-  ];
 }
 
 function bindControls(): void {
@@ -384,8 +372,8 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
       mood: controls.mood,
       cameraPath: controls.cameraPath,
       haze: controls.haze,
-      hazeDensity: Number((0.014 + controls.haze / 100 * 0.034).toFixed(3)),
-      lightShafts: countMatching(nodeNames, "light shaft"),
+      hazeDensity: Number((0.006 + controls.haze / 100 * 0.012).toFixed(3)),
+      effectNodes: snapshot.nodes.filter((node) => node.kind === "effect").length,
       drawCalls: diagnostics.drawCalls
     },
     /*
@@ -429,7 +417,7 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
       "engine.createArchitectureKit floor/room focus, sun direction, material variants",
       "engine.createCinematicKit shot sequencing, transitions, export plan",
       "typed architecture district model(assets.showcaseSkylineCity)",
-      "bounded architecture district presentation",
+      "bounded root fog, bloom, and contact-occlusion requests",
       "camera choreography",
       "bounded public lighting",
       "orbit interaction",
@@ -438,11 +426,12 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
     claimBoundary: {
       accepted: [
         "Typed architecture district asset staged as the primary environment subject.",
-        "Public createAuraApp route uses bounded lighting, camera path controls, and orbit controls around a typed city architecture asset.",
+        "Public createAuraApp route uses bounded lighting, fog, bloom, contact occlusion, camera path controls, and orbit controls around a typed city architecture asset.",
         "Evidence object is published on window for route-health and visual review tooling."
       ],
       notClaimed: [
-        "No HDR, IBL, shadow, postprocess, PBR parity, or final architectural visualization fidelity is claimed.",
+        "No HDR, IBL, broad postprocess, PBR parity, or final architectural-visualization fidelity is claimed.",
+        "The selected fog, bloom, and contact-occlusion requests are bounded to this route and its current screenshots.",
         "No final launch acceptance is claimed until screenshot, visual review, route health, and deploy checks run.",
         "No primitive staging is presented as the architecture subject."
       ]
@@ -451,8 +440,8 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
       foregroundNodes: countMatching(nodeNames, "foreground"),
       midgroundNodes: countMatching(nodeNames, "midground"),
       backgroundNodes: countMatching(nodeNames, "background"),
-      lightShafts: countMatching(nodeNames, "light shaft"),
-      hazeDensity: Number((0.014 + controls.haze / 100 * 0.034).toFixed(3))
+      effectNodes: snapshot.nodes.filter((node) => node.kind === "effect").length,
+      hazeDensity: Number((0.006 + controls.haze / 100 * 0.012).toFixed(3))
     },
     aura: auraEvidence,
     renderer: renderer.diagnostics(app.scene),

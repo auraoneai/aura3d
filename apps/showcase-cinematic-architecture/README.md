@@ -15,10 +15,10 @@ CLI-backed architectural district presentation for the Aura3D portfolio build.
   than a public architecture demo.
 - Primitive status: route-level primitive staging was removed from the current
   primary composition after human review rejected the blockout-looking result.
-- Claim status: bounded to typed architecture staging, public createAuraApp
-  lighting, camera choreography, and deploy proof. Do not claim final
-  architectural photography quality, HDR, IBL, shadow parity, or postprocess
-  parity.
+- Claim status: bounded to typed architecture staging, public `createAuraApp`
+  lighting, scoped fog/bloom/contact-occlusion requests, camera choreography,
+  and deploy proof. Do not claim final architectural photography quality, HDR,
+  IBL, shadow parity, or broad postprocess parity.
 
 ## Route
 
@@ -31,7 +31,7 @@ CLI-backed architectural district presentation for the Aura3D portfolio build.
 
 - Mood: `Dawn`, `Gallery`, `Nocturne`
 - Camera Path: `Establish`, `Glide`, `Balcony`
-- Haze Density: range control that rebuilds the Aura scene with bounded light-shaft opacity
+- Haze Density: range control that rebuilds the Aura scene with bounded fog and bloom values
 - Orbit interaction remains enabled through `interactions.orbit()`
 
 ## Systems Used
@@ -40,6 +40,8 @@ CLI-backed architectural district presentation for the Aura3D portfolio build.
 - Typed CLI-resolved architecture model through `model(assets.showcaseSkylineCity)`
 - `camera.path` and `camera.dolly` choreography
 - `lights.ambient`, `lights.directional`, `lights.point`, and `lights.rect`
+- `effects.fog`, `effects.bloom`, and `effects.ambientOcclusion`, bounded to the
+  current route and screenshot evidence
 - `collectAuraSceneEvidence` and renderer diagnostics published to the route evidence global
 
 ## Asset Provenance
@@ -73,6 +75,6 @@ The route publishes:
 
 This route demonstrates a typed, catalog-resolved city architecture asset staged
 inside an Aura3D scene. The current presentation is a bounded architectural
-district tour: it proves readable typed asset staging, camera choreography, and
-route evidence, but it does not claim final architectural visualization fidelity
-or unsupported renderer features.
+district tour: it proves readable typed asset staging, camera choreography,
+selected root effects, and route evidence, but it does not claim final
+architectural visualization fidelity or unsupported renderer features.

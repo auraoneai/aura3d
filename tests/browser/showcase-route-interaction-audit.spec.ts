@@ -462,9 +462,17 @@ for (const route of ROUTES) {
        */
       const peakInvariants = await readInvariants(page, route.globalName);
 
+      mkdirSync(REPORT_DIR, { recursive: true });
+      const interactionFinalPath = join(REPORT_DIR, `${route.id}-interaction-final.png`);
+      await page.screenshot({ path: interactionFinalPath });
+
       // Restart: reloading must return the route to a mounted state.
       await page.reload({ waitUntil: "domcontentloaded" });
       await waitForMount(page, route.globalName);
+      // Several routes publish their evidence object before the first GPU frame.
+      // Waiting for one stable render interval keeps the restart receipt from
+      // retaining a black canvas that no user would consider a mounted route.
+      await page.waitForTimeout(450);
       const afterReload = await evidenceSnapshot(page, route.globalName);
       const finalInvariants = await readInvariants(page, route.globalName);
       /** Best evidence for each invariant group across the session. */
@@ -479,7 +487,6 @@ for (const route of ROUTES) {
             : {})
       };
 
-      mkdirSync(REPORT_DIR, { recursive: true });
       const screenshotPath = join(REPORT_DIR, `${route.id}-final.png`);
       await page.screenshot({ path: screenshotPath });
 
@@ -608,6 +615,7 @@ for (const route of ROUTES) {
         consoleErrors,
         trace,
         screenshot: `tests/reports/showcase-interaction-audit/${route.id}-final.png`,
+        interactionFinalScreenshot: `tests/reports/showcase-interaction-audit/${route.id}-interaction-final.png`,
         // Phase 17 evidence set.
         viewportVariants,
         frameSequence,
