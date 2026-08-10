@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Current product configurator comparison</title>
+    <style>
+      html, body, #root { margin: 0; min-height: 100%; background: #080b12; color: #fff; font: 14px system-ui; }
+      header { padding: 8px; }
+      .shell { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .shell canvas { display: block; width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <header><button id="change-configuration" type="button">Apply ceramic titanium inspection configuration</button></header>
+    <div class="shell"><canvas id="aura" width="1440" height="900"></canvas><div id="root"></div></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
