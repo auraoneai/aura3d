@@ -2,9 +2,11 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { execFileSync } from "node:child_process";
 
 const root = resolve(import.meta.dirname, "../..");
 const output = "release-artifacts/2.0-final-visual-review-manifest.json";
+const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 
 const flagshipIds = [
   "showcase-product-configurator",
@@ -32,7 +34,6 @@ const gameFiles = [
   ].map((state) => `tests/reports/showcase-gameplay/showcase-skyline-runner-${state}.png`),
   "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
   "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-  "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-canvas-only.png",
   ...[
     "before-input", "after-input", "checkpoint", "drift", "high-speed-chase",
     "off-track", "reset"
@@ -93,6 +94,7 @@ const sections = [
 const document = {
   schema: "aura3d.2.0-final-visual-review-manifest/1.0",
   generatedAt: new Date().toISOString(),
+  sourceCommit,
   status: "machine-complete-independent-human-approval-pending",
   claimBoundary: "Approval applies only to the exact hashes and scopes below. It does not establish universal Three.js ecosystem parity, broad performance superiority, or real-device XR coverage.",
   sectionCount: sections.length,
