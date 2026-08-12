@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-Status: release-candidate migration guide; publication pending
+Status: published migration guide for Aura3D 2.0.0
 
 Aura3D 2.0 changes the supported public presentation and ownership model. It
 does not mean every internal renderer or historical example became a root-API

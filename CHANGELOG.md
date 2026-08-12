@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current source release candidate is `2.0.0` across the release-line package manifests. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.0` is published across all 29 public packages and tagged at its immutable release commit. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated; later changes on `main` are not retroactively part of the npm tarballs.
 
 Current evidence note (2026-08-11): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -16,7 +16,7 @@ Comparison wording for the 1.6.0 entry is historical and limited to the named
 broadened into universal engine or ecosystem superiority. The current
 `three@0.185.1` program is tracked by `1.6-FINAL-PRD-Finishes.md`.
 
-## 2.0.0 (release candidate; unpublished)
+## 2.0.0 (2026-08-12)
 
 Competitive replatform and public-surface consolidation:
 
@@ -42,10 +42,9 @@ Competitive replatform and public-surface consolidation:
 - records the complete public-surface diff from `v1.5.2`, including every
   removal class, relocation, compatibility alias, schema/CLI/template invariant,
   and declaration change;
-- remains release-gated: `2.0.0` is not published and no current universal
-  Three.js ecosystem-parity claim is approved until the final unfiltered visual
-  audit, same-workload current-Three.js comparisons, complete release suites,
-  package smoke tests, website deployment checks, and human review records pass.
+- publishes all 29 packages in lockstep, deprecates all 396 pre-2.0 package
+  versions, tags the immutable release commit, and publishes the bounded
+  release notes without asserting universal Three.js ecosystem parity.
 
 ## 1.6.0 (2026-08-08)
 

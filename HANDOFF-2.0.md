@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-Status: release candidate; publication pending remaining final PRD gates
+Status: 2.0.0 published; post-release exact-artifact review and closure gates remain
 
 ## Release identity
 
@@ -15,7 +15,16 @@ Status: release candidate; publication pending remaining final PRD gates
 | Migration guide | `MIGRATION-2.0.md` |
 | Current Three.js comparison target | repository-locked `three@0.185.1` |
 
-## No-go conditions
+## Release record
+
+Aura3D 2.0.0 is published across 29 npm packages. All 396 versions below 2.0.0
+are deprecated with the 2.0 migration notice. Git tag `v2.0.0` resolves to
+release commit `b3fae923135813c69e95f330656c556d48ee8d17`, and the GitHub
+release is public. The canonical website is live. Changes after that tag are
+post-release source improvements and require a later patch release if they are
+to be distributed through npm.
+
+## No-go conditions for the next publication
 
 Do not publish while any of the following is true:
 
@@ -54,9 +63,9 @@ Do not publish while any of the following is true:
 
 ## Current state
 
-This handoff is intentionally not approval to publish. The source manifests
-have been moved to the 2.0.0 candidate line; all 19 source and exact-installed
+This handoff does not authorize republishing the immutable 2.0.0 version. The
+source manifests remain on the 2.0 line; all 19 source and exact-installed
 template lifecycles, the public-surface diff, the packed migration consumer,
-and the bounded 15-workload installed comparison are green. Exact-artifact
-human review, two serial full suites, website verification, and remote release
-gates remain authoritative.
+and the bounded 15-workload installed comparison were green for the released
+candidate. Post-tag exact-artifact human review and final ledger closure remain
+authoritative for the later game, lighting, and website changes on `main`.

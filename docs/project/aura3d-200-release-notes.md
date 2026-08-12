@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-Status: published on npm; GitHub and website release in progress
+Status: published on npm and GitHub; canonical website deployed
 
 Aura3D 2.0 is a major competitive replatform, not a relabeled 1.6 build. The
 major version records a changed public contract: fewer duplicate public hosts,
@@ -108,6 +108,8 @@ versions. The two complete serial release suites passed from the same clean
 candidate, including all 19 source and exact-installed-tarball scaffold
 lifecycles.
 
-GitHub tag/release and both production website updates are the remaining
-publication steps. Historical releases remain available for reproducibility
-but are superseded by 2.0.0.
+GitHub tag `v2.0.0`, the public GitHub release, and the canonical
+`https://aura3d.auraone.ai` deployment are live. Historical releases remain
+available for reproducibility but are superseded by 2.0.0. Game, lighting,
+evidence, and website changes made after the tag are post-release source work;
+they are not represented as bytes contained in the immutable 2.0.0 tarballs.

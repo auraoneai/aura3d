@@ -92,13 +92,15 @@ an app, add typed assets, run it, test it, deploy it.
 
 ## Current Release: Aura3D 2.0.0
 
-Aura3D 2.0.0 is the current source release candidate across the release-line
-packages. It is a major-version competitive replatform: public authoring is
+Aura3D 2.0.0 is published across all 29 public packages, tagged on GitHub, and
+documented at [aura3d.auraone.ai](https://aura3d.auraone.ai). It is a
+major-version competitive replatform: public authoring is
 centered on typed assets and the safe root API, commodity subsystems have one
 declared owner, duplicate or misleading public hosts have been internalized,
 and every retained example is subject to separate canvas and full-page review.
-It has not yet been published to npm or promoted as a completed universal
-Three.js replacement.
+It is not promoted as a universal Three.js replacement. The comparison is
+bounded to the named, repository-locked `three@0.185.1` workloads and discloses
+remaining visual and ecosystem losses.
 
 ### What ships in 2.0.0
 
@@ -124,9 +126,11 @@ Three.js replacement.
   historical. The 2.0 program locks current comparison work to
   `three@0.185.1` and requires same-workload, same-asset evidence; unfinished
   rows stay unfinished instead of being generalized into parity.
-- **Release remains gated.** npm/GitHub publication, website promotion, and
-  deprecation of older releases happen only after the final PRD gates pass.
-  See `1.6-FINAL-PRD-Finishes.md` for the live evidence ledger.
+- **Publication is externally verified.** All 29 packages are at `2.0.0`; all
+  396 pre-2.0 versions are deprecated with a migration notice; tag
+  `v2.0.0` and the GitHub release identify the immutable release commit. Later
+  game, lighting, evidence, and website work on `main` is post-release source
+  work and does not silently replace the published tarballs.
 
 ### Consolidated 2.0 outcomes
 
