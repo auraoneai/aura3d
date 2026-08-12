@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.2.0-final-visual-review-manifest/1.0",
-  "generatedAt": "2026-08-12T06:44:45.453Z",
-  "sourceCommit": "5bc7d936be3c1f17aa30d4c9d15c0da0bdd3f3a7",
+  "generatedAt": "2026-08-12T08:12:40.593Z",
+  "sourceCommit": "d9ba829329efeb5f50407231ce4a09bb70ccd700",
   "status": "machine-complete-independent-human-approval-pending",
   "claimBoundary": "Approval applies only to the exact hashes and scopes below. It does not establish universal Three.js ecosystem parity, broad performance superiority, or real-device XR coverage.",
   "sectionCount": 4,
@@ -104,10 +104,10 @@
         },
         {
           "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-final.png",
-          "width": 1129,
-          "height": 648,
-          "bytes": 1501876,
-          "sha256": "9364f1aaff1842128577f8eab1dfa842b0a3c2a1dc220b870219ca4d064e3c56"
+          "width": 1004,
+          "height": 1096,
+          "bytes": 2471263,
+          "sha256": "ecb9db12f4f999a754c5a360759f6a5e2328fd2b420915719c0d8f7a3d7e4fd0"
         }
       ],
       "fileCount": 12
@@ -336,43 +336,43 @@
           "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
           "width": 1280,
           "height": 800,
-          "bytes": 1313485,
-          "sha256": "e0fc7263bd70285905303acf5d7717cd12b605c8c505847c23f1622d916dda68"
+          "bytes": 1326110,
+          "sha256": "605d06b3659b9b079dbd67689dd0d739a5c549f6a0e349be4e7e1c2b3a48fe42"
         },
         {
           "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-checkpoint.png",
           "width": 1280,
           "height": 800,
-          "bytes": 1299277,
-          "sha256": "8b462fd1db09cfd2357dbbb767bd25d9bc274cb485befbdd280ebe4f7ac1de16"
+          "bytes": 1326996,
+          "sha256": "0905e482c758e0fc70035b355fe3d5230fb93c5a390fcde17ed6634e149ea1ac"
         },
         {
           "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-drift.png",
           "width": 1280,
           "height": 800,
-          "bytes": 1333931,
-          "sha256": "69943b6a22d374b150ba0c26b96ac6885ede8bc1d020a5751ecf9665de8b34c5"
+          "bytes": 1293519,
+          "sha256": "6d6e515003e1a2df0587fd987dc0f9ba59f80f8981a4f6523dbd8256f2d2810e"
         },
         {
           "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
           "width": 1280,
           "height": 800,
-          "bytes": 1312200,
-          "sha256": "a82be328bbec8f03beddf82b2d5ede24a7a1776234e11a0f2e5a097e5bc09d90"
+          "bytes": 1311822,
+          "sha256": "4ccaba91c4025115816b8145952793cac87671b66878fabd86388fd20356bdcc"
         },
         {
           "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-off-track.png",
           "width": 1280,
           "height": 800,
-          "bytes": 1339891,
-          "sha256": "101ec6a9099ffd0496df147247abd79fa55a15f9bb335d04d7aa19d5e953a6f7"
+          "bytes": 1323198,
+          "sha256": "e554cf8d5eb3e35c2cec3c60c60102e9bfabc120e7d69793b6b3d3a32e3d118e"
         },
         {
           "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-reset.png",
-          "width": 1344,
-          "height": 1728,
-          "bytes": 5960247,
-          "sha256": "69a104f7639309078f896d4945eace1534fa3e7fa7d3264b6ddd5eeab0e661d6"
+          "width": 1280,
+          "height": 800,
+          "bytes": 1308848,
+          "sha256": "c66f8f2586fc6ca41409f86c767f9c2954e96e82c1495361ad8a1501ce652752"
         }
       ],
       "fileCount": 32
@@ -474,10 +474,10 @@
         },
         {
           "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-mobile.png",
-          "width": 1004,
-          "height": 648,
-          "bytes": 1270794,
-          "sha256": "02b835f62b2146af9fa75910fb7cbd71883720bfe343f0a618b98c13b9849815"
+          "width": 1058,
+          "height": 1096,
+          "bytes": 2545782,
+          "sha256": "bb8385fbb1ebd511c50a9c137a0edabc34441ebb01dfb1524cf340e57debda24"
         }
       ],
       "fileCount": 12
@@ -669,8 +669,8 @@
           "path": "tests/reports/current-head-to-head/navigation-crowd/three-after.png",
           "width": 1440,
           "height": 900,
-          "bytes": 131362,
-          "sha256": "ef5bf60ade76f1d813aa55a0afc5ee2cb962f4d4263f5752aa7bcc91ac309452"
+          "bytes": 131359,
+          "sha256": "be54e738d3b22491a0c3940c791cc32f39f6c7dc2ace1278767c6993e75b99bd"
         },
         {
           "path": "tests/reports/current-head-to-head/webgpu-tsl/aura-after.png",
@@ -723,10 +723,10 @@
         },
         {
           "path": "tests/reports/current-head-to-head/scaffold-to-deploy/three-after.png",
-          "width": 1344,
-          "height": 1728,
-          "bytes": 1830287,
-          "sha256": "b332f9214a9a3230e8636f1547aa5f5694a885ecdcd8c02667dcaa5f1d03ce8f"
+          "width": 1360,
+          "height": 1760,
+          "bytes": 1918953,
+          "sha256": "99fbd98ac7ee28e765ceb483bc6697bad5f6c4d300b0c7beddf87a29658866f8"
         }
       ],
       "fileCount": 30
