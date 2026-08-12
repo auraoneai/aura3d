@@ -144,12 +144,14 @@ function pruneAuraClashRuntimeAssets(targetDir: string): void {
 
 function mirrorMarketingHtmlOutput(outDir: string): void {
   const generatedMarketingDir = resolve(outDir, "marketing");
-  const generatedIndex = resolve(generatedMarketingDir, "index.html");
-  if (existsSync(generatedIndex)) {
-    copyFileSync(generatedIndex, resolve(outDir, "index.html"));
+  const generatedDocsDir = resolve(generatedMarketingDir, "docs");
+  const generatedDocsIndex = resolve(generatedDocsDir, "index.html");
+  if (existsSync(generatedDocsIndex)) {
+    // Aura3D 2.0 uses the documentation-led experience as the canonical
+    // homepage. Do not restore the retired 1.x marketing page at `/`.
+    copyFileSync(generatedDocsIndex, resolve(outDir, "index.html"));
   }
 
-  const generatedDocsDir = resolve(generatedMarketingDir, "docs");
   const publicDocsDir = resolve(outDir, "docs");
   if (!existsSync(generatedDocsDir)) return;
   mkdirSync(publicDocsDir, { recursive: true });
