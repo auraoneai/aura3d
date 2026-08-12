@@ -1070,20 +1070,17 @@ function publishPlatformerEvidence(): void {
       ...(locomotionSnapshot.restart ? { restart: true } : {})
     });
   }
-  // Locomotion is expressed through a bounded non-uniform scale cycle. This is
-  // deliberately visible at the corrected (smaller) subject scale and does not
-  // move the node position, which stays authoritative for camera and contact.
-  const cycle = locomotionSnapshot.frame * 0.42;
-  const bob = Math.sin(cycle) * 0.14;
+  // The imported clip owns locomotion. The former 14% scale pulse made the character breathe and
+  // squash on every frame independently of foot contact, which read as slow, rubbery motion. Keep
+  // scale neutral during idle/run and use only restrained one-shot silhouettes for air/impact states.
   player.setScale(compositionSubjectSuppressed
     ? 0.0001
     : compositionPoseSettled ? 1
-    : visualState === "jump" ? [0.93, 1.09, 0.93]
-      : visualState === "fall" ? [0.96, 1.05, 0.96]
-        : visualState === "hit" ? [1.11, 0.89, 1.11]
-          : visualState === "land" ? [1.07, 0.93, 1.07]
-            : visualState === "run" ? [1.04 - bob, 0.97 + bob, 1.04 - bob]
-              : [1 - bob, 1 + bob, 1 - bob]);
+    : visualState === "jump" ? [0.98, 1.035, 0.98]
+      : visualState === "fall" ? [1.015, 0.985, 1.015]
+        : visualState === "hit" ? [1.045, 0.955, 1.045]
+          : visualState === "land" ? [1.025, 0.975, 1.025]
+            : 1);
   mountedEvidence.status = "running";
   mountedEvidence.platformerStateStatus = state.status;
   mountedEvidence.player = {
@@ -1128,7 +1125,7 @@ function animationEvidence() {
      * pose. Skinned playback is a root-integration gap, not a route claim.
      */
     skinnedClipPlaybackProvenAtRoot: false,
-    visibleMotionSource: "bounded-procedural-pose",
+    visibleMotionSource: "imported-clip-request-with-restrained-air-impact-pose",
     loop: locomotionSnapshot.loop,
     oneShot: locomotionSnapshot.oneShot,
     clipMap: { ...HERO_LOCOMOTION_CLIP_MAP },

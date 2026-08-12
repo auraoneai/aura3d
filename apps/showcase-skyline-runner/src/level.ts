@@ -143,6 +143,10 @@ export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
   // Reducing the rendered hero for world readability must not quietly reduce
   // the jump back to the barely-there arc this route was rebuilt to remove.
   jumpHeight: SKYLINE_CHARACTER_HEIGHT * 2.4,
+  // Raise normal traversal while retaining margin above the two-minute physical-course floor.
+  // At 1.21 units/second the 151-unit level is roughly 125 seconds before sentry decisions,
+  // collection, falls, and checkpoint recovery; this is more responsive without gaming duration.
+  runSpeedPerHeight: 2.75,
   gapMargin: 1.5,
   /*
    * The reported session "ends in 20-30 seconds": the 16.6-unit course crosses in about 14

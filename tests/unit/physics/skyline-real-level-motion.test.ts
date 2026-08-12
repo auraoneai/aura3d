@@ -63,6 +63,7 @@ describe("skyline motion comes from intent, not from the tallest step", () => {
     expect(skylineMotion.coyoteMs).toBeGreaterThan(0);
     expect(skylineMotion.jumpBufferMs).toBeGreaterThan(0);
     expect(skylineMotion.fallGravityMultiplier).toBeGreaterThan(1);
+    expect(skylineMotion.moveSpeed).toBeGreaterThanOrEqual(1.2);
   });
 
   it("fails loudly when declared intent cannot clear the level", () => {
