@@ -27,6 +27,7 @@ test.describe("Aura Clash camera combat feedback", () => {
     expect(resting.camera?.respondingToCombat, "an untouched round must sit at the resting frame volume").toBe(false);
     expect(resting.camera?.punchIn).toBe(0);
     expect(resting.camera?.frameWidthUnits).toBe(resting.camera?.restingFrameWidthUnits);
+    expect(resting.camera?.settled).toBe(true);
 
     await installCameraRecorder(page);
 
@@ -80,6 +81,7 @@ type CameraSample = {
   frameWidthUnits: number;
   restingFrameWidthUnits: number;
   respondingToCombat: boolean;
+  settled: boolean;
 };
 
 /** Record camera evidence every animation frame, so the sub-0.13s hit-stop window is not missed. */

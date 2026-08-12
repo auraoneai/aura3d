@@ -91,14 +91,17 @@ export function createFighterSecondaryMotion(actor: TypedGLBActor): FighterSecon
   };
 }
 
-export function resetFighterSecondaryMotion(state: FighterSecondaryMotionState): void {
+export function resetFighterSecondaryMotion(state: FighterSecondaryMotionState, x = state.prevX): void {
   state.floorY = null;
   state.footLocks.foot_l.locked = false;
   state.footLocks.foot_r.locked = false;
-  state.prevX = 0;
+  state.prevX = x;
   state.vSquash = 0;
   state.vSquashVel = 0;
-  state.spring.reset({ position: [0, 0, 0] });
+  // Reset at the fighter's current world position. Resetting at zero made the spring spend its first
+  // several frames racing toward a fighter standing at ±1.25, which presented as an unexplained
+  // body wobble at round start and after KO cleanup.
+  state.spring.reset({ position: [x, 0, 0] });
 }
 
 export function updateFighterSecondaryMotion(

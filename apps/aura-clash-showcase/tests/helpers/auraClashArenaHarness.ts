@@ -23,6 +23,7 @@ export type AuraClashArenaProof = {
     action: string;
     activeClip: string;
     attacking: AuraClashMoveId | null;
+    facing: 1 | -1;
   };
   rival: {
     name: string;
@@ -34,6 +35,7 @@ export type AuraClashArenaProof = {
     action: string;
     activeClip: string;
     attacking: AuraClashMoveId | null;
+    facing: 1 | -1;
   };
   fighterAssets?: {
     player: { id: string; url: string; hash: string };
@@ -70,6 +72,15 @@ export type AuraClashArenaProof = {
     specialRequiresMeter: boolean;
     koLocked: boolean;
     resetCount: number;
+  };
+  camera?: {
+    impactStrength: number;
+    punchIn: number;
+    roundOverFraming: boolean;
+    frameWidthUnits: number;
+    restingFrameWidthUnits: number;
+    respondingToCombat: boolean;
+    settled: boolean;
   };
   lighting?: {
     contractId: "aura-clash-lighting-review-v1";

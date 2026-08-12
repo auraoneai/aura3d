@@ -724,6 +724,16 @@ export interface GameRacingKit {
   readonly maxSpeed: number;
   readonly surfaceQuery: GameRacingSurfaceQuery;
   step(dt: number, input?: GameRacingInput): GameRacingSnapshot;
+  /**
+   * Feed a position resolved by the selected collision solver back into the racing
+   * state. This keeps vehicle-to-vehicle and barrier contact authoritative instead
+   * of moving only the rendered model while gameplay continues through the obstacle.
+   */
+  resolveContact(position: GameKitVec2, options?: {
+    readonly heading?: number;
+    readonly speedMultiplier?: number;
+    readonly driftMultiplier?: number;
+  }): GameRacingSnapshot;
   reset(progress?: number): GameRacingSnapshot;
   placeAtProgress(progress: number, offset?: number): GameRacingSnapshot;
   snapshot(): GameRacingSnapshot;
@@ -1372,6 +1382,32 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
     };
     return snapshot();
   };
+  const resolveContact = (
+    position: GameKitVec2,
+    correction: { readonly heading?: number; readonly speedMultiplier?: number; readonly driftMultiplier?: number } = {}
+  ) => {
+    const contact = surfaceQuery.query(position);
+    const vehicle = motion.constrain({
+      x: position.x,
+      z: position.y,
+      heading: correction.heading,
+      speedMultiplier: correction.speedMultiplier,
+      driftMultiplier: correction.driftMultiplier
+    });
+    state = {
+      ...state,
+      speed: vehicle.speed,
+      drift: vehicle.drift,
+      heading: vehicle.heading,
+      position: { x: vehicle.x, y: vehicle.z },
+      progress: contact.progress,
+      distance: contact.distance,
+      trackOffset: contact.trackOffset,
+      signedTrackOffset: contact.signedTrackOffset,
+      offTrack: !contact.onTrack
+    };
+    return snapshot();
+  };
 
   return {
     kind: "aura-game-racing-kit",
@@ -1476,6 +1512,7 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       }
       return snapshot();
     },
+    resolveContact,
     reset(progress = options.startProgress ?? 0) {
       events = [];
       state = createRaceState(progress);

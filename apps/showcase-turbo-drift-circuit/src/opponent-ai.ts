@@ -31,6 +31,11 @@ export interface TurboOpponentRacingState<TSnapshot extends TurboOpponentSnapsho
   snapshot(): TSnapshot;
   step(dt: number, input: TurboOpponentInput): TSnapshot;
   reset(progress?: number): TSnapshot;
+  resolveContact?(position: { readonly x: number; readonly y: number }, options?: {
+    readonly heading?: number;
+    readonly speedMultiplier?: number;
+    readonly driftMultiplier?: number;
+  }): TSnapshot;
 }
 
 /**
@@ -101,6 +106,7 @@ export interface TurboOpponentAi<TSnapshot extends TurboOpponentSnapshot> {
   snapshot(): TSnapshot;
   step(dt: number, playerProgress: number): TSnapshot;
   reset(): TSnapshot;
+  resolveContact(position: { readonly x: number; readonly y: number }, speedMultiplier?: number): TSnapshot;
   evidence(playerProgress: number): TurboOpponentAiEvidence;
 }
 
@@ -174,6 +180,14 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
 
   return {
     snapshot: () => snapshot,
+    resolveContact(position, speedMultiplier = 0.55) {
+      if (!state.resolveContact) return snapshot;
+      snapshot = state.resolveContact(position, {
+        speedMultiplier,
+        driftMultiplier: 0.35
+      });
+      return snapshot;
+    },
     step(dt, playerProgress) {
       elapsed += Math.max(0, dt);
       const input = config.driver ? decideWithDriver(dt, config.driver) : decide(playerProgress);

@@ -699,6 +699,21 @@ describe("game runtime source gates", () => {
     expect(snapshot.bestTime).toBeGreaterThan(0);
     expect(snapshot.status).toBe("finished");
 
+    const contactRace = game.racing({
+      route: {
+        width: 2,
+        points: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 4 }, { x: 0, y: 4 }]
+      }
+    });
+    const beforeContact = contactRace.step(1 / 10, { throttle: true });
+    const collisionResolved = contactRace.resolveContact({ x: 1.5, y: 0.3 }, {
+      speedMultiplier: 0.4,
+      driftMultiplier: 0.2
+    });
+    expect(collisionResolved.position).toEqual({ x: 1.5, y: 0.3 });
+    expect(collisionResolved.speed).toBeLessThan(beforeContact.speed);
+    expect(collisionResolved.progress).toBeGreaterThan(0);
+
     const wrongOrder = game.racing({
       route: {
         points: [
@@ -1420,6 +1435,11 @@ describe("game runtime source gates", () => {
     expect(turboMain).toContain("const route = game.assetBoundRacingRoute(");
     expect(turboMain).toContain("const racingScene = game.racingSceneBinding({");
     expect(turboMain).toContain("const racingState = game.racing(");
+    expect(turboMain).toContain("const vehicleContactWorld = game.collisionWorld({");
+    expect(turboMain).toContain("raceSnapshot = racingState.resolveContact(");
+    expect(turboMain).toContain("opponent = opponentAi.resolveContact(");
+    expect(turboMain).toContain("solverPositionsFeedGameplayState: true");
+    expect(turboMain).not.toContain("collisionless visual");
     const turboGeometry = readFileSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts", "utf8");
     expect(turboMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
     expect(turboMain).not.toContain('"source": "asset-mesh-extracted"');

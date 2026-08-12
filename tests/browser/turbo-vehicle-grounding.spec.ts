@@ -38,6 +38,18 @@ interface ChassisEvidence {
   };
 }
 
+interface VehicleContactEvidence {
+  readonly system: "game.collisionWorld:Rapier";
+  readonly active: boolean;
+  readonly contactCount: number;
+  readonly contactFrames: number;
+  readonly maximumPenetration: number;
+  readonly currentPenetration: number;
+  readonly minimumCenterSeparation: number;
+  readonly centerSeparation: number;
+  readonly solverPositionsFeedGameplayState: boolean;
+}
+
 /**
  * Route evidence global.
  *
@@ -102,6 +114,7 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
 
     const finalEvidence = await readEvidence(page);
     const chassis = finalEvidence.vehicleChassis as ChassisEvidence;
+    const vehicleContact = finalEvidence.vehicleContact as VehicleContactEvidence;
     const opponent = finalEvidence.opponent as { controller?: string; driverTelemetry?: Record<string, unknown> } | undefined;
     const raceState = finalEvidence.raceState as { roadAlignment?: { onRoad?: boolean } } | undefined;
     const gameplay = finalEvidence.gameplay as Record<string, unknown> | undefined;
@@ -114,6 +127,7 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
       sampleCount: samples.length,
       samples,
       finalChassis: chassis,
+      vehicleContact,
       opponentController: opponent?.controller,
       opponentDriverTelemetry: opponent?.driverTelemetry,
       raceState,
@@ -142,6 +156,14 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
     expect(chassis.observed.pitchObserved, "chassis never pitched under braking or throttle").toBe(true);
     expect(chassis.observed.rollObserved, "chassis never rolled while cornering").toBe(true);
     expect(chassis.observed.wheelSpinObserved, "wheels never rotated").toBe(true);
+
+    // The visible cars are live Rapier participants. This assertion prevents the old
+    // architecture—an unrelated physics proof plus two collisionless rendered cars—
+    // from passing again even when this particular driving line avoids the rival.
+    expect(vehicleContact.system).toBe("game.collisionWorld:Rapier");
+    expect(vehicleContact.solverPositionsFeedGameplayState).toBe(true);
+    expect(vehicleContact.centerSeparation).toBeGreaterThanOrEqual(vehicleContact.minimumCenterSeparation - 0.01);
+    expect(vehicleContact.maximumPenetration).toBeLessThan(0.04);
 
     // The opponent must be driven by the reusable driver and stay on the circuit.
     expect(opponent?.controller, "opponent controller").toBe("aura-vehicle-driver-ai");

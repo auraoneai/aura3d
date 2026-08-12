@@ -217,10 +217,11 @@ const fittedCarChassisSpec = vehicleChassisSpecFromBounds([
 });
 const carChassisSpec = {
   ...fittedCarChassisSpec,
-  // The retained full-stint measurement peaks at 0.0148 scene units after sparse
-  // mesh recovery. Thirteen percent of the fitted 0.125 tyre radius is 0.0163:
-  // enough compliant rubber to seat that contact, far below a real verge drop.
-  contactTolerance: fittedCarChassisSpec.wheelRadius * 0.13
+  // Full-stint contact now includes small Rapier side-contact corrections. The
+  // retained peak at a sparse triangle seam is 0.01684 scene units. Fourteen percent
+  // of the fitted tyre radius covers that finite patch while remaining far below a
+  // real verge drop, so contact correction cannot masquerade as airborne travel.
+  contactTolerance: fittedCarChassisSpec.wheelRadius * 0.14
 };
 /*
  * The public racing kit constrains the vehicle *centre*, while the mesh chassis samples
@@ -267,10 +268,9 @@ const racingState = game.racing({
   recoveryHeadingLimit
 });
 
-// Start the rival inside the chase camera's opening sightline with enough lead
-// to prevent the launch acceleration from putting two collisionless visual
-// chassis in the same space. The old 0.12 hid it almost five scene units away;
-// 0.018 made it visible but let the player overlap it within the first second.
+// Start the rival inside the chase camera's opening sightline. Live Rapier car
+// proxies below now own separation, so this lead is composition rather than a
+// workaround for collisionless models.
 const opponentStartProgress = 0.07;
 const opponentState = game.racing({
   route,
@@ -368,7 +368,7 @@ const fittedOpponentChassisSpec = vehicleChassisSpecFromBounds(opponentRenderedS
 });
 const opponentChassisSpec = {
   ...fittedOpponentChassisSpec,
-  contactTolerance: fittedOpponentChassisSpec.wheelRadius * 0.13
+  contactTolerance: fittedOpponentChassisSpec.wheelRadius * 0.14
 };
 
 /**
@@ -425,6 +425,48 @@ const playerChassis = createVehicleChassis(carChassisSpec, circuitSurface);
 const opponentChassis = createVehicleChassis(opponentChassisSpec, circuitSurface);
 
 const physicsProof = createShowcaseRapierPhysicsProof("turbo-drift-circuit");
+
+/**
+ * Live vehicle-to-vehicle contact world.
+ *
+ * `game.racing` deliberately owns arcade steering and lap state; Rapier owns solid
+ * contact. Compact round proxies model the central sprung mass rather than the open
+ * wheels, preventing one Formula car from climbing over another while allowing close
+ * wheel-to-wheel racing. Every solved XZ position is fed back into `game.racing`.
+ */
+const vehicleContactWorld = game.collisionWorld({
+  backend: "rapier",
+  gravity: [0, 0, 0],
+  fixedDelta: 1 / 120,
+  solverIterations: 12,
+  enableSleeping: false,
+  continuousCollision: {
+    mode: "adaptive-substeps",
+    maxSubSteps: 64,
+    motionThreshold: 0.08
+  }
+});
+const playerContactRadius = Math.max(carChassisSpec.wheelRadius * 1.45, carChassisSpec.trackWidth * 0.34);
+const opponentContactRadius = Math.max(opponentChassisSpec.wheelRadius * 1.45, opponentChassisSpec.trackWidth * 0.34);
+const initialPlayerContactPoint = racingScene.toScenePose(racingState.snapshot()).position;
+const initialOpponentContactPoint = racingScene.toScenePose(opponentAi.snapshot(), 0.25).position;
+const playerContactBody = vehicleContactWorld.addSphere("player-race-car", playerContactRadius, {
+  type: "dynamic",
+  position: [initialPlayerContactPoint[0], 0, initialPlayerContactPoint[2]],
+  tags: ["vehicle", "player"],
+  material: { friction: 0.8, restitution: 0.05 },
+  rigidBody: { mass: 760, linearDamping: 0.08, angularDamping: 1 }
+});
+const opponentContactBody = vehicleContactWorld.addSphere("opponent-race-car", opponentContactRadius, {
+  type: "dynamic",
+  position: [initialOpponentContactPoint[0], 0, initialOpponentContactPoint[2]],
+  tags: ["vehicle", "opponent"],
+  material: { friction: 0.8, restitution: 0.05 },
+  rigidBody: { mass: 760, linearDamping: 0.08, angularDamping: 1 }
+});
+let vehicleContactCount = 0;
+let vehicleContactFrames = 0;
+let maximumVehiclePenetration = 0;
 
 let raceSnapshot = racingState.snapshot();
 let opponentRaceStarted = false;
@@ -815,6 +857,8 @@ const mountedEvidence = {
   },
   /** Populated per frame; see `observedVehicleGrounding`. */
   vehicleChassis: undefined as unknown,
+  /** Populated per frame from the live Rapier car-contact world. */
+  vehicleContact: undefined as unknown,
   claimBoundary: "Bounded arcade-handling asset-topology racing presentation with route-selected Rapier collision fidelity proof and a reusable deterministic opponent driver; does not claim a physical tyre, suspension, drivetrain, or motorsport simulation.",
   frameCount: 0,
   speed: raceSnapshot.speed,
@@ -985,6 +1029,10 @@ app.onFrame(({ dt }) => {
       contactClearance: opponentChassisSpec.wheelRadius * 0.06
     }));
     opponentCar.setRotation(opponentChassisPose.rotation[0], resetOpponentPose.rotation[1], opponentChassisPose.rotation[2]);
+    playerContactBody.setPosition([resetPose.position[0], 0, resetPose.position[2]]);
+    playerContactBody.setVelocity([0, 0, 0]);
+    opponentContactBody.setPosition([resetOpponentPose.position[0], 0, resetOpponentPose.position[2]]);
+    opponentContactBody.setVelocity([0, 0, 0]);
     mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
     updateRacingHud();
     return;
@@ -999,6 +1047,46 @@ app.onFrame(({ dt }) => {
     drift: input.held("drift"),
     steer: input.axis("steer")
   });
+  const previousOpponent = opponentAi.snapshot();
+  let opponent = opponentRaceStarted
+    ? opponentAi.step(step, raceSnapshot.progress)
+    : previousOpponent;
+
+  // Drive the Rapier bodies toward the authored steering poses. Rapier advances and
+  // resolves the two solid masses; its positions then become gameplay state before
+  // chassis grounding or rendering occurs.
+  const proposedPlayerPose = racingScene.toScenePose(raceSnapshot);
+  const proposedOpponentPose = racingScene.toScenePose(opponent, 0.25);
+  playerContactBody.setVelocity([
+    (proposedPlayerPose.position[0] - playerContactBody.position[0]) / step,
+    0,
+    (proposedPlayerPose.position[2] - playerContactBody.position[2]) / step
+  ]);
+  opponentContactBody.setVelocity([
+    (proposedOpponentPose.position[0] - opponentContactBody.position[0]) / step,
+    0,
+    (proposedOpponentPose.position[2] - opponentContactBody.position[2]) / step
+  ]);
+  vehicleContactWorld.step(step);
+  const vehicleContacts = vehicleContactWorld.overlaps({ tags: ["vehicle"], includeSensors: false });
+  const activeVehicleContact = vehicleContacts.find((contact) =>
+    (contact.a.id === "player-race-car" && contact.b.id === "opponent-race-car") ||
+    (contact.a.id === "opponent-race-car" && contact.b.id === "player-race-car")
+  );
+  if (activeVehicleContact) {
+    vehicleContactCount += 1;
+    vehicleContactFrames += 1;
+    maximumVehiclePenetration = Math.max(maximumVehiclePenetration, activeVehicleContact.penetration);
+  }
+  const contactSpeedMultiplier = activeVehicleContact ? 0.46 : 1;
+  const solvedPlayerGamePoint = racingScene.toGamePoint(playerContactBody.position[0], playerContactBody.position[2]);
+  const solvedOpponentGamePoint = racingScene.toGamePoint(opponentContactBody.position[0], opponentContactBody.position[2]);
+  raceSnapshot = racingState.resolveContact(solvedPlayerGamePoint, {
+    speedMultiplier: contactSpeedMultiplier,
+    driftMultiplier: activeVehicleContact ? 0.3 : 1
+  });
+  opponent = opponentAi.resolveContact(solvedOpponentGamePoint, activeVehicleContact ? 0.46 : 1);
+
   const playerPose = racingScene.toScenePose(raceSnapshot);
   /*
    * The chassis resolves the car's height and attitude from the surface under each
@@ -1066,10 +1154,6 @@ app.onFrame(({ dt }) => {
         .setVisible(driftVisible);
     });
   }
-  const previousOpponent = opponentAi.snapshot();
-  const opponent = opponentRaceStarted
-    ? opponentAi.step(step, raceSnapshot.progress)
-    : previousOpponent;
   const opponentPose = racingScene.toScenePose(opponent, 0.25);
   const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
   opponentChassisPose = opponentChassis.step(step, {
@@ -1092,6 +1176,21 @@ app.onFrame(({ dt }) => {
   mountedEvidence.lap = raceSnapshot.lap;
   mountedEvidence.checkpoint = raceSnapshot.checkpoint;
   mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
+  mountedEvidence.vehicleContact = {
+    system: "game.collisionWorld:Rapier",
+    bodies: [playerContactBody.snapshot(), opponentContactBody.snapshot()],
+    active: Boolean(activeVehicleContact),
+    contactCount: vehicleContactCount,
+    contactFrames: vehicleContactFrames,
+    maximumPenetration: round(maximumVehiclePenetration),
+    currentPenetration: round(activeVehicleContact?.penetration ?? 0),
+    minimumCenterSeparation: round(playerContactRadius + opponentContactRadius),
+    centerSeparation: round(Math.hypot(
+      playerContactBody.position[0] - opponentContactBody.position[0],
+      playerContactBody.position[2] - opponentContactBody.position[2]
+    )),
+    solverPositionsFeedGameplayState: true
+  };
   mountedEvidence.raceState = raceStateEvidence(previous.progress);
   mountedEvidence.subjectFraming = subjectFramingEvidence();
   mountedEvidence.renderedFeedback = {

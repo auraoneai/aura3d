@@ -80,6 +80,8 @@ export interface AuraClashProofFighter {
   readonly action: AuraClashFighterAction;
   readonly activeClip: string;
   readonly attacking: AuraClashMoveId | null;
+  /** World-facing direction used by combat and the rendered actor root. */
+  readonly facing: 1 | -1;
 }
 
 export interface AuraClashArenaProof {
@@ -159,6 +161,8 @@ export interface AuraClashArenaProof {
     readonly restingFrameWidthUnits: number;
     /** Whether the camera is responding to combat rather than sitting at its resting volume. */
     readonly respondingToCombat: boolean;
+    /** Round-over presentation has no residual hit-stop or camera jitter. */
+    readonly settled: boolean;
   };
   readonly tweaks: AuraClashArenaTweaksEvidence;
   readonly fighterController: AuraClashFighterControllerBoundary;

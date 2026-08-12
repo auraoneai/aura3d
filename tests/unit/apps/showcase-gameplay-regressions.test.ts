@@ -282,6 +282,14 @@ describe("public showcase gameplay regressions", () => {
       reset: (progress = 0) => {
         snapshot = { ...snapshot, progress, speed: 0, frame: 0 };
         return snapshot;
+      },
+      resolveContact: (position: { readonly x: number; readonly y: number }, options?: { readonly speedMultiplier?: number }) => {
+        snapshot = {
+          ...snapshot,
+          position,
+          speed: snapshot.speed * (options?.speedMultiplier ?? 1)
+        };
+        return snapshot;
       }
     };
     const opponent = createTurboOpponentAi(state, { startProgress: 0.12, maxSpeed: 4.4 });
@@ -300,6 +308,11 @@ describe("public showcase gameplay regressions", () => {
     expect(evidence.independentFromPlayerPlacement).toBe(true);
     expect(evidence.decisionCount).toBeGreaterThan(0);
     expect(evidence.recentDecisions.length).toBeGreaterThan(0);
+
+    const speedBeforeContact = opponent.snapshot().speed;
+    const contactResolved = opponent.resolveContact({ x: 3, y: -0.2 }, 0.4);
+    expect(contactResolved.position).toEqual({ x: 3, y: -0.2 });
+    expect(contactResolved.speed).toBeCloseTo(speedBeforeContact * 0.4, 6);
 
     expect(opponent.reset().progress).toBeCloseTo(0.12, 6);
     expect(opponent.snapshot().speed).toBe(0);

@@ -595,7 +595,8 @@ export function mountAuraClashArenaApp(): void {
         roundOverFraming: false,
         frameWidthUnits: 5.6,
         restingFrameWidthUnits: 5.6,
-        respondingToCombat: false
+        respondingToCombat: false,
+        settled: true
       },
       tweaks: createArenaTweaksEvidence(root),
       fighterController: assertAuraClashFighterControllerBoundary(),
@@ -948,7 +949,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       roundOverFraming: roundOver,
       frameWidthUnits,
       restingFrameWidthUnits,
-      respondingToCombat: Math.abs(frameWidthUnits - restingFrameWidthUnits) > 1e-4
+      respondingToCombat: Math.abs(frameWidthUnits - restingFrameWidthUnits) > 1e-4,
+      settled: !roundOver || impact === 0
     };
   }
   /**
@@ -959,14 +961,16 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * arena behind it are both readable in the final frame the player is left looking at.
    */
   function currentCameraFrameBounds(): { min: readonly [number, number, number]; max: readonly [number, number, number] } {
-    const impact = currentImpactStrength();
+    // Once the round is over the camera must be a stable presentation frame. Residual hit-stop is
+    // deliberately ignored here as a second line of defence against a vibrating KO screen.
+    const impact = roundOver ? 0 : currentImpactStrength();
     const baseBounds = restingCameraBounds();
     if (impact <= 0 && !roundOver) return baseBounds;
     // Hit-stop peaks at 0.13s (special). Normalise so light/heavy/special scale with move weight.
     const punch = clamp(impact / 0.13, 0, 1);
     // Deterministic jitter from the frame counter, scaled by the decaying impulse, so it settles.
-    const jitterX = Math.sin(frame * 2.7) * 0.045 * punch;
-    const jitterY = Math.cos(frame * 3.1) * 0.032 * punch;
+    const jitterX = roundOver ? 0 : Math.sin(frame * 2.7) * 0.045 * punch;
+    const jitterY = roundOver ? 0 : Math.cos(frame * 3.1) * 0.032 * punch;
     // Punch-in tightens by up to 9%; the KO frame widens by 6% and lifts the top of frame.
     const tighten = punch * 0.09;
     const koWiden = roundOver ? 0.06 : 0;
@@ -1087,8 +1091,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       lastInput = "reset";
       resetFighter(playerState, -1.25, 1);
       resetFighter(rivalState, 1.25, -1);
-      resetFighterSecondaryMotion(playerRuntime.secondary);
-      resetFighterSecondaryMotion(rivalRuntime.secondary);
+      resetFighterSecondaryMotion(playerRuntime.secondary, playerState.x);
+      resetFighterSecondaryMotion(rivalRuntime.secondary, rivalState.x);
       resetCombatWorld(combatWorld, playerState, rivalState);
       rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
       rivalPassive = false;
@@ -1231,6 +1235,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       updateFighterPhysics(playerState, dt);
       updateFighterPhysics(rivalState, dt);
       resolvePushback(playerState, rivalState);
+      stabilizeFighterFacing(playerState, rivalState);
       const playerMove = playerState.attack?.id ?? "strike";
       const rivalMove = rivalState.attack?.id ?? "strike";
       combatSnapshot = resolveEngineCombat(combatWorld, playerState, rivalState, sparks, dt);
@@ -1265,6 +1270,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       if (playerState.health <= 0 || rivalState.health <= 0 || roundTime <= 0) {
         roundOver = true;
         callout = finishRound(playerState, rivalState, roundTime);
+        resetFighterSecondaryMotion(playerRuntime.secondary, playerState.x);
+        resetFighterSecondaryMotion(rivalRuntime.secondary, rivalState.x);
         if (callout === "WIN") playerScore++;
         else if (callout === "KO") rivalScore++;
         roundIndex++;
@@ -1496,6 +1503,12 @@ function resetFighter(fighter: FighterState, x: number, facing: 1 | -1): void {
   fighter.action = "idle";
   fighter.clip = fighter.clips.idle;
   fighter.clipTime = 0;
+  fighter.prevClip = null;
+  fighter.prevClipTime = 0;
+  fighter.blendElapsed = 0;
+  fighter.blendDuration = 0;
+  fighter.moving = false;
+  fighter.locomotionTime = 0;
   fighter.grounded = true;
   fighter.guard = false;
   fighter.hitstun = 0;
@@ -1550,8 +1563,24 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
   rival.queuedAttack = null;
   player.guard = false;
   rival.guard = false;
+  player.moving = false;
+  rival.moving = false;
   player.hitstun = 0;
   rival.hitstun = 0;
+  player.recovery = 0;
+  rival.recovery = 0;
+  player.hitStopRemaining = 0;
+  rival.hitStopRemaining = 0;
+  player.pendingImpulse = 0;
+  rival.pendingImpulse = 0;
+  player.inputBuffer = null;
+  rival.inputBuffer = null;
+  player.prevClip = null;
+  rival.prevClip = null;
+  player.blendElapsed = 0;
+  rival.blendElapsed = 0;
+  player.blendDuration = 0;
+  rival.blendDuration = 0;
   player.vy = 0;
   rival.vy = 0;
   player.y = 0;
@@ -1567,6 +1596,8 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
     rival.action = "idle";
     player.clip = player.clips.idle;
     rival.clip = rival.clips.idle;
+    player.clipTime = 0;
+    rival.clipTime = 0;
     return "DRAW";
   }
   const playerWon = player.health > rival.health;
@@ -1574,6 +1605,7 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
   const loser = playerWon ? rival : player;
   winner.action = "idle";
   winner.clip = winner.clips.idle;
+  winner.clipTime = 0;
   loser.action = "ko";
   loser.clip = loser.clips.ko;
   loser.clipTime = 0;
@@ -1755,7 +1787,6 @@ function updateFighterIntents(
     fighter.jumpGrace = movementMoves.jump.jumpGrace ?? 0.2;
     if (Math.abs(moveX) > 0.02) {
       fighter.x = clamp(fighter.x + Math.sign(moveX) * 0.22, stage.minX, stage.maxX);
-      fighter.facing = moveX > 0 ? 1 : -1;
     }
   }
   const dashActive = fighter.grounded && !fighter.attack && !fighter.guard && fighter.dashGrace > 0;
@@ -1765,7 +1796,6 @@ function updateFighterIntents(
   fighter.moving = fighter.grounded && Math.abs(moveX) > 0.02 && !fighter.guard && !downActive;
   if (Math.abs(moveX) > 0.02 && !fighter.guard && !downActive) {
     fighter.x = clamp(fighter.x + moveX * speed * dt, stage.minX, stage.maxX);
-    fighter.facing = moveX > 0 ? 1 : -1;
     if (!fighter.attack) fighter.action = fighter.grounded ? dashActive ? "run" : "walk" : "jump";
   } else if (dashActive && !downActive) {
     fighter.x = clamp(fighter.x + fighter.facing * speed * dt, stage.minX, stage.maxX);
@@ -2022,6 +2052,21 @@ function resolvePushback(left: FighterState, right: FighterState): void {
   const direction = gap >= 0 ? 1 : -1;
   left.x = clamp(left.x - correction * direction, stage.minX, stage.maxX);
   right.x = clamp(right.x + correction * direction, stage.minX, stage.maxX);
+}
+
+/**
+ * Keep neutral, locomoting and guarding fighters oriented toward one another. Movement direction
+ * is not facing direction in a side-view fighter: walking backwards must not turn a character's
+ * back to the opponent. Active attacks, hit reactions and KO poses retain their authored facing so
+ * an animation cannot flip halfway through a strike or reaction.
+ */
+function stabilizeFighterFacing(player: FighterState, rival: FighterState): void {
+  const playerShouldFace: 1 | -1 = player.x <= rival.x ? 1 : -1;
+  const rivalShouldFace: 1 | -1 = playerShouldFace === 1 ? -1 : 1;
+  const facingLocked = (fighter: FighterState): boolean =>
+    fighter.attack !== null || fighter.hitstun > 0 || fighter.action === "hurt" || fighter.action === "knockdown" || fighter.action === "ko";
+  if (!facingLocked(player)) player.facing = playerShouldFace;
+  if (!facingLocked(rival)) rival.facing = rivalShouldFace;
 }
 
 function updateClips(fighter: FighterState, dt: number): void {
@@ -2680,7 +2725,8 @@ function proofFighter(fighter: FighterState): ProofFighter {
     grounded: fighter.grounded,
     action: fighter.action,
     activeClip: fighter.clip,
-    attacking: fighter.attack?.id ?? null
+    attacking: fighter.attack?.id ?? null,
+    facing: fighter.facing
   };
 }
 
@@ -2718,7 +2764,8 @@ function fallbackProofFighter(name: string): ProofFighter {
     grounded: true,
     action: "idle",
     activeClip: playerClips.idle,
-    attacking: null
+    attacking: null,
+    facing: name === "Mara Volt" ? 1 : -1
   };
 }
 
