@@ -297,12 +297,18 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   await page.waitForTimeout(250);
   expect(pageErrors).toEqual([]);
   await expect(canvas).toBeVisible();
-  // Capture the canvas rectangle through the page-level CDP path. Locator
-  // screenshots wait for element stability; a correctly running game or
-  // animation canvas is intentionally never stable because it renders every
-  // frame. Page capture with an explicit clip preserves the same canvas-only
-  // evidence without treating continuous rendering as a failure.
-  const screenshot = await page.screenshot({ clip: box, animations: "allow", timeout: 30_000 });
+  // Capture through Chromium's protocol directly. Playwright page/locator
+  // screenshots can wait for a continuously rendering game canvas to become
+  // stable and consume the whole test timeout even though the route is healthy.
+  const cdp = await page.context().newCDPSession(page);
+  const capture = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    fromSurface: true,
+    captureBeyondViewport: false,
+    clip: { x: box.x, y: box.y, width: box.width, height: box.height, scale: 1 }
+  });
+  await cdp.detach();
+  const screenshot = Buffer.from(capture.data, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/release-screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/release-screenshot.json"), JSON.stringify({
