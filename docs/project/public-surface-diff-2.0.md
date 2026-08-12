@@ -4,9 +4,9 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 - Baseline packages: **26**; current packages: **29**
 - Baseline export subpaths: **68**; current export subpaths: **88**
-- Baseline symbols: **13007**; current symbols: **12704**
+- Baseline symbols: **13007**; current symbols: **12713**
 - Classified removals: **945**; unclassified removals: **0**
-- Retained-symbol declaration contract changes: **148**
+- Retained-symbol declaration contract changes: **154**
 - Public schema identifiers: **25** baseline; **25** current
 - Generated asset shape: **field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership**
 - Verdict: **PASS**
@@ -974,6 +974,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine:runtime:projectWorldLabels` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:AuraAssetMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraAssetType` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraCityInstancingPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraCreateAppOptions` — reviewed-2.0-public-declaration-contract-change
@@ -992,6 +993,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine:type:PlatformerMotionRequest` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:PlatformerMotionSolution` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:ProjectedLabel` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:VehicleChassisSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:VehicleSurfaceSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
@@ -1004,6 +1006,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine:runtime:projectWorldLabels` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:AuraAssetMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraAssetType` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraCityInstancingPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraCreateAppOptions` — reviewed-2.0-public-declaration-contract-change
@@ -1022,12 +1025,14 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine:type:PlatformerMotionRequest` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:PlatformerMotionSolution` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:ProjectedLabel` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:VehicleChassisSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:VehicleSurfaceSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:runtime:projectWorldLabels` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:AuraAssetMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraAssetType` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraCityInstancingPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraCreateAppOptions` — reviewed-2.0-public-declaration-contract-change
@@ -1046,6 +1051,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine-runtime:type:PlatformerMotionRequest` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:PlatformerMotionSolution` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:ProjectedLabel` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:VehicleChassisSpec` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:VehicleSurfaceSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:WorldLabel` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:WorldLabelLayer` — reviewed-2.0-public-declaration-contract-change
