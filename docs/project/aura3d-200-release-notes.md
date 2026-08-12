@@ -62,13 +62,20 @@ after the last repairs is green with zero failures, and every retained route has
 an evidence-backed source/canvas/page disposition. Independent comparison,
 full-suite, packaging, website, and publication gates remain open.
 
-The generated-template gate currently passes 149/149 checks across all 19
-scaffolds. Clean npm-tarball lifecycle evidence passes 35/35 checks for the
-product, cinematic, and mini-game starters, including route health, static
-preview, screenshots, asset replacement, regenerated types, negative asset
-tests, and installed dependency-isolation assertions for both lean starters.
-These checks establish the stated scaffold contracts; they do not by
-themselves establish photorealism or universal Three.js parity.
+The generated-template gate passes 149/149 source checks across all 19
+scaffolds. A separate clean lifecycle installs the exact Aura3D 2.0.0 tarballs
+and passes the same 149/149 checks across all 19 scaffolds: dependency install,
+typecheck, production build, browser load, meaningful interaction, static
+preview, screenshot, route health, deploy behavior, asset replacement where
+applicable, regenerated types, negative asset tests, and dependency-isolation
+assertions. These checks establish the stated scaffold contracts; they do not
+by themselves establish photorealism or universal Three.js parity.
+
+The packed migration consumer installs all 29 exact 2.0.0 tarballs, compiles
+every TypeScript example in the three 2.0 migration guides with library type
+checking enabled, exercises the codemod, imports retained compatibility and
+dedicated package entries, and verifies that removed fabricated postprocessing
+imports fail with an actionable migration message.
 
 ## Three.js comparison boundary
 

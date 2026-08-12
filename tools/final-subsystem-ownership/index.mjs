@@ -24,7 +24,7 @@ const packageDisposition = {
   audio: "BROWSER-STANDARD", "aura3d-cli": "AURA-MOAT", controls: "AURA-CORE", core: "AURA-CORE",
   "create-aura3d": "AURA-MOAT", debug: "AURA-MOAT", ecs: "COMPATIBILITY-ONLY",
   "editor-runtime": "OPTIONAL-PLUGIN", editor: "OPTIONAL-PLUGIN", engine: "AURA-MOAT",
-  environments: "AURA-CORE", input: "AURA-CORE", materials: "AURA-CORE", math: "AURA-CORE",
+  environments: "AURA-CORE", input: "AURA-CORE", lean: "AURA-MOAT", materials: "AURA-CORE", math: "AURA-CORE",
   "navigation-recast": "EXTERNAL-ADAPTER", physics: "COMPATIBILITY-ONLY", "physics-rapier": "EXTERNAL-ADAPTER", "product-studio": "AURA-MOAT", react: "EXTERNAL-ADAPTER",
   rendering: "AURA-CORE", scene: "AURA-CORE", scripting: "COMPATIBILITY-ONLY",
   "three-compat": "COMPATIBILITY-ONLY", workflows: "AURA-MOAT"
@@ -38,7 +38,7 @@ const overrides = [
   { id: "audio-evidence-fixtures", package: "audio", match: /Fixtures\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Move non-runtime fixtures out of the published audio package." },
   { id: "audio-browser-runtime", package: "audio", match: /\.ts$/, disposition: "BROWSER-STANDARD", owner: "Web Audio or selected thin adapter", decision: "Select one playback owner; retain Aura-specific cue semantics only." },
   { id: "asset-evidence-fixtures", package: "assets", match: /(?:Fixtures|ExternalParity).*\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Remove evidence-only source from the published runtime after consumer proof." },
-  { id: "engine-node-media-publishing", package: "engine", match: /\/(?:FfmpegFrameEncoder|CloudRenderAdapter|PublishingPipeline|VideoExportPipeline|YouTubeMetadataGenerator|YouTubeUploadAdapter|PngSequenceEncoder|CaptionExporter|AudioMuxer)\.ts$/, disposition: "OPTIONAL-PLUGIN", owner: "Node/media integration package", decision: "Remove Node/cloud/FFmpeg ownership from browser entries." },
+  { id: "engine-node-media-publishing", package: "engine", match: /\/(?:FfmpegFrameEncoder|CloudRenderAdapter|PublishingPipeline|VideoExportPipeline|YouTubeMetadataGenerator|YouTubeUploadAdapter|PngSequenceEncoder|CaptionExporter|AudioMuxer)\.ts$/, disposition: "OPTIONAL-PLUGIN", owner: "@aura3d/engine/media-node", decision: "Keep Node/cloud/FFmpeg ownership isolated behind the dedicated media-node export; never include it in browser entries." },
   { id: "engine-browser-media", package: "engine", match: /\/(?:BrowserFrameCaptureAdapter|MediaRecorderFrameEncoder|WebCodecsFrameEncoder|FrameEncoder)\.ts$/, disposition: "BROWSER-STANDARD", owner: "browser media adapter", decision: "Keep browser capture separate from Node encoding and publishing." },
   { id: "editor-evidence-fixtures", package: "editor-runtime", match: /Fixtures\.ts$/, disposition: "EVIDENCE-ONLY", owner: "tests/tools", decision: "Move fixtures out of the optional editor runtime." }
 ];
@@ -188,8 +188,8 @@ const overlaps = [
   { capability: "physical integration", owners: ["@dimforge/rapier3d-compat through @aura3d/physics-rapier"], status: "single selected owner; PhysicsWorld is the backend-neutral public contract" },
   { capability: "authored-unit arcade motion", owners: ["KinematicBody/KinematicWorld", "ArcadeVehicleTelemetry", "GameRuntime"], status: "non-physical capability with one semantic owner split into low-level and public layers" },
   { capability: "navigation and crowd", owners: ["optional Recast/Detour adapter"], status: "single selected owner after the major-version migration" },
-  { capability: "audio context/mixing/effects", owners: ["AudioContextManager", "AudioMixer/Bus", "effects wrappers", "route/browser unlock handlers"], status: "potential duplicate browser ownership; Phase 2 characterization required" },
-  { capability: "media encoding/publishing", owners: ["browser encoders", "FFmpeg adapter", "cloud/YouTube publishing"], status: "Node/browser ownership mixed in engine agent API" }
+  { capability: "audio context/mixing/effects", owners: ["@aura3d/audio over Web Audio"], status: "single selected browser-standard owner; Howler rejected because it would duplicate context, cache, playback, spatial, and unlock ownership" },
+  { capability: "media encoding/publishing", owners: ["browser capture/encoders in browser exports", "FFmpeg/cloud/YouTube adapters in @aura3d/engine/media-node"], status: "browser and Node ownership separated by public export graph and browser-entry purity tests" }
 ];
 const failures = [];
 if (packages.length !== Object.keys(packageDisposition).length) failures.push(`package-classification:${packages.length}/${Object.keys(packageDisposition).length}`);
@@ -226,7 +226,7 @@ function renderDoc(value) {
   for (const entry of value.packages) lines.push(`| \`${entry.publishedName}\` | \`${entry.disposition}\` | ${entry.source.lines} | ${entry.consumerCounts.source} | ${entry.publicExports.length} | ${entry.dist.gzipBytes} | ${entry.publicExportBlocksImmediateRemoval ? "yes" : "no"} |`);
   lines.push("", "## Runtime subsystem dispositions", "", "Every package source file is assigned exactly once. General rows inherit the package decision; exceptional rows isolate commodity, compatibility, optional, and evidence-only ownership.", "", "| Subsystem | Package | Disposition | Files | Lines | Built gzip | Maintenance refs | Decision |", "| --- | --- | --- | ---: | ---: | ---: | ---: | --- |");
   for (const entry of value.subsystems) lines.push(`| \`${entry.id}\` | \`${entry.package}\` | \`${entry.disposition}\` | ${entry.files.length} | ${entry.lines} | ${entry.compiledCost.gzipBytes} | ${entry.maintenanceReferenceCount} | ${cell(entry.decision)} |`);
-  lines.push("", "## External-candidate maintenance lock", "", "A metadata score is not a selection. Runtime, bundle, determinism, disposal, worker, and isolated security measurements remain mandatory in Phase 2.", "", "| Candidate | Version | License | Modified | Freshness | Integrity | Exit-risk note |", "| --- | --- | --- | --- | --- | --- | --- |");
+  lines.push("", "## External-candidate maintenance lock", "", "A metadata score is not a selection. The retained decisions are bound to runtime, bundle, determinism, disposal, worker, and isolated security measurements; future dependency changes must rerun the same evidence.", "", "| Candidate | Version | License | Modified | Freshness | Integrity | Exit-risk note |", "| --- | --- | --- | --- | --- | --- | --- |");
   for (const entry of value.externalCandidates) {
     const bundle = entry.packageAudit?.allExportBrowserBundle;
     const exitRisk = `${entry.scoring.fiveYearExitRisk}; tarball ${entry.packageAudit?.tarball?.packageBytes ?? "unmeasured"} B; all-export browser gzip ${bundle?.pass ? `${bundle.gzipBytes} B` : `requires explicit WASM loader (${bundle?.error ?? "unmeasured"})`}; isolated npm audit ${entry.packageAudit?.security?.vulnerable ? "vulnerable" : "0 vulnerabilities"}`;

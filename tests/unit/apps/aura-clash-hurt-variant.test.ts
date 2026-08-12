@@ -26,14 +26,14 @@ describe("resolveAuraClashHurtClip (varied hit reactions)", () => {
     expect(resolveAuraClashHurtClip(auraClashRivalClips, "light", false)).toBe("Hit_Knockback");
   });
 
-  it("heavy/special hits use the stronger hurtHeavy clip", () => {
+  it("heavy/special hits use the strongest reaction actually embedded in each rig", () => {
     expect(resolveAuraClashHurtClip(auraClashPlayerClips, "heavy", false)).toBe("Hit_Head");
-    expect(resolveAuraClashHurtClip(auraClashRivalClips, "heavy", false)).toBe("Hit_Knockback_RM");
+    expect(resolveAuraClashHurtClip(auraClashRivalClips, "heavy", false)).toBe("Hit_Knockback");
   });
 
-  it("light and heavy reactions are distinct clips for both fighters", () => {
+  it("uses distinct reactions when the source rig provides them and a truthful fallback otherwise", () => {
     expect(resolveAuraClashHurtClip(auraClashPlayerClips, "light", false)).not.toBe(resolveAuraClashHurtClip(auraClashPlayerClips, "heavy", false));
-    expect(resolveAuraClashHurtClip(auraClashRivalClips, "light", false)).not.toBe(resolveAuraClashHurtClip(auraClashRivalClips, "heavy", false));
+    expect(resolveAuraClashHurtClip(auraClashRivalClips, "light", false)).toBe(resolveAuraClashHurtClip(auraClashRivalClips, "heavy", false));
   });
 
   it("death overrides the reaction with the KO clip", () => {
@@ -41,8 +41,8 @@ describe("resolveAuraClashHurtClip (varied hit reactions)", () => {
     expect(resolveAuraClashHurtClip(auraClashRivalClips, "light", true)).toBe("LayToIdle");
   });
 
-  it("both hurtHeavy clips are real clips embedded in the rigs (chest/head, knockback variants)", () => {
+  it("never names a reaction clip that is absent from the generated rig metadata", () => {
     expect(auraClashPlayerClips.hurtHeavy).toBe("Hit_Head");
-    expect(auraClashRivalClips.hurtHeavy).toBe("Hit_Knockback_RM");
+    expect(auraClashRivalClips.hurtHeavy).toBe("Hit_Knockback");
   });
 });

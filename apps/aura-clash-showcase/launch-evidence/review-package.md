@@ -1,6 +1,6 @@
 # Aura Clash Launch Review Package
 
-Generated: 2026-07-31T17:07:09.137Z
+Generated: 2026-08-11T23:48:06.844Z
 
 This package is for release review. It summarizes generated launch evidence, but it does not approve the visual gate automatically. The visual approval gate still requires explicit human approval.
 
@@ -9,7 +9,7 @@ This package is for release review. It summarizes generated launch evidence, but
 | Gate | Status |
 | --- | --- |
 | Local gates | PASS |
-| 1.0.6 readiness evidence | MISSING / NOT PASSING |
+| 2.0 flagship readiness evidence | PASS |
 | First-frame screenshot metadata | PASS |
 | First-frame screenshot file | PASS |
 | Combat screenshot file | PASS |
@@ -26,11 +26,11 @@ This package is for release review. It summarizes generated launch evidence, but
 ## Evidence files
 
 - localGates: apps/aura-clash-showcase/tests/reports/flagship-gates.json
-- readiness: apps/aura-clash-showcase/launch-evidence/aura-clash-106-readiness.json
+- readiness: apps/aura-clash-showcase/tests/reports/flagship-readiness.json
 - screenshotMeta: apps/aura-clash-showcase/launch-evidence/first-frame.json
-- screenshotPng: apps/aura-clash-showcase/launch-evidence/playable-106-first-frame.png
-- combatScreenshotPng: apps/aura-clash-showcase/launch-evidence/playable-106-combat-frame.png
-- koResetScreenshotPng: apps/aura-clash-showcase/launch-evidence/playable-106-ko-reset.png
+- screenshotPng: apps/aura-clash-showcase/launch-evidence/aura-clash-arena-first-frame.png
+- combatScreenshotPng: apps/aura-clash-showcase/launch-evidence/aura-clash-arena-combat-frame.png
+- koResetScreenshotPng: apps/aura-clash-showcase/launch-evidence/aura-clash-arena-ko-frame.png
 - vercelDeploy: apps/aura-clash-showcase/launch-evidence/vercel-deploy.json
 - deployedRoutes: apps/aura-clash-showcase/launch-evidence/deployed-routes.json
 - workflow: apps/aura-clash-showcase/launch-evidence/workflow.json
@@ -40,9 +40,9 @@ This package is for release review. It summarizes generated launch evidence, but
 
 ## Screenshot review
 
-- First-frame screenshot: apps/aura-clash-showcase/launch-evidence/playable-106-first-frame.png
-- Combat screenshot: apps/aura-clash-showcase/launch-evidence/playable-106-combat-frame.png
-- KO/reset screenshot: apps/aura-clash-showcase/launch-evidence/playable-106-ko-reset.png
+- First-frame screenshot: apps/aura-clash-showcase/launch-evidence/aura-clash-arena-first-frame.png
+- Combat screenshot: apps/aura-clash-showcase/launch-evidence/aura-clash-arena-combat-frame.png
+- KO/reset screenshot: apps/aura-clash-showcase/launch-evidence/aura-clash-arena-ko-frame.png
 - Captured target: http://127.0.0.1:5178/playable/?capture=first-frame
 - Final URL: http://127.0.0.1:5178/playable/?capture=first-frame
 - Page title: Play Aura Clash - Aura3D Browser Fighting Game
@@ -58,7 +58,7 @@ Overall machine-readable status: PASS
 
 | Area | Status | Page declaration | Visible DOM signal | Text signal |
 | --- | --- | --- | --- | --- |
-| Debug overlays | PASS | yes | no | yes |
+| Debug overlays | PASS | yes | no | no |
 | Readable fighters | PASS | yes | yes | yes |
 | Effects | PASS | yes | no | no |
 | HUD | PASS | yes | yes | yes |
@@ -123,7 +123,7 @@ Approval command after explicit user approval:
 
 ```bash
 AURA_CLASH_APPROVED_BY="<name>" AURA_CLASH_VISUAL_APPROVAL_CONFIRMED=1 npm run launch:approve-visual
-npm run launch:update-prd
+npm run launch:documentation-check
 ```
 
 ## Local gate details
@@ -134,38 +134,181 @@ npm run launch:update-prd
   "commandCount": 8,
   "completedCount": 8,
   "failedCount": 0,
-  "generatedAt": "2026-06-07T20:10:37.904Z"
+  "generatedAt": "2026-08-11T22:08:03.535Z"
 }
 ```
 
-## 1.0.6 readiness details
+## 2.0 flagship readiness details
 
 ```json
 {
-  "ok": false,
-  "generatedAt": "2026-07-31T16:53:51.780Z",
-  "route": "/playable/",
-  "release": "1.0.6",
-  "contextualRoute": "Aura Clash Arena",
-  "gates": {
-    "flagshipGates": {
+  "ok": true,
+  "generatedAt": "2026-08-11T22:06:30.561Z",
+  "route": null,
+  "release": null,
+  "contextualRoute": null,
+  "gates": [
+    {
+      "id": "flagship-playwright-suite-present",
+      "title": "Flagship Playwright suite covers the manual failure modes",
       "ok": true,
-      "status": "flagship-ready",
-      "generatedAt": "2026-06-07T20:10:37.904Z",
-      "commandCount": 8,
-      "failedCount": 0
+      "summary": "The flagship Playwright suite exists and names controls, KO/reset, artifact, performance, and audio gates.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
     },
-    "flagshipReadiness": {
+    {
+      "id": "control-key-coverage",
+      "title": "A/D/S/Space/Shift/Q/J/K/L/P/R controls are release-gated",
       "ok": true,
-      "status": "flagship-ready",
-      "generatedAt": "2026-06-07T20:09:20.786Z",
-      "gateCount": 14
+      "summary": "The flagship suite must exercise every shipped keyboard control, including down, guard, special, pause, and reset.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
     },
-    "deployedProof": {
-      "ok": false,
-      "source": "collect-launch-evidence-probes"
+    {
+      "id": "runtime-controls-proof",
+      "title": "Runtime proof publishes controls evidence every frame",
+      "ok": true,
+      "summary": "window.__AURA_CLASH_ARENA_PROOF__ must include controls.lastInput, downSupported, specialRequiresMeter, koLocked, and resetCount in the normal writeProof path.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "distinct-release-fighter-assets",
+      "title": "Flagship proof rejects same-model tinting and training mannequin fighters",
+      "ok": true,
+      "summary": "The flagship route must publish player/rival typed fighter asset ids, URLs, hashes, distinctness, and release readiness. Same-model tinting and the training mannequin must fail release gates.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "ko-lock-reset-gated",
+      "title": "KO lock and reset behavior are release-gated",
+      "ok": true,
+      "summary": "The flagship suite must prove KO cannot keep taking damage or repeat attacks until reset, and reset clears the round.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "normal-hit-vfx-no-debug-cubes",
+      "title": "Normal-play hit VFX are not debug cubes or generic box artifacts",
+      "ok": true,
+      "summary": "The normal hit-effect path must be a designed VFX path, not lit cube render items.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "performance-proof-contract",
+      "title": "Flagship proof exposes explicit performance budgets",
+      "ok": true,
+      "summary": "The playable route must publish performance.frameTimeMs, fps, drawCalls, and budgetOk and the test suite must enforce thresholds.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "audio-proof-contract",
+      "title": "Flagship proof exposes audio readiness instead of silent placeholders",
+      "ok": true,
+      "summary": "The playable route must publish audio readiness with music, SFX, mute, and last cue evidence.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-visual-regression-spec",
+      "title": "Dedicated visual-regression spec captures the required Aura Clash states",
+      "ok": true,
+      "summary": "The PRD-required visual states must live in a dedicated Playwright spec and write contextual screenshot artifacts.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/visual-regression.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-performance-budget-spec",
+      "title": "Dedicated performance-budget spec enforces frame, draw, JS, CSS, and GLB budgets",
+      "ok": true,
+      "summary": "Performance proof must be a dedicated Playwright gate instead of only route text.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/performance-budget.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-asset-quality-spec",
+      "title": "Dedicated asset-quality spec validates final fighter assets",
+      "ok": true,
+      "summary": "Final fighter assets must be validated independently from the broad flagship suite.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/asset-quality.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-audio-spec",
+      "title": "Dedicated audio spec validates unlock and gameplay cue proof",
+      "ok": true,
+      "summary": "Audio readiness must prove user-gesture unlock and gameplay cue publication.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/audio.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-deployed-playable-spec",
+      "title": "Dedicated deployed-playable spec probes route, assets, console, and controls",
+      "ok": true,
+      "summary": "Deployment parity must be represented by a dedicated Playwright spec that can target local or deployed origins.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/deployed-playable.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "script-wiring",
+      "title": "Flagship gates are runnable from app and root package scripts",
+      "ok": true,
+      "summary": "The readiness tool, dedicated Playwright specs, and flagship gate runner must be reachable through stable package scripts.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/package.json",
+        "package.json",
+        "apps/aura-clash-showcase/scripts/run-flagship-readiness-gates.mjs"
+      ],
+      "blockers": [],
+      "status": "pass"
     }
-  }
+  ]
 }
 ```
 

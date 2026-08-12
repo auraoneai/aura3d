@@ -46,6 +46,10 @@ interface GltfDocument {
 }
 
 interface GltfJson {
+  readonly asset?: {
+    readonly generator?: string;
+    readonly extras?: Readonly<Record<string, unknown>>;
+  };
   readonly scenes?: readonly GltfScene[];
   readonly scene?: number;
   readonly nodes?: readonly GltfNode[];
@@ -132,6 +136,15 @@ interface AssetGeometry {
   readonly asset: ManifestAsset;
   readonly primitives: readonly PrimitiveGeometry[];
   readonly bounds: ShowcaseGeometryModelBounds;
+  readonly platformerAuthoring?: PlatformerAuthoringMetadata;
+}
+
+interface PlatformerAuthoringMetadata {
+  readonly modelToGameScale: number;
+  readonly sectionModelSpan: number;
+  readonly maxRetainedPlayableSurfaces: number;
+  readonly authoredLevelLength?: number;
+  readonly authoredCompletionSeconds?: number;
 }
 
 interface PlatformerSurfacePrimitiveSelection {
@@ -180,7 +193,7 @@ const RACING_MAX_AUTHORED_LAP_SECONDS = 60;
  * surface. Small excursions are tolerated where kerb triangles are modelled with
  * gaps; a route that is mostly off-road is rejected outright.
  */
-const RACING_MAX_OFF_ROAD_RATIO = 0.08;
+const RACING_MAX_OFF_ROAD_RATIO = 0.01;
 /**
  * Maximum ratio between the widest and tightest radius of a derived racing loop.
  * Real circuits vary; a route that bulges out across an attached apron does not.
@@ -214,6 +227,8 @@ const PLATFORMER_DEFAULT_CHARACTER_FOOTPRINT_WIDTH = 0.72;
 const PLATFORMER_MAX_HORIZONTAL_TRAVERSAL_GAP = 8;
 const PLATFORMER_MAX_UPWARD_TRAVERSAL_STEP = 2.5;
 const PLATFORMER_MAX_RETAINED_MESH_SURFACES = 16;
+const PLATFORMER_MAX_DECLARED_RETAINED_MESH_SURFACES = 256;
+const PLATFORMER_AUTHORED_WORLD_GENERATOR = "Aura3D Skyline Level 1 deterministic GLB compositor";
 const PLATFORMER_DECORATIVE_PATTERN = /\b(column|pillar|tower|decor|background|backdrop)\b/i;
 
 /**
@@ -244,6 +259,31 @@ export function extractRacingTrackTopologyFromAsset(
 /** Clears the racing extraction memo. Exposed for tests that rewrite asset files in place. */
 export function clearRacingTrackTopologyCache(): void {
   racingTopologyCache.clear();
+}
+
+/** Internal evidence probe used by the top-down racing audit and regression tests. */
+export function diagnoseRacingPrimitiveCoverage(
+  assetId: string,
+  options: ExtractOptions = {}
+): readonly {
+  readonly materialName: string;
+  readonly triangleCount: number;
+  readonly routeCoverage: number;
+  readonly bounds: ShowcaseGeometryModelBounds;
+}[] {
+  const projectDir = options.projectDir ?? process.cwd();
+  const geometry = loadAssetGeometry(assetId, projectDir);
+  const topology = extractRacingTrackTopologyFromAsset(assetId, options);
+  if (!geometry.ok || !topology.ok) return [];
+  return geometry.value.primitives.filter(isRoadPrimitive).map((primitive) => {
+    const surface = createRoadSurface([primitive]);
+    return {
+      materialName: primitive.materialName,
+      triangleCount: primitive.triangles.length,
+      routeCoverage: round4(1 - measureOffRoadRatio(topology.value.roadCenterline, surface)),
+      bounds: primitive.bounds
+    };
+  }).sort((a, b) => b.routeCoverage - a.routeCoverage || b.triangleCount - a.triangleCount);
 }
 
 function computeRacingTrackTopology(
@@ -411,7 +451,8 @@ export function extractPlatformerPlayableSurfaceMapFromAsset(
     assetId,
     horizontalCandidates,
     surfaceBounds,
-    platformerCharacterFootprintWidth(options, options.projectDir ?? process.cwd())
+    platformerCharacterFootprintWidth(options, options.projectDir ?? process.cwd()),
+    geometry.value.platformerAuthoring
   );
   if (prepared.blockers.length > 0) {
     return failure(
@@ -423,7 +464,7 @@ export function extractPlatformerPlayableSurfaceMapFromAsset(
       ]
     );
   }
-  const surfaces = createPlayableSurfaces(prepared.primitives, surfaceBounds);
+  const surfaces = createPlayableSurfaces(prepared.primitives, surfaceBounds, geometry.value.platformerAuthoring);
   const meshPlayableSurfaces = meshBoundPlayableSurfaces(surfaces);
   const qualityBlockers = platformerMeshSurfaceQualityBlockers(assetId, meshPlayableSurfaces);
   if (qualityBlockers.length > 0) {
@@ -444,7 +485,8 @@ export function extractPlatformerPlayableSurfaceMapFromAsset(
     source: "asset-mesh-extracted",
     surfaces,
     levelLength: round3(levelLength),
-    estimatedCompletionSeconds: Math.max(30, Math.ceil(levelLength / 0.9)),
+    estimatedCompletionSeconds: geometry.value.platformerAuthoring?.authoredCompletionSeconds
+      ?? Math.max(30, Math.ceil(levelLength / 0.9)),
     characterScaleRatio: 0.42,
     confidence: 0.74,
     modelAlignment: {
@@ -455,7 +497,7 @@ export function extractPlatformerPlayableSurfaceMapFromAsset(
         x: round3(levelLength / 2),
         y: 0
       },
-      anchorPairs: createPlatformerAnchorPairs(surfaces, surfaceBounds),
+      anchorPairs: createPlatformerAnchorPairs(surfaces, surfaceBounds, geometry.value.platformerAuthoring),
       evidence: {
         ...(options.routeOverlayPath ? { routeOverlay: options.routeOverlayPath } : {}),
         notes: "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
@@ -486,9 +528,10 @@ function preparePlatformerSurfacePrimitives(
   assetId: string,
   primitives: readonly PrimitiveGeometry[],
   bounds: ShowcaseGeometryModelBounds,
-  characterFootprintWidth: number
+  characterFootprintWidth: number,
+  authoring?: PlatformerAuthoringMetadata
 ): PlatformerPrimitivePreparation {
-  const modelToGameScale = platformerModelToGameScale(bounds);
+  const modelToGameScale = platformerModelToGameScale(bounds, authoring);
   const minimumWalkableWidth = Math.max(
     PLATFORMER_DEFAULT_CHARACTER_FOOTPRINT_WIDTH,
     characterFootprintWidth
@@ -518,13 +561,13 @@ function preparePlatformerSurfacePrimitives(
     };
   }
 
-  const familySurfaces = candidatePlatformerSurfaces(selectedFamily.primitives, bounds);
+  const familySurfaces = candidatePlatformerSurfaces(selectedFamily.primitives, bounds, authoring);
   const columnResolution = resolveAmbiguousPlatformerColumns(assetId, familySurfaces);
   const retainedPrimitiveKeys = new Set(columnResolution.surfaces.map((surface) => surface.primitiveKey));
   const columnResolvedPrimitives = selectedFamily.primitives.filter((primitive) =>
     retainedPrimitiveKeys.has(platformerPrimitiveKey(primitive))
   );
-  const traversal = selectPlatformerTraversalComponent(columnResolvedPrimitives, bounds);
+  const traversal = selectPlatformerTraversalComponent(columnResolvedPrimitives, bounds, authoring);
   const familyReasons = families
     .filter((family) => family !== selectedFamily)
     .map((family, index) =>
@@ -601,9 +644,10 @@ interface PlatformerSurfaceCandidateWithPrimitive extends CandidatePlatformerSur
 
 function candidatePlatformerSurfaces(
   primitives: readonly PrimitiveGeometry[],
-  bounds: ShowcaseGeometryModelBounds
+  bounds: ShowcaseGeometryModelBounds,
+  authoring?: PlatformerAuthoringMetadata
 ): readonly PlatformerSurfaceCandidateWithPrimitive[] {
-  const modelToGameScale = platformerModelToGameScale(bounds);
+  const modelToGameScale = platformerModelToGameScale(bounds, authoring);
   const baseline = Math.min(...primitives.map((primitive) => primitive.bounds.max[1]));
   return primitives.map((primitive, index) => ({
     id: `candidate-platform-${String(index).padStart(2, "0")}`,
@@ -660,9 +704,10 @@ function resolveAmbiguousPlatformerColumns(
 
 function selectPlatformerTraversalComponent(
   primitives: readonly PrimitiveGeometry[],
-  bounds: ShowcaseGeometryModelBounds
+  bounds: ShowcaseGeometryModelBounds,
+  authoring?: PlatformerAuthoringMetadata
 ): PlatformerPrimitivePreparation {
-  const surfaces = [...candidatePlatformerSurfaces(primitives, bounds)].sort((a, b) =>
+  const surfaces = [...candidatePlatformerSurfaces(primitives, bounds, authoring)].sort((a, b) =>
     (a.x - a.width / 2) - (b.x - b.width / 2) || a.y - b.y
   );
   const components: PlatformerSurfaceCandidateWithPrimitive[][] = [];
@@ -743,7 +788,10 @@ function loadAssetGeometry(assetId: string, projectDir: string): GeometryExtract
     value: {
       asset,
       primitives,
-      bounds: boundsForPrimitives(primitives)
+      bounds: boundsForPrimitives(primitives),
+      ...(readPlatformerAuthoringMetadata(document.value) ? {
+        platformerAuthoring: readPlatformerAuthoringMetadata(document.value)
+      } : {})
     },
     reasons: [`read ${primitives.length} GLB primitive(s) from ${assetPath}`]
   };
@@ -897,7 +945,9 @@ function isPlatformPrimitive(primitive: PrimitiveGeometry): boolean {
 }
 
 function selectPlatformerSurfacePrimitives(geometry: AssetGeometry): PlatformerSurfacePrimitiveSelection {
-  const geometric = geometry.primitives.filter((primitive) => isGenericPlatformerSurfacePrimitive(primitive, geometry.bounds));
+  const geometric = geometry.primitives.filter((primitive) =>
+    isGenericPlatformerSurfacePrimitive(primitive, geometry.bounds, geometry.platformerAuthoring)
+  );
   const positive = geometric.filter(isPlatformPrimitive).length;
   const decorative = geometric.filter((primitive) =>
     PLATFORMER_DECORATIVE_PATTERN.test(`${primitive.nodeName} ${primitive.meshName} ${primitive.materialName}`)
@@ -911,15 +961,26 @@ function selectPlatformerSurfacePrimitives(geometry: AssetGeometry): PlatformerS
   };
 }
 
-function isGenericPlatformerSurfacePrimitive(primitive: PrimitiveGeometry, modelBounds: ShowcaseGeometryModelBounds): boolean {
+function isGenericPlatformerSurfacePrimitive(
+  primitive: PrimitiveGeometry,
+  modelBounds: ShowcaseGeometryModelBounds,
+  authoring?: PlatformerAuthoringMetadata
+): boolean {
   if (!isHorizontalSurface(primitive)) return false;
   const modelSize = boundsSize(modelBounds);
-  const modelFootprint = Math.max(0.001, modelSize[0] * modelSize[2]);
+  // A composed authored level repeats local platform modules across a much longer
+  // X span. Comparing each module with the entire 923-unit world incorrectly
+  // rejects the smaller floating ledges purely because the level has ten districts.
+  // The signed compositor metadata supplies the immutable source-section span so
+  // local walkability is judged against one authored district, while the normal
+  // extractor remains unchanged for arbitrary third-party GLBs.
+  const effectiveModelWidth = authoring?.sectionModelSpan ?? modelSize[0];
+  const modelFootprint = Math.max(0.001, effectiveModelWidth * modelSize[2]);
   const primitiveFootprint = primitive.size[0] * primitive.size[2];
   const longestAxis = Math.max(primitive.size[0], primitive.size[2]);
   const shortestAxis = Math.min(primitive.size[0], primitive.size[2]);
   return primitiveFootprint >= Math.max(0.08, modelFootprint * 0.00045) &&
-    longestAxis >= Math.max(0.7, modelSize[0] * 0.006) &&
+    longestAxis >= Math.max(0.7, effectiveModelWidth * 0.006) &&
     shortestAxis >= 0.16;
 }
 
@@ -1322,6 +1383,18 @@ function traceRoadLoop(
   let maxDistance = 0;
   for (const value of distance) if (value > maxDistance) maxDistance = value;
   if (maxDistance <= 0) return [];
+  // The maximum distance belongs to the middle of a paddock/apron on real assets,
+  // not to the centre of the racing ribbon. Using it as the cost target actively
+  // rewarded the Tsukuba shortcut across the service apron. A lower quantile of all
+  // occupied cells represents the repeatable half-width of the actual road: edge
+  // cells occupy the lower tail, circuit centres the middle, and broad aprons the
+  // upper tail. The path cost below is then U-shaped around this lane-width target.
+  const occupiedDistances = Array.from(distance)
+    .filter((value, index) => road[index] === 1 && value > 0 && value < 1e8)
+    .sort((a, b) => a - b);
+  const preferredDistance = occupiedDistances[
+    Math.min(occupiedDistances.length - 1, Math.floor(occupiedDistances.length * 0.58))
+  ] ?? Math.max(1, maxDistance * 0.2);
 
   const holes = roadInteriorHoles(raster, road);
   let best: { points: readonly { x: number; z: number; width: number }[]; area: number } | undefined;
@@ -1344,7 +1417,7 @@ function traceRoadLoop(
       if (road[holeZ * width + x]) seam.push(holeZ * width + x);
     }
     if (seam.length === 0) continue;
-    const loop = shortestRoadLoop(raster, road, distance, maxDistance, seam);
+    const loop = shortestRoadLoop(raster, road, distance, preferredDistance, seam);
     if (loop.length < 24) continue;
     const points = loop.map((cell) => {
       const point = raster.toWorld(cell);
@@ -1360,7 +1433,7 @@ function traceRoadLoop(
   // Resampling a traced loop chords across corners, and on a tight hairpin that chord can
   // clip the apex. Take the densest count that still keeps every emitted point and every
   // interpolated step on the road, rather than loosening the off-road gate.
-  for (const count of [32, 28, 24, 20]) {
+  for (const count of [72, 64, 56, 48, 40, 32, 28, 24, 20]) {
     const resampled = resampleLoop(best.points, count);
     if (resampled.length < 8) continue;
     if (resampled.some((point) => !surface.contains(point.x, point.z))) continue;
@@ -1386,7 +1459,7 @@ function shortestRoadLoop(
   raster: RoadRaster,
   road: Uint8Array,
   distance: Float64Array,
-  maxDistance: number,
+  preferredDistance: number,
   seam: readonly number[]
 ): readonly number[] {
   const { width, height } = raster;
@@ -1416,8 +1489,13 @@ function shortestRoadLoop(
   const goals = new Set<number>([below]);
 
   const cellCost = (cell: number): number => {
-    const openness = Math.min(1, distance[cell]! / maxDistance);
-    return 1 + 8 * (1 - openness) ** 2;
+    const laneRatio = distance[cell]! / Math.max(1e-6, preferredDistance);
+    const edgePenalty = laneRatio < 1 ? 8 * (1 - laneRatio) ** 2 : 0;
+    // A little extra width at a corner is normal; a path several lane-widths from
+    // any edge is an apron, paddock or parking surface and must not become a racing
+    // shortcut merely because it is asphalt-labelled.
+    const apronPenalty = laneRatio > 1.6 ? 5 * (laneRatio - 1.6) ** 2 : 0;
+    return 1 + edgePenalty + apronPenalty;
   };
   const best = new Float64Array(road.length).fill(Number.POSITIVE_INFINITY);
   const previous = new Int32Array(road.length).fill(-1);
@@ -1655,9 +1733,13 @@ function segmentStaysOnRoad(
   return true;
 }
 
-function createPlayableSurfaces(primitives: readonly PrimitiveGeometry[], bounds: ShowcaseGeometryModelBounds): readonly ExtractedPlatformerPlayableSurface[] {
+function createPlayableSurfaces(
+  primitives: readonly PrimitiveGeometry[],
+  bounds: ShowcaseGeometryModelBounds,
+  authoring?: PlatformerAuthoringMetadata
+): readonly ExtractedPlatformerPlayableSurface[] {
   const minX = bounds.min[0];
-  const modelToGameScale = platformerModelToGameScale(bounds);
+  const modelToGameScale = platformerModelToGameScale(bounds, authoring);
   const uniquePrimitives = uniquePlayableSurfacePrimitives(primitives);
   const candidateSurfaces: readonly CandidatePlatformerSurface[] = uniquePrimitives
     .map((primitive, index): CandidatePlatformerSurface => {
@@ -1675,7 +1757,7 @@ function createPlayableSurfaces(primitives: readonly PrimitiveGeometry[], bounds
   });
   const selectedSurfaces = [...dedupePlayableSurfaces(candidateSurfaces)]
     .sort((a, b) => a.x - b.x)
-    .slice(0, PLATFORMER_MAX_RETAINED_MESH_SURFACES);
+    .slice(0, authoring?.maxRetainedPlayableSurfaces ?? PLATFORMER_MAX_RETAINED_MESH_SURFACES);
   const selectedBaselineTopY = selectedPlayableSurfaceBaseline(selectedSurfaces);
   const topSurfaces: readonly AnchoredPlatformerPlayableSurface[] = selectedSurfaces.map((surface, index): AnchoredPlatformerPlayableSurface => ({
       ...surface,
@@ -1794,9 +1876,10 @@ function createRacingAnchorPairs(
 
 function createPlatformerAnchorPairs(
   surfaces: readonly ShowcasePlatformerPlayableSurface[],
-  bounds: ShowcaseGeometryModelBounds
+  bounds: ShowcaseGeometryModelBounds,
+  authoring?: PlatformerAuthoringMetadata
 ): NonNullable<ShowcasePlatformerPlayableSurfaceMap["modelAlignment"]["anchorPairs"]> {
-  const modelToGameScale = platformerModelToGameScale(bounds);
+  const modelToGameScale = platformerModelToGameScale(bounds, authoring);
   const meshBoundSurfaces = meshBoundPlayableSurfaces(surfaces);
   const anchorSource = meshBoundSurfaces.length >= 3 ? meshBoundSurfaces : surfaces;
   const anchorSurfaces = pickPlatformerAnchorSurfaces(anchorSource
@@ -1917,10 +2000,50 @@ function pickPlatformerAnchorSurfaces(
   return anchors;
 }
 
-function platformerModelToGameScale(bounds: ShowcaseGeometryModelBounds): number {
+function platformerModelToGameScale(
+  bounds: ShowcaseGeometryModelBounds,
+  authoring?: PlatformerAuthoringMetadata
+): number {
+  if (authoring) return authoring.modelToGameScale;
   const size = boundsSize(bounds);
   const widthScale = PLATFORMER_TARGET_GAME_LENGTH / Math.max(0.001, size[0]);
   return round3(Math.min(PLATFORMER_MAX_GAME_SCALE, Math.max(PLATFORMER_MIN_GAME_SCALE, widthScale)));
+}
+
+function readPlatformerAuthoringMetadata(document: GltfDocument): PlatformerAuthoringMetadata | undefined {
+  if (document.json.asset?.generator !== PLATFORMER_AUTHORED_WORLD_GENERATOR) return undefined;
+  const value = document.json.asset.extras?.platformerGeometry;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const metadata = value as Readonly<Record<string, unknown>>;
+  const modelToGameScale = metadata.modelToGameScale;
+  const sectionModelSpan = metadata.sectionModelSpan;
+  const maxRetainedPlayableSurfaces = metadata.maxRetainedPlayableSurfaces;
+  const authoredLevelLength = metadata.authoredLevelLength;
+  const authoredCompletionSeconds = metadata.authoredCompletionSeconds;
+  if (
+    typeof modelToGameScale !== "number" || !Number.isFinite(modelToGameScale) ||
+    modelToGameScale <= 0 || modelToGameScale > PLATFORMER_MAX_GAME_SCALE ||
+    typeof sectionModelSpan !== "number" || !Number.isFinite(sectionModelSpan) || sectionModelSpan <= 0 ||
+    typeof maxRetainedPlayableSurfaces !== "number" || !Number.isInteger(maxRetainedPlayableSurfaces) ||
+    maxRetainedPlayableSurfaces < PLATFORMER_MAX_RETAINED_MESH_SURFACES ||
+    maxRetainedPlayableSurfaces > PLATFORMER_MAX_DECLARED_RETAINED_MESH_SURFACES ||
+    (authoredLevelLength !== undefined && (
+      typeof authoredLevelLength !== "number" || !Number.isFinite(authoredLevelLength) || authoredLevelLength <= 0
+    )) ||
+    (authoredCompletionSeconds !== undefined && (
+      typeof authoredCompletionSeconds !== "number" || !Number.isFinite(authoredCompletionSeconds) ||
+      authoredCompletionSeconds < 30 || authoredCompletionSeconds > 300
+    ))
+  ) return undefined;
+  return {
+    modelToGameScale: round3(modelToGameScale),
+    sectionModelSpan: round3(sectionModelSpan),
+    maxRetainedPlayableSurfaces,
+    ...(typeof authoredLevelLength === "number" ? { authoredLevelLength: round3(authoredLevelLength) } : {}),
+    ...(typeof authoredCompletionSeconds === "number" ? {
+      authoredCompletionSeconds: round3(authoredCompletionSeconds)
+    } : {})
+  };
 }
 
 function platformerCharacterFootprintWidth(

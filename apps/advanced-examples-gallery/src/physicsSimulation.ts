@@ -354,7 +354,10 @@ function velocityVisual(body: PhysicsBodyVisual): PhysicsVectorVisual {
 
 function selectVelocityVectors(bodies: readonly PhysicsBodyVisual[]): readonly PhysicsVectorVisual[] {
   return bodies
-    .filter((body) => Math.hypot(body.velocity[0], body.velocity[2]) > 0.18)
+    // Keep lower-speed conveyor motion visible in the diagnostic overlay. These
+    // bodies are still moving meaningfully, even after friction has reduced the
+    // horizontal component below the old 0.18 m/s cutoff.
+    .filter((body) => Math.hypot(body.velocity[0], body.velocity[2]) > 0.08)
     .sort((a, b) => Math.hypot(b.velocity[0], b.velocity[2]) - Math.hypot(a.velocity[0], a.velocity[2]))
     .slice(0, 24)
     .map(velocityVisual);

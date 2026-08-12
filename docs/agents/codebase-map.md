@@ -16,7 +16,6 @@ not expose, the correct next step is a library task, not a primitive workaround.
 | Scaffolder | `packages/create-aura3d/` | `product-viewer`, `cinematic-scene`, `mini-game` templates |
 | Starter examples | `apps/hello-world-typed-asset/`, `apps/material-lighting/`, `apps/camera-path/` | Live API proof routes |
 | Agent docs | `docs/agents/` and `llms.txt` | Agent-readable instructions and anti-hallucination rules |
-| Legacy archive | `archive/legacy-ai-runtime/` | Historical pre-cutover work, not active product surface |
 
 ## Boundary Checks
 

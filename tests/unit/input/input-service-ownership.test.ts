@@ -28,6 +28,8 @@ const ROOT = process.cwd();
 const LEGITIMATE_KEYBOARD_OWNERS: Readonly<Record<string, string>> = {
   "packages/engine/src/agent-api/GameRuntime.ts":
     "THE runtime input service. `createGameInput` owns keyboard state for a mounted Aura3D application: action mapping, buffering, combos, axes, pointer, gamepad, replay.",
+  "packages/lean/src/ArcadeRuntime.ts":
+    "The standalone lean/game facade owns the keyboard stream for its mounted lean application and is never combined with the engine game.input service; the non-duplication assertion below enforces that boundary.",
   "packages/input/src/InputSystem.ts":
     "Standalone device layer for consumers that are NOT a mounted app. `packages/controls` (Orbit/Map/Drag/FirstPerson/Fly/PointerLock) and the camera-control apps consume `InputSnapshot` as a DATA TYPE rather than as a competing service. Verified by measurement: no file in packages/, apps/ or examples/ imports both this and game.input().",
   "packages/editor-runtime/src/StaticExportRuntime.ts":

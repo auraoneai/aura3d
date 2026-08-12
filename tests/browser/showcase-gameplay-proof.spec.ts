@@ -2,6 +2,14 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import {
+  SKYLINE_FIRST_MID_CHECKPOINT_ID,
+  SKYLINE_FIRST_MID_CHECKPOINT_X,
+  SKYLINE_LEVEL_ACTS,
+  SKYLINE_SECTION_COUNT,
+  SKYLINE_SECTION_STRIDE,
+  createSkylineLevel
+} from "../../apps/showcase-skyline-runner/src/level";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 declare global {
@@ -193,7 +201,10 @@ const REPORT_DIR = resolve("tests/reports/showcase-gameplay");
 const VISUAL_REVIEW_PATH = "docs/project/showcase-visual-review.json";
 
 test.describe("showcase gameplay proof", () => {
-  test.setTimeout(180_000);
+  // Skyline's physical Level 1 now runs for two-to-three minutes before the test's
+  // checkpoint, deliberate-fall, respawn, reset and screenshot work. The former
+  // three-minute ceiling expired during valid mounted traversal.
+  test.setTimeout(300_000);
 
   let server: ExampleDevServer;
 
@@ -219,7 +230,10 @@ test.describe("showcase gameplay proof", () => {
     const turboCaptures: Record<string, ScreenshotEvidence> = { start: beforePng };
 
     await page.keyboard.down("KeyW");
-    await page.waitForTimeout(900);
+    // Capture the launch while the car is still on the opening straight. Waiting 900 ms
+    // carried an unsteered car into the first bend, so the frame raced the boundary
+    // recovery even though its sampled telemetry was still on-road.
+    await page.waitForTimeout(650);
     // High-speed chase: capture once real speed has built.
     const atSpeed = await readTurbo(page);
     if (atSpeed.speed > before.speed + 0.04) {
@@ -232,20 +246,33 @@ test.describe("showcase gameplay proof", () => {
       turboCaptures.checkpoint = await capture(page, "showcase-turbo-drift-circuit", "checkpoint");
     }
     // Drift: the handbrake is what builds real slip in game.racing.
-    await page.keyboard.down("KeyA");
+    // The first visible bend turns right. Drive the authored corner rather than
+    // manufacturing a left-hand slide into its grass verge.
+    await page.keyboard.down("KeyD");
     await page.keyboard.down("Space");
-    await page.waitForTimeout(40);
+    // Sample across a short, bounded handbrake window. Do not stop at the first visible frame:
+    // the route intentionally reveals the ribbons as slip crosses 0.12, while its public evidence
+    // is rounded for stable JSON. Capturing at that boundary could report exactly 0.12 and produced
+    // a weak-looking proof frame. Wait for pronounced, reportable slip so both the contract and the
+    // screenshot demonstrate a real drift rather than the onset of one.
+    await page.waitForTimeout(120);
     let drifting = await readTurbo(page);
-    for (let sample = 0; sample < 4 && drifting.renderedFeedback?.driftVisible !== true; sample += 1) {
-      await page.waitForTimeout(25);
+    for (let sample = 0; sample < 12 && (
+      drifting.renderedFeedback?.driftVisible !== true
+      || (drifting.renderedFeedback?.driftAmount ?? 0) <= 0.24
+    ); sample += 1) {
+      await page.waitForTimeout(35);
       drifting = await readTurbo(page);
     }
-    if (drifting.renderedFeedback?.driftVisible === true) {
+    if (
+      drifting.renderedFeedback?.driftVisible === true
+      && (drifting.renderedFeedback?.driftAmount ?? 0) > 0.24
+    ) {
       turboCaptures.drift = await capture(page, "showcase-turbo-drift-circuit", "drift");
     }
     await page.keyboard.up("Space");
     await page.waitForTimeout(400);
-    await page.keyboard.up("KeyA");
+    await page.keyboard.up("KeyD");
     await page.keyboard.up("KeyW");
     await page.waitForTimeout(300);
     const after = await readTurbo(page);
@@ -297,7 +324,12 @@ test.describe("showcase gameplay proof", () => {
     const reset = await readTurbo(page);
     turboCaptures.reset = await capture(page, "showcase-turbo-drift-circuit", "reset");
 
-    check(after.speed > before.speed + 0.04, blockers, "throttle did not increase visible car speed");
+    // Prove throttle against the named high-speed sample captured while throttle is still held.
+    // `after` is intentionally sampled after releasing throttle and waiting for the drift recovery,
+    // so comparing its decelerated speed to launch becomes timing-sensitive when a detailed GLB
+    // increases screenshot encode time. The retained high-speed frame and its telemetry are the
+    // direct evidence for this assertion.
+    check(atSpeed.speed > before.speed + 0.04, blockers, "throttle did not increase visible car speed");
     check((after.raceState?.progress ?? 0) > (before.raceState?.progress ?? 0) + 0.015, blockers, "throttle did not advance race progress");
     check(Math.abs((after.raceState?.heading ?? 0) - (before.raceState?.heading ?? 0)) > 0.008, blockers, "steering did not change heading");
     check((after.raceState?.x ?? 0) !== (before.raceState?.x ?? 0) || (after.raceState?.z ?? 0) !== (before.raceState?.z ?? 0), blockers, "car position did not change");
@@ -422,13 +454,16 @@ test.describe("showcase gameplay proof", () => {
     await page.waitForTimeout(80);
     const leftFacing = await readSkyline(page);
 
-    // Reach checkpoint 03 with ordinary keyboard play, miss the next jump naturally,
+    // Reach the first relay with ordinary keyboard play, miss the next jump naturally,
     // then prove the repaired checkpoint respawn can recover and continue forward.
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(120);
     await page.keyboard.down("KeyD");
     let checkpointSpawn = await readSkyline(page);
-    for (let sample = 0; sample < 120 && checkpointSpawn.checkpointId !== "asset-checkpoint-03"; sample += 1) {
+    // At the shipped 1.1-unit/second pace the first relay sits about 29 units from
+    // spawn, so the old 12-second allowance could never reach it after the Level 1
+    // was extended. This bound covers that physical distance without teleporting.
+    for (let sample = 0; sample < 350 && checkpointSpawn.checkpointId !== SKYLINE_FIRST_MID_CHECKPOINT_ID; sample += 1) {
       if (checkpointSpawn.diagnostics?.snapshot?.grounded === true) {
         await page.keyboard.press("Space");
       }
@@ -437,15 +472,31 @@ test.describe("showcase gameplay proof", () => {
     }
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(120);
-    if (checkpointSpawn.checkpointId === "asset-checkpoint-03") {
+    if (checkpointSpawn.checkpointId === SKYLINE_FIRST_MID_CHECKPOINT_ID) {
       skylineCaptures.checkpoint = await capture(page, "showcase-skyline-runner", "checkpoint");
     }
     const checkpointDeaths = checkpointSpawn.deaths;
     await page.keyboard.down("KeyD");
-    await expect.poll(async () => (await readSkyline(page)).deaths, { timeout: 4_000 }).toBeGreaterThan(checkpointDeaths);
+    // Continue without jumping until the next certified gap or sentry produces a real
+    // route death, then prove that the active checkpoint owns the recovery.
+    await expect.poll(async () => (await readSkyline(page)).deaths, { timeout: 10_000 }).toBeGreaterThan(checkpointDeaths);
     await page.keyboard.up("KeyD");
-    await page.waitForTimeout(120);
+    // A death is observable on the same browser frame that starts the respawn.
+    // Do not treat that transient, falling frame as the recovered checkpoint state:
+    // keep input neutral until the new body has actually landed on the certified
+    // supporting surface. Reapplying Right before this condition was what turned a
+    // valid respawn into a deterministic second fall in the evidence driver.
+    await expect.poll(async () => (await readSkyline(page)).diagnostics?.snapshot?.grounded, {
+      timeout: 5_000,
+      message: "runner should settle on a certified surface after respawn"
+    }).toBe(true);
     const respawned = await readSkyline(page);
+    expect(respawned.deaths, "respawn must retain the observed death count").toBeGreaterThan(checkpointDeaths);
+    expect(respawned.checkpointId, "respawn must retain the active first relay").toBe(SKYLINE_FIRST_MID_CHECKPOINT_ID);
+    expect(
+      Math.abs((respawned.diagnostics?.snapshot?.x ?? Number.POSITIVE_INFINITY) - SKYLINE_FIRST_MID_CHECKPOINT_X),
+      "respawn must land within the certified first-relay support tolerance"
+    ).toBeLessThanOrEqual(0.35);
     skylineCaptures.respawn = await capture(page, "showcase-skyline-runner", "respawn");
     await page.keyboard.down("KeyD");
     let continued = respawned;
@@ -466,11 +517,59 @@ test.describe("showcase gameplay proof", () => {
     await page.waitForTimeout(120);
     continued = await readSkyline(page);
 
-    let completed = continued;
+    // The deliberate checkpoint death above proves recovery, but it must not pad
+    // or contaminate the physical start-to-finish duration measurement. Begin the
+    // completion run from a clean public reset and traverse the entire level.
+    await page.keyboard.press("KeyR");
+    await page.waitForTimeout(260);
+    let completed = await readSkyline(page);
+    const mountedLevel = createSkylineLevel();
+    const mountedPlatforms = [...(mountedLevel.platforms ?? [])].sort((left, right) => left.x - right.x);
+    const mountedHazards = [...(mountedLevel.hazards ?? [])].sort((left, right) => left.x - right.x);
     await page.keyboard.down("KeyD");
-    for (let hop = 0; hop < 80 && completed.diagnostics?.completionProof?.completed !== true; hop += 1) {
-      await page.keyboard.press("Space");
-      await page.waitForTimeout(520);
+    for (let hop = 0; hop < 3_600 && completed.diagnostics?.completionProof?.completed !== true; hop += 1) {
+      const x = completed.diagnostics?.snapshot?.x ?? 0;
+      for (const act of SKYLINE_LEVEL_ACTS.slice(1)) {
+        const label = `act-${act.id}`;
+        const actStartX = act.sections[0] * SKYLINE_SECTION_STRIDE;
+        if (x >= actStartX + 7.5 && skylineCaptures[label] === undefined) {
+          // Screenshot encoding is not a gameplay frame. Neutralize movement so
+          // a capture near an edge cannot walk the runner into a gap while the
+          // browser compresses the PNG.
+          await page.keyboard.up("KeyD");
+          skylineCaptures[label] = await capture(page, "showcase-skyline-runner", label);
+          await page.keyboard.down("KeyD");
+        }
+      }
+      const player = completed.diagnostics?.snapshot;
+      const currentSurfaceIndex = mountedPlatforms.findIndex((surface) => {
+        const top = surface.y + surface.height;
+        return x >= surface.x - 0.04
+          && x <= surface.x + surface.width + 0.04
+          && Math.abs((player?.y ?? Number.POSITIVE_INFINITY) - top) <= 0.08;
+      });
+      const currentSurface = mountedPlatforms[currentSurfaceIndex];
+      const nextSurface = currentSurfaceIndex >= 0 ? mountedPlatforms[currentSurfaceIndex + 1] : undefined;
+      const edgeDistance = currentSurface ? currentSurface.x + currentSurface.width - x : Number.POSITIVE_INFINITY;
+      const nextGap = currentSurface && nextSurface
+        ? nextSurface.x - (currentSurface.x + currentSurface.width)
+        : 0;
+      const risingStep = currentSurface && nextSurface
+        ? nextSurface.y + nextSurface.height > currentSurface.y + currentSurface.height + 0.08
+        : false;
+      const upcomingHazard = mountedHazards.some((hazard) => {
+        const distance = hazard.x - x;
+        return distance >= 0 && distance <= 0.28;
+      });
+      const routeJump = edgeDistance <= 0.3 && (nextGap > 0.05 || risingStep);
+      // Drive the mounted route with the same geometry-aware policy as the public-kit
+      // deterministic proof. The former 400ms unconditional taps missed short grounded
+      // windows and died 34 times at district five, so it measured sampling cadence rather
+      // than playability.
+      if (player?.grounded === true && (upcomingHazard || routeJump || currentSurfaceIndex < 0)) {
+        await page.keyboard.press("Space");
+      }
+      await page.waitForTimeout(50);
       completed = await readSkyline(page);
     }
     await page.keyboard.up("KeyD");
@@ -492,7 +591,7 @@ test.describe("showcase gameplay proof", () => {
     check((traversing.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.35, blockers, "movement did not change runner x position");
     check(rightFacing?.facing === 1 && rightFacing.facingYaw === Math.PI / 2, blockers, "runner did not face right along forward travel");
     check(leftFacing.diagnostics?.snapshot?.facing === -1 && leftFacing.diagnostics.snapshot.facingYaw === -Math.PI / 2, blockers, "runner did not turn left with reverse travel");
-    check(checkpointSpawn.checkpointId === "asset-checkpoint-03", blockers, "mid-course checkpoint setup failed");
+    check(checkpointSpawn.checkpointId === SKYLINE_FIRST_MID_CHECKPOINT_ID, blockers, "first-district checkpoint setup failed");
     check(respawned.deaths > checkpointSpawn.deaths, blockers, "missed mid-course jump did not respawn the runner");
     check((continued.diagnostics?.snapshot?.x ?? 0) > (respawned.diagnostics?.snapshot?.x ?? 0) + 0.65, blockers, "runner remained blocked after checkpoint respawn");
     check(continued.deaths === respawned.deaths, blockers, "runner re-entered a death loop after checkpoint respawn");
@@ -516,9 +615,10 @@ test.describe("showcase gameplay proof", () => {
       "checkpoint/finish progression is not proven"
     );
     check(completed.diagnostics?.completionProof?.completed === true, blockers, "completion proof does not reach the finish");
-    check((completed.diagnostics?.completionProof?.finalTime ?? 0) >= 30, blockers, "completion proof is shorter than 30 seconds");
+    check((completed.diagnostics?.completionProof?.finalTime ?? 0) >= 120, blockers, "physical completion occurred before the two-minute Level 1 floor");
+    check((completed.diagnostics?.completionProof?.finalTime ?? Number.POSITIVE_INFINITY) <= 180, blockers, "physical completion exceeded the three-minute Level 1 ceiling");
     check(completed.diagnostics?.completionProof?.stable === true && ((completed.diagnostics.completionProof.checkpoints?.length ?? 0) > 0 || (completed.diagnostics.completionProof.eventCounts?.respawn ?? 0) > 0), blockers, "stable checkpoint/hazard route progression proof is missing");
-    check((after.levelDesign?.authoredPlayableSeconds ?? 0) >= 30, blockers, "authored platformer path is shorter than 30 seconds");
+    check((after.levelDesign?.authoredPlayableSeconds ?? 0) === 170, blockers, "authored platformer path is not the five-act 170-second target");
     check(after.levelDesign?.styleCompatible === true && after.levelDesign.scaleCompatible === true, blockers, "platformer asset style/scale fit is not proven");
     check(beforeContact?.feetOnSurface === true, blockers, "runner initial feet are not proven on a visible playable surface");
     check(Math.abs(beforeContact?.verticalGap ?? Number.POSITIVE_INFINITY) <= 0.12, blockers, "runner surface contact gap exceeds playable-surface tolerance");
@@ -531,7 +631,8 @@ test.describe("showcase gameplay proof", () => {
     // FS-103: every named state must have been genuinely reached and captured.
     for (const requiredState of [
       "first-load", "traversal", "jump", "landing", "collection-chain",
-      "checkpoint", "respawn", "finish", "reset"
+      "checkpoint", "respawn", "act-broken-canopy", "act-sentry-pass",
+      "act-cloudstep-rise", "act-aurora-crown", "finish", "reset"
     ]) {
       check(
         skylineCaptures[requiredState] !== undefined,
@@ -614,6 +715,17 @@ test.describe("showcase gameplay proof", () => {
       lineClearState = await readBlockfall(page);
     }
     if (Number(lineClearState.current?.lines ?? 0) > baselineLines) {
+      // A clear immediately spawns the next piece on the hidden/top row. Capturing that exact
+      // transition made the new piece read as a stray pink bar attached to the cabinet header,
+      // even though it was ordinary live gameplay. Advance the mounted piece into the visible
+      // well while the 900 ms renderer-owned clear burst is still active. This keeps the named
+      // frame truthful (the clear just occurred and its beat is visible) while making the newly
+      // spawned controllable piece legible as a tetromino rather than a cabinet artifact.
+      for (let step = 0; step < 3; step += 1) {
+        await page.keyboard.press("ArrowDown");
+        await page.waitForTimeout(35);
+      }
+      lineClearState = await readBlockfall(page);
       namedCaptures["line-clear"] = await capture(page, "showcase-blockfall-reactor", "line-clear");
     }
 
@@ -901,8 +1013,33 @@ async function readBlockfall(page: Page): Promise<BlockfallEvidence> {
 
 async function capture(page: Page, appId: string, label: string): Promise<ScreenshotEvidence> {
   const path = resolve(REPORT_DIR, `${appId}-${label}.png`);
-  const buffer = await page.screenshot({ path, fullPage: false, scale: "css" });
-  return { path, bytes: buffer.byteLength, sha256: createHash("sha256").update(buffer).digest("hex") };
+  /*
+   * Screenshot encoding is not instantaneous on renderer-heavy routes. Turbo's PNG capture took
+   * long enough for a held steering key to advance the simulation by hundreds of frames: the JSON
+   * described the state that triggered the capture, while the PNG showed a car several corners
+   * later, sometimes facing into the infield. The engine already owns a public capture seam for
+   * exactly this purpose. Freeze every mounted Aura app while Chromium reads the pixels, then resume
+   * in `finally` so a failed screenshot cannot leave the rest of the gameplay proof paused.
+   */
+  const pausedApps = await page.evaluate(() => {
+    const registry = (globalThis as typeof globalThis & {
+      __AURA3D_LIVE_APPS__?: { pauseAll(): number };
+    }).__AURA3D_LIVE_APPS__;
+    return registry?.pauseAll() ?? 0;
+  });
+  try {
+    const buffer = await page.screenshot({ path, fullPage: false, scale: "css" });
+    return { path, bytes: buffer.byteLength, sha256: createHash("sha256").update(buffer).digest("hex") };
+  } finally {
+    if (pausedApps > 0) {
+      await page.evaluate(() => {
+        const registry = (globalThis as typeof globalThis & {
+          __AURA3D_LIVE_APPS__?: { resumeAll(): number };
+        }).__AURA3D_LIVE_APPS__;
+        registry?.resumeAll();
+      });
+    }
+  }
 }
 
 function check(condition: boolean, blockers: string[], message: string): void {

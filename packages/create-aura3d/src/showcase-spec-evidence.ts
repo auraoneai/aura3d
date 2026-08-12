@@ -71,7 +71,11 @@ function validateCategoryTemplateEvidence(spec: ShowcaseSpec, context: EvidenceV
       spec,
       evidence: spec.racing?.raceDesign.assetPairEvidence,
       expectedCategory: "racing",
-      expectedAssets: spec.racing ? [spec.racing.vehicleAsset, spec.racing.trackAsset] : [],
+      // A racing presentation may retain additional typed competitors beyond
+      // the player/track pair.  Those vehicles are still release-primary scene
+      // assets and therefore belong in the hash-bound geometry/composition
+      // evidence instead of being rejected as unexplained extras.
+      expectedAssets: spec.racing ? spec.primaryAssets.map((asset) => asset.id) : [],
       context
     }));
     return blockers;

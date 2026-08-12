@@ -4,10 +4,9 @@
 > decisions uses frozen `three@0.165.0`; this record does not establish current
 > parity with r185.
 
-**Status:** Active product boundary  
+**Status:** Aura3D 2.0 product boundary
 **Decision date:** 2026-07-28  
-**Applies to:** the release tracked by
-`docs/project/plans/final-remaining-work-prd.md`
+**Applies to:** Aura3D 2.0.0 and the current comparison methodology
 
 These decisions remove unproven compatibility work from the active release
 goal. They do not convert an unsupported or partial feature into parity.

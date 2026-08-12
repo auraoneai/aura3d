@@ -406,6 +406,11 @@ input {
   pointer-events: none;
 }
 
+/* Runtime/clip diagnostics belong to evidence captures, not the public game presentation. */
+.aca[data-evidence-mode="false"] .aca-topline {
+  display: none;
+}
+
 .aca-topline span,
 .aca-toast,
 .aca-combo {
@@ -720,8 +725,8 @@ input {
    * round clock, all eleven controls and the whole evidence drawer are still present and legible.
    */
   .aca-stage-shell {
-    block-size: 62vh;
-    min-block-size: 460px;
+    block-size: 58vh;
+    min-block-size: 430px;
   }
 
   .aca-topline {

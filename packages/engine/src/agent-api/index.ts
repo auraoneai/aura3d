@@ -842,6 +842,11 @@ export interface AuraAssetMetadata {
   };
   readonly thumbnailUrl?: string;
   readonly license?: string;
+  readonly author?: string;
+  readonly provenance?: {
+    readonly sourceUrl?: string;
+    readonly [key: string]: unknown;
+  };
 }
 
 const auraAssetRefBrand: unique symbol = Symbol("AuraAssetRef");
@@ -1047,6 +1052,8 @@ export interface AuraModelOptions extends AuraTransformSpec {
   readonly targetMaxDimension?: number;
   readonly targetLength?: number;
   readonly physics?: AuraNodePhysicsSpec;
+  /** Exact glTF node names to suppress when composing a typed model into a route. */
+  readonly hiddenNodeNames?: readonly string[];
 }
 
 export interface AuraPrimitiveOptions extends AuraTransformSpec {
@@ -1290,6 +1297,7 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly animation?: AuraAnimationSpec;
   readonly interaction?: AuraInteractionSpec;
   readonly physics?: AuraNodePhysicsSpec;
+  readonly hiddenNodeNames?: readonly string[];
   readonly runtime?: AuraRuntimeNodeSpec;
 }
 
@@ -1723,7 +1731,8 @@ export function model<TAsset extends AuraAssetRef<"model">>(
     targetHeight: options.targetHeight,
     targetMaxDimension: options.targetMaxDimension,
     targetLength: options.targetLength,
-    physics: options.physics
+    physics: options.physics,
+    hiddenNodeNames: options.hiddenNodeNames
   });
 }
 
@@ -11711,6 +11720,7 @@ async function createProductionRuntimeSceneRenderer(
             name: node.name ?? node.asset.id ?? `model-${index + 1}`,
             width: canvas.width,
             height: canvas.height,
+            ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
             ...(node.material?.color ? {
               tint: {
                 baseColor: colorToLinearRgba(node.material.color),
@@ -12824,6 +12834,7 @@ interface GltfTextureSource {
 }
 
 interface GltfRuntimeNode {
+  readonly name: string;
   readonly children: readonly number[];
   readonly baseTranslation: AuraVec3;
   readonly baseRotation: readonly [number, number, number, number];
@@ -13285,7 +13296,12 @@ function createWebGLModel(gl: WebGL2RenderingContext, node: AuraModelNode, model
     bounds: modelData.bounds,
     color: colorToRgb(node.material?.color ?? "#8fb4ff"),
     normalizeToUnit: shouldNormalizeModelNode(node),
-    primitives: modelData.primitives.map((primitiveEntry) => {
+    primitives: modelData.primitives
+      .filter((primitiveEntry) => {
+        if (!node.hiddenNodeNames || primitiveEntry.nodeIndex === undefined) return true;
+        return !node.hiddenNodeNames.includes(modelData.nodes[primitiveEntry.nodeIndex]?.name ?? "");
+      })
+      .map((primitiveEntry) => {
       const position = createBuffer(gl, gl.ARRAY_BUFFER, primitiveEntry.positions);
       const normal = createBuffer(gl, gl.ARRAY_BUFFER, primitiveEntry.normals);
       const uv = primitiveEntry.uvs ? createBuffer(gl, gl.ARRAY_BUFFER, primitiveEntry.uvs) : undefined;
@@ -14094,6 +14110,7 @@ function createGltfRuntimeNodes(json: GltfJson): readonly GltfRuntimeNode[] {
     const rotate = node.rotation ?? [0, 0, 0, 1];
     const scale = node.scale ?? [1, 1, 1];
     return {
+      name: node.name ?? "",
       children: node.children ?? [],
       baseTranslation: [translate[0] ?? 0, translate[1] ?? 0, translate[2] ?? 0],
       baseRotation: normalizeQuaternion([rotate[0] ?? 0, rotate[1] ?? 0, rotate[2] ?? 0, rotate[3] ?? 1]),

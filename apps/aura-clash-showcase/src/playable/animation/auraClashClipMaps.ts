@@ -68,7 +68,7 @@ export const auraClashPlayerClips = {
   run: "Sprint_Loop",
   air: "Jump_Loop",
   down: "Crouch_Idle_Loop",
-  guard: "Sword_Idle",
+  guard: "Sword_Block",
   light: "Punch_Jab",
   heavy: "Punch_Cross",
   special: "Sword_Attack",
@@ -88,7 +88,7 @@ export const auraClashRivalClips = {
   heavy: "Sword_Regular_A",
   special: "Sword_Regular_Combo",
   hurt: "Hit_Knockback",
-  hurtHeavy: "Hit_Knockback_RM",
+  hurtHeavy: "Hit_Knockback",
   ko: "LayToIdle"
 } as const satisfies AuraClashFighterClipMap;
 

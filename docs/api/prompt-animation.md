@@ -431,7 +431,7 @@ npx @aura3d/cli@latest assets add ./assets/character.glb --name character
 npx @aura3d/cli@latest assets validate-animation
 ```
 
-Repository release gates for the Aura3D 1.0.5 prompt-animation track:
+Repository release gates for the Aura3D 2.0 prompt-animation track:
 
 ```bash
 pnpm prompt-animation:docs

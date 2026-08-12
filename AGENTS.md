@@ -12,6 +12,19 @@ tools, benchmarks, and release artifacts live side by side. Read `llms.txt`
 first; read `docs/agents/claims-and-boundaries.md` before editing examples,
 routes, templates, README text, release copy, or public claims.
 
+## AURA3D 2.0 RELEASE CONTEXT
+
+- The target version is `2.0.0` across all 29 public packages.
+- `@aura3d/lean`, `/product`, and `/game` are the recommended isolated entries;
+  the root engine remains the compatibility-heavy safe authoring surface.
+- Rapier is the sole physical-simulation owner. Recast is optional navigation;
+  authored arcade motion is explicitly non-physical.
+- Current comparison uses repository-locked `three@0.185.1`. Historical
+  `three@0.165.0` results must remain labeled historical.
+- All 19 scaffolds must pass both source and exact-installed-tarball lifecycles.
+- A route is not approved merely because automated evidence is green; exact
+  final artifacts require independent human review.
+
 ## STRUCTURE
 
 ```text

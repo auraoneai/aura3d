@@ -407,7 +407,7 @@ export async function mountScenePlayer(doc: EpisodeDocument): Promise<void> {
   let CelMaterial: CelCtor | undefined;
   if (inShaderCel) {
     try {
-      const mod = (await import("@aura3d/rendering")) as unknown as { AnimationToonMaterial?: CelCtor };
+      const mod = (await import("@aura3d/engine/rendering")) as unknown as { AnimationToonMaterial?: CelCtor };
       CelMaterial = mod.AnimationToonMaterial;
       if (!CelMaterial) console.warn("[scene-player] inShaderCel (stylized default) requested but AnimationToonMaterial absent from the build; falling back to PBR.");
       else console.info("[scene-player] inShaderCel ON (stylized default): non-glow set pieces use AnimationToonMaterial.");

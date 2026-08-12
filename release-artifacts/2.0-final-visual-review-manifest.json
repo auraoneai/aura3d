@@ -1,0 +1,742 @@
+{
+  "schema": "aura3d.2.0-final-visual-review-manifest/1.0",
+  "generatedAt": "2026-08-12T06:06:15.538Z",
+  "status": "machine-complete-independent-human-approval-pending",
+  "claimBoundary": "Approval applies only to the exact hashes and scopes below. It does not establish universal Three.js ecosystem parity, broad performance superiority, or real-device XR coverage.",
+  "sectionCount": 4,
+  "artifactCount": 87,
+  "sections": [
+    {
+      "id": "flagship-routes",
+      "approvalScope": "four materially rebuilt release candidates",
+      "files": [
+        "tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+        "tests/reports/showcase-interaction-audit/showcase-product-configurator-final.png",
+        "tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+        "tests/reports/showcase-interaction-audit/showcase-smart-city-control-final.png",
+        "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+        "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-final.png",
+        "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+        "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-final.png"
+      ],
+      "artifacts": [
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 165542,
+          "sha256": "d4974f55b2b692ef01b956b5f511e262d3bb38a355c128a994f1ced34661f4b2"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 65964,
+          "sha256": "acfab109936c8f8526154c20c9f2df296a184ef605db41769621e905a2c98ee0"
+        },
+        {
+          "path": "tests/reports/showcase-interaction-audit/showcase-product-configurator-final.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 158506,
+          "sha256": "7a53827f68eeae55570ec3cc642a44139e31c7e313f85795e35daeb96750b9a6"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 304656,
+          "sha256": "a75df7db870091deda0cfd6c9e55e3ea252f0622d622cd12c12f51f67e338d60"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 104240,
+          "sha256": "592c2e5be07111b9d0ae19c5d94a745a0bd897931ee1d4a9e6973e807315f640"
+        },
+        {
+          "path": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-final.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 259541,
+          "sha256": "f4ab04ae24f8140ce26bd36f0081efd78e3685a221f8e3ba822126da46fc2289"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 269912,
+          "sha256": "f0be0e3682358fd03d176e5e802bb7560b73e4ee57ee7ff965661d7502864209"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 100488,
+          "sha256": "f2cf913a6fb1ac060ebbf6db1495aa487ee0b04d77e81d38b2b91221642e895f"
+        },
+        {
+          "path": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-final.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 284437,
+          "sha256": "37d9fc20af9160dbd19b6f203dae4579f12c3810f38649cda482e5208c9d5d88"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 186848,
+          "sha256": "a4e32e17eb4e7a7230d0fed768342fa7846d63bcf7d4e4d63ae0c21a92456466"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 69548,
+          "sha256": "2bc6b754cb216e8a147ade1a78b671d4da6c76f7ee71d8aa1449ec9125cf4aad"
+        },
+        {
+          "path": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-final.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 220965,
+          "sha256": "5e6a24eb166651c2ae6e9a66574bfbeb3b4169ffffbbeae1535a5962b0b3d05b"
+        }
+      ],
+      "fileCount": 12
+    },
+    {
+      "id": "showcase-games",
+      "approvalScope": "three independently reviewed playable showcase games",
+      "files": [
+        "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+        "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before-input.png",
+        "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+        "tests/reports/showcase-gameplay/showcase-blockfall-reactor-line-clear.png",
+        "tests/reports/showcase-gameplay/showcase-blockfall-reactor-game-over.png",
+        "tests/reports/showcase-gameplay/showcase-blockfall-reactor-reset.png",
+        "tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-before-input.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-traversal.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-jump.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-landing.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-act-broken-canopy.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-act-cloudstep-rise.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-act-sentry-pass.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-act-aurora-crown.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-collection-chain.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-checkpoint.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-respawn.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-finish.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-reset.png",
+        "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+        "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-canvas-only.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-before-input.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-checkpoint.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-drift.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-off-track.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-reset.png"
+      ],
+      "artifacts": [
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 150809,
+          "sha256": "4561279029695eaeddb772edf130777ad2988cb1674a9e81c8ab9cb081d41c69"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 73253,
+          "sha256": "5101b9a5d6d7ee9a7bdf895800a357e74ceedabbe331410c1822e9cf6b7d07e5"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before-input.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 142311,
+          "sha256": "adfe21b1136b0ae3207f6e7e060fb35e3bbe2a9df3756386ab220e2be68ca012"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 141650,
+          "sha256": "8adc848e1b88ffd5e480cd4e19824bb5272dee2e9bbe3d8fe64bc031d1388150"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-line-clear.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 142555,
+          "sha256": "186105e3874b03e9e1d2040b32ef408fa2201c558a4ff6ec24c6c1d731cfdf2c"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-game-over.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 148038,
+          "sha256": "ac4b293e62d415ef6325a0d5c21fa6818ad58a1ea340523d318a81e3e5d0a2f1"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-reset.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 141526,
+          "sha256": "ffe85e572aa51bcef2ea9ffc9820a440a31521e48521f6a6013ca2773976b217"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 465129,
+          "sha256": "11cc9f05496ff032b154fde3849f53cebbee72e98ac29b8f318d269b344ace8b"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 129174,
+          "sha256": "da77db61df5f3636963ee8ab5aa396b0ab3cfaaa0d8ee209de90117531e4c5bc"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-before-input.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 376208,
+          "sha256": "9bf0a82d739ac0e44cad4848876b8a9143b99ba259ff6e6f7a45c215190674d8"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 380647,
+          "sha256": "557730c58ddd8a1ea0a1b368c98ee785087901418eab7a0fe39942d430881c25"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-traversal.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 377335,
+          "sha256": "3c49830bea4e9655f04741dd2e5ff3903fd1bdb2bbb49034cd4bb5e5138fe63d"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-jump.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 379149,
+          "sha256": "a928b07148af3c834f9d783d7eedecd7cb469059591cee4b43a9514504cf408e"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-landing.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 380776,
+          "sha256": "31f4bfcf787773e1722c44f7c2f10aca995515c8edbf4f67371843cc2c6f84df"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-act-broken-canopy.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 398419,
+          "sha256": "b169d4c27d7c5c1b58a81a27fb96d0a8eacf9ed5cf7e89b17c1d74dff1a34c90"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-act-cloudstep-rise.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 401028,
+          "sha256": "aeec44ae49a1ab1e02a91bac86d21a2788ff89be7272bd0514a4a7293ed8d55a"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-act-sentry-pass.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 397899,
+          "sha256": "92e3b7b362a774479f766a4001ec556caa6e7e21157d1002a2e0ec36e606602e"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-act-aurora-crown.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 405219,
+          "sha256": "58be1b11a781bfcf17d0b348f9c15afe6c6a8bf82f6a0fd01060cc5b58bcd442"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-collection-chain.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 351047,
+          "sha256": "63232abc295ce13af1c3d404d766261348888a746fa4ec9e0b529de6566f9e43"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-checkpoint.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 404120,
+          "sha256": "31ef4d9f27747534721779e2425c6424acd4d1843c7b34c69e03284320dc09bd"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-respawn.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 402340,
+          "sha256": "ff5bec1e59f170191732324572b9b89d9265d454f10d94d2edd98573b6fb5fea"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-finish.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 351027,
+          "sha256": "9e8d4af14a1b64451bab7e476d2b36d1bc669951e70be6bba7da024e5947cf9d"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-skyline-runner-reset.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 375794,
+          "sha256": "747fc942f6dcfec98a3e078db6b00bc7303e81ca492259d164e9b8fd7d14dd73"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 1645123,
+          "sha256": "53891b6426fc5898a99916b566c7cd67480cfe4c931f1a31cd8bdabe5a7d9f04"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "width": 390,
+          "height": 740,
+          "bytes": 355240,
+          "sha256": "9ace58f9c3250085249051c8292f9c432bd633199e653a4132250f01ffe34eb0"
+        },
+        {
+          "path": "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-canvas-only.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 182323,
+          "sha256": "2dfa6340edf70b2b280fcfb1402ef834579465255114ad34230565034a59a120"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-before-input.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1308848,
+          "sha256": "c66f8f2586fc6ca41409f86c767f9c2954e96e82c1495361ad8a1501ce652752"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1313485,
+          "sha256": "e0fc7263bd70285905303acf5d7717cd12b605c8c505847c23f1622d916dda68"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-checkpoint.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1299277,
+          "sha256": "8b462fd1db09cfd2357dbbb767bd25d9bc274cb485befbdd280ebe4f7ac1de16"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-drift.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1333931,
+          "sha256": "69943b6a22d374b150ba0c26b96ac6885ede8bc1d020a5751ecf9665de8b34c5"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1312200,
+          "sha256": "a82be328bbec8f03beddf82b2d5ede24a7a1776234e11a0f2e5a097e5bc09d90"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-off-track.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1339891,
+          "sha256": "101ec6a9099ffd0496df147247abd79fa55a15f9bb335d04d7aa19d5e953a6f7"
+        },
+        {
+          "path": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-reset.png",
+          "width": 1280,
+          "height": 800,
+          "bytes": 1308848,
+          "sha256": "c66f8f2586fc6ca41409f86c767f9c2954e96e82c1495361ad8a1501ce652752"
+        }
+      ],
+      "fileCount": 33
+    },
+    {
+      "id": "aura-clash",
+      "approvalScope": "typed-fighter combat showcase",
+      "files": [
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-movement.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-jump.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-light.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-heavy.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-guard.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-hit.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-down.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-ko-reset.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-reset.png",
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-mobile.png"
+      ],
+      "artifacts": [
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-first-frame.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 829712,
+          "sha256": "526486dc17c371d6dd78d89b0d2255ce51c81e5891f58256d9c75bbbe77c5754"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-movement.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 832010,
+          "sha256": "6802d77509e0ee59cee3547aee4849316a8e04e350cf815f6ca8f5e632adfd0d"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-jump.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 848382,
+          "sha256": "0f6d487c7bb0cd0572e536a2b3167358380075895200d5f19562cf6773f183a8"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-light.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 844114,
+          "sha256": "ecd0f802d4b2a8734795f1f79d62d8abe1e318b3f33a4a1eb32e1c0133547e36"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-heavy.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 840683,
+          "sha256": "0f06207fc02cf0a8f81cf5723c74ef4059a974f8d1306a26c3ded84fc924b124"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 853341,
+          "sha256": "efd19a07149d896e40b2590db9cad801537354ff171825e44bf0a8c727cd61d7"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-guard.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 835027,
+          "sha256": "994e986882a937fabb067f8bc12703739eb58ac16a2f5288eb465d014f42f63f"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-hit.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 844910,
+          "sha256": "3a66a9f7cd1e38fb9e4a79d4f0143dcda7075bd93bdc7902862e18a3f3d45cd9"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-down.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 831356,
+          "sha256": "ab30580fd453cadd659a99515501715ab9d7a19fbded28c7178f14f0bc84190e"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-ko-reset.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 854245,
+          "sha256": "0776320421b315a85d5ff5dc7f1d571363a8140ce7f5017208b9b3c84a72c3f3"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-reset.png",
+          "width": 1280,
+          "height": 1091,
+          "bytes": 834797,
+          "sha256": "37cb302cf077ca2e0acd1cbe4fde2a0441778d5769542accf3eba34d9cc77c4b"
+        },
+        {
+          "path": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-mobile.png",
+          "width": 390,
+          "height": 1038,
+          "bytes": 267533,
+          "sha256": "b1c0811c72c8a3db0826ed1a5e94558b2578b5af1877d4357141a1985764d771"
+        }
+      ],
+      "fileCount": 12
+    },
+    {
+      "id": "selected-threejs-comparison",
+      "approvalScope": "15 selected current head-to-head workloads only",
+      "files": [
+        "tests/reports/current-head-to-head/primitive-scene/aura.png",
+        "tests/reports/current-head-to-head/primitive-scene/three.png",
+        "tests/reports/current-head-to-head/gltf-product-viewer/aura.png",
+        "tests/reports/current-head-to-head/gltf-product-viewer/three.png",
+        "tests/reports/current-head-to-head/cinematic-architecture/aura-after.png",
+        "tests/reports/current-head-to-head/cinematic-architecture/three-after.png",
+        "tests/reports/current-head-to-head/digital-twin-data/aura-after.png",
+        "tests/reports/current-head-to-head/digital-twin-data/three-after.png",
+        "tests/reports/current-head-to-head/instancing-lod/aura-near.png",
+        "tests/reports/current-head-to-head/instancing-lod/three-near.png",
+        "tests/reports/current-head-to-head/skinned-morph-animation/aura-after.png",
+        "tests/reports/current-head-to-head/skinned-morph-animation/three-after.png",
+        "tests/reports/current-head-to-head/custom-material-shader/aura-after.png",
+        "tests/reports/current-head-to-head/custom-material-shader/three-after.png",
+        "tests/reports/current-head-to-head/postprocessed-scene/aura-on.png",
+        "tests/reports/current-head-to-head/postprocessed-scene/three-on.png",
+        "tests/reports/current-head-to-head/physical-character/aura-after.png",
+        "tests/reports/current-head-to-head/physical-character/three-after.png",
+        "tests/reports/current-head-to-head/physical-vehicle/aura-after.png",
+        "tests/reports/current-head-to-head/physical-vehicle/three-after.png",
+        "tests/reports/current-head-to-head/navigation-crowd/aura-after.png",
+        "tests/reports/current-head-to-head/navigation-crowd/three-after.png",
+        "tests/reports/current-head-to-head/webgpu-tsl/aura-after.png",
+        "tests/reports/current-head-to-head/webgpu-tsl/three-after.png",
+        "tests/reports/current-head-to-head/xr-interaction/aura-after.png",
+        "tests/reports/current-head-to-head/xr-interaction/three-after.png",
+        "tests/reports/current-head-to-head/resource-lifecycle/aura-after.png",
+        "tests/reports/current-head-to-head/resource-lifecycle/three-after.png",
+        "tests/reports/current-head-to-head/scaffold-to-deploy/aura-after.png",
+        "tests/reports/current-head-to-head/scaffold-to-deploy/three-after.png"
+      ],
+      "artifacts": [
+        {
+          "path": "tests/reports/current-head-to-head/primitive-scene/aura.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 55599,
+          "sha256": "805815c74a87593c9a9ff58152a520f0a4a636567820346dc2cc229098a02427"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/primitive-scene/three.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 52726,
+          "sha256": "5242c7441beee5e3f8cfe2bb0da5e899e8b06b5fde33a3b8826b031528208db3"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/gltf-product-viewer/aura.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 339314,
+          "sha256": "fc66006327959d16a15651050fbb6c987ba85f1399c62679ebe06acbb1ea18c1"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/gltf-product-viewer/three.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 389416,
+          "sha256": "709791c9d770d9c8398a1d874d23fa996c0e4f5a519e1a7fd52fa7581fea21dd"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/cinematic-architecture/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 256458,
+          "sha256": "0b85344da5964393836f8a4053c03697e521d265689482b3ec693e86e985e98a"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/cinematic-architecture/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 213484,
+          "sha256": "62418b5ae2503cb075073ff247589c50fabf59cdfad6269ef8d2e2a38889582b"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/digital-twin-data/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 179575,
+          "sha256": "1f9c371fd71cced90f91b154393202ca6cd13f4bef7d77ccceea08de1965a15e"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/digital-twin-data/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 161792,
+          "sha256": "1da1e18d7740f0bf34eeec598a51b0cdf569fa470efe31cd41e4faed1cce60a8"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/instancing-lod/aura-near.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 424293,
+          "sha256": "668cc720c3a8d3712f5164d9a0960ece09e335cfd0fc1429e4b74c21903c2d68"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/instancing-lod/three-near.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 402877,
+          "sha256": "2b7bfb52e412b95dd0d591669e2fc019adc103d295f024234115111be3d6fef5"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/skinned-morph-animation/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 105984,
+          "sha256": "0411e36137863e2185cbebbab16d4208162d05e6a283b829c8adcf219970b43f"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/skinned-morph-animation/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 108828,
+          "sha256": "5f5b4ac3b4aa39ee15b1eb783ce7319863b609312ee41805f3b853455e83f0bb"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/custom-material-shader/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 361650,
+          "sha256": "04fe5e53c3966bf237f9e7f96008437a3923a52f88f4f754317841ae07bf0b91"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/custom-material-shader/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 393073,
+          "sha256": "27aab5bfe6a62d7cf14ae464bb236728c6e772c4fc39ef8e809fddd74e862bd2"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/postprocessed-scene/aura-on.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 288114,
+          "sha256": "ef00712248d987474b29328c21d1e9210973433745f77c17bd06b01b2f3b7c84"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/postprocessed-scene/three-on.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 370027,
+          "sha256": "34b0a8578d4b97f43566fcf32edf36b765c291aeb8b57295385d771ecc582b7a"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/physical-character/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 79347,
+          "sha256": "0a2b7b53206157ab81e93b2670c1b0144bb06beb63e8aa2f5cd1e29e0d9b1662"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/physical-character/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 75915,
+          "sha256": "aca28555e94de9a1f378962e7e00b500ffd4ff241ee7a5bc1afb4400dd179a42"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/physical-vehicle/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 156029,
+          "sha256": "5b5b168df0a4322f5eabe20e51d88813ae2a1864e618ea871d6b49120670bb84"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/physical-vehicle/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 147027,
+          "sha256": "923e10f76cf3916e4bf4cd650c55ebf4f2cccc10a461efb6bfb5bf91d6afa0af"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/navigation-crowd/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 141004,
+          "sha256": "e0b999cc8ad128521384cc39a285ddd7594d358cc8f65c85160a9fee8a3f2941"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/navigation-crowd/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 131362,
+          "sha256": "ef5bf60ade76f1d813aa55a0afc5ee2cb962f4d4263f5752aa7bcc91ac309452"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/webgpu-tsl/aura-after.png",
+          "width": 382,
+          "height": 239,
+          "bytes": 31661,
+          "sha256": "763e1bf6148a8f8c1f513a227bd5f17f989339cdff7b395593409635897cc67a"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/webgpu-tsl/three-after.png",
+          "width": 382,
+          "height": 239,
+          "bytes": 31092,
+          "sha256": "44d3b2fb02319a6e99c382ad7bf12bebe0ccfe37b65b31a58232d08a4076a304"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/xr-interaction/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 177179,
+          "sha256": "ed3de346f874e787d772a4a3f9a6f37582b53ac4ced41ff6c7ae0a77c886e586"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/xr-interaction/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 170372,
+          "sha256": "fbf06d7242cab604d4788561d85b3c66868a3e37e6717ff43890173566b85db6"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/resource-lifecycle/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 268175,
+          "sha256": "2f5ace4a4dcd590935259f621b1ae227054d32f8be22cb9dc02f0f5031c99f58"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/resource-lifecycle/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 321273,
+          "sha256": "f7208a56e490c1162c5639c241d6e8d879ca5849c81d708e27149a54207c3ffb"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/scaffold-to-deploy/aura-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 316375,
+          "sha256": "fe2d08f03071e667756f0bfc9b1d5b0ed6ceb967f48c999c42a58a5db0689b66"
+        },
+        {
+          "path": "tests/reports/current-head-to-head/scaffold-to-deploy/three-after.png",
+          "width": 1440,
+          "height": 900,
+          "bytes": 303120,
+          "sha256": "8c2ea0aba619afbf7ee8f777439acd6416772f59b34d2f7315815b154658decb"
+        }
+      ],
+      "fileCount": 30
+    }
+  ]
+}

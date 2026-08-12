@@ -687,11 +687,15 @@ describe("game runtime source gates", () => {
     expect(racing.camera()).toMatchObject({ kind: "aura-game-racing-camera", fov: 48 });
 
     let snapshot = accelerated;
+    const observedEventTypes = new Set(snapshot.events.map((event) => event.type));
     for (let frame = 0; frame < 180 && snapshot.status !== "finished"; frame += 1) {
       snapshot = racing.step(1 / 30, { throttle: true });
+      for (const event of snapshot.events) observedEventTypes.add(event.type);
     }
 
-    expect(snapshot.events.map((event) => event.type)).toEqual(expect.arrayContaining(["checkpoint", "lap", "finish"]));
+    // Events are frame-local. Accumulate them across the drive rather than relying
+    // on the old finish-line over-credit bug to re-emit a checkpoint on the final frame.
+    expect([...observedEventTypes]).toEqual(expect.arrayContaining(["checkpoint", "lap", "finish"]));
     expect(snapshot.bestTime).toBeGreaterThan(0);
     expect(snapshot.status).toBe("finished");
 
@@ -709,6 +713,25 @@ describe("game runtime source gates", () => {
     });
     wrongOrder.placeAtProgress(0.75);
     expect(wrongOrder.step(1 / 60).checkpoint).toBe(0);
+  });
+
+  it("caps credited gates at the configured checkpoint count while awaiting a lap wrap", () => {
+    const racing = game.racing({
+      route: {
+        points: [
+          { x: 0, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 4 },
+          { x: 0, y: 4 }
+        ],
+        checkpoints: [0.99]
+      },
+      startProgress: 0.99,
+      checkpointRadius: 0.03
+    });
+    expect(racing.step(0).checkpoint).toBe(1);
+    for (let frame = 0; frame < 12; frame += 1) racing.step(0);
+    expect(racing.snapshot().checkpoint).toBe(racing.snapshot().checkpointCount);
   });
 
   it("requires public racing examples to bind a meaningful route to typed vehicle and track assets", () => {
@@ -1366,7 +1389,7 @@ describe("game runtime source gates", () => {
     expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
     expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
     expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');
-    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"');
+    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"');
     expect(skylineMain).toContain("sceneBinding: platformerScene.evidence");
     expect(skylineMain).toContain("surfaceContact: platformerScene.contactPointForPlayer(state.player)");
     expect(skylineMain).toContain("surfaceContactAlignment: playerSurfaceAlignment()");

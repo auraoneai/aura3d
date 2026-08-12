@@ -4,10 +4,10 @@ export const gameGeometryContract = {
   "routeId": "showcase-skyline-runner",
   "category": "platformer",
   "geometrySource": "asset-mesh-extracted",
-  "sourceReport": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+  "sourceReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
   "surfaceMap": {
     "assetId": "showcaseKenneyVerdantPlatformerWorld",
-    "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+    "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
     "source": "asset-mesh-extracted",
     "surfaces": [
       {
@@ -23,122 +23,1112 @@ export const gameGeometryContract = {
       {
         "id": "asset-platform-01",
         "x": 2.25,
-        "y": 0.216,
+        "y": 0.242,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 1.38,
+        "modelTopY": 1.526,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-02",
         "x": 3.33,
-        "y": 0.432,
+        "y": 0.463,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 2.58,
+        "modelTopY": 2.752,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-03",
         "x": 4.41,
-        "y": 0.234,
+        "y": 0.269,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 1.48,
+        "modelTopY": 1.673,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-04",
         "x": 5.67,
-        "y": 0.54,
+        "y": 0.613,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 3.18,
+        "modelTopY": 3.586,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-05",
         "x": 7.11,
-        "y": 0.324,
+        "y": 0.378,
         "width": 1.26,
         "height": 0.22,
-        "modelTopY": 1.98,
+        "modelTopY": 2.281,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-06",
         "x": 8.55,
-        "y": 0.684,
+        "y": 0.772,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 3.98,
+        "modelTopY": 4.47,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-07",
         "x": 9.99,
-        "y": 0.468,
+        "y": 0.549,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 2.78,
+        "modelTopY": 3.232,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-08",
         "x": 11.43,
-        "y": 0.756,
+        "y": 0.859,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 4.38,
+        "modelTopY": 4.954,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-09",
         "x": 12.87,
-        "y": 0.504,
+        "y": 0.613,
         "width": 1.2,
         "height": 0.22,
-        "modelTopY": 2.98,
+        "modelTopY": 3.583,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-platform-10",
         "x": 14.31,
-        "y": 0.81,
+        "y": 0.929,
         "width": 1.26,
         "height": 0.22,
-        "modelTopY": 4.68,
+        "modelTopY": 5.339,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-11",
+        "x": 15.75,
+        "y": 0.168,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 1.112,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-12",
+        "x": 17.19,
+        "y": 0.469,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 2.783,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-13",
+        "x": 18.27,
+        "y": 0.676,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 3.935,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-14",
+        "x": 19.35,
+        "y": 0.474,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 2.811,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-15",
+        "x": 20.61,
+        "y": 0.883,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.083,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-16",
+        "x": 22.05,
+        "y": 0.622,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 3.633,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-17",
+        "x": 23.49,
+        "y": 1.069,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.117,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-18",
+        "x": 24.93,
+        "y": 0.825,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.763,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-19",
+        "x": 26.37,
+        "y": 1.166,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.658,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-20",
+        "x": 27.81,
+        "y": 0.873,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.028,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-21",
+        "x": 29.25,
+        "y": 1.156,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 6.604,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-22",
+        "x": 30.69,
+        "y": 0.42,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 2.515,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-23",
+        "x": 32.13,
+        "y": 0.517,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 3.053,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-24",
+        "x": 33.21,
+        "y": 0.8,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.627,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-25",
+        "x": 34.29,
+        "y": 0.773,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.477,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-26",
+        "x": 35.55,
+        "y": 1.158,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.614,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-27",
+        "x": 36.99,
+        "y": 0.697,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 4.052,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-28",
+        "x": 38.43,
+        "y": 1.01,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.793,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-29",
+        "x": 39.87,
+        "y": 1.098,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.279,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-30",
+        "x": 41.31,
+        "y": 1.376,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.826,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-31",
+        "x": 42.75,
+        "y": 0.917,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.277,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-32",
+        "x": 44.19,
+        "y": 1.214,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 6.926,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-33",
+        "x": 45.63,
+        "y": 0.415,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 2.488,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-34",
+        "x": 47.07,
+        "y": 0.565,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 3.317,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-35",
+        "x": 48.15,
+        "y": 0.829,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.788,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-36",
+        "x": 49.23,
+        "y": 0.725,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.206,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-37",
+        "x": 50.49,
+        "y": 0.925,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.321,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-38",
+        "x": 51.93,
+        "y": 0.868,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 5,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-39",
+        "x": 53.37,
+        "y": 1.133,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.472,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-40",
+        "x": 54.81,
+        "y": 1.043,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.973,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-41",
+        "x": 56.25,
+        "y": 1.243,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.083,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-42",
+        "x": 57.69,
+        "y": 0.979,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.621,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-43",
+        "x": 59.13,
+        "y": 1.106,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 6.323,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-44",
+        "x": 60.57,
+        "y": 0.556,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 3.268,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-45",
+        "x": 62.01,
+        "y": 0.849,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.894,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-46",
+        "x": 63.09,
+        "y": 1.137,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.498,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-47",
+        "x": 64.17,
+        "y": 1.014,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.812,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-48",
+        "x": 65.43,
+        "y": 1.394,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.924,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-49",
+        "x": 66.87,
+        "y": 1.263,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 7.196,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-50",
+        "x": 68.31,
+        "y": 1.666,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.437,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-51",
+        "x": 69.75,
+        "y": 1.387,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.884,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-52",
+        "x": 71.19,
+        "y": 1.611,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.13,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-53",
+        "x": 72.63,
+        "y": 1.286,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.324,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-54",
+        "x": 74.07,
+        "y": 1.507,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 8.553,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-55",
+        "x": 75.51,
+        "y": 0.639,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 3.732,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-56",
+        "x": 76.95,
+        "y": 0.765,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.432,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-57",
+        "x": 78.03,
+        "y": 1.046,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.989,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-58",
+        "x": 79.11,
+        "y": 0.94,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.403,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-59",
+        "x": 80.37,
+        "y": 1.033,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 5.921,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-60",
+        "x": 81.81,
+        "y": 1.079,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 6.177,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-61",
+        "x": 83.25,
+        "y": 1.247,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.106,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-62",
+        "x": 84.69,
+        "y": 1.093,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.252,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-63",
+        "x": 86.13,
+        "y": 1.269,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.23,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-64",
+        "x": 87.57,
+        "y": 1.08,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.181,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-65",
+        "x": 89.01,
+        "y": 1.314,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 7.482,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-66",
+        "x": 90.45,
+        "y": 0.788,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 4.556,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-67",
+        "x": 91.89,
+        "y": 1.102,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 6.3,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-68",
+        "x": 92.97,
+        "y": 1.397,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.942,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-69",
+        "x": 94.05,
+        "y": 1.279,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.284,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-70",
+        "x": 95.31,
+        "y": 1.677,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.499,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-71",
+        "x": 96.75,
+        "y": 1.567,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 8.888,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-72",
+        "x": 98.19,
+        "y": 2.028,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 11.445,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-73",
+        "x": 99.63,
+        "y": 1.896,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.716,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-74",
+        "x": 101.07,
+        "y": 2.203,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 12.417,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-75",
+        "x": 102.51,
+        "y": 1.866,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.546,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-76",
+        "x": 103.95,
+        "y": 2.087,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 11.775,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-77",
+        "x": 105.39,
+        "y": 0.973,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 5.584,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-78",
+        "x": 106.83,
+        "y": 1.247,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.11,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-79",
+        "x": 107.91,
+        "y": 1.46,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 8.29,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-80",
+        "x": 108.99,
+        "y": 1.228,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 7.004,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-81",
+        "x": 110.25,
+        "y": 1.672,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.469,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-82",
+        "x": 111.69,
+        "y": 1.376,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 7.823,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-83",
+        "x": 113.13,
+        "y": 1.851,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.463,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-84",
+        "x": 114.57,
+        "y": 1.586,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 8.992,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-85",
+        "x": 116.01,
+        "y": 1.941,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.964,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-86",
+        "x": 117.45,
+        "y": 1.641,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.297,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-87",
+        "x": 118.89,
+        "y": 1.914,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 10.811,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-88",
+        "x": 120.33,
+        "y": 1.16,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 6.622,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-89",
+        "x": 121.77,
+        "y": 1.495,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 8.484,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-90",
+        "x": 122.85,
+        "y": 1.806,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.215,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-91",
+        "x": 123.93,
+        "y": 1.704,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.645,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-92",
+        "x": 125.19,
+        "y": 2.121,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 11.963,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-93",
+        "x": 126.63,
+        "y": 2.028,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 11.444,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-94",
+        "x": 128.07,
+        "y": 2.488,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 14,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-95",
+        "x": 129.51,
+        "y": 2.3,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 12.955,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-96",
+        "x": 130.95,
+        "y": 2.494,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 14.038,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-97",
+        "x": 132.39,
+        "y": 2.136,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 12.049,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-98",
+        "x": 133.83,
+        "y": 2.336,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 13.16,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-99",
+        "x": 135.27,
+        "y": 1.423,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 8.088,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-100",
+        "x": 136.71,
+        "y": 1.775,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.04,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-101",
+        "x": 137.79,
+        "y": 2.068,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 11.67,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-102",
+        "x": 138.87,
+        "y": 1.894,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.704,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-103",
+        "x": 140.13,
+        "y": 2.123,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 11.972,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-104",
+        "x": 141.57,
+        "y": 1.801,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 10.183,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-105",
+        "x": 143.01,
+        "y": 2.055,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 11.594,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-106",
+        "x": 144.45,
+        "y": 1.733,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 9.805,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-107",
+        "x": 145.89,
+        "y": 1.914,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 10.816,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-108",
+        "x": 147.33,
+        "y": 1.556,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 8.827,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-109",
+        "x": 148.77,
+        "y": 1.756,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 9.938,
         "modelCenterZ": 0,
         "kind": "platform"
       },
       {
         "id": "asset-finish-run",
-        "x": 15.94,
-        "y": 0.81,
+        "x": 150.4,
+        "y": 1.756,
         "width": 1.4,
         "height": 0.3,
         "kind": "finish"
       },
       {
         "id": "asset-hazard-gap",
-        "x": 9.27,
-        "y": 0.128,
+        "x": 146.61,
+        "y": 1.216,
         "width": 0.192,
         "height": 0.18,
         "kind": "hazard"
       },
       {
         "id": "asset-checkpoint-01",
-        "x": 2.988,
+        "x": 29.88,
         "y": 0.9,
         "width": 1.1,
         "height": 1.1,
@@ -146,47 +1136,47 @@ export const gameGeometryContract = {
       },
       {
         "id": "asset-checkpoint-02",
-        "x": 5.378,
-        "y": 1.116,
+        "x": 53.784,
+        "y": 1.142,
         "width": 1.1,
         "height": 1.1,
         "kind": "checkpoint"
       },
       {
         "id": "asset-checkpoint-03",
-        "x": 7.769,
-        "y": 1.332,
+        "x": 77.688,
+        "y": 1.363,
         "width": 1.1,
         "height": 1.1,
         "kind": "checkpoint"
       },
       {
         "id": "asset-checkpoint-04",
-        "x": 10.159,
-        "y": 1.134,
+        "x": 101.592,
+        "y": 1.169,
         "width": 1.1,
         "height": 1.1,
         "kind": "checkpoint"
       },
       {
         "id": "asset-checkpoint-05",
-        "x": 12.55,
-        "y": 1.44,
+        "x": 125.496,
+        "y": 1.513,
         "width": 1.1,
         "height": 1.1,
         "kind": "checkpoint"
       },
       {
         "id": "asset-checkpoint-06",
-        "x": 14.342,
-        "y": 1.224,
+        "x": 143.424,
+        "y": 1.278,
         "width": 1.1,
         "height": 1.1,
         "kind": "checkpoint"
       }
     ],
-    "levelLength": 14.94,
-    "estimatedCompletionSeconds": 30,
+    "levelLength": 149.4,
+    "estimatedCompletionSeconds": 170,
     "characterScaleRatio": 0.42,
     "confidence": 0.74,
     "modelAlignment": {
@@ -198,18 +1188,18 @@ export const gameGeometryContract = {
           -9
         ],
         "max": [
-          75.706,
-          12.4,
+          822.706,
+          18.05,
           1.854
         ]
       },
       "modelPoint": [
-        30.81,
-        -1.1,
+        404.31,
+        -1.039,
         -0.075
       ],
       "gamePoint": {
-        "x": 7.47,
+        "x": 74.7,
         "y": 0
       },
       "anchorPairs": [
@@ -228,25 +1218,25 @@ export const gameGeometryContract = {
         {
           "id": "mesh-surface-anchor-2",
           "modelPoint": [
-            28,
-            1.98,
+            408.00000000000006,
+            3.732,
             0
           ],
           "gamePoint": {
-            "x": 7.11,
-            "y": 0.324
+            "x": 75.51,
+            "y": 0.639
           }
         },
         {
           "id": "mesh-surface-anchor-3",
           "modelPoint": [
-            68,
-            4.68,
+            815.0000000000001,
+            9.938,
             0
           ],
           "gamePoint": {
-            "x": 14.31,
-            "y": 0.81
+            "x": 148.77,
+            "y": 1.756
           }
         }
       ],
@@ -256,13 +1246,13 @@ export const gameGeometryContract = {
     },
     "evidence": {
       "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
-      "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+      "notes": "Playable surfaces extracted from 511 flat geometric GLB primitive(s) and bound to the current asset hash."
     }
   },
   "worldAssetBindings": [
     {
       "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
-      "worldAssetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "worldAssetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
       "surfaceSource": "asset-mesh-extracted",
       "confidence": 0.74,
       "surfaceIds": [
@@ -277,6 +1267,105 @@ export const gameGeometryContract = {
         "asset-platform-08",
         "asset-platform-09",
         "asset-platform-10",
+        "asset-platform-11",
+        "asset-platform-12",
+        "asset-platform-13",
+        "asset-platform-14",
+        "asset-platform-15",
+        "asset-platform-16",
+        "asset-platform-17",
+        "asset-platform-18",
+        "asset-platform-19",
+        "asset-platform-20",
+        "asset-platform-21",
+        "asset-platform-22",
+        "asset-platform-23",
+        "asset-platform-24",
+        "asset-platform-25",
+        "asset-platform-26",
+        "asset-platform-27",
+        "asset-platform-28",
+        "asset-platform-29",
+        "asset-platform-30",
+        "asset-platform-31",
+        "asset-platform-32",
+        "asset-platform-33",
+        "asset-platform-34",
+        "asset-platform-35",
+        "asset-platform-36",
+        "asset-platform-37",
+        "asset-platform-38",
+        "asset-platform-39",
+        "asset-platform-40",
+        "asset-platform-41",
+        "asset-platform-42",
+        "asset-platform-43",
+        "asset-platform-44",
+        "asset-platform-45",
+        "asset-platform-46",
+        "asset-platform-47",
+        "asset-platform-48",
+        "asset-platform-49",
+        "asset-platform-50",
+        "asset-platform-51",
+        "asset-platform-52",
+        "asset-platform-53",
+        "asset-platform-54",
+        "asset-platform-55",
+        "asset-platform-56",
+        "asset-platform-57",
+        "asset-platform-58",
+        "asset-platform-59",
+        "asset-platform-60",
+        "asset-platform-61",
+        "asset-platform-62",
+        "asset-platform-63",
+        "asset-platform-64",
+        "asset-platform-65",
+        "asset-platform-66",
+        "asset-platform-67",
+        "asset-platform-68",
+        "asset-platform-69",
+        "asset-platform-70",
+        "asset-platform-71",
+        "asset-platform-72",
+        "asset-platform-73",
+        "asset-platform-74",
+        "asset-platform-75",
+        "asset-platform-76",
+        "asset-platform-77",
+        "asset-platform-78",
+        "asset-platform-79",
+        "asset-platform-80",
+        "asset-platform-81",
+        "asset-platform-82",
+        "asset-platform-83",
+        "asset-platform-84",
+        "asset-platform-85",
+        "asset-platform-86",
+        "asset-platform-87",
+        "asset-platform-88",
+        "asset-platform-89",
+        "asset-platform-90",
+        "asset-platform-91",
+        "asset-platform-92",
+        "asset-platform-93",
+        "asset-platform-94",
+        "asset-platform-95",
+        "asset-platform-96",
+        "asset-platform-97",
+        "asset-platform-98",
+        "asset-platform-99",
+        "asset-platform-100",
+        "asset-platform-101",
+        "asset-platform-102",
+        "asset-platform-103",
+        "asset-platform-104",
+        "asset-platform-105",
+        "asset-platform-106",
+        "asset-platform-107",
+        "asset-platform-108",
+        "asset-platform-109",
         "asset-finish-run"
       ]
     }
@@ -288,8 +1377,8 @@ export const gameGeometryContract = {
       "y": 0.24
     },
     "finish": {
-      "x": 16.64,
-      "y": 1.13
+      "x": 151.1,
+      "y": 2.076
     },
     "moveSpeed": 1.15,
     "jumpVelocity": 7.4,
@@ -305,77 +1394,770 @@ export const gameGeometryContract = {
       {
         "id": "asset-platform-01",
         "x": 1.65,
-        "y": 0.216,
+        "y": 0.242,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-02",
         "x": 2.73,
-        "y": 0.432,
+        "y": 0.463,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-03",
         "x": 3.81,
-        "y": 0.234,
+        "y": 0.269,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-04",
         "x": 5.07,
-        "y": 0.54,
+        "y": 0.613,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-05",
         "x": 6.48,
-        "y": 0.324,
+        "y": 0.378,
         "width": 1.26,
         "height": 0.22
       },
       {
         "id": "asset-platform-06",
         "x": 7.95,
-        "y": 0.684,
+        "y": 0.772,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-07",
         "x": 9.39,
-        "y": 0.468,
+        "y": 0.549,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-08",
         "x": 10.83,
-        "y": 0.756,
+        "y": 0.859,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-09",
         "x": 12.27,
-        "y": 0.504,
+        "y": 0.613,
         "width": 1.2,
         "height": 0.22
       },
       {
         "id": "asset-platform-10",
         "x": 13.68,
-        "y": 0.81,
+        "y": 0.929,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-11",
+        "x": 14.94,
+        "y": 0.168,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-12",
+        "x": 16.59,
+        "y": 0.469,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-13",
+        "x": 17.67,
+        "y": 0.676,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-14",
+        "x": 18.75,
+        "y": 0.474,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-15",
+        "x": 20.01,
+        "y": 0.883,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-16",
+        "x": 21.42,
+        "y": 0.622,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-17",
+        "x": 22.89,
+        "y": 1.069,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-18",
+        "x": 24.33,
+        "y": 0.825,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-19",
+        "x": 25.77,
+        "y": 1.166,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-20",
+        "x": 27.21,
+        "y": 0.873,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-21",
+        "x": 28.62,
+        "y": 1.156,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-22",
+        "x": 29.88,
+        "y": 0.42,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-23",
+        "x": 31.53,
+        "y": 0.517,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-24",
+        "x": 32.61,
+        "y": 0.8,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-25",
+        "x": 33.69,
+        "y": 0.773,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-26",
+        "x": 34.95,
+        "y": 1.158,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-27",
+        "x": 36.36,
+        "y": 0.697,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-28",
+        "x": 37.83,
+        "y": 1.01,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-29",
+        "x": 39.27,
+        "y": 1.098,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-30",
+        "x": 40.71,
+        "y": 1.376,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-31",
+        "x": 42.15,
+        "y": 0.917,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-32",
+        "x": 43.56,
+        "y": 1.214,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-33",
+        "x": 44.82,
+        "y": 0.415,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-34",
+        "x": 46.47,
+        "y": 0.565,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-35",
+        "x": 47.55,
+        "y": 0.829,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-36",
+        "x": 48.63,
+        "y": 0.725,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-37",
+        "x": 49.89,
+        "y": 0.925,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-38",
+        "x": 51.3,
+        "y": 0.868,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-39",
+        "x": 52.77,
+        "y": 1.133,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-40",
+        "x": 54.21,
+        "y": 1.043,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-41",
+        "x": 55.65,
+        "y": 1.243,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-42",
+        "x": 57.09,
+        "y": 0.979,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-43",
+        "x": 58.5,
+        "y": 1.106,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-44",
+        "x": 59.76,
+        "y": 0.556,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-45",
+        "x": 61.41,
+        "y": 0.849,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-46",
+        "x": 62.49,
+        "y": 1.137,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-47",
+        "x": 63.57,
+        "y": 1.014,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-48",
+        "x": 64.83,
+        "y": 1.394,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-49",
+        "x": 66.24,
+        "y": 1.263,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-50",
+        "x": 67.71,
+        "y": 1.666,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-51",
+        "x": 69.15,
+        "y": 1.387,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-52",
+        "x": 70.59,
+        "y": 1.611,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-53",
+        "x": 72.03,
+        "y": 1.286,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-54",
+        "x": 73.44,
+        "y": 1.507,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-55",
+        "x": 74.7,
+        "y": 0.639,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-56",
+        "x": 76.35,
+        "y": 0.765,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-57",
+        "x": 77.43,
+        "y": 1.046,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-58",
+        "x": 78.51,
+        "y": 0.94,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-59",
+        "x": 79.77,
+        "y": 1.033,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-60",
+        "x": 81.18,
+        "y": 1.079,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-61",
+        "x": 82.65,
+        "y": 1.247,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-62",
+        "x": 84.09,
+        "y": 1.093,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-63",
+        "x": 85.53,
+        "y": 1.269,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-64",
+        "x": 86.97,
+        "y": 1.08,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-65",
+        "x": 88.38,
+        "y": 1.314,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-66",
+        "x": 89.64,
+        "y": 0.788,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-67",
+        "x": 91.29,
+        "y": 1.102,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-68",
+        "x": 92.37,
+        "y": 1.397,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-69",
+        "x": 93.45,
+        "y": 1.279,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-70",
+        "x": 94.71,
+        "y": 1.677,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-71",
+        "x": 96.12,
+        "y": 1.567,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-72",
+        "x": 97.59,
+        "y": 2.028,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-73",
+        "x": 99.03,
+        "y": 1.896,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-74",
+        "x": 100.47,
+        "y": 2.203,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-75",
+        "x": 101.91,
+        "y": 1.866,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-76",
+        "x": 103.32,
+        "y": 2.087,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-77",
+        "x": 104.58,
+        "y": 0.973,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-78",
+        "x": 106.23,
+        "y": 1.247,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-79",
+        "x": 107.31,
+        "y": 1.46,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-80",
+        "x": 108.39,
+        "y": 1.228,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-81",
+        "x": 109.65,
+        "y": 1.672,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-82",
+        "x": 111.06,
+        "y": 1.376,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-83",
+        "x": 112.53,
+        "y": 1.851,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-84",
+        "x": 113.97,
+        "y": 1.586,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-85",
+        "x": 115.41,
+        "y": 1.941,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-86",
+        "x": 116.85,
+        "y": 1.641,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-87",
+        "x": 118.26,
+        "y": 1.914,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-88",
+        "x": 119.52,
+        "y": 1.16,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-89",
+        "x": 121.17,
+        "y": 1.495,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-90",
+        "x": 122.25,
+        "y": 1.806,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-91",
+        "x": 123.33,
+        "y": 1.704,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-92",
+        "x": 124.59,
+        "y": 2.121,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-93",
+        "x": 126,
+        "y": 2.028,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-94",
+        "x": 127.47,
+        "y": 2.488,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-95",
+        "x": 128.91,
+        "y": 2.3,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-96",
+        "x": 130.35,
+        "y": 2.494,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-97",
+        "x": 131.79,
+        "y": 2.136,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-98",
+        "x": 133.2,
+        "y": 2.336,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-99",
+        "x": 134.46,
+        "y": 1.423,
+        "width": 1.62,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-100",
+        "x": 136.11,
+        "y": 1.775,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-101",
+        "x": 137.19,
+        "y": 2.068,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-102",
+        "x": 138.27,
+        "y": 1.894,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-103",
+        "x": 139.53,
+        "y": 2.123,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-104",
+        "x": 140.94,
+        "y": 1.801,
+        "width": 1.26,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-105",
+        "x": 142.41,
+        "y": 2.055,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-106",
+        "x": 143.85,
+        "y": 1.733,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-107",
+        "x": 145.29,
+        "y": 1.914,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-108",
+        "x": 146.73,
+        "y": 1.556,
+        "width": 1.2,
+        "height": 0.22
+      },
+      {
+        "id": "asset-platform-109",
+        "x": 148.14,
+        "y": 1.756,
         "width": 1.26,
         "height": 0.22
       },
       {
         "id": "asset-finish-run",
-        "x": 15.24,
-        "y": 0.81,
+        "x": 149.7,
+        "y": 1.756,
         "width": 1.4,
         "height": 0.3
       }
@@ -401,22 +2183,22 @@ export const gameGeometryContract = {
       },
       {
         "id": "coin-04",
-        "x": 20.8,
-        "y": 1.93,
+        "x": 143.1,
+        "y": 2.876,
         "value": 50
       },
       {
         "id": "coin-05",
-        "x": 24.8,
-        "y": 2.13,
+        "x": 147.9,
+        "y": 3.076,
         "value": 50
       }
     ],
     "hazards": [
       {
         "id": "asset-hazard-gap",
-        "x": 9.174,
-        "y": 0.128,
+        "x": 146.514,
+        "y": 1.216,
         "width": 0.192,
         "height": 0.18,
         "respawn": true
@@ -425,65 +2207,65 @@ export const gameGeometryContract = {
     "checkpoints": [
       {
         "id": "asset-checkpoint-01",
-        "x": 2.988,
+        "x": 29.88,
         "y": 0.9,
         "radius": 0.9
       },
       {
         "id": "asset-checkpoint-02",
-        "x": 5.378,
-        "y": 1.116,
+        "x": 53.784,
+        "y": 1.142,
         "radius": 0.9
       },
       {
         "id": "asset-checkpoint-03",
-        "x": 7.769,
-        "y": 1.332,
+        "x": 77.688,
+        "y": 1.363,
         "radius": 0.9
       },
       {
         "id": "asset-checkpoint-04",
-        "x": 10.159,
-        "y": 1.134,
+        "x": 101.592,
+        "y": 1.169,
         "radius": 0.9
       },
       {
         "id": "asset-checkpoint-05",
-        "x": 12.55,
-        "y": 1.44,
+        "x": 125.496,
+        "y": 1.513,
         "radius": 0.9
       },
       {
         "id": "asset-checkpoint-06",
-        "x": 14.342,
-        "y": 1.224,
+        "x": 143.424,
+        "y": 1.278,
         "radius": 0.9
       }
     ],
     "extractionReasons": [
-      "mesh-derived platformer surfaces from 56 geometric primitive(s)",
-      "selected depth-coherent family with 11 primitive(s) at model z 0..0",
-      "excluded 45 primitive(s) narrower than the 0.72 game-unit character footprint",
-      "selected traversable component with 11 mesh surface(s) spanning 14.94 game units",
-      "semantic hints: 11 playable label(s), 0 decorative label(s); hints only affected family ranking",
-      "selected 56 primitive(s) by flat horizontal game-surface geometry; 29 playable and 0 decorative semantic hint(s) remained soft ranking signals",
-      "surfaceCount:19",
-      "meshPlayableSurfaceCount:11",
-      "estimatedCompletionSeconds:30"
+      "mesh-derived platformer surfaces from 511 geometric primitive(s)",
+      "selected depth-coherent family with 110 primitive(s) at model z 0..0",
+      "excluded 401 primitive(s) narrower than the 0.72 game-unit character footprint",
+      "selected traversable component with 110 mesh surface(s) spanning 149.4 game units",
+      "semantic hints: 110 playable label(s), 0 decorative label(s); hints only affected family ranking",
+      "selected 511 primitive(s) by flat horizontal game-surface geometry; 300 playable and 0 decorative semantic hint(s) remained soft ranking signals",
+      "surfaceCount:118",
+      "meshPlayableSurfaceCount:110",
+      "estimatedCompletionSeconds:170"
     ],
     "extractionBlockers": []
   },
   "authoredSeconds": 30,
   "cameraBounds": {
     "minX": -0.8,
-    "maxX": 17.44,
+    "maxX": 151.9,
     "minY": -0.8,
-    "maxY": 3.34
+    "maxY": 3.5140000000000002
   },
   "evidence": {
-    "geometryReport": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
-    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "routePrimaryScreenshotSha256": "sha256-2028977a8c39901cbcf72e9d053b38e1bd85ede8f30614349a7c23f1798f4d23"
+    "geometryReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "routePrimaryScreenshotSha256": "sha256-d4f022a76741f420a477f38eb55c34667dcc317fcbf90e70604546f0cb7488b9"
   },
   "design": {
     "minPlayableSeconds": 30,
@@ -495,7 +2277,7 @@ export const gameGeometryContract = {
     "playableSurfaceLayoutValidated": true,
     "playableSurfaceMap": {
       "assetId": "showcaseKenneyVerdantPlatformerWorld",
-      "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
       "source": "asset-mesh-extracted",
       "surfaces": [
         {
@@ -728,22 +2510,23 @@ export const gameGeometryContract = {
     "characterWorldScaleCompatible": true,
     "styleCompatible": true,
     "primitivePrimaryWorldRejected": true,
+    "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "assetPairEvidence": {
       "category": "platformer",
       "assets": [
         "showcaseKenneyOobiPlatformerHero",
         "showcaseKenneyVerdantPlatformerWorld"
       ],
-      "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-      "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
-      "screenshotSha256": "sha256-2028977a8c39901cbcf72e9d053b38e1bd85ede8f30614349a7c23f1798f4d23",
+      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+      "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+      "screenshotSha256": "sha256-d4f022a76741f420a477f38eb55c34667dcc317fcbf90e70604546f0cb7488b9",
       "geometryEvidence": {
         "category": "platformer",
         "kind": "platformer-playable-surface-map",
         "source": "asset-mesh-extracted",
-        "report": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
-        "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-        "routePrimaryScreenshotSha256": "sha256-2028977a8c39901cbcf72e9d053b38e1bd85ede8f30614349a7c23f1798f4d23",
+        "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+        "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        "routePrimaryScreenshotSha256": "sha256-d4f022a76741f420a477f38eb55c34667dcc317fcbf90e70604546f0cb7488b9",
         "assets": [
           {
             "id": "showcaseKenneyOobiPlatformerHero",
@@ -751,11 +2534,11 @@ export const gameGeometryContract = {
           },
           {
             "id": "showcaseKenneyVerdantPlatformerWorld",
-            "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+            "hash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"
           }
         ]
       },
-      "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+      "compositionReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
       "checks": [
         {
           "id": "binding-overlap",
@@ -781,7 +2564,6 @@ export const gameGeometryContract = {
       "verdict": "pass",
       "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
       "blockers": []
-    },
-    "playableSurfaceEvidence": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json"
+    }
   }
 } as const;

@@ -47,7 +47,7 @@ export function createAura3D109ReleaseReadinessReport(root = process.cwd(), opti
   const releaseReport = (name: string) => `tests/reports/aura3d${releaseDigits}/${name}.json`;
   const releaseGateDoc = existsSync(join(root, `docs/project/aura3d-${releaseDigits}-release-gates.md`))
     ? `docs/project/aura3d-${releaseDigits}-release-gates.md`
-    : "docs/project/aura3d-109-release-gates.md";
+    : "docs/project/release/release-checklist.md";
   const versionedSourceNames = validateVersionedSourceNames({ root });
   const gates: Aura3D109GateResult[] = [
     {

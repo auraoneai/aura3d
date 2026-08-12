@@ -53,7 +53,9 @@ Primary visual review artifacts:
 - `tests/reports/advanced-examples-gallery/current-contact-sheet.png` - current screenshot contact sheet for human review.
 - `tests/reports/advanced-examples-gallery/visual-review-report.json` - generated evidence report; this is the anti-regression record that keeps smoke pass separate from showcase acceptance.
 - `tests/reports/advanced-examples-gallery/reusable-systems-disclosure-audit.json` - generated structural audit report.
-- `ACCEPTANCE_PLAN.md` - the 10/10 execution contract: gates, capability boundaries, per-route blockers, promotion rules, and evidence commands.
+- The acceptance contract is the 2.0 showcase quality gate in
+  `docs/project/showcase/quality-gates.md`; this README records only this app's
+  current route and evidence boundary.
 
 ## Source Acceptance State
 

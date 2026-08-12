@@ -43,7 +43,7 @@ const artifacts = {
   deployedRoutes: inspectJson("launch-evidence/deployed-routes.json"),
   visualApproval: verifyVisualApprovalBinding(inspectJson("launch-evidence/visual-approval.json")),
   launchAssetEvidence: inspectJson("assets/source/aura-clash-launch-asset-evidence.json"),
-  prdCoverage: inspectJson("launch-evidence/prd-evidence-coverage.json"),
+  documentationEvidence: inspectJson("launch-evidence/documentation-evidence.json"),
   wiring: inspectJson("launch-evidence/evidence-wiring.json"),
   crossRuntime: inspectJson("launch-evidence/cross-runtime-evidence.json")
 };
@@ -51,8 +51,8 @@ const artifacts = {
 const gates = [
   {
     id: "fighter-runtime-visual-validation",
-    prdLineHint: 264,
-    prdLabel:
+    documentationLineHint: 264,
+    documentationLabel:
       "Quaternius-derived fighter visual validation proof remains pending until `apps/aura-clash-showcase/launch-evidence/first-frame.json`, `apps/aura-clash-showcase/launch-evidence/first-frame.png`, `apps/aura-clash-showcase/launch-evidence/review-package.md`, `apps/aura-clash-showcase/launch-evidence/visual-approval.json`, and `apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json` prove the fighters are visible, grounded, correctly oriented, readable, and free of detached hair/clothes/accessories in runtime/browser screenshots.",
     label:
       "Quaternius-derived fighter visual validation proof: fighters visible, grounded, oriented, readable, and no detached accessories.",
@@ -68,8 +68,8 @@ const gates = [
   },
   {
     id: "source-is-not-approval-boundary",
-    prdLineHint: 265,
-    prdLabel:
+    documentationLineHint: 265,
+    documentationLabel:
       "Source manifests and typed asset declarations do not complete visual screenshot approval, deployed GLB reachability, or human visual quality approval; completion requires `first-frame.json`, `first-frame.png`, `review-package.md`, `deployed-routes.json`, and `visual-approval.json` with `ok: true`.",
     label:
       "Source manifests and typed assets are separated from screenshot approval, deployed GLB reachability, and human visual approval.",
@@ -85,40 +85,40 @@ const gates = [
   },
   {
     id: "capture-and-review-first-frame",
-    prdLineHint: 443,
-    prdLabel: "Capture and review first-frame screenshot.",
+    documentationLineHint: 443,
+    documentationLabel: "Capture and review first-frame screenshot.",
     label: "Capture and review first-frame screenshot.",
     commandPath: "npm run launch:screenshot && npm run launch:review-package",
     artifactIds: ["firstFrameJson", "firstFramePng", "reviewPackage"]
   },
   {
     id: "build-app-and-marketing",
-    prdLineHint: 463,
-    prdLabel: "Build app and marketing site.",
+    documentationLineHint: 463,
+    documentationLabel: "Build app and marketing site.",
     label: "Build app and marketing site.",
     commandPath: "npm run launch:local-gates",
     artifactIds: ["localGates"]
   },
   {
     id: "deploy-to-vercel",
-    prdLineHint: 464,
-    prdLabel: "Deploy to Vercel.",
+    documentationLineHint: 464,
+    documentationLabel: "Deploy to Vercel.",
     label: "Deploy to Vercel.",
     commandPath: "AURA_CLASH_RUN_VERCEL_DEPLOY=1 npm run launch:proof",
     artifactIds: ["vercelDeploy"]
   },
   {
     id: "deployed-route-and-glb-200",
-    prdLineHint: 465,
-    prdLabel: "Confirm deployed route and GLB URLs return 200.",
+    documentationLineHint: 465,
+    documentationLabel: "Confirm deployed route and GLB URLs return 200.",
     label: "Confirm deployed route and GLB URLs return 200.",
     commandPath: "AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 npm run launch:proof",
     artifactIds: ["deployedRoutes"]
   },
   {
     id: "gameplay-smoke",
-    prdLineHint: 491,
-    prdLabel:
+    documentationLineHint: 491,
+    documentationLabel:
       "Gameplay smoke passes. Source strengthened in `apps/aura-clash-showcase/tests/playable-smoke.spec.ts` for runtime responsiveness and no-scene-reconstruction hooks, but no pass is claimed until executed evidence exists.",
     label: "Gameplay smoke passes.",
     commandPath: "npm run launch:local-gates",
@@ -126,8 +126,8 @@ const gates = [
   },
   {
     id: "visual-screenshot-approved",
-    prdLineHint: 492,
-    prdLabel: "Visual screenshot approved by user.",
+    documentationLineHint: 492,
+    documentationLabel: "Visual screenshot approved by user.",
     label: "Visual screenshot approved by user.",
     commandPath:
       "AURA_CLASH_APPROVED_BY='<name>' AURA_CLASH_VISUAL_APPROVAL_CONFIRMED=1 npm run launch:approve-visual",
@@ -135,8 +135,8 @@ const gates = [
   },
   {
     id: "deployed-route-confirmed",
-    prdLineHint: 494,
-    prdLabel: "Deployed route confirmed.",
+    documentationLineHint: 494,
+    documentationLabel: "Deployed route confirmed.",
     label: "Deployed route confirmed.",
     commandPath: "AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 npm run launch:proof",
     artifactIds: ["deployedRoutes"]
@@ -161,9 +161,9 @@ const report = {
   ok: openGates.length === 0,
   generatedAt: new Date().toISOString(),
   appRoot: toRepoRelative(appRoot),
-  prd: "docs/project/showcase/aura-clash-showcase-plan.md",
+  documentation: "docs/examples/aura-clash.md",
   boundary:
-    "This report classifies readiness only. It does not mark PRD checkboxes and does not replace generated evidence, deployed proof, or explicit user approval.",
+    "This report classifies readiness only. It never edits documentation and does not replace generated evidence, deployed proof, or explicit user approval.",
   summary: {
     gateCount: gates.length,
     readyGateCount: gates.length - openGates.length,

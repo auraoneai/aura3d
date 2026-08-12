@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-Status: blocked pending final PRD and release gates
+Status: release candidate; publication pending remaining final PRD gates
 
 ## Release identity
 
@@ -21,7 +21,7 @@ Do not publish while any of the following is true:
 
 - a required final-PRD row is unchecked;
 - an accepted example lacks current source, canvas, and full-page inspection;
-- the unfiltered 13-route audit is not green from the release candidate;
+- the unfiltered retained-route audit is not green from the release candidate;
 - same-workload current-Three.js comparison requirements are incomplete;
 - docs, site, tarballs, package manifests, and the lockfile disagree on 2.0.0;
 - npm authentication, package ownership, provenance, GitHub permissions, or
@@ -55,5 +55,8 @@ Do not publish while any of the following is true:
 ## Current state
 
 This handoff is intentionally not approval to publish. The source manifests
-have been moved to the 2.0.0 candidate line, but visual, comparison, full-suite,
-website, and remote release gates remain authoritative.
+have been moved to the 2.0.0 candidate line; all 19 source and exact-installed
+template lifecycles, the public-surface diff, the packed migration consumer,
+and the bounded 15-workload installed comparison are green. Exact-artifact
+human review, two serial full suites, website verification, and remote release
+gates remain authoritative.

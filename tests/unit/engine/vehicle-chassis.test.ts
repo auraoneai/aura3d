@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createVehicleChassis,
   flatVehicleSurface,
+  groundedFittedModelPosition,
   vehicleChassisSpecFromBounds,
   type VehiclePlanarState,
   type VehicleSurface
@@ -103,6 +104,23 @@ describe("vehicle grounding", () => {
       // A fitted model placed here must never be above or below the road.
       expect(pose.groundedPosition[1]).toBeCloseTo(surfaceHeight, 4);
     }
+  });
+
+  it("lifts a bottom-grounded fitted model by the vertical sweep of pitch and roll", () => {
+    const pose = {
+      groundedPosition: [4, 0.35, -2] as const,
+      rotation: [0.08, 1.2, -0.12] as const
+    };
+    const size = [1.4, 0.8, 3.2] as const;
+    const rendered = groundedFittedModelPosition(pose, size);
+    const expectedLift = Math.abs(Math.sin(pose.rotation[0])) * size[2] / 2
+      + Math.abs(Math.sin(pose.rotation[2])) * size[0] / 2;
+
+    expect(rendered[0]).toBe(pose.groundedPosition[0]);
+    expect(rendered[2]).toBe(pose.groundedPosition[2]);
+    expect(rendered[1]).toBeCloseTo(pose.groundedPosition[1] + expectedLift, 8);
+    // Presentation compensation must not mutate the physical contact-plane evidence.
+    expect(pose.groundedPosition[1]).toBe(0.35);
   });
 
   it("follows a sloped surface instead of a frozen plane", () => {

@@ -7,8 +7,8 @@ const claims = [
     status: "conditional-until-release",
     claim: "A3D is a high-quality Three.js competitor for supported External parity workflows.",
     evidence: [
-      "tests/reports/external-parity-threejs-visual-parity.json",
-      "tests/reports/external-parity-external-consumer.json"
+      "tests/reports/current-head-to-head-installed/report.json",
+      "tests/reports/current-head-to-head/aggregate.json"
     ]
   },
   {
@@ -16,8 +16,8 @@ const claims = [
     status: "supported",
     claim: "A packed @aura3d/engine package can be installed into a fresh Vite app and render through public APIs.",
     evidence: [
-      "tests/reports/external-parity-package-smoke.json",
-      "tests/reports/external-parity-external-consumer.json"
+      "tests/reports/packed-migration-consumer.json",
+      "tests/reports/installed-template-lifecycle.json"
     ]
   },
   {
@@ -44,7 +44,11 @@ const blockedClaims = read("docs/project/claim-guidelines.md");
 const knownGaps = read("docs/project/status/known-limits.md");
 checks.push({
   id: "blocked-claims-preserved",
-  pass: ["Broad Three.js replacement", "Unity replacement", "Unreal replacement", "Full game engine replacement"].every((phrase) => blockedClaims.includes(phrase) && knownGaps.includes(phrase)),
+  pass:
+    /Three\.js\/Babylon\/Unity\/Unreal replacement/i.test(blockedClaims) &&
+    /scoped\s+comparison\s+language\s+only/i.test(blockedClaims) &&
+    /broad replacement or ecosystem-parity claim/i.test(knownGaps) &&
+    /arbitrary-mesh game-engine parity/i.test(knownGaps),
   detail: "Blocked broad replacement claims must remain blocked in blocked-claims and known-gaps docs."
 });
 

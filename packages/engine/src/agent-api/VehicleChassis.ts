@@ -38,6 +38,8 @@ export interface VehicleSurfaceSample {
   readonly normal?: VehicleVec3 | undefined;
   /** Grip multiplier, 1 on tarmac and lower off-track. */
   readonly grip?: number | undefined;
+  /** False when no real surface exists under the complete contact patch. */
+  readonly hit?: boolean | undefined;
 }
 
 /**
@@ -54,7 +56,7 @@ export interface VehicleSurface {
 
 /** Flat surface at a fixed height, for prototypes and tests. */
 export function flatVehicleSurface(height = 0, grip = 1): VehicleSurface {
-  return { sample: () => ({ height, normal: [0, 1, 0], grip }) };
+  return { sample: () => ({ height, normal: [0, 1, 0], grip, hit: true }) };
 }
 
 /**
@@ -72,17 +74,49 @@ export function flatVehicleSurface(height = 0, grip = 1): VehicleSurface {
  */
 export function meshVehicleSurface(query: {
   sample(x: number, z: number): { readonly height: number; readonly normal: readonly [number, number, number]; readonly grip: number; readonly hit: boolean };
-}, options: { readonly offRoadGrip?: number | undefined } = {}): VehicleSurface {
+}, options: {
+  readonly offRoadGrip?: number | undefined;
+  /**
+   * Radius of the tyre contact patch in world units. A wheel is not a zero-area ray:
+   * when the centre ray lands in a small triangle seam, nearby road within this radius
+   * still supports the tyre.
+   */
+  readonly contactPatchRadius?: number | undefined;
+} = {}): VehicleSurface {
   const offRoadGrip = options.offRoadGrip ?? 0.45;
+  const contactPatchRadius = Math.max(0, options.contactPatchRadius ?? 0);
   return {
     sample: (x, z) => {
-      const sample = query.sample(x, z);
+      let sample = query.sample(x, z);
+      if (!sample.hit && contactPatchRadius > 0) {
+        /*
+         * Probe the finite patch from near to far. Selecting the highest hit on the
+         * first successful ring keeps a tyre on the road surface instead of dropping it
+         * to the mesh query's global fallback height, while still reporting a true miss
+         * when the whole contact patch has left the mesh.
+         */
+        // Sparse extracted meshes do not guarantee that the closest triangle lies
+        // on one of eight cardinal/diagonal rays. Probe concentric rings densely
+        // enough to represent the complete circular patch rather than 16 isolated
+        // points; this still runs only after the centre sample is a genuine miss.
+        for (const radius of [0.25, 0.5, 0.75, 1].map((fraction) => contactPatchRadius * fraction)) {
+          const hits = Array.from({ length: 16 }, (_, index) => {
+            const angle = index * Math.PI / 8;
+            return query.sample(x + Math.cos(angle) * radius, z + Math.sin(angle) * radius);
+          }).filter((candidate) => candidate.hit);
+          if (hits.length > 0) {
+            sample = hits.reduce((highest, candidate) => candidate.height > highest.height ? candidate : highest);
+            break;
+          }
+        }
+      }
       return {
         height: sample.height,
         normal: sample.normal as VehicleVec3,
         // A point with no triangle under it is off the drivable mesh entirely, which
         // should be slippery rather than silently full-grip.
-        grip: sample.hit ? sample.grip : offRoadGrip
+        grip: sample.hit ? sample.grip : offRoadGrip,
+        hit: sample.hit
       };
     }
   };
@@ -102,6 +136,12 @@ export interface VehicleChassisSpec {
   readonly rideHeight: number;
   /** Suspension travel available above and below rest, world units. */
   readonly suspensionTravel?: number | undefined;
+  /**
+   * Maximum additional reach supplied by tyre deformation at the contact patch.
+   * This is separate from suspension travel: a compliant tyre seats against small
+   * mesh height discontinuities while a real drop still leaves the wheel airborne.
+   */
+  readonly contactTolerance?: number | undefined;
   /**
    * Spring stiffness as a normalized rate. Higher is firmer: the chassis resists
    * pitch and roll more and settles faster.
@@ -184,6 +224,36 @@ export interface VehiclePose {
   readonly averageCompression: number;
 }
 
+/**
+ * Position a bottom-grounded fitted model without rotating its tyres through the road.
+ *
+ * `groundedPosition` is the physical contact plane. A fitted GLB is translated so its
+ * lowest local Y sits on that plane, but pitch and roll are then applied around the
+ * model node's pivot. Without compensation, the downhill edge of that already-grounded
+ * box rotates below the plane even though all four chassis contacts remain valid. The
+ * required lift is the vertical sweep of the model's half-length and half-width.
+ *
+ * This is a presentation transform only: wheel contact telemetry and the physical
+ * contact plane remain unchanged.
+ */
+export function groundedFittedModelPosition(
+  pose: Pick<VehiclePose, "groundedPosition" | "rotation">,
+  fittedSize: VehicleVec3,
+  options: { readonly contactClearance?: number | undefined } = {}
+): VehicleVec3 {
+  const pitchLift = Math.abs(Math.sin(pose.rotation[0])) * Math.abs(fittedSize[2]) / 2;
+  const rollLift = Math.abs(Math.sin(pose.rotation[2])) * Math.abs(fittedSize[0]) / 2;
+  // A tiny caller-supplied raster clearance keeps a dark tyre circumference from
+  // disappearing into a similarly dark road/contact shadow. It is presentation-only
+  // and should remain a small fraction of wheel radius, never a ride-height offset.
+  const contactClearance = Math.max(0, options.contactClearance ?? 0);
+  return [
+    pose.groundedPosition[0],
+    pose.groundedPosition[1] + pitchLift + rollLift + contactClearance,
+    pose.groundedPosition[2]
+  ];
+}
+
 export interface VehicleChassisTelemetry {
   readonly speed: number;
   readonly speedKph: number;
@@ -231,6 +301,7 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     wheelRadius: positive(spec.wheelRadius, 0.15),
     rideHeight: positive(spec.rideHeight, 0.3),
     suspensionTravel: positive(spec.suspensionTravel ?? spec.rideHeight * 0.35, 0.05),
+    contactTolerance: Math.max(0, spec.contactTolerance ?? spec.wheelRadius * 0.04),
     springRate: positive(spec.springRate ?? 14, 1),
     dampingRatio: positive(spec.dampingRatio ?? 0.72, 0.05),
     maxSteerAngle: positive(spec.maxSteerAngle ?? 0.52, 0.05),
@@ -407,7 +478,7 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     const resolvedWheels: VehicleWheelPose[] = wheels.map((wheel, index) => {
       const sample = samples[index]!.sample;
       const requiredDrop = supportY - sample.height;
-      if (requiredDrop <= maxReach) return wheel;
+      if (requiredDrop <= maxReach + resolved.contactTolerance) return wheel;
       // Out of travel: the wheel hangs at full extension below the supported body and
       // reports the gap to the surface it cannot reach.
       const hangingCentreY = supportY - maxReach + resolved.wheelRadius;
@@ -427,9 +498,22 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
      * lower than right is roll. Derived rather than imposed, so the attitude can only
      * be one the springs produced.
      */
+    /*
+     * A rigid body rests on the wheels that can reach it. Do not derive its attitude
+     * from the mesh query's fallback height under an explicitly ungrounded wheel: that
+     * made one tyre over a seam roll the whole car toward the bottom of the mesh. With
+     * three supported corners, the missing corner is the planar continuation of the
+     * other three; with fewer, use the supported median rather than inventing a slope.
+     */
+    const missingSurface = samples.map((entry) => entry.sample.hit === false);
+    const supportedCornerHeights = supportPlaneValues(cornerHeights, missingSurface);
+    const supportedSurfaceHeights = supportPlaneValues(
+      samples.map((entry) => entry.sample.height),
+      missingSurface
+    );
     const cornerBy = (id: VehicleWheelId) => {
       const index = WHEEL_LAYOUT.findIndex((wheel) => wheel.id === id);
-      return cornerHeights[index] ?? bodyY;
+      return supportedCornerHeights[index] ?? bodyY;
     };
     const frontHeight = (cornerBy("front-left") + cornerBy("front-right")) / 2;
     const rearHeight = (cornerBy("rear-left") + cornerBy("rear-right")) / 2;
@@ -454,7 +538,7 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
      */
     const surfaceHeightAt = (id: VehicleWheelId) => {
       const index = WHEEL_LAYOUT.findIndex((wheel) => wheel.id === id);
-      return samples[index]?.sample.height ?? 0;
+      return supportedSurfaceHeights[index] ?? 0;
     };
     const surfaceFront = (surfaceHeightAt("front-left") + surfaceHeightAt("front-right")) / 2;
     const surfaceRear = (surfaceHeightAt("rear-left") + surfaceHeightAt("rear-right")) / 2;
@@ -573,6 +657,36 @@ function attitudeLimitForTravel(travel: number, span: number): number {
   const halfSpan = Math.max(1e-6, span / 2);
   const budget = Math.max(0, travel) / 2;
   return Math.asin(Math.min(1, budget / halfSpan));
+}
+
+/** Resolve a rectangular four-corner support plane around any hanging wheels. */
+function supportPlaneValues(values: readonly number[], missingSurface: readonly boolean[]): number[] {
+  const resolved = [values[0] ?? 0, values[1] ?? 0, values[2] ?? 0, values[3] ?? 0];
+  const hanging = missingSurface
+    .map((missing, index) => missing ? index : -1)
+    .filter((index) => index >= 0);
+  if (hanging.length === 0) return resolved;
+  if (hanging.length === 1) {
+    const missing = hanging[0]!;
+    // Layout: front-left, front-right, rear-left, rear-right.
+    const extrapolated = [
+      resolved[1]! + resolved[2]! - resolved[3]!,
+      resolved[0]! + resolved[3]! - resolved[2]!,
+      resolved[0]! + resolved[3]! - resolved[1]!,
+      resolved[1]! + resolved[2]! - resolved[0]!
+    ];
+    resolved[missing] = extrapolated[missing]!;
+    return resolved;
+  }
+  const supported = resolved.filter((_value, index) => !missingSurface[index]);
+  const sorted = supported.sort((left, right) => left - right);
+  const median = sorted.length === 0
+    ? 0
+    : sorted.length % 2 === 1
+      ? sorted[Math.floor(sorted.length / 2)]!
+      : (sorted[sorted.length / 2 - 1]! + sorted[sorted.length / 2]!) / 2;
+  for (const index of hanging) resolved[index] = median;
+  return resolved;
 }
 
 function clamp(value: number, min: number, max: number): number {

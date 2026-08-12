@@ -1,7 +1,7 @@
 # Architecture Decision Records — the R11 architecture lock
 
-R11 of [`Aura3D-1.6-Replatform-PRD.md`](../../../Aura3D-1.6-Replatform-PRD.md) forbids introducing a
-new engine subsystem during 1.6 without first answering, in writing:
+The Aura3D 2.0 architecture contract forbids introducing a
+new engine subsystem for 2.0 without first answering, in writing:
 
 1. Does Three.js already solve this?
 2. Does another mature ecosystem library solve this?
@@ -56,7 +56,7 @@ without command output is not evidence.
 ## Index
 
 Maintained as ADRs land. An empty index is a legitimate state — it means no new subsystem has
-been introduced, which is the intended default for 1.6. ADR 0001 is not a new subsystem; it
+been introduced, which is the intended default for 2.0. ADR 0001 is not a new subsystem; it
 records why an existing one could not be removed.
 
 | ADR | Title | Status |
@@ -70,3 +70,5 @@ records why an existing one could not be removed.
 | [0007](0007-ecs-and-scripting-are-optional-compatibility-layers.md) | ECS and scripting are optional compatibility/authoring layers | accepted; supersedes ADR 0001 permanence |
 | [0008](0008-browser-roots-and-node-utilities-are-separated.md) | Browser package roots and Node-only utilities are separated | accepted |
 | [0009](0009-runtime-descriptors-cannot-claim-capabilities.md) | Public descriptors cannot claim unmounted runtime capabilities | accepted |
+| [0010](0010-lean-entrypoints-compose-existing-owners.md) | Lean entrypoints compose existing owners | accepted |
+| [0011](0011-public-rendering-adapters-remain-owned-by-rendering.md) | Public rendering adapters remain owned by rendering | accepted |

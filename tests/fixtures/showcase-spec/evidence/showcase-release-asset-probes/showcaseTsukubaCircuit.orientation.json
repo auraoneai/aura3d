@@ -1,0 +1,18 @@
+{
+  "source": "manifest-override",
+  "view": "isolated-track-overview",
+  "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+  "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts plus current Turbo Drift route inspection",
+  "checkedAt": "2026-08-11T19:09:20.014Z",
+  "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit",
+  "renderedProbe": {
+    "url": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+    "sha256": "sha256-6202fdb8417b0e734912e6191de5e2950f5b0bdf7132b809c42e27c309d145c6",
+    "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    "checkedAt": "2026-08-11T19:09:20.014Z",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit"
+  },
+  "messages": [
+    "The isolated overview proves the current asset hash and complete source bounds; the gameplay and route-primary frames separately prove the selected Course 2000 road at player scale."
+  ]
+}

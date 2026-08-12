@@ -114,12 +114,14 @@ describe("R11 — architecture lock", () => {
     )
       .split("\n")
       .filter((line) => line.startsWith("A\t"));
-    const phase2 = json<{ readonly addedPackageSource: Readonly<Record<string, string>> }>(
+    const phase2 = json<{
+      readonly addedPackages: Readonly<Record<string, string>>;
+      readonly addedPackageSource: Readonly<Record<string, string>>;
+    }>(
       "tools/final-subsystem-ownership/adr-registry.json"
     );
-    const allowed = [
+    const allowed = [...new Set([
       "A\tpackages/assets/src/gltf-runtime.ts",
-      "A\tpackages/engine/src/agent-api/lean-base.ts",
       "A\tpackages/engine/src/agent-api/lean-game.ts",
       "A\tpackages/engine/src/agent-api/lean-product.ts",
       "A\tpackages/engine/src/agent-api/lean.ts",
@@ -128,7 +130,7 @@ describe("R11 — architecture lock", () => {
       "A\tpackages/rendering/src/lean/LeanProductRenderer.ts",
       "A\tpackages/rendering/src/lean/LeanProductionRenderer.ts",
       ...Object.keys(phase2.addedPackageSource).map((path) => `A\t${path}`)
-    ].sort();
+    ])].sort();
     expect(addedFiles.sort(), `unexpected source additions during 1.6: ${addedFiles.join(", ")}`).toEqual(allowed);
 
     const addedPackages = execFileSync(
@@ -138,15 +140,14 @@ describe("R11 — architecture lock", () => {
     )
       .split("\n")
       .filter((line) => line.startsWith("A\t"));
-    expect(addedPackages, `unreviewed new packages during 1.6: ${addedPackages.join(", ")}`).toEqual([
-      "A\tpackages/navigation-recast/package.json",
-      "A\tpackages/physics-rapier/package.json"
-    ]);
+    const allowedPackages = Object.keys(phase2.addedPackages).map((path) => `A\t${path}`).sort();
+    expect(addedPackages.sort(), `unreviewed new packages during 2.0: ${addedPackages.join(", ")}`)
+      .toEqual(allowedPackages);
   });
 
   it("has an ADR for each decision that reached the lock", () => {
     // The original lock decisions remain, and every Phase 2 source addition resolves to a tracked ADR.
-    const adrs = execFileSync("git", ["ls-files", "docs/architecture/adr"], { encoding: "utf8" })
+    const adrs = execFileSync("rg", ["--files", "docs/architecture/adr"], { encoding: "utf8" })
       .split("\n")
       .filter((path) => path.endsWith(".md") && !path.endsWith("README.md"));
     expect(adrs.length).toBeGreaterThanOrEqual(2);

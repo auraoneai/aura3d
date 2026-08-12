@@ -1,0 +1,19 @@
+{
+  "source": "manifest-override",
+  "forwardAxis": "+Z",
+  "upAxis": "+Y",
+  "assetHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+  "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts plus Turbo Drift route-facing inspection",
+  "checkedAt": "2026-08-11T18:57:52.055Z",
+  "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCcByFormulaOpponent",
+  "renderedProbe": {
+    "url": "tests/reports/showcase-release-asset-probes/showcaseCcByFormulaOpponent.png",
+    "sha256": "sha256-3f7dd9fc9c9d8ad01cb62d71f8e2b30a7791bbfb6b5bbf45125c367483dcfd1b",
+    "assetHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+    "checkedAt": "2026-08-11T18:57:52.055Z",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCcByFormulaOpponent"
+  },
+  "messages": [
+    "The blue Formula rival's +Z-forward, +Y-up pose was checked in the isolated release probe and as an independently driven car in the current route-primary and gameplay frames."
+  ]
+}

@@ -158,6 +158,61 @@ describe("vehicle contact against a real mesh", () => {
     expect(surface.sample(50, 50).grip).toBe(0.2);
   });
 
+  it("uses the finite tyre contact patch across a small mesh seam without bridging a real void", () => {
+    const island = grid(4, 8, () => 0.25);
+    const query = createMeshSurfaceQuery(island, undefined, { fallbackHeight: -2 });
+    const pointSurface = meshVehicleSurface(query, { offRoadGrip: 0.2 });
+    const tyreSurface = meshVehicleSurface(query, { offRoadGrip: 0.2, contactPatchRadius: 0.12 });
+
+    // The centre ray is just beyond the last triangle, but a real 0.12-unit contact patch
+    // still overlaps the road and must not drop the chassis to the global fallback height.
+    expect(pointSurface.sample(2.04, 0)).toMatchObject({ height: -2, grip: 0.2 });
+    expect(tyreSurface.sample(2.04, 0)).toMatchObject({ height: 0.25, grip: 1 });
+    // A genuine void remains a miss; contact-patch tolerance is not an infinite bridge.
+    expect(tyreSurface.sample(3, 0)).toMatchObject({ height: -2, grip: 0.2 });
+  });
+
+  it("covers the circular contact patch between the old eight probe rays", () => {
+    const patchRadius = 0.12;
+    const supportedRadius = patchRadius * 0.75;
+    const supportedAngle = Math.PI / 8;
+    const supported = {
+      x: Math.cos(supportedAngle) * supportedRadius,
+      z: Math.sin(supportedAngle) * supportedRadius
+    };
+    const sparseQuery = {
+      sample(x: number, z: number) {
+        const hit = Math.hypot(x - supported.x, z - supported.z) < 0.006;
+        return {
+          height: hit ? 0.4 : -2,
+          normal: [0, 1, 0] as const,
+          grip: hit ? 1 : 0.2,
+          hit
+        };
+      }
+    };
+    const surface = meshVehicleSurface(sparseQuery, { offRoadGrip: 0.2, contactPatchRadius: patchRadius });
+
+    expect(surface.sample(0, 0)).toMatchObject({ height: 0.4, grip: 1, hit: true });
+  });
+
+  it("derives rigid-body attitude from three supported wheels instead of a hanging-wheel fallback", () => {
+    const oneCornerVoid = {
+      sample: (x: number, z: number) => x > 1 && z < 0
+        ? { height: -2, normal: [0, 1, 0] as const, grip: 0.2, hit: false }
+        : { height: 0, normal: [0, 1, 0] as const, grip: 1, hit: true }
+    };
+    const chassis = createVehicleChassis(SPEC, meshVehicleSurface(oneCornerVoid, { offRoadGrip: 0.2 }));
+    const pose = chassis.reset({ x: 0, z: 0, heading: 0, speed: 8, steer: 0, slip: 0 });
+
+    expect(pose.grounded).toBe(false);
+    expect(pose.wheels.filter((wheel) => wheel.grounded)).toHaveLength(3);
+    // The missing tyre hangs, but the rigid body continues the plane defined by the
+    // other three contact patches instead of rolling toward the -2 fallback height.
+    expect(Math.abs(pose.rotation[0])).toBeLessThan(0.05);
+    expect(Math.abs(pose.rotation[2])).toBeLessThan(0.05);
+  });
+
   it("still supports a flat surface for prototypes", () => {
     const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0, 1));
     const pose = chassis.reset({ x: 0, z: 0, heading: 0, speed: 0, steer: 0, slip: 0 });

@@ -1,6 +1,6 @@
 # Aura3D Editor And Visual Scripting API
 
-Status: 1.1.0 scoped release guidance.
+Status: Aura3D 2.0.0 guidance.
 
 This page documents the safe authoring-tool pattern for Aura3D editor-runtime
 and visual scripting work. It is scoped to browser authoring, timeline runtime
@@ -30,7 +30,7 @@ Aura3D currently exposes reusable packages:
   runtime nodes, runs `app.onFrame(...)`, steps deterministically through
   `app.step(dt)`, and collects evidence.
 
-Aura3D 1.0.5 must prove the bridge between these layers. A visual graph or
+Aura3D 2.0 must prove the bridge between these layers. A visual graph or
 editor project is not release-ready until it has browser evidence showing that
 the authored data mutates the mounted Aura app.
 
@@ -113,7 +113,7 @@ console.log(json.length, evidence.evidence.sourceLicenseAssetEvidence);
 
 Release docs and examples should count source/license-bearing asset entries.
 String-only asset references are allowed only for legacy or importer-specific
-documents and should not be used as 1.0.5 release proof.
+documents and should not be used as 2.0 release proof.
 
 ## Timeline Runtime Bridge
 
@@ -349,7 +349,7 @@ function applyVisualGraphSideEffects(result: ReturnType<VisualGraphExecutor["exe
 }
 ```
 
-Keep the side-effect adapter small and testable. 1.0.5 should replace repeated
+Keep the side-effect adapter small and testable. 2.0 requires replace repeated
 route-local adapters with a documented public bridge only after browser evidence
 proves it.
 

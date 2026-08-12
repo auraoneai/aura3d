@@ -1,6 +1,6 @@
 # Release Tracks
 
-Date: 2026-08-08
+Date: 2026-08-11
 Status: 2.0.0 release-candidate tracks
 
 Aura3D releases are split into independent tracks. Passing one track does not
@@ -77,7 +77,9 @@ Current status for this track: the retained public `examples/` inventory is 13
 routes with per-route claim boundaries and human source/canvas/page
 dispositions. The final unfiltered audit after the latest presentation repairs
 passed with exactly 13 routes and zero failures. Internalized routes and
-prototype-blocked showcases cannot be promoted by this track, and this result
+unapproved showcases cannot be promoted by this track. The three materially
+rebuilt game routes have current automated evidence but remain promotion-blocked
+until an independent reviewer approves their exact final artifacts. This result
 does not close the independent package, comparison, or marketing tracks.
 
 ## Track 3: Marketing Launch Release

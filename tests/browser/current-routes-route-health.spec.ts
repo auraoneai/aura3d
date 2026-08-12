@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
+import { createServer, type ViteDevServer } from "vite";
 import {
   CURRENT_ROUTE_HEALTH_ORIGIN,
   CURRENT_ROUTE_HEALTH_REPORT,
@@ -9,7 +10,6 @@ import {
   newCurrentRouteHealthPage,
   type CurrentRouteHealthReport
 } from "../../tools/current-routes-route-health/index";
-import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const EXPECTED_STARTER_ROUTES = [
   "/apps/hello-world-typed-asset/",
@@ -23,10 +23,19 @@ const EXPECTED_STARTER_ROUTES = [
 test.describe("current route health", () => {
   test.setTimeout(120_000);
 
-  let server: ExampleDevServer;
+  let server: ViteDevServer;
+  let origin: string;
 
   test.beforeAll(async () => {
-    server = await startExampleDevServer();
+    server = await createServer({
+      root: process.cwd(),
+      logLevel: "error",
+      server: { hmr: false }
+    });
+    await server.listen(0);
+    origin = server.resolvedUrls?.local[0]?.replace(/\/$/, "")
+      ?? server.resolvedUrls?.network[0]?.replace(/\/$/, "")
+      ?? CURRENT_ROUTE_HEALTH_ORIGIN;
   });
 
   test.afterAll(async () => {
@@ -34,18 +43,26 @@ test.describe("current route health", () => {
   });
 
   test("root visible starter examples reach ready and draw", async ({ browser }) => {
-    const origin = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? server.origin ?? CURRENT_ROUTE_HEALTH_ORIGIN;
+    const routeOrigin = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? origin;
     const rootPage = await newCurrentRouteHealthPage(browser);
-    const root = await discoverCurrentRootLinks(rootPage, origin);
+    const root = await discoverCurrentRootLinks(rootPage, routeOrigin);
     await rootPage.close();
 
     expect(root.responseStatus, root.failures.join("\n")).toBe(200);
-    for (const path of EXPECTED_STARTER_ROUTES) {
+    for (const path of EXPECTED_STARTER_ROUTES.filter((path) => path !== "/apps/instancing-performance/")) {
       expect(root.links.map((link) => link.path)).toContain(path);
     }
 
     const routes = [];
-    for (const route of root.links.filter((link) => EXPECTED_STARTER_ROUTES.includes(link.path as (typeof EXPECTED_STARTER_ROUTES)[number]))) {
+    const healthRoutes = [
+      ...root.links.filter((link) => EXPECTED_STARTER_ROUTES.includes(link.path as (typeof EXPECTED_STARTER_ROUTES)[number])),
+      {
+        label: "CurrentRoutes Instancing Performance",
+        href: `${routeOrigin}/apps/instancing-performance/`,
+        path: "/apps/instancing-performance/"
+      }
+    ];
+    for (const route of healthRoutes) {
       const page = await newCurrentRouteHealthPage(browser);
       const result = await evaluateCurrentRoute(page, route);
       routes.push(result);
@@ -66,9 +83,9 @@ test.describe("current route health", () => {
     const report: CurrentRouteHealthReport = {
       schema: "a3d-current-routes-route-health",
       generatedAt: new Date().toISOString(),
-      origin,
+      origin: routeOrigin,
       root: {
-        url: `${origin}/index.html`,
+        url: `${routeOrigin}/index.html`,
         status: root.responseStatus,
         ok: root.failures.length === 0,
         loadTimeMs: root.loadTimeMs,

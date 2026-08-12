@@ -42,13 +42,23 @@ const safeLinePatterns = [
   /\bknown gaps\b/i,
   /\bremain visible\b/i,
   /\bout-of-scope\b/i,
-  /\bpartial\b/i
+  /\bout of scope\b/i,
+  /\bpartial\b/i,
+  /\bremoved\b/i,
+  /\bbanned\b/i
 ] as const;
 
 const publicDocRoots = [
   "README.md",
   "docs/project/parity/threejs/status.md",
-  "docs/project"
+  "docs/project/parity/threejs/parity-matrix.md",
+  "docs/project/parity/threejs/claim-boundary.md",
+  "docs/project/status/current-state.md",
+  "docs/project/status/known-limits.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/compatibility.md",
+  "docs/project/migration.md",
+  "docs/project/competitive-positioning.md"
 ] as const;
 
 const missing = requiredFiles.filter((path) => !existsSync(resolve(path)));

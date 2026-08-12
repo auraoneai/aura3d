@@ -1,6 +1,6 @@
 # Aura3D Known Limits
 
-Date: 2026-08-08
+Date: 2026-08-11
 Status: canonical limitations doc
 
 This file is the public limitations source for project docs, release copy, and
@@ -52,11 +52,14 @@ guide or README must include the narrower wording.
 - Public platformer routes require retained playable-surface evidence that
   binds the character, contact point, collision, checkpoint path, hazards,
   finish, camera, and visible world geometry.
-- Turbo Drift Circuit and Skyline Runner retain bounded certified asset-pair,
-  mounted gameplay, route-local AI/challenge, and deploy evidence. They are
-  prototype-blocked during the current visual rebuild; the July 19 review is
-  stale and does not approve current source. None of this generalizes to
-  arbitrary assets or production games.
+- Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner have materially
+  rebuilt gameplay and current bounded route evidence. Skyline's authored
+  Level 1 is constrained to a 120–180-second completion window; Turbo retains
+  distinct typed vehicles, four-lap progression, and per-wheel circuit contact;
+  Blockfall retains hold/queue, line-clear, game-over, reset, and progression
+  proof. All three remain promotion-blocked until independent review approves
+  their exact final artifacts. None of this generalizes to arbitrary assets,
+  physical tyre simulation, or production games.
 
 ## Asset Limits
 
@@ -91,11 +94,13 @@ guide or README must include the narrower wording.
 - The retained 54-row Three.js comparison and its bundle/developer-friction
   measurements use `three@0.165.0`. They are historical regression evidence,
   not evidence of parity with the locked current `three@0.185.1` ecosystem.
-- The current r185 comparison program now includes the bounded WebGPU
-  architecture row and one bounded ShaderMaterial/TSL custom-material control.
-  General TSL/node-material and realistic companion-stack workloads remain
-  incomplete. Aura3D therefore makes
-  no current broad head-to-head, replacement, or ecosystem-parity claim.
+- The current r185.1 comparison program passes all 15 selected correctness
+  workloads from 29 freshly packed and npm-installed Aura3D 2.0.0 tarballs.
+  Every workload retains explicit losses and a claim boundary. The aggregate
+  remains incomplete because the full repeated-performance protocol,
+  clean-machine reproduction, independent gallery review, general TSL/node-
+  material breadth, and real-device XR are open. Aura3D therefore makes no
+  current broad replacement or ecosystem-parity claim.
 - `tests/reports/` artifacts may be local or ignored; they must be regenerated
   in release runs or attached as immutable artifacts.
 - Nonblank screenshots prove only that something rendered.

@@ -170,7 +170,10 @@ export interface GameRacingSceneBinding {
    * Returns `undefined` when the topology has no mesh, so a caller must decide what to do
    * rather than silently receiving a flat plane that looks like it works.
    */
-  vehicleSurface(options?: { readonly offRoadGrip?: number }): VehicleSurface | undefined;
+  vehicleSurface(options?: {
+    readonly offRoadGrip?: number;
+    readonly contactPatchRadius?: number;
+  }): VehicleSurface | undefined;
 }
 
 export interface GameRacingPresentationCameraOptions {
@@ -445,7 +448,8 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
       const query = resolveSurfaceQuery();
       if (!query) return undefined;
       return meshVehicleSurface(query, {
-        ...(surfaceOptions?.offRoadGrip === undefined ? {} : { offRoadGrip: surfaceOptions.offRoadGrip })
+        ...(surfaceOptions?.offRoadGrip === undefined ? {} : { offRoadGrip: surfaceOptions.offRoadGrip }),
+        ...(surfaceOptions?.contactPatchRadius === undefined ? {} : { contactPatchRadius: surfaceOptions.contactPatchRadius })
       });
     }
   };

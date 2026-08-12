@@ -75,11 +75,18 @@ export function applyGeneratedGameTemplateEvidence(
 ): ShowcaseGameTemplateArtifacts {
   if (spec.category === "game-racing" && spec.racing && !spec.racing.raceDesign.trackTopologyEvidence) {
     const evidencePath = `game-template/${spec.routeId}-racing-track-topology.json`;
+    const currentPlan = createRacingTemplatePlan(spec.racing, options);
     const racing: ShowcaseRacingSpec = {
       ...spec.racing,
       raceDesign: {
         ...spec.racing.raceDesign,
         trackTopologyEvidence: evidencePath,
+        // A retained composition report can carry the previous extraction. When
+        // the current asset can be inspected, make that extraction authoritative
+        // for both the generated geometry contract and the route/design metadata.
+        // Otherwise one generated file can contain a current `topology` and a
+        // contradictory stale `design.trackTopology`.
+        trackTopology: currentPlan.topology,
         ...(spec.racing.raceDesign.assetPairEvidence ? {
           assetPairEvidence: {
             ...spec.racing.raceDesign.assetPairEvidence,

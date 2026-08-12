@@ -66,6 +66,7 @@ export const auraClashAudioCueAssetKeys: Record<AuraClashAudioCue, AuraClashAudi
 
 export function auraClashAudioAssetReference(key: AuraClashAudioAssetKey): AuraClashAudioAssetReference {
   const asset = assets[key];
+  if (!asset.hash) throw new Error(`Aura Clash audio asset ${key} is missing its generated content hash.`);
   return {
     key,
     typedAssetMember: `assets.${key}`,

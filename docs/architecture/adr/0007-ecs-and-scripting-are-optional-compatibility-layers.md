@@ -6,17 +6,17 @@
 
 ## Context
 
-ADR 0001 correctly refused an unsafe 1.6 deletion, but overreached by describing
+ADR 0001 correctly refused an unsafe pre-2.0 deletion, but overreached by describing
 the maintenance commitment as permanent. Current measurement still finds real
 consumers: the ECS-to-renderer bridge and editor visual scripting. It also finds
 that neither package is required by recommended lean/product/arcade source
 entries. The aggregate `@aura3d/engine` compatibility package continues to
-publish legacy `./ecs` and `./scripting` subpaths in 1.6.
+publish legacy `./ecs` and `./scripting` subpaths in 2.0.
 
 ## Decision
 
 Keep `@aura3d/ecs` and `@aura3d/scripting` as explicitly optional compatibility
-and authoring packages for 1.6. Do not describe them as renderer capability or
+and authoring packages for 2.0. Do not describe them as renderer capability or
 recommend them for ordinary apps. Do not add bitECS, Miniplex, or Yuka adapters
 without a measured workload: doing so now would add owners rather than replace
 one. The 2.0 migration removes the duplicate engine compatibility subpaths and
@@ -28,7 +28,7 @@ a separate consumer migration and R8 proof.
 - Existing 1.x imports keep working.
 - Lean/product/arcade examples and templates must not introduce these packages
   unless the workload actually uses ECS or visual authoring.
-- The dedicated packages can evolve or be replaced independently after 1.6.
+- The dedicated packages can evolve or be replaced independently after 2.0.
 - Retention is a compatibility/product decision, never competitive-renderer
   evidence.
 

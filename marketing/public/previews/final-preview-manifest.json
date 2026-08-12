@@ -1,0 +1,79 @@
+{
+  "schema": "aura3d.marketing-final-previews/1.0",
+  "status": "machine-reviewed-human-approval-pending",
+  "generatedAt": "2026-08-11T23:02:05.821Z",
+  "previews": [
+    {
+      "id": "showcase-product-configurator",
+      "source": "tests/reports/showcase-interaction-audit/showcase-product-configurator-desktop.png",
+      "target": "marketing/public/previews/showcase/showcase-product-configurator.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "7a53827f68eeae55570ec3cc642a44139e31c7e313f85795e35daeb96750b9a6",
+      "bytes": 158506
+    },
+    {
+      "id": "showcase-smart-city-control",
+      "source": "tests/reports/showcase-interaction-audit/showcase-smart-city-control-desktop.png",
+      "target": "marketing/public/previews/showcase/showcase-smart-city-control-scene.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "20fd04ce4cf8f7b94834a16a87cfc4db79641f7891c792342fdc0dd8e8721d17",
+      "bytes": 260290
+    },
+    {
+      "id": "showcase-cinematic-architecture",
+      "source": "tests/reports/showcase-interaction-audit/showcase-cinematic-architecture-desktop.png",
+      "target": "marketing/public/previews/showcase/showcase-cinematic-architecture.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "b8758ff643e465d6dd785a8c66199ddbf136ba5c62f0f41a97319411843d2339",
+      "bytes": 284469
+    },
+    {
+      "id": "showcase-digital-twin-ops",
+      "source": "tests/reports/showcase-interaction-audit/showcase-digital-twin-ops-desktop.png",
+      "target": "marketing/public/previews/showcase/showcase-digital-twin-ops.png",
+      "width": 1440,
+      "height": 900,
+      "sha256": "14daa36d49d73f5653dc7f8f4b854e128c0ca267c7e61bed699b53b35d957bb7",
+      "bytes": 219853
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "source": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-line-clear.png",
+      "target": "marketing/public/previews/showcase/showcase-blockfall-reactor.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "186105e3874b03e9e1d2040b32ef408fa2201c558a4ff6ec24c6c1d731cfdf2c",
+      "bytes": 142555
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "source": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-high-speed-chase.png",
+      "target": "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "a82be328bbec8f03beddf82b2d5ede24a7a1776234e11a0f2e5a097e5bc09d90",
+      "bytes": 1312200
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "source": "tests/reports/showcase-gameplay/showcase-skyline-runner-act-aurora-crown.png",
+      "target": "marketing/public/previews/showcase/showcase-skyline-runner.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "58be1b11a781bfcf17d0b348f9c15afe6c6a8bf82f6a0fd01060cc5b58bcd442",
+      "bytes": 405219
+    },
+    {
+      "id": "aura-clash-arena",
+      "source": "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png",
+      "target": "marketing/public/previews/aura-clash-poster.png",
+      "width": 1280,
+      "height": 1091,
+      "sha256": "efd19a07149d896e40b2590db9cad801537354ff171825e44bf0a8c727cd61d7",
+      "bytes": 853341
+    }
+  ]
+}

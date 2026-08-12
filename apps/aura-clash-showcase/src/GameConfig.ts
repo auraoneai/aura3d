@@ -305,9 +305,8 @@ export const AURA_CLASH_MATCH_CONFIG = {
   maxGuard: 100,
   meterCap: 100,
   arenaName: "Neon Downtown Rooftop",
-  arenaAssetMember: "assets.arenaNeonDowntown",
-  duelStageAssetMember: "assets.auraClashDuelStage",
-  liveSceneComposition: "assets.auraClashDuelStage + selected assets.fighter* GLBs",
+  arenaAssetMember: "assets.arenaNeonDowntownTextured",
+  liveSceneComposition: "assets.arenaNeonDowntownTextured + assets.auraClashPlayerRig + assets.auraClashRivalRig",
   sourcePacks: "Quaternius CC0 standard packs",
   runtime: "@aura3d/engine 1.0.5+"
 } as const;

@@ -419,7 +419,13 @@ export function bindGameRouteEvidence(options: BindGameRouteEvidenceOptions): Bi
   const assetIds = [...new Set(options.assetIds.map((id) => id.trim()).filter(Boolean))];
   const blockers: string[] = [];
   if (!/^[a-z0-9][a-z0-9-]*$/.test(options.routeId)) blockers.push(`game-route-evidence:unsafe-route-id:${options.routeId}`);
-  if (assetIds.length !== 2) blockers.push(`game-route-evidence:asset-pair-required:${assetIds.length}`);
+  // Racing composition evidence may include an independently rendered opponent
+  // in addition to the player vehicle and certified track.  Requiring exactly
+  // two assets made the CLI reject the stronger, three-asset proof even though
+  // the compiler and composition report correctly bound every primary asset.
+  // Keep two as the minimum (subject + world), and validate every additional
+  // primary asset with the same hash/certification checks below.
+  if (assetIds.length < 2) blockers.push(`game-route-evidence:asset-set-minimum:${assetIds.length}`);
 
   const assets = assetIds.map((id) => manifest.assets.find((asset) => asset.id === id));
   for (let index = 0; index < assetIds.length; index += 1) {

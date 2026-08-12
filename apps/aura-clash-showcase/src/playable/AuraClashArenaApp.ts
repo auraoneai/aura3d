@@ -10,6 +10,7 @@ import {
   createLightingRig,
   resolveSubjectRimPlacement,
   Geometry,
+  Material,
   UnlitMaterial,
   type CollectedLight,
   type RenderDeviceDiagnostics,
@@ -98,6 +99,7 @@ type AuraClashWindow = Window & {
     setPlayerMeter(meter: number): void;
     setPositions(playerX: number, rivalX: number): void;
     setRivalGuardSuppressed(suppressed: boolean): void;
+    pauseOnNextHit(): void;
     queuePlayerAttack(move: MoveId): void;
   };
 };
@@ -205,7 +207,9 @@ const stage = {
   jumpVelocity: movementMoves.jump.jumpVelocity ?? 8.65,
   maxJumpY: movementMoves.jump.maxJumpY ?? 2.18,
   fastFallVelocity: movementMoves.down.fastFallVelocity ?? -21,
-  fighterScale: 0.82,
+  // Side-view fighters must read as the primary subjects, not small figures lost in the set.
+  // This fills roughly two thirds of the playable frame while retaining jump/head clearance.
+  fighterScale: 1.08,
   fighterYOffset: 0,
   z: 0
 };
@@ -376,6 +380,7 @@ const gameWindow = window as AuraClashWindow;
 export function mountAuraClashArenaApp(): void {
   const root = document.querySelector<HTMLDivElement>("#app");
   if (!root) throw new Error("Missing #app");
+  const testDriverEnabled = new URLSearchParams(window.location.search).has("auraTestDriver");
 
   gameWindow.__AURA_CLASH_VISUAL_REVIEW__ = {
     version: "aura-clash-visual-review/v1",
@@ -415,7 +420,7 @@ export function mountAuraClashArenaApp(): void {
   };
 
   root.innerHTML = `
-    <main class="aca" tabindex="0" aria-label="Aura Clash Arena playable game">
+    <main class="aca" data-evidence-mode="${testDriverEnabled ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
       <nav class="aca-nav" aria-label="Aura Clash navigation">
         <h1 class="aca-title"><a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a></h1>
@@ -432,7 +437,7 @@ export function mountAuraClashArenaApp(): void {
       <section class="aca-hud" aria-label="Fight HUD" data-hud="fight-hud" role="status">
         <article class="aca-card">
           <span>Player one</span>
-          <h2 id="player-name">Flux Vanta</h2>
+          <h2 id="player-name">Mara Volt</h2>
           <p>Skinned GLB fighter driven by Aura3D production animation runtime.</p>
           <div class="aca-bar aca-health" data-testid="player-health" aria-label="Player health"><i id="player-health"></i></div>
           <div class="aca-bar aca-meter"><i id="player-meter"></i></div>
@@ -444,7 +449,7 @@ export function mountAuraClashArenaApp(): void {
         </article>
         <article class="aca-card aca-rival-card">
           <span>Rival AI</span>
-          <h2 id="rival-name">Nyx Circuit</h2>
+          <h2 id="rival-name">Rook Atlas</h2>
           <p>Independent second GLB instance with its own clips, spacing, and hit windows.</p>
           <div class="aca-bar aca-health"><i id="rival-health"></i></div>
           <div class="aca-bar aca-meter"><i id="rival-meter"></i></div>
@@ -552,8 +557,8 @@ export function mountAuraClashArenaApp(): void {
       visibleFighterAsset: assets.auraClashPlayerRig.url,
       fighterAssets: activeFighterAssetsProof(),
       renderer: { surface: "aura3d-production-gltf-animation", backend: "none", drawCalls: 0 },
-      player: fallbackProofFighter("Flux Vanta"),
-      rival: fallbackProofFighter("Nyx Circuit"),
+      player: fallbackProofFighter("Mara Volt"),
+      rival: fallbackProofFighter("Rook Atlas"),
       animation: {
         visibleSkinnedGlb: true,
         skinnedDrawItems: 0,
@@ -607,12 +612,13 @@ export function mountAuraClashArenaApp(): void {
 }
 
 async function bootAuraClashArena(root: HTMLElement): Promise<void> {
-  const testDriverEnabled = new URLSearchParams(window.location.search).has("auraTestDriver");
   const canvas = root.querySelector<HTMLCanvasElement>("#aura-clash-arena-canvas");
   if (!canvas) throw new Error("Missing #aura-clash-arena-canvas canvas");
+  const arenaCanvas = canvas;
+  const testDriverEnabled = new URLSearchParams(window.location.search).has("auraTestDriver");
 
-  const playerState = createFighter("player", "Flux Vanta", "Player one", -1.25, 1, playerClips);
-  const rivalState = createFighter("rival", "Nyx Circuit", "Rival AI", 1.25, -1, rivalClips);
+  const playerState = createFighter("player", "Mara Volt", "Player one", -1.25, 1, playerClips);
+  const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", 1.25, -1, rivalClips);
   const controls = createControls(root);
   const gameApp = createGameApp(null, {
     autoStart: false,
@@ -663,18 +669,16 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     createTypedGLBActor({
       asset: assets.auraClashPlayerRig,
       id: "aura-clash-arena-player-rig",
-      name: "Flux Vanta",
+      name: "Mara Volt",
       width: viewport.width,
-      height: viewport.height,
-      tint: { baseColor: [0.08, 0.74, 1, 1], emissiveColor: [0.02, 0.72, 0.95] }
+      height: viewport.height
     }),
     createTypedGLBActor({
       asset: assets.auraClashRivalRig,
       id: "aura-clash-arena-rival-rig",
-      name: "Nyx Circuit",
+      name: "Rook Atlas",
       width: viewport.width,
-      height: viewport.height,
-      tint: { baseColor: [1, 0.34, 0.06, 1], emissiveColor: [0.95, 0.24, 0.04] }
+      height: viewport.height
     }),
     createTypedGLBActor({
       // The textured multi-building arena, not the single-mesh `arenaRooftopBuilding` façade.
@@ -700,6 +704,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     playerAvailableClips: playerActor.evidence.clips,
     rivalAvailableClips: rivalActor.evidence.clips
   });
+  applyFighterMaterialDirection(playerActor, "player");
+  applyFighterMaterialDirection(rivalActor, "rival");
 
   const playerRuntime: RuntimeFighter = {
     state: playerState,
@@ -818,8 +824,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * rim on the fighter instead of washing the building behind it.
    */
   const fighterRimLights = [
-    { id: "aura-clash-player-rim", color: [0.2, 1, 0.62] as const, intensity: 1.45, owner: "player" as const },
-    { id: "aura-clash-rival-rim", color: [0.38, 0.85, 1] as const, intensity: 1.35, owner: "rival" as const }
+    { id: "aura-clash-player-rim", color: [0.18, 0.92, 1] as const, intensity: 2.05, owner: "player" as const },
+    { id: "aura-clash-rival-rim", color: [1, 0.34, 0.08] as const, intensity: 1.95, owner: "rival" as const }
   ].map((descriptor) => {
     const light = new PointLight(descriptor.id);
     light.color = [...descriptor.color];
@@ -837,7 +843,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * 0.667x, 0.186x, -0.394x and 0.820x of this rig's 1.829-unit height -- correct ratios frozen as absolute
    * numbers, and therefore silently wrong for any other rig.
    */
-  const fighterHeight = assets.auraClashPlayerRig.bounds[1] ?? 1.829;
+  const fighterHeight = assets.auraClashPlayerRig.bounds?.[1] ?? 1.829;
 
   /** Re-anchor each rim light behind and above its fighter so the edge separation follows the action. */
   function updateFighterRimLights(): void {
@@ -907,7 +913,24 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * unaffected. The shake is derived from the *decaying* hit-stop timer rather than a separate
    * animation clock, so a shake cannot exist without a hit that actually landed.
    */
-  const CAMERA_BASE_BOUNDS = { min: [-2.8, -0.08, -0.82] as const, max: [2.8, 2.05, 0.82] as const };
+  const CAMERA_BASE_BOUNDS = { min: [-2.65, -0.08, -0.82] as const, max: [2.65, 2.15, 0.82] as const };
+  function restingCameraBounds(): { min: readonly [number, number, number]; max: readonly [number, number, number] } {
+    // Keep an airborne fighter's entire silhouette in frame. The old fixed 2.05 top bound cropped
+    // Mara at the apex even though the actor itself was animating correctly.
+    const airborneHeadroom = Math.max(0, playerState.y, rivalState.y) * 0.9;
+    if (arenaCanvas.clientWidth > 600) {
+      return {
+        min: CAMERA_BASE_BOUNDS.min,
+        max: [CAMERA_BASE_BOUNDS.max[0], CAMERA_BASE_BOUNDS.max[1] + airborneHeadroom, CAMERA_BASE_BOUNDS.max[2]]
+      };
+    }
+    const center = clamp((playerState.x + rivalState.x) * 0.5, -0.9, 0.9);
+    const halfWidth = clamp(Math.abs(rivalState.x - playerState.x) * 0.5 + 0.72, 1.72, 2.75);
+    return {
+      min: [center - halfWidth, -0.08, -0.82],
+      max: [center + halfWidth, 2.08 + airborneHeadroom, 0.82]
+    };
+  }
   /** Peak hit-stop across both fighters; this is the impulse the camera responds to. */
   function currentImpactStrength(): number {
     return Math.max(playerState.hitStopRemaining, rivalState.hitStopRemaining);
@@ -915,9 +938,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   /** Camera evidence measured from the frame volume submitted this frame, not from declared intent. */
   function currentCameraEvidence(): AuraClashArenaProof["camera"] {
     const bounds = currentCameraFrameBounds();
+    const restingBounds = restingCameraBounds();
     const impact = currentImpactStrength();
     const frameWidthUnits = Number((bounds.max[0] - bounds.min[0]).toFixed(4));
-    const restingFrameWidthUnits = Number((CAMERA_BASE_BOUNDS.max[0] - CAMERA_BASE_BOUNDS.min[0]).toFixed(4));
+    const restingFrameWidthUnits = Number((restingBounds.max[0] - restingBounds.min[0]).toFixed(4));
     return {
       impactStrength: Number(impact.toFixed(4)),
       punchIn: Number(clamp(impact / 0.13, 0, 1).toFixed(4)),
@@ -936,7 +960,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    */
   function currentCameraFrameBounds(): { min: readonly [number, number, number]; max: readonly [number, number, number] } {
     const impact = currentImpactStrength();
-    if (impact <= 0 && !roundOver) return CAMERA_BASE_BOUNDS;
+    const baseBounds = restingCameraBounds();
+    if (impact <= 0 && !roundOver) return baseBounds;
     // Hit-stop peaks at 0.13s (special). Normalise so light/heavy/special scale with move weight.
     const punch = clamp(impact / 0.13, 0, 1);
     // Deterministic jitter from the frame counter, scaled by the decaying impulse, so it settles.
@@ -948,11 +973,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const scale = 1 - tighten + koWiden;
     const lift = roundOver ? 0.14 : 0;
     return {
-      min: [CAMERA_BASE_BOUNDS.min[0] * scale + jitterX, CAMERA_BASE_BOUNDS.min[1] + jitterY, CAMERA_BASE_BOUNDS.min[2] * scale],
-      max: [CAMERA_BASE_BOUNDS.max[0] * scale + jitterX, CAMERA_BASE_BOUNDS.max[1] * scale + lift + jitterY, CAMERA_BASE_BOUNDS.max[2] * scale]
+      min: [baseBounds.min[0] * scale + jitterX, baseBounds.min[1] + jitterY, baseBounds.min[2] * scale],
+      max: [baseBounds.max[0] * scale + jitterX, baseBounds.max[1] * scale + lift + jitterY, baseBounds.max[2] * scale]
     };
   }
   let paused = false;
+  let pauseOnNextHit = false;
   let frame = 0;
   let totalHits = 0;
   let lastHitFrame = 0;
@@ -1107,6 +1133,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
             rivalState.attack = null;
           }
         },
+        pauseOnNextHit() {
+          pauseOnNextHit = true;
+        },
         setPositions(playerX: number, rivalX: number) {
           playerState.x = clamp(playerX, stage.minX, stage.maxX);
           rivalState.x = clamp(rivalX, stage.minX, stage.maxX);
@@ -1218,7 +1247,14 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         const attacker = combatResult.rivalDamage ? playerState : rivalState;
         const defender = combatResult.rivalDamage ? rivalState : playerState;
         const moveId = (attacker.attack?.id ?? "light") as MoveId;
-        applyHitStopAndImpact(attacker, defender, moveId, sparks);
+        applyHitStopAndImpact(attacker, defender, moveId);
+        // Test-only capture latch: freeze the exact simulation frame that produced the real hit.
+        // It does not synthesize an effect or bypass combat; it only prevents the next RAF from
+        // advancing the authored pose and render-item spark before evidence capture finishes.
+        if (pauseOnNextHit) {
+          pauseOnNextHit = false;
+          paused = true;
+        }
       } else if (combatResult.blocked) {
         callout = "BLOCK";
         toast = `${combatResult.blockedBy === "player" ? playerState.name : rivalState.name} guards the strike.`;
@@ -1827,7 +1863,7 @@ function resolveEngineCombat(
         y: event.position[1],
         z: event.position[2],
         age: 0,
-        life: 0.28,
+        life: event.type === "blocked" ? 0.28 : event.moveId === "special" ? 0.62 : event.moveId === "heavy" ? 0.38 : 0.28,
         facing: attacker.facing,
         kind: event.type === "blocked" ? "block" : toMoveId(event.moveId)
       });
@@ -2222,18 +2258,13 @@ function moveHitStop(id: MoveId): number {
 // Hit-stop + impact impulse + spark burst on a confirmed hit. Both fighters freeze their visual pose
 // for the move's hit-stop window; the defender recoils (and the attacker follows through) via the
 // secondary-motion squash spring. Deterministic + presentation-only (combat sim/replay untouched).
-function applyHitStopAndImpact(attacker: FighterState, defender: FighterState, moveId: MoveId, sparks: Spark[]): void {
+function applyHitStopAndImpact(attacker: FighterState, defender: FighterState, moveId: MoveId): void {
   const hs = moveHitStop(moveId);
   attacker.hitStopRemaining = Math.max(attacker.hitStopRemaining, hs);
   defender.hitStopRemaining = Math.max(defender.hitStopRemaining, hs);
   const recoil = moveId === "special" ? 0.9 : moveId === "heavy" ? 0.62 : 0.4;
   defender.pendingImpulse = Math.max(defender.pendingImpulse, recoil);
   attacker.pendingImpulse = Math.max(attacker.pendingImpulse, recoil * 0.35);
-  const burst = moveId === "special" ? 7 : moveId === "heavy" ? 5 : 3;
-  const midX = (attacker.x + defender.x) / 2;
-  for (let i = 0; i < burst; i += 1) {
-    sparks.push({ x: midX + (i - burst / 2) * 0.06, y: 0.9 + (i % 3) * 0.18, z: stage.z, age: 0, life: 0.22, facing: attacker.facing, kind: moveId });
-  }
 }
 
 interface FighterSecondaryProof {
@@ -2278,15 +2309,52 @@ function attackLunge(id: MoveId, phase: number): number {
   return Math.sin(Math.PI * Math.min(1, phase * 1.15)) * 0.58;
 }
 
+/**
+ * Give the two textured rigs separate arcade-fighter material reads.
+ *
+ * Both characters originate in the same Ranger outfit family. Leaving the
+ * imported factors untouched made them read as two dim variants of one NPC.
+ * These are renderer material parameters on the real skinned GLB draws: Mara
+ * receives a cooler, cleaner technical-fabric response while Rook receives a
+ * warmer, heavier treatment. Skin textures remain neutral and neither fighter
+ * is replaced by overlay or primitive geometry.
+ */
+function applyFighterMaterialDirection(actor: TypedGLBActor, owner: FighterId): void {
+  const seen = new Set<Material>();
+  for (const item of actor.collectRenderItems()) {
+    const material = item.material;
+    if (!(material instanceof Material) || seen.has(material)) continue;
+    seen.add(material);
+    const isOutfit = material.name.toLowerCase().includes("ranger");
+    if (isOutfit) {
+      material.setParameter("u_baseColor", owner === "player"
+        ? [0.72, 0.92, 1, 1]
+        : [1, 0.66, 0.42, 1]);
+      material.setParameter("u_roughness", owner === "player" ? 0.27 : 0.34);
+      material.setParameter("u_metallic", owner === "player" ? 0.16 : 0.22);
+      material.setParameter("u_clearcoatFactor", owner === "player" ? 0.28 : 0.18);
+      material.setParameter("u_clearcoatRoughnessFactor", 0.24);
+    } else {
+      material.setParameter("u_baseColor", [1, 1, 1, 1]);
+      material.setParameter("u_roughness", 0.46);
+      material.setParameter("u_metallic", 0.02);
+    }
+    material.setParameter("u_environmentIntensity", 1.35);
+    material.setParameter("u_specularFactor", 1);
+  }
+}
+
 function collectFighterRenderItems(fighter: RuntimeFighter): RenderItem[] {
   return fighter.actor.collectRenderItems();
 }
 
 const fighterAuraGeometry = Geometry.uvSphere(0.5, 14, 8);
-const impactGeometry = Geometry.litCube(1);
-const playerAuraMaterial = new UnlitMaterial({ name: "flux-ground-aura", color: [0.1, 0.94, 1, 0.26] });
-const rivalAuraMaterial = new UnlitMaterial({ name: "nyx-ground-aura", color: [1, 0.36, 0.08, 0.26] });
+const impactCoreGeometry = Geometry.uvSphere(0.5, 18, 10);
+const impactShardGeometry = Geometry.capsule({ radius: 0.12, height: 1, segments: 12, rings: 5 });
+const playerAuraMaterial = new UnlitMaterial({ name: "mara-ground-aura", color: [0.1, 0.94, 1, 0.26] });
+const rivalAuraMaterial = new UnlitMaterial({ name: "rook-ground-aura", color: [1, 0.36, 0.08, 0.26] });
 const hitImpactMaterial = new UnlitMaterial({ name: "combat-hit-impact", color: [1, 0.86, 0.3, 0.92] });
+const specialImpactMaterial = new UnlitMaterial({ name: "combat-special-impact", color: [0.12, 1, 0.72, 0.94] });
 const blockImpactMaterial = new UnlitMaterial({ name: "combat-block-impact", color: [0.28, 0.9, 1, 0.84] });
 
 function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
@@ -2312,14 +2380,26 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
   return sparks.flatMap((spark, sparkIndex) => {
     const progress = clamp(spark.age / Math.max(spark.life, 0.001), 0, 1);
     const fadeScale = Math.max(0.02, 1 - progress);
-    const burstScale = (spark.kind === "special" ? 0.34 : spark.kind === "heavy" ? 0.25 : 0.18) * fadeScale;
-    const material = spark.kind === "block" ? blockImpactMaterial : hitImpactMaterial;
-    return Array.from({ length: spark.kind === "special" ? 6 : 4 }, (_, ray) => {
-      const angle = (ray / (spark.kind === "special" ? 6 : 4)) * Math.PI * 2 + progress * 0.55;
-      const travel = progress * (spark.kind === "special" ? 0.68 : 0.42);
+    const burstScale = (spark.kind === "special" ? 0.34 : spark.kind === "heavy" ? 0.14 : 0.1) * fadeScale;
+    const material = spark.kind === "block" ? blockImpactMaterial : spark.kind === "special" ? specialImpactMaterial : hitImpactMaterial;
+    const rayCount = spark.kind === "special" ? 6 : 3;
+    const core: RenderItem = {
+      label: `aura-clash-impact:${sparkIndex}:core`,
+      geometry: impactCoreGeometry,
+      material,
+      modelMatrix: composeMat4(
+        [spark.x, spark.y, spark.z + 0.12],
+        quatFromEuler(0, 0, 0),
+        [burstScale * 0.55, burstScale * 0.55, burstScale * 0.22]
+      ) as Mat4,
+      includeInAutoFrame: false
+    };
+    const shards = Array.from({ length: rayCount }, (_, ray) => {
+      const angle = (ray / rayCount) * Math.PI * 2 + progress * 0.72;
+      const travel = 0.09 + progress * (spark.kind === "special" ? 0.54 : 0.28);
       return {
         label: `aura-clash-impact:${sparkIndex}:${ray}`,
-        geometry: impactGeometry,
+        geometry: impactShardGeometry,
         material,
         modelMatrix: composeMat4(
           [
@@ -2328,11 +2408,12 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
             spark.z + 0.12
           ],
           quatFromEuler(0, 0, angle),
-          [burstScale * 1.8, burstScale * 0.22, burstScale * 0.22]
+          [burstScale * (spark.kind === "special" ? 0.12 : 0.18), burstScale * (spark.kind === "special" ? 1.35 : 1), burstScale * (spark.kind === "special" ? 0.12 : 0.18)]
         ) as Mat4,
         includeInAutoFrame: false
       } satisfies RenderItem;
     });
+    return [core, ...shards];
   });
 }
 
@@ -2604,15 +2685,20 @@ function proofFighter(fighter: FighterState): ProofFighter {
 }
 
 function activeFighterAssetsProof(): AuraClashArenaProof["fighterAssets"] {
+  const playerHash = assets.auraClashPlayerRig.hash;
+  const rivalHash = assets.auraClashRivalRig.hash;
+  if (!playerHash || !rivalHash) {
+    throw new Error("Aura Clash typed fighter assets require generated content hashes.");
+  }
   const player = {
     id: "auraClashPlayerRig",
     url: assets.auraClashPlayerRig.url,
-    hash: assets.auraClashPlayerRig.hash
+    hash: playerHash
   };
   const rival = {
     id: "auraClashRivalRig",
     url: assets.auraClashRivalRig.url,
-    hash: assets.auraClashRivalRig.hash
+    hash: rivalHash
   };
   return {
     player,

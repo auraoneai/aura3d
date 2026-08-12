@@ -22,7 +22,7 @@ Use this page with:
 
 ## Current Boundary
 
-The 1.6 baseline has:
+The 2.0 baseline has:
 
 - `createAuraApp(...)`, `app.onFrame(...)`, `app.step(dt)`, and runtime nodes.
 - `AnimationController` / `createAnimationController(...)` with named clips,
@@ -156,7 +156,7 @@ app.onFrame(({ dt }) => {
 
 Current controller binding mirrors active clip, local time, speed, loop state,
 layer metadata, event source, and binding metadata onto the runtime node. The
-1.6 bounded fixture proves that state drives visible skinned GLB pose output;
+The 2.0 bounded fixture proves that state drives visible skinned GLB pose output;
 new assets and behaviors still require their own browser evidence.
 
 ## Restart And Blend
@@ -382,7 +382,7 @@ effects, overlays, captions, and morph target changes.
 
 ## Release Evidence
 
-The canonical 1.6 animation evidence writes reports under
+The canonical 2.0 animation evidence writes reports under
 `tests/reports/animation-complete/` and `tests/reports/threejs-parity/`.
 Feature-specific routes may additionally write reports under:
 

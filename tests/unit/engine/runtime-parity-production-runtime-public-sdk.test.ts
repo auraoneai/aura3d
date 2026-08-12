@@ -414,7 +414,7 @@ describe("RuntimeParity production public SDK", () => {
     expect(main).toContain("ProductionRuntimeRenderer");
     expect(main).toContain("loadGltfScene");
     expect(main).toContain("loadHdrEnvironment");
-    expect(main).toContain("createCurrentRoutesInteractiveRenderer");
+    expect(main).toContain("ProductionRuntimeRenderer.create");
     expect(sources).not.toContain("production-runtime-common/src/runtime");
     expect(sources).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
     expect(sources).not.toMatch(/from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/);
@@ -551,8 +551,8 @@ describe("RuntimeParity production public SDK", () => {
         pass: flagshipSource.includes("ProductionRuntimeRenderer")
           && flagshipSource.includes("loadGltfScene")
           && flagshipSource.includes("loadHdrEnvironment")
-          && flagshipSource.includes("createCurrentRoutesInteractiveRenderer"),
-        evidence: "apps/wow-webgpu-product-viewer/src/main.ts uses the current product-viewer route path after legacy product-configurator pruning."
+          && flagshipSource.includes("ProductionRuntimeRenderer.create"),
+        evidence: "apps/wow-webgpu-product-viewer/src/main.ts directly uses the public production renderer and GLTF/HDR helpers after legacy route-wrapper pruning."
       },
       {
         id: "template-uses-public-sdk",

@@ -1657,6 +1657,37 @@ describe("Renderer", () => {
 
     const command = (renderer.device as MockRenderDevice).drawCommands[0];
     expect(command?.renderState?.cullMode).toBe("front");
+    expect(Array.from(command?.uniforms?.get("u_normalMatrix") as Float32Array)).toEqual([
+      1, 0, 0, 0,
+      0, -1, 0, 0,
+      0, 0, -1, 0,
+      0, 0, 0, 1
+    ]);
+    renderer.dispose();
+  });
+
+  it("corrects mirrored double-sided normals even when culling is disabled", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 4, height: 4 });
+    const material = new PBRMaterial({
+      name: "mirrored-double-sided-pbr",
+      renderState: { cullMode: "none" }
+    });
+
+    renderer.render([{
+      geometry: Geometry.litCube(1),
+      material,
+      modelMatrix: scaleMatrix(1, 1, -1),
+      label: "mirrored-double-sided-pbr"
+    }]);
+
+    const command = (renderer.device as MockRenderDevice).drawCommands[0];
+    expect(command?.renderState?.cullMode).toBe("none");
+    expect(Array.from(command?.uniforms?.get("u_normalMatrix") as Float32Array)).toEqual([
+      -1, 0, 0, 0,
+      0, -1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ]);
     renderer.dispose();
   });
 

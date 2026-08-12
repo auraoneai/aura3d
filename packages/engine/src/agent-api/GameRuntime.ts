@@ -619,7 +619,13 @@ export interface GameArcadeVehicleState {
 export interface GameArcadeVehicle {
   readonly kind: "aura-game-arcade-vehicle";
   step(dt: number, input?: GameArcadeVehicleInput): GameArcadeVehicleState;
-  constrain(options: { readonly x?: number; readonly z?: number; readonly speedMultiplier?: number }): GameArcadeVehicleState;
+  constrain(options: {
+    readonly x?: number;
+    readonly z?: number;
+    readonly heading?: number;
+    readonly speedMultiplier?: number;
+    readonly driftMultiplier?: number;
+  }): GameArcadeVehicleState;
   reset(state?: Partial<GameArcadeVehicleState>): GameArcadeVehicleState;
   snapshot(): GameArcadeVehicleState;
 }
@@ -2040,7 +2046,9 @@ export function createGameArcadeVehicle(options: GameArcadeVehicleOptions): Game
         ...state,
         x: constraint.x ?? state.x,
         z: constraint.z ?? state.z,
-        speed: state.speed * clamp(constraint.speedMultiplier ?? 1, 0, 1)
+        heading: constraint.heading ?? state.heading,
+        speed: state.speed * clamp(constraint.speedMultiplier ?? 1, 0, 1),
+        drift: state.drift * clamp(constraint.driftMultiplier ?? 1, 0, 1)
       };
       return snapshot();
     },

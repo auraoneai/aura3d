@@ -36,8 +36,11 @@ function packAndRun(): { readonly pass: boolean; readonly detail: string } {
       });
     }
     const packed = execFileSync("find", [tarballs, "-maxdepth", "1", "-name", "*.tgz", "-print"], { encoding: "utf8" }).trim().split("\n").filter(Boolean);
-    const physics = packed.find((path) => basename(path).startsWith("aura3d-physics-"));
-    const rapier = packed.find((path) => basename(path).startsWith("aura3d-physics-rapier-"));
+    // `aura3d-physics-rapier-*` also starts with `aura3d-physics-`; an
+    // unordered `find` result previously selected the Rapier tarball twice and
+    // produced a false clean-install failure with @aura3d/physics missing.
+    const physics = packed.find((path) => /^aura3d-physics-\d/.test(basename(path)));
+    const rapier = packed.find((path) => /^aura3d-physics-rapier-\d/.test(basename(path)));
     if (!physics || !rapier) return { pass: false, detail: `expected physics and physics-rapier tarballs; found ${packed.map((path) => basename(path)).join(", ")}` };
 
     writeFileSync(join(consumer, "package.json"), `${JSON.stringify({ private: true, type: "module" }, null, 2)}\n`);
@@ -86,6 +89,7 @@ const currentVersions = {
   physicsRapier: packageVersion("packages/physics-rapier/package.json")
 };
 const requiredNextVersion = "2.0.0";
+const releaseBlockedUntilMajorBump = !Object.values(currentVersions).every((version) => version === requiredNextVersion);
 const breaking = removedModules.length > 0 || migration.includes("former rigid-body `CharacterController` export has been removed");
 const migrationCoverage = removedModules.filter((module) => migration.includes(`\`${module}\``));
 const packedMigration = packAndRun();
@@ -101,7 +105,7 @@ writeReport(reportPath, "aura3d.physics-major-version-gate/1.0", checks, {
   baseTag,
   currentVersions,
   requiredNextVersion,
-  releaseBlockedUntilMajorBump: !Object.values(currentVersions).every((version) => version === requiredNextVersion),
+  releaseBlockedUntilMajorBump,
   beforeModules,
   afterModules,
   removedModules,
@@ -110,5 +114,5 @@ writeReport(reportPath, "aura3d.physics-major-version-gate/1.0", checks, {
   decision: "Preserving the package name while removing public modules and changing solver/init semantics is a major migration. Do not publish these changes as 1.6.x."
 });
 
-console.log(JSON.stringify({ pass: checks.every((check) => check.pass), requiredNextVersion, releaseBlockedUntilMajorBump: true, removedModules, packedMigration }, null, 2));
+console.log(JSON.stringify({ pass: checks.every((check) => check.pass), requiredNextVersion, releaseBlockedUntilMajorBump, removedModules, packedMigration }, null, 2));
 if (checks.some((check) => !check.pass)) process.exitCode = 1;

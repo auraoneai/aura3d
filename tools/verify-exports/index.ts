@@ -31,6 +31,16 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
     "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" },
     "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" }
   },
+  "@aura3d/environments": {
+    "./node": { types: "./dist/node.d.ts", import: "./dist/node.js" }
+  },
+  "@aura3d/lean": {
+    "./product": { types: "./dist/product.d.ts", import: "./dist/product.js" },
+    "./game": { types: "./dist/game.d.ts", import: "./dist/game.js" }
+  },
+  "@aura3d/materials": {
+    "./node": { types: "./dist/node.d.ts", import: "./dist/node.js" }
+  },
   "@aura3d/physics": {
     "./solverless": { types: "./dist/solverless.d.ts", import: "./dist/solverless.js" },
     "./world": { types: "./dist/world.d.ts", import: "./dist/world.js" }
@@ -58,7 +68,9 @@ const standaloneRootPackages = new Set([
   "@aura3d/asset-index",
   "@aura3d/cli",
   "@aura3d/react",
-  "@aura3d/three-compat"
+  "@aura3d/three-compat",
+  "@aura3d/navigation-recast",
+  "@aura3d/physics-rapier"
 ]);
 
 function readJson(path: string): PackageJson {

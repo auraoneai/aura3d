@@ -14,14 +14,12 @@ const outPath = resolve(
 const runDeployedEvidence = process.env.AURA_CLASH_RUN_DEPLOYED_EVIDENCE === "1";
 const runVercelDeploy = process.env.AURA_CLASH_RUN_VERCEL_DEPLOY === "1";
 const runCrossRuntimeEvidence = process.env.AURA_CLASH_RUN_CROSS_RUNTIME_EVIDENCE === "1";
-const runPrdEvidenceCoverage = process.env.AURA_CLASH_RUN_PRD_EVIDENCE_COVERAGE === "1";
+const runDocumentationEvidence = process.env.AURA_CLASH_RUN_DOCUMENTATION_EVIDENCE === "1";
 const runCommandPlanCheck = process.env.AURA_CLASH_RUN_COMMAND_PLAN_CHECK === "1";
 const runCommandPlan = process.env.AURA_CLASH_RUN_COMMAND_PLAN === "1";
 const runEvidenceWiringCheck = process.env.AURA_CLASH_RUN_EVIDENCE_WIRING_CHECK === "1";
 const runReadinessReport = process.env.AURA_CLASH_RUN_READINESS_REPORT === "1";
-const runCompletionAudit = process.env.AURA_CLASH_RUN_COMPLETION_AUDIT === "1";
-const updatePrd = process.env.AURA_CLASH_UPDATE_PRD === "1";
-const dryRunPrd = process.env.AURA_CLASH_PRD_UPDATE_DRY_RUN ?? (updatePrd ? "0" : "1");
+const runDocumentationAudit = process.env.AURA_CLASH_RUN_DOCUMENTATION_AUDIT === "1";
 
 const steps = [
   {
@@ -98,11 +96,11 @@ if (runCrossRuntimeEvidence) {
   });
 }
 
-if (runPrdEvidenceCoverage) {
+if (runDocumentationEvidence) {
   steps.push({
-    id: "prd-evidence-coverage",
+    id: "documentation-evidence",
     command: "npm",
-    args: ["run", "launch:coverage-check"],
+    args: ["run", "launch:documentation-evidence"],
     cwd: appRoot
   });
 }
@@ -116,21 +114,11 @@ if (runReadinessReport) {
   });
 }
 
-steps.push({
-  id: updatePrd ? "update-prd" : "dry-run-update-prd",
-  command: "npm",
-  args: ["run", "launch:update-prd"],
-  cwd: appRoot,
-  env: {
-    AURA_CLASH_PRD_UPDATE_DRY_RUN: dryRunPrd
-  }
-});
-
-if (runCompletionAudit) {
+if (runDocumentationAudit) {
   steps.push({
-    id: "completion-audit",
+    id: "documentation-audit",
     command: "npm",
-    args: ["run", "launch:completion-check"],
+    args: ["run", "launch:documentation-check"],
     cwd: appRoot
   });
 }
@@ -156,14 +144,12 @@ const evidence = {
   runDeployedEvidence,
   runVercelDeploy,
   runCrossRuntimeEvidence,
-  runPrdEvidenceCoverage,
+  runDocumentationEvidence,
   runCommandPlanCheck,
   runCommandPlan,
   runEvidenceWiringCheck,
   runReadinessReport,
-  runCompletionAudit,
-  updatePrd,
-  dryRunPrd,
+  runDocumentationAudit,
   stepCount: steps.length,
   completedCount: results.length,
   failedCount: failed.length,

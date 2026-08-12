@@ -94,7 +94,7 @@ async function main(): Promise<void> {
       const compositionReport = readOption("--composition-report");
       const visualReview = readOption("--visual-review");
       if ((category !== "racing" && category !== "platformer") || !routeId || !assetIds || !routePrimaryScreenshot || !geometryReport || !compositionReport || !visualReview) {
-        throw new Error("Usage: aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>");
+        throw new Error("Usage: aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id,...> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>");
       }
       const result = bindGameRouteEvidence({ category, routeId, assetIds, routePrimaryScreenshot, geometryReport, compositionReport, visualReview });
       console.log(JSON.stringify(result, null, 2));

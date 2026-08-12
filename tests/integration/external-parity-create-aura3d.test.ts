@@ -22,14 +22,17 @@ test("create-aura3d scaffolds every starter template from public package imports
       const manifest = JSON.parse(readFileSync(join(targetDir, "package.json"), "utf8")) as {
         dependencies: Record<string, string>;
       };
-      expect(manifest.dependencies["@aura3d/engine"]).toBe("1.0.0");
+      const auraDependencies = Object.entries(manifest.dependencies)
+        .filter(([name]) => name.startsWith("@aura3d/"));
+      expect(auraDependencies.length, `${template} must declare a public Aura3D runtime`).toBeGreaterThan(0);
+      expect(auraDependencies.every(([, version]) => version === "1.0.0"), `${template} Aura3D versions`).toBe(true);
       const mainPath = join(targetDir, "src/main.ts");
       // animation-studio's entry is a thin bootstrap (render-live-route.ts); its
       // genuine public-API usage lives in the generic scene player it mounts.
       const scenePlayerPath = join(targetDir, "src/scene-player.ts");
       const apiFile = existsSync(mainPath) ? mainPath : scenePlayerPath;
       const source = readFileSync(apiFile, "utf8");
-      expect(source).toContain("from \"@aura3d/engine\"");
+      expect(auraDependencies.some(([name]) => source.includes(`from "${name}`)), `${template} public Aura3D import`).toBe(true);
     }
     writeCreateA3DReport("tests/reports/create-aura3d.json", results[0]!);
     writeFileSync("tests/reports/create-aura3d-templates.json", `${JSON.stringify({ ok: true, templates: results }, null, 2)}\n`);

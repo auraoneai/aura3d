@@ -651,10 +651,17 @@ function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
   } catch {
     matrix = [...identityMatrix()] as Mat4;
   }
+  // WebGL's front-face winding remains CCW when Aura represents a mirrored
+  // draw by swapping front/back culling (and double-sided draws do not cull at
+  // all). The PBR shaders use gl_FrontFacing to orient double-sided normals, so
+  // compensate the inverse-transpose here just as a renderer that flips the
+  // native front-face winding would. Without this sign, negatively-scaled glTF
+  // meshes receive direct light from the opposite side.
+  const handedness = hasNegativeHandedness(modelMatrix) ? -1 : 1;
   return [
-    matrix[0], matrix[1], matrix[2], 0,
-    matrix[4], matrix[5], matrix[6], 0,
-    matrix[8], matrix[9], matrix[10], 0,
+    matrix[0] * handedness, matrix[1] * handedness, matrix[2] * handedness, 0,
+    matrix[4] * handedness, matrix[5] * handedness, matrix[6] * handedness, 0,
+    matrix[8] * handedness, matrix[9] * handedness, matrix[10] * handedness, 0,
     0, 0, 0, 1
   ];
 }

@@ -1,15 +1,7 @@
 # Aura3D Library Gap Roadmap
 
-> **Status note — superseded for remaining work (2026-07-29).**
-> This document is retained as a historical record. The authoritative list of
-> still-open work is `docs/project/plans/final-remaining-work-prd.md`, whose FS IDs
-> supersede any checkbox, status line, or completion claim here. A checked item in
-> this file does not override a failing or stale current artifact; where the two
-> disagree, the current generated report wins.
-
-
-Date: 2026-07-27
-Status: durable roadmap with evidence-bounded progress notes
+Date: 2026-08-11
+Status: Aura3D 2.0 post-release roadmap; targets are not shipped claims
 
 This roadmap names the library work required before Aura3D can ask agents to
 build "Three.js quality" games and polished showcases through the public safe

@@ -302,7 +302,7 @@ function validateRacingSpec(spec: ShowcaseSpec): void {
     }
     validateAssetPairEvidenceAssets(
       assetPairEvidence.assets,
-      [spec.racing.vehicleAsset, spec.racing.trackAsset],
+      spec.primaryAssets.map((asset) => asset.id),
       "racing.raceDesign.assetPairEvidence.assets"
     );
   }

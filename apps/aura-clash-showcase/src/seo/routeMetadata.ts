@@ -93,7 +93,7 @@ type AuraClashRouteMetadataSource = {
 export const AURA_CLASH_CANONICAL_ORIGIN = "https://aura3d.auraone.ai";
 export const AURA_CLASH_CANONICAL_BASE_PATH = "/showcase/aura-clash";
 export const AURA_CLASH_SITE_NAME = "Aura Clash";
-export const AURA_CLASH_SOCIAL_IMAGE_PATH = "/aura-assets/auraClashPlayableScene.thumb.svg";
+export const AURA_CLASH_SOCIAL_IMAGE_PATH = "/aura-assets/auraClashPlayerRig.thumb.svg";
 export const AURA_CLASH_SITEMAP_PATH = `${AURA_CLASH_CANONICAL_BASE_PATH}/sitemap.xml`;
 
 const normalizeOrigin = (origin: string): string => origin.replace(/\/+$/, "");

@@ -273,9 +273,43 @@ describe("public game geometry certification", () => {
       driven = racing.step(1 / 60, { throttle: true, steer: frame >= 54 ? 1 : 0 });
     }
     expect(driven.heading).not.toBe(initialHeading);
-    expect(driven.trackOffset).toBeLessThanOrEqual(driven.kind === "aura-game-racing-kit" ? (route.width ?? 1.2) / 2 : 0);
+    expect(driven.trackOffset).toBeLessThanOrEqual((driven.kind === "aura-game-racing-kit" ? (route.width ?? 1.2) / 2 : 0) + 1e-9);
     expect(racing.surfaceQuery.query(driven.position).onTrack).toBe(true);
     expect(() => game.racing({ route, maxSpeed: route.assetBinding.speedModel.certifiedSpeed + 1 })).toThrow(/conflicts with certified route speed/);
+  });
+
+  it("keeps a vehicle footprint inside certified road edges and bounds recovery heading", () => {
+    const { route } = createRacingPresentationFixture();
+    const roadHalfWidth = (route.width ?? 1.2) / 2;
+    const boundaryInset = roadHalfWidth * 0.45;
+    // A long Formula-style footprint on a narrow circuit needs a genuinely tight
+    // recovery yaw; verify the public option is not silently widened to 0.1 rad.
+    const recoveryHeadingLimit = 0.035;
+    const racing = game.racing({
+      route,
+      paceMultiplier: 4,
+      acceleration: 30,
+      steerRate: 8,
+      boundaryInset,
+      recoveryHeadingLimit
+    });
+
+    let recovered = racing.snapshot();
+    let observedRecovery = false;
+    for (let frame = 0; frame < 240; frame += 1) {
+      recovered = racing.step(1 / 60, { throttle: true, steer: 1, drift: true });
+      if (recovered.offTrack) {
+        observedRecovery = true;
+        const contact = racing.surfaceQuery.query(recovered.position);
+        const headingError = Math.atan2(
+          Math.sin(recovered.heading - contact.tangentHeading),
+          Math.cos(recovered.heading - contact.tangentHeading)
+        );
+        expect(Math.abs(headingError)).toBeLessThanOrEqual(recoveryHeadingLimit + 1e-6);
+        expect(recovered.trackOffset).toBeLessThanOrEqual(roadHalfWidth - boundaryInset + 1e-6);
+      }
+    }
+    expect(observedRecovery).toBe(true);
   });
 
   it("grounds safe-rendered platformer character origins on certified surface contact", () => {

@@ -90,7 +90,7 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
   const releaseDigits = releaseTrackId(currentVersion);
   const releaseGateDoc = existsSync(join(root, `docs/project/aura3d-${releaseDigits}-release-gates.md`))
     ? `docs/project/aura3d-${releaseDigits}-release-gates.md`
-    : "docs/project/aura3d-109-release-gates.md";
+    : "docs/project/release/release-checklist.md";
   const evidencePaths = ["README.md", "llms.txt", "docs/project/claim-guidelines.md", releaseGateDoc];
   const blockers: string[] = [];
   // Required wording is version-consistency + factual product/showcase framing only. The mandatory
@@ -203,7 +203,7 @@ function forbiddenClaimsGate(root: string): DocsClaimGate {
     "docs/project/status/current-state.md",
     "docs/project/status/product-boundaries.md",
     "docs/project/status/known-limits.md",
-    "docs/project/showcase/aura-clash-showcase-plan.md"
+    "docs/examples/aura-clash.md"
   ];
   const blockers: string[] = [];
   const patterns: readonly (readonly [RegExp, string])[] = [

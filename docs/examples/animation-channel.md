@@ -196,9 +196,9 @@ window.__AURA3D_ANIMATION_CHANNEL_SOURCE_EVIDENCE__ = {
 The source example declares the package contract and planned evidence. It is not
 a completed render, package smoke, deployment, or visual approval artifact.
 
-## 1.0.5 typed GLB viseme proof
+## 2.0 typed GLB viseme proof
 
-For 1.0.5 release work, a animation route should prove both timing and visible
+For 2.0 release work, a animation route should prove both timing and visible
 mouth-shape output. Primitive mouth cards remain an explicit fallback, but a GLB
 blendshape claim requires typed morph target names and rendered evidence.
 

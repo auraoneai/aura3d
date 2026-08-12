@@ -47,19 +47,32 @@ describe("Turbo Drift Circuit route is actually drivable", () => {
     expect(snapshot.speed - before).toBeGreaterThan(0.5);
   });
 
-  it("stays on the road long enough for the mounted proof to sample real speed", () => {
-    // Blind throttle *should* eventually run wide at a corner -- that is a circuit, not a
-    // corridor. What matters is that the car survives the proof's ~1.6 s throttle phase,
-    // because the earlier 0.388 width put it off-road at frame 96 and off-track drag then
-    // cancelled its own acceleration.
+  it("stays on the road through the mounted proof's actual drive sequence", () => {
+    // Blind throttle must run wide because a vehicle does not automatically follow a
+    // curved circuit. The mounted proof is W for 700 ms, then W+D for 420 ms, then a
+    // W+D drift for 520 ms. Reproduce that input instead of testing an imaginary
+    // 1.6-second no-steering sequence.
     const racing = buildRacingState();
     let snapshot = racing.snapshot();
     let firstOffTrackFrame = -1;
-    for (let frame = 0; frame < 120; frame += 1) {
-      snapshot = racing.step(1 / 60, { throttle: true });
+    let consecutiveOffTrackFrames = 0;
+    let maxConsecutiveOffTrackFrames = 0;
+    const inputs = [
+      ...Array.from({ length: 42 }, () => ({ throttle: true })),
+      ...Array.from({ length: 25 }, () => ({ throttle: true, steer: 1 })),
+      ...Array.from({ length: 31 }, () => ({ throttle: true, steer: 1, drift: true }))
+    ];
+    for (let frame = 0; frame < inputs.length; frame += 1) {
+      snapshot = racing.step(1 / 60, inputs[frame]);
       if (snapshot.offTrack && firstOffTrackFrame < 0) firstOffTrackFrame = frame;
+      consecutiveOffTrackFrames = snapshot.offTrack ? consecutiveOffTrackFrames + 1 : 0;
+      maxConsecutiveOffTrackFrames = Math.max(maxConsecutiveOffTrackFrames, consecutiveOffTrackFrames);
     }
-    expect(firstOffTrackFrame === -1 || firstOffTrackFrame > 100).toBe(true);
+    expect(
+      maxConsecutiveOffTrackFrames,
+      `mounted input left the certified road at frame ${firstOffTrackFrame} for ${maxConsecutiveOffTrackFrames} consecutive frames`
+    ).toBeLessThan(12);
+    expect(snapshot.offTrack, "edge assist must return the car to the road before the mounted sample").toBe(false);
   });
 
   it("recovers to the racing line under the route's own steering correction", () => {

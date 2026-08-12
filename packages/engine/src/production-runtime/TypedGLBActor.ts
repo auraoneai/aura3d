@@ -34,6 +34,8 @@ export interface TypedGLBActorOptions {
    * leave off for actors whose materials are individually tinted at runtime.
    */
   readonly deduplicateIdenticalMaterials?: boolean;
+  /** Exact imported glTF node names that should not contribute renderables. */
+  readonly hiddenNodeNames?: readonly string[];
 }
 
 export interface TypedGLBActorTintOptions {
@@ -121,6 +123,12 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
   });
   pipeline.resources.scene.root.name = `${options.id}-scene-root`;
+  if (options.hiddenNodeNames && options.hiddenNodeNames.length > 0) {
+    const hidden = new Set(options.hiddenNodeNames);
+    pipeline.resources.scene.traverse((node) => {
+      if (hidden.has(node.name)) node.visible = false;
+    });
+  }
   const animation = createGLTFSceneAnimationRuntime({
     scene: pipeline.resources.scene,
     clips: pipeline.asset.animations,

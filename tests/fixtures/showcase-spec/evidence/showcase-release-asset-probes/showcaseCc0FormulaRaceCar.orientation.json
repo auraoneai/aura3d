@@ -1,0 +1,19 @@
+{
+  "source": "manifest-override",
+  "forwardAxis": "+Z",
+  "upAxis": "+Y",
+  "assetHash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3",
+  "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts plus Turbo Drift route-facing inspection",
+  "checkedAt": "2026-08-11T18:57:46.909Z",
+  "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCc0FormulaRaceCar",
+  "renderedProbe": {
+    "url": "tests/reports/showcase-release-asset-probes/showcaseCc0FormulaRaceCar.png",
+    "sha256": "sha256-4ec28cf443913f446bf00b60bf0c2efedc8d41d1df198582d6016a7a561c53d9",
+    "assetHash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3",
+    "checkedAt": "2026-08-11T18:57:46.909Z",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCc0FormulaRaceCar"
+  },
+  "messages": [
+    "The Formula car's +Z-forward, +Y-up pose was checked in the isolated release probe and the current route-primary, start, chase, checkpoint, drift, and reset frames."
+  ]
+}

@@ -3,8 +3,10 @@ import {
   createAuraApp,
   createVehicleChassis,
   createVehicleDriverAi,
+  environments,
   effects,
   game,
+  groundedFittedModelPosition,
   lights,
   material,
   model,
@@ -13,6 +15,7 @@ import {
   scene,
   vehicleChassisSpecFromBounds,
   type AuraRuntimeNodeHandle,
+  type AuraVec3,
   type DriverRoute,
   type VehicleChassis,
   type VehicleSurface
@@ -25,7 +28,7 @@ import { createTurboOpponentAi } from "./opponent-ai";
 const trackTopology = gameGeometryContract.topology;
 const routeGeometry = gameGeometryContract.route;
 const route = game.assetBoundRacingRoute({
-  vehicleAsset: "turboRaceCar",
+  vehicleAsset: "showcaseCc0FormulaRaceCar",
   trackAsset: "showcaseTsukubaCircuit",
   authoredLapSeconds: 35,
   minLapSeconds: 30,
@@ -110,7 +113,7 @@ const CAR_TARGET_MAX_DIMENSION = 1.1;
  * justified by reciting a third asset's bounds in a comment. Swapping the hero asset now requires no
  * edit below this line.
  */
-const heroFraming = resolveChaseFraming(assets.turboRaceCar, {
+const heroFraming = resolveChaseFraming(assets.showcaseCc0FormulaRaceCar, {
   targetMaxDimension: CAR_TARGET_MAX_DIMENSION,
   /*
    * Measured, not guessed. The chase frame that reads correctly for this genre -- car as clear
@@ -194,6 +197,47 @@ const racingScene = game.racingSceneBinding({
   carY: CAR_REFERENCE_Y,
   ghostY: CAR_REFERENCE_Y - 0.02
 });
+/*
+ * `game.racing` moves the vehicle centre, but a Formula car has four contact patches spread
+ * across most of this circuit's narrow road. Letting the centre reach 98% of the road half-width
+ * put two wheels over the grass mesh while telemetry still called the centre "on road"; the mesh
+ * chassis then correctly pitched/rolled toward that drop and the car looked buried. Convert the
+ * rendered car's half-width back into route units and reserve most of it at both edges.
+ */
+const fittedCarChassisSpec = vehicleChassisSpecFromBounds([
+  heroFraming.subject.size[0],
+  heroFraming.subject.size[1],
+  heroFraming.subject.size[2]
+], {
+  // This is an open-wheel Formula silhouette, not a road-car body: its tyre
+  // diameter occupies about four fifths of the fitted vertical bounds. The generic
+  // 42% road-car default halved the contact footprint and suspension reach, causing
+  // a real road triangle under the broad tyre to be treated as a hanging wheel.
+  wheelDiameterFraction: 0.8
+});
+const carChassisSpec = {
+  ...fittedCarChassisSpec,
+  // The retained full-stint measurement peaks at 0.0148 scene units after sparse
+  // mesh recovery. Thirteen percent of the fitted 0.125 tyre radius is 0.0163:
+  // enough compliant rubber to seat that contact, far below a real verge drop.
+  contactTolerance: fittedCarChassisSpec.wheelRadius * 0.13
+};
+/*
+ * The public racing kit constrains the vehicle *centre*, while the mesh chassis samples
+ * four wheel contact patches.  The Formula car's fitted track width occupies most of
+ * Tsukuba's narrow extracted road, so a percentage chosen from the centre alone lets an
+ * outside tyre fall onto the verge even though `roadAlignment.onRoad` remains true.
+ * Reserve the measured half track plus one tyre radius, capped just inside the
+ * certified half-width.  This leaves a small but real steering corridor and still lets a
+ * deliberate steering input cross it and emit the retained off-track/recovery event.
+ */
+const vehicleBoundaryInset = Math.min(
+  routeWidth * 0.475,
+  carChassisSpec.trackWidth / 2 + carChassisSpec.wheelRadius
+);
+// A recovery frame may retain a visible drift angle, but never a sideways/backwards heading that
+// makes the target-yaw chase camera orbit into the infield.
+const recoveryHeadingLimit = Math.PI / 90;
 
 const input = game.input({
   actions: {
@@ -218,14 +262,16 @@ const racingState = game.racing({
   paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
-  steerRate: certifiedSteerRate
+  steerRate: certifiedSteerRate,
+  boundaryInset: vehicleBoundaryInset,
+  recoveryHeadingLimit
 });
 
 // Start the rival inside the chase camera's opening sightline with enough lead
 // to prevent the launch acceleration from putting two collisionless visual
 // chassis in the same space. The old 0.12 hid it almost five scene units away;
 // 0.018 made it visible but let the player overlap it within the first second.
-const opponentStartProgress = 0.05;
+const opponentStartProgress = 0.07;
 const opponentState = game.racing({
   route,
   startProgress: opponentStartProgress,
@@ -234,7 +280,9 @@ const opponentState = game.racing({
   paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
-  steerRate: certifiedSteerRate
+  steerRate: certifiedSteerRate,
+  boundaryInset: vehicleBoundaryInset,
+  recoveryHeadingLimit
 });
 /**
  * Route adapter for the reusable AI driver.
@@ -275,7 +323,7 @@ const driverRoute: DriverRoute = {
 };
 const opponentDriver = createVehicleDriverAi(driverRoute, {
   maxSpeed: gameplayMaxSpeed,
-  paceFraction: 0.86,
+  paceFraction: 0.93,
   // Look-ahead is the whole point: at pace the driver plans roughly a car-length-
   // scaled distance up the road rather than reacting to where it already is.
   lookAheadSeconds: 1.15,
@@ -291,7 +339,7 @@ const opponentDriver = createVehicleDriverAi(driverRoute, {
 const opponentAi = createTurboOpponentAi(opponentState, {
   startProgress: opponentStartProgress,
   maxSpeed: gameplayMaxSpeed,
-  cruiseRatio: 0.79,
+  cruiseRatio: 0.9,
   catchUpStrength: 0.22,
   steeringGain: STEER_CORRECTION_GAIN,
   // The route-local controller is retained only as the state container; every
@@ -305,11 +353,23 @@ const opponentAi = createTurboOpponentAi(opponentState, {
  * Resolved before the surface because the surface's verge depth is expressed in terms
  * of the suspension travel this spec provides.
  */
-const carChassisSpec = vehicleChassisSpecFromBounds([
-  heroFraming.subject.size[0],
-  heroFraming.subject.size[1],
-  heroFraming.subject.size[2]
-]);
+const opponentTargetMaxDimension = 1.04;
+// The rival's authored nose follows the presentation convention returned by
+// `GameRacingSceneBinding.toScenePose`; simulation heading remains separate for chassis contact.
+const opponentPresentationRotation = (rotation: AuraVec3): AuraVec3 => rotation;
+const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.showcaseCcByFormulaOpponent.bounds);
+const opponentRenderedSize: AuraVec3 = [
+  assets.showcaseCcByFormulaOpponent.bounds[0] * opponentAssetScale,
+  assets.showcaseCcByFormulaOpponent.bounds[1] * opponentAssetScale,
+  assets.showcaseCcByFormulaOpponent.bounds[2] * opponentAssetScale
+];
+const fittedOpponentChassisSpec = vehicleChassisSpecFromBounds(opponentRenderedSize, {
+  wheelDiameterFraction: 0.8
+});
+const opponentChassisSpec = {
+  ...fittedOpponentChassisSpec,
+  contactTolerance: fittedOpponentChassisSpec.wheelRadius * 0.13
+};
 
 /**
  * Vehicle surface: the circuit's own road triangles, sampled per wheel.
@@ -333,7 +393,14 @@ const carChassisSpec = vehicleChassisSpecFromBounds([
  * (`GameRacingSceneBinding.vehicleSurface`), and this route simply consumes it.
  */
 const circuitSurface: VehicleSurface = (() => {
-  const surface = racingScene.vehicleSurface({ offRoadGrip: 0.55 });
+  const surface = racingScene.vehicleSurface({
+    offRoadGrip: 0.55,
+    // Finite tyre contact may bridge a triangle seam, but it must never reach across
+    // a lane, curb, divider, or adjacent branch. The former 40%-of-road probe could
+    // select a remote higher surface and made telemetry look grounded while the
+    // retained image contradicted it. Keep recovery inside the physical tyre envelope.
+    contactPatchRadius: carChassisSpec.wheelRadius * 1.15
+  });
   if (!surface) {
     // Loud rather than silently flat: a missing mesh means the contract was regenerated
     // without drivable triangles, and a flat fallback here would reintroduce exactly the
@@ -354,11 +421,8 @@ const circuitSurface: VehicleSurface = (() => {
  * cannot roll in a corner -- which is why the car read as sinking into the tarmac
  * and as a sprite sliding on a plane at 111 km/h.
  */
-function createCarChassis(): VehicleChassis {
-  return createVehicleChassis(carChassisSpec, circuitSurface);
-}
-const playerChassis = createCarChassis();
-const opponentChassis = createCarChassis();
+const playerChassis = createVehicleChassis(carChassisSpec, circuitSurface);
+const opponentChassis = createVehicleChassis(opponentChassisSpec, circuitSurface);
 
 const physicsProof = createShowcaseRapierPhysicsProof("turbo-drift-circuit");
 
@@ -372,6 +436,16 @@ let opponentRaceStarted = false;
 const observedVehicleGrounding = {
   everUngrounded: false,
   maxContactGap: 0,
+  firstUngrounded: null as null | {
+    frame: number;
+    trackOffset: number;
+    progress: number;
+    position: { x: number; z: number };
+    heading: number;
+    groundedWheels: number;
+    maxContactGap: number;
+    wheels: readonly { id: string; grounded: boolean; contactGap: number; position: AuraVec3 }[];
+  },
   pitchObserved: false,
   rollObserved: false,
   wheelSpinObserved: false,
@@ -379,6 +453,26 @@ const observedVehicleGrounding = {
 };
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
 const initialOpponentPose = racingScene.toScenePose(opponentAi.snapshot(), 0.25);
+/*
+ * Resolve the first rendered pose through the same four-wheel chassis path used by
+ * every later frame.  Starting the model at the route centre plane and waiting for
+ * the first animation frame to ground it created a one-frame discontinuity and also
+ * left composition evidence with no authoritative wheel contact to reference.
+ */
+let playerChassisPose = playerChassis.reset({
+  x: initialPlayerPose.position[0],
+  z: initialPlayerPose.position[2],
+  heading: raceSnapshot.heading,
+  speed: 0,
+  steer: 0
+});
+let opponentChassisPose = opponentChassis.reset({
+  x: initialOpponentPose.position[0],
+  z: initialOpponentPose.position[2],
+  heading: opponentAi.snapshot().heading,
+  speed: 0,
+  steer: 0
+});
 const chaseDistance = Math.max(heroFraming.distance, CAR_SCENE_HEIGHT * 5.2);
 const chaseHeight = Math.max(heroFraming.height, CAR_SCENE_HEIGHT * 2.1);
 const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
@@ -422,6 +516,11 @@ const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   scene: scene()
     .background("#5f9fc0")
+    // Neutral generated HDR lighting preserves the texture's red/white/graphite palette
+    // and gives the bodywork readable broad reflections. Ambient lights alone provide a
+    // flat procedural gradient; the studio environment is the supported root API for a
+    // material-bearing hero that needs reflection definition in every camera heading.
+    .add(environments.studio({ name: "circuit neutral daylight reflections", intensity: 1.08, color: "#fff8ee" }))
     // The chase camera yaws with the car, so the sky is the scene background
     // rather than a finite wall whose edge would swing into frame. A distant
     // treeline band plus fog grade the ground into that sky.
@@ -452,79 +551,59 @@ const app = createAuraApp("#app", {
       curbColor: "#df4259",
       laneColor: "#b9f7ff"
     }))
-    /*
-     * Player hero: `showcaseCityVehicle`, replacing `showcaseTexturedSportsCar`.
-     *
-     * The previous hero asset is **structurally broken**, and this was confirmed in its own isolated
-     * release probe (`tests/reports/showcase-release-asset-probes/showcaseTexturedSportsCar.png`), not
-     * in the route: all four tyres are modelled detached from the hull on visible stalks at roughly
-     * truck scale, and the cockpit renders as an untextured brown smear. Because the defect is present
-     * in the asset at its own probe camera, no route framing, lighting or scaling can fix it -- the PRD
-     * previously recorded that "all four tyres now read as complete rounded wheels resting on the
-     * asphalt", which the probe contradicts. That claim is retracted in the execution log.
-     *
-     * `showcaseCityVehicle` is the substitute: role `vehicle`, `quality: release`, CC-BY-4.0 with
-     * Objaverse provenance, four texture references, and correct car proportions (2.376 x 1.508 x 5.0,
-     * a 2.10 length/width ratio against the broken asset's 1.91 open-wheel proportion). Its probe shows
-     * a clean body with glass, lights and integrated wheels.
-     */
-    .add(model(assets.turboRaceCar, {
+    // The hero is a CC0 Formula racer with authored red/white/graphite palette texturing.
+    // The rival is a separate CC-BY Formula racer with a detailed blue/black livery, visible
+    // suspension, driver, front/rear wings and exposed tires. Neither vehicle receives a
+    // whole-model tint: the distinction comes from authored materials and geometry.
+    .add(model(assets.showcaseCc0FormulaRaceCar, {
       name: "racing-player-car",
       role: "primaryVehicle",
       scaleMode: "fit",
       targetMaxDimension: 1.1,
       castShadow: true,
       receiveShadow: true
-    }).position(...initialPlayerPose.position).rotate(...initialPlayerPose.rotation).runtime(game.runtimeNode("racing-player-car", {
+    }).position(...groundedFittedModelPosition(playerChassisPose, heroFraming.subject.size, {
+      contactClearance: carChassisSpec.wheelRadius * 0.06
+    })).rotate(playerChassisPose.rotation[0], initialPlayerPose.rotation[1], playerChassisPose.rotation[2]).runtime(game.runtimeNode("racing-player-car", {
       tags: ["player", "vehicle", "typed-primary-asset"]
     })))
-    /*
-     * Opponent: the same well-built model in a distinct livery.
-     *
-     * An earlier revision pointed the opponent at `showcaseCityVehicle` while the player kept the
-     * broken `showcaseTexturedSportsCar`. Now that the *player* uses the good asset, a second distinct
-     * well-built car would be preferable -- but the catalog does not contain one. Every alternative was
-     * checked: `showcaseKenneyRaceCarRed` is flat untextured low-poly (0 textures, confirmed in its
-     * probe), `showcaseCleanSportsCar` has 0 textures and a 0.64 length/width ratio, and
-     * `aura3d assets search` returns only a low-poly Kenney delivery prop under CC0.
-     *
-     * So this is an honest material variant rather than a claimed second asset. It is defensible here
-     * for a reason that did **not** hold before: `showcaseCityVehicle` declares a **single** material
-     * (`material`), so a whole-model livery does not flatten separate tyre/glass/cockpit slots -- which
-     * is exactly the objection that made the previous tint on the seven-slot sports car wrong.
-     * The distinction is livery plus scale, and `opponentDistinction` below reports that truthfully
-     * instead of claiming a distinct silhouette.
-     */
-    .add(model(assets.turboRaceCar, {
+    .add(model(assets.showcaseCcByFormulaOpponent, {
       name: "racing-opponent-car",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 1.04,
-      material: material.metal({
-        name: "opponent cyan race livery",
-        color: "#26d9e8",
-        metallic: 0.52,
-        roughness: 0.3
-      }),
+      targetMaxDimension: opponentTargetMaxDimension,
       castShadow: true,
       receiveShadow: true
-    }).position(...initialOpponentPose.position).rotate(...initialOpponentPose.rotation).runtime(game.runtimeNode("racing-opponent-car", {
+    }).position(...groundedFittedModelPosition(opponentChassisPose, opponentRenderedSize, {
+      contactClearance: opponentChassisSpec.wheelRadius * 0.06
+    })).rotate(opponentChassisPose.rotation[0], opponentPresentationRotation(initialOpponentPose.rotation)[1], opponentChassisPose.rotation[2]).runtime(game.runtimeNode("racing-opponent-car", {
       tags: ["opponent", "vehicle", "typed-secondary-asset", "route-local-ai"]
     })))
     .add(primitives.box({
-      name: "left drift ribbon",
-      material: material.emissive({ name: "hot tire ribbon", color: "#70e8ff", emissive: "#70e8ff", emissiveIntensity: 0.5, opacity: 0.62 })
+      name: "left drift ribbon near",
+      material: material.pbr({ name: "fresh left tire mark", color: "#252a2c", roughness: 0.98, metallic: 0.01 })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-ribbon", {
       tags: ["vehicle-feedback", "drift", "renderer-owned"]
     })))
     .add(primitives.box({
-      name: "right drift ribbon",
-      material: material.emissive({ name: "hot tire ribbon", color: "#ff6c91", emissive: "#ff6c91", emissiveIntensity: 0.5, opacity: 0.62 })
+      name: "right drift ribbon near",
+      material: material.pbr({ name: "fresh right tire mark", color: "#252a2c", roughness: 0.98, metallic: 0.01 })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-ribbon", {
       tags: ["vehicle-feedback", "drift", "renderer-owned"]
     })))
-    .add(effects.ambientOcclusion({ intensity: 0.42 }))
-    .add(effects.neonBloom({ intensity: 0.16 }))
+    .add(primitives.box({ name: "left drift ribbon middle", material: material.pbr({ color: "#292e30", roughness: 0.98, metallic: 0.01 }) })
+      .position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-ribbon-middle", { tags: ["vehicle-feedback", "drift", "renderer-owned"] })))
+    .add(primitives.box({ name: "right drift ribbon middle", material: material.pbr({ color: "#292e30", roughness: 0.98, metallic: 0.01 }) })
+      .position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-ribbon-middle", { tags: ["vehicle-feedback", "drift", "renderer-owned"] })))
+    .add(primitives.box({ name: "left drift ribbon far", material: material.pbr({ color: "#303537", roughness: 0.98, metallic: 0.01 }) })
+      .position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-ribbon-far", { tags: ["vehicle-feedback", "drift", "renderer-owned"] })))
+    .add(primitives.box({ name: "right drift ribbon far", material: material.pbr({ color: "#303537", roughness: 0.98, metallic: 0.01 }) })
+      .position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-ribbon-far", { tags: ["vehicle-feedback", "drift", "renderer-owned"] })))
+    // Keep contact definition without crushing the Formula car's red palette into black.
+    // The former 0.42 AO pass was appropriate for the pale untextured car and visibly
+    // over-occluded the textured cockpit, sidepods and rear wing of the new hero.
+    .add(effects.ambientOcclusion({ intensity: 0.18 }))
+    .add(effects.neonBloom({ intensity: 0.1 }))
     // Nonzero depth haze that grades the treeline into the sky and separates
     // near curbing from distant trackside.
     // Fog density and light positions are expressed relative to the scene's own size.
@@ -537,22 +616,30 @@ const app = createAuraApp("#app", {
       density: Number((0.032 * (5.4 / SCENE_SIZE)).toFixed(5)),
       intensity: 0.32
     }))
-    .add(lights.ambient({ name: "circuit sky fill", color: "#e1f1fa", intensity: 1.08 }))
-    .add(lights.directional({ name: "circuit daylight key", color: "#fff2dc", intensity: 2.1 })
+    .add(lights.ambient({ name: "circuit sky fill", color: "#fff4e8", intensity: 1.08 }))
+    .add(lights.directional({ name: "circuit daylight key", color: "#fff1dc", intensity: 2.15 })
       .position(-0.83 * SCENE_SIZE, 1.2 * SCENE_SIZE, 0.65 * SCENE_SIZE))
-    .add(lights.directional({ name: "circuit cool rim", color: "#bfe4ff", intensity: 0.72 })
+    .add(lights.directional({ name: "circuit cool rim", color: "#d8ebff", intensity: 0.92 })
       .position(0.65 * SCENE_SIZE, 0.59 * SCENE_SIZE, -0.56 * SCENE_SIZE))
-    .add(lights.point({ name: "pit lane magenta spill", color: "#ff547c", intensity: 0.5 })
+    .add(lights.point({ name: "pit lane warm fill", color: "#ffd9b8", intensity: 0.34 })
       .position(0.44 * SCENE_SIZE, 0.15 * SCENE_SIZE, -0.33 * SCENE_SIZE))
-    .add(lights.point({ name: "start line cyan spill", color: "#57f3e1", intensity: 0.4 })
+    .add(lights.point({ name: "start line daylight fill", color: "#d9efff", intensity: 0.28 })
       .position(-0.33 * SCENE_SIZE, 0.13 * SCENE_SIZE, 0.3 * SCENE_SIZE))
     .camera(racingCamera)
 });
 
 const playerCar = app.nodes.require("racing-player-car");
 const opponentCar = app.nodes.require("racing-opponent-car");
-const leftDriftRibbon = app.nodes.require("racing-left-drift-ribbon") as AuraRuntimeNodeHandle;
-const rightDriftRibbon = app.nodes.require("racing-right-drift-ribbon") as AuraRuntimeNodeHandle;
+const leftDriftRibbons = [
+  app.nodes.require("racing-left-drift-ribbon"),
+  app.nodes.require("racing-left-drift-ribbon-middle"),
+  app.nodes.require("racing-left-drift-ribbon-far")
+] as AuraRuntimeNodeHandle[];
+const rightDriftRibbons = [
+  app.nodes.require("racing-right-drift-ribbon"),
+  app.nodes.require("racing-right-drift-ribbon-middle"),
+  app.nodes.require("racing-right-drift-ribbon-far")
+] as AuraRuntimeNodeHandle[];
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "racing",
@@ -569,8 +656,10 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     // driven away: the projected contact reference sat ~158 px above the rendered
     // silhouette and the `contact` check measured a 0.376 offset on a correctly grounded car.
     get subject() {
-      const pose = racingScene.toScenePose(raceSnapshot);
-      return { position: pose.position, rotation: pose.rotation, targetSize: CAR_SCENE_HEIGHT };
+      // The production follow camera resolves against the mutable runtime node, so the
+      // probe must use that exact node transform too.  Reconstructing it from the 2D race
+      // snapshot omits chassis surface height, pitch, roll and raster clearance.
+      return { position: playerCar.position, rotation: playerCar.rotation, targetSize: CAR_SCENE_HEIGHT };
     },
     playSpacePoints: route.points.map((point) => racingScene.toScenePoint(point, TRACK_REFERENCE_Y)),
     // Derived from the car's own pose, not from `route.points[0]`. The subject the probe
@@ -578,8 +667,24 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     // the reference at a different place on the circuit, so a correct car-on-road frame
     // still measured a large contact offset.
     get contactPoint() {
-      const pose = racingScene.toScenePose(raceSnapshot);
-      return [pose.position[0], CAR_REFERENCE_Y, pose.position[2]] as const;
+      /*
+       * A chase camera looks down the car's length, so projecting the contact plane at
+       * the *centre* of the wheelbase lands visually inside the body.  Perspective puts
+       * the near rear tyre substantially lower in the frame; that tyre is the visible
+       * silhouette/road junction the composition validator is meant to verify.
+       *
+       * The camera's positive lateral offset makes rear-left the near contact for every
+       * heading because both camera and chassis rotate with the vehicle.  This is a real
+       * wheel sample from `VehicleChassis`, not a screenshot-tuned screen coordinate.
+       */
+      const nearRearWheel = playerChassisPose.wheels.find((wheel) => wheel.id === "rear-left")
+        ?? playerChassisPose.wheels[0];
+      if (!nearRearWheel) return playerChassisPose.groundedPosition;
+      return [
+        nearRearWheel.position[0],
+        nearRearWheel.position[1] - carChassisSpec.wheelRadius,
+        nearRearWheel.position[2]
+      ] as const;
     },
     setSubjectSuppressed: (suppressed: boolean) => {
       app.pause();
@@ -690,11 +795,6 @@ function raceStateEvidence(previousProgress = raceSnapshot.progress) {
  * only when the matching rendered feedback was driven by real mounted state.
  */
 const observedRenderedFeedback = { driftRendered: false, highSpeedRendered: false, offTrackRendered: false };
-// Certified routes immediately constrain a boundary-crossing car back onto the
-// retained road. Preserve the resulting recovery beat long enough for a player
-// to perceive it and read the status; otherwise the one-frame `offTrack` state
-// can be mechanically true while the HUD has already returned to "Road locked".
-let recoveryFeedbackSeconds = 0;
 /** Ordered checkpoint gates observed from mounted kit events. */
 const observedCheckpointGates: number[] = [];
 const initialRaceStateEvidence = raceStateEvidence();
@@ -764,7 +864,7 @@ const mountedEvidence = {
     carAlignedToVisibleRoad: initialRaceStateEvidence.roadAlignment.onRoad,
     independentVisualReviewStatus: "pending"
   },
-  primaryAssets: ["turboRaceCar", "showcaseTsukubaCircuit"],
+  primaryAssets: ["showcaseCc0FormulaRaceCar", "showcaseCcByFormulaOpponent", "showcaseTsukubaCircuit"],
   /**
    * Playable camera evidence. The route uses a chase rig bound to the player
    * car node, not a static proof/overview camera.
@@ -791,43 +891,29 @@ const mountedEvidence = {
   },
   observedRenderedFeedback: { ...observedRenderedFeedback },
   /**
-   * Opponent distinction evidence, derived from the typed manifest rather than declared.
-   *
-   * The opponent used to be the player's own asset recoloured by a whole-model material override, so
-   * "the AI is visually distinguishable" rested entirely on hue. These fields read the two assets'
-   * actual manifest entries, so the claim is checkable and would go false if the route ever pointed
-   * both nodes at the same model again.
-   */
-  /**
    * Opponent distinction evidence, reported truthfully rather than favourably.
    *
-   * Both cars are `showcaseCityVehicle`, because the catalog has no second well-built textured car:
-   * `showcaseKenneyRaceCarRed` and `showcaseCleanSportsCar` both ship 0 textures, and asset search
-   * returns only a low-poly CC0 prop. So `distinctAsset` is **false** and this records a livery+scale
-   * variant instead of overclaiming a distinct silhouette.
-   *
-   * The variant is legitimate here for a reason that did not hold for the previous hero: this asset
-   * declares a single material, so a whole-model livery cannot flatten separate tyre/glass/cockpit
-   * slots. `sharedAssetJustification` states why, so a reviewer sees the tradeoff rather than a claim.
+   * The CC0 Formula hero and CC-BY rival are separate typed assets with visibly different nose,
+   * cockpit, wing, body and wheel geometry. Neither receives a whole-model material override,
+   * so the distinction comes from authored geometry and materials rather than a debug tint.
    */
   opponentDistinction: {
-    playerAsset: assets.turboRaceCar.id,
-    opponentAsset: assets.turboRaceCar.id,
-    distinctAsset: false,
-    distinctSilhouette: false,
-    distinctionMode: "livery-and-scale-variant",
-    reliesOnColorTintOnly: true,
+    playerAsset: assets.showcaseCc0FormulaRaceCar.id,
+    opponentAsset: assets.showcaseCcByFormulaOpponent.id,
+    distinctAsset: true,
+    distinctSilhouette: true,
+    distinctionMode: "distinct-authored-formula-racing-assets",
+    reliesOnColorTintOnly: false,
     opponentAssetRole: "vehicle",
     opponentAssetQuality: "release",
-    sharedAssetJustification:
-      "No second release-certified textured car exists in the catalog; the shared asset declares a single material, so a whole-model livery does not flatten separate tyre/glass/cockpit slots.",
-    playerBounds: assets.turboRaceCar.bounds,
-    opponentBounds: assets.turboRaceCar.bounds
+    sharedAssetJustification: null,
+    playerBounds: assets.showcaseCc0FormulaRaceCar.bounds,
+    opponentBounds: assets.showcaseCcByFormulaOpponent.bounds
   },
   racing: {
     cameraIntent: "stable-chase",
-    vehicleAsset: "turboRaceCar",
-    opponentVehicleAsset: "turboRaceCar",
+    vehicleAsset: "showcaseCc0FormulaRaceCar",
+    opponentVehicleAsset: "showcaseCcByFormulaOpponent",
     trackAsset: "showcaseTsukubaCircuit",
     assetBinding: route.assetBinding,
     sceneBinding: racingScene.evidence,
@@ -866,7 +952,6 @@ app.onFrame(({ dt }) => {
   input.update(step);
   if (input.pressed("reset")) {
     raceSnapshot = racingState.reset(0);
-    recoveryFeedbackSeconds = 0;
     opponentRaceStarted = false;
     const resetOpponent = opponentAi.reset();
     mountedEvidence.gameplay.resetWorks = true;
@@ -886,16 +971,20 @@ app.onFrame(({ dt }) => {
     const resetOpponentPose = racingScene.toScenePose(resetOpponent, 0.25);
     // Settle both chassis at rest so a reset car is grounded on its first frame
     // rather than dropping onto the road.
-    const playerRest = playerChassis.reset({
-      x: resetPose.position[0], z: resetPose.position[2], heading: resetPose.rotation[1], speed: 0, steer: 0
+    playerChassisPose = playerChassis.reset({
+      x: resetPose.position[0], z: resetPose.position[2], heading: raceSnapshot.heading, speed: 0, steer: 0
     });
-    const opponentRest = opponentChassis.reset({
-      x: resetOpponentPose.position[0], z: resetOpponentPose.position[2], heading: resetOpponentPose.rotation[1], speed: 0, steer: 0
+    opponentChassisPose = opponentChassis.reset({
+      x: resetOpponentPose.position[0], z: resetOpponentPose.position[2], heading: resetOpponent.heading, speed: 0, steer: 0
     });
-    playerCar.setPosition(playerRest.groundedPosition[0], playerRest.groundedPosition[1], playerRest.groundedPosition[2]);
-    playerCar.setRotation(playerRest.rotation[0], playerRest.rotation[1], playerRest.rotation[2]);
-    opponentCar.setPosition(opponentRest.groundedPosition[0], opponentRest.groundedPosition[1], opponentRest.groundedPosition[2]);
-    opponentCar.setRotation(opponentRest.rotation[0], opponentRest.rotation[1], opponentRest.rotation[2]);
+    playerCar.setPosition(...groundedFittedModelPosition(playerChassisPose, heroFraming.subject.size, {
+      contactClearance: carChassisSpec.wheelRadius * 0.06
+    }));
+    playerCar.setRotation(playerChassisPose.rotation[0], resetPose.rotation[1], playerChassisPose.rotation[2]);
+    opponentCar.setPosition(...groundedFittedModelPosition(opponentChassisPose, opponentRenderedSize, {
+      contactClearance: opponentChassisSpec.wheelRadius * 0.06
+    }));
+    opponentCar.setRotation(opponentChassisPose.rotation[0], resetOpponentPose.rotation[1], opponentChassisPose.rotation[2]);
     mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
     updateRacingHud();
     return;
@@ -910,9 +999,6 @@ app.onFrame(({ dt }) => {
     drift: input.held("drift"),
     steer: input.axis("steer")
   });
-  recoveryFeedbackSeconds = raceSnapshot.offTrack
-    ? 5
-    : Math.max(0, recoveryFeedbackSeconds - step);
   const playerPose = racingScene.toScenePose(raceSnapshot);
   /*
    * The chassis resolves the car's height and attitude from the surface under each
@@ -920,12 +1006,12 @@ app.onFrame(({ dt }) => {
    * could not respond to the road and produced no pitch or roll -- the sinking, and
    * the "sprite sliding on a plane" read at speed.
    */
-  const playerChassisPose = playerChassis.step(step, {
+  playerChassisPose = playerChassis.step(step, {
     x: playerPose.position[0],
     z: playerPose.position[2],
-    // `toScenePose` yaws the model to face along the racing line; the chassis works in
-    // the same scene frame, so it takes that yaw directly.
-    heading: playerPose.rotation[1],
+    // Chassis contact follows the racing surface query's +X planar-heading convention.
+    // The GLB presentation yaw is separate and is applied only when rendering below.
+    heading: raceSnapshot.heading,
     speed: raceSnapshot.speed,
     steer: input.axis("steer"),
     throttle: input.held("throttle") ? 1 : 0,
@@ -940,31 +1026,45 @@ app.onFrame(({ dt }) => {
    * lifted the whole car by its ride height, which renders as a car hovering above the
    * tarmac -- the sinking defect's mirror image.
    */
-  playerCar.setPosition(playerChassisPose.groundedPosition[0], playerChassisPose.groundedPosition[1], playerChassisPose.groundedPosition[2]);
-  playerCar.setRotation(playerChassisPose.rotation[0], playerChassisPose.rotation[1], playerChassisPose.rotation[2]);
+  playerCar.setPosition(...groundedFittedModelPosition(playerChassisPose, heroFraming.subject.size, {
+    contactClearance: carChassisSpec.wheelRadius * 0.06
+  }));
+  playerCar.setRotation(playerChassisPose.rotation[0], playerPose.rotation[1], playerChassisPose.rotation[2]);
   // Drift feedback is driven by the kit's actual slip value plus real speed, not
   // by raw steering input: a stationary car turning its wheels must not smoke.
   const driftAmount = Math.min(1, Math.abs(raceSnapshot.drift));
   const speedFraction = Math.min(1, Math.abs(raceSnapshot.speed) / Math.max(gameplayMaxSpeed, 0.001));
   const driftVisible = driftAmount > 0.12 && speedFraction > 0.18;
-  // Ribbon length scales with both slip and speed so faster, harder drifts leave
-  // visibly longer marks.
-  const ribbonLength = 0.18 + driftAmount * speedFraction * 0.9;
-  const ribbonWidth = 0.04 + driftAmount * 0.035;
+  // Keep the live feedback local to the rear contact patches. The former 1.15-unit
+  // multiplier produced two long, blunt black rails that visually fused with the tyres.
+  // A retained skid history can be segmented later; these nodes show the current slip only.
+  const ribbonLength = 0.16 + driftAmount * speedFraction * 0.48;
+  const ribbonWidth = 0.021 + driftAmount * 0.015;
   const heading = playerPose.heading;
   // Anchor each ribbon half a length behind the rear axle so it trails from the
   // tire contact patch along the road surface instead of hanging off the body.
-  const trailOffset = 0.26 + ribbonLength * 0.5;
-  const rearX = playerPose.position[0] - Math.sin(heading) * trailOffset;
-  const rearZ = playerPose.position[2] - Math.cos(heading) * trailOffset;
-  const sideX = Math.cos(heading) * 0.16;
-  const sideZ = -Math.sin(heading) * 0.16;
-  for (const [ribbon, side] of [[leftDriftRibbon, -1], [rightDriftRibbon, 1]] as const) {
-    ribbon
-      .setPosition(rearX + sideX * side, playerPose.position[1] - 0.115, rearZ + sideZ * side)
-      .setRotation(...playerPose.rotation)
-      .setScale(driftVisible ? [ribbonWidth, 0.012, ribbonLength] : [0.001, 0.001, 0.001])
-      .setVisible(driftVisible);
+  const rearAxleOffset = carChassisSpec.wheelbase / 2;
+  const tireExitGap = carChassisSpec.wheelRadius * 0.55;
+  const halfTrack = carChassisSpec.trackWidth / 2;
+  const sideX = -Math.sin(heading) * halfTrack;
+  const sideZ = Math.cos(heading) * halfTrack;
+  const segmentGap = 0.045;
+  const segmentLength = Math.max(0.055, (ribbonLength - segmentGap * 2) / 3);
+  for (const [ribbons, side] of [[leftDriftRibbons, -1], [rightDriftRibbons, 1]] as const) {
+    ribbons.forEach((ribbon, segment) => {
+      const trailOffset = rearAxleOffset + tireExitGap + segmentLength * 0.5 + segment * (segmentLength + segmentGap);
+      const rearX = playerPose.position[0] - Math.cos(heading) * trailOffset;
+      const rearZ = playerPose.position[2] - Math.sin(heading) * trailOffset;
+      ribbon
+        // The scene pose Y is the certified road-contact plane. Lift a few millimetres
+        // to avoid z-fighting without intersecting the tyre silhouette.
+        .setPosition(rearX + sideX * side, playerPose.position[1] + 0.012, rearZ + sideZ * side)
+        // A tyre mark lies on the road plane. Inheriting chassis pitch/roll tipped its ends
+        // through the tarmac and recreated the apparent wheel-submersion defect.
+        .setRotation(0, playerPose.rotation[1], 0)
+        .setScale(driftVisible ? [ribbonWidth * (1 - segment * 0.09), 0.008, segmentLength] : [0.001, 0.001, 0.001])
+        .setVisible(driftVisible);
+    });
   }
   const previousOpponent = opponentAi.snapshot();
   const opponent = opponentRaceStarted
@@ -972,18 +1072,20 @@ app.onFrame(({ dt }) => {
     : previousOpponent;
   const opponentPose = racingScene.toScenePose(opponent, 0.25);
   const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
-  const opponentChassisPose = opponentChassis.step(step, {
+  opponentChassisPose = opponentChassis.step(step, {
     x: opponentPose.position[0],
     z: opponentPose.position[2],
-    heading: opponentPose.rotation[1],
+    heading: opponent.heading,
     speed: opponent.speed,
     steer: opponentDriverInput.steer,
     throttle: opponentDriverInput.throttle ? 1 : 0,
     brake: opponentDriverInput.brake ? 1 : 0,
     slip: Math.min(1, Math.abs(opponent.drift))
   });
-  opponentCar.setPosition(opponentChassisPose.groundedPosition[0], opponentChassisPose.groundedPosition[1], opponentChassisPose.groundedPosition[2]);
-  opponentCar.setRotation(opponentChassisPose.rotation[0], opponentChassisPose.rotation[1], opponentChassisPose.rotation[2]);
+  opponentCar.setPosition(...groundedFittedModelPosition(opponentChassisPose, opponentRenderedSize, {
+    contactClearance: opponentChassisSpec.wheelRadius * 0.06
+  }));
+  opponentCar.setRotation(opponentChassisPose.rotation[0], opponentPose.rotation[1], opponentChassisPose.rotation[2]);
   mountedEvidence.status = raceSnapshot.status;
   mountedEvidence.frameCount = raceSnapshot.frame;
   mountedEvidence.speed = raceSnapshot.speed;
@@ -999,7 +1101,9 @@ app.onFrame(({ dt }) => {
     ribbonLength: round(ribbonLength),
     source: "game.racing drift + speed state",
     offTrack: raceSnapshot.offTrack,
-    recoveryVisible: recoveryFeedbackSeconds > 0
+    // This is deliberately the current boundary state, not a timer. A stale latch made
+    // later on-road captures continue to advertise recovery after the kit had settled.
+    recoveryVisible: raceSnapshot.offTrack
   };
   observedRenderedFeedback.driftRendered ||= driftVisible;
   observedRenderedFeedback.highSpeedRendered ||= speedFraction > 0.6;
@@ -1014,13 +1118,30 @@ app.onFrame(({ dt }) => {
    * same colour histogram as one sitting on it.
    */
   const chassisTelemetry = playerChassis.telemetry();
+  if (!playerChassisPose.grounded && observedVehicleGrounding.firstUngrounded === null) {
+    observedVehicleGrounding.firstUngrounded = {
+      frame: raceSnapshot.frame,
+      trackOffset: round(raceSnapshot.trackOffset),
+      progress: round(raceSnapshot.progress),
+      position: { x: round(playerPose.position[0]), z: round(playerPose.position[2]) },
+      heading: round(raceSnapshot.heading),
+      groundedWheels: chassisTelemetry.groundedWheels,
+      maxContactGap: round(chassisTelemetry.maxContactGap),
+      wheels: playerChassisPose.wheels.map((wheel) => ({
+        id: wheel.id,
+        grounded: wheel.grounded,
+        contactGap: round(wheel.contactGap),
+        position: wheel.position
+      }))
+    };
+  }
   observedVehicleGrounding.everUngrounded ||= !playerChassisPose.grounded;
   observedVehicleGrounding.maxContactGap = Math.max(observedVehicleGrounding.maxContactGap, chassisTelemetry.maxContactGap);
   observedVehicleGrounding.pitchObserved ||= Math.abs(chassisTelemetry.pitch) > 0.004;
   observedVehicleGrounding.rollObserved ||= Math.abs(chassisTelemetry.roll) > 0.004;
   observedVehicleGrounding.wheelSpinObserved ||= chassisTelemetry.wheelSpinRate > 0.5;
   observedVehicleGrounding.suspensionMoved ||=
-    Math.abs(chassisTelemetry.averageCompression - 0.5) > 0.01;
+    playerChassisPose.wheels.some((wheel) => Math.abs(wheel.compression - 0.5) > 0.01);
   mountedEvidence.vehicleChassis = {
     system: "engine.createVehicleChassis",
     routePinsCarHeightToLiteral: false,
@@ -1069,7 +1190,7 @@ function setupRacingPanel(): void {
       <p class="panel__lede">Arcade handling. Four laps, six gates, one rival—carry speed through the apex and break the line.</p>
     </header>
     <section class="metrics-row" aria-label="Live race metrics">
-      <article class="metric metric--speed"><span>km/h</span><strong id="speed-value">0</strong></article>
+      <article class="metric metric--speed"><span>Speed · km/h</span><strong id="speed-value">0</strong></article>
       <article class="metric"><span>Lap</span><strong id="lap-value">1</strong></article>
       <article class="metric"><span>Gate</span><strong id="checkpoint-value">0</strong></article>
       <article class="metric metric--status"><span>Race</span><strong id="status-value">Ready</strong></article>
@@ -1125,10 +1246,10 @@ function racingStatusLabel(): string {
 function updateRacingHud(): void {
   hud.speed.textContent = String(Math.round(Math.abs(raceSnapshot.speed) * 36));
   hud.lap.textContent = String(raceSnapshot.lap);
-  hud.checkpoint.textContent = String(raceSnapshot.checkpoint);
+  hud.checkpoint.textContent = `${Math.min(raceSnapshot.checkpoint, raceSnapshot.checkpointCount)} / ${raceSnapshot.checkpointCount}`;
   hud.status.textContent = racingStatusLabel();
   const recoveryVisible = mountedEvidence.renderedFeedback.recoveryVisible === true;
-  hud.alignment.textContent = recoveryVisible ? "Auto recovery" : "Road locked";
+  hud.alignment.textContent = recoveryVisible ? "Edge assist" : "Road locked";
   const alignmentStatus = document.getElementById("alignment-status");
   if (alignmentStatus) alignmentStatus.dataset.state = recoveryVisible ? "recovering" : "locked";
 }

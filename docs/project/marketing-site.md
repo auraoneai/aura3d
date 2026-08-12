@@ -1,6 +1,6 @@
 # Marketing Site
 
-Date: 2026-08-08
+Date: 2026-08-11
 Status: Aura3D 2.0.0 marketing release-candidate requirements
 
 The marketing site must be claim-safe. It can sell Aura3D's current strengths,
@@ -9,16 +9,17 @@ capability.
 
 ## Current Showcase Gallery State
 
-The 2.0 website build publishes four non-game route-library candidates awaiting
-current human review:
+The 2.0 website build presents four non-game route-library candidates awaiting
+current independent human review:
 
 - Product Configurator
 - Smart City Control
 - Cinematic Architecture
 - Digital Twin Operations
 
-It also publishes three clearly labeled visual-rebuild prototypes that cannot
-be promoted in this release:
+It also presents three materially rebuilt game candidates whose automated
+gameplay and visual evidence is current, but which cannot be promoted until
+their exact final artifacts receive independent approval:
 
 - Blockfall Reactor
 - Turbo Drift Circuit
@@ -72,8 +73,9 @@ Each card must include:
 - evidence status;
 - limitation or fallback state when relevant.
 
-Prototype and blocked routes may appear only in internal/staging pages or in a
-clearly labeled "work in progress" section.
+Unapproved and blocked routes may appear only with an explicit candidate,
+development, held, or independent-review-pending label; they cannot be called
+released or approved examples.
 
 ## Release Review
 
@@ -86,5 +88,5 @@ Before publication:
 - ensure app READMEs and marketing copy agree.
 - verify the gallery matches current `tools/showcase-library/route-gates.json`
   and `docs/project/showcase-launch-evidence.json`: four review-eligible
-  candidates, two Labs diagnostics, three visibly prototype-blocked games, and
+  candidates, two Labs diagnostics, three rebuilt approval-pending games, and
   no superseded or duplicate public routes.

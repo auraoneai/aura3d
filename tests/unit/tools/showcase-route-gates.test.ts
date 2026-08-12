@@ -463,11 +463,16 @@ describe("showcase route gate registry", () => {
     const review = JSON.parse(readFileSync(resolve("docs/project/showcase-visual-review.json"), "utf8")) as ShowcaseVisualReviewFile;
     const reviewsById = new Map((review.routes ?? []).map((route) => [route.id, route]));
     const expected = new Map([
-      // Hero swapped to `turboRaceCar`: `showcaseTexturedSportsCar` is broken in its own isolated
-      // release probe (tyres modelled detached from the hull on stalks, untextured brown cockpit), which
-      // no route framing can correct.
-      ["showcase-turbo-drift-circuit", { category: "racing", hero: "turboRaceCar", secondary: "showcaseTsukubaCircuit" }],
-      ["showcase-skyline-runner", { category: "platformer", hero: "showcaseKenneyOobiPlatformerHero", secondary: "showcaseKenneyVerdantPlatformerWorld" }]
+      ["showcase-turbo-drift-circuit", {
+        category: "racing",
+        hero: "showcaseCc0FormulaRaceCar",
+        secondary: ["showcaseCcByFormulaOpponent", "showcaseTsukubaCircuit"]
+      }],
+      ["showcase-skyline-runner", {
+        category: "platformer",
+        hero: "showcaseKenneyOobiPlatformerHero",
+        secondary: ["showcaseKenneyVerdantPlatformerWorld"]
+      }]
     ]);
 
     for (const [routeId, truth] of expected) {
@@ -478,7 +483,7 @@ describe("showcase route gate registry", () => {
       expect(route.gameTemplateStatus?.publicTemplateReady, `${routeId} game template ready`).toBe(false);
       expect(route.gameTemplateStatus?.evidence?.length ?? 0, `${routeId} template evidence`).toBeGreaterThanOrEqual(4);
       expect(route.routePrimaryHeroAsset, `${routeId} hero`).toBe(truth.hero);
-      expect(route.secondaryPrimaryAssets, `${routeId} secondary`).toEqual([truth.secondary]);
+      expect(route.secondaryPrimaryAssets, `${routeId} secondary`).toEqual(truth.secondary);
 
       const health = JSON.parse(readFileSync(resolve("apps", routeId, "route-health.json"), "utf8")) as RouteHealthFile;
       expect(health.classification, `${routeId} route-health classification`).toBe("prototype-blocked");
@@ -690,11 +695,11 @@ describe("showcase route gate registry", () => {
       },
       root: process.cwd()
       // Negative control: a forged `verdict: "pass"` with deliberately wrong hashes must still be
-      // rejected. The hero asset is `turboRaceCar` since 1.5.0 (`showcaseTexturedSportsCar` is
-      // broken in its own release probe), so the per-asset blocker names it.
+      // rejected for both current Formula cars and the circuit.
     })).toEqual(expect.arrayContaining([
       "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-      "release-game-geometry-asset-hash-mismatch:turboRaceCar",
+      "release-game-geometry-asset-hash-mismatch:showcaseCc0FormulaRaceCar",
+      "release-game-geometry-asset-hash-mismatch:showcaseCcByFormulaOpponent",
       "release-game-geometry-asset-hash-mismatch:showcaseTsukubaCircuit"
     ]));
 
@@ -858,21 +863,12 @@ describe("showcase route gate registry", () => {
     expect(launchEvidence.schema, "launch evidence schema").toBe("aura3d-showcase-build-deploy/1.0");
     expect(typeof launchEvidence.ok, "launch evidence ok flag").toBe("boolean");
     /*
-     * The evidence-truth reset is closed for the four release candidates.
-     *
-     * These previously asserted `false` because no route carried independent human
-     * approval -- the review recorded `reviewer.kind: "pending"`. The project owner has
-     * since reviewed and approved the four candidates against their exact hash-bound
-     * desktop, mobile and gameplay screenshots, so the gate legitimately passes.
-     *
-     * `allRoutesOk` stays false, and that is the point: the three prototype-blocked game
-     * routes were deliberately NOT approved (their gameTemplateStatus.requiredBeforePublic
-     * lists open work beyond approval), and one internal diagnostic retains real blockers.
-     * A true value here would mean those honest blockers had been papered over.
+     * Independent human approval remains deliberately pending. Machine checks cannot promote
+     * the four candidates or manufacture that reviewer-owned decision.
      */
-    expect(launchEvidence.ok, "launch evidence passes once candidates carry human approval").toBe(true);
-    expect(launchEvidence.publicReleaseOk, "public release candidates carry independent human review").toBe(true);
-    expect(launchEvidence.publicVisualReviewOk, "public visual review gate").toBe(true);
+    expect(launchEvidence.ok, "launch evidence remains blocked pending independent human approval").toBe(false);
+    expect(launchEvidence.publicReleaseOk, "public release candidates remain reviewer-blocked").toBe(false);
+    expect(launchEvidence.publicVisualReviewOk, "public visual review gate").toBe(false);
     expect(launchEvidence.allRoutesOk, "prototypes and retained diagnostics keep honest blockers").toBe(false);
     expect(launchEvidence.releaseCandidateCount, "release candidate count").toBe(expectedReleaseCandidateCount);
     expect(launchEvidence.releaseCandidatePassed, "release candidates passed").toBe(expectedReleaseCandidatePassed);
@@ -890,9 +886,9 @@ describe("showcase route gate registry", () => {
     expect(launchEvidence.gateConfig?.schema, "launch gate config schema").toBe(routeGateConfig.schema);
     expect(launchEvidence.gateConfig?.hash, "launch gate config hash").toBe(routeGateConfigHash);
     expect(launchEvidence.visualReview?.path, "visual review path").toBe("docs/project/showcase-visual-review.json");
-    expect(launchEvidence.visualReview?.ok, "public release visual review ok").toBe(true);
-    expect(launchEvidence.visualReview?.overallVerdict, "approved all-route visual review verdict").toBe("pass");
-    expect(launchEvidence.visualReview?.failures ?? [], "approved visual review has no failures").toEqual([]);
+    expect(launchEvidence.visualReview?.ok, "public release visual review remains pending").toBe(false);
+    expect(launchEvidence.visualReview?.overallVerdict, "pending visual review verdict").toBe("needs-work");
+    expect(launchEvidence.visualReview?.failures?.length ?? 0, "pending visual review retains failures").toBeGreaterThan(0);
     /*
      * A document-level `pass` must not silently approve everything.
      *
@@ -1081,8 +1077,8 @@ describe("showcase route gate registry", () => {
       requireScreenshot: false
     });
 
-    expect(context.routePrimaryHeroAsset).toBe("turboRaceCar");
-    expect(context.secondaryPrimaryAssets).toEqual(["showcaseTsukubaCircuit"]);
+    expect(context.routePrimaryHeroAsset).toBe("showcaseCc0FormulaRaceCar");
+    expect(context.secondaryPrimaryAssets).toEqual(["showcaseCcByFormulaOpponent", "showcaseTsukubaCircuit"]);
     expect(result).toMatchObject({ ok: true, required: true, failures: [] });
 
     const missingHero = cloneRecord(evidence);

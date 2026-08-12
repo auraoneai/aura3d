@@ -2927,12 +2927,21 @@ function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
   } catch {
     matrix = identityMat4();
   }
+  const handedness = hasNegativeHandedness(modelMatrix) ? -1 : 1;
   return [
-    matrix[0], matrix[1], matrix[2], 0,
-    matrix[4], matrix[5], matrix[6], 0,
-    matrix[8], matrix[9], matrix[10], 0,
+    matrix[0] * handedness, matrix[1] * handedness, matrix[2] * handedness, 0,
+    matrix[4] * handedness, matrix[5] * handedness, matrix[6] * handedness, 0,
+    matrix[8] * handedness, matrix[9] * handedness, matrix[10] * handedness, 0,
     0, 0, 0, 1
   ];
+}
+
+function hasNegativeHandedness(matrix: Mat4): boolean {
+  const determinant =
+    matrix[0] * (matrix[5] * matrix[10] - matrix[9] * matrix[6]) -
+    matrix[4] * (matrix[1] * matrix[10] - matrix[9] * matrix[2]) +
+    matrix[8] * (matrix[1] * matrix[6] - matrix[5] * matrix[2]);
+  return Number.isFinite(determinant) && determinant < -1e-8;
 }
 
 function transposeMat4(matrix: Mat4): Mat4 {

@@ -66,6 +66,16 @@ describe("agent API", () => {
     expect(snapshot.nodes[0]).toMatchObject({ kind: "model", asset: { id: "robot" } });
   });
 
+  test("retains exact glTF node exclusions on typed model declarations", () => {
+    const snapshot = scene()
+      .add(model(assets.robot, { hiddenNodeNames: ["legacy-checkpoint", "legacy-finish"] }))
+      .toJSON();
+    expect(snapshot.nodes[0]).toMatchObject({
+      kind: "model",
+      hiddenNodeNames: ["legacy-checkpoint", "legacy-finish"]
+    });
+  });
+
   test("builds a compact cinematic scene", () => {
     const snapshot = scene()
       .background("#05070d")

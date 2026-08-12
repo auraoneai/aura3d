@@ -1,11 +1,11 @@
 {
-  "name": "Aura Clash and Aura3D 1.0.5 launch evidence command plan",
-  "version": "1.0.0",
-  "purpose": "Lists the exact command-proof outputs consumed by launch-evidence/cross-runtime-evidence.json and docs/project/showcase/aura-clash-showcase-plan.md.",
+  "name": "Aura Clash and Aura3D 2.0 launch evidence command plan",
+  "version": "2.0.0",
+  "purpose": "Lists the exact command-proof outputs consumed by launch-evidence/cross-runtime-evidence.json and docs/examples/aura-clash.md.",
   "runner": "pnpm evidence:command",
   "notes": [
     "This file is a source plan only. It does not prove any gate until the commands are executed.",
-    "Run commands from /Users/gurbakshchahal/aura3d unless a command overrides cwd.",
+    "Run commands from the Aura3D repository root unless a command overrides cwd.",
     "Deploy and user visual approval still require explicit operator approval.",
     "AuraVoice sample render gates require real rendered/video/screenshot artifacts, not placeholder JSON."
   ],
@@ -21,7 +21,7 @@
         "apps/aura-clash-showcase/launch-evidence/review-package.md",
         "apps/aura-clash-showcase/launch-evidence/workflow.json"
       ],
-      "prdGates": [463]
+      "documentationGates": [463]
     },
     {
       "id": "aura-clash-visual-approval",
@@ -41,7 +41,7 @@
       "cwd": "apps/aura-clash-showcase",
       "command": "npm run launch:deploy",
       "output": "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
-      "prdGates": [464],
+      "documentationGates": [464],
       "requires": [
         "Explicit deploy approval and valid Vercel credentials"
       ]
@@ -51,7 +51,7 @@
       "cwd": "apps/aura-clash-showcase",
       "command": "AURA_CLASH_ORIGIN='<production-origin>' npm run launch:evidence",
       "output": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
-      "prdGates": [465, 494],
+      "documentationGates": [465, 494],
       "requires": [
         "A successful Vercel deployment",
         "AURA_CLASH_ORIGIN or AURA_CLASH_PRODUCTION_URL points at the production deployment"
@@ -65,7 +65,7 @@
         "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
         "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
       ],
-      "prdGates": [464, 465, 494],
+      "documentationGates": [464, 465, 494],
       "requires": [
         "Explicit deploy approval and valid Vercel credentials"
       ]
@@ -284,7 +284,7 @@
         "apps/aura-clash-showcase/launch-evidence/first-frame.json",
         "apps/aura-clash-showcase/launch-evidence/first-frame.png",
         "apps/aura-clash-showcase/launch-evidence/review-package.md",
-        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/launch-evidence/documentation-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/evidence-wiring.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.md",
@@ -298,10 +298,10 @@
       "output": "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json"
     },
     {
-      "id": "prd-evidence-coverage",
+      "id": "documentation-evidence",
       "cwd": "apps/aura-clash-showcase",
-      "command": "npm run launch:coverage-check",
-      "output": "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json"
+      "command": "npm run launch:documentation-evidence",
+      "output": "apps/aura-clash-showcase/launch-evidence/documentation-evidence.json"
     },
     {
       "id": "evidence-wiring-check",
@@ -319,24 +319,23 @@
       ]
     },
     {
-      "id": "completion-audit",
+      "id": "documentation-audit",
       "cwd": "apps/aura-clash-showcase",
-      "command": "npm run launch:completion-check",
-      "output": "apps/aura-clash-showcase/launch-evidence/completion-audit.json"
+      "command": "npm run launch:documentation-check",
+      "output": "apps/aura-clash-showcase/launch-evidence/documentation-audit.json"
     },
     {
-      "id": "prd-update",
+      "id": "complete-read-only-proof",
       "cwd": "apps/aura-clash-showcase",
       "command": "npm run launch:proof-complete",
       "outputs": [
-        "docs/project/showcase/aura-clash-showcase-plan.md",
         "apps/aura-clash-showcase/launch-evidence/workflow.json",
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
-        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/launch-evidence/documentation-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/evidence-wiring.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.json",
         "apps/aura-clash-showcase/launch-evidence/readiness.md",
-        "apps/aura-clash-showcase/launch-evidence/completion-audit.json"
+        "apps/aura-clash-showcase/launch-evidence/documentation-audit.json"
       ]
     }
   ]

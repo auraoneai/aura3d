@@ -20,18 +20,18 @@ if (process.env.AURA_CLASH_CONTEXTUAL_EVIDENCE_ONLY === "1") {
   process.exit(0);
 }
 
-const prdGates = [
+const documentationGates = [
   {
     id: "deployed-route-and-glb-200",
-    prdLineHint: 465,
-    prdLabel: "Confirm deployed route and GLB URLs return 200.",
+    documentationLineHint: 465,
+    documentationLabel: "Confirm deployed route and GLB URLs return 200.",
     artifact: "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
     requiredKinds: ["route", "glb"]
   },
   {
     id: "deployed-route-confirmed",
-    prdLineHint: 494,
-    prdLabel: "Deployed route confirmed.",
+    documentationLineHint: 494,
+    documentationLabel: "Deployed route confirmed.",
     artifact: "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
     requiredKinds: ["route", "metadata", "glb"]
   }
@@ -121,7 +121,7 @@ const evidence = {
   ok: failed.length === 0,
   failedCount: failed.length,
   kindStatus,
-  prdGateCoverage: createPrdGateCoverage(kindStatus),
+  documentationGateCoverage: createDocumentationGateCoverage(kindStatus),
   results
 };
 
@@ -218,8 +218,8 @@ function summarizeKindStatus(targetResults) {
   );
 }
 
-function createPrdGateCoverage(statusByKind) {
-  return prdGates.map((gate) => ({
+function createDocumentationGateCoverage(statusByKind) {
+  return documentationGates.map((gate) => ({
     ...gate,
     ok: gate.requiredKinds.every((kind) => statusByKind[kind]?.ok === true),
     requiredKindStatus: Object.fromEntries(

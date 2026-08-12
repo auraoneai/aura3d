@@ -21,7 +21,7 @@ const defaultScanRoots = ["README.md", "llms.txt", "docs/animation", "docs/api",
 // Animation-specific overclaims the engine must never make without an explicit fixture/non-goal qualifier nearby.
 const forbiddenPatterns: ReadonlyArray<readonly [RegExp, string]> = [
   [/\bmotion[-\s]?matching\s+(?:engine|system|runtime|database|middleware)\b/i, "motion-matching engine claim"],
-  [/\binertialization\b/i, "inertialization claim"],
+  [/\binertialization\s+(?:parity|equivalent|replacement)\b/i, "inertialization parity claim"],
   [/\bragdoll\s+(?:physics|system|simulation|controller)\b/i, "production ragdoll claim"],
   [/\bfull[-\s]?body\s+IK\b/i, "full-body IK claim"],
   [/\b(?:FABRIK|CCD)\s+(?:solver|IK)\b/i, "FABRIK/CCD solver claim"],

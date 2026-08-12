@@ -4,12 +4,22 @@ import { expect, test } from "@playwright/test";
 import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const REPORT_PATH = "tests/reports/threejs-parity/gltf-parity.json";
-const ARTIFACTS = {
-  a3d: "tests/reports/threejs-parity/gltf-parity/a3d-gltf.png",
-  threejs: "tests/reports/threejs-parity/gltf-parity/threejs-gltf.png",
-  sideBySide: "tests/reports/threejs-parity/gltf-parity/side-by-side.png"
-} as const;
+const PARITY_CASES = [
+  {
+    id: "helmet",
+    title: "loads Damaged Helmet through A3D and actual Three.js GLTFLoader",
+    reportPath: "tests/reports/threejs-parity/gltf-parity.json",
+    artifactDir: "tests/reports/threejs-parity/gltf-parity",
+    maxMeanDelta: undefined
+  },
+  {
+    id: "formula",
+    title: "preserves mirrored Formula-car material response against actual Three.js GLTFLoader",
+    reportPath: "tests/reports/threejs-parity/gltf-formula-parity.json",
+    artifactDir: "tests/reports/threejs-parity/gltf-formula-parity",
+    maxMeanDelta: 5
+  }
+] as const;
 
 test.describe("GLTF same-asset Three.js parity", () => {
   test.setTimeout(120_000);
@@ -24,7 +34,12 @@ test.describe("GLTF same-asset Three.js parity", () => {
     await server.close();
   });
 
-  test("loads Damaged Helmet through A3D and actual Three.js GLTFLoader", async ({ page }) => {
+  for (const parityCase of PARITY_CASES) test(parityCase.title, async ({ page }) => {
+    const artifacts = {
+      a3d: `${parityCase.artifactDir}/a3d-gltf.png`,
+      threejs: `${parityCase.artifactDir}/threejs-gltf.png`,
+      sideBySide: `${parityCase.artifactDir}/side-by-side.png`
+    } as const;
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -36,7 +51,7 @@ test.describe("GLTF same-asset Three.js parity", () => {
       }
     });
 
-    await page.goto(`${server.origin}/tools/threejs-parity-gltf-parity/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/tools/threejs-parity-gltf-parity/index.html?asset=${parityCase.id}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
         const result = window.__THREEJS_PARITY_GLTF_PARITY__ as { readonly status?: string } | undefined;
@@ -47,10 +62,10 @@ test.describe("GLTF same-asset Three.js parity", () => {
     );
 
     const result = await page.evaluate(() => window.__THREEJS_PARITY_GLTF_PARITY__) as GltfParityResult;
-    writeJson(REPORT_PATH, {
+    writeJson(parityCase.reportPath, {
       ...(result.status === "ready" ? stripDataUrls(result) : result),
       generatedAt: new Date().toISOString(),
-      artifacts: ARTIFACTS,
+      artifacts,
       pageErrors
     });
 
@@ -72,11 +87,14 @@ test.describe("GLTF same-asset Three.js parity", () => {
     expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.35);
+    if (parityCase.maxMeanDelta !== undefined) {
+      expect(result.diff.meanDelta, "mirrored Formula material mean RGB delta").toBeLessThanOrEqual(parityCase.maxMeanDelta);
+    }
     expect(pageErrors).toEqual([]);
     assertNoThreeJsInA3DFlagshipRuntimeSource();
 
-    for (const [kind, path] of Object.entries(ARTIFACTS)) {
-      const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
+    for (const [kind, path] of Object.entries(artifacts)) {
+      const dataUrl = result.dataUrls[kind as keyof typeof artifacts];
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
       writePng(path, dataUrl);
       const stats = readProductionPngStats(resolve(path));
@@ -85,11 +103,11 @@ test.describe("GLTF same-asset Three.js parity", () => {
       expect(statSync(resolve(path)).size, `${kind} PNG size`).toBeGreaterThan(12 * 1024);
     }
 
-    writeJson(REPORT_PATH, {
+    writeJson(parityCase.reportPath, {
       ...stripDataUrls(result),
       generatedAt: new Date().toISOString(),
-      artifacts: ARTIFACTS,
-      artifactStats: Object.fromEntries(Object.entries(ARTIFACTS).map(([kind, path]) => [
+      artifacts,
+      artifactStats: Object.fromEntries(Object.entries(artifacts).map(([kind, path]) => [
         kind,
         {
           path,
@@ -103,14 +121,15 @@ test.describe("GLTF same-asset Three.js parity", () => {
 });
 
 function assertNoThreeJsInA3DFlagshipRuntimeSource(): void {
-  const forbidden = /from\s+["'](?:three(?:\/[^"']*)?|\/node_modules\/three[^"']*)["']|node_modules\/three|new\s+THREE\.|THREE\./i;
+  const forbiddenImport = /from\s+["'](?:three(?:\/[^"']*)?|\/node_modules\/three[^"']*)["']|node_modules\/three/i;
+  const forbiddenNamespaceUse = /\b(?:new\s+)?THREE\./;
   for (const sourcePath of [
     "apps/flagship-viewer/src/main.ts",
     "packages/assets/src/GLTFLoader.ts",
     "packages/assets/src/GLTFRenderResources.ts"
   ]) {
     const source = readFileSync(resolve(sourcePath), "utf8");
-    expect(forbidden.test(source), `${sourcePath} must not import or instantiate Three.js`).toBe(false);
+    expect(forbiddenImport.test(source) || forbiddenNamespaceUse.test(source), `${sourcePath} must not import or instantiate Three.js`).toBe(false);
   }
 }
 
@@ -143,7 +162,7 @@ type GltfParityResult =
         readonly renderer: { readonly drawCalls: number };
         readonly pixels: { readonly uniqueColorBuckets: number };
       };
-      readonly diff: { readonly structuralSimilarityProxy: number };
+      readonly diff: { readonly meanDelta: number; readonly structuralSimilarityProxy: number };
       readonly assertions: {
         readonly actualThreeGLTFLoader: boolean;
         readonly actualThreeRenderer: boolean;

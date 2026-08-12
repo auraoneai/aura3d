@@ -49,7 +49,7 @@ describe("Skyline challenge state is rendered, not only written to the HUD", () 
     expect(source).toContain("const heroHeight = platformerScene.evidence.playerTargetHeight");
     const block = source.slice(
       source.indexOf("function renderChallengeFeedback"),
-      source.indexOf("function renderChallengeFeedback") + 2600
+      source.indexOf("let compositionSubjectSuppressed")
     );
     const setScales = [...block.matchAll(/setScale\(\[([^\]]+)\]\)/g)].map((m) => m[1] ?? "");
     const sized = setScales.filter((args) => args.includes("heroHeight"));

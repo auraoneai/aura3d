@@ -189,9 +189,23 @@ body > * {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before {
-    animation: none;
+  html {
+    scroll-behavior: auto !important;
   }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+:where(a, button, input, select, textarea, [role="link"], [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* ── Proof band upgrade ────────────────────────────────────── */

@@ -10,7 +10,12 @@ import { gameGeometryContract as skylineGeometry } from "../../../apps/showcase-
 import { gameGeometryContract as turboGeometry } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
 import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/showcase-turbo-drift-circuit/src/opponent-ai";
 import { createRunnerChallenge } from "../../../apps/showcase-skyline-runner/src/runner-challenge";
-import { createSkylineLevel } from "../../../apps/showcase-skyline-runner/src/level";
+import { createSixtySecondLevelProof } from "../../../apps/showcase-skyline-runner/src/level-proof";
+import {
+  SKYLINE_FIRST_MID_CHECKPOINT_ID,
+  SKYLINE_SECTION_COUNT,
+  createSkylineLevel
+} from "../../../apps/showcase-skyline-runner/src/level";
 
 describe("public showcase gameplay regressions", () => {
   it("does not self-author completion or visual approval before mounted interaction", () => {
@@ -21,7 +26,10 @@ describe("public showcase gameplay regressions", () => {
     expect(skyline).toContain("completed: false");
     expect(skyline).toContain("state.status === \"completed\"");
     expect(skyline).toContain("!completionProof.completed");
-    expect(skyline).toContain("challengeEvidence.elapsedSeconds >= level.assetBinding.authoredPlayableSeconds");
+    // The shipped level now completes at the physical finish. A post-finish clock
+    // gate would make a short course look long without adding any gameplay.
+    expect(skyline).not.toContain("challengeEvidence.elapsedSeconds >= level.assetBinding.authoredPlayableSeconds");
+    expect(skyline).toContain("completionProof.finalTime = challengeEvidence.elapsedSeconds");
     expect(skyline).not.toContain("visualReviewPass: true");
     expect(turbo).not.toContain("visualReviewPass: true");
     expect(turbo).toContain("opponentMovesIndependently");
@@ -40,25 +48,31 @@ describe("public showcase gameplay regressions", () => {
      * definition is what makes these regressions about the shipped route.
      */
     const level = createSkylineLevel();
-    const finishSurface = level.platforms?.find((surface) => surface.id === "asset-finish-run");
-    const hazard = level.hazards?.find((surface) => surface.id === "asset-hazard-gap");
+    expect(level.finish, "extended Skyline level must retain a physical finish").toBeDefined();
+    const finish = level.finish!;
+    const lastDistrictPrefix = `district-${SKYLINE_SECTION_COUNT}-`;
+    const finishSurface = level.platforms?.find((surface) =>
+      (surface.id.startsWith(lastDistrictPrefix) || surface.id === "asset-finish-run")
+      && finish.x >= surface.x
+      && finish.x <= surface.x + surface.width
+      && finish.y >= surface.y
+      && finish.y <= surface.y + surface.height + 0.1
+    );
+    const hazard = level.hazards?.find((surface) => surface.id.endsWith("asset-hazard-gap"));
     expect(finishSurface, "finish must be retained as collision geometry").toBeDefined();
     expect(hazard, "route must retain a miss-jump hazard").toBeDefined();
     expect(rectsOverlap(finishSurface!, hazard!)).toBe(false);
     for (const platform of level.platforms ?? []) expect(rectsOverlap(platform, hazard!)).toBe(false);
 
-    const simulation = createGamePlatformerKit(level);
-    let snapshot = simulation.snapshot();
-    let lastJumpFrame = -100;
-    for (let frame = 0; frame < 60 * 45 && snapshot.status !== "completed"; frame += 1) {
-      const jump = snapshot.player.grounded && frame - lastJumpFrame > 24;
-      if (jump) lastJumpFrame = frame;
-      snapshot = simulation.step(1 / 60, { moveX: 1, jumpPressed: jump, jumpHeld: jump });
-    }
-
-    expect(snapshot.status).toBe("completed");
-    expect(snapshot.deaths).toBe(0);
-    expect(snapshot.checkpointId).toBe("asset-checkpoint-06");
+    // Reuse the route-owned deterministic driver rather than maintaining a
+    // second, weaker jump policy here. It traverses the complete physical course
+    // and records the exact finish frame inside the promised two-to-three-minute
+    // window.
+    const proof = createSixtySecondLevelProof();
+    expect(proof.metrics.finalStatus).toBe("completed");
+    expect(proof.metrics.maxTraversalX).toBeGreaterThan(finish.x - 1);
+    expect(proof.metrics.activatedCheckpointCount).toBe(level.checkpoints?.length);
+    expect(proof.mechanics.completionFallsInsideTargetWindow).toBe(true);
   });
 
   it("respawns Skyline checkpoints on supporting surfaces instead of trigger-center heights", () => {
@@ -71,7 +85,7 @@ describe("public showcase gameplay regressions", () => {
      * definition is what makes these regressions about the shipped route.
      */
     const level = createSkylineLevel();
-    const checkpoint = level.checkpoints?.find((candidate) => candidate.id === "asset-checkpoint-03");
+    const checkpoint = level.checkpoints?.find((candidate) => candidate.id === SKYLINE_FIRST_MID_CHECKPOINT_ID);
     const supportingSurface = [...(level.platforms ?? [])].sort((left, right) => {
       const leftDistance = Math.abs(checkpoint!.x - Math.min(Math.max(checkpoint!.x, left.x), left.x + left.width));
       const rightDistance = Math.abs(checkpoint!.x - Math.min(Math.max(checkpoint!.x, right.x), right.x + right.width));
@@ -121,7 +135,7 @@ describe("public showcase gameplay regressions", () => {
      */
     const level = createSkylineLevel();
     const simulation = createGamePlatformerKit(level);
-    let snapshot = simulation.reset("asset-checkpoint-03");
+    let snapshot = simulation.reset(SKYLINE_FIRST_MID_CHECKPOINT_ID);
     const checkpointX = snapshot.player.x;
     for (let frame = 0; frame < 240 && snapshot.deaths === 0; frame += 1) {
       snapshot = simulation.step(1 / 60, { moveX: 1 });

@@ -128,7 +128,9 @@ describe("showcase game geometry probe", () => {
     // loop tracer rather than the radial sweep. Assert a plausible resampled range
     // rather than an exact count so the check survives resampling tweaks.
     expect(result.extraction.value.roadCenterline.length).toBeGreaterThanOrEqual(16);
-    expect(result.extraction.value.roadCenterline.length).toBeLessThanOrEqual(40);
+    // Tight hairpins need enough samples that the centreline follows the rendered
+    // asphalt instead of cutting a 32-point chord across the grass island.
+    expect(result.extraction.value.roadCenterline.length).toBeLessThanOrEqual(80);
     expect(result.extraction.reasons.join(" ")).toContain("centerlineMethod:raster-loop-trace");
     expect(result.extraction.value.checkpoints).toHaveLength(6);
     expect(result.extraction.value.lapLengthMeters).toBeGreaterThan(0);

@@ -127,7 +127,7 @@ function of steering input, because such a car has no slip, no lateral velocity 
 to saturate. It is not achievable by any parameterisation of a tyre-based force model on this
 geometry. Continuing to tune constants until the tests pass would produce numbers chosen to
 satisfy assertions rather than to describe a vehicle, which is precisely the pattern
-`Aura3D-1.6-Replatform-PRD.md` exists to end.
+the Aura3D 2.0 architecture contract exists to end.
 
 The three existing tests that fail are not wrong, and must not be weakened (R2). They encode
 the shipped route's real behavioural contract:

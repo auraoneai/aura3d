@@ -7,11 +7,35 @@
 - `product-viewer`: A GLB/glTF product viewer with typed asset references, orbit camera, studio lighting, diagnostics, route health, and screenshot tests.
 - `cinematic-scene`: A cinematic browser scene with camera motion, lighting, atmosphere, imported assets, and presentation-ready visual composition. Use `docs/agents/cinematic-scene-quality.md` before presenting a cinematic route as product proof.
 - `mini-game`: A playable platformer-style starter for input, HUD state, route health, screenshot tests, and deployable output. It uses `game.platformer(...)`, typed asset imports, keyboard movement, jump, scoring, reset, and visible browser state tests. It is not a production-quality game or art-direction claim.
+- `racing-starter`: A bounded typed-vehicle arcade racing starter with input,
+  ordered checkpoint/lap state, reset, and browser evidence; it is not a
+  physical tyre or motorsport simulation.
+- `falling-blocks-starter`: A deterministic falling-block starter with movement,
+  rotation, hold, queue, line-clear, progression, reset, and browser evidence.
 - `fighting-game`: A playable browser fighting-game starter with runtime nodes, input, combat state, HUD evidence, and route health checks.
 - `animation-channel`: A prompt-driven animation episode scaffold with AuraVoice bridge metadata, shot playback, captions, visemes, render queue evidence, and typed animation asset placeholders.
 - `prompt-animation-channel`: Alias-style prompt animation scaffold for episode plans, dialogue/caption timing, viseme tracks, and animation render metadata.
 - `animation-studio`: A animation production scaffold with shot/dialogue/render timeline data, asset slot metadata, render pipeline evidence, and the same typed asset rules as the animation-channel template.
 - `episode-builder`: A guided prompt-to-episode scaffold with format choices, wizard state, compiled episode proof, typed asset placeholders, and route tests.
+- `character-controller`: A typed-character movement and camera starter with
+  bounded controller evidence.
+- `three-compat-premium-product-viewer`: A migration-oriented premium product
+  viewer starter using the public compatibility package.
+- `three-compat-architecture-interior`: An architecture/interior migration
+  starter.
+- `three-compat-material-authoring`: A material-authoring migration starter.
+- `three-compat-asset-inspector`: An asset-inspection migration starter.
+- `three-compat-character-viewer`: A character-viewer migration starter.
+- `three-compat-postprocess-scene`: A bounded postprocess migration starter.
+- `three-compat-custom-threejs-migration`: A custom Three.js migration starter
+  for retained compatibility seams.
+- `three-compat-large-scene`: A large-scene migration starter with bounded
+  diagnostics.
+
+The authoritative registry contains 19 templates. Aura3D 2.0 requires both the
+source lifecycle and the separate clean exact-tarball lifecycle to pass 149/149
+checks across all 19: install, typecheck, production build, browser load,
+meaningful interaction, static preview, screenshot, route health, and deploy.
 
 ## Scaffold
 
@@ -19,6 +43,8 @@
 npx create-aura3d@latest my-app --template product-viewer
 npx create-aura3d@latest my-scene --template cinematic-scene
 npx create-aura3d@latest my-starter --template mini-game
+npx create-aura3d@latest my-racer --template racing-starter
+npx create-aura3d@latest my-puzzle --template falling-blocks-starter
 ```
 
 Every active template includes:
@@ -58,4 +84,7 @@ production-quality, add:
 
 ## Held-back templates
 
-Additional template ideas stay in `archive/held-back-create-aura3d-templates/` until they have documentation, tests, scaffold smoke coverage, package manifest support, and the same production-grade route evidence as the active starter templates.
+Additional template ideas are not retained in the current tree until they have
+documentation, tests, scaffold smoke coverage, package-manifest support, and
+the same production-grade route evidence as active starters. Git history is the
+archive for rejected or held-back drafts.

@@ -40,8 +40,23 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
   const publicAssetApi = resolveTypedAssetApi(projectDir);
   const lines = [
     `import { defineAuraAssets } from ${JSON.stringify(publicAssetApi)};`,
+    `import type { AuraAssetDefinition, AuraAssetMap } from ${JSON.stringify(publicAssetApi)};`,
     "",
-    "export const assets = defineAuraAssets({",
+    "type AuraGeneratedAssetDefinitions = {",
+    ...manifest.assets.map((asset) => {
+      const bounds = asset.bounds
+        ? " readonly bounds: readonly [number, number, number];"
+        : "";
+      // Keep the generated declaration compact enough for very large asset
+      // manifests while preserving the required fields consumers are allowed
+      // to rely on. `AuraAssetDefinition` intentionally models partially known
+      // external assets, so url/hash/bounds are optional there; a generated
+      // manifest entry has already validated and written these exact fields.
+      return `  readonly ${JSON.stringify(asset.id)}: AuraAssetDefinition & { readonly type: ${JSON.stringify(asset.type)}; readonly url: string; readonly hash: string;${bounds} };`;
+    }),
+    "};",
+    "",
+    "export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({",
     ...manifest.assets.map((asset) => {
       const metadata = {
         materials: asset.materials,

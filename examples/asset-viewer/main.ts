@@ -27,8 +27,7 @@ import {
   type ExternalParityLdrPostprocessSummary,
   type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
-import { Camera, type Light } from "@aura3d/scene";
-import { quatFromEuler } from "@aura3d/scene/math";
+import { Camera, quatFromEuler, type Light } from "@aura3d/scene";
 import { installExampleStyles } from "../shared/exampleHarness.js";
 
 const KHRONOS_BOX_GLB =

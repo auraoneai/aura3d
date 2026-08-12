@@ -1,10 +1,21 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
+import { checkDeploy } from "../../packages/aura3d-cli/src/index";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
 const templates = [...CREATE_AURA3D_TEMPLATES];
+const requestedSmokeTemplates = process.env.A3D_TEMPLATE_FILTER
+  ?.split(",")
+  .map((template) => template.trim())
+  .filter((template): template is CreateA3DTemplate => CREATE_AURA3D_TEMPLATES.includes(template as CreateA3DTemplate));
+const smokeTemplates: readonly CreateA3DTemplate[] = requestedSmokeTemplates?.length
+  ? requestedSmokeTemplates
+  : templates;
+const installedTarballDirectory = process.env.A3D_TEMPLATE_TARBALL_DIR
+  ? resolve(process.env.A3D_TEMPLATE_TARBALL_DIR)
+  : undefined;
 const templateNames = new Set<string>(templates);
 const rootPackagedTemplates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
 /**
@@ -117,11 +128,11 @@ const checks: ReleaseCheck[] = [
     detail: `active package template dirs: ${activePackageTemplateDirs.join(", ")}`
   },
   {
-    id: "held-back-template-archive-documented",
+    id: "held-back-template-archive-pruned",
     pass:
-      existsSync("archive/held-back-create-aura3d-templates/README.md") &&
+      !existsSync("archive/held-back-create-aura3d-templates/README.md") &&
       heldBackTemplateDirs.every((template) => existsSync(`archive/held-back-create-aura3d-templates/${template}`)),
-    detail: "held-back create-aura3d templates are archived with a README boundary"
+    detail: "held-back template sources remain excluded while superseded archive documentation is pruned"
   },
   {
     id: "non-starter-templates-not-packaged",
@@ -155,7 +166,8 @@ checks.push({
   detail: scaffoldSmoke.pass ? `${scaffoldSmoke.results.length} generated template projects built and ran route-health plus template smoke specs` : scaffoldSmoke.failures.join("; ")
 });
 
-writeReport("tests/reports/agent-templates.json", "aura3d-agent-templates", checks, {
+writeReport(installedTarballDirectory ? "tests/reports/installed-template-lifecycle.json" : "tests/reports/agent-templates.json", installedTarballDirectory ? "aura3d-installed-template-lifecycle" : "aura3d-agent-templates", checks, {
+  mode: installedTarballDirectory ? "fresh-local-2.0.0-tarballs" : "workspace-source-aliases",
   scaffoldSmoke: scaffoldSmoke.results
 });
 
@@ -170,7 +182,7 @@ function runScaffoldSmoke(): {
   const results: Record<string, unknown>[] = [];
   const failures: string[] = [];
 
-  for (const template of templates) {
+  for (const template of smokeTemplates) {
     const targetDir = resolve(outRoot, template);
     try {
       const scaffold = createA3DProject({
@@ -179,27 +191,53 @@ function runScaffoldSmoke(): {
         packageVersion: "2.0.0",
         rootDir: resolve("packages/create-aura3d")
       });
-      writeWorkspaceViteConfig(targetDir);
+      const installedPackages = installedTarballDirectory ? installPackedTemplateDependencies(targetDir) : [];
+      writeWorkspaceViteConfig(targetDir, !installedTarballDirectory);
       writeWorkspacePlaywrightConfig(targetDir);
+      writeReleaseRenderSpec(targetDir);
       const smokeSpecs = templateSmokeSpecs(template);
-      run("pnpm", ["exec", "vite", "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
-      run("pnpm", ["exec", "playwright", "test", ...smokeSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+      if (installedTarballDirectory) run("npm", ["run", "build"], targetDir);
+      else run("pnpm", ["exec", "vite", "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
+      const deploy = checkDeploy({ projectDir: targetDir, distDir: "dist" });
+      if (!deploy.ok) throw new Error(`deploy check failed: ${deploy.failures.join("; ")}`);
+      const browserSpecs = [...smokeSpecs, "__release-render.spec.ts"];
+      run("pnpm", ["exec", "playwright", "test", ...browserSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
       const routeReportPath = resolve(targetDir, "tests/reports/route-health.json");
-      const screenshotReportPath = resolve(targetDir, "tests/reports/screenshot.json");
-      const screenshotPath = resolve(targetDir, "tests/reports/screenshot.png");
+      // Keep the release-matrix artifact separate from each template's own
+      // screenshot report. Playwright sorts spec files independently of the
+      // CLI argument order, so a template screenshot spec may otherwise
+      // overwrite the matrix interaction receipt after it has been written.
+      const screenshotReportPath = resolve(targetDir, "tests/reports/release-screenshot.json");
+      const screenshotPath = resolve(targetDir, "tests/reports/release-screenshot.png");
       const routeReport = existsSync(routeReportPath)
         ? JSON.parse(readFileSync(routeReportPath, "utf8")) as { drawCalls?: number }
         : undefined;
       const screenshotReport = existsSync(screenshotReportPath)
-        ? JSON.parse(readFileSync(screenshotReportPath, "utf8")) as { bytes?: number; profile?: Record<string, unknown> }
+        ? JSON.parse(readFileSync(screenshotReportPath, "utf8")) as {
+            bytes?: number;
+            profile?: Record<string, unknown>;
+            interactionEvents?: readonly string[];
+          }
         : undefined;
+      if (!existsSync(screenshotPath) || statSync(screenshotPath).size <= 1_000) {
+        throw new Error("render smoke did not retain a screenshot larger than 1,000 bytes");
+      }
+      if (screenshotReport?.interactionEvents?.length !== 3) {
+        throw new Error("interaction smoke did not exercise pointer drag, wheel, and keyboard focus");
+      }
       results.push({
         template,
         files: scaffold.files.length,
+        installMode: installedTarballDirectory ? "fresh-local-2.0.0-tarballs" : "workspace-source-aliases",
+        installedPackages,
         build: true,
-        smokeSpecs,
-        routeHealth: existsSync(routeReportPath),
-        screenshot: existsSync(screenshotPath),
+        browserSmoke: true,
+        interactionSmoke: true,
+        deployCheck: true,
+        smokeSpecs: browserSpecs,
+        routeHealth: true,
+        routeHealthReport: existsSync(routeReportPath),
+        screenshot: true,
         drawCalls: routeReport?.drawCalls,
         screenshotBytes: screenshotReport?.bytes,
         screenshotProfile: screenshotReport?.profile,
@@ -228,6 +266,54 @@ function templateSmokeSpecs(template: string): readonly string[] {
   if (template === "animation-channel" || template === "prompt-animation-channel") return ["route-health.spec.ts", "storyboard-playback.spec.ts"];
   if (template === "racing-starter" || template === "falling-blocks-starter") return ["route-health.spec.ts", "playable.spec.ts"];
   return ["route-health.spec.ts", "screenshot.spec.ts"];
+}
+
+function writeReleaseRenderSpec(targetDir: string): void {
+  writeFileSync(resolve(targetDir, "tests/__release-render.spec.ts"), `import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { expect, test } from "@playwright/test";
+
+test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
+  test.setTimeout(90_000);
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.goto("/");
+  const canvas = page.locator("canvas").first();
+  await expect(canvas).toBeVisible({ timeout: 45_000 });
+  await page.waitForTimeout(750);
+  const box = await canvas.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThan(100);
+  expect(box?.height ?? 0).toBeGreaterThan(100);
+  expect(pageErrors).toEqual([]);
+  if (!box) throw new Error("visible Aura3D canvas did not expose screenshot bounds");
+  const centerX = box.x + box.width / 2;
+  const centerY = box.y + box.height / 2;
+  await page.mouse.move(centerX, centerY);
+  await page.mouse.down();
+  await page.mouse.move(centerX + Math.min(80, box.width / 6), centerY + Math.min(36, box.height / 8), { steps: 4 });
+  await page.mouse.up();
+  await page.mouse.wheel(0, -120);
+  await page.keyboard.press("Tab");
+  await page.waitForTimeout(250);
+  expect(pageErrors).toEqual([]);
+  await expect(canvas).toBeVisible();
+  // Capture the canvas rectangle through the page-level CDP path. Locator
+  // screenshots wait for element stability; a correctly running game or
+  // animation canvas is intentionally never stable because it renders every
+  // frame. Page capture with an explicit clip preserves the same canvas-only
+  // evidence without treating continuous rendering as a failure.
+  const screenshot = await page.screenshot({ clip: box, animations: "allow", timeout: 30_000 });
+  mkdirSync(resolve("tests/reports"), { recursive: true });
+  writeFileSync(resolve("tests/reports/release-screenshot.png"), screenshot);
+  writeFileSync(resolve("tests/reports/release-screenshot.json"), JSON.stringify({
+    bytes: screenshot.byteLength,
+    canvas: box,
+    pageErrors,
+    interactionEvents: ["pointer-drag", "wheel", "keyboard-tab"]
+  }, null, 2) + "\\n");
+  expect(screenshot.byteLength).toBeGreaterThan(1_000);
+});
+`);
 }
 
 // animation-studio is the one template whose entry is the render-live route
@@ -268,7 +354,11 @@ export default defineConfig({
 `);
 }
 
-function writeWorkspaceViteConfig(targetDir: string): void {
+function writeWorkspaceViteConfig(targetDir: string, sourceAliases: boolean): void {
+  if (!sourceAliases) {
+    writeFileSync(resolve(targetDir, "vite.config.ts"), `import { defineConfig } from "vite";\n\nexport default defineConfig({});\n`);
+    return;
+  }
   const aliasEntries = Object.entries(tsconfig.compilerOptions?.paths ?? {})
     .map(([specifier, paths]) => [specifier, paths[0]] as const)
     .filter((entry): entry is readonly [string, string] => Boolean(entry[1]))
@@ -294,6 +384,43 @@ ${aliasEntries}
   }
 });
 `);
+}
+
+function installPackedTemplateDependencies(targetDir: string): readonly string[] {
+  if (!installedTarballDirectory) return [];
+  const templateManifest = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8")) as {
+    readonly dependencies?: Readonly<Record<string, string>>;
+  };
+  const directAuraPackages = Object.keys(templateManifest.dependencies ?? {}).filter((name) => name.startsWith("@aura3d/"));
+  const packageDirectories = [".", ...readdirSync(resolve("packages"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(resolve("packages", entry.name, "package.json")))
+    .map((entry) => resolve("packages", entry.name))];
+  const manifests = new Map<string, { readonly dependencies?: Readonly<Record<string, string>> }>();
+  for (const directory of packageDirectories) {
+    const path = resolve(directory, "package.json");
+    const manifest = JSON.parse(readFileSync(path, "utf8")) as { readonly name?: string; readonly dependencies?: Readonly<Record<string, string>> };
+    if (manifest.name?.startsWith("@aura3d/")) manifests.set(manifest.name, manifest);
+  }
+  const closure = new Set<string>();
+  const visit = (name: string): void => {
+    if (closure.has(name)) return;
+    closure.add(name);
+    const manifest = manifests.get(name);
+    if (!manifest) throw new Error(`No workspace manifest found for template dependency ${name}.`);
+    for (const dependency of Object.keys(manifest.dependencies ?? {}).filter((entry) => entry.startsWith("@aura3d/"))) visit(dependency);
+  };
+  for (const name of directAuraPackages) visit(name);
+  const tarballs = [...closure].sort().map((name) => {
+    const path = resolve(installedTarballDirectory, `${name.slice(1).replace("/", "-")}-2.0.0.tgz`);
+    if (!existsSync(path)) throw new Error(`Missing packed template dependency ${path}.`);
+    return path;
+  });
+  run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-save", ...tarballs], targetDir);
+  for (const name of directAuraPackages) {
+    const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...name.split("/"), "package.json"), "utf8")) as { readonly version?: string };
+    if (installed.version !== "2.0.0") throw new Error(`${name}: expected installed 2.0.0, found ${installed.version ?? "missing"}.`);
+  }
+  return tarballs.map((path) => basename(path));
 }
 
 function run(command: string, args: readonly string[], cwd: string): void {

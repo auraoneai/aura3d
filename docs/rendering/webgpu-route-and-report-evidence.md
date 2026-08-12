@@ -1,6 +1,6 @@
 # WebGPU Route And Report Evidence
 
-Version: 1.0.5
+Version: 2.0.0
 
 This page is the durable documentation for the current first-class WebGPU product surface. It replaces the temporary PRD-level checklist with code-backed routes, runtime contracts, scripts, reports, and release notes.
 
@@ -122,7 +122,7 @@ The completion audit intentionally checks for missing reports. Run the earlier W
 
 ## Feature Matrix Interpretation
 
-`tools/webgpu-feature-matrix/index.ts` is the source for the current feature rows. As of version `1.0.0`, supported rows include triangle geometry, indexed geometry, lines, points, PBR, sampled textures, render targets, readback, instancing, lifecycle, and compute. Partial rows include HDR/IBL, postprocess, shadows, skinning, morph targets, transmission, and device-loss diagnostics.
+`tools/webgpu-feature-matrix/index.ts` is the source for the current feature rows. In the feature-matrix schema, supported rows include triangle geometry, indexed geometry, lines, points, PBR, sampled textures, render targets, readback, instancing, lifecycle, and compute. Partial rows include HDR/IBL, postprocess, shadows, skinning, morph targets, transmission, and device-loss diagnostics.
 
 ## Verification Coverage
 

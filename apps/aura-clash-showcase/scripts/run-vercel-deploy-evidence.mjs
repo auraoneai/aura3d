@@ -17,11 +17,11 @@ const outPath = resolve(
   process.env.AURA_CLASH_VERCEL_DEPLOY_OUT ?? "launch-evidence/vercel-deploy.json"
 );
 
-const prdGates = [
+const documentationGates = [
   {
     id: "deploy-to-vercel",
-    prdLineHint: 464,
-    prdLabel: "Deploy to Vercel.",
+    documentationLineHint: 464,
+    documentationLabel: "Deploy to Vercel.",
     artifact: "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
     requiredFields: ["ok: true", "productionUrl", "deploymentUrls"]
   }
@@ -53,11 +53,11 @@ const evidence = {
   code: result.code,
   signal: result.signal,
   deploymentUrls,
-  prdGateCoverage: [],
+  documentationGateCoverage: [],
   stdout: result.stdout,
   stderr: result.stderr
 };
-evidence.prdGateCoverage = prdGates.map((gate) => ({
+evidence.documentationGateCoverage = documentationGates.map((gate) => ({
   ...gate,
   ok: evidence.ok && Boolean(evidence.productionUrl)
 }));

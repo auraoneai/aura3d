@@ -97,6 +97,14 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     ],
     edgeTerms: [/cleanup/i, /keyboard/i, /pointer/i, /gamepad/i, /controls?/i]
   },
+  lean: {
+    suites: [
+      "tests/unit/agent-api/line-count-acceptance.test.ts",
+      "tests/unit/input/input-service-ownership.test.ts",
+      "tests/integration/external-parity-create-aura3d.test.ts"
+    ],
+    edgeTerms: [/bounded/i, /keyboard/i, /fallback/i, /diagnostics?/i, /runtime/i]
+  },
   math: {
     suites: ["tests/unit/math/edge-cases.test.ts", "tests/unit/math/geometry-random.test.ts", "tests/unit/math/vector-matrix.test.ts"],
     edgeTerms: [/degenerate/i, /rejects?/i, /undefined/i, /deterministic/i, /singular/i]

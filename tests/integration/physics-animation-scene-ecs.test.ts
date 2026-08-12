@@ -6,7 +6,9 @@ import { describe, expect, it } from "vitest";
 
 describe("physics and animation scene/ECS integration", () => {
   it("syncs physics body positions into scene nodes and ECS transforms", () => {
-    const physics = new PhysicsWorld({ gravity: [0, 0, 0] });
+    // Sleeping is not the subject of this bridge contract. Disable it so a collider-free
+    // integration fixture cannot be put to sleep by Rapier during the deliberately large step.
+    const physics = new PhysicsWorld({ gravity: [0, 0, 0], enableSleeping: false });
     const body = physics.createRigidBody({ position: [0, 0, 0], velocity: [2, 0, 0] });
 
     const scene = new Scene();

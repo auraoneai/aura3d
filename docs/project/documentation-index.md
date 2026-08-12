@@ -1,143 +1,99 @@
-# Documentation Index
+# Aura3D 2.0 documentation index
 
-Date: 2026-08-08
-Status: Aura3D 2.0.0 documentation index
+Date: 2026-08-11
+Status: current for Aura3D 2.0.0
 
-## Directory Taxonomy
+The current tree contains product documentation, executable evidence inputs,
+required package/app entry points, and the 2.0 release record. Superseded PRDs,
+prompts, handoffs, duplicate per-version release notes, and archive Markdown are
+removed after their still-valid decisions are consolidated here. Git history is
+the archive.
 
-Canonical project documents use lowercase, hyphen-separated filenames and are
-grouped by purpose:
+## Start here
 
-| Directory | Purpose |
-| --- | --- |
-| `docs/project/plans/` | Active and historical execution plans and PRDs. |
-| `docs/project/audits/` | Evidence-backed gap and implementation audits. |
-| `docs/project/status/` | Current state, product boundaries, and known limits. |
-| `docs/project/roadmaps/` | Durable future-work roadmaps. |
-| `docs/project/showcase/` | Showcase classification, quality gates, and route plans. |
-| `docs/project/release/` | Release checklists and operational release procedures. |
-| `docs/project/parity/threejs/` | Three.js parity status, inventory, matrix, backlog, boundary, and execution plan. |
-| `docs/project/architecture/` | Architecture decisions and integration designs. |
-| `docs/api/contracts/` | Generated or maintained public API contracts. |
+- Product overview: [`README.md`](../../README.md)
+- Agent context: [`llms.txt`](../../llms.txt)
+- Safe claim boundary: [`docs/agents/claims-and-boundaries.md`](../agents/claims-and-boundaries.md)
+- Current product state: [`status/current-state.md`](./status/current-state.md)
+- Known limits: [`status/known-limits.md`](./status/known-limits.md)
+- Public API: [`docs/api/public-api.md`](../api/public-api.md)
+- Migration to 2.0: [`MIGRATION-2.0.md`](../../MIGRATION-2.0.md)
+- 2.0 release notes: [`aura3d-200-release-notes.md`](./aura3d-200-release-notes.md)
 
-Conventional repository, package, app, fixture, report, and evidence entrypoints
-retain `README.md` where tools and users expect a colocated entrypoint. Root
-`README.md`, `CHANGELOG.md`, and `GoLiveCheckList.md` also remain at repository
-root.
+## Architecture
 
-## Deliberately Colocated Entry Points
+- 2.0 platform boundary: [`docs/architecture/2.0-platform.md`](../architecture/2.0-platform.md)
+- Package ownership: [`docs/architecture/package-ownership.md`](../architecture/package-ownership.md)
+- Exact generated subsystem ledger: [`docs/architecture/final-subsystem-ownership.md`](../architecture/final-subsystem-ownership.md)
+- Public API design: [`docs/architecture/public-api-design.md`](../architecture/public-api-design.md)
+- Extension points: [`docs/architecture/extension-points.md`](../architecture/extension-points.md)
+- Claim lineage: [`docs/architecture/claim-lineage.md`](../architecture/claim-lineage.md)
+- 2.0 removals and retrieval: [`docs/architecture/2.0-removals.md`](../architecture/2.0-removals.md)
+- Architecture decisions: [`docs/architecture/adr/README.md`](../architecture/adr/README.md)
 
-These requested documents stay beside the code or evidence they explain:
+## Authoring and API documentation
 
-- Showcase app entry points:
-  `apps/showcase-turbo-drift-circuit/README.md`,
-  `apps/showcase-skyline-runner/README.md`,
-  `apps/world-war-x-showcase/README.md`,
-  `apps/aura-clash-showcase/README.md`,
-  `apps/animation-studio-web/README.md`, and
-  `apps/advanced-examples-gallery/README.md`.
-- Agent simulation report entry point:
-  `tests/reports/agent-simulation-app/README.md`.
-- Aura Clash review evidence:
-  `apps/aura-clash-showcase/launch-evidence/review-package.md` and
-  `apps/aura-clash-showcase/launch-evidence/readiness.md`.
-- External-engine baseline instructions:
-  `fixtures/external-engine-baselines/external-parity/unreal/README.md`,
-  `fixtures/external-engine-baselines/external-parity/unity/README.md`, and
-  `fixtures/external-engine-baselines/external-parity/RUNBOOK.md`.
-- Dated production evidence overview:
-  `docs/project/production-evidence/2026-07-23/overview.md`.
+- Agent workflows: [`docs/agents/README.md`](../agents/README.md)
+- Asset workflow: [`docs/agents/asset-workflow.md`](../agents/asset-workflow.md)
+- Game example standards: [`docs/agents/game-example-standards.md`](../agents/game-example-standards.md)
+- Rendering proof rules: [`docs/agents/rendering-proof-required.md`](../agents/rendering-proof-required.md)
+- API index: [`docs/api/readme.md`](../api/readme.md)
+- Rendering: [`docs/concepts/rendering.md`](../concepts/rendering.md)
+- Animation: [`docs/animation/runtime-support.md`](../animation/runtime-support.md)
+- Game runtime: [`docs/api/game-runtime.md`](../api/game-runtime.md)
+- Templates: [`docs/templates/create-aura3d-templates.md`](../templates/create-aura3d-templates.md)
 
-## Canonical Project Docs
+## Current comparison documentation
 
-- Current state: `docs/project/status/current-state.md`
-- Product boundaries: `docs/project/status/product-boundaries.md`
-- Known limits: `docs/project/status/known-limits.md`
-- Claim guidelines: `docs/project/claim-guidelines.md`
-- Launch positioning: `docs/project/launch-positioning.md`
-- Library gap roadmap: `docs/project/roadmaps/library-gap-roadmap.md`
-- `createAuraApp` production bridge architecture: `docs/project/architecture/create-aura-app-production-bridge.md`
-- Showcase quality gates: `docs/project/showcase/quality-gates.md`
-- Docs matrix tracking: `docs/project/docs-matrix-tracking.md`
-- Frozen benchmark release gates: `docs/project/frozen-benchmark-release-gates.md`
-- Superiority evidence workflow: `docs/project/superiority-evidence-workflow.md`
-- Marketing site: `docs/project/marketing-site.md`
-- Game layer rebuild plan: `docs/project/aura3d-game-layer-rebuild-plan.md`
+- Comparison status: [`threejs-superiority-status.md`](./threejs-superiority-status.md)
+- Claim boundary: [`parity/threejs/claim-boundary.md`](./parity/threejs/claim-boundary.md)
+- Current inventory: [`parity/threejs/inventory.md`](./parity/threejs/inventory.md)
+- Per-row matrix: [`parity/threejs/parity-matrix.md`](./parity/threejs/parity-matrix.md)
+- Scope decisions: [`parity/threejs/scope-decisions.md`](./parity/threejs/scope-decisions.md)
+- Generated capability lineage: [`parity/threejs/capability-lineage.md`](./parity/threejs/capability-lineage.md)
+- Reproduction workflow: [`superiority-evidence-workflow.md`](./superiority-evidence-workflow.md)
 
-## Active Plans And Audits
+Frozen historical benchmark inputs or results may remain only when a current
+reproduction tool consumes them. They are data, not current public claims.
 
-- Aura3D 2.0 final governing PRD: `1.6-FINAL-PRD-Finishes.md`
-- Aura3D 2.0 migration guide: `MIGRATION-2.0.md`
-- Aura3D 2.0 release handoff: `HANDOFF-2.0.md`
-- Historical Aura3D 1.6 replatform PRD: `Aura3D-1.6-Replatform-PRD.md`
-- Historical Aura3D 1.6 migration decision: `MIGRATION-1.6.md`
-- Engine parity gap audit: `docs/project/audits/engine-parity-gap-audit.md`
-- Three.js comparison status: `docs/project/threejs-superiority-status.md`
+## Showcases and examples
 
-The final remaining-work, recovery remediation, engine/game parity, and Three.js
-execution plans are retained as implementation history. Their completed or
-superseded tasks are not current release requirements; the final 2.0 PRD and
-canonical release checklist own the current gate state.
+- Showcase classifications: [`showcase/apps-classification.md`](./showcase/apps-classification.md)
+- Quality gates: [`showcase/quality-gates.md`](./showcase/quality-gates.md)
+- Visual quality standard: [`showcase/visual-quality-standard.md`](./showcase/visual-quality-standard.md)
+- Flagship visual audit: [`status/2.0-flagship-visual-audit.md`](./status/2.0-flagship-visual-audit.md)
+- Installed visual audit: [`status/2.0-installed-visual-audit.md`](./status/2.0-installed-visual-audit.md)
+- Each package, template, app, example, fixture, or evidence bundle retains a
+  colocated `README.md` only when users or tools need that entry point.
 
-## Release Docs
+## Release and operations
 
-- Release tracks: `docs/project/release-tracks.md`
-- Release checklist: `docs/project/release/release-checklist.md`
-- Release process: `docs/project/release-process.md`
-- Aura3D 1.4.0 release candidate: `docs/project/aura3d-140-release-candidate.md`
-- Aura3D 1.4.0 release notes draft: `docs/project/aura3d-140-release-notes.md`
-- Aura3D 1.4.1 release notes: `docs/project/aura3d-141-release-notes.md`
-- Aura3D 1.4.2 release notes: `docs/project/aura3d-142-release-notes.md`
-- Aura3D 1.4.3 release notes: `docs/project/aura3d-143-release-notes.md`
-- Aura3D 1.4.4 release notes: `docs/project/aura3d-144-release-notes.md`
-- Aura3D 1.4.5 release notes: `docs/project/aura3d-145-release-notes.md`
-- Aura3D 2.0.0 release notes: `docs/project/aura3d-200-release-notes.md`
-- Aura3D 1.6.0 historical release notes: `docs/project/aura3d-160-release-notes.md`
-- Verification evidence: `docs/project/verification-evidence.md`
-- Requirements trace: `docs/project/requirements-trace.md`
-- Completion audit: `docs/project/completion-audit.md`
-- Site map: `docs/project/site-map.md`
-- Deployment rollback: `docs/project/release/deployment-rollback.md`
-- Support policy: `docs/project/support-policy.md`
-- Security policy: `docs/project/security-policy.md`
+- Release process: [`release-process.md`](./release-process.md)
+- Release checklist: [`release/release-checklist.md`](./release/release-checklist.md)
+- Release tracks: [`release-tracks.md`](./release-tracks.md)
+- Rollback: [`release/deployment-rollback.md`](./release/deployment-rollback.md)
+- Verification evidence: [`verification-evidence.md`](./verification-evidence.md)
+- Requirements trace: [`requirements-trace.md`](./requirements-trace.md)
+- Documentation audit ledger: [`docs-matrix-tracking.md`](./docs-matrix-tracking.md)
+- Website: [`marketing-site.md`](./marketing-site.md)
+- Security: [`security-policy.md`](./security-policy.md)
+- Support: [`support-policy.md`](./support-policy.md)
 
-## Showcase Docs
+`CHANGELOG.md` is the single retained release-history document. Separate 1.x
+release-note drafts and obsolete migration/handoff files are not part of the
+2.0 documentation surface.
 
-- Showcase app plan: `docs/project/showcase-application-plan.md`
-- App classification: `docs/project/showcase/apps-classification.md`
-- Showcase copy review: `docs/project/showcase-copy-review.md`
-- Showcase launch evidence JSON: `docs/project/showcase-launch-evidence.json`
-- Showcase visual review JSON: `docs/project/showcase-visual-review.json`
-- Aura Clash showcase: `docs/project/showcase/aura-clash-showcase-plan.md`
+## Retention rules
 
-## API And Agent Docs Covered By The Claim-Boundary Pass
+A Markdown file remains only when it is one of:
 
-These docs must stay aligned with the canonical project docs before public
-release:
+1. current 2.0 product/API/architecture/migration/release documentation;
+2. a required colocated README, agent instruction, legal/license file, or ADR;
+3. an executable benchmark specification or frozen evidence input consumed by
+   a current command;
+4. generated current evidence whose producer and claim boundary are named.
 
-- `llms.txt`
-- `AGENTS.md`
-- `.github/copilot-instructions.md`
-- `README.md`
-- `docs/agents/claims-and-boundaries.md`
-- `docs/agents/no-hackjob-rules.md`
-- `docs/agents/asset-selection.md`
-- `docs/agents/game-example-standards.md`
-- `docs/agents/rendering-proof-required.md`
-- `docs/agents/prompt-to-3d-workflow.md`
-- `docs/agents/asset-workflow.md`
-- `docs/api/assets.md`
-- `docs/api/game-runtime.md`
-- `docs/guides/build-a-browser-game.md`
-- `docs/concepts/rendering.md`
-- `docs/rendering/material-matrix.md`
-- `docs/rendering/postprocess.md`
-- `docs/rendering/skinning-and-morphs.md`
-- `docs/animation/runtime-support.md`
-- `docs/templates/create-aura3d-templates.md`
-
-## Index Policy
-
-Do not add a file to a public index unless it exists and its claims match
-`docs/project/claim-guidelines.md`. Deleted PRDs and historical planning files
-should not be used as current release standards.
+Scratch prompts, PRDs, handoffs, stale status snapshots, superseded plans,
+duplicate release notes, and archive-only explanations belong in Git history.
+No retained historical datum can override a current generated report or expand
+a 2.0 public claim.

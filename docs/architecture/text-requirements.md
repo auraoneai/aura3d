@@ -1,6 +1,6 @@
 # Text rendering — requirements before implementation (WS-2.7)
 
-**Status:** historical requirement + decision record for WS-2.7. Its 1.6
+**Status:** retained 2.0 decision record for WS-2.7. Its
 decision about DOM annotations remains active; its deferral of lit geometry
 text was superseded by the later WS-3.7 requirement and implementation. See
 `docs/rendering/geometry-instancing-lod-text.md`.
@@ -29,7 +29,7 @@ implementation serves at most two of them well.
 | 2 | **Accessible DOM labels** | Real text in the accessibility tree, selectable, screen-reader legible, responsive to OS font settings. | **Yes — and we must not lose it.** Already delivered. |
 | 3 | **Occlusion-aware annotations** | A label hidden or dimmed when the geometry it annotates is behind something else. | **Yes.** It is already a *declared option* that does nothing — see below. This is the real gap. |
 | 4 | **High-quality scalable UI text** | Crisp text at any zoom for HUDs, axis ticks, in-scene UI. | **Yes, and DOM already does it better than any GPU approach.** |
-| 5 | **Lit 3D geometry text** | Extruded glyph meshes, shaded by scene lights, self-shadowing. Title cards, embossed logos, signage. | **No — not a 1.6 requirement.** Genuinely valuable for cinematic and signage work, and nothing in the repository asks for it. Building it to close a parity row would be the exact mistake WS-2.7 was written to prevent. |
+| 5 | **Lit 3D geometry text** | Extruded glyph meshes, shaded by scene lights, self-shadowing. Title cards, embossed logos, signage. | **No — not a 2.0 release requirement.** Genuinely valuable for cinematic and signage work, and nothing in the repository asks for it. Building it only to close a parity row would violate the workstream's evidence rule. |
 
 ## What we actually have, measured
 
@@ -78,7 +78,7 @@ Read against the requirement table, the answer is not what a parity row would su
 
 ## Step 3 — decision
 
-> **Implement occlusion for the existing DOM label layer. Do not build a text renderer in 1.6.**
+> **Retain occlusion for the existing DOM label layer. Do not claim a 3D text renderer in 2.0.**
 
 Rationale, in the terms of the PRD's North Star: a developer can already ship legible, accessible,
 world-anchored, crisply-scaled annotations. What they cannot do is have those annotations respect the

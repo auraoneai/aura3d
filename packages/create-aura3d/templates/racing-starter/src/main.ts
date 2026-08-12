@@ -195,7 +195,7 @@ function buildScene() {
 function routeRibbonNodes(): AuraNodeInput[] {
   const asphalt = material.pbr({ color: "#5a6570", roughness: 0.78, metallic: 0.03 });
   return routeRibbonSegments.map(([name, position, scale]) =>
-    primitives.box({ name, material: asphalt }).position(...position).scale(scale)
+    primitives.box({ name, material: asphalt }).position(position[0], position[1], position[2]).scale(scale)
   );
 }
 

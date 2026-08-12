@@ -95,13 +95,25 @@ interface DiffStats {
   readonly structuralSimilarityProxy: number;
 }
 
-const ASSET = {
-  id: "damaged-helmet",
-  name: "Damaged Helmet",
-  url: "/fixtures/asset-corpus/damaged-helmet.glb",
-  width: 640,
-  height: 480
+const PARITY_ASSETS = {
+  helmet: {
+    id: "damaged-helmet",
+    name: "Damaged Helmet",
+    url: "/fixtures/asset-corpus/damaged-helmet.glb",
+    width: 640,
+    height: 480
+  },
+  formula: {
+    id: "showcase-cc0-formula-race-car",
+    name: "CC0 Formula Race Car",
+    url: "/aura-assets/showcaseCc0FormulaRaceCar.acdf4965.glb",
+    width: 640,
+    height: 480
+  }
 } as const;
+
+const requestedAsset = new URLSearchParams(window.location.search).get("asset");
+const ASSET = requestedAsset === "formula" ? PARITY_ASSETS.formula : PARITY_ASSETS.helmet;
 
 const FRAME = {
   paddingRatio: 0.02,
@@ -111,6 +123,24 @@ const FRAME = {
   nearPadding: 0.08,
   farPadding: 1.6
 } as const;
+
+const PARITY_ENVIRONMENT_LIGHTING = {
+  color: [0.723, 0.799, 1] as const,
+  intensity: 0.7,
+  proceduralMap: {
+    skyColor: [0.723, 0.799, 1] as const,
+    horizonColor: [0.723, 0.799, 1] as const,
+    groundColor: [0.012, 0.01, 0.009] as const,
+    specularColor: [1, 1, 1] as const,
+    intensity: 0,
+    specularIntensity: 0
+  }
+} as const;
+
+const PARITY_DIRECT_LIGHTS = [
+  parityDirectionalLight("parity warm key", [1, 0.863, 0.672], 3.0, [2.2, 3.2, 2.4]),
+  parityDirectionalLight("parity cool fill", [0.337, 0.474, 1], 1.0, [-2.4, 1.6, 1.9])
+] as const;
 
 void run();
 
@@ -161,13 +191,21 @@ async function run(): Promise<void> {
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
         a3dPublicRenderResources: a3d.metadata.meshCount > 0 && a3d.drawCalls > 0,
-        requiredCountsPresent: a3d.metadata.meshCount === 1
-          && a3d.metadata.primitiveCount === 1
-          && a3d.metadata.materialCount === 1
-          && a3d.metadata.textureCount >= 5
-          && threejs.metadata.meshCount === 1
-          && threejs.metadata.materialCount === 1
-          && threejs.metadata.textureCount >= 5,
+        requiredCountsPresent: ASSET.id === "damaged-helmet"
+          ? a3d.metadata.meshCount === 1
+            && a3d.metadata.primitiveCount === 1
+            && a3d.metadata.materialCount === 1
+            && a3d.metadata.textureCount >= 5
+            && threejs.metadata.meshCount === 1
+            && threejs.metadata.materialCount === 1
+            && threejs.metadata.textureCount >= 5
+          : a3d.metadata.meshCount === 5
+            && a3d.metadata.primitiveCount === 5
+            && a3d.metadata.materialCount === 1
+            && a3d.metadata.textureCount >= 1
+            && threejs.metadata.meshCount === 5
+            && threejs.metadata.materialCount === 1
+            && threejs.metadata.textureCount >= 1,
         boundsComparable: boundsDelta(summarizeBounds(a3d.bounds.min, a3d.bounds.max), threejs.bounds) <= 0.18,
         screenshotsNonBlank: analyzeImageData(a3dPixels).nonBlackPixels > 25_000 && analyzeImageData(threePixels).nonBlackPixels > 25_000,
         fakeEqualityClaimed: false
@@ -175,7 +213,7 @@ async function run(): Promise<void> {
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
-        "This artifact proves the bounded Damaged Helmet GLB path against actual Three.js GLTFLoader and WebGLRenderer.",
+        `This artifact proves the bounded ${ASSET.name} GLB path against actual Three.js GLTFLoader and WebGLRenderer.`,
         "It is not a blanket claim for every glTF extension, texture compression format, animation path, or material extension."
       ]
     };
@@ -208,6 +246,8 @@ async function renderA3D(canvas: HTMLCanvasElement) {
         qualityPreset: "studio-preview",
         frame: FRAME,
         cameraPolicy: "require",
+        environmentLighting: PARITY_ENVIRONMENT_LIGHTING,
+        collectedLights: PARITY_DIRECT_LIGHTS,
         postprocess: false,
         frustumCulling: false
     }
@@ -223,6 +263,8 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     qualityPreset: "studio-preview",
     frame: FRAME,
     cameraPolicy: "require",
+    environmentLighting: PARITY_ENVIRONMENT_LIGHTING,
+    collectedLights: PARITY_DIRECT_LIGHTS,
     postprocess: false,
     frustumCulling: false
   });
@@ -233,6 +275,32 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     bounds: pipeline.resources.bounds,
     drawCalls: diagnostics.drawCalls,
     dataUrl
+  };
+}
+
+function parityDirectionalLight(
+  name: string,
+  color: readonly [number, number, number],
+  intensity: number,
+  position: readonly [number, number, number]
+) {
+  const length = Math.hypot(...position);
+  return {
+    kind: "directional" as const,
+    name,
+    color,
+    intensity,
+    position,
+    // CollectedLight.direction is the direction the light rays travel. The
+    // forward shader negates it to obtain the fragment-to-light vector used by
+    // Three.js for a DirectionalLight at this position targeting the origin.
+    direction: [-position[0] / length, -position[1] / length, -position[2] / length] as const,
+    range: 0,
+    spotAngle: 0,
+    penumbra: 0,
+    castsShadow: false,
+    layerMask: 0xffffffff,
+    source: { id: name.replace(/\s+/g, "-"), name }
   };
 }
 

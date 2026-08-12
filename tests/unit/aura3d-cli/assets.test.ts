@@ -93,7 +93,7 @@ describe("@aura3d/cli assets", () => {
     expect(readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8")).toContain('"certified-racing-track"');
   });
 
-  test("atomically binds a certified asset pair to current route evidence and refuses stale evidence", () => {
+  test("atomically binds a certified primary asset set to current route evidence and refuses stale evidence", () => {
     const projectDir = createProject();
     mkdirSync(join(projectDir, "evidence"), { recursive: true });
     const screenshot = Buffer.from("current-route-primary-png-bytes");
@@ -104,6 +104,7 @@ describe("@aura3d/cli assets", () => {
     const routeId = "showcase-test-race";
     const trackHash = `sha256-${"1".repeat(64)}`;
     const vehicleHash = `sha256-${"2".repeat(64)}`;
+    const opponentHash = `sha256-${"3".repeat(64)}`;
     writeFileSync(join(projectDir, screenshotPath), screenshot);
     writeFileSync(join(projectDir, geometryPath), JSON.stringify({
       schema: "aura3d-racing-track-topology/1.0",
@@ -126,6 +127,7 @@ describe("@aura3d/cli assets", () => {
       geometry: { report: geometryPath, assetId: "track", assetHash: trackHash },
       assets: [
         { id: "vehicle", manifestHash: vehicleHash, evidenceHash: vehicleHash },
+        { id: "opponent", manifestHash: opponentHash, evidenceHash: opponentHash },
         { id: "track", manifestHash: trackHash, evidenceHash: trackHash }
       ],
       checks: ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"].map((id) => ({ id, verdict: "pass" })),
@@ -144,6 +146,10 @@ describe("@aura3d/cli assets", () => {
           gameGeometry: { certification: "certified-racing-vehicle", evidence: { manifestHash: vehicleHash, blockers: [] } }
         },
         {
+          id: "opponent", type: "model", format: "gltf", source: "assets/opponent.gltf", outputPath: "public/aura-assets/opponent.gltf", url: "/aura-assets/opponent.gltf", hash: opponentHash, sizeBytes: 1, materials: [], animations: [], textures: [], dependencies: [],
+          gameGeometry: { certification: "certified-racing-vehicle", evidence: { manifestHash: opponentHash, blockers: [] } }
+        },
+        {
           id: "track", type: "model", format: "gltf", source: "assets/track.gltf", outputPath: "public/aura-assets/track.gltf", url: "/aura-assets/track.gltf", hash: trackHash, sizeBytes: 1, materials: [], animations: [], textures: [], dependencies: [],
           gameGeometry: { certification: "certified-racing-track", evidence: { manifestHash: trackHash, blockers: [] }, racingTopology: { assetId: "track", assetHash: trackHash, source: "asset-mesh-extracted" } }
         }
@@ -151,7 +157,7 @@ describe("@aura3d/cli assets", () => {
     }, null, 2)}\n`);
 
     const options = {
-      projectDir, category: "racing" as const, routeId, assetIds: ["vehicle", "track"],
+      projectDir, category: "racing" as const, routeId, assetIds: ["vehicle", "opponent", "track"],
       routePrimaryScreenshot: screenshotPath, geometryReport: geometryPath,
       compositionReport: compositionPath, visualReview: reviewPath
     };

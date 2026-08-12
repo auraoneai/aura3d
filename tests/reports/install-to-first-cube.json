@@ -1,11 +1,11 @@
 {
   "schema": "aura3d-install-to-first-cube/1.0",
-  "generatedAt": "2026-08-08T16:14:14.903Z",
+  "generatedAt": "2026-08-11T10:15:36.353Z",
   "pass": true,
   "measurement": "Wall-clock time from npm install start through fresh project creation, production build, Vite readiness, and a browser-verified non-blank rendered cube.",
   "methodology": {
-    "releaseCandidate": "actual pnpm-packed @aura3d/engine 1.6.0 tarball from the measured commit",
-    "comparison": "three@0.165.0 from the public npm registry",
+    "releaseCandidate": "actual pnpm-packed @aura3d/lean 2.0.0 tarball plus its complete local Aura dependency closure from the measured commit",
+    "comparison": "three@0.185.1 from the public npm registry",
     "commonTooling": "vite@7.3.2",
     "samplesPerEnginePerState": 3,
     "cold": "fresh project, fresh npm cache, and fresh empty npm user config for every sample",
@@ -22,24 +22,61 @@
     "platform": "darwin",
     "architecture": "arm64",
     "node": "v22.22.0",
-    "npm": "10.9.4",
+    "npm": "11.19.0",
     "pnpm": "11.1.3",
     "browser": {
       "name": "chromium",
       "version": "147.0.7727.15"
     },
     "cpu": "Apple M4 Max",
-    "commit": "096068d1875673d7c0c4b5d13c63169387c5fe88",
+    "commit": "7321247d4da8b3d57af354717455e90e5a5d6852",
     "npmRegistry": "https://registry.npmjs.org/"
   },
   "artifacts": {
     "aura3d": {
-      "version": "1.6.0",
-      "source": "release-candidate-tarball",
-      "sha256": "ade9696442d0297581c2f44d63d3539351ed0e7cac9b1b5958f398de5245675f"
+      "version": "2.0.0",
+      "source": "release-candidate-tarballs",
+      "entry": "@aura3d/lean",
+      "packages": [
+        {
+          "name": "@aura3d/lean",
+          "file": "aura3d-lean-2.0.0.tgz",
+          "sha256": "5e94f7bfd821cb9fcec1a99c67695b60a7709f9d36e486734636c6c14e4330e6"
+        },
+        {
+          "name": "@aura3d/assets",
+          "file": "aura3d-assets-2.0.0.tgz",
+          "sha256": "1b27a0431e169a730a122c2b4add761511f51de58f8d7bc9ac8eb661e0b273be"
+        },
+        {
+          "name": "@aura3d/animation",
+          "file": "aura3d-animation-2.0.0.tgz",
+          "sha256": "884c90e2425e89f32613770651ff9e6d4b8a484f624f6bbc5aa33c6eb21f39a5"
+        },
+        {
+          "name": "@aura3d/rendering",
+          "file": "aura3d-rendering-2.0.0.tgz",
+          "sha256": "4593adaf0939519b14fcd2236c008312f4685d3ad195605828424e55f3421d37"
+        },
+        {
+          "name": "@aura3d/scene",
+          "file": "aura3d-scene-2.0.0.tgz",
+          "sha256": "7cb75f73a67e87166f0d1d17e6e38188fc1496f60a66d5723bf8579aa0f57638"
+        },
+        {
+          "name": "@aura3d/core",
+          "file": "aura3d-core-2.0.0.tgz",
+          "sha256": "dbe313c515b9a60c12e84b587411cd75f09e1b5ce26e8f308a274e2143f651b6"
+        },
+        {
+          "name": "@aura3d/math",
+          "file": "aura3d-math-2.0.0.tgz",
+          "sha256": "47c213974c86d71e0dfe3e720d82e6f78996b36fa830ef2a3b2bdbc121a329cd"
+        }
+      ]
     },
     "threejs": {
-      "version": "0.165.0",
+      "version": "0.185.1",
       "source": "npm-registry"
     }
   },
@@ -49,19 +86,19 @@
       "cacheState": "cold",
       "sample": 1,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:05.866Z",
-        "installCompletedAt": "2026-08-08T16:13:10.585Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:10.585Z",
-        "buildCompletedAt": "2026-08-08T16:13:11.214Z",
-        "devServerReadyAt": "2026-08-08T16:13:11.450Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:12.504Z"
+        "installStartedAt": "2026-08-11T10:14:51.810Z",
+        "installCompletedAt": "2026-08-11T10:14:55.104Z",
+        "projectCreationCompletedAt": "2026-08-11T10:14:55.104Z",
+        "buildCompletedAt": "2026-08-11T10:14:55.629Z",
+        "devServerReadyAt": "2026-08-11T10:14:55.853Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:14:56.873Z"
       },
-      "installMs": 4719.1,
+      "installMs": 3293.9,
       "projectCreationMs": 0.3,
-      "buildMs": 628.3,
-      "devServerReadyMs": 236.7,
-      "browserToVerifiedFrameMs": 1054.1,
-      "installToFirstCubeMs": 6638.6,
+      "buildMs": 524.6,
+      "devServerReadyMs": 224.2,
+      "browserToVerifiedFrameMs": 1020,
+      "installToFirstCubeMs": 5063,
       "verifiedChangedPixels": 144000,
       "cacheDirectoryWasFresh": true,
       "projectDirectoryWasFresh": true
@@ -71,19 +108,19 @@
       "cacheState": "cold",
       "sample": 1,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:12.726Z",
-        "installCompletedAt": "2026-08-08T16:13:16.169Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:16.169Z",
-        "buildCompletedAt": "2026-08-08T16:13:16.830Z",
-        "devServerReadyAt": "2026-08-08T16:13:17.145Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:17.774Z"
+        "installStartedAt": "2026-08-11T10:14:56.889Z",
+        "installCompletedAt": "2026-08-11T10:15:00.568Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:00.568Z",
+        "buildCompletedAt": "2026-08-11T10:15:01.243Z",
+        "devServerReadyAt": "2026-08-11T10:15:01.461Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:02.102Z"
       },
-      "installMs": 3442.9,
-      "projectCreationMs": 0.2,
-      "buildMs": 661.6,
-      "devServerReadyMs": 314.5,
-      "browserToVerifiedFrameMs": 628.7,
-      "installToFirstCubeMs": 5047.9,
+      "installMs": 3679.1,
+      "projectCreationMs": 0.3,
+      "buildMs": 675.3,
+      "devServerReadyMs": 217.8,
+      "browserToVerifiedFrameMs": 640.8,
+      "installToFirstCubeMs": 5213.2,
       "verifiedChangedPixels": 46577,
       "cacheDirectoryWasFresh": true,
       "projectDirectoryWasFresh": true
@@ -93,19 +130,19 @@
       "cacheState": "cold",
       "sample": 2,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:17.831Z",
-        "installCompletedAt": "2026-08-08T16:13:21.296Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:21.296Z",
-        "buildCompletedAt": "2026-08-08T16:13:21.970Z",
-        "devServerReadyAt": "2026-08-08T16:13:22.285Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:22.917Z"
+        "installStartedAt": "2026-08-11T10:15:02.117Z",
+        "installCompletedAt": "2026-08-11T10:15:05.542Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:05.542Z",
+        "buildCompletedAt": "2026-08-11T10:15:06.194Z",
+        "devServerReadyAt": "2026-08-11T10:15:06.412Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:07.047Z"
       },
-      "installMs": 3464.7,
-      "projectCreationMs": 0.3,
-      "buildMs": 674,
-      "devServerReadyMs": 314.9,
-      "browserToVerifiedFrameMs": 631.7,
-      "installToFirstCubeMs": 5085.5,
+      "installMs": 3424.8,
+      "projectCreationMs": 0.2,
+      "buildMs": 652,
+      "devServerReadyMs": 217.3,
+      "browserToVerifiedFrameMs": 635.6,
+      "installToFirstCubeMs": 4930,
       "verifiedChangedPixels": 46577,
       "cacheDirectoryWasFresh": true,
       "projectDirectoryWasFresh": true
@@ -115,19 +152,19 @@
       "cacheState": "cold",
       "sample": 2,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:22.936Z",
-        "installCompletedAt": "2026-08-08T16:13:27.849Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:27.850Z",
-        "buildCompletedAt": "2026-08-08T16:13:28.430Z",
-        "devServerReadyAt": "2026-08-08T16:13:28.745Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:29.456Z"
+        "installStartedAt": "2026-08-11T10:15:07.061Z",
+        "installCompletedAt": "2026-08-11T10:15:10.960Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:10.960Z",
+        "buildCompletedAt": "2026-08-11T10:15:11.481Z",
+        "devServerReadyAt": "2026-08-11T10:15:11.694Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:12.427Z"
       },
-      "installMs": 4913.8,
+      "installMs": 3898.9,
       "projectCreationMs": 0.2,
-      "buildMs": 580.7,
-      "devServerReadyMs": 315.1,
-      "browserToVerifiedFrameMs": 710.8,
-      "installToFirstCubeMs": 6520.5,
+      "buildMs": 521.1,
+      "devServerReadyMs": 212.7,
+      "browserToVerifiedFrameMs": 733.1,
+      "installToFirstCubeMs": 5366.1,
       "verifiedChangedPixels": 144000,
       "cacheDirectoryWasFresh": true,
       "projectDirectoryWasFresh": true
@@ -137,19 +174,19 @@
       "cacheState": "cold",
       "sample": 3,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:30.895Z",
-        "installCompletedAt": "2026-08-08T16:13:35.952Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:35.953Z",
-        "buildCompletedAt": "2026-08-08T16:13:36.521Z",
-        "devServerReadyAt": "2026-08-08T16:13:36.837Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:37.559Z"
+        "installStartedAt": "2026-08-11T10:15:12.441Z",
+        "installCompletedAt": "2026-08-11T10:15:15.885Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:15.885Z",
+        "buildCompletedAt": "2026-08-11T10:15:16.405Z",
+        "devServerReadyAt": "2026-08-11T10:15:16.619Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:17.369Z"
       },
-      "installMs": 5057,
-      "projectCreationMs": 0.3,
-      "buildMs": 568.4,
-      "devServerReadyMs": 315.8,
-      "browserToVerifiedFrameMs": 722.2,
-      "installToFirstCubeMs": 6663.8,
+      "installMs": 3443.9,
+      "projectCreationMs": 0.2,
+      "buildMs": 519.9,
+      "devServerReadyMs": 213.9,
+      "browserToVerifiedFrameMs": 750.6,
+      "installToFirstCubeMs": 4928.6,
       "verifiedChangedPixels": 144000,
       "cacheDirectoryWasFresh": true,
       "projectDirectoryWasFresh": true
@@ -159,19 +196,19 @@
       "cacheState": "cold",
       "sample": 3,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:38.981Z",
-        "installCompletedAt": "2026-08-08T16:13:42.210Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:42.211Z",
-        "buildCompletedAt": "2026-08-08T16:13:42.876Z",
-        "devServerReadyAt": "2026-08-08T16:13:43.192Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:43.832Z"
+        "installStartedAt": "2026-08-11T10:15:17.384Z",
+        "installCompletedAt": "2026-08-11T10:15:20.756Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:20.756Z",
+        "buildCompletedAt": "2026-08-11T10:15:21.416Z",
+        "devServerReadyAt": "2026-08-11T10:15:21.630Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:22.257Z"
       },
-      "installMs": 3228.9,
+      "installMs": 3372.5,
       "projectCreationMs": 0.2,
-      "buildMs": 665.8,
-      "devServerReadyMs": 315.2,
-      "browserToVerifiedFrameMs": 640.5,
-      "installToFirstCubeMs": 4850.6,
+      "buildMs": 659.5,
+      "devServerReadyMs": 213.6,
+      "browserToVerifiedFrameMs": 627,
+      "installToFirstCubeMs": 4872.8,
       "verifiedChangedPixels": 46577,
       "cacheDirectoryWasFresh": true,
       "projectDirectoryWasFresh": true
@@ -181,19 +218,19 @@
       "cacheState": "warm",
       "sample": 1,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:46.194Z",
-        "installCompletedAt": "2026-08-08T16:13:47.819Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:47.819Z",
-        "buildCompletedAt": "2026-08-08T16:13:48.398Z",
-        "devServerReadyAt": "2026-08-08T16:13:48.714Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:49.427Z"
+        "installStartedAt": "2026-08-11T10:15:22.270Z",
+        "installCompletedAt": "2026-08-11T10:15:23.202Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:23.202Z",
+        "buildCompletedAt": "2026-08-11T10:15:23.708Z",
+        "devServerReadyAt": "2026-08-11T10:15:23.921Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:24.658Z"
       },
-      "installMs": 1624.8,
+      "installMs": 931.9,
       "projectCreationMs": 0.2,
-      "buildMs": 579.5,
-      "devServerReadyMs": 315.7,
-      "browserToVerifiedFrameMs": 712.9,
-      "installToFirstCubeMs": 3233.1,
+      "buildMs": 505.7,
+      "devServerReadyMs": 213.3,
+      "browserToVerifiedFrameMs": 737,
+      "installToFirstCubeMs": 2388,
       "verifiedChangedPixels": 144000,
       "cacheDirectoryWasFresh": false,
       "projectDirectoryWasFresh": true
@@ -203,19 +240,19 @@
       "cacheState": "warm",
       "sample": 1,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:49.536Z",
-        "installCompletedAt": "2026-08-08T16:13:50.237Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:50.237Z",
-        "buildCompletedAt": "2026-08-08T16:13:50.899Z",
-        "devServerReadyAt": "2026-08-08T16:13:51.213Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:51.834Z"
+        "installStartedAt": "2026-08-11T10:15:24.672Z",
+        "installCompletedAt": "2026-08-11T10:15:25.388Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:25.388Z",
+        "buildCompletedAt": "2026-08-11T10:15:26.047Z",
+        "devServerReadyAt": "2026-08-11T10:15:26.263Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:26.905Z"
       },
-      "installMs": 701.1,
+      "installMs": 715.7,
       "projectCreationMs": 0.2,
-      "buildMs": 661.6,
-      "devServerReadyMs": 313.5,
-      "browserToVerifiedFrameMs": 621.2,
-      "installToFirstCubeMs": 2297.7,
+      "buildMs": 659.6,
+      "devServerReadyMs": 215.7,
+      "browserToVerifiedFrameMs": 641.6,
+      "installToFirstCubeMs": 2232.9,
       "verifiedChangedPixels": 46577,
       "cacheDirectoryWasFresh": false,
       "projectDirectoryWasFresh": true
@@ -225,19 +262,19 @@
       "cacheState": "warm",
       "sample": 2,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:53.186Z",
-        "installCompletedAt": "2026-08-08T16:13:53.930Z",
-        "projectCreationCompletedAt": "2026-08-08T16:13:53.931Z",
-        "buildCompletedAt": "2026-08-08T16:13:54.629Z",
-        "devServerReadyAt": "2026-08-08T16:13:54.944Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:13:55.577Z"
+        "installStartedAt": "2026-08-11T10:15:26.922Z",
+        "installCompletedAt": "2026-08-11T10:15:27.646Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:27.646Z",
+        "buildCompletedAt": "2026-08-11T10:15:28.288Z",
+        "devServerReadyAt": "2026-08-11T10:15:28.502Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:29.134Z"
       },
-      "installMs": 743.8,
+      "installMs": 724,
       "projectCreationMs": 0.2,
-      "buildMs": 698.1,
-      "devServerReadyMs": 314.8,
-      "browserToVerifiedFrameMs": 633.6,
-      "installToFirstCubeMs": 2390.6,
+      "buildMs": 642.4,
+      "devServerReadyMs": 213.4,
+      "browserToVerifiedFrameMs": 632.5,
+      "installToFirstCubeMs": 2212.5,
       "verifiedChangedPixels": 46577,
       "cacheDirectoryWasFresh": false,
       "projectDirectoryWasFresh": true
@@ -247,19 +284,19 @@
       "cacheState": "warm",
       "sample": 2,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:13:58.557Z",
-        "installCompletedAt": "2026-08-08T16:14:00.005Z",
-        "projectCreationCompletedAt": "2026-08-08T16:14:00.005Z",
-        "buildCompletedAt": "2026-08-08T16:14:00.576Z",
-        "devServerReadyAt": "2026-08-08T16:14:00.892Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:14:01.611Z"
+        "installStartedAt": "2026-08-11T10:15:29.150Z",
+        "installCompletedAt": "2026-08-11T10:15:30.070Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:30.070Z",
+        "buildCompletedAt": "2026-08-11T10:15:30.580Z",
+        "devServerReadyAt": "2026-08-11T10:15:30.794Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:31.541Z"
       },
-      "installMs": 1448.3,
+      "installMs": 919.3,
       "projectCreationMs": 0.2,
-      "buildMs": 571.2,
-      "devServerReadyMs": 315.7,
-      "browserToVerifiedFrameMs": 718.5,
-      "installToFirstCubeMs": 3054,
+      "buildMs": 509.6,
+      "devServerReadyMs": 214.7,
+      "browserToVerifiedFrameMs": 747,
+      "installToFirstCubeMs": 2390.8,
       "verifiedChangedPixels": 144000,
       "cacheDirectoryWasFresh": false,
       "projectDirectoryWasFresh": true
@@ -269,19 +306,19 @@
       "cacheState": "warm",
       "sample": 3,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:14:02.212Z",
-        "installCompletedAt": "2026-08-08T16:14:03.825Z",
-        "projectCreationCompletedAt": "2026-08-08T16:14:03.825Z",
-        "buildCompletedAt": "2026-08-08T16:14:04.379Z",
-        "devServerReadyAt": "2026-08-08T16:14:04.693Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:14:05.412Z"
+        "installStartedAt": "2026-08-11T10:15:31.555Z",
+        "installCompletedAt": "2026-08-11T10:15:32.496Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:32.496Z",
+        "buildCompletedAt": "2026-08-11T10:15:33.012Z",
+        "devServerReadyAt": "2026-08-11T10:15:33.226Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:33.998Z"
       },
-      "installMs": 1612.7,
+      "installMs": 940.9,
       "projectCreationMs": 0.2,
-      "buildMs": 554.4,
-      "devServerReadyMs": 313.4,
-      "browserToVerifiedFrameMs": 718.8,
-      "installToFirstCubeMs": 3199.5,
+      "buildMs": 516.3,
+      "devServerReadyMs": 213.5,
+      "browserToVerifiedFrameMs": 772.3,
+      "installToFirstCubeMs": 2443.2,
       "verifiedChangedPixels": 144000,
       "cacheDirectoryWasFresh": false,
       "projectDirectoryWasFresh": true
@@ -291,19 +328,19 @@
       "cacheState": "warm",
       "sample": 3,
       "timeline": {
-        "installStartedAt": "2026-08-08T16:14:12.400Z",
-        "installCompletedAt": "2026-08-08T16:14:13.072Z",
-        "projectCreationCompletedAt": "2026-08-08T16:14:13.072Z",
-        "buildCompletedAt": "2026-08-08T16:14:13.736Z",
-        "devServerReadyAt": "2026-08-08T16:14:14.051Z",
-        "firstVerifiedFrameAt": "2026-08-08T16:14:14.676Z"
+        "installStartedAt": "2026-08-11T10:15:34.013Z",
+        "installCompletedAt": "2026-08-11T10:15:34.756Z",
+        "projectCreationCompletedAt": "2026-08-11T10:15:34.756Z",
+        "buildCompletedAt": "2026-08-11T10:15:35.424Z",
+        "devServerReadyAt": "2026-08-11T10:15:35.640Z",
+        "firstVerifiedFrameAt": "2026-08-11T10:15:36.266Z"
       },
-      "installMs": 671.7,
+      "installMs": 743.1,
       "projectCreationMs": 0.2,
-      "buildMs": 664.5,
-      "devServerReadyMs": 314.3,
-      "browserToVerifiedFrameMs": 625.1,
-      "installToFirstCubeMs": 2275.8,
+      "buildMs": 667,
+      "devServerReadyMs": 216.8,
+      "browserToVerifiedFrameMs": 625.5,
+      "installToFirstCubeMs": 2252.6,
       "verifiedChangedPixels": 46577,
       "cacheDirectoryWasFresh": false,
       "projectDirectoryWasFresh": true
@@ -314,64 +351,64 @@
       "aura3d": {
         "sampleCount": 3,
         "samplesMs": [
-          6638.6,
-          6520.5,
-          6663.8
+          5063,
+          5366.1,
+          4928.6
         ],
-        "medianMs": 6638.6,
-        "medianMinutes": 0.1106,
-        "meanMs": 6607.6,
-        "varianceMs2": 3901.9,
-        "standardDeviationMs": 62.5,
-        "minMs": 6520.5,
-        "maxMs": 6663.8
+        "medianMs": 5063,
+        "medianMinutes": 0.0844,
+        "meanMs": 5119.2,
+        "varianceMs2": 33482.1,
+        "standardDeviationMs": 183,
+        "minMs": 4928.6,
+        "maxMs": 5366.1
       },
       "threejs": {
         "sampleCount": 3,
         "samplesMs": [
-          5047.9,
-          5085.5,
-          4850.6
+          5213.2,
+          4930,
+          4872.8
         ],
-        "medianMs": 5047.9,
-        "medianMinutes": 0.0841,
-        "meanMs": 4994.7,
-        "varianceMs2": 10613.2,
-        "standardDeviationMs": 103,
-        "minMs": 4850.6,
-        "maxMs": 5085.5
+        "medianMs": 4930,
+        "medianMinutes": 0.0822,
+        "meanMs": 5005.3,
+        "varianceMs2": 22149.6,
+        "standardDeviationMs": 148.8,
+        "minMs": 4872.8,
+        "maxMs": 5213.2
       }
     },
     "warm": {
       "aura3d": {
         "sampleCount": 3,
         "samplesMs": [
-          3233.1,
-          3054,
-          3199.5
+          2388,
+          2390.8,
+          2443.2
         ],
-        "medianMs": 3199.5,
-        "medianMinutes": 0.0533,
-        "meanMs": 3162.2,
-        "varianceMs2": 6041.8,
-        "standardDeviationMs": 77.7,
-        "minMs": 3054,
-        "maxMs": 3233.1
+        "medianMs": 2390.8,
+        "medianMinutes": 0.0398,
+        "meanMs": 2407.3,
+        "varianceMs2": 644.5,
+        "standardDeviationMs": 25.4,
+        "minMs": 2388,
+        "maxMs": 2443.2
       },
       "threejs": {
         "sampleCount": 3,
         "samplesMs": [
-          2297.7,
-          2390.6,
-          2275.8
+          2232.9,
+          2212.5,
+          2252.6
         ],
-        "medianMs": 2297.7,
-        "medianMinutes": 0.0383,
-        "meanMs": 2321.4,
-        "varianceMs2": 2476.6,
-        "standardDeviationMs": 49.8,
-        "minMs": 2275.8,
-        "maxMs": 2390.6
+        "medianMs": 2232.9,
+        "medianMinutes": 0.0372,
+        "meanMs": 2232.7,
+        "varianceMs2": 268,
+        "standardDeviationMs": 16.4,
+        "minMs": 2212.5,
+        "maxMs": 2252.6
       }
     }
   }

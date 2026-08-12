@@ -1,11 +1,12 @@
 # Package ownership and dependency direction
 
-Canonical record for **WS-3.6a** of [`Aura3D-1.6-Replatform-PRD.md`](../../Aura3D-1.6-Replatform-PRD.md).
+Canonical Aura3D 2.0 package ownership record. The generated file-level ledger
+is [`final-subsystem-ownership.md`](./final-subsystem-ownership.md).
 Machine-enforced by `pnpm check:package-graph` (`tools/package-graph/index.ts`), which writes
 `tests/reports/package-graph.json` and `docs/architecture/package-graph.dot`. **This document is
 descriptive; the tool is authoritative.** If they disagree, the tool is right and this file is stale.
 
-Measured 2026-08-09 · 29 workspace packages · graph acyclic · 0 undeclared dependencies · 0 layer violations.
+Measured 2026-08-11 · 29 workspace packages · graph acyclic · 0 undeclared dependencies · 0 layer violations.
 
 ## How the graph is measured
 
@@ -49,34 +50,34 @@ Nothing may depend on tier 5 or 6 except tier 6.
 | Package | Tier | LOC | Public subpath | Owns | Dependencies (union of declared + source) |
 |---|---|---|---|---|---|
 | `math` | 0 | 1,220 | `@aura3d/math` | vectors, matrices, quaternions, curves | — |
-| `navigation-recast` | 0 | 196 | `@aura3d/navigation-recast` | optional Recast/Detour navmesh, path-query, crowd, and tile-cache adapter | — |
-| `physics` | 0 | 12,715 | `@aura3d/physics` | solver, collision, joints, character, vehicle. **Internals re-platformed by P4** | `physics-rapier` |
-| `physics-rapier` | 0 | 160 | `@aura3d/physics-rapier` | optional async Rapier physical-simulation adapter; separate WASM | — |
-| `scripting` | 0 | 5,837 | `@aura3d/scripting` | GOAP / HTN / behaviour trees / utility AI. **Zero consumers — WS-3.3** | — |
+| `navigation-recast` | 0 | 239 | `@aura3d/navigation-recast` | optional Recast/Detour navmesh, path-query, crowd, and tile-cache adapter | — |
+| `physics` | 0 | 6,573 | `@aura3d/physics` | compatibility contract over Rapier plus explicitly non-physical authored arcade motion | `physics-rapier` |
+| `physics-rapier` | 0 | 355 | `@aura3d/physics-rapier` | optional async Rapier physical-simulation adapter; separate WASM | — |
+| `scripting` | 0 | 3,692 | `@aura3d/scripting` | compatibility-only GOAP / HTN / behaviour trees / utility AI | — |
 | `asset-index` | 0 | 3,438 | `@aura3d/asset-index` | asset catalogue index and search | — |
 | `core` | 1 | 1,186 | `@aura3d/core` | base object model. **Transitive dep of `engine`, `scene`, `ecs`, `apps`** | `math` |
-| `scene` | 1 | 1,704 | `@aura3d/scene` | scene graph, transforms, traversal | `core`, `math` |
-| `animation` | 2 | 7,988 | `@aura3d/animation` | clips, mixers, blending, skinning, morphs | `math` |
-| `rendering` | 2 | 54,859 | `@aura3d/rendering` | WebGL2 + WebGPU devices, materials, shaders, lighting, shadows, postprocess | `math`, `scene` |
-| `input` | 2 | 2,463 | `@aura3d/input` | keyboard/pointer/touch/gamepad/XR, action maps, replay | `math`, `scene` |
-| `audio` | 2 | 2,225 | `@aura3d/audio` | Web Audio graph, buses, effects, positional audio | `scene` |
+| `scene` | 1 | 1,715 | `@aura3d/scene` | scene graph, transforms, traversal | `core`, `math` |
+| `animation` | 2 | 7,527 | `@aura3d/animation` | clips, mixers, blending, skinning, morphs | `math` |
+| `rendering` | 2 | 55,665 | `@aura3d/rendering` | WebGL2 + WebGPU devices, materials, shaders, lighting, shadows, postprocess | `math`, `scene` |
+| `input` | 2 | 1,983 | `@aura3d/input` | keyboard/pointer/touch/gamepad/XR, action maps, replay | `math`, `scene` |
+| `audio` | 2 | 1,696 | `@aura3d/audio` | sole browser-standard Web Audio graph, buses, effects, positional audio | `scene` |
 | `ecs` | 2 | 1,480 | `@aura3d/ecs` | entity/component store. **One consumer — WS-3.3** | `core`, `math` |
-| `assets` | 3 | 16,574 | `@aura3d/assets` | glTF/GLB/KTX2/Draco loading, provenance, admission | `animation`, `rendering`, `scene` |
+| `assets` | 3 | 15,854 | `@aura3d/assets` | glTF/GLB/KTX2/Draco loading, provenance, admission | `animation`, `rendering`, `scene` |
 | `controls` | 3 | 2,389 | `@aura3d/controls` | orbit/fly/pointer camera controls | `input` |
-| `materials` | 3 | 360 | `@aura3d/materials` | material presets. **Public export, self-consumed only** | `assets`, `rendering` |
-| `environments` | 3 | 469 | `@aura3d/environments` | IBL/environment presets. **Public export, self-consumed only** | `rendering` |
+| `materials` | 3 | 339 | `@aura3d/materials` | material presets. **Public export, self-consumed only** | `assets`, `rendering` |
+| `environments` | 3 | 464 | `@aura3d/environments` | IBL/environment presets. **Public export, self-consumed only** | `rendering` |
 | `debug` | 3 | 1,133 | `@aura3d/debug` | inspectors, overlays, physics/animation visualisers | `animation`, `physics`, `rendering` |
-| `editor-runtime` | 3 | 7,915 | `@aura3d/editor-runtime` | editor document model and commands | `animation`, `math`, `scene` |
-| `product-studio` | 4 | 696 | `@aura3d/product-studio` | product-viewer application surface | `assets`, `rendering`, `scene` |
+| `editor-runtime` | 3 | 7,537 | `@aura3d/editor-runtime` | editor document model and commands | `animation`, `math`, `scene` |
+| `product-studio` | 4 | 740 | `@aura3d/product-studio` | product-viewer application surface | `assets`, `rendering`, `scene` |
 | `apps` | 4 | 162 | `@aura3d/apps` | application shell contracts. **`engine` depends on it** | `core`, `rendering`, `workflows` |
 | `workflows` | 4 | 1,174 | `@aura3d/workflows` | composed authoring workflows, production example runtime | `animation`, `assets`, `product-studio`, `rendering`, `scene` |
 | `editor` | 4 | 1 | `@aura3d/editor` | placeholder aggregate over `editor-runtime` | `editor-runtime` |
 | `lean` | 4 | 971 | `@aura3d/lean`, `/product`, `/game` | dependency-isolated WebGL2 primitive, typed-product, and solver-free deterministic arcade runtime | `assets`, `rendering`, `scene` |
-| `engine` | 5 | 56,172 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus deprecated lean aliases. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `lean`, `physics`, `product-studio`, `rendering`, `scene`, `workflows` |
+| `engine` | 5 | 57,044 | `@aura3d/engine` (root) | compatibility-heavy agent API, game runtime, kits, production runtime, plus deprecated lean aliases and isolated `media-node`. Private as `@aura3d/engine-runtime` | `animation`, `apps`, `assets`, `audio`, `core`, `ecs`, `lean`, `physics`, `product-studio`, `rendering`, `scene`, `workflows` |
 | `react` | 6 | 173 | `@aura3d/react` | React bindings | `engine` |
-| `three-compat` | 6 | 1,185 | `@aura3d/three-compat` | Three.js migration surface | `animation`, `controls`, `debug`, `rendering` |
-| `aura3d-cli` | 6 | 8,756 | `@aura3d/cli` | asset pipeline CLI | `asset-index` |
-| `create-aura3d` | 6 | 8,574 | `create-aura3d` | project scaffolding | `asset-index` |
+| `three-compat` | 6 | 1,234 | `@aura3d/three-compat` | Three.js migration surface | `animation`, `controls`, `debug`, `rendering` |
+| `aura3d-cli` | 6 | 8,777 | `@aura3d/cli` | asset pipeline CLI | `asset-index` |
+| `create-aura3d` | 6 | 8,578 | `create-aura3d` | project scaffolding | `asset-index` |
 
 ## Over-declarations (weight, not failures)
 

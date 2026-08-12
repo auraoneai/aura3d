@@ -78,14 +78,16 @@ const progress = existsSync(resolve("docs/project/verification-evidence.md"))
   : "";
 
 const requiredStatusPatterns = [
-  /\bnot\W+currently\W+a\W+Unity\W+replacement\b/i,
-  /\bnot\W+complete\W+until\W+`pnpm foundation:release`\W+passes\b/i
+  /\bnot\W+currently\W+a\W+Unity\W+or\W+Unreal\W+replacement\b/i,
+  /\b2\.0\W+release\W+is\W+not\W+complete\W+until\W+`pnpm check:release`/i
 ] as const;
 const missingStatusPhrases = requiredStatusPatterns
   .filter((pattern) => !pattern.test(status))
   .map((pattern) => String(pattern));
-const progressHasReleaseGate = progress.includes("Milestone 10 - Release Gates")
-  && (progress.includes("Current status: in-progress") || progress.includes("Current status: complete"));
+const progressHasReleaseGate = progress.includes("## Requirements Trace Gate")
+  && progress.includes("## Gate Result")
+  && progress.includes("RELEASE-")
+  && progress.includes("Complete: no");
 
 const report = {
   schema: "a3d-foundation-truth",

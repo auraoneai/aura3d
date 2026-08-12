@@ -269,7 +269,10 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
   if (!specifier.startsWith(".")) return false;
   const resolved = resolve(dirname(file), specifier);
   const relativeToRoot = relative(process.cwd(), resolved).replaceAll("\\", "/");
-  return relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
+  // The CLI-generated root asset map is the one deliberate cross-directory import:
+  // examples consume typed `assets.*` rather than guessing public model URLs.
+  return relativeToRoot === "src/aura-assets" || relativeToRoot === "src/aura-assets.js"
+    || relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
 }
 
 function collectSourceFiles(dir: string, out: string[] = []): string[] {

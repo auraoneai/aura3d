@@ -46,12 +46,14 @@ describe("showcase platformer spec compiler", () => {
       });
 
       expect(report.routeId).toBe("showcase-skyline-runner");
-      expect(report.finalStatus).toBe("release-ready candidate");
-      expect(report.ok).toBe(true);
+      // The fixture intentionally preserves rejected pre-2.0 evidence. Generation must still be safe and
+      // deterministic, but stale evidence may never promote the result to a release candidate.
+      expect(report.finalStatus).toBe("prototype-blocked");
+      expect(report.ok).toBe(false);
       expect(report.rejectedAssets).toEqual([]);
       expect(report.selectedReplacement).toBeUndefined();
       expect(report.replacementCandidates).toEqual([]);
-      expect(report.blockers).toEqual([]);
+      expect(report.blockers.length).toBeGreaterThan(0);
       expect(report.blockers).not.toContain("evidence:platformer-asset-pair:verdict-not-pass:fail");
       expect(report.assetPairComposition).toMatchObject({
         verdict: "pass",
@@ -329,7 +331,7 @@ describe("showcase platformer spec compiler", () => {
 
       expect(report.ok).toBe(false);
       expect(report.finalStatus).toBe("prototype-blocked");
-      expect(report.blockers).toContain("evidence:platformer-asset-pair:screenshot-sha256-mismatch");
+      expect(report.blockers).toContain("evidence:platformer-asset-pair:route-primary-sha256-missing");
       expect(report.blockers).toContain("evidence:platformer-asset-pair:screenshot:file-sha256-mismatch");
     } finally {
       rmSync(outputDir, { recursive: true, force: true });

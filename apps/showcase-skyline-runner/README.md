@@ -1,24 +1,29 @@
 # Skyline Runner
 
-Status: visual-rebuild-in-progress prototype
+Status: five-act Level 1 rebuild under final visual review
 
 Claim label: createAuraApp
 
 Primary asset: showcaseKenneyOobiPlatformerHero
 
-The route technically proves typed character/world loading, bounded
-mesh-derived surfaces, mounted movement/jump/checkpoint/hazard/finish state,
-route-local challenge scoring, route-primary evidence, and deploy checks. Its
-retained July 19 manual review predates the current mounted source and is not
-current visual approval. Public promotion remains blocked until rebuilt
-desktop, mobile, and gameplay screenshots pass the hash-bound independent
-review gate. This does not claim arbitrary asset conversion or production
-platformer-engine parity.
+The route contains an original five-act side-scroller story: Home Grove,
+Broken Canopy, Sentry Pass, Cloudstep Rise, and Aurora Crown. Ten distinct
+district transforms, typed robot sentries, act landmarks, relay checkpoints,
+sky-shard collection, retries, flow scoring, and a summit-beacon finish create
+a complete Level 1 rather than a short repeated obstacle strip.
 
-Authored duration is proven separately by `src/level-proof.ts`
-(`tests/unit/apps/skyline-sixty-second-level.test.ts`), which drives the public
-`game.platformer` kit over a 3,600-frame window: 60.0 s remain playable against
-the authored 30 s floor, with 15.06 units of forward traversal, 38 jumps,
-1,738 grounded frames against 1,862 airborne, and all 6 checkpoints activated.
-That proof publishes `provesMountedKitPlayback: false` because a planned input
-sequence is not mounted browser playback.
+The public `game.platformer` kit proof drives the physical start-to-finish
+course with the shipped movement and jump configuration. Its authored target is
+145 seconds, and completion must occur
+between 120 and 180 seconds; reaching the finish early and waiting on a timer
+does not pass. Browser evidence separately proves the same keyboard controls,
+checkpoint/fall/respawn chain, typed rendered actors, and real finish event.
+
+Duration is proven by `src/level-proof.ts`
+(`tests/unit/apps/skyline-sixty-second-level.test.ts`) across a 10,800-frame
+window. That deterministic proof intentionally publishes
+`provesMountedKitPlayback: false`; the Playwright gameplay proof owns mounted
+browser playback and the retained visual states.
+
+Boundary: this is a bounded certified-surface platformer showcase. It does not
+claim arbitrary GLB-to-game conversion or general engine parity.

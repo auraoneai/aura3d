@@ -4,7 +4,8 @@ import { dirname, resolve } from "node:path";
 const requiredFiles = [
   "docs/project/parity/threejs/status.md",
   "docs/project/claim-guidelines.md",
-  "docs/project/status/current-state.md"
+  "docs/project/status/current-state.md",
+  "docs/project/status/known-limits.md"
 ] as const;
 const combined = requiredFiles
   .filter((path) => existsSync(resolve(path)))
@@ -33,7 +34,7 @@ const requiredPolicies = [
   },
   {
     id: "webgpu-evidence-bound",
-    pattern: /Native WebGPU particles\/rendering.*Blocked unless adapter\/backend|WebGPU.*adapter, backend, dispatch\/render, fallback, telemetry, and pixel evidence/is,
+    pattern: /WebGPU.*adapter\/backend state, dispatch\/render evidence,\s*fallback state, telemetry, and pixels/is,
     detail: "The retained policy must bind WebGPU claims to backend, fallback, telemetry, and pixel proof."
   },
   {

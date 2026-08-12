@@ -1,6 +1,6 @@
 # Aura Clash Arena Showcase Build Guide
 
-Version: 1.1.0
+Version: 2.0.0
 
 Use this guide when editing, reviewing, or documenting the active Aura3D game showcase in `apps/aura-clash-showcase`.
 

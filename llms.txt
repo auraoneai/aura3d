@@ -110,7 +110,7 @@ Game runtime rules:
 - Use `game.evidence(app)` to prove runtime nodes and frame-loop activity.
 - Keep typed assets from `./aura-assets`; do not use string ids, invented URLs, or direct loader code.
 
-Aura3D 1.1.0 game runtime helpers include fighting presets, touch controls,
+Current Aura3D game runtime helpers include fighting presets, touch controls,
 jump assist, collision worlds, colliders, HUD bindings, accessibility state,
 input replay, event logs, platformer/racing/falling-block helpers, and debug
 overlays. Use them through `game`/`games` and prove each mechanic with browser
@@ -120,7 +120,7 @@ Animation controller pattern: create an `AnimationController` from typed clip
 metadata, call `animation.update(dt)` in `app.onFrame(...)`, and crossfade named
 clips only when the names are present in asset metadata or inspection evidence.
 
-Aura3D 1.1.0 animation/editor/visual scripting rules:
+Current Aura3D animation/editor/visual scripting rules:
 - Read `docs/api/animation-runtime-events.md` before changing skeletal animation, animation events, or viseme/blendshape sync docs or examples.
 - Read `docs/api/editor-visual-scripting.md` before changing editor-runtime, timeline, project serialization, visual graph, or graph-to-runtime bridge docs or examples.
 - Use typed asset metadata for clip, skeleton, and morph target names. If the names are not in `src/aura-assets.ts`, `aura.assets.json`, an asset inspection report, or a source/license evidence file, inspect the asset first instead of guessing.
@@ -138,7 +138,7 @@ app.onFrame(({ time }) => {
 
 - `@aura3d/editor-runtime` and `@aura3d/scripting` are public package surfaces for tools and tests. Live browser routes still mount through `@aura3d/engine`.
 - Visual graphs can validate and emit deterministic side effects. A graph is not proven to drive a browser scene until those side effects are applied to a mounted Aura app and captured in browser evidence.
-- Source metadata, deterministic snapshots, and nonblank screenshots are not enough for 1.1.0 release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
+- Source metadata, deterministic snapshots, and nonblank screenshots are not enough for release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
 
 Aura3D Animation Studio rules (prompt → document → render pipeline):
 - Use `create-aura3d --template animation-studio` for the agent-driven episode workflow. YOU (the coding agent / harness) are the director — there is NO separate LLM and NO API key. You drive the validated Scene-Tool CLI (`animation-scene`, a.k.a. `aura3d animation scene`); each command edits one `EpisodeDocument` (`dist/scene/working.document.json`) and is rejected if it would break the scene. `animation-channel` and `prompt-animation-channel` remain source-level examples unless their render/package gates pass.
@@ -229,7 +229,7 @@ Game and animation asset readiness:
 - A readiness report is not visual proof. Do not mark visual-quality, animation-quality, or launch-quality gates complete without screenshot/runtime evidence.
 - Use `create-aura3d --template prompt-animation-channel` for prompt-driven episode scaffolds that need AuraVoice manifests, shot timelines, dialogue beats, visemes, captions, and render plans. The shorter `animation-channel` template name remains supported.
 
-Aura3D 1.1.0 package/readiness declarations:
+Aura3D 2.0 package/readiness declarations:
 ```bash
 npx create-aura3d@latest my-fighter --template fighting-game
 npx create-aura3d@latest my-episode --template prompt-animation-channel
@@ -248,10 +248,10 @@ pnpm prompt-animation:release
 
 Do not claim game, prompt-animation, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
 
-Aura3D 1.4.1 game-engine/showcase claim rules:
-- Treat 1.4.1 as a package-presentation patch on top of the scoped 1.4.0
-  runtime-foundation release backed by npm, docs, deployed-route, performance,
-  and readiness evidence.
+Aura3D 2.0 game-engine/showcase claim rules:
+- Treat 2.0 as a major public-contract replatform whose package, docs,
+  installed-route, performance, visual, and readiness claims remain separately
+  evidence-gated.
 - Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
 - Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 - Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.

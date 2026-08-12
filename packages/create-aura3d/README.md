@@ -19,6 +19,8 @@ npm run dev
 npx create-aura3d@latest my-product --template product-viewer
 npx create-aura3d@latest my-scene --template cinematic-scene
 npx create-aura3d@latest my-game --template mini-game
+npx create-aura3d@latest my-racer --template racing-starter
+npx create-aura3d@latest my-puzzle --template falling-blocks-starter
 npx create-aura3d@latest my-fighter --template fighting-game
 npx create-aura3d@latest my-episode --template prompt-animation-channel
 npx create-aura3d@latest my-studio --template animation-studio
@@ -44,6 +46,13 @@ npx create-aura3d@latest --help
 - **Game routes fail closed.** Public racing/platformer generation uses certified assets and compiler-emitted geometry contracts rather than guessed route-local rectangles or centerlines.
 - **Static deploys are first-class.** Build output is a browser app you can
   deploy like any Vite project.
+
+Aura3D 2.0 verifies all 19 registered templates twice: 149/149 checks against
+workspace source and 149/149 checks in clean projects that install the exact
+packed 2.0.0 dependency graph. Those lifecycles cover install, typecheck,
+production build, browser load, meaningful interaction, static preview,
+screenshot, route health, and deploy behavior. They prove the scaffold
+contracts, not universal visual quality or Three.js ecosystem parity.
 
 ## Add A Real Model
 

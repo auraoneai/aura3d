@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-Date: 2026-08-08
+Date: 2026-08-11
 Status: Aura3D 2.0.0 site map
 
 ## Public Marketing Pages
@@ -31,18 +31,12 @@ copy boundary and must not present prototypes as public release examples.
 - [Release tracks](release-tracks.md)
 - [Release checklist](release/release-checklist.md)
 - [Release process](release-process.md)
-- [Aura3D 1.4.0 release candidate](aura3d-140-release-candidate.md)
-- [Aura3D 1.4.0 release notes draft](aura3d-140-release-notes.md)
-- [Aura3D 1.4.1 release notes](aura3d-141-release-notes.md)
-- [Aura3D 1.4.2 release notes](aura3d-142-release-notes.md)
-- [Aura3D 1.4.4 release notes](aura3d-144-release-notes.md)
-- [Aura3D 1.4.5 release notes](aura3d-145-release-notes.md)
 - [Aura3D 2.0.0 release notes](aura3d-200-release-notes.md)
-- [Aura3D 1.6.0 historical release notes](aura3d-160-release-notes.md)
+- [2.0 platform architecture](../architecture/2.0-platform.md)
+- [2.0 removals and retrieval](../architecture/2.0-removals.md)
 - [Aura3D 2.0.0 Three.js comparison status](threejs-superiority-status.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase/quality-gates.md)
-- [Showcase application plan](showcase-application-plan.md)
 - [Apps classification](showcase/apps-classification.md)
 - [Library gap roadmap](roadmaps/library-gap-roadmap.md)
 - [`createAuraApp` production bridge architecture](architecture/create-aura-app-production-bridge.md)

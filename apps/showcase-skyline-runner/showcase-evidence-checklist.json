@@ -1,7 +1,7 @@
 {
   "schema": "aura3d-showcase-evidence-checklist/1.0",
   "routeId": "showcase-skyline-runner",
-  "finalStatus": "release-ready candidate",
+  "finalStatus": "prototype-blocked",
   "requiredCommands": [
     "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset showcaseKenneyOobiPlatformerHero --asset showcaseKenneyVerdantPlatformerWorld",
     "pnpm exec playwright test tests/browser/showcase-route-primary-probes.spec.ts --reporter=line"
@@ -61,7 +61,7 @@
       "playableSurfaceLayoutValidated": true,
       "playableSurfaceMap": {
         "assetId": "showcaseKenneyVerdantPlatformerWorld",
-        "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+        "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
         "source": "asset-mesh-extracted",
         "surfaces": [
           {
@@ -294,7 +294,7 @@
       "characterWorldScaleCompatible": true,
       "styleCompatible": true,
       "primitivePrimaryWorldRejected": true,
-      "playableSurfaceEvidence": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
       "assetPairEvidence": {
         "category": "platformer",
         "assets": [
@@ -303,14 +303,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-        "screenshotSha256": "sha256-2028977a8c39901cbcf72e9d053b38e1bd85ede8f30614349a7c23f1798f4d23",
+        "screenshotSha256": "sha256-d4f022a76741f420a477f38eb55c34667dcc317fcbf90e70604546f0cb7488b9",
         "geometryEvidence": {
           "category": "platformer",
           "kind": "platformer-playable-surface-map",
           "source": "asset-mesh-extracted",
-          "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-2028977a8c39901cbcf72e9d053b38e1bd85ede8f30614349a7c23f1798f4d23",
+          "routePrimaryScreenshotSha256": "sha256-d4f022a76741f420a477f38eb55c34667dcc317fcbf90e70604546f0cb7488b9",
           "assets": [
             {
               "id": "showcaseKenneyOobiPlatformerHero",
@@ -318,7 +318,7 @@
             },
             {
               "id": "showcaseKenneyVerdantPlatformerWorld",
-              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+              "hash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"
             }
           ]
         },
@@ -364,5 +364,13 @@
       "requiresSuitabilityReason": true
     }
   },
-  "blockers": []
+  "blockers": [
+    "evidence:gameplay-proof:platformer:checkpoint-missing",
+    "evidence:gameplay-proof:platformer:hazard-respawn-missing",
+    "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
+    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
+    "evidence:deploy-artifact:not-passing",
+    "evidence:deploy-artifact:has-warnings",
+    "evidence:deploy-artifact:has-failures"
+  ]
 }

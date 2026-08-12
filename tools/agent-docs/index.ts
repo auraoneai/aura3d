@@ -32,6 +32,7 @@ const pathBTerms = [
 ].map((term) => new RegExp(escapeRegExp(term)));
 const docsText = docs.map((path) => `${path}\n${readFileSync(path, "utf8")}`).join("\n\n");
 const llmsText = readFileSync("llms.txt", "utf8");
+const publicLlmsText = readFileSync("public/llms.txt", "utf8");
 const cliSource = readFileSync("packages/aura3d-cli/src/cli.ts", "utf8");
 const sourceTemplates = [...CREATE_AURA3D_TEMPLATES].sort();
 const sourceTemplateValues: readonly string[] = sourceTemplates;
@@ -49,6 +50,11 @@ const agentSimulation = runAgentSimulation(llmsText);
 const checks: ReleaseCheck[] = [
   ...docs.map((path) => existsCheck(path)),
   { id: "llms-size", pass: statSync("llms.txt").size < 25_000, detail: `llms.txt is ${statSync("llms.txt").size} bytes` },
+  {
+    id: "public-llms-matches-canonical",
+    pass: publicLlmsText === llmsText,
+    detail: publicLlmsText === llmsText ? "public/llms.txt matches canonical llms.txt byte-for-byte" : "public/llms.txt is stale"
+  },
   fileIncludes("llms.txt", ["npx create-aura3d@latest", "model(assets.robot)", "Do not invent asset paths"], "llms executable patterns"),
   fileIncludes("docs/agents/api-surface.md", ["createAuraApp", "@aura3d/react", "model(assets.robot)"], "api docs current"),
   noFileMatches(docs, pathBTerms, "agent docs no removed runtime copy"),

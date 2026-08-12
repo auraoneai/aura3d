@@ -69,7 +69,7 @@ renderer.dispose();       // renderer-owned targets, device, remaining caches
 The package export map and declarations under `@aura3d/rendering`,
 `@aura3d/rendering/lean-runtime`, and `@aura3d/rendering/webgpu` are public API.
 Aura3D applies semantic versioning to those exported names and TypeScript
-signatures: a 1.6 patch may fix behavior without intentionally breaking the
+signatures: a 2.0 patch may fix behavior without intentionally breaking the
 contract; a minor may add optional capabilities; removing or incompatibly
 changing an exported contract requires a major version and migration notes.
 The root `@aura3d/engine/rendering` compatibility entry follows the same rule.

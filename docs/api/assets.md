@@ -358,9 +358,9 @@ The readiness commands emit JSON with:
 
 Use this JSON in launch evidence, PRD checklists, and deploy gates. Only mark a visual-quality task complete after the route has actual visual proof.
 
-## 1.0.5 animation and editor evidence
+## 2.0 animation and editor evidence
 
-Aura3D 1.0.5 animation, editor, and visual scripting work needs stronger asset
+Aura3D 2.0 animation, editor, and visual scripting work needs stronger asset
 evidence than a static model route. Character, animation, animation, and editor
 assets must carry enough metadata for agents to choose real clips and morph
 targets without guessing.

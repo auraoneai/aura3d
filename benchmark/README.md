@@ -1,42 +1,42 @@
-# Aura3D vs low-level renderer code Benchmark
+# Aura3D 2.0 benchmark fixtures
 
-This directory is the release proof package for Aura3D.
+This directory contains executable benchmark inputs and runner utilities. It is
+not the public Three.js parity claim and it does not decide release readiness.
+Current competitive conclusions come from the installed-package head-to-head
+reports and the documentation under `docs/project/parity/threejs/`.
 
-The benchmark answers one question:
+## Inputs
 
-> Can AI coding agents produce better browser 3D apps with Aura3D than with low-level renderer code on the same prompts?
+- `workloads.json` is the machine-readable, frozen ten-workload agent benchmark
+  input. It replaces the former Markdown prompt packet.
+- `assets/sneaker.glb` is the only prompt-provided external asset and is allowed
+  only by the product-viewer workload.
+- `context/` contains frozen package/source context bundles. Their manifests and
+  hashes define the exact context; snapshot Markdown inside a bundle is input
+  data, not current repository guidance.
+- `runner/` contains finite setup, capture, validation, asset/source-audit,
+  visual-QA, and performance utilities.
 
-`UnifiedPRD.md` is the source of truth. This directory makes that plan executable by filename.
+## Current commands
 
-## Files
+```bash
+pnpm benchmark:guard-full
+pnpm benchmark:tarball-audit
+pnpm benchmark:validate-engine
+pnpm benchmark:render-material-quality
+pnpm benchmark:scene-kits
+pnpm benchmark:contact-sheet
+pnpm benchmark:visual-qa
+pnpm benchmark:performance-budgets
+```
 
-- `prompts/` contains the frozen 10 benchmark prompts.
-- `prompts/manifest.md` freezes prompt order and filenames.
-- `rubric.md` defines the frozen scoring rubric.
-- `protocol.md` defines the run protocol and anti-drift rules.
-- `context/` contains frozen Aura3D and low-level renderer code context bundles.
-- `runner/README.md` defines the machine, setup, prompt-delivery, runtime, and failure rules.
-- `metrics/README.md` defines every metric and winner calculation.
-- `engine/README.md` defines the non-agent engine parity benchmark.
-- `runs/README.md` defines the required output directory structure.
-- `scoring/README.md` defines the neutral scoring handoff.
-- `assets/README.md` documents the required product-viewer GLB fixture.
-- `assets/sneaker.glb` is required before Phase A can exit.
-- `results/template.md` is the required results format.
-- `results/engine-template.md` is the required engine result format.
-- `results/decision-template.md` is the required Phase C decision format.
-- `results/phase-a-signoff-template.md` is the required user sign-off format before Round 1 starts.
-- `results/amendment-template.md` is the required format for later PRD amendments.
+Each command documents its actual inputs in source and writes generated output
+under `benchmark/runs/` or `tests/reports/`. Generated screenshots, notes, and
+contact sheets are evidence artifacts, not maintained documentation.
 
-## Release Rule
+## Claim boundary
 
-Internal repo tools can support debugging, but they cannot score this benchmark and cannot decide release readiness. Scoring must be done by a neutral human reviewer or an opposite-vendor model using only the prompt, screenshot, code listing, and captured metrics.
-
-The prompt benchmark measures agent productivity and visual outcomes. The engine benchmark measures whether Aura3D remains competitive with hand-authored low-level renderer code scenes when the agent layer is removed from the comparison.
-
-## Status
-
-Phase A is not complete until every required file above exists, the context
-bundle hashes match, `assets/sneaker.glb` is committed from a clearly licensed
-source, and `gchahal1982` signs off in writing that the benchmark package is
-ready to run.
+Frozen historical contexts or results cannot establish current renderer,
+workflow, performance, or ecosystem parity. A current claim requires locked
+versions and companion packages, identical workload inputs, installed Aura3D
+tarballs, browser evidence, disclosed losses, and the current comparison gate.

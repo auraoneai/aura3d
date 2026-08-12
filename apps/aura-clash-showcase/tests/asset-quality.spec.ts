@@ -15,6 +15,8 @@ type AuraAssetManifest = {
     clips?: readonly unknown[];
     skeleton?: unknown;
     bounds?: unknown;
+    nodeNames?: readonly string[];
+    hierarchy?: { meshCount?: number };
   }>;
 };
 
@@ -37,6 +39,17 @@ test("Aura Clash final fighter assets are distinct, licensed, animated, and fetc
     expect(JSON.stringify(entry).toLowerCase(), `${key} must include animation metadata`).toMatch(/clip|animation|skeleton|skin/);
     expect(JSON.stringify(entry).toLowerCase(), `${key} must include bounds metadata`).toMatch(/bounds|radius|height|center/);
   }
+
+  const player = manifest.assets?.find((asset) => asset.id === "auraClashPlayerRig");
+  const rival = manifest.assets?.find((asset) => asset.id === "auraClashRivalRig");
+  expect(player?.nodeNames).toEqual(expect.arrayContaining([
+    "auraClashPlayerRig_open-head_Eyebrows",
+    "auraClashPlayerRig_open-head_Eyes",
+    "auraClashPlayerRig_open-head_Superhero_Female",
+    "auraClashPlayerRig_hair_Hair_Buns"
+  ]));
+  expect(player?.hierarchy?.meshCount).toBe(13);
+  expect(rival?.hierarchy?.meshCount).toBe(9);
 
   const statuses = await page.evaluate(async (urls) => Promise.all(urls.map(async (url) => {
     const response = await fetch(url);

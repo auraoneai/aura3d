@@ -35,7 +35,8 @@
  * `unmeasured` with a reason and is **never scored**.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "..", "..");
@@ -226,27 +227,67 @@ function countDependencies(source: string): readonly string[] {
   return [...packages].sort();
 }
 
-/** Three fresh `tsc --noEmit` processes; report the median and retain all samples. */
-function typecheckMs(entry: string): { readonly ms: number; readonly samplesMs: readonly number[]; readonly ok: boolean } {
+/**
+ * Three fresh `tsc --noEmit` processes; report the median and retain all samples.
+ *
+ * Each entry receives its own temporary project that extends the repository's authoritative
+ * TypeScript configuration. That keeps the comparison scoped to one scenario while preserving
+ * the package paths and compiler contract under which the committed Aura3D examples are meant
+ * to compile. A compile failure is a report failure, not merely another timing sample.
+ */
+function typecheckMs(entry: string): {
+  readonly ms: number;
+  readonly samplesMs: readonly number[];
+  readonly ok: boolean;
+  readonly errors: readonly string[];
+} {
   const samplesMs: number[] = [];
+  const errors: string[] = [];
   let ok = true;
-  for (let sample = 0; sample < 3; sample += 1) {
-    const started = Date.now();
-    try {
-      execFileSync(
-        "npx",
-        ["tsc", "--noEmit", "--skipLibCheck", "--target", "es2022", "--module", "esnext", "--moduleResolution", "bundler", "--strict", entry],
-        { cwd: repoRoot, stdio: "pipe", encoding: "utf8" }
-      );
-    } catch {
-      // A non-zero exit still yields a timing, and the entry compiling standalone is not the claim
-      // being made here — the monorepo `pnpm typecheck` is what gates correctness.
-      ok = false;
+  const projectDirectory = mkdtempSync(join(tmpdir(), "aura3d-developer-friction-"));
+  const projectPath = join(projectDirectory, "tsconfig.json");
+  writeFileSync(
+    projectPath,
+    `${JSON.stringify({
+      extends: join(repoRoot, "tsconfig.base.json"),
+      compilerOptions: {
+        declaration: false,
+        declarationMap: false,
+        noEmit: true,
+        sourceMap: false,
+        types: ["node"],
+        typeRoots: [join(repoRoot, "node_modules/@types")]
+      },
+      files: [join(repoRoot, entry)]
+    }, null, 2)}\n`
+  );
+
+  try {
+    for (let sample = 0; sample < 3; sample += 1) {
+      const started = Date.now();
+      try {
+        execFileSync("npx", ["tsc", "--project", projectPath], {
+          cwd: repoRoot,
+          stdio: "pipe",
+          encoding: "utf8"
+        });
+      } catch (error) {
+        ok = false;
+        const failure = error as { readonly stdout?: string; readonly stderr?: string; readonly message?: string };
+        const detail = [failure.stdout, failure.stderr, failure.message]
+          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          .join("\n")
+          .trim();
+        errors.push(detail || `TypeScript exited non-zero for ${entry} sample ${sample + 1}.`);
+      }
+      samplesMs.push(Date.now() - started);
     }
-    samplesMs.push(Date.now() - started);
+  } finally {
+    rmSync(projectDirectory, { recursive: true, force: true });
   }
+
   const ordered = [...samplesMs].sort((left, right) => left - right);
-  return { ms: ordered[Math.floor(ordered.length / 2)]!, samplesMs, ok };
+  return { ms: ordered[Math.floor(ordered.length / 2)]!, samplesMs, ok, errors };
 }
 
 function measureEntry(relativePath: string) {
@@ -261,7 +302,8 @@ function measureEntry(relativePath: string) {
     dependencyCount: dependencies.length,
     typecheckMs: compile.ms,
     typecheckSamplesMs: compile.samplesMs,
-    typecheckClean: compile.ok
+    typecheckClean: compile.ok,
+    typecheckErrors: compile.errors
   };
 }
 
@@ -289,14 +331,63 @@ function main(): void {
   });
 
   const gapReport = readGapReportLineCounts();
+  const failures: string[] = [];
+  for (const scenario of scenarios) {
+    if (!scenario.aura3d.typecheckClean) failures.push(`${scenario.id}: Aura3D entry does not typecheck cleanly.`);
+    if (!scenario.threejs.typecheckClean) failures.push(`${scenario.id}: Three.js entry does not typecheck cleanly.`);
+  }
+  if (gapReport.length === 0) failures.push("The external parity gap report supplied no measured workflow rows.");
+  if (unmeasured.length > 0) failures.push(`Unmeasured required fields: ${unmeasured.map((field) => field.field).join(", ")}.`);
+
+  const startupAuraMs = startup.aura3d.runtimeStartupToFirstFrameMs.median!;
+  const startupThreeMs = startup.threejs.runtimeStartupToFirstFrameMs.median!;
+  const coldInstallAuraMs = install.summary.cold.aura3d.medianMs;
+  const coldInstallThreeMs = install.summary.cold.threejs.medianMs;
+  const warmInstallAuraMs = install.summary.warm.aura3d.medianMs;
+  const warmInstallThreeMs = install.summary.warm.threejs.medianMs;
+
+  const observedLosses = [
+    ...scenarios.flatMap((scenario) => scenario.aura3d.typecheckMs > scenario.threejs.typecheckMs ? [{
+      metric: `${scenario.id}TypecheckMs`,
+      aura3d: scenario.aura3d.typecheckMs,
+      threejs: scenario.threejs.typecheckMs,
+      delta: scenario.aura3d.typecheckMs - scenario.threejs.typecheckMs,
+      interpretation: `Aura3D's measured median typecheck time is slower for ${scenario.label}.`
+    }] : []),
+    ...(startupAuraMs > startupThreeMs ? [{
+      metric: "runtimeStartupToFirstFrameMs",
+      aura3d: startupAuraMs,
+      threejs: startupThreeMs,
+      delta: Number((startupAuraMs - startupThreeMs).toFixed(3)),
+      interpretation: "Aura3D's measured runtime construction-to-first-frame median is slower. Bundle download and module evaluation are excluded."
+    }] : []),
+    ...(coldInstallAuraMs > coldInstallThreeMs ? [{
+      metric: "coldInstallToFirstCubeMs",
+      aura3d: coldInstallAuraMs,
+      threejs: coldInstallThreeMs,
+      delta: Number((coldInstallAuraMs - coldInstallThreeMs).toFixed(3)),
+      interpretation: "Aura3D's packed release candidate is slower from a cold install through a browser-verified first cube."
+    }] : []),
+    ...(warmInstallAuraMs > warmInstallThreeMs ? [{
+      metric: "warmInstallToFirstCubeMs",
+      aura3d: warmInstallAuraMs,
+      threejs: warmInstallThreeMs,
+      delta: Number((warmInstallAuraMs - warmInstallThreeMs).toFixed(3)),
+      interpretation: "Aura3D's packed release candidate is slower from a warm install through a browser-verified first cube."
+    }] : [])
+  ];
 
   const report = {
     schema: "aura3d-developer-friction/1.0",
+    pass: failures.length === 0,
+    failures,
     generatedAt: new Date().toISOString(),
     method:
       "Measured on the committed bundle-scenario entries, one per engine per scenario, so friction and bundle size " +
       "describe the same apps. Authored lines exclude blanks and comments, because the Aura3D entries carry long " +
-      "explanatory headers that would otherwise count as developer effort in Aura3D's favour.",
+      "explanatory headers that would otherwise count as developer effort in Aura3D's favour. Each entry is typechecked " +
+      "as the only root file in a temporary project extending tsconfig.base.json, preserving the real workspace package paths " +
+      "and Node ambient types used by the workspace source graph. Packed declaration correctness is gated separately by check:public-api.",
     scenarios,
     gapReportWorkflows: gapReport,
     runtimeStartupToFirstFrame: {
@@ -316,6 +407,7 @@ function main(): void {
       summary: install.summary,
       samples: install.samples
     },
+    observedLosses,
     unmeasured,
     summary: {
       scenariosWhereAura3dNeedsFewerLines: scenarios.filter((scenario) => scenario.aura3dFewerLines).length,
@@ -366,7 +458,14 @@ function main(): void {
       `${install.summary.warm.threejs.medianMs}ms Three.js (median of ${install.summary.warm.aura3d.sampleCount})`
   );
   console.log(`unmeasured fields    : ${report.unmeasured.map((field) => field.field).join(", ")}`);
+  console.log(`observed losses      : ${report.observedLosses.map((loss) => loss.metric).join(", ") || "none"}`);
+  console.log(`result               : ${report.pass ? "PASS" : "FAIL"}`);
   console.log("\nreport: tests/reports/developer-friction.json");
+
+  if (!report.pass) {
+    for (const failure of report.failures) console.error(`FAIL: ${failure}`);
+    process.exitCode = 1;
+  }
 }
 
 main();

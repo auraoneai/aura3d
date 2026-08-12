@@ -1,14 +1,19 @@
 import { game } from "@aura3d/engine";
-import { gameGeometryContract } from "./generated/game-geometry";
-import { createSkylineLevel } from "./level";
+import {
+  SKYLINE_AUTHORED_PLAYABLE_SECONDS,
+  SKYLINE_MAX_TARGET_PLAYABLE_SECONDS,
+  SKYLINE_MIN_PLAYABLE_SECONDS,
+  createSkylineLevel
+} from "./level";
 
 /**
- * Deterministic 60-second level proof for FS-103.
+ * Deterministic 180-second acceptance proof for the five-act Level 1.
  *
  * FS-103 requires "at least 30 seconds of asset-aligned level duration and a 60-second" review run.
  * Duration is not observable in a screenshot and a mounted browser session cannot be replayed
  * deterministically, so the claim is proven by driving the *public* `game.platformer` kit with the
- * route's own asset-bound level over a full 3,600-frame window and recording what happens.
+ * route's own asset-bound level over the full 10,800-frame acceptance window and recording
+ * the exact physical finish frame.
  *
  * This mirrors the Blockfall replay proof and the Turbo race proof, and carries the same boundary:
  * it proves the kit sustains the level for the required duration under the route's real
@@ -16,8 +21,8 @@ import { createSkylineLevel } from "./level";
  * suite covers separately.
  */
 
-/** 60 seconds at 60 Hz. */
-export const LEVEL_PROOF_FRAMES = 3600;
+/** Three minutes at 60 Hz: the upper edge of the promised normal-play window. */
+export const LEVEL_PROOF_FRAMES = 10800;
 const STEP_SECONDS = 1 / 60;
 
 export interface SkylineLevelProof {
@@ -51,6 +56,7 @@ export interface SkylineLevelProof {
     readonly collectiblesBanked: boolean;
     readonly checkpointsActivated: boolean;
     readonly sustainsMinimumDuration: boolean;
+    readonly completionFallsInsideTargetWindow: boolean;
     readonly resetReturnsToStart: boolean;
   };
 }
@@ -65,7 +71,7 @@ export interface SkylineLevelProof {
 const createProofLevel = createSkylineLevel;
 
 /**
- * Runs the level for a full 60-second window and reports only observed values.
+ * Runs the level for the full 180-second acceptance window and reports only observed values.
  *
  * The input policy is deterministic and deliberately simple: run right, and jump when grounded and
  * either blocked or approaching a gap. Because it is competent but not optimal it produces real
@@ -88,8 +94,8 @@ export function createSixtySecondLevelProof(): SkylineLevelProof {
     simulatedSeconds: Number((LEVEL_PROOF_FRAMES * STEP_SECONDS).toFixed(3)),
     frames: LEVEL_PROOF_FRAMES,
     deterministic,
-    minimumPlayableSeconds: 30,
-    authoredPlayableSeconds: gameGeometryContract.authoredSeconds,
+    minimumPlayableSeconds: SKYLINE_MIN_PLAYABLE_SECONDS,
+    authoredPlayableSeconds: SKYLINE_AUTHORED_PLAYABLE_SECONDS,
     metrics: {
       framesPlayable: run.framesPlayable,
       secondsPlayable: Number((run.framesPlayable * STEP_SECONDS).toFixed(3)),
@@ -111,9 +117,12 @@ export function createSixtySecondLevelProof(): SkylineLevelProof {
       landingReturnsToGround: run.landedAfterJump,
       collectiblesBanked: run.collectedCount > 0,
       checkpointsActivated: run.activatedCheckpointCount > 0,
-      // Measured, not assumed: the level must remain playable for at least the 30-second floor,
+      // Measured, not assumed: the level must remain playable for at least the extended floor,
       // either by still running at that mark or by being completed after it.
-      sustainsMinimumDuration: run.framesPlayable * STEP_SECONDS >= 30,
+      sustainsMinimumDuration: run.framesPlayable * STEP_SECONDS >= SKYLINE_MIN_PLAYABLE_SECONDS,
+      completionFallsInsideTargetWindow:
+        run.finishFrame >= SKYLINE_MIN_PLAYABLE_SECONDS / STEP_SECONDS
+        && run.finishFrame <= SKYLINE_MAX_TARGET_PLAYABLE_SECONDS / STEP_SECONDS,
       resetReturnsToStart: run.resetStatus === "playing" && run.resetScore === 0
     }
   };
@@ -122,6 +131,8 @@ export function createSixtySecondLevelProof(): SkylineLevelProof {
 function simulate() {
   const level = createProofLevel();
   const platformer = game.platformer(level);
+  const platforms = [...(level.platforms ?? [])].sort((left, right) => left.x - right.x);
+  const hazards = [...(level.hazards ?? [])].sort((left, right) => left.x - right.x);
 
   let snapshot = platformer.snapshot();
   const startX = snapshot.player.x;
@@ -136,34 +147,61 @@ function simulate() {
   let jumpCooldown = 0;
 
   for (let frame = 0; frame < LEVEL_PROOF_FRAMES; frame += 1) {
-    // Jump on a fixed cadence whenever grounded, with a cooldown long enough that the hero spends
-    // real time running on the ground between jumps. A shorter cooldown re-jumped on the single
-    // frame that ground contact was reported, which made the run look permanently airborne
-    // (measured 95 grounded frames against 3,505 airborne) even though nothing was wrong with the
-    // kit. A cadence rather than a geometry lookahead keeps the policy deterministic.
-    const wantJump = snapshot.player.grounded && jumpCooldown <= 0;
-    jumpCooldown = wantJump ? 90 : jumpCooldown - 1;
-
-    // Explore the level rather than sprinting to the goal. Holding `moveX: 1` for the whole window
-    // reaches the finish in ~13.8 s, which measures how fast the level *can* be rushed, not whether
-    // it sustains the authored 30 seconds of play. Alternating direction traverses the same
-    // asset-aligned geometry at review pace, which is what the duration claim is about.
-    const sweepPhase = Math.floor(frame / 450) % 2;
-    const moveX = sweepPhase === 0 ? 1 : -1;
+    // Use the shipped platform geometry to jump near an edge or into a rising step. The former fixed
+    // cadence happened to miss the bridge into district two on every retry and therefore proved only
+    // the first 15 units of a 66-unit course. This policy is still deterministic, but it demonstrates
+    // that an ordinary forward player can traverse the actual section joins.
+    const currentSurfaceIndex = platforms.findIndex((surface) => {
+      const top = surface.y + surface.height;
+      return snapshot.player.x >= surface.x - 0.04
+        && snapshot.player.x <= surface.x + surface.width + 0.04
+        && Math.abs(snapshot.player.y - top) <= 0.08;
+    });
+    const currentSurface = platforms[currentSurfaceIndex];
+    const nextSurface = currentSurfaceIndex >= 0 ? platforms[currentSurfaceIndex + 1] : undefined;
+    const edgeDistance = currentSurface
+      ? currentSurface.x + currentSurface.width - snapshot.player.x <= 0.38
+      : false;
+    const nextGap = currentSurface && nextSurface
+      ? nextSurface.x - (currentSurface.x + currentSurface.width)
+      : 0;
+    const risingStep = currentSurface && nextSurface
+      ? nextSurface.y + nextSurface.height > currentSurface.y + currentSurface.height + 0.08
+      : false;
+    const upcomingHazard = hazards.find((hazard) => {
+      const distance = hazard.x - snapshot.player.x;
+      // At 1.1 units/second the 0.32-second jump apex lands roughly 0.35 units
+      // after launch. Triggering farther away puts the hero back below the
+      // sentry collider by the time their horizontal bounds overlap.
+      return distance >= 0 && distance <= 0.28;
+    });
+    const routeJump = edgeDistance && (nextGap > 0.05 || risingStep);
+    const wantJump = snapshot.player.grounded && (
+      Boolean(upcomingHazard) ||
+      (jumpCooldown <= 0 && (routeJump || currentSurfaceIndex < 0))
+    );
+    jumpCooldown = wantJump ? 18 : jumpCooldown - 1;
 
     snapshot = platformer.step(STEP_SECONDS, {
-      moveX,
+      // The duration proof now runs straight toward the finish. The former proof reversed direction
+      // to pad a 13.8-second strip to 30 seconds; that measured the input policy, not the level.
+      moveX: 1,
       jumpPressed: wantJump,
       jumpHeld: wantJump || jumpCooldown > 84
     });
 
     if (wantJump) jumpsLaunched += 1;
-    if (snapshot.player.grounded) {
-      groundedFrames += 1;
-      if (sawAirborne) landedAfterJump = true;
-    } else {
-      airborneFrames += 1;
-      sawAirborne = true;
+    // Completed/failed snapshots are frozen terminal states, not locomotion frames. Counting the
+    // remainder of the 180-second audit window as airborne made the grounding ratio depend on how
+    // early a course finished rather than on the traversal itself.
+    if (snapshot.status === "playing") {
+      if (snapshot.player.grounded) {
+        groundedFrames += 1;
+        if (sawAirborne) landedAfterJump = true;
+      } else {
+        airborneFrames += 1;
+        sawAirborne = true;
+      }
     }
 
     maxTraversalX = Math.max(maxTraversalX, snapshot.player.x - startX);

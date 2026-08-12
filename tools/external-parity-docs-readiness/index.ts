@@ -8,16 +8,16 @@ const requiredFiles = [
   "docs/project/competitive-positioning.md",
   "docs/project/getting-started.md",
   "docs/project/tutorials-product-configurator.md",
-  "docs/project/tutorials-product-configurator.md",
-  "docs/project/getting-started.md",
   "docs/project/parity/threejs/parity-matrix.md",
   "docs/project/migration.md",
+  "MIGRATION-2.0.md",
   "docs/project/threejs-superiority-status.md",
-  "docs/project/parity/threejs/status.md",
   "docs/project/compatibility.md",
+  "docs/project/status/current-state.md",
   "docs/project/status/known-limits.md",
   "docs/project/release-process.md",
   "docs/api/app-api.md",
+  "docs/api/public-api.md",
   "README.md",
   "tools/external-parity-docs-readiness/index.ts",
   "tools/external-parity-claim-registry/index.ts",
@@ -33,27 +33,27 @@ for (const file of requiredFiles) check(`file:${file}`, existsSync(resolve(file)
 
 const docs = requiredFiles.filter((file) => file.endsWith(".md") || file === "README.md").map(read).join("\n");
 const normalizedDocs = docs.toLowerCase();
-check("product-positioning", docs.includes("A3D Visual Engine External parity") && docs.includes("@aura3d/engine") && docs.includes("createA3DApp"), "Docs must state the product, package, and runtime API.");
+check("product-positioning", docs.includes("Aura3D 2.0") && docs.includes("@aura3d/engine") && docs.includes("createAuraApp"), "Docs must state the current product, package, and public runtime API.");
 check(
   "named-product-docs",
   [
     "Getting started",
-    "Product Viewer Guide",
-    "Material Authoring Guide",
-    "Asset Pipeline Guide",
-    "HDR And IBL Guide",
-    "Three.js Migration Guide",
-    "Release Notes"
+    "Product Configurator",
+    "typed assets",
+    "Migration",
+    "Known Limits",
+    "Three.js Comparison Status"
   ].every((phrase) => normalizedDocs.includes(phrase.toLowerCase())),
-  "Docs must include the named External parity product docs."
+  "Docs must include the current onboarding, product, migration, limits, and comparison surfaces."
 );
 check("evidence-paths", [
-  "tests/reports/external-parity-threejs-visual-parity.json",
-  "tests/reports/external-parity-external-consumer.json",
-  "tests/reports/external-parity-visual-quality.json"
+  "tests/reports/current-head-to-head-installed/report.json",
+  "tests/reports/current-head-to-head/aggregate.json",
+  "tests/reports/packed-migration-consumer.json",
+  "tests/reports/installed-template-lifecycle.json"
 ].every((path) => docs.includes(path)), "Docs must cite current evidence reports.");
-check("claim-boundary", normalizedDocs.includes("full three.js api compatibility remains blocked") && normalizedDocs.includes("unity replacement remains blocked") && normalizedDocs.includes("unreal replacement remains blocked"), "Docs must preserve blocked claim boundaries.");
-check("readme-external-parity", read("README.md").includes("pnpm external-parity:release") && read("README.md").includes("external-parity:package") && read("README.md").includes("external-parity:docs"), "README must document the External parity gates and release boundary.");
+check("claim-boundary", normalizedDocs.includes("not a universal ecosystem-parity claim") && normalizedDocs.includes("not currently a unity or unreal replacement") && normalizedDocs.includes("comparisoncomplete: false"), "Docs must preserve the current scoped comparison and blocked replacement boundaries.");
+check("readme-release-boundary", read("README.md").includes("pnpm run check:release") && read("README.md").includes("not a universal parity claim"), "README must document the canonical release gate and bounded comparison result.");
 
 const claimRegistry = json("tests/reports/external-parity-claim-registry.json");
 check("claim-registry", claimRegistry?.pass === true, "Claim registry report must pass.");
@@ -65,8 +65,8 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "External parity Milestone 18 documentation and claim registry are ready."
-    : "External parity Milestone 18 documentation and claim registry are incomplete.",
+    ? "Aura3D 2.0 comparison documentation and claim registry are current."
+    : "Aura3D 2.0 comparison documentation and claim registry are incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "sha256": "sha256-3c4f9c3617ed80c6ae79609f15678471e3e759fa9f59bea40265819467b65f16",
+    "sha256": "sha256-0023667efabc29ee90f84b98df0f76fdd061b460eb25b27c459270ef1bc8aaec",
     "width": 1440,
     "height": 900
   },
@@ -19,9 +19,14 @@
   },
   "assets": [
     {
-      "id": "turboRaceCar",
-      "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
-      "evidenceHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935"
+      "id": "showcaseCc0FormulaRaceCar",
+      "manifestHash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3",
+      "evidenceHash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3"
+    },
+    {
+      "id": "showcaseCcByFormulaOpponent",
+      "manifestHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+      "evidenceHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958"
     },
     {
       "id": "showcaseTsukubaCircuit",
@@ -50,7 +55,7 @@
         "requiresZeroPresentationOffset": true
       },
       "measured": {
-        "overlapRatio": 0.4741,
+        "overlapRatio": 1,
         "averageBindingError": 0,
         "modelAnchorCount": 3,
         "sceneAssetHashMatches": true,
@@ -69,8 +74,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0,
-        "screenContactDistance": 65.33613199447909,
-        "screenContactDistanceRatio": 0.3187
+        "screenContactDistance": 67.55340332655341,
+        "screenContactDistanceRatio": 0.3057
       },
       "blockers": []
     },
@@ -85,7 +90,7 @@
         "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.2428,
+        "playSpaceAreaRatio": 0.6894,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
@@ -103,10 +108,10 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.2278,
+        "subjectWorldRatio": 0.2456,
         "characterScaleRatio": "not-required",
         "projectedTargetHeight": "not-required",
-        "renderedSubjectHeight": 205,
+        "renderedSubjectHeight": 221,
         "scaleDelta": "missing"
       },
       "blockers": []

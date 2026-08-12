@@ -1,86 +1,125 @@
-# Visual review: the gate now works — here is what signing takes
+# Aura3D 2.0 exact-artifact visual sign-off
 
-The gate was **broken, not merely unsigned**. It is now fixed at the engine and tooling layers, and a
-signature will hold. Full analysis in `GameEngine-PRD.md` §3.1.
+Date: 2026-08-11
 
-## What was wrong
+Status: independent human review pending
 
-Re-running `tests/browser/showcase-library.spec.ts` with **no code change** produced different bytes
-for **14 of 29** screenshots. Approval binds to `sha256` of those bytes, so every regeneration killed a
-still-correct signature. The only way to keep the gate green was never to re-run the spec — which is
-why it went red before 1.5.2 and the release shipped anyway.
+This is the operational sign-off contract for Aura3D 2.0. Automated screenshot,
+route-health, interaction, subject-mask, gameplay, and deploy checks can prepare
+a review packet, but they cannot grant aesthetic approval. Internal inspection
+by the implementation agent also does not satisfy the independent-human gate.
 
-Four separable defects, all fixed:
+## Routes requiring a verdict
 
-| # | Defect | Fix |
-|---|---|---|
-| 1 | No way to reach a running app; capture could only photograph an arbitrary frame | `auraAppRegistry` (`pauseAll` / `resumeAll` / `settle`), on `globalThis` so no route opt-in is needed |
-| 2 | `settle(30)` meant "30 steps after however long loading took" | `settle` rewinds the runtime clock first |
-| 3 | `step(dt)` rendered at wall-clock time, so time-driven shaders varied | renders at simulated time, in **both** render paths |
-| 4 | Byte equality is unachievable even when settled (GPU rasterisation is not bit-reproducible) | `perceptualSignature` fallback in the gate |
+The four non-game release candidates require independent review:
 
-## Measured result
+- Product Configurator
+- Smart City Control
+- Cinematic Architecture
+- Digital Twin Operations
 
-Release-candidate screenshot stability across **three independent runs**:
+Each rebuilt game requires its own verdict; approval of the four routes above
+cannot be inherited:
 
-| stage | release candidates stable | all screenshots |
-|---|---|---|
-| before this work | 1 of 8 | 15 of 29 |
-| registry + clock rewind | 7 of 8 | 22 of 29 |
-| + production-path fix | **8 of 8** | 24 of 29 |
+- Blockfall Reactor
+- Skyline Runner
+- Turbo Drift Circuit
 
-And with perceptual signatures recorded against the owner's committed approval verbatim — no verdict,
-reviewer or scope altered — screenshot-binding failures fell **30 → 4**, total **45 → 19**.
+Aura Clash remains a separately tracked development showcase. It requires the
+same exact-artifact review before any site or release copy can call it approved
+or flagship quality.
 
-## What signing now requires
+## Artifact binding
 
-The remaining 19 failures are **honest and expected**: 7 stale-source plus 4 source/route-health
-hashes, because this branch genuinely changed route source, and 4 not-approved rollups downstream of
-those. Changed code *should* require a fresh look. What no longer happens is a signature dying because
-a screenshot was re-rendered.
+`docs/project/showcase-visual-review.json` is the machine-readable approval
+record for the seven route-library candidates. Before review, run:
 
-1. Run `node tools/showcase-library/refresh-visual-review-baseline.mjs`.
-   It rebinds every source, route-health, screenshot hash **and perceptual signature** to current
-   artifacts. It deliberately resets `reviewer` to `pending` and all verdicts to `needs-work` — it
-   cannot grant approval, by design.
-2. Review the four public release candidates against their current screenshots in
-   `tests/reports/showcase-library-screenshots/`:
-   `showcase-product-configurator`, `showcase-smart-city-control`, `showcase-cinematic-architecture`,
-   `showcase-digital-twin-ops`.
-3. In `docs/project/showcase-visual-review.json` set, for those four only:
-   - `verdict: "pass"`, `approvalScope: "public-release"`, `blockingIssues: []`
-   - and at the top level `reviewer: { id, name, kind: "human" }`, `overallVerdict: "pass"`, a
-     substantive `summary`.
-   Leave every hash and `perceptualSignature` exactly as the tool wrote them — they are what bind your
-   approval to these pixels.
-4. **Do not approve** `showcase-blockfall-reactor`, `showcase-skyline-runner` or
-   `showcase-turbo-drift-circuit`. They are `prototype-blocked`; `allRoutesOk` is expected to stay
-   `false` and the gate asserts that.
-5. Verify:
+```bash
+node tools/showcase-library/refresh-visual-review-baseline.mjs
+```
+
+The refresh binds each route to its current source, route-health record,
+screenshot hashes, and perceptual signatures. It deliberately resets the
+reviewer to `pending` and the verdicts to `needs-work`; a tool cannot manufacture
+human approval.
+
+Any change to route source, typed assets, generated asset metadata, camera,
+material, lighting, environment, interaction, responsive layout, or screenshot
+invalidates the affected verdict. Regenerate and review the complete affected
+packet after such a change.
+
+## Per-file review requirement
+
+The reviewer must open every original-resolution artifact individually. Contact
+sheets are navigation aids, not acceptance evidence. For each route, review all
+applicable files in these classes:
+
+- desktop, tablet, and phone full-page captures;
+- canvas-only captures;
+- meaningful interaction-final and reset captures;
+- temporal frames for animated routes;
+- subject-suppressed and subject-mask comparison images;
+- before/after and masked-difference images;
+- named gameplay states for game routes;
+- current same-workload Three.js pairs where the route makes a comparative
+  claim.
+
+Reject any blank/fallback frame, unintended clipping or stretch, illegible UI,
+misleading overlay, temporary/debug geometry, broken contact or grounding,
+missing primary subject, visually inert interaction, incoherent composition,
+unexplained Aura/Three material difference, or screenshot that disagrees with
+its evidence record.
+
+## Game-specific review
+
+Blockfall must visibly prove a readable 10×20 board, active-piece entry,
+hold/next queues, line-clear feedback, game-over, reset, and progression without
+the former pink header block or white sweep artifact.
+
+Skyline must be reviewed as a complete five-act Level 1, not as a single poster.
+The packet must show traversal, jump and landing, sentries, collection chain,
+checkpoint, fall/respawn, district progression, and finish. Automated duration
+proof must retain the 120–180-second completion window without satisfying the
+window by waiting at the finish.
+
+Turbo must show forward chase play, a distinct rival, ordered gates, lap/race
+progression, drift feedback, off-track recovery, and four wheels visibly
+grounded on the circuit in normal and drift states. The route remains an arcade
+handling claim; approval must not be worded as physical tyre or motorsport
+simulation proof.
+
+Aura Clash must preserve the improved typed fighters and verify readable
+silhouettes, animation states, hit/guard/special feedback, arena composition,
+HUD hierarchy, and meaningful combat progression. It cannot be approved from a
+poster-only or idle-only frame.
+
+## Approval record
+
+For every approved route, record:
+
+- reviewer identifier and name;
+- `kind: "human"`;
+- review date;
+- exact source commit and lock hash;
+- per-route verdict;
+- approval scope;
+- blocking issues, which must be empty for a pass;
+- a substantive observation that refers to the inspected pixels and
+  interactions;
+- the artifact hashes written by the refresh tool, unchanged.
+
+Use `verdict: "pass"` only when the exact artifacts satisfy the route's stated
+scope. Keep `needs-work` and list concrete blockers otherwise. A pass is not a
+universal renderer, game-engine, performance, ecosystem, or Three.js-parity
+claim.
+
+## Verification after review
 
 ```bash
 node tools/showcase-library/build-and-check.mjs
-pnpm exec vitest run tests/unit/tools/showcase-route-gates.test.ts
+pnpm exec vitest run tests/unit/tools/showcase-route-gates.test.ts --reporter=dot
 ```
 
-## Verified independently of the gate
-
-Both flagship game routes were inspected directly: **Turbo Drift shows the car's wheels on the tarmac
-and `STATUS Ready`** (WS-4.1 and WS-5.3 visibly live), and Skyline renders the hero grounded with
-collectibles and gates. `showcase-library` passes 6/6; `check:quality-gates` reports 21 pass / 0 fail /
-0 unproven; `check:game-runtime` 4 gates + 68 tests.
-
-## Known remaining drift, not hidden
-
-Four non-candidate screenshots still vary between runs: `webgpu-particle-lab` (desktop and mobile),
-`material-asset-inspector` mobile, `skyline-runner` desktop. Two are `prototype-blocked` game routes.
-The particle lab drives an emitter hard enough that residual float ordering still moves signature
-cells. I could have made these pass by coarsening the signature; that weakens the gate for every route,
-so I did not.
-
-## The other release decision
-
-`check:bundle-size` fails on a pre-existing overrun: `core-agent-api` is 578,017 B gzip against an
-80,000 B budget. Measured at `v1.5.2` with the same instrument it was 567,890 B (7.10x), so this branch
-adds 1.8%. 1.5.2 shipped with that gate *crashing* rather than measuring, so 1.5.3 is the first release
-where the number is visible. The budget was deliberately not raised.
+The final release must then rerun the complete serial suites from the same
+commit. If that rerun changes any approved artifact, the approval is stale and
+must be repeated.

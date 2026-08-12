@@ -1,6 +1,6 @@
 # Quarantined experiments (negative-regression fixtures only)
 
-These three modules are **rejected** Aura3D 1.0.10 animation experiments. They are
+These three modules are **rejected pre-2.0 animation experiments**. They are
 kept here as historical / negative evidence only. They are **NOT** imported by
 `src/main.ts`, `index.html`, or any release-facing route, and they are **NOT**
 referenced by any release-facing npm script.

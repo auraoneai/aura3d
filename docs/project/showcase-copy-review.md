@@ -4,7 +4,7 @@ Date: 2026-06-18
 
 Scope reviewed:
 
-- `docs/project/plans/recovery-remediation-prd.md`
+- `docs/project/showcase/quality-gates.md`
 - `llms.txt`
 - `docs/project/showcase-launch-evidence.json`
 - `apps/showcase-index/src/main.ts`

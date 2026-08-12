@@ -31,7 +31,7 @@ describe("current showcase claims", () => {
       readFileSync("README.md", "utf8"),
       readFileSync("apps/aura-clash-showcase/README.md", "utf8"),
       readFileSync("docs/project/showcase/apps-classification.md", "utf8"),
-      readFileSync("docs/project/showcase/aura-clash-showcase-plan.md", "utf8")
+      readFileSync("docs/examples/aura-clash.md", "utf8")
     ].join("\n");
     expect(sources).toContain("development showcase");
     expect(sources).not.toMatch(/Aura Clash (?:is|as) (?:a )?(?:flagship|launch-ready|visually approved)/i);

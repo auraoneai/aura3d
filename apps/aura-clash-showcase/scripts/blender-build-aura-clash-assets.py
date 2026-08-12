@@ -15,80 +15,10 @@ scene_out = out_dir / "scenes"
 for path in [fighter_out, arena_out, scene_out]:
     path.mkdir(parents=True, exist_ok=True)
 
-fighter_defs = [
-    {
-        "id": "fighter-mara-volt",
-        "assetKey": "fighterMaraVolt",
-        "source": stage / "characters" / "base" / "Superhero_Female_FullBody.gltf",
-        "output": fighter_out / "fighter-mara-volt.glb",
-        "hair": stage / "characters" / "hair" / "Hair_Buns.gltf",
-        "scale": (1.04, 1.04, 1.04),
-        "tint": (0.00, 0.95, 0.72, 1.0),
-        "accent": (0.10, 0.65, 1.0, 1.0),
-        "action": "Melee_Hook",
-        "actionFrame": 0.50
-    },
-    {
-        "id": "fighter-rook-atlas",
-        "assetKey": "fighterRookAtlas",
-        "source": stage / "characters" / "base" / "Superhero_Male_FullBody.gltf",
-        "output": fighter_out / "fighter-rook-atlas.glb",
-        "hair": stage / "characters" / "hair" / "Hair_Buzzed.gltf",
-        "scale": (1.22, 1.22, 1.22),
-        "tint": (1.00, 0.68, 0.16, 1.0),
-        "accent": (0.12, 0.25, 0.95, 1.0),
-        "action": "Sword_Block",
-        "actionFrame": 0.52
-    },
-    {
-        "id": "fighter-nyx-vale",
-        "assetKey": "fighterNyxVale",
-        "source": stage / "characters" / "base" / "Superhero_Female_FullBody.gltf",
-        "output": fighter_out / "fighter-nyx-vale.glb",
-        "hair": stage / "characters" / "hair" / "Hair_Long.gltf",
-        "scale": (0.98, 0.98, 1.06),
-        "tint": (0.54, 0.18, 1.00, 1.0),
-        "accent": (0.00, 0.86, 1.0, 1.0),
-        "action": "NinjaJump_Start",
-        "actionFrame": 0.42
-    },
-    {
-        "id": "fighter-kade-ember",
-        "assetKey": "fighterKadeEmber",
-        "source": stage / "characters" / "base" / "Superhero_Male_FullBody.gltf",
-        "output": fighter_out / "fighter-kade-ember.glb",
-        "hair": stage / "characters" / "hair" / "Hair_SimpleParted.gltf",
-        "scale": (1.08, 1.08, 1.08),
-        "tint": (1.00, 0.22, 0.08, 1.0),
-        "accent": (1.00, 0.82, 0.25, 1.0),
-        "action": "Sword_Regular_A",
-        "actionFrame": 0.48
-    },
-    {
-        "id": "fighter-sable-iron",
-        "assetKey": "fighterSableIron",
-        "source": stage / "characters" / "base" / "Superhero_Female_FullBody.gltf",
-        "output": fighter_out / "fighter-sable-iron.glb",
-        "hair": stage / "characters" / "hair" / "Hair_BuzzedFemale.gltf",
-        "scale": (1.05, 1.05, 1.05),
-        "tint": (0.08, 0.12, 0.16, 1.0),
-        "accent": (0.70, 0.90, 1.0, 1.0),
-        "action": "Sword_Block",
-        "actionFrame": 0.62
-    },
-    {
-        "id": "fighter-jin-flux",
-        "assetKey": "fighterJinFlux",
-        "source": stage / "characters" / "base" / "Superhero_Male_FullBody.gltf",
-        "output": fighter_out / "fighter-jin-flux.glb",
-        "hair": stage / "characters" / "hair" / "Hair_SimpleParted.gltf",
-        "scale": (1.02, 1.02, 1.08),
-        "tint": (0.05, 0.30, 0.96, 1.0),
-        "accent": (0.95, 0.72, 0.24, 1.0),
-        "action": "NinjaJump_Start",
-        "actionFrame": 0.50
-    }
-]
+release_fighter_sources = {
+    "player": fighter_out / "aura-clash-player-rig.glb",
+    "rival": fighter_out / "aura-clash-rival-rig.glb",
+}
 
 arena_pieces = [
     ("Floor_4x4", (0, 0, 0), (4.2, 4.2, 1), 0),
@@ -620,8 +550,8 @@ def build_playable_scene():
         import_piece(*piece)
     stylize_city_materials()
     add_stage_backplate()
-    import_glb_instance(fighter_out / "fighter-mara-volt.glb", (-2.10, -1.42, 0.24), (4.25, 4.25, 4.25), math.radians(72))
-    import_glb_instance(fighter_out / "fighter-rook-atlas.glb", (2.10, -1.36, 0.24), (3.85, 3.85, 3.85), math.radians(-72))
+    import_glb_instance(release_fighter_sources["player"], (-2.10, -1.42, 0.24), (4.25, 4.25, 4.25), math.radians(72))
+    import_glb_instance(release_fighter_sources["rival"], (2.10, -1.36, 0.24), (3.85, 3.85, 3.85), math.radians(-72))
 
     aura_mat = make_emissive_material("AuraClash_Versus_Ring", (0.0, 1.0, 0.65, 1.0), 2.5)
     for x, name in [(-1.18, "Mara_Aura_Ring"), (1.22, "Rook_Aura_Ring")]:
@@ -724,32 +654,22 @@ def build_duel_stage():
     export_glb(scene_out / "aura-clash-duel-stage.glb")
 
 
-load_animation_actions()
-
-for fighter in fighter_defs:
-    build_fighter(fighter)
-
 build_arena()
-build_duel_stage()
-build_playable_scene()
 
 manifest = {
     "schema": "aura-clash.source-glbs/1.0",
     "builtAt": "2026-06-03",
     "outputs": [
-        {"id": fighter["id"], "assetKey": fighter["assetKey"], "path": str(fighter["output"].relative_to(app_root))}
-        for fighter in fighter_defs
-    ] + [
+        {"id": "aura-clash-player-rig", "assetKey": "auraClashPlayerRig", "path": "assets/source/fighters/aura-clash-player-rig.glb"},
+        {"id": "aura-clash-rival-rig", "assetKey": "auraClashRivalRig", "path": "assets/source/fighters/aura-clash-rival-rig.glb"},
         {"id": "arena-neon-downtown", "assetKey": "arenaNeonDowntown", "path": "assets/source/arenas/arena-neon-downtown.glb"},
-        {"id": "aura-clash-duel-stage", "assetKey": "auraClashDuelStage", "path": "assets/source/scenes/aura-clash-duel-stage.glb"},
-        {"id": "aura-clash-playable-scene", "assetKey": "auraClashPlayableScene", "path": "assets/source/scenes/aura-clash-playable-scene.glb"},
         {"id": "animation-library-1", "assetKey": "animationLibraryOne", "path": "assets/quaternius-source/selected/animations/UAL1_Standard.glb"},
         {"id": "animation-library-2", "assetKey": "animationLibraryTwo", "path": "assets/quaternius-source/selected/animations/UAL2_Standard.glb"}
     ],
     "notes": [
-        "Fighter GLBs are V1 source candidates derived from Quaternius Universal Base Characters and color/scale variations.",
-        "Arena GLB is a V1 source candidate composed from selected Downtown City MegaKit glTF pieces plus simple Aura Clash emissive signage/lights."
+        "The release player and rival rigs are generated first by build-animated-fighter-rigs.mjs from the provenance-pinned fantasy character source archive.",
+        "Arena and combined review GLBs use the same release rigs as the playable route; retired Quaternius prototype fighters are not regenerated."
     ]
 }
 (app_root / "assets" / "source" / "aura-clash-source-glbs.json").write_text(json.dumps(manifest, indent=2) + "\n")
-print(f"Built {len(fighter_defs)} fighter GLBs and 1 arena GLB into {out_dir.relative_to(repo_root)}")
+print(f"Built release-rig review scenes and arena GLBs into {out_dir.relative_to(repo_root)}")

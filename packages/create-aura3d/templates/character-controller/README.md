@@ -24,8 +24,21 @@ npm test         # route-health + screenshot
 
 For a grounded 3D capsule instead of the kinematic model, swap `stepCharacterSpeed` for
 `@aura3d/physics` `createFightingCharacterController()` and feed its resulting speed into the same
-locomotion kit. That requires a physics world + a rigged GLB character (see
-`docs/animation/runtime-support.md`).
+locomotion kit. The default scaffold deliberately does not install physical simulation. Opt in
+explicitly with the backend-neutral contract and the selected Rapier adapter:
+
+```bash
+npm run enable:physics
+```
+
+The script executes
+`npm install @aura3d/physics@2.0.0 @aura3d/physics-rapier@2.0.0`, so the
+large asynchronous physical backend is added only when this physical capsule
+path is selected and never enters the default kinematic scaffold transitively.
+
+That path requires a physics world plus a rigged GLB character (see
+`docs/animation/runtime-support.md`). Arcade/kinematic applications should retain the smaller
+default dependency set.
 
 ## Non-goals
 

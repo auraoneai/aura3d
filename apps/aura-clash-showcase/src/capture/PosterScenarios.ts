@@ -30,7 +30,7 @@ export const auraClashPosterScenarios: AuraClashPosterScenario[] = [
     ],
     evidenceRequirements: [
       "Capture metadata must include imageEvidence.nonblank=true.",
-      "The two-fighter GLB claim must resolve to typed asset manifest entries for assets.fighterMaraVolt and assets.fighterRookAtlas.",
+      "The two-fighter GLB claim must resolve to typed asset manifest entries for assets.auraClashPlayerRig and assets.auraClashRivalRig.",
       "This shot can support marketing review but cannot mark human visual approval automatically.",
     ],
     reviewCriteria: [

@@ -16,7 +16,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer, type ViteDevServer } from "vite";
-import { quantizeToonBand } from "@aura3d/rendering";
+import { quantizeToonBand } from "@aura3d/engine/rendering";
 // WS-2.3: the ffmpeg encoder is a Node-only entry point. These render scripts run under Node, so this
 // is the correct import; the browser barrel no longer carries `node:` builtins.
 import { createFfmpegFrameEncoderAdapter } from "@aura3d/engine/media-node";

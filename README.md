@@ -128,82 +128,23 @@ Three.js replacement.
   deprecation of older releases happen only after the final PRD gates pass.
   See `1.6-FINAL-PRD-Finishes.md` for the live evidence ledger.
 
-### What shipped in 1.5.2
+### Consolidated 2.0 outcomes
 
-- **Orthographic and isometric cameras on the public surface.** `camera.orthographic()`
-  and `camera.isometric()` join the safe agent API with an `orthographicSize` field, and
-  `@aura3d/rendering` gains `computeOrthographicCameraFrame` (bounds-derived) and
-  `computeOrthographicCameraView` (explicit frustum), selectable through
-  `RenderSource.cameraProjection`. Before this, renderer auto-framing could only build a
-  perspective frustum, so a scene that needed a parallel projection silently received a
-  perspective one — CAD and technical views, isometric games, floor plans, sprite bakes and
-  product turntables were all affected. `camera.isometric()` uses the true `atan(1/√2)`
-  elevation at which the three world axes project to equal screen lengths. Perspective
-  remains the default, so this is not a breaking change.
-- **`fitSizeToRegion()` for bounds-derived asset sizing.** Returns a `targetMaxDimension`
-  that sizes an asset to a chosen fraction of the region it occupies. Placement was already
-  bounds-derived through `resolveSemanticRegion`; sizing was not, so routes had no correct
-  alternative to inventing a scale multiplier that broke whenever the asset or scene
-  changed size.
-- **Per-row background estimation in foreground analysis.** Every showcase screenshot gate
-  measures silhouette extent, foreground ratio and subject centroid against a background
-  estimate. That estimate was a single average of the frame's four corners, which is wrong
-  for most of a frame that has a gradient sky: rows near the horizon were compared against
-  a colour sampled from the top of the frame, so sky pixels were admitted as subject and
-  every derived measurement was computed against an inflated mask. Background is now
-  estimated per row from the median of that row's left and right margins, which tracks a
-  vertical gradient and tolerates a prop or HUD edge intruding into one margin.
-- **Producer/verifier parity is pinned by equality.** `tools/showcase-library/png-foreground.mjs`
-  re-derives the same metrics from the written PNG; the two implementations must now agree
-  pixel-for-pixel across gradient, flat-background, off-centre-subject and HUD-crop cases.
-- **Aura Clash evidence route cites current artifacts.** Its evidence model pointed at
-  superseded proof files; every required signal now resolves to a field of the current schema.
-
-### What shipped in 1.5.1
-
-1.5.1 was a **product-remediation release**: three reported interaction defects and four
-reported game-runtime defects were root-caused at the library level and fixed with reusable
-systems, each backed by unit tests and a runtime probe rather than by a screenshot.
-
-- **Focus and selection (`focusObject`, `focusSemanticRegion`).** A focus indicator
-  rendered as a flat bar because Aura3D's torus is a ring in local **XY** with its tube
-  on **Z**, and a route scaled its ring-plane radius instead of its tube. The axis
-  convention is now published as `AURA_PRIMITIVE_AXES`, and indicator correctness is
-  asserted per result — circular in its own plane, thinned on the tube axis, enclosing
-  its target, callout outside it.
-- **World-anchored labels.** `labels.callout(...)` produced a valid node that nothing
-  drew: label rendering lived only in the canvas2d fallback, while every route with a
-  typed GLB takes the production WebGL2 path. Evidence counted label *nodes*, so reports
-  stayed green while the screen showed none. There is now a real screen-space label layer
-  in the production path, and `AuraDiagnostics.labels` reports what was actually placed.
-- **Asset-relative layout (`SpatialAnchoring`).** `placedBoundsFromAsset`, 19 bounds
-  anchors, normalized semantic regions, deterministic distribution and
-  `checkSpatialInvariants` replace literal helper coordinates that stopped matching their
-  asset.
-- **Vehicle chassis and AI driving.** A car pinned to a literal height cannot respond to
-  the road; `createVehicleChassis` resolves contact, suspension and attitude from four
-  contact points, deriving geometry from the asset's own bounds.
-  `createVehicleDriverAi` steers toward a look-ahead point on the racing line with
-  curvature-based corner speeds, so it turns into a corner rather than after it.
-- **Platformer motion solving.** `solvePlatformerMotion` derives gravity, jump velocity
-  and move speed from a level's own platform geometry; `validatePlatformerMotion` refuses
-  tuning inconsistent with it. A shipped level had a 5.76x jump overshoot that passed
-  every gate because the level was *solvable*.
-- **Frame-based combat.** `solveCombatFrameData` and `validateCombatFrameData` validate
-  frame data *as* frame data. A shipped move table had 12–32 active frames against 4–5
-  recovery, inverted from any real fighting game, so every move was safe on block.
-- **Application kits.** Five reusable kits — product configurator, digital twin,
-  architecture, smart city, cinematic. Each publishes a `capabilities` report naming what
-  it deliberately does **not** own.
-- **Scene queries.** Raycasts, sphere casts and ground probes reachable from the public
-  API; previously implemented in `@aura3d/physics` and unreachable from a route.
+Earlier minor-release implementation notes have been consolidated into the 2.0 architecture, migration, API, and evidence documentation. Git history retains the original release narratives.
 
 ### Measured
 
-- **87 of 87** public controls and **47 of 47** keyboard bindings verified *by operation*
-  across 13 routes, with zero console errors.
-- **21 of 21** combined quality gates pass with **zero unproven**. Missing evidence is
-  reported as `unproven`, never as a pass.
+- **149 of 149** source-template checks and **149 of 149** clean exact-tarball
+  lifecycle checks pass across all **19** public scaffolds. Each lifecycle proves
+  install, typecheck, production build, browser load, meaningful interaction,
+  static preview, screenshot, route health, and deploy behavior against the packed
+  2.0.0 dependency graph. Source: `tests/reports/agent-templates.json` and
+  `tests/reports/installed-template-lifecycle.json`.
+- **15 of 15** bounded same-workload comparisons pass from freshly packed and
+  installed Aura3D 2.0.0 tarballs against repository-locked `three@0.185.1`.
+  Individual visual differences and capability boundaries remain part of the
+  result; this is not a universal ecosystem-parity claim. The exact migration
+  consumer is recorded in `tests/reports/packed-migration-consumer.json`.
 - The retained package, architecture, route-health, parity, superiority, and
   documentation gates pass individually; the two required final serial release
   runs remain pending until the human visual-review gate is recorded.
@@ -242,18 +183,19 @@ Stated because a release note that omits this is not useful:
   engine and cache state. Full raw samples and methodology:
   `tests/reports/developer-friction.json`.
 - `showcase-blockfall-reactor`, `showcase-skyline-runner`, and
-  `showcase-turbo-drift-circuit` remain **prototype-blocked** and cannot be
-  promoted in this release. Their reusable engine causes have been addressed,
-  and racing now delegates authored-unit arcade motion to the shared runtime
-  owner under ADR 0003. None of that supplies public visual approval or turns
-  the arcade contract into physical vehicle-dynamics proof.
+  `showcase-turbo-drift-circuit` have materially rebuilt gameplay and current
+  automated route evidence, but remain **promotion-blocked pending independent
+  review of the exact final artifacts**. None of that review converts Turbo's
+  authored-unit arcade contract into physical tyre or vehicle-dynamics proof.
 - `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
   not cover it. It carries its own 23-spec suite.
 - `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51
   exported symbol names have more than one owning package.
-- All **35 of 35** Tier 1/2 routes now pass the real-browser health gate with no failure
-  allowlist. `material-showroom`, `postprocess-lab`, and `shadow-lab` were repaired against
-  their retained 10-case renderer visual contract rather than replaced by weaker demos.
+- The current public `examples/` inventory contains **13 retained routes** after
+  duplicate, contract-only, or visually rejected hosts were internalized. The
+  clean 2026-08-09 source/canvas/full-page audit passed all 13 with no filtered
+  failure list; material, postprocess, and large-scene differences remain
+  disclosed rather than being converted into a blanket parity claim.
 - The historical `three@0.165.0` comparisons cover **54 selected example-level rows**, all
   matched by the generated inventory with **0 high-priority rows open**. This is a
   bounded compatibility and migration result, not a claim that Aura3D universally
@@ -270,7 +212,9 @@ animation, physics, lifecycle, and migration conclusions remain limited to the n
 fixtures, routes, assets, browsers, and thresholds in those reports. Universal engine or
 ecosystem superiority is not claimed.
 
-Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd.md`.
+The current product boundary and evidence are documented in
+`docs/project/status/current-state.md` and
+`docs/project/verification-evidence.md`.
 
 Install after the npm publication completes:
 
@@ -285,9 +229,9 @@ The current 2.0 candidate notes are in
 with the executable migration guide in [`MIGRATION-2.0.md`](MIGRATION-2.0.md)
 and retained claim boundaries and release evidence under `docs/project/`.
 
-## Aura3D 1.1.0 asset catalog
+## Aura3D 2.0 asset catalog
 
-Aura3D 1.1.0 includes the catalog-first asset workflow for AI coding agents. When a prompt names a real object, agents should search the hosted Aura3D catalog before writing scene code:
+Aura3D 2.0 includes the catalog-first asset workflow for AI coding agents. When a prompt names a real object, agents should search the hosted Aura3D catalog before writing scene code:
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"
@@ -305,9 +249,9 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 ```
 
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
-## Aura3D 1.1.0 runtime launch track
+## Aura3D 2.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 2.0.0 is
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.0 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -315,7 +259,8 @@ the current package release that carries it forward:
 - `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-animation-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored animation/video workflows. The shorter `animation-channel` template name remains supported.
 - `AuraVoice bridge`: AuraVoice owns script/audio/caption/viseme timing; Aura3D owns typed scene generation, character performance, camera choreography, rendering, screenshots, and visual evidence.
 
-Aura Clash remains a development showcase, not a polished flagship claim.
+Aura Clash remains a development showcase pending exact-artifact approval, not
+an automatically approved polished flagship claim.
 Historical runtime, screenshot, route, GLB, package-smoke, and deployment
 receipts do not replace current gameplay, visual, asset, audio, performance,
 and documentation gates.
@@ -378,7 +323,9 @@ The showcase currently targets:
 - arcade movement, hitboxes, guard state, meter, AI pressure, and results;
 - evidence routes, accessibility settings, poster capture, Playwright contracts, sitemap and robots integration, and marketing homepage placement.
 
-Open the source route at `apps/aura-clash-showcase/`. Treat the current route as a development showcase until the 1.1.0 gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
+Open the source route at `apps/aura-clash-showcase/`. Treat the current route as
+a development showcase until the current 2.0 gameplay, visual, asset, audio,
+performance, deployment, docs-claim, and independent-review gates pass.
 
 ## Animation Studio — prompt → rendered short
 
@@ -423,7 +370,7 @@ createAuraApp("#app", {
 
 The safe API uses generated refs such as `assets.robot`. Do not write `model("robot")`, hand-written GLB URLs, or invented asset ids.
 
-## Aura3D 1.1.0 game runtime example
+## Aura3D 2.0 game runtime example
 
 Add typed assets before writing model code:
 
@@ -548,7 +495,7 @@ const evidence = app.evidence({
 console.log(touchLayout.controls.length, replayDriver.snapshot(), overlay.sections, evidence.systems);
 ```
 
-## Aura3D 1.1.0 prompt-animation and AuraVoice example
+## Aura3D 2.0 prompt-animation and AuraVoice example
 
 Prompt-animation routes use typed assets, contract artifacts, shot playback, captions, visemes, and AuraVoice timing packages.
 
@@ -743,7 +690,7 @@ pnpm run check:release
 
 Use release checks to confirm package integrity, generated assets, examples, and static deployment output before shipping.
 
-Aura3D 1.1.0 route-specific readiness commands:
+Aura3D 2.0 route-specific readiness commands:
 
 ```bash
 npx @aura3d/cli@latest assets validate-game
@@ -761,7 +708,7 @@ pnpm prompt-animation:release
 
 Do not mark a game, prompt-animation, or AuraVoice route launch-ready from source evidence alone. Asset readiness, package smoke, browser route health, deterministic screenshots, visual review, accessibility proof, and deployment checks must also pass.
 
-Aura3D 1.1.0 game-engine/showcase readiness is stricter:
+Aura3D 2.0 game-engine/showcase readiness is stricter:
 
 ```bash
 pnpm aura3d110:readiness

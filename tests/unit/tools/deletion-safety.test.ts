@@ -1,9 +1,12 @@
-import { execFileSync } from "node:child_process";
+import { execFile } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 /**
  * WS-0.2 — the deletion-safety tool is only useful if it *blocks* a file that is genuinely unsafe
@@ -18,13 +21,12 @@ afterAll(() => {
   rmSync(scratch, { recursive: true, force: true });
 });
 
-function run(args: readonly string[]): { readonly status: number; readonly report: Record<string, unknown> } {
+async function run(args: readonly string[]): Promise<{ readonly status: number; readonly report: Record<string, unknown> }> {
   const reportPath = join(scratch, `report-${Math.random().toString(36).slice(2)}.json`);
   let status = 0;
   try {
-    execFileSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/deletion-safety/index.ts", "--report", reportPath, ...args], {
-      encoding: "utf8",
-      stdio: "pipe"
+    await execFileAsync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/deletion-safety/index.ts", "--report", reportPath, ...args], {
+      encoding: "utf8"
     });
   } catch (error) {
     status = (error as { readonly status?: number }).status ?? 1;
@@ -33,8 +35,8 @@ function run(args: readonly string[]): { readonly status: number; readonly repor
 }
 
 describe("deletion-safety (R8)", () => {
-  it("blocks a file with a real internal importer", () => {
-    const { status, report } = run(["packages/rendering/src/TerrainHeightfield.ts"]);
+  it("blocks a file with a real internal importer", async () => {
+    const { status, report } = await run(["packages/rendering/src/TerrainHeightfield.ts"]);
     expect(status).not.toBe(0);
     expect(report.pass).toBe(false);
     const files = report.files as readonly { readonly path: string; readonly clear: boolean; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
@@ -48,8 +50,8 @@ describe("deletion-safety (R8)", () => {
     expect(runtime.some((evidence) => evidence.at.startsWith("packages/rendering/src/EnvironmentPlatform.ts:"))).toBe(true);
   }, 180_000);
 
-  it("blocks a symbol consumed through a multiline public-barrel import", () => {
-    const { status, report } = run(["packages/rendering/src/OceanSurface.ts"]);
+  it("blocks a symbol consumed through a multiline public-barrel import", async () => {
+    const { status, report } = await run(["packages/rendering/src/OceanSurface.ts"]);
     expect(status).not.toBe(0);
     const files = report.files as readonly {
       readonly path: string;
@@ -63,7 +65,7 @@ describe("deletion-safety (R8)", () => {
     )).toBe(true);
   }, 180_000);
 
-  it("treats an empty deletion queue as a pass", () => {
+  it("treats an empty deletion queue as a pass", async () => {
     /*
      * Against an explicitly empty manifest, not the repository's live queue. Reading the live
      * `candidates.json` made this test assert that no deletion is currently being proven — so it
@@ -74,7 +76,7 @@ describe("deletion-safety (R8)", () => {
     const manifestPath = "tests/reports/deletion-safety-empty-manifest.json";
     writeFileSync(join(repoRoot, manifestPath), JSON.stringify({ candidates: [] }, null, 2));
     try {
-      const { status, report } = run(["--manifest", manifestPath]);
+      const { status, report } = await run(["--manifest", manifestPath]);
       expect(status).toBe(0);
       expect(report.pass).toBe(true);
       expect((report.checks as readonly { readonly id: string }[]).some((check) => check.id === "r8:queue")).toBe(true);
@@ -83,18 +85,18 @@ describe("deletion-safety (R8)", () => {
     }
   }, 180_000);
 
-  it("reports a prose mention without blocking on it", () => {
+  it("reports a prose mention without blocking on it", async () => {
     /*
      * The tool's own source comment names `rendering/src/OceanSurface.ts`. An early version classified
      * that as a runtime consumer and blocked on itself, which is unclearable. Prose is reported so
      * stale references get tidied, but it does not gate a deletion.
      */
-    const { report } = run(["packages/rendering/src/OceanSurface.ts"]);
+    const { report } = await run(["packages/rendering/src/OceanSurface.ts"]);
     const files = report.files as readonly { readonly proseMentions?: readonly unknown[] }[];
     expect(Array.isArray(files[0]?.proseMentions)).toBe(true);
   }, 180_000);
 
-  it("does not block a non-unique basename on every other file that shares it", () => {
+  it("does not block a non-unique basename on every other file that shares it", async () => {
     /*
      * Regression pin for the fourth false-positive class. `moduleSpecifiersFor` emitted a file's
      * bare basename as an identity it could be referenced by, suppressing only a hand-written list
@@ -110,7 +112,7 @@ describe("deletion-safety (R8)", () => {
      * while the **path**-shaped evidence that actually matters still lands — `packages/ecs/src/index.ts`
      * is genuinely blocked by `tools/bundle-scenarios` and the `@aura3d/ecs` export map.
      */
-    const { report } = run(["packages/ecs/package.json", "packages/ecs/tsconfig.json", "packages/ecs/README.md", "packages/ecs/src/index.ts"]);
+    const { report } = await run(["packages/ecs/package.json", "packages/ecs/tsconfig.json", "packages/ecs/README.md", "packages/ecs/src/index.ts"]);
     const files = report.files as readonly {
       readonly path: string;
       readonly blocking: Record<string, readonly { readonly at: string; readonly detail: string }[]>;
@@ -136,7 +138,7 @@ describe("deletion-safety (R8)", () => {
     expect(barrel?.blocking["runtime-consumer"]?.length ?? 0).toBeGreaterThan(0);
   }, 180_000);
 
-  it("does not report the deletion queue itself as a consumer of its candidates", () => {
+  it("does not report the deletion queue itself as a consumer of its candidates", async () => {
     /*
      * Regression pin for the fifth — and most self-defeating — false-positive class. The manifest
      * lists each candidate by its repo-relative path, which is precisely the shape
@@ -154,7 +156,7 @@ describe("deletion-safety (R8)", () => {
     const candidates = ["packages/rendering/src/TerrainHeightfield.ts", "packages/ecs/src/Bitset.ts"];
     writeFileSync(join(repoRoot, manifestPath), JSON.stringify({ candidates }, null, 2));
     try {
-      const { report } = run(["--manifest", manifestPath]);
+      const { report } = await run(["--manifest", manifestPath]);
       const files = report.files as readonly {
         readonly path: string;
         readonly blocking: Record<string, readonly { readonly at: string }[]>;
@@ -175,7 +177,7 @@ describe("deletion-safety (R8)", () => {
     }
   }, 180_000);
 
-  it("excludes the deletion queue however the run was invoked", () => {
+  it("excludes the deletion queue however the run was invoked", async () => {
     /*
      * The first fix for the class above excluded the manifest only when the candidate list had been
      * *read* from it, so `--manifest` runs passed while runs that named the same paths as CLI
@@ -187,7 +189,7 @@ describe("deletion-safety (R8)", () => {
      * on the CLI-argument path and against the *default* queue rather than a temporary one.
      */
     const candidate = "packages/rendering/src/VegetationScatter.ts";
-    const { report } = run([candidate]);
+    const { report } = await run([candidate]);
     const files = report.files as readonly {
       readonly path: string;
       readonly blocking: Record<string, readonly { readonly at: string }[]>;
@@ -200,20 +202,28 @@ describe("deletion-safety (R8)", () => {
     expect(fromQueue, "the default queue must never be reported as a consumer").toEqual([]);
   }, 180_000);
 
-  it("fails when asked to prove a deletion of a file that does not exist", () => {
-    const { status, report } = run(["packages/rendering/src/DefinitelyNotAFile.ts"]);
+  it("fails when asked to prove a deletion of a file that does not exist", async () => {
+    const { status, report } = await run(["packages/rendering/src/DefinitelyNotAFile.ts"]);
     expect(status).not.toBe(0);
     const failures = report.failures as readonly string[];
     expect(failures.some((failure) => failure.includes("already gone"))).toBe(true);
   }, 180_000);
 
-  it("proves a tracked working-tree deletion from its HEAD body", () => {
-    const candidate = "packages/rendering/src/OceanSurface.ts";
+  it("proves a tracked working-tree deletion from its HEAD body", async () => {
+    /*
+     * Use a documentation fixture rather than a live runtime module. This test temporarily moves
+     * the candidate so the gate has to read its body from HEAD. Using OceanSurface.ts here raced
+     * every concurrently running renderer/browser test that imports the public rendering barrel:
+     * those tests could observe the deliberate, millisecond-scale absence as a real missing module.
+     * The fixture is tracked and non-empty, so it proves the same git fallback without mutating the
+     * runtime module graph under the rest of the suite.
+     */
+    const candidate = "tests/fixtures/external-interior-scene/README.md";
     const absolute = join(repoRoot, candidate);
     const held = `${absolute}.deletion-safety-test`;
     renameSync(absolute, held);
     try {
-      const { report } = run([candidate]);
+      const { report } = await run([candidate]);
       const files = report.files as readonly {
         readonly path: string;
         readonly exists: boolean;
@@ -230,7 +240,7 @@ describe("deletion-safety (R8)", () => {
     }
   }, 180_000);
 
-  it("keeps a deletion proof reproducible after the deletion commit", () => {
+  it("keeps a deletion proof reproducible after the deletion commit", async () => {
     /*
      * Reuse a closed deletion manifest instead of spelling one of its candidates in this test.
      * The manifest is an input to the proof, not a consumer, and the CLI excludes the active
@@ -243,7 +253,7 @@ describe("deletion-safety (R8)", () => {
     };
     const candidate = manifest.candidates[0];
     expect(candidate).toBeDefined();
-    const { report } = run(["--manifest", manifestPath]);
+    const { report } = await run(["--manifest", manifestPath]);
     const files = report.files as readonly {
       readonly path: string;
       readonly exists: boolean;
@@ -315,14 +325,13 @@ function blockingEntries(report: CalibrationReport | undefined): readonly string
 }
 
 /** Run the real gate over `candidates` and return its per-file reports. */
-function runGate(candidates: readonly string[]): readonly CalibrationReport[] {
+async function runGate(candidates: readonly string[]): Promise<readonly CalibrationReport[]> {
   const reportPath = join("tests/reports", `${uniqueName()}.json`);
   calibrationReports.push(reportPath);
   try {
-    execFileSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/deletion-safety/index.ts", ...candidates, "--report", reportPath], {
+    await execFileAsync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/deletion-safety/index.ts", ...candidates, "--report", reportPath], {
       cwd: repoRoot,
-      encoding: "utf8",
-      stdio: "pipe"
+      encoding: "utf8"
     });
   } catch {
     // A blocked candidate exits non-zero by design; the report is still written.
@@ -340,7 +349,7 @@ function write(name: string, contents: string): string {
 }
 
 describe("R8 deletion safety — blocks real dependencies", () => {
-  it("blocks a module that a runtime file imports by path", () => {
+  it("blocks a module that a runtime file imports by path", async () => {
     const moduleName = uniqueName();
     const target = write(`${moduleName}.ts`, `export function widget(): number {\n  return 1;\n}\n`);
     write(
@@ -348,24 +357,24 @@ describe("R8 deletion safety — blocks real dependencies", () => {
       `import { widget } from "./${moduleName}";\nexport const used = widget();\n`
     );
 
-    const [report] = runGate([target]);
+    const [report] = await runGate([target]);
     expect(report?.clear).toBe(false);
     expect(blockingEntries(report).some((entry) => entry.startsWith("runtime-consumer"))).toBe(true);
-  });
+  }, 180_000);
 
-  it("blocks a module whose exported symbol is re-exported by a registry that never names the file", () => {
+  it("blocks a module whose exported symbol is re-exported by a registry that never names the file", async () => {
     const moduleName = uniqueName();
     const symbol = uniqueName();
     const target = write(`${moduleName}.ts`, `export const ${symbol} = { role: "fixture" };\n`);
     write(`${uniqueName()}.ts`, `export { ${symbol} } from "./${moduleName}";\n`);
 
-    const [report] = runGate([target]);
+    const [report] = await runGate([target]);
     expect(report?.clear).toBe(false);
-  });
+  }, 180_000);
 });
 
 describe("R8 deletion safety — argument handling", () => {
-  it("ignores the pnpm `--` separator instead of treating it as a candidate", () => {
+  it("ignores the pnpm `--` separator instead of treating it as a candidate", async () => {
     /*
      * `pnpm check:deletion-safety -- a.ts` forwards `--` through to the tool. It was pushed onto the
      * candidate list, so every scripted invocation reported an extra
@@ -374,14 +383,14 @@ describe("R8 deletion safety — argument handling", () => {
      * file nobody named.
      */
     const target = write(`${uniqueName()}.ts`, `export const ${uniqueName()} = 1;\n`);
-    const reports = runGate(["--", target]);
+    const reports = await runGate(["--", target]);
     expect(reports.map((report) => report.path)).toEqual([target]);
     expect(reports[0]?.clear).toBe(true);
-  });
+  }, 180_000);
 });
 
 describe("R8 deletion safety — does not manufacture dependencies", () => {
-  it("clears a prose file that merely contains pasted source code", () => {
+  it("clears a prose file that merely contains pasted source code", async () => {
     // The exact defect that reported 111 references to logs.txt: a transcript is not a module, so
     // `export function frame()` inside it is not an export *of* the transcript. Every identifier
     // pasted below also exists as a real export elsewhere in the repository.
@@ -400,30 +409,30 @@ describe("R8 deletion safety — does not manufacture dependencies", () => {
       ].join("\n")
     );
 
-    const [report] = runGate([target]);
+    const [report] = await runGate([target]);
     expect(blockingEntries(report)).toEqual([]);
     expect(report?.clear).toBe(true);
-  });
+  }, 180_000);
 
-  it("clears a module whose exported name collides with an identifier bound from elsewhere", () => {
+  it("clears a module whose exported name collides with an identifier bound from elsewhere", async () => {
     const target = write(`${uniqueName()}.ts`, `export function frame(): number {\n  return 0;\n}\n`);
     write(
       `${uniqueName()}.ts`,
       `import { frame } from "./${uniqueName()}";\nexport const value = frame();\n`
     );
 
-    const [report] = runGate([target]);
+    const [report] = await runGate([target]);
     expect(blockingEntries(report)).toEqual([]);
     expect(report?.clear).toBe(true);
-  });
+  }, 180_000);
 
-  it("clears a file whose only mention is prose in a Markdown document", () => {
+  it("clears a file whose only mention is prose in a Markdown document", async () => {
     const moduleName = uniqueName();
     const target = write(`${moduleName}.ts`, `export const ${uniqueName()} = 7;\n`);
     write(`${uniqueName()}.md`, `We should delete \`${moduleName}.ts\` at some point.\n`);
 
-    const [report] = runGate([target]);
+    const [report] = await runGate([target]);
     expect(blockingEntries(report)).toEqual([]);
     expect(report?.clear).toBe(true);
-  });
+  }, 180_000);
 });

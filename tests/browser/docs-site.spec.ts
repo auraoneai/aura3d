@@ -39,8 +39,8 @@ test.describe("docs and marketing site", () => {
     expect(heroDisplay).toBe("grid");
     const navPosition = await page.locator(".nav").evaluate((element) => getComputedStyle(element).position);
     expect(navPosition).toBe("sticky");
-    await expect(page.locator(".hero-right iframe[data-route='/apps/wow-webgpu-compute-particles/']")).toBeVisible();
-    await expect(page.locator(".hero-right iframe")).toHaveAttribute("src", /wow-webgpu-compute-particles/);
+    await expect(page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']")).toBeVisible();
+    await expect(page.locator(".hero-right iframe")).toHaveAttribute("src", /wow-concept-car-cinema/);
     await expect(page.locator(".hero-left")).toContainText("The 3D SDK");
     await expect(page.locator(".hero-left")).toContainText("800,000+ real GLB/glTF assets");
     expect(await page.locator("a[href='/llms.txt']").count()).toBeGreaterThanOrEqual(1);
@@ -79,8 +79,132 @@ test.describe("docs and marketing site", () => {
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: /The 3D SDK/i })).toBeVisible();
     await expect(page.locator(".hero-left .hero-cta")).toBeVisible();
+    const mobileHero = page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']");
+    await expect(mobileHero).toBeVisible();
+    await expect(mobileHero).toHaveAttribute("src", /wow-concept-car-cinema/);
+    await expect(page.locator(".hero-right")).toContainText("WebGL2 mobile-ready");
     await expect(page.locator("#templates")).toBeVisible();
     await expect(page.locator("#templates .pkg-grid")).toBeVisible();
+  });
+
+  test("mobile homepage hero renders when WebGPU is unavailable", async ({ page }) => {
+    /*
+     * Regression for the iOS blank-hero defect.  The old homepage embedded the
+     * native-only WebGPU compute route.  That route correctly refused unsupported
+     * devices, but its hidden embed chrome left only an empty black canvas.  This
+     * test removes `navigator.gpu`, loads the real (unstubbed) mobile homepage and
+     * requires the deployed WebGL2 concept-car hero to produce a running renderer
+     * and pixels from the same CDN path used by the public page.
+     */
+    await page.addInitScript(() => {
+      try {
+        Object.defineProperty(navigator, "gpu", { configurable: true, value: undefined });
+      } catch (_error) {
+        // The replacement hero does not require WebGPU; an immutable browser
+        // property is therefore harmless, but the real route must still render.
+      }
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
+    const hero = page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']");
+    await expect(hero).toBeVisible();
+    const heroHandle = await hero.elementHandle();
+    const frame = await heroHandle?.contentFrame();
+    expect(frame, "mobile hero iframe should have a document").toBeTruthy();
+    await expect.poll(async () => frame?.evaluate(() => {
+      const runtime = (window as unknown as {
+        __a3dWowRuntime?: { status?: string; drawCalls?: number; frameCount?: number; textures?: number };
+      }).__a3dWowRuntime;
+      return Boolean(
+        runtime &&
+        ["ready", "running"].includes(runtime.status ?? "") &&
+        (runtime.drawCalls ?? 0) > 0 &&
+        (runtime.frameCount ?? 0) >= 3 &&
+        (runtime.textures ?? 0) > 0
+      );
+    }), { timeout: 90_000 }).toBe(true);
+    await page.waitForTimeout(800);
+    const canvas = frame!.locator("canvas#viewport");
+    await expect(canvas).toBeVisible();
+    // Capture the composited outer hero, not the iframe canvas in isolation.
+    // WebGL canvases created without preserveDrawingBuffer may read back black
+    // between presentation frames even while the browser compositor is visibly
+    // displaying them; the customer-facing page composition is the contract here.
+    const screenshot = await page.locator(".hero-right").screenshot();
+    mkdirSync(resolve("tests/reports/docs-site"), { recursive: true });
+    writeFileSync(resolve("tests/reports/docs-site/marketing-mobile-hero.png"), screenshot);
+    expect(screenshot.byteLength).toBeGreaterThan(8_000);
+  });
+
+  test("marketing homepage passes its keyboard, semantics, contrast, and reduced-motion audit", async ({ page }) => {
+    await stubMarketingEmbeds(page);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator("h1")).toHaveCount(1);
+    const headingLevels = await page.locator("h1, h2, h3, h4, h5, h6").evaluateAll((headings) =>
+      headings.map((heading) => Number(heading.tagName.slice(1)))
+    );
+    expect(headingLevels[0]).toBe(1);
+    for (let index = 1; index < headingLevels.length; index += 1) {
+      expect(headingLevels[index] - headingLevels[index - 1], `heading level skips at index ${index}`).toBeLessThanOrEqual(1);
+    }
+
+    const unnamedControls = await page.locator("a[href], button, input, select, textarea, [role='link']").evaluateAll((controls) =>
+      controls.filter((control) => {
+        const element = control as HTMLElement;
+        const style = getComputedStyle(element);
+        if (style.display === "none" || style.visibility === "hidden") return false;
+        const label = element.getAttribute("aria-label")
+          ?? element.getAttribute("title")
+          ?? element.textContent
+          ?? "";
+        return label.trim().length === 0;
+      }).map((control) => control.outerHTML.slice(0, 180))
+    );
+    expect(unnamedControls).toEqual([]);
+
+    const firstNavLink = page.locator(".nav a").first();
+    await firstNavLink.focus();
+    await expect(firstNavLink).toBeFocused();
+    const focusStyle = await firstNavLink.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth };
+    });
+    expect(focusStyle.outlineStyle).not.toBe("none");
+    expect(Number.parseFloat(focusStyle.outlineWidth)).toBeGreaterThanOrEqual(2);
+
+    const motion = await page.locator("body").evaluate(() => {
+      const animated = [document.body, ...Array.from(document.body.querySelectorAll("*"))]
+        .flatMap((element) => [element, ...(element === document.body ? ["::before", "::after"] : [])])
+        .map((entry) => typeof entry === "string" ? getComputedStyle(document.body, entry) : getComputedStyle(entry))
+        .filter((style) => style.animationName !== "none" && Number.parseFloat(style.animationDuration) > 0.001);
+      return animated.length;
+    });
+    expect(motion).toBe(0);
+
+    const contrast = await page.locator(":root").evaluate((root) => {
+      const style = getComputedStyle(root);
+      const parse = (value: string) => {
+        const hex = value.trim().replace("#", "");
+        return [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255);
+      };
+      const luminance = (rgb: number[]) => rgb
+        .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+        .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+      const ratio = (foreground: string, background: string) => {
+        const lighter = Math.max(luminance(parse(foreground)), luminance(parse(background)));
+        const darker = Math.min(luminance(parse(foreground)), luminance(parse(background)));
+        return (lighter + 0.05) / (darker + 0.05);
+      };
+      return {
+        body: ratio(style.getPropertyValue("--ink-1"), style.getPropertyValue("--bg")),
+        accent: ratio(style.getPropertyValue("--accent"), style.getPropertyValue("--bg"))
+      };
+    });
+    expect(contrast.body).toBeGreaterThanOrEqual(4.5);
+    expect(contrast.accent).toBeGreaterThanOrEqual(4.5);
   });
 });
 

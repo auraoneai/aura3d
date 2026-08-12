@@ -42,6 +42,8 @@ export type ProbeAssetId =
   | "showcaseWalkAnimatedGirl"
   | "showcaseKenneyNeonRaceCircuit"
   | "showcaseKenneyRaceCarRed"
+  | "showcaseCc0FormulaRaceCar"
+  | "showcaseCcByFormulaOpponent"
   | "showcaseKenneyVerdantPlatformerWorld"
   | "showcaseKenneyOobiPlatformerHero";
 
@@ -79,6 +81,8 @@ export const PROBE_ASSETS = [
   "showcaseSideScrollerPlatformLevel",
   "showcaseKenneyNeonRaceCircuit",
   "showcaseKenneyRaceCarRed",
+  "showcaseCc0FormulaRaceCar",
+  "showcaseCcByFormulaOpponent",
   "showcaseKenneyVerdantPlatformerWorld",
   "showcaseKenneyOobiPlatformerHero",
   "turboRaceCar",
@@ -341,6 +345,28 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     rotation: [0, 0.72, 0],
     minForegroundWidth: 120,
     minForegroundHeight: 70
+  },
+  showcaseCc0FormulaRaceCar: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.82,
+    elevation: 0.2,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 150,
+    minForegroundHeight: 80
+  },
+  showcaseCcByFormulaOpponent: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.82,
+    elevation: 0.2,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 150,
+    minForegroundHeight: 80
   },
   showcaseKenneyVerdantPlatformerWorld: {
     // Sized by height, not max dimension. This asset is a wide platformer strip whose

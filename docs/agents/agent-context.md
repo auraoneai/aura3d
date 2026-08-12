@@ -12,7 +12,9 @@ Primary active areas:
 - `apps/hello-world-typed-asset/`, `apps/material-lighting/`, and
   `apps/camera-path/` for starter examples
 
-Do not use archived `archive/legacy-ai-runtime/` files from active code.
+Superseded runtime documentation is removed from the current tree. Use Git
+history only for archaeology; never restore historical APIs into active code
+without a current ADR and public-contract evidence.
 
 Prompt-to-visual workflow:
 

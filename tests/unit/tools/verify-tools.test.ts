@@ -132,7 +132,10 @@ describe("verification tools", () => {
       "workflows",
       "editor-runtime",
       "editor",
-      "debug"
+      "debug",
+      "lean",
+      "navigation-recast",
+      "physics-rapier"
     ];
     for (const packageName of packages) {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
@@ -238,7 +241,10 @@ describe("verification tools", () => {
       "workflows",
       "editor-runtime",
       "editor",
-      "debug"
+      "debug",
+      "lean",
+      "navigation-recast",
+      "physics-rapier"
     ];
     for (const packageName of packages) {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });

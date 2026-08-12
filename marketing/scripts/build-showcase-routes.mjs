@@ -169,6 +169,23 @@ function copyRouteHealth() {
   }
 }
 
+function ensureBuiltRouteFavicons() {
+  for (const route of publicRoutes) {
+    const builtHtml = path.join(distDir, "apps", route, "index.html");
+    if (!existsSync(builtHtml)) continue;
+    const html = readFileSync(builtHtml, "utf8");
+    if (/rel=["'](?:shortcut )?icon["']/i.test(html)) continue;
+    const withFavicon = html.replace(
+      /(<meta\s+charset=[^>]+>)/i,
+      `$1\n    <link rel="icon" type="image/svg+xml" href="/favicon.svg">`
+    );
+    if (withFavicon === html) {
+      throw new Error(`Could not inject the shared favicon into built route: ${builtHtml}`);
+    }
+    writeFileSync(builtHtml, withFavicon, "utf8");
+  }
+}
+
 function copyAuraAssets() {
   const manifest = readJson(path.join(repoRoot, "aura.assets.json"));
   const manifestAssets = new Map(manifest.assets.map((asset) => [asset.id, asset]));
@@ -304,6 +321,7 @@ function main() {
   try {
     const configPath = writeViteConfig(tempDir);
     runViteBuild(configPath);
+    ensureBuiltRouteFavicons();
     copyRouteHealth();
     if (showcaseAssetBaseUrl) {
       removeLocalAuraAssets(distDir);

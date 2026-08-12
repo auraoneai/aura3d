@@ -13,6 +13,10 @@ const auraEntries = browser.build?.aura ?? [];
 const threeEntries = browser.build?.three ?? [];
 const jsBytes = (entries: readonly any[]) => entries.filter((entry) => entry.path.endsWith(".js")).reduce((sum, entry) => sum + entry.bytes, 0);
 const totalBytes = (entries: readonly any[]) => entries.reduce((sum, entry) => sum + entry.bytes, 0);
+const workflowPhases = ["scaffolding", "assetAcquisition", "firstEdit", "interactionAddition", "errorRecovery", "productionBuild", "deploy"] as const;
+const workflowLosses = workflowPhases
+  .filter((phase) => browser.workflowTimings?.aura?.[phase] > browser.workflowTimings?.three?.[phase])
+  .map((phase) => `${phase}: Aura3D ${browser.workflowTimings.aura[phase]}ms vs Three.js ${browser.workflowTimings.three[phase]}ms`);
 
 const checks = [
   { id: "current-three-react-r3f-drei-stack", pass: baseline.three?.version === "0.185.1" && browser.three?.before?.revision === "185" && browser.three?.before?.actualR3F === true && browser.three?.before?.actualDrei === true },
@@ -22,6 +26,7 @@ const checks = [
   { id: "real-built-deploys", pass: auraEntries.some((entry: any) => entry.path === "index.html" && entry.bytes > 100) && threeEntries.some((entry: any) => entry.path === "index.html" && entry.bytes > 100) },
   { id: "real-render-and-interaction", pass: browser.aura?.before?.drawCalls === 2 && browser.three?.before?.drawCalls === 2 && browser.aura?.beforeHash !== browser.aura?.afterHash && browser.three?.beforeHash !== browser.three?.afterHash },
   { id: "native-captures-retained", pass: captures.every((name) => statSync(resolve(`tests/reports/current-head-to-head/scaffold-to-deploy/${name}`)).size > 10_000) },
+  { id: "seven-workflow-phases-measured", pass: workflowPhases.every((phase) => browser.workflowTimings?.aura?.[phase] > 0 && browser.workflowTimings?.three?.[phase] > 0) },
   { id: "lean-product-excludes-unrelated-scaffold-payload", pass: !auraEntries.some((entry: any) => /rapier|humanoid|fixture/i.test(entry.path)) && jsBytes(auraEntries) < jsBytes(threeEntries) }
 ];
 const failures = checks.filter((entry) => !entry.pass);
@@ -37,11 +42,13 @@ const report = {
     aura: { javascriptBytes: jsBytes(auraEntries), totalDeployBytes: totalBytes(auraEntries), files: auraEntries.length },
     three: { javascriptBytes: jsBytes(threeEntries), totalDeployBytes: totalBytes(threeEntries), files: threeEntries.length },
     normalizedPairedRmse: { before: 0.0494657, after: 0.0486773 },
-    normalizedInteractionDelta: { aura: 0.0739289, three: 0.0977439 }
+    normalizedInteractionDelta: { aura: 0.0739289, three: 0.0977439 },
+    workflowPhases: browser.workflowTimings
   },
   comparison: {
     observedLosses: [
       "Personal inspection of all four native canvas captures confirms comparable complete product framing and the same meaningful lateral interaction. Three remains slightly brighter; Aura retains a concentrated procedural-studio highlight on the floor. Normalized paired RMSE is 0.0494657 before and 0.0486773 after, so pixel-level visual parity is not claimed.",
+      `Aura3D was slower in ${workflowLosses.length}/${workflowPhases.length} automated local workflow phases: ${workflowLosses.join("; ")}.`,
       "The workflow starts from the real product-viewer scaffold, then performs a documented source/asset replacement to compare the frozen product through the lean-product entry. This proves that clean route, build, static serve, and interaction path; it does not prove package-manager installation latency, cloud-provider deployment, every scaffold, rotation authoring in lean-product, or ecosystem-wide parity."
     ],
     claimBoundary: "Fresh local product-viewer scaffold adapted to the public lean-product entry versus a clean current React/R3F/Drei/Three product application, both built by Vite and served from production dist output."

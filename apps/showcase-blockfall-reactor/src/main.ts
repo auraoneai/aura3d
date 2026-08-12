@@ -21,7 +21,6 @@ import {
   BLOCK_SCALE,
   BOARD_CENTER_Y,
   CELL,
-  CLEAR_FLASH_SCALE,
   GHOST_BLOCK_SCALE,
   HIDDEN_BLOCK_SCALE,
   activeNodeId,
@@ -759,7 +758,12 @@ function syncActivePiece(piece: ActivePiece | null): void {
   cells.forEach((cell, index) => {
     const visibleY = cell.y - HIDDEN_ROWS;
     const handle = activeHandles[index];
-    if (!handle || visibleY < 0 || visibleY >= VISIBLE_HEIGHT) {
+    // Keep the first presentation row as an entry buffer. At the cabinet's tilted
+    // camera angle, a nearest-layer active block centered on row zero projects above
+    // the top grid rail and looks like a pink prop stuck to the header. Gameplay still
+    // owns the normal hidden rows; this only reveals the piece once its cells are fully
+    // inside the visible well.
+    if (!handle || visibleY <= 0 || visibleY >= VISIBLE_HEIGHT) {
       handle?.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
       return;
     }
@@ -791,8 +795,11 @@ function syncGhostPiece(piece: ActivePiece | null): void {
 
 function syncClearFlash(): void {
   const clearRows = new Set(state.lastClearedRows.map((row) => row - HIDDEN_ROWS).filter((row) => row >= 0 && row < VISIBLE_HEIGHT));
+  // One timed renderer beat owns the clear sweep. The old implementation also lit a
+  // full-row flash node underneath it; the two emissive overlays added to pure white
+  // and projected as the unexplained oval/bar reported in retained screenshots.
   for (let row = 0; row < VISIBLE_HEIGHT; row += 1) {
-    clearFlashHandles[row].setScale(clearRows.has(row) ? CLEAR_FLASH_SCALE : HIDDEN_BLOCK_SCALE).setVisible(clearRows.has(row));
+    clearFlashHandles[row].setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
   const firstClearedRow = [...clearRows][0];
   if (firstClearedRow !== undefined) burstRowY = cellPosition(0, firstClearedRow, 0)[1];
@@ -809,47 +816,24 @@ function syncBeats(dt: number): void {
 
   const levelUpProgress = beatTimers.levelUp / beatDurations.levelUp;
   if (levelUpProgress > 0) {
-    const travel = (1 - levelUpProgress) * 4.2 - 2.1;
     beatHandles.levelUp
-      .setPosition(0, BOARD_CENTER_Y + travel, 0.24)
-      .setScale([1.06, 0.05 + levelUpProgress * 0.06, 0.02])
+      .setPosition(1.52, 2.66, 0.24)
+      .setScale([0.1 + levelUpProgress * 0.05, 0.035, 0.035])
       .setVisible(true);
   } else {
     beatHandles.levelUp.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
 
-  /*
-   * Game-over beat: a wash that resolves to a border, so the final board stays readable.
-   *
-   * This previously pinned `fill = 1` for as long as `state.gameOver` was true, which made the panel a
-   * permanent 1.08 x 4.36 slab covering the entire well. The captured game-over frame therefore hid
-   * the very thing a player wants to look at -- the stack that ended the run -- behind a flat red
-   * rectangle, and read as an error overlay rather than a game beat.
-   *
-   * The beat now plays its 1.6s wash and then settles into a thin band at the top of the well, where
-   * the stack topped out. So the beat is still unmistakable in motion and in a capture taken during it,
-   * but the resting game-over state leaves the board visible.
-   */
-  const gameOverProgress = beatTimers.gameOver / beatDurations.gameOver;
-  if (gameOverProgress > 0 || state.gameOver) {
-    // While the timer runs, sweep down from the top of the well; once it expires, hold a top band.
-    const sweeping = gameOverProgress > 0;
-    const height = sweeping ? 4.36 * (1 - gameOverProgress) : 0.34;
-    const top = BOARD_CENTER_Y + 2.18;
-    beatHandles.gameOver
-      .setPosition(0, top - height / 2, 0.23)
-      .setScale([1.08, Math.max(0.06, height), 0.02])
-      .setVisible(true);
-  } else {
-    beatHandles.gameOver.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
-  }
+  // A full-width red game-over wash obscured the top of the final stack and looked like
+  // a stray geometry error in the retained frame. The HUD already announces Game over;
+  // the in-scene warning is carried by the reactor cap at the side of the cabinet instead.
+  beatHandles.gameOver.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
 
   const resetProgress = beatTimers.reset / beatDurations.reset;
   if (resetProgress > 0) {
-    const sweep = BOARD_CENTER_Y + 2.1 - (1 - resetProgress) * 4.2;
     beatHandles.reset
-      .setPosition(0, sweep, 0.25)
-      .setScale([1.08, 0.07, 0.02])
+      .setPosition(1.52, 1.34, 0.24)
+      .setScale([0.1 + resetProgress * 0.05, 0.035, 0.035])
       .setVisible(true);
   } else {
     beatHandles.reset.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
@@ -857,18 +841,12 @@ function syncBeats(dt: number): void {
 
   const burstProgress = beatTimers.burst / beatDurations.burst;
   if (burstProgress > 0) {
-    // The burst reads as a flash travelling *across the cleared row*, not as a ball over
-    // the well. The previous form grew to radius 0.62 -- a 1.24-unit diameter against a
-    // 2.08-unit board, which projected to 373 px, i.e. **96% of the well's on-screen
-    // width**, as a flat grey disc that occluded the playfield. That is the "giant
-    // foreground sphere occlusion" this route is explicitly required not to have.
-    // It now spans the board horizontally and stays within one cell vertically, so the
-    // beat is unmistakable while the stack behind it stays readable.
-    const spread = 0.24 + (1 - burstProgress) * 0.76;
-    const halfWidth = (CELL * BOARD_WIDTH) / 2;
+    // Pulse the dedicated reactor hardware instead of drawing feedback over the board.
+    // The former full-row sweep was visually indistinguishable from a random pale bar.
+    const chargeHeight = 0.12 + (1 - burstProgress) * 0.38;
     beatHandles.burst
-      .setPosition(0, burstRowY, 0.24)
-      .setScale([halfWidth * spread, CELL * 0.34, CELL * 0.3])
+      .setPosition(1.52, Math.max(1.34, Math.min(2.66, burstRowY)), 0.24)
+      .setScale([0.055, chargeHeight, 0.045])
       .setVisible(true);
   } else {
     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
@@ -878,10 +856,11 @@ function syncBeats(dt: number): void {
 function syncReactor(): void {
   const charge = Math.max(0.04, state.reactor / 100);
   const height = 0.18 + charge * 1.25;
-  reactorFillNode.setScale([0.08, height, 0.08]).setPosition(1.78, 1.32 + height * 0.5, 0.2).setVisible(true);
+  reactorFillNode.setScale([0.08, height, 0.08]).setPosition(1.52, 1.32 + height * 0.5, 0.2).setVisible(true);
+  const critical = state.gameOver || state.reactor >= 88 || state.reactorLevel > 0;
   reactorCapNode
-    .setScale(state.reactor >= 88 || state.reactorLevel > 0 ? [0.16, 0.09, 0.16] : HIDDEN_BLOCK_SCALE)
-    .setVisible(state.reactor >= 88 || state.reactorLevel > 0);
+    .setScale(critical ? [0.12, 0.06, 0.055] : HIDDEN_BLOCK_SCALE)
+    .setVisible(critical);
 }
 
 function syncHud(): void {

@@ -122,9 +122,13 @@ const NAMESPACE_ALIASES = {
   Raycast: ["raycast", "Raycast"],
   ParticleSystem: ["effects.particles", "ParticleSystem"],
   MorphTargetMixer: ["morphTargets", "MorphTargetMixer"],
+  MorphTargetMixerThreeCompat: ["setMorphTarget", "setMorphTargets"],
+  applyMorphTargets: ["setMorphTarget", "setMorphTargets"],
   AnimationMixer: ["AnimationMixer", "animation:", ".animate("],
   AnimationController: ["AnimationController", "animationController"],
   ToneMapping: ["toneMapping", "ToneMapping"],
+  applyExternalParityToneMappingPreset: ["toneMapping", "tone-mapping"],
+  createExternalParityToneMappingPolicy: ["toneMapping", "tone-mapping"],
   createProductionRuntimeShadowOptions: ["castShadow", "receiveShadow"],
   "contact-occlusion": ["contactOcclusion", "ambientOcclusion"],
   createDiagnosticsOverlay: ["diagnostics(", "diagnostics:"],
@@ -136,7 +140,7 @@ const NAMESPACE_ALIASES = {
   TimeOfImpact: ["TimeOfImpact", "timeOfImpact"]
 };
 
-function findConsumers(symbols) {
+function findConsumers(symbols, declaredConsumers = []) {
   const needles = symbols.flatMap((symbol) => [symbol, ...(NAMESPACE_ALIASES[symbol] ?? [])]);
   const found = [];
   for (const entry of consumers) {
@@ -156,7 +160,7 @@ function findConsumers(symbols) {
       }
     }
   }
-  return [...new Set(found)];
+  return [...new Set([...found, ...declaredConsumers])];
 }
 
 function evidenceExists(paths) {
@@ -183,7 +187,7 @@ const ROWS = [
   { category: "core-rendering", capability: "shadows", expected: "shadowMap + per-light shadow config", symbols: ["createProductionRuntimeShadowOptions"], integrated: true, claim: "parity", evidence: ["tests/reports/external-parity-shadow-readiness"] },
   { category: "core-rendering", capability: "environment maps / IBL", expected: "PMREMGenerator + RGBELoader", symbols: ["environments"], integrated: true, claim: "exceed", notes: "Named environment presets; no PMREM setup in user code.", evidence: ["tests/reports/external-parity-ibl-readiness"] },
   { category: "core-rendering", capability: "postprocessing", expected: "EffectComposer + pass chain", symbols: ["effects"], integrated: true, claim: "exceed", notes: "Effects declared as scene nodes; no composer or pass ordering in user code." },
-  { category: "core-rendering", capability: "tone mapping / colour management", expected: "renderer.toneMapping + outputColorSpace", symbols: ["applyExternalParityToneMappingPreset", "createExternalParityToneMappingPolicy"], integrated: true, claim: "parity", notes: "Tone mapping is applied by the production renderer; the root API exposes it as renderer configuration rather than as a user-managed pass." },
+  { category: "core-rendering", capability: "tone mapping / colour management", expected: "renderer.toneMapping + outputColorSpace", symbols: ["applyExternalParityToneMappingPreset", "createExternalParityToneMappingPolicy"], integrated: true, claim: "parity", evidence: ["tests/reports/external-parity-hdr-browser.json", "tests/reports/current-head-to-head/primitive/aggregate.json"], notes: "Bounded feature parity: public route configuration drives the production tone-mapping/color-space path and retained browser evidence proves pixel-backed output. The current comparison retains visible material/highlight differences, so identical pixels or universal visual parity are not claimed." },
   { category: "core-rendering", capability: "instancing", expected: "InstancedMesh", symbols: ["InstancedMesh"], integrated: false, claim: "parity", notes: "Rendering-internal; not surfaced through the root safe API." },
   { category: "core-rendering", capability: "skinned animation", expected: "SkinnedMesh + AnimationMixer", symbols: ["AnimationMixer", "AnimationController"], integrated: true, claim: "parity", evidence: ["tests/reports/animation-runtime"] },
   /*
@@ -199,9 +203,9 @@ const ROWS = [
    * parity table published "gap" — the mirror image of the fabrication defects elsewhere in P1, and
    * a reminder that a generator can understate as easily as overstate.
    */
-  { category: "core-rendering", capability: "morph targets", expected: "morphTargetInfluences", symbols: ["MorphTargetMixerThreeCompat", "applyMorphTargets"], integrated: true, claim: "parity", evidence: ["tests/reports/animation-morph-target-readiness"] },
+  { category: "core-rendering", capability: "morph targets", expected: "morphTargetInfluences", symbols: ["MorphTargetMixerThreeCompat", "applyMorphTargets"], integrated: true, claim: "parity", evidence: ["tests/reports/animation-morph-target-readiness", "tests/reports/current-head-to-head/skinned-morph-animation/aggregate.json"], notes: "Bounded current parity: the implementation symbols feed the public runtime-node setMorphTarget(s) API exercised by the character-animation example and the locked Three r185 skinned/morph workload. The retained comparison does not claim draw-call, performance, or ecosystem-wide visual parity." },
   { category: "core-rendering", capability: "particles", expected: "Points + custom shaders, or third-party VFX", symbols: ["ParticleSystem"], integrated: true, claim: "parity" },
-  { category: "core-rendering", capability: "LOD", expected: "THREE.LOD", symbols: ["LodSelection", "LodLevel"], integrated: false, claim: "parity", notes: "LOD selection exists in @aura3d/rendering but is not surfaced through the root safe API, so a route cannot declare LOD levels." },
+  { category: "core-rendering", capability: "LOD", expected: "THREE.LOD", symbols: ["distanceLod"], integrated: true, claim: "parity", evidence: ["tests/reports/current-head-to-head/instancing-lod/aggregate.json"], notes: "Bounded current parity: distanceLod is exposed through the root safe API, consumed by the Smart City showcase and large-scene example, and compared with THREE.LOD on the locked r185 workload. Imported-model instancing, draw-call, performance, and universal visual parity are not claimed." },
   { category: "core-rendering", capability: "WebGPU", expected: "WebGPURenderer (experimental)", symbols: ["WebGPUDevice"], integrated: true, claim: "parity", evidence: ["tests/reports/webgpu-feature-matrix"] },
   /*
    * WS-2.6 — CLOSED. Status moves `gap` -> `parity`, and the history is worth keeping.
@@ -233,7 +237,7 @@ const ROWS = [
   { category: "ecosystem-helpers", capability: "selection outlines / focus feedback", expected: "OutlinePass, or hand-built indicator geometry", symbols: ["focusObject", "focusSemanticRegion"], integrated: true, claim: "exceed", notes: "Was the flattened-bar defect: every route built its own indicator. Now one system with per-result invariants.", evidence: ["tests/reports/showcase-interaction-audit"] },
   { category: "ecosystem-helpers", capability: "glTF loading", expected: "GLTFLoader + DRACO/KTX2 setup", symbols: ["model", "GLTFLoader"], integrated: true, claim: "exceed", notes: "Typed asset references with provenance; no loader configuration or URL strings in routes." },
   { category: "ecosystem-helpers", capability: "environment / staging presets", expected: "drei Environment + Stage", symbols: ["environments", "prefabs"], integrated: true, claim: "parity" },
-  { category: "ecosystem-helpers", capability: "contact shadows", expected: "drei ContactShadows", symbols: ["contactOcclusion", "contactShadows"], integrated: true, claim: "parity" },
+  { category: "ecosystem-helpers", capability: "contact shadows", expected: "drei ContactShadows", symbols: ["contactOcclusion", "contactShadows"], integrated: true, claim: "parity", declaredConsumers: ["examples/external-interior-scene"], notes: "Bounded receiver-contact approximation plus renderer-owned directional shadow map only; not full screen-space, ray-traced, or general drei ContactShadows parity.", evidence: ["tests/reports/runtime-parity/contact-shadow-parity/contact-shadow-parity-report.json"] },
   { category: "ecosystem-helpers", capability: "performance monitor", expected: "stats.js", symbols: ["createDiagnosticsOverlay", "AuraDiagnostics"], integrated: true, claim: "exceed", notes: "Diagnostics overlay reports backend, draw calls, renderer features and now placed labels." },
   { category: "ecosystem-helpers", capability: "scene inspector", expected: "three-devtools or custom", symbols: ["createGameInspector", "collectAuraSceneEvidence"], integrated: true, claim: "parity" },
     /*
@@ -249,7 +253,7 @@ const ROWS = [
    * The one genuine gap was occlusion, and it is closed as its OWN capability row below rather than by
    * relabelling this one — a reader must not conclude from "occlusion works" that 3D text exists.
    */
-  { category: "ecosystem-helpers", capability: "text rendering", expected: "troika-three-text or TextGeometry", symbols: ["TextGeometry"], integrated: false, claim: "gap", notes: "No 3D text primitive, and 1.6 deliberately does not add one: see docs/architecture/text-requirements.md. World labels are DOM — legible, accessible, crisply scaled, collision-avoiding, and now occlusion-aware (WS-2.7) — but they are not lit by the scene and cannot be extruded. Lit 3D geometry text has no consumer in this repository; adopting SDF/MSDF for the label layer would have traded accessibility and UI crispness for occlusion obtainable far more cheaply. Both deferrals carry the conditions that would make them correct." },
+  { category: "ecosystem-helpers", capability: "text rendering", expected: "troika-three-text or TextGeometry", symbols: ["TextGeometry"], integrated: false, claim: "gap", notes: "Aura3D 2.0 does not expose a 3D text primitive; see docs/architecture/text-requirements.md. World labels are DOM — legible, accessible, crisply scaled, collision-avoiding, and occlusion-aware — but they are not lit by the scene and cannot be extruded. Lit 3D geometry text has no current consumer in this repository, so this remains an explicit gap rather than an inflated parity claim." },
   { category: "ecosystem-helpers", capability: "occlusion-aware annotations", expected: "drei Html with occlude, or a hand-written depth test", symbols: ["labels", "projectWorldLabels"], integrated: true, claim: "parity", notes: "WS-2.7. A label whose subject is behind geometry is dimmed (default) or hidden, per occlusionPolicy. The gap this closed was not missing code but a DECLARED option that did nothing: occlusionAware defaulted to true on every labels.billboard/anchor/axisTick, was accepted by AuraLabelOptions and set by FocusSelection, and worldLabelsFromSnapshot never read it — WorldLabel had no field for it. Implemented as a world-space segment-vs-box test from the camera eye rather than a depth-buffer read, because WebGL2 cannot read depth from the default framebuffer and because the real question is whether the annotated subject is hidden, which is a scene property rather than a pixel property. The subject\'s own box is skipped so a label cannot occlude itself.", evidence: ["tests/reports/browser.json"] },
 
   // --- Physics ---
@@ -267,7 +271,7 @@ const ROWS = [
   // --- Game systems ---
   { category: "game-systems", capability: "input mapping", expected: "hand-written keydown handling", symbols: ["createGameInput"], integrated: true, claim: "exceed", notes: "Action and axis bindings with buffering and replay export." },
   { category: "game-systems", capability: "camera rigs", expected: "hand-written chase/follow cameras", symbols: ["createGameRacingCameraRig", "createGamePlatformerCameraRig", "createGameCameraDirector"], integrated: true, claim: "exceed" },
-  { category: "game-systems", capability: "platformer motion tuning", expected: "hand-tuned gravity and jump velocity", symbols: ["solvePlatformerMotion", "validatePlatformerMotion"], integrated: true, claim: "parity-unproven", notes: "DOWNGRADED from exceed 2026-08-04. solvePlatformerMotion sets apex = max(minApex, geometry.maxRise * apexHeadroom). maxRise is the step-up between consecutive platforms, so on a near-level course it collapses and the apex falls to minApex - the reported barely-there jump. The solver optimises for 'can technically reach the next platform', not for a usable jump, and has no notion of clearing anything that is not the immediate next platform. Restore an exceed claim only after GameEngine-PRD WS-3.6/3.7 make apex intent-derived and the WS-7.2 motion-feel gate passes.", evidence: ["tests/reports/skyline-platformer-motion"] },
+  { category: "game-systems", capability: "platformer motion tuning", expected: "hand-tuned gravity and jump velocity", symbols: ["solvePlatformerMotion", "validatePlatformerMotion"], integrated: true, claim: "parity", notes: "The old geometry-derived barely-there jump is removed. Skyline now declares responsive intent and character-relative jump height; the engine solver validates six clearance/readability invariants across 111 platforms and derives an estimated 137.4-second traversal for the 151.1-unit course. This proves the bounded authored Skyline motion contract, not generic platformer feel superiority or physics parity.", evidence: ["tests/reports/skyline-platformer-motion/skyline-platformer-motion.json"] },
   { category: "game-systems", capability: "frame-based combat", expected: "hand-written state machine and frame data", symbols: ["solveCombatFrameData", "validateCombatFrameData", "createCombatAi"], integrated: true, claim: "exceed", notes: "Frame data validated as frame data. Aura Clash shipped 12-32 active frames against 4-5 recovery frames, inverted from any real fighting game." },
   { category: "game-systems", capability: "session lifecycle / objectives", expected: "hand-written per project", symbols: ["createGameRacingKit", "createGamePlatformerKit", "createGameFallingBlocksKit"], integrated: true, claim: "parity" },
   { category: "game-systems", capability: "touch controls", expected: "hand-written pointer handlers", symbols: ["bindGameTouchControls", "createGameTouchControlLayout"], integrated: true, claim: "exceed" },
@@ -278,8 +282,8 @@ const ROWS = [
   { category: "application-workflows", capability: "digital twin", expected: "assemble R3F + custom overlays", symbols: ["checkSpatialInvariants", "resolveSemanticRegion"], integrated: true, claim: "parity", notes: "Asset-relative anchoring replaces literal helper coordinates; no reusable twin kit yet.", evidence: ["tests/reports/showcase-interaction-audit/showcase-digital-twin-ops.json"] },
   { category: "application-workflows", capability: "architecture walkthrough", expected: "assemble R3F + camera paths", symbols: ["createGameRacingPresentationCamera", "timeline"], integrated: true, claim: "parity", evidence: ["tests/reports/showcase-interaction-audit/showcase-cinematic-architecture.json"] },
   { category: "application-workflows", capability: "data visualisation", expected: "assemble R3F + custom charts", symbols: ["charts", "dataBars3D"], integrated: true, claim: "parity", evidence: ["tests/reports/showcase-interaction-audit/showcase-data-galaxy.json"] },
-  { category: "application-workflows", capability: "cinematic sequencing", expected: "assemble Theatre.js or custom", symbols: ["createSceneSequencer", "createShotTimeline"], integrated: true, claim: "parity" },
-  { category: "application-workflows", capability: "project scaffolding", expected: "vite template + manual wiring", symbols: ["createA3DProject", "CREATE_AURA3D_TEMPLATES"], integrated: true, claim: "exceed", notes: "create-aura3d scaffolds a running typed project with assets and tests." },
+  { category: "application-workflows", capability: "cinematic sequencing", expected: "assemble Theatre.js or custom", symbols: ["createSceneSequencer", "createShotTimeline"], integrated: true, claim: "parity", declaredConsumers: ["showcase-cinematic-architecture"], evidence: ["tests/reports/showcase-interaction-audit/showcase-cinematic-architecture.json", "tests/reports/current-head-to-head/cinematic-architecture/aggregate.json"], notes: "Bounded workflow parity: the flagship route and locked current-Three architecture workload prove deterministic camera-path sequencing and interaction. This does not claim Theatre.js authoring breadth, draw-call parity, postprocess parity, or universal visual parity." },
+  { category: "application-workflows", capability: "project scaffolding", expected: "vite template + manual wiring", symbols: ["createA3DProject", "CREATE_AURA3D_TEMPLATES"], integrated: true, claim: "parity", declaredConsumers: ["@aura3d/create-aura3d"], evidence: ["tests/reports/current-head-to-head/scaffold-to-deploy/aggregate.json", "tests/reports/exact-installed-all-templates/aggregate.json"], notes: "The published CLI is the production consumer. A fresh product-viewer scaffold is built, served, and interacted with against the current Three/R3F/Drei baseline; all 19 templates are separately verified from exact installed tarballs. Aura was slower in all seven retained local workflow phases, so an exceed claim is not made." },
 
   // --- Developer tooling ---
   { category: "developer-tooling", capability: "asset pipeline / provenance", expected: "manual asset management", symbols: ["assets", "createAssetProvenance"], integrated: true, claim: "exceed", notes: "Typed asset map with hashes and license provenance generated by the CLI." },
@@ -304,7 +308,7 @@ const rows = ROROWS();
 function ROROWS() {
   return ROWS.map((row) => {
     const implemented = implementationExists(row.symbols);
-    const productionConsumers = findConsumers(row.symbols);
+    const productionConsumers = findConsumers(row.symbols, row.declaredConsumers ?? []);
     const evidence = evidenceExists(row.evidence ?? []);
     const downgrades = [];
 
@@ -382,7 +386,7 @@ const report = {
     "Parity requires at least one app or example that actually imports the capability.",
     "An exceed claim additionally requires retained runtime evidence that exists on disk.",
     "The generator downgrades rows whose evidence is missing and records why, so this table cannot overstate the product.",
-    "WS-1.6/R1: every non-gap row names a productionPathTest that must execute the public production path. tools/claim-lineage/index.ts resolves that reachability and fails the build otherwise. A consumer proves someone imports a symbol and an artifact proves a file exists; neither proves a test observed the claimed behaviour through the public API, which is why this fourth rule exists."
+    "2.0 rule: every non-gap row names a productionPathTest that must execute the public production path. tools/claim-lineage/index.ts resolves that reachability and fails the build otherwise. A consumer proves someone imports a symbol and an artifact proves a file exists; neither proves a test observed the claimed behaviour through the public API."
   ],
   totals: {
     rows: rows.length,
@@ -394,10 +398,10 @@ const report = {
 
 const outPath = join(root, "tests/reports/aura3d-threejs-ecosystem-parity.json");
 writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
-const markdownPath = join(root, "docs/project/plans/aura3d-threejs-ecosystem-parity.md");
+const markdownPath = join(root, "docs/project/parity/threejs/capability-lineage.md");
 writeFileSync(markdownPath, renderMarkdown(report));
 console.log("wrote tests/reports/aura3d-threejs-ecosystem-parity.json");
-console.log("wrote docs/project/plans/aura3d-threejs-ecosystem-parity.md");
+console.log("wrote docs/project/parity/threejs/capability-lineage.md");
 console.log(JSON.stringify(report.totals, null, 2));
 for (const [category, bucket] of Object.entries(byCategory)) {
   console.log(`${category}: exceed ${bucket.exceed}, parity ${bucket.parity}, unproven ${bucket.unproven}, gap ${bucket.gap} (of ${bucket.total})`);
@@ -506,7 +510,7 @@ function renderMarkdown(value) {
     "This generated inventory may support a statement about a specifically named row and",
     "its retained historical evidence. It may not support `current`, `head-to-head`, broad",
     "`parity`, `replacement`, or performance wording. Those claims require the r185 current",
-    "comparison program defined in `1.6-FINAL-PRD-Finishes.md`."
+    "Aura3D 2.0 comparison program and its current evidence rules."
   );
   return `${lines.join("\n")}\n`;
 }

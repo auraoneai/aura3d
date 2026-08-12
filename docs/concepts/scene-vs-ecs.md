@@ -1,6 +1,6 @@
 # Scene Graph Versus ECS
 
-Version: 1.0.5
+Version: 2.0.0
 
 Aura3D has both a scene graph package and an ECS package. They serve different roles.
 
@@ -39,7 +39,7 @@ Scene graph and ECS APIs are both available, but not every scene feature has a m
 ## Current Limits
 
 - Scene and ECS APIs coexist, but not every scene feature has a complete ECS authoring workflow.
-- ECS parity gaps (as of 1.4.0):
+- ECS compatibility gaps retained in 2.0:
   - ✅ Transform, Hierarchy, Name, Tag, Active components
   - ✅ **WorldTransformComponent** — computed by `TransformSystem` (world matrix + normal matrix)
   - ✅ **CameraComponent** — perspective/orthographic params; computed by `CameraSystem`

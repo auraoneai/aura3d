@@ -42,7 +42,7 @@ Commands:
   aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list
   aura3d assets typegen
-  aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>
+  aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id,...> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>
   aura3d assets certify-game-geometry --asset <id> --category racing|platformer
   aura3d assets certify-game-geometry --assets <id,id,...> --category racing|platformer
   aura3d assets thumbnail

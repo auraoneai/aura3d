@@ -1,6 +1,6 @@
 # Physics
 
-Version: 1.5.3
+Version: 2.0.0
 
 Aura3D physics has two layers, and the distinction matters when you are deciding what to reach for:
 
@@ -10,7 +10,7 @@ Aura3D physics has two layers, and the distinction matters when you are deciding
   `Constraint`, `MeshBVH`, `SurfaceQuery`), over either a `cannon-es` or a native `aura-js`
   backend. You do not need it for gameplay code.
 
-Until 1.5.3 only the second layer existed in any usable form. `.physics({ type: "dynamic" })`
+In the retired 1.x line only the second layer existed in any usable form. `.physics({ type: "dynamic" })`
 let you declare a body and watch it fall; there was no handle to push it, no collision callback,
 and no query. Declaring a simulation you cannot interact with is not a physics API, and it is why
 the library had four hardcoded genre kits and no path to a fifth.

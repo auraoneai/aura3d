@@ -1,6 +1,6 @@
 # Tutorial: Product Configurator
 
-Version: 1.1.0
+Version: 2.0.0
 
 This tutorial points to the current allowlisted product configurator surface inside the advanced gallery.
 

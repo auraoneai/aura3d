@@ -1,6 +1,6 @@
-# Physical simulation migration for the next major release
+# Physical simulation migration for Aura3D 2.0
 
-The next major Aura3D release makes `@aura3d/physics-rapier` the selected
+Aura3D 2.0 makes `@aura3d/physics-rapier` the selected
 optional physical-simulation owner. Authored-unit arcade motion remains in
 `@aura3d/physics`, but it is not interchangeable with rigid-body simulation.
 

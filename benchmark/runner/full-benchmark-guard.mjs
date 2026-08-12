@@ -87,10 +87,9 @@ const approvedPrefixes = [
   "packages/product-studio/",
   "benchmark/runner/",
   "benchmark/context/",
-  "benchmark/prompts/",
+  "benchmark/workloads.json",
   "docs/agents/",
-  "llms.txt",
-  "UnifiedPRD.md"
+  "llms.txt"
 ];
 
 if (override) {
@@ -134,7 +133,7 @@ if (!nonRelease) {
   }
 
   if (!touchedFailedWorkstream) {
-    console.error("No changed file touches a UnifiedPRD failed workstream area. Refusing full benchmark rerun.");
+    console.error("No changed file touches an approved 2.0 benchmark workstream area. Refusing full benchmark rerun.");
     console.error(changedFiles.join("\n"));
     process.exit(1);
   }

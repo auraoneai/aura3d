@@ -1,0 +1,64 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "carModel",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+      "outputPath": "public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+      "url": "/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+      "hash": "sha256-1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14",
+      "sizeBytes": 357064,
+      "bounds": [
+        3.455,
+        3.428,
+        2.206
+      ],
+      "materials": [
+        "Material.001",
+        "Material.002",
+        "Material.003",
+        "Material.004"
+      ],
+      "animations": [],
+      "textures": [],
+      "thumbnailUrl": "/aura-assets/showcaseCleanSportsCar.thumb.svg",
+      "license": "CC-BY-4.0",
+      "author": "JUFF",
+      "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-008/23dfdeb55dc24970b36065afaab7a8a5.glb"
+    },
+    {
+      "id": "trackModel",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb",
+      "outputPath": "public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb",
+      "url": "/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb",
+      "hash": "sha256-5cbb912e511e5e82363c347210096d59dd3007db12c363fd0c9f07919f5ebbd0",
+      "sizeBytes": 1641744,
+      "bounds": [
+        24.651,
+        24.647,
+        2.073
+      ],
+      "materials": [
+        "LINEAS",
+        "gris",
+        "verde",
+        "rojo",
+        "azul",
+        "amarillo"
+      ],
+      "animations": [],
+      "textures": [],
+      "thumbnailUrl": "/aura-assets/showcaseReadableKartCircuit.thumb.svg",
+      "license": "CC-BY-4.0",
+      "author": "Puendiz",
+      "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-034/2fc89fcd8c034bc9ba05eac24c9bf537.glb"
+    }
+  ]
+}

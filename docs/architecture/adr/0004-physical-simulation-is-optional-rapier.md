@@ -55,7 +55,7 @@ Cannon's last npm modification is 2022-08-12; Rapier 0.20.0 was modified on
    platformer motion under ADR 0003 because those are not physical simulation.
 6. This selection changes initialization and physical semantics. If complete
    compatibility cannot be proven, the release version is major rather than
-   pretending the change is a 1.6-compatible minor.
+   pretending the change is backward-compatible with the retired 1.x line.
 
 ## Measured basis
 

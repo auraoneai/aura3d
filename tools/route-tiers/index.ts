@@ -99,6 +99,9 @@ function listRoutes(root: "apps" | "examples"): readonly string[] {
   return readdirSync(directory)
     .filter((entry) => statSync(join(directory, entry)).isDirectory())
     .filter((entry) => !NON_ROUTE_DIRECTORIES.has(entry))
+    // Empty migration placeholders are not navigable routes. Treating any
+    // directory name as a route manufactured three unclassifiable examples.
+    .filter((entry) => readdirSync(join(directory, entry)).length > 0)
     .sort();
 }
 

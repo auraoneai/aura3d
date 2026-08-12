@@ -380,7 +380,7 @@ export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransfo
  * `AnimationMixerThreeCompat`, `SkeletonThreeCompat` and `MorphTargetMixerThreeCompat`, the symbols WS-1.6
  * found the parity generator was failing to grep. Only the rendering one was fabricated.
  *
- * Retrievable from git history; recorded in `docs/architecture/removed-in-1.6.md`.
+ * Retrievable from git history; recorded in `docs/architecture/2.0-removals.md`.
  */
 export {
   ProductionWebGL2Renderer,

@@ -3,8 +3,8 @@
 > **No parity, performance, compatibility, or visual claim may be generated from evidence that does
 > not execute the public production path of the thing being claimed.**
 
-This is R1 of [`Aura3D-1.6-Replatform-PRD.md`](../../Aura3D-1.6-Replatform-PRD.md) and the
-controlling principle of the 1.6 effort. It is enforced by `pnpm check:claim-lineage`
+This is the Aura3D 2.0 claim-lineage contract and the
+controlling principle of the 2.0 release. It is enforced by `pnpm check:claim-lineage`
 (`tools/claim-lineage/index.ts`), which runs inside `check:release`.
 
 ## Why the rule exists
@@ -94,7 +94,7 @@ Neither proves a test executed the public path and observed the claimed behaviou
    that nothing surfaces through the root API. The vaguer note invited closing the row by pointing at
    the listeners. Note also that `tests/browser/production-runtime-webgl2-context-loss.spec.ts` is a
    **one-line re-export shell containing no test** — the kind of file that makes a capability look
-   covered. WS-2.6 closed the root-API gap, and the final 1.6 completion pass added
+   covered. WS-2.6 closed the root-API gap, and the final 2.0 completion pass added
    `apps/context-loss-recovery` as an actual retained consumer. Its browser test provokes a real
    loss/restoration cycle through the public app API, so the generated row now reaches `parity`
    without relaxing the consumer rule. WS-3.9 extends that retained consumer to pause on loss and

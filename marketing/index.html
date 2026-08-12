@@ -133,15 +133,25 @@
     </div>
 
     <div class="hero-right">
-      <iframe class="hero-canvas" data-route="/apps/wow-webgpu-compute-particles/" title="Aura3D · prompt-generated particle system"></iframe>
+      <!--
+        The homepage hero must render on phones, including iOS browsers without
+        WebGPU.  The former embed was the native-only WebGPU compute route; that
+        route correctly reports `unsupported` when `navigator.gpu` is absent, but
+        `chrome=hidden` also hides its diagnostic panel, leaving a black hero on
+        those devices.  Keep native WebGPU as a dedicated capability example and
+        use the WebGL2-compatible authored concept car for the universal first
+        impression. Its production GLB is part of the deployed fixture corpus,
+        so the public site does not depend on an unpublished worktree asset.
+      -->
+      <iframe class="hero-canvas" data-route="/apps/wow-concept-car-cinema/" title="Aura3D · authored cinematic concept car"></iframe>
       <div class="hero-overlay">
         <div class="hero-overlay-top">
-          <span class="scene-chip"><span class="dot"></span>Prompt-generated particles</span>
-          <span class="scene-stat">scene kits</span>
+          <span class="scene-chip"><span class="dot"></span>Authored cinematic vehicle</span>
+          <span class="scene-stat">typed GLB</span>
         </div>
         <div class="hero-overlay-bot">
-          <span class="scene-chip">particles · controls · TypeScript</span>
-          <span class="scene-stat">owned TypeScript</span>
+          <span class="scene-chip">clearcoat · glass · materials</span>
+          <span class="scene-stat">WebGL2 mobile-ready</span>
         </div>
       </div>
     </div>
@@ -175,7 +185,7 @@
       <div class="sec-head-left">
         <span class="eyebrow">New in 2.0.0</span>
         <h2 class="h2">One owner per capability. Typed assets in public. <em style="font-family:var(--serif);font-style:italic">Visual evidence that fails closed.</em></h2>
-        <p class="lede">The unpublished 2.0.0 candidate consolidates duplicate public hosts, selects Rapier as the production physics owner, keeps typed GLB assets and the safe root API as the public authoring path, and requires source, canvas, and full-page inspection for every retained example. Current <code>three@0.185.1</code> comparison work remains explicitly incomplete; 2.0 is not presented as a universal ecosystem-parity result.</p>
+        <p class="lede">The 2.0.0 release candidate consolidates duplicate public hosts, selects Rapier as the production physics owner, keeps typed GLB assets and the safe root API as the public authoring path, and requires source, canvas, and full-page inspection for every retained example. On August 11, 2026, all 15 selected correctness workloads passed from a fresh isolated consumer that installed all 29 exact Aura3D 2.0.0 tarballs against <code>three@0.185.1</code>. This is bounded correctness evidence, not universal ecosystem parity or a completed performance claim.</p>
       </div>
     </div>
 
@@ -216,14 +226,27 @@
           <span class="warn">● scoped comparisons</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">selected inventory</span> <span class="v ok">54 / 54 matched</span></div>
+          <div class="diag-row"><span class="k">protocol</span> <span class="v">29 exact tarballs, isolated consumer, frozen workloads</span></div>
+          <div class="diag-row"><span class="k">correctness</span> <span class="v ok">15 / 15 selected workloads pass</span></div>
           <div class="diag-row"><span class="k">high-priority open</span> <span class="v ok">0</span></div>
           <div class="diag-row"><span class="k">same-asset animation</span> <span class="v ok">7 / 7 comparisons pass</span></div>
           <div class="diag-row"><span class="k">resource lifecycle</span> <span class="v ok">0 tracked leaks after 100 reloads</span></div>
-          <div class="diag-row"><span class="k">boundary</span> <span class="v">named routes, assets, browsers, and thresholds only</span></div>
-          <div class="diag-row"><span class="k">games</span> <span class="v">3 routes remain prototype-blocked</span></div>
+          <div class="diag-row"><span class="k">disclosed losses</span> <span class="v">some Aura frames remain darker or less reflective</span></div>
+          <div class="diag-row"><span class="k">still open</span> <span class="v">full performance protocol, clean-machine rerun, independent review</span></div>
+          <div class="diag-row"><span class="k">games</span> <span class="v">3 rebuilt routes await exact-artifact review</span></div>
         </div>
       </div>
+    </div>
+    <div class="wwx-source-row" aria-label="Aura3D 2.0 release and comparison references" style="margin-top:24px">
+      <a href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener">npm package</a>
+      <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub source</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/MIGRATION-2.0.md" target="_blank" rel="noopener">2.0 migration</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/api/public-api.md" target="_blank" rel="noopener">Public API</a>
+      <a href="#gallery">Examples</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/superiority-evidence-workflow.md" target="_blank" rel="noopener">Comparison methodology</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/threejs-superiority-status.md" target="_blank" rel="noopener">Current results and limits</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/tests/reports/current-head-to-head-installed/report.json" target="_blank" rel="noopener">Installed reproduction report</a>
+      <a href="https://github.com/auraoneai/aura3d/blob/main/tests/reports/current-head-to-head/aggregate.json" target="_blank" rel="noopener">Comparison aggregate</a>
     </div>
   </div>
 </section>
@@ -492,7 +515,7 @@
       </div>
       <div class="pkg">
         <div class="pkg-name">Prompt · Material lab</div>
-        <div class="pkg-desc">"Show chrome, glass, rubber, emissive, and clearcoat as distinct primitives with lighting, reflections, labels, and contact shadows."</div>
+        <div class="pkg-desc">"Show chrome, glass, rubber, emissive, and clearcoat as distinct primitives with lighting, reflections, and labels."</div>
         <div class="pkg-tags"><span class="pkg-tag">materials</span><span class="pkg-tag">primitives</span></div>
       </div>
       <div class="pkg">
@@ -571,9 +594,9 @@
           <span class="showcase-open">Open live route ↗</span>
         </div>
         <div class="showcase-copy">
-          <div class="showcase-kicker"><span class="chip">Visual rebuild</span><span class="chip">Arcade</span></div>
+          <div class="showcase-kicker"><span class="chip">Prototype blocked</span><span class="chip">Arcade</span></div>
           <h3>Blockfall Reactor</h3>
-          <p>A route-local 3D arcade loop with keyboard gameplay and reset evidence.</p>
+          <p>A route-local 3D arcade loop with keyboard gameplay and reset evidence; independent visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/showcase/aura-clash/playable/" role="link" tabindex="0" aria-label="Open Aura Clash Arena showcase">
@@ -584,7 +607,7 @@
         <div class="showcase-copy">
           <div class="showcase-kicker"><span class="chip">Development</span><span class="chip">Fighting game</span></div>
           <h3>Aura Clash Arena</h3>
-          <p>Two typed fighters, responsive browser combat, accessibility controls, and retained gameplay evidence.</p>
+          <p>Two typed fighters, responsive browser combat, accessibility controls, and retained gameplay evidence; human visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/apps/showcase-turbo-drift-circuit/" role="link" tabindex="0" aria-label="Open Turbo Drift Circuit showcase">
@@ -593,9 +616,9 @@
           <span class="showcase-open">Open live route ↗</span>
         </div>
         <div class="showcase-copy">
-          <div class="showcase-kicker"><span class="chip">Visual rebuild</span><span class="chip">Racing</span></div>
+          <div class="showcase-kicker"><span class="chip">Prototype blocked</span><span class="chip">Racing</span></div>
           <h3>Turbo Drift Circuit</h3>
-          <p>A mesh-bound circuit whose hero vehicle passes role-aware admission with rendered wheel visibility, plus certified pacing and lap proof.</p>
+          <p>A mesh-bound circuit with rendered wheel visibility, certified pacing, and lap proof; independent visual approval is pending.</p>
         </div>
       </article>
       <article class="tile t-showcase" data-link="/apps/showcase-skyline-runner/" role="link" tabindex="0" aria-label="Open Skyline Runner showcase">
@@ -604,9 +627,9 @@
           <span class="showcase-open">Open live route ↗</span>
         </div>
         <div class="showcase-copy">
-          <div class="showcase-kicker"><span class="chip">Visual rebuild</span><span class="chip">Platformer</span></div>
+          <div class="showcase-kicker"><span class="chip">Prototype blocked</span><span class="chip">Platformer</span></div>
           <h3>Skyline Runner</h3>
-          <p>Layered depth composition and a graded sky backdrop from reusable engine APIs, with grounded contact, progression, and current visual-QA evidence for the certified asset pair.</p>
+          <p>A ten-district, 2–3 minute route-local level with grounded contact and progression proof; independent visual approval is pending.</p>
         </div>
       </article>
     </div>
@@ -800,8 +823,8 @@
         <p class="lede">Aura3D brings the current production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
       </div>
       <div class="sec-head-right">
-        <span class="eyebrow-num">@aura3d/engine@2.0.0</span>
-        <span class="mute-2 mono" style="font-size:11px">unpublished source candidate</span>
+          <span class="eyebrow-num">@aura3d/engine@2.0.0</span>
+        <span class="mute-2 mono" style="font-size:11px">release candidate · publication gated</span>
       </div>
     </div>
 
@@ -1127,14 +1150,14 @@ scene()
         <p class="foot-blurb">Aura3D is the AI-native TypeScript 3D SDK for the web: prompt workflows, scene kits, primitives, typed GLB/glTF assets, Vite templates, diagnostics, and static deployment checks.</p>
       </div>
       <div class="foot-col">
-        <h4>Library</h4>
+        <h3>Library</h3>
         <a href="#workflows">Agent API</a>
         <a href="#prompts">AI prompts</a>
         <a href="#packages">Packages</a>
         <a href="/docs/api.html">API reference</a>
               </div>
       <div class="foot-col">
-        <h4>Build</h4>
+        <h3>Build</h3>
         <a href="/docs/agent-quickstart.html">Getting started</a>
         <a href="/showcase/aura-clash/">Aura&nbsp;Clash</a>
         <a href="#templates">Templates</a>
@@ -1142,16 +1165,17 @@ scene()
         <a href="#gallery">Examples</a>
       </div>
       <div class="foot-col">
-        <h4>Quality</h4>
+        <h3>Quality</h3>
         <a href="#quality">Release workflow</a>
         <a href="/docs/deployment.html">Deployment checks</a>
         <a href="/docs/assets.html">Asset workflow</a>
         <a href="/docs/api.html">API overview</a>
         <a href="/docs/evidence.html">Evidence</a>
         <a href="/docs/claims.html">Claims & limits</a>
+        <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/superiority-evidence-workflow.md" target="_blank" rel="noopener">Comparison method</a>
       </div>
       <div class="foot-col">
-        <h4>Project</h4>
+        <h3>Project</h3>
         <a href="/llms.txt">llms.txt</a>
         <a href="/docs/agent-rules.html">Agent setup</a>
         <a href="/docs/claude.html">Claude guide</a>

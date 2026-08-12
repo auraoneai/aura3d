@@ -110,7 +110,9 @@ describe("Production HDRLoader contract", () => {
     expect(environment.lighting.environmentBrdfLutTexture?.validate().ok).toBe(true);
     expect(environment.lighting.environmentMapEncoding).toBe("linear");
     expect(environment.lighting.environmentMapIntensity).toBe(1.2);
-    expect(environment.lighting.environmentMapSpecularIntensity).toBeCloseTo(0.456, 5);
+    // PBRHDRPipeline intentionally keeps the HDR specular lobe at 110% of the
+    // caller's IBL intensity; the former 38% multiplier made metals look flat.
+    expect(environment.lighting.environmentMapSpecularIntensity).toBeCloseTo(1.32, 5);
     expect(environment.lighting.environmentMapRotation).toBe(0.35);
     expect(environment.resources.environmentTexture.format).toBe("rgba16f");
     expect(environment.resources.environmentCubeTexture.dimension).toBe("cube");

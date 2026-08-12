@@ -12,9 +12,9 @@ describe("Aura Clash playable index asset paths", () => {
       .map((match) => match[1] ?? match[2])
       .filter((path): path is string => Boolean(path) && path.startsWith("/aura-assets/"));
 
-    expect(referencedPaths).toContain("/aura-assets/auraClashPlayerRig.d8672924.glb");
-    expect(referencedPaths).toContain("/aura-assets/auraClashRivalRig.9a0ffda4.glb");
-    expect(referencedPaths).toContain("/aura-assets/auraClashPlayableScene.thumb.svg");
+    expect(referencedPaths).toContain("/aura-assets/auraClashPlayerRig.3318d671.glb");
+    expect(referencedPaths).toContain("/aura-assets/auraClashRivalRig.c8d844dc.glb");
+    expect(referencedPaths).toContain("/aura-assets/auraClashPlayerRig.thumb.svg");
     expect(referencedPaths.filter((path) => path.endsWith(".ogg")).length).toBeGreaterThanOrEqual(11);
     expect(html).not.toContain("/previews/aura-clash-poster.svg");
 

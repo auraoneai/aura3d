@@ -1,6 +1,6 @@
 # Aura Clash
 
-Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.
+Aura Clash Arena is a playable Aura3D fighting showcase proving browser-runtime mechanics with two current, textured, animated Quaternius GLB fighters, input, animation state, combat evidence, screenshots, and deployment checks.
 
 The route uses production-runtime render resources with the advanced-runtime
 `A3DRenderer`; it does not make a root `createAuraApp` capability claim or a
@@ -26,9 +26,9 @@ import { camera, createAuraApp, effects, lights, model, scene } from "@aura3d/en
 import { assets } from "./src/aura-assets";
 
 const fightScene = scene()
-  .add(model(assets.auraClashDuelStage))
-  .add(model(assets.fighterMaraVolt))
-  .add(model(assets.fighterRookAtlas))
+  .add(model(assets.arenaNeonDowntownTextured))
+  .add(model(assets.auraClashPlayerRig))
+  .add(model(assets.auraClashRivalRig))
   .add(lights.ambient({ color: "#8ee7bd", intensity: 0.36 }))
   .add(camera.perspective({ fov: 42, position: [0, 2.35, 7.4] }));
 
@@ -51,6 +51,7 @@ Useful scripts:
 npm run assets:stage
 npm run assets:build
 npm run assets:register
+npm run assets:provenance
 npm run assets:check
 npm run routes:check
 ```
@@ -69,4 +70,4 @@ npm run routes:check
 
 ## Current completion boundary
 
-The game architecture, typed assets, evidence surfaces, route metadata, readiness checks, and combat systems are implemented. Browser visual QA, screenshot approval, build validation, Vercel deployment, and live URL checks still require explicit approval before this showcase can be declared finished.
+The game architecture, current typed fighters, source-archive provenance, evidence surfaces, route metadata, readiness checks, combat systems, mounted browser gameplay proof, and local visual-regression proof are implemented. Public promotion still requires approval of the exact final screenshots and verification of the deployed production URL; local evidence is not a deployment claim.

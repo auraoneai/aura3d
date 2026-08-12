@@ -15,10 +15,11 @@ describe("agent API line-count acceptance", () => {
     const source = readFileSync(path, "utf8");
 
     expect(source).toContain("createAuraApp");
-    expect(source).toContain("definePromptPlan");
-    expect(source).toContain("promptPlanToScene");
-    expect(source).toContain("asset: assets.product");
-    expect(source).toContain('sceneType: "product-viewer"');
+    expect(source).toContain('from "@aura3d/lean/product"');
+    expect(source).toContain("model(assets.product");
+    expect(source).toContain("environments.studio()");
+    expect(source).toContain("interactions.orbit()");
+    expect(source).toContain("app.ready()");
     expect(countAppLines(path)).toBeLessThanOrEqual(60);
   });
 

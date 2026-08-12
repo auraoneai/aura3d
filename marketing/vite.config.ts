@@ -14,6 +14,7 @@ const appInputs = [
   "apps/wow-boombox-texture-lab/index.html",
   "apps/wow-concept-car-cinema/index.html",
   "apps/wow-damaged-helmet-pbr-detail/index.html",
+  "apps/wow-robot-expressive-rig/index.html",
   "apps/wow-simple-transforms/index.html",
   "apps/wow-standard-material-spheres/index.html",
   "apps/wow-tokyo-keyframes/index.html",

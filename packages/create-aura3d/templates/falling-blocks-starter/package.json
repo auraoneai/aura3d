@@ -14,6 +14,7 @@
     "@aura3d/engine": "2.0.0"
   },
   "devDependencies": {
+    "@types/node": "^22.15.30",
     "@playwright/test": "^1.52.0",
     "typescript": "^5.8.3",
     "vite": "^7.3.2"

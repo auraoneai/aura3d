@@ -34,6 +34,8 @@ const publicDraftLanguageTerms = [
 
 const checks: ReleaseCheck[] = [
   fileIncludes("marketing/index.html", ["Aura3D", "agent-written browser 3D", "assets add", "check-deploy", "The agent writes code. You bring the assets.", "not a hidden runtime generator"], "marketing truthful product copy"),
+  fileIncludes("marketing/index.html", ["August 11, 2026", "15 selected correctness workloads", "all 29 exact Aura3D 2.0.0 tarballs", "three@0.185.1", "not universal ecosystem parity", "full performance protocol", "clean-machine rerun", "independent review", "some Aura frames remain darker or less reflective"], "marketing current comparison protocol, result, and losses"),
+  fileIncludes("marketing/index.html", ["npm package", "GitHub source", "2.0 migration", "Public API", "Examples", "Comparison methodology", "Current results and limits", "Installed reproduction report", "Comparison aggregate"], "marketing release reference links"),
   fileIncludes("README.md", ["agent-written browser 3D", "assets add", "create-aura3d"], "README product positioning"),
   noFileMatches(publicSiteFiles, versionCycleTerms, "public site no version-cycle language"),
   noFileMatches(publicSiteFiles, publicDraftLanguageTerms, "public site production language only"),

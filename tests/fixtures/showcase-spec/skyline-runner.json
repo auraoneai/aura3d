@@ -40,7 +40,7 @@
       "primitivePrimaryWorldRejected": true,
       "playableSurfaceMap": {
         "assetId": "showcaseKenneyVerdantPlatformerWorld",
-        "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+        "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
         "source": "asset-mesh-extracted",
         "surfaces": [
           {

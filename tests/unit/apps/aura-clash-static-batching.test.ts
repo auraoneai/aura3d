@@ -11,10 +11,9 @@ import { resolve } from "node:path";
  * took the baseline from **91 to 68 draw calls at 60 FPS** with a byte-comparable frame, widening
  * headroom under the route's own 160-draw contract from 69 to 92.
  *
- * This matters for FS-104 because the typed arena candidates are far heavier than the current façade:
- * measured at 60 FPS but **230** draw calls for `auraClashDuelStage` and **300** for
- * `arenaNeonDowntown` (207 and 300 respectively with batching on). The draw-call contract, not frame
- * time, is what blocks the swap.
+ * The current textured arena is the live asset rather than a separate combined-scene façade. Its
+ * 81 primitives leave enough room for both skinned fighters and effects inside the unchanged
+ * 160-draw contract, while static batching still protects the authored set dressing.
  */
 describe("Aura Clash arena enables renderer-owned static batching", () => {
   const source = readFileSync(
@@ -52,18 +51,15 @@ describe("Aura Clash arena enables renderer-owned static batching", () => {
 });
 
 /**
- * The typed arena swap is blocked by *geometry*, not materials.
+ * The current textured arena's batching floor is determined by its geometry.
  *
- * `auraClashDuelStage` declares 77 material slots that are only 13 distinct definitions once the name
- * field is ignored, so deduplicating materials looked like a route to the swap. Parsing the GLB proved
- * otherwise: its 85 mesh primitives have 85 distinct attribute sets, and renderer static batching
- * groups by (geometry, material) pairs — unique geometry means one draw per primitive regardless of
- * how few materials are shared. Measured with dedup enabled the stage still cost 207 draw calls.
- *
- * This test pins the measurement so the idea is not retried from scratch.
+ * It has 81 mesh primitives with 81 distinct attribute sets. Renderer static batching groups by
+ * geometry/material pairs, so the current GLB has an 81-primitive geometry floor even though its
+ * texture-backed material set is a compact 19 definitions. This test pins the release asset rather
+ * than retaining a performance contract for the retired prototype duel-stage GLB.
  */
-describe("typed arena swap is geometry-bound, not material-bound", () => {
-  const glbPath = "apps/aura-clash-showcase/public/aura-assets/auraClashDuelStage.09735d3b.glb";
+describe("live textured arena geometry floor", () => {
+  const glbPath = "apps/aura-clash-showcase/public/aura-assets/arenaNeonDowntownTextured.312f2320.glb";
 
   it("has far fewer distinct material definitions than slots, yet unique geometry per primitive", () => {
     const buffer = readFileSync(resolve(process.cwd(), glbPath));
@@ -78,14 +74,13 @@ describe("typed arena swap is geometry-bound, not material-bound", () => {
       delete copy.name;
       return JSON.stringify(copy);
     };
-    // Many slots, few real definitions: the duplication is genuine.
-    expect(materials.length).toBeGreaterThan(50);
-    expect(new Set(materials.map(withoutName)).size).toBeLessThan(20);
+    expect(materials.length).toBe(19);
+    expect(new Set(materials.map(withoutName)).size).toBe(19);
 
     // ...but every primitive owns unique geometry, which is the actual batching floor.
     const primitives = (json.meshes ?? []).flatMap((mesh) => mesh.primitives ?? []);
     const attributeSets = new Set(primitives.map((primitive) => JSON.stringify(primitive.attributes)));
-    expect(primitives.length).toBeGreaterThan(50);
+    expect(primitives.length).toBe(81);
     expect(attributeSets.size).toBe(primitives.length);
   });
 });

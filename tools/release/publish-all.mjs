@@ -34,7 +34,7 @@
 //     from the environment and never logged: `--otp` is appended to the argv of the
 //     child process only.
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -70,7 +70,65 @@ function collectPublishablePackages() {
   return packages;
 }
 
-const packages = collectPublishablePackages();
+function internalDependencies(manifest, packageNames) {
+  return Object.keys({
+    ...(manifest.dependencies ?? {}),
+    ...(manifest.optionalDependencies ?? {})
+  }).filter((name) => packageNames.has(name)).sort();
+}
+
+function dependencyOrder(unorderedPackages) {
+  const byName = new Map(unorderedPackages.map((entry) => [entry.manifest.name, entry]));
+  const packageNames = new Set(byName.keys());
+  const pendingDependencies = new Map();
+  const dependents = new Map([...packageNames].map((name) => [name, []]));
+  for (const entry of unorderedPackages) {
+    const dependencies = internalDependencies(entry.manifest, packageNames);
+    pendingDependencies.set(entry.manifest.name, new Set(dependencies));
+    for (const dependency of dependencies) dependents.get(dependency).push(entry.manifest.name);
+  }
+  const ready = [...packageNames]
+    .filter((name) => pendingDependencies.get(name).size === 0)
+    .sort();
+  const ordered = [];
+  while (ready.length > 0) {
+    const name = ready.shift();
+    ordered.push(byName.get(name));
+    for (const dependent of dependents.get(name).sort()) {
+      const pending = pendingDependencies.get(dependent);
+      pending.delete(name);
+      if (pending.size === 0 && !ordered.some((entry) => entry.manifest.name === dependent) && !ready.includes(dependent)) {
+        ready.push(dependent);
+        ready.sort();
+      }
+    }
+  }
+  if (ordered.length !== unorderedPackages.length) {
+    const blocked = [...pendingDependencies]
+      .filter(([, dependencies]) => dependencies.size > 0)
+      .map(([name, dependencies]) => `${name} <- ${[...dependencies].join(", ")}`);
+    throw new Error(`Internal package dependency cycle: ${blocked.join("; ")}`);
+  }
+  return ordered;
+}
+
+function publishedRegistryVersion(name, version) {
+  try {
+    const result = execFileSync("npm", ["view", `${name}@${version}`, "version", "--json"], {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      maxBuffer: 4 * 1024 * 1024
+    }).trim();
+    return result ? JSON.parse(result) : null;
+  } catch (error) {
+    const diagnostic = `${error?.stdout ?? ""}\n${error?.stderr ?? ""}\n${error?.message ?? ""}`;
+    if (/E404|is not in this registry|No match found for version/i.test(diagnostic)) return null;
+    throw new Error(`Registry availability check failed for ${name}@${version}: ${diagnostic.trim()}`);
+  }
+}
+
+const packages = dependencyOrder(collectPublishablePackages());
 if (packages.length !== EXPECTED_PUBLIC_COUNT) {
   console.error(`Expected exactly ${EXPECTED_PUBLIC_COUNT} publishable packages, found ${packages.length}:`);
   for (const { manifest } of packages) console.error(`  - ${manifest.name}@${manifest.version}`);
@@ -83,6 +141,24 @@ if (mismatched.length > 0) {
   console.error(`Version lockstep violated (root is ${version}):`);
   for (const { manifest } of mismatched) console.error(`  - ${manifest.name}@${manifest.version}`);
   process.exit(1);
+}
+
+const unpublishedChecks = [];
+if (DRY_RUN) {
+  for (const { manifest } of packages) {
+    const publishedVersion = publishedRegistryVersion(manifest.name, manifest.version);
+    unpublishedChecks.push({
+      name: manifest.name,
+      version: manifest.version,
+      unpublished: publishedVersion === null
+    });
+  }
+  const alreadyPublished = unpublishedChecks.filter((entry) => !entry.unpublished);
+  if (alreadyPublished.length > 0) {
+    console.error(`Target version is already published for ${alreadyPublished.length} package(s):`);
+    for (const entry of alreadyPublished) console.error(`  - ${entry.name}@${entry.version}`);
+    process.exit(1);
+  }
 }
 
 rmSync(PACK_DIR, { recursive: true, force: true });
@@ -104,8 +180,10 @@ try {
       const packOutput = sh(`pnpm pack --pack-destination ${JSON.stringify(PACK_DIR)}`, { cwd: dir });
       const tarball = packOutput.split("\n").pop();
       if (!tarball || !existsSync(tarball)) throw new Error(`pack produced no tarball (output: ${packOutput})`);
-      const integrity = `sha512-${createHash("sha512").update(readFileSync(tarball)).digest("base64")}`;
-      packedPackages.set(manifest.name, { tarball, integrity });
+      const tarballBytes = readFileSync(tarball);
+      const integrity = `sha512-${createHash("sha512").update(tarballBytes).digest("base64")}`;
+      const sha256 = createHash("sha256").update(tarballBytes).digest("hex");
+      packedPackages.set(manifest.name, { tarball, integrity, sha256 });
       if (DRY_RUN) {
         console.log(`[dry-run] packed ${label} -> ${tarball}`);
       } else {
@@ -140,6 +218,34 @@ if (failures.length > 0) {
   console.error(`\n${failures.length} package(s) failed to publish. Re-run after fixing; already-published packages will conflict harmlessly.`);
   process.exit(1);
 }
+
+writeFileSync(
+  join(PACK_DIR, "release-plan.json"),
+  `${JSON.stringify({
+    schema: "aura3d-release-plan/1.0",
+    generatedAt: new Date().toISOString(),
+    commit: sh("git rev-parse HEAD"),
+    lockfileSha256: createHash("sha256").update(readFileSync(join(ROOT, "pnpm-lock.yaml"))).digest("hex"),
+    version,
+    dryRun: DRY_RUN,
+    expectedPackageCount: EXPECTED_PUBLIC_COUNT,
+    packageCount: packages.length,
+    targetVersionUnpublished: DRY_RUN ? unpublishedChecks.every((entry) => entry.unpublished) : null,
+    packages: packages.map(({ manifest }) => {
+      const packed = packedPackages.get(manifest.name);
+      return {
+        name: manifest.name,
+        version: manifest.version,
+        internalDependencies: internalDependencies(manifest, new Set(packages.map((entry) => entry.manifest.name))),
+        tarball: packed?.tarball ? packed.tarball.replace(`${ROOT}/`, "") : null,
+        sha256: packed?.sha256 ?? null,
+        integrity: packed?.integrity ?? null,
+        unpublished: DRY_RUN ? unpublishedChecks.find((entry) => entry.name === manifest.name)?.unpublished ?? false : null
+      };
+    })
+  }, null, 2)}\n`,
+  "utf8"
+);
 
 // Trap 4: verify against the registry (skipped on dry runs).
 if (!DRY_RUN) {

@@ -1,6 +1,6 @@
 # Aura3D Showcase Apps Classification
 
-Date: 2026-07-28
+Date: 2026-08-11
 Status: current classification policy
 
 App classification controls what public copy may say. A route can be useful and
@@ -44,13 +44,13 @@ still not be a public release candidate.
 | `showcase-smart-city-control` | release-ready candidate | Public visual operations demo; not a real city simulation claim. |
 | `showcase-cinematic-architecture` | release-ready candidate | Public architecture presentation with bounded rendering claims. |
 | `showcase-digital-twin-ops` | release-ready candidate | Public visual ops/dashboard demo; not a real digital-twin integration claim. |
-| `showcase-blockfall-reactor` | prototype-blocked | Typed cabinet and mounted falling-block mechanics are retained technical proof; cabinet/playfield reconstruction and hash-bound independent review are pending. |
+| `showcase-blockfall-reactor` | prototype-blocked | Materially rebuilt typed-cabinet falling-block loop with hold/queue, line-clear, game-over, reset, progression, and current automated evidence; exact-artifact independent review is pending. |
 | `showcase-racing-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
-| `showcase-skyline-runner` | prototype-blocked | Typed character/world, mesh-derived surfaces, mounted gameplay, and route-local challenge evidence remain bounded technical proof; the visual rebuild and current independent review are pending. |
-| `showcase-turbo-drift-circuit` | prototype-blocked | Typed car/track topology, mounted racing state, and route-local opponent AI remain bounded technical proof; the visual rebuild and current independent review are pending. |
+| `showcase-skyline-runner` | prototype-blocked | Materially rebuilt five-act, 120–180-second Level 1 with typed character/world, mesh-derived surfaces, sentries, checkpoints, collection chain, respawn, and mounted finish evidence; exact-artifact independent review is pending. |
+| `showcase-turbo-drift-circuit` | prototype-blocked | Materially rebuilt four-lap typed-car circuit with ordered gates, distinct typed rival, chase camera, drift feedback, per-wheel circuit contact, and mounted race evidence; exact-artifact independent review is pending. Its handling claim remains arcade, not physical tyre simulation. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 ## Retained Engine Evidence
@@ -202,6 +202,7 @@ gates.
 Marketing may embed a route only when it labels the route with the correct
 classification. `prototype`, `prototype-blocked`, `internal diagnostic`, and
 `blocked` routes cannot be presented as public showcase examples. The configured
-route-library inventory currently contains four candidate entries, two internal
-diagnostics, two game-layer diagnostic harnesses, and three prototype-blocked
-routes; classification and current promotion eligibility are separate.
+route-library inventory currently contains four non-game candidate entries, two
+internal diagnostics, and three materially rebuilt but independent-review-
+pending game routes; classification and current promotion eligibility are
+separate.

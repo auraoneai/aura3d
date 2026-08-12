@@ -19,7 +19,7 @@ interface JsonReport {
 const engineSource = read("packages/engine/src/agent-api/index.ts");
 const bridgeTest = read("tests/unit/agent-api/production-bridge-boundary.test.ts");
 const pauseTest = read("tests/unit/agent-api/paused-render-clock.test.ts");
-const leanBaseSource = read("packages/engine/src/agent-api/lean-base.ts");
+const leanBaseSource = read("packages/lean/src/base.ts");
 const leanSource = read("packages/engine/src/agent-api/lean.ts");
 const leanProductSource = read("packages/engine/src/agent-api/lean-product.ts");
 const leanGameSource = read("packages/engine/src/agent-api/lean-game.ts");

@@ -507,6 +507,14 @@ export interface GameRacingOptions {
   readonly steerRate?: number;
   readonly boostAcceleration?: number;
   readonly offTrackDrag?: number;
+  /**
+   * Keeps the vehicle centre this far inside each certified road edge. Use half the
+   * rendered vehicle width (converted to route units) so wheels do not hang over the
+   * terrain while the centre point still reports on-track.
+   */
+  readonly boundaryInset?: number;
+  /** Maximum heading error from the racing-line tangent during automatic edge recovery. */
+  readonly recoveryHeadingLimit?: number;
   readonly checkpointRadius?: number;
   readonly startProgress?: number;
   readonly lapsToWin?: number;
@@ -1287,6 +1295,14 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
   const steerRate = options.steerRate ?? 2.7;
   const boostAcceleration = options.boostAcceleration ?? 9;
   const offTrackDrag = options.offTrackDrag ?? 5.5;
+  const boundaryInset = Math.max(0, options.boundaryInset ?? 0);
+  const recoveryHeadingLimit = options.recoveryHeadingLimit === undefined
+    ? undefined
+    // Narrow asset-bound circuits may need a much tighter recovery corridor than
+    // 0.1 rad (~5.7°): a long open-wheel chassis can put its outside-front contact
+    // beyond the mesh while its centre is already recovered. Preserve the caller's
+    // physical footprint decision down to a one-hundredth radian.
+    : clampNumber(options.recoveryHeadingLimit, 0.01, Math.PI);
   const checkpointRadius = options.checkpointRadius ?? 0.07;
   const lapsToWin = Math.max(1, options.lapsToWin ?? 1);
   const motion = createGameArcadeVehicle({
@@ -1387,21 +1403,40 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
         y: vehicle.z
       };
       let contact = surfaceQuery.query(position);
-      const offTrack = !contact.onTrack;
+      const vehicleCenterHalfWidth = boundaryInset > 0
+        ? Math.max(0.001, contact.roadHalfWidth - Math.min(boundaryInset, contact.roadHalfWidth * 0.95))
+        : contact.roadHalfWidth * 0.98;
+      // A certified recovery clamps the centre exactly onto the admissible boundary.
+      // Floating-point projection can return that same point a few ulps outside on the
+      // next frame, which previously left `offTrack` latched forever after one touch.
+      // Keep the tolerance proportional to the sampled road width so it is scale-safe
+      // while remaining far smaller than a visible tyre/contact-patch displacement.
+      const boundaryTolerance = Math.max(1e-6, contact.roadHalfWidth * 0.002);
+      const offTrack = !contact.onTrack || contact.trackOffset > vehicleCenterHalfWidth + boundaryTolerance;
       if (offTrack) {
         if (!state.offTrack) emit("off-track");
         if (surfaceQuery.certified) {
           const center = sampleRaceRoute(segments, length, contact.progress);
           const dx = position.x - center.x;
           const dy = position.y - center.y;
-          const scale = contact.trackOffset > 0 ? (contact.roadHalfWidth * 0.98) / contact.trackOffset : 0;
+          // Recover slightly inside the admissible centre corridor, not exactly on its
+          // mathematical edge. A boundary-only clamp lets an inertial vehicle re-trigger
+          // recovery every frame and never reaches a visibly settled "on road" state.
+          const recoveryHalfWidth = vehicleCenterHalfWidth * 0.92;
+          const scale = contact.trackOffset > 0 ? recoveryHalfWidth / contact.trackOffset : 0;
           position = { x: center.x + dx * scale, y: center.y + dy * scale };
           contact = surfaceQuery.query(position);
         }
+        const headingError = normalizeRacingAngle(vehicle.heading - contact.tangentHeading);
+        const recoveryHeading = recoveryHeadingLimit === undefined
+          ? undefined
+          : contact.tangentHeading + clampNumber(headingError, -recoveryHeadingLimit, recoveryHeadingLimit);
         vehicle = motion.constrain({
           x: position.x,
           z: position.y,
-          speedMultiplier: Math.max(0, 1 - offTrackDrag * step)
+          heading: recoveryHeading,
+          speedMultiplier: Math.max(0, 1 - offTrackDrag * step),
+          driftMultiplier: recoveryHeadingLimit === undefined ? 1 : Math.max(0, 1 - step * 2.5)
         });
       }
       state = {
@@ -1416,8 +1451,13 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
         signedTrackOffset: contact.signedTrackOffset,
         offTrack
       };
-      const target = checkpoints[state.checkpoint] ?? 1;
-      if (progressDistance(state.progress, target) <= checkpointRadius && !offTrack) {
+      // Once every ordered checkpoint in the lap is credited there is no next
+      // checkpoint. Falling back to progress `1` made every frame near the finish
+      // line increment the counter again when a noisy nearest-segment projection
+      // delayed the lap-wrap transition (Turbo visibly reached "Gate 62" in one
+      // stint despite having six gates).
+      const target = checkpoints[state.checkpoint];
+      if (target !== undefined && progressDistance(state.progress, target) <= checkpointRadius && !offTrack) {
         emit("checkpoint", `checkpoint-${state.checkpoint + 1}`);
         state = { ...state, checkpoint: state.checkpoint + 1 };
       }
@@ -1460,6 +1500,13 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       return consumed;
     }
   };
+}
+
+function normalizeRacingAngle(angle: number): number {
+  let normalized = angle;
+  while (normalized > Math.PI) normalized -= Math.PI * 2;
+  while (normalized < -Math.PI) normalized += Math.PI * 2;
+  return normalized;
 }
 
 const FALLING_BLOCK_SHAPES: Record<GameFallingBlockPiece, readonly (readonly GameKitVec2[])[]> = {

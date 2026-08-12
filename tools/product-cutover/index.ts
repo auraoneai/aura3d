@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { extname, resolve } from "node:path";
-import { existsCheck, writeReport, type ReleaseCheck } from "../check-common";
+import { writeReport, type ReleaseCheck } from "../check-common";
 
 const tagExists = (() => {
   try {
@@ -39,8 +39,11 @@ const versionCycleHits = activeFiles
 
 const checks: ReleaseCheck[] = [
   { id: "pre-cutover-tag", pass: tagExists, detail: tagExists ? "pre-cutover tag exists" : "missing pre-cutover tag" },
-  existsCheck("archive/legacy-ai-runtime/README.md", "legacy archive"),
-  existsCheck("archive/legacy-ai-runtime/PORT_BACK.md", "port-back list"),
+  {
+    id: "legacy-markdown-pruned",
+    pass: !existsSync(resolve("archive/legacy-ai-runtime/README.md")) && !existsSync(resolve("archive/legacy-ai-runtime/PORT_BACK.md")),
+    detail: "superseded legacy-runtime Markdown is absent; Git history is the archive"
+  },
   { id: "active-ai-scene-package-removed", pass: !existsSync(resolve("packages/ai-scene")), detail: "packages/ai-scene is absent from active workspace" },
   { id: "active-ai-scene-server-removed", pass: !existsSync(resolve("packages/ai-scene-server")), detail: "packages/ai-scene-server is absent from active workspace" },
   {
@@ -57,7 +60,7 @@ const checks: ReleaseCheck[] = [
 
 writeReport("tests/reports/product-cutover.json", "aura3d-product-cutover", checks, {
   preCutoverTagPresent: tagExists,
-  archive: "archive/legacy-ai-runtime",
+  archive: "git history",
   scannedFiles: activeFiles.length
 });
 

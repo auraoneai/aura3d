@@ -1,6 +1,6 @@
 # WebGPU Availability And Fallback Behavior
 
-Version: next major candidate
+Version: 2.0.0
 
 Aura3D has WebGPU package implementation, production-runtime, template, proof-test, and bounded root route surfaces. Browser/device availability remains conditional, so a named WebGPU route must either prove `a3d-webgpu` or show a structured unsupported state. The route, feature, and report inventory lives in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 
@@ -23,7 +23,8 @@ Aura3D has WebGPU package implementation, production-runtime, template, proof-te
 - WebGPU helpers probe `navigator.gpu` when browser support exists.
 - `backend: "auto"` prefers WebGPU and falls back to WebGL2 when WebGPU
   initialization is unavailable. Diagnostics retain the native cause/code.
-- Explicit `backend: "webgpu"` never silently substitutes WebGL2; failure is an
+- An explicit WebGPU request does not silently replace a failed WebGPU request
+  with WebGL2. Explicit `backend: "webgpu"` never silently substitutes WebGL2; failure is an
   actionable error.
 - Expected diagnostic codes include `WEBGPU_RUNTIME_MISSING`, `WEBGPU_ADAPTER_MISSING`, `WEBGPU_DEVICE_REQUEST_FAILED`, `WEBGPU_CANVAS_CONTEXT_MISSING`, and `WEBGPU_CANVAS_CONTEXT_INVALID`.
 - Explicit WebGPU routes use `backend: "webgpu"` and must not silently fall back to WebGL2.
@@ -71,6 +72,6 @@ pnpm webgpu
 
 The current architecture gate does retain real-hardware adapter/device, native
 pipeline, upload, pass, readback, compute, fallback, error, and six-route
-evidence on Chromium/Apple Metal. It does not claim universal browser
+evidence on Chromium/Apple Metal. This bounded route evidence does not claim full real-hardware WebGPU support across all browsers and devices. It does not claim universal browser
 availability, root-default WebGPU, TSL parity, or WebGPU parity for every
 renderer feature. See `webgpu-current-architecture.md`.

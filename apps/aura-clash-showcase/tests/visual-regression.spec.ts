@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
   holdKey,
-  landKeyboardHit,
   loadAuraClashArena,
   queueNearKoHeavy,
   readAuraClashProof,
@@ -16,15 +15,27 @@ test.describe("Aura Clash visual regression states", () => {
 
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-first-frame.png", fullPage: true });
 
-    await holdKey(page, "KeyD", 420);
+    await setFighterTestState(page, { playerX: -1.2, rivalX: 1.2, suppressRivalGuard: true });
+    await page.keyboard.down("KeyD");
+    await expect.poll(async () => (await readAuraClashProof(page)).player.action).toBe("walk");
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-movement.png", fullPage: true });
+    await page.keyboard.up("KeyD");
 
-    await holdKey(page, "KeyW", 160);
-    await page.waitForTimeout(240);
+    // Movement closes the lane enough for the rival AI to interrupt with hitstun. Reset only the
+    // transient combat state so this frame proves an actual player jump rather than racing the AI.
+    await setFighterTestState(page, { playerX: -1.2, rivalX: 1.2, suppressRivalGuard: true });
+    await page.keyboard.down("KeyW");
+    await expect.poll(async () => (await readAuraClashProof(page)).player.grounded, {
+      message: "jump capture must prove the fighter is airborne"
+    }).toBe(false);
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-jump.png", fullPage: true });
+    await page.keyboard.up("KeyW");
+    await expect.poll(async () => (await readAuraClashProof(page)).player.grounded).toBe(true);
 
-    await holdKey(page, "KeyS", 260);
+    await page.keyboard.down("KeyS");
+    await expect.poll(async () => (await readAuraClashProof(page)).player.action).toBe("down");
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-down.png", fullPage: true });
+    await page.keyboard.up("KeyS");
 
     await page.keyboard.down("ShiftLeft");
     await expect.poll(async () => (await readAuraClashProof(page)).player.action).toBe("guard");
@@ -41,16 +52,45 @@ test.describe("Aura Clash visual regression states", () => {
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-heavy.png", fullPage: true });
     await page.waitForTimeout(420);
 
-    await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100 });
-    await holdKey(page, "KeyL", 220);
+    await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100, suppressRivalGuard: true });
+    const hitsBeforeSpecial = (await readAuraClashProof(page)).totalHits;
+    await page.evaluate(() => {
+      const driver = (window as Window & {
+        __AURA_CLASH_ARENA_TEST_DRIVER__?: { pauseOnNextHit(): void };
+      }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+      if (!driver) throw new Error("Aura Clash test driver was not installed.");
+      driver.pauseOnNextHit();
+    });
+    await page.keyboard.press("KeyL");
+    await expect.poll(async () => (await readAuraClashProof(page)).totalHits, {
+      message: "special capture must include a real landed hit",
+      intervals: [10, 20, 30, 50]
+    }).toBeGreaterThan(hitsBeforeSpecial);
+    // The driver freezes the exact real landed-hit frame so full-page capture cannot advance the
+    // authored pose, hit-stop camera response or live render-item VFX independently.
+    await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-special.png", fullPage: true });
+    await page.keyboard.press("KeyP");
     await page.waitForTimeout(520);
 
-    await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100 });
-    const hit = await landKeyboardHit(page);
-    expect(hit.totalHits).toBeGreaterThan(0);
+    await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100, suppressRivalGuard: true });
+    const hitsBeforeHitFrame = (await readAuraClashProof(page)).totalHits;
+    await page.evaluate(() => {
+      const driver = (window as Window & {
+        __AURA_CLASH_ARENA_TEST_DRIVER__?: { pauseOnNextHit(): void };
+      }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+      if (!driver) throw new Error("Aura Clash test driver was not installed.");
+      driver.pauseOnNextHit();
+    });
+    await page.keyboard.press("KeyJ");
+    await expect.poll(async () => (await readAuraClashProof(page)).totalHits, {
+      message: "hit capture must freeze a real landed hit",
+      intervals: [10, 20, 30, 50]
+    }).toBeGreaterThan(hitsBeforeHitFrame);
+    await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
     await expectReadableVisualProof(page, "action");
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-hit.png", fullPage: true });
+    await page.keyboard.press("KeyP");
 
     await queueNearKoHeavy(page);
     await expect.poll(async () => (await readAuraClashProof(page)).rival.health).toBe(0);

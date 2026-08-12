@@ -4,12 +4,13 @@ Version: 2.0.0
 
 All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current source release candidate is `2.0.0` across the release-line package manifests. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
 
-Current evidence note (2026-07-27): release entries below record what shipped
+Current evidence note (2026-08-11): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
-verdict. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
-currently prototype-blocked while their visual rebuild and hash-bound
-independent review are pending. Their prior release receipts remain history,
-not approval of the current worktree.
+verdict. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner now have
+materially rebuilt gameplay and current automated evidence, but remain
+promotion-blocked until hash-bound independent review covers their exact final
+artifacts. Their prior release receipts remain history, not approval of the
+current worktree.
 Comparison wording for the 1.6.0 entry is historical and limited to the named
 `three@0.165.0` workloads and reports. It must not be described as current or
 broadened into universal engine or ecosystem superiority. The current
@@ -35,6 +36,12 @@ Competitive replatform and public-surface consolidation:
 - changes the major version because the final program consolidates ownership,
   removes or internalizes public-facing surfaces, and changes the supported
   competitive contract rather than presenting that work as a minor upgrade;
+- proves all 19 public scaffolds through both 149/149 source checks and 149/149
+  clean exact-2.0-tarball lifecycle checks, and exercises the documented 2.0
+  migration against all 29 exact tarballs in a clean consumer;
+- records the complete public-surface diff from `v1.5.2`, including every
+  removal class, relocation, compatibility alias, schema/CLI/template invariant,
+  and declaration change;
 - remains release-gated: `2.0.0` is not published and no current universal
   Three.js ecosystem-parity claim is approved until the final unfiltered visual
   audit, same-workload current-Three.js comparisons, complete release suites,
@@ -293,7 +300,9 @@ tests and a runtime probe rather than by a screenshot.
 - Frame-time and memory budgets are not independently measured. Draw calls are (776 max against a
   2000 budget).
 
-Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd.md`.
+The consolidated 2.0 product boundary and evidence are documented in
+`docs/project/status/current-state.md` and
+`docs/project/verification-evidence.md`.
 
 ## 1.5.0 (2026-08-01)
 
@@ -572,7 +581,8 @@ The 1.2.0 work was never published as its own release; it shipped as part of 1.3
 - Aura3D 1.0.9 is a scoped runtime-foundation release. It is not a Unity replacement, Unreal competitor, Babylon.js parity claim, or mature commercial game-engine claim.
 - Aura Clash Arena is a development showcase and browser runtime proof target. It is not yet a flagship-quality fighting game.
 - Current published artifact evidence is recorded in `docs/project/release-artifacts.json`.
-- Current scoped release gates are recorded in `docs/project/aura3d-109-release-gates.md`.
+- Current release gates are recorded in
+  `docs/project/release/release-checklist.md`.
 
 ## 1.0.6 - 1.0.8
 

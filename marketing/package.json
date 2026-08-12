@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 7782 --strictPort",
+    "previews:sync": "node scripts/sync-final-previews.mjs",
     "build": "pnpm --dir ../apps/aura-clash-showcase build && vite build && node scripts/build-showcase-routes.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 7782 --strictPort"
   },

@@ -3,12 +3,59 @@
   "routeId": "showcase-product-configurator",
   "routePath": "/apps/showcase-product-configurator/",
   "appId": "showcase-product-configurator",
-  "sourceHash": "sha256-dba0f07c491674f648e71cd67f73f381e4621d6d15a05a6404670e02a7ff3c15",
-  "routeGateHash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d",
+  "sourceHash": "sha256-c1a9516f1b1e13cd6e36f2ef449884c39529480725de51cc85ade5b23a74f607",
+  "routeGateHash": "26b522d8aadd59883d8c507c1b755a19cd887de6aa7246b1032c98ae54d15402",
   "routePrimaryHeroAsset": "showcaseHeadphones",
   "secondaryPrimaryAssets": [],
-  "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
-  "generatedAt": "2026-07-20T05:20:38.765Z",
+  "routeHealthHash": "sha256-0f136f567b6439a8f124dc2b994b14629ceb4f5adced20487c08da05f40be566",
+  "freshness": {
+    "schema": "aura3d-evidence-freshness/1.0",
+    "artifact": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
+    "producer": {
+      "id": "route-primary-probes",
+      "version": "1.1",
+      "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
+    },
+    "generatedAt": "2026-08-11T13:50:27.229Z",
+    "dependencies": [
+      {
+        "kind": "primary-asset",
+        "id": "showcaseHeadphones",
+        "hash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833"
+      },
+      {
+        "kind": "producer-version",
+        "id": "route-primary-probes",
+        "hash": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
+      },
+      {
+        "kind": "renderer-fingerprint",
+        "id": "agent-api+assets",
+        "hash": "sha256-45377ac1fbe7d352ccc6664ad34f92427dff3e41e9c85113d372471eecb919c3"
+      },
+      {
+        "kind": "route-gate-config",
+        "id": "route-gates.json",
+        "hash": "26b522d8aadd59883d8c507c1b755a19cd887de6aa7246b1032c98ae54d15402"
+      },
+      {
+        "kind": "route-health",
+        "id": "showcase-product-configurator/route-health.json",
+        "hash": "sha256-0f136f567b6439a8f124dc2b994b14629ceb4f5adced20487c08da05f40be566"
+      },
+      {
+        "kind": "route-source",
+        "id": "showcase-product-configurator",
+        "hash": "sha256-c1a9516f1b1e13cd6e36f2ef449884c39529480725de51cc85ade5b23a74f607"
+      },
+      {
+        "kind": "viewport-contract",
+        "id": "showcase-product-configurator",
+        "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
+      }
+    ]
+  },
+  "generatedAt": "2026-08-11T13:50:27.230Z",
   "viewport": {
     "width": 1440,
     "height": 900,
@@ -24,6 +71,7 @@
       "claimBoundary",
       "controls",
       "diagnostics",
+      "focusEvidence",
       "interactionState",
       "proceduralStatus",
       "productDiagnostics",
@@ -45,7 +93,7 @@
   },
   "renderer": {
     "backend": "scene-plan",
-    "drawCalls": 6,
+    "drawCalls": 2,
     "renderSize": [
       1440,
       900
@@ -53,17 +101,18 @@
   },
   "renderedProbe": {
     "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
-    "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+    "sha256": "sha256-7a53827f68eeae55570ec3cc642a44139e31c7e313f85795e35daeb96750b9a6",
     "width": 1440,
     "height": 900,
     "analysisCrop": {
-      "x": 398,
-      "y": 218,
-      "width": 1032,
-      "height": 526
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "area": 1296000
     },
-    "nonBlankPixels": 54766,
-    "colorBuckets": 31,
+    "nonBlankPixels": 54646,
+    "colorBuckets": 68,
     "foregroundBounds": {
       "x": 576,
       "y": 293,
@@ -73,7 +122,8 @@
     "visible": true,
     "clipped": false,
     "occludedByUi": false,
-    "readabilityScore": 100,
+    "controlsInViewport": true,
+    "readabilityScore": 95,
     "failures": []
   },
   "primaryAssets": [
@@ -86,17 +136,18 @@
       "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
       "renderedProbe": {
         "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
-        "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+        "sha256": "sha256-7a53827f68eeae55570ec3cc642a44139e31c7e313f85795e35daeb96750b9a6",
         "width": 1440,
         "height": 900,
         "analysisCrop": {
-          "x": 398,
-          "y": 218,
-          "width": 1032,
-          "height": 526
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "area": 1296000
         },
-        "nonBlankPixels": 54766,
-        "colorBuckets": 31,
+        "nonBlankPixels": 54646,
+        "colorBuckets": 68,
         "foregroundBounds": {
           "x": 576,
           "y": 293,
@@ -106,7 +157,8 @@
         "visible": true,
         "clipped": false,
         "occludedByUi": false,
-        "readabilityScore": 100,
+        "controlsInViewport": true,
+        "readabilityScore": 95,
         "failures": []
       }
     }

@@ -786,7 +786,10 @@ function validateGameAssetPairRouteHealth(route, health) {
   if (evidence.category !== status.category) {
     failures.push(`game-asset-pair-category:${String(evidence.category)}`);
   }
-  if (evidence.verdict !== "fail") {
+  const requiresFailingComposition = route.releaseClass === GAME_LAYER_DIAGNOSTIC;
+  if (requiresFailingComposition && evidence.verdict !== "fail") {
+    failures.push(`game-asset-pair-verdict:${String(evidence.verdict)}`);
+  } else if (!requiresFailingComposition && evidence.verdict !== "pass" && evidence.verdict !== "fail") {
     failures.push(`game-asset-pair-verdict:${String(evidence.verdict)}`);
   }
   if (typeof evidence.screenshotEvidence !== "string" || evidence.screenshotEvidence.length === 0) {
@@ -806,19 +809,21 @@ function validateGameAssetPairRouteHealth(route, health) {
   }
 
   const pairBlockers = Array.isArray(evidence.blockers) ? evidence.blockers.filter((blocker) => typeof blocker === "string" && blocker.length > 0) : [];
-  if (pairBlockers.length === 0) {
+  if (evidence.verdict === "fail" && pairBlockers.length === 0) {
     failures.push("missing-game-asset-pair-blockers");
   }
 
   const healthBlockers = Array.isArray(health.blockers) ? health.blockers : [];
-  const requiredVerdictBlocker = `evidence:${status.category}-asset-pair:verdict-not-pass:fail`;
-  if (!healthBlockers.includes(requiredVerdictBlocker)) {
-    failures.push(`missing-route-health-blocker:${requiredVerdictBlocker}`);
-  }
-  for (const blocker of pairBlockers) {
-    const requiredPairBlocker = `evidence:${status.category}-asset-pair:blocker:${blocker}`;
-    if (!healthBlockers.includes(requiredPairBlocker)) {
-      failures.push(`missing-route-health-blocker:${requiredPairBlocker}`);
+  if (evidence.verdict === "fail") {
+    const requiredVerdictBlocker = `evidence:${status.category}-asset-pair:verdict-not-pass:fail`;
+    if (!healthBlockers.includes(requiredVerdictBlocker)) {
+      failures.push(`missing-route-health-blocker:${requiredVerdictBlocker}`);
+    }
+    for (const blocker of pairBlockers) {
+      const requiredPairBlocker = `evidence:${status.category}-asset-pair:blocker:${blocker}`;
+      if (!healthBlockers.includes(requiredPairBlocker)) {
+        failures.push(`missing-route-health-blocker:${requiredPairBlocker}`);
+      }
     }
   }
 

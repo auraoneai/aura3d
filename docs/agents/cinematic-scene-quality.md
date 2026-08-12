@@ -1,6 +1,6 @@
 # Cinematic Scene Quality
 
-Version: 1.1.0
+Version: 2.0.0
 
 Use this guide when an AI coding agent builds a cinematic Aura3D scene or edits the `cinematic-scene` template.
 

@@ -3,14 +3,66 @@
   "routeId": "showcase-skyline-runner",
   "routePath": "/apps/showcase-skyline-runner/",
   "appId": "showcase-skyline-runner",
-  "sourceHash": "sha256-4ebfe029da79819b30e914266c7531010e2a984d2931b78a75affb903fb32a22",
-  "routeGateHash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d",
+  "sourceHash": "sha256-95c4b8e8252d067afedacd378a6a80183be7f880ce97755837071b790883a896",
+  "routeGateHash": "039e5eb69b9aabf3e749b0b0296fed097daad9cb68d36eda53d2bdbe236924cc",
   "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
   "secondaryPrimaryAssets": [
     "showcaseKenneyVerdantPlatformerWorld"
   ],
-  "routeHealthHash": "sha256-6466fea7d12466e86e35154e83d4f12aa6c90393d394b75d9293353aeaa0e12e",
-  "generatedAt": "2026-07-20T06:12:28.289Z",
+  "routeHealthHash": "sha256-8780d1de672c07570c29e4be21c20ab1c2b30922081979acb0408cd4018e3f18",
+  "freshness": {
+    "schema": "aura3d-evidence-freshness/1.0",
+    "artifact": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+    "producer": {
+      "id": "route-primary-probes",
+      "version": "1.1",
+      "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
+    },
+    "generatedAt": "2026-08-10T21:39:28.949Z",
+    "dependencies": [
+      {
+        "kind": "primary-asset",
+        "id": "showcaseKenneyOobiPlatformerHero",
+        "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+      },
+      {
+        "kind": "primary-asset",
+        "id": "showcaseKenneyVerdantPlatformerWorld",
+        "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+      },
+      {
+        "kind": "producer-version",
+        "id": "route-primary-probes",
+        "hash": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
+      },
+      {
+        "kind": "renderer-fingerprint",
+        "id": "agent-api+assets",
+        "hash": "sha256-2600cb4ae6ae52498a42c4705c9fee4c1a37f381eb7a33fb8345fd4232c867fb"
+      },
+      {
+        "kind": "route-gate-config",
+        "id": "route-gates.json",
+        "hash": "039e5eb69b9aabf3e749b0b0296fed097daad9cb68d36eda53d2bdbe236924cc"
+      },
+      {
+        "kind": "route-health",
+        "id": "showcase-skyline-runner/route-health.json",
+        "hash": "sha256-8780d1de672c07570c29e4be21c20ab1c2b30922081979acb0408cd4018e3f18"
+      },
+      {
+        "kind": "route-source",
+        "id": "showcase-skyline-runner",
+        "hash": "sha256-95c4b8e8252d067afedacd378a6a80183be7f880ce97755837071b790883a896"
+      },
+      {
+        "kind": "viewport-contract",
+        "id": "showcase-skyline-runner",
+        "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
+      }
+    ]
+  },
+  "generatedAt": "2026-08-10T21:39:28.949Z",
   "viewport": {
     "width": 1440,
     "height": 900,
@@ -18,10 +70,12 @@
   },
   "mountedEvidence": {
     "present": true,
-    "status": "running",
+    "status": "ready",
     "evidenceKeys": [
       "animation",
       "appId",
+      "challenge",
+      "challengeFeedback",
       "checkpointId",
       "claimBoundary",
       "coins",
@@ -32,9 +86,12 @@
       "gameplay",
       "kitContractProof",
       "levelDesign",
+      "motion",
       "platformer",
       "platformerStateStatus",
+      "player",
       "primaryAssets",
+      "rootRendererIntegration",
       "schema",
       "score",
       "status",
@@ -49,66 +106,70 @@
   },
   "renderer": {
     "backend": "webgl2",
-    "drawCalls": 167,
+    "drawCalls": 444,
     "renderSize": [
-      1108,
-      900
+      2160,
+      1350
     ]
   },
   "renderedProbe": {
-    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "sha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+    "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "sha256": "sha256-d1629dd899a691fd061997e545c385309d7063fccfb7a23e71c2f6cccd56d67e",
     "width": 1440,
     "height": 900,
     "analysisCrop": {
-      "x": 10,
-      "y": 10,
-      "width": 1088,
-      "height": 880
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "area": 1296000
     },
-    "nonBlankPixels": 6763,
-    "colorBuckets": 51,
+    "nonBlankPixels": 8101,
+    "colorBuckets": 168,
     "foregroundBounds": {
-      "x": 279,
-      "y": 455,
-      "width": 100,
-      "height": 104
+      "x": 390,
+      "y": 417,
+      "width": 89,
+      "height": 124
     },
     "visible": true,
     "clipped": false,
     "occludedByUi": false,
-    "readabilityScore": 50,
-    "subjectSuppressedScreenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-    "subjectSuppressedScreenshotSha256": "sha256-23a68a210e916be40c90f35f3f698a7e1aaee2fb8a79aa0d3143980a1e3a13ec",
+    "controlsInViewport": true,
+    "readabilityScore": 49,
+    "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
+    "subjectSuppressedScreenshotSha256": "sha256-0584969f85449bcf8338c3a10858fb6d0907b45c3bdba862737fa96b8b1c4c69",
     "evidenceMethod": "runtime-bound-subject-pixel-difference",
-    "failures": []
+    "failures": [
+      "primary-foreground-width:89"
+    ]
   },
   "compositionProbe": {
     "category": "platformer",
     "subjectBounds": {
-      "x": 279,
-      "y": 455,
-      "width": 100,
-      "height": 104
+      "x": 390,
+      "y": 417,
+      "width": 89,
+      "height": 124
     },
-    "subjectPixels": 6763,
-    "subjectColorBuckets": 51,
+    "subjectPixels": 8101,
+    "subjectColorBuckets": 168,
     "subjectClipped": false,
-    "subjectReadabilityScore": 50,
-    "subjectSuppressedScreenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-    "subjectSuppressedScreenshotSha256": "sha256-23a68a210e916be40c90f35f3f698a7e1aaee2fb8a79aa0d3143980a1e3a13ec",
+    "subjectReadabilityScore": 49,
+    "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
+    "subjectSuppressedScreenshotSha256": "sha256-0584969f85449bcf8338c3a10858fb6d0907b45c3bdba862737fa96b8b1c4c69",
     "projectedPlaySpaceBounds": {
-      "x": 222,
-      "y": 470,
-      "width": 886,
-      "height": 91
+      "x": 357,
+      "y": 474,
+      "width": 1083,
+      "height": 322
     },
     "projectedContactPoint": {
-      "x": 329.912,
-      "y": 555.659
+      "x": 437.461,
+      "y": 536.475
     },
-    "projectedSubjectHeight": 100.554,
-    "subjectTargetSize": 0.32,
+    "projectedSubjectHeight": 137.635,
+    "subjectTargetSize": 0.52,
     "cameraMode": "follow"
   },
   "primaryAssets": [
@@ -120,32 +181,36 @@
       "evidenceMode": "route-primary-foreground",
       "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
       "renderedProbe": {
-        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
-        "sha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        "sha256": "sha256-d1629dd899a691fd061997e545c385309d7063fccfb7a23e71c2f6cccd56d67e",
         "width": 1440,
         "height": 900,
         "analysisCrop": {
-          "x": 10,
-          "y": 10,
-          "width": 1088,
-          "height": 880
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 900,
+          "area": 1296000
         },
-        "nonBlankPixels": 6763,
-        "colorBuckets": 51,
+        "nonBlankPixels": 8101,
+        "colorBuckets": 168,
         "foregroundBounds": {
-          "x": 279,
-          "y": 455,
-          "width": 100,
-          "height": 104
+          "x": 390,
+          "y": 417,
+          "width": 89,
+          "height": 124
         },
         "visible": true,
         "clipped": false,
         "occludedByUi": false,
-        "readabilityScore": 50,
-        "subjectSuppressedScreenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-        "subjectSuppressedScreenshotSha256": "sha256-23a68a210e916be40c90f35f3f698a7e1aaee2fb8a79aa0d3143980a1e3a13ec",
+        "controlsInViewport": true,
+        "readabilityScore": 49,
+        "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
+        "subjectSuppressedScreenshotSha256": "sha256-0584969f85449bcf8338c3a10858fb6d0907b45c3bdba862737fa96b8b1c4c69",
         "evidenceMethod": "runtime-bound-subject-pixel-difference",
-        "failures": []
+        "failures": [
+          "primary-foreground-width:89"
+        ]
       }
     },
     {
@@ -158,6 +223,8 @@
     }
   ],
   "primitivePrimaryCandidates": [],
-  "pass": true,
-  "failures": []
+  "pass": false,
+  "failures": [
+    "primary-foreground-width:89"
+  ]
 }

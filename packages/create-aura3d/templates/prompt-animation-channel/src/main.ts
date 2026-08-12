@@ -133,7 +133,7 @@ const app = createAuraApp("#app", {
     )
     .add(
       primitives
-        .sphere({ name: "glow stones primitive fallback", material: material.emissive({ color: "#ffe18e", intensity: 0.42 }) })
+        .sphere({ name: "glow stones primitive fallback", material: material.emissive({ color: "#ffe18e", emissive: "#ffe18e", emissiveIntensity: 0.42 }) })
         .position(0.18, 0.16, 0.28)
         .scale([0.16, 0.08, 0.16])
     )
@@ -143,73 +143,11 @@ const app = createAuraApp("#app", {
         .position(-0.38, 0.2, 0.18)
         .scale([0.12, 0.24, 0.04])
     )
-    .add(labels.hud({ text: firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D animation channel", position: "bottom-center" }))
+    .add(labels.hud(firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D animation channel"))
     .add(lights.studio({ intensity: 1.2 }))
     .add(effects.bloom({ intensity: 0.18, color: "#7de2ff" }))
     .camera(camera.perspective({ position: [0, 1.4, 4.2], target: [0, 0.7, 0], fov: 42 })),
-  diagnostics: true,
-  metadata: {
-    contractId: episodeContractId,
-    template: "prompt-animation-channel",
-    runtimePlayback: "app.onFrame updates runtime nodes; createAuraApp is called once",
-    renderQueueItems: renderPlan.items.length,
-    renderPackageId: renderOutputPackage.packageId,
-    storyBibleId: storyBible.episodeId,
-    storyBibleProps: storyBible.props.map((prop) => prop.id),
-    styleGuide: storyBible.styleGuide.visualStyle,
-    shotListCount: storyBible.shotList.length,
-    playbackProbeSamples: playbackProbeSamples.map((sample) => ({
-      time: sample.time,
-      frame: sample.frame,
-      shotId: sample.shotId,
-      captionId: sample.captionId,
-      nodeUpdateCount: sample.nodeUpdates.length
-    })),
-    thumbnailCaptureSceneStateId: thumbnailCapture.sourceSceneStateId,
-    thumbnailCaptureTime: thumbnailCapture.time,
-    thumbnailCaptionId: thumbnailCaption?.captionId,
-    deterministicCaptureItems: renderPlan.items.filter((item) => item.sourceSceneState).length,
-    deterministicScreenshotFixtures,
-    typedAssets: typedAnimationAssetSummary,
-    requiredTypedAssets: requiredAnimationCharacterAssets,
-    missingTypedAssets: missingAnimationCharacterAssets,
-    assetCommands: publicAnimationAssetInstructions,
-    bridgeIssueCount: bridgeIssues.length,
-    bridgeSampleAtThumbnail: {
-      time: bridgeSampleAtThumbnail.time,
-      frame: bridgeSampleAtThumbnail.frame,
-      shotId: bridgeSampleAtThumbnail.shot?.shotId,
-      dialogueLineId: bridgeSampleAtThumbnail.dialogue?.lineId
-    },
-    promptAnimationEvidence: {
-      publishReady: promptAnimationEvidence.publishReady,
-      assetStatus: promptAnimationEvidence.assetStatus,
-      captions: promptAnimationEvidence.captions,
-      visemes: promptAnimationEvidence.visemes,
-      audio: promptAnimationEvidence.audio,
-      deterministicCapture: promptAnimationEvidence.deterministicCapture,
-      routeHealth: promptAnimationEvidence.routeHealth
-    },
-    publishReadiness: {
-      ready: publishReadiness.ready,
-      issueCount: publishReadiness.issues.length
-    },
-    captionTimingProof: {
-      status: captionTimingProof.status,
-      maxDriftFrames: captionTimingProof.maxDriftFrames,
-      coveredLineIds: captionTimingProof.coveredLineIds
-    },
-    captionFrameSyncSourceProof,
-    visemeFrameSyncSourceProof,
-    sampleRenderSourceWorkflow,
-    accessibilityProof: {
-      captions: accessibilityProofMetadata?.captions.status,
-      reducedMotion: accessibilityProofMetadata?.reducedMotion.status,
-      highContrast: accessibilityProofMetadata?.highContrast.status
-    },
-    primitiveMouthRuntimeExample,
-    glbVisemeRuntimeExample
-  }
+  diagnostics: true
 });
 
 window.__AURA3D_ANIMATION_TEMPLATE__ = {
@@ -282,7 +220,7 @@ function createMouthCard(id: "miko:mouth" | "luma:mouth", name: string, position
   return primitives
     .box({
       name: `${name} primitive mouth card`,
-      material: material.emissive({ color, intensity: 0.32 })
+      material: material.emissive({ color, emissive: color, emissiveIntensity: 0.32 })
     })
     .position(position[0], position[1], position[2])
     .scale([0.22, 0.035, 0.025])

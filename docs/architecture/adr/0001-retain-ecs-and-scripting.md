@@ -6,7 +6,7 @@
 
 ## Context
 
-`Aura3D-1.6-Replatform-PRD.md` §A lists "an ECS research framework" and "a behaviour-tree /
+The Aura3D 2.0 platform boundary lists "an ECS research framework" and "a behaviour-tree /
 GOAP / HTN AI framework" under *what Aura3D is NOT*, and WS-3.3 was written to delete both
 packages (7,317 lines) from the active tree on the premise that they had **zero consumers**.
 
@@ -22,7 +22,7 @@ deletion.
    competitor already provides.
 2. **Does another mature ecosystem library solve this?** Yes, partially — `bitecs`/`miniplex`
    for ECS, Yuka for steering and behaviour. This is the honest basis for the original §A
-   prohibition: had these been greenfield proposals in 1.6, R11 would likely have rejected
+   prohibition: had these been greenfield proposals for 2.0, R11 would likely have rejected
    building them. **That argument governs new work; it does not retroactively authorise
    removing published API with live consumers and satisfied R1 evidence.**
 3. **Does this create lasting differentiation for Aura3D?** Weakly as libraries, materially as
@@ -38,7 +38,7 @@ deletion.
 ## Decision
 
 **Retain both packages. No workspace change, no `exports` change, no publish-list change, no
-`archive/1.5/` graveyard, and no breaking API removal in 1.6 from this workstream.**
+an in-tree graveyard, and no unreviewed breaking API removal in 2.0 from this workstream.**
 
 Amend §A instead, to state that the prohibition binds *new* subsystems and does not mandate
 deleting published API that carries a live consumer and production-path evidence.

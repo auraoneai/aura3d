@@ -36,12 +36,20 @@ const panelMaterial = material.pbr({ name: "readable graphite board backplate", 
 const railMaterial = material.metal({ name: "brushed safety rail", color: "#a9b49d", roughness: 0.36, metallic: 0.62 });
 const gridMaterial = material.emissive({ name: "readable board grid", color: "#39685f", emissive: "#6fd8c2", emissiveIntensity: 0.3, roughness: 0.7 });
 const ghostMaterial = material.glass({ name: "transparent ghost landing piece", color: "#dbe7d9", opacity: 0.26, transmission: 0.45, roughness: 0.12 });
-const flashMaterial = material.emissive({ name: "line clear flash", color: "#fff4b8", emissive: "#fff4b8", emissiveIntensity: 1.8 });
+const flashMaterial = material.emissive({
+  name: "line clear grid pulse",
+  color: "#39f6ff",
+  emissive: "#39f6ff",
+  emissiveIntensity: 1.15,
+  roughness: 0.22,
+  opacity: 0.58
+});
 const levelUpMaterial = material.neon({ name: "level up charge band", color: "#74ff91", emissive: "#9dffb4", emissiveIntensity: 1.5, roughness: 0.16, opacity: 0.72 });
 const gameOverMaterial = material.emissive({ name: "game over wash", color: "#5c0f19", emissive: "#ff4d5f", emissiveIntensity: 0.95, roughness: 0.5, opacity: 0.66 });
 const resetMaterial = material.neon({ name: "reset sweep", color: "#39f6ff", emissive: "#9ff9ff", emissiveIntensity: 1.4, roughness: 0.14, opacity: 0.7 });
-const burstMaterial = material.neon({ name: "line clear burst core", color: "#fff4b8", emissive: "#ffffff", emissiveIntensity: 2.1, roughness: 0.1, opacity: 0.85 });
+const burstMaterial = material.neon({ name: "line clear reactor sweep", color: "#42d96b", emissive: "#65ff88", emissiveIntensity: 1.25, roughness: 0.18, opacity: 0.52 });
 const reactorMaterial = material.neon({ name: "reactor charge column", color: "#6dee8d", emissive: "#77ff96", emissiveIntensity: 1.1, roughness: 0.18 });
+const reactorHousingMaterial = material.metal({ name: "reactor meter graphite housing", color: "#17201e", roughness: 0.42, metallic: 0.58 });
 const marqueePanelMaterial = material.pbr({ name: "blockfall marquee backlit panel", color: "#150a1f", roughness: 0.46, metallic: 0.22 });
 const marqueeGlyphMaterial = material.neon({ name: "blockfall marquee glyph block", color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 1.15, roughness: 0.2 });
 const reactorCapMaterial = material.neon({ name: "reactor critical cap", color: "#ffb35a", emissive: "#ffd05d", emissiveIntensity: 0.9, roughness: 0.2 });
@@ -226,9 +234,18 @@ export function createClearFlashNodes(): AuraNodeInput[] {
 
 export function createReactorNodes(): AuraNodeInput[] {
   return [
+    // A single dark housing and four structural rails make the fill, glass and event
+    // lamps read as one cabinet instrument instead of detached vertical fragments.
+    primitives.box({ name: "reactor meter housing", material: reactorHousingMaterial }).position(1.52, 2, 0.08).scale([0.36, 1.56, 0.08]),
+    primitives.box({ name: "reactor meter left rail", material: railMaterial }).position(1.34, 2, 0.15).scale([0.035, 0.76, 0.07]),
+    primitives.box({ name: "reactor meter right rail", material: railMaterial }).position(1.7, 2, 0.15).scale([0.035, 0.76, 0.07]),
     primitives.cylinder({ name: "reactor charge glass tube", material: material.glass({ color: "#e7f7e7", opacity: 0.34, transmission: 0.55, roughness: 0.08 }) }).position(1.52, 2, 0.16).scale([0.095, 0.68, 0.095]),
+    primitives.box({ name: "reactor meter lower bracket", material: railMaterial }).position(1.52, 1.24, 0.15).scale([0.22, 0.045, 0.08]),
+    primitives.box({ name: "reactor meter upper bracket", material: railMaterial }).position(1.52, 2.76, 0.15).scale([0.22, 0.045, 0.08]),
     primitives.cylinder({ name: "reactor fill", material: reactorMaterial }).position(1.52, 1.42, 0.2).scale([0.08, 0.18, 0.08]).runtime(game.runtimeNode("blockfall-reactor-fill", { tags: ["blockfall", "reactor", "meter"] })),
-    primitives.sphere({ name: "reactor cap", material: reactorCapMaterial }).position(1.52, 3.1, 0.2).scale(HIDDEN_BLOCK_SCALE).runtime(game.runtimeNode("blockfall-reactor-cap", { tags: ["blockfall", "reactor", "critical"] })),
+    // A rectangular warning beacon reads as part of the reactor hardware. The former
+    // non-uniform sphere projected as an unexplained yellow/white oval beside the board.
+    primitives.box({ name: "reactor critical beacon", material: reactorCapMaterial }).position(1.52, 2.66, 0.2).scale(HIDDEN_BLOCK_SCALE).runtime(game.runtimeNode("blockfall-reactor-cap", { tags: ["blockfall", "reactor", "critical"] })),
     primitives.box({ name: "left hold dock glow", material: material.emissive({ color: "#8b7a55", emissive: "#d3a23c", emissiveIntensity: 0.22 }) }).position(-1.45, 3.2, 0.02).scale([0.13, 0.025, 0.018]),
     primitives.box({ name: "right queue dock glow", material: material.emissive({ color: "#55725a", emissive: "#69dd83", emissiveIntensity: 0.2 }) }).position(1.45, 1.04, 0.02).scale([0.13, 0.025, 0.018])
   ];
@@ -243,7 +260,7 @@ export const BEAT_HIDDEN_SCALE = HIDDEN_BLOCK_SCALE;
  */
 export function createBeatNodes(): AuraNodeInput[] {
   return [
-    // Level-up: a rising charge band across the full board width.
+    // Level-up: a status lamp mounted on the reactor housing.
     primitives.box({ name: "level up charge band", material: levelUpMaterial })
       .position(0, BOARD_CENTER_Y, 0.24)
       .scale(HIDDEN_BLOCK_SCALE)
@@ -253,14 +270,16 @@ export function createBeatNodes(): AuraNodeInput[] {
       .position(0, BOARD_CENTER_Y, 0.23)
       .scale(HIDDEN_BLOCK_SCALE)
       .runtime(game.runtimeNode(BEAT_NODE_IDS.gameOver, { tags: ["blockfall", "beat", "game-over"] })),
-    // Reset: a cool sweep bar that runs the board once on restart.
-    primitives.box({ name: "reset sweep bar", material: resetMaterial })
+    // Reset: a cool status lamp mounted on the reactor housing.
+    primitives.box({ name: "reset reactor status lamp", material: resetMaterial })
       .position(0, BOARD_CENTER_Y, 0.25)
       .scale(HIDDEN_BLOCK_SCALE)
       .runtime(game.runtimeNode(BEAT_NODE_IDS.reset, { tags: ["blockfall", "beat", "reset"] })),
-    // Combo/clear burst: a bright core that pulses at the cleared rows.
-    primitives.sphere({ name: "line clear burst core", material: burstMaterial })
-      .position(0, BOARD_CENTER_Y, 0.3)
+    // Combo/clear burst: a charge pulse beside the physical reactor meter. Keeping this
+    // out of the playfield prevents feedback geometry from masquerading as a falling piece
+    // or an unexplained horizontal bar over the stack.
+    primitives.box({ name: "line clear reactor charge", material: burstMaterial })
+      .position(1.52, BOARD_CENTER_Y, 0.3)
       .scale(HIDDEN_BLOCK_SCALE)
       .runtime(game.runtimeNode(BEAT_NODE_IDS.burst, { tags: ["blockfall", "beat", "line-clear-burst"] }))
   ];

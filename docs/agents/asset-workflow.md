@@ -1,6 +1,6 @@
 # Asset Workflow
 
-Typed GLB/glTF asset workflow for AI coding agents. The 1.0.4 planning track introduced the catalog-first path for named real-world objects; Aura3D 1.4.1 carries it as the active typed asset baseline.
+Typed GLB/glTF asset workflow for Aura3D 2.0 coding agents.
 
 Read `llms.txt` and `docs/agents/claims-and-boundaries.md` before writing route
 code or asset claims. Asset safety is a release blocker, not a style preference.
@@ -94,8 +94,8 @@ unfiltered command when the whole manifest is intended to ship.
 
 ## Source and release validation
 
-Public examples must pass static source validation for unsafe asset use. The P0
-release gate from `docs/project/plans/recovery-remediation-prd.md` requires source scanning for:
+Public examples must pass the 2.0 release checklist's static source validation
+for unsafe asset use:
 
 - `model("...")` raw string IDs;
 - raw `.glb` or `.gltf` URLs;

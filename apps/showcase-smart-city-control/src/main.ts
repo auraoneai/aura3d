@@ -108,13 +108,22 @@ const VEHICLE_STATION_FOOTPRINT_REGION: SemanticRegion = {
   u: 0.47,
   v: 0.54,
   w: 0.58,
-  extent: [0.12, 0.08, 0.12]
+  // A 15%-of-city station presents the hero at roughly 40% of the 3.8-unit
+  // city footprint: readable, but still far below the rejected 64% occluding
+  // scale. The prior 12% station sat too close to the primary-pixel floor and
+  // produced sequence-dependent 2,126–2,500-pixel probe results.
+  extent: [0.15, 0.1, 0.15]
 };
 
 /** Bounds-derived world size for the hero vehicle. Never a hardcoded multiplier. */
 function vehicleTargetMaxDimension(): number {
   return fitSizeToRegion(resolveSemanticRegion(cityBounds(), VEHICLE_STATION_FOOTPRINT_REGION), {
-    occupancy: 0.82
+    // Keep the typed vehicle legible at the release 1440x900 probe size. The
+    // former smaller station produced only 2,126–2,500 isolated subject
+    // pixels—at or below the public-primary floor—even though its bounds were
+    // otherwise healthy. This remains region-derived and occupies less than
+    // the station.
+    occupancy: 0.9
   }).targetMaxDimension;
 }
 

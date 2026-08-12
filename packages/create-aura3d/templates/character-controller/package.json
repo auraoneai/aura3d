@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "enable:physics": "npm install @aura3d/physics@2.0.0 @aura3d/physics-rapier@2.0.0",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
@@ -12,8 +13,7 @@
   },
   "dependencies": {
     "@aura3d/animation": "2.0.0",
-    "@aura3d/engine": "2.0.0",
-    "@aura3d/physics": "2.0.0"
+    "@aura3d/engine": "2.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

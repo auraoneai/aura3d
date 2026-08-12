@@ -1,0 +1,83 @@
+{
+  "schema": "aura3d-agent-benchmark-workloads/2.0",
+  "version": "2.0.0",
+  "rules": {
+    "orderFrozen": true,
+    "assetPolicy": "Workloads 1-9 provide no prompt-specific external assets. Public library helpers and bundled assets are allowed. Workload 10 permits only benchmark/assets/sneaker.glb.",
+    "mutationBoundary": "Changing workload order, instructions, asset policy, or evidence requirements voids an in-progress run."
+  },
+  "workloads": [
+    {
+      "id": "physics-playground",
+      "order": 1,
+      "instruction": "Build a physics playground: 50 falling cubes onto a tilted ramp with collision response, camera orbit, reset button, and live contact count overlay.",
+      "assets": [],
+      "requiredVisualEvidence": ["many cubes", "tilted ramp", "visible collision/contact behavior", "reset control", "live contact count", "readable camera framing"]
+    },
+    {
+      "id": "particle-fountain",
+      "order": 2,
+      "instruction": "Build a particle fountain: gravity-affected particles emitted upward from a point, colored by lifetime, with a ground plane they collide against and a controllable emission rate.",
+      "assets": [],
+      "requiredVisualEvidence": ["identifiable emitter", "upward-and-falling arc", "lifetime color variation", "ground plane", "emission-rate control"]
+    },
+    {
+      "id": "procedural-solar-system",
+      "order": 3,
+      "instruction": "Build a procedural solar system: sun, 6 planets at different orbital distances and speeds, label each planet, bloom on the sun, orbit camera.",
+      "assets": [],
+      "requiredVisualEvidence": ["one sun and six planets", "different orbit distances", "readable labels", "sun glow or bloom", "whole-system framing"]
+    },
+    {
+      "id": "neon-tunnel-flythrough",
+      "order": 4,
+      "instruction": "Build a neon tunnel flythrough: procedurally generated tube geometry with emissive segments, camera animated through the tunnel, bloom postprocess, fog falloff.",
+      "assets": [],
+      "requiredVisualEvidence": ["tunnel interior", "emissive segments", "bloom or glow", "fog or depth falloff", "captured camera animation"]
+    },
+    {
+      "id": "3d-data-visualization",
+      "order": 5,
+      "instruction": "Build a 3D data visualization: a 6x6 grid of bars whose heights animate from random values, color by height, hover-highlight, orbit camera, axis labels.",
+      "assets": [],
+      "requiredVisualEvidence": ["36-bar grid", "varied bar heights", "height-correlated color", "readable axis labels", "documented hover highlight"]
+    },
+    {
+      "id": "mini-golf-hole",
+      "order": 6,
+      "instruction": "Build a mini-golf hole: a flat green with one obstacle, a ball with physics, click-to-aim-and-shoot, score counter, follow camera on the ball.",
+      "assets": [],
+      "requiredVisualEvidence": ["green", "obstacle", "ball", "aim or shot interaction", "score counter", "ball-emphasizing camera"]
+    },
+    {
+      "id": "material-lab",
+      "order": 7,
+      "instruction": "Build a material lab: 5 spheres with metal, glass, rubber, emissive, and clearcoat materials under controlled studio lighting with an environment map and orbit controls.",
+      "assets": [],
+      "requiredVisualEvidence": ["five spheres", "five distinct materials", "studio highlights/reflections/shadows", "environment lighting", "orbit controls"]
+    },
+    {
+      "id": "procedural-city-block",
+      "order": 8,
+      "instruction": "Build a procedurally generated city block: 20 box buildings of varying heights with windows, streets, street lights, and a day/night toggle that changes lighting and sky.",
+      "assets": [],
+      "requiredVisualEvidence": ["about 20 buildings", "varied heights", "windows", "streets and street lights", "day/night lighting and sky change"]
+    },
+    {
+      "id": "animated-humanoid-walk",
+      "order": 9,
+      "instruction": "Build an animated humanoid character walking across the ground plane. The result must read as one connected character, not an exploded primitive puppet or rough prototype output.",
+      "assets": [],
+      "assetPolicy": "No prompt-provided or downloaded assets. Library-bundled humanoid helpers or built-in character assets exposed through the public context are allowed.",
+      "requiredVisualEvidence": ["connected humanoid", "head torso arms legs hands and feet", "ground plane", "grounding/contact cue", "walk-cycle runtime motion", "animated pose", "no detached limbs"]
+    },
+    {
+      "id": "product-viewer-sneaker",
+      "order": 10,
+      "instruction": "Build a product viewer using the provided sneaker.glb: centered, auto-scaled, on a plinth, with studio lights, orbit controls, and a rotating turntable.",
+      "assets": ["benchmark/assets/sneaker.glb"],
+      "assetPolicy": "No asset discovery, remote search, substitute model, or invented asset path.",
+      "requiredVisualEvidence": ["visible sneaker", "centered and auto-scaled model", "plinth", "readable studio lighting", "orbit controls", "turntable rotation"]
+    }
+  ]
+}

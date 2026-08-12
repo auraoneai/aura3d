@@ -11,7 +11,7 @@ import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import process from "node:process";
 import { chromium } from "@playwright/test";
@@ -54,8 +54,7 @@ const viteVersion = "7.3.2";
 const threeVersion = "0.185.1";
 
 mkdirSync(tarballDirectory, { recursive: true });
-const auraTarball = packReleaseCandidate();
-const auraTarballSha256 = sha256(auraTarball);
+const auraTarballs = packReleaseCandidate();
 const warmCaches: Record<Engine, string> = {
   aura3d: join(profileRoot, "cache-warm-aura3d"),
   threejs: join(profileRoot, "cache-warm-threejs")
@@ -82,7 +81,8 @@ try {
       "Wall-clock time from npm install start through fresh project creation, production build, " +
       "Vite readiness, and a browser-verified non-blank rendered cube.",
     methodology: {
-      releaseCandidate: "actual pnpm-packed @aura3d/engine 2.0.0 tarball from the measured commit",
+      releaseCandidate:
+        "actual pnpm-packed @aura3d/lean 2.0.0 tarball plus its complete local Aura dependency closure from the measured commit",
       comparison: `three@${threeVersion} from the public npm registry`,
       commonTooling: `vite@${viteVersion}`,
       samplesPerEnginePerState: sampleCount,
@@ -105,7 +105,16 @@ try {
       npmRegistry: "https://registry.npmjs.org/"
     },
     artifacts: {
-      aura3d: { version: "2.0.0", source: "release-candidate-tarball", sha256: auraTarballSha256 },
+      aura3d: {
+        version: "2.0.0",
+        source: "release-candidate-tarballs",
+        entry: "@aura3d/lean",
+        packages: Object.entries(auraTarballs).map(([name, path]) => ({
+          name,
+          file: basename(path),
+          sha256: sha256(path)
+        }))
+      },
       threejs: { version: threeVersion, source: "npm-registry" }
     },
     samples,
@@ -131,16 +140,29 @@ try {
   rmSync(profileRoot, { recursive: true, force: true });
 }
 
-function packReleaseCandidate(): string {
-  const result = spawnSync("pnpm", ["pack", "--pack-destination", tarballDirectory], {
-    cwd: repoRoot,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
-  });
-  if (result.status !== 0) throw new Error(`Unable to pack release candidate: ${result.stderr}`);
-  const filename = result.stdout.trim().split(/\r?\n/).filter(Boolean).at(-1);
-  if (!filename) throw new Error("pnpm pack did not return a release-candidate filename.");
-  return resolve(tarballDirectory, filename);
+function packReleaseCandidate(): Readonly<Record<string, string>> {
+  const packageDirectories: Readonly<Record<string, string>> = {
+    "@aura3d/lean": "packages/lean",
+    "@aura3d/assets": "packages/assets",
+    "@aura3d/animation": "packages/animation",
+    "@aura3d/rendering": "packages/rendering",
+    "@aura3d/scene": "packages/scene",
+    "@aura3d/core": "packages/core",
+    "@aura3d/math": "packages/math"
+  };
+  return Object.fromEntries(
+    Object.entries(packageDirectories).map(([name, directory]) => {
+      const result = spawnSync("pnpm", ["pack", "--pack-destination", tarballDirectory], {
+        cwd: resolve(repoRoot, directory),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"]
+      });
+      if (result.status !== 0) throw new Error(`Unable to pack ${name}: ${result.stderr}`);
+      const filename = result.stdout.trim().split(/\r?\n/).filter(Boolean).at(-1);
+      if (!filename) throw new Error(`pnpm pack did not return a filename for ${name}.`);
+      return [name, resolve(tarballDirectory, filename)] as const;
+    })
+  );
 }
 
 function primeWarmCache(engine: Engine, cache: string): void {
@@ -246,7 +268,10 @@ function createProfile(engine: Engine, id: string, cache: string): { readonly di
     type: "module",
     scripts: { build: "vite build", dev: "vite" },
     dependencies: engine === "aura3d"
-      ? { "@aura3d/engine": `file:${auraTarball}`, vite: viteVersion }
+      ? {
+          ...Object.fromEntries(Object.entries(auraTarballs).map(([name, path]) => [name, `file:${path}`])),
+          vite: viteVersion
+        }
       : { three: threeVersion, vite: viteVersion }
   }, null, 2)}\n`);
   return {

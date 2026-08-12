@@ -15,17 +15,16 @@ const requiredCommands = [
   "firstFrameScreenshot",
   "vercelDeploy",
   "deployedRouteEvidence",
-  "auraClash106Evidence",
+  "auraClashEvidence",
   "reviewPackage",
   "visualApproval",
   "crossRuntimeEvidence",
-  "prdEvidenceCoverage",
+  "documentationEvidence",
   "commandPlanCheck",
   "commandPlanDryRun",
   "evidenceWiringCheck",
   "readinessReport",
-  "completionAudit",
-  "prdUpdate",
+  "documentationAudit",
   "proofWorkflow",
   "localProofAlias",
   "completeProofAlias"
@@ -45,8 +44,7 @@ const requiredSourceEvidence = {
   ],
   stageSafeZone: [
     "packages/engine/src/agent-api/game-kits/fighting.ts",
-    "apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage.ts",
-    "apps/aura-clash-showcase/src/scenes/createStageScene.ts"
+    "apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage.ts"
   ],
   treeShakableExports: [
     "packages/engine/src/agent-api/GameRuntime.ts",
@@ -76,39 +74,6 @@ if (!manifest.remainingHumanGate?.checkbox) {
   failures.push("Missing remainingHumanGate.checkbox");
 }
 
-if (!Array.isArray(manifest.auraClash106CurrentEvidence?.requiredArtifacts)) {
-  failures.push("Missing auraClash106CurrentEvidence.requiredArtifacts");
-} else {
-  for (const artifact of manifest.auraClash106CurrentEvidence.requiredArtifacts) {
-    if (!existsSync(resolve(repoRoot, artifact))) {
-      failures.push(`auraClash106CurrentEvidence.requiredArtifacts references a missing file: ${artifact}`);
-    }
-  }
-}
-
-if (!Array.isArray(manifest.auraClash106CurrentEvidence?.sourceArtifacts)) {
-  failures.push("Missing auraClash106CurrentEvidence.sourceArtifacts");
-} else {
-  for (const artifact of manifest.auraClash106CurrentEvidence.sourceArtifacts) {
-    if (!existsSync(resolve(repoRoot, artifact))) {
-      failures.push(`auraClash106CurrentEvidence.sourceArtifacts references a missing file: ${artifact}`);
-    }
-  }
-}
-
-for (const required of [
-  "apps/aura-clash-showcase/launch-evidence/aura-clash-106-readiness.json",
-  "apps/aura-clash-showcase/launch-evidence/deployed-106-proof.json",
-  "apps/aura-clash-showcase/launch-evidence/playable-106-first-frame.png",
-  "apps/aura-clash-showcase/launch-evidence/playable-106-combat-frame.png",
-  "apps/aura-clash-showcase/launch-evidence/playable-106-ko-reset.png"
-]) {
-  const entry = JSON.stringify(manifest);
-  if (!entry.includes(required)) {
-    failures.push(`Manifest must reference current 1.0.6 artifact: ${required}`);
-  }
-}
-
 const serializedManifest = JSON.stringify(manifest);
 for (const stalePattern of [/launch-evidence\/[^"]*v5/i, /launch-evidence\/[^"]*v6/i, /playable-smoke-v6/i]) {
   if (stalePattern.test(serializedManifest)) {
@@ -116,8 +81,8 @@ for (const stalePattern of [/launch-evidence\/[^"]*v5/i, /launch-evidence\/[^"]*
   }
 }
 
-if (!manifest.prd || !manifest.prd.endsWith("docs/project/showcase/aura-clash-showcase-plan.md")) {
-  failures.push("Manifest prd must point at docs/project/showcase/aura-clash-showcase-plan.md");
+if (!manifest.documentation || !manifest.documentation.endsWith("docs/examples/aura-clash.md")) {
+  failures.push("Manifest documentation source must point at docs/examples/aura-clash.md");
 }
 
 for (const [entryName, requiredFiles] of Object.entries(requiredSourceEvidence)) {
@@ -162,13 +127,12 @@ for (const script of [
   "run-vercel-deploy-evidence.mjs",
   "create-launch-review-package.mjs",
   "record-visual-approval.mjs",
-  "update-prd-from-launch-evidence.mjs",
   "run-launch-proof-workflow.mjs",
   "check-cross-runtime-evidence.mjs",
-  "check-prd-evidence-coverage.mjs",
+  "check-documentation-evidence.mjs",
   "check-evidence-wiring.mjs",
   "create-launch-readiness-report.mjs",
-  "check-prd-completion.mjs"
+  "check-documentation-integrity.mjs"
 ]) {
   const scriptPath = resolve(appRoot, "scripts", script);
   if (!existsSync(scriptPath)) {

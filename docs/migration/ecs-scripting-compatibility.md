@@ -4,7 +4,7 @@
 
 `@aura3d/ecs` and `@aura3d/scripting` are optional packages. Existing
 `@aura3d/engine/ecs` and `@aura3d/engine/scripting` compatibility imports remain
-available for the 1.x line, but new code should import the dedicated package:
+available as deprecated aliases throughout 2.x, but new code should import the dedicated package:
 
 ```ts
 import { World, TransformComponent } from "@aura3d/ecs";
@@ -15,9 +15,10 @@ Do not add either package to a renderer, product viewer, or arcade application
 that does not use it. They are application architecture/authoring choices, not
 proof of rendering parity.
 
-## Aura3D 2.0 plan
+## Compatibility schedule
 
-The duplicate engine subpaths are scheduled for removal. A codemod will rewrite
+The duplicate engine subpaths are eligible for removal in 3.0, not before
+2027-08-11, and only after fresh packed-consumer evidence. The 2.0 codemod rewrites
 specifier-only imports:
 
 ```text
@@ -28,3 +29,6 @@ specifier-only imports:
 The symbol names are unchanged. Consumers must add the destination package to
 their manifest. Dedicated-package removal is not scheduled: it requires a
 separate external adapter, consumer migration, and deletion-safety proof.
+
+Run `pnpm migrate:2.0 ./src` from this repository checkout, or apply the five
+exact mappings documented in `MIGRATION-2.0.md`.

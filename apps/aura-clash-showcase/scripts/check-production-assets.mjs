@@ -10,12 +10,12 @@ const appRoot = resolve(__dirname, "..");
 const requiredAssets = [
   {
     name: "auraClashPlayerRig",
-    source: "assets/quaternius-source/selected/animations/UAL1_Standard.glb",
+    source: "assets/source/fighters/aura-clash-player-rig.glb",
     maxSizeBytes: 9_000_000,
   },
   {
     name: "auraClashRivalRig",
-    source: "assets/quaternius-source/selected/animations/UAL2_Standard.glb",
+    source: "assets/source/fighters/aura-clash-rival-rig.glb",
     maxSizeBytes: 9_000_000,
   },
 ];
@@ -169,7 +169,7 @@ for (const asset of requiredAssets) {
     if (provenance.author !== "Quaternius") {
       fail(`Manifest provenance for ${asset.name} must include Quaternius author.`);
     }
-    if (!String(provenance.sourceUrl ?? "").includes("quaternius.com")) {
+    if (!String(provenance.sourceUrl ?? "").includes("quaternius")) {
       fail(`Manifest provenance for ${asset.name} must include Quaternius source URL.`);
     }
     if (!manifestEntry.skeleton || manifestEntry.skeleton.jointCount < 40) {

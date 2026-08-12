@@ -195,7 +195,7 @@
         "evidence": [
           "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json records five passing automated composition checks",
           "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png is the current retained route-primary screenshot",
-          "docs/project/showcase-visual-review.json records the current passing manual review and all six automated visual QA checks",
+          "docs/project/showcase-visual-review.json records independent human review as pending; automated route and gameplay evidence is retained separately",
           "tests/reports/showcase-gameplay/showcase-skyline-runner.json proves the required platformer interactions and category floor"
         ]
       },
@@ -220,15 +220,18 @@
       "published": true,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "turboRaceCar",
+        "showcaseCc0FormulaRaceCar",
+        "showcaseCcByFormulaOpponent",
         "showcaseTsukubaCircuit"
       ],
       "primaryAssetRoles": {
-        "turboRaceCar": "vehicle",
+        "showcaseCc0FormulaRaceCar": "vehicle",
+        "showcaseCcByFormulaOpponent": "vehicle",
         "showcaseTsukubaCircuit": "track"
       },
-      "routePrimaryHeroAsset": "turboRaceCar",
+      "routePrimaryHeroAsset": "showcaseCc0FormulaRaceCar",
       "secondaryPrimaryAssets": [
+        "showcaseCcByFormulaOpponent",
         "showcaseTsukubaCircuit"
       ],
       "primitiveBudget": 10,
@@ -240,14 +243,14 @@
         "blocker": "visual-review:turbo-drift-circuit-independent-review-pending",
         "requiredBeforePublic": [
           "Obtain explicit user approval of the exact hash-bound Turbo Drift Circuit screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
-          "Give the opponent a genuinely distinct supported asset or material variant and prove the distinction in action captures.",
-          "Clear the racing gameplay-proof and deploy-artifact blockers recorded in apps/showcase-turbo-drift-circuit/route-health.json.",
+          "Retain the distinct typed blue/black Formula rival and prove its separation from the red player car in current action captures.",
+          "Regenerate racing gameplay, route-health, deploy, and launch evidence from the final approved source.",
           "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
         ],
         "evidence": [
           "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json records five passing automated composition checks",
           "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png is the current retained route-primary screenshot",
-          "docs/project/showcase-visual-review.json records the current passing manual review and all six automated visual QA checks",
+          "docs/project/showcase-visual-review.json records independent human review as pending; automated route and gameplay evidence is retained separately",
           "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json proves the required racing interactions and category floor"
         ]
       }

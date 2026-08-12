@@ -72,8 +72,9 @@ against `three@0.165.0` remain recorded but cannot close the current
 
 ## Showcase Gates
 
-- [ ] The four retained candidate routes have been materially rebuilt from the
-  immutable before captures and independently approved by a named human reviewer.
+- [ ] The four retained non-game candidates and each promoted rebuilt game route
+  have current exact-source artifacts and are independently approved by a named
+  human reviewer for their explicit scope.
 - [ ] `node tools/showcase-library/build-and-check.mjs` exits 0 for public
   release status. Static, route-primary, build, deploy, interaction, and
   structural checks pass; four human candidate verdicts are still pending.
@@ -120,7 +121,9 @@ against `three@0.165.0` remain recorded but cannot close the current
 ## Rendering, Animation, And WebGPU Gates
 
 - [ ] Current same-workload comparisons against locked `three@0.185.1` and the
-  realistic companion stacks pass for every advertised flagship capability.
+  realistic companion stacks pass for every advertised capability. The 15/15
+  installed correctness run is green; the full repeated-performance protocol,
+  clean-machine rerun, and independent gallery review remain open.
 - [x] Material, lighting, shadow, and postprocess claims cite exact route pixels.
 - [x] Animation claims use screenshot/video deltas in the animated subject
   region, not only counters or camera movement.

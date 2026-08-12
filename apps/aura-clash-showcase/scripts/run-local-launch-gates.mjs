@@ -13,18 +13,18 @@ const outPath = resolve(
   process.env.AURA_CLASH_LOCAL_GATES_OUT ?? "launch-evidence/local-gates.json"
 );
 
-const prdGates = [
+const documentationGates = [
   {
     id: "build-app-and-marketing",
-    prdLineHint: 463,
-    prdLabel: "Build app and marketing site.",
+    documentationLineHint: 463,
+    documentationLabel: "Build app and marketing site.",
     requiredResultIds: ["aura-clash-build", "marketing-build"],
     artifact: "apps/aura-clash-showcase/launch-evidence/local-gates.json"
   },
   {
     id: "gameplay-smoke",
-    prdLineHint: 491,
-    prdLabel:
+    documentationLineHint: 491,
+    documentationLabel:
       "Gameplay smoke passes. Source strengthened in `apps/aura-clash-showcase/tests/playable-smoke.spec.ts` for runtime responsiveness and no-scene-reconstruction hooks, but no pass is claimed until executed evidence exists.",
     requiredResultIds: ["playable-smoke"],
     artifact: "apps/aura-clash-showcase/launch-evidence/local-gates.json"
@@ -125,9 +125,9 @@ const evidence = {
   completedCount: results.length,
   failedCount: failed.length,
   results,
-  prdGateCoverage: []
+  documentationGateCoverage: []
 };
-evidence.prdGateCoverage = createPrdGateCoverage(evidence.ok, results);
+evidence.documentationGateCoverage = createDocumentationGateCoverage(evidence.ok, results);
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, `${JSON.stringify(evidence, null, 2)}\n`);
@@ -192,10 +192,10 @@ function runCommand(item) {
   });
 }
 
-function createPrdGateCoverage(overallOk, commandResults) {
+function createDocumentationGateCoverage(overallOk, commandResults) {
   const resultById = new Map(commandResults.map((result) => [result.id, result]));
 
-  return prdGates.map((gate) => {
+  return documentationGates.map((gate) => {
     const requiredResults = gate.requiredResultIds.map((resultId) => {
       const result = resultById.get(resultId);
       return {

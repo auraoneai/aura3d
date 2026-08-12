@@ -1,0 +1,34 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "product",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/product-fixture.glb",
+      "outputPath": "public/aura-assets/product-fixture.glb",
+      "url": "/aura-assets/product-fixture.glb",
+      "hash": "sha256-5613d5ad4ddc538b02c147faf2f87777bfd5a79580297cc6a103fdb7556580d3",
+      "sizeBytes": 48612,
+      "bounds": [
+        1.9,
+        2.9,
+        1.1
+      ],
+      "materials": [
+        "satin cabinet",
+        "patterned grille",
+        "rubber cone",
+        "metallic knobs"
+      ],
+      "animations": [],
+      "textures": [
+        "embedded product material swatches"
+      ],
+      "thumbnailUrl": "/aura-assets/product.thumb.svg"
+    }
+  ]
+}

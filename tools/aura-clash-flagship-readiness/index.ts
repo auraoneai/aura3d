@@ -196,14 +196,14 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
       title: "Flagship proof exposes audio readiness instead of silent placeholders",
       ok:
         writeProofBlock.includes("audio:") &&
-        /AudioContext|HTMLAudioElement|game\.audio/.test(source.text) &&
+        /createGameAudio|AudioContext|HTMLAudioElement|game\.audio/.test(source.text) &&
         includesAll(source.text, ["musicReady", "sfxReady", "muted", "lastCue"]) &&
         flagshipTest.text.includes("proof.audio"),
       summary: "The playable route must publish audio readiness with music, SFX, mute, and last cue evidence.",
       evidencePaths: [toRepo(root, appSourcePath), toRepo(root, testPath)],
       blockers: [
         ...(writeProofBlock.includes("audio:") ? [] : ["writeProof() does not publish proof.audio."]),
-        ...(/AudioContext|HTMLAudioElement|game\.audio/.test(source.text) ? [] : ["No concrete audio runtime path is present in the route source."]),
+        ...(/createGameAudio|AudioContext|HTMLAudioElement|game\.audio/.test(source.text) ? [] : ["No concrete audio runtime path is present in the route source."]),
         ...missingAll(source.text, ["musicReady", "sfxReady", "muted", "lastCue"]).map((field) => `Audio field ${field} is missing from the route source.`),
         ...(flagshipTest.text.includes("proof.audio") ? [] : ["flagship-readiness.spec.ts does not assert proof.audio."])
       ]
@@ -247,11 +247,11 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
       title: "Dedicated performance-budget spec enforces frame, draw, JS, CSS, and GLB budgets",
       ok:
         performanceTest.exists &&
-        includesAll(performanceTest.text, ["frameTimeMs", "fps", "drawCalls", "jsBytes", "cssBytes", "glbBytes", "maxGlbBytes"]),
+        includesAll(performanceTest.text, ["frameTimeMs", "fps", "drawCalls", "jsBytes", "jsTransferBytes", "cssBytes", "glbBytes", "maxGlbBytes"]),
       summary: "Performance proof must be a dedicated Playwright gate instead of only route text.",
       evidencePaths: [toRepo(root, performanceTestPath)],
       blockers: performanceTest.exists
-        ? missingAll(performanceTest.text, ["frameTimeMs", "fps", "drawCalls", "jsBytes", "cssBytes", "glbBytes", "maxGlbBytes"]).map(
+        ? missingAll(performanceTest.text, ["frameTimeMs", "fps", "drawCalls", "jsBytes", "jsTransferBytes", "cssBytes", "glbBytes", "maxGlbBytes"]).map(
             (item) => `Missing performance assertion token: ${item}`
           )
         : ["Add apps/aura-clash-showcase/tests/performance-budget.spec.ts."]

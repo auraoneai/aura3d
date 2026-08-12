@@ -1,6 +1,6 @@
-# Navigation migration for the next major release
+# Navigation migration for Aura3D 2.0
 
-The next major Aura3D release removes the in-house grid navigation, local
+Aura3D 2.0 removes the in-house grid navigation, local
 steering, and quadratic crowd simulation exports from `@aura3d/physics`.
 `@aura3d/navigation-recast` is the sole selected owner for 3D navmesh
 generation, Detour path queries, crowds, serialization, and temporary
@@ -15,6 +15,8 @@ workspace/release dependency set, then initialize it lazily:
 import { createRecastNavigation } from "@aura3d/navigation-recast";
 import { assets } from "./aura-assets";
 
+const startWorldPosition: readonly [number, number, number] = [-8, 0, -8];
+const endWorldPosition: readonly [number, number, number] = [8, 0, 8];
 const navigation = await createRecastNavigation();
 const navMesh = await navigation.importAsset(assets.levelNavigation);
 const path = navMesh.computePath(startWorldPosition, endWorldPosition);

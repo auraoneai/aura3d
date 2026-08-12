@@ -2363,7 +2363,12 @@ vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   float faceOnSpecularGate = smoothstep(0.1, 0.42, nDotV);
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, clampedRoughness));
-  float roughEnvironmentFloor = mix(0.04, 0.38, clampedRoughness);
+  // Keep the procedural environment from becoming a uniform white veil on
+  // saturated textured base colors. A high roughness floor spread neutral
+  // specular over every fragment, while image-based lighting and Three.js keep
+  // the strongest neutral energy in reflection bands and glancing highlights.
+  // The lower floor preserves ambient readability without erasing texture chroma.
+  float roughEnvironmentFloor = mix(0.012, 0.16, clampedRoughness);
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
   float horizonStripe = pow(clamp(1.0 - abs(reflectionDirection.y), 0.0, 1.0), mix(14.0, 3.0, clampedRoughness));
   float sideStripe = pow(clamp(abs(reflectionDirection.x), 0.0, 1.0), mix(10.0, 3.0, clampedRoughness)) * smoothstep(0.0, 0.72, 1.0 - abs(reflectionDirection.y));

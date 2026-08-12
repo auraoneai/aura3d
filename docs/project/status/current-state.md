@@ -1,7 +1,7 @@
 # Aura3D Current State
 
-Date: 2026-08-08
-Status: Aura3D 2.0.0 release-candidate baseline; final competitive replatform incomplete
+Date: 2026-08-11
+Status: Aura3D 2.0.0 release candidate; implementation and installed-package evidence advanced, final approval and publication pending
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -11,6 +11,10 @@ Aura3D CLI to register typed assets.
 This file is intentionally conservative. It describes what the public root
 `createAuraApp` path can prove today and what still requires library work before
 showcase or marketing claims can use it.
+
+Aura3D is not currently a Unity or Unreal replacement, and the 2.0 release is
+not complete until `pnpm check:release`, exact-artifact human review, package
+publication, and production-site verification all pass.
 
 ## Current Public Root API Strengths
 
@@ -100,17 +104,20 @@ or ecosystem claim is permitted until `1.6-FINAL-PRD-Finishes.md` passes.
 
 ## Showcase Reality
 
-The currently eligible four-route slate includes Product Configurator, Smart
-City Control, Cinematic Architecture, and Digital Twin Operations. Blockfall
-Reactor, Turbo Drift Circuit, and Skyline Runner are visual-rebuild prototypes.
-Aura Clash is tracked separately. Superseded and duplicate public routes are
-excluded from the website build. Data Galaxy and WebGPU Particle Lab remain
-internal diagnostics.
+The non-game candidate slate includes Product Configurator, Smart City Control,
+Cinematic Architecture, and Digital Twin Operations. Blockfall Reactor, Turbo
+Drift Circuit, and Skyline Runner now have materially rebuilt gameplay and
+current automated evidence; they remain promotion-blocked until an independent
+reviewer approves the exact final artifacts. Aura Clash is tracked separately
+and remains a development showcase under the same exact-artifact rule.
+Superseded and duplicate public routes are excluded from the website build.
+Data Galaxy and WebGPU Particle Lab remain internal diagnostics.
 
 Turbo Drift and Skyline retain bounded certified asset-geometry, pair,
-mounted gameplay, route-local AI/challenge, route-primary, and deploy evidence.
-That evidence does not establish current visual approval, arbitrary GLB-to-game
-conversion, or production game-engine parity.
+mounted gameplay, route-local AI/challenge, route-primary, full-level or race
+progression, and deploy evidence. That evidence does not establish independent
+visual approval, arbitrary GLB-to-game conversion, physical vehicle simulation,
+or production game-engine parity.
 
 No route may move to public-ready based only on boot success, nonblank screenshots, route-local claims, deploy metadata, or gameplay state changes. Public game routes require current certified geometry, pair composition, route-primary, gameplay, automated visual QA, manual downward-only review, and deploy evidence.
 

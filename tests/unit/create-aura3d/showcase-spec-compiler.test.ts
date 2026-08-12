@@ -22,6 +22,7 @@ describe("showcase spec compiler", () => {
         }
       }, { outputDir });
 
+      expect(report.blockers).toEqual([]);
       expect(report.ok).toBe(true);
       expect(report.finalStatus).toBe("release-ready candidate");
       expect(report.generatedFiles).toEqual(expect.arrayContaining([
@@ -32,7 +33,6 @@ describe("showcase spec compiler", () => {
         "showcase-evidence-checklist.json",
         "showcase-spec-compile-report.json"
       ]));
-      expect(report.blockers).toEqual([]);
 
       const routeGatePatch = JSON.parse(readFileSync(join(outputDir, "route-gate.patch.json"), "utf8"));
       expect(routeGatePatch).toMatchObject({

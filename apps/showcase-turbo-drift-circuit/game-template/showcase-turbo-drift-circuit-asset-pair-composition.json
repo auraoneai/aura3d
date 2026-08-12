@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "sha256": "sha256-dd6d119e7f655b62e7b82c74680e82d03220a7121ba805c87c754c48ca45230d",
+    "sha256": "sha256-0023667efabc29ee90f84b98df0f76fdd061b460eb25b27c459270ef1bc8aaec",
     "width": 1440,
     "height": 900
   },
@@ -19,9 +19,14 @@
   },
   "assets": [
     {
-      "id": "turboRaceCar",
-      "manifestHash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e",
-      "evidenceHash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e"
+      "id": "showcaseCc0FormulaRaceCar",
+      "manifestHash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3",
+      "evidenceHash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3"
+    },
+    {
+      "id": "showcaseCcByFormulaOpponent",
+      "manifestHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+      "evidenceHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958"
     },
     {
       "id": "showcaseTsukubaCircuit",
@@ -69,8 +74,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0,
-        "screenContactDistance": 51.11311503909738,
-        "screenContactDistanceRatio": 0.3007
+        "screenContactDistance": 67.55340332655341,
+        "screenContactDistanceRatio": 0.3057
       },
       "blockers": []
     },
@@ -85,7 +90,7 @@
         "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.7733,
+        "playSpaceAreaRatio": 0.6894,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
@@ -103,10 +108,10 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.1889,
+        "subjectWorldRatio": 0.2456,
         "characterScaleRatio": "not-required",
         "projectedTargetHeight": "not-required",
-        "renderedSubjectHeight": 170,
+        "renderedSubjectHeight": 221,
         "scaleDelta": "missing"
       },
       "blockers": []

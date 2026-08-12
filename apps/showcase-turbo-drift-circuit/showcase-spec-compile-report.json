@@ -15,11 +15,10 @@
   ],
   "blockers": [
     "evidence:gameplay-proof:racing:visual-review-verdict-not-pass:needs-work",
-    "evidence:gameplay-proof:racing:visual-review-screenshot-mismatch",
-    "evidence:deploy-artifact:command-mismatch"
+    "evidence:gameplay-proof:racing:visual-review-screenshot-mismatch"
   ],
-  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-spec-compiler/turbo-drift-circuit/showcase-evidence-checklist.json",
-  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-spec-compiler/turbo-drift-circuit/route-gate.patch.json",
+  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-DIoiTq/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-DIoiTq/route-gate.patch.json",
   "rejectedAssets": [],
   "replacementCandidates": [],
   "assetPairComposition": {
@@ -50,8 +49,8 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-e33242006aa3420c0f19d3c8537b26f1bb18685a30a5849ddb9daf21a8efe655",
-    "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "sourceReportHash": "sha256-a628c4d046c86600a116aafae51179a1298f185e704b8b59b87c48e0a61d6172"
+    "contentHash": "sha256-ee36d347a33c011d6dd092425d8840d45666b305e9ad01f1f4a0578d6b201e71",
+    "sourceReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-DIoiTq/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "sourceReportHash": "sha256-35594d86874c752c1fef4f15855573ebfee400aac9f2cc016792e2ac65e0bb01"
   }
 }

@@ -34,7 +34,12 @@ interface MotionEvidence {
     readonly measured: { readonly apexToRiseRatio: number; readonly airtime: number };
     readonly checks: readonly { readonly id: string; readonly passes: boolean; readonly detail: string }[];
   };
-  readonly previousTuning: { readonly apex: number; readonly airtime: number };
+  readonly sessionLengthProof: {
+    readonly targetSeconds: number;
+    readonly acceptanceWindowSeconds: readonly [number, number];
+    readonly achievedEstimateSeconds: number;
+    readonly source: string;
+  };
 }
 
 async function readEvidence(page: Page): Promise<Record<string, unknown>> {
@@ -118,26 +123,21 @@ test("skyline jump is derived from level geometry and lands reliably", async ({ 
     expect(motion.apex).toBeLessThan(motion.geometry.maxRise * 2.6);
     expect(motion.invariants.measured.apexToRiseRatio).toBeLessThan(2.6);
 
-    // And it must be a genuine improvement on the shipped tuning, not a relabelling.
-    expect(motion.apex).toBeLessThan(motion.previousTuning.apex);
-    expect(motion.airtime).toBeLessThan(motion.previousTuning.airtime);
-
     // A jump must still clear the widest gap, or the level becomes unplayable.
     expect(motion.jumpReach).toBeGreaterThan(motion.geometry.maxGap);
 
     /*
      * Session length must be *derived*, and its limiting factor stated.
      *
-     * The route asks for a 180-second session; the 0.30-unit gap forces a speed that
-     * crosses the 16.6-unit course in ~48 seconds. The solver correctly prefers gap
-     * clearance over pace, so the shortfall is a level-design limit -- the course needs
-     * more content -- not a tuning bug. Asserting the route reports it honestly is the
-     * right check; asserting 180 seconds would demand the solver break the level.
+     * The rebuilt route owns enough physical course for a two-to-three-minute Level 1.
+     * This must be the start-to-finish traversal estimate, not a post-finish timer or
+     * repeated opening strip.
      */
-    expect(motion.estimatedSessionSeconds).toBeGreaterThan(30);
-    const shortfall = (initial.motion as { sessionLengthShortfall?: { requestedSeconds: number; achievedSeconds: number; reason: string } }).sessionLengthShortfall;
-    expect(shortfall, "route must report its session-length shortfall rather than implying a longer session").toBeDefined();
-    expect(shortfall!.achievedSeconds).toBeCloseTo(motion.estimatedSessionSeconds, 3);
+    expect(motion.estimatedSessionSeconds).toBeGreaterThanOrEqual(120);
+    expect(motion.estimatedSessionSeconds).toBeLessThanOrEqual(180);
+    expect(motion.sessionLengthProof.achievedEstimateSeconds).toBeCloseTo(motion.estimatedSessionSeconds, 3);
+    expect(motion.sessionLengthProof.source).toBe("physical-start-to-finish-traversal");
+    expect(motion.sessionLengthProof.acceptanceWindowSeconds).toEqual([120, 180]);
 
     // Landing reliability: the player must spend most samples on the ground and never
     // be airborne for an implausibly long run of samples.

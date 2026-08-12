@@ -48,7 +48,7 @@ export const audioStemManifest = createAudioStemManifest({
   stems: [
     ...episode.dialogueTrack.lines.map((line) => ({
       id: `audio:${line.lineId}`,
-      role: "dialogue",
+      role: "dialogue" as const,
       path: line.audioFile ?? `assets/audio/en/${line.lineId}.wav`,
       startTime: line.startTime,
       duration: line.endTime - line.startTime,

@@ -1,8 +1,8 @@
 {
-  "ok": true,
+  "ok": false,
   "schema": "aura3d-showcase-spec-compile-report/1.0",
   "routeId": "showcase-skyline-runner",
-  "finalStatus": "release-ready candidate",
+  "finalStatus": "prototype-blocked",
   "generatedFiles": [
     "README.md",
     "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
@@ -13,9 +13,17 @@
     "src/generated/game-geometry.ts",
     "src/main.ts"
   ],
-  "blockers": [],
-  "evidenceChecklistPath": "tests/reports/showcase-spec-compiler/skyline-runner/showcase-evidence-checklist.json",
-  "routeGatePatchPath": "tests/reports/showcase-spec-compiler/skyline-runner/route-gate.patch.json",
+  "blockers": [
+    "evidence:gameplay-proof:platformer:checkpoint-missing",
+    "evidence:gameplay-proof:platformer:hazard-respawn-missing",
+    "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
+    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
+    "evidence:deploy-artifact:not-passing",
+    "evidence:deploy-artifact:has-warnings",
+    "evidence:deploy-artifact:has-failures"
+  ],
+  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/route-gate.patch.json",
   "rejectedAssets": [],
   "replacementCandidates": [],
   "assetPairComposition": {
@@ -46,8 +54,8 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-91ff32b1f5ac5e7b65598a315456bcec4fafc21f7953ef8260b5bb76e1facb05",
+    "contentHash": "sha256-6bc5cad296642712500554a0898458d08d2dd0c5425dd077de89dd02484d0f32",
     "sourceReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
-    "sourceReportHash": "sha256-9f6a83f2c8f5c3af17171aaea64e0049cc34305ca64d8e578499f1d663f8e8bf"
+    "sourceReportHash": "sha256-e42226b4813227b1f94fdbeb5ddbebe59590526cc75cf2a9afff72e8490bc4da"
   }
 }
