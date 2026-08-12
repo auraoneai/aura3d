@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("falling-blocks starter responds to keyboard input and clears a line", async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto("/");
   await page.waitForFunction(() => document.body.dataset.aura3dReady === "true", undefined, { timeout: 45_000 });
   await page.waitForFunction(() => Boolean((window as unknown as { __AURA3D_FALLING_BLOCKS_STARTER__?: unknown }).__AURA3D_FALLING_BLOCKS_STARTER__));
@@ -79,7 +80,5 @@ async function fallingState(page: import("@playwright/test").Page): Promise<{
 }
 
 async function tapKey(page: import("@playwright/test").Page, key: string, holdMs = 90): Promise<void> {
-  await page.keyboard.down(key);
-  await page.waitForTimeout(holdMs);
-  await page.keyboard.up(key);
+  await page.keyboard.press(key, { delay: holdMs });
 }

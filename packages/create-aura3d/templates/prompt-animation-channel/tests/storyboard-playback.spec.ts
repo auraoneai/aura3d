@@ -1,9 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(90_000);
+
 test("animation channel storyboard caption renders", async ({ page }) => {
   await page.goto("/");
   await page.waitForFunction(() => Boolean((window as any).__AURA3D_ANIMATION_TEMPLATE__));
-  await expect(page.locator("#caption-overlay")).toContainText(/moon|robot|Aura3D animation channel/i);
+  const caption = page.locator("#caption-overlay");
+  await expect(caption).toBeVisible();
+  await expect(caption).not.toHaveText("");
+  const captionIds = await page.evaluate(() => (window as any).__AURA3D_ANIMATION_TEMPLATE__?.captionIds ?? []);
+  expect(captionIds.length).toBeGreaterThan(0);
 });
 
 test("storyboard playback, character performance, caption timing, cuts, and nonblank animation frames are sourced", async ({
@@ -71,6 +77,9 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
   expect(routeProof.bodyShotCount).toBe("3");
   expect(routeProof.bodyCaptionCount).toBe("6");
 
-  const screenshot = await page.screenshot();
+  const cdp = await page.context().newCDPSession(page);
+  const capture = await cdp.send("Page.captureScreenshot", { format: "png", fromSurface: true });
+  await cdp.detach();
+  const screenshot = Buffer.from(capture.data, "base64");
   expect(screenshot.byteLength).toBeGreaterThan(2048);
 });

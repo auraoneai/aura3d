@@ -151,14 +151,12 @@ if (!input) throw new Error("create-aura3d fighting-game template failed to crea
 const replayInput = game.input({ ...inputOptions, autoListen: false, gamepad: false });
 const openingReplay = game.inputReplay(
   [
-    { frame: 2, time: 2 / 60, type: "press", binding: "KeyD" },
-    { frame: 16, time: 16 / 60, type: "press", binding: "KeyL" },
-    { frame: 20, time: 20 / 60, type: "release", binding: "KeyL" },
-    { frame: 32, time: 32 / 60, type: "release", binding: "KeyD" },
-    { frame: 44, time: 44 / 60, type: "press", binding: "KeyJ" },
-    { frame: 48, time: 48 / 60, type: "release", binding: "KeyJ" }
+    { frame: 1, time: 1 / 60, type: "press", binding: "KeyL" },
+    { frame: 8, time: 8 / 60, type: "release", binding: "KeyL" },
+    { frame: 12, time: 12 / 60, type: "press", binding: "KeyJ" },
+    { frame: 16, time: 16 / 60, type: "release", binding: "KeyJ" }
   ],
-  { label: "starter approach-special replay", fps: 60, seed: 105 }
+  { label: "starter close-range special replay", fps: 60, seed: 105 }
 );
 const replayDriver = game.inputReplayDriver(replayInput, openingReplay);
 

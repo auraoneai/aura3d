@@ -288,11 +288,19 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   if (!box) throw new Error("visible Aura3D canvas did not expose screenshot bounds");
   const centerX = box.x + box.width / 2;
   const centerY = box.y + box.height / 2;
-  await page.mouse.move(centerX, centerY);
-  await page.mouse.down();
-  await page.mouse.move(centerX + Math.min(80, box.width / 6), centerY + Math.min(36, box.height / 8), { steps: 4 });
-  await page.mouse.up();
-  await page.mouse.wheel(0, -120);
+  await page.evaluate(({ centerX, centerY, dragX, dragY }) => {
+    const target = document.querySelector("canvas");
+    if (!(target instanceof HTMLCanvasElement)) throw new Error("Aura3D canvas disappeared before interaction smoke.");
+    target.dispatchEvent(new PointerEvent("pointerdown", { clientX: centerX, clientY: centerY, pointerId: 1, buttons: 1, bubbles: true }));
+    target.dispatchEvent(new PointerEvent("pointermove", { clientX: dragX, clientY: dragY, pointerId: 1, buttons: 1, bubbles: true }));
+    target.dispatchEvent(new PointerEvent("pointerup", { clientX: dragX, clientY: dragY, pointerId: 1, buttons: 0, bubbles: true }));
+    target.dispatchEvent(new WheelEvent("wheel", { deltaY: -120, bubbles: true }));
+  }, {
+    centerX,
+    centerY,
+    dragX: centerX + Math.min(80, box.width / 6),
+    dragY: centerY + Math.min(36, box.height / 8)
+  });
   await page.keyboard.press("Tab");
   await page.waitForTimeout(250);
   expect(pageErrors).toEqual([]);
