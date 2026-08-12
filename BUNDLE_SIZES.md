@@ -12,7 +12,7 @@ chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenat
 | `@aura3d/react adapter excluding React and core` | 2,097 | 948 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 710 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 49,915 | 13,713 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 827,151 | 186,920 | 250,000 | pass |
+| `product-viewer starter app before user assets` | 827,151 | 186,919 | 250,000 | pass |
 | `cinematic-scene starter app before user assets` | 981,752 | 227,507 | 250,000 | pass |
 | `mini-game starter app before user assets` | 835,375 | 190,046 | 250,000 | pass |
 
