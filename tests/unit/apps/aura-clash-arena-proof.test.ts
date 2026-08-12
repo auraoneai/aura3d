@@ -78,6 +78,7 @@ const baseProofInput: AuraClashArenaProofInput = {
     x: -1,
     y: 0,
     grounded: true,
+    facing: 1,
     action: "heavy",
     activeClip: "Punch_Cross",
     attacking: "heavy"
@@ -89,6 +90,7 @@ const baseProofInput: AuraClashArenaProofInput = {
     x: 1,
     y: 0,
     grounded: true,
+    facing: -1,
     action: "hurt",
     activeClip: "Hit_Knockback",
     attacking: null
@@ -133,7 +135,8 @@ const baseProofInput: AuraClashArenaProofInput = {
     roundOverFraming: false,
     frameWidthUnits: 5.1968,
     restingFrameWidthUnits: 5.6,
-    respondingToCombat: true
+    respondingToCombat: true,
+    settled: false
   },
   tweaks: createArenaTweaksEvidence(createProofRoot()),
   fighterController: assertAuraClashFighterControllerBoundary(),
