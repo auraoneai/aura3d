@@ -1,8 +1,16 @@
 # Aura3D 2.0 exact-artifact visual sign-off
 
-Date: 2026-08-11
+Date: 2026-08-12
 
-Status: independent human review pending
+Status: approved for public release
+
+Gurbaksh Chahal (`gchahal1982`) issued `Decision: ship` for all four
+flagships, all three games, AuraClash, and the selected comparison gallery on
+2026-08-12, with no blocking visual issues. The signed machine-readable record
+is `release-artifacts/2.0-final-visual-review-approval.json`; it binds the
+approval to the SHA-256 of the 86-artifact manifest rather than broadening the
+approval into a universal renderer, ecosystem, performance, simulation, or XR
+claim.
 
 This is the operational sign-off contract for Aura3D 2.0. Automated screenshot,
 route-health, interaction, subject-mask, gameplay, and deploy checks can prepare

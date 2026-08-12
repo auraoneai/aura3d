@@ -1,0 +1,27 @@
+{
+  "schema": "aura3d.2.0-final-visual-review-approval/1.0",
+  "decision": "ship",
+  "approved": true,
+  "reviewer": {
+    "id": "gchahal1982",
+    "name": "Gurbaksh Chahal",
+    "kind": "human"
+  },
+  "approvedAt": "2026-08-12T16:34:09Z",
+  "approvalStatement": "Decision: ship — approve all four flagships, all three games, AuraClash, and the selected comparison gallery. Reviewer: Gurbaksh Chahal. No blocking visual issues.",
+  "manifest": {
+    "path": "release-artifacts/2.0-final-visual-review-manifest.json",
+    "sha256": "3e970a1292b16b739fd9c4fed92665b4bd29ac86213cd29a5f14fecb49fe45bc",
+    "sourceCommit": "0e0cf9ca60842e5dd1c203f2108fe5450f67f403",
+    "artifactCount": 86,
+    "sectionCount": 4
+  },
+  "approvedScopes": [
+    "four flagship routes",
+    "three showcase games",
+    "AuraClash",
+    "selected current Three.js comparison gallery"
+  ],
+  "blockingIssues": [],
+  "claimBoundary": "Approval applies only to the exact hashes and scopes in the referenced manifest. It does not establish universal Three.js ecosystem parity, broad performance superiority, physical motorsport simulation, or real-device XR coverage."
+}
