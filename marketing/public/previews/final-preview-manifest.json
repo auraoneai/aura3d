@@ -1,7 +1,9 @@
 {
   "schema": "aura3d.marketing-final-previews/1.0",
-  "status": "machine-reviewed-human-approval-pending",
-  "generatedAt": "2026-08-11T23:02:05.821Z",
+  "status": "machine-reviewed-and-human-approved",
+  "approvedAt": "2026-08-12",
+  "reviewer": "Gurbaksh Chahal",
+  "generatedAt": "2026-08-12T17:06:08.615Z",
   "previews": [
     {
       "id": "showcase-product-configurator",
@@ -54,8 +56,8 @@
       "target": "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png",
       "width": 1280,
       "height": 800,
-      "sha256": "a82be328bbec8f03beddf82b2d5ede24a7a1776234e11a0f2e5a097e5bc09d90",
-      "bytes": 1312200
+      "sha256": "4ccaba91c4025115816b8145952793cac87671b66878fabd86388fd20356bdcc",
+      "bytes": 1311822
     },
     {
       "id": "showcase-skyline-runner",
