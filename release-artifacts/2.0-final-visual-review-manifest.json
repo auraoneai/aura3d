@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.2.0-final-visual-review-manifest/1.0",
-  "generatedAt": "2026-08-12T08:12:40.593Z",
-  "sourceCommit": "d9ba829329efeb5f50407231ce4a09bb70ccd700",
+  "generatedAt": "2026-08-12T09:14:23.102Z",
+  "sourceCommit": "5c6f4076c676e56278f098a750364aebc9e47bfc",
   "status": "machine-complete-independent-human-approval-pending",
   "claimBoundary": "Approval applies only to the exact hashes and scopes below. It does not establish universal Three.js ecosystem parity, broad performance superiority, or real-device XR coverage.",
   "sectionCount": 4,
