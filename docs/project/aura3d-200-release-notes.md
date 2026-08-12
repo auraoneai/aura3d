@@ -2,7 +2,7 @@
 
 Version: 2.0.0
 
-Status: release candidate; unpublished
+Status: published on npm; GitHub and website release in progress
 
 Aura3D 2.0 is a major competitive replatform, not a relabeled 1.6 build. The
 major version records a changed public contract: fewer duplicate public hosts,
@@ -57,10 +57,10 @@ Repairs completed in the current candidate include:
 - explicit diagnostic labeling for particles, state machines, custom
   materials, raycast/CCD, stress, and large-scene workloads.
 
-Automated capture is not human acceptance. The final unfiltered 13-route audit
-after the last repairs is green with zero failures, and every retained route has
-an evidence-backed source/canvas/page disposition. Independent comparison,
-full-suite, packaging, website, and publication gates remain open.
+Automated capture is not human acceptance. The final 86-artifact packet was
+approved by Gurbaksh Chahal on August 12, 2026 with no blocking visual issues.
+The hash-bound approval is retained in
+`release-artifacts/2.0-final-visual-review-approval.json`.
 
 The generated-template gate passes 149/149 source checks across all 19
 scaffolds. A separate clean lifecycle installs the exact Aura3D 2.0.0 tarballs
@@ -86,19 +86,28 @@ a different scene, or retaining a route with the right title does not prove
 head-to-head parity. Universal Three.js ecosystem parity is not currently
 claimed.
 
+## Install
+
+```sh
+npx create-aura3d@2.0.0 my-scene --template product-viewer
+npm install @aura3d/lean@2.0.0
+```
+
+Use `@aura3d/lean/product` for typed product scenes and
+`@aura3d/lean/game` for deterministic arcade motion. Use
+`@aura3d/engine@2.0.0` when an application intentionally needs the broader
+compatibility-heavy safe authoring surface.
+
 ## Publication status
 
-`2.0.0` is not published yet. npm publication, the GitHub tag/release, website
-deployment, and deprecation/supersession of older versions occur only after:
+All 29 public packages are published in version lockstep at `2.0.0`. Public
+npm readback verified every package and uploaded SHA-512 integrity. All 396
+published versions below 2.0.0 across the 26 packages with older histories are
+deprecated with a 2.0 migration notice; the three new packages have no older
+versions. The two complete serial release suites passed from the same clean
+candidate, including all 19 source and exact-installed-tarball scaffold
+lifecycles.
 
-1. all final PRD implementation and comparison rows are complete;
-2. the complete type, unit, integration, browser, visual, build, package-smoke,
-   documentation, and release suites pass from the release commit;
-3. the package inventory and tarballs are verified at version 2.0.0;
-4. the public website matches the accepted examples and claim boundaries;
-5. the exact npm and GitHub version inventories are captured for rollback;
-6. the new package and GitHub release are verified before any older version is
-   deprecated or marked superseded.
-
-The live completion ledger is `1.6-FINAL-PRD-Finishes.md`; the filename is
-retained for audit continuity, while its title and release target are 2.0.
+GitHub tag/release and both production website updates are the remaining
+publication steps. Historical releases remain available for reproducibility
+but are superseded by 2.0.0.
