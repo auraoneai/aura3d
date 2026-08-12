@@ -122,8 +122,9 @@ against `three@0.165.0` remain recorded but cannot close the current
 
 - [ ] Current same-workload comparisons against locked `three@0.185.1` and the
   realistic companion stacks pass for every advertised capability. The 15/15
-  installed correctness run is green; the full repeated-performance protocol,
-  clean-machine rerun, and independent gallery review remain open.
+  installed correctness run and clean Linux reproduction are green, subject to
+  the documented native-WebGPU hardware boundary. Broad performance is not a
+  2.0 claim; independent gallery review remains open.
 - [x] Material, lighting, shadow, and postprocess claims cite exact route pixels.
 - [x] Animation claims use screenshot/video deltas in the animated subject
   region, not only counters or camera movement.

@@ -1,7 +1,7 @@
 # Three.js Comparison Status
 
 Date: 2026-08-11
-Status: 15 current installed-package correctness workloads pass; full performance and independent-reproduction program incomplete
+Status: 15 current installed-package correctness workloads pass; clean Linux reproduction retained; independent human review pending
 
 Aura3D passes all 15 selected correctness workloads from 29 freshly packed and
 npm-installed 2.0.0 tarballs against repository-locked `three@0.185.1`. Every
@@ -9,9 +9,10 @@ workload retains its public entry, exact inputs, explicit verdict, visual losses
 and claim boundary in `tests/reports/current-head-to-head/aggregate.json`.
 `tests/reports/current-head-to-head-installed/report.json` binds that result to
 the source commit, lock hash, tarball hashes, isolated consumer, and browser
-specs. The aggregate deliberately reports `comparisonComplete: false`: the
-full repeated-performance matrix, clean-machine rerun, and independent gallery
-review remain open.
+specs. The aggregate deliberately reports `comparisonComplete: false` until
+the independent gallery review is recorded. The broad repeated-performance
+matrix is not a 2.0 release claim: directional timings cannot establish a
+performance win or non-inferiority verdict.
 
 The historical suite against `three@0.165.0` remains useful only for regression
 history. It is not a current-market parity, superiority, or replacement verdict.
@@ -24,10 +25,13 @@ history. It is not a current-market parity, superiority, or replacement verdict.
 - Every workload publishes losses. Aura remains visibly different in several
   material, lighting, bloom, and output-treatment pairs and often submits more
   draws in the selected asset-heavy scenes.
-- Performance non-inferiority is not established because the complete
-  120-warmup/600-frame/five-session protocol is not yet collected for all 15
-  workloads.
-- Clean-machine reproduction and independent human gallery review remain open.
+- Performance non-inferiority is not claimed. The proposed
+  120-warmup/600-frame/five-session universal protocol was removed from the 2.0
+  release scope with the corresponding public performance claim.
+- Clean Linux reproduction is retained in
+  `docs/project/status/2.0-clean-environment-reproduction.md`: 23/24 browser
+  assertions pass without GPU passthrough, and the native WebGPU row passes on
+  the host hardware profile. Independent human gallery review remains open.
 - Ecosystem breadth, general TSL/node-material ergonomics, and real-device XR
   remain explicitly unproven.
 

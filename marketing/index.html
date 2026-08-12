@@ -185,7 +185,7 @@
       <div class="sec-head-left">
         <span class="eyebrow">New in 2.0.0</span>
         <h2 class="h2">One owner per capability. Typed assets in public. <em style="font-family:var(--serif);font-style:italic">Visual evidence that fails closed.</em></h2>
-        <p class="lede">The 2.0.0 release candidate consolidates duplicate public hosts, selects Rapier as the production physics owner, keeps typed GLB assets and the safe root API as the public authoring path, and requires source, canvas, and full-page inspection for every retained example. On August 11, 2026, all 15 selected correctness workloads passed from a fresh isolated consumer that installed all 29 exact Aura3D 2.0.0 tarballs against <code>three@0.185.1</code>. This is bounded correctness evidence, not universal ecosystem parity or a completed performance claim.</p>
+        <p class="lede">The 2.0.0 release candidate consolidates duplicate public hosts, selects Rapier as the production physics owner, keeps typed GLB assets and the safe root API as the public authoring path, and requires source, canvas, and full-page inspection for every retained example. On August 12, 2026, all 15 selected correctness workloads passed from a fresh isolated consumer that installed all 29 exact Aura3D 2.0.0 tarballs against <code>three@0.185.1</code>, and clean Linux reproduction was retained with an explicit native-WebGPU hardware boundary. This is bounded correctness evidence, not universal ecosystem parity; broad performance is not claimed and independent review remains open.</p>
       </div>
     </div>
 
@@ -232,7 +232,8 @@
           <div class="diag-row"><span class="k">same-asset animation</span> <span class="v ok">7 / 7 comparisons pass</span></div>
           <div class="diag-row"><span class="k">resource lifecycle</span> <span class="v ok">0 tracked leaks after 100 reloads</span></div>
           <div class="diag-row"><span class="k">disclosed losses</span> <span class="v">some Aura frames remain darker or less reflective</span></div>
-          <div class="diag-row"><span class="k">still open</span> <span class="v">full performance protocol, clean-machine rerun, independent review</span></div>
+          <div class="diag-row"><span class="k">reproduction</span> <span class="v">clean Linux reproduction retained; native WebGPU verified on host hardware</span></div>
+          <div class="diag-row"><span class="k">claim boundary</span> <span class="v">broad performance is not claimed; independent review is still open</span></div>
           <div class="diag-row"><span class="k">games</span> <span class="v">3 rebuilt routes await exact-artifact review</span></div>
         </div>
       </div>

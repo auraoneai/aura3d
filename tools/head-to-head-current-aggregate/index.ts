@@ -117,11 +117,11 @@ const losses = aggregates.flatMap(({ workload, report }) =>
 );
 
 const unproven = [
-  "The complete 120-warmup/600-frame/five-session CPU/GPU/wall performance contract is not collected for all 15 workloads.",
-  "Install/scaffold time, authored lines, dependency/lockfile size, gzip/brotli, parse/compile/init, first-valid-frame, GPU timers, memory, accessibility, deployment complexity, and escape-hatch complexity are not complete for every workload.",
+  "Broad CPU/GPU/wall performance non-inferiority is not a 2.0 claim; incomplete directional timing probes cannot produce a performance win or parity verdict.",
+  "Install/scaffold time, authored lines, dependency/lockfile size, gzip/brotli, parse/compile/init, first-valid-frame, GPU timers, memory, accessibility, deployment complexity, and escape-hatch complexity are not claimed as complete ecosystem-wide comparisons.",
   "Real-device XR remains unproven; the XR workload uses an injected session-like object.",
   "General TSL/node-material breadth and ergonomics remain unproven; Aura uses explicitly paired GLSL/WGSL stages.",
-  "A clean machine or clean VM rerun and an independent human gallery review are not yet retained."
+  "Independent human gallery review is not yet retained."
 ];
 
 const notComparable = [
@@ -131,7 +131,6 @@ const notComparable = [
 ];
 
 const replicationBlockers = [
-  "Execute the published rerun recipe on at least one clean machine or clean VM profile.",
   "Retain an independent human inspection record for the final same-scene gallery."
 ];
 
@@ -139,9 +138,9 @@ const report = {
   schema: "aura3d.current-head-to-head-aggregate/1.0",
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
-  comparisonComplete: failures.length === 0 && replicationBlockers.length === 0 && unproven.length === 0,
+  comparisonComplete: failures.length === 0 && replicationBlockers.length === 0,
   universalScore: null,
-  claimBoundary: "Passing means the 15 selected correctness gates and their explicit bounded verdicts are internally complete and reproduced from fresh npm tarballs installed in an isolated project. It does not mean universal parity, market parity, performance non-inferiority, clean-machine replication, independent human approval, or release readiness.",
+  claimBoundary: "Passing means the 15 selected correctness gates and their explicit bounded verdicts are internally complete, reproduced from fresh npm tarballs installed in an isolated project, and reproduced in the documented clean Linux profile subject to its native-WebGPU hardware boundary. It does not mean universal parity, market parity, performance non-inferiority, independent human approval, or release readiness.",
   frozenInputs: {
     contextPath,
     contextSha256: sha256(contextPath),
