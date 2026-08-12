@@ -260,6 +260,11 @@ renderStaticAssetPanel();
 app = createAuraApp("#aura-stage", {
   diagnostics: { overlay: false, assetPanel: false, performancePanel: false },
   pixelRatio: Math.min(1.5, window.devicePixelRatio || 1),
+  renderer: {
+    mode: "production",
+    qualityProfile: "production",
+    fallback: "safe-basic"
+  },
   scene: initialScene
 });
 publishEvidence(app.diagnostics().errors.length > 0 ? "error" : "ready", app.scene);
@@ -302,7 +307,11 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     .background("#050607")
     .add(environments.productHero({
       name: "authored product hero HDR environment",
-      intensity: 1.72,
+      // Keep the environment strong enough to describe the clearcoat without
+      // lifting the entire copper body toward one flat midtone. The two long
+      // directional cards below provide the readable highlight-to-shadow
+      // transition that a product photograph needs.
+      intensity: 1.28,
       color: "#fff4e6"
     }))
     .addMany(compactProductStageNodes(nextState))
@@ -310,9 +319,10 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       ? productModel.animate({ clip: "turntable", speed: 0.36, duration: 9, captureTime: 0.36 })
       : productModel)
     .addMany(configuratorSceneAccents(nextState))
-    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.3, color: "#f4efe6" }))
-    .add(lights.point({ name: "large product key light", position: [-1.8, 2.2, 2.1], intensity: 2.35, color: "#fff8ee" }))
-    .add(lights.point({ name: "cool product rim light", position: [1.8, 1.45, 0.2], intensity: 0.86, color: "#b9e7ff" }))
+    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.18, color: "#d9e1e8" }))
+    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 3.05, color: "#fff4e6" }))
+    .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 1.38, color: "#a9dcff" }))
+    .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.76, color: "#ffe2c0" }))
     .add(lights.rect({
       name: "long warm showroom reflection card",
       position: [2.75, 1.62, 1.72],

@@ -208,6 +208,11 @@ publishEvidence("booting");
 app = createAuraApp("#aura-stage", {
   diagnostics: { overlay: false, performancePanel: false },
   pixelRatio: 1,
+  renderer: {
+    mode: "production",
+    qualityProfile: "production",
+    fallback: "safe-basic"
+  },
   scene: activeBuild.snapshot
 });
 
@@ -285,9 +290,9 @@ function buildSmartCityScene(): SceneBuild {
     .background(controls.timeOfDay === "night" ? "#050706" : "#c9ecff")
     .add(effects.fog({
       name: "smart city operational depth haze",
-      density: controls.timeOfDay === "night" ? 0.03 : 0.017,
+      density: controls.timeOfDay === "night" ? 0.018 : 0.012,
       color: controls.timeOfDay === "night" ? "#1b2a20" : "#d7f4ff",
-      intensity: controls.timeOfDay === "night" ? 0.56 : 0.34
+      intensity: controls.timeOfDay === "night" ? 0.36 : 0.24
     }))
     .add(effects.bloom({
       name: "smart city bounded infrastructure bloom",
@@ -306,6 +311,23 @@ function buildSmartCityScene(): SceneBuild {
       position: [0.8, 2.4, 2.35],
       color: "#e8fbff",
       intensity: controls.timeOfDay === "night" ? 2.1 : 1.1
+    }))
+    .add(lights.ambient({
+      name: "bounded city ambient fill",
+      color: controls.timeOfDay === "night" ? "#7894a8" : "#d9efff",
+      intensity: controls.timeOfDay === "night" ? 0.16 : 0.28
+    }))
+    .add(lights.directional({
+      name: "city tower form key",
+      position: [-7.2, 11.5, 8.4],
+      color: controls.timeOfDay === "night" ? "#cde7ff" : "#fff0d5",
+      intensity: controls.timeOfDay === "night" ? 1.72 : 2.05
+    }))
+    .add(lights.directional({
+      name: "city skyline separation rim",
+      position: [8.5, 5.5, -6.2],
+      color: controls.timeOfDay === "night" ? "#56c9b0" : "#a6d7ff",
+      intensity: controls.timeOfDay === "night" ? 0.74 : 0.62
     }))
     .add(interactions.hover({ target: `${controls.district} district control overlay`, selected: `${controls.district} district control overlay` }))
     .addMany(createSmartCityOverlayNodes())
@@ -453,7 +475,7 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
     primitives.box({
       name: `${controls.district} district control overlay`,
-      material: material.emissive({ color: highlightColor, emissive: highlightColor, emissiveIntensity: 0.58, opacity: 0.22 })
+      material: material.emissive({ color: highlightColor, emissive: highlightColor, emissiveIntensity: 0.42, opacity: 0.13 })
     }).position(selected[0], selectedRegion.center[1], selected[1])
       .scale([Math.max(0.05, selectedRegion.size[0]), 0.018, Math.max(0.05, selectedRegion.size[2])]),
     primitives.box({
