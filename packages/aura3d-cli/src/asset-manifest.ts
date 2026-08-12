@@ -52,7 +52,7 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
       // to rely on. `AuraAssetDefinition` intentionally models partially known
       // external assets, so url/hash/bounds are optional there; a generated
       // manifest entry has already validated and written these exact fields.
-      return `  readonly ${JSON.stringify(asset.id)}: AuraAssetDefinition & { readonly type: ${JSON.stringify(asset.type)}; readonly url: string; readonly hash: string;${bounds} };`;
+      return `  readonly ${JSON.stringify(asset.id)}: AuraAssetDefinition & { readonly type: ${JSON.stringify(asset.type)}; readonly format: ${JSON.stringify(asset.format)}; readonly url: string; readonly hash: string;${bounds} };`;
     }),
     "};",
     "",

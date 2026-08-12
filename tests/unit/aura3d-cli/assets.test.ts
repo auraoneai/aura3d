@@ -22,6 +22,23 @@ describe("@aura3d/cli assets", () => {
     expect(generated).not.toContain('from "@aura3d/engine"');
   });
 
+  test("preserves validated asset formats as literals for lean model typing", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "package.json"), JSON.stringify({
+      type: "module",
+      dependencies: { "@aura3d/lean": "2.0.0" }
+    }));
+    writeFileSync(join(projectDir, "assets", "product.gltf"), JSON.stringify({
+      asset: { version: "2.0" },
+      scenes: [{ nodes: [] }]
+    }));
+
+    addAsset({ projectDir, file: "assets/product.gltf", name: "product" });
+
+    const generated = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
+    expect(generated).toContain('readonly format: "gltf"');
+  });
+
   test("prefers the compatibility engine asset brand when a project declares both APIs", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "package.json"), JSON.stringify({
