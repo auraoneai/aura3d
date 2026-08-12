@@ -64,9 +64,8 @@ function inspectPng(path) {
 
 const manifest = {
   schema: "aura3d.marketing-final-previews/1.0",
-  status: "machine-reviewed-and-human-approved",
-  approvedAt: "2026-08-12",
-  reviewer: "Gurbaksh Chahal",
+  status: "machine-reviewed-human-approval-pending",
+  approvalNote: "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
   generatedAt: new Date().toISOString(),
   previews: previews.map((preview) => {
     const source = resolve(repoRoot, preview.source);

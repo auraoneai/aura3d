@@ -1,9 +1,8 @@
 {
   "schema": "aura3d.marketing-final-previews/1.0",
-  "status": "machine-reviewed-and-human-approved",
-  "approvedAt": "2026-08-12",
-  "reviewer": "Gurbaksh Chahal",
-  "generatedAt": "2026-08-12T17:06:08.615Z",
+  "status": "machine-reviewed-human-approval-pending",
+  "approvalNote": "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
+  "generatedAt": "2026-08-12T23:21:27.555Z",
   "previews": [
     {
       "id": "showcase-product-configurator",

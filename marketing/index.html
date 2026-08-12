@@ -42,7 +42,7 @@
 <!-- ─── NAV ──────────────────────────────────────────────────── -->
 <nav class="nav">
   <div class="wrap nav-inner">
-    <a href="#" class="brand">
+    <a href="/" class="brand">
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
         <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
@@ -55,6 +55,7 @@
       <a class="nav-link" href="#workflows">SDK</a>
       <a class="nav-link" href="#prompts">Prompts</a>
       <a class="nav-link" href="#gallery">Examples</a>
+      <a class="nav-link" href="/docs/aura3d-vs-threejs.html">Compare</a>
       <a class="nav-link" href="#templates">Templates</a>
       <a class="nav-link" href="#packages">Platform</a>
       <a class="nav-link" href="#deployment">Deploy</a>
@@ -178,6 +179,51 @@
   </div>
 </section>
 
+<!-- ─── LIVE PRODUCT PROOF ─────────────────────────────────── -->
+<section class="section visual-proof" id="product-proof" data-search-index="live Aura3D examples product configurator smart city skyline runner typed GLB production renderer">
+  <div class="wrap">
+    <div class="visual-proof-head">
+      <div>
+        <span class="eyebrow">Built with Aura3D 2.0</span>
+        <h2 class="visual-proof-title">Don’t take our word for it.<br /><em>Use the product.</em></h2>
+      </div>
+      <div class="visual-proof-intro">
+        <p>These are live public routes—not video loops or composited mockups. Open a product, operate a city, or play a complete platforming level, then inspect the TypeScript and the evidence behind it.</p>
+        <a class="btn btn-ghost" href="/apps/advanced-examples-gallery/">Explore every example <span class="arr"></span></a>
+      </div>
+    </div>
+
+    <div class="visual-proof-grid">
+      <article class="visual-proof-card visual-proof-card-wide">
+        <div class="visual-proof-stage">
+          <iframe data-route="/apps/showcase-product-configurator/" title="Aura3D · live product configurator" data-poster-title="Product Configurator" data-poster-kicker="live typed product" data-poster-description="Change the finish, focus individual parts, orbit the typed GLB, and inspect its retained asset provenance."></iframe>
+        </div>
+        <div class="visual-proof-copy"><span>01 · Product</span><h3>One asset. Every finish.</h3><p>Typed GLB provenance, production PBR materials, clearcoat response, product lighting, part focus, and an interactive turntable through the public API.</p><a href="/apps/showcase-product-configurator/">Open Product Configurator <span class="arr"></span></a></div>
+      </article>
+
+      <article class="visual-proof-card">
+        <div class="visual-proof-stage">
+          <iframe data-route="/apps/showcase-smart-city-control/" title="Aura3D · live Smart City Control" data-poster-title="Smart City Control" data-poster-kicker="live operations scene" data-poster-description="Switch districts and cameras across a typed, instanced operational city."></iframe>
+        </div>
+        <div class="visual-proof-copy"><span>02 · Operations</span><h3>A city that answers back.</h3><p>Native instancing, distance LOD, frustum-culling diagnostics, typed assets, district focus, live telemetry, and day/night state.</p><a href="/apps/showcase-smart-city-control/">Open Smart City Control <span class="arr"></span></a></div>
+      </article>
+
+      <article class="visual-proof-card">
+        <div class="visual-proof-stage">
+          <iframe data-route="/apps/showcase-skyline-runner/" title="Aura3D · live Skyline Runner" data-poster-title="Skyline Runner" data-poster-kicker="full level" data-poster-description="Run, jump, collect, recover, and complete the 149.4-unit Level 1 route."></iframe>
+        </div>
+        <div class="visual-proof-copy"><span>03 · Play</span><h3>A real level, not a toy loop.</h3><p>A 149.4-unit, ten-district platforming course with 30 story shards, six relay checkpoints, collision, recovery, progression, and a complete finish state.</p><a href="/apps/showcase-skyline-runner/">Play Skyline Runner <span class="arr"></span></a></div>
+      </article>
+    </div>
+
+    <div class="comparison-callout">
+      <div><span class="eyebrow">Aura3D and Three.js</span><h3>Same destination. A different starting point.</h3></div>
+      <p>Three.js remains the broader renderer ecosystem. Aura3D 2.0 starts higher in the stack: typed assets, agent-oriented composition, integrated scaffolds, optional Rapier and Recast adapters, and evidence that follows the route to deployment.</p>
+      <a class="btn btn-primary" href="/docs/aura3d-vs-threejs.html">See the honest comparison <span class="arr"></span></a>
+    </div>
+  </div>
+</section>
+
 <!-- ─── NEW IN 2.0.0 ───────────────────────────────────────── -->
 <section class="section-tight" id="release-200" data-search-index="released 2.0.0 typed assets public surface consolidation visual audit current threejs comparison evidence">
   <div class="wrap">
@@ -185,7 +231,7 @@
       <div class="sec-head-left">
         <span class="eyebrow">New in 2.0.0</span>
         <h2 class="h2">One owner per capability. Typed assets in public. <em style="font-family:var(--serif);font-style:italic">Visual evidence that fails closed.</em></h2>
-        <p class="lede">Aura3D 2.0.0 is live on npm and GitHub. The major release consolidates duplicate public hosts, selects Rapier as the sole physical-simulation owner, keeps typed GLB assets and the safe root API as the public authoring path, and requires source, canvas, and full-page inspection for every retained example. On August 12, 2026, all 15 selected correctness workloads passed from a fresh isolated consumer that installed all 29 exact Aura3D 2.0.0 tarballs against <code>three@0.185.1</code>. The four flagships, all three games, Aura Clash, and the selected comparison gallery then received independent human approval. This is bounded correctness and release evidence, not universal ecosystem parity; broad performance is not claimed.</p>
+        <p class="lede">Aura3D 2.0.0 is live on npm and GitHub. The major release consolidates duplicate public hosts, selects Rapier as the sole physical-simulation owner, keeps typed GLB assets and the safe root API as the public authoring path, and requires source, canvas, and full-page inspection for every retained example. On August 12, 2026, all 15 selected correctness workloads passed from a fresh isolated consumer that installed all 29 exact Aura3D 2.0.0 tarballs against <code>three@0.185.1</code>. This is bounded correctness and release evidence, not universal ecosystem parity; broad performance is not claimed. Post-release game and lighting changes invalidate the earlier visual sign-off until the exact final artifacts are reviewed again.</p>
       </div>
     </div>
 
@@ -234,7 +280,7 @@
           <div class="diag-row"><span class="k">disclosed losses</span> <span class="v">some Aura frames remain darker or less reflective</span></div>
           <div class="diag-row"><span class="k">reproduction</span> <span class="v">clean Linux reproduction retained; native WebGPU verified on host hardware</span></div>
           <div class="diag-row"><span class="k">claim boundary</span> <span class="v">broad performance and universal ecosystem parity are not claimed</span></div>
-          <div class="diag-row"><span class="k">visual approval</span> <span class="v ok">4 flagships · 3 games · Aura Clash · selected comparison gallery</span></div>
+          <div class="diag-row"><span class="k">visual approval</span> <span class="v">exact-final re-review required after source changes</span></div>
         </div>
       </div>
     </div>
@@ -245,6 +291,7 @@
       <a href="https://github.com/auraoneai/aura3d/blob/main/MIGRATION-2.0.md" target="_blank" rel="noopener">2.0 migration</a>
       <a href="https://github.com/auraoneai/aura3d/blob/main/docs/api/public-api.md" target="_blank" rel="noopener">Public API</a>
       <a href="#gallery">Examples</a>
+      <a href="/docs/aura3d-vs-threejs.html">Aura3D vs Three.js</a>
       <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/superiority-evidence-workflow.md" target="_blank" rel="noopener">Comparison methodology</a>
       <a href="https://github.com/auraoneai/aura3d/blob/main/docs/project/threejs-superiority-status.md" target="_blank" rel="noopener">Current results and limits</a>
       <a href="https://github.com/auraoneai/aura3d/blob/main/tests/reports/current-head-to-head-installed/report.json" target="_blank" rel="noopener">Installed reproduction report</a>

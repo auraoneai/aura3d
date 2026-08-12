@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aura3D 2.0 vs Three.js r185: An Honest Product Comparison</title>
+<meta name="description" content="A workload-by-workload comparison of Aura3D 2.0 and Three.js r185: renderer output, developer workflow, integrated platform capabilities, ecosystem breadth, evidence, and limits." />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<link rel="canonical" href="https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Aura3D 2.0 vs Three.js r185" />
+<meta property="og:description" content="Not a universal score. A current, reproducible, workload-by-workload product comparison." />
+<meta property="og:url" content="https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/marketing/src/styles.css" />
+</head>
+<body>
+<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api.html">Agent API</a><a class="nav-link" href="/apps/advanced-examples-gallery/">Examples</a><a class="nav-link" href="/docs/aura3d-vs-threejs.html">Compare</a><a class="nav-link" href="/docs/evidence.html">Evidence</a><a class="nav-link" href="/docs/claims.html">Limits</a></div><div class="nav-actions"><span class="nav-version">v2.0.0</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart.html">Get started <span class="arr"></span></a></div></div></nav>
+
+<main class="compare-page">
+  <header class="compare-hero">
+    <div class="wrap">
+      <span class="hero-tag"><span class="pill">CURRENT</span><b>Aura3D 2.0.0</b><span class="mute">vs Three.js 0.185.1</span></span>
+      <h1>Three.js gives you the parts.<br /><em>Aura3D gives you a product path.</em></h1>
+      <p class="compare-hero-lede">This is not a claim that Aura3D replaces the world’s broader JavaScript 3D ecosystem. It is a simpler claim—and a more useful one: for the 15 frozen workloads below, Aura3D reaches the same required outcomes through public, installed packages, while adding typed asset provenance, agent-oriented composition, scaffolds, diagnostics, and evidence that travels with the application.</p>
+      <div class="hero-cta"><a class="btn btn-primary" href="/apps/advanced-examples-gallery/">Use the live examples <span class="arr"></span></a><a class="btn btn-ghost" href="https://github.com/auraoneai/aura3d/blob/main/tests/reports/current-head-to-head/aggregate.json">Inspect the aggregate</a></div>
+      <div class="compare-facts">
+        <div><strong>15 / 15</strong><span>selected correctness workloads</span></div>
+        <div><strong>29</strong><span>exact installed Aura3D tarballs</span></div>
+        <div><strong>r185</strong><span>current locked Three.js baseline</span></div>
+        <div><strong>0</strong><span>broad performance claims</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="compare-section"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">The decision</span><h2>Choose the layer you want to own.</h2><p>Three.js is a mature, low-level 3D library with a large official and third-party ecosystem. Aura3D is an opinionated TypeScript application SDK: it owns less commodity infrastructure, integrates mature engines such as Rapier and Recast through optional adapters, and owns more of the path from a prompt or typed asset to a verified, deployable route.</p></div>
+    <div class="compare-columns">
+      <article><span>Choose Three.js when</span><h3>You want maximum renderer reach.</h3><ul><li>You need the broadest example, addon, loader, WebXR, TSL, node-material, and community surface.</li><li>You want direct control of the scene graph, render loop, renderer, loaders, effects, and lifecycle.</li><li>Your team already owns the architecture that connects those pieces into an application.</li></ul></article>
+      <article class="aura-choice"><span>Choose Aura3D when</span><h3>You want to start with the system assembled.</h3><ul><li>You want typed, provenance-backed assets instead of raw model URLs.</li><li>You want public scene composition designed for coding agents and editable TypeScript.</li><li>You want scaffolds, route health, diagnostics, interactions, optional mature simulation adapters, and release evidence in one product path.</li></ul></article>
+    </div>
+  </div></section>
+
+  <section class="compare-section compare-dark"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">Current measured result</span><h2>No magic score. Five separate verdicts.</h2><p>Correctness cannot be traded for fewer lines. Visual differences cannot be erased by an aggregate. Ecosystem breadth cannot be inferred from a selected workload set.</p></div>
+    <div class="verdict-grid">
+      <article><span>01</span><h3>Renderer correctness</h3><strong>Selected workloads pass</strong><p>Both stacks complete all 15 frozen correctness workloads. Several Aura frames retain visible material, lighting, bloom, or output-treatment losses, disclosed per workload.</p></article>
+      <article><span>02</span><h3>Renderer depth</h3><strong>Three.js leads broadly</strong><p>Three.js has the wider official renderer, addon, WebGPU/TSL, postprocessing, loader, XR, and example surface. Aura3D does not label that ecosystem breadth as parity.</p></article>
+      <article><span>03</span><h3>Developer workflow</h3><strong>Aura3D integrates more</strong><p>Typed asset references, scene kits, agent context, maintained scaffolds, diagnostics, and static deployment checks begin above the raw renderer layer.</p></article>
+      <article><span>04</span><h3>Application evidence</h3><strong>Aura3D differentiates</strong><p>Route health, interaction audits, asset hashes, screenshots, installed-package tests, claim boundaries, and evidence freshness are maintained product surfaces.</p></article>
+      <article><span>05</span><h3>Adoption risk</h3><strong>Three.js is safer broadly</strong><p>Three.js has far greater adoption, community knowledge, integrations, and escape hatches. Aura3D reduces orchestration work but carries the risk of a younger ecosystem.</p></article>
+    </div>
+  </div></section>
+
+  <section class="compare-section"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">What 2.0 changes</span><h2>Built in, without rebuilding everything.</h2></div>
+    <div class="compare-feature-grid">
+      <article><h3>Typed assets</h3><p>The CLI records provenance, license, hash, bounds, and a generated TypeScript reference. Public routes import <code>assets.product</code>; they do not guess a URL.</p></article>
+      <article><h3>One simulation owner</h3><p>Rapier owns physical bodies, colliders, joints, CCD, character movement, and physical vehicle handles. Recast owns navmesh and crowd. Authored arcade motion stays explicitly non-physical.</p></article>
+      <article><h3>AI-native composition</h3><p>The public API exposes stable scene nouns and verbs, templates, prompt context, and ordinary TypeScript that a developer can inspect after an agent writes it.</p></article>
+      <article><h3>Evidence as code</h3><p>A green DOM is not accepted as a rendered scene. Aura3D separates source, renderer, visual, interaction, package, clean-consumer, and hosted-route proof.</p></article>
+      <article><h3>Lean entries</h3><p><code>@aura3d/lean</code>, <code>/product</code>, and <code>/game</code> isolate recommended surfaces while the root engine remains the broad compatibility entry.</p></article>
+      <article><h3>Production escape hatch</h3><p>The production renderer and low-level packages remain reachable for selected shader, postprocess, WebGPU, GLB, animation, and lifecycle workloads—with claims scoped to the path actually tested.</p></article>
+    </div>
+  </div></section>
+
+  <section class="compare-section compare-workloads"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">Frozen r185 workload set</span><h2>Fifteen outcomes. Every limitation retained.</h2></div>
+    <div class="workload-list">
+      <span>Primitive PBR scene</span><span>GLB product viewer</span><span>Cinematic architecture</span><span>Digital-twin data</span><span>Instancing + LOD</span><span>Skinned morph animation</span><span>Custom material shader</span><span>Postprocessed scene</span><span>Rapier character</span><span>Rapier vehicle</span><span>Recast crowd</span><span>WebGPU shader</span><span>Injected XR interaction</span><span>Resource lifecycle</span><span>Scaffold to deploy</span>
+    </div>
+    <p class="compare-note">The set proves these named outcomes, not universal visual parity, renderer-feature parity, performance non-inferiority, physical-device XR, general TSL ergonomics, or the breadth of Three.js’s ecosystem. Native WebGPU passed on host hardware; the clean Linux container without GPU passthrough passed 23 of 24 browser assertions.</p>
+  </div></section>
+
+  <section class="compare-cta"><div class="wrap"><span class="eyebrow">The shortest honest pitch</span><h2>Less assembly.<br />More application.</h2><p>If you want a renderer toolbox, Three.js remains exceptional. If you want an AI-native TypeScript path from asset to interactive, inspectable, deployable browser 3D, Aura3D 2.0 is ready to be evaluated on the work that matters to you.</p><div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Build the first scene <span class="arr"></span></a><a class="btn btn-ghost" href="/docs/claims.html">Read every boundary</a></div></div></section>
+</main>
+
+<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D · MIT licensed</span><span>Comparison locked to Three.js 0.185.1 · no universal score</span></div></div></footer>
+<script type="module" src="/marketing/src/main.ts"></script>
+</body>
+</html>
