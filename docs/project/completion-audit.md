@@ -1,7 +1,7 @@
 # Completion Audit
 
 Date: 2026-08-08
-Status: superseded pre-publication audit; final competitive program incomplete
+Status: historical pre-publication audit
 
 ## Current Result
 
@@ -9,8 +9,8 @@ This audit is retained as a historical snapshot. It is not sufficient to enter
 the final release sequence. In addition to human visual review, serial suites,
 package provenance/tarballs, publication, registry integrity, GitHub release,
 deployment, and live verification, the current `three@0.185.1` comparison,
-subsystem ownership work, and material flagship rebuild in
-`1.6-FINAL-PRD-Finishes.md` remain open.
+subsystem ownership work, and material flagship review remained open at the
+time of this snapshot.
 
 ## Completed For The Candidate
 

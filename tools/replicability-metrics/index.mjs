@@ -164,7 +164,7 @@ export const CONSTANT_CATEGORIES = Object.freeze({
      */
     "TRACK_REFERENCE_Y", "CAR_TARGET_MAX_DIMENSION", "cabinetTargetSize", "SCENE_SIZE",
     // The *input* depth of the world plane. Consumers read the resolved value back from the binding.
-    "WORLD_PLANE_DEPTH", "GAMEPLAY_ACTOR_DEPTH", "opponentTargetMaxDimension", "chaseFov"
+    "WORLD_PLANE_DEPTH", "GAMEPLAY_ACTOR_DEPTH", "opponentTargetMaxDimension", "CONTACT_CLEARANCE", "chaseFov"
   ],
   /**
    * 2: Reusable genre defaults. Belong in a shared preset.

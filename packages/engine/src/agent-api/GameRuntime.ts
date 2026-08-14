@@ -842,6 +842,8 @@ export interface GameCollisionBodyHandle {
   readonly velocity: GameVec3;
   setPosition(position: GameVec3): GameCollisionBodySnapshot;
   setVelocity(velocity: GameVec3): GameCollisionBodySnapshot;
+  /** Set the body's world rotation as an [x, y, z, w] quaternion. */
+  setRotation(rotation: readonly [number, number, number, number]): GameCollisionBodySnapshot;
   translate(delta: GameVec3): GameCollisionBodySnapshot;
   snapshot(): GameCollisionBodySnapshot;
 }
@@ -2047,7 +2049,10 @@ export function createGameArcadeVehicle(options: GameArcadeVehicleOptions): Game
         x: constraint.x ?? state.x,
         z: constraint.z ?? state.z,
         heading: constraint.heading ?? state.heading,
-        speed: state.speed * clamp(constraint.speedMultiplier ?? 1, 0, 1),
+        // Contact resolution may either dissipate speed (<1) or transfer momentum
+        // into this vehicle (>1). Keep the result inside the vehicle's configured
+        // forward/reverse limits instead of silently flattening every multiplier to 1.
+        speed: clamp(state.speed * Math.max(0, constraint.speedMultiplier ?? 1), -reverseSpeed, maxSpeed),
         drift: state.drift * clamp(constraint.driftMultiplier ?? 1, 0, 1)
       };
       return snapshot();
@@ -2298,6 +2303,10 @@ export function createGameCollisionWorld(descriptor: PhysicsWorldDescriptor = {}
       },
       setVelocity(velocity) {
         body.setVelocity(vec3(velocity, body.velocity));
+        return snapshot();
+      },
+      setRotation(rotation) {
+        body.setRotation(rotation);
         return snapshot();
       },
       translate(delta) {

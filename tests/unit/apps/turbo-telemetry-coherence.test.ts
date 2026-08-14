@@ -75,7 +75,7 @@ describe("turbo drift telemetry is coherent with simulation", () => {
      * exists to prevent.
      */
     const code = SOURCE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-    expect(code).toMatch(/raceSnapshot\s*=\s*racingState\.step\(/);
+    expect(code).toMatch(/raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/);
     expect(code).toMatch(/hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/);
   });
 

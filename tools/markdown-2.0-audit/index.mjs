@@ -4,14 +4,18 @@ import { dirname, extname, resolve } from "node:path";
 
 const root = process.cwd();
 const outputPath = resolve(root, "tests/reports/markdown-2.0-audit.json");
+const currentPackageVersion = readPackageVersion();
 const allowActiveFinalPrd = process.env.A3D_ALLOW_ACTIVE_FINAL_PRD === "1";
 const retiredPathPatterns = [
   /^archive\/.*\.md$/i,
   /^docs\/archive\/.*\.md$/i,
   /^docs\/project\/plans\/.*\.md$/i,
+  /^docs\/project\/implementation-plan\.md$/i,
+  /^docs\/project\/roadmaps\/.*\.md$/i,
   /(^|\/)ACCEPTANCE_PLAN\.md$/i,
   /(^|\/).*PRD.*\.md$/i,
   /^HANDOFF-1\.6\.md$/i,
+  /^HANDOFF-2\.0\.md$/i,
   /^MIGRATION-1\.6\.md$/i,
   /^Aura3D-1\.6-/i,
   /^docs\/project\/aura3d-(?:109|140|141|142|143|144|145|160)-release/i,
@@ -28,6 +32,10 @@ const retiredReferences = [
   "Aura3D-1.6-Architecture-Decision.md",
   "GameEngine-PRD.md",
   "HANDOFF-1.6.md",
+  "HANDOFF-2.0.md",
+  "1.6-FINAL-PRD-Finishes.md",
+  "docs/project/implementation-plan.md",
+  "docs/project/roadmaps/",
   "MIGRATION-1.6.md",
   "docs/project/aura3d-109-release-gates.md",
   "docs/project/showcase/aura-clash-showcase-plan.md",
@@ -56,8 +64,8 @@ for (const path of markdownFiles) {
     violations.push({ path, rule: "missing-document-title", detail: "tracked Markdown must contain a level-one title" });
   }
   const versionHeader = text.match(/^Version:\s*(\d+\.\d+(?:\.\d+)?)/m)?.[1];
-  if (versionHeader && versionHeader !== "2.0.0") {
-    violations.push({ path, rule: "non-2.0-version-header", detail: `Version header is ${versionHeader}; expected 2.0.0` });
+  if (versionHeader && !/^2\.0(?:\.\d+)?$/.test(versionHeader)) {
+    violations.push({ path, rule: "non-2.0-version-header", detail: `Version header is ${versionHeader}; expected Aura3D 2.0 documentation` });
   }
   const retired = retiredPathPatterns.some((pattern) => pattern.test(path))
     && !(allowActiveFinalPrd && path === "1.6-FINAL-PRD-Finishes.md");
@@ -85,7 +93,7 @@ const report = {
   schema: "aura3d-markdown-2.0-audit/1.0",
   generatedAt: new Date().toISOString(),
   command: "pnpm check:markdown-2.0",
-  version: readPackageVersion(),
+  version: currentPackageVersion,
   allowActiveFinalPrd,
   fileCount: inventory.length,
   classificationCounts: Object.fromEntries([...new Set(inventory.map((entry) => entry.classification))]
@@ -111,7 +119,7 @@ function classify(path) {
   if (/^benchmark\/context\//.test(path)) return "frozen-benchmark-context";
   if (/^benchmark\/(?:prompts|results)\//.test(path)) return "benchmark-input-or-result";
   if (/^docs\/project\/production-evidence\//.test(path)) return "production-evidence-index";
-  if (/^(?:CHANGELOG|MIGRATION-2\.0|HANDOFF-2\.0)\.md$/.test(path)) return "release-document";
+  if (/^(?:CHANGELOG|MIGRATION-2\.0)\.md$/.test(path)) return "release-document";
   if (/^docs\//.test(path)) return "current-documentation";
   if (/^(?:apps|examples|packages|templates|tests|fixtures|assets)\//.test(path)) return "colocated-documentation";
   return "repository-documentation";

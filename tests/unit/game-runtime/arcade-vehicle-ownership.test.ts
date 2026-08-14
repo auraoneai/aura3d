@@ -27,6 +27,15 @@ describe("shared arcade vehicle ownership", () => {
     expect(run()).toEqual(run());
   });
 
+  it("supports bounded momentum transfer during contact resolution", () => {
+    const vehicle = createGameArcadeVehicle({ maxSpeed: 12, reverseSpeed: 3 });
+    vehicle.reset({ speed: 4 });
+
+    expect(vehicle.constrain({ speedMultiplier: 1.25 }).speed).toBe(5);
+    expect(vehicle.constrain({ speedMultiplier: 10 }).speed).toBe(12);
+    expect(vehicle.constrain({ speedMultiplier: 0.5 }).speed).toBe(6);
+  });
+
   it("owns pose integration while the racing kit delegates and applies surface constraints", () => {
     const source = readFileSync("packages/engine/src/agent-api/GameGenreKits.ts", "utf8");
     const start = source.indexOf("export function createGameRacingKit");

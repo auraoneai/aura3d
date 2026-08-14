@@ -40,13 +40,28 @@ interface ChassisEvidence {
 
 interface VehicleContactEvidence {
   readonly system: "game.collisionWorld:Rapier";
+  readonly shape: "rendered-footprint-oriented-box";
   readonly active: boolean;
   readonly contactCount: number;
   readonly contactFrames: number;
   readonly maximumPenetration: number;
+  readonly renderedEnvelopeMinimumClearance: number;
   readonly currentPenetration: number;
-  readonly minimumCenterSeparation: number;
+  readonly renderedFootprints: {
+    readonly playerHalfExtents: readonly [number, number, number];
+    readonly opponentHalfExtents: readonly [number, number, number];
+  };
+  readonly minimumDirectImpactSeparation: number;
   readonly centerSeparation: number;
+  readonly impactResponse: {
+    readonly recoveryActive: boolean;
+    readonly remainingSeconds: number;
+    readonly responses: number;
+    readonly visualEffectNodes: 0;
+    readonly hitStopActive: boolean;
+    readonly hitStopRemainingSeconds: number;
+    readonly headingKickApplied: boolean;
+  };
   readonly lastImpact: null | {
     readonly frame: number;
     readonly relativeClosingSpeed: number;
@@ -54,6 +69,10 @@ interface VehicleContactEvidence {
     readonly playerSpeedAfter: number;
     readonly opponentSpeedBefore: number;
     readonly opponentSpeedAfter: number;
+    readonly playerHeadingBefore: number;
+    readonly playerHeadingAfter: number;
+    readonly opponentHeadingBefore: number;
+    readonly opponentHeadingAfter: number;
     readonly racingLineOffset: number;
     readonly contactNormal: readonly [number, number, number];
   };
@@ -171,9 +190,9 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
     // architecture—an unrelated physics proof plus two collisionless rendered cars—
     // from passing again even when this particular driving line avoids the rival.
     expect(vehicleContact.system).toBe("game.collisionWorld:Rapier");
+    expect(vehicleContact.shape).toBe("rendered-footprint-oriented-box");
     expect(vehicleContact.solverPositionsFeedGameplayState).toBe(true);
-    expect(vehicleContact.centerSeparation).toBeGreaterThanOrEqual(vehicleContact.minimumCenterSeparation - 0.01);
-    expect(vehicleContact.maximumPenetration).toBeLessThan(0.04);
+    expect(vehicleContact.renderedEnvelopeMinimumClearance, "visible car envelopes overlapped").toBeGreaterThan(0.001);
 
     // The opponent must be driven by the reusable driver and stay on the circuit.
     expect(opponent?.controller, "opponent controller").toBe("aura-vehicle-driver-ai");
@@ -199,7 +218,7 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
     });
     page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`${server.origin}${ROUTE}`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}${ROUTE}?collisionReview=side`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, { vehicleContact?: unknown } | undefined>)[name];
       return Boolean(value?.vehicleContact);
@@ -212,16 +231,43 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
 
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, { vehicleContact?: VehicleContactEvidence } | undefined>)[name];
-      return (value?.vehicleContact?.contactFrames ?? 0) >= 8 && value?.vehicleContact?.active === true;
+      const contact = value?.vehicleContact;
+      return contact?.active === true
+        && (contact?.impactResponse.responses ?? 0) >= 1
+        && contact?.impactResponse.recoveryActive === true
+        && contact?.impactResponse.hitStopActive === true;
     }, GLOBAL_NAME, { timeout: 30_000, polling: "raf" });
-    const impact = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
-    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-contact.png") });
+    const firstContact = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-first-contact.png") });
+    await page.screenshot({
+      path: join(REPORT_DIR, "turbo-direct-impact-first-contact-close.png"),
+      clip: { x: 400, y: 260, width: 500, height: 330 }
+    });
+
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { vehicleContact?: VehicleContactEvidence } | undefined>)[name];
+      const contact = value?.vehicleContact;
+      return Boolean(contact
+        && !contact.active
+        && contact.impactResponse.recoveryActive
+        && contact.impactResponse.headingKickApplied
+        && contact.centerSeparation >= contact.minimumDirectImpactSeparation + 0.25);
+    }, GLOBAL_NAME, { timeout: 30_000, polling: "raf" });
+    const reaction = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-reaction.png") });
+    await page.screenshot({
+      path: join(REPORT_DIR, "turbo-direct-impact-reaction-close.png"),
+      clip: { x: 350, y: 240, width: 560, height: 350 }
+    });
 
     await page.keyboard.up("KeyW");
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, { vehicleContact?: VehicleContactEvidence } | undefined>)[name];
       const contact = value?.vehicleContact;
-      return Boolean(contact && !contact.active && contact.centerSeparation >= contact.minimumCenterSeparation + 0.12);
+      return Boolean(contact
+        && !contact.active
+        && !contact.impactResponse.recoveryActive
+        && contact.centerSeparation >= contact.minimumDirectImpactSeparation + 0.3);
     }, GLOBAL_NAME, { timeout: 20_000, polling: "raf" });
     const separated = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
     await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-separated.png") });
@@ -231,31 +277,39 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
       generatedAt: new Date().toISOString(),
       producer: "tests/browser/turbo-vehicle-grounding.spec.ts",
       approach,
-      impact,
+      firstContact,
+      reaction,
       separated,
       consoleErrors
     }, null, 2)}\n`);
 
     expect(consoleErrors).toEqual([]);
-    expect(impact.system).toBe("game.collisionWorld:Rapier");
-    expect(impact.solverPositionsFeedGameplayState).toBe(true);
-    expect(impact.active).toBe(true);
-    expect(impact.contactFrames).toBeGreaterThanOrEqual(8);
+    expect(reaction.system).toBe("game.collisionWorld:Rapier");
+    expect(reaction.shape).toBe("rendered-footprint-oriented-box");
+    expect(reaction.solverPositionsFeedGameplayState).toBe(true);
+    expect(firstContact.lastImpact, "first-contact capture must contain impact telemetry").not.toBeNull();
+    expect(firstContact.impactResponse.recoveryActive, "first-contact capture must begin physical recoil").toBe(true);
+    expect(firstContact.impactResponse.visualEffectNodes, "collision must not use decorative flash geometry").toBe(0);
+    expect(firstContact.renderedEnvelopeMinimumClearance, "first-contact silhouettes overlapped").toBeGreaterThan(0.001);
+    expect(firstContact.renderedEnvelopeMinimumClearance, "first-contact screenshot must show bumper contact").toBeLessThan(0.03);
     // A solver may finish an impact at exact touching contact, so residual overlap
     // is not required. The bound rejects visible interpenetration; onset telemetry,
     // closing speed, impulse response and subsequent separation prove the impact.
-    expect(impact.maximumPenetration).toBeLessThan(0.04);
-    expect(impact.centerSeparation).toBeGreaterThanOrEqual(impact.minimumCenterSeparation - 0.01);
-    expect(impact.lastImpact).not.toBeNull();
-    expect(impact.lastImpact!.racingLineOffset, "impact must be direct rather than a lateral glance").toBeLessThanOrEqual(0.02);
-    expect(impact.lastImpact!.relativeClosingSpeed, "player must close on the rival before impact").toBeGreaterThan(0.25);
-    expect(impact.lastImpact!.playerSpeedAfter, "impact must reduce player speed").toBeLessThan(impact.lastImpact!.playerSpeedBefore);
-    expect(Math.abs(impact.lastImpact!.contactNormal[1]), "contact normal must remain in the road plane").toBeLessThanOrEqual(0.001);
+    expect(reaction.renderedEnvelopeMinimumClearance, "visible car envelopes overlapped").toBeGreaterThan(0.001);
+    expect(reaction.impactResponse.recoveryActive, "reaction frame must retain player recoil").toBe(true);
+    expect(reaction.lastImpact).not.toBeNull();
+    expect(reaction.lastImpact!.racingLineOffset, "impact must be direct rather than a lateral glance").toBeLessThanOrEqual(0.02);
+    expect(reaction.lastImpact!.relativeClosingSpeed, "player must close on the rival before impact").toBeGreaterThan(0.25);
+    expect(reaction.lastImpact!.playerSpeedAfter, "impact must sharply reduce player speed").toBeLessThan(reaction.lastImpact!.playerSpeedBefore * 0.5);
+    expect(reaction.lastImpact!.opponentSpeedAfter, "rear impact must transfer speed into the rival").toBeGreaterThan(reaction.lastImpact!.opponentSpeedBefore * 1.25);
+    expect(Math.abs(reaction.lastImpact!.playerHeadingAfter - reaction.lastImpact!.playerHeadingBefore), "player must visibly recoil in yaw").toBeGreaterThan(0.1);
+    expect(Math.abs(reaction.lastImpact!.opponentHeadingAfter - reaction.lastImpact!.opponentHeadingBefore), "rival must visibly deflect in yaw").toBeGreaterThan(0.3);
+    expect(Math.abs(reaction.lastImpact!.contactNormal[1]), "contact normal must remain in the road plane").toBeLessThanOrEqual(0.001);
     expect(separated.active).toBe(false);
-    expect(separated.centerSeparation).toBeGreaterThan(impact.centerSeparation + 0.1);
+    expect(separated.centerSeparation).toBeGreaterThan(reaction.centerSeparation + 0.1);
     expect(approach.active).toBe(false);
     expect(approach.contactFrames).toBe(0);
-    expect(approach.centerSeparation).toBeGreaterThan(approach.minimumCenterSeparation + 0.12);
+    expect(approach.centerSeparation).toBeGreaterThan(approach.minimumDirectImpactSeparation + 0.12);
   } finally {
     await page.keyboard.up("KeyW").catch(() => undefined);
     await server?.close();

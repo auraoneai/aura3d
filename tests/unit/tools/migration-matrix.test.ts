@@ -27,6 +27,7 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
   });
 
   it("sets every released package to the coordinated major version", () => {
+    const coordinatedVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
     const manifests = ["package.json", ...readdirSync("packages", { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => `packages/${entry.name}/package.json`)];
@@ -34,10 +35,12 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
       .map((path) => ({ path, manifest: JSON.parse(readFileSync(path, "utf8")) as { private?: boolean; name?: string; version?: string } }))
       .filter(({ manifest }) => manifest.private !== true);
     expect(released.length).toBe(29);
-    expect(released.every(({ manifest }) => manifest.version === "2.0.0")).toBe(true);
+    expect(coordinatedVersion).toMatch(/^2\.0\.\d+$/);
+    expect(released.every(({ manifest }) => manifest.version === coordinatedVersion)).toBe(true);
   });
 
   it("classifies the root subpath change and preserves a reachable compatibility package", () => {
+    const coordinatedVersion = JSON.parse(readFileSync("package.json", "utf8")).version as string;
     const before = JSON.parse(showAtBase("package.json")) as { exports?: Record<string, unknown>; files?: readonly string[] };
     const after = JSON.parse(readFileSync("package.json", "utf8")) as { exports?: Record<string, unknown> };
     const removed = Object.keys(before.exports ?? {}).filter((key) => !(key in (after.exports ?? {})));
@@ -45,7 +48,7 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
     expect((before.files ?? []).some((entry) => entry.includes("three-compat"))).toBe(false);
     expect(JSON.parse(readFileSync("packages/three-compat/package.json", "utf8"))).toMatchObject({
       name: "@aura3d/three-compat",
-      version: "2.0.0"
+      version: coordinatedVersion
     });
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/editor-runtime",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "exports": {
     ".": {
@@ -14,6 +14,9 @@
     "@aura3d/animation": "workspace:*",
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
+  },
+  "devDependencies": {
+    "@aura3d/engine": "workspace:*"
   },
   "description": "Runtime editor command history, selection state, picking, inspector models, play-mode snapshots, material variants, and transform gizmos for Aura3D.",
   "keywords": [

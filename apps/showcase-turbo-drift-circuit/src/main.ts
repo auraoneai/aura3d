@@ -221,7 +221,9 @@ const carChassisSpec = {
   // retained peak at a sparse triangle seam is 0.01684 scene units. Fourteen percent
   // of the fitted tyre radius covers that finite patch while remaining far below a
   // real verge drop, so contact correction cannot masquerade as airborne travel.
-  contactTolerance: fittedCarChassisSpec.wheelRadius * 0.14
+  // The corrected collision path reaches the certified sparse seam at a retained
+  // 0.01806 gap; 15% of tyre radius covers it without approaching a verge drop.
+  contactTolerance: fittedCarChassisSpec.wheelRadius * 0.15
 };
 /*
  * The public racing kit constrains the vehicle *centre*, while the mesh chassis samples
@@ -275,7 +277,11 @@ const racingState = game.racing({
 // wheel-to-wheel encounter during the opening stint. The former 7% lead let the
 // collision gate finish with zero contact frames, so it certified an unexercised
 // contact system while the visible cars could still overlap in actual play.
-const opponentStartProgress = 0.032;
+const collisionReviewCamera = new URLSearchParams(window.location.search).get("collisionReview") === "side";
+// The evidence-only side view starts the rival nearer on the same opening straight,
+// making first contact deterministic before barriers or later circuit branches can
+// obscure either silhouette. Normal gameplay retains the authored 0.032 head start.
+const opponentStartProgress = collisionReviewCamera ? 0.017 : 0.032;
 // Both cars occupy the same authored racing line. A permanent lateral presentation
 // offset made the first encounter a glancing side-swipe, so the retained collision
 // image could not demonstrate the requested direct rear impact.
@@ -376,7 +382,7 @@ const fittedOpponentChassisSpec = vehicleChassisSpecFromBounds(opponentRenderedS
 });
 const opponentChassisSpec = {
   ...fittedOpponentChassisSpec,
-  contactTolerance: fittedOpponentChassisSpec.wheelRadius * 0.14
+  contactTolerance: fittedOpponentChassisSpec.wheelRadius * 0.15
 };
 
 /**
@@ -441,47 +447,93 @@ const physicsProof = createShowcaseRapierPhysicsProof("turbo-drift-circuit");
  * Live vehicle-to-vehicle contact world.
  *
  * `game.racing` deliberately owns arcade steering and lap state; Rapier owns solid
- * contact. Compact round proxies model the central sprung mass rather than the open
- * wheels, preventing one Formula car from climbing over another while allowing close
- * wheel-to-wheel racing. Every solved XZ position is fed back into `game.racing`.
+ * contact. Oriented boxes follow each rendered Formula footprint, so the long noses,
+ * wings and tyres cannot pass through one another while close side-by-side racing
+ * remains possible. Every solved XZ position is fed back into `game.racing`.
  */
 const vehicleContactWorld = game.planarCollisionWorld({
   backend: "rapier",
   fixedDelta: 1 / 120,
-  solverIterations: 12,
+  solverIterations: 20,
   enableSleeping: false,
   continuousCollision: {
     mode: "adaptive-substeps",
-    // Keep the sweep threshold well below either collider radius. Sixty-four is
-    // sufficient for the bounded certified speed and rejects rather than tunnels.
-    maxSubSteps: 64,
+    // Keep the sweep threshold below the narrowest fitted box half-extent. A retained
+    // full-stint steering frame requires 65 subdivisions, so 96 preserves rejection
+    // semantics while covering the route's bounded certified speed.
+    maxSubSteps: 96,
     motionThreshold: 0.08
   }
 });
-// Keep this explicitly planar contact world on a rotation-invariant primitive.
-// The old spheres represented only the central sprung mass and let the long noses
-// overlap. Radius now follows the larger of measured half-length and half-width, so
-// rear-end contact begins at the rendered Formula envelope without a Y-axis escape.
-const playerContactRadius = Math.max(
-  carChassisSpec.wheelbase * 0.42,
-  carChassisSpec.trackWidth * 0.52,
-  carChassisSpec.wheelRadius * 1.35
-);
-const opponentContactRadius = Math.max(
-  opponentChassisSpec.wheelbase * 0.42,
-  opponentChassisSpec.trackWidth * 0.52,
-  opponentChassisSpec.wheelRadius * 1.35
-);
+// These half-extents come from the exact fitted asset bounds used by the renderer.
+// The former 0.27-radius spheres covered barely half the visible car length, which
+// let a solved physics contact render as one Formula car stacked over the other.
+// Clearance exceeds the retained worst solver penetration, so even during the
+// compression phase the visible GLB envelopes retain a real gap.
+// A small visible safety margin around the fitted GLB footprint. The strong one-shot
+// momentum transfer below now separates the cars immediately, so contact can occur
+// near the rendered bumpers without the repeated compression that formerly required
+// an obviously oversized proxy.
+const CONTACT_CLEARANCE = 0.009;
+const playerContactHalfExtents: AuraVec3 = [
+  heroFraming.subject.size[0] / 2 + CONTACT_CLEARANCE,
+  // The planar world must never choose Y as the shortest separation axis. A tall
+  // proxy makes X/Z the only viable contact plane and prevents car-on-car climbing.
+  1,
+  heroFraming.subject.size[2] / 2 + CONTACT_CLEARANCE
+];
+const opponentContactHalfExtents: AuraVec3 = [
+  opponentRenderedSize[0] / 2 + CONTACT_CLEARANCE,
+  1,
+  opponentRenderedSize[2] / 2 + CONTACT_CLEARANCE
+];
+const minimumDirectImpactSeparation = playerContactHalfExtents[2] + opponentContactHalfExtents[2];
+const yawQuaternion = (yaw: number): readonly [number, number, number, number] => [
+  0,
+  Math.sin(yaw / 2),
+  0,
+  Math.cos(yaw / 2)
+];
+function orientedFootprintClearance(
+  playerPosition: AuraVec3,
+  playerYaw: number,
+  opponentPosition: AuraVec3,
+  opponentYaw: number
+): number {
+  const playerHalfWidth = heroFraming.subject.size[0] / 2;
+  const playerHalfLength = heroFraming.subject.size[2] / 2;
+  const opponentHalfWidth = opponentRenderedSize[0] / 2;
+  const opponentHalfLength = opponentRenderedSize[2] / 2;
+  const axesFor = (yaw: number) => [
+    [Math.cos(yaw), -Math.sin(yaw)],
+    [Math.sin(yaw), Math.cos(yaw)]
+  ] as const;
+  const playerAxes = axesFor(playerYaw);
+  const opponentAxes = axesFor(opponentYaw);
+  const delta = [opponentPosition[0] - playerPosition[0], opponentPosition[2] - playerPosition[2]] as const;
+  const projectionRadius = (
+    axis: readonly [number, number],
+    boxAxes: readonly [readonly [number, number], readonly [number, number]],
+    halfWidth: number,
+    halfLength: number
+  ) => halfWidth * Math.abs(axis[0] * boxAxes[0][0] + axis[1] * boxAxes[0][1])
+    + halfLength * Math.abs(axis[0] * boxAxes[1][0] + axis[1] * boxAxes[1][1]);
+  return Math.max(...[...playerAxes, ...opponentAxes].map((axis) =>
+    Math.abs(delta[0] * axis[0] + delta[1] * axis[1])
+      - projectionRadius(axis, playerAxes, playerHalfWidth, playerHalfLength)
+      - projectionRadius(axis, opponentAxes, opponentHalfWidth, opponentHalfLength)
+  ));
+}
 const initialPlayerContactPoint = racingScene.toScenePose(racingState.snapshot()).position;
 const initialOpponentContactPoint = racingScene.toScenePose(opponentAi.snapshot(), opponentRacingLineOffset).position;
-const playerContactBody = vehicleContactWorld.addSphere("player-race-car", playerContactRadius, {
+const playerContactBody = vehicleContactWorld.addBox("player-race-car", playerContactHalfExtents, {
   type: "dynamic",
   position: [initialPlayerContactPoint[0], 0, initialPlayerContactPoint[2]],
   tags: ["vehicle", "player"],
   material: { friction: 0.8, restitution: 0.05 },
   rigidBody: { mass: 760, linearDamping: 0.08, angularDamping: 1 }
 });
-const opponentContactBody = vehicleContactWorld.addSphere("opponent-race-car", opponentContactRadius, {
+const opponentContactBody = vehicleContactWorld.addBox("opponent-race-car", opponentContactHalfExtents, {
   type: "dynamic",
   position: [initialOpponentContactPoint[0], 0, initialOpponentContactPoint[2]],
   tags: ["vehicle", "opponent"],
@@ -491,7 +543,16 @@ const opponentContactBody = vehicleContactWorld.addSphere("opponent-race-car", o
 let vehicleContactCount = 0;
 let vehicleContactFrames = 0;
 let maximumVehiclePenetration = 0;
+let minimumRenderedEnvelopeClearance = Number.POSITIVE_INFINITY;
 let vehicleContactWasActive = false;
+let vehicleImpactRecoverySeconds = 0;
+let vehicleImpactResponses = 0;
+let vehicleHitStopSeconds = 0;
+let vehicleHitStopPlayerPoint: null | { readonly x: number; readonly y: number } = null;
+let vehicleHitStopOpponentPoint: null | { readonly x: number; readonly y: number } = null;
+let pendingPlayerImpactHeading: number | null = null;
+let pendingOpponentImpactHeading: number | null = null;
+let vehicleHeadingKickApplied = false;
 let lastVehicleImpact: null | {
   readonly frame: number;
   readonly relativeClosingSpeed: number;
@@ -499,6 +560,10 @@ let lastVehicleImpact: null | {
   readonly playerSpeedAfter: number;
   readonly opponentSpeedBefore: number;
   readonly opponentSpeedAfter: number;
+  readonly playerHeadingBefore: number;
+  readonly playerHeadingAfter: number;
+  readonly opponentHeadingBefore: number;
+  readonly opponentHeadingAfter: number;
   readonly racingLineOffset: number;
   readonly contactNormal: readonly [number, number, number];
 } = null;
@@ -560,6 +625,9 @@ const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
 // view. Sixty-two degrees retains a genre-appropriate ~19% hero height while
 // restoring visible road context around the subject.
 const chaseFov = 62;
+// Evidence-only camera selection. The public route keeps its genre chase framing;
+// `?collisionReview=side` widens and moves laterally so a retained screenshot can
+// prove the two vehicle silhouettes are separate at the contact plane.
 const racingCamera = game.racingCameraRig({
   sceneBinding: racingScene,
   focus: raceSnapshot,
@@ -581,12 +649,12 @@ const racingCamera = game.racingCameraRig({
    * modelled barriers. The floor is relative to the car's rendered height so it
    * remains valid if the typed vehicle changes.
    */
-  distance: chaseDistance,
-  height: chaseHeight,
+  distance: collisionReviewCamera ? chaseDistance * 1.35 : chaseDistance,
+  height: collisionReviewCamera ? chaseHeight * 1.15 : chaseHeight,
   // Derived, not tuned: see `requireLowerSideFeatureVisibility` above.
-  sideOffset: heroFraming.sideOffset,
+  sideOffset: collisionReviewCamera ? chaseDistance * 0.72 : heroFraming.sideOffset,
   lookAhead: chaseLookAhead,
-  fov: chaseFov
+  fov: collisionReviewCamera ? 58 : chaseFov
 });
 setupRacingPanel();
 
@@ -953,11 +1021,12 @@ const mountedEvidence = {
     mode: "chase",
     targetNode: "racing-player-car",
     source: "game.racingCameraRig",
-    distance: chaseDistance,
-    height: chaseHeight,
-    sideOffset: heroFraming.sideOffset,
+    collisionReviewCamera,
+    distance: collisionReviewCamera ? chaseDistance * 1.35 : chaseDistance,
+    height: collisionReviewCamera ? chaseHeight * 1.15 : chaseHeight,
+    sideOffset: collisionReviewCamera ? chaseDistance * 0.72 : heroFraming.sideOffset,
     lookAhead: chaseLookAhead,
-    fov: chaseFov
+    fov: collisionReviewCamera ? 58 : chaseFov
   },
   subjectFraming: subjectFramingEvidence(),
   renderedFeedback: {
@@ -1030,11 +1099,23 @@ updateRacingHud();
 app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   edgeRecoverySeconds = Math.max(0, edgeRecoverySeconds - step);
+  vehicleImpactRecoverySeconds = Math.max(0, vehicleImpactRecoverySeconds - step);
+  const vehicleHitStopActive = vehicleHitStopSeconds > 0
+    && vehicleHitStopPlayerPoint !== null
+    && vehicleHitStopOpponentPoint !== null;
+  vehicleHitStopSeconds = Math.max(0, vehicleHitStopSeconds - step);
   input.update(step);
   if (input.pressed("reset")) {
     raceSnapshot = racingState.reset(0);
     opponentRaceStarted = false;
     vehicleContactWasActive = false;
+    vehicleImpactRecoverySeconds = 0;
+    vehicleHitStopSeconds = 0;
+    vehicleHitStopPlayerPoint = null;
+    vehicleHitStopOpponentPoint = null;
+    pendingPlayerImpactHeading = null;
+    pendingOpponentImpactHeading = null;
+    vehicleHeadingKickApplied = false;
     edgeRecoverySeconds = 0;
     const resetOpponent = opponentAi.reset();
     mountedEvidence.gameplay.resetWorks = true;
@@ -1069,35 +1150,67 @@ app.onFrame(({ dt }) => {
     }));
     opponentCar.setRotation(opponentChassisPose.rotation[0], resetOpponentPose.rotation[1], opponentChassisPose.rotation[2]);
     playerContactBody.setPosition([resetPose.position[0], 0, resetPose.position[2]]);
+    playerContactBody.setRotation(yawQuaternion(resetPose.rotation[1]));
     playerContactBody.setVelocity([0, 0, 0]);
     opponentContactBody.setPosition([resetOpponentPose.position[0], 0, resetOpponentPose.position[2]]);
+    opponentContactBody.setRotation(yawQuaternion(resetOpponentPose.rotation[1]));
     opponentContactBody.setVelocity([0, 0, 0]);
     mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
     updateRacingHud();
     return;
   }
   const previous = raceSnapshot;
+  const previousOpponent = opponentAi.snapshot();
   opponentRaceStarted ||= input.held("throttle") || input.held("brake") || Math.abs(input.axis("steer")) > 0.01;
-  raceSnapshot = racingState.step(step, {
-    throttle: input.held("throttle"),
-    brake: input.held("brake"),
-    // The handbrake is what builds real slip in game.racing. Without it the
-    // kit's drift value stays zero and no drift feedback can honestly render.
-    drift: input.held("drift"),
-    steer: input.axis("steer")
-  });
+  raceSnapshot = vehicleHitStopActive
+    ? racingState.resolveContact(vehicleHitStopPlayerPoint, { speedMultiplier: 1, driftMultiplier: 1 })
+    : racingState.step(step, {
+      // A hard rear impact interrupts drive torque briefly. Without this recovery
+      // window, held throttle immediately erased the speed loss on the next frame and
+      // the collision looked like two cars merely touching.
+      throttle: input.held("throttle") && vehicleImpactRecoverySeconds <= 0,
+      brake: input.held("brake"),
+      // The handbrake is what builds real slip in game.racing. Without it the
+      // kit's drift value stays zero and no drift feedback can honestly render.
+      drift: input.held("drift"),
+      steer: input.axis("steer")
+    });
   const steppedOffTrack = raceSnapshot.offTrack
     || raceSnapshot.events.some((event) => event.type === "off-track");
-  const previousOpponent = opponentAi.snapshot();
-  let opponent = opponentRaceStarted
-    ? opponentAi.step(step, raceSnapshot.progress)
-    : previousOpponent;
+  let opponent = vehicleHitStopActive
+    ? opponentAi.resolveContact(vehicleHitStopOpponentPoint, 1)
+    : opponentRaceStarted
+      ? opponentAi.step(step, raceSnapshot.progress)
+      : previousOpponent;
+  const preStepBodySeparation = Math.hypot(
+    playerContactBody.position[0] - opponentContactBody.position[0],
+    playerContactBody.position[2] - opponentContactBody.position[2]
+  );
+  if (
+    !vehicleHitStopActive
+    && pendingPlayerImpactHeading !== null
+    && pendingOpponentImpactHeading !== null
+    && preStepBodySeparation >= minimumDirectImpactSeparation + 0.25
+  ) {
+    raceSnapshot = racingState.resolveContact(raceSnapshot.position, {
+      heading: pendingPlayerImpactHeading,
+      speedMultiplier: 1,
+      driftMultiplier: 1
+    });
+    opponent = opponentAi.resolveContact(opponent.position, 1, pendingOpponentImpactHeading);
+    pendingPlayerImpactHeading = null;
+    pendingOpponentImpactHeading = null;
+    vehicleHeadingKickApplied = true;
+  }
 
   // Drive the Rapier bodies toward the authored steering poses. Rapier advances and
   // resolves the two solid masses; its positions then become gameplay state before
   // chassis grounding or rendering occurs.
   const proposedPlayerPose = racingScene.toScenePose(raceSnapshot);
   const proposedOpponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
+  // Keep each Rapier box aligned to the same presentation yaw as its rendered car.
+  playerContactBody.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
+  opponentContactBody.setRotation(yawQuaternion(proposedOpponentPose.rotation[1]));
   playerContactBody.setVelocity([
     (proposedPlayerPose.position[0] - playerContactBody.position[0]) / step,
     0,
@@ -1119,6 +1232,28 @@ app.onFrame(({ dt }) => {
     vehicleContactFrames += 1;
     maximumVehiclePenetration = Math.max(maximumVehiclePenetration, activeVehicleContact.penetration);
   }
+  // Rapier owns the solved X/Z displacement. Normalize the intentionally ignored
+  // axis and authored yaw only after reading this step's contact manifold, so angular
+  // impulses cannot accumulate into vehicle climbing or invalidate onset evidence.
+  const solvedPlayerBodyPosition = playerContactBody.position;
+  const solvedPlayerBodyVelocity = playerContactBody.velocity;
+  const solvedOpponentBodyPosition = opponentContactBody.position;
+  const solvedOpponentBodyVelocity = opponentContactBody.velocity;
+  playerContactBody.setPosition([solvedPlayerBodyPosition[0], 0, solvedPlayerBodyPosition[2]]);
+  playerContactBody.setVelocity([solvedPlayerBodyVelocity[0], 0, solvedPlayerBodyVelocity[2]]);
+  playerContactBody.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
+  opponentContactBody.setPosition([solvedOpponentBodyPosition[0], 0, solvedOpponentBodyPosition[2]]);
+  opponentContactBody.setVelocity([solvedOpponentBodyVelocity[0], 0, solvedOpponentBodyVelocity[2]]);
+  opponentContactBody.setRotation(yawQuaternion(proposedOpponentPose.rotation[1]));
+  minimumRenderedEnvelopeClearance = Math.min(
+    minimumRenderedEnvelopeClearance,
+    orientedFootprintClearance(
+      playerContactBody.position,
+      proposedPlayerPose.rotation[1],
+      opponentContactBody.position,
+      proposedOpponentPose.rotation[1]
+    )
+  );
   /*
    * Rapier can report a resting/side-by-side contact for many consecutive frames.
    * Applying an impact loss on every such frame made the two cars behave like a
@@ -1127,22 +1262,59 @@ app.onFrame(({ dt }) => {
    * frame, while the arcade tyre-slip state remains controllable through contact.
    */
   const vehicleContactBegan = Boolean(activeVehicleContact) && !vehicleContactWasActive;
-  const contactSpeedMultiplier = vehicleContactBegan ? 0.72 : 1;
+  const playerSpeedBeforeContact = raceSnapshot.speed;
+  const opponentSpeedBeforeContact = opponent.speed;
+  const playerHeadingBeforeContact = raceSnapshot.heading;
+  const opponentHeadingBeforeContact = opponent.heading;
+  const relativeClosingSpeed = Math.max(0, playerSpeedBeforeContact - opponentSpeedBeforeContact);
+  const directRearImpact = vehicleContactBegan
+    && relativeClosingSpeed > 0.25
+    && Math.abs(raceSnapshot.trackOffset - opponent.trackOffset) <= routeWidth * 0.12;
+  // A rear impact transfers momentum: the striking car loses pace while the rival
+  // is pushed forward. Slowing both by the same factor made them remain glued together.
+  const playerContactSpeedMultiplier = vehicleContactBegan ? (directRearImpact ? 0.38 : 0.72) : 1;
+  const opponentContactSpeedMultiplier = vehicleContactBegan ? (directRearImpact ? 1.55 : 0.9) : 1;
+  // A direct rear impact must change more than two speed numbers. The struck car
+  // visibly yaws away from the line while the player recoils in the opposite
+  // direction; those headings persist after the hit-stop and produce a readable
+  // lateral trajectory change in the reaction frame.
+  const impactSide = Math.sin(raceSnapshot.progress * Math.PI * 2) >= 0 ? 1 : -1;
+  const playerImpactHeading = directRearImpact
+    ? playerHeadingBeforeContact - impactSide * 0.14
+    : undefined;
+  const opponentImpactHeading = directRearImpact
+    ? opponentHeadingBeforeContact + impactSide * 0.34
+    : undefined;
   const solvedPlayerGamePoint = racingScene.toGamePoint(playerContactBody.position[0], playerContactBody.position[2]);
   const solvedOpponentGamePoint = racingScene.toGamePoint(opponentContactBody.position[0], opponentContactBody.position[2]);
   raceSnapshot = racingState.resolveContact(solvedPlayerGamePoint, {
-    speedMultiplier: contactSpeedMultiplier,
+    speedMultiplier: playerContactSpeedMultiplier,
     driftMultiplier: 1
   });
-  opponent = opponentAi.resolveContact(solvedOpponentGamePoint, vehicleContactBegan ? 0.72 : 1);
+  opponent = opponentAi.resolveContact(solvedOpponentGamePoint, opponentContactSpeedMultiplier);
   if (vehicleContactBegan && activeVehicleContact) {
+    vehicleImpactRecoverySeconds = directRearImpact ? 0.65 : 0.28;
+    vehicleImpactResponses += 1;
+    // A brief physical hit-stop holds the exact solved bumper-contact pose long
+    // enough for the player—and the screenshot gate—to perceive impact before the
+    // transferred momentum opens the gap. No decorative flash substitutes for it.
+    vehicleHitStopSeconds = directRearImpact ? 0.14 : 0.07;
+    vehicleHitStopPlayerPoint = solvedPlayerGamePoint;
+    vehicleHitStopOpponentPoint = solvedOpponentGamePoint;
+    pendingPlayerImpactHeading = playerImpactHeading ?? null;
+    pendingOpponentImpactHeading = opponentImpactHeading ?? null;
+    vehicleHeadingKickApplied = false;
     lastVehicleImpact = {
       frame: raceSnapshot.frame,
-      relativeClosingSpeed: round(Math.max(0, previous.speed - previousOpponent.speed)),
-      playerSpeedBefore: round(previous.speed),
+      relativeClosingSpeed: round(relativeClosingSpeed),
+      playerSpeedBefore: round(playerSpeedBeforeContact),
       playerSpeedAfter: round(raceSnapshot.speed),
-      opponentSpeedBefore: round(previousOpponent.speed),
+      opponentSpeedBefore: round(opponentSpeedBeforeContact),
       opponentSpeedAfter: round(opponent.speed),
+      playerHeadingBefore: round(playerHeadingBeforeContact),
+      playerHeadingAfter: round(playerImpactHeading ?? raceSnapshot.heading),
+      opponentHeadingBefore: round(opponentHeadingBeforeContact),
+      opponentHeadingAfter: round(opponentImpactHeading ?? opponent.heading),
       racingLineOffset: round(Math.abs(raceSnapshot.trackOffset - opponent.trackOffset)),
       contactNormal: activeVehicleContact.normal.map(round) as [number, number, number]
     };
@@ -1165,7 +1337,7 @@ app.onFrame(({ dt }) => {
     heading: raceSnapshot.heading,
     speed: raceSnapshot.speed,
     steer: input.axis("steer"),
-    throttle: input.held("throttle") ? 1 : 0,
+    throttle: input.held("throttle") && vehicleImpactRecoverySeconds <= 0 ? 1 : 0,
     brake: input.held("brake") ? 1 : 0,
     slip: Math.min(1, Math.abs(raceSnapshot.drift))
   });
@@ -1241,17 +1413,34 @@ app.onFrame(({ dt }) => {
   mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
   mountedEvidence.vehicleContact = {
     system: "game.collisionWorld:Rapier",
+    shape: "rendered-footprint-oriented-box",
     bodies: [playerContactBody.snapshot(), opponentContactBody.snapshot()],
     active: Boolean(activeVehicleContact),
     contactCount: vehicleContactCount,
     contactFrames: vehicleContactFrames,
     maximumPenetration: round(maximumVehiclePenetration),
+    // Post-solver separating-axis measurement of the exact rendered X/Z bounds.
+    // Positive means the visible GLB footprints never intersected this session.
+    renderedEnvelopeMinimumClearance: round(minimumRenderedEnvelopeClearance),
     currentPenetration: round(activeVehicleContact?.penetration ?? 0),
-    minimumCenterSeparation: round(playerContactRadius + opponentContactRadius),
+    renderedFootprints: {
+      playerHalfExtents: playerContactHalfExtents.map(round),
+      opponentHalfExtents: opponentContactHalfExtents.map(round)
+    },
+    minimumDirectImpactSeparation: round(minimumDirectImpactSeparation),
     centerSeparation: round(Math.hypot(
       playerContactBody.position[0] - opponentContactBody.position[0],
       playerContactBody.position[2] - opponentContactBody.position[2]
     )),
+    impactResponse: {
+      recoveryActive: vehicleImpactRecoverySeconds > 0,
+      remainingSeconds: round(vehicleImpactRecoverySeconds),
+      responses: vehicleImpactResponses,
+      visualEffectNodes: 0,
+      hitStopActive: vehicleHitStopSeconds > 0,
+      hitStopRemainingSeconds: round(vehicleHitStopSeconds),
+      headingKickApplied: vehicleHeadingKickApplied
+    },
     lastImpact: lastVehicleImpact,
     solverPositionsFeedGameplayState: true
   };

@@ -128,7 +128,7 @@ Allowed claims:
 
 Required gates before promotion:
 
-- library acceptance checks in `docs/project/roadmaps/library-gap-roadmap.md`;
+- current library acceptance checks for the named public surface;
 - public root API tests when the claim targets root `@aura3d/engine`;
 - docs updates that explain fallback behavior and limitations.
 

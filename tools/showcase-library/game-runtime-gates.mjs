@@ -136,7 +136,7 @@ function telemetryGate(against) {
   const blockers = [];
   if (!source) return { id: "telemetry-coherence", verdict: "fail", blockers: ["turbo-route-missing"], measured: {} };
   const code = codeOf(source);
-  const readsSteppedSnapshot = /raceSnapshot\s*=\s*racingState\.step\(/.test(code)
+  const readsSteppedSnapshot = /raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/.test(code)
     && /hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/.test(code);
   if (!readsSteppedSnapshot) blockers.push("hud-speed-not-derived-from-stepped-snapshot");
   const printsRawEnum = /hud\.status\.textContent\s*=\s*raceSnapshot\.status/.test(code);

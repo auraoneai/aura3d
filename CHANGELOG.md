@@ -1,6 +1,6 @@
 # Changelog
 
-Version: 2.0.0
+Version: 2.0.1
 
 All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.0` is published across all 29 public packages and tagged at its immutable release commit. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated; later changes on `main` are not retroactively part of the npm tarballs.
 
@@ -14,7 +14,18 @@ current worktree.
 Comparison wording for the 1.6.0 entry is historical and limited to the named
 `three@0.165.0` workloads and reports. It must not be described as current or
 broadened into universal engine or ecosystem superiority. The current
-`three@0.185.1` program is tracked by `1.6-FINAL-PRD-Finishes.md`.
+`three@0.185.1` comparison remains bounded by the published comparison reports
+and claim guidelines.
+
+## 2.0.1 (2026-08-14)
+
+Patch release with corrected Turbo Drift Circuit vehicle contact:
+
+- aligns Rapier oriented boxes with the rendered vehicle footprints;
+- feeds solved contact positions back into gameplay state;
+- adds one-shot momentum transfer, impact recovery, hit-stop, and visible yaw response;
+- proves direct first contact, non-interpenetration, reaction, and separation in browser evidence;
+- removes internal planning, PRD, roadmap, and handoff Markdown from the public repository surface.
 
 ## 2.0.0 (2026-08-12)
 

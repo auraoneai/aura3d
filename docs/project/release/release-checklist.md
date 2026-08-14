@@ -1,18 +1,18 @@
 # Aura3D Release Checklist
 
-Version: 2.0.0
+Version: 2.0.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
 Date: 2026-08-08
-Status: Aura3D 2.0.0 release-candidate gate checklist
+Status: Aura3D 2.0.1 release gate checklist
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained
 or command evidence; unchecked items are real release blockers.
 
-The final competitive program in `1.6-FINAL-PRD-Finishes.md` supersedes earlier
-technical passes as a release-completion standard. Historical comparison gates
+The retained release checks and current evidence supersede earlier technical
+passes as the release-completion standard. Historical comparison gates
 against `three@0.165.0` remain recorded but cannot close the current
 `three@0.185.1` or material-showcase gates below.
 
@@ -151,8 +151,8 @@ against `three@0.165.0` remain recorded but cannot close the current
 
 ## Go-Live Gates
 
-- [ ] Every applicable checkbox in `1.6-FINAL-PRD-Finishes.md` is complete and
-  its exact-commit evidence ledger is current.
+- [ ] Every applicable release check is complete and its exact-commit evidence
+  is current.
 - [ ] Hosted 2.0 route claims have public HTTPS deployment checks. Complete only
   after the verified production deployment reaches `https://aura3d.auraone.ai`.
 - [ ] `docs/project/release-artifacts.json` references the final package

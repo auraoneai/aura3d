@@ -1,6 +1,6 @@
 # Aura3D Claim Guidelines
 
-Version: 2.0.0
+Version: 2.0.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -14,7 +14,7 @@ roadmap item cannot be used as proof for the public root `createAuraApp` path.
 ## Claim Labels
 
 Use one of these labels in release notes, showcase READMEs, launch copy, and
-internal handoff docs:
+maintainer documentation:
 
 | Label | Meaning | Evidence required |
 | --- | --- | --- |

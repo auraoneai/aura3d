@@ -90,11 +90,12 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 2.0.0
+## Current Release: Aura3D 2.0.1
 
-Aura3D 2.0.0 is published across all 29 public packages, tagged on GitHub, and
-documented at [aura3d.auraone.ai](https://aura3d.auraone.ai). It is a
-major-version competitive replatform: public authoring is
+Aura3D 2.0.1 is the coordinated patch release across all 29 public packages and
+is documented at [aura3d.auraone.ai](https://aura3d.auraone.ai). It retains the
+2.0 major-version competitive replatform while correcting Turbo Drift Circuit
+vehicle contact and tightening release-document hygiene. Public authoring is
 centered on typed assets and the safe root API, commodity subsystems have one
 declared owner, duplicate or misleading public hosts have been internalized,
 and every retained example is subject to separate canvas and full-page review.
@@ -102,7 +103,7 @@ It is not promoted as a universal Three.js replacement. The comparison is
 bounded to the named, repository-locked `three@0.185.1` workloads and discloses
 remaining visual and ecosystem losses.
 
-### What ships in 2.0.0
+### What ships in 2.0.1
 
 - **One public owner per capability.** Duplicate product, material, character,
   physics, shadow, HDR, WebGPU, editor-output, and contract-only hosts are no
@@ -234,12 +235,12 @@ The current product boundary and evidence are documented in
 `docs/project/status/current-state.md` and
 `docs/project/verification-evidence.md`.
 
-Install after the npm publication completes:
+Install the current release:
 
 ```bash
-npm install @aura3d/engine@2.0.0
+npm install @aura3d/engine@2.0.1
 # or scaffold an app
-npx create-aura3d@2.0.0 my-product --template product-viewer
+npx create-aura3d@2.0.1 my-product --template product-viewer
 ```
 
 The current 2.0 candidate notes are in

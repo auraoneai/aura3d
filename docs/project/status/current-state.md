@@ -95,7 +95,7 @@ Current retained result:
   disclosed and the result does not support a universal ecosystem-parity claim.
 
 Current route-library release status: per-route repairs, human dispositions,
-and the clean unfiltered audit are recorded in the final PRD. The exact
+and the clean unfiltered audit are recorded in retained release evidence. The exact
 installed-package same-workload run and internal per-file visual ledger are
 current; clean-machine reproduction is retained with an explicit container
 WebGPU hardware boundary, broad performance superiority is not claimed, and
@@ -103,7 +103,7 @@ independent human review plus the remaining release tracks are still open.
 The former comparison suite is frozen
 against `three@0.165.0` and is historical only. The current target is
 `three@0.185.1`; no current broad parity, performance, head-to-head, replacement,
-or ecosystem claim is permitted until `1.6-FINAL-PRD-Finishes.md` passes.
+or ecosystem claim is permitted without current, workload-specific evidence.
 
 ## Showcase Reality
 
@@ -145,9 +145,7 @@ No route may move to public-ready based only on boot success, nonblank screensho
 - Claim policy: `docs/project/claim-guidelines.md`
 - Product boundary: `docs/project/status/product-boundaries.md`
 - Known limitations: `docs/project/status/known-limits.md`
-- Library gap roadmap: `docs/project/roadmaps/library-gap-roadmap.md`
 - Showcase gates: `docs/project/showcase/quality-gates.md`
 - Release tracks: `docs/project/release-tracks.md`
 - Launch positioning: `docs/project/launch-positioning.md`
-- Game layer rebuild plan: `docs/project/aura3d-game-layer-rebuild-plan.md`
 - Aura3D 2.0.0 release notes: `docs/project/aura3d-200-release-notes.md`

@@ -1,9 +1,9 @@
 # Site Map
 
-Version: 2.0.0
+Version: 2.0.1
 
 Date: 2026-08-11
-Status: Aura3D 2.0.0 site map
+Status: Aura3D 2.0.1 site map
 
 ## Public Marketing Pages
 
@@ -38,7 +38,6 @@ copy boundary and must not present prototypes as public release examples.
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase/quality-gates.md)
 - [Apps classification](showcase/apps-classification.md)
-- [Library gap roadmap](roadmaps/library-gap-roadmap.md)
 - [`createAuraApp` production bridge architecture](architecture/create-aura-app-production-bridge.md)
 - [Docs matrix tracking](docs-matrix-tracking.md)
 - [Frozen benchmark release gates](frozen-benchmark-release-gates.md)

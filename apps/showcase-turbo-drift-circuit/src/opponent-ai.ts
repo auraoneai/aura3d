@@ -106,7 +106,7 @@ export interface TurboOpponentAi<TSnapshot extends TurboOpponentSnapshot> {
   snapshot(): TSnapshot;
   step(dt: number, playerProgress: number): TSnapshot;
   reset(): TSnapshot;
-  resolveContact(position: { readonly x: number; readonly y: number }, speedMultiplier?: number): TSnapshot;
+  resolveContact(position: { readonly x: number; readonly y: number }, speedMultiplier?: number, heading?: number): TSnapshot;
   evidence(playerProgress: number): TurboOpponentAiEvidence;
 }
 
@@ -180,10 +180,11 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
 
   return {
     snapshot: () => snapshot,
-    resolveContact(position, speedMultiplier = 0.55) {
+    resolveContact(position, speedMultiplier = 0.55, heading) {
       if (!state.resolveContact) return snapshot;
       snapshot = state.resolveContact(position, {
         speedMultiplier,
+        heading,
         driftMultiplier: 0.35
       });
       return snapshot;

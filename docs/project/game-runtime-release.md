@@ -111,10 +111,7 @@ Current blockers:
 - Skyline Runner:
   `asset-pair:platformer-public-character-world-binding-missing`.
 
-## Library Roadmap Link
+## Reusable Game-Kit Boundary
 
-Reusable game-kit work is tracked in
-`docs/project/roadmaps/library-gap-roadmap.md` and
-`docs/project/aura3d-game-layer-rebuild-plan.md`. Until those tasks pass
-acceptance checks, platformer and racing showcase routes must be described as
-route-local prototypes or prototype-blocked evidence routes.
+Until reusable game-kit acceptance checks pass, platformer and racing showcase
+routes must be described as route-local prototypes or bounded evidence routes.
