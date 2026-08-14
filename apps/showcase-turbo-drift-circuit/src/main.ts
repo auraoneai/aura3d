@@ -283,6 +283,7 @@ const collisionReviewCamera = new URLSearchParams(window.location.search).get("c
 // was perceptible in play but could expire while Playwright encoded a screenshot,
 // leaving only approach/aftermath images even though contact telemetry was real.
 let collisionReviewContactHeld = collisionReviewCamera;
+let collisionReviewReactionHeld = false;
 // The evidence-only side view starts the rival nearer on the same opening straight,
 // making first contact deterministic before barriers or later circuit branches can
 // obscure either silhouette. Normal gameplay retains the authored 0.032 head start.
@@ -479,7 +480,7 @@ const vehicleContactWorld = game.planarCollisionWorld({
 // momentum transfer below now separates the cars immediately, so contact can occur
 // near the rendered bumpers without the repeated compression that formerly required
 // an obviously oversized proxy.
-const CONTACT_CLEARANCE = 0.006;
+const CONTACT_CLEARANCE = 0.001;
 const playerContactHalfExtents: AuraVec3 = [
   heroFraming.subject.size[0] / 2 + CONTACT_CLEARANCE,
   // The planar world must never choose Y as the shortest separation axis. A tall
@@ -1037,6 +1038,9 @@ const mountedEvidence = {
     mode: collisionReviewCamera ? "held-first-contact-side-profile" : "disabled",
     releaseFirstContact: () => {
       collisionReviewContactHeld = false;
+    },
+    releaseReaction: () => {
+      collisionReviewReactionHeld = false;
     }
   },
   subjectFraming: subjectFramingEvidence(),
@@ -1111,7 +1115,7 @@ app.onFrame(({ dt }) => {
   // Freeze the complete solved state—not only the timer—while the evidence producer
   // captures first contact. Continuing to advance Rapier beneath a held camera could
   // briefly clear and re-enter the manifold, manufacturing a second impact on release.
-  if (collisionReviewContactHeld && vehicleImpactResponses > 0) return;
+  if ((collisionReviewContactHeld && vehicleImpactResponses > 0) || collisionReviewReactionHeld) return;
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   edgeRecoverySeconds = Math.max(0, edgeRecoverySeconds - step);
   vehicleImpactRecoverySeconds = Math.max(0, vehicleImpactRecoverySeconds - step);
@@ -1218,6 +1222,7 @@ app.onFrame(({ dt }) => {
     pendingPlayerImpactHeading = null;
     pendingOpponentImpactHeading = null;
     vehicleHeadingKickApplied = true;
+    collisionReviewReactionHeld = collisionReviewCamera;
   }
 
   // Drive the Rapier bodies toward the authored steering poses. Rapier advances and
