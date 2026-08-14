@@ -59,7 +59,7 @@ function walkFiles(dir: string, out: string[] = []): string[] {
     const path = join(dir, entry);
     const stats = statSync(path);
     if (stats.isDirectory()) walkFiles(path, out);
-    else if (path.endsWith(".js")) out.push(path);
+    else if (path.endsWith(".js") || path.endsWith(".d.ts")) out.push(path);
   }
   return out;
 }
