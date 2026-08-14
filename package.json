@@ -714,6 +714,7 @@
     "vitest": "^3.1.3"
   },
   "dependencies": {
+    "@aura3d/lean": "workspace:*",
     "@dimforge/rapier3d-compat": "0.20.0",
     "@loaders.gl/core": "4.4.1",
     "@loaders.gl/textures": "4.4.1"

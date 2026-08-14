@@ -10,6 +10,9 @@ importers:
 
   .:
     dependencies:
+      '@aura3d/lean':
+        specifier: workspace:*
+        version: link:packages/lean
       '@dimforge/rapier3d-compat':
         specifier: 0.20.0
         version: 0.20.0
