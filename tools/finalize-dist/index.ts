@@ -38,7 +38,6 @@ for (const packageName of packageNames) {
   cpSync(source, localPackageDist, { recursive: true });
   copyStaticRuntimeAssets(packageSource, rootPackageDist);
   copyStaticRuntimeAssets(packageSource, localPackageDist);
-  rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   rewriteJavaScriptSpecifiers(localPackageDist, localPackageDist, false);
 
   if (publicPackageNames.includes(packageName)) {
@@ -46,6 +45,17 @@ for (const packageName of packageNames) {
     rootTypeLines.push(`export * from "./${packageName}/index.js";`);
   } else if (!rootPackageSurfacePackages.has(packageName)) {
     rmSync(rootPackageDist, { recursive: true, force: true });
+  }
+}
+
+// Root-package rewrites must run only after every workspace package has been
+// copied. Otherwise a clean build processes `engine` before `lean`, cannot see
+// the eventual target, and leaves an external workspace import in the root
+// compatibility bundle. A warm local dist masked that ordering defect.
+for (const packageName of packageNames) {
+  const rootPackageDist = join(rootDist, packageName);
+  if (existsSync(rootPackageDist)) {
+    rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   }
 }
 
