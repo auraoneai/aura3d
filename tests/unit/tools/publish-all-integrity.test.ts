@@ -15,6 +15,12 @@ describe("npm release publisher integrity contract", () => {
     expect(publisher).toContain("registryIntegrity === packed.integrity");
   });
 
+  it("separates unpublished release preflight from published-version reproduction", () => {
+    expect(publisher).toContain('process.argv.includes("--pack-only")');
+    expect(publisher).toContain("DRY_RUN || PACK_ONLY");
+    expect(publisher).toContain("!DRY_RUN && !PACK_ONLY");
+  });
+
   it("fails unless all 26 versions and integrity hashes match", () => {
     expect(publisher).toContain("versionMatches && integrityMatches");
     expect(publisher).toContain("verified !== EXPECTED_PUBLIC_COUNT");

@@ -228,13 +228,19 @@ vec3 a3dPbrEnvironmentLightSplitSum(
 ) {
   float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
   vec3 f0 = a3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = a3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
-  vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
-  vec3 diffuse = kd * albedo * diffuseIrradiance;
   vec2 brdf = clamp(environmentBrdf, vec2(0.0), vec2(1.0));
   float hasSplitSum = step(0.0001, brdf.x + brdf.y);
-  vec3 splitSumFresnel = F * brdf.x + vec3(brdf.y);
-  vec3 specular = specularRadiance * mix(F, splitSumFresnel, hasSplitSum);
+  vec3 fallbackFresnel = a3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
+  float f90 = mix(clamp(specularFactor, 0.0, 1.0), 1.0, clamp(metallic, 0.0, 1.0));
+  vec3 singleScatter = f0 * brdf.x + vec3(f90 * brdf.y);
+  float ess = brdf.x + brdf.y;
+  float ems = 1.0 - ess;
+  vec3 favg = f0 + (vec3(1.0) - f0) * (1.0 / 21.0);
+  vec3 multiScatter = singleScatter * favg / max(vec3(1.0) - ems * favg, vec3(A3D_EPSILON)) * ems;
+  vec3 scattering = mix(fallbackFresnel, singleScatter + multiScatter, hasSplitSum);
+  vec3 kd = (vec3(1.0) - scattering) * (1.0 - clamp(metallic, 0.0, 1.0));
+  vec3 diffuse = kd * albedo * diffuseIrradiance;
+  vec3 specular = specularRadiance * scattering;
   return diffuse + specular;
 }
 

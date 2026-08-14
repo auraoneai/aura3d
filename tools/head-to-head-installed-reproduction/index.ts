@@ -45,7 +45,10 @@ const aggregateTools = [
 rmSync(workspace, { recursive: true, force: true });
 mkdirSync(workspace, { recursive: true });
 run("pnpm", ["build:raw"], root);
-run("node", ["tools/release/publish-all.mjs", "--dry-run"], root);
+// This reproduces an already published version, so it needs exact local
+// tarballs without the unpublished-version eligibility check used by a new
+// release-candidate dry run.
+run("node", ["tools/release/publish-all.mjs", "--pack-only"], root);
 
 const tarballs = readdirSync(tarballDirectory)
   .filter((name) => name.endsWith("-2.0.0.tgz"))

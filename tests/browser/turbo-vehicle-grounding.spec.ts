@@ -47,6 +47,16 @@ interface VehicleContactEvidence {
   readonly currentPenetration: number;
   readonly minimumCenterSeparation: number;
   readonly centerSeparation: number;
+  readonly lastImpact: null | {
+    readonly frame: number;
+    readonly relativeClosingSpeed: number;
+    readonly playerSpeedBefore: number;
+    readonly playerSpeedAfter: number;
+    readonly opponentSpeedBefore: number;
+    readonly opponentSpeedAfter: number;
+    readonly racingLineOffset: number;
+    readonly contactNormal: readonly [number, number, number];
+  };
   readonly solverPositionsFeedGameplayState: boolean;
 }
 
@@ -88,6 +98,7 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
       return Boolean(value && value.vehicleChassis !== undefined);
     }, GLOBAL_NAME, { timeout: 90_000 });
 
+    mkdirSync(REPORT_DIR, { recursive: true });
     const samples: ChassisEvidence[] = [];
     // Drive: throttle held, steering swept, with a braking phase to load the front
     // suspension. Sampling across the stint is what makes "never sinks" checkable.
@@ -119,7 +130,6 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
     const raceState = finalEvidence.raceState as { roadAlignment?: { onRoad?: boolean } } | undefined;
     const gameplay = finalEvidence.gameplay as Record<string, unknown> | undefined;
 
-    mkdirSync(REPORT_DIR, { recursive: true });
     writeFileSync(join(REPORT_DIR, "turbo-vehicle-grounding.json"), `${JSON.stringify({
       schema: "aura3d-turbo-vehicle-grounding/1.0",
       generatedAt: new Date().toISOString(),
@@ -174,6 +184,80 @@ test("turbo hero car stays grounded while driving a full stint", async ({ page }
     expect(gameplay?.throttleChangesSpeed, "throttle did not change speed").toBe(true);
     expect(gameplay?.steeringChangesHeading, "steering did not change heading").toBe(true);
   } finally {
+    await server?.close();
+  }
+});
+
+test("turbo cars complete a direct same-line Rapier impact and separate", async ({ page }, testInfo) => {
+  testInfo.setTimeout(180_000);
+  let server: ExampleDevServer | undefined;
+  const consoleErrors: string[] = [];
+  try {
+    server = await startExampleDevServer();
+    page.on("console", (message) => {
+      if (message.type() === "error" && !/favicon/i.test(message.text())) consoleErrors.push(message.text());
+    });
+    page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${server.origin}${ROUTE}`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { vehicleContact?: unknown } | undefined>)[name];
+      return Boolean(value?.vehicleContact);
+    }, GLOBAL_NAME, { timeout: 90_000 });
+
+    mkdirSync(REPORT_DIR, { recursive: true });
+    const approach = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-approach.png") });
+    await page.keyboard.down("KeyW");
+
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { vehicleContact?: VehicleContactEvidence } | undefined>)[name];
+      return (value?.vehicleContact?.contactFrames ?? 0) >= 8 && value?.vehicleContact?.active === true;
+    }, GLOBAL_NAME, { timeout: 30_000, polling: "raf" });
+    const impact = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-contact.png") });
+
+    await page.keyboard.up("KeyW");
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { vehicleContact?: VehicleContactEvidence } | undefined>)[name];
+      const contact = value?.vehicleContact;
+      return Boolean(contact && !contact.active && contact.centerSeparation >= contact.minimumCenterSeparation + 0.12);
+    }, GLOBAL_NAME, { timeout: 20_000, polling: "raf" });
+    const separated = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-separated.png") });
+
+    writeFileSync(join(REPORT_DIR, "turbo-direct-impact.json"), `${JSON.stringify({
+      schema: "aura3d-turbo-direct-impact/1.0",
+      generatedAt: new Date().toISOString(),
+      producer: "tests/browser/turbo-vehicle-grounding.spec.ts",
+      approach,
+      impact,
+      separated,
+      consoleErrors
+    }, null, 2)}\n`);
+
+    expect(consoleErrors).toEqual([]);
+    expect(impact.system).toBe("game.collisionWorld:Rapier");
+    expect(impact.solverPositionsFeedGameplayState).toBe(true);
+    expect(impact.active).toBe(true);
+    expect(impact.contactFrames).toBeGreaterThanOrEqual(8);
+    // A solver may finish an impact at exact touching contact, so residual overlap
+    // is not required. The bound rejects visible interpenetration; onset telemetry,
+    // closing speed, impulse response and subsequent separation prove the impact.
+    expect(impact.maximumPenetration).toBeLessThan(0.04);
+    expect(impact.centerSeparation).toBeGreaterThanOrEqual(impact.minimumCenterSeparation - 0.01);
+    expect(impact.lastImpact).not.toBeNull();
+    expect(impact.lastImpact!.racingLineOffset, "impact must be direct rather than a lateral glance").toBeLessThanOrEqual(0.02);
+    expect(impact.lastImpact!.relativeClosingSpeed, "player must close on the rival before impact").toBeGreaterThan(0.25);
+    expect(impact.lastImpact!.playerSpeedAfter, "impact must reduce player speed").toBeLessThan(impact.lastImpact!.playerSpeedBefore);
+    expect(Math.abs(impact.lastImpact!.contactNormal[1]), "contact normal must remain in the road plane").toBeLessThanOrEqual(0.001);
+    expect(separated.active).toBe(false);
+    expect(separated.centerSeparation).toBeGreaterThan(impact.centerSeparation + 0.1);
+    expect(approach.active).toBe(false);
+    expect(approach.contactFrames).toBe(0);
+    expect(approach.centerSeparation).toBeGreaterThan(approach.minimumCenterSeparation + 0.12);
+  } finally {
+    await page.keyboard.up("KeyW").catch(() => undefined);
     await server?.close();
   }
 });

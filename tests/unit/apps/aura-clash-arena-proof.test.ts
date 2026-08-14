@@ -81,7 +81,11 @@ const baseProofInput: AuraClashArenaProofInput = {
     facing: 1,
     action: "heavy",
     activeClip: "Punch_Cross",
-    attacking: "heavy"
+    attacking: "heavy",
+    renderedRoot: {
+      position: [-1, 0, 0],
+      rotation: [0, 0, 0, 1]
+    }
   },
   rival: {
     name: "Nyx Circuit",
@@ -93,7 +97,11 @@ const baseProofInput: AuraClashArenaProofInput = {
     facing: -1,
     action: "hurt",
     activeClip: "Hit_Knockback",
-    attacking: null
+    attacking: null,
+    renderedRoot: {
+      position: [1, 0, 0],
+      rotation: [0, 1, 0, 0]
+    }
   },
   animation: {
     visibleSkinnedGlb: true,

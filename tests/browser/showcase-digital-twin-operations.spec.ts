@@ -25,6 +25,9 @@ test("proves Digital Twin Operations selection, focus, alarms, isolation, time, 
     expect(overview.renderedLabels.some((label) => label.visible)).toBe(true);
     expect(overview.spatialInvariants.passes).toBe(true);
     expect(overview.spatialInvariants.kit.spatialInvariants.passes).toBe(true);
+    expect(overview.motionProof.movingWorkpieces).toHaveLength(3);
+    expect(overview.motionProof.movingWorkpieces.every((workpiece: any) => workpiece.insidePackagingLane)).toBe(true);
+    expect(overview.motionProof.movingWorkpieces.every((workpiece: any) => workpiece.bottomY >= overview.motionProof.conveyorSurfaceY - 0.004)).toBe(true);
 
     await page.locator("[data-zone='packaging']").click();
     await waitForEvidence(page, (evidence) => evidence.selectedZone === "packaging");
@@ -88,6 +91,7 @@ test("proves Digital Twin Operations selection, focus, alarms, isolation, time, 
       captures: { overview: overviewCapture, focused: focusedCapture, alarmed: alarmCapture, isolated: isolatedCapture },
       assertions: {
         typedWorkcellAndAssetRelativeSpatialInvariants: true,
+        workpiecesRemainOnRaisedPackagingConveyor: true,
         selectionChangesEvidence: true,
         focusChangesCameraAndPixels: true,
         alarmsChangeTelemetryAndPixels: true,

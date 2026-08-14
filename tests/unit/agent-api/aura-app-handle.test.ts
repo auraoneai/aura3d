@@ -24,7 +24,7 @@ describe("Aura app handle game runtime", () => {
     expect(app.nodes.ids()).toEqual(["player"]);
     expect(app.runtime).toMatchObject({ paused: true, frame: 0, time: 0 });
 
-    app.step(1 / 30);
+    app.advance(1 / 30);
     unsubscribe();
     app.step(1 / 30);
 

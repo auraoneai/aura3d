@@ -420,18 +420,10 @@ vec3 a3dPbrBoundHdrTransmissionRadiance(vec3 radiance) {
   return nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)));
 }
 vec3 a3dPbrBoundHdrSpecularRadiance(vec3 radiance) {
-  vec3 nonNegative = max(radiance, vec3(0.0));
-  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.58);
-  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
-  return maxChannel > 1.65 ? softKnee * (1.65 / maxChannel) : softKnee;
+  return clamp(radiance, vec3(0.0), vec3(65504.0));
 }
 vec3 a3dPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
-  float faceOn = smoothstep(0.12, 0.55, clamp(nDotV, 0.0, 1.0));
-  float roughEnergy = mix(0.6, 1.0, clamp(roughness, 0.0, 1.0));
-  float edgeCap = mix(0.12, 1.2, faceOn) * roughEnergy;
-  float edgeScale = mix(0.14, 0.92, faceOn);
-  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
-  return max(bounded, vec3(0.0));
+  return max(radiance, vec3(0.0));
 }
 vec4 a3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, a3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
@@ -601,7 +593,7 @@ void main() {
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, roughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, roughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, roughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
   float clearcoatEnvironmentRoughness = clamp(u_clearcoatRoughnessFactor, 0.04, 1.0);
   float clearcoatEnvironmentLod = clearcoatEnvironmentRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 clearcoatSampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, clearcoatEnvironmentLod)));

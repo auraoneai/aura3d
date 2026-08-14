@@ -706,7 +706,8 @@ function renderChallengeFeedback(): void {
 }
 let compositionSubjectSuppressed = false;
 /*
- * When true, the locomotion scale cycle is pinned to its neutral pose.
+ * When true, both route-local scale and the imported locomotion clip are pinned
+ * to the neutral pose declared by the composition contract.
  *
  * Set by `settleSubjectPose`. Resetting scale from outside the update loop was not enough: the loop rewrites scale
  * every frame from `visualState`, and the hero is often `fall` at capture time (it spawns above the platform), which
@@ -728,18 +729,21 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     setSubjectSuppressed: (suppressed: boolean) => {
       compositionSubjectSuppressed = suppressed;
       app.pause();
-      player.setScale(suppressed ? 0.0001 : 1);
+      // Visibility is exact; an effectively-zero skinned mesh can still cover
+      // a subpixel and make the diagnostic screenshot depend on raster rounding.
+      player.setVisible(!suppressed);
+      player.setScale(1);
       app.step(0);
     },
     /*
      * Freeze the hero into the neutral pose `targetSize` actually describes.
      *
-     * Locomotion is expressed as a scale cycle (`1 +/- 0.14` at idle -- see `advanceLocomotion`), a 28%
-     * peak-to-peak height swing. The scale-contract check compares measured pixel height against the height
-     * projected from `targetSize: 0.52`, which is the *un-bobbed* size, so the two quantities described
-     * different things and the measured hero varied 119-154px across four consecutive captures. `scaleDelta`
-     * straddled its 0.18 threshold and one run failed composition at 0.1892 with nothing about the route
-     * changed -- the gate was measuring animation phase, not scale correctness.
+     * Earlier route-local scale animation produced a 28% peak-to-peak height
+     * swing. The scale-contract check compares measured pixel height against
+     * the neutral `targetSize: 0.52`, so that old motion made the gate measure
+     * animation phase rather than authored scale. The scale pulse is gone, but
+     * the imported clip must still be pinned because arm motion changes the
+     * measured silhouette.
      *
      * Pausing and setting unit scale puts the hero at bob = 0, which is exactly the pose `targetSize`
      * declares. The node position is untouched: it was already authoritative for camera and contact and
@@ -1065,10 +1069,17 @@ function publishPlatformerEvidence(): void {
   // playback, so the route also applies a bounded procedural pose so the state
   // change is actually visible. The distinction is published in the evidence.
   if (typeof player.play === "function") {
-    player.play(locomotionSnapshot.clip, {
-      loop: locomotionSnapshot.loop,
-      ...(locomotionSnapshot.restart ? { restart: true } : {})
-    });
+    if (compositionPoseSettled) {
+      // The composition hook calls app.step(0), which runs this update callback
+      // before presenting. Keep the settled clip authoritative here; otherwise
+      // the live `fall`/`run` state immediately overwrites the fixed idle frame.
+      player.play(HERO_LOCOMOTION_CLIP_MAP.idle, { loop: false, captureTime: 0.4 });
+    } else {
+      player.play(locomotionSnapshot.clip, {
+        loop: locomotionSnapshot.loop,
+        ...(locomotionSnapshot.restart ? { restart: true } : {})
+      });
+    }
   }
   // The imported clip owns locomotion. The former 14% scale pulse made the character breathe and
   // squash on every frame independently of foot contact, which read as slow, rubbery motion. Keep

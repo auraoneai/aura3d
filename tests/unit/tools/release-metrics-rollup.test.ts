@@ -113,7 +113,11 @@ describe("R11 — architecture lock", () => {
       { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }
     )
       .split("\n")
-      .filter((line) => line.startsWith("A\t"));
+      .filter((line) => line.startsWith("A\t"))
+      // `src/aura-assets.ts` is deterministic CLI output, not a hand-authored
+      // engine subsystem. Generated asset maps belong to the template lifecycle
+      // evidence and must not be misclassified as R11 architecture additions.
+      .filter((line) => !line.endsWith("/src/aura-assets.ts"));
     const phase2 = json<{
       readonly addedPackages: Readonly<Record<string, string>>;
       readonly addedPackageSource: Readonly<Record<string, string>>;

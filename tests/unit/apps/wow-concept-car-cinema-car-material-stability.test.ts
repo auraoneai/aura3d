@@ -34,13 +34,11 @@ describe("wow neon city car material stability", () => {
     expect(materialSource).toContain("u_iridescenceTextureEnabled: options.iridescenceTexture ? 1 : 0");
     expect(pmremSource).toContain("function sampleEquirectTexel");
     expect(pmremSource).toContain("return mixRgb(top, bottom, ty);");
-    expect(shaderSource).toContain("float faceOn = smoothstep(0.2, 0.72, clamp(nDotV, 0.0, 1.0));");
-    expect(shaderSource).toContain("float edgeCap = mix(0.035, 0.86, faceOn) * roughEnergy;");
-    expect(shaderSource).toContain("float edgeScale = mix(0.045, 0.78, faceOn);");
-    expect(shaderSource).toContain("float faceOnSpecularGate = smoothstep(0.1, 0.42, nDotV);");
+    expect(shaderSource).toContain("float faceOn = smoothstep(0.18, 0.68, nDotV);");
+    expect(shaderSource).toContain("vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn)");
     expect(shaderSource).toContain("float materialFiniteSpecularScale = sqrt(materialEnvironmentSpecularScale);");
-    expect(shaderSource).toContain("float proceduralSpecularScale = materialFiniteSpecularScale * mix(0.34, 1.0, faceOnSpecularGate);");
-    expect(shaderSource).toContain("float sampledSpecularScale = materialEnvironmentSpecularScale * mix(0.18, 1.0, faceOnSpecularGate);");
+    expect(shaderSource).toContain("float proceduralSpecularScale = materialFiniteSpecularScale;");
+    expect(shaderSource).toContain("float sampledSpecularScale = materialEnvironmentSpecularScale;");
     expect(shaderSource).toContain("float directExtensionSpecularScale = sqrt(clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0)) * directExtensionGrazingGate;");
     expect(shaderSource).not.toContain("max(materialEnvironmentSpecularScale, 0.38)");
     expect(shaderSource).not.toContain("max(clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0), 0.42)");

@@ -18,7 +18,12 @@
 //     the registry; the expected count is asserted (29).
 //
 // Usage:
-//   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs [--dry-run]
+//   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs [--dry-run|--pack-only]
+//
+// `--dry-run` is a release-candidate preflight and therefore requires the
+// target version to be unpublished. `--pack-only` is for exact installed-
+// artifact reproduction of an already published version: it runs the same
+// pnpm-pack path but performs no registry eligibility or publication writes.
 //
 // The npm token must live in an .npmrc OUTSIDE the repo (the repo .npmrc is tracked).
 //
@@ -41,6 +46,11 @@ import { join, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const DRY_RUN = process.argv.includes("--dry-run");
+const PACK_ONLY = process.argv.includes("--pack-only");
+if (DRY_RUN && PACK_ONLY) {
+  console.error("Choose either --dry-run or --pack-only, not both.");
+  process.exit(1);
+}
 // Never hardcode or log this. It is a short-lived one-time password, not a token.
 const NPM_OTP = process.env.NPM_OTP?.trim() ?? "";
 const OTP_ARG = NPM_OTP ? ` --otp ${JSON.stringify(NPM_OTP)}` : "";
@@ -184,8 +194,8 @@ try {
       const integrity = `sha512-${createHash("sha512").update(tarballBytes).digest("base64")}`;
       const sha256 = createHash("sha256").update(tarballBytes).digest("hex");
       packedPackages.set(manifest.name, { tarball, integrity, sha256 });
-      if (DRY_RUN) {
-        console.log(`[dry-run] packed ${label} -> ${tarball}`);
+      if (DRY_RUN || PACK_ONLY) {
+        console.log(`[${DRY_RUN ? "dry-run" : "pack-only"}] packed ${label} -> ${tarball}`);
       } else {
         sh(`npm publish ${JSON.stringify(tarball)} --access public${OTP_ARG}`, { cwd: dir });
         console.log(`published ${label}`);
@@ -228,6 +238,7 @@ writeFileSync(
     lockfileSha256: createHash("sha256").update(readFileSync(join(ROOT, "pnpm-lock.yaml"))).digest("hex"),
     version,
     dryRun: DRY_RUN,
+    packOnly: PACK_ONLY,
     expectedPackageCount: EXPECTED_PUBLIC_COUNT,
     packageCount: packages.length,
     targetVersionUnpublished: DRY_RUN ? unpublishedChecks.every((entry) => entry.unpublished) : null,
@@ -247,8 +258,8 @@ writeFileSync(
   "utf8"
 );
 
-// Trap 4: verify against the registry (skipped on dry runs).
-if (!DRY_RUN) {
+// Trap 4: verify against the registry (skipped when no publication occurred).
+if (!DRY_RUN && !PACK_ONLY) {
   let verified = 0;
   const registryResults = [];
   for (const { dir, manifest } of packages) {
@@ -309,4 +320,4 @@ if (!DRY_RUN) {
   if (verified !== EXPECTED_PUBLIC_COUNT) process.exit(1);
 }
 
-console.log(DRY_RUN ? "\ndry-run complete." : "\npublish complete.");
+console.log(DRY_RUN ? "\ndry-run complete." : PACK_ONLY ? "\npack-only complete." : "\npublish complete.");

@@ -152,6 +152,20 @@ describe("game runtime source gates", () => {
     expect(collision.step(1 / 60).map((event) => event.type)).toEqual(["end"]);
   });
 
+  it("owns the zero-gravity gameplay-plane preset in the public game facade", () => {
+    const collision = game.planarCollisionWorld({ backend: "rapier" });
+    const body = collision.addSphere("vehicle", 0.5, {
+      position: [0, 2, 0],
+      velocity: [1, 0, 0]
+    });
+
+    collision.step(1);
+
+    expect(body.position[0]).toBeGreaterThan(0);
+    expect(body.position[1]).toBeCloseTo(2, 8);
+    expect(body.velocity[1]).toBeCloseTo(0, 8);
+  });
+
   it("supports collision sweeps and explicit solid resolution through the public game facade", () => {
     const collision = game.collisionWorld({ backend: "rapier", gravity: [0, 0, 0] });
 
@@ -1435,7 +1449,7 @@ describe("game runtime source gates", () => {
     expect(turboMain).toContain("const route = game.assetBoundRacingRoute(");
     expect(turboMain).toContain("const racingScene = game.racingSceneBinding({");
     expect(turboMain).toContain("const racingState = game.racing(");
-    expect(turboMain).toContain("const vehicleContactWorld = game.collisionWorld({");
+    expect(turboMain).toContain("const vehicleContactWorld = game.planarCollisionWorld({");
     expect(turboMain).toContain("raceSnapshot = racingState.resolveContact(");
     expect(turboMain).toContain("opponent = opponentAi.resolveContact(");
     expect(turboMain).toContain("solverPositionsFeedGameplayState: true");

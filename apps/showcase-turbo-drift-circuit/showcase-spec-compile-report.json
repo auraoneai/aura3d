@@ -49,8 +49,8 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-ee36d347a33c011d6dd092425d8840d45666b305e9ad01f1f4a0578d6b201e71",
-    "sourceReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-DIoiTq/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "sourceReportHash": "sha256-35594d86874c752c1fef4f15855573ebfee400aac9f2cc016792e2ac65e0bb01"
+    "contentHash": "sha256-a9626b99ac63f81aadb147927df3ad192743c7a2a2a2db86ba327b3fd14c9377",
+    "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "sourceReportHash": "sha256-c30ac50923e222c4474c2f54ca3bf3e3f419b7464047a91756f6a6a694b3afe0"
   }
 }

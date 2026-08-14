@@ -24,6 +24,10 @@ export type AuraClashArenaProof = {
     activeClip: string;
     attacking: AuraClashMoveId | null;
     facing: 1 | -1;
+    renderedRoot: {
+      position: readonly [number, number, number];
+      rotation: readonly [number, number, number, number];
+    };
   };
   rival: {
     name: string;
@@ -36,6 +40,10 @@ export type AuraClashArenaProof = {
     activeClip: string;
     attacking: AuraClashMoveId | null;
     facing: 1 | -1;
+    renderedRoot: {
+      position: readonly [number, number, number];
+      rotation: readonly [number, number, number, number];
+    };
   };
   fighterAssets?: {
     player: { id: string; url: string; hash: string };

@@ -507,7 +507,7 @@
     "check:agent-docs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-docs/index.ts",
     "check:templates": "pnpm exec vitest run tests/unit/create-aura3d/templates.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
     "check:template-source-audit": "pnpm exec tsx --tsconfig tsconfig.base.json tools/template-source-audit/index.ts",
-    "check:templates:installed": "pnpm build:raw && node tools/release/publish-all.mjs --dry-run && A3D_TEMPLATE_TARBALL_DIR=tests/reports/release-tarballs pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
+    "check:templates:installed": "pnpm build:raw && node tools/release/publish-all.mjs --pack-only && A3D_TEMPLATE_TARBALL_DIR=tests/reports/release-tarballs pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
     "sync:template-asset-manifests": "pnpm exec tsx --tsconfig tsconfig.base.json tools/template-asset-manifest-sync/index.ts",
     "screen:assets": "node tools/asset-screening/screen.mjs",
     "explain:staleness": "node tools/evidence-freshness/explain-staleness.mjs --write",

@@ -66,7 +66,16 @@ interface DigitalTwinEvidence {
     readonly robotArmRadians: number;
     readonly typedRobotYaw: number;
     readonly sensorSweepRadians: number;
-    readonly movingWorkpieces: readonly { readonly id: string; readonly x: number; readonly z: number }[];
+    readonly conveyorSurfaceY: number;
+    readonly movingWorkpieces: readonly {
+      readonly id: string;
+      readonly x: number;
+      readonly y: number;
+      readonly z: number;
+      readonly bottomY: number;
+      readonly surfaceClearance: number;
+      readonly insidePackagingLane: boolean;
+    }[];
   };
   readonly claimBoundary: string;
   /**
@@ -153,15 +162,27 @@ const zoneRegions: Record<ZoneId, SemanticRegion> = {
  */
 const conveyorRegion: SemanticRegion = {
   id: "conveyor",
-  label: "Conveyor line",
-  u: 0.4,
-  v: 0.14,
-  w: 0.82,
-  extent: [0.62, 0.06, 0.08]
+  label: "Packaging conveyor line",
+  // The lane crosses the visible Packaging station and continues toward Dock.
+  // Its raised centre is deliberately distinct from the workcell floor plane.
+  u: 0.65,
+  v: 0.2,
+  w: 0.72,
+  extent: [0.54, 0.04, 0.1]
 };
 
 function conveyorLine() {
   return resolveSemanticRegion(workcellBounds(), conveyorRegion);
+}
+
+function conveyorDimensions() {
+  const bounds = workcellBounds();
+  const belt = conveyorLine();
+  const deckHeight = bounds.size[1] * 0.035;
+  const workpieceHeight = bounds.size[1] * 0.038;
+  const surfaceY = belt.center[1] + deckHeight / 2;
+  const workpieceY = surfaceY + workpieceHeight / 2;
+  return { belt, deckHeight, workpieceHeight, surfaceY, workpieceY };
 }
 
 /**
@@ -233,6 +254,7 @@ let lastMotionProof: DigitalTwinEvidence["motionProof"] = {
   robotArmRadians: 0,
   typedRobotYaw: -0.18,
   sensorSweepRadians: 0,
+  conveyorSurfaceY: Number(conveyorDimensions().surfaceY.toFixed(3)),
   movingWorkpieces: []
 };
 
@@ -324,7 +346,7 @@ function buildOpsScene() {
 
 function createWorkcellPresentation(): AuraNodeInput[] {
   const bounds = workcellBounds();
-  const belt = conveyorLine();
+  const { belt, deckHeight, workpieceY } = conveyorDimensions();
   // Floor and plinth are sized to the workcell's own footprint with margin, so a
   // larger or smaller asset still stands on a stage that fits it.
   const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.2, 1, bounds.size[2] * 1.3];
@@ -354,9 +376,12 @@ function createWorkcellPresentation(): AuraNodeInput[] {
     ...isolationIndicatorNodes(),
     ...alarmIndicatorNodes(),
     ...zoneWorldLabels(),
+    primitives.box({ name: "raised packaging conveyor deck", material: material.pbr({ color: "#24383b", roughness: 0.52, metallic: 0.48 }) })
+      .position(belt.center[0], belt.center[1], belt.center[2])
+      .scale([belt.size[0], deckHeight, belt.size[2]]),
     primitives.box({ name: "short conveyor motion marker", material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.64, opacity: 0.62 }) })
-      .position(belt.min[0], belt.center[1], belt.center[2])
-      .scale([belt.size[0] * 0.2, 0.009, belt.size[2] * 0.6])
+      .position(belt.min[0], workpieceY - deckHeight * 0.35, belt.center[2])
+      .scale([belt.size[0] * 0.2, deckHeight * 0.16, belt.size[2] * 0.62])
       .runtime(game.runtimeNode("ops-conveyor-motion", { tags: ["conveyor", "runtime", "motion-proof"] })),
     primitives.box({ name: "optical scanner sweep", material: material.neon({ color: "#b8f7d9", emissive: "#b8f7d9", emissiveIntensity: 0.68, opacity: 0.54 }) })
       .position(...scannerAnchor.center)
@@ -444,12 +469,12 @@ function zoneWorldLabels(): AuraNodeInput[] {
 
 function createWorkpieces(): AuraNodeInput[] {
   const colors = ["#f2b15a", "#dbe7e4", "#b8f7d9"] as const;
-  const belt = conveyorLine();
+  const { belt, workpieceY } = conveyorDimensions();
   const bounds = workcellBounds();
   // Deterministic distribution along the belt region: spacing follows the belt's
   // length instead of being an independent literal that can disagree with it.
   const placements = distributeInRegion(
-    { min: [belt.min[0], belt.center[1], belt.center[2]], max: [belt.max[0], belt.center[1], belt.center[2]] },
+    { min: [belt.min[0], workpieceY, belt.center[2]], max: [belt.max[0], workpieceY, belt.center[2]] },
     { count: 3, seed: 11 }
   );
   return placements.map((placement, index) =>
@@ -468,10 +493,10 @@ function createWorkpieces(): AuraNodeInput[] {
 }
 
 function createBeltPulses(): AuraNodeInput[] {
-  const belt = conveyorLine();
+  const { belt, surfaceY } = conveyorDimensions();
   const bounds = workcellBounds();
   const placements = distributeInRegion(
-    { min: [belt.min[0], belt.center[1] - bounds.size[1] * 0.02, belt.max[2]], max: [belt.max[0], belt.center[1] - bounds.size[1] * 0.02, belt.max[2]] },
+    { min: [belt.min[0], surfaceY + bounds.size[1] * 0.002, belt.max[2]], max: [belt.max[0], surfaceY + bounds.size[1] * 0.002, belt.max[2]] },
     { count: 4, seed: 23 }
   );
   return placements.map((placement, index) =>
@@ -573,7 +598,7 @@ function updateTelemetry(dt: number): void {
 
 function syncRuntime(time: number): void {
   const bounds = workcellBounds();
-  const belt = conveyorLine();
+  const { belt, deckHeight, workpieceHeight, surfaceY, workpieceY } = conveyorDimensions();
   const conveyorIsolated = isolatedZone === "packaging" || isolatedZone === "dock";
   const beltSpeed = conveyorIsolated ? 0 : mode === "maintenance" ? 0.36 : mode === "incident" ? 0.95 : 0.68;
   const conveyorX = belt.min[0] + ((time * beltSpeed) % Math.max(0.001, belt.size[0]));
@@ -586,18 +611,29 @@ function syncRuntime(time: number): void {
     const z = belt.center[2] + Math.sin(time * 1.2 + index) * belt.size[2] * 0.08;
     entry.node
       .setVisible(!conveyorIsolated)
-      .setPosition(x, belt.center[1], z)
-      .setRotation(0, time * (0.45 + index * 0.05), 0)
-      .setScale([bounds.size[0] * 0.048, bounds.size[1] * (0.038 + Math.sin(time * 2 + index) * 0.003), bounds.size[2] * 0.06]);
-    return { id: entry.id, x: Number(x.toFixed(3)), z: Number(z.toFixed(3)) };
+      .setPosition(x, workpieceY, z)
+      // Packages travel square to the belt. Spinning made them read as loose
+      // debris sliding across the factory floor.
+      .setRotation(0, 0, 0)
+      .setScale([bounds.size[0] * 0.048, workpieceHeight, bounds.size[2] * 0.06]);
+    const bottomY = workpieceY - workpieceHeight / 2;
+    return {
+      id: entry.id,
+      x: Number(x.toFixed(3)),
+      y: Number(workpieceY.toFixed(3)),
+      z: Number(z.toFixed(3)),
+      bottomY: Number(bottomY.toFixed(3)),
+      surfaceClearance: Number((bottomY - surfaceY).toFixed(3)),
+      insidePackagingLane: x >= belt.min[0] && x <= belt.max[0] && z >= belt.min[2] && z <= belt.max[2]
+    };
   });
   beltPulseNodes.forEach((node, index) => {
     const pulseX = belt.min[0] + ((time * beltSpeed * 1.2 + index * belt.size[0] / beltPulseNodes.length) % Math.max(0.001, belt.size[0]));
     node
-      .setPosition(pulseX, belt.center[1] - bounds.size[1] * 0.02, belt.max[2])
+      .setPosition(pulseX, surfaceY + bounds.size[1] * 0.002, belt.max[2])
       .setScale([bounds.size[0] * 0.053, bounds.size[1] * 0.007, bounds.size[2] * 0.028]);
   });
-  conveyor.setPosition(conveyorX, belt.center[1], belt.center[2]);
+  conveyor.setPosition(conveyorX, surfaceY + deckHeight * 0.08, belt.center[2]);
   workcell
     .setPosition(WORKCELL_POSITION[0], WORKCELL_POSITION[1] + Math.sin(time * 0.7) * 0.002, WORKCELL_POSITION[2])
     .setRotation(0, typedRobotYaw, 0)
@@ -626,6 +662,7 @@ function syncRuntime(time: number): void {
     robotArmRadians: Number(robotArmRadians.toFixed(3)),
     typedRobotYaw: Number(typedRobotYaw.toFixed(3)),
     sensorSweepRadians: Number(sensorSweepRadians.toFixed(3)),
+    conveyorSurfaceY: Number(surfaceY.toFixed(3)),
     movingWorkpieces: workpieceProof
   };
 }

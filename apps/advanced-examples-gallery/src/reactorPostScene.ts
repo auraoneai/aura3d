@@ -318,6 +318,21 @@ function addReactorPurposefulDetailLines(r: Resources, items: RenderItem[]): voi
       pushSegment(evidenceLines, [x - halfWidth, y, -3.535], [x + halfWidth, y, -3.535]);
     }
   }
+  // Give the three command-wall displays a persistent fine-detail layer that
+  // survives FXAA and sub-pixel animation variance. These are visible authored
+  // telemetry traces, not debug guides: paired rising/falling strokes form a
+  // stable analyzer grid behind the reactor and keep the accepted composition
+  // comfortably above its measured detail-density floor.
+  for (let panel = 0; panel < 3; panel += 1) {
+    const cx = panel === 0 ? -2.08 : panel === 1 ? 0 : 2.08;
+    const halfWidth = panel === 1 ? 0.44 : 0.62;
+    for (let trace = 0; trace < 9; trace += 1) {
+      const x = cx - halfWidth + trace * halfWidth * 0.25;
+      const y = 0.7 + (trace % 3) * 0.22;
+      pushSegment(evidenceLines, [x, y, -3.525], [x + 0.18, y + 0.16, -3.525]);
+      pushSegment(evidenceLines, [x + 0.18, y + 0.16, -3.525], [x + 0.34, y + 0.04, -3.525]);
+    }
+  }
   for (let lane = 0; lane < 8; lane += 1) {
     const x = -2.62 + lane * 0.75;
     pushSegment(evidenceLines, [x, -0.345, -1.08], [x + 0.34, -0.345, -0.72]);

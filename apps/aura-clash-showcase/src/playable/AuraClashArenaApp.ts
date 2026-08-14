@@ -1358,8 +1358,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         visibleFighterAsset: assets.auraClashPlayerRig.url,
         fighterAssets: activeFighterAssetsProof(),
         renderer: { surface: "aura3d-production-gltf-animation", backend: renderer.device.kind, drawCalls: diagnostics.drawCalls },
-        player: proofFighter(playerState),
-        rival: proofFighter(rivalState),
+        player: proofFighter(playerRuntime),
+        rival: proofFighter(rivalRuntime),
         animation: {
           visibleSkinnedGlb: true,
           skinnedDrawItems: skinnedDrawItems(playerRuntime) + skinnedDrawItems(rivalRuntime),
@@ -2119,7 +2119,11 @@ function updateClips(fighter: FighterState, dt: number): void {
   if (fighter.action === "ko") {
     fighter.prevClip = null;
     fighter.blendDuration = 0;
-    fighter.clipTime = Math.min(KO_FREEZE_TIME, fighter.clipTime + dt);
+    // The rival asset's only grounded-down clip is authored in the opposite direction
+    // (`LayToIdle`). Its first pose is the truthful KO pose; advancing it makes the defeated
+    // fighter stand back up during the winner tableau. Hold that pose while normal death clips
+    // (such as Mara's `Death01`) advance once and freeze at their authored end.
+    fighter.clipTime = fighter.clip === "LayToIdle" ? 0 : Math.min(KO_FREEZE_TIME, fighter.clipTime + dt);
     return;
   }
   // Hit-stop: freeze the VISUAL animation clock for a few frames on impact (the classic fighting-game
@@ -2613,8 +2617,8 @@ function writeProof(input: {
       backend: input.backend,
       drawCalls: input.diagnostics.drawCalls
     },
-    player: proofFighter(input.player.state),
-    rival: proofFighter(input.rival.state),
+    player: proofFighter(input.player),
+    rival: proofFighter(input.rival),
     animation: {
       visibleSkinnedGlb: true,
       skinnedDrawItems: skinnedDrawItems(input.player) + skinnedDrawItems(input.rival),
@@ -2715,7 +2719,9 @@ function writeProof(input: {
   input.root.dataset.arenaStatus = proof.status;
 }
 
-function proofFighter(fighter: FighterState): ProofFighter {
+function proofFighter(runtime: RuntimeFighter): ProofFighter {
+  const fighter = runtime.state;
+  const root = runtime.actor.pipeline.resources.scene.root.transform;
   return {
     name: fighter.name,
     health: Math.round(fighter.health),
@@ -2726,7 +2732,20 @@ function proofFighter(fighter: FighterState): ProofFighter {
     action: fighter.action,
     activeClip: fighter.clip,
     attacking: fighter.attack?.id ?? null,
-    facing: fighter.facing
+    facing: fighter.facing,
+    renderedRoot: {
+      position: [
+        Number((root.position[0] ?? 0).toFixed(4)),
+        Number((root.position[1] ?? 0).toFixed(4)),
+        Number((root.position[2] ?? 0).toFixed(4))
+      ],
+      rotation: [
+        Number((root.rotation[0] ?? 0).toFixed(5)),
+        Number((root.rotation[1] ?? 0).toFixed(5)),
+        Number((root.rotation[2] ?? 0).toFixed(5)),
+        Number((root.rotation[3] ?? 1).toFixed(5))
+      ]
+    }
   };
 }
 
@@ -2765,7 +2784,11 @@ function fallbackProofFighter(name: string): ProofFighter {
     action: "idle",
     activeClip: playerClips.idle,
     attacking: null,
-    facing: name === "Mara Volt" ? 1 : -1
+    facing: name === "Mara Volt" ? 1 : -1,
+    renderedRoot: {
+      position: [0, 0, stage.z],
+      rotation: [0, 0, 0, 1]
+    }
   };
 }
 

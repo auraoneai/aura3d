@@ -111,10 +111,15 @@ export function updateFighterSecondaryMotion(
 ): SecondaryMotionResult {
   const safeDt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, 1 / 20) : 1 / 60;
 
-  // --- Spring body-sway (always on; rigid root lean, no palette refresh) -----------------------
-  state.spring.integrate(safeDt, { position: [input.x, 0, 0] });
+  // --- Spring body-sway (locomotion only; rigid root lean, no palette refresh) -----------------
+  // Do not let locomotion inertia decay through an attack, hit reaction, guard, or KO pose. That
+  // residual spring used to keep rotating an otherwise stationary rendered root and presented as
+  // a shake during close combat and after the winner had already settled. Re-anchor whenever the
+  // fighter leaves locomotion, then begin a fresh response on the next walk/run frame.
+  if (input.locomoting) state.spring.integrate(safeDt, { position: [input.x, 0, 0] });
+  else state.spring.reset({ position: [input.x, 0, 0] });
   const tel = state.spring.telemetry();
-  const lag = tel.tipPosition[0] - tel.rootPosition[0]; // horizontal lag of the body top
+  const lag = input.locomoting ? tel.tipPosition[0] - tel.rootPosition[0] : 0; // horizontal lag of the body top
   const leanAngle = clamp(lag * SPRING_LEAN_SCALE, -0.16, 0.16);
   // Lean as a roll about the view axis (Z), composed onto the synced root rotation.
   const leanQuat = quatAxisAngle([0, 0, 1], leanAngle);

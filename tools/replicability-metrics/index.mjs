@@ -151,7 +151,7 @@ export const CONSTANT_CATEGORIES = Object.freeze({
   "gameplay-design": [
     "KO_FREEZE_TIME", "CLIP_BLEND_DURATION", "INPUT_BUFFER_LIFETIME_MS",
     "FOOT_IK_WEIGHT", "SPRING_LEAN_SCALE",
-    "authoredLapSeconds", "gameplayPaceMultiplier", "opponentStartProgress",
+    "authoredLapSeconds", "gameplayPaceMultiplier", "opponentStartProgress", "opponentRacingLineOffset",
     /*
      * `TRACK_REFERENCE_Y` replaced `TRACK_SURFACE_Y` in WS-4.
      *

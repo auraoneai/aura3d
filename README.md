@@ -157,6 +157,20 @@ Earlier minor-release implementation notes have been consolidated into the 2.0 a
   private imports.
 - Route-local magic-geometry findings in published routes: **47 → 7**.
 
+### Scoped Three.js comparisons
+
+#### Why Aura3D can beat Three.js in scoped workflows
+
+Aura3D can reduce authoring and packaging work in selected, reproducible
+workflows where its typed assets, narrow entries, scaffolds, and integrated
+evidence pipeline replace manual renderer glue. That is a scoped result, not a
+claim of universal visual, performance, or ecosystem superiority. The current
+15-workload comparison records every observed loss and remains incomplete until
+the independent same-scene gallery review is approved. See
+`tests/reports/superiority/claim-defense.json` and
+`docs/project/threejs-superiority-status.md` for the generated verdict and its
+claim boundaries.
+
 ### What is still not resolved
 
 Stated because a release note that omits this is not useful:

@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "sha256": "sha256-0023667efabc29ee90f84b98df0f76fdd061b460eb25b27c459270ef1bc8aaec",
+    "sha256": "sha256-ca8328a8de86c1abd41b67f13418cba7e4d516b970e37cd63354014756805c81",
     "width": 1440,
     "height": 900
   },
@@ -73,9 +73,9 @@
       },
       "measured": {
         "contactProven": true,
-        "normalizedOffset": 0,
-        "screenContactDistance": 67.55340332655341,
-        "screenContactDistanceRatio": 0.3057
+        "normalizedOffset": 0.001,
+        "screenContactDistance": 67.40391903294642,
+        "screenContactDistanceRatio": 0.3064
       },
       "blockers": []
     },
@@ -108,10 +108,10 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.2456,
+        "subjectWorldRatio": 0.2444,
         "characterScaleRatio": "not-required",
         "projectedTargetHeight": "not-required",
-        "renderedSubjectHeight": 221,
+        "renderedSubjectHeight": 220,
         "scaleDelta": "missing"
       },
       "blockers": []

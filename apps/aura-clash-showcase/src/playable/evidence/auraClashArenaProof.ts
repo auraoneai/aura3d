@@ -82,6 +82,11 @@ export interface AuraClashProofFighter {
   readonly attacking: AuraClashMoveId | null;
   /** World-facing direction used by combat and the rendered actor root. */
   readonly facing: 1 | -1;
+  /** Final actor-root transform submitted after animation, facing, lunge, and secondary motion. */
+  readonly renderedRoot: {
+    readonly position: readonly [number, number, number];
+    readonly rotation: readonly [number, number, number, number];
+  };
 }
 
 export interface AuraClashArenaProof {

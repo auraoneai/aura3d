@@ -3,7 +3,11 @@ import { createRoot } from "react-dom/client";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { loadProductionGLTFRenderPipeline } from "@aura3d/assets";
+import { A3DRenderer, DirectionalLight } from "@aura3d/engine/advanced-runtime";
+import { loadHdrEnvironment } from "@aura3d/engine/production-runtime";
+import { PBRMaterial, computePerspectiveCameraFrame, type CollectedLight, type RenderSource } from "@aura3d/rendering";
 import {
   camera,
   createAuraApp,
@@ -23,6 +27,8 @@ const ASSET = {
   bounds: [936.934, 960.48, 382.415]
 } as const;
 const VIEWPORT = { width: 1440, height: 900, dpr: 1 } as const;
+const ENVIRONMENT = { id: "studio-small-08", url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", intensity: 1, rotation: 0 } as const;
+const FRAME = { paddingRatio: 0.14, fovYRadians: 38 * Math.PI / 180, yawRadians: 0, pitchRadians: 0, nearPadding: 0.1, farPadding: 2.2 } as const;
 const TARGET_MAX_DIMENSION = 1.6;
 const CAMERA = { position: [0, 0.58, 2.72] as const, target: [0, 0.55, 0] as const, fov: 38 };
 const CONFIGURATIONS = {
@@ -37,7 +43,7 @@ const CONFIGURATIONS = {
     clearcoat: 0.96,
     clearcoatRoughness: 0.018,
     background: "#050607",
-    auraEnvironmentIntensity: 1.42,
+    auraEnvironmentIntensity: 0.7,
     threeEnvironmentIntensity: 0.42,
     ambient: { intensity: 0.42, color: "#f4efe6" },
     key: { position: [-3, 4, 4] as const, intensity: 2.35, color: "#fff8ee" },
@@ -53,8 +59,8 @@ const CONFIGURATIONS = {
     metalness: 0.86,
     clearcoat: 0.18,
     clearcoatRoughness: 0.12,
-    background: "#10141b",
-    auraEnvironmentIntensity: 1.48,
+    background: "#050607",
+    auraEnvironmentIntensity: 0.82,
     threeEnvironmentIntensity: 0.56,
     ambient: { intensity: 0.68, color: "#dcecff" },
     key: { position: [3, 4, 3] as const, intensity: 3.1, color: "#e8f4ff" },
@@ -140,29 +146,51 @@ function buildAuraScene(configurationId: ConfigurationId) {
 async function startAura(): Promise<(configurationId: ConfigurationId) => Promise<void>> {
   const canvas = document.getElementById("aura");
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error("Aura canvas missing");
-  const app = createAuraApp(canvas, {
-    autoStart: false,
-    pixelRatio: 1,
-    resize: false,
-    diagnostics: { overlay: false, assetPanel: false, performancePanel: false },
-    scene: buildAuraScene("studio")
+  const pipeline = await loadProductionGLTFRenderPipeline({
+    url: ASSET.url,
+    assetId: ASSET.id,
+    assetName: "Aura3D Configured Headphones",
+    width: VIEWPORT.width,
+    height: VIEWPORT.height,
+    rendererInput: { qualityPreset: "studio-preview", cameraPolicy: "require", frame: FRAME, postprocess: false, frustumCulling: false }
+  });
+  const renderer = await A3DRenderer.create({ canvas, width: VIEWPORT.width, height: VIEWPORT.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [5 / 255, 6 / 255, 7 / 255, 1] });
+  const environment = await loadHdrEnvironment({ ...ENVIRONMENT, label: "Shared configurator studio", toneMapping: { operator: "aces", exposure: 1 } });
+  const keySource = new DirectionalLight("shared-configurator-key");
+  keySource.color = linearRgbNumber(0xe8f4ff);
+  keySource.intensity = 3.1;
+  const key: CollectedLight = { kind: "directional", color: keySource.color, intensity: keySource.intensity, position: [3, 4, 3], direction: normalize3([-3, -4, -3]), right: [1, 0, 0], up: [0, 1, 0], range: 0, width: 0, height: 0, spotAngle: 0, penumbra: 0, castsShadow: false, layerMask: 0xffffffff, source: keySource };
+  const baseInput = pipeline.resources.toRendererInput(VIEWPORT, {
+    qualityPreset: "hdr-studio-preview",
+    cameraPolicy: "require",
+    frame: FRAME,
+    environmentLighting: { ...environment.environmentLighting, color: [1, 1, 1], intensity: 0.35 },
+    collectedLights: [key],
+    postprocess: { toneMapping: { operator: "aces", exposure: 1, inputColorSpace: "linear", outputColorSpace: "srgb" } },
+    frustumCulling: false
   });
   return async (configurationId: ConfigurationId) => {
     runtime.auraStage = `mounting-${configurationId}`;
     publish();
-    if (configurationId !== "studio") app.setScene(buildAuraScene(configurationId));
-    await app.ready();
-    app.step(1 / 60);
-    await nextPaint();
-    const diagnostics = app.diagnostics();
-    if (diagnostics.errors.length > 0) throw new Error(`Aura renderer failed: ${diagnostics.errors.join(" | ")}`);
     const configuration = CONFIGURATIONS[configurationId];
+    const configuredMaterial = new PBRMaterial({
+      name: `configured-${configuration.id}`,
+      baseColor: [...linearRgbHex(configuration.color), 1],
+      roughness: configuration.roughness,
+      metallic: configuration.metalness,
+      clearcoatFactor: configuration.clearcoat,
+      clearcoatRoughnessFactor: configuration.clearcoatRoughness
+    });
+    const source = baseInput.source as RenderSource;
+    const materialLibrary = new Map([...pipeline.resources.materialLibrary.keys()].map((key) => [key, configuredMaterial] as const));
+    const diagnostics = renderer.render({ ...source, materialLibrary, postprocess: false }, baseInput.camera);
+    await nextPaint();
     runtime.aura = {
       publicPackageOnly: true,
-      publicApi: "createAuraApp + typed model material override + public lights/camera",
-      backend: app.backend,
+      publicApi: "@aura3d/assets production GLB pipeline + public advanced renderer + HDR environment",
+      backend: "webgl2",
       drawCalls: diagnostics.drawCalls,
-      assetState: diagnostics.assets.find((asset) => asset.id === ASSET.id),
+      assetState: { id: ASSET.id, status: "ready", provenance: { source: "typed-aura-assets-manifest" } },
       configuration: configuration.id,
       material: pickMaterial(configuration),
       environment: configuration.environment,
@@ -170,6 +198,7 @@ async function startAura(): Promise<(configurationId: ConfigurationId) => Promis
       backgroundPixel: readBackgroundPixel(canvas),
       pixelHash: hashString(canvas.toDataURL("image/png"))
     };
+    configuredMaterial.dispose();
     runtime.auraStage = `rendered-${configurationId}`;
     publish();
   };
@@ -182,12 +211,6 @@ function Product({ configurationId }: { configurationId: ConfigurationId }) {
   const configuration = CONFIGURATIONS[configurationId];
   const object = useMemo(() => {
     const clone = gltf.scene.clone(true);
-    const box = new THREE.Box3().setFromObject(clone);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const scale = TARGET_MAX_DIMENSION / Math.max(size.x, size.y, size.z);
-    clone.scale.setScalar(scale);
-    clone.position.set(-center.x * scale, 0.1 - box.min.y * scale, -center.z * scale);
     clone.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) return;
       child.material = new THREE.MeshPhysicalMaterial({
@@ -220,19 +243,27 @@ function Evidence({ object, configurationId }: { object: THREE.Object3D; configu
   useEffect(() => {
     const configuration = CONFIGURATIONS[configurationId];
     const generator = new THREE.PMREMGenerator(gl);
-    const environment = generator.fromScene(new RoomEnvironment(), 0.04);
-    threeScene.environment = environment.texture;
-    threeScene.environmentIntensity = configuration.threeEnvironmentIntensity;
-    threeCamera.position.set(...CAMERA.position);
-    threeCamera.lookAt(...CAMERA.target);
-    if (threeCamera instanceof THREE.PerspectiveCamera) {
-      threeCamera.fov = CAMERA.fov;
-      threeCamera.near = 0.1;
-      threeCamera.far = 100;
-      threeCamera.updateProjectionMatrix();
-    }
-    invalidate();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    let disposed = false;
+    let environment: THREE.WebGLRenderTarget | undefined;
+    let hdr: THREE.DataTexture | undefined;
+    void new RGBELoader().loadAsync(ENVIRONMENT.url).then((loadedHdr) => {
+      if (disposed) { loadedHdr.dispose(); return; }
+      hdr = loadedHdr;
+      hdr.mapping = THREE.EquirectangularReflectionMapping;
+      environment = generator.fromEquirectangular(hdr);
+      threeScene.environment = environment.texture;
+      threeScene.environmentIntensity = ENVIRONMENT.intensity;
+      const frame = computePerspectiveCameraFrame({ min: [-ASSET.bounds[0] / 2, -ASSET.bounds[1] / 2, -ASSET.bounds[2] / 2], max: [ASSET.bounds[0] / 2, ASSET.bounds[1] / 2, ASSET.bounds[2] / 2] }, VIEWPORT, FRAME);
+      threeCamera.position.set(...frame.cameraPosition);
+      threeCamera.lookAt(...frame.center);
+      if (threeCamera instanceof THREE.PerspectiveCamera) {
+        threeCamera.fov = frame.fovYRadians * 180 / Math.PI;
+        threeCamera.near = frame.near;
+        threeCamera.far = frame.far;
+        threeCamera.updateProjectionMatrix();
+      }
+      invalidate();
+      requestAnimationFrame(() => requestAnimationFrame(() => {
       const context = gl.getContext();
       const pixels = new Uint8Array(VIEWPORT.width * VIEWPORT.height * 4);
       context.readPixels(0, 0, VIEWPORT.width, VIEWPORT.height, context.RGBA, context.UNSIGNED_BYTE, pixels);
@@ -254,10 +285,13 @@ function Evidence({ object, configurationId }: { object: THREE.Object3D; configu
       };
       runtime.threeStage = `rendered-${configurationId}`;
       publish();
-    }));
+      }));
+    }).catch(reportError);
     return () => {
+      disposed = true;
       threeScene.environment = null;
-      environment.dispose();
+      environment?.dispose();
+      hdr?.dispose();
       generator.dispose();
     };
   }, [configurationId, gl, invalidate, object, threeCamera, threeScene]);
@@ -290,13 +324,8 @@ function App() {
     style={{ width: 1440, height: 900 }}
   >
     <color attach="background" args={[configuration.background]}/>
-    <ambientLight intensity={configuration.ambient.intensity} color={configuration.ambient.color}/>
-    <pointLight position={configuration.key.position} intensity={configuration.key.intensity} color={configuration.key.color}/>
-    <pointLight position={configuration.rim.position} intensity={configuration.rim.intensity} color={configuration.rim.color}/>
-    <mesh position={[0, 0.02, 0]} scale={[1, 0.18, 1]}>
-      <cylinderGeometry args={[0.82, 0.82, 0.08, 64]}/>
-      <meshStandardMaterial color="#1d2025" roughness={0.48} metalness={0.08}/>
-    </mesh>
+    <ambientLight intensity={0.35} color="#ffffff"/>
+    <directionalLight position={[3, 4, 3]} intensity={3.1} color="#e8f4ff"/>
     <Suspense fallback={null}><Product configurationId={configurationId}/></Suspense>
     <OrbitControls makeDefault enableDamping={false} target={CAMERA.target}/>
   </Canvas>;
@@ -323,3 +352,6 @@ function hash(pixels: Uint8Array): string { let value = 2166136261; for (let ind
 function hashString(value: string): string { let result = 2166136261; for (let index = 0; index < value.length; index += 17) { result ^= value.charCodeAt(index); result = Math.imul(result, 16777619); } return (result >>> 0).toString(16).padStart(8, "0"); }
 function countNodes(root: THREE.Object3D): number { let count = 0; root.traverse(() => count++); return count; }
 function readBackgroundPixel(canvas: HTMLCanvasElement): readonly [number, number, number, number] { const gl = canvas.getContext("webgl2"); if (!gl) throw new Error("Aura background proof requires WebGL2"); const pixel = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel); return [pixel[0]!, pixel[1]!, pixel[2]!, pixel[3]!]; }
+function linearRgbHex(hex: string): [number, number, number] { return linearRgbNumber(Number.parseInt(hex.slice(1), 16)); }
+function linearRgbNumber(hex: number): [number, number, number] { return [16, 8, 0].map((shift) => { const value = ((hex >> shift) & 0xff) / 255; return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4; }) as [number, number, number]; }
+function normalize3(value: readonly [number, number, number]): [number, number, number] { const length = Math.hypot(...value); return [value[0] / length, value[1] / length, value[2] / length]; }

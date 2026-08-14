@@ -292,7 +292,8 @@ function buildSmartCityScene(): SceneBuild {
       name: "smart city operational depth haze",
       density: controls.timeOfDay === "night" ? 0.018 : 0.012,
       color: controls.timeOfDay === "night" ? "#1b2a20" : "#d7f4ff",
-      intensity: controls.timeOfDay === "night" ? 0.36 : 0.24
+      // Keep night depth without laying a pale veil over the Command camera.
+      intensity: controls.timeOfDay === "night" ? 0.2 : 0.24
     }))
     .add(effects.bloom({
       name: "smart city bounded infrastructure bloom",
@@ -304,24 +305,24 @@ function buildSmartCityScene(): SceneBuild {
       name: "operations amber district rim light",
       position: [2.8, 3.4, 3.6],
       color: "#f4c35d",
-      intensity: controls.timeOfDay === "night" ? 1.8 : 0.8
+      intensity: controls.timeOfDay === "night" ? 1.46 : 0.8
     }))
     .add(lights.point({
       name: "city vehicle route-primary key light",
       position: [0.8, 2.4, 2.35],
       color: "#e8fbff",
-      intensity: controls.timeOfDay === "night" ? 2.1 : 1.1
+      intensity: controls.timeOfDay === "night" ? 1.62 : 1.1
     }))
     .add(lights.ambient({
       name: "bounded city ambient fill",
       color: controls.timeOfDay === "night" ? "#7894a8" : "#d9efff",
-      intensity: controls.timeOfDay === "night" ? 0.16 : 0.28
+      intensity: controls.timeOfDay === "night" ? 0.1 : 0.28
     }))
     .add(lights.directional({
       name: "city tower form key",
       position: [-7.2, 11.5, 8.4],
       color: controls.timeOfDay === "night" ? "#cde7ff" : "#fff0d5",
-      intensity: controls.timeOfDay === "night" ? 1.72 : 2.05
+      intensity: controls.timeOfDay === "night" ? 1.34 : 2.05
     }))
     .add(lights.directional({
       name: "city skyline separation rim",
@@ -466,6 +467,9 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
   const selectedRegion = districtRegion(controls.district);
   const selected = districtAnchor(controls.district);
   const highlightColor = controls.district === "all" ? "#50d891" : districtColor(controls.district);
+  // `all` spans the complete 11.4 x 11.4 city footprint. Giving that plane the
+  // same opacity as one district washed the entire Command view green/white.
+  const selectionOpacity = controls.district === "all" ? 0.035 : 0.13;
   // Telemetry landmarks as normalized regions of the city.
   const eastCorridor = resolveSemanticRegion(bounds, { id: "east-corridor", u: 0.5, v: 0.08, w: 0.4, extent: [0.12, 0.02, 0.03] });
   const northCorridor = resolveSemanticRegion(bounds, { id: "north-corridor", u: 0.41, v: 0.09, w: 0.5, extent: [0.11, 0.02, 0.03] });
@@ -475,7 +479,7 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
     primitives.box({
       name: `${controls.district} district control overlay`,
-      material: material.emissive({ color: highlightColor, emissive: highlightColor, emissiveIntensity: 0.42, opacity: 0.13 })
+      material: material.emissive({ color: highlightColor, emissive: highlightColor, emissiveIntensity: controls.district === "all" ? 0.18 : 0.42, opacity: selectionOpacity })
     }).position(selected[0], selectedRegion.center[1], selected[1])
       .scale([Math.max(0.05, selectedRegion.size[0]), 0.018, Math.max(0.05, selectedRegion.size[2])]),
     primitives.box({
@@ -772,7 +776,7 @@ function publishEvidence(status: ShowcaseStatus): void {
         renderSize: appDiagnostics.renderSize,
         warnings: appDiagnostics.warnings,
         errors: appDiagnostics.errors,
-        rendererRuntime: appDiagnostics.renderer.runtime
+        rendererRuntime: appDiagnostics.renderer?.runtime
       } : {})
     },
     updatedAt: new Date().toISOString()

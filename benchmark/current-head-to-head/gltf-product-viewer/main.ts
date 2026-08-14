@@ -1,15 +1,17 @@
 import { loadProductionGLTFRenderPipeline } from "@aura3d/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
-import { computePerspectiveCameraFrame } from "@aura3d/rendering";
+import { A3DRenderer, DirectionalLight } from "@aura3d/engine/advanced-runtime";
+import { loadHdrEnvironment } from "@aura3d/engine/production-runtime";
+import { computePerspectiveCameraFrame, type CollectedLight } from "@aura3d/rendering";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const ASSET = { id: "showcaseHeadphones", url: "/aura-assets/showcaseHeadphones.40b1fdf7.glb", sha256: "40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833" } as const;
+const ENVIRONMENT = { id: "studio-small-08", url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", intensity: 1, rotation: 0 } as const;
 const VIEWPORT = { width: 1440, height: 900, dpr: 1 } as const;
 const FRAME = { paddingRatio: 0.14, fovYRadians: 45 * Math.PI / 180, yawRadians: -0.34, pitchRadians: -0.12, nearPadding: 0.1, farPadding: 2.2 } as const;
 
@@ -21,14 +23,36 @@ async function run(): Promise<void> {
   const auraCanvas = canvas("aura"); const threeCanvas = canvas("three");
   const pipeline = await loadProductionGLTFRenderPipeline({ url: ASSET.url, assetId: ASSET.id, assetName: "Aura3D Headphones", width: VIEWPORT.width, height: VIEWPORT.height, rendererInput: { qualityPreset: "studio-preview", cameraPolicy: "require", frame: FRAME, postprocess: false, frustumCulling: false } });
   const auraRenderer = await A3DRenderer.create({ canvas: auraCanvas, width: VIEWPORT.width, height: VIEWPORT.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.018, 0.024, 0.04, 1] });
+  const auraEnvironment = await loadHdrEnvironment({ ...ENVIRONMENT, label: "Shared neutral studio", toneMapping: { operator: "aces", exposure: 1 } });
+  const auraKeySource = new DirectionalLight("product-viewer-key");
+  auraKeySource.color = linearRgb(0xfff4e6);
+  auraKeySource.intensity = 2.6;
+  const auraKey: CollectedLight = {
+    kind: "directional",
+    color: auraKeySource.color,
+    intensity: auraKeySource.intensity,
+    position: [8, 14, 10],
+    direction: normalize3([-8, -14, -10]),
+    right: [1, 0, 0],
+    up: [0, 1, 0],
+    range: 0,
+    width: 0,
+    height: 0,
+    spotAngle: 0,
+    penumbra: 0,
+    castsShadow: false,
+    layerMask: 0xffffffff,
+    source: auraKeySource
+  };
 
   const threeRenderer = new THREE.WebGLRenderer({ canvas: threeCanvas, antialias: true, preserveDrawingBuffer: true });
   threeRenderer.setPixelRatio(1); threeRenderer.setSize(VIEWPORT.width, VIEWPORT.height, false); threeRenderer.outputColorSpace = THREE.SRGBColorSpace; threeRenderer.toneMapping = THREE.ACESFilmicToneMapping; threeRenderer.toneMappingExposure = 1;
   const draco = new DRACOLoader().setDecoderPath("/node_modules/three/examples/jsm/libs/draco/");
   const ktx2 = new KTX2Loader().setTranscoderPath("/node_modules/three/examples/jsm/libs/basis/").detectSupport(threeRenderer);
   const loader = new GLTFLoader().setDRACOLoader(draco).setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
-  const gltf = await loader.loadAsync(ASSET.url);
-  const threeScene = new THREE.Scene(); threeScene.background = new THREE.Color(0x05060a); threeScene.environment = new THREE.PMREMGenerator(threeRenderer).fromScene(new RoomEnvironment(), 0.04).texture; threeScene.environmentIntensity = 1; threeScene.add(gltf.scene, new THREE.AmbientLight(0xffffff, 0.35));
+  const [gltf, threeHdr] = await Promise.all([loader.loadAsync(ASSET.url), new RGBELoader().loadAsync(ENVIRONMENT.url)]);
+  threeHdr.mapping = THREE.EquirectangularReflectionMapping;
+  const threeScene = new THREE.Scene(); threeScene.background = new THREE.Color(0x05060a); threeScene.environment = new THREE.PMREMGenerator(threeRenderer).fromEquirectangular(threeHdr).texture; threeScene.environmentIntensity = 1; threeScene.add(gltf.scene, new THREE.AmbientLight(0xffffff, 0.35));
   const key = new THREE.DirectionalLight(0xfff4e6, 2.6); key.position.set(8, 14, 10); threeScene.add(key);
   const box = new THREE.Box3().setFromObject(gltf.scene); const center = box.getCenter(new THREE.Vector3());
   const bounds = { min: [box.min.x, box.min.y, box.min.z] as [number, number, number], max: [box.max.x, box.max.y, box.max.z] as [number, number, number] };
@@ -36,7 +60,7 @@ async function run(): Promise<void> {
   const controls = new OrbitControls(camera, threeCanvas); controls.target.copy(center); controls.enableDamping = false;
 
   const render = (yawRadians: number) => {
-    const auraInput = pipeline.resources.toRendererInput(VIEWPORT, { qualityPreset: "studio-preview", cameraPolicy: "require", frame: { ...FRAME, yawRadians }, postprocess: false, frustumCulling: false });
+    const auraInput = pipeline.resources.toRendererInput(VIEWPORT, { qualityPreset: "hdr-studio-preview", cameraPolicy: "require", frame: { ...FRAME, yawRadians }, environmentLighting: { ...auraEnvironment.environmentLighting, color: [1, 1, 1], intensity: 0.35 }, collectedLights: [auraKey], postprocess: { toneMapping: { operator: "aces", exposure: 1, inputColorSpace: "linear", outputColorSpace: "srgb" } }, frustumCulling: false });
     const aura = auraRenderer.render({ source: auraInput.source, camera: auraInput.camera });
     const frame = computePerspectiveCameraFrame(bounds, VIEWPORT, { ...FRAME, yawRadians });
     camera.fov = frame.fovYRadians * 180 / Math.PI; camera.aspect = frame.aspect; camera.near = frame.near; camera.far = frame.far; camera.position.set(...frame.cameraPosition); controls.target.set(...frame.center); camera.lookAt(...frame.center); camera.updateProjectionMatrix(); controls.update(); threeRenderer.render(threeScene, camera);
@@ -52,3 +76,5 @@ async function run(): Promise<void> {
 function canvas(id: string): HTMLCanvasElement { const result = document.getElementById(id); if (!(result instanceof HTMLCanvasElement)) throw new Error(`Missing ${id}`); return result; }
 function readThree(renderer: THREE.WebGLRenderer): Uint8Array { const gl = renderer.getContext(); const pixels = new Uint8Array(VIEWPORT.width * VIEWPORT.height * 4); gl.readPixels(0, 0, VIEWPORT.width, VIEWPORT.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels); return pixels; }
 function pixelHash(pixels: Uint8Array): string { let hash = 2166136261; for (let i = 0; i < pixels.length; i += 97) { hash ^= pixels[i]!; hash = Math.imul(hash, 16777619); } return (hash >>> 0).toString(16).padStart(8, "0"); }
+function normalize3(value: readonly [number, number, number]): [number, number, number] { const length = Math.hypot(...value) || 1; return [value[0] / length, value[1] / length, value[2] / length]; }
+function linearRgb(hex: number): [number, number, number] { return [16, 8, 0].map((shift) => { const value = ((hex >> shift) & 0xff) / 255; return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4; }) as [number, number, number]; }

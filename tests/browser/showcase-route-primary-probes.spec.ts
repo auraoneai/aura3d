@@ -193,7 +193,11 @@ interface CompositionProbeMeasurement {
 }
 
 test.describe("showcase route-primary probe generation", () => {
-  test.setTimeout(300_000);
+  // The full producer captures visible and subject-suppressed 1440x900 frames
+  // for all ten retained routes. The measured clean serial run now takes just
+  // over five minutes; this budget covers the complete producer without
+  // weakening any route, pixel, freshness, or promotion assertion.
+  test.setTimeout(600_000);
 
   let server: ExampleDevServer;
 
@@ -484,6 +488,13 @@ async function settleCompositionSubjectPose(page: Page): Promise<void> {
       .__AURA3D_COMPOSITION_PROBE__;
     probe?.settleSubjectPose?.();
   });
+  // Let the browser compositor expose the route's final synchronous render.
+  // The route itself owns any extra renderer presentations required to settle
+  // asynchronous GPU state because requestAnimationFrame does not render a
+  // paused Aura app.
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  }));
 }
 
 async function measureCompositionProbe(
@@ -509,11 +520,10 @@ async function measureCompositionProbe(
      * Settle an animated subject into its declared pose before measuring.
      *
      * The scale-contract check compares the subject's *measured* pixel height against the height projected
-     * from `subject.targetSize`. When the route animates its subject through a scale cycle, those two
-     * quantities describe different things: Skyline's hero locomotion applies `1 +/- 0.14`, a 28%
-     * peak-to-peak swing, so the measured height varied 119-154px across four consecutive captures and
-     * `scaleDelta` straddled the 0.18 threshold -- one run legitimately failed while nothing about the
-     * route had changed.
+     * from `subject.targetSize`. A route-local scale cycle previously made
+     * those quantities describe different poses: Skyline varied 119-154px
+     * across consecutive captures and straddled its scale threshold while
+     * nothing about the authored route changed.
      *
      * That is the gate measuring animation phase rather than scale correctness. `settleSubjectPose` lets a
      * route put its subject into the neutral pose its `targetSize` actually describes. It is optional, so

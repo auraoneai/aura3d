@@ -268,14 +268,17 @@ describe("ShaderLibrary", () => {
     expect(library.compileSource(DEFAULT_SKINNED_LIT_SHADER_NAME).fragment).toContain("vec4 decodedBaseColor = vec4(a3dPbrDecodeEnvironmentSrgb(sampledBaseColor.rgb), sampledBaseColor.a);");
   });
 
-  it("keeps textured PBR sampled HDR and extension lighting bounded by material specular scale", () => {
+  it("preserves textured PBR HDR reflections while retaining material specular ownership", () => {
     const library = createDefaultShaderLibrary();
     const textured = library.compileSource(DEFAULT_TEXTURED_PBR_SHADER_NAME);
 
     expect(textured.fragment).toContain("float materialEnvironmentSpecularScale = clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0);");
     expect(textured.fragment).toContain("float materialFiniteSpecularScale = sqrt(materialEnvironmentSpecularScale);");
-    expect(textured.fragment).toContain("float proceduralSpecularScale = materialFiniteSpecularScale * mix(0.34, 1.0, faceOnSpecularGate);");
-    expect(textured.fragment).toContain("float sampledSpecularScale = materialEnvironmentSpecularScale * mix(0.18, 1.0, faceOnSpecularGate);");
+    expect(textured.fragment).toContain("float proceduralSpecularScale = materialFiniteSpecularScale;");
+    expect(textured.fragment).toContain("float sampledSpecularScale = materialEnvironmentSpecularScale;");
+    expect(textured.fragment).toContain("return clamp(radiance, vec3(0.0), vec3(65504.0));");
+    expect(textured.fragment).not.toContain("float faceOnSpecularGate = smoothstep(0.1, 0.42, nDotV);");
+    expect(textured.fragment).not.toContain("maxChannel > 1.35 ? softKnee * (1.35 / maxChannel) : softKnee;");
     expect(textured.fragment).toContain("float directExtensionSpecularScale = sqrt(clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0)) * directExtensionGrazingGate;");
     expect(textured.fragment).not.toContain("max(materialEnvironmentSpecularScale, 0.38)");
     expect(textured.fragment).not.toContain("max(clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0), 0.42)");
@@ -402,7 +405,7 @@ describe("ShaderLibrary", () => {
     expect(fragmentSource).not.toContain("alpha = mix(alpha, alpha * transmissionCoverage, transmissionAlpha);");
     expect(fragmentSource).toContain("vec3 a3dPbrBoundHdrSpecularRadiance(vec3 radiance)");
     expect(fragmentSource).toContain("vec3 sampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample");
-    expect(fragmentSource).toContain("sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, roughness);");
+    expect(fragmentSource).toContain("sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);");
     expect(fragmentSource).toContain("vec3 parallaxDirection = a3dPbrBoxProjectedDirection");
     expect(fragmentSource).toContain("float causticEnergy = u_transmissionCausticStrength");
     expect(fragmentSource).toContain("u_environmentMapTexture");
@@ -574,13 +577,13 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("float materialFiniteSpecularScale = sqrt(materialEnvironmentSpecularScale);");
     expect(compiled.fragment).toContain("float horizonStripe = pow(clamp(1.0 - abs(reflectionDirection.y), 0.0, 1.0)");
     expect(compiled.fragment).toContain("vec3 proceduralSpecularColor = u_environmentSpecularColor * proceduralSpecularResponse");
-    expect(compiled.fragment).toContain("float faceOnSpecularGate = smoothstep(0.1, 0.42, nDotV);");
-    expect(compiled.fragment).toContain("float proceduralSpecularScale = materialFiniteSpecularScale * mix(0.34, 1.0, faceOnSpecularGate);");
-    expect(compiled.fragment).toContain("float sampledSpecularScale = materialEnvironmentSpecularScale * mix(0.18, 1.0, faceOnSpecularGate);");
+    expect(compiled.fragment).toContain("float proceduralSpecularScale = materialFiniteSpecularScale;");
+    expect(compiled.fragment).toContain("float sampledSpecularScale = materialEnvironmentSpecularScale;");
+    expect(compiled.fragment).not.toContain("float faceOnSpecularGate = smoothstep(0.1, 0.42, nDotV);");
     expect(compiled.fragment).toContain("return proceduralSpecular * proceduralSpecularScale + sampledSpecular * sampledSpecularScale;");
     expect(compiled.fragment).not.toContain("max(materialEnvironmentSpecularScale, 0.72)");
     expect(compiled.fragment).not.toContain("return (proceduralSpecular * mix(0.16, 1.0, grazingSpecularGate) + sampledSpecular) * materialEnvironmentSpecularScale;");
-    expect(compiled.fragment).toContain("vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;");
+    expect(compiled.fragment).toContain("vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0);");
     expect(compiled.fragment).toContain("float a3dTexturedPbrCharlieSheen(");
     expect(compiled.fragment).toContain("float a3dTexturedPbrAnisotropicDistribution(");
     expect(compiled.fragment).toContain("vec3 authoredTangent = normalize(tangentFrame.xyz);");
@@ -591,9 +594,9 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.12;");
     expect(compiled.fragment).toContain("vec3 extensionEnvironmentSpecular = a3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0));");
     expect(compiled.fragment).toContain("vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn), vec3(mix(0.08, 0.95, faceOn)));");
-    expect(compiled.fragment).toContain("vec3 clearcoatLobe = boundedSpecularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0) * 0.045;");
+    expect(compiled.fragment).toContain("vec3 clearcoatLobe = specularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0);");
     expect(compiled.fragment).toContain("vec3 iridescenceLobe = boundedSpecularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.09;");
-    expect(compiled.fragment).toContain("sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);");
+    expect(compiled.fragment).toContain("sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, clampedRoughness);");
     expect(compiled.fragment).toContain("float texturedFallbackEnvironmentTransmissionEnergy = mix(1.0, clamp(u_transmissionFallbackEnergy, 0.0, 1.0), texturedTransmissionAmount);");
     expect(compiled.fragment).toContain("texturedTransmissionAmount * texturedFallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness)");
     expect(compiled.fragment).toContain("texturedSampledEnvironmentWeight * clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0);");
@@ -606,7 +609,8 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("vec3 texturedRefractedEnvironment = a3dTexturedPbrBoundHdrTransmissionRadiance(a3dTexturedPbrDecodeEnvironmentSample");
     expect(compiled.fragment).not.toContain("alpha = mix(alpha, alpha * texturedTransmissionCoverage, transmissionAlpha);");
     expect(compiled.fragment).toContain("vec3 a3dTexturedPbrBoundHdrSpecularRadiance(vec3 radiance)");
-    expect(compiled.fragment).toContain("maxChannel > 1.35 ? softKnee * (1.35 / maxChannel) : softKnee;");
+    expect(compiled.fragment).toContain("return clamp(radiance, vec3(0.0), vec3(65504.0));");
+    expect(compiled.fragment).not.toContain("maxChannel > 1.35 ? softKnee * (1.35 / maxChannel) : softKnee;");
     expect(compiled.fragment).toContain("vec3 sampledSpecular = a3dTexturedPbrBoundHdrSpecularRadiance(a3dTexturedPbrDecodeEnvironmentSample");
     expect(compiled.fragment).not.toContain("texturedTransmissionAmount * 0.58);");
     expect(compiled.fragment).toContain(") + a3dTexturedPbrExtensionEnvironmentLight(");

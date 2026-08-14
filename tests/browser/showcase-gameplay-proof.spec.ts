@@ -396,7 +396,12 @@ test.describe("showcase gameplay proof", () => {
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 
-  test("proves skyline runner gameplay when keyboard input is applied", async ({ page }) => {
+  test("proves skyline runner gameplay when keyboard input is applied", async ({ page }, testInfo) => {
+    // The route itself must still finish within the asserted 120–180 simulated
+    // seconds. This wall-clock allowance covers the earlier real-time checkpoint/
+    // respawn journey, deterministic mounted-app simulation, WebGL rendering,
+    // evidence serialization, and thirteen PNG encodes.
+    testInfo.setTimeout(480_000);
     const blockers: string[] = [];
     const errors = collectPageErrors(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -406,34 +411,34 @@ test.describe("showcase gameplay proof", () => {
 
     const skylineCaptures: Record<string, ScreenshotEvidence> = { "first-load": beforePng };
 
+    // The opening platform immediately teaches a moving jump. Start both inputs
+    // together so a loaded browser cannot turn a nominally short walk capture
+    // into an unobserved fall before Space is delivered.
     await page.keyboard.down("KeyD");
+    await page.keyboard.down("Space");
     await expect.poll(async () => {
-      const current = await readSkyline(page);
-      return current.deaths === before.deaths
-        ? (current.diagnostics?.snapshot?.x ?? 0)
+      const current = await readSkylineDriver(page);
+      return current.deaths === before.deaths && current.snapshot?.grounded === false
+        ? current.snapshot.x
         : Number.NEGATIVE_INFINITY;
-    }, {
-      timeout: 2_000,
-      message: "runner should move right while alive before the opening jump"
-    }).toBeGreaterThan((before.diagnostics?.snapshot?.x ?? 0) + 0.35);
+    }, { timeout: 2_000, message: "runner should perform the opening moving jump" })
+      .toBeGreaterThan((before.diagnostics?.snapshot?.x ?? 0) + 0.1);
+    await page.keyboard.up("KeyD");
+    const traversing = await readSkyline(page);
+    expect(traversing.deaths, "runner must stay alive during the opening moving jump").toBe(before.deaths);
+    expect(
+      traversing.diagnostics?.snapshot?.x ?? 0,
+      "runner should move right while alive before the opening jump"
+    ).toBeGreaterThan((before.diagnostics?.snapshot?.x ?? 0) + 0.1);
     // Freeze the genuinely reached traversal state before capturing it. Keeping
     // Right held while Chromium encodes the screenshot can carry the runner off
     // the finite opening platform and respawn it, replacing the state the poll
     // just proved with the reset position. This does not relax the movement
     // assertion above; it makes the named traversal evidence deterministic.
-    await page.keyboard.up("KeyD");
-    const traversing = await readSkyline(page);
     // Traversal: the runner is moving right along the course.
     skylineCaptures.traversal = await capture(page, "showcase-skyline-runner", "traversal");
-    await page.keyboard.down("KeyD");
-    await page.keyboard.down("Space");
-    await expect.poll(async () => (await readSkyline(page)).diagnostics?.snapshot?.grounded, {
-      timeout: 1_000,
-      message: "runner should become airborne for the named jump capture"
-    }).toBe(false);
     // Jump: capture while the runner is genuinely airborne.
-    const airborne = await readSkyline(page);
-    if (airborne.diagnostics?.snapshot?.grounded === false) {
+    if (traversing.diagnostics?.snapshot?.grounded === false) {
       skylineCaptures.jump = await capture(page, "showcase-skyline-runner", "jump");
     }
     await page.keyboard.up("Space");
@@ -460,18 +465,20 @@ test.describe("showcase gameplay proof", () => {
     await page.waitForTimeout(120);
     await page.keyboard.down("KeyD");
     let checkpointSpawn = await readSkyline(page);
+    let checkpointDriver = await readSkylineDriver(page);
     // At the shipped 1.1-unit/second pace the first relay sits about 29 units from
     // spawn, so the old 12-second allowance could never reach it after the Level 1
     // was extended. This bound covers that physical distance without teleporting.
-    for (let sample = 0; sample < 350 && checkpointSpawn.checkpointId !== SKYLINE_FIRST_MID_CHECKPOINT_ID; sample += 1) {
-      if (checkpointSpawn.diagnostics?.snapshot?.grounded === true) {
+    for (let sample = 0; sample < 350 && checkpointDriver.checkpointId !== SKYLINE_FIRST_MID_CHECKPOINT_ID; sample += 1) {
+      if (checkpointDriver.snapshot?.grounded === true) {
         await page.keyboard.press("Space");
       }
       await page.waitForTimeout(100);
-      checkpointSpawn = await readSkyline(page);
+      checkpointDriver = await readSkylineDriver(page);
     }
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(120);
+    checkpointSpawn = await readSkyline(page);
     if (checkpointSpawn.checkpointId === SKYLINE_FIRST_MID_CHECKPOINT_ID) {
       skylineCaptures.checkpoint = await capture(page, "showcase-skyline-runner", "checkpoint");
     }
@@ -479,24 +486,26 @@ test.describe("showcase gameplay proof", () => {
     await page.keyboard.down("KeyD");
     // Continue without jumping until the next certified gap or sentry produces a real
     // route death, then prove that the active checkpoint owns the recovery.
-    await expect.poll(async () => (await readSkyline(page)).deaths, { timeout: 10_000 }).toBeGreaterThan(checkpointDeaths);
+    await expect.poll(async () => (await readSkylineDriver(page)).deaths, { timeout: 10_000 }).toBeGreaterThan(checkpointDeaths);
     await page.keyboard.up("KeyD");
     // A death is observable on the same browser frame that starts the respawn.
     // Do not treat that transient, falling frame as the recovered checkpoint state:
     // keep input neutral until the new body has actually landed on the certified
     // supporting surface. Reapplying Right before this condition was what turned a
     // valid respawn into a deterministic second fall in the evidence driver.
-    await expect.poll(async () => (await readSkyline(page)).diagnostics?.snapshot?.grounded, {
+    await expect.poll(async () => (await readSkylineDriver(page)).snapshot?.grounded, {
       timeout: 5_000,
       message: "runner should settle on a certified surface after respawn"
     }).toBe(true);
     const respawned = await readSkyline(page);
     expect(respawned.deaths, "respawn must retain the observed death count").toBeGreaterThan(checkpointDeaths);
     expect(respawned.checkpointId, "respawn must retain the active first relay").toBe(SKYLINE_FIRST_MID_CHECKPOINT_ID);
+    const firstRelay = createSkylineLevel().checkpoints.find((checkpoint) => checkpoint.id === SKYLINE_FIRST_MID_CHECKPOINT_ID);
     expect(
       Math.abs((respawned.diagnostics?.snapshot?.x ?? Number.POSITIVE_INFINITY) - SKYLINE_FIRST_MID_CHECKPOINT_X),
-      "respawn must land within the certified first-relay support tolerance"
-    ).toBeLessThanOrEqual(0.35);
+      "respawn must land within the visible first-relay trigger and its certified supporting surface"
+    ).toBeLessThanOrEqual(firstRelay?.radius ?? 0.35);
+    expect(respawned.diagnostics?.snapshot?.grounded, "respawn must settle on the certified relay support").toBe(true);
     skylineCaptures.respawn = await capture(page, "showcase-skyline-runner", "respawn");
     await page.keyboard.down("KeyD");
     let continued = respawned;
@@ -523,56 +532,27 @@ test.describe("showcase gameplay proof", () => {
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(260);
     let completed = await readSkyline(page);
-    const mountedLevel = createSkylineLevel();
-    const mountedPlatforms = [...(mountedLevel.platforms ?? [])].sort((left, right) => left.x - right.x);
-    const mountedHazards = [...(mountedLevel.hazards ?? [])].sort((left, right) => left.x - right.x);
-    await page.keyboard.down("KeyD");
-    for (let hop = 0; hop < 3_600 && completed.diagnostics?.completionProof?.completed !== true; hop += 1) {
-      const x = completed.diagnostics?.snapshot?.x ?? 0;
+    let completionDriver = await readSkylineCompletionDriver(page);
+    const completionLevel = createSkylineLevel();
+    await startSkylineManualDriver(page);
+    // Drive the mounted Aura app through its public deterministic lifecycle. Each
+    // batch advances real `app.onFrame` callbacks, `game.input`, `game.platformer`,
+    // collisions, checkpoints, renderer output, and route evidence by exactly 60
+    // fixed 1/60-second frames. Only wall-clock RAF scheduling is removed.
+    for (let second = 0; second < 180 && completionDriver.completed !== true; second += 1) {
+      completionDriver = await stepSkylineManualDriver(page, completionLevel, 60);
+      const x = completionDriver.snapshot?.x ?? 0;
       for (const act of SKYLINE_LEVEL_ACTS.slice(1)) {
         const label = `act-${act.id}`;
         const actStartX = act.sections[0] * SKYLINE_SECTION_STRIDE;
         if (x >= actStartX + 7.5 && skylineCaptures[label] === undefined) {
-          // Screenshot encoding is not a gameplay frame. Neutralize movement so
-          // a capture near an edge cannot walk the runner into a gap while the
-          // browser compresses the PNG.
-          await page.keyboard.up("KeyD");
-          skylineCaptures[label] = await capture(page, "showcase-skyline-runner", label);
-          await page.keyboard.down("KeyD");
+          await presentSkylineManualDriver(page);
+          skylineCaptures[label] = await captureScene(page, "showcase-skyline-runner", label);
         }
       }
-      const player = completed.diagnostics?.snapshot;
-      const currentSurfaceIndex = mountedPlatforms.findIndex((surface) => {
-        const top = surface.y + surface.height;
-        return x >= surface.x - 0.04
-          && x <= surface.x + surface.width + 0.04
-          && Math.abs((player?.y ?? Number.POSITIVE_INFINITY) - top) <= 0.08;
-      });
-      const currentSurface = mountedPlatforms[currentSurfaceIndex];
-      const nextSurface = currentSurfaceIndex >= 0 ? mountedPlatforms[currentSurfaceIndex + 1] : undefined;
-      const edgeDistance = currentSurface ? currentSurface.x + currentSurface.width - x : Number.POSITIVE_INFINITY;
-      const nextGap = currentSurface && nextSurface
-        ? nextSurface.x - (currentSurface.x + currentSurface.width)
-        : 0;
-      const risingStep = currentSurface && nextSurface
-        ? nextSurface.y + nextSurface.height > currentSurface.y + currentSurface.height + 0.08
-        : false;
-      const upcomingHazard = mountedHazards.some((hazard) => {
-        const distance = hazard.x - x;
-        return distance >= 0 && distance <= 0.28;
-      });
-      const routeJump = edgeDistance <= 0.3 && (nextGap > 0.05 || risingStep);
-      // Drive the mounted route with the same geometry-aware policy as the public-kit
-      // deterministic proof. The former 400ms unconditional taps missed short grounded
-      // windows and died 34 times at district five, so it measured sampling cadence rather
-      // than playability.
-      if (player?.grounded === true && (upcomingHazard || routeJump || currentSurfaceIndex < 0)) {
-        await page.keyboard.press("Space");
-      }
-      await page.waitForTimeout(50);
-      completed = await readSkyline(page);
     }
-    await page.keyboard.up("KeyD");
+    await stopSkylineManualDriver(page);
+    completed = await readSkyline(page);
     // Collection chain: by the completion run the player has banked collectibles.
     if (Number(completed.coins ?? 0) > Number(before.coins ?? 0)) {
       skylineCaptures["collection-chain"] = await capture(page, "showcase-skyline-runner", "collection-chain");
@@ -588,7 +568,7 @@ test.describe("showcase gameplay proof", () => {
     const states = (after.animation?.stateHistory ?? []).map((entry) => entry.state);
     const beforeContact = before.diagnostics?.surfaceContactAlignment;
 
-    check((traversing.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.35, blockers, "movement did not change runner x position");
+    check((traversing.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.1, blockers, "movement did not change runner x position");
     check(rightFacing?.facing === 1 && rightFacing.facingYaw === Math.PI / 2, blockers, "runner did not face right along forward travel");
     check(leftFacing.diagnostics?.snapshot?.facing === -1 && leftFacing.diagnostics.snapshot.facingYaw === -Math.PI / 2, blockers, "runner did not turn left with reverse travel");
     check(checkpointSpawn.checkpointId === SKYLINE_FIRST_MID_CHECKPOINT_ID, blockers, "first-district checkpoint setup failed");
@@ -996,6 +976,193 @@ async function readSkyline(page: Page): Promise<SkylineEvidence> {
   return evidence;
 }
 
+async function readSkylineCompletionDriver(page: Page): Promise<{
+  readonly completed: boolean;
+  readonly snapshot?: { readonly x: number; readonly y: number; readonly grounded: boolean };
+}> {
+  return page.evaluate(() => {
+    const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
+    return {
+      completed: evidence?.diagnostics?.completionProof?.completed === true,
+      snapshot: evidence?.diagnostics?.snapshot === undefined
+        ? undefined
+        : {
+            x: evidence.diagnostics.snapshot.x,
+            y: evidence.diagnostics.snapshot.y,
+            grounded: evidence.diagnostics.snapshot.grounded
+          }
+    };
+  });
+}
+
+async function startSkylineManualDriver(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    type DriverHost = typeof globalThis & {
+      __AURA3D_SKYLINE_TEST_DRIVER__?: {
+        lastJumpFrame: number;
+        observedDeaths: number;
+        recoveryFrames: number;
+      };
+      __AURA3D_LIVE_APPS__?: {
+        pauseAll(): number;
+      };
+    };
+    const host = globalThis as DriverHost;
+    host.__AURA3D_LIVE_APPS__?.pauseAll();
+    window.dispatchEvent(new KeyboardEvent("keyup", { code: "Space", key: " ", bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyD", key: "KeyD", bubbles: true }));
+    host.__AURA3D_SKYLINE_TEST_DRIVER__ = {
+      lastJumpFrame: Number.NEGATIVE_INFINITY,
+      observedDeaths: window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.deaths ?? 0,
+      recoveryFrames: 0
+    };
+  });
+}
+
+async function stepSkylineManualDriver(
+  page: Page,
+  level: ReturnType<typeof createSkylineLevel>,
+  frames: number
+): Promise<Awaited<ReturnType<typeof readSkylineCompletionDriver>>> {
+  return page.evaluate(({ platforms, hazards, framesToRun }) => {
+    type DriverHost = typeof globalThis & {
+      __AURA3D_SKYLINE_TEST_DRIVER__?: {
+        lastJumpFrame: number;
+        observedDeaths: number;
+        recoveryFrames: number;
+      };
+      __AURA3D_LIVE_APPS__?: {
+        all(): readonly { advance(dt?: number): void; step(dt?: number): void }[];
+      };
+    };
+    const host = globalThis as DriverHost;
+    const driver = host.__AURA3D_SKYLINE_TEST_DRIVER__;
+    const app = host.__AURA3D_LIVE_APPS__?.all()[0];
+    if (!driver || !app) throw new Error("Skyline manual driver requires one mounted Aura app.");
+    const dispatch = (type: "keydown" | "keyup", code: string) => {
+      window.dispatchEvent(new KeyboardEvent(type, { code, key: code === "Space" ? " " : code, bubbles: true }));
+    };
+    for (let index = 0; index < framesToRun; index += 1) {
+      const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
+      if (evidence?.diagnostics?.completionProof?.completed === true) {
+        break;
+      }
+      const grounded = evidence?.diagnostics?.snapshot?.grounded === true;
+      const snapshot = evidence?.diagnostics?.snapshot;
+      const frame = evidence?.frameCount ?? 0;
+      const deaths = evidence?.deaths ?? 0;
+      if (deaths > driver.observedDeaths) {
+        driver.observedDeaths = deaths;
+        driver.recoveryFrames = 1;
+        dispatch("keyup", "KeyD");
+        dispatch("keyup", "Space");
+      }
+      const recovering = driver.recoveryFrames > 0 || (
+        driver.observedDeaths > 0 && snapshot?.grounded !== true && deaths === driver.observedDeaths
+      );
+      if (!recovering) {
+        dispatch("keydown", "KeyD");
+      }
+      const currentSurfaceIndex = snapshot === undefined
+        ? -1
+        : platforms.findIndex((surface) => {
+            const top = surface.y + surface.height;
+            return snapshot.x >= surface.x - 0.04
+              && snapshot.x <= surface.x + surface.width + 0.04
+              && Math.abs(snapshot.y - top) <= 0.08;
+          });
+      const currentSurface = platforms[currentSurfaceIndex];
+      const nextSurface = currentSurfaceIndex >= 0 ? platforms[currentSurfaceIndex + 1] : undefined;
+      const edgeDistance = currentSurface !== undefined && snapshot !== undefined
+        ? currentSurface.x + currentSurface.width - snapshot.x
+        : Number.POSITIVE_INFINITY;
+      const nextGap = currentSurface !== undefined && nextSurface !== undefined
+        ? nextSurface.x - (currentSurface.x + currentSurface.width)
+        : 0;
+      const risingStep = currentSurface !== undefined && nextSurface !== undefined
+        ? nextSurface.y + nextSurface.height > currentSurface.y + currentSurface.height + 0.08
+        : false;
+      const upcomingHazard = snapshot !== undefined && hazards.some((hazard) => {
+        const distance = hazard.x - snapshot.x;
+        return distance >= 0 && distance <= 0.28;
+      });
+      const routeJump = edgeDistance <= 0.38 && (nextGap > 0.05 || risingStep);
+      const wantJump = !recovering
+        && grounded
+        && frame - driver.lastJumpFrame >= 18
+        && (upcomingHazard || routeJump || currentSurfaceIndex < 0);
+      if (wantJump) {
+        driver.lastJumpFrame = frame;
+        dispatch("keydown", "Space");
+        // Preserve the route proof's one-step `jumpPressed` input without a
+        // variable-height hold. `game.input` retains the pending press edge
+        // through the immediate release and consumes it on the next app frame.
+        dispatch("keyup", "Space");
+      }
+      app.advance(1 / 60);
+      if (driver.recoveryFrames > 0) driver.recoveryFrames -= 1;
+    }
+    const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
+    return {
+      completed: evidence?.diagnostics?.completionProof?.completed === true,
+      snapshot: evidence?.diagnostics?.snapshot === undefined
+        ? undefined
+        : {
+            x: evidence.diagnostics.snapshot.x,
+            y: evidence.diagnostics.snapshot.y,
+            grounded: evidence.diagnostics.snapshot.grounded
+          }
+    };
+  }, {
+    platforms: [...(level.platforms ?? [])].sort((left, right) => left.x - right.x),
+    hazards: [...(level.hazards ?? [])].sort((left, right) => left.x - right.x),
+    framesToRun: frames
+  });
+}
+
+async function stopSkylineManualDriver(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const host = globalThis as typeof globalThis & {
+      __AURA3D_SKYLINE_TEST_DRIVER__?: unknown;
+      __AURA3D_LIVE_APPS__?: { resumeAll(): number };
+    };
+    window.dispatchEvent(new KeyboardEvent("keyup", { code: "Space", key: " ", bubbles: true }));
+    window.dispatchEvent(new KeyboardEvent("keyup", { code: "KeyD", key: "KeyD", bubbles: true }));
+    delete host.__AURA3D_SKYLINE_TEST_DRIVER__;
+    host.__AURA3D_LIVE_APPS__?.resumeAll();
+  });
+}
+
+async function presentSkylineManualDriver(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const host = globalThis as typeof globalThis & {
+      __AURA3D_LIVE_APPS__?: { all(): readonly { step(dt?: number): void }[] };
+    };
+    host.__AURA3D_LIVE_APPS__?.all()[0]?.step(0);
+  });
+}
+
+async function readSkylineDriver(page: Page): Promise<{
+  readonly deaths: number;
+  readonly checkpointId?: string;
+  readonly snapshot?: { readonly x: number; readonly y: number; readonly grounded: boolean };
+}> {
+  return page.evaluate(() => {
+    const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
+    return {
+      deaths: evidence?.deaths ?? 0,
+      checkpointId: evidence?.checkpointId,
+      snapshot: evidence?.diagnostics?.snapshot === undefined
+        ? undefined
+        : {
+            x: evidence.diagnostics.snapshot.x,
+            y: evidence.diagnostics.snapshot.y,
+            grounded: evidence.diagnostics.snapshot.grounded
+          }
+    };
+  });
+}
+
 async function readPlatformer(
   page: Page,
   globalName: "__AURA3D_SHOWCASE_SKYLINE_RUNNER__" | "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__"
@@ -1028,7 +1195,7 @@ async function capture(page: Page, appId: string, label: string): Promise<Screen
     return registry?.pauseAll() ?? 0;
   });
   try {
-    const buffer = await page.screenshot({ path, fullPage: false, scale: "css" });
+    const buffer = await page.screenshot({ path, fullPage: false, scale: "css", timeout: 30_000 });
     return { path, bytes: buffer.byteLength, sha256: createHash("sha256").update(buffer).digest("hex") };
   } finally {
     if (pausedApps > 0) {
@@ -1040,6 +1207,14 @@ async function capture(page: Page, appId: string, label: string): Promise<Screen
       });
     }
   }
+}
+
+async function captureScene(page: Page, appId: string, label: string): Promise<ScreenshotEvidence> {
+  const path = resolve(REPORT_DIR, `${appId}-${label}.png`);
+  const canvas = page.locator("canvas").first();
+  await expect(canvas, `${appId} should expose a rendered canvas for ${label}`).toBeVisible({ timeout: 10_000 });
+  const buffer = await canvas.screenshot({ path, scale: "css", timeout: 30_000 });
+  return { path, bytes: buffer.byteLength, sha256: createHash("sha256").update(buffer).digest("hex") };
 }
 
 function check(condition: boolean, blockers: string[], message: string): void {

@@ -193,13 +193,19 @@ vec3 a3dPbrEnvironmentLightSplitSum(
 ) {
   float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
   vec3 f0 = a3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = a3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
-  vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
-  vec3 diffuse = kd * albedo * diffuseIrradiance;
   vec2 brdf = clamp(environmentBrdf, vec2(0.0), vec2(1.0));
   float hasSplitSum = step(0.0001, brdf.x + brdf.y);
-  vec3 splitSumFresnel = F * brdf.x + vec3(brdf.y);
-  vec3 specular = specularRadiance * mix(F, splitSumFresnel, hasSplitSum);
+  vec3 fallbackFresnel = a3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
+  float f90 = mix(clamp(specularFactor, 0.0, 1.0), 1.0, clamp(metallic, 0.0, 1.0));
+  vec3 singleScatter = f0 * brdf.x + vec3(f90 * brdf.y);
+  float ess = brdf.x + brdf.y;
+  float ems = 1.0 - ess;
+  vec3 favg = f0 + (vec3(1.0) - f0) * (1.0 / 21.0);
+  vec3 multiScatter = singleScatter * favg / max(vec3(1.0) - ems * favg, vec3(A3D_EPSILON)) * ems;
+  vec3 scattering = mix(fallbackFresnel, singleScatter + multiScatter, hasSplitSum);
+  vec3 kd = (vec3(1.0) - scattering) * (1.0 - clamp(metallic, 0.0, 1.0));
+  vec3 diffuse = kd * albedo * diffuseIrradiance;
+  vec3 specular = specularRadiance * scattering;
   return diffuse + specular;
 }
 vec3 a3dApplyMetalRough(vec3 baseColor, float metallic, float roughness) {
@@ -555,18 +561,10 @@ vec3 a3dPbrBoundHdrTransmissionRadiance(vec3 radiance) {
   return nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)));
 }
 vec3 a3dPbrBoundHdrSpecularRadiance(vec3 radiance) {
-  vec3 nonNegative = max(radiance, vec3(0.0));
-  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.58);
-  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
-  return maxChannel > 1.65 ? softKnee * (1.65 / maxChannel) : softKnee;
+  return clamp(radiance, vec3(0.0), vec3(65504.0));
 }
 vec3 a3dPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
-  float faceOn = smoothstep(0.12, 0.55, clamp(nDotV, 0.0, 1.0));
-  float roughEnergy = mix(0.6, 1.0, clamp(roughness, 0.0, 1.0));
-  float edgeCap = mix(0.12, 1.2, faceOn) * roughEnergy;
-  float edgeScale = mix(0.14, 0.92, faceOn);
-  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
-  return max(bounded, vec3(0.0));
+  return max(radiance, vec3(0.0));
 }
 vec4 a3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, a3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
@@ -736,7 +734,7 @@ void main() {
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, roughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, roughness);
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, roughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.65, roughness);
   float clearcoatEnvironmentRoughness = clamp(u_clearcoatRoughnessFactor, 0.04, 1.0);
   float clearcoatEnvironmentLod = clearcoatEnvironmentRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 clearcoatSampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, clearcoatEnvironmentLod)));

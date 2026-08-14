@@ -6,10 +6,9 @@ import { describe, expect, it } from "vitest";
  *
  * ## The defect
  *
- * Skyline expresses hero locomotion as a scale cycle -- `1 +/- 0.14` at idle, a **28% peak-to-peak** height
- * swing -- while the composition probe declares a static `targetSize: 0.52`. The `scale-contract` check
- * compares the subject's *measured* pixel height against the height projected from that `targetSize`, so the
- * two quantities described different things.
+ * Skyline previously expressed hero locomotion as a 28% peak-to-peak scale
+ * cycle while the composition probe declared a static `targetSize: 0.52`.
+ * The `scale-contract` check compared different poses as a result.
  *
  * Consequence: across four consecutive probe runs the measured hero height was 119, 122, 141 and 154px, and
  * `scaleDelta` straddled its `maxPlatformerScaleDelta: 0.18` threshold. One run failed composition at 0.1892
@@ -48,8 +47,13 @@ describe("Skyline's composition subject is measured in a deterministic pose", ()
      * reintroduces the flakiness. Skyline animates its subject, so for this route it is required.
      */
     expect(source).toContain("settleSubjectPose:");
-    // And the locomotion cycle that made it necessary must still be the thing being neutralised.
-    expect(source).toMatch(/Math\.sin\(cycle\) \* 0\.14/);
+    // The old independent 14% scale cycle is intentionally gone. The hook must
+    // still pin both unit scale and a deterministic imported-clip capture frame.
+    expect(source).not.toMatch(/Math\.sin\(cycle\) \* 0\.14/);
+    expect(source).toContain("compositionPoseSettled = true");
+    expect(source).toContain("captureTime: 0.4");
+    expect(source).toMatch(/if \(compositionPoseSettled\)[\s\S]*player\.play\(HERO_LOCOMOTION_CLIP_MAP\.idle, \{ loop: false, captureTime: 0\.4 \}\)/);
+    expect(source).toContain("player.setVisible(!suppressed)");
   });
 
   it("keeps the retained scaleDelta well inside the composition threshold", () => {

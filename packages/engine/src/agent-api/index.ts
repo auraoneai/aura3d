@@ -265,6 +265,7 @@ import {
   createGameColliderDebugGeometry,
   createGameCombatDebugGeometry,
   createGameCollisionWorld,
+  createGamePlanarCollisionWorld,
   createGameDebugOverlayData,
   createGameDebugSceneNodes,
   createGameHitboxDebugGeometry,
@@ -7059,6 +7060,7 @@ export const game = {
   touchControls: createGameTouchControlLayout,
   kinematicBody: createGameKinematicBody,
   collisionWorld: createGameCollisionWorld,
+  planarCollisionWorld: createGamePlanarCollisionWorld,
   jumpAssist: createGameJumpAssist,
   collider: {
     box: createGameBoxCollider,
@@ -9524,6 +9526,15 @@ export interface AuraApp {
   onDeviceRestored(listener: () => void): () => void;
   /** True while the WebGL context is lost, so a caller can check state rather than only react to events. */
   deviceLost(): boolean;
+  /**
+   * Advance deterministic application state without presenting a rendered frame.
+   *
+   * This runs the same `onFrame` callbacks and app-owned physics step as {@link step},
+   * but deliberately skips renderer submission. Use it for fixed-step simulation,
+   * replay, and evidence runs that only need pixels at named milestones; call
+   * `step(0)` when a milestone should be presented.
+   */
+  advance(dt?: number): void;
   step(dt?: number): void;
   diagnostics(): AuraDiagnostics;
   evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
@@ -10296,10 +10307,14 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     deviceLost() {
       return productionController?.deviceLost?.() ?? false;
     },
-    step(dt = 1 / 60) {
+    advance(dt = 1 / 60) {
       const seconds = Math.max(0, dt);
       runRuntimeFrame(seconds, "manual");
       canvasRuntimePhysics?.step(seconds);
+    },
+    step(dt = 1 / 60) {
+      const seconds = Math.max(0, dt);
+      app.advance(seconds);
       const previousPaused = runtimePaused;
       runtimePaused = true;
       /*
@@ -12456,7 +12471,17 @@ function colorToAcesInputClearColor(color: AuraColor): readonly [number, number,
     -0.1470278520, 1.1602515117, -0.0132236597,
     -0.0363368301, -0.1624364369, 1.1987732670
   ], fitted);
-  return [Math.max(0, input[0] * 0.6), Math.max(0, input[1] * 0.6), Math.max(0, input[2] * 0.6), alpha];
+  // The renderer's fitted ACES shoulder is effectively linear only above the
+  // toe. Preserve very dark authored display colors through that toe while
+  // leaving mid/high display colors at the full inverse-transform energy.
+  const displayPeak = Math.max(red, green, blue);
+  const toeCompensation = 0.6 + 0.06 * smoothstepNumber(0.08, 0.55, displayPeak);
+  return [Math.max(0, input[0] * toeCompensation), Math.max(0, input[1] * toeCompensation), Math.max(0, input[2] * toeCompensation), alpha];
+}
+
+function smoothstepNumber(edge0: number, edge1: number, value: number): number {
+  const t = clampNumber((value - edge0) / (edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
 }
 
 function inverseAcesFit(target: number): number {

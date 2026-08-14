@@ -12,7 +12,7 @@ the source commit, lock hash, tarball hashes, isolated consumer, and browser
 specs. The aggregate deliberately reports `comparisonComplete: false` until
 the independent gallery review is recorded. The broad repeated-performance
 matrix is not a 2.0 release claim: directional timings cannot establish a
-performance win or non-inferiority verdict.
+performance win or an equivalence verdict.
 
 The historical suite against `three@0.165.0` remains useful only for regression
 history. It is not a current-market parity, superiority, or replacement verdict.
@@ -25,7 +25,7 @@ history. It is not a current-market parity, superiority, or replacement verdict.
 - Every workload publishes losses. Aura remains visibly different in several
   material, lighting, bloom, and output-treatment pairs and often submits more
   draws in the selected asset-heavy scenes.
-- Performance non-inferiority is not claimed. The proposed
+- Broad performance equivalence is not claimed. The proposed
   120-warmup/600-frame/five-session universal protocol was removed from the 2.0
   release scope with the corresponding public performance claim.
 - Clean Linux reproduction is retained in

@@ -2501,6 +2501,20 @@ export function createGameCollisionWorld(descriptor: PhysicsWorldDescriptor = {}
   };
 }
 
+/**
+ * Create a collision-only world for gameplay authored on a fixed plane.
+ *
+ * Racing, top-down, and board-game routes frequently need Rapier to own solid
+ * contacts while a genre kit owns authored motion. Keeping zero gravity here
+ * prevents each route from restating a physical-world constant and makes that
+ * ownership boundary explicit.
+ */
+export function createGamePlanarCollisionWorld(
+  descriptor: Omit<PhysicsWorldDescriptor, "gravity"> = {}
+): GameCollisionWorld {
+  return createGameCollisionWorld({ ...descriptor, gravity: [0, 0, 0] });
+}
+
 export function createGameFighting2DRules(options: GameFighting2DRulesOptions = {}): GameFighting2DRules {
   return {
     kind: "aura-game-fighting-2d-rules",
