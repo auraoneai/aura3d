@@ -2,7 +2,7 @@
 
 Version: 2.0.1
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.0` is published across all 29 public packages and tagged at its immutable release commit. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated; later changes on `main` are not retroactively part of the npm tarballs.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.1` is published across all 29 public packages; every `2.0.0` package version is deprecated in favor of the patch release, while the immutable `v2.0.0` tag remains historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated; later changes on `main` are not retroactively part of the npm tarballs.
 
 Current evidence note (2026-08-11): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree

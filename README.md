@@ -127,11 +127,11 @@ remaining visual and ecosystem losses.
   historical. The 2.0 program locks current comparison work to
   `three@0.185.1` and requires same-workload, same-asset evidence; unfinished
   rows stay unfinished instead of being generalized into parity.
-- **Publication is externally verified.** All 29 packages are at `2.0.0`; all
-  396 pre-2.0 versions are deprecated with a migration notice; tag
-  `v2.0.0` and the GitHub release identify the immutable release commit. Later
-  game, lighting, evidence, and website work on `main` is post-release source
-  work and does not silently replace the published tarballs.
+- **Publication is externally verified.** All 29 packages report `2.0.1` as
+  `latest`; every `2.0.0` package version is deprecated with a 2.0.1 upgrade
+  notice; and all 396 pre-2.0 versions remain deprecated with their migration
+  notice. Tag `v2.0.1` and the GitHub release identify the patch release commit.
+  The immutable `v2.0.0` tag remains the historical major-release record.
 
 ### Consolidated 2.0 outcomes
 
@@ -270,7 +270,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 2.0 runtime launch track
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.0 is
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.1 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -733,9 +733,10 @@ Aura3D 2.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The 2.0.0 package candidate and exact installed-package
-comparison against `three@0.185.1` pass their bounded local checks across 15
-workloads. That comparison is not a universal parity claim: clean-machine,
+Expected current state — The published 2.0.1 patch packages pass their release
+checks. The historical exact-installed 2.0.0 comparison against
+`three@0.185.1` passes its bounded local checks across 15 workloads. That
+comparison is not a universal parity claim: clean-machine,
 repeated-performance, independent-human, publication, and production-origin
 gates remain open. Blockfall Reactor, Turbo Drift Circuit, and
 Skyline Runner remain `prototype-blocked`; their typed assets, mounted gameplay,
