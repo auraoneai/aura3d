@@ -226,7 +226,11 @@ const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
  * path resolves without a CDN round trip -- and without depending on a CDN copy that may not
  * exist.
  */
-const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]"]);
+const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]", "aura3d.auraone.ai"]);
+
+function hostServesPublishedFixtures(hostname: string): boolean {
+  return SAME_ORIGIN_FIXTURE_HOSTS.has(hostname) || hostname.endsWith(".vercel.app");
+}
 
 
 export function expectedAuthoredAssetCountForDemo(demoId: DemoId): number {
@@ -498,7 +502,7 @@ function resolvePublicAssetUrl(url: string): string {
    * A CDN origin is still used when the page sets one explicitly, or when the page is served
    * from a host that does not carry the fixtures.
    */
-  if (!configured && typeof location !== "undefined" && SAME_ORIGIN_FIXTURE_HOSTS.has(location.hostname)) {
+  if (!configured && typeof location !== "undefined" && hostServesPublishedFixtures(location.hostname)) {
     return url.startsWith("/") ? url : `/${url}`;
   }
   const base = configured ?? PUBLIC_ASSET_ORIGIN;

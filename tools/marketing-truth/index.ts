@@ -34,8 +34,9 @@ const publicDraftLanguageTerms = [
 
 const checks: ReleaseCheck[] = [
   fileIncludes("marketing/index.html", ["Aura3D", "agent-written browser 3D", "assets add", "check-deploy", "The agent writes code. You bring the assets.", "not a hidden runtime generator"], "marketing truthful product copy"),
-  fileIncludes("marketing/index.html", ["August 12, 2026", "15 selected correctness workloads", "all 29 exact Aura3D 2.0.0 tarballs", "three@0.185.1", "not universal ecosystem parity", "broad performance is not claimed", "clean Linux reproduction", "independent review", "some Aura frames remain darker or less reflective"], "marketing current comparison protocol, result, and losses"),
-  fileIncludes("marketing/index.html", ["npm package", "GitHub source", "2.0 migration", "Public API", "Examples", "Comparison methodology", "Current results and limits", "Installed reproduction report", "Comparison aggregate"], "marketing release reference links"),
+  fileIncludes("marketing/index.html", ["Aura3D 2.0.1 is live", "36 apps, games, and focused examples", "29 coordinated packages at 2.0.1", "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
+  fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["15 / 15", "29", "exact installed Aura3D tarballs", "Frozen r185 workload set", "The set proves these named outcomes"], "technical comparison retains scoped evidence"),
+  fileIncludes("marketing/index.html", ["npm package", "GitHub source", "2.0 migration", "Public API", "36 live experiences", "Templates", "Asset pipeline", "Deployment"], "marketing release reference links"),
   fileIncludes("README.md", ["agent-written browser 3D", "assets add", "create-aura3d"], "README product positioning"),
   noFileMatches(publicSiteFiles, versionCycleTerms, "public site no version-cycle language"),
   noFileMatches(publicSiteFiles, publicDraftLanguageTerms, "public site production language only"),

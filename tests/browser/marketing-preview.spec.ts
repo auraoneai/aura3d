@@ -77,7 +77,7 @@ test.describe("built marketing preview", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${server.origin}/index.html`, { waitUntil: "networkidle" });
     await expect(page.locator(".doc-hero h1")).toBeVisible();
-    await expect(page.locator("a[href='/docs/aura3d-vs-threejs.html']")).toHaveCount(3);
+    await expect(page.getByRole("link", { name: "Launch 36 examples" })).toBeVisible();
     const productProof = page.locator(".visual-proof iframe[data-route='/apps/showcase-product-configurator/']");
     await productProof.scrollIntoViewIfNeeded();
     const productFrame = page.frameLocator(".visual-proof iframe[data-route='/apps/showcase-product-configurator/']");
@@ -91,11 +91,12 @@ test.describe("built marketing preview", () => {
     expect(requestFailures).toEqual([]);
   });
 
-  test("publishes the bounded Aura3D and Three.js comparison sheet", async ({ page }) => {
+  test("publishes the application-first Aura3D comparison sheet", async ({ page }) => {
     await page.goto(`${server.origin}/docs/aura3d-vs-threejs.html`, { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Three.js");
-    await expect(page.getByText("Three.js leads broadly")).toBeVisible();
-    await expect(page.getByText("broad performance claims")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Stop assembling renderer parts");
+    await expect(page.getByText("15 / 15", { exact: true })).toBeVisible();
+    await expect(page.getByText("36", { exact: true })).toBeVisible();
+    await expect(page.getByText("The Aura3D path")).toBeVisible();
     await expect(page.locator("body")).toContainText("Three.js 0.185.1");
   });
 

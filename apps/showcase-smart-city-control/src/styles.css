@@ -292,6 +292,11 @@ h1 {
   white-space: nowrap;
 }
 
+html[data-chrome="hidden"] .commandbar,
+html[data-chrome="hidden"] .panel {
+  display: none;
+}
+
 @media (max-width: 1080px) {
   .shell {
     min-height: 760px;

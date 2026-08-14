@@ -29,6 +29,9 @@ import type { AuraCameraSpec, AuraNodeInput, AuraSceneNode, AuraSceneSnapshot, F
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
+const embeddedChromeMode = new URLSearchParams(window.location.search).get("chrome");
+if (embeddedChromeMode === "hidden") document.documentElement.dataset.chrome = "hidden";
+
 /*
  * City geometry and district regions are declared before anything that consumes them.
  *

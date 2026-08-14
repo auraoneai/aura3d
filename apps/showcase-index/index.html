@@ -3,24 +3,27 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Aura3D Showcase Library</title>
+    <title>Aura3D Examples and Games</title>
     <link rel="stylesheet" href="./src/styles.css">
   </head>
   <body>
     <main class="shell">
       <header class="masthead">
         <div>
-          <p class="eyebrow">Aura3D showcase portfolio</p>
-          <h1>Seven configured route-library candidates with evidence-bounded status.</h1>
+          <p class="eyebrow">Built with Aura3D 2.0.1</p>
+          <h1>Launch the apps. Play the games. Inspect the code.</h1>
+          <p class="intro">Thirty-six live browser 3D experiences—from product configurators and digital twins to racing, platforming, physics, animation, particles, water, materials, and WebGPU experiments.</p>
         </div>
         <aside class="status-panel" aria-label="Portfolio status">
-          <span class="status-pill">Route library: 7 examples</span>
-          <span class="status-pill">3 route-library games plus retained diagnostics</span>
-          <span class="status-pill">Overall promotion held</span>
+          <span class="status-pill">36 live experiences</span>
+          <span class="status-pill">4 playable games</span>
+          <span class="status-pill">Typed assets · physics · animation · interaction</span>
         </aside>
       </header>
 
-      <section class="library" aria-label="Showcase applications">
+      <section class="catalog-section" aria-labelledby="featured-title">
+        <div class="section-head"><div><p class="eyebrow">Featured</p><h2 id="featured-title">Apps and interactive showcases</h2></div><p>Production-shaped experiences built around typed assets, application state, controls, and deployable routes.</p></div>
+        <div class="library">
         <a class="showcase-card is-product" href="/apps/showcase-product-configurator/">
           <span>01</span>
           <strong>Product Configurator Studio</strong>
@@ -41,6 +44,73 @@
           <strong>Digital Twin Operations Center</strong>
           <small>Factory zones, telemetry, sensors, deterministic state.</small>
         </a>
+        <a class="showcase-card is-game" href="/apps/showcase-blockfall-reactor/">
+          <span>05</span>
+          <strong>Blockfall Reactor</strong>
+          <small>Playable falling-block reactor with scoring, progression, reset, and typed cabinet staging.</small>
+        </a>
+        <a class="showcase-card is-racing" href="/apps/showcase-turbo-drift-circuit/">
+          <span>06</span>
+          <strong>Turbo Drift Circuit</strong>
+          <small>Playable circuit racing with typed Formula cars, Rapier contact, gates, laps, drift, and recovery.</small>
+        </a>
+        <a class="showcase-card is-game" href="/apps/showcase-skyline-runner/">
+          <span>07</span>
+          <strong>Skyline Runner</strong>
+          <small>Playable platforming route with a typed hero, checkpoints, collectibles, hazards, and completion.</small>
+        </a>
+        <a class="showcase-card is-arena" href="/showcase/aura-clash/playable/">
+          <span>08</span>
+          <strong>Aura Clash Arena</strong>
+          <small>Playable arena combat showcase with movement, attacks, health, rounds, accessibility, and touch controls.</small>
+        </a>
+        </div>
+      </section>
+
+      <section class="catalog-section" aria-labelledby="advanced-title">
+        <div class="section-head"><div><p class="eyebrow">Advanced gallery</p><h2 id="advanced-title">Engine-scale interactive scenes</h2></div><p>Open each scene directly with its live controls, authored assets, runtime metrics, and capture modes.</p></div>
+        <div class="library library-compact">
+          <a class="showcase-card is-water" href="/apps/advanced-examples-gallery/#water-lab"><span>09</span><strong>Interactive Water Lab</strong><small>Ripple interaction, floating props, docks, lights, and debug waves.</small></a>
+          <a class="showcase-card is-water" href="/apps/advanced-examples-gallery/#ocean-observatory"><span>10</span><strong>Ocean Surface Showcase</strong><small>Layered ocean motion, authored observatory, drones, beacons, and wind controls.</small></a>
+          <a class="showcase-card is-advanced" href="/apps/advanced-examples-gallery/#reactor-post"><span>11</span><strong>Cinematic Post Pipeline</strong><small>Command-center staging, emissive reactor, particles, scan rings, and effect controls.</small></a>
+          <a class="showcase-card is-city" href="/apps/advanced-examples-gallery/#smart-city"><span>12</span><strong>Smart City Stress Test</strong><small>Instanced city systems, traffic, data overlays, flythrough controls, and load metrics.</small></a>
+          <a class="showcase-card is-data" href="/apps/advanced-examples-gallery/#data-galaxy"><span>13</span><strong>AI Data Galaxy</strong><small>Dense formations, attractors, trails, connection hints, and camera flight.</small></a>
+          <a class="showcase-card is-product" href="/apps/advanced-examples-gallery/#product-configurator"><span>14</span><strong>Concept Car Configurator</strong><small>Texture-backed car, imported variants, exploded view, turntable, and studio lighting.</small></a>
+          <a class="showcase-card is-advanced" href="/apps/advanced-examples-gallery/#robotics-lab"><span>15</span><strong>Animated Robotics Lab</strong><small>Animated glTF actors, task zones, monitors, timeline controls, and follow camera.</small></a>
+          <a class="showcase-card is-advanced" href="/apps/advanced-examples-gallery/#physics-playground"><span>16</span><strong>Physics Manipulation Lab</strong><small>Rigid bodies, conveyors, pusher, collision zones, scoring, and debug controls.</small></a>
+          <a class="showcase-card is-cinema" href="/apps/advanced-examples-gallery/#fog-cathedral"><span>17</span><strong>Fog Cathedral</strong><small>Authored architecture, atmospheric depth, light shafts, dust, and camera choreography.</small></a>
+          <a class="showcase-card is-ops" href="/apps/advanced-examples-gallery/#digital-twin"><span>18</span><strong>Factory Digital Twin</strong><small>Robots, conveyors, sensors, heatmaps, work cells, and simulation controls.</small></a>
+        </div>
+      </section>
+
+      <section class="catalog-section" aria-labelledby="engine-title">
+        <div class="section-head"><div><p class="eyebrow">Focused examples</p><h2 id="engine-title">Rendering, loading, controls, and interaction</h2></div><p>Small, direct routes for testing specific Aura3D capabilities in isolation.</p></div>
+        <div class="library library-compact">
+          <a class="showcase-card is-evidence" href="/apps/loader-gltf-variants/"><span>19</span><strong>glTF Material Variants</strong><small>Load a typed glTF and switch authored material variants.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/loader-obj/"><span>20</span><strong>OBJ Loader</strong><small>Focused OBJ loading and presentation route.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/texture-anisotropy/"><span>21</span><strong>Texture Anisotropy</strong><small>Inspect texture filtering across angled surfaces.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/postprocessing-depth-outline/"><span>22</span><strong>Depth Outline</strong><small>Postprocess depth-outline presentation and controls.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/controls-trackball/"><span>23</span><strong>Trackball Controls</strong><small>Interactive trackball navigation around a live 3D subject.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/geometry-drawrange/"><span>24</span><strong>Geometry Draw Range</strong><small>Change indexed draw ranges and inspect geometry output.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/interactive-picking/"><span>25</span><strong>Interactive Picking</strong><small>Select and inspect live scene objects.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/camera-multiple-views/"><span>26</span><strong>Multiple Camera Views</strong><small>Compose and update several camera views in one route.</small></a>
+          <a class="showcase-card is-evidence" href="/apps/webxr-interactions/"><span>27</span><strong>WebXR Interactions</strong><small>XR session interaction route for supported devices.</small></a>
+        </div>
+      </section>
+
+      <section class="catalog-section" aria-labelledby="visual-title">
+        <div class="section-head"><div><p class="eyebrow">Visual and asset labs</p><h2 id="visual-title">Models, materials, animation, and GPU experiments</h2></div><p>Fast-loading studies that make individual visual systems easy to inspect.</p></div>
+        <div class="library library-compact">
+          <a class="showcase-card is-wow" href="/apps/wow-simple-transforms/"><span>28</span><strong>Simple Transforms</strong><small>Position, rotation, scale, and scene composition.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-robot-expressive-rig/"><span>29</span><strong>Expressive Robot Rig</strong><small>Animated robot asset and expressive skeletal motion.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-boombox-texture-lab/"><span>30</span><strong>Boombox Texture Lab</strong><small>Texture-backed product asset under controlled lighting.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-standard-material-spheres/"><span>31</span><strong>Material Spheres</strong><small>Readable material response across a compact comparison grid.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-webgpu-compute-particles/"><span>32</span><strong>GPU Particle Field</strong><small>WebGPU compute-particle experiment with live motion.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-tokyo-keyframes/"><span>33</span><strong>Tokyo Keyframes</strong><small>Animated authored city asset and keyframe playback.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-damaged-helmet-pbr-detail/"><span>34</span><strong>Damaged Helmet Detail</strong><small>High-detail glTF asset and material inspection.</small></a>
+          <a class="showcase-card is-wow" href="/apps/wow-concept-car-cinema/"><span>35</span><strong>Concept Car Cinema</strong><small>Automotive asset presentation with cinematic staging.</small></a>
+          <a class="showcase-card is-wow" href="/apps/advanced-examples-gallery/"><span>36</span><strong>Advanced Gallery Console</strong><small>Open the complete interactive gallery shell and switch scenes in place.</small></a>
+        </div>
       </section>
     </main>
     <script type="module" src="./src/main.ts"></script>

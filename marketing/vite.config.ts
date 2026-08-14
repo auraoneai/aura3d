@@ -41,6 +41,7 @@ function copyMarketingPublicFiles() {
       const outDir = resolve(marketingDir, "dist");
       mkdirSync(outDir, { recursive: true });
       mirrorMarketingHtmlOutput(outDir);
+      copyAdvancedGalleryAssets(outDir);
       for (const file of ["favicon.svg", "robots.txt", "sitemap.xml", "llms.txt"]) {
         const marketingSource = resolve(marketingDir, file);
         const source = existsSync(marketingSource) ? marketingSource : resolve(repoRoot, file);
@@ -124,6 +125,36 @@ function copyDir(sourceDir: string, targetDir: string): void {
       copyFileSync(source, target);
     }
   }
+}
+
+function copyAdvancedGalleryAssets(outDir: string): void {
+  const fixtureFiles = [
+    "fixtures/advanced-gallery/assets/water-cinematic-marina-blender/water-cinematic-marina-blender.glb",
+    "fixtures/threejs-parity/assets/physics/duck.glb",
+    "fixtures/advanced-gallery/assets/ocean-observatory-cinematic-blender/ocean-observatory-cinematic-blender.glb",
+    "fixtures/threejs-parity/assets/materials/compare-transmission.glb",
+    "fixtures/advanced-gallery/assets/reactor-command-center-blender/reactor-command-center-blender.glb",
+    "fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb",
+    "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+    "fixtures/advanced-gallery/assets/robotics-training-lab-blender/robotics-training-lab-blender.glb",
+    "fixtures/threejs-parity/assets/character/soldier.glb",
+    "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+    "fixtures/advanced-gallery/assets/physics-robotics-testbed-blender/physics-robotics-testbed-blender.glb",
+    "fixtures/advanced-gallery/assets/fog-cathedral-blender/fog-cathedral-blender.glb",
+    "fixtures/advanced-gallery/assets/digital-twin-factory-blender/digital-twin-factory-blender.glb",
+    "fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb"
+  ];
+  for (const fixtureFile of fixtureFiles) {
+    const source = resolve(repoRoot, fixtureFile);
+    if (!existsSync(source)) throw new Error(`Advanced-gallery production asset is missing: ${source}`);
+    const target = resolve(outDir, fixtureFile);
+    mkdirSync(dirname(target), { recursive: true });
+    copyFileSync(source, target);
+  }
+
+  const smartCitySource = resolve(repoRoot, "fixtures/advanced-gallery/assets/smart-city-district");
+  if (!existsSync(smartCitySource)) throw new Error(`Advanced-gallery smart-city asset directory is missing: ${smartCitySource}`);
+  copyDir(smartCitySource, resolve(outDir, "fixtures/advanced-gallery/assets/smart-city-district"));
 }
 
 function copyAuraClashRuntimeAssets(sourceDir: string, targetDir: string): void {

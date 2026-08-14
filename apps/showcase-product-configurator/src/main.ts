@@ -112,6 +112,8 @@ interface ConfiguratorEvidence {
 }
 
 const productAsset = assets.showcaseHeadphones;
+const embeddedChromeMode = new URLSearchParams(window.location.search).get("chrome");
+if (embeddedChromeMode === "hidden") document.documentElement.dataset.chrome = "hidden";
 const assetMetadata = productAsset.metadata;
 const assetProvenance = assetMetadata.provenance;
 const materialMetadata = assetMetadata.materialMetadata;
@@ -311,7 +313,7 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       // lifting the entire copper body toward one flat midtone. The two long
       // directional cards below provide the readable highlight-to-shadow
       // transition that a product photograph needs.
-      intensity: 1.28,
+      intensity: 0.96,
       color: "#fff4e6"
     }))
     .addMany(compactProductStageNodes(nextState))
@@ -320,9 +322,9 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       : productModel)
     .addMany(configuratorSceneAccents(nextState))
     .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.18, color: "#d9e1e8" }))
-    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 3.05, color: "#fff4e6" }))
-    .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 1.38, color: "#a9dcff" }))
-    .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.76, color: "#ffe2c0" }))
+    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 2.28, color: "#fff4e6" }))
+    .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 0.82, color: "#a9dcff" }))
+    .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.44, color: "#ffe2c0" }))
     .add(lights.rect({
       name: "long warm showroom reflection card",
       position: [2.75, 1.62, 1.72],

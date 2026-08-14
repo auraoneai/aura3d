@@ -56,6 +56,14 @@ h1 {
   letter-spacing: 0;
 }
 
+.intro {
+  max-width: 840px;
+  margin: 22px 0 0;
+  color: rgba(239, 245, 252, 0.78);
+  font-size: clamp(16px, 2vw, 21px);
+  line-height: 1.55;
+}
+
 .status-panel {
   display: grid;
   gap: 10px;
@@ -79,6 +87,35 @@ h1 {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
+}
+
+.catalog-section {
+  padding: 38px 0 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 520px);
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1;
+}
+
+.section-head > p {
+  margin: 0;
+  color: rgba(239, 245, 252, 0.7);
+  line-height: 1.55;
+}
+
+.library-compact .showcase-card {
+  min-height: 220px;
 }
 
 .showcase-card {
@@ -147,6 +184,11 @@ h1 {
 .is-gpu { background-color: #102734; }
 .is-game { background-color: #2a2020; }
 .is-racing { background-color: #173127; }
+.is-arena { background-color: #30182b; }
+.is-water { background-color: #0d2a3a; }
+.is-advanced { background-color: #1e2036; }
+.is-evidence { background-color: #162532; }
+.is-wow { background-color: #272117; }
 
 @media (max-width: 1100px) {
   .library {
@@ -163,6 +205,10 @@ h1 {
   .masthead {
     grid-template-columns: 1fr;
     min-height: auto;
+  }
+
+  .section-head {
+    grid-template-columns: 1fr;
   }
 
   .library {

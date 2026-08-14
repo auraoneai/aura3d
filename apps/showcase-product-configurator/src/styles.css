@@ -215,8 +215,11 @@ button.is-active {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 0 8px;
+  min-width: 0;
+  gap: 4px;
+  padding: 0 4px;
+  font-size: clamp(0.68rem, 0.74vw, 0.82rem);
+  white-space: nowrap;
 }
 
 .swatches span {
@@ -313,6 +316,10 @@ button.is-active {
 }
 
 pre[hidden] {
+  display: none;
+}
+
+html[data-chrome="hidden"] .chrome {
   display: none;
 }
 

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "a3d-architecture-asset-manifest",
+  "id": "smart-city-district",
+  "displayName": "Smart City District",
+  "source": {
+    "kind": "generated-local-gltf",
+    "generator": "tools/advanced-gallery-assets/generate-smart-city-district.mjs"
+  },
+  "localPath": "fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf",
+  "features": [
+    "gltf",
+    "procedural-architecture",
+    "district-layout",
+    "multi-material-scene"
+  ],
+  "unsupportedFeatures": [
+    "BIM/IFC import",
+    "CAD-accurate measurements",
+    "Unity/Unreal renderer parity"
+  ],
+  "inspection": {
+    "meshes": 18,
+    "materials": 18,
+    "cameras": 0,
+    "lights": 0,
+    "warnings": []
+  }
+}
