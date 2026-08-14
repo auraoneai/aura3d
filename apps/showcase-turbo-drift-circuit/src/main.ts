@@ -278,6 +278,11 @@ const racingState = game.racing({
 // collision gate finish with zero contact frames, so it certified an unexercised
 // contact system while the visible cars could still overlap in actual play.
 const collisionReviewCamera = new URLSearchParams(window.location.search).get("collisionReview") === "side";
+// The collision proof route holds the exact solved first-contact pose until the
+// browser producer releases it after taking the retained frame. A 140 ms hit-stop
+// was perceptible in play but could expire while Playwright encoded a screenshot,
+// leaving only approach/aftermath images even though contact telemetry was real.
+let collisionReviewContactHeld = collisionReviewCamera;
 // The evidence-only side view starts the rival nearer on the same opening straight,
 // making first contact deterministic before barriers or later circuit branches can
 // obscure either silhouette. Normal gameplay retains the authored 0.032 head start.
@@ -474,7 +479,7 @@ const vehicleContactWorld = game.planarCollisionWorld({
 // momentum transfer below now separates the cars immediately, so contact can occur
 // near the rendered bumpers without the repeated compression that formerly required
 // an obviously oversized proxy.
-const CONTACT_CLEARANCE = 0.009;
+const CONTACT_CLEARANCE = 0.006;
 const playerContactHalfExtents: AuraVec3 = [
   heroFraming.subject.size[0] / 2 + CONTACT_CLEARANCE,
   // The planar world must never choose Y as the shortest separation axis. A tall
@@ -649,12 +654,12 @@ const racingCamera = game.racingCameraRig({
    * modelled barriers. The floor is relative to the car's rendered height so it
    * remains valid if the typed vehicle changes.
    */
-  distance: collisionReviewCamera ? chaseDistance * 1.35 : chaseDistance,
-  height: collisionReviewCamera ? chaseHeight * 1.15 : chaseHeight,
+  distance: collisionReviewCamera ? chaseDistance * 0.2 : chaseDistance,
+  height: collisionReviewCamera ? chaseHeight * 1.3 : chaseHeight,
   // Derived, not tuned: see `requireLowerSideFeatureVisibility` above.
-  sideOffset: collisionReviewCamera ? chaseDistance * 0.72 : heroFraming.sideOffset,
+  sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset,
   lookAhead: chaseLookAhead,
-  fov: collisionReviewCamera ? 58 : chaseFov
+  fov: collisionReviewCamera ? 48 : chaseFov
 });
 setupRacingPanel();
 
@@ -1022,11 +1027,17 @@ const mountedEvidence = {
     targetNode: "racing-player-car",
     source: "game.racingCameraRig",
     collisionReviewCamera,
-    distance: collisionReviewCamera ? chaseDistance * 1.35 : chaseDistance,
-    height: collisionReviewCamera ? chaseHeight * 1.15 : chaseHeight,
-    sideOffset: collisionReviewCamera ? chaseDistance * 0.72 : heroFraming.sideOffset,
+    distance: collisionReviewCamera ? chaseDistance * 0.2 : chaseDistance,
+    height: collisionReviewCamera ? chaseHeight * 1.3 : chaseHeight,
+    sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset,
     lookAhead: chaseLookAhead,
-    fov: collisionReviewCamera ? 58 : chaseFov
+    fov: collisionReviewCamera ? 48 : chaseFov
+  },
+  collisionCapture: {
+    mode: collisionReviewCamera ? "held-first-contact-side-profile" : "disabled",
+    releaseFirstContact: () => {
+      collisionReviewContactHeld = false;
+    }
   },
   subjectFraming: subjectFramingEvidence(),
   renderedFeedback: {
@@ -1097,13 +1108,19 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { value
 updateRacingHud();
 
 app.onFrame(({ dt }) => {
+  // Freeze the complete solved state—not only the timer—while the evidence producer
+  // captures first contact. Continuing to advance Rapier beneath a held camera could
+  // briefly clear and re-enter the manifold, manufacturing a second impact on release.
+  if (collisionReviewContactHeld && vehicleImpactResponses > 0) return;
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   edgeRecoverySeconds = Math.max(0, edgeRecoverySeconds - step);
   vehicleImpactRecoverySeconds = Math.max(0, vehicleImpactRecoverySeconds - step);
   const vehicleHitStopActive = vehicleHitStopSeconds > 0
     && vehicleHitStopPlayerPoint !== null
     && vehicleHitStopOpponentPoint !== null;
-  vehicleHitStopSeconds = Math.max(0, vehicleHitStopSeconds - step);
+  if (!(collisionReviewContactHeld && vehicleImpactResponses > 0)) {
+    vehicleHitStopSeconds = Math.max(0, vehicleHitStopSeconds - step);
+  }
   input.update(step);
   if (input.pressed("reset")) {
     raceSnapshot = racingState.reset(0);
