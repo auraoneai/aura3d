@@ -2,8 +2,7 @@
 
 Version: 2.0.1
 
-Status: published to npm and GitHub on 2026-08-14; canonical website
-publication is verified as a separate go-live step
+Status: published to npm, GitHub, and the canonical website on 2026-08-14
 
 Aura3D 2.0.1 is a coordinated patch release across all 29 public packages. It
 retains the 2.0 public architecture and claim boundaries while correcting
