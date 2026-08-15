@@ -1,33 +1,39 @@
 import { describe, expect, it } from "vitest";
 import { LEVEL_PROOF_FRAMES, createSixtySecondLevelProof } from "../../../apps/showcase-skyline-runner/src/level-proof";
+import {
+  SKYLINE_AUTHORED_PLAYABLE_SECONDS,
+  SKYLINE_MAX_TARGET_PLAYABLE_SECONDS,
+  SKYLINE_MIN_PLAYABLE_SECONDS
+} from "../../../apps/showcase-skyline-runner/src/level";
 
 /**
- * The five-act Level 1 must physically complete inside a 120-180 second normal-play window.
- *
- * Duration cannot be shown in a screenshot, so it is proven by driving the public `game.platformer`
- * kit with the route's own asset-bound level across a full 3,600-frame window and asserting measured
- * values. Mirrors the Blockfall replay proof and the Turbo race proof.
+ * The five-act Level 1 must physically complete inside the shipped responsive window
+ * (70-115 seconds, 95 authored). Duration cannot be shown in a screenshot, so it is
+ * proven by driving the public `game.platformer` kit with the route's own asset-bound
+ * level across the 7,200-frame acceptance window and asserting measured values.
  *
  * Honesty boundary: this exercises the kit, not mounted browser playback.
  */
 describe("Skyline Runner full Level 1 proof", () => {
   const proof = createSixtySecondLevelProof();
 
-  it("simulates the full 180-second acceptance window deterministically", () => {
+  it("simulates the full 120-second acceptance window deterministically", () => {
     expect(proof.frames).toBe(LEVEL_PROOF_FRAMES);
-    expect(proof.simulatedSeconds).toBeCloseTo(180, 3);
+    expect(proof.simulatedSeconds).toBeCloseTo(LEVEL_PROOF_FRAMES / 60, 3);
     expect(proof.deterministic).toBe(true);
   });
 
-  it("sustains at least two minutes and completes before three minutes", () => {
-    expect(proof.minimumPlayableSeconds).toBe(120);
-    expect(proof.authoredPlayableSeconds).toBe(170);
+  it("sustains the authored floor and completes inside the responsive window", () => {
+    expect(proof.minimumPlayableSeconds).toBe(SKYLINE_MIN_PLAYABLE_SECONDS);
+    expect(proof.authoredPlayableSeconds).toBe(SKYLINE_AUTHORED_PLAYABLE_SECONDS);
     expect(proof.mechanics.sustainsMinimumDuration).toBe(true);
     expect(proof.mechanics.completionFallsInsideTargetWindow).toBe(true);
-    expect(proof.metrics.secondsPlayable).toBeGreaterThanOrEqual(120);
-    expect(proof.metrics.secondsPlayable).toBeLessThanOrEqual(180);
+    expect(proof.metrics.secondsPlayable).toBeGreaterThanOrEqual(SKYLINE_MIN_PLAYABLE_SECONDS);
+    expect(proof.metrics.secondsPlayable).toBeLessThanOrEqual(SKYLINE_MAX_TARGET_PLAYABLE_SECONDS);
     expect(proof.metrics.finalStatus).toBe("completed");
     expect(proof.metrics.finishFrame).not.toBeNull();
+    expect((proof.metrics.finishFrame ?? 0) / 60).toBeGreaterThanOrEqual(SKYLINE_MIN_PLAYABLE_SECONDS);
+    expect((proof.metrics.finishFrame ?? Number.POSITIVE_INFINITY) / 60).toBeLessThanOrEqual(SKYLINE_MAX_TARGET_PLAYABLE_SECONDS);
   });
 
   it("traverses the level under real locomotion rather than standing still", () => {

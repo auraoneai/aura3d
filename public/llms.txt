@@ -34,7 +34,7 @@ Claim boundary:
 - Do not claim performance parity from the hand-authored feature inventory or a stale visual capture. Comparative performance claims require current like-for-like reports with no missing evidence inputs.
 - A compiling route is not proof. Evidence must include typed asset provenance, route-health or equivalent diagnostics, and screenshots where the primary subject is readable.
 
-Release blockers from `docs/project/plans/recovery-remediation-prd.md`:
+Release integrity rules:
 - no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
 - no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization;
 - no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;

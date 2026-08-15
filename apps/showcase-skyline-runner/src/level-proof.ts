@@ -170,10 +170,10 @@ function simulate() {
       : false;
     const upcomingHazard = hazards.find((hazard) => {
       const distance = hazard.x - snapshot.player.x;
-      // At 1.1 units/second the 0.32-second jump apex lands roughly 0.35 units
-      // after launch. Triggering farther away puts the hero back below the
-      // sentry collider by the time their horizontal bounds overlap.
-      return distance >= 0 && distance <= 0.28;
+      // At the shipped 1.98 units/second a full hop travels about 0.6 units
+      // before apex. Launch when the sentry is still inside that window so the
+      // stomp lands on the body instead of walking into it.
+      return distance >= 0 && distance <= 0.62;
     });
     const routeJump = edgeDistance && (nextGap > 0.05 || risingStep);
     const wantJump = snapshot.player.grounded && (
@@ -187,7 +187,9 @@ function simulate() {
       // to pad a 13.8-second strip to 30 seconds; that measured the input policy, not the level.
       moveX: 1,
       jumpPressed: wantJump,
-      jumpHeld: wantJump || jumpCooldown > 84
+      // Hold through the first 14 frames of the 18-frame cooldown so the shipped
+      // variable-height jump reaches the authored stair and sentry tops.
+      jumpHeld: wantJump || jumpCooldown > 4
     });
 
     if (wantJump) jumpsLaunched += 1;

@@ -452,9 +452,23 @@ export async function createBrowserDracoDecoder(): Promise<GLTFDracoDecoder> {
   return browserDracoDecoderPromise;
 }
 
+const DRACO_DECODER_CANDIDATES = [
+  "/assets/draco/draco_decoder_nodejs.js",
+  "/node_modules/draco3d/draco_decoder_nodejs.js"
+] as const;
+
+async function resolveDracoDecoderUrls(): Promise<{ readonly scriptUrl: string; readonly wasmUrl: string }> {
+  for (const scriptPath of DRACO_DECODER_CANDIDATES) {
+    const scriptUrl = new URL(scriptPath, window.location.origin).href;
+    const wasmUrl = new URL(scriptPath.replace(/draco_decoder_nodejs\.js$/, "draco_decoder.wasm"), window.location.origin).href;
+    const response = await fetch(scriptUrl);
+    if (response.ok) return { scriptUrl, wasmUrl };
+  }
+  throw new Error(`Failed to load Draco decoder from ${DRACO_DECODER_CANDIDATES.join(", ")}`);
+}
+
 async function createBrowserDracoDecoderUncached(): Promise<GLTFDracoDecoder> {
-  const decoderScriptUrl = new URL("/node_modules/draco3d/draco_decoder_nodejs.js", window.location.origin).href;
-  const decoderWasmUrl = new URL("/node_modules/draco3d/draco_decoder.wasm", window.location.origin).href;
+  const { scriptUrl: decoderScriptUrl, wasmUrl: decoderWasmUrl } = await resolveDracoDecoderUrls();
   const response = await fetch(decoderScriptUrl);
   if (!response.ok) {
     throw new Error(`Failed to load Draco decoder: HTTP ${response.status}`);
