@@ -14,7 +14,7 @@ const previews = [
   },
   {
     id: "showcase-smart-city-control",
-    source: "tests/reports/showcase-interaction-audit/showcase-smart-city-control-desktop.png",
+    source: "tests/reports/production-catalog-audit/02-smart-city-control-room.png",
     target: "marketing/public/previews/showcase/showcase-smart-city-control-scene.png"
   },
   {
