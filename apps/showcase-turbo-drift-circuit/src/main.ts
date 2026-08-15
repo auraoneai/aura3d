@@ -238,7 +238,8 @@ const carChassisSpec = {
 const vehicleBoundaryInset = turboVehicleBoundaryInset({
   roadWidth: routeWidth,
   sceneScale: racingScene.transform.scale,
-  chassisHalfWidth: carChassisSpec.trackWidth / 2
+  chassisHalfWidth: carChassisSpec.trackWidth / 2,
+  wheelRadius: carChassisSpec.wheelRadius
 });
 // A recovery frame may retain a visible drift angle, but never a sideways/backwards heading that
 // makes the target-yaw chase camera orbit into the infield.
@@ -358,6 +359,7 @@ const passingLane = measureTurboPassingLane({
   playerCollisionWidth: heroFraming.subject.size[0] + 0.002,
   opponentCollisionWidth: opponentRenderedSize[0] + 0.002,
   playerChassisHalfWidth: carChassisSpec.trackWidth / 2,
+  wheelRadius: carChassisSpec.wheelRadius,
   passingMargin: 0.03
 });
 const opponentDriver = createVehicleDriverAi(driverRoute, {
@@ -385,6 +387,7 @@ const opponentAi = createTurboOpponentAi(opponentState, {
   catchUpStrength: 0.22,
   steeringGain: STEER_CORRECTION_GAIN,
   legalPassingOffset: passingLane.legalPassingOffset,
+  yieldEnabled: !collisionReviewCamera,
   // The route-local controller is retained only as the state container; every
   // decision now comes from the reusable driver.
   driver: opponentDriver
@@ -522,6 +525,15 @@ function orientedFootprintClearance(
   opponentPosition: AuraVec3,
   opponentYaw: number
 ): number {
+  return measureOrientedFootprint(playerPosition, playerYaw, opponentPosition, opponentYaw).clearance;
+}
+
+function measureOrientedFootprint(
+  playerPosition: AuraVec3,
+  playerYaw: number,
+  opponentPosition: AuraVec3,
+  opponentYaw: number
+): { readonly clearance: number; readonly axis: readonly [number, number]; readonly sign: number } {
   const playerHalfWidth = heroFraming.subject.size[0] / 2;
   const playerHalfLength = heroFraming.subject.size[2] / 2;
   const opponentHalfWidth = opponentRenderedSize[0] / 2;
@@ -540,11 +552,47 @@ function orientedFootprintClearance(
     halfLength: number
   ) => halfWidth * Math.abs(axis[0] * boxAxes[0][0] + axis[1] * boxAxes[0][1])
     + halfLength * Math.abs(axis[0] * boxAxes[1][0] + axis[1] * boxAxes[1][1]);
-  return Math.max(...[...playerAxes, ...opponentAxes].map((axis) =>
-    Math.abs(delta[0] * axis[0] + delta[1] * axis[1])
-      - projectionRadius(axis, playerAxes, playerHalfWidth, playerHalfLength)
-      - projectionRadius(axis, opponentAxes, opponentHalfWidth, opponentHalfLength)
-  ));
+  let clearance = Number.NEGATIVE_INFINITY;
+  let axis: readonly [number, number] = [1, 0];
+  let sign = 1;
+  for (const candidate of [...playerAxes, ...opponentAxes]) {
+    const projected = delta[0] * candidate[0] + delta[1] * candidate[1];
+    const separation = Math.abs(projected)
+      - projectionRadius(candidate, playerAxes, playerHalfWidth, playerHalfLength)
+      - projectionRadius(candidate, opponentAxes, opponentHalfWidth, opponentHalfLength);
+    if (separation > clearance) {
+      clearance = separation;
+      axis = candidate;
+      sign = projected >= 0 ? 1 : -1;
+    }
+  }
+  return { clearance, axis, sign };
+}
+
+function separateRenderedFootprints(
+  playerPosition: AuraVec3,
+  playerYaw: number,
+  opponentPosition: AuraVec3,
+  opponentYaw: number,
+  minClearance: number
+): { readonly player: AuraVec3; readonly opponent: AuraVec3 } {
+  let nextOpponent = opponentPosition;
+  for (let iteration = 0; iteration < 4; iteration += 1) {
+    const measurement = measureOrientedFootprint(
+      playerPosition,
+      playerYaw,
+      nextOpponent,
+      opponentYaw
+    );
+    if (measurement.clearance >= minClearance) break;
+    const push = minClearance - measurement.clearance;
+    nextOpponent = [
+      nextOpponent[0] + measurement.axis[0] * measurement.sign * push,
+      nextOpponent[1],
+      nextOpponent[2] + measurement.axis[1] * measurement.sign * push
+    ];
+  }
+  return { player: playerPosition, opponent: nextOpponent };
 }
 const initialPlayerContactPoint = racingScene.toScenePose(racingState.snapshot()).position;
 const initialOpponentContactPoint = racingScene.toScenePose(opponentAi.snapshot(), opponentRacingLineOffset).position;
@@ -575,6 +623,7 @@ let vehicleHitStopOpponentPoint: null | { readonly x: number; readonly y: number
 let pendingPlayerImpactHeading: number | null = null;
 let pendingOpponentImpactHeading: number | null = null;
 let vehicleHeadingKickApplied = false;
+let playerLeadHoldSeconds = 0;
 let lastVehicleImpact: null | {
   readonly frame: number;
   readonly relativeClosingSpeed: number;
@@ -1163,6 +1212,7 @@ app.onFrame(({ dt }) => {
     minimumRenderedEnvelopeClearance = Number.POSITIVE_INFINITY;
     vehicleImpactResponses = 0;
     lastVehicleImpact = null;
+    playerLeadHoldSeconds = 0;
     mountedEvidence.gameplay.playerOvertookOpponent = false;
     const resetOpponent = opponentAi.reset();
     mountedEvidence.gameplay.resetWorks = true;
@@ -1254,8 +1304,23 @@ app.onFrame(({ dt }) => {
   // Drive the Rapier bodies toward the authored steering poses. Rapier advances and
   // resolves the two solid masses; its positions then become gameplay state before
   // chassis grounding or rendering occurs.
-  const proposedPlayerPose = racingScene.toScenePose(raceSnapshot);
-  const proposedOpponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
+  const unconstrainedPlayerPose = racingScene.toScenePose(raceSnapshot);
+  const unconstrainedOpponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
+  const separatedFootprints = separateRenderedFootprints(
+    unconstrainedPlayerPose.position,
+    unconstrainedPlayerPose.rotation[1],
+    unconstrainedOpponentPose.position,
+    unconstrainedOpponentPose.rotation[1],
+    collisionReviewCamera ? -0.008 : 0.002
+  );
+  const proposedPlayerPose = {
+    ...unconstrainedPlayerPose,
+    position: separatedFootprints.player
+  };
+  const proposedOpponentPose = {
+    ...unconstrainedOpponentPose,
+    position: separatedFootprints.opponent
+  };
   // Keep each Rapier box aligned to the same presentation yaw as its rendered car.
   playerContactBody.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
   opponentContactBody.setRotation(yawQuaternion(proposedOpponentPose.rotation[1]));
@@ -1290,15 +1355,22 @@ app.onFrame(({ dt }) => {
   playerContactBody.setPosition([solvedPlayerBodyPosition[0], 0, solvedPlayerBodyPosition[2]]);
   playerContactBody.setVelocity([solvedPlayerBodyVelocity[0], 0, solvedPlayerBodyVelocity[2]]);
   playerContactBody.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
-  opponentContactBody.setPosition([solvedOpponentBodyPosition[0], 0, solvedOpponentBodyPosition[2]]);
+  const postStepSeparation = separateRenderedFootprints(
+    proposedPlayerPose.position,
+    proposedPlayerPose.rotation[1],
+    [solvedOpponentBodyPosition[0], 0, solvedOpponentBodyPosition[2]],
+    proposedOpponentPose.rotation[1],
+    collisionReviewCamera ? -0.008 : 0.002
+  );
+  opponentContactBody.setPosition(postStepSeparation.opponent);
   opponentContactBody.setVelocity([solvedOpponentBodyVelocity[0], 0, solvedOpponentBodyVelocity[2]]);
   opponentContactBody.setRotation(yawQuaternion(proposedOpponentPose.rotation[1]));
   minimumRenderedEnvelopeClearance = Math.min(
     minimumRenderedEnvelopeClearance,
     orientedFootprintClearance(
-      playerContactBody.position,
+      proposedPlayerPose.position,
       proposedPlayerPose.rotation[1],
-      opponentContactBody.position,
+      postStepSeparation.opponent,
       proposedOpponentPose.rotation[1]
     )
   );
@@ -1339,11 +1411,19 @@ app.onFrame(({ dt }) => {
     : undefined;
   const solvedPlayerGamePoint = racingScene.toGamePoint(playerContactBody.position[0], playerContactBody.position[2]);
   const solvedOpponentGamePoint = racingScene.toGamePoint(opponentContactBody.position[0], opponentContactBody.position[2]);
-  raceSnapshot = racingState.resolveContact(solvedPlayerGamePoint, {
-    speedMultiplier: playerContactSpeedMultiplier,
-    driftMultiplier: 1
-  });
+  raceSnapshot = racingState.resolveContact(
+    collisionReviewCamera ? solvedPlayerGamePoint : raceSnapshot.position,
+    {
+      speedMultiplier: playerContactSpeedMultiplier,
+      driftMultiplier: 1
+    }
+  );
   opponent = opponentAi.resolveContact(solvedOpponentGamePoint, opponentContactSpeedMultiplier);
+  if (collisionReviewCamera && vehicleContactBegan) {
+    raceSnapshot = racingState.placeAtProgress(raceSnapshot.progress, 0);
+    const line = racingLine.sampleAt(opponent.progress);
+    opponent = opponentAi.resolveContact({ x: line.x, y: line.y }, opponentContactSpeedMultiplier);
+  }
   if (vehicleContactBegan && activeVehicleContact) {
     vehicleImpactRecoverySeconds = directRearImpact ? 0.2 : 0.1;
     vehicleImpactResponses += 1;
@@ -1579,9 +1659,12 @@ app.onFrame(({ dt }) => {
   mountedEvidence.gameplay.opponentMovesIndependently ||= opponent.progress !== previousOpponent.progress &&
     mountedEvidence.opponent.decisionCount > 0;
   const wrappedLead = ((raceSnapshot.progress - opponent.progress + 1.5) % 1) - 0.5;
-  mountedEvidence.gameplay.playerOvertookOpponent ||= wrappedLead > 0.004
-    && !raceSnapshot.offTrack
-    && !opponent.offTrack;
+  if (wrappedLead > 0.006 && !raceSnapshot.offTrack && !opponent.offTrack) {
+    playerLeadHoldSeconds += step;
+  } else {
+    playerLeadHoldSeconds = 0;
+  }
+  mountedEvidence.gameplay.playerOvertookOpponent ||= playerLeadHoldSeconds >= 1.2;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   recordRacingKitEvents(raceSnapshot.events);

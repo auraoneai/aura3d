@@ -188,6 +188,10 @@ function resolveRequest(root: string, pathname: string): string | undefined {
 
   if (normalizedPath === "/" || normalizedPath === ".") {
     candidates.push(join(root, "examples", "00-basic-triangle", "index.html"));
+  } else if (normalizedPath.startsWith("assets/draco/") || normalizedPath.startsWith("/assets/draco/")) {
+    const decoderFile = normalizedPath.replace(/^[/\\]?assets[/\\]draco[/\\]/, "");
+    candidates.push(join(root, "marketing", "public", "assets", "draco", decoderFile));
+    candidates.push(join(root, "node_modules", "draco3d", decoderFile));
   } else if (normalizedPath.startsWith("aura-assets/") || normalizedPath.startsWith("/aura-assets/")) {
     candidates.push(join(root, "public", normalizedPath.replace(/^[/\\]?/, "")));
     candidates.push(join(root, "templates", "product-viewer", "public", normalizedPath.replace(/^[/\\]?/, "")));

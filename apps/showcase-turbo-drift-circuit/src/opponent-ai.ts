@@ -75,6 +75,7 @@ export interface TurboOpponentAiConfig {
   readonly cruiseRatio?: number;
   readonly catchUpStrength?: number;
   readonly legalPassingOffset?: number;
+  readonly yieldEnabled?: boolean;
   /**
    * Proportional gain for returning to the racing line. Scale this with the route's
    * width: a gain tuned for a wide kart circuit under-corrects on a narrow one.
@@ -168,12 +169,19 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
    * The route-local fallback cannot: it only nulls present lateral offset.
    */
   function decideWithDriver(dt: number, driver: TurboOpponentDriver, playerSignedOffset = 0, playerProgress = 0): TurboOpponentInput {
-    const yieldDecision = decideTurboOpponentYield({
-      wrappedPlayerGap: wrappedGap(playerProgress, snapshot.progress),
-      playerSignedOffset,
-      opponentSignedOffset: snapshot.signedTrackOffset,
-      legalPassingOffset: config.legalPassingOffset ?? 0.06
-    });
+    const yieldDecision = config.yieldEnabled === false
+      ? {
+        preferredSignedOffset: 0,
+        passingSide: "left" as const,
+        yielding: false,
+        mode: "racing-line" as const
+      }
+      : decideTurboOpponentYield({
+        wrappedPlayerGap: wrappedGap(playerProgress, snapshot.progress),
+        playerSignedOffset,
+        opponentSignedOffset: snapshot.signedTrackOffset,
+        legalPassingOffset: config.legalPassingOffset ?? 0.06
+      });
     lastPreferredSignedOffset = yieldDecision.preferredSignedOffset;
     lastYielding = yieldDecision.yielding;
     const decision = driver.decide(dt, {

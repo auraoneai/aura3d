@@ -6,6 +6,7 @@ export interface TurboPassingLaneInput {
   readonly playerCollisionWidth: number;
   readonly opponentCollisionWidth: number;
   readonly playerChassisHalfWidth: number;
+  readonly wheelRadius?: number;
   readonly passingMargin: number;
 }
 
@@ -46,16 +47,26 @@ export function turboVehicleBoundaryInset(input: {
   readonly roadWidth: number;
   readonly sceneScale: number;
   readonly chassisHalfWidth: number;
+  readonly wheelRadius?: number;
 }): number {
   const chassisInsetGame = turboSceneToGame(input.chassisHalfWidth, input.sceneScale);
-  return Math.min(input.roadWidth * 0.36, chassisInsetGame);
+  const wheelInsetGame = turboSceneToGame(input.wheelRadius ?? 0, input.sceneScale);
+  // Convert the rendered half-track and tyre radius into game units. Mixing those
+  // scene-unit lengths into this min() previously collapsed the corridor to a few
+  // centimetres and made a pass physically impossible. Keep enough extra reserve
+  // that an outside tyre cannot hang over the extracted Tsukuba verge while the
+  // vehicle centre is still logically on-road.
+  const tyreReserve = chassisInsetGame + wheelInsetGame;
+  const meshReserve = input.roadWidth * 0.34;
+  return Math.min(input.roadWidth * 0.42, Math.max(tyreReserve, meshReserve));
 }
 
 export function measureTurboPassingLane(input: TurboPassingLaneInput): TurboPassingLaneMetrics {
   const inset = turboVehicleBoundaryInset({
     roadWidth: input.roadWidth,
     sceneScale: input.sceneScale,
-    chassisHalfWidth: input.playerChassisHalfWidth
+    chassisHalfWidth: input.playerChassisHalfWidth,
+    ...(input.wheelRadius === undefined ? {} : { wheelRadius: input.wheelRadius })
   });
   const halfWidth = input.roadWidth * 0.5;
   const vehicleCenterHalfWidth = Math.max(0, halfWidth - Math.min(inset, halfWidth * 0.95));

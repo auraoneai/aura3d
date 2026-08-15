@@ -37,4 +37,10 @@ describe("threejsParity advanced gallery route architecture containment", () => 
     expect(authoredLayerPolicies).toContain('assetId === "reactor-command-center-blender"');
     expect(authoredLayerPolicies).toContain('assetId === "product-configurator-studio-blender"');
   });
+
+  it("loads Draco from a deployable public path instead of only node_modules", () => {
+    const authoredLayer = readFileSync("apps/advanced-examples-gallery/src/authoredLayer.ts", "utf8");
+    expect(authoredLayer).toContain("/assets/draco/draco_decoder_nodejs.js");
+    expect(authoredLayer).toContain("DRACO_DECODER_CANDIDATES");
+  });
 });

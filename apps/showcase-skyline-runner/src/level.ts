@@ -205,7 +205,7 @@ export function createSkylineLevel() {
       coyoteMs: skylineMotion.coyoteMs,
       jumpBufferMs: skylineMotion.jumpBufferMs,
       fallGravityMultiplier: skylineMotion.fallGravityMultiplier,
-      jumpReleaseScale: 0.45,
+      jumpReleaseScale: 0.72,
       lives: 3
     }
   });

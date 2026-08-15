@@ -907,6 +907,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
   let body = createBody();
   let events: GamePlatformerEvent[] = [];
   const defeatedHazards = new Set<string>();
+  let jumpReleaseApplied = false;
 
   const syncPlayerFromBody = () => {
     const next = body.snapshot();
@@ -962,6 +963,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       ridingPlatformId: undefined
     };
     body = createBody();
+    jumpReleaseApplied = false;
     // Ignore held directional input briefly after a death so a key that caused
     // the miss cannot immediately carry the fresh spawn off its supporting
     // surface before the player or an automated driver can react.
@@ -985,6 +987,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         state = createPlatformerState(config);
         body = createBody();
         defeatedHazards.clear();
+        jumpReleaseApplied = false;
         emit("reset");
         return snapshot();
       }
@@ -1028,11 +1031,18 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       }
       if (body.consumeJump(config.jumpVelocity)) {
         state.player.ridingPlatformId = undefined;
+        jumpReleaseApplied = false;
         emit("jump");
       }
-      if (input.jumpHeld === false && body.velocity[1] > config.jumpVelocity * 0.35) {
+      if (
+        input.jumpHeld === false
+        && !jumpReleaseApplied
+        && body.velocity[1] > config.jumpVelocity * 0.35
+      ) {
         body.velocity = [body.velocity[0], body.velocity[1] * config.jumpReleaseScale, body.velocity[2]];
+        jumpReleaseApplied = true;
       }
+      if (body.grounded) jumpReleaseApplied = false;
       if (body.velocity[1] < 0 && config.fallGravityMultiplier > 1) {
         body.velocity = [
           body.velocity[0],

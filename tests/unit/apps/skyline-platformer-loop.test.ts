@@ -79,4 +79,37 @@ describe("skyline platformer loop", () => {
     expect([...seen]).toEqual(expect.arrayContaining(["stomp"]));
     expect(stompState.lives).toBe(3);
   });
+
+  it("keeps a tap jump high enough to clear the opening stair step", () => {
+    const kit = game.platformer({
+      start: { x: 0.2, y: 0.42 },
+      playerSize: [0.2, SKYLINE_CHARACTER_HEIGHT],
+      platforms: [
+        { id: "ground", x: -1, y: 0, width: 2.4, height: 0.2 },
+        { id: "step", x: 1.3, y: 0.34, width: 1.6, height: 0.2 }
+      ],
+      finish: { x: 2.4, y: 0.7 },
+      moveSpeed: skylineMotion.moveSpeed,
+      jumpVelocity: skylineMotion.jumpVelocity,
+      gravity: skylineMotion.gravity,
+      jumpReleaseScale: 0.72,
+      fallGravityMultiplier: skylineMotion.fallGravityMultiplier,
+      coyoteMs: skylineMotion.coyoteMs,
+      jumpBufferMs: skylineMotion.jumpBufferMs,
+      lives: 3
+    });
+    let snapshot = kit.snapshot();
+    for (let frame = 0; frame < 8; frame += 1) {
+      snapshot = kit.step(1 / 60, { moveX: 0 });
+    }
+    expect(snapshot.player.grounded).toBe(true);
+    snapshot = kit.step(1 / 60, { moveX: 1, jumpPressed: true, jumpHeld: true });
+    let peakY = snapshot.player.y;
+    for (let frame = 0; frame < 24; frame += 1) {
+      snapshot = kit.step(1 / 60, { moveX: 1, jumpHeld: false });
+      peakY = Math.max(peakY, snapshot.player.y);
+    }
+    expect(peakY).toBeGreaterThan(0.72);
+    expect(snapshot.deaths).toBe(0);
+  });
 });

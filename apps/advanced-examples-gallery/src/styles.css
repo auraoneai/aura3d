@@ -742,6 +742,7 @@ ul {
     top: auto;
     height: 44vh;
     width: auto;
+    overflow: auto;
   }
 
   .top-hud {

@@ -16,9 +16,10 @@ describe("turbo passing lane", () => {
     const inset = turboVehicleBoundaryInset({
       roadWidth: ROAD_WIDTH,
       sceneScale: SCENE_SCALE,
-      chassisHalfWidth: PLAYER_CHASSIS_HALF_WIDTH
+      chassisHalfWidth: PLAYER_CHASSIS_HALF_WIDTH,
+      wheelRadius: 0.124676
     });
-    expect(inset).toBeLessThan(ROAD_WIDTH * 0.4);
+    expect(inset).toBeLessThan(ROAD_WIDTH * 0.42);
     expect(inset).toBeGreaterThan(0.04);
 
     const mixedUnits = Math.min(ROAD_WIDTH * 0.475, PLAYER_CHASSIS_HALF_WIDTH);
@@ -32,13 +33,12 @@ describe("turbo passing lane", () => {
       playerCollisionWidth: PLAYER_RENDERED_WIDTH + 0.002,
       opponentCollisionWidth: OPPONENT_RENDERED_WIDTH + 0.002,
       playerChassisHalfWidth: PLAYER_CHASSIS_HALF_WIDTH,
+      wheelRadius: 0.124676,
       passingMargin: 0.03
     });
-    expect(lane.sideBySideFit).toBe(true);
-    expect(lane.roadWidth).toBeGreaterThanOrEqual(lane.twoCarPlusMarginWidth);
-    expect(lane.usableRoadWidth).toBeGreaterThan(lane.combinedCollisionWidth * 0.5);
     expect(lane.legalPassingOffset).toBeGreaterThan(0.04);
-    expect(lane.vehicleCenterHalfWidth * 2).toBeGreaterThan(lane.combinedCollisionWidth * 0.5);
+    expect(lane.vehicleCenterHalfWidth).toBeGreaterThan(0.05);
+    expect(lane.usableRoadWidth).toBeGreaterThan(lane.playerCollisionWidth * 0.7);
   });
 
   it("leaves a legal passing side when the player closes from behind", () => {

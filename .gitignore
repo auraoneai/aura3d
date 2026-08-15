@@ -265,6 +265,7 @@ site/
 # Build artifacts
 *.wasm
 *.wasm.map
+!marketing/public/assets/draco/*.wasm
 release-artifacts/external-demos/
 
 # Generated files

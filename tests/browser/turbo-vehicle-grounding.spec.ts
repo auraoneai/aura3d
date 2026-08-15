@@ -362,8 +362,11 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
         opponent?: { progress?: number };
         vehicleContact?: { active?: boolean; currentPenetration?: number };
       } | undefined>)[name];
-      return value?.gameplay?.playerOvertookOpponent === true;
-    }, GLOBAL_NAME, { timeout: 90_000, polling: "raf" });
+      const player = Number(value?.raceState?.progress ?? 0);
+      const rival = Number(value?.opponent?.progress ?? 1);
+      const lead = ((player - rival + 1.5) % 1) - 0.5;
+      return value?.gameplay?.playerOvertookOpponent === true && lead > 0.006;
+    }, GLOBAL_NAME, { timeout: 120_000, polling: "raf" });
 
     await page.screenshot({ path: join(REPORT_DIR, "turbo-overtake-pass-complete.png") });
     await page.waitForTimeout(1200);
@@ -375,7 +378,7 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
     const contact = evidence.vehicleContact as { currentPenetration?: number };
     expect(gameplay.playerOvertookOpponent).toBe(true);
     expect(Number(raceState.progress)).toBeGreaterThan(Number(opponent.progress));
-    expect(raceState.offTrack).toBe(false);
+    expect(raceState.roadAlignment?.onRoad ?? gameplay.carAlignedToVisibleRoad).toBe(true);
     expect(Number(contact.currentPenetration ?? 0)).toBeLessThan(0.04);
     expect(consoleErrors, consoleErrors.join("\n")).toEqual([]);
   } finally {
