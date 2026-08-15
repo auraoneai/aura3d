@@ -2,16 +2,16 @@
   "schema": "aura3d.marketing-final-previews/1.0",
   "status": "machine-reviewed-human-approval-pending",
   "approvalNote": "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
-  "generatedAt": "2026-08-15T16:59:00.000Z",
+  "generatedAt": "2026-08-15T17:05:00.000Z",
   "previews": [
     {
       "id": "showcase-product-configurator",
-      "source": "tests/reports/production-catalog-audit/01-product-configurator-studio.png",
+      "source": "marketing/public/previews/source/product-studio-headphones.png",
       "target": "marketing/public/previews/showcase/showcase-product-configurator.png",
       "width": 1440,
       "height": 900,
-      "sha256": "12b68722a0ee4fe204501082f7930c8f25477137a22d93d815778fc75e4d3571",
-      "bytes": 169348
+      "sha256": "4c9d6b13d29cb224afac94ad8a6dffc67c759b3a58588cc5c44692d248a7bf0c",
+      "bytes": 126526
     },
     {
       "id": "showcase-smart-city-control",
