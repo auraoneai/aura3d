@@ -369,26 +369,50 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
     await page.keyboard.down("KeyW");
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, {
-        opponent?: { signedPlayerGap?: number };
-        raceState?: { roadAlignment?: { onRoad?: boolean } };
+        opponent?: { signedPlayerGap?: number; onAsphalt?: boolean; onRoad?: boolean; offTrack?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number };
+        raceState?: { roadAlignment?: { onAsphalt?: boolean; onRoad?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number } };
       } | undefined>)[name];
       const gap = Number(value?.opponent?.signedPlayerGap ?? 0);
-      return gap > -0.08 && gap < -0.008 && value?.raceState?.roadAlignment?.onRoad === true;
+      const player = value?.raceState?.roadAlignment;
+      const rival = value?.opponent;
+      const playerHalf = Number(player?.visualAsphaltHalfWidth ?? 0);
+      const rivalHalf = Number(rival?.visualAsphaltHalfWidth ?? 0);
+      const bothOnAsphalt = player?.onAsphalt === true
+        && rival?.onAsphalt === true
+        && player?.onRoad === true
+        && rival?.onRoad === true
+        && rival?.offTrack !== true
+        && Number(player?.outerEdge ?? 1) <= playerHalf + 1e-4
+        && Number(rival?.outerEdge ?? 1) <= rivalHalf + 1e-4
+        && Math.abs(Number(player?.signedTrackOffset ?? 1)) + Number(player?.bodyHalfWidth ?? 1) <= playerHalf + 1e-4
+        && Math.abs(Number(rival?.signedTrackOffset ?? 1)) + Number(rival?.bodyHalfWidth ?? 1) <= rivalHalf + 1e-4;
+      return gap > -0.08 && gap < -0.008 && bothOnAsphalt;
     }, GLOBAL_NAME, { timeout: 40_000, polling: "raf" });
     await shot("approach");
 
     await page.keyboard.down("KeyD");
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, {
-        opponent?: { signedPlayerGap?: number; onRoad?: boolean; offTrack?: boolean; yielding?: boolean };
-        raceState?: { roadAlignment?: { onRoad?: boolean } };
+        opponent?: { signedPlayerGap?: number; onAsphalt?: boolean; onRoad?: boolean; offTrack?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number };
+        raceState?: { roadAlignment?: { onAsphalt?: boolean; onRoad?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number } };
         vehicleContact?: { currentPenetration?: number; currentRenderedEnvelopeClearance?: number };
       } | undefined>)[name];
       const gap = Math.abs(Number(value?.opponent?.signedPlayerGap ?? 1));
+      const player = value?.raceState?.roadAlignment;
+      const rival = value?.opponent;
+      const playerHalf = Number(player?.visualAsphaltHalfWidth ?? 0);
+      const rivalHalf = Number(rival?.visualAsphaltHalfWidth ?? 0);
+      const bothOnAsphalt = player?.onAsphalt === true
+        && rival?.onAsphalt === true
+        && player?.onRoad === true
+        && rival?.onRoad === true
+        && rival?.offTrack !== true
+        && Number(player?.outerEdge ?? 1) <= playerHalf + 1e-4
+        && Number(rival?.outerEdge ?? 1) <= rivalHalf + 1e-4
+        && Math.abs(Number(player?.signedTrackOffset ?? 1)) + Number(player?.bodyHalfWidth ?? 1) <= playerHalf + 1e-4
+        && Math.abs(Number(rival?.signedTrackOffset ?? 1)) + Number(rival?.bodyHalfWidth ?? 1) <= rivalHalf + 1e-4;
       return gap <= 0.018
-        && value?.raceState?.roadAlignment?.onRoad === true
-        && value?.opponent?.onRoad === true
-        && value?.opponent?.offTrack !== true
+        && bothOnAsphalt
         && Number(value?.vehicleContact?.currentPenetration ?? 0) < 0.04
         && Number(value?.vehicleContact?.currentRenderedEnvelopeClearance ?? 0) > -0.04;
     }, GLOBAL_NAME, { timeout: 20_000, polling: "raf" });
@@ -398,18 +422,29 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, {
         gameplay?: { playerOvertookOpponent?: boolean };
-        raceState?: { progress?: number; roadAlignment?: { onRoad?: boolean } };
-        opponent?: { progress?: number; onRoad?: boolean; offTrack?: boolean };
+        raceState?: { progress?: number; roadAlignment?: { onAsphalt?: boolean; onRoad?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number } };
+        opponent?: { progress?: number; onAsphalt?: boolean; onRoad?: boolean; offTrack?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number };
         vehicleContact?: { currentPenetration?: number; currentRenderedEnvelopeClearance?: number };
       } | undefined>)[name];
       const player = Number(value?.raceState?.progress ?? 0);
       const rival = Number(value?.opponent?.progress ?? 1);
       const lead = ((player - rival + 1.5) % 1) - 0.5;
+      const alignment = value?.raceState?.roadAlignment;
+      const rivalState = value?.opponent;
+      const playerHalf = Number(alignment?.visualAsphaltHalfWidth ?? 0);
+      const rivalHalf = Number(rivalState?.visualAsphaltHalfWidth ?? 0);
+      const bothOnAsphalt = alignment?.onAsphalt === true
+        && rivalState?.onAsphalt === true
+        && alignment?.onRoad === true
+        && rivalState?.onRoad === true
+        && rivalState?.offTrack !== true
+        && Number(alignment?.outerEdge ?? 1) <= playerHalf + 1e-4
+        && Number(rivalState?.outerEdge ?? 1) <= rivalHalf + 1e-4
+        && Math.abs(Number(alignment?.signedTrackOffset ?? 1)) + Number(alignment?.bodyHalfWidth ?? 1) <= playerHalf + 1e-4
+        && Math.abs(Number(rivalState?.signedTrackOffset ?? 1)) + Number(rivalState?.bodyHalfWidth ?? 1) <= rivalHalf + 1e-4;
       return value?.gameplay?.playerOvertookOpponent === true
         && lead > 0.006
-        && value?.raceState?.roadAlignment?.onRoad === true
-        && value?.opponent?.onRoad === true
-        && value?.opponent?.offTrack !== true
+        && bothOnAsphalt
         && Number(value?.vehicleContact?.currentPenetration ?? 0) < 0.04
         && Number(value?.vehicleContact?.currentRenderedEnvelopeClearance ?? 0) > -0.04;
     }, GLOBAL_NAME, { timeout: 90_000, polling: "raf" });
@@ -419,11 +454,26 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
 
     const evidence = await readEvidence(page);
     const gameplay = evidence.gameplay as { playerOvertookOpponent?: boolean };
-    const raceState = evidence.raceState as { progress?: number; roadAlignment?: { onRoad?: boolean } };
+    const raceState = evidence.raceState as {
+      progress?: number;
+      roadAlignment?: {
+        onAsphalt?: boolean;
+        onRoad?: boolean;
+        outerEdge?: number;
+        visualAsphaltHalfWidth?: number;
+        bodyHalfWidth?: number;
+        signedTrackOffset?: number;
+      };
+    };
     const opponent = evidence.opponent as {
       progress?: number;
+      onAsphalt?: boolean;
       onRoad?: boolean;
       offTrack?: boolean;
+      outerEdge?: number;
+      visualAsphaltHalfWidth?: number;
+      bodyHalfWidth?: number;
+      signedTrackOffset?: number;
     };
     const contact = evidence.vehicleContact as {
       currentPenetration?: number;
@@ -432,9 +482,15 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
     const lead = ((Number(raceState.progress) - Number(opponent.progress) + 1.5) % 1) - 0.5;
     expect(gameplay.playerOvertookOpponent).toBe(true);
     expect(lead).toBeGreaterThan(0.006);
+    expect(raceState.roadAlignment?.onAsphalt, "player body must stay on grey asphalt").toBe(true);
+    expect(opponent.onAsphalt, "rival body must stay on grey asphalt").toBe(true);
     expect(raceState.roadAlignment?.onRoad).toBe(true);
     expect(opponent.onRoad).toBe(true);
     expect(opponent.offTrack).toBe(false);
+    expect(Number(raceState.roadAlignment?.outerEdge ?? 1))
+      .toBeLessThanOrEqual(Number(raceState.roadAlignment?.visualAsphaltHalfWidth ?? 0) + 1e-4);
+    expect(Number(opponent.outerEdge ?? 1))
+      .toBeLessThanOrEqual(Number(opponent.visualAsphaltHalfWidth ?? 0) + 1e-4);
     expect(Number(contact.currentPenetration ?? 0)).toBeLessThan(0.04);
     expect(Number(contact.currentRenderedEnvelopeClearance ?? 0)).toBeGreaterThan(-0.04);
     expect(consoleErrors, consoleErrors.join("\n")).toEqual([]);

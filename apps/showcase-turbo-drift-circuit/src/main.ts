@@ -24,7 +24,13 @@ import { assets } from "../../../src/aura-assets";
 import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
 import { createTurboOpponentAi } from "./opponent-ai";
-import { measureTurboPassingLane, turboVehicleBoundaryInset } from "./passing-lane";
+import {
+  measureTurboPassingLane,
+  turboBodyOnAsphalt,
+  turboMaxAsphaltOffset,
+  turboVehicleBoundaryInset,
+  turboVisualAsphaltWidth
+} from "./passing-lane";
 
 const trackTopology = gameGeometryContract.topology;
 const routeGeometry = gameGeometryContract.route;
@@ -88,7 +94,7 @@ const STEER_CORRECTION_GAIN = Number((2 / Math.max(0.05, routeGeometry.width / 2
  */
 const SCENE_SIZE = 39.097;
 /** Longest-axis size the car model is fit to. */
-const CAR_TARGET_MAX_DIMENSION = 1.1;
+const CAR_TARGET_MAX_DIMENSION = 0.96;
 /**
  * The car's height once fit to `CAR_TARGET_MAX_DIMENSION`, derived from the typed manifest.
  *
@@ -239,7 +245,8 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
   roadWidth: routeWidth,
   sceneScale: racingScene.transform.scale,
   chassisHalfWidth: carChassisSpec.trackWidth / 2,
-  wheelRadius: carChassisSpec.wheelRadius
+  wheelRadius: carChassisSpec.wheelRadius,
+  renderedHalfWidth: heroFraming.subject.size[0] / 2
 });
 // A recovery frame may retain a visible drift angle, but never a sideways/backwards heading that
 // makes the target-yaw chase camera orbit into the infield.
@@ -344,7 +351,7 @@ const driverRoute: DriverRoute = {
     return { x: sample.x, y: sample.y, heading: sample.heading };
   }
 };
-const opponentTargetMaxDimension = 1.04;
+const opponentTargetMaxDimension = 0.91;
 const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.showcaseCcByFormulaOpponent.bounds);
 const opponentRenderedSize: AuraVec3 = [
   assets.showcaseCcByFormulaOpponent.bounds[0] * opponentAssetScale,
@@ -360,7 +367,7 @@ const passingLane = measureTurboPassingLane({
   opponentCollisionWidth: opponentRenderedSize[0] + 0.002,
   playerChassisHalfWidth: carChassisSpec.trackWidth / 2,
   wheelRadius: carChassisSpec.wheelRadius,
-  passingMargin: 0.03
+  passingMargin: 0.02
 });
 const opponentDriver = createVehicleDriverAi(driverRoute, {
   maxSpeed: gameplayMaxSpeed,
@@ -387,6 +394,10 @@ const opponentAi = createTurboOpponentAi(opponentState, {
   catchUpStrength: 0.22,
   steeringGain: STEER_CORRECTION_GAIN,
   legalPassingOffset: passingLane.legalPassingOffset,
+  maxAsphaltOffset: turboMaxAsphaltOffset({
+    bodyHalfWidth: passingLane.opponentRenderedWidth / 2,
+    visualAsphaltHalfWidth: turboVisualAsphaltWidth(routeWidth) / 2
+  }),
   yieldEnabled: !collisionReviewCamera,
   // The route-local controller is retained only as the state container; every
   // decision now comes from the reusable driver.
@@ -919,15 +930,31 @@ const routeProof = {
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
-function roadAlignmentForSnapshot(snapshot: typeof raceSnapshot) {
-  const roadHalfWidth = routeWidth / 2;
-  const normalizedOffset = Math.abs(snapshot.trackOffset) / Math.max(roadHalfWidth, 0.001);
+const visualAsphaltWidth = turboVisualAsphaltWidth(routeWidth);
+const visualAsphaltHalfWidth = visualAsphaltWidth / 2;
+const playerBodyHalfWidth = passingLane.playerRenderedWidth / 2;
+const opponentBodyHalfWidth = passingLane.opponentRenderedWidth / 2;
+function asphaltAlignment(signedTrackOffset: number, bodyHalfWidth: number) {
+  const outerEdge = Math.abs(signedTrackOffset) + bodyHalfWidth;
+  const onAsphalt = turboBodyOnAsphalt({
+    signedTrackOffset,
+    bodyHalfWidth,
+    visualAsphaltHalfWidth
+  });
   return {
-    trackOffset: round(snapshot.trackOffset),
-    roadHalfWidth: round(roadHalfWidth),
-    normalizedOffset: round(normalizedOffset),
-    onRoad: normalizedOffset <= 1
+    trackOffset: round(Math.abs(signedTrackOffset)),
+    signedTrackOffset: round(signedTrackOffset),
+    roadHalfWidth: round(routeWidth / 2),
+    visualAsphaltHalfWidth: round(visualAsphaltHalfWidth),
+    bodyHalfWidth: round(bodyHalfWidth),
+    outerEdge: round(outerEdge),
+    normalizedOffset: round(outerEdge / Math.max(visualAsphaltHalfWidth, 0.001)),
+    onAsphalt,
+    onRoad: onAsphalt
   };
+}
+function roadAlignmentForSnapshot(snapshot: typeof raceSnapshot) {
+  return asphaltAlignment(snapshot.signedTrackOffset, playerBodyHalfWidth);
 }
 /**
  * Live subject-framing evidence. Everything here is derived from the mounted
@@ -1244,7 +1271,17 @@ app.onFrame(({ dt }) => {
     opponentContactBody.setPosition([resetOpponentPose.position[0], 0, resetOpponentPose.position[2]]);
     opponentContactBody.setRotation(yawQuaternion(resetOpponentPose.rotation[1]));
     opponentContactBody.setVelocity([0, 0, 0]);
-    mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
+    const resetOpponentAsphalt = asphaltAlignment(resetOpponent.signedTrackOffset, opponentBodyHalfWidth);
+    mountedEvidence.opponent = {
+      ...opponentAi.evidence(raceSnapshot.progress),
+      onRoad: resetOpponentAsphalt.onAsphalt,
+      onAsphalt: resetOpponentAsphalt.onAsphalt,
+      offTrack: resetOpponent.offTrack || !resetOpponentAsphalt.onAsphalt,
+      signedTrackOffset: resetOpponentAsphalt.signedTrackOffset,
+      bodyHalfWidth: resetOpponentAsphalt.bodyHalfWidth,
+      outerEdge: resetOpponentAsphalt.outerEdge,
+      visualAsphaltHalfWidth: resetOpponentAsphalt.visualAsphaltHalfWidth
+    };
     updateRacingHud();
     return;
   }
@@ -1545,7 +1582,17 @@ app.onFrame(({ dt }) => {
   mountedEvidence.speed = raceSnapshot.speed;
   mountedEvidence.lap = raceSnapshot.lap;
   mountedEvidence.checkpoint = raceSnapshot.checkpoint;
-  mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
+  const opponentAsphalt = asphaltAlignment(opponent.signedTrackOffset, opponentBodyHalfWidth);
+  mountedEvidence.opponent = {
+    ...opponentAi.evidence(raceSnapshot.progress),
+    onRoad: opponentAsphalt.onAsphalt,
+    onAsphalt: opponentAsphalt.onAsphalt,
+    offTrack: opponent.offTrack || !opponentAsphalt.onAsphalt,
+    signedTrackOffset: opponentAsphalt.signedTrackOffset,
+    bodyHalfWidth: opponentAsphalt.bodyHalfWidth,
+    outerEdge: opponentAsphalt.outerEdge,
+    visualAsphaltHalfWidth: opponentAsphalt.visualAsphaltHalfWidth
+  };
   mountedEvidence.vehicleContact = {
     system: "game.collisionWorld:Rapier",
     shape: "rendered-footprint-oriented-box",
@@ -1663,7 +1710,13 @@ app.onFrame(({ dt }) => {
   mountedEvidence.gameplay.opponentMovesIndependently ||= opponent.progress !== previousOpponent.progress &&
     mountedEvidence.opponent.decisionCount > 0;
   const wrappedLead = ((raceSnapshot.progress - opponent.progress + 1.5) % 1) - 0.5;
-  if (wrappedLead > 0.006 && !raceSnapshot.offTrack && !opponent.offTrack) {
+  if (
+    wrappedLead > 0.006
+    && !raceSnapshot.offTrack
+    && !opponent.offTrack
+    && asphaltAlignment(raceSnapshot.signedTrackOffset, playerBodyHalfWidth).onAsphalt
+    && opponentAsphalt.onAsphalt
+  ) {
     playerLeadHoldSeconds += step;
   } else {
     playerLeadHoldSeconds = 0;

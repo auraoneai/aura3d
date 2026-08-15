@@ -75,6 +75,7 @@ export interface TurboOpponentAiConfig {
   readonly cruiseRatio?: number;
   readonly catchUpStrength?: number;
   readonly legalPassingOffset?: number;
+  readonly maxAsphaltOffset?: number;
   readonly yieldEnabled?: boolean;
   /**
    * Proportional gain for returning to the racing line. Scale this with the route's
@@ -180,7 +181,8 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
         wrappedPlayerGap: wrappedGap(playerProgress, snapshot.progress),
         playerSignedOffset,
         opponentSignedOffset: snapshot.signedTrackOffset,
-        legalPassingOffset: config.legalPassingOffset ?? 0.06
+        legalPassingOffset: config.legalPassingOffset ?? 0.06,
+        ...(config.maxAsphaltOffset === undefined ? {} : { maxAsphaltOffset: config.maxAsphaltOffset })
       });
     lastPreferredSignedOffset = yieldDecision.preferredSignedOffset;
     lastYielding = yieldDecision.yielding;

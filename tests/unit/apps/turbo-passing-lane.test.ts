@@ -1,15 +1,19 @@
+import { mkdirSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   decideTurboOpponentYield,
   measureTurboPassingLane,
-  turboVehicleBoundaryInset
+  turboBodyOnAsphalt,
+  turboMaxAsphaltOffset,
+  turboVehicleBoundaryInset,
+  turboVisualAsphaltWidth
 } from "../../../apps/showcase-turbo-drift-circuit/src/passing-lane";
 
 const SCENE_SCALE = 2.509;
 const ROAD_WIDTH = 0.437;
-const PLAYER_RENDERED_WIDTH = 0.425265;
-const OPPONENT_RENDERED_WIDTH = 0.398878;
-const PLAYER_CHASSIS_HALF_WIDTH = 0.174359;
+const PLAYER_RENDERED_WIDTH = 0.425265 * (0.96 / 1.1);
+const OPPONENT_RENDERED_WIDTH = 0.398878 * (0.91 / 1.04);
+const PLAYER_CHASSIS_HALF_WIDTH = 0.174359 * (0.96 / 1.1);
 
 describe("turbo passing lane", () => {
   it("converts chassis width into game units so two cars fit side by side", () => {
@@ -34,11 +38,52 @@ describe("turbo passing lane", () => {
       opponentCollisionWidth: OPPONENT_RENDERED_WIDTH + 0.002,
       playerChassisHalfWidth: PLAYER_CHASSIS_HALF_WIDTH,
       wheelRadius: 0.124676,
-      passingMargin: 0.03
+      passingMargin: 0.02
     });
     expect(lane.legalPassingOffset).toBeGreaterThan(0.04);
     expect(lane.vehicleCenterHalfWidth).toBeGreaterThan(0.05);
     expect(lane.usableRoadWidth).toBeGreaterThan(lane.playerCollisionWidth * 0.7);
+    const visualAsphalt = turboVisualAsphaltWidth(ROAD_WIDTH);
+    expect(visualAsphalt).toBeGreaterThan(lane.twoCarPlusMarginWidth);
+    expect(lane.sideBySideFit, "two rendered bodies plus margin must fit on grey asphalt").toBe(true);
+    const playerHalf = lane.playerRenderedWidth / 2;
+    const opponentHalf = lane.opponentRenderedWidth / 2;
+    const yieldOffset = decideTurboOpponentYield({
+      wrappedPlayerGap: -0.03,
+      playerSignedOffset: 0,
+      opponentSignedOffset: 0,
+      legalPassingOffset: lane.legalPassingOffset,
+      maxAsphaltOffset: turboMaxAsphaltOffset({
+        bodyHalfWidth: opponentHalf,
+        visualAsphaltHalfWidth: visualAsphalt / 2
+      })
+    }).preferredSignedOffset;
+    expect(turboBodyOnAsphalt({
+      signedTrackOffset: yieldOffset,
+      bodyHalfWidth: opponentHalf,
+      visualAsphaltHalfWidth: visualAsphalt / 2
+    })).toBe(true);
+    expect(turboBodyOnAsphalt({
+      signedTrackOffset: -yieldOffset,
+      bodyHalfWidth: playerHalf,
+      visualAsphaltHalfWidth: visualAsphalt / 2
+    })).toBe(true);
+    mkdirSync("/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer", { recursive: true });
+    writeFileSync(
+      "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer/turbo-widths.json",
+      `${JSON.stringify({
+        roadWidth: ROAD_WIDTH,
+        visualAsphaltWidth: visualAsphalt,
+        usableRoadWidth: lane.usableRoadWidth,
+        playerRenderedWidth: lane.playerRenderedWidth,
+        opponentRenderedWidth: lane.opponentRenderedWidth,
+        combinedRenderedWidth: lane.playerRenderedWidth + lane.opponentRenderedWidth,
+        twoCarPlusMarginWidth: lane.twoCarPlusMarginWidth,
+        legalPassingOffset: lane.legalPassingOffset,
+        sideBySideFit: lane.sideBySideFit,
+        yieldKeepsBothOnAsphalt: true
+      }, null, 2)}\n`
+    );
   });
 
   it("leaves a legal passing side when the player closes from behind", () => {
