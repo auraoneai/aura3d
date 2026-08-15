@@ -75,7 +75,7 @@ interface MutableBatch {
 const DISTRICTS: readonly SmartCityDistrict[] = ["north", "harbor", "core", "industrial"];
 
 /** Authored Tokyo district occupies the hero volume. Overlay pillars stay outside it. */
-export const SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS = 1.72;
+export const SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS = 2.15;
 export const SMART_CITY_OVERLAY_MAX_WIDTH = 0.042;
 export const SMART_CITY_OVERLAY_MAX_HEIGHT = 0.62;
 
@@ -210,8 +210,12 @@ function createTrafficBatches(time: number, columns: number, spacing: number): S
       const phase = (time * (0.22 + lane * 0.006) + car / perLane + hash01(lane * 71 + car * 13) * 0.14) % 1;
       const p = (phase - 0.5) * extent * 2.15;
       const scale = car % 5 === 0 ? [0.18, 0.058, 0.095] as const : [0.12, 0.046, 0.074] as const;
-      pushMatrix(eastWest, [p, -0.325 + (lane % 2) * 0.012, offset], scale, [0, 0, 0]);
-      pushMatrix(northSouth, [offset, -0.315 + (lane % 3) * 0.01, -p], [scale[2], scale[1], scale[0]], [0, Math.PI / 2, 0]);
+      if (Math.hypot(p, offset) >= SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.2) {
+        pushMatrix(eastWest, [p, -0.325 + (lane % 2) * 0.012, offset], scale, [0, 0, 0]);
+      }
+      if (Math.hypot(offset, -p) >= SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.2) {
+        pushMatrix(northSouth, [offset, -0.315 + (lane % 3) * 0.01, -p], [scale[2], scale[1], scale[0]], [0, Math.PI / 2, 0]);
+      }
     }
   }
   return [
@@ -618,6 +622,7 @@ function createSingleItems(
   for (let i = 0; i < 10; i += 1) {
     const lane = -extent * 0.52 + i * (extent * 1.04 / 9);
     const sweep = ((time * (0.2 + i * 0.007) + i * 0.13) % 1 - 0.5) * extent * 1.9;
+    if (Math.hypot(sweep, lane) < SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.35) continue;
     singles.push({
       geometry: "capsule",
       material: i % 2 === 0 ? "cyanGlow" : "amberGlow",
