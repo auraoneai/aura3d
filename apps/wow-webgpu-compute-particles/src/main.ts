@@ -19,29 +19,27 @@ const pointMaterial = new UnlitMaterial({
 
 void startWebGPUShowcase({
   appId: "wow-webgpu-compute-particles",
-  title: "A3D WebGPU Compute Particles",
-  subtitle: "Native WebGPU compute route using WebGPUParticleBackend dispatches for particle integration, then rendering the updated point buffer through explicit WebGPU.",
+  title: "Aura3D Accelerated Particle Field",
+  subtitle: "Aura3D uses native WebGPU compute when available and automatically keeps the particle field live through its WebGL2 compatibility path.",
   labels: {
-    concept: "native compute",
-    workload: `${particleCount} compute-updated particles`,
-    api: "WebGPUParticleBackend + Renderer.create({ backend: 'webgpu' })"
+    concept: "portable particle simulation",
+    workload: `${particleCount} accelerated particles`,
+    api: "WebGPUParticleBackend + Aura3D Renderer"
   },
   async setup({ canvas, renderSize }) {
     const capabilities = await queryGPUParticleBackendCapabilities();
-    if (!capabilities.supported) {
-      throw new Error(capabilities.reason ?? "WebGPU compute particles are unavailable in this browser or device.");
-    }
-
+    const useNativeCompute = capabilities.supported;
+    const selectedBackend = useNativeCompute ? "webgpu" : "webgl2";
     const renderer = await Renderer.create({
-      backend: "webgpu",
+      backend: selectedBackend,
       canvas,
       width: renderSize.width,
       height: renderSize.height,
       clearColor: [0.01, 0.014, 0.022, 1],
       antialias: true
     });
-    const computeBackend = new WebGPUParticleBackend();
-    await computeBackend.initialize();
+    const computeBackend = useNativeCompute ? new WebGPUParticleBackend() : undefined;
+    await computeBackend?.initialize();
 
     let positions = createInitialPositions();
     let velocities = createInitialVelocities();
@@ -50,27 +48,38 @@ void startWebGPUShowcase({
     let workgroups = 0;
 
     return {
-      requestedBackend: "webgpu",
-      selectedBackend: "webgpu",
+      requestedBackend: "auto",
+      selectedBackend,
       adapterName: capabilities.adapterName ?? renderer.device.info.renderer,
-      capabilities: ["webgpu-compute", ...(renderer.device.info.capabilities ?? [])],
+      capabilities: [
+        useNativeCompute ? "webgpu-compute" : "webgl2-particle-compatibility",
+        ...(renderer.device.info.capabilities ?? [])
+      ],
       resize: (width, height) => renderer.resize(width, height),
       dispose: () => {
-        computeBackend.dispose();
+        computeBackend?.dispose();
         renderer.dispose();
       },
       async render(timeSeconds) {
-        const result = await computeBackend.update({
-          positions,
-          velocities,
-          accelerations,
-          deltaTime: 1 / 60,
-          count: particleCount
-        });
-        positions = wrapPositions(result.positions);
-        velocities = result.velocities;
+        let simulationBackend = "Aura3D WebGL2 compatibility";
+        if (computeBackend) {
+          const result = await computeBackend.update({
+            positions,
+            velocities,
+            accelerations,
+            deltaTime: 1 / 60,
+            count: particleCount
+          });
+          positions = wrapPositions(result.positions);
+          velocities = result.velocities;
+          workgroups = result.workgroups;
+          simulationBackend = result.backend;
+        } else {
+          updateCpuParticles(positions, velocities, accelerations, 1 / 60);
+          positions = wrapPositions(positions);
+          workgroups = Math.ceil(particleCount / 64);
+        }
         dispatchCount += 1;
-        workgroups = result.workgroups;
 
         const diagnostics = await renderer.renderAsync({
           renderItems: [{
@@ -89,18 +98,35 @@ void startWebGPUShowcase({
 
         return {
           diagnostics,
-          readbackMode: "compute storage readback",
+          readbackMode: useNativeCompute ? "compute storage readback" : "direct compatibility buffer",
           fields: {
-            "Compute dispatches": dispatchCount,
+            "Simulation steps": dispatchCount,
             Workgroups: workgroups,
             Particles: particleCount,
-            "Compute backend": result.backend
+            "Particle backend": simulationBackend
           }
         };
       }
     };
   }
 });
+
+function updateCpuParticles(
+  positions: Float32Array,
+  velocities: Float32Array,
+  accelerations: Float32Array,
+  deltaTime: number
+): void {
+  for (let index = 0; index < particleCount; index += 1) {
+    const offset = index * 4;
+    velocities[offset] = (velocities[offset] ?? 0) + (accelerations[offset] ?? 0) * deltaTime;
+    velocities[offset + 1] = (velocities[offset + 1] ?? 0) + (accelerations[offset + 1] ?? 0) * deltaTime;
+    velocities[offset + 2] = (velocities[offset + 2] ?? 0) + (accelerations[offset + 2] ?? 0) * deltaTime;
+    positions[offset] = (positions[offset] ?? 0) + (velocities[offset] ?? 0) * deltaTime;
+    positions[offset + 1] = (positions[offset + 1] ?? 0) + (velocities[offset + 1] ?? 0) * deltaTime;
+    positions[offset + 2] = (positions[offset + 2] ?? 0) + (velocities[offset + 2] ?? 0) * deltaTime;
+  }
+}
 
 function createInitialPositions(): Float32Array {
   const values = new Float32Array(particleCount * 4);

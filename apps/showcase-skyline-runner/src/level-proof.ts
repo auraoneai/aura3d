@@ -7,12 +7,12 @@ import {
 } from "./level";
 
 /**
- * Deterministic two-minute acceptance proof for the five-act Level 1.
+ * Deterministic responsive-course acceptance proof for the five-act Level 1.
  *
  * FS-103 requires "at least 30 seconds of asset-aligned level duration and a 60-second" review run.
  * Duration is not observable in a screenshot and a mounted browser session cannot be replayed
  * deterministically, so the claim is proven by driving the *public* `game.platformer` kit with the
- * route's own asset-bound level over the full 10,800-frame acceptance window and recording
+ * route's own asset-bound level over the full 7,200-frame acceptance window and recording
  * the exact physical finish frame.
  *
  * This mirrors the Blockfall replay proof and the Turbo race proof, and carries the same boundary:
@@ -21,7 +21,7 @@ import {
  * suite covers separately.
  */
 
-/** Two minutes at 60 Hz: enough to cover the responsive completion window. */
+/** Two minutes at 60 Hz: enough to cover the 115-second responsive completion ceiling. */
 export const LEVEL_PROOF_FRAMES = 7200;
 const STEP_SECONDS = 1 / 60;
 
@@ -71,7 +71,7 @@ export interface SkylineLevelProof {
 const createProofLevel = createSkylineLevel;
 
 /**
- * Runs the level for the full 120-second acceptance window and reports only observed values.
+ * Runs the level for the full 120-second proof window and reports only observed values.
  *
  * The input policy is deterministic and deliberately simple: run right, and jump when grounded and
  * either blocked or approaching a gap. Because it is competent but not optimal it produces real
@@ -192,7 +192,7 @@ function simulate() {
 
     if (wantJump) jumpsLaunched += 1;
     // Completed/failed snapshots are frozen terminal states, not locomotion frames. Counting the
-    // remainder of the 180-second audit window as airborne made the grounding ratio depend on how
+    // remainder of the proof window as airborne made the grounding ratio depend on how
     // early a course finished rather than on the traversal itself.
     if (snapshot.status === "playing") {
       if (snapshot.player.grounded) {

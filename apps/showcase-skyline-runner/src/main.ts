@@ -954,7 +954,7 @@ const mountedEvidence = {
     estimatedSessionSeconds: solvedMotion.estimatedSessionSeconds,
     invariants: level.assetBinding.motionReport,
     // Physical course length now owns duration. The deterministic public-kit proof
-    // must reach the real finish between 120 and 180 seconds; no post-finish timer can
+    // must reach the real finish between 70 and 115 seconds; no post-finish timer can
     // satisfy this field or `completionProof`.
     sessionLengthProof: {
       targetSeconds: SKYLINE_AUTHORED_PLAYABLE_SECONDS,

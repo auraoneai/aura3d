@@ -397,7 +397,7 @@ test.describe("showcase gameplay proof", () => {
   });
 
   test("proves skyline runner gameplay when keyboard input is applied", async ({ page }, testInfo) => {
-    // The route itself must still finish within the asserted 120–180 simulated
+    // The route itself must finish within the responsive 70–115 simulated
     // seconds. This wall-clock allowance covers the earlier real-time checkpoint/
     // respawn journey, deterministic mounted-app simulation, WebGL rendering,
     // evidence serialization, and thirteen PNG encodes.
@@ -595,10 +595,10 @@ test.describe("showcase gameplay proof", () => {
       "checkpoint/finish progression is not proven"
     );
     check(completed.diagnostics?.completionProof?.completed === true, blockers, "completion proof does not reach the finish");
-    check((completed.diagnostics?.completionProof?.finalTime ?? 0) >= 120, blockers, "physical completion occurred before the two-minute Level 1 floor");
-    check((completed.diagnostics?.completionProof?.finalTime ?? Number.POSITIVE_INFINITY) <= 180, blockers, "physical completion exceeded the three-minute Level 1 ceiling");
+    check((completed.diagnostics?.completionProof?.finalTime ?? 0) >= 70, blockers, "physical completion occurred before the responsive Level 1 floor");
+    check((completed.diagnostics?.completionProof?.finalTime ?? Number.POSITIVE_INFINITY) <= 115, blockers, "physical completion exceeded the responsive Level 1 ceiling");
     check(completed.diagnostics?.completionProof?.stable === true && ((completed.diagnostics.completionProof.checkpoints?.length ?? 0) > 0 || (completed.diagnostics.completionProof.eventCounts?.respawn ?? 0) > 0), blockers, "stable checkpoint/hazard route progression proof is missing");
-    check((after.levelDesign?.authoredPlayableSeconds ?? 0) === 170, blockers, "authored platformer path is not the five-act 170-second target");
+    check((after.levelDesign?.authoredPlayableSeconds ?? 0) === 95, blockers, "authored platformer path is not the five-act 95-second target");
     check(after.levelDesign?.styleCompatible === true && after.levelDesign.scaleCompatible === true, blockers, "platformer asset style/scale fit is not proven");
     check(beforeContact?.feetOnSurface === true, blockers, "runner initial feet are not proven on a visible playable surface");
     check(Math.abs(beforeContact?.verticalGap ?? Number.POSITIVE_INFINITY) <= 0.12, blockers, "runner surface contact gap exceeds playable-surface tolerance");

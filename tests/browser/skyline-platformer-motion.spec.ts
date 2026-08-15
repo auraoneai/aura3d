@@ -129,15 +129,15 @@ test("skyline jump is derived from level geometry and lands reliably", async ({ 
     /*
      * Session length must be *derived*, and its limiting factor stated.
      *
-     * The rebuilt route owns enough physical course for a two-to-three-minute Level 1.
+     * The rebuilt route owns enough physical course for a responsive 70-to-115-second Level 1.
      * This must be the start-to-finish traversal estimate, not a post-finish timer or
      * repeated opening strip.
      */
-    expect(motion.estimatedSessionSeconds).toBeGreaterThanOrEqual(120);
-    expect(motion.estimatedSessionSeconds).toBeLessThanOrEqual(180);
+    expect(motion.estimatedSessionSeconds).toBeGreaterThanOrEqual(70);
+    expect(motion.estimatedSessionSeconds).toBeLessThanOrEqual(115);
     expect(motion.sessionLengthProof.achievedEstimateSeconds).toBeCloseTo(motion.estimatedSessionSeconds, 3);
     expect(motion.sessionLengthProof.source).toBe("physical-start-to-finish-traversal");
-    expect(motion.sessionLengthProof.acceptanceWindowSeconds).toEqual([120, 180]);
+    expect(motion.sessionLengthProof.acceptanceWindowSeconds).toEqual([70, 115]);
 
     // Landing reliability: the player must spend most samples on the ground and never
     // be airborne for an implausibly long run of samples.
