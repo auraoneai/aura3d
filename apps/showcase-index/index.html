@@ -20,17 +20,39 @@
     </nav>
     <main class="shell">
       <header class="masthead">
-        <div>
+        <div class="masthead-copy">
           <p class="eyebrow">Built with Aura3D 2.0.1</p>
-          <h1>Launch the apps. Play the games. Inspect the code.</h1>
-          <p class="intro">Thirty-six live browser 3D experiences—from product configurators and digital twins to racing, platforming, physics, animation, particles, water, materials, and WebGPU experiments.</p>
+          <h1>See what Aura3D can build.</h1>
+          <p class="intro">Explore thirty-six live browser 3D experiences—from product configurators and digital twins to racing, platforming, physics, animation, particles, water, materials, and GPU experiments.</p>
+          <div class="hero-actions">
+            <a class="hero-primary" href="#featured-title">Explore the gallery <span>↓</span></a>
+            <a class="hero-secondary" href="/docs/agent-quickstart.html">Build your first scene <span>↗</span></a>
+          </div>
         </div>
-        <aside class="status-panel" aria-label="Portfolio status">
-          <span class="status-pill">36 live experiences</span>
-          <span class="status-pill">4 playable games</span>
-          <span class="status-pill">Typed assets · physics · animation · interaction</span>
+        <aside class="hero-gallery" aria-label="Featured Aura3D experiences">
+          <a class="hero-shot hero-shot--primary" href="/apps/showcase-turbo-drift-circuit/">
+            <img src="/previews/showcase-index/06-turbo-drift-circuit.webp" alt="Turbo Drift Circuit gameplay with two Formula cars on the track" width="720" height="450" fetchpriority="high">
+            <span><b>Playable game</b> Turbo Drift Circuit</span>
+          </a>
+          <a class="hero-shot hero-shot--secondary" href="/apps/showcase-product-configurator/">
+            <img src="/previews/showcase-index/01-product-configurator-studio.webp" alt="Interactive Aura3D product configurator" width="720" height="450" fetchpriority="high">
+            <span>Product Studio</span>
+          </a>
+          <a class="hero-shot hero-shot--tertiary" href="/apps/showcase-smart-city-control/">
+            <img src="/previews/showcase-index/02-smart-city-control-room.webp" alt="Aura3D smart city command scene" width="720" height="450">
+            <span>Smart City</span>
+          </a>
         </aside>
       </header>
+
+      <div class="portfolio-strip" aria-label="Portfolio highlights">
+        <span><strong>36</strong> live experiences</span>
+        <span><strong>4</strong> playable games</span>
+        <span>Typed assets</span>
+        <span>Physics</span>
+        <span>Animation</span>
+        <span>Interaction</span>
+      </div>
 
       <section class="catalog-section" aria-labelledby="featured-title">
         <div class="section-head"><div><p class="eyebrow">Featured</p><h2 id="featured-title">Apps and interactive showcases</h2></div><p>Production-shaped experiences built around typed assets, application state, controls, and deployable routes.</p></div>

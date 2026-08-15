@@ -161,6 +161,80 @@ const apps = [
 const publicApps = apps.filter((entry) => entry.publicShowcase);
 const routes = publicApps.map((entry) => entry.route);
 
+const previewNames = [
+  "product-configurator-studio",
+  "smart-city-control-room",
+  "cinematic-architecture-tour",
+  "digital-twin-operations-center",
+  "blockfall-reactor",
+  "turbo-drift-circuit",
+  "skyline-runner",
+  "aura-clash-arena",
+  "interactive-water-lab",
+  "ocean-surface-showcase",
+  "cinematic-post-pipeline",
+  "smart-city-stress-test",
+  "ai-data-galaxy",
+  "concept-car-configurator",
+  "animated-robotics-lab",
+  "physics-manipulation-lab",
+  "fog-cathedral",
+  "factory-digital-twin",
+  "gltf-material-variants",
+  "obj-loader",
+  "texture-anisotropy",
+  "depth-outline",
+  "trackball-controls",
+  "geometry-draw-range",
+  "interactive-picking",
+  "multiple-camera-views",
+  "webxr-interactions",
+  "simple-transforms",
+  "expressive-robot-rig",
+  "avocado-texture-lab",
+  "material-spheres",
+  "accelerated-particle-field",
+  "tokyo-keyframes",
+  "damaged-helmet-detail",
+  "concept-car-cinema",
+  "advanced-gallery-console"
+] as const;
+
+const experienceLabels = [
+  "Product", "Operations", "Architecture", "Digital twin", "Playable game", "Playable game",
+  "Playable game", "Playable game", "Simulation", "Environment", "Post pipeline", "Stress test",
+  "Data", "Product", "Animation", "Physics", "Environment", "Digital twin", "Asset loading",
+  "Asset loading", "Textures", "Postprocess", "Controls", "Geometry", "Interaction", "Cameras",
+  "XR", "Scene basics", "Animation", "Materials", "Materials", "GPU", "Animation", "Materials",
+  "Automotive", "Gallery"
+] as const;
+
+document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, index) => {
+  const title = card.querySelector("strong")?.textContent?.trim() ?? `Aura3D experience ${index + 1}`;
+  const description = card.querySelector("small");
+  const media = document.createElement("figure");
+  media.className = "showcase-card__media";
+
+  const image = document.createElement("img");
+  image.src = `/previews/showcase-index/${String(index + 1).padStart(2, "0")}-${previewNames[index]}.webp`;
+  image.alt = `${title} live preview`;
+  image.width = 720;
+  image.height = 450;
+  image.loading = index < 4 ? "eager" : "lazy";
+  image.decoding = "async";
+
+  const label = document.createElement("span");
+  label.className = "showcase-card__label";
+  label.textContent = experienceLabels[index];
+  media.append(image, label);
+  card.insertBefore(media, description ?? null);
+
+  const launch = document.createElement("em");
+  launch.className = "showcase-card__launch";
+  launch.innerHTML = "Open live experience <span aria-hidden=\"true\">↗</span>";
+  card.append(launch);
+});
+
 window.__AURA3D_SHOWCASE_INDEX__ = {
   status: "ready",
   appCount: publicApps.length,

@@ -343,7 +343,10 @@ const driverRoute: DriverRoute = {
 };
 const opponentDriver = createVehicleDriverAi(driverRoute, {
   maxSpeed: gameplayMaxSpeed,
-  paceFraction: 0.93,
+  // Leave a real performance window for the player. At 93% the rival exited every
+  // corner at nearly the player's maximum pace; once its solid body occupied the
+  // racing line, contact recovery made a clean overtake practically impossible.
+  paceFraction: 0.82,
   // Look-ahead is the whole point: at pace the driver plans roughly a car-length-
   // scaled distance up the road rather than reacting to where it already is.
   lookAheadSeconds: 1.15,
@@ -1294,15 +1297,19 @@ app.onFrame(({ dt }) => {
     && Math.abs(raceSnapshot.trackOffset - opponent.trackOffset) <= routeWidth * 0.12;
   // A rear impact transfers momentum: the striking car loses pace while the rival
   // is pushed forward. Slowing both by the same factor made them remain glued together.
-  const playerContactSpeedMultiplier = vehicleContactBegan ? (directRearImpact ? 0.38 : 0.72) : 1;
-  const opponentContactSpeedMultiplier = vehicleContactBegan ? (directRearImpact ? 1.55 : 0.9) : 1;
+  // Contact must be readable without functioning as a penalty wall. Preserve enough
+  // player momentum to pull alongside after a bump and keep the recovery brief. The
+  // former 0.38 player multiplier plus 650 ms throttle lock made overtaking impossible
+  // in practice even after Rapier had already separated the cars.
+  const playerContactSpeedMultiplier = vehicleContactBegan ? (directRearImpact ? 0.5 : 0.86) : 1;
+  const opponentContactSpeedMultiplier = vehicleContactBegan ? (directRearImpact ? 1.55 : 0.94) : 1;
   // A direct rear impact must change more than two speed numbers. The struck car
   // visibly yaws away from the line while the player recoils in the opposite
   // direction; those headings persist after the hit-stop and produce a readable
   // lateral trajectory change in the reaction frame.
   const impactSide = Math.sin(raceSnapshot.progress * Math.PI * 2) >= 0 ? 1 : -1;
   const playerImpactHeading = directRearImpact
-    ? playerHeadingBeforeContact - impactSide * 0.14
+    ? playerHeadingBeforeContact - impactSide * 0.07
     : undefined;
   const opponentImpactHeading = directRearImpact
     ? opponentHeadingBeforeContact + impactSide * 0.34
@@ -1315,12 +1322,12 @@ app.onFrame(({ dt }) => {
   });
   opponent = opponentAi.resolveContact(solvedOpponentGamePoint, opponentContactSpeedMultiplier);
   if (vehicleContactBegan && activeVehicleContact) {
-    vehicleImpactRecoverySeconds = directRearImpact ? 0.65 : 0.28;
+    vehicleImpactRecoverySeconds = directRearImpact ? 0.2 : 0.1;
     vehicleImpactResponses += 1;
     // A brief physical hit-stop holds the exact solved bumper-contact pose long
     // enough for the player—and the screenshot gate—to perceive impact before the
     // transferred momentum opens the gap. No decorative flash substitutes for it.
-    vehicleHitStopSeconds = directRearImpact ? 0.14 : 0.07;
+    vehicleHitStopSeconds = directRearImpact ? 0.08 : 0.045;
     vehicleHitStopPlayerPoint = solvedPlayerGamePoint;
     vehicleHitStopOpponentPoint = solvedOpponentGamePoint;
     pendingPlayerImpactHeading = playerImpactHeading ?? null;

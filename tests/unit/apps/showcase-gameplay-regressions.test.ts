@@ -238,6 +238,9 @@ describe("public showcase gameplay regressions", () => {
     const source = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
     expect(source).toContain("const gameplayPaceMultiplier = 4");
     expect(source).toContain("Speed · km/h");
+    expect(source).toContain("paceFraction: 0.82");
+    expect(source).toContain("directRearImpact ? 0.5 : 0.86");
+    expect(source).toContain("directRearImpact ? 0.2 : 0.1");
   });
 
   it("drives the Turbo opponent from its own racing state instead of a player-progress offset", () => {
