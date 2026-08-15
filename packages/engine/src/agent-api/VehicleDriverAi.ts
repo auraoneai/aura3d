@@ -55,6 +55,8 @@ export interface DriverVehicleState {
   readonly signedTrackOffset: number;
   readonly position: { readonly x: number; readonly y: number };
   readonly offTrack: boolean;
+  /** Signed racing-line offset the driver should hold, in game units. */
+  readonly preferredSignedOffset?: number;
 }
 
 export interface DriverInput {
@@ -216,7 +218,8 @@ export function createVehicleDriverAi(route: DriverRoute, config: DriverConfig):
     const steerFromHeading = clamp(headingError * headingGain, -1, 1);
     // Lateral error normalized by road width, so a gain tuned on a wide circuit
     // does not under-correct on a narrow one.
-    const steerFromLine = clamp((-state.signedTrackOffset / halfWidth) * lineGain, -1, 1);
+    const lineError = state.signedTrackOffset - (state.preferredSignedOffset ?? 0);
+    const steerFromLine = clamp((-lineError / halfWidth) * lineGain, -1, 1);
 
     // Racing-line variation keeps two AI cars from tracing the same path, and is
     // deterministic so it does not make a race unreproducible.

@@ -106,7 +106,7 @@ describe("threejsParity advanced gallery route policies", () => {
     expect(fog.bounds).toEqual({ min: [-2.65, -0.82, -3.35], max: [2.65, 2.42, 1.45] });
   });
 
-  it("keeps smart-city fly camera policy separate from hero camera policy", () => {
+  it("applies smart-city flythrough motion on top of hero and district framing", () => {
     const fly = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "smart-city",
       cameraPreset: "wide",
@@ -114,7 +114,7 @@ describe("threejsParity advanced gallery route policies", () => {
       controls: { fly: true }
     }));
     expect(fly.yawRadians).toBeCloseTo(0.4 + Math.sin(2.2) * 0.34, 6);
-    expect(fly.pitchRadians).toBeCloseTo(-0.3 + Math.sin(1.7) * 0.08, 6);
+    expect(fly.pitchRadians).toBeCloseTo(-0.2 + Math.sin(1.7) * 0.08, 6);
     expect(fly.paddingRatio).toBe(0.24);
 
     const hero = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
@@ -123,8 +123,8 @@ describe("threejsParity advanced gallery route policies", () => {
       time: 10,
       controls: { fly: true }
     }));
-    expect(hero.yawRadians).toBe(-0.72);
-    expect(hero.pitchRadians).toBe(-0.21);
+    expect(hero.yawRadians).toBeCloseTo(-0.72 + Math.sin(2.2) * 0.34, 6);
+    expect(hero.pitchRadians).toBeCloseTo(-0.21 + Math.sin(1.7) * 0.08, 6);
     expect(hero.paddingRatio).toBe(0.045);
   });
 
@@ -179,7 +179,8 @@ describe("threejsParity advanced gallery route policies", () => {
       "shore rocks",
       "unsupported decoration",
       "data pulse route",
-      "instanced district tower",
+      "district load hologram",
+      "debug grid",
       "workstation",
       "lab floor"
     ]);
@@ -190,7 +191,8 @@ describe("threejsParity advanced gallery route policies", () => {
     ]);
     expect(labels(visibleProceduralItemsForRoute(scene, "smart-city", readyAuthored()))).toEqual([
       "data pulse route",
-      "instanced district tower"
+      "district load hologram",
+      "debug grid"
     ]);
     expect(labels(visibleProceduralItemsForRoute(scene, "robotics-lab", readyAuthored()))).toEqual(["lab floor"]);
     expect(labels(visibleProceduralItemsForRoute(scene, "robotics-lab", loadingAuthored()))).toEqual(scene.items.map((item) => String(item.label)));

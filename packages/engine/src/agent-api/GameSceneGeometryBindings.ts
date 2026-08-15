@@ -187,6 +187,7 @@ export interface GameRacingPresentationCameraOptions {
   readonly lookAhead?: number;
   readonly target?: Vec3;
   readonly fov?: number;
+  readonly smoothing?: number;
 }
 
 export interface GameRacingCameraRigOptions extends Omit<GameRacingPresentationCameraOptions, "mode"> {
@@ -497,12 +498,12 @@ export function createGameRacingPresentationCamera(options: GameRacingPresentati
       mode: "follow",
       targetNode: options.targetNode,
       offset: [roundScene(sideOffset), roundScene(height), roundScene(-distance)],
-      targetOffset: [0, 0.18, 0],
+      targetOffset: [0, 0.18, roundScene(lookAhead * 0.18)],
       offsetMode: "target-yaw",
       target: [0, 0.2, 0],
       distance,
       fov: options.fov ?? 44,
-      smoothing: 0.06,
+      smoothing: options.smoothing ?? 0.045,
       subjectEmphasis: 0.78
     };
   }

@@ -24,6 +24,7 @@ import { assets } from "../../../src/aura-assets";
 import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
 import { createTurboOpponentAi } from "./opponent-ai";
+import { measureTurboPassingLane, turboVehicleBoundaryInset } from "./passing-lane";
 
 const trackTopology = gameGeometryContract.topology;
 const routeGeometry = gameGeometryContract.route;
@@ -234,10 +235,11 @@ const carChassisSpec = {
  * certified half-width.  This leaves a small but real steering corridor and still lets a
  * deliberate steering input cross it and emit the retained off-track/recovery event.
  */
-const vehicleBoundaryInset = Math.min(
-  routeWidth * 0.475,
-  carChassisSpec.trackWidth / 2 + carChassisSpec.wheelRadius
-);
+const vehicleBoundaryInset = turboVehicleBoundaryInset({
+  roadWidth: routeWidth,
+  sceneScale: racingScene.transform.scale,
+  chassisHalfWidth: carChassisSpec.trackWidth / 2
+});
 // A recovery frame may retain a visible drift angle, but never a sideways/backwards heading that
 // makes the target-yaw chase camera orbit into the infield.
 const recoveryHeadingLimit = Math.PI / 90;
@@ -341,6 +343,23 @@ const driverRoute: DriverRoute = {
     return { x: sample.x, y: sample.y, heading: sample.heading };
   }
 };
+const opponentTargetMaxDimension = 1.04;
+const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.showcaseCcByFormulaOpponent.bounds);
+const opponentRenderedSize: AuraVec3 = [
+  assets.showcaseCcByFormulaOpponent.bounds[0] * opponentAssetScale,
+  assets.showcaseCcByFormulaOpponent.bounds[1] * opponentAssetScale,
+  assets.showcaseCcByFormulaOpponent.bounds[2] * opponentAssetScale
+];
+const passingLane = measureTurboPassingLane({
+  roadWidth: routeWidth,
+  sceneScale: racingScene.transform.scale,
+  playerRenderedWidth: heroFraming.subject.size[0],
+  opponentRenderedWidth: opponentRenderedSize[0],
+  playerCollisionWidth: heroFraming.subject.size[0] + 0.002,
+  opponentCollisionWidth: opponentRenderedSize[0] + 0.002,
+  playerChassisHalfWidth: carChassisSpec.trackWidth / 2,
+  passingMargin: 0.03
+});
 const opponentDriver = createVehicleDriverAi(driverRoute, {
   maxSpeed: gameplayMaxSpeed,
   // Leave a real performance window for the player. At 93% the rival exited every
@@ -365,6 +384,7 @@ const opponentAi = createTurboOpponentAi(opponentState, {
   cruiseRatio: 0.9,
   catchUpStrength: 0.22,
   steeringGain: STEER_CORRECTION_GAIN,
+  legalPassingOffset: passingLane.legalPassingOffset,
   // The route-local controller is retained only as the state container; every
   // decision now comes from the reusable driver.
   driver: opponentDriver
@@ -376,16 +396,9 @@ const opponentAi = createTurboOpponentAi(opponentState, {
  * Resolved before the surface because the surface's verge depth is expressed in terms
  * of the suspension travel this spec provides.
  */
-const opponentTargetMaxDimension = 1.04;
 // The rival's authored nose follows the presentation convention returned by
 // `GameRacingSceneBinding.toScenePose`; simulation heading remains separate for chassis contact.
 const opponentPresentationRotation = (rotation: AuraVec3): AuraVec3 => rotation;
-const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.showcaseCcByFormulaOpponent.bounds);
-const opponentRenderedSize: AuraVec3 = [
-  assets.showcaseCcByFormulaOpponent.bounds[0] * opponentAssetScale,
-  assets.showcaseCcByFormulaOpponent.bounds[1] * opponentAssetScale,
-  assets.showcaseCcByFormulaOpponent.bounds[2] * opponentAssetScale
-];
 const fittedOpponentChassisSpec = vehicleChassisSpecFromBounds(opponentRenderedSize, {
   wheelDiameterFraction: 0.8
 });
@@ -663,7 +676,8 @@ const racingCamera = game.racingCameraRig({
   // Derived, not tuned: see `requireLowerSideFeatureVisibility` above.
   sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset,
   lookAhead: chaseLookAhead,
-  fov: collisionReviewCamera ? 48 : chaseFov
+  fov: collisionReviewCamera ? 48 : chaseFov,
+  smoothing: 0.045
 });
 setupRacingPanel();
 
@@ -1095,6 +1109,8 @@ const mountedEvidence = {
     checkpointProgression: false,
     finishProgression: false,
     opponentMovesIndependently: false,
+    playerOvertookOpponent: false,
+    passingLane,
     authoredLapSeconds,
     routeAlignedToVisibleTrack: true,
     noDebugLocatorDisk: true,
@@ -1141,6 +1157,13 @@ app.onFrame(({ dt }) => {
     pendingOpponentImpactHeading = null;
     vehicleHeadingKickApplied = false;
     edgeRecoverySeconds = 0;
+    vehicleContactCount = 0;
+    vehicleContactFrames = 0;
+    maximumVehiclePenetration = 0;
+    minimumRenderedEnvelopeClearance = Number.POSITIVE_INFINITY;
+    vehicleImpactResponses = 0;
+    lastVehicleImpact = null;
+    mountedEvidence.gameplay.playerOvertookOpponent = false;
     const resetOpponent = opponentAi.reset();
     mountedEvidence.gameplay.resetWorks = true;
     mountedEvidence.kitContractProof.resetRestoresStart = raceSnapshot.lap === 1
@@ -1186,7 +1209,7 @@ app.onFrame(({ dt }) => {
   const previous = raceSnapshot;
   const previousOpponent = opponentAi.snapshot();
   opponentRaceStarted ||= input.held("throttle") || input.held("brake") || Math.abs(input.axis("steer")) > 0.01;
-  raceSnapshot = vehicleHitStopActive
+  raceSnapshot = vehicleHitStopActive && vehicleHitStopPlayerPoint
     ? racingState.resolveContact(vehicleHitStopPlayerPoint, { speedMultiplier: 1, driftMultiplier: 1 })
     : racingState.step(step, {
       // A hard rear impact interrupts drive torque briefly. Without this recovery
@@ -1201,10 +1224,10 @@ app.onFrame(({ dt }) => {
     });
   const steppedOffTrack = raceSnapshot.offTrack
     || raceSnapshot.events.some((event) => event.type === "off-track");
-  let opponent = vehicleHitStopActive
+  let opponent = vehicleHitStopActive && vehicleHitStopOpponentPoint
     ? opponentAi.resolveContact(vehicleHitStopOpponentPoint, 1)
     : opponentRaceStarted
-      ? opponentAi.step(step, raceSnapshot.progress)
+      ? opponentAi.step(step, raceSnapshot.progress, raceSnapshot.signedTrackOffset)
       : previousOpponent;
   const preStepBodySeparation = Math.hypot(
     playerContactBody.position[0] - opponentContactBody.position[0],
@@ -1555,6 +1578,10 @@ app.onFrame(({ dt }) => {
     raceSnapshot.lap > previous.lap;
   mountedEvidence.gameplay.opponentMovesIndependently ||= opponent.progress !== previousOpponent.progress &&
     mountedEvidence.opponent.decisionCount > 0;
+  const wrappedLead = ((raceSnapshot.progress - opponent.progress + 1.5) % 1) - 0.5;
+  mountedEvidence.gameplay.playerOvertookOpponent ||= wrappedLead > 0.004
+    && !raceSnapshot.offTrack
+    && !opponent.offTrack;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   recordRacingKitEvents(raceSnapshot.events);

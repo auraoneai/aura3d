@@ -1,3 +1,5 @@
+import { decideTurboOpponentYield } from "./passing-lane";
+
 export interface TurboOpponentSnapshot {
   readonly progress: number;
   readonly speed: number;
@@ -53,6 +55,7 @@ export interface TurboOpponentDriver {
     readonly signedTrackOffset: number;
     readonly position: { readonly x: number; readonly y: number };
     readonly offTrack: boolean;
+    readonly preferredSignedOffset?: number;
   }): { readonly throttle: number; readonly brake: number; readonly steer: number; readonly drift: boolean };
   /**
    * Whatever the driver reports about its own decision. Only `targetSpeed` is read here;
@@ -71,6 +74,7 @@ export interface TurboOpponentAiConfig {
   readonly maxSpeed: number;
   readonly cruiseRatio?: number;
   readonly catchUpStrength?: number;
+  readonly legalPassingOffset?: number;
   /**
    * Proportional gain for returning to the racing line. Scale this with the route's
    * width: a gain tuned for a wide kart circuit under-corrects on a narrow one.
@@ -100,11 +104,13 @@ export interface TurboOpponentAiEvidence {
   readonly targetSpeed: number;
   readonly input: TurboOpponentInput;
   readonly recentDecisions: readonly string[];
+  readonly preferredSignedOffset: number;
+  readonly yielding: boolean;
 }
 
 export interface TurboOpponentAi<TSnapshot extends TurboOpponentSnapshot> {
   snapshot(): TSnapshot;
-  step(dt: number, playerProgress: number): TSnapshot;
+  step(dt: number, playerProgress: number, playerSignedOffset?: number): TSnapshot;
   reset(): TSnapshot;
   resolveContact(position: { readonly x: number; readonly y: number }, speedMultiplier?: number, heading?: number): TSnapshot;
   evidence(playerProgress: number): TurboOpponentAiEvidence;
@@ -122,6 +128,8 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
   let decisionCount = 0;
   let lastInput: TurboOpponentInput = { throttle: false, brake: false, steer: 0 };
   let lastTargetSpeed = config.maxSpeed * cruiseRatio;
+  let lastPreferredSignedOffset = 0;
+  let lastYielding = false;
   const recentDecisions: string[] = [];
 
   function decide(playerProgress: number): TurboOpponentInput {
@@ -159,14 +167,23 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
    * the curvature it is about to meet, so it turns into corners and brakes for them.
    * The route-local fallback cannot: it only nulls present lateral offset.
    */
-  function decideWithDriver(dt: number, driver: TurboOpponentDriver): TurboOpponentInput {
+  function decideWithDriver(dt: number, driver: TurboOpponentDriver, playerSignedOffset = 0, playerProgress = 0): TurboOpponentInput {
+    const yieldDecision = decideTurboOpponentYield({
+      wrappedPlayerGap: wrappedGap(playerProgress, snapshot.progress),
+      playerSignedOffset,
+      opponentSignedOffset: snapshot.signedTrackOffset,
+      legalPassingOffset: config.legalPassingOffset ?? 0.06
+    });
+    lastPreferredSignedOffset = yieldDecision.preferredSignedOffset;
+    lastYielding = yieldDecision.yielding;
     const decision = driver.decide(dt, {
       progress: snapshot.progress,
       speed: snapshot.speed,
       heading: snapshot.heading,
       signedTrackOffset: snapshot.signedTrackOffset,
       position: snapshot.position,
-      offTrack: snapshot.offTrack
+      offTrack: snapshot.offTrack,
+      preferredSignedOffset: yieldDecision.preferredSignedOffset
     });
     lastTargetSpeed = Number(driver.telemetry().targetSpeed ?? lastTargetSpeed);
     return {
@@ -189,9 +206,11 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       });
       return snapshot;
     },
-    step(dt, playerProgress) {
+    step(dt, playerProgress, playerSignedOffset = 0) {
       elapsed += Math.max(0, dt);
-      const input = config.driver ? decideWithDriver(dt, config.driver) : decide(playerProgress);
+      const input = config.driver
+        ? decideWithDriver(dt, config.driver, playerSignedOffset, playerProgress)
+        : decide(playerProgress);
       remember(input);
       lastInput = input;
       snapshot = state.step(dt, input);
@@ -202,6 +221,8 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       decisionCount = 0;
       lastInput = { throttle: false, brake: false, steer: 0 };
       lastTargetSpeed = config.maxSpeed * cruiseRatio;
+      lastPreferredSignedOffset = 0;
+      lastYielding = false;
       recentDecisions.length = 0;
       config.driver?.reset();
       snapshot = state.reset(config.startProgress);
@@ -220,7 +241,9 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
         separation: round(Math.abs(signedPlayerGap)),
         targetSpeed: round(lastTargetSpeed),
         input: lastInput,
-        recentDecisions: recentDecisions.slice()
+        recentDecisions: recentDecisions.slice(),
+        preferredSignedOffset: round(lastPreferredSignedOffset),
+        yielding: lastYielding
       };
     }
   };

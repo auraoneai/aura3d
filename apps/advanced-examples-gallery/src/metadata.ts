@@ -233,7 +233,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     controls: [
       { key: "explode", label: "Exploded view", kind: "toggle", value: false },
       { key: "carVariant", label: "Car variant", kind: "select", value: "Carmine Candy", options: ["Carmine Candy", "Pearly Swirly", "Torched Graphite"] },
-      { key: "focusPart", label: "Hotspot", kind: "select", value: "overview", options: ["overview", "lens", "body", "sensor", "battery", "grip", "controls"] },
+      { key: "focusPart", label: "Hotspot", kind: "select", value: "overview", options: ["overview", "body", "wheels", "interior", "lights"] },
       { key: "lighting", label: "Lighting", kind: "select", value: "studio", options: ["studio", "environment", "inspection"] },
       { key: "turntable", label: "Turntable", kind: "toggle", value: false }
     ]

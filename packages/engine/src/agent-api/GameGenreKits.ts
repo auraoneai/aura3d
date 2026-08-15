@@ -31,6 +31,11 @@ export interface GamePlatformerCollectible extends GameKitVec2 {
 export interface GamePlatformerHazard extends GameKitRect {
   readonly damage?: number;
   readonly respawn?: boolean;
+  readonly axis?: "x" | "y";
+  readonly amplitude?: number;
+  readonly period?: number;
+  readonly phase?: number;
+  readonly stompable?: boolean;
 }
 
 export interface GamePlatformerCheckpoint extends GameKitVec2 {
@@ -57,6 +62,8 @@ export interface GamePlatformerLevel {
   readonly hazards?: readonly GamePlatformerHazard[];
   readonly checkpoints?: readonly GamePlatformerCheckpoint[];
   readonly lives?: number;
+  readonly fallGravityMultiplier?: number;
+  readonly jumpReleaseScale?: number;
 }
 
 export interface GamePlatformerInput {
@@ -83,6 +90,7 @@ export type GamePlatformerEventType =
   | "collect"
   | "checkpoint"
   | "hazard"
+  | "stomp"
   | "fall"
   | "respawn"
   | "complete"
@@ -851,7 +859,9 @@ const DEFAULT_PLATFORMER_LEVEL: Required<Omit<GamePlatformerLevel, "id">> & { re
   collectibles: [],
   hazards: [],
   checkpoints: [],
-  lives: 3
+  lives: 3,
+  fallGravityMultiplier: 1,
+  jumpReleaseScale: 0.45
 };
 
 export function createGamePlatformerSurfaceQuery(level: GamePlatformerLevel = {}): GamePlatformerSurfaceQuery {
@@ -896,6 +906,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
   });
   let body = createBody();
   let events: GamePlatformerEvent[] = [];
+  const defeatedHazards = new Set<string>();
 
   const syncPlayerFromBody = () => {
     const next = body.snapshot();
@@ -973,6 +984,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         events = [];
         state = createPlatformerState(config);
         body = createBody();
+        defeatedHazards.clear();
         emit("reset");
         return snapshot();
       }
@@ -1018,6 +1030,16 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         state.player.ridingPlatformId = undefined;
         emit("jump");
       }
+      if (input.jumpHeld === false && body.velocity[1] > config.jumpVelocity * 0.35) {
+        body.velocity = [body.velocity[0], body.velocity[1] * config.jumpReleaseScale, body.velocity[2]];
+      }
+      if (body.velocity[1] < 0 && config.fallGravityMultiplier > 1) {
+        body.velocity = [
+          body.velocity[0],
+          body.velocity[1] + config.gravity * (config.fallGravityMultiplier - 1) * step,
+          body.velocity[2]
+        ];
+      }
       if (input.fastFall && body.velocity[1] < 0) {
         body.velocity = [body.velocity[0], body.velocity[1] + config.gravity * 0.6 * step, body.velocity[2]];
       }
@@ -1051,11 +1073,20 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
           emit("checkpoint", checkpoint.id);
         }
       }
-      for (const hazard of config.hazards) {
-        if (rectsOverlap(platformerPlayerRect(state.player, playerWidth, playerHeight), hazard)) {
-          respawn("hazard", hazard.id);
-          break;
+      for (const hazard of platformerHazardRectsAt(state.time, config)) {
+        if (defeatedHazards.has(hazard.id)) continue;
+        if (!rectsOverlap(platformerPlayerRect(state.player, playerWidth, playerHeight), hazard)) continue;
+        const stompable = hazard.stompable === true || ((hazard.amplitude ?? 0) > 0 && hazard.stompable !== false);
+        const stomping = previousPlayer.vy < -0.15 && previousPlayer.y >= hazard.y + hazard.height * 0.4;
+        if (stompable && stomping) {
+          defeatedHazards.add(hazard.id);
+          body.velocity = [body.velocity[0], Math.abs(config.jumpVelocity) * 0.42, body.velocity[2]];
+          syncPlayerFromBody();
+          emit("stomp", hazard.id);
+          continue;
         }
+        respawn("hazard", hazard.id);
+        break;
       }
       if (state.player.y < config.lowerBound) respawn("fall");
       if (config.finish && state.player.x >= config.finish.x && Math.abs(state.player.y - config.finish.y) <= 1.25) {
@@ -1066,6 +1097,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     },
     reset(checkpointId) {
       events = [];
+      defeatedHazards.clear();
       state = createPlatformerState(config, checkpointId);
       body = createBody();
       return snapshot();
@@ -1896,6 +1928,19 @@ function platformerSpawnSurface(platforms: readonly GameKitRect[], checkpointX: 
     const rightDistance = Math.abs(checkpointX - clampNumber(checkpointX, right.x, right.x + right.width));
     return leftDistance - rightDistance;
   })[0];
+}
+
+function platformerHazardRectsAt(time: number, config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }): readonly GamePlatformerHazard[] {
+  return config.hazards.map((hazard) => {
+    if (!hazard.axis || !hazard.amplitude || !hazard.period) return hazard;
+    const phase = ((time / Math.max(0.001, hazard.period)) + (hazard.phase ?? 0)) * Math.PI * 2;
+    const offset = Math.sin(phase) * hazard.amplitude;
+    return {
+      ...hazard,
+      x: hazard.axis === "x" ? hazard.x + offset : hazard.x,
+      y: hazard.axis === "y" ? hazard.y + offset : hazard.y
+    };
+  });
 }
 
 function platformerMovingRectsAt(time: number, config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }): readonly GameKitRect[] {

@@ -30,11 +30,7 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
   let bounds = input.sceneBounds;
   const authoredReady = input.authored.status === "ready";
 
-  if (input.demoId === "smart-city" && input.controls.fly === true) {
-    yawRadians += Math.sin(input.time * 0.22) * 0.34;
-    pitchRadians = -0.3 + Math.sin(input.time * 0.17) * 0.08;
-    paddingRatio = input.cameraPreset === "wide" ? 0.24 : 0.1;
-  }
+  // Flythrough is applied after named hero framing so the default Hero view still moves.
   if (input.demoId === "water-lab" && input.cameraPreset === "hero") {
     yawRadians = 0.22 + Math.sin(input.time * 0.18) * 0.025;
     pitchRadians = -0.2;
@@ -61,9 +57,52 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     paddingRatio = 0.004;
   }
   if (input.demoId === "smart-city" && input.cameraPreset === "hero") {
-    yawRadians = -0.72;
-    pitchRadians = -0.21;
-    paddingRatio = 0.045;
+    const district = String(input.controls.district ?? "all");
+    if (district === "harbor") {
+      yawRadians = -0.28;
+      pitchRadians = -0.18;
+      paddingRatio = 0.04;
+    } else if (district === "industrial") {
+      yawRadians = -1.15;
+      pitchRadians = -0.2;
+      paddingRatio = 0.04;
+    } else if (district === "north") {
+      yawRadians = 0.52;
+      pitchRadians = -0.2;
+      paddingRatio = 0.04;
+    } else if (district === "core") {
+      yawRadians = -0.72;
+      pitchRadians = -0.16;
+      paddingRatio = 0.02;
+    } else {
+      yawRadians = -0.72;
+      pitchRadians = -0.21;
+      paddingRatio = 0.045;
+    }
+  }
+  if (input.demoId === "smart-city" && input.controls.fly === true) {
+    yawRadians += Math.sin(input.time * 0.22) * 0.34;
+    pitchRadians += Math.sin(input.time * 0.17) * 0.08;
+    paddingRatio = input.cameraPreset === "wide" ? 0.24 : Math.min(paddingRatio, 0.1);
+  }
+  if (input.demoId === "product-configurator") {
+    const focus = String(input.controls.focusPart ?? "overview");
+    if (focus === "wheels") {
+      pitchRadians = -0.38;
+      paddingRatio = 0.016;
+    } else if (focus === "interior") {
+      yawRadians = 0.18;
+      pitchRadians = -0.02;
+      paddingRatio = 0.012;
+    } else if (focus === "lights") {
+      yawRadians = -0.98;
+      pitchRadians = -0.05;
+      paddingRatio = 0.018;
+    } else if (focus === "body") {
+      yawRadians = -0.32;
+      pitchRadians = -0.1;
+      paddingRatio = 0.026;
+    }
   }
   if (input.demoId === "robotics-lab" && input.cameraPreset === "hero") {
     yawRadians = -0.24 + Math.sin(input.time * 0.28) * 0.006;
@@ -312,13 +351,17 @@ export function visibleProceduralItemsForRoute(
     });
   }
   if (demoId === "smart-city") {
-    return filterByLabel(scene.items, (label) => label === "instanced district tower"
+    return filterByLabel(scene.items, (label) => label === "district load hologram"
+      || label === "instanced district tower"
+      || label === "district sensor pulse"
+      || label === "facade window data pulse"
       || label === "selected district highlight"
       || label === "traffic vehicles"
       || label === "district light rail trail"
       || label === "district light rail car"
       || label === "aerial transit drone"
       || label === "aerial transit path"
+      || label === "debug grid"
       || label.includes("data pulse"));
   }
   return scene.items;

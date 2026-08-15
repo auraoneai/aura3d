@@ -56,6 +56,9 @@ export interface SmartCityRouteEvidence {
   readonly trafficInstances: number;
   readonly logisticsInstances: number;
   readonly sensorInstances: number;
+  readonly maxOverlayWidth: number;
+  readonly maxOverlayHeight: number;
+  readonly authoredCoreKeepoutRadius: number;
   readonly lineSegments: number;
   readonly pulsePoints: number;
   readonly drawBatches: number;
@@ -71,6 +74,11 @@ interface MutableBatch {
 
 const DISTRICTS: readonly SmartCityDistrict[] = ["north", "harbor", "core", "industrial"];
 
+/** Authored Tokyo district occupies the hero volume. Overlay pillars stay outside it. */
+export const SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS = 1.72;
+export const SMART_CITY_OVERLAY_MAX_WIDTH = 0.042;
+export const SMART_CITY_OVERLAY_MAX_HEIGHT = 0.62;
+
 export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions): SmartCityRouteEvidence {
   const level = normalizeLevel(options.level);
   const selectedDistrict = normalizeDistrict(options.selectedDistrict);
@@ -84,29 +92,27 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
   const towerC: MutableBatch = { transforms: new Float32Array(capacity * 16), count: 0 };
 
   let towerInstances = 0;
+  let maxOverlayWidth = 0;
+  let maxOverlayHeight = 0;
   for (let row = 0; row < columns; row += 1) {
     for (let col = 0; col < columns; col += 1) {
-      const x = (col - (columns - 1) / 2) * spacing;
-      const z = (row - (columns - 1) / 2) * spacing;
-      const district = districtForPosition(x, z);
-      const onAvenue = row % 6 === 0 || col % 6 === 0;
-      const onServiceLane = row % 3 === 0 || col % 4 === 0;
-      if (onAvenue && (row + col) % 2 === 0) continue;
-      const selectedBoost = selectedDistrict === district || (selectedDistrict === "all" && district === "core") ? 0.42 : 0;
-      const districtBias = district === "core" ? 0.72 : district === "harbor" ? 0.34 : district === "industrial" ? 0.5 : 0.28;
-      const height = (onAvenue ? 0.12 : 0.26) + hash01(row * 83 + col * 41) * (onServiceLane ? 0.82 : 1.35) + districtBias + selectedBoost;
-      const width = 0.105 + hash01(col * 19 + row) * 0.07;
-      const depth = 0.11 + hash01(row * 29 + col * 3) * 0.075;
-      const sway = Math.sin(options.time * 0.34 + row * 0.13 + col * 0.19) * (options.flythrough ? 0.025 : 0.012);
-      const target = district === "core"
-        ? towerB
-        : district === "harbor"
-          ? towerC
-          : (row + col) % 3 === 0
-            ? towerB
-            : towerA;
-      pushMatrix(target, [x, -0.48 + height * 0.5, z], [width, height, depth], [0, sway, 0]);
+      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict, level);
+      if (!profile) continue;
+      const sway = Math.sin(options.time * 0.34 + row * 0.13 + col * 0.19) * (options.flythrough ? 0.018 : 0.008);
+      const target = profile.district === "harbor"
+        ? towerC
+        : profile.district === "industrial"
+          ? towerB
+          : towerA;
+      pushMatrix(
+        target,
+        [profile.x, -0.42 + profile.height * 0.5, profile.z],
+        [profile.width, profile.height, profile.depth],
+        [0, sway, 0]
+      );
       towerInstances += 1;
+      maxOverlayWidth = Math.max(maxOverlayWidth, profile.width, profile.depth);
+      maxOverlayHeight = Math.max(maxOverlayHeight, profile.height);
     }
   }
 
@@ -118,9 +124,9 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
   const pointGroups = createPulsePointGroups(options.time, columns, spacing, selectedDistrict, options.flythrough);
   const singles = createSingleItems(options.time, selectedDistrict, selectedAnchor, extent, options.flythrough);
   const towerBatches = [
-    toInstanceBatch("cube", "cityA", "instanced district tower", towerA),
-    toInstanceBatch("cube", "cityB", "instanced district tower", towerB),
-    toInstanceBatch("cube", "cityC", "instanced district tower", towerC)
+    toInstanceBatch("cube", "cityA", "district load hologram", towerA),
+    toInstanceBatch("cube", "cityB", "district load hologram", towerB),
+    toInstanceBatch("cube", "cityC", "district load hologram", towerC)
   ].filter((batch) => batch.count > 0);
   const instanceBatches = [
     ...towerBatches,
@@ -147,12 +153,15 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
     trafficInstances,
     logisticsInstances: logisticsBatch.count,
     sensorInstances: sensorBatch.count,
+    maxOverlayWidth,
+    maxOverlayHeight,
+    authoredCoreKeepoutRadius: SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS,
     lineSegments,
     pulsePoints,
     drawBatches,
     systems: [
       "authored animated city district",
-      "district-scale instanced tower grid",
+      "restrained district load holograms",
       "logistics cargo and curb-flow instances",
       "traffic platoons and light-rail sweeps",
       "instanced facade/window bands",
@@ -163,10 +172,10 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       "instancing scale telemetry"
     ],
     approximations: [
-      `${towerInstances.toLocaleString("en-US")} procedural district towers across 3 instanced draw batches`,
+      `${towerInstances.toLocaleString("en-US")} thin holographic load pillars sit outside the authored city keepout`,
       `${trafficInstances.toLocaleString("en-US")} traffic vehicles and ${logisticsBatch.count.toLocaleString("en-US")} logistics cargo markers are instanced overlays around the authored city`,
       `${sensorBatch.count.toLocaleString("en-US")} smart-infrastructure status pulses use instanced cubes, not individual render objects`,
-      `${facadeBandBatch.count.toLocaleString("en-US")} tower facade/window bands use one instanced draw batch for accepted-route detail evidence`,
+      `${facadeBandBatch.count.toLocaleString("en-US")} thin facade/window ticks use one instanced draw batch`,
       `${lineSegments.toLocaleString("en-US")} facade/window, road, rail, minimap, selection, and data-flow segments are batched line geometry`,
       `${pulsePoints.toLocaleString("en-US")} telemetry pulse points are batched point geometry`,
       "Pointer probe highlights the nearest district as control-level picking evidence; per-building raycast picking is not claimed.",
@@ -175,7 +184,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
     ],
     labels: [
       `Grid ${columns}x${columns}`,
-      `${towerInstances.toLocaleString("en-US")} towers`,
+      `${towerInstances.toLocaleString("en-US")} load pillars`,
       `${trafficInstances.toLocaleString("en-US")} traffic`,
       `${logisticsBatch.count.toLocaleString("en-US")} cargo`,
       `${sensorBatch.count.toLocaleString("en-US")} sensors`,
@@ -245,7 +254,7 @@ function createSensorBatch(time: number, columns: number, spacing: number, selec
       anchor[1] + Math.sin(angle) * ring * 0.72
     ], [size, size * 1.8, size], [0, angle, 0]);
   }
-  return toInstanceBatch("cube", "cityC", "instanced district tower", batch);
+  return toInstanceBatch("cube", "cyanGlow", "district sensor pulse", batch);
 }
 
 function createFacadeBandBatch(time: number, columns: number, spacing: number, selectedDistrict: SmartCityDistrict): SmartCityInstanceBatch {
@@ -253,22 +262,21 @@ function createFacadeBandBatch(time: number, columns: number, spacing: number, s
   const batch: MutableBatch = { transforms: new Float32Array(capacity * 16), count: 0 };
   for (let row = 0; row < columns; row += 1) {
     for (let col = 0; col < columns; col += 1) {
-      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict);
+      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict, "medium");
       if (!profile) continue;
       const selected = selectedDistrict === profile.district || (selectedDistrict === "all" && profile.district === "core");
-      const visibleDetailTower = selected || profile.district === "core" || (row + col) % 3 === 0;
+      const visibleDetailTower = selected || (row + col) % 4 === 0;
       if (!visibleDetailTower) continue;
 
       const frontZ = profile.z - profile.depth * 0.64;
-      const bandCount = selected || profile.district === "core" ? 3 : 2;
+      const bandCount = selected ? 2 : 1;
       for (let band = 0; band < bandCount; band += 1) {
-        const heightT = 0.28 + band * (0.48 / Math.max(1, bandCount - 1));
-        const y = -0.48 + profile.height * heightT + Math.sin(time * 0.36 + row * 0.19 + col * 0.23 + band) * 0.004;
-        const widthScale = band % 2 === 0 ? 0.84 : 0.62;
+        const heightT = 0.42 + band * 0.22;
+        const y = -0.42 + profile.height * heightT + Math.sin(time * 0.36 + row * 0.19 + col * 0.23 + band) * 0.003;
         pushMatrix(
           batch,
           [profile.x, y, frontZ],
-          [profile.width * widthScale, 0.026, 0.016],
+          [profile.width * 0.72, 0.012, 0.01],
           [0, 0, 0]
         );
       }
@@ -319,9 +327,9 @@ function createLineGroups(
   const selected = selectedDistrict === "all" ? DISTRICTS : [selectedDistrict];
   for (const district of selected) {
     const anchor = districtAnchor(district, extent);
-    const width = district === "core" ? 2.25 : 1.62;
+    const width = district === "core" ? 1.05 : 0.86;
     addRectangle(selectionLines, anchor[0], -0.405, anchor[1], width, width * 0.78);
-    addSegment(selectionLines, [anchor[0], -0.38, anchor[1]], [anchor[0], 1.15, anchor[1]]);
+    addSegment(selectionLines, [anchor[0], -0.38, anchor[1]], [anchor[0], 0.22, anchor[1]]);
   }
   const nearestPointerDistrict = districtForPosition(pointerX, pointerZ);
   const nearestPointerAnchor = districtAnchor(nearestPointerDistrict, extent);
@@ -444,10 +452,10 @@ function addSmartCityFacadeLines(
 ): void {
   for (let row = 0; row < columns; row += 1) {
     for (let col = 0; col < columns; col += 1) {
-      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict);
+      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict, "medium");
       if (!profile) continue;
 
-      const baseY = -0.48;
+      const baseY = -0.42;
       const topY = baseY + profile.height;
       const floorCount = Math.max(3, Math.min(10, Math.floor(profile.height * 5.4)));
       const selected = selectedDistrict === profile.district || (selectedDistrict === "all" && profile.district === "core");
@@ -540,12 +548,12 @@ function addSmartCityWindowPulsePoints(
 ): void {
   for (let row = 0; row < columns; row += 1) {
     for (let col = 0; col < columns; col += 1) {
-      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict);
+      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict, "medium");
       if (!profile) continue;
       const selected = selectedDistrict === profile.district || (selectedDistrict === "all" && profile.district === "core");
-      if (!selected && profile.district !== "core" && (row + col) % 2 !== 0) continue;
+      if (!selected && (row + col) % 2 !== 0) continue;
 
-      const floorCount = Math.max(3, Math.min(8, Math.floor(profile.height * 4.8)));
+      const floorCount = Math.max(2, Math.min(4, Math.floor(profile.height * 4.8)));
       const step = selected || profile.district === "core" ? 1 : 2;
       const slots = 2 + ((row + col) % 3);
       for (let floor = 1; floor <= floorCount; floor += step) {
@@ -675,7 +683,8 @@ function cityTowerProfile(
   col: number,
   columns: number,
   spacing: number,
-  selectedDistrict: SmartCityDistrict
+  selectedDistrict: SmartCityDistrict,
+  level: SmartCityLevel = "medium"
 ): {
   readonly x: number;
   readonly z: number;
@@ -686,16 +695,46 @@ function cityTowerProfile(
 } | null {
   const x = (col - (columns - 1) / 2) * spacing;
   const z = (row - (columns - 1) / 2) * spacing;
+  if (Math.hypot(x, z) < SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS) return null;
   const district = districtForPosition(x, z);
+  if (selectedDistrict !== "all" && district !== selectedDistrict) return null;
+  const densityStride = level === "low" ? 3 : level === "medium" ? 2 : 1;
+  if ((row + col) % densityStride !== 0) return null;
   const onAvenue = row % 6 === 0 || col % 6 === 0;
-  const onServiceLane = row % 3 === 0 || col % 4 === 0;
   if (onAvenue && (row + col) % 2 === 0) return null;
-  const selectedBoost = selectedDistrict === district || (selectedDistrict === "all" && district === "core") ? 0.42 : 0;
-  const districtBias = district === "core" ? 0.72 : district === "harbor" ? 0.34 : district === "industrial" ? 0.5 : 0.28;
-  const height = (onAvenue ? 0.12 : 0.26) + hash01(row * 83 + col * 41) * (onServiceLane ? 0.82 : 1.35) + districtBias + selectedBoost;
-  const width = 0.105 + hash01(col * 19 + row) * 0.07;
-  const depth = 0.11 + hash01(row * 29 + col * 3) * 0.075;
+  const selectedBoost = selectedDistrict === district ? 0.14 : 0;
+  const height = Math.min(
+    SMART_CITY_OVERLAY_MAX_HEIGHT,
+    0.16 + hash01(row * 83 + col * 41) * 0.32 + selectedBoost
+  );
+  const width = Math.min(SMART_CITY_OVERLAY_MAX_WIDTH, 0.02 + hash01(col * 19 + row) * 0.016);
+  const depth = width;
   return { x, z, district, height, width, depth };
+}
+
+export function smartCityColumnsForLevel(level: string): number {
+  return columnsForLevel(normalizeLevel(level));
+}
+
+export function createSmartCityControlSnapshot(options: SmartCityEvidenceOptions): {
+  readonly towerInstances: number;
+  readonly trafficInstances: number;
+  readonly selectedDistrict: SmartCityDistrict;
+  readonly maxOverlayWidth: number;
+  readonly maxOverlayHeight: number;
+  readonly authoredCoreKeepoutRadius: number;
+  readonly flythrough: boolean;
+} {
+  const evidence = createSmartCityRouteEvidence(options);
+  return {
+    towerInstances: evidence.towerInstances,
+    trafficInstances: evidence.trafficInstances,
+    selectedDistrict: evidence.selectedDistrict,
+    maxOverlayWidth: evidence.maxOverlayWidth,
+    maxOverlayHeight: evidence.maxOverlayHeight,
+    authoredCoreKeepoutRadius: evidence.authoredCoreKeepoutRadius,
+    flythrough: options.flythrough
+  };
 }
 
 function pushMatrix(batch: MutableBatch, position: Vec3, scale: Vec3, rotation: Vec3): void {

@@ -455,7 +455,9 @@ html[data-review-capture="hero"] .loading-state {
   width: min(360px, calc(100vw - 20px));
   border-radius: 8px;
   overflow: auto;
+  overflow-x: hidden;
   padding: 13px;
+  z-index: 4;
 }
 
 .right-panel header span {
@@ -579,12 +581,22 @@ html[data-review-capture="hero"] .loading-state {
 
 .control-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 58%);
   align-items: center;
   gap: 10px;
   margin: 9px 0;
   color: #d8e8fa;
   font-size: 13px;
+}
+
+.control-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.control-row select {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .control-row.is-range {

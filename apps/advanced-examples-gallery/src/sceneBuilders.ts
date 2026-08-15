@@ -100,9 +100,9 @@ export function createResources(): Resources {
     showroomGuide: unlit("showroomGuide", [0.28, 0.52, 0.62, 0.18], true),
     showroomGuideStrong: unlit("showroomGuideStrong", [0.5, 0.8, 0.88, 0.34], true),
     showroomEdge: unlit("showroomEdge", [0.72, 0.86, 0.9, 0.46], true),
-    cityA: instanced("cityA", "#316cbb", 0.18, 0.48, [0.04, 0.2, 0.45], 0.32),
-    cityB: instanced("cityB", "#7550d8", 0.16, 0.46, [0.2, 0.08, 0.48], 0.34),
-    cityC: instanced("cityC", "#1d9c83", 0.14, 0.5, [0.0, 0.38, 0.32], 0.28),
+    cityA: hologramInstanced("cityA", "#4aa7e6", [0.08, 0.42, 0.72], 0.55, 0.22),
+    cityB: hologramInstanced("cityB", "#7a6ad4", [0.32, 0.16, 0.62], 0.48, 0.2),
+    cityC: hologramInstanced("cityC", "#2eb89a", [0.04, 0.48, 0.36], 0.42, 0.2),
 	    traffic: instanced("traffic", "#f3c04a", 0.12, 0.34, [1, 0.42, 0.04], 1.4),
 	    particle: unlit("particle", [0.38, 0.9, 1, 0.84], true, 2.2, true),
 	    particleWarm: unlit("particleWarm", [1, 0.74, 0.28, 0.78], true, 1.95, true),
@@ -170,6 +170,24 @@ function instanced(name: string, hex: string, metallic: number, roughness: numbe
     roughness,
     emissiveColor,
     emissiveStrength
+  });
+}
+
+function hologramInstanced(
+  name: string,
+  hex: string,
+  emissiveColor: readonly [number, number, number],
+  emissiveStrength: number,
+  alpha: number
+): InstancedPBRMaterial {
+  return new InstancedPBRMaterial({
+    name,
+    baseColor: colorFromHex(hex, alpha),
+    metallic: 0.04,
+    roughness: 0.42,
+    emissiveColor,
+    emissiveStrength,
+    renderState: { blend: true, depthWrite: false, cullMode: "none" }
   });
 }
 

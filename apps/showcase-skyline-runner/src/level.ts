@@ -85,8 +85,28 @@ export const SKYLINE_SENTRY_ENCOUNTERS = [2, 4, 5, 8].map((section, index) => ({
   width: 0.26,
   // Keep the collision body below the robot's visual antenna/head silhouette.
   // A full-height 0.4 box punished the hero after visibly clearing the body.
-  height: 0.3
+  height: 0.3,
+  axis: "x" as const,
+  amplitude: 0.55,
+  period: 2.4 + index * 0.35,
+  phase: index * 0.18,
+  stompable: true
 }));
+
+export const SKYLINE_MOVING_PLATFORMS = [3, 6, 7].map((section, index) => {
+  const platform = nearestPlatform(section, 9.2);
+  return {
+    id: sectionId(section, `lift-span-${index + 1}`),
+    x: platform.x + platform.width * 0.15,
+    y: platform.y + platform.height + 0.42 + index * 0.08,
+    width: 1.05,
+    height: 0.16,
+    axis: (index === 1 ? "y" : "x") as "x" | "y",
+    amplitude: index === 1 ? 0.38 : 0.72,
+    period: 3.2 + index * 0.4,
+    phase: index * 0.22
+  };
+});
 
 // Only collectibles inside the certified base finish belong to that section. The old generated
 // fixture also carried two unreachable draft coins beyond the finish; repeating those would turn
@@ -141,9 +161,9 @@ export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
   characterHeight: SKYLINE_CHARACTER_HEIGHT,
   // A fast, readable arc: enough clearance for the authored course without the
   // slow-motion hang time of the previous 2.4-character-height jump.
-  jumpHeight: SKYLINE_CHARACTER_HEIGHT * 1.8,
+  jumpHeight: SKYLINE_CHARACTER_HEIGHT * 2.3,
   // Keep lateral control quick enough to respond immediately to a key press.
-  runSpeedPerHeight: 3.7,
+  runSpeedPerHeight: 4.5,
   gapMargin: 1.5,
   /*
    * The reported session "ends in 20-30 seconds": the 16.6-unit course crosses in about 14
@@ -153,7 +173,7 @@ export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
    */
   // Direct traversal targets a compact play session; hazards and collection add
   // time without making ordinary movement feel artificially slow.
-  targetSessionSeconds: SKYLINE_AUTHORED_PLAYABLE_SECONDS,
+  targetSessionSeconds: 80,
   traversalFraction: 1
 });
 
@@ -173,6 +193,7 @@ export function createSkylineLevel() {
       platforms: extendedPlatforms,
       checkpoints: extendedCheckpoints,
       hazards: [...extendedHazards, ...SKYLINE_SENTRY_ENCOUNTERS],
+      movingPlatforms: SKYLINE_MOVING_PLATFORMS,
       collectibles: extendedCollectibles,
       // Keep collision and presentation in one scale contract. Without this,
       // game.platformer falls back to its 0.45 x 1.0 default collider even
@@ -182,7 +203,10 @@ export function createSkylineLevel() {
       jumpVelocity: skylineMotion.jumpVelocity,
       moveSpeed: skylineMotion.moveSpeed,
       coyoteMs: skylineMotion.coyoteMs,
-      jumpBufferMs: skylineMotion.jumpBufferMs
+      jumpBufferMs: skylineMotion.jumpBufferMs,
+      fallGravityMultiplier: skylineMotion.fallGravityMultiplier,
+      jumpReleaseScale: 0.45,
+      lives: 3
     }
   });
 }

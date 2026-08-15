@@ -38,6 +38,7 @@ const input = game.input({
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
     jump: ["KeyW", "ArrowUp", "Space"],
+    dash: ["ShiftLeft", "KeyK"],
     reset: ["KeyR"]
   },
   axes: { moveX: { negative: "left", positive: "right" } },
@@ -1179,7 +1180,8 @@ app.onFrame(({ dt }) => {
   state = platformerState.step(step, {
     moveX: input.axis("moveX"),
     jumpPressed: input.pressed("jump"),
-    jumpHeld: input.held("jump")
+    jumpHeld: input.held("jump"),
+    dashPressed: input.pressed("dash")
   });
   challengeEvidence = runnerChallenge.step(step, previous, state);
   // Flow, chain and objective state must be visible in the rendered scene, not only in
@@ -1237,9 +1239,10 @@ function setupPlatformerPanel(): void {
         <button id="left-control" type="button" aria-label="Move left"><b aria-hidden="true">←</b><span>Left</span></button>
         <button id="right-control" type="button" aria-label="Move right"><b aria-hidden="true">→</b><span>Right</span></button>
         <button id="jump-control" type="button"><b aria-hidden="true">↑</b><span>Jump</span></button>
+        <button id="dash-control" type="button"><b aria-hidden="true">⇢</b><span>Dash</span></button>
         <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
       </div>
-      <ul class="controls-list"><li><kbd>A D</kbd> Run</li><li><kbd>Space</kbd> Jump</li><li><kbd>R</kbd> Restart</li></ul>
+      <ul class="controls-list"><li><kbd>A D</kbd> Run</li><li><kbd>Space</kbd> Jump · hold for height</li><li><kbd>Shift</kbd> Dash</li><li><kbd>R</kbd> Restart</li></ul>
     </section>
     <section class="route-contract" aria-label="Geometry contract">
       <span class="contract-status"><i aria-hidden="true"></i> Surface locked</span>
@@ -1255,10 +1258,11 @@ function setupPlatformerPanel(): void {
   bindGameTouchControls({
     hold: [
       { elementId: "left-control", code: "KeyA" },
-      { elementId: "right-control", code: "KeyD" }
+      { elementId: "right-control", code: "KeyD" },
+      { elementId: "jump-control", code: "Space" }
     ],
     pulse: [
-      { elementId: "jump-control", code: "Space" },
+      { elementId: "dash-control", code: "ShiftLeft" },
       { elementId: "reset-control", code: "KeyR" }
     ]
   });

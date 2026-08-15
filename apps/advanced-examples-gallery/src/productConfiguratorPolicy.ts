@@ -46,7 +46,17 @@ export const PRODUCT_CONFIGURATOR_DIAGNOSTIC_LABELS = [
   "Turntable"
 ] as const;
 
-export type ProductConfiguratorFocusPart = "lens" | "body" | "sensor" | "battery" | "grip" | "controls";
+export type ProductConfiguratorFocusPart =
+  | "overview"
+  | "body"
+  | "wheels"
+  | "interior"
+  | "lights"
+  | "lens"
+  | "sensor"
+  | "battery"
+  | "grip"
+  | "controls";
 
 export interface ProductConfiguratorHotspotTarget {
   readonly focusPart: ProductConfiguratorFocusPart;
@@ -320,6 +330,7 @@ export function productConfiguratorFocusOffset(
   nodeName: string,
   controls: Readonly<Record<string, unknown>>
 ): readonly [number, number, number] {
+  if (assetId === "car-concept") return carConceptFocusOffset(nodeName, String(controls.focusPart ?? "overview"));
   if (assetId !== PRODUCT_CONFIGURATOR_STUDIO_ASSET_ID) return ZERO_OFFSET;
   const focus = String(controls.focusPart ?? "overview");
   if (focus === "overview") return ZERO_OFFSET;
@@ -363,6 +374,19 @@ export function explodedProductPartOffset(
   if (/chassis shell|structural bridge|control dial|shutter crown|status slit|mode selector/i.test(nodeName)) return [0, 0.08, 0];
   if (/swatch|hotspot|station|studio|floor|plinth|softbox|panel|leader|nameplate|label|separation|turntable|tile|baffle|cove|trough|calibration|readout|shelf|rig|cable|light/i.test(nodeName)) return [0, 0, 0];
   return [0, 0, 0];
+}
+
+function carConceptFocusOffset(nodeName: string, focus: string): readonly [number, number, number] {
+  if (focus === "overview") return ZERO_OFFSET;
+  if (focus === "body" && /BodyHood|BodyDoor|BodyRear|BodyRoof|BodyPanels/i.test(nodeName)) return [0, 0.08, 0];
+  if (focus === "wheels" && /Wheel/i.test(nodeName)) {
+    if (/L\b|Left/i.test(nodeName)) return [-0.16, -0.02, 0.06];
+    if (/R\b|Right/i.test(nodeName)) return [0.16, -0.02, -0.06];
+    return [0, -0.02, 0];
+  }
+  if (focus === "interior" && /Interior|Dashboard|Seat|Steering|Cage/i.test(nodeName)) return [0, 0.1, 0.08];
+  if (focus === "lights" && /Headlight|Taillight|Turnsignal|Signal|BrakeLight/i.test(nodeName)) return [0, 0.06, /Head/i.test(nodeName) ? -0.12 : 0.12];
+  return ZERO_OFFSET;
 }
 
 function explodedOriginalCarPartOffset(nodePath: string): readonly [number, number, number] {

@@ -446,6 +446,19 @@ export function applyCarConceptMaterialStability(
   applyGalleryCarConceptMaterialStability(material, options);
 }
 
+export type CarConceptPaintVariant = "carmine" | "pearly" | "graphite";
+
+export function resolveCarConceptPaintVariant(
+  context: Pick<CarConceptMaterialVisualRoleContext, "materialKey" | "sourceMaterialName" | "nodeName"> | string
+): CarConceptPaintVariant {
+  const identity = typeof context === "string"
+    ? context
+    : `${context.nodeName ?? ""} ${context.materialKey ?? ""} ${context.sourceMaterialName ?? ""}`;
+  if (/Pearl|Pearly/i.test(identity)) return "pearly";
+  if (/Graphite/i.test(identity)) return "graphite";
+  return "carmine";
+}
+
 export function carConceptMaterialVisualRole(
   context: CarConceptMaterialVisualRoleContext
 ): CarConceptMaterialVisualRole {
@@ -890,12 +903,108 @@ function applyGalleryCarConceptSourceTextureDetail(
   material.setParameter("u_baseColorTextureEnabled", weight);
 }
 
+function galleryCarConceptPaintVariantSurface(
+  role: "body-primary-paint" | "body-secondary-paint" | "side-panel",
+  variant: CarConceptPaintVariant,
+  surface: GalleryCarConceptRoleSurface,
+  _identity: string
+): GalleryCarConceptRoleSurface | null {
+  if (variant === "carmine") return null;
+  if (variant === "pearly") {
+    if (role === "body-primary-paint") {
+      return {
+        ...surface,
+        baseColor: [0.86, 0.78, 0.72, 1],
+        metallic: 0.18,
+        roughness: 0.22,
+        specular: 0.58,
+        specularColorFactor: [0.78, 0.68, 0.62],
+        clearcoat: 0.72,
+        clearcoatRoughness: 0.16,
+        materialEnvironmentSpecularScale: 0.32,
+        envMapIntensity: 0.32
+      };
+    }
+    if (role === "body-secondary-paint") {
+      return {
+        ...surface,
+        baseColor: [0.62, 0.54, 0.52, 1],
+        metallic: 0.12,
+        roughness: 0.3,
+        specular: 0.4,
+        specularColorFactor: [0.56, 0.48, 0.44],
+        clearcoat: 0.48,
+        clearcoatRoughness: 0.24,
+        materialEnvironmentSpecularScale: 0.2,
+        envMapIntensity: 0.2
+      };
+    }
+    return {
+      ...surface,
+      baseColor: [0.48, 0.42, 0.4, 1],
+      metallic: 0.08,
+      roughness: 0.42,
+      specular: 0.18,
+      specularColorFactor: [0.4, 0.34, 0.3],
+      clearcoat: 0.16,
+      clearcoatRoughness: 0.48,
+      materialEnvironmentSpecularScale: 0.08,
+      envMapIntensity: 0.08
+    };
+  }
+  if (role === "body-primary-paint") {
+    return {
+      ...surface,
+      baseColor: [0.1, 0.108, 0.114, 1],
+      metallic: 0.42,
+      roughness: 0.34,
+      specular: 0.36,
+      specularColorFactor: [0.22, 0.23, 0.24],
+      clearcoat: 0.38,
+      clearcoatRoughness: 0.28,
+      materialEnvironmentSpecularScale: 0.18,
+      envMapIntensity: 0.18
+    };
+  }
+  if (role === "body-secondary-paint") {
+    return {
+      ...surface,
+      baseColor: [0.046, 0.048, 0.052, 1],
+      metallic: 0.28,
+      roughness: 0.42,
+      specular: 0.22,
+      specularColorFactor: [0.12, 0.125, 0.13],
+      clearcoat: 0.22,
+      clearcoatRoughness: 0.4,
+      materialEnvironmentSpecularScale: 0.1,
+      envMapIntensity: 0.1
+    };
+  }
+  return {
+    ...surface,
+    baseColor: [0.032, 0.034, 0.036, 1],
+    metallic: 0.16,
+    roughness: 0.52,
+    specular: 0.1,
+    specularColorFactor: [0.08, 0.082, 0.086],
+    clearcoat: 0.08,
+    clearcoatRoughness: 0.58,
+    materialEnvironmentSpecularScale: 0.04,
+    envMapIntensity: 0.04
+  };
+}
+
 function galleryCarConceptRoleSurface(
   role: Exclude<CarConceptMaterialVisualRole, "unclassified">,
   context: Pick<CarConceptMaterialStabilityOptions, "materialKey" | "sourceMaterialName" | "nodeName">
 ): GalleryCarConceptRoleSurface {
   const surface = GALLERY_ROLE_SURFACES[role];
   const identity = `${context.nodeName ?? ""} ${context.materialKey ?? ""} ${context.sourceMaterialName ?? ""}`;
+  const paintVariant = resolveCarConceptPaintVariant(identity);
+  if (role === "body-primary-paint" || role === "body-secondary-paint" || role === "side-panel") {
+    const variantSurface = galleryCarConceptPaintVariantSurface(role, paintVariant, surface, identity);
+    if (variantSurface) return variantSurface;
+  }
   if (role === "body-primary-paint") {
     if (/BodyHood/i.test(identity)) {
       return {

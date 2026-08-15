@@ -613,7 +613,7 @@ function bindEvents(renderer: A3DRenderer): void {
     selected = selected === "none" ? selectedDemo.systems[0] ?? "selected system" : "none";
   });
 
-  app.addEventListener("input", (event) => {
+  const applyControlEvent = (event: Event): void => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
     const key = target.dataset.control;
@@ -629,7 +629,9 @@ function bindEvents(renderer: A3DRenderer): void {
     resetRuntimeSampling(performance.now());
     fpsReadyResetDemoId = undefined;
     updateControlReadouts();
-  });
+  };
+  app.addEventListener("input", applyControlEvent);
+  app.addEventListener("change", applyControlEvent);
 
   app.addEventListener("click", (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-action],button[data-demo],button[data-camera]");
@@ -688,10 +690,10 @@ function renderShell(): void {
         </header>
         <div class="gallery-grid">
           ${DEMOS.map((demo, index) => `
-            <button class="gallery-card review-${escapeHtml(demo.visualReview.status)}" data-demo="${demo.id}" type="button">
+            <button class="gallery-card" data-demo="${demo.id}" type="button">
               <span class="demo-preview preview-${escapeHtml(demo.id)}"><i></i><i></i><i></i></span>
               <span class="gallery-card-copy">
-                <small>${index + 1}. ${escapeHtml(demo.difficulty)} / ${escapeHtml(reviewLabel(demo.visualReview.status))}</small>
+                <small>${index + 1}. ${escapeHtml(demo.difficulty)}</small>
                 <b>${escapeHtml(demo.title)}</b>
                 <em>${escapeHtml(demo.features.slice(0, 2).join(" · "))}</em>
                 <span>${escapeHtml(demo.subtitle)}</span>
@@ -721,15 +723,15 @@ function renderShell(): void {
     </section>
     <aside class="right-panel">
       <header>
-        <span>${escapeHtml(selectedDemo.difficulty)} / ${escapeHtml(reviewLabel(selectedDemo.visualReview.status))}</span>
+        <span>${escapeHtml(selectedDemo.difficulty)}</span>
         <h1>${escapeHtml(selectedDemo.title)}</h1>
         <p>${escapeHtml(selectedDemo.subtitle)}</p>
       </header>
-      <section class="visual-review review-${escapeHtml(selectedDemo.visualReview.status)}">
-        <h2>Release Quality</h2>
-        <strong>${escapeHtml(reviewLabel(selectedDemo.visualReview.status))}</strong>
-        <p>${escapeHtml(selectedDemo.proves[0] ?? selectedDemo.subtitle)}</p>
-        <small>Built and verified with Aura3D 2.0.1</small>
+      <section class="visual-review">
+        <h2>Scene</h2>
+        <strong>Aura3D 2.0.1</strong>
+        <p>${escapeHtml(selectedDemo.features.slice(0, 3).join(" · "))}</p>
+        <small>Interactive browser experience built with Aura3D 2.0.1</small>
       </section>
       <section class="stats-grid" id="stats-grid">
         ${metric("Status", runtime.status)}
@@ -744,14 +746,12 @@ function renderShell(): void {
         ${renderControls(selectedDemo)}
       </section>
       <section class="info-section">
-        <h2>What This Proves</h2>
-        ${list(selectedDemo.proves)}
-        <h2>A3D Features Used</h2>
+        <h2>About this scene</h2>
         ${chips(selectedDemo.features)}
-        <h2>Build Highlights</h2>
-        ${list(selectedDemo.systems)}
-        <h2>Try It Live</h2>
+        <h2>What you can do</h2>
         ${list(selectedDemo.interactions)}
+        <h2>Live systems</h2>
+        ${list(selectedDemo.systems)}
       </section>
     </aside>
     <div class="caption-strip" id="caption-strip">
@@ -785,12 +785,6 @@ function updateAuthoredLoaderState(demoId: string, authoredStatus: AuthoredAsset
       ? "Authored asset failed to load — showing procedural scene only."
       : "Loading authored asset…";
   }
-}
-
-function reviewLabel(status: DemoDefinition["visualReview"]["status"]): string {
-  if (status === "accepted") return "live";
-  if (status === "candidate") return "preview";
-  return "under review";
 }
 
 function renderControls(demo: DemoDefinition): string {

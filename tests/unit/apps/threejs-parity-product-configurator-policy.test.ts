@@ -558,7 +558,7 @@ describe("threejsParity product configurator policy", () => {
     expect(productConfiguratorFocusOffset("other-asset", "lens-material target", { focusPart: "lens" })).toEqual([0, 0, 0]);
     expect(productConfiguratorFocusOffset("product-configurator-studio-blender", "lens-material target", { focusPart: "lens" })).toEqual([0, 0.08, -0.16]);
     expect(productConfiguratorFocusOffset("product-configurator-studio-blender", "battery-sled support", { focusPart: "battery" })).toEqual([0.14, -0.04, 0.12]);
-    expect(productConfiguratorFocusOffset("car-concept", "BodyHood", { focusPart: "body" })).toEqual([0, 0, 0]);
+    expect(productConfiguratorFocusOffset("car-concept", "BodyHood", { focusPart: "body" })).toEqual([0, 0.08, 0]);
     expect(productConfiguratorFocusOffset("product-configurator-studio-blender", "unmatched imported node", { focusPart: "controls" })).toEqual([0, 0, 0]);
   });
 

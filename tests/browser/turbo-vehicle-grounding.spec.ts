@@ -332,3 +332,55 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
     await server?.close();
   }
 });
+
+test("turbo player overtakes the rival on the normal gameplay camera", async ({ page }, testInfo) => {
+  testInfo.setTimeout(240_000);
+  let server: ExampleDevServer | undefined;
+  const consoleErrors: string[] = [];
+  try {
+    server = await startExampleDevServer();
+    page.on("console", (message) => {
+      if (message.type() === "error" && !/favicon/i.test(message.text())) consoleErrors.push(message.text());
+    });
+    page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${server.origin}${ROUTE}`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { status?: string } | undefined>)[name];
+      return value?.status === "ready";
+    }, GLOBAL_NAME, { timeout: 90_000 });
+
+    mkdirSync(REPORT_DIR, { recursive: true });
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-overtake-approach.png") });
+    await page.keyboard.down("KeyW");
+    await page.keyboard.down("KeyD");
+
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, {
+        gameplay?: { playerOvertookOpponent?: boolean };
+        raceState?: { progress?: number; offTrack?: boolean };
+        opponent?: { progress?: number };
+        vehicleContact?: { active?: boolean; currentPenetration?: number };
+      } | undefined>)[name];
+      return value?.gameplay?.playerOvertookOpponent === true;
+    }, GLOBAL_NAME, { timeout: 90_000, polling: "raf" });
+
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-overtake-pass-complete.png") });
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: join(REPORT_DIR, "turbo-overtake-retained-lead.png") });
+    const evidence = await readEvidence(page);
+    const gameplay = evidence.gameplay as { playerOvertookOpponent?: boolean };
+    const raceState = evidence.raceState as { progress?: number; offTrack?: boolean };
+    const opponent = evidence.opponent as { progress?: number };
+    const contact = evidence.vehicleContact as { currentPenetration?: number };
+    expect(gameplay.playerOvertookOpponent).toBe(true);
+    expect(Number(raceState.progress)).toBeGreaterThan(Number(opponent.progress));
+    expect(raceState.offTrack).toBe(false);
+    expect(Number(contact.currentPenetration ?? 0)).toBeLessThan(0.04);
+    expect(consoleErrors, consoleErrors.join("\n")).toEqual([]);
+  } finally {
+    await page.keyboard.up("KeyW").catch(() => undefined);
+    await page.keyboard.up("KeyD").catch(() => undefined);
+    await server?.close();
+  }
+});

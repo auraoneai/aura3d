@@ -2,8 +2,11 @@ import { createStudioLighting } from "@aura3d/engine/production-runtime";
 import { createLightingRig, type CollectedLight } from "@aura3d/rendering";
 import type { SceneFrame } from "./sceneBuilderPrimitives";
 
-export type ProductConfiguratorLightingControl = "studio" | "inspection" | string;
-export type ProductConfiguratorShowroomLightingPreset = "production-runtime-product-studio" | "production-runtime-inspection-studio";
+export type ProductConfiguratorLightingControl = "studio" | "environment" | "inspection" | string;
+export type ProductConfiguratorShowroomLightingPreset =
+  | "production-runtime-product-studio"
+  | "production-runtime-environment-studio"
+  | "production-runtime-inspection-studio";
 
 export interface ProductConfiguratorShowroomLighting {
   readonly preset: ProductConfiguratorShowroomLightingPreset;
@@ -14,16 +17,51 @@ export interface ProductConfiguratorShowroomLighting {
 export function createProductConfiguratorShowroomLighting(
   lightingControl: ProductConfiguratorLightingControl = "studio"
 ): ProductConfiguratorShowroomLighting {
-  const inspection = lightingControl === "inspection";
+  if (lightingControl === "inspection") {
+    const lightingRig = createLightingRig({
+      preset: "product-detail",
+      intensityScale: 1,
+      shadows: false
+    });
+    return {
+      preset: "production-runtime-inspection-studio",
+      collectedLights: createStudioLighting({
+        preset: "inspection",
+        shadows: false,
+        intensityScale: 1
+      }),
+      diagnostics: lightingRig.diagnostics
+    };
+  }
+  if (lightingControl === "environment") {
+    const lightingRig = createLightingRig({
+      preset: "urban-neon",
+      intensityScale: 1.05,
+      shadows: false
+    });
+    return {
+      preset: "production-runtime-environment-studio",
+      collectedLights: createStudioLighting({
+        preset: "softbox",
+        shadows: false,
+        intensityScale: 0.82
+      }).map((light) => {
+        if (/key/i.test(light.source.name)) return adjustProductLight(light, [0.42, 0.62, 1], 0.86);
+        if (/fill/i.test(light.source.name)) return adjustProductLight(light, [0.28, 0.72, 0.82], 1.35);
+        return adjustProductLight(light, [0.72, 0.38, 0.95], 1.12);
+      }),
+      diagnostics: lightingRig.diagnostics
+    };
+  }
   const lightingRig = createLightingRig({
-    preset: inspection ? "product-detail" : "product-shot",
+    preset: "product-shot",
     intensityScale: 1,
     shadows: false
   });
   return {
-    preset: inspection ? "production-runtime-inspection-studio" : "production-runtime-product-studio",
+    preset: "production-runtime-product-studio",
     collectedLights: createStudioLighting({
-      preset: inspection ? "inspection" : "product",
+      preset: "product",
       shadows: false,
       intensityScale: 1
     }),
