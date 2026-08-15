@@ -30,7 +30,7 @@ export const PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS = [
 ] as const;
 
 export const PRODUCT_CONFIGURATOR_ROUTE_LIMITATIONS = [
-  "The default Product Configurator route now uses only the original texture-backed car-concept GLB as the visual subject; generated no-texture product-studio fixtures and unrelated product props are not part of the accepted-fidelity path.",
+  "The studio presents the original texture-backed concept car so paint, wheels, and cabin parts stay readable. Extra generated props stay off the default stage.",
   "The car control consumes real imported KHR_materials_variants metadata through the shared authored-layer pipeline where the source asset exposes variants.",
   "A3D still does not expose triangle spatial raycast picking for imported GLB renderables, so hotspot-style part inspection remains bounded to route-side focus controls.",
   "Exploded view uses route-side name-pattern offsets against imported node names, not a product-aware node graph, variant graph, or authored exploded animation timeline."

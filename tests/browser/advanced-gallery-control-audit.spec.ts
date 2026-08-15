@@ -15,6 +15,8 @@ interface GalleryRuntime {
   readonly drawCalls: number;
   readonly objectCount: number;
   readonly instanceCount: number;
+  readonly width?: number;
+  readonly height?: number;
   readonly error?: string;
   readonly authoredAsset?: { readonly status?: string };
   readonly interactionState?: {
@@ -24,6 +26,7 @@ interface GalleryRuntime {
   };
   readonly systems?: readonly string[];
   readonly animationState?: { readonly paused?: boolean; readonly routeAnimatedSystems?: readonly string[] };
+  readonly telemetry?: { readonly captureOverhead?: { readonly directCaptureCount?: number; readonly lastDirectCaptureMs?: number } };
 }
 
 interface ControlLedgerEntry {
@@ -53,10 +56,20 @@ async function waitForRuntime(page: Page, demo: DemoId): Promise<GalleryRuntime>
       .__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
     if (!runtime || runtime.demoId !== expected) return false;
     if (runtime.status === "error") return true;
-    return runtime.frameCount >= 4 && runtime.drawCalls > 0;
+    const canvas = document.querySelector("canvas");
+    const sized = canvas instanceof HTMLCanvasElement && canvas.width >= 1280 && canvas.height >= 720;
+    return runtime.frameCount >= 4 && runtime.drawCalls > 0 && sized;
   }, demo, { timeout: 90_000 });
   const runtime = await readRuntime(page);
   if (!runtime) throw new Error(`No gallery runtime for ${demo}`);
+  const canvas = await page.evaluate(() => {
+    const node = document.querySelector("canvas");
+    if (!(node instanceof HTMLCanvasElement)) return { width: 0, height: 0 };
+    return { width: node.width, height: node.height };
+  });
+  expect(canvas.width, `${demo} canvas width`).toBeGreaterThanOrEqual(1280);
+  expect(canvas.height, `${demo} canvas height`).toBeGreaterThanOrEqual(720);
+  expect(runtime.width ?? canvas.width, `${demo} runtime width`).toBeGreaterThanOrEqual(1280);
   return runtime;
 }
 
@@ -114,6 +127,8 @@ test("every advanced-gallery control changes UI, runtime, and rendered output", 
       const bodyText = await page.locator(".right-panel").innerText();
       expect(bodyText.toLowerCase()).not.toContain("what this proves");
       expect(bodyText.toLowerCase()).not.toContain("tests/reports");
+      expect(bodyText.toLowerCase()).not.toContain("accepted-fidelity");
+      expect(bodyText.toLowerCase()).not.toContain("accepted fidelity");
       await page.screenshot({ path: join(REPORT_DIR, `${demo.id}-default.png`) });
       await page.screenshot({ path: join(SCRATCH_DIR, "gallery", `${demo.id}-default.png`) });
       if (demo.id === "smart-city") {
@@ -162,7 +177,7 @@ test("every advanced-gallery control changes UI, runtime, and rendered output", 
           || (afterRuntime?.animationState?.paused ?? false) !== (beforeRuntime?.animationState?.paused ?? false)
           || (afterRuntime?.systems ?? []).join("|") !== (beforeRuntime?.systems ?? []).join("|");
         const pixelsChanged = changedFingerprint !== initialFingerprint;
-        const pass = uiChanged && (runtimeChanged || pixelsChanged);
+        const pass = uiChanged && runtimeChanged && pixelsChanged;
         ledger.push({
           demo: demo.id,
           control: control.key,
@@ -179,6 +194,54 @@ test("every advanced-gallery control changes UI, runtime, and rendered output", 
         await page.screenshot({ path: join(REPORT_DIR, `${demo.id}-${control.key}.png`) });
       }
 
+      for (const camera of ["detail", "wide", "hero"] as const) {
+        const before = await readRuntime(page);
+        const beforePrint = await canvasFingerprint(page);
+        await page.locator(`button[data-camera="${camera}"]`).click();
+        await page.waitForTimeout(280);
+        const after = await waitForRuntime(page, demo.id);
+        const afterPrint = await canvasFingerprint(page);
+        const runtimeChanged = after.interactionState?.cameraPreset === camera
+          && after.interactionState.cameraPreset !== before?.interactionState?.cameraPreset;
+        const pixelsChanged = afterPrint !== beforePrint;
+        ledger.push({
+          demo: demo.id,
+          control: `camera-${camera}`,
+          kind: "button",
+          initialUi: String(before?.interactionState?.cameraPreset ?? "unknown"),
+          changedUi: camera,
+          initialRuntime: before?.interactionState?.cameraPreset,
+          changedRuntime: after.interactionState?.cameraPreset,
+          initialFingerprint: beforePrint,
+          changedFingerprint: afterPrint,
+          pass: runtimeChanged && pixelsChanged,
+          reason: runtimeChanged && pixelsChanged
+            ? "camera-runtime+pixels"
+            : `runtimeChanged=${runtimeChanged} pixelsChanged=${pixelsChanged}`
+        });
+        await page.screenshot({ path: join(REPORT_DIR, `${demo.id}-camera-${camera}.png`) });
+      }
+
+      const captureBefore = await readRuntime(page);
+      await page.getByRole("button", { name: "Capture" }).click();
+      await page.waitForTimeout(200);
+      const captureAfter = await readRuntime(page);
+      const captureChanged = (captureAfter.telemetry?.captureOverhead?.directCaptureCount ?? 0)
+        > (captureBefore?.telemetry?.captureOverhead?.directCaptureCount ?? 0);
+      ledger.push({
+        demo: demo.id,
+        control: "capture",
+        kind: "button",
+        initialUi: "idle",
+        changedUi: "activated",
+        initialRuntime: captureBefore?.telemetry?.captureOverhead?.directCaptureCount ?? 0,
+        changedRuntime: captureAfter.telemetry?.captureOverhead?.directCaptureCount ?? 0,
+        initialFingerprint: "capture",
+        changedFingerprint: "capture",
+        pass: captureChanged,
+        reason: captureChanged ? "capture-fired" : "capture-noop"
+      });
+
       const beforeReset = await readRuntime(page);
       await page.getByRole("button", { name: "Reset" }).click();
       await page.waitForTimeout(200);
@@ -193,6 +256,17 @@ test("every advanced-gallery control changes UI, runtime, and rendered output", 
       }
       expect(beforeReset?.frameCount ?? 0).toBeGreaterThan(0);
     }
+
+    await page.goto(`${server.origin}${ROUTE}#product-configurator`, { waitUntil: "domcontentloaded" });
+    await waitForRuntime(page, "product-configurator");
+    await page.getByRole("button", { name: "Gallery" }).click();
+    await page.waitForFunction(() => {
+      const runtime = (window as unknown as { __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: { route?: string; demoId?: string } })
+        .__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
+      return runtime?.route === "gallery" || runtime?.demoId === "gallery" || location.hash.includes("gallery");
+    }, undefined, { timeout: 15_000 });
+    await page.screenshot({ path: join(REPORT_DIR, "gallery-home.png") });
+    await page.screenshot({ path: join(SCRATCH_DIR, "gallery", "gallery-home.png") });
 
     const failed = ledger.filter((entry) => !entry.pass);
     writeFileSync(join(REPORT_DIR, "gallery-controls.json"), JSON.stringify({ ledger, failed, errors, failedAssets }, null, 2));

@@ -1,6 +1,6 @@
 import { createServer, type Server } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { extname, join, normalize, relative, resolve } from "node:path";
+import { dirname, extname, join, normalize, relative, resolve } from "node:path";
 import ts from "typescript";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
@@ -275,8 +275,16 @@ function browserMappedLoadersGLPath(pathname: string): string | undefined {
 }
 
 function transpileForBrowser(source: string, fileName: string): string {
-  const withoutCssSideEffects = source.replace(/^\s*import\s+["'][^"']+\.css["'];?\s*$/gm, "");
-  const rewritten = rewritePackageImports(withoutCssSideEffects);
+  const withCssInjected = source.replace(/^\s*import\s+["']([^"']+\.css)["'];?\s*$/gm, (_statement, specifier: string) => {
+    const cssPath = specifier.startsWith(".")
+      ? resolve(dirname(fileName), specifier)
+      : resolve(process.cwd(), specifier.replace(/^\//, ""));
+    if (!existsSync(cssPath)) {
+      throw new Error(`CSS import not found: ${specifier} from ${fileName}`);
+    }
+    return `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(process.cwd(), cssPath))}); style.textContent = ${JSON.stringify(readFileSync(cssPath, "utf8"))}; document.head.appendChild(style); })();`;
+  });
+  const rewritten = rewritePackageImports(withCssInjected);
   const result = ts.transpileModule(rewritten, {
     fileName,
     compilerOptions: {

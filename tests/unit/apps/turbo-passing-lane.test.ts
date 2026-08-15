@@ -53,6 +53,16 @@ describe("turbo passing lane", () => {
     expect(closing.passingSide).toBe("left");
     expect(closing.preferredSignedOffset).toBeLessThan(0);
 
+    const onLine = decideTurboOpponentYield({
+      wrappedPlayerGap: -0.03,
+      playerSignedOffset: 0,
+      opponentSignedOffset: 0,
+      legalPassingOffset: 0.07
+    });
+    expect(onLine.yielding).toBe(true);
+    expect(onLine.passingSide).toBe("right");
+    expect(onLine.preferredSignedOffset).toBeGreaterThan(0);
+
     const alongside = decideTurboOpponentYield({
       wrappedPlayerGap: 0,
       playerSignedOffset: 0.06,

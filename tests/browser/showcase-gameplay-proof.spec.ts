@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import {
   SKYLINE_FIRST_MID_CHECKPOINT_ID,
@@ -404,8 +404,12 @@ test.describe("showcase gameplay proof", () => {
     testInfo.setTimeout(480_000);
     const blockers: string[] = [];
     const errors = collectPageErrors(page);
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${server.origin}/apps/showcase-skyline-runner/`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => {
+      const canvas = document.querySelector("canvas");
+      return canvas instanceof HTMLCanvasElement && canvas.width >= 1280 && canvas.height >= 720;
+    }, undefined, { timeout: 60_000 });
     const before = await waitForSkyline(page);
     const beforePng = await capture(page, "showcase-skyline-runner", "before-input");
 
@@ -765,6 +769,23 @@ test.describe("showcase gameplay proof", () => {
       levelProgressionProvenBy: "tests/unit/apps/blockfall-sixty-second-replay.test.ts",
       sixtySecondReplayProof: after.sixtySecondReplayProof
     });
+    writeFileSync(
+      "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer/blockfall.log",
+      `${JSON.stringify({
+        producer: "tests/browser/showcase-gameplay-proof.spec.ts",
+        input: "keyboard ArrowLeft/ArrowRight/ArrowUp/Space/KeyR",
+        movedLeft: minCellX(movedLeft) < minCellX(before),
+        movedRight: minCellX(movedRight) > minCellX(movedLeft),
+        rotated: rotated.kitContractProof?.rotateChangesRotation === true,
+        locked: (after.current?.piecesPlaced ?? 0) > (before.current?.piecesPlaced ?? 0),
+        lineClear: Number(lineClearState.current?.lines ?? 0) > Number(before.current?.lines ?? 0),
+        scoreIncreased: Number(after.current?.score ?? 0) >= Number(before.current?.score ?? 0),
+        gameOver: gameOverState.current?.gameOver === true,
+        resetCleared: reset.current?.score === 0 && reset.current.lines === 0,
+        blockers,
+        errors
+      }, null, 2)}\n`
+    );
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 });
@@ -1196,6 +1217,11 @@ async function capture(page: Page, appId: string, label: string): Promise<Screen
   });
   try {
     const buffer = await page.screenshot({ path, fullPage: false, scale: "css", timeout: 30_000 });
+    const scratchName = scratchCaptureName(appId, label);
+    if (scratchName) {
+      mkdirSync(scratchName.dir, { recursive: true });
+      writeFileSync(scratchName.file, buffer);
+    }
     return { path, bytes: buffer.byteLength, sha256: createHash("sha256").update(buffer).digest("hex") };
   } finally {
     if (pausedApps > 0) {
@@ -1214,7 +1240,38 @@ async function captureScene(page: Page, appId: string, label: string): Promise<S
   const canvas = page.locator("canvas").first();
   await expect(canvas, `${appId} should expose a rendered canvas for ${label}`).toBeVisible({ timeout: 10_000 });
   const buffer = await canvas.screenshot({ path, scale: "css", timeout: 30_000 });
+  const scratchName = scratchCaptureName(appId, label);
+  if (scratchName) {
+    mkdirSync(scratchName.dir, { recursive: true });
+    writeFileSync(scratchName.file, buffer);
+  }
   return { path, bytes: buffer.byteLength, sha256: createHash("sha256").update(buffer).digest("hex") };
+}
+
+function scratchCaptureName(appId: string, label: string): { readonly dir: string; readonly file: string } | undefined {
+  const root = "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer";
+  if (appId === "showcase-skyline-runner") {
+    const aliases: Record<string, string> = {
+      "before-input": "start",
+      "first-load": "start",
+      collectible: "collectible",
+      "collection-chain": "collectible",
+      enemy: "enemy",
+      respawn: "hazard",
+      checkpoint: "checkpoint",
+      finish: "finish",
+      landing: "landing",
+      jump: "jump"
+    };
+    const name = aliases[label] ?? label;
+    const dir = join(root, "skyline");
+    return { dir, file: join(dir, `${name}.png`) };
+  }
+  if (appId === "showcase-blockfall-reactor") {
+    const dir = join(root, "blockfall");
+    return { dir, file: join(dir, `${label}.png`) };
+  }
+  return undefined;
 }
 
 function check(condition: boolean, blockers: string[], message: string): void {

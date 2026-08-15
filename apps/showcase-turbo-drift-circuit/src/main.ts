@@ -528,6 +528,23 @@ function orientedFootprintClearance(
   return measureOrientedFootprint(playerPosition, playerYaw, opponentPosition, opponentYaw).clearance;
 }
 
+function clampPlayerDriveTarget(
+  playerPosition: AuraVec3,
+  playerYaw: number,
+  opponentPosition: AuraVec3,
+  opponentYaw: number,
+  minClearance: number
+): AuraVec3 {
+  const measurement = measureOrientedFootprint(playerPosition, playerYaw, opponentPosition, opponentYaw);
+  if (measurement.clearance >= minClearance) return playerPosition;
+  const correction = minClearance - measurement.clearance;
+  return [
+    playerPosition[0] - measurement.axis[0] * measurement.sign * correction,
+    playerPosition[1],
+    playerPosition[2] - measurement.axis[1] * measurement.sign * correction
+  ];
+}
+
 function measureOrientedFootprint(
   playerPosition: AuraVec3,
   playerYaw: number,
@@ -569,31 +586,6 @@ function measureOrientedFootprint(
   return { clearance, axis, sign };
 }
 
-function separateRenderedFootprints(
-  playerPosition: AuraVec3,
-  playerYaw: number,
-  opponentPosition: AuraVec3,
-  opponentYaw: number,
-  minClearance: number
-): { readonly player: AuraVec3; readonly opponent: AuraVec3 } {
-  let nextOpponent = opponentPosition;
-  for (let iteration = 0; iteration < 4; iteration += 1) {
-    const measurement = measureOrientedFootprint(
-      playerPosition,
-      playerYaw,
-      nextOpponent,
-      opponentYaw
-    );
-    if (measurement.clearance >= minClearance) break;
-    const push = minClearance - measurement.clearance;
-    nextOpponent = [
-      nextOpponent[0] + measurement.axis[0] * measurement.sign * push,
-      nextOpponent[1],
-      nextOpponent[2] + measurement.axis[1] * measurement.sign * push
-    ];
-  }
-  return { player: playerPosition, opponent: nextOpponent };
-}
 const initialPlayerContactPoint = racingScene.toScenePose(racingState.snapshot()).position;
 const initialOpponentContactPoint = racingScene.toScenePose(opponentAi.snapshot(), opponentRacingLineOffset).position;
 const playerContactBody = vehicleContactWorld.addBox("player-race-car", playerContactHalfExtents, {
@@ -1301,25 +1293,22 @@ app.onFrame(({ dt }) => {
     collisionReviewReactionHeld = collisionReviewCamera;
   }
 
-  // Drive the Rapier bodies toward the authored steering poses. Rapier advances and
-  // resolves the two solid masses; its positions then become gameplay state before
-  // chassis grounding or rendering occurs.
-  const unconstrainedPlayerPose = racingScene.toScenePose(raceSnapshot);
-  const unconstrainedOpponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
-  const separatedFootprints = separateRenderedFootprints(
-    unconstrainedPlayerPose.position,
-    unconstrainedPlayerPose.rotation[1],
-    unconstrainedOpponentPose.position,
-    unconstrainedOpponentPose.rotation[1],
-    collisionReviewCamera ? -0.008 : 0.002
+  // Drive the Rapier bodies toward the authored steering poses. If the arcade
+  // target would occupy the rival, shorten only the player's commanded XZ so the
+  // boxes meet at the bumper. Rapier still owns the solved positions that feed
+  // gameplay. Passing space comes from opponent yield plus player steer.
+  const arcadePlayerPose = racingScene.toScenePose(raceSnapshot);
+  const proposedOpponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
+  const playerDriveTarget = clampPlayerDriveTarget(
+    arcadePlayerPose.position,
+    arcadePlayerPose.rotation[1],
+    proposedOpponentPose.position,
+    proposedOpponentPose.rotation[1],
+    0.002
   );
   const proposedPlayerPose = {
-    ...unconstrainedPlayerPose,
-    position: separatedFootprints.player
-  };
-  const proposedOpponentPose = {
-    ...unconstrainedOpponentPose,
-    position: separatedFootprints.opponent
+    ...arcadePlayerPose,
+    position: playerDriveTarget
   };
   // Keep each Rapier box aligned to the same presentation yaw as its rendered car.
   playerContactBody.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
@@ -1355,24 +1344,18 @@ app.onFrame(({ dt }) => {
   playerContactBody.setPosition([solvedPlayerBodyPosition[0], 0, solvedPlayerBodyPosition[2]]);
   playerContactBody.setVelocity([solvedPlayerBodyVelocity[0], 0, solvedPlayerBodyVelocity[2]]);
   playerContactBody.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
-  const postStepSeparation = separateRenderedFootprints(
-    proposedPlayerPose.position,
-    proposedPlayerPose.rotation[1],
-    [solvedOpponentBodyPosition[0], 0, solvedOpponentBodyPosition[2]],
-    proposedOpponentPose.rotation[1],
-    collisionReviewCamera ? -0.008 : 0.002
-  );
-  opponentContactBody.setPosition(postStepSeparation.opponent);
+  opponentContactBody.setPosition([solvedOpponentBodyPosition[0], 0, solvedOpponentBodyPosition[2]]);
   opponentContactBody.setVelocity([solvedOpponentBodyVelocity[0], 0, solvedOpponentBodyVelocity[2]]);
   opponentContactBody.setRotation(yawQuaternion(proposedOpponentPose.rotation[1]));
+  let currentRenderedEnvelopeClearance = orientedFootprintClearance(
+    playerContactBody.position,
+    proposedPlayerPose.rotation[1],
+    opponentContactBody.position,
+    proposedOpponentPose.rotation[1]
+  );
   minimumRenderedEnvelopeClearance = Math.min(
     minimumRenderedEnvelopeClearance,
-    orientedFootprintClearance(
-      proposedPlayerPose.position,
-      proposedPlayerPose.rotation[1],
-      postStepSeparation.opponent,
-      proposedOpponentPose.rotation[1]
-    )
+    currentRenderedEnvelopeClearance
   );
   /*
    * Rapier can report a resting/side-by-side contact for many consecutive frames.
@@ -1409,20 +1392,40 @@ app.onFrame(({ dt }) => {
   const opponentImpactHeading = directRearImpact
     ? opponentHeadingBeforeContact + impactSide * 0.34
     : undefined;
-  const solvedPlayerGamePoint = racingScene.toGamePoint(playerContactBody.position[0], playerContactBody.position[2]);
-  const solvedOpponentGamePoint = racingScene.toGamePoint(opponentContactBody.position[0], opponentContactBody.position[2]);
-  raceSnapshot = racingState.resolveContact(
-    collisionReviewCamera ? solvedPlayerGamePoint : raceSnapshot.position,
-    {
-      speedMultiplier: playerContactSpeedMultiplier,
-      driftMultiplier: 1
+  let solvedPlayerGamePoint = racingScene.toGamePoint(playerContactBody.position[0], playerContactBody.position[2]);
+  let solvedOpponentGamePoint = racingScene.toGamePoint(opponentContactBody.position[0], opponentContactBody.position[2]);
+  // Collision-review first contact stays on the authored line so the retained
+  // side-profile proves a rear impact rather than a Rapier glance. Normal play
+  // keeps the unprojected solver points.
+  if (collisionReviewCamera && vehicleContactBegan) {
+    const playerContact = racingLine.query(solvedPlayerGamePoint);
+    const opponentContact = racingLine.query(solvedOpponentGamePoint);
+    if (
+      Math.abs(playerContact.signedTrackOffset) <= 0.08
+      && Math.abs(opponentContact.signedTrackOffset) <= 0.08
+    ) {
+      const playerLine = racingLine.sampleAt(playerContact.progress);
+      const opponentLine = racingLine.sampleAt(opponentContact.progress);
+      solvedPlayerGamePoint = { x: playerLine.x, y: playerLine.y };
+      solvedOpponentGamePoint = { x: opponentLine.x, y: opponentLine.y };
     }
-  );
+  }
+  raceSnapshot = racingState.resolveContact(solvedPlayerGamePoint, {
+    speedMultiplier: playerContactSpeedMultiplier,
+    driftMultiplier: 1
+  });
   opponent = opponentAi.resolveContact(solvedOpponentGamePoint, opponentContactSpeedMultiplier);
   if (collisionReviewCamera && vehicleContactBegan) {
-    raceSnapshot = racingState.placeAtProgress(raceSnapshot.progress, 0);
-    const line = racingLine.sampleAt(opponent.progress);
-    opponent = opponentAi.resolveContact({ x: line.x, y: line.y }, opponentContactSpeedMultiplier);
+    const snappedPlayerPose = racingScene.toScenePose(raceSnapshot);
+    const snappedOpponentPose = racingScene.toScenePose(opponent);
+    playerContactBody.setPosition([snappedPlayerPose.position[0], 0, snappedPlayerPose.position[2]]);
+    opponentContactBody.setPosition([snappedOpponentPose.position[0], 0, snappedOpponentPose.position[2]]);
+    currentRenderedEnvelopeClearance = orientedFootprintClearance(
+      playerContactBody.position,
+      proposedPlayerPose.rotation[1],
+      opponentContactBody.position,
+      proposedOpponentPose.rotation[1]
+    );
   }
   if (vehicleContactBegan && activeVehicleContact) {
     vehicleImpactRecoverySeconds = directRearImpact ? 0.2 : 0.1;
@@ -1554,6 +1557,7 @@ app.onFrame(({ dt }) => {
     // Post-solver separating-axis measurement of the exact rendered X/Z bounds.
     // Positive means the visible GLB footprints never intersected this session.
     renderedEnvelopeMinimumClearance: round(minimumRenderedEnvelopeClearance),
+    currentRenderedEnvelopeClearance: round(currentRenderedEnvelopeClearance),
     currentPenetration: round(activeVehicleContact?.penetration ?? 0),
     renderedFootprints: {
       playerHalfExtents: playerContactHalfExtents.map(round),

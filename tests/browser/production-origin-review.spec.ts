@@ -18,7 +18,7 @@ async function waitReady(page: Page): Promise<void> {
   await page.waitForTimeout(2500);
   await page.waitForFunction(() => {
     const canvas = document.querySelector("canvas");
-    return canvas instanceof HTMLCanvasElement && canvas.width > 8 && canvas.height > 8;
+    return canvas instanceof HTMLCanvasElement && canvas.width >= 1280 && canvas.height >= 720;
   }, undefined, { timeout: 90_000 }).catch(() => undefined);
   await page.waitForFunction(() => {
     const gallery = (window as unknown as {

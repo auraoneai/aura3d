@@ -251,7 +251,10 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
         input: lastInput,
         recentDecisions: recentDecisions.slice(),
         preferredSignedOffset: round(lastPreferredSignedOffset),
-        yielding: lastYielding
+        yielding: lastYielding,
+        offTrack: snapshot.offTrack,
+        signedTrackOffset: round(snapshot.signedTrackOffset),
+        onRoad: snapshot.offTrack !== true
       };
     }
   };

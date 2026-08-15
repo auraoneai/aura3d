@@ -100,7 +100,9 @@ export function measureTurboPassingLane(input: TurboPassingLaneInput): TurboPass
 
 export function decideTurboOpponentYield(input: TurboOpponentYieldInput): TurboOpponentYieldDecision {
   const legal = Math.max(0.02, input.legalPassingOffset);
-  const playerSide: "left" | "right" = input.playerSignedOffset >= 0 ? "left" : "right";
+  // An on-line closer is treated as taking the right-hand passing lane so the
+  // rival vacates left instead of mirroring a D-key pass onto the same verge.
+  const playerSide: "left" | "right" = input.playerSignedOffset > 0.008 ? "left" : "right";
   const defensiveSide: "left" | "right" = playerSide === "left" ? "right" : "left";
   const defensiveOffset = defensiveSide === "left" ? legal : -legal;
   const playerClosingFromBehind = input.wrappedPlayerGap > -0.09 && input.wrappedPlayerGap < 0.012;

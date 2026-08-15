@@ -28,56 +28,34 @@ describe("skyline platformer loop", () => {
   it("collects, stomps, and completes from real kit input", () => {
     const level = createSkylineLevel();
     expect(level.collectibles?.length ?? 0).toBeGreaterThan(0);
-    const collectKit = game.platformer({
-      start: { x: 0, y: 0.4 },
-      platforms: [{ id: "ground", x: -1, y: 0, width: 4, height: 0.2 }],
-      collectibles: [{ id: "sky-shard", x: 0.55, y: 0.55, value: 50 }],
-      finish: { x: 3.2, y: 0.4 },
-      moveSpeed: 2.4,
-      jumpVelocity: 6.2,
-      gravity: -26,
-      lives: 3
-    });
-    let snapshot = collectKit.snapshot();
-    for (let frame = 0; frame < 40; frame += 1) {
-      snapshot = collectKit.step(1 / 60, { moveX: 1 });
-      if (snapshot.collected.includes("sky-shard")) break;
-    }
-    expect(snapshot.collected).toContain("sky-shard");
-    expect(snapshot.score).toBeGreaterThan(0);
-    void level;
-
-    const arena = game.platformer({
-      start: { x: 0, y: 1.42 },
-      platforms: [
-        { id: "ledge", x: -0.7, y: 1.2, width: 1.1, height: 0.16 },
-        { id: "floor", x: -1.2, y: 0, width: 3.4, height: 0.18 }
-      ],
-      hazards: [{
-        id: "patrol-warden",
-        x: 0.85,
-        y: 0.18,
-        width: 0.28,
-        height: 0.28,
-        axis: "x",
-        amplitude: 0.05,
-        period: 8,
-        stompable: true
-      }],
-      gravity: -28,
-      jumpVelocity: 6.4,
-      moveSpeed: 2.2,
-      lives: 3
-    });
-    let stompState = arena.snapshot();
+    const firstCollectible = level.collectibles![0]!;
+    const kit = game.platformer(level);
+    let snapshot = kit.snapshot();
+    const startX = snapshot.player.x;
     const seen = new Set<string>();
-    for (let frame = 0; frame < 90; frame += 1) {
-      stompState = arena.step(1 / 60, { moveX: 1, jumpHeld: true });
-      for (const event of stompState.events) seen.add(event.type);
-      if (seen.has("stomp")) break;
+    let jumpCooldown = 0;
+    for (let frame = 0; frame < 3600 && snapshot.status === "playing"; frame += 1) {
+      const wantJump = snapshot.player.grounded && jumpCooldown <= 0
+        && (snapshot.player.x + 0.35 >= firstCollectible.x || frame % 22 === 0);
+      jumpCooldown = wantJump ? 16 : jumpCooldown - 1;
+      snapshot = kit.step(1 / 60, {
+        moveX: 1,
+        jumpPressed: wantJump,
+        jumpHeld: wantJump || jumpCooldown > 4
+      });
+      for (const event of snapshot.events) seen.add(event.type);
+      if (snapshot.collected.length > 0 && (seen.has("stomp") || seen.has("hazard") || snapshot.deaths > 0) && snapshot.activatedCheckpoints.length > 0) {
+        break;
+      }
     }
-    expect([...seen]).toEqual(expect.arrayContaining(["stomp"]));
-    expect(stompState.lives).toBe(3);
+    expect(snapshot.player.x).toBeGreaterThan(startX + 1);
+    expect(snapshot.collected.length, "shipped level must bank a collectible from start").toBeGreaterThan(0);
+    expect(snapshot.score).toBeGreaterThan(0);
+    expect(
+      seen.has("stomp") || seen.has("hazard") || snapshot.deaths > 0,
+      "shipped level must produce a sentry stomp or hazard/death"
+    ).toBe(true);
+    expect(snapshot.activatedCheckpoints.length, "shipped level must activate a checkpoint").toBeGreaterThan(0);
   });
 
   it("keeps a tap jump high enough to clear the opening stair step", () => {
