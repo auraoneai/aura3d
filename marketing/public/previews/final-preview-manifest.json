@@ -2,16 +2,16 @@
   "schema": "aura3d.marketing-final-previews/1.0",
   "status": "machine-reviewed-human-approval-pending",
   "approvalNote": "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
-  "generatedAt": "2026-08-15T12:51:04.000Z",
+  "generatedAt": "2026-08-15T16:59:00.000Z",
   "previews": [
     {
       "id": "showcase-product-configurator",
-      "source": "tests/reports/showcase-interaction-audit/showcase-product-configurator-desktop.png",
+      "source": "tests/reports/production-catalog-audit/01-product-configurator-studio.png",
       "target": "marketing/public/previews/showcase/showcase-product-configurator.png",
       "width": 1440,
       "height": 900,
-      "sha256": "136c32cd68bfee70bbcb6c3ca7939388c220992a79e3ac1e230701d6bdd0c243",
-      "bytes": 535974
+      "sha256": "12b68722a0ee4fe204501082f7930c8f25477137a22d93d815778fc75e4d3571",
+      "bytes": 169348
     },
     {
       "id": "showcase-smart-city-control",

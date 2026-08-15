@@ -9,7 +9,7 @@ const repoRoot = resolve(marketingDir, "..");
 const previews = [
   {
     id: "showcase-product-configurator",
-    source: "tests/reports/showcase-interaction-audit/showcase-product-configurator-desktop.png",
+    source: "tests/reports/production-catalog-audit/01-product-configurator-studio.png",
     target: "marketing/public/previews/showcase/showcase-product-configurator.png"
   },
   {
