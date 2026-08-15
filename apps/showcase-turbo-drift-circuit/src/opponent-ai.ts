@@ -1,4 +1,4 @@
-import { decideTurboOpponentYield } from "./passing-lane";
+import { decideTurboOpponentYield, turboBodyOnAsphalt } from "./passing-lane";
 
 export interface TurboOpponentSnapshot {
   readonly progress: number;
@@ -76,6 +76,8 @@ export interface TurboOpponentAiConfig {
   readonly catchUpStrength?: number;
   readonly legalPassingOffset?: number;
   readonly maxAsphaltOffset?: number;
+  readonly bodyHalfWidth?: number;
+  readonly visualAsphaltHalfWidth?: number;
   readonly yieldEnabled?: boolean;
   /**
    * Proportional gain for returning to the racing line. Scale this with the route's
@@ -256,7 +258,22 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
         yielding: lastYielding,
         offTrack: snapshot.offTrack,
         signedTrackOffset: round(snapshot.signedTrackOffset),
-        onRoad: snapshot.offTrack !== true
+        onAsphalt: config.bodyHalfWidth !== undefined && config.visualAsphaltHalfWidth !== undefined
+          ? turboBodyOnAsphalt({
+            signedTrackOffset: snapshot.signedTrackOffset,
+            bodyHalfWidth: config.bodyHalfWidth,
+            visualAsphaltHalfWidth: config.visualAsphaltHalfWidth
+          })
+          : snapshot.offTrack !== true,
+        // onRoad is the grey-asphalt body check when widths are known. !offTrack
+        // alone stays true on the kerb/verge and must not be used as on-asphalt.
+        onRoad: config.bodyHalfWidth !== undefined && config.visualAsphaltHalfWidth !== undefined
+          ? turboBodyOnAsphalt({
+            signedTrackOffset: snapshot.signedTrackOffset,
+            bodyHalfWidth: config.bodyHalfWidth,
+            visualAsphaltHalfWidth: config.visualAsphaltHalfWidth
+          })
+          : snapshot.offTrack !== true
       };
     }
   };

@@ -419,35 +419,46 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
     await shot("side-by-side");
     await page.keyboard.up("KeyD");
 
-    await page.waitForFunction((name) => {
-      const value = (window as unknown as Record<string, {
-        gameplay?: { playerOvertookOpponent?: boolean };
-        raceState?: { progress?: number; roadAlignment?: { onAsphalt?: boolean; onRoad?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number } };
-        opponent?: { progress?: number; onAsphalt?: boolean; onRoad?: boolean; offTrack?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number };
-        vehicleContact?: { currentPenetration?: number; currentRenderedEnvelopeClearance?: number };
-      } | undefined>)[name];
-      const player = Number(value?.raceState?.progress ?? 0);
-      const rival = Number(value?.opponent?.progress ?? 1);
-      const lead = ((player - rival + 1.5) % 1) - 0.5;
-      const alignment = value?.raceState?.roadAlignment;
-      const rivalState = value?.opponent;
-      const playerHalf = Number(alignment?.visualAsphaltHalfWidth ?? 0);
-      const rivalHalf = Number(rivalState?.visualAsphaltHalfWidth ?? 0);
-      const bothOnAsphalt = alignment?.onAsphalt === true
-        && rivalState?.onAsphalt === true
-        && alignment?.onRoad === true
-        && rivalState?.onRoad === true
-        && rivalState?.offTrack !== true
-        && Number(alignment?.outerEdge ?? 1) <= playerHalf + 1e-4
-        && Number(rivalState?.outerEdge ?? 1) <= rivalHalf + 1e-4
-        && Math.abs(Number(alignment?.signedTrackOffset ?? 1)) + Number(alignment?.bodyHalfWidth ?? 1) <= playerHalf + 1e-4
-        && Math.abs(Number(rivalState?.signedTrackOffset ?? 1)) + Number(rivalState?.bodyHalfWidth ?? 1) <= rivalHalf + 1e-4;
-      return value?.gameplay?.playerOvertookOpponent === true
-        && lead > 0.006
-        && bothOnAsphalt
-        && Number(value?.vehicleContact?.currentPenetration ?? 0) < 0.04
-        && Number(value?.vehicleContact?.currentRenderedEnvelopeClearance ?? 0) > -0.04;
-    }, GLOBAL_NAME, { timeout: 90_000, polling: "raf" });
+    try {
+      await page.waitForFunction((name) => {
+        const value = (window as unknown as Record<string, {
+          gameplay?: { playerOvertookOpponent?: boolean };
+          raceState?: { progress?: number; roadAlignment?: { onAsphalt?: boolean; onRoad?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number } };
+          opponent?: { progress?: number; onAsphalt?: boolean; onRoad?: boolean; offTrack?: boolean; outerEdge?: number; visualAsphaltHalfWidth?: number; bodyHalfWidth?: number; signedTrackOffset?: number };
+          vehicleContact?: { currentPenetration?: number; currentRenderedEnvelopeClearance?: number };
+        } | undefined>)[name];
+        const player = Number(value?.raceState?.progress ?? 0);
+        const rival = Number(value?.opponent?.progress ?? 1);
+        const lead = ((player - rival + 1.5) % 1) - 0.5;
+        const alignment = value?.raceState?.roadAlignment;
+        const rivalState = value?.opponent;
+        const playerHalf = Number(alignment?.visualAsphaltHalfWidth ?? 0);
+        const rivalHalf = Number(rivalState?.visualAsphaltHalfWidth ?? 0);
+        const bothOnAsphalt = alignment?.onAsphalt === true
+          && rivalState?.onAsphalt === true
+          && alignment?.onRoad === true
+          && rivalState?.onRoad === true
+          && rivalState?.offTrack !== true
+          && Number(alignment?.outerEdge ?? 1) <= playerHalf + 1e-4
+          && Number(rivalState?.outerEdge ?? 1) <= rivalHalf + 1e-4
+          && Math.abs(Number(alignment?.signedTrackOffset ?? 1)) + Number(alignment?.bodyHalfWidth ?? 1) <= playerHalf + 1e-4
+          && Math.abs(Number(rivalState?.signedTrackOffset ?? 1)) + Number(rivalState?.bodyHalfWidth ?? 1) <= rivalHalf + 1e-4;
+        return value?.gameplay?.playerOvertookOpponent === true
+          && lead > 0.006
+          && bothOnAsphalt
+          && Number(value?.vehicleContact?.currentPenetration ?? 0) < 0.04
+          && Number(value?.vehicleContact?.currentRenderedEnvelopeClearance ?? 0) > -0.04;
+      }, GLOBAL_NAME, { timeout: 90_000, polling: "raf" });
+    } catch (error) {
+      const dump = await readEvidence(page);
+      writeFileSync(join(scratchOvertake, "pass-timeout.json"), `${JSON.stringify({
+        gameplay: dump.gameplay,
+        raceState: dump.raceState,
+        opponent: dump.opponent,
+        vehicleContact: dump.vehicleContact
+      }, null, 2)}\n`);
+      throw error;
+    }
     await shot("pass-complete");
     await page.waitForTimeout(1200);
     await shot("retained-lead");

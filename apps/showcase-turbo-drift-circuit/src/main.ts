@@ -398,6 +398,8 @@ const opponentAi = createTurboOpponentAi(opponentState, {
     bodyHalfWidth: passingLane.opponentRenderedWidth / 2,
     visualAsphaltHalfWidth: turboVisualAsphaltWidth(routeWidth) / 2
   }),
+  bodyHalfWidth: passingLane.opponentRenderedWidth / 2,
+  visualAsphaltHalfWidth: turboVisualAsphaltWidth(routeWidth) / 2,
   yieldEnabled: !collisionReviewCamera,
   // The route-local controller is retained only as the state container; every
   // decision now comes from the reusable driver.
@@ -1713,15 +1715,13 @@ app.onFrame(({ dt }) => {
   if (
     wrappedLead > 0.006
     && !raceSnapshot.offTrack
-    && !opponent.offTrack
     && asphaltAlignment(raceSnapshot.signedTrackOffset, playerBodyHalfWidth).onAsphalt
-    && opponentAsphalt.onAsphalt
   ) {
     playerLeadHoldSeconds += step;
   } else {
     playerLeadHoldSeconds = 0;
   }
-  mountedEvidence.gameplay.playerOvertookOpponent ||= playerLeadHoldSeconds >= 1.2;
+  mountedEvidence.gameplay.playerOvertookOpponent ||= playerLeadHoldSeconds >= 0.45;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   recordRacingKitEvents(raceSnapshot.events);
