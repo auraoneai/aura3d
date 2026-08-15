@@ -1,6 +1,6 @@
 # Physics
 
-Version: 2.0.0
+Version: 2.0.2
 
 Aura3D physics has two layers, and the distinction matters when you are deciding what to reach for:
 

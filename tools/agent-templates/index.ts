@@ -5,6 +5,7 @@ import { checkDeploy } from "../../packages/aura3d-cli/src/index";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
+const currentPackageVersion = (JSON.parse(readFileSync("package.json", "utf8")) as { version: string }).version;
 const templates = [...CREATE_AURA3D_TEMPLATES];
 const requestedSmokeTemplates = process.env.A3D_TEMPLATE_FILTER
   ?.split(",")
@@ -167,7 +168,7 @@ checks.push({
 });
 
 writeReport(installedTarballDirectory ? "tests/reports/installed-template-lifecycle.json" : "tests/reports/agent-templates.json", installedTarballDirectory ? "aura3d-installed-template-lifecycle" : "aura3d-agent-templates", checks, {
-  mode: installedTarballDirectory ? "fresh-local-2.0.0-tarballs" : "workspace-source-aliases",
+  mode: installedTarballDirectory ? `fresh-local-${currentPackageVersion}-tarballs` : "workspace-source-aliases",
   scaffoldSmoke: scaffoldSmoke.results
 });
 
@@ -188,7 +189,7 @@ function runScaffoldSmoke(): {
       const scaffold = createA3DProject({
         targetDir,
         template: template as CreateA3DTemplate,
-        packageVersion: "2.0.0",
+        packageVersion: currentPackageVersion,
         rootDir: resolve("packages/create-aura3d")
       });
       const installedPackages = installedTarballDirectory ? installPackedTemplateDependencies(targetDir) : [];
@@ -228,7 +229,7 @@ function runScaffoldSmoke(): {
       results.push({
         template,
         files: scaffold.files.length,
-        installMode: installedTarballDirectory ? "fresh-local-2.0.0-tarballs" : "workspace-source-aliases",
+        installMode: installedTarballDirectory ? `fresh-local-${currentPackageVersion}-tarballs` : "workspace-source-aliases",
         installedPackages,
         build: true,
         browserSmoke: true,
@@ -425,14 +426,14 @@ function installPackedTemplateDependencies(targetDir: string): readonly string[]
   };
   for (const name of directAuraPackages) visit(name);
   const tarballs = [...closure].sort().map((name) => {
-    const path = resolve(installedTarballDirectory, `${name.slice(1).replace("/", "-")}-2.0.0.tgz`);
+    const path = resolve(installedTarballDirectory, `${name.slice(1).replace("/", "-")}-${currentPackageVersion}.tgz`);
     if (!existsSync(path)) throw new Error(`Missing packed template dependency ${path}.`);
     return path;
   });
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-save", ...tarballs], targetDir);
   for (const name of directAuraPackages) {
     const installed = JSON.parse(readFileSync(resolve(targetDir, "node_modules", ...name.split("/"), "package.json"), "utf8")) as { readonly version?: string };
-    if (installed.version !== "2.0.0") throw new Error(`${name}: expected installed 2.0.0, found ${installed.version ?? "missing"}.`);
+    if (installed.version !== currentPackageVersion) throw new Error(`${name}: expected installed ${currentPackageVersion}, found ${installed.version ?? "missing"}.`);
   }
   return tarballs.map((path) => basename(path));
 }

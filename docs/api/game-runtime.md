@@ -849,7 +849,7 @@ Aura3D exposes deterministic source/runtime kits for common browser game loops. 
 
 ### `game.platformer(...)`
 
-`game.platformer(level)` provides gravity, movement, coyote time, jump buffering, dash, ledge-tolerant landings, moving platforms, checkpoints, hazards, collectibles, respawn, and finish state.
+`game.platformer(level)` provides gravity, movement, coyote time, jump buffering, optional `jumpReleaseScale` (applied once per jump), dash, ledge-tolerant landings, moving platforms, checkpoints, hazards, collectibles, respawn, and finish state. Callers can retire hazards through `input.clearHazardIds`; the snapshot exposes `defeatedHazards` and the kit emits a `defeat` event. These helpers are deterministic presentation/runtime APIs, not a general enemy-combat engine.
 
 ```ts
 const platformer = game.platformer({

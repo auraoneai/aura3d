@@ -1,11 +1,11 @@
 # Aura3D Release Checklist
 
-Version: 2.0.1
+Version: 2.0.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-Date: 2026-08-08
-Status: Aura3D 2.0.1 release gate checklist
+Date: 2026-08-15
+Status: Aura3D 2.0.2 release gate checklist
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained

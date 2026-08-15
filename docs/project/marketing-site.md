@@ -1,7 +1,7 @@
 # Marketing Site
 
-Date: 2026-08-11
-Status: Aura3D 2.0.0 marketing release-candidate requirements
+Date: 2026-08-15
+Status: Aura3D 2.0.2 marketing site requirements
 
 The marketing site must be claim-safe. It can sell Aura3D's current strengths,
 but it cannot imply unsupported root renderer, animation, game, or WebGPU
@@ -22,8 +22,8 @@ gameplay and visual evidence is current, but which cannot be promoted until
 their exact final artifacts receive independent approval:
 
 - Blockfall Reactor
-- Turbo Drift Circuit
-- Skyline Runner
+- Turbo Drift Circuit, with visual asphalt wide enough to pass on tarmac
+- Skyline Runner, with coins, score, ember volleys, and a 70–115 second Level 1 window
 
 Aura Clash remains a development showcase. Data Galaxy and WebGPU Particle Lab
 remain Labs diagnostics. Superseded public proofs and the duplicate Material

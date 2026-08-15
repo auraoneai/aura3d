@@ -1,7 +1,7 @@
 # Aura3D Current State
 
-Date: 2026-08-12
-Status: Aura3D 2.0.0 published; post-release source improvements remain exact-artifact review gated
+Date: 2026-08-15
+Status: Aura3D 2.0.2 current package version; independent exact-artifact review remains a separate gate
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -12,11 +12,11 @@ This file is intentionally conservative. It describes what the public root
 `createAuraApp` path can prove today and what still requires library work before
 showcase or marketing claims can use it.
 
-Aura3D is not currently a Unity or Unreal replacement. Version 2.0.0 is
-published on npm and GitHub and the canonical site is live. Subsequent game,
-lighting, and website changes on `main` still require exact-artifact review and
-a new immutable package version before they can be described as shipped npm
-bytes.
+Aura3D is not currently a Unity or Unreal replacement. Version 2.0.2 is the
+current coordinated package version. The immutable `v2.0.0` and `v2.0.1` tags
+remain historical. Subsequent game, lighting, and website changes still require
+exact-artifact review before they can be promoted as independently approved
+showcase artifacts.
 
 ## Current Public Root API Strengths
 

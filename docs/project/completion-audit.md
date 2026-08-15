@@ -1,58 +1,51 @@
-# Completion Audit
+# Release completion verification
 
-Date: 2026-08-08
-Status: historical pre-publication audit
+This page is the retained completion record consumed by production-runtime and
+Three.js-compat verification tools. It describes how to verify a 2.0 release
+candidate against current source and generated evidence. It is not a feature
+todo list and it is not a substitute for the operational checklist.
 
-## Current Result
+## How to verify
 
-This audit is retained as a historical snapshot. It is not sufficient to enter
-the final release sequence. In addition to human visual review, serial suites,
-package provenance/tarballs, publication, registry integrity, GitHub release,
-deployment, and live verification, the current `three@0.185.1` comparison,
-subsystem ownership work, and material flagship review remained open at the
-time of this snapshot.
+Use the current documents and commands, not a historical “still open” snapshot:
 
-## Completed For The Candidate
+1. Read [`status/current-state.md`](./status/current-state.md) for what the
+   public root API can prove today.
+2. Read [`status/known-limits.md`](./status/known-limits.md) before writing
+   release copy.
+3. Follow [`release/release-checklist.md`](./release/release-checklist.md) for
+   the operational release sequence.
+4. Collect evidence with [`verification-evidence.md`](./verification-evidence.md)
+   and the requirements-trace gate.
 
-- Current state now separates proven root API behavior from internal,
-  production-runtime, and roadmap capabilities.
-- Claim guidelines now require scope labels, claim labels, and evidence paths.
-- Release tracks now split package, showcase, marketing, benchmark, and roadmap
-  releases.
-- Release checklist/process now include asset safety, route-health, screenshots,
-  primitive budgets, game input tests, WebGPU proof, and copy review.
-- Verification evidence now rejects nonblank screenshots, route-local text, and
-  internal-only proof for public root claims.
-- Showcase plan and app classifications demote overclaimed routes and keep all
-  three prohibited games `prototype-blocked`.
-- The compatibility root is retained, recommended lean entries meet the three
-  frozen bundle budgets, and migration/version decisions are documented.
-- Production physics has one solver owner and the divergent implementation has
-  been removed; grounding, query rotation, stability, joint, tunnelling,
-  sleep/wake, repeatability, step/slope, suspension, and lifecycle invariants
-  are retained.
-- All 43 Tier 1/2 routes pass the current real-browser health gate.
-- The selected historical `three@0.165.0` 54-row inventory is matched with zero high-priority rows
-  open, bounded by the comparison-status document.
-- The public website source and build include the 2.0 content update and nine
-  restored, separately scoped evidence routes.
+```bash
+pnpm check:markdown-2.0
+pnpm check:docs-codeblocks
+pnpm check:agent-docs
+pnpm verify:release:quick
+```
 
-## Still Open
+Package publication, showcase promotion, marketing copy, and benchmark
+comparison are separate release tracks. A green unit suite is not completion of
+the public release sequence.
 
-- Record the human verdict for Product Configurator, Smart City Control,
-  Cinematic Architecture, and Digital Twin Operations. Do not infer or
-  self-author it.
-- Run the complete release suite twice, serially, from one clean commit.
-- Generate and verify every public-package tarball and provenance record from
-  that exact commit.
-- Publish, verify registry version and integrity for every package, create the
-  exact tag and GitHub release, deploy the website, and verify installed
-  tarballs plus production-origin pages and assets.
-- Keep broad root-renderer, production-game, physical-vehicle, hardware-WebXR,
-  and universal-engine superiority claims out of release copy.
+## What this record covers
 
-## Audit Conclusion
+- Claim labels and evidence paths in [`claim-guidelines.md`](./claim-guidelines.md)
+- Release tracks in [`release-tracks.md`](./release-tracks.md)
+- Showcase classification in [`showcase/apps-classification.md`](./showcase/apps-classification.md)
+- Production-runtime backend selection (not full renderer parity) in
+  [`architecture/create-aura-app-production-bridge.md`](./architecture/create-aura-app-production-bridge.md)
 
-The implementation is a release candidate, not a completed release. The final
-verdict must come from the canonical checklist and post-publication receipts;
-this audit must not be used as a substitute for any unchecked gate.
+## What this record does not cover
+
+Do not treat this page as:
+
+- independent human visual sign-off
+- package provenance or registry publication
+- hosted production-origin verification
+- a GO / NO-GO for a specific commit (that lives on generated reports)
+
+Human review, serial clean-commit suites, tarball provenance, and live
+deployment checks remain on the release checklist. This file exists so
+verification tools have a stable, current completion document.

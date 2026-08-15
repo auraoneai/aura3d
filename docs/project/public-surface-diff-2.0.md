@@ -6,7 +6,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 - Baseline export subpaths: **68**; current export subpaths: **88**
 - Baseline symbols: **13007**; current symbols: **12713**
 - Classified removals: **945**; unclassified removals: **0**
-- Retained-symbol declaration contract changes: **154**
+- Retained-symbol declaration contract changes: **175**
 - Public schema identifiers: **25** baseline; **25** current
 - Generated asset shape: **field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership**
 - Verdict: **PASS**
@@ -983,9 +983,16 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine:type:AuraPrimitiveNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraPrimitiveOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraRendererDiagnosticReport` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:DriverVehicleState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameAudioCueDefinition` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameAudioOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:GameCollisionBodyHandle` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:GamePlatformerEventType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:GamePlatformerHazard` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:GamePlatformerLevel` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:GameRacingKit` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameRacingOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:type:GameRacingPresentationCameraOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameRacingSceneBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameRacingSurfaceContact` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:GameRacingSurfaceQuery` — reviewed-2.0-public-declaration-contract-change
@@ -1015,9 +1022,16 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine:type:AuraPrimitiveNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraPrimitiveOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:AuraRendererDiagnosticReport` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:DriverVehicleState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameAudioCueDefinition` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameAudioOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:GameCollisionBodyHandle` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:GamePlatformerEventType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:GamePlatformerHazard` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:GamePlatformerLevel` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:GameRacingKit` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameRacingOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine:type:GameRacingPresentationCameraOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameRacingSceneBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameRacingSurfaceContact` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine:type:GameRacingSurfaceQuery` — reviewed-2.0-public-declaration-contract-change
@@ -1041,9 +1055,16 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/engine-runtime:type:AuraPrimitiveNode` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraPrimitiveOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:AuraRendererDiagnosticReport` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:DriverVehicleState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameAudioCueDefinition` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameAudioOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:GameCollisionBodyHandle` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:GamePlatformerEventType` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:GamePlatformerHazard` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:GamePlatformerLevel` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:GameRacingKit` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameRacingOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/engine-runtime:type:GameRacingPresentationCameraOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameRacingSceneBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameRacingSurfaceContact` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/engine-runtime:type:GameRacingSurfaceQuery` — reviewed-2.0-public-declaration-contract-change

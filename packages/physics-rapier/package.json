@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/physics-rapier",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,15 +15,30 @@
     }
   },
   "description": "Optional asynchronously loaded Rapier physical-simulation adapter for Aura3D.",
-  "keywords": ["aura3d", "physics", "rapier", "wasm", "rigid-body", "character-controller", "vehicle-controller"],
+  "keywords": [
+    "aura3d",
+    "physics",
+    "rapier",
+    "wasm",
+    "rigid-body",
+    "character-controller",
+    "vehicle-controller"
+  ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/auraoneai/aura3d.git",
     "directory": "packages/physics-rapier"
   },
-  "bugs": { "url": "https://github.com/auraoneai/aura3d/issues" },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
   "license": "MIT",
-  "publishConfig": { "access": "public" },
-  "files": ["README.md", "dist"]
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

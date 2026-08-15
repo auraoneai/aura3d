@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 2.0.1
+Version: 2.0.2
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.1` is published across all 29 public packages; every `2.0.0` package version is deprecated in favor of the patch release, while the immutable `v2.0.0` tag remains historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated; later changes on `main` are not retroactively part of the npm tarballs.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.2` is the coordinated patch across all 29 public packages; `2.0.1` and `2.0.0` remain historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-08-11): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -16,6 +16,20 @@ Comparison wording for the 1.6.0 entry is historical and limited to the named
 broadened into universal engine or ecosystem superiority. The current
 `three@0.185.1` comparison remains bounded by the published comparison reports
 and claim guidelines.
+
+## 2.0.2 (2026-08-15)
+
+Patch release for shipped showcase, catalog, and documentation corrections:
+
+- widens Turbo Drift Circuit visual asphalt so the player can pass the rival on tarmac, with Rapier still owning solid contact;
+- adds Skyline Runner coins, score, and ember volleys through `game.platformer`, with jump-release applied once and a 70–115 second Level 1 window (authored 95 seconds);
+- corrects homepage and catalog posters so Product Configurator shows the headphone studio and Control Room shows the control-room capture;
+- keeps Smart City Stress Test on the Littlest Tokyo hero, excludes tram/train/bus authored nodes, and drops extra district GLBs;
+- unifies the examples catalog with homepage type and the orbital Aura3D mark;
+- lowers robot-rig and Damaged Helmet studio exposure;
+- serves the Draco decoder from `/assets/draco` and ships a real favicon;
+- pins all 19 public scaffolds to the packed 2.0.2 dependency graph;
+- updates `/docs` and retained Markdown to the shipped 2.0.2 behavior without broadening claim labels.
 
 ## 2.0.1 (2026-08-14)
 

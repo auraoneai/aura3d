@@ -69,7 +69,7 @@ checks.push(
   {
     id: "physical-character-opt-in-installs-selected-packages",
     pass:
-      characterManifest.scripts?.["enable:physics"] === "npm install @aura3d/physics@2.0.0 @aura3d/physics-rapier@2.0.0" &&
+      characterManifest.scripts?.["enable:physics"] === "npm install @aura3d/physics@2.0.2 @aura3d/physics-rapier@2.0.2" &&
       characterReadme.includes("npm run enable:physics"),
     detail: "character-controller keeps kinematic default lean and exposes one explicit selected-Rapier opt-in install command"
   }

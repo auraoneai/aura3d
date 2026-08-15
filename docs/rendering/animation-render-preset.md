@@ -1,68 +1,25 @@
 # Animation Render Preset
 
-`AnimationRenderPreset` is the planned Aura3D 1.1 rendering policy for scoped animation episodes. It should make browser-rendered episode frames look intentional, readable, and reviewable without claiming feature-film or Pixar-quality output.
+`createAnimationRenderPreset` is a shipped helper on `@aura3d/rendering` (also
+re-exported from `@aura3d/engine`). It returns an
+`AnimationRenderPresetEvidence` record: a policy the episode route should
+honor. It is not a `createAuraApp` renderer mode and it does not render frames
+by itself.
 
-The preset is a production gate target, not a shortcut around assets and animation. Good lighting cannot make a still-image puppet into a real animation.
+`applyAnimationRenderPreset(preset, options?)` turns that record into pixel
+work the caller can assign:
 
-## Goals
+- a real `AnimationToonMaterial` (banded N·L ramp + rim)
+- an optional Sobel outline pass when `materialStyle.outline` is true
+- an optional color-grade pass when you pass a frame buffer
 
-- Keep characters readable against the set.
-- Provide soft shadows and grounding.
-- Preserve caption-safe framing.
-- Avoid debug overlays in exported media.
-- Support toon/cel material treatment when compatible with the asset.
-- Produce visual evidence that can fail blank, occluded, overexposed, or fake-motion frames.
+Lights listed on the preset (`soft-key`, `cool-rim`, `set-fill`,
+`emissive-practicals`) are descriptive. The toon program consumes one
+directional key light. Bloom and fog from the preset are **not** applied here.
 
-## Planned Runtime Inputs
-
-The planned preset should accept:
-
-- episode id;
-- shot id;
-- resolution and frame rate;
-- character bounds;
-- set bounds;
-- caption safe area;
-- reduced-motion and reduced-flash flags;
-- style target such as `soft-neon-bedtime`, `bright-classroom`, or `storybook-garden`;
-- debug/export mode.
-
-## Visual Policy
-
-Required defaults:
-
-- key, fill, and rim lighting tuned for readable silhouettes;
-- contact shadows or equivalent grounding;
-- controlled bloom, not screen-washing glow;
-- color grading that keeps skin, face, and mouth areas readable;
-- fog/depth cues only when they do not hide action;
-- stable camera framing with caption-safe lower-third space;
-- no route chrome, browser UI, proof panels, debug labels, or editor handles in export mode.
-
-Optional style controls:
-
-- toon/cel material override;
-- outline pass;
-- depth haze;
-- soft vignette;
-- background plate treatment;
-- particle accents for story beats.
-
-## Motion And Visual Metrics
-
-The rendering gate must report:
-
-- nonblank frame status;
-- overexposure and underexposure;
-- character visibility;
-- foreground/background separation;
-- text/caption occlusion;
-- route overlay contamination;
-- local character-region motion;
-- global-only motion suspicion;
-- mouth-region change during dialogue.
-
-The gate should reject a video where the only visible change is a whole-frame image translation, scale, wobble, shake, or subtitle update.
+Calling either helper does not prove root `createAuraApp` rendered bloom, color
+grading, soft shadows, toon materials, skinning, or morph targets. Those
+features need browser screenshots from the actual route.
 
 ## Render Preset API (`createAnimationRenderPreset`)
 
@@ -232,7 +189,7 @@ Generated images are not allowed as:
 
 Allowed after gates pass:
 
-- "The animation preset provides readable browser-rendered animation episode frames for the scoped 1.1 workflow."
+- "The animation preset records a readable-frame policy and can apply toon, outline, and color-grade treatments the caller assigns."
 - "The visual gate checks blank frames, caption occlusion, character visibility, and global-only fake motion."
 
 Not allowed:

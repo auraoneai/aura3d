@@ -10,7 +10,7 @@
     "preview": "vite preview --host 127.0.0.1 --port 7782 --strictPort"
   },
   "dependencies": {
-    "@aura3d/engine": "2.0.1"
+    "@aura3d/engine": "2.0.2"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

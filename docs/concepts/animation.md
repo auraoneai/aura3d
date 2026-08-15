@@ -1,6 +1,6 @@
 # Animation
 
-Version: 2.0.0
+Version: 2.0.2
 
 Aura3D animation is a runtime system for clips, tracks, mixers, layers, skeletal data, morph weights, root motion, IK, and motion diagnostics.
 

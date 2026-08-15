@@ -1,157 +1,114 @@
-# Animation Episode Production Workflow
+# Animation episode production workflow
 
-This workflow describes the planned Aura3D 1.1 path from a animation idea to a reviewed episode package. It is intentionally narrower than a full animation studio: one short episode, typed assets, browser playback, render output, captions, evidence, and human review.
+This is the shipped path from a prompt to a silent rendered clip using the
+`animation-studio` template. It is not a planned 1.1 contract and it is not an
+image-to-video pipeline.
 
-Aura3D does not turn any single image into a believable 3D episode. Generated images may guide the look, but publish-ready animation must be driven by typed assets, rigs or segmented puppet parts, timelines, dialogue, visemes, captions, render output, and visual/motion gates.
+The template turns a sentence into a validated `EpisodeDocument` and plays that
+document through a generic renderer. Renders are **silent**. AuraVoice owns
+voice, if you add it later.
 
-## 1. Show Bible
-
-Define the reusable show context:
-
-- series title;
-- characters;
-- set;
-- art direction;
-- motion rules;
-- dialogue style;
-- safety/accessibility rules;
-- target runtime and resolution.
-
-The 1.1 flagship target is `Moon Garden Helpers`: two recurring characters, one Moon Garden set, and a 45-60 second episode.
-
-## 2. Typed Asset Intake
-
-Resolve or add assets before writing scene code:
+## 1. Scaffold
 
 ```bash
-npx @aura3d/cli@latest assets resolve "stylized rigged animation child robot" --name miko --profile animation-character
-npx @aura3d/cli@latest assets resolve "stylized rigged animation helper robot" --name luma --profile animation-character
-npx @aura3d/cli@latest assets resolve "stylized moon garden set" --name moonGarden --profile animation-set
-npx @aura3d/cli@latest assets validate-animation --require-license --no-placeholders
+npx create-aura3d@latest my-studio --template animation-studio
+cd my-studio
+pnpm install
 ```
 
-The asset gate should reject:
+The live template scripts (`packages/create-aura3d/templates/animation-studio/package.json`)
+are:
 
-- unlicensed or missing-provenance files;
-- placeholder paths;
-- same-model character duplication presented as distinct cast;
-- static characters unless an explicit segmented fallback exists;
-- missing mouth/blendshape/fallback readiness;
-- set assets without usable bounds, scale, framing, or material evidence.
+| Script | What it runs |
+| --- | --- |
+| `scene` | `tsx scripts/animation-scene.ts` — Scene-Tool CLI |
+| `episode:generate` | `tsx scripts/generate-scene.ts` |
+| `episode:render-3d` | `tsx scripts/render-live.ts` — headless live-3D render |
+| `studio` | Vite web NLE at `apps`-style local studio |
+| `scene:preview` | preview server |
+| `scene:determinism` | document-hash → render-hash check |
+| `dev` / `build` / `preview` | Vite route |
 
-## 3. Episode Plan
+There is no `episode:plan`, `episode:preview`, `episode:render`,
+`episode:package`, `episode:review`, or `episode:verify` script on this
+template.
 
-Generate or author:
+## 2. Author a working document
 
-- episode id and title;
-- target duration, frame rate, and resolution;
-- beats;
-- shot list;
-- character blocking;
-- dialogue lines;
-- caption cues;
-- viseme cues;
-- performance cues;
-- render queue.
-
-The plan is source evidence only. It is not animation proof until the browser route plays it and render/package evidence exists.
-
-## 4. Browser Preview Route
-
-The preview route mounts one Aura app and uses public engine APIs:
-
-- `createAuraApp(...)`;
-- typed `model(assets.x)` refs;
-- `game.runtimeNode(...)` for mutable character/set nodes;
-- `installShotPlayback(...)` or the 1.1 episode playback equivalent;
-- caption and viseme sampling;
-- route proof exposed on `window.__AURA3D_ANIMATION_EPISODE_PROOF__`.
-
-The route must support play, pause, scrub, shot jump, caption toggle, mute, reduced motion, reduced flash, and review markers.
-
-## 5. Motion And Performance
-
-Every episode needs visible authored motion. The motion gate should sample rendered frames and fail global-only movement.
-
-Required motion evidence:
-
-- character body or limb movement during action beats;
-- mouth movement during dialogue beats;
-- camera movement only when the shot timeline asks for it;
-- no debug overlays or route panels in exported frames;
-- frame hashes that change because local character regions move, not because the whole still image shifts.
-
-Rejected motion:
-
-- one generated image panned or zoomed;
-- CSS wobble on a flat poster;
-- subtitles changing over a static frame;
-- a background and characters moving as a single layer;
-- an output marked `notTrue3D: true` or `sourceOnly: true`.
-
-## 6. Audio, Captions, And Visemes
-
-AuraVoice or another timing source owns dialogue, audio, caption, phoneme, and viseme timing. Aura3D owns scene assembly, character performance, camera choreography, rendering, screenshots, and package evidence.
-
-Label lip-sync mode honestly:
-
-- `phoneme-aligned` for real phoneme/word timing;
-- `blendshape-lip-sync` for inspected GLB morph targets;
-- `primitive-mouth-card` for explicit fallback mouth shapes;
-- `amplitude-only` for audio-level heuristics;
-- `missing-mouth-motion` when no rendered mouth movement exists.
-
-Do not market amplitude-only mouth openness as high-quality lip sync.
-
-## 7. Render And Package
-
-The planned 1.1 render step writes:
+The Scene-Tool CLI is the director surface. Every command edits
+`dist/scene/working.document.json`.
 
 ```bash
-npm run episode:render
-npm run episode:package
+# Skeleton: set + shots + timeline, empty cast
+pnpm scene new --prompt "two office workers arguing about a deadline"
+
+# Or a complete first draft (cast + dialogue + per-beat actions)
+pnpm scene new --prompt "a chef teaches a child to bake" --full
+
+pnpm scene cast add --id worker-1 --query "office worker in a shirt"
+pnpm scene dialogue --line l0 --speaker worker-1 --text "We are not shipping on Friday." --start 0.4
+pnpm scene block --character worker-1 --shot shot-1 --to -1,0 --clip talk
+pnpm scene camera --shot shot-1 --preset close-up
+pnpm scene validate
 ```
 
-The package must include:
+Implemented commands in `scripts/animation-scene.ts`: `new`, `show`, `block`,
+`camera`, `gesture`, `dress`, `clear-props`, `set`, `cast`, `scale`, `shot`,
+`prop`, `dialogue`, `retime`, `undo`, `validate`, `render`.
 
-- playable video or an explicitly scoped PNG-sequence fallback;
-- thumbnail captured from actual route state;
-- VTT and SRT captions;
-- metadata JSON;
-- prompt-animation evidence;
-- route proof;
-- asset provenance;
-- render manifest;
-- visual acceptance report.
+Full command reference: [`docs/animation-studio/guide.md`](../animation-studio/guide.md).
 
-In-memory encoder summaries are useful for unit tests. They are not publish-ready media artifacts.
+## 3. Optional typed-asset intake
 
-## 8. Review
-
-The review step writes:
+The studio's default cast is the curated procedural humanoid library. To bring
+your own rigged GLB:
 
 ```bash
-npm run episode:review
+npx @aura3d/cli@latest assets add ./assets/hero.glb --name hero
+npx @aura3d/cli@latest assets validate-animation --require-license
 ```
 
-The review package should include representative frames, route proof, package manifest, visual/motion summaries, caption timing, asset provenance, known limitations, and a place for named reviewer approval.
+Resolve/search profiles that exist on `@aura3d/cli` are
+`animation-character`, `animation-prop`, `animation-set`, and
+`animation-environment`. Import the generated `assets.*` keys. Do not pass
+string ids or raw `.glb` URLs.
 
-Human review is required before public copy calls a 1.1 episode visually approved.
+## 4. Render
 
-## 9. Publish-Ready Definition
+```bash
+# Fast previz
+pnpm scene render
 
-An episode is publish-ready only when:
+# Final silent WebM (1080p / 24fps when AURA_QUALITY=final)
+AURA_QUALITY=final pnpm episode:render-3d
+```
 
-- typed assets validate;
-- the browser route plays the complete shot timeline;
-- characters and mouths visibly move;
-- captions are timed and exported;
-- a playable video or scoped fallback exists;
-- thumbnail and metadata exist;
-- visual and motion gates pass;
-- review artifacts exist;
-- docs and public copy make no Pixar, image-to-video, or full-studio overclaims.
+`episode:render-3d` writes `dist/episodes/live-3d/episode-3d.webm`. The file is
+silent by design. Caption / viseme / dialogue timing stays on the document for
+AuraVoice; see [`docs/api/auravoice-bridge.md`](../api/auravoice-bridge.md).
 
-## 10. Failure Handling
+## 5. Review what the gates actually measure
 
-If the output looks like `tests/reports/prompt-animation/animation-image-puppet-animation.webm`, treat that as failure evidence. The correct next step is not better marketing language. The correct next step is to improve assets, rigging, performance mapping, shot playback, render capture, or motion gates until the episode shows real local motion.
+Quality is measured on the rendered episode, not on a checklist:
+
+- body motion (not lip-flap-only)
+- mouth cycling during dialogue
+- caption windows matching speech duration
+- prompt-specific set (no moon-garden fallback unless opted in)
+- determinism (`document-hash` → `render-hash`)
+
+See [`docs/animation-studio/quality-and-limitations.md`](../animation-studio/quality-and-limitations.md).
+
+Rejected as animation evidence: a still image with subtitles, CSS pan/zoom on
+one plate, or a `sourceOnly: true` render plan presented as publish-ready
+video.
+
+## Related
+
+- Studio product docs: [`docs/animation-studio/README.md`](../animation-studio/README.md)
+- Web NLE: [`docs/animation-studio/studio-app.md`](../animation-studio/studio-app.md)
+- Prompt-animation playback APIs (`compilePromptEpisodePlan`,
+  `createShotPlaybackPlan`, `installShotPlayback`) live on `@aura3d/engine` and
+  are used by the `animation-channel`, `prompt-animation-channel`, and
+  `episode-builder` templates — not by the `animation-studio` Scene-Tool lane.
+  See [`docs/api/prompt-animation.md`](../api/prompt-animation.md).

@@ -63,7 +63,9 @@ moon-garden default**), dialogue (synthesized or, better, agent-authored), camer
 | **[studio-app.md](./studio-app.md)** | The web studio app — the 3-pane NLE shell (Outliner / Stage / Inspector / Timeline / Director Console), how it reads the working document and runs real Scene-Tool commands, and the dev API endpoints. |
 | **[quality-and-limitations.md](./quality-and-limitations.md)** | The 10-gate quality suite (what each gate measures and when it fails), fidelity tiering (A/B/C), the no-fake-proof principle, and the **honest ceiling**. |
 
-Related: [`docs/api/prompt-animation.md`](../api/prompt-animation.md) (prompt → animation playback),
+Related: [`docs/workflows/animation-episode-production.md`](../workflows/animation-episode-production.md)
+(current command lane),
+[`docs/api/prompt-animation.md`](../api/prompt-animation.md) (prompt → animation playback),
 [`docs/api/auravoice-bridge.md`](../api/auravoice-bridge.md) (the voice/timing handoff),
 [`docs/api/assets.md`](../api/assets.md) (the character catalog reality).
 

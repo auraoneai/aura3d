@@ -16,7 +16,7 @@ React 18 + TypeScript.
 
 ## Overview
 
-The app is the production NLE shell from PRD §7. There is **no seed / mock /
+The app is the production NLE shell. There is **no seed / mock /
 fixture data** — when no document has been authored yet, every panel renders an
 honest empty state ("No render yet", "Nothing selected", etc.). Everything it
 shows comes from real, on-disk artifacts produced by the Aura3D animation

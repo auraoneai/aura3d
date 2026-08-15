@@ -49,8 +49,8 @@ still not be a public release candidate.
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
-| `showcase-skyline-runner` | prototype-blocked | Materially rebuilt five-act, 120–180-second Level 1 with typed character/world, mesh-derived surfaces, sentries, checkpoints, collection chain, respawn, and mounted finish evidence; exact-artifact independent review is pending. |
-| `showcase-turbo-drift-circuit` | prototype-blocked | Materially rebuilt four-lap typed-car circuit with ordered gates, distinct typed rival, chase camera, drift feedback, per-wheel circuit contact, and mounted race evidence; exact-artifact independent review is pending. Its handling claim remains arcade, not physical tyre simulation. |
+| `showcase-skyline-runner` | prototype-blocked | Materially rebuilt five-act Level 1 (authored 95 seconds, 70–115 completion window) with typed character/world, mesh-derived surfaces, sentries, coins, ember volleys, checkpoints, respawn, and mounted finish evidence; exact-artifact independent review is pending. |
+| `showcase-turbo-drift-circuit` | prototype-blocked | Materially rebuilt four-lap typed-car circuit with ordered gates, distinct typed rival, chase camera, drift feedback, per-wheel circuit contact, visual asphalt wide enough to pass on tarmac, and mounted race evidence; exact-artifact independent review is pending. Its handling claim remains arcade, not physical tyre simulation. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 ## Retained Engine Evidence

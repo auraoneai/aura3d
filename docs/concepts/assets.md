@@ -1,6 +1,6 @@
 # Assets
 
-Version: 2.0.0
+Version: 2.0.2
 
 Aura3D uses a bring-your-own-assets pipeline:
 

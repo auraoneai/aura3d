@@ -1,7 +1,7 @@
 # Aura3D 2.0 documentation index
 
-Date: 2026-08-11
-Status: current for Aura3D 2.0.0
+Date: 2026-08-15
+Status: current for Aura3D 2.0.2
 
 The current tree contains product documentation, executable evidence inputs,
 required package/app entry points, and the 2.0 release record. Superseded PRDs,
@@ -19,6 +19,8 @@ the archive.
 - Public API: [`docs/api/public-api.md`](../api/public-api.md)
 - Migration to 2.0: [`MIGRATION-2.0.md`](../../MIGRATION-2.0.md)
 - 2.0 release notes: [`aura3d-200-release-notes.md`](./aura3d-200-release-notes.md)
+- 2.0.1 release notes: [`aura3d-201-release-notes.md`](./aura3d-201-release-notes.md)
+- 2.0.2 release notes: [`aura3d-202-release-notes.md`](./aura3d-202-release-notes.md)
 
 ## Architecture
 
@@ -42,6 +44,10 @@ the archive.
 - Animation: [`docs/animation/runtime-support.md`](../animation/runtime-support.md)
 - Game runtime: [`docs/api/game-runtime.md`](../api/game-runtime.md)
 - Templates: [`docs/templates/create-aura3d-templates.md`](../templates/create-aura3d-templates.md)
+- Animation Studio: [`docs/animation-studio/README.md`](../animation-studio/README.md)
+- Animation episode workflow: [`docs/workflows/animation-episode-production.md`](../workflows/animation-episode-production.md)
+- World labels and mesh text: [`docs/rendering/world-labels-and-text.md`](../rendering/world-labels-and-text.md)
+- Animation render preset: [`docs/rendering/animation-render-preset.md`](../rendering/animation-render-preset.md)
 
 ## Current comparison documentation
 
@@ -73,6 +79,8 @@ reproduction tool consumes them. They are data, not current public claims.
 - Release tracks: [`release-tracks.md`](./release-tracks.md)
 - Rollback: [`release/deployment-rollback.md`](./release/deployment-rollback.md)
 - Verification evidence: [`verification-evidence.md`](./verification-evidence.md)
+- Completion verification: [`completion-audit.md`](./completion-audit.md)
+- Production renderer path: [`architecture/create-aura-app-production-bridge.md`](./architecture/create-aura-app-production-bridge.md)
 - Requirements trace: [`requirements-trace.md`](./requirements-trace.md)
 - Documentation audit ledger: [`docs-matrix-tracking.md`](./docs-matrix-tracking.md)
 - Website: [`marketing-site.md`](./marketing-site.md)

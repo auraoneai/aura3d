@@ -13,9 +13,11 @@ sky-shard collection, retries, flow scoring, and a summit-beacon finish create
 a complete Level 1 rather than a short repeated obstacle strip.
 
 The public `game.platformer` kit proof drives the physical start-to-finish
-course with the shipped movement and jump configuration. Its authored target is
-145 seconds, and completion must occur
-between 120 and 180 seconds; reaching the finish early and waiting on a timer
+course with the shipped movement and jump configuration. Collectible coins add
+score, and `KeyJ` fires ember volleys that defeat sentries through
+`input.clearHazardIds` and the kit `defeat` event. Jump-release scaling applies
+once per jump. The authored target is 95 seconds, and completion must occur
+between 70 and 115 seconds; reaching the finish early and waiting on a timer
 does not pass. Browser evidence separately proves the same keyboard controls,
 checkpoint/fall/respawn chain, typed rendered actors, and real finish event.
 

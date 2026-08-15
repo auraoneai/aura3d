@@ -1,6 +1,6 @@
 # Advanced Examples Gallery
 
-Version: 2.0.0
+Version: 2.0.2
 
 The advanced examples gallery is the current proof surface for the production-grade showcase work that was previously tracked in the root execution PRD. The durable source lives in `apps/advanced-examples-gallery/`, `tools/advanced-gallery-*`, `tools/advanced-gallery-assets/`, and the ignored generated local evidence directory `tests/reports/advanced-examples-gallery/`.
 
@@ -10,12 +10,12 @@ The gallery source metadata currently defines ten accepted advanced routes. That
 
 | Route id | Feature area | Primary source owners |
 |---|---|---|
-| `product-configurator` | Texture-backed concept-car configurator with variant, lighting, turntable, and exploded-view controls. | `productConfiguratorScene.ts`, `productConfiguratorPolicy.ts`, `productConfiguratorLighting.ts`, `productConfiguratorVisualCleanup.ts`, authored asset metadata. |
+| `product-configurator` | Texture-backed concept-car configurator with variant, lighting, turntable, and exploded-view controls. This gallery route is distinct from the homepage/showcase Product Configurator, which uses the typed headphone studio. | `productConfiguratorScene.ts`, `productConfiguratorPolicy.ts`, `productConfiguratorLighting.ts`, `productConfiguratorVisualCleanup.ts`, authored asset metadata. |
 | `data-galaxy` | Dense data-particle visualization with formations, attractors, streams, arcs, and deep-space staging. | `dataGalaxyScene.ts`, `dataGalaxyBudgets.ts`, `dataGalaxyFocalSystem.ts`, `dataGalaxyEvidence.ts`, Data Galaxy asset generators. |
 | `reactor-post` | Cinematic command-center postprocess route with color, tone, vignette, sharpen, FXAA-style, and emissive evidence. | `reactorPostScene.ts`, `showcaseShaders.ts`, renderer postprocess diagnostics. |
 | `digital-twin` | Factory digital twin with deterministic overlays, zones, telemetry, camera modes, and route instrumentation. | `proceduralRouteScenes.ts`, `sceneBuilders.ts`, authored asset metadata. |
 | `robotics-lab` | Robotics training lab with imported animated characters, procedural lab context, and animation evidence. | `roboticsLabEvidence.ts`, `authoredLayer.ts`, route scene builders. |
-| `smart-city` | Animated smart-city district with traffic/data overlays, flythrough state, and performance telemetry. | `smartCityEvidence.ts`, `proceduralRouteScenes.ts`, smart-city asset generator. |
+| `smart-city` | Littlest Tokyo hero with restrained traffic/data overlays and flythrough state. Extra district GLBs are not added; tram/train/bus authored nodes are excluded. | `smartCityEvidence.ts`, `proceduralRouteScenes.ts`, authored Tokyo layer. |
 | `fog-cathedral` | Atmospheric architecture route with Sponza/cathedral staging, haze, dust, and light-shaft helpers. | `fogCathedralEvidence.ts`, `rendererEnvironmentFogEvidence.ts`, fog asset generator. |
 | `physics-playground` | Deterministic manipulation testbed using `@aura3d/physics` rigid bodies and route-level interaction. | `physicsSimulation.ts`, `proceduralRouteScenes.ts`, physics asset generator. |
 | `water-lab` | Interactive procedural water scene with ripple controls, marina props, and route instrumentation. | `waterSystems.ts`, `proceduralRouteScenes.ts`, marina/water asset generators. |

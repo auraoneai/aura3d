@@ -12,7 +12,7 @@ screenshots, and bundle-size reports.
 
 ## Animation Studio commercial direction
 
-The Animation Studio track (see `docs/examples/animation-studio.md`) opens an
+The Animation Studio track (see [`docs/animation-studio/README.md`](../animation-studio/README.md)) opens an
 adjacent market: a browser-native, AI-agent animation-episode production pipeline. The strongest
 first wedge is **repeatable family-safe short animation episodes using a fixed cast and fixed set
 library** — a fixed-cast, fixed-set factory rather than one-off generation.

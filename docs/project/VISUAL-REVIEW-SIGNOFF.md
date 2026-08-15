@@ -87,8 +87,9 @@ the former pink header block or white sweep artifact.
 Skyline must be reviewed as a complete five-act Level 1, not as a single poster.
 The packet must show traversal, jump and landing, sentries, collection chain,
 checkpoint, fall/respawn, district progression, and finish. Automated duration
-proof must retain the 120–180-second completion window without satisfying the
-window by waiting at the finish.
+proof must retain the 70–115-second completion window (authored 95 seconds)
+without satisfying the window by waiting at the finish. Coins, score, and
+ember volleys are part of the shipped Level 1, not optional decoration.
 
 Turbo must show forward chase play, a distinct rival, ordered gates, lap/race
 progression, drift feedback, off-track recovery, and four wheels visibly

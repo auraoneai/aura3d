@@ -54,8 +54,10 @@ guide or README must include the narrower wording.
   finish, camera, and visible world geometry.
 - Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner have materially
   rebuilt gameplay and current bounded route evidence. Skyline's authored
-  Level 1 is constrained to a 120–180-second completion window; Turbo retains
-  distinct typed vehicles, four-lap progression, and per-wheel circuit contact;
+  Level 1 is constrained to a 70–115-second completion window (authored 95
+  seconds) with coins and ember volleys; Turbo retains distinct typed
+  vehicles, four-lap progression, per-wheel circuit contact, and visual
+  asphalt wide enough to pass on tarmac;
   Blockfall retains hold/queue, line-clear, game-over, reset, and progression
   proof. All three remain promotion-blocked until independent review approves
   their exact final artifacts. None of this generalizes to arbitrary assets,

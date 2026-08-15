@@ -11,7 +11,7 @@
     "test": "playwright test tests/playable.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "2.0.0"
+    "@aura3d/engine": "2.0.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

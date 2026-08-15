@@ -10,7 +10,11 @@ Primary assets: `showcaseCc0FormulaRaceCar`,
 Turbo Drift Circuit is a four-lap arcade racing candidate with six ordered
 gates, a typed red Formula-style player car, a distinct typed blue/black rival,
 a chase camera aligned to forward travel, drift feedback, off-track recovery,
-lap/finish progression, and circuit-derived per-wheel contact sampling.
+lap/finish progression, and circuit-derived per-wheel contact sampling. The
+visual grey asphalt is wide enough for the player to pass the rival on tarmac.
+Rapier owns solid vehicle contact. SAT clamps only the player's commanded
+target. Opponent `onRoad` evidence uses the same body-on-asphalt test as the
+player.
 
 Controls:
 

@@ -356,7 +356,7 @@ The readiness commands emit JSON with:
 - `failures`: blocking packaging issues.
 - `warnings`: quality or production risks.
 
-Use this JSON in launch evidence, PRD checklists, and deploy gates. Only mark a visual-quality task complete after the route has actual visual proof.
+Use this JSON in launch evidence and deploy gates. Only mark a visual-quality task complete after the route has actual visual proof.
 
 ## 2.0 animation and editor evidence
 

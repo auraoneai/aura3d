@@ -1,6 +1,6 @@
 # glTF Compression Decoder Status
 
-Version: 2.0.0
+Version: 2.0.2
 
 Aura3D has public hooks for mesh and texture compression paths in the asset pipeline.
 

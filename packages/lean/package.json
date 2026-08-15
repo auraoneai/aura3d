@@ -1,14 +1,23 @@
 {
   "name": "@aura3d/lean",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./product": { "types": "./dist/product.d.ts", "import": "./dist/product.js" },
-    "./game": { "types": "./dist/game.d.ts", "import": "./dist/game.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./product": {
+      "types": "./dist/product.d.ts",
+      "import": "./dist/product.js"
+    },
+    "./game": {
+      "types": "./dist/game.d.ts",
+      "import": "./dist/game.js"
+    }
   },
   "dependencies": {
     "@aura3d/assets": "workspace:*",
@@ -16,15 +25,29 @@
     "@aura3d/scene": "workspace:*"
   },
   "description": "Lean Aura3D browser runtime for production rendering, typed glTF products, and deterministic arcade games without physics, navigation, editor, or Node media dependencies.",
-  "keywords": ["aura3d", "browser-3d", "webgl2", "gltf", "typescript", "game-runtime"],
+  "keywords": [
+    "aura3d",
+    "browser-3d",
+    "webgl2",
+    "gltf",
+    "typescript",
+    "game-runtime"
+  ],
   "homepage": "https://aura3d.auraone.ai",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/auraoneai/aura3d.git",
     "directory": "packages/lean"
   },
-  "bugs": { "url": "https://github.com/auraoneai/aura3d/issues" },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
   "license": "MIT",
-  "publishConfig": { "access": "public" },
-  "files": ["README.md", "dist"]
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

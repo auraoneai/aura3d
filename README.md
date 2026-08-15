@@ -90,48 +90,44 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 2.0.1
+## Current Release: Aura3D 2.0.2
 
-Aura3D 2.0.1 is the coordinated patch release across all 29 public packages and
+Aura3D 2.0.2 is the coordinated patch release across all 29 public packages and
 is documented at [aura3d.auraone.ai](https://aura3d.auraone.ai). It retains the
-2.0 major-version competitive replatform while correcting Turbo Drift Circuit
-vehicle contact and tightening release-document hygiene. Public authoring is
-centered on typed assets and the safe root API, commodity subsystems have one
-declared owner, duplicate or misleading public hosts have been internalized,
-and every retained example is subject to separate canvas and full-page review.
-It is not promoted as a universal Three.js replacement. The comparison is
-bounded to the named, repository-locked `three@0.185.1` workloads and discloses
-remaining visual and ecosystem losses.
+2.0 major-version competitive replatform and the 2.0.1 Rapier vehicle-contact
+fix while correcting playable-route passing and collectibles, catalog and
+homepage posters, Smart City composition, examples-catalog chrome, and
+documentation alignment. Public authoring is centered on typed assets and the
+safe root API, commodity subsystems have one declared owner, duplicate or
+misleading public hosts have been internalized, and every retained example is
+subject to separate canvas and full-page review. It is not promoted as a
+universal Three.js replacement. The comparison is bounded to the named,
+repository-locked `three@0.185.1` workloads and discloses remaining visual and
+ecosystem losses.
 
-### What ships in 2.0.1
+### What ships in 2.0.2
 
-- **One public owner per capability.** Duplicate product, material, character,
-  physics, shadow, HDR, WebGPU, editor-output, and contract-only hosts are no
-  longer presented as separate public products. Reusable implementation and
-  browser contracts remain testable through internal fixtures.
-- **Typed real assets on public routes.** Named characters and products use
-  manifest-backed GLB assets. Primitive-only, Canvas2D, CSS, raw-URL, and
-  screenshot-only substitutes are not accepted as proof of rendered subjects.
-- **Retained examples are explicitly bounded.** Character Animation Viewer and
-  Product Configurator are real-asset public workflows. Material Showroom,
-  Postprocess Lab, Renderer Stress Lab, Large Scene, particles, raycast/CCD, and
-  state-machine routes are labeled diagnostics rather than inflated into game,
-  production-renderer, WebGPU, or ecosystem-parity claims.
-- **Visual defects are release defects.** The audit has corrected clipped and
-  aspect-distorted material swatches, low-resolution postprocess enlargement,
-  non-presenting large-scene frames, unconstrained telemetry pages, unreadable
-  stress framing, obscuring overlays, and PBR variant geometry/framing. A route
-  is accepted only after its current source, canvas image, and full-page image
-  are reviewed together.
-- **Current comparison target.** Historical `three@0.165.0` receipts remain
-  historical. The 2.0 program locks current comparison work to
-  `three@0.185.1` and requires same-workload, same-asset evidence; unfinished
-  rows stay unfinished instead of being generalized into parity.
-- **Publication is externally verified.** All 29 packages report `2.0.1` as
-  `latest`; every `2.0.0` package version is deprecated with a 2.0.1 upgrade
-  notice; and all 396 pre-2.0 versions remain deprecated with their migration
-  notice. Tag `v2.0.1` and the GitHub release identify the patch release commit.
-  The immutable `v2.0.0` tag remains the historical major-release record.
+- **Playable-route corrections.** Turbo Drift Circuit widens visual asphalt so
+  the player can pass the rival on tarmac, with Rapier still owning solid
+  contact. Skyline Runner adds coins, score, and ember volleys through
+  `game.platformer`, with a 70–115 second Level 1 window.
+- **Catalog and homepage honesty.** Product Configurator posters show the
+  headphone studio, not the gallery car. The Smart City Control Room card uses
+  the control-room capture. The examples catalog uses homepage type and the
+  orbital Aura3D mark.
+- **Smart City composition.** The stress-test route keeps Littlest Tokyo as the
+  sole authored hero, excludes tram/train/bus authored nodes, and does not add
+  extra district GLBs.
+- **Asset and decoder hygiene.** Draco-compressed public assets load from
+  `/assets/draco`. Robot-rig and Damaged Helmet studio exposure is lowered.
+  The marketing site ships a real favicon.
+- **Templates pin 2.0.2.** All 19 public scaffolds install the packed 2.0.2
+  dependency graph. Historical 2.0.0 exact-tarball lifecycle receipts remain
+  historical.
+- **Claim boundary unchanged.** One public owner per capability, typed real
+  assets on public routes, and the repository-locked `three@0.185.1`
+  comparison remain in force. See
+  [`docs/project/aura3d-202-release-notes.md`](docs/project/aura3d-202-release-notes.md).
 
 ### Consolidated 2.0 outcomes
 
@@ -238,9 +234,9 @@ The current product boundary and evidence are documented in
 Install the current release:
 
 ```bash
-npm install @aura3d/engine@2.0.1
+npm install @aura3d/engine@2.0.2
 # or scaffold an app
-npx create-aura3d@2.0.1 my-product --template product-viewer
+npx create-aura3d@2.0.2 my-product --template product-viewer
 ```
 
 The current 2.0 candidate notes are in
@@ -270,7 +266,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 2.0 runtime launch track
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.1 is
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.2 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -733,8 +729,9 @@ Aura3D 2.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The published 2.0.1 patch packages pass their release
-checks. The historical exact-installed 2.0.0 comparison against
+Expected current state — The published 2.0.2 patch packages carry the
+playable-route, catalog, and documentation corrections on this tag. The
+historical exact-installed 2.0.0 comparison against
 `three@0.185.1` passes its bounded local checks across 15 workloads. That
 comparison is not a universal parity claim: clean-machine,
 repeated-performance, independent-human, publication, and production-origin

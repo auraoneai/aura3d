@@ -101,7 +101,7 @@ world-anchored DOM UI. They retain accessible text, crisp scaling, collision
 avoidance, and their documented occlusion policy. They are not called 3D text,
 do not satisfy mesh-text evidence, and are not lit by scene materials. The two
 surfaces solve different problems; neither is an implementation substitute for
-the other.
+the other. Usage: [`docs/rendering/world-labels-and-text.md`](./world-labels-and-text.md).
 
 ## Custom indexed geometry
 

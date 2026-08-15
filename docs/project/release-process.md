@@ -1,6 +1,6 @@
 # Release Process
 
-Version: 2.0.1
+Version: 2.0.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
