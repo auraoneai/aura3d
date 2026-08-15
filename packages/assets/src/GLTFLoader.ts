@@ -2851,12 +2851,33 @@ async function loadBuffer(
     throw new Error("GLTFLoader requires fetch for external buffers");
   }
 
-  const url = new URL(buffer.uri, document.url).toString();
+  const url = new URL(buffer.uri, resolveAbsoluteDocumentUrl(document.url)).toString();
   const response = await fetch(url, { signal: request.signal });
   if (!response.ok) {
     throw new Error(`glTF buffer request failed with ${response.status}`);
   }
   return validateLoadedBufferLength(index, buffer, await readResponseBytes(response, url, "buffer", request));
+}
+
+/**
+ * External glTF buffers need an absolute document base. Public Aura3D routes
+ * intentionally use root-relative asset URLs, which are valid fetch targets but
+ * are not valid as the second argument to `new URL()` by themselves.
+ */
+function resolveAbsoluteDocumentUrl(documentUrl: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(documentUrl)) return documentUrl;
+  const browserBase =
+    (typeof document !== "undefined" && document.baseURI) ||
+    (typeof location !== "undefined" && location.href) ||
+    undefined;
+  if (browserBase) {
+    try {
+      return new URL(documentUrl, browserBase).toString();
+    } catch {
+      // Fall through to a deterministic non-browser-compatible base.
+    }
+  }
+  return new URL(documentUrl, "file:///").toString();
 }
 
 function validateBufferDescriptor(index: number, buffer: GLTFBuffer): void {

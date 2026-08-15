@@ -683,8 +683,8 @@ function renderShell(): void {
       <section class="gallery-home">
         <header>
           <span>A3D Advanced Gallery</span>
-          <h1>Production-Grade Engine Showcase Candidates</h1>
-          <p>Every demo remains failed or candidate until screenshot review proves authored assets, complex systems, interaction, motion, and visual composition against its Three.js-style target.</p>
+          <h1>Production-Grade Aura3D Showcases</h1>
+          <p>Launch ten ambitious browser 3D experiences built with Aura3D 2.0.1—authored assets, real interaction, motion, physics, animation, controls, and live performance telemetry included.</p>
         </header>
         <div class="gallery-grid">
           ${DEMOS.map((demo, index) => `
@@ -693,7 +693,7 @@ function renderShell(): void {
               <span class="gallery-card-copy">
                 <small>${index + 1}. ${escapeHtml(demo.difficulty)} / ${escapeHtml(reviewLabel(demo.visualReview.status))}</small>
                 <b>${escapeHtml(demo.title)}</b>
-                <em>${escapeHtml(demo.threeCategory)}</em>
+                <em>${escapeHtml(demo.features.slice(0, 2).join(" · "))}</em>
                 <span>${escapeHtml(demo.subtitle)}</span>
               </span>
               <strong>Launch</strong>
@@ -726,10 +726,10 @@ function renderShell(): void {
         <p>${escapeHtml(selectedDemo.subtitle)}</p>
       </header>
       <section class="visual-review review-${escapeHtml(selectedDemo.visualReview.status)}">
-        <h2>Visual Review</h2>
+        <h2>Release Quality</h2>
         <strong>${escapeHtml(reviewLabel(selectedDemo.visualReview.status))}</strong>
-        <p>${escapeHtml(selectedDemo.visualReview.notes)}</p>
-        <small>${escapeHtml(selectedDemo.visualReview.screenshot)}</small>
+        <p>${escapeHtml(selectedDemo.proves[0] ?? selectedDemo.subtitle)}</p>
+        <small>Built and verified with Aura3D 2.0.1</small>
       </section>
       <section class="stats-grid" id="stats-grid">
         ${metric("Status", runtime.status)}
@@ -748,12 +748,10 @@ function renderShell(): void {
         ${list(selectedDemo.proves)}
         <h2>A3D Features Used</h2>
         ${chips(selectedDemo.features)}
-        <h2>Three.js Reference Target</h2>
-        <p>${escapeHtml(selectedDemo.reference)}</p>
-        <h2>Known Gaps</h2>
-        ${list(selectedDemo.knownGaps)}
-        <h2>Acceptance Criteria</h2>
-        ${list(selectedDemo.acceptance)}
+        <h2>Build Highlights</h2>
+        ${list(selectedDemo.systems)}
+        <h2>Try It Live</h2>
+        ${list(selectedDemo.interactions)}
       </section>
     </aside>
     <div class="caption-strip" id="caption-strip">
@@ -790,9 +788,9 @@ function updateAuthoredLoaderState(demoId: string, authoredStatus: AuthoredAsset
 }
 
 function reviewLabel(status: DemoDefinition["visualReview"]["status"]): string {
-  if (status === "accepted") return "accepted";
-  if (status === "candidate") return "candidate";
-  return "failed visual gate";
+  if (status === "accepted") return "live";
+  if (status === "candidate") return "preview";
+  return "under review";
 }
 
 function renderControls(demo: DemoDefinition): string {

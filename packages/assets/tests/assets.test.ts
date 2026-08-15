@@ -198,6 +198,59 @@ test("GLTFLoader loads a triangle fixture into geometry and scene data", async (
   assert.equal(asset.createScene().collectRenderables().length, 1);
 });
 
+test("GLTFLoader resolves an external buffer from a root-relative glTF URL", async () => {
+  const binary = Buffer.alloc(44);
+  new Float32Array(binary.buffer, binary.byteOffset, 9).set([-0.5, -0.5, 0, 0.5, -0.5, 0, 0, 0.5, 0]);
+  new Uint16Array(binary.buffer, binary.byteOffset + 36, 3).set([0, 1, 2]);
+  const gltf = {
+    asset: { version: "2.0" },
+    buffers: [{ uri: "district.bin", byteLength: 44 }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: 36 },
+      { buffer: 0, byteOffset: 36, byteLength: 6 }
+    ],
+    accessors: [
+      { bufferView: 0, componentType: 5126, count: 3, type: "VEC3" },
+      { bufferView: 1, componentType: 5123, count: 3, type: "SCALAR" }
+    ],
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 }, indices: 1 }] }],
+    nodes: [{ mesh: 0 }],
+    scenes: [{ nodes: [0] }],
+    scene: 0
+  };
+  const previousFetch = globalThis.fetch;
+  const requested: string[] = [];
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = String(input);
+    requested.push(url);
+    if (url === "/fixtures/city/district.gltf") {
+      return new Response(JSON.stringify(gltf), { status: 200, headers: { "content-type": "model/gltf+json" } });
+    }
+    if (url === "https://aura3d.test/fixtures/city/district.bin") {
+      return new Response(binary, { status: 200 });
+    }
+    return new Response("not found", { status: 404 });
+  }) as typeof fetch;
+  Object.defineProperty(globalThis, "location", {
+    configurable: true,
+    value: { href: "https://aura3d.test/apps/advanced-examples-gallery/" }
+  });
+  try {
+    const asset = await new GLTFLoader().load(
+      { url: "/fixtures/city/district.gltf" },
+      { throwIfAborted: () => undefined } as never
+    );
+    assert.equal(asset.meshes.length, 1);
+    assert.deepEqual(requested, [
+      "/fixtures/city/district.gltf",
+      "https://aura3d.test/fixtures/city/district.bin"
+    ]);
+  } finally {
+    globalThis.fetch = previousFetch;
+    Reflect.deleteProperty(globalThis, "location");
+  }
+});
+
 test("GLTFLoader loads a binary GLB fixture with a BIN chunk", async () => {
   const binary = Buffer.alloc(44);
   new Float32Array(binary.buffer, binary.byteOffset, 9).set([-1, 0, 0, 1, 0, 0, 0, 1, 0]);

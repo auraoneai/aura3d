@@ -141,10 +141,10 @@ const finishes: Record<FinishId, { readonly label: string; readonly roughness: n
   },
   gloss: {
     label: "Gloss clearcoat",
-    roughness: 0.09,
+    roughness: 0.22,
     metallic: 0.03,
-    clearcoat: 0.96,
-    accentMaterial: material.clearGlass({ color: "#f8fbff", opacity: 0.18, transmission: 0.72 })
+    clearcoat: 0.58,
+    accentMaterial: material.clearGlass({ color: "#c9d0d4", opacity: 0.12, transmission: 0.62 })
   },
   titanium: {
     label: "Brushed titanium",
@@ -313,7 +313,7 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       // lifting the entire copper body toward one flat midtone. The two long
       // directional cards below provide the readable highlight-to-shadow
       // transition that a product photograph needs.
-      intensity: 0.96,
+      intensity: 0.72,
       color: "#fff4e6"
     }))
     .addMany(compactProductStageNodes(nextState))
@@ -321,14 +321,14 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       ? productModel.animate({ clip: "turntable", speed: 0.36, duration: 9, captureTime: 0.36 })
       : productModel)
     .addMany(configuratorSceneAccents(nextState))
-    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.18, color: "#d9e1e8" }))
-    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 2.28, color: "#fff4e6" }))
-    .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 0.82, color: "#a9dcff" }))
-    .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.44, color: "#ffe2c0" }))
+    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.12, color: "#cbd4dc" }))
+    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 1.72, color: "#ffe8d3" }))
+    .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 0.42, color: "#80b7da" }))
+    .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.22, color: "#efbf91" }))
     .add(lights.rect({
       name: "long warm showroom reflection card",
       position: [2.75, 1.62, 1.72],
-      intensity: nextState.variant === "copper" ? 0.78 : 0.5,
+      intensity: nextState.variant === "copper" ? 0.46 : 0.34,
       color: activeVariant.accent,
       width: 2.6,
       height: 0.72
@@ -592,8 +592,8 @@ function productMaterialFor(nextState: ConfiguratorState): AuraMaterialSpec {
     roughness: activeFinish.roughness,
     metallic: activeFinish.metallic,
     clearcoat: activeFinish.clearcoat,
-    clearcoatRoughness: nextState.finish === "gloss" ? 0.018 : 0.12,
-    envMapIntensity: nextState.finish === "gloss" ? 1.65 : 1.08
+    clearcoatRoughness: nextState.finish === "gloss" ? 0.16 : 0.12,
+    envMapIntensity: nextState.finish === "gloss" ? 0.92 : 0.84
   });
 }
 

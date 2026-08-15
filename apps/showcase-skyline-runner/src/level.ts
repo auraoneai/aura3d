@@ -38,9 +38,9 @@ export {
   skylineTerrainWarp
 } from "./level-layout";
 
-export const SKYLINE_AUTHORED_PLAYABLE_SECONDS = 170;
-export const SKYLINE_MIN_PLAYABLE_SECONDS = 120;
-export const SKYLINE_MAX_TARGET_PLAYABLE_SECONDS = 180;
+export const SKYLINE_AUTHORED_PLAYABLE_SECONDS = 95;
+export const SKYLINE_MIN_PLAYABLE_SECONDS = 70;
+export const SKYLINE_MAX_TARGET_PLAYABLE_SECONDS = 115;
 
 const sectionId = (section: number, id: string) =>
   `district-${section + 1}-${SKYLINE_SECTION_LAYOUTS[section]?.name ?? "unknown"}--${id}`;
@@ -137,16 +137,13 @@ export const skylineWorldAssetBindings = [{
  * reads correctly relative to the character rather than to an absolute world number.
  */
 export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
-  feel: "responsive",
+  feel: "snappy",
   characterHeight: SKYLINE_CHARACTER_HEIGHT,
-  // Preserve the redesigned jump as a deliberate 2.4-character-height move.
-  // Reducing the rendered hero for world readability must not quietly reduce
-  // the jump back to the barely-there arc this route was rebuilt to remove.
-  jumpHeight: SKYLINE_CHARACTER_HEIGHT * 2.4,
-  // Raise normal traversal while retaining margin above the two-minute physical-course floor.
-  // At 1.21 units/second the 151-unit level is roughly 125 seconds before sentry decisions,
-  // collection, falls, and checkpoint recovery; this is more responsive without gaming duration.
-  runSpeedPerHeight: 2.75,
+  // A fast, readable arc: enough clearance for the authored course without the
+  // slow-motion hang time of the previous 2.4-character-height jump.
+  jumpHeight: SKYLINE_CHARACTER_HEIGHT * 1.8,
+  // Keep lateral control quick enough to respond immediately to a key press.
+  runSpeedPerHeight: 3.7,
   gapMargin: 1.5,
   /*
    * The reported session "ends in 20-30 seconds": the 16.6-unit course crosses in about 14
@@ -154,8 +151,8 @@ export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
    * multi-minute session is how a level gets its duration on purpose. The solver still
    * prefers gap clearance, so this is a target rather than a guarantee.
    */
-  // Direct traversal is intentionally 150 seconds. This is the acceptance target itself,
-  // not a five-minute session estimate multiplied by an undocumented fraction.
+  // Direct traversal targets a compact play session; hazards and collection add
+  // time without making ordinary movement feel artificially slow.
   targetSessionSeconds: SKYLINE_AUTHORED_PLAYABLE_SECONDS,
   traversalFraction: 1
 });

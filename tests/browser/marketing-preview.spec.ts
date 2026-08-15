@@ -46,7 +46,7 @@ test.describe("built marketing preview", () => {
     await server.close();
   });
 
-  test("serves the canonical mobile homepage and its live product proof without failures", async ({ page }) => {
+  test("serves the canonical mobile homepage with lightweight showcase posters", async ({ page }) => {
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
     const requestFailures: string[] = [];
@@ -79,12 +79,10 @@ test.describe("built marketing preview", () => {
     await expect(page.locator(".doc-hero h1")).toBeVisible();
     await expect(page.getByRole("link", { name: "Launch 36 examples" })).toBeVisible();
     const productProof = page.locator(".visual-proof iframe[data-route='/apps/showcase-product-configurator/']");
-    await productProof.scrollIntoViewIfNeeded();
-    const productFrame = page.frameLocator(".visual-proof iframe[data-route='/apps/showcase-product-configurator/']");
-    await expect.poll(() => productFrame.locator("body").evaluate((body) => {
-      const runtime = (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__;
-      return body.dataset.aura3dReady === "true" && Boolean(runtime);
-    }), { timeout: 90_000 }).toBe(true);
+    await productProof.locator("xpath=..").scrollIntoViewIfNeeded();
+    await expect(productProof).toHaveAttribute("data-preview", "static");
+    await expect(productProof).not.toHaveAttribute("src", /.+/);
+    await expect(page.locator(".visual-proof-stage .example-poster-static").first()).toBeVisible();
     expect(badResponses).toEqual([]);
     expect(consoleErrors).toEqual([]);
     expect(pageErrors).toEqual([]);

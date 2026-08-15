@@ -11013,7 +11013,7 @@ async function startProductionRender(
        */
       labelLayer.setOcclusionTest(createSceneLabelOcclusionTest(
         snapshot,
-        resolveCameraEye(snapshot, snapshot.camera, renderTime, runtimeNodes),
+        resolveCameraFrame(snapshot, snapshot.camera, renderTime, runtimeNodes).eye,
         runtimeNodes
       ));
       labelLayer.update(renderer.viewProjection(renderTime));
@@ -11890,7 +11890,7 @@ function createProductionRuntimeRendererInput(
 ): ProductionRendererInput {
   const items: RenderItem[] = [];
   const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
-  const cameraPosition = resolveCameraEye(snapshot, snapshot.camera, time, runtimeNodes);
+  const cameraPosition = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
   for (const entry of actorEntries) {
     const currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     const currentNode = currentState.node;
@@ -12742,6 +12742,64 @@ function resolveCameraEye(snapshot: AuraSceneSnapshot, cameraSpec: AuraCameraSpe
     eye = mix3(from, to, eased);
   }
   return eye;
+}
+
+interface SmoothedCameraFrame {
+  readonly time: number;
+  readonly target: AuraVec3;
+  readonly eye: AuraVec3;
+}
+
+const smoothedCameraFrames = new WeakMap<object, Map<AuraCameraSpec, SmoothedCameraFrame>>();
+
+function mixCameraVector(from: AuraVec3, to: AuraVec3, amount: number): AuraVec3 {
+  return [
+    from[0] + (to[0] - from[0]) * amount,
+    from[1] + (to[1] - from[1]) * amount,
+    from[2] + (to[2] - from[2]) * amount
+  ];
+}
+
+/** Resolve one coherent camera frame and honor the public follow-camera smoothing contract. */
+function resolveCameraFrame(
+  snapshot: AuraSceneSnapshot,
+  cameraSpec: AuraCameraSpec,
+  time: number,
+  runtimeNodes?: AuraRuntimeNodeRegistry
+): SmoothedCameraFrame {
+  const rawTarget = resolveCameraTarget(snapshot, cameraSpec, runtimeNodes);
+  const rawEye = resolveCameraEye(snapshot, cameraSpec, time, runtimeNodes);
+  const smoothing = Math.max(0, Math.min(0.98, cameraSpec.smoothing ?? 0));
+  if (!runtimeNodes || cameraSpec.mode !== "follow" || smoothing <= 0) {
+    return { time, target: rawTarget, eye: rawEye };
+  }
+
+  const key = runtimeNodes as object;
+  let cameraMap = smoothedCameraFrames.get(key);
+  if (!cameraMap) {
+    cameraMap = new Map();
+    smoothedCameraFrames.set(key, cameraMap);
+  }
+  const previous = cameraMap.get(cameraSpec);
+  if (previous && time === previous.time) return previous;
+  if (!previous || time < previous.time || time - previous.time > 250) {
+    const frame = { time, target: rawTarget, eye: rawEye };
+    cameraMap.set(cameraSpec, frame);
+    return frame;
+  }
+
+  // Treat smoothing as the intended blend fraction at 60 Hz, then convert it
+  // to an exponential response so the camera feels identical at every refresh rate.
+  const deltaSeconds = (time - previous.time) / 1000;
+  const responsePerSecond = -Math.log(1 - smoothing) * 60;
+  const amount = 1 - Math.exp(-responsePerSecond * deltaSeconds);
+  const frame = {
+    time,
+    target: mixCameraVector(previous.target, rawTarget, amount),
+    eye: mixCameraVector(previous.eye, rawEye, amount)
+  };
+  cameraMap.set(cameraSpec, frame);
+  return frame;
 }
 
 interface WebGLSceneRenderer {
@@ -14725,8 +14783,7 @@ function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
 
 function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): Float32Array {
   const cameraSpec = snapshot.camera;
-  const target = resolveCameraTarget(snapshot, cameraSpec, runtimeNodes);
-  const eye = resolveCameraEye(snapshot, cameraSpec, time, runtimeNodes);
+  const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
   const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
   const halfHeight = Math.max(1e-4, cameraSpec.orthographicSize ?? 1.4);
   const halfWidth = Math.max(1e-4, halfHeight * aspect);

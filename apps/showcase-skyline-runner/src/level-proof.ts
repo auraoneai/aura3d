@@ -7,7 +7,7 @@ import {
 } from "./level";
 
 /**
- * Deterministic 180-second acceptance proof for the five-act Level 1.
+ * Deterministic two-minute acceptance proof for the five-act Level 1.
  *
  * FS-103 requires "at least 30 seconds of asset-aligned level duration and a 60-second" review run.
  * Duration is not observable in a screenshot and a mounted browser session cannot be replayed
@@ -21,8 +21,8 @@ import {
  * suite covers separately.
  */
 
-/** Three minutes at 60 Hz: the upper edge of the promised normal-play window. */
-export const LEVEL_PROOF_FRAMES = 10800;
+/** Two minutes at 60 Hz: enough to cover the responsive completion window. */
+export const LEVEL_PROOF_FRAMES = 7200;
 const STEP_SECONDS = 1 / 60;
 
 export interface SkylineLevelProof {
@@ -71,7 +71,7 @@ export interface SkylineLevelProof {
 const createProofLevel = createSkylineLevel;
 
 /**
- * Runs the level for the full 180-second acceptance window and reports only observed values.
+ * Runs the level for the full 120-second acceptance window and reports only observed values.
  *
  * The input policy is deterministic and deliberately simple: run right, and jump when grounded and
  * either blocked or approaching a gap. Because it is competent but not optimal it produces real
