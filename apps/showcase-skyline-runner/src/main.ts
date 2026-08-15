@@ -27,6 +27,7 @@ import {
   SKYLINE_SECTION_COUNT,
   SKYLINE_SECTION_STRIDE,
   SKYLINE_SENTRY_ENCOUNTERS,
+  SKYLINE_EMBER_PICKUPS,
   createSkylineLevel,
   skylinePlayableSurfaceMap,
   skylineMotion
@@ -39,6 +40,7 @@ const input = game.input({
     right: ["KeyD", "ArrowRight"],
     jump: ["KeyW", "ArrowUp", "Space"],
     dash: ["ShiftLeft", "KeyK"],
+    fire: ["KeyJ", "KeyL"],
     reset: ["KeyR"]
   },
   axes: { moveX: { negative: "left", positive: "right" } },
@@ -622,6 +624,33 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).rotate(Math.PI / 2, 0, 0).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-objective-pulse", {
       tags: ["feedback", "objective", "renderer-owned"]
     })))
+    .addMany(SKYLINE_EMBER_PICKUPS.map((pickup, index) => {
+      const [px, py] = platformerScene.toScenePoint({ x: pickup.x, y: pickup.y });
+      return primitives.sphere({
+        name: `ember charge ${index + 1}`,
+        material: material.emissive({
+          name: `ember charge glow ${index + 1}`,
+          color: "#ff7a32",
+          emissive: "#ffb070",
+          emissiveIntensity: 1.25,
+          roughness: 0.28
+        })
+      }).position(px, py, GAMEPLAY_ACTOR_DEPTH).scale([0.13, 0.13, 0.13]).runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}`, {
+        tags: ["pickup", "ember", "renderer-owned"]
+      }));
+    }))
+    .addMany([0, 1, 2, 3].map((index) => primitives.sphere({
+      name: `ember volley ${index + 1}`,
+      material: material.emissive({
+        name: `ember volley glow ${index + 1}`,
+        color: "#ff5a1f",
+        emissive: "#ffd08a",
+        emissiveIntensity: 1.4,
+        roughness: 0.22
+      })
+    }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
+      tags: ["projectile", "ember", "renderer-owned"]
+    }))))
     .add(effects.ambientOcclusion({ intensity: 0.4 }))
     .add(effects.neonBloom({ intensity: 0.1 }))
     .add(effects.fog({ name: "skyline layered distance haze", color: "#2a6182", density: 0.05, intensity: 0.5 }))
@@ -639,6 +668,20 @@ const feedbackNodes = {
   chain: app.nodes.require("skyline-chain-pips"),
   objective: app.nodes.require("skyline-objective-pulse")
 };
+const emberPickupNodes = Object.fromEntries(
+  SKYLINE_EMBER_PICKUPS.map((pickup) => [pickup.id, app.nodes.require(`skyline-ember-pickup-${pickup.id}`)])
+);
+const emberVolleyNodes = [0, 1, 2, 3].map((index) => app.nodes.require(`skyline-ember-volley-${index}`));
+interface EmberVolley {
+  x: number;
+  y: number;
+  vx: number;
+  life: number;
+  slot: number;
+}
+const emberVolleys: EmberVolley[] = [];
+let spentEmberCharges = 0;
+const pendingDefeatedSentries = new Set<string>();
 /** Raised only by an observed render of each feedback node, never by configuration. */
 const observedFeedbackProof = { flowRibbon: false, chainPips: false, objectivePulse: false };
 
@@ -703,6 +746,29 @@ function renderChallengeFeedback(): void {
     observedFeedbackProof.objectivePulse = true;
   } else {
     feedbackNodes.objective.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
+  }
+}
+
+function renderEmberVolleys(): void {
+  for (const pickup of SKYLINE_EMBER_PICKUPS) {
+    const node = emberPickupNodes[pickup.id];
+    if (!node) continue;
+    const taken = state.collected.includes(pickup.id);
+    node.setVisible(!taken);
+    if (taken) node.setScale([...HIDDEN_FEEDBACK_SCALE]);
+  }
+  for (const [index, encounter] of SKYLINE_SENTRY_ENCOUNTERS.entries()) {
+    const defeated = state.defeatedHazards.includes(encounter.id);
+    app.nodes.require(`relay-sentry-${index + 1}`).setVisible(!defeated);
+  }
+  for (const [index, node] of emberVolleyNodes.entries()) {
+    const volley = emberVolleys.find((entry) => entry.slot === index);
+    if (!volley) {
+      node.setVisible(false).setScale([...HIDDEN_FEEDBACK_SCALE]);
+      continue;
+    }
+    const [sx, sy] = platformerScene.toScenePoint({ x: volley.x, y: volley.y });
+    node.setVisible(true).setPosition(sx, sy, GAMEPLAY_ACTOR_DEPTH).setScale([0.1, 0.1, 0.1]);
   }
 }
 let compositionSubjectSuppressed = false;
@@ -775,6 +841,8 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
 const hud = {
   x: requireElement("x-value"),
   score: requireElement("score-value"),
+  coins: requireElement("coin-value"),
+  ember: requireElement("ember-value"),
   deaths: requireElement("death-value"),
   checkpoint: requireElement("checkpoint-value"),
   surface: requireElement("surface-value"),
@@ -1051,6 +1119,8 @@ const mountedEvidence = {
     hazardRespawn: false,
     finishProgression: false,
     resetWorks: false,
+    emberVolleyFired: false,
+    emberDefeatedSentry: false,
     surfaceContactProven: initialSurfaceAlignment.feetOnSurface,
     authoredPlayableSeconds
   }
@@ -1158,6 +1228,9 @@ app.onFrame(({ dt }) => {
   if (input.pressed("reset")) {
     state = platformerState.reset();
     challengeEvidence = runnerChallenge.reset();
+    emberVolleys.length = 0;
+    spentEmberCharges = 0;
+    pendingDefeatedSentries.clear();
     playerFacing = 1;
     frameCount += 1;
     mountedEvidence.gameplay.resetWorks = true;
@@ -1173,20 +1246,63 @@ app.onFrame(({ dt }) => {
     completionProof.eventCounts.respawn = 0;
     completionProof.eventCounts.finish = 0;
     locomotionSnapshot = locomotion.reset("idle");
+    renderEmberVolleys();
     publishPlatformerEvidence();
     return;
   }
   const previous = state;
+  const collectedEmbers = state.collected.filter((id) => id.includes("ember-charge")).length;
+  const emberCharges = Math.max(0, collectedEmbers - spentEmberCharges);
+  if (input.pressed("fire") && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
+    const slot = emberVolleyNodes.findIndex((_, index) => !emberVolleys.some((volley) => volley.slot === index));
+    if (slot >= 0) {
+      spentEmberCharges += 1;
+      emberVolleys.push({
+        x: state.player.x + playerFacing * 0.22,
+        y: state.player.y + SKYLINE_CHARACTER_HEIGHT * 0.55,
+        vx: playerFacing * 6.4,
+        life: 1.15,
+        slot
+      });
+      mountedEvidence.gameplay.emberVolleyFired = true;
+    }
+  }
+  const clearedThisFrame: string[] = [...pendingDefeatedSentries];
+  for (const volley of emberVolleys) {
+    volley.x += volley.vx * step;
+    volley.life -= step;
+    for (const sentry of SKYLINE_SENTRY_ENCOUNTERS) {
+      if (pendingDefeatedSentries.has(sentry.id) || state.defeatedHazards.includes(sentry.id)) continue;
+      const phase = ((state.time / Math.max(0.001, sentry.period)) + sentry.phase) * Math.PI * 2;
+      const sentryX = sentry.x + Math.sin(phase) * sentry.amplitude;
+      if (
+        volley.x >= sentryX - 0.08
+        && volley.x <= sentryX + sentry.width + 0.08
+        && volley.y >= sentry.y - 0.08
+        && volley.y <= sentry.y + sentry.height + 0.18
+      ) {
+        pendingDefeatedSentries.add(sentry.id);
+        clearedThisFrame.push(sentry.id);
+        volley.life = 0;
+        mountedEvidence.gameplay.emberDefeatedSentry = true;
+      }
+    }
+  }
+  for (let index = emberVolleys.length - 1; index >= 0; index -= 1) {
+    if ((emberVolleys[index]?.life ?? 0) <= 0) emberVolleys.splice(index, 1);
+  }
   state = platformerState.step(step, {
     moveX: input.axis("moveX"),
     jumpPressed: input.pressed("jump"),
     jumpHeld: input.held("jump"),
-    dashPressed: input.pressed("dash")
+    dashPressed: input.pressed("dash"),
+    clearHazardIds: clearedThisFrame
   });
   challengeEvidence = runnerChallenge.step(step, previous, state);
   // Flow, chain and objective state must be visible in the rendered scene, not only in
   // HUD text, so the feedback nodes are driven from the evidence that was just observed.
   renderChallengeFeedback();
+  renderEmberVolleys();
   frameCount += 1;
   mountedEvidence.gameplay.moveChangesX ||= Math.abs(state.player.x - previous.player.x) > 0.001;
   mountedEvidence.gameplay.jumpChangesY ||= Math.abs(state.player.y - previous.player.y) > 0.001;
@@ -1221,12 +1337,14 @@ function setupPlatformerPanel(): void {
     <header class="runner-brand">
       <span class="label"><i aria-hidden="true"></i> Verdant relay</span>
       <h1>Skyline Runner</h1>
-      <p class="claim">Keep the flow alive. Chain three sky shards and carry the charge through the summit gate.</p>
+      <p class="claim">Bank lumen coins, stock ember charges, stomp or volley the sentries, and restore the summit beacon.</p>
     </header>
     <section class="panel-metrics" aria-label="Live runner metrics">
       <div class="metrics-row">
         <article><span>Distance</span><strong id="x-value">0.00</strong></article>
         <article><span>Score</span><strong id="score-value">0</strong></article>
+        <article><span>Coins</span><strong id="coin-value">0</strong></article>
+        <article><span>Ember</span><strong id="ember-value">0</strong></article>
         <article class="metric--flow"><span>Flow chain</span><strong id="challenge-value">0</strong></article>
         <article><span>Falls</span><strong id="death-value">0</strong></article>
         <article class="metric--checkpoint"><span>Relay</span><strong id="checkpoint-value">start</strong></article>
@@ -1240,9 +1358,10 @@ function setupPlatformerPanel(): void {
         <button id="right-control" type="button" aria-label="Move right"><b aria-hidden="true">→</b><span>Right</span></button>
         <button id="jump-control" type="button"><b aria-hidden="true">↑</b><span>Jump</span></button>
         <button id="dash-control" type="button"><b aria-hidden="true">⇢</b><span>Dash</span></button>
+        <button id="fire-control" type="button"><b aria-hidden="true">✸</b><span>Ember</span></button>
         <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
       </div>
-      <ul class="controls-list"><li><kbd>A D</kbd> Run</li><li><kbd>Space</kbd> Jump · hold for height</li><li><kbd>Shift</kbd> Dash</li><li><kbd>R</kbd> Restart</li></ul>
+      <ul class="controls-list"><li><kbd>A D</kbd> Run</li><li><kbd>Space</kbd> Jump · hold for height</li><li><kbd>Shift</kbd> Dash</li><li><kbd>J</kbd> Ember volley</li><li><kbd>R</kbd> Restart</li></ul>
     </section>
     <section class="route-contract" aria-label="Geometry contract">
       <span class="contract-status"><i aria-hidden="true"></i> Surface locked</span>
@@ -1263,6 +1382,7 @@ function setupPlatformerPanel(): void {
     ],
     pulse: [
       { elementId: "dash-control", code: "ShiftLeft" },
+      { elementId: "fire-control", code: "KeyJ" },
       { elementId: "reset-control", code: "KeyR" }
     ]
   });
@@ -1270,6 +1390,10 @@ function setupPlatformerPanel(): void {
 function updatePlatformerHud(): void {
   hud.x.textContent = round(state.player.x).toFixed(2);
   hud.score.textContent = String(challengeEvidence.challengeScore);
+  const coinCount = state.collected.filter((id) => id.includes("sky-shard")).length;
+  const emberStock = Math.max(0, state.collected.filter((id) => id.includes("ember-charge")).length - spentEmberCharges);
+  hud.coins.textContent = String(coinCount);
+  hud.ember.textContent = String(emberStock);
   hud.deaths.textContent = String(state.deaths);
   const relayLabel = state.checkpointId === "start"
     ? `00/${checkpoints.length}`

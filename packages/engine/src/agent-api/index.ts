@@ -6755,7 +6755,7 @@ export function createGamePlatformerPresentationSurfaceNodes(options: AuraPlatfo
       })
         .position(point[0], point[1], point[2] + (isGameLevel ? 0.26 : 0.16))
         .rotate(Math.PI / 2, 0, 0)
-        .scale([0.045, 0.045, 0.012])
+        .scale([0.11, 0.11, 0.028])
         .toJSON()
     );
   }

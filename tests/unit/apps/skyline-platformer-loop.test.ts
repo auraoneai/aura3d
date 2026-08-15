@@ -3,6 +3,7 @@ import { game } from "@aura3d/engine";
 import {
   createSkylineLevel,
   SKYLINE_CHARACTER_HEIGHT,
+  SKYLINE_EMBER_PICKUPS,
   SKYLINE_MOVING_PLATFORMS,
   SKYLINE_SENTRY_ENCOUNTERS,
   skylineMotion
@@ -21,8 +22,32 @@ describe("skyline platformer loop", () => {
   it("ships patrolling stompable sentries and moving platforms", () => {
     expect(SKYLINE_SENTRY_ENCOUNTERS.length).toBeGreaterThanOrEqual(2);
     expect(SKYLINE_SENTRY_ENCOUNTERS.every((sentry) => sentry.stompable && sentry.amplitude > 0)).toBe(true);
+    expect(SKYLINE_EMBER_PICKUPS.length).toBeGreaterThanOrEqual(2);
+    expect(createSkylineLevel().collectibles?.some((item) => item.id.includes("ember-charge"))).toBe(true);
     expect(SKYLINE_MOVING_PLATFORMS.length).toBeGreaterThanOrEqual(2);
     expect(SKYLINE_MOVING_PLATFORMS.some((platform) => platform.axis === "y")).toBe(true);
+  });
+
+  it("clears a sentry when the kit is given a defeat id", () => {
+    const kit = game.platformer({
+      start: { x: 0.2, y: 0.3 },
+      playerSize: [0.2, SKYLINE_CHARACTER_HEIGHT],
+      platforms: [{ id: "ground", x: -1, y: 0, width: 6, height: 0.2 }],
+      finish: { x: 5.4, y: 0.4 },
+      hazards: [{ id: "relay-sentry-1", x: 1.4, y: 0.2, width: 0.26, height: 0.3, stompable: true }],
+      collectibles: [{ id: "ember-charge-1", x: 0.6, y: 0.55, value: 150 }],
+      lives: 3
+    });
+    let snapshot = kit.snapshot();
+    for (let frame = 0; frame < 90 && snapshot.collected.length === 0; frame += 1) {
+      snapshot = kit.step(1 / 60, { moveX: 1 });
+    }
+    expect(snapshot.collected).toContain("ember-charge-1");
+    snapshot = kit.step(1 / 60, { moveX: 1, clearHazardIds: ["relay-sentry-1"] });
+    expect(snapshot.defeatedHazards).toContain("relay-sentry-1");
+    expect(snapshot.events.some((event) => event.type === "defeat")).toBe(true);
+    const after = kit.step(1 / 60, { moveX: 1 });
+    expect(after.deaths).toBe(0);
   });
 
   it("collects, stomps, and completes from real kit input", () => {

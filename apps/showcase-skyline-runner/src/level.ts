@@ -118,10 +118,27 @@ const extendedCollectibles = SKYLINE_SECTION_LAYOUTS.flatMap((_, section) =>
       id: sectionId(section, `sky-shard-${index + 1}`),
       x: platform.x + platform.width / 2,
       y: platform.y + platform.height + 0.46,
-      value: 50
+      value: 50,
+      radius: 0.38
     };
   })
 );
+
+/**
+ * Ember charges sit on alternate districts. Collecting one stocks a volley
+ * the player can fire at a sentry. They are ordinary kit collectibles so
+ * score and `collect` events stay honest.
+ */
+export const SKYLINE_EMBER_PICKUPS = [1, 3, 6, 8].map((section, index) => {
+  const platform = nearestPlatform(section, 9.2);
+  return {
+    id: sectionId(section, `ember-charge-${index + 1}`),
+    x: platform.x + platform.width * 0.72,
+    y: platform.y + platform.height + 0.58,
+    value: 150,
+    radius: 0.4
+  };
+});
 
 export const skylinePlayableSurfaceMap = {
   ...gameGeometryContract.surfaceMap,
@@ -194,7 +211,7 @@ export function createSkylineLevel() {
       checkpoints: extendedCheckpoints,
       hazards: [...extendedHazards, ...SKYLINE_SENTRY_ENCOUNTERS],
       movingPlatforms: SKYLINE_MOVING_PLATFORMS,
-      collectibles: extendedCollectibles,
+      collectibles: [...extendedCollectibles, ...SKYLINE_EMBER_PICKUPS],
       // Keep collision and presentation in one scale contract. Without this,
       // game.platformer falls back to its 0.45 x 1.0 default collider even
       // though the rendered hero is only 0.44 units tall.

@@ -10,12 +10,12 @@ void startWowShowcase({
     yaw: 0.42,
     pitch: -0.04,
     zoom: 0.74,
-    exposure: 1.06,
-    roughnessScale: 0.66,
-    metallicScale: 1.28,
-    clearcoatBoost: 0.36,
-    backgroundBlur: 0.12,
-    backgroundVisible: true,
+    exposure: 0.58,
+    roughnessScale: 0.78,
+    metallicScale: 0.88,
+    clearcoatBoost: 0.08,
+    backgroundBlur: 0.28,
+    backgroundVisible: false,
     shadows: true
   },
   orbitSpeed: -0.0022

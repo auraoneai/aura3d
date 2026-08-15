@@ -88,11 +88,14 @@ const tightestCornerRadius = measureTightestCornerRadius(routeGeometry.points);
 const STEER_CORRECTION_GAIN = Number((2 / Math.max(0.05, routeGeometry.width / 2)).toFixed(3));
 
 /**
- * Scene size chosen so the certified road width reproduces the car-length-to-road-width
- * ratio (~1.1) that reads correctly, rather than a size picked to fit the model bounds.
+ * Scene size chosen so two cars plus a passing margin sit inside the grey asphalt
+ * with room to spare. The previous 39.097 fit left only ~7% unused tarmac, so a
+ * side-by-side pass read as two bodies filling the whole lane. Scaling the
+ * circuit (not shrinking the cars) widens the visible road while the chase
+ * camera still frames the hero from its own size.
  * Lighting and fog are expressed relative to this so they scale with the circuit.
  */
-const SCENE_SIZE = 39.097;
+const SCENE_SIZE = 55.518;
 /** Longest-axis size the car model is fit to. */
 const CAR_TARGET_MAX_DIMENSION = 0.96;
 /**
@@ -192,11 +195,11 @@ const racingScene = game.racingSceneBinding({
   topology: trackTopology,
   route,
   trackAsset: "showcaseTsukubaCircuit",
-  // Tsukuba's modelled road is ~0.42 units wide against a 35.4-unit model, so the
-  // scene size is chosen to reproduce the car-length-to-road-width ratio (~1.1) that
-  // reads correctly, rather than a size picked to fit the model bounds.
+  // Tsukuba's modelled road is ~0.42 units wide against a 35.4-unit model.
+  // Scene size and the fitted mesh share one 1.42× scale so the grey asphalt
+  // is wide enough for a legal pass while the centerline stays on the mesh.
   targetSceneSize: SCENE_SIZE,
-  trackModelTargetMaxDimension: 90.413,
+  trackModelTargetMaxDimension: 128.386,
   trackY: TRACK_REFERENCE_Y,
   // `carY` is the contact plane: the renderer grounds a `scaleMode: "fit"` model on its
   // node origin (see `CAR_REFERENCE_Y`), so this is the track surface itself with no

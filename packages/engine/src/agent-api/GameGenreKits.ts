@@ -73,6 +73,11 @@ export interface GamePlatformerInput {
   readonly dashPressed?: boolean;
   readonly fastFall?: boolean;
   /**
+   * Hazard ids the caller has already cleared (ember volley, scripted defeat).
+   * The kit owns the defeated set so a later overlap cannot still deal contact damage.
+   */
+  readonly clearHazardIds?: readonly string[];
+  /**
    * Restart the level from its start.
    *
    * Present because `GameRacingInput` has it and this did not: a clean-room platformer
@@ -91,6 +96,7 @@ export type GamePlatformerEventType =
   | "checkpoint"
   | "hazard"
   | "stomp"
+  | "defeat"
   | "fall"
   | "respawn"
   | "complete"
@@ -126,6 +132,7 @@ export interface GamePlatformerSnapshot {
   readonly deaths: number;
   readonly checkpointId: string;
   readonly collected: readonly string[];
+  readonly defeatedHazards: readonly string[];
   readonly activatedCheckpoints: readonly string[];
   readonly events: readonly GamePlatformerEvent[];
 }
@@ -939,6 +946,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     deaths: state.deaths,
     checkpointId: state.checkpointId,
     collected: [...state.collected].sort(),
+    defeatedHazards: [...defeatedHazards].sort(),
     activatedCheckpoints: [...state.activatedCheckpoints].sort(),
     events: [...events]
   });
@@ -1082,6 +1090,11 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
           state.activatedCheckpoints.add(checkpoint.id);
           emit("checkpoint", checkpoint.id);
         }
+      }
+      for (const clearedId of input.clearHazardIds ?? []) {
+        if (defeatedHazards.has(clearedId)) continue;
+        defeatedHazards.add(clearedId);
+        emit("defeat", clearedId);
       }
       for (const hazard of platformerHazardRectsAt(state.time, config)) {
         if (defeatedHazards.has(hazard.id)) continue;

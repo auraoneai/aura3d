@@ -110,6 +110,13 @@ export interface TurboOpponentAiEvidence {
   readonly recentDecisions: readonly string[];
   readonly preferredSignedOffset: number;
   readonly yielding: boolean;
+  readonly offTrack: boolean;
+  readonly signedTrackOffset: number;
+  readonly onAsphalt: boolean;
+  readonly onRoad: boolean;
+  readonly bodyHalfWidth?: number;
+  readonly outerEdge?: number;
+  readonly visualAsphaltHalfWidth?: number;
 }
 
 export interface TurboOpponentAi<TSnapshot extends TurboOpponentSnapshot> {
