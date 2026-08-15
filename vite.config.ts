@@ -3,9 +3,14 @@ import {
   CONTEXTUAL_ROUTE_ALIASES,
   rewriteLegacyPath
 } from "./tools/naming-taxonomy/contextualAliases";
+import { createReadStream, existsSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { extname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 import { installedAuraPackageAliases } from "./tests/browser/installed-package-resolve";
+
+const repoRoot = fileURLToPath(new URL(".", import.meta.url));
 
 const aliasEntries = [
   ["@aura3d/lean/product", "./packages/lean/src/product.ts"],
@@ -94,6 +99,29 @@ export default {
           next();
         });
       },
+    },
+    {
+      name: "a3d-serve-draco-decoder",
+      configureServer(server: ViteDevServer) {
+        server.middlewares.use((request: IncomingMessage, response: ServerResponse, next: () => void) => {
+          const path = (request.url ?? "").split("?")[0] ?? "";
+          if (!path.startsWith("/assets/draco/") && !path.startsWith("/node_modules/draco3d/")) {
+            next();
+            return;
+          }
+          const file = path.replace(/^\/assets\/draco\//, "").replace(/^\/node_modules\/draco3d\//, "");
+          const found = [
+            resolve(repoRoot, "marketing/public/assets/draco", file),
+            resolve(repoRoot, "node_modules/draco3d", file)
+          ].find((candidate) => existsSync(candidate));
+          if (!found) {
+            next();
+            return;
+          }
+          response.setHeader("Content-Type", extname(found) === ".wasm" ? "application/wasm" : "application/javascript");
+          createReadStream(found).pipe(response);
+        });
+      }
     },
   ],
   server: {
