@@ -29,7 +29,7 @@ describe("threejsParity route-owned scene modules", () => {
     expect(frame.animatedSystems).toContain("route-owned car paint environment suppresses blue-gray specular halo");
     expect(frame.animatedSystems).toContain("route-owned Product proof uses original car plus controlled configurator platform etch and material swatch tray");
     expect(frame.animatedSystems).toContain("route-owned compact material selector panel");
-    expect(frame.approximations.some((entry) => entry.includes("original texture-backed car-concept GLB as the visual subject"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("original texture-backed concept car so paint"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("route-owned product-shot/product-detail lighting rig"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("bounded direct key/fill/rim energy"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("blue-gray product environment creates pale Fresnel shading"))).toBe(true);

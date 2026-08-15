@@ -165,6 +165,10 @@ test("audit all 36 production catalog routes", async ({ page }, testInfo) => {
   writeFileSync(join(REPORT_DIR, "production-catalog-audit.json"), `${JSON.stringify(report, null, 2)}\n`);
   writeFileSync(SCRATCH_JSON, `${JSON.stringify(report, null, 2)}\n`);
   writeFileSync(
+    "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer/catalog-audit.json",
+    `${JSON.stringify(report, null, 2)}\n`
+  );
+  writeFileSync(
     join(REPORT_DIR, "production-catalog-audit.md"),
     [
       `# Production catalog audit`,

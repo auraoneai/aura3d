@@ -2,7 +2,7 @@
   "schema": "aura3d.marketing-final-previews/1.0",
   "status": "machine-reviewed-human-approval-pending",
   "approvalNote": "The August 12 approval predates subsequent game, lighting, and homepage changes. Exact final artifacts require renewed independent review.",
-  "generatedAt": "2026-08-12T23:21:27.555Z",
+  "generatedAt": "2026-08-15T12:51:04.000Z",
   "previews": [
     {
       "id": "showcase-product-configurator",
@@ -10,8 +10,8 @@
       "target": "marketing/public/previews/showcase/showcase-product-configurator.png",
       "width": 1440,
       "height": 900,
-      "sha256": "7a53827f68eeae55570ec3cc642a44139e31c7e313f85795e35daeb96750b9a6",
-      "bytes": 158506
+      "sha256": "136c32cd68bfee70bbcb6c3ca7939388c220992a79e3ac1e230701d6bdd0c243",
+      "bytes": 535974
     },
     {
       "id": "showcase-smart-city-control",
@@ -19,8 +19,8 @@
       "target": "marketing/public/previews/showcase/showcase-smart-city-control-scene.png",
       "width": 1440,
       "height": 900,
-      "sha256": "20fd04ce4cf8f7b94834a16a87cfc4db79641f7891c792342fdc0dd8e8721d17",
-      "bytes": 260290
+      "sha256": "c83d7fa2c0993a055b49a89a99f44b60c74bf309e7b0d424c13eb878f114fc07",
+      "bytes": 853360
     },
     {
       "id": "showcase-cinematic-architecture",
@@ -55,8 +55,8 @@
       "target": "marketing/public/previews/showcase/showcase-turbo-drift-circuit.png",
       "width": 1280,
       "height": 800,
-      "sha256": "4ccaba91c4025115816b8145952793cac87671b66878fabd86388fd20356bdcc",
-      "bytes": 1311822
+      "sha256": "557f6c1ff454313cbabf912fe68e1d02c6fb1ac31922a7ff955c9b3830984da1",
+      "bytes": 1324883
     },
     {
       "id": "showcase-skyline-runner",
@@ -64,8 +64,8 @@
       "target": "marketing/public/previews/showcase/showcase-skyline-runner.png",
       "width": 1280,
       "height": 800,
-      "sha256": "58be1b11a781bfcf17d0b348f9c15afe6c6a8bf82f6a0fd01060cc5b58bcd442",
-      "bytes": 405219
+      "sha256": "282326eaf5f9517991dd775d9e3e67c0223a327efb13cd158495cf92e24f5d8f",
+      "bytes": 402363
     },
     {
       "id": "aura-clash-arena",
