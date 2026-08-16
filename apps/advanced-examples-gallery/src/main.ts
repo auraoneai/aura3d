@@ -736,12 +736,12 @@ function renderShell(): void {
       ${selectedDemo.id === "smart-city" ? `
           <section class="workload-legend">
             <h2>Stress workload</h2>
-            <p>Every moving marker is a batched workload. Increase Object count to grow the grid and measure the live render cost.</p>
+          <p>Every marker is a batched city workload anchored to a road, yard, intersection, or district perimeter. Increase Object count to measure the live render cost.</p>
             <ul>
-              <li><i class="legend-swatch legend-traffic"></i><span><b>Yellow</b> traffic fleet</span></li>
-              <li><i class="legend-swatch legend-logistics"></i><span><b>Orange</b> logistics cargo</span></li>
-              <li><i class="legend-swatch legend-sensor"></i><span><b>Cyan</b> sensor pulses</span></li>
-              <li><i class="legend-swatch legend-city"></i><span><b>Blue / green</b> district load pillars</span></li>
+              <li><i class="legend-swatch legend-traffic"></i><span><b>Yellow</b> street traffic</span></li>
+              <li><i class="legend-swatch legend-logistics"></i><span><b>Orange</b> yard cargo pallets</span></li>
+              <li><i class="legend-swatch legend-sensor"></i><span><b>Cyan</b> intersection sensors</span></li>
+              <li><i class="legend-swatch legend-city"></i><span><b>Blue / green</b> perimeter load pillars</span></li>
             </ul>
           </section>
         ` : ""}

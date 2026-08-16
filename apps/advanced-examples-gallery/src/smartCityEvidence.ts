@@ -78,13 +78,16 @@ const DISTRICTS: readonly SmartCityDistrict[] = ["north", "harbor", "core", "ind
 export const SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS = 2.15;
 export const SMART_CITY_OVERLAY_MAX_WIDTH = 0.06;
 export const SMART_CITY_OVERLAY_MAX_HEIGHT = 0.74;
+const SMART_CITY_GRID_HALF_EXTENT = 6.1;
+const SMART_CITY_ROAD_Z = [-4.72, -2.28, 0.72, 3.08] as const;
+const SMART_CITY_ROAD_X = [-5.18, -2.64, 0.78, 3.38, 5.22] as const;
 
 export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions): SmartCityRouteEvidence {
   const level = normalizeLevel(options.level);
   const selectedDistrict = normalizeDistrict(options.selectedDistrict);
   const columns = columnsForLevel(level);
-  const spacing = 0.34;
-  const extent = columns * spacing * 0.5;
+  const extent = SMART_CITY_GRID_HALF_EXTENT;
+  const spacing = (extent * 2) / columns;
   const selectedAnchor = districtAnchor(selectedDistrict, extent);
   const capacity = columns * columns;
   const towerA: MutableBatch = { transforms: new Float32Array(capacity * 16), count: 0 };
@@ -160,12 +163,12 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
     pulsePoints,
     drawBatches,
     systems: [
-      "authored animated city district",
+      "authored Smart City street grid",
       "restrained district load holograms",
       "instanced yellow traffic fleet",
-      "instanced orange logistics cargo",
+      "instanced orange logistics-yard cargo",
       "instanced cyan sensor network",
-      "traffic platoons and light-rail sweeps",
+      "street-grid traffic platoons",
       "instanced facade/window bands",
       "batched facade, window, road, and logistics-yard detail",
       "district selection overlays",
@@ -174,10 +177,11 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       "instancing scale telemetry"
     ],
     approximations: [
-      `${towerInstances.toLocaleString("en-US")} thin holographic load pillars sit outside the authored city keepout`,
-      `${trafficInstances.toLocaleString("en-US")} traffic vehicles and ${logisticsBatch.count.toLocaleString("en-US")} logistics cargo markers are instanced overlays around the authored city`,
-      `${sensorBatch.count.toLocaleString("en-US")} smart-infrastructure status pulses use instanced cubes, not individual render objects`,
-      "Yellow blocks are traffic, orange blocks are logistics cargo, cyan blocks are sensors, and colored pillars are district load.",
+      `${towerInstances.toLocaleString("en-US")} thin holographic load pillars trace the city perimeter outside the authored street grid`,
+      `${trafficInstances.toLocaleString("en-US")} rounded traffic vehicles stay on the authored street coordinates`,
+      `${logisticsBatch.count.toLocaleString("en-US")} orange cargo pallets stay inside the harbor and industrial logistics yards`,
+      `${sensorBatch.count.toLocaleString("en-US")} cyan sensor beacons sit at street intersections instead of floating in the skyline`,
+      "Yellow capsules are traffic, orange cubes are yard cargo, cyan beacons are sensors, and colored pillars are district load.",
       `${facadeBandBatch.count.toLocaleString("en-US")} thin facade/window ticks use one instanced draw batch`,
       `${lineSegments.toLocaleString("en-US")} facade/window, road, rail, minimap, selection, and data-flow segments are batched line geometry`,
       `${pulsePoints.toLocaleString("en-US")} telemetry pulse points are batched point geometry`,
@@ -188,12 +192,12 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
     labels: [
       `Load ${level}`,
       `Grid ${columns}x${columns}`,
-      "Yellow = traffic",
-      "Orange = cargo",
-      "Cyan = sensors",
+      "Yellow = street traffic",
+      "Orange = yard cargo",
+      "Cyan = intersection sensors",
       `${towerInstances.toLocaleString("en-US")} load pillars`,
       `${trafficInstances.toLocaleString("en-US")} traffic vehicles`,
-      `${logisticsBatch.count.toLocaleString("en-US")} cargo instances`,
+      `${logisticsBatch.count.toLocaleString("en-US")} yard cargo pallets`,
       `${sensorBatch.count.toLocaleString("en-US")} sensor pulses`,
       `${facadeBandBatch.count.toLocaleString("en-US")} facade bands`,
       `${lineSegments.toLocaleString("en-US")} segments`,
@@ -205,67 +209,79 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
 }
 
 function createTrafficBatches(time: number, columns: number, spacing: number): SmartCityInstanceBatch[] {
-  // Platoons scale with the district grid so medium reads as a living city, not
-  // a token ring of cars. Every car still clears the authored Tokyo keepout.
-  const laneCount = Math.max(10, Math.floor(columns * 0.75));
-  const perLane = 9;
-  const count = laneCount * perLane * 2;
-  const eastWest: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
-  const northSouth: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
-  const extent = columns * spacing * 0.5;
-  for (let lane = 0; lane < laneCount; lane += 1) {
-    const offset = -extent + (lane + 0.5) * (extent * 2 / laneCount);
-    for (let car = 0; car < perLane; car += 1) {
-      const phase = (time * (0.22 + lane * 0.006) + car / perLane + hash01(lane * 71 + car * 13) * 0.14) % 1;
-      const p = (phase - 0.5) * extent * 2.15;
-      const scale = car % 5 === 0 ? [0.26, 0.078, 0.14] as const : [0.17, 0.06, 0.105] as const;
-      if (Math.hypot(p, offset) >= SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.2) {
-        pushMatrix(eastWest, [p, -0.325 + (lane % 2) * 0.012, offset], scale, [0, 0, 0]);
+  // Keep traffic on the authored street grid. The old extent-wide ring put
+  // abstract cubes in empty air around the hero building, which read as cargo
+  // packages instead of a city workload.
+  const perRoad = Math.max(6, Math.floor(columns * 0.75));
+  const eastWest: MutableBatch = {
+    transforms: new Float32Array(SMART_CITY_ROAD_Z.length * 2 * perRoad * 16),
+    count: 0
+  };
+  const northSouth: MutableBatch = {
+    transforms: new Float32Array(SMART_CITY_ROAD_X.length * 2 * perRoad * 16),
+    count: 0
+  };
+  for (let road = 0; road < SMART_CITY_ROAD_Z.length; road += 1) {
+    const z = SMART_CITY_ROAD_Z[road]!;
+    for (let lane = 0; lane < 2; lane += 1) {
+      const laneOffset = lane === 0 ? -0.13 : 0.13;
+      for (let car = 0; car < perRoad; car += 1) {
+        const phase = (time * (0.18 + road * 0.012 + lane * 0.008) + car / perRoad + hash01(road * 71 + lane * 19 + car * 13) * 0.12) % 1;
+        const x = (phase - 0.5) * 11.7;
+        const scale = car % 5 === 0 ? [0.11, 0.26, 0.085] as const : [0.085, 0.17, 0.065] as const;
+        pushMatrix(eastWest, [x, -0.3, z + laneOffset], scale, [0, 0, Math.PI / 2]);
       }
-      if (Math.hypot(offset, -p) >= SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.2) {
-        pushMatrix(northSouth, [offset, -0.315 + (lane % 3) * 0.01, -p], [scale[2], scale[1], scale[0]], [0, Math.PI / 2, 0]);
+    }
+  }
+  for (let road = 0; road < SMART_CITY_ROAD_X.length; road += 1) {
+    const x = SMART_CITY_ROAD_X[road]!;
+    for (let lane = 0; lane < 2; lane += 1) {
+      const laneOffset = lane === 0 ? -0.13 : 0.13;
+      for (let car = 0; car < perRoad; car += 1) {
+        const phase = (time * (0.17 + road * 0.011 + lane * 0.007) + car / perRoad + hash01(road * 67 + lane * 23 + car * 17) * 0.12) % 1;
+        const z = (phase - 0.5) * 9.25;
+        const scale = car % 5 === 0 ? [0.11, 0.26, 0.085] as const : [0.085, 0.17, 0.065] as const;
+        pushMatrix(northSouth, [x + laneOffset, -0.3, z], scale, [Math.PI / 2, 0, 0]);
       }
     }
   }
   return [
-    toInstanceBatch("cube", "traffic", "traffic vehicles", eastWest),
-    toInstanceBatch("cube", "traffic", "traffic vehicles", northSouth)
+    toInstanceBatch("capsule", "traffic", "traffic vehicles", eastWest),
+    toInstanceBatch("capsule", "traffic", "traffic vehicles", northSouth)
   ];
 }
 
 function createLogisticsBatch(time: number, columns: number, spacing: number): SmartCityInstanceBatch {
-  const extent = columns * spacing * 0.5;
   const count = Math.max(64, Math.floor(columns * 3.2));
   const batch: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
   for (let i = 0; i < count; i += 1) {
     const district = i % 2 === 0 ? "harbor" : "industrial";
-    const anchor = districtAnchor(district, extent);
-    const rack = Math.floor(i / 8);
+    const anchor = districtAnchor(district, SMART_CITY_GRID_HALF_EXTENT);
+    const rack = Math.floor(i / 8) % 4;
     const slot = i % 8;
-    const x = anchor[0] + (slot - 3.5) * 0.16 + Math.sin(time * 0.22 + i) * 0.018;
-    const z = anchor[1] + (rack % 5 - 2) * 0.18 + Math.cos(time * 0.18 + i * 0.4) * 0.018;
-    const lift = ((time * 0.35 + i * 0.07) % 1) * 0.09;
-    pushMatrix(batch, [x, -0.34 + lift, z], [0.16, 0.11, 0.15], [0, (i % 4) * Math.PI / 2, 0]);
+    const x = anchor[0] + (slot - 3.5) * 0.13 + Math.sin(time * 0.22 + i) * 0.012;
+    const z = anchor[1] + (rack - 1.5) * 0.16 + Math.cos(time * 0.18 + i * 0.4) * 0.012;
+    const lift = ((time * 0.35 + i * 0.07) % 1) * 0.035;
+    pushMatrix(batch, [x, -0.29 + lift, z], [0.13, 0.08, 0.17], [0, (i % 4) * Math.PI / 2, 0]);
   }
-  return toInstanceBatch("cube", "logistics", "logistics cargo", batch);
+  return toInstanceBatch("cube", "logistics", "logistics cargo pallets", batch);
 }
 
 function createSensorBatch(time: number, columns: number, spacing: number, selectedDistrict: SmartCityDistrict): SmartCityInstanceBatch {
-  const extent = columns * spacing * 0.5;
   const count = Math.max(96, Math.floor(columns * 5));
   const batch: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
+  const intersections = SMART_CITY_ROAD_X.flatMap((x) => SMART_CITY_ROAD_Z.map((z) => [x, z] as const));
   for (let i = 0; i < count; i += 1) {
-    const district = DISTRICTS[i % DISTRICTS.length]!;
-    const anchor = districtAnchor(district, extent);
+    const [x, z] = intersections[i % intersections.length]!;
+    const district = districtForPosition(x, z);
     const angle = i * 2.399 + time * 0.08;
-    const ring = 0.34 + (i % 9) * 0.075;
     const selectedLift = selectedDistrict === district ? 0.22 : 0;
-    const size = 0.045 + (i % 4) * 0.008;
+    const size = 0.035 + (i % 4) * 0.006;
     pushMatrix(batch, [
-      anchor[0] + Math.cos(angle) * ring,
-      0.25 + selectedLift + (i % 5) * 0.08 + Math.sin(time * 0.7 + i) * 0.025,
-      anchor[1] + Math.sin(angle) * ring * 0.72
-    ], [size, size * 1.8, size], [0, angle, 0]);
+      x + Math.cos(angle) * 0.08,
+      -0.12 + selectedLift + (i % 4) * 0.045 + Math.sin(time * 0.7 + i) * 0.012,
+      z + Math.sin(angle) * 0.08
+    ], [size, size * 2.4, size], [0, angle, 0]);
   }
   return toInstanceBatch("cube", "sensor", "district sensor pulse", batch);
 }
@@ -320,21 +336,21 @@ function createLineGroups(
   const pointerX = (pointer.x - 0.5) * extent * 1.3;
   const pointerZ = (pointer.y - 0.5) * extent * 1.3;
 
-  for (let lane = -Math.floor(columns / 2); lane <= Math.floor(columns / 2); lane += 3) {
-    const p = lane * spacing;
+  for (const p of SMART_CITY_ROAD_Z) {
     addSegment(gridLines, [-extent, -0.452, p], [extent, -0.452, p]);
+  }
+  for (const p of SMART_CITY_ROAD_X) {
     addSegment(gridLines, [p, -0.448, -extent], [p, -0.448, extent]);
   }
 
   addRoadAndYardDetail(roadMarkLines, logisticsYardLines, time, columns, spacing);
   addSmartCityFacadeLines(facadeLines, windowFrameLines, time, columns, spacing, selectedDistrict);
 
-  for (let lane = 0; lane < 12; lane += 1) {
-    const y = -0.24 + lane * 0.012;
-    const z = -extent + (lane + 0.5) * (extent * 2 / 12);
-    const sweep = ((time * (0.14 + lane * 0.012) + lane * 0.11) % 1 - 0.5) * extent * 2;
+  for (let lane = 0; lane < SMART_CITY_ROAD_Z.length; lane += 1) {
+    const y = -0.22 + lane * 0.012;
+    const z = SMART_CITY_ROAD_Z[lane]!;
+    const sweep = ((time * (0.14 + lane * 0.012) + lane * 0.11) % 1 - 0.5) * 11.2;
     addSegment(railLines, [sweep - 0.65, y, z], [sweep + 0.65, y, z]);
-    addSegment(railLines, [z, y + 0.015, -sweep - 0.5], [z, y + 0.015, -sweep + 0.5]);
   }
 
   const selected = selectedDistrict === "all" ? DISTRICTS : [selectedDistrict];
@@ -368,14 +384,16 @@ function createLineGroups(
     addSegment(dataLines, start, end);
   }
 
-  for (let i = 0; i < 14; i += 1) {
-    const angle = i * Math.PI * 2 / 14 + time * (flythrough ? 0.24 : 0.12);
-    const radius = 2.0 + (i % 5) * 0.22;
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle * 0.82) * radius * 0.72;
-    const y = 0.92 + (i % 4) * 0.19;
-    addSegment(droneLines, [x * 0.72, y - 0.18, z * 0.72], [x, y, z]);
-    if (flythrough) addSegment(droneLines, [x, y, z], [pointerX, 1.35, pointerZ]);
+  if (flythrough) {
+    for (let i = 0; i < 14; i += 1) {
+      const angle = i * Math.PI * 2 / 14 + time * 0.24;
+      const radius = 2.0 + (i % 5) * 0.22;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle * 0.82) * radius * 0.72;
+      const y = 0.92 + (i % 4) * 0.19;
+      addSegment(droneLines, [x * 0.72, y - 0.18, z * 0.72], [x, y, z]);
+      addSegment(droneLines, [x, y, z], [pointerX, 1.35, pointerZ]);
+    }
   }
 
   const miniX = extent * 0.55;
@@ -410,15 +428,14 @@ function addRoadAndYardDetail(
   spacing: number
 ): void {
   const extent = columns * spacing * 0.5;
-  const half = Math.floor(columns / 2);
+  const roadCoordinates = [...SMART_CITY_ROAD_Z, ...SMART_CITY_ROAD_X];
 
-  for (let lane = -half; lane <= half; lane += 6) {
-    const p = lane * spacing;
+  for (const p of roadCoordinates) {
     const tickCount = 24;
     for (let tick = 0; tick < tickCount; tick += 1) {
       const t = tick / Math.max(1, tickCount - 1);
       const sweep = -extent + t * extent * 2;
-      const phase = ((time * 0.18 + tick * 0.071 + lane * 0.013) % 1) * 0.05;
+      const phase = ((time * 0.18 + tick * 0.071 + p * 0.013) % 1) * 0.05;
       addSegment(roadMarkLines, [sweep - 0.08, -0.438, p + phase], [sweep + 0.08, -0.438, p + phase]);
       addSegment(roadMarkLines, [p - phase, -0.436, sweep - 0.08], [p - phase, -0.436, sweep + 0.08]);
       if (tick % 3 === 1) {
@@ -426,8 +443,7 @@ function addRoadAndYardDetail(
       }
     }
 
-    for (let cross = -half; cross <= half; cross += 6) {
-      const q = cross * spacing;
+    for (const q of roadCoordinates) {
       for (let stripe = -4; stripe <= 4; stripe += 1) {
         const offset = stripe * 0.035;
         addSegment(roadMarkLines, [p + offset, -0.432, q - 0.22], [p + offset, -0.432, q + 0.22]);
@@ -534,7 +550,7 @@ function createPulsePointGroups(
     const radius = 0.28 + hash01(i * 47) * (district === "core" ? 1.7 : 1.2);
     const point: Vec3 = [
       anchor[0] + Math.cos(angle) * radius,
-      0.22 + hash01(i * 17) * 2.15 + Math.sin(time * 0.9 + i) * 0.035,
+      -0.18 + hash01(i * 17) * 0.72 + Math.sin(time * 0.9 + i) * 0.018,
       anchor[1] + Math.sin(angle) * radius * 0.72
     ];
     if (i % 11 === 0) amber.push(point);
@@ -600,8 +616,8 @@ function createSingleItems(
     singles.push({
       geometry: "sphere",
       material: i % 2 ? "amberGlow" : "cyanGlow",
-      label: "animated city data pulse",
-      position: [anchor[0], 1.35 + i * 0.16 + Math.sin(time * 0.8 + i) * 0.04, anchor[1]],
+      label: "district data pulse",
+      position: [anchor[0], 0.34 + i * 0.06 + Math.sin(time * 0.8 + i) * 0.02, anchor[1]],
       scale: [scale, scale, scale],
       rotation: [0, 0, 0]
     });
@@ -609,37 +625,40 @@ function createSingleItems(
       geometry: "cube",
       material: "transparentCyan",
       label: "vertical data pulse",
-      position: [anchor[0], 0.42, anchor[1]],
-      scale: [0.014, 0.85 + i * 0.1, 0.014],
+      position: [anchor[0], -0.02, anchor[1]],
+      scale: [0.014, 0.42 + i * 0.04, 0.014],
       rotation: [0, time * 0.12, 0]
     });
   }
 
-  for (let i = 0; i < 14; i += 1) {
-    const angle = i * Math.PI * 2 / 14 + time * (flythrough ? 0.24 : 0.12);
-    const radius = 2.0 + (i % 5) * 0.22;
-    singles.push({
-      geometry: "capsule",
-      material: i % 2 === 0 ? "cyanGlow" : "white",
-      label: "aerial transit drone",
-      position: [Math.cos(angle) * radius, 0.92 + (i % 4) * 0.19, Math.sin(angle * 0.82) * radius * 0.72],
-      scale: [0.07, 0.32, 0.07],
-      rotation: [Math.PI / 2, angle, 0.08]
-    });
+  if (flythrough) {
+    for (let i = 0; i < 14; i += 1) {
+      const angle = i * Math.PI * 2 / 14 + time * 0.24;
+      const radius = 2.0 + (i % 5) * 0.22;
+      singles.push({
+        geometry: "capsule",
+        material: i % 2 === 0 ? "cyanGlow" : "white",
+        label: "aerial transit drone",
+        position: [Math.cos(angle) * radius, 0.92 + (i % 4) * 0.19, Math.sin(angle * 0.82) * radius * 0.72],
+        scale: [0.07, 0.32, 0.07],
+        rotation: [Math.PI / 2, angle, 0.08]
+      });
+    }
   }
 
-  for (let i = 0; i < 10; i += 1) {
-    const lane = -extent * 0.52 + i * (extent * 1.04 / 9);
-    const sweep = ((time * (0.2 + i * 0.007) + i * 0.13) % 1 - 0.5) * extent * 1.9;
-    if (Math.hypot(sweep, lane) < SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.35) continue;
-    singles.push({
-      geometry: "capsule",
-      material: i % 2 === 0 ? "cyanGlow" : "amberGlow",
-      label: "district light rail car",
-      position: [sweep, -0.2 + (i % 3) * 0.018, lane],
-      scale: [0.09, 0.28, 0.09],
-      rotation: [Math.PI / 2, i % 2 === 0 ? 0 : Math.PI / 2, 0]
-    });
+  if (flythrough) {
+    for (let i = 0; i < 8; i += 1) {
+      const z = SMART_CITY_ROAD_Z[i % SMART_CITY_ROAD_Z.length]!;
+      const sweep = ((time * (0.2 + i * 0.007) + i * 0.13) % 1 - 0.5) * 11.2;
+      singles.push({
+        geometry: "capsule",
+        material: i % 2 === 0 ? "cyanGlow" : "amberGlow",
+        label: "district light rail car",
+        position: [sweep, -0.18, z],
+        scale: [0.09, 0.28, 0.09],
+        rotation: [0, 0, Math.PI / 2]
+      });
+    }
   }
 
   if (flythrough) {
@@ -686,9 +705,9 @@ function districtForPosition(x: number, z: number): SmartCityDistrict {
 }
 
 function districtAnchor(district: SmartCityDistrict, extent: number): readonly [number, number] {
-  if (district === "north") return [-extent * 0.52, -extent * 0.5];
-  if (district === "harbor") return [extent * 0.54, extent * 0.48];
-  if (district === "industrial") return [extent * 0.54, -extent * 0.48];
+  if (district === "north") return [-4.25, 3.18];
+  if (district === "harbor") return [4.25, 3.04];
+  if (district === "industrial") return [4.25, -3.66];
   return [0, 0];
 }
 

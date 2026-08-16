@@ -153,7 +153,7 @@ function buildSmartCity(r: Resources, time: number, state: GalleryState): SceneF
   const items: RenderItem[] = [];
   appendSmartCityEvidence(r, items, city);
   if (bool(state.controls.wire)) addBoundsGrid(r, items, city.extent * 2, city.extent * 2);
-  return frame(items, bounds([-city.extent * 0.96, -0.92, -city.extent * 0.96], [city.extent * 0.96, 4.35, city.extent * 0.96]), lights("city"), env("night"), {
+  return frame(items, bounds([-city.extent - 0.72, -0.62, -city.extent - 0.52], [city.extent + 0.72, 5.78, city.extent + 0.52]), lights("city"), env("night"), {
     bloom: { threshold: 0.42, intensity: 0.38, radius: 5 },
     colorGrade: { contrast: 1.12, saturation: 1.16 },
     fxaa: true

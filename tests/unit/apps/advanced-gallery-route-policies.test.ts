@@ -123,9 +123,9 @@ describe("threejsParity advanced gallery route policies", () => {
       time: 10,
       controls: { fly: true }
     }));
-    expect(hero.yawRadians).toBeCloseTo(-0.72 + Math.sin(2.2) * 0.34, 6);
-    expect(hero.pitchRadians).toBeCloseTo(-0.21 + Math.sin(1.7) * 0.08, 6);
-    expect(hero.paddingRatio).toBe(0.045);
+    expect(hero.yawRadians).toBeCloseTo(-0.58 + Math.sin(2.2) * 0.34, 6);
+    expect(hero.pitchRadians).toBeCloseTo(-0.42 + Math.sin(1.7) * 0.08, 6);
+    expect(hero.paddingRatio).toBe(0.035);
   });
 
   it("keeps ready product GLBs on compact studio grounding only", () => {

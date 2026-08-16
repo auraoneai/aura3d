@@ -133,17 +133,12 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
   ],
   "smart-city": [
     {
-      assetId: "littlest-tokyo",
-      label: "authored Littlest Tokyo animated district",
-      position: [0, -0.82, 0],
+      assetId: "smart-city-district",
+      label: "authored Smart City street grid",
+      position: [0, -0.44, 0],
       scale: [1, 1, 1],
       targetHeight: 5.55,
-      yawRadians: -0.34,
-      animate: true,
-      defaultClip: /take|animation|default/i,
-      // The Tokyo clip drives a tram through the block. Keep the district, hide
-      // the tram so it cannot ride through walls or over neighboring roofs.
-      excludeNodePattern: /train|tram|trolley|bus|railcar|ostrain|os.?train/i
+      yawRadians: 0
     }
   ],
   "data-galaxy": [],

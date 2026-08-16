@@ -72,12 +72,12 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
       paddingRatio = 0.04;
     } else if (district === "core") {
       yawRadians = -0.72;
-      pitchRadians = -0.16;
+      pitchRadians = -0.34;
       paddingRatio = 0.02;
     } else {
-      yawRadians = -0.72;
-      pitchRadians = -0.21;
-      paddingRatio = 0.045;
+      yawRadians = -0.58;
+      pitchRadians = -0.42;
+      paddingRatio = 0.035;
     }
   }
   if (input.demoId === "smart-city" && input.controls.fly === true) {
@@ -140,6 +140,9 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
   }
   if (input.demoId === "digital-twin" && input.cameraPreset === "hero" && authoredReady) {
     bounds = { min: [-4.85, -0.74, -2.35], max: [4.75, 2.15, 2.45] };
+  }
+  if (input.demoId === "smart-city" && input.cameraPreset === "hero" && authoredReady) {
+    bounds = { min: [-7.1, -0.56, -6.45], max: [7.1, 5.75, 6.05] };
   }
   if (input.demoId === "robotics-lab" && input.cameraPreset === "hero" && authoredReady) {
     bounds = { min: [-0.98, -0.66, -0.82], max: [2.02, 1.9, 1.26] };
@@ -357,7 +360,7 @@ export function visibleProceduralItemsForRoute(
       || label === "facade window data pulse"
       || label === "selected district highlight"
       || label === "traffic vehicles"
-      || label === "logistics cargo"
+      || label === "logistics cargo pallets"
       || label === "district light rail trail"
       || label === "district light rail car"
       || label === "aerial transit drone"
