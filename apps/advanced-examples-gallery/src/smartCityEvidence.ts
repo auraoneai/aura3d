@@ -74,7 +74,7 @@ interface MutableBatch {
 
 const DISTRICTS: readonly SmartCityDistrict[] = ["north", "harbor", "core", "industrial"];
 
-/** Authored Tokyo district occupies the hero volume. Overlay pillars stay outside it. */
+/** Authored street-grid district occupies the hero volume. Overlay pillars stay outside it. */
 export const SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS = 2.15;
 export const SMART_CITY_OVERLAY_MAX_WIDTH = 0.06;
 export const SMART_CITY_OVERLAY_MAX_HEIGHT = 0.74;
