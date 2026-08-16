@@ -2,7 +2,7 @@
 
 Version: 2.0.3
 
-Status: release candidate for 2026-08-16; npm and GitHub publication pending
+Status: published to npm, GitHub, and `https://aura3d.auraone.ai/` on 2026-08-16
 
 Aura3D 2.0.3 is a showcase and test-harness patch. It keeps the 2.0.2 public
 architecture and claim boundaries, aligns the 29 public packages and scaffold
@@ -57,3 +57,20 @@ Use `@aura3d/lean/product` for typed product scenes and
 `@aura3d/lean/game` for deterministic arcade motion. Use `@aura3d/engine@2.0.3`
 when an application intentionally needs the broader compatibility-heavy safe
 authoring surface.
+
+## Superseded versions and publication
+
+All 29 public npm packages were published at `2.0.3` with the repository
+release publisher. Every corresponding `2.0.2` version is now deprecated with
+the exact message: `Aura3D 2.0.3 supersedes this release. Upgrade to 2.0.3.`
+The previously deprecated `2.0.1` versions remain deprecated. The active
+`2.0.3` versions are not deprecated.
+
+The release commit is pushed to `main` at `5a354bb7`. The marketing site was
+built from the monorepo and promoted through Vercel to the canonical
+`https://aura3d.auraone.ai/` domain. Production checks returned HTTP 200 for
+`/favicon.ico`, `/assets/draco/draco_decoder.wasm`, the examples catalog, the
+product configurator, and `/showcase/aura-clash/playable/`; the 390px catalog
+viewport had no horizontal overflow, and the configurator had no browser page
+or console errors. All 83 deployed HTML routes contain 2.0.3 copy with no
+remaining 2.0.2 references.
