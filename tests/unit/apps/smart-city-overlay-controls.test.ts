@@ -104,6 +104,8 @@ describe("smart city overlay and control bindings", () => {
     expect(city).toBeDefined();
     const keys = city!.controls.map((control) => control.key);
     expect(keys).toEqual(["count", "traffic", "wire", "fly", "district"]);
+    expect(city!.controls.find((control) => control.key === "count")?.value).toBe("high");
+    expect(city!.subtitle).toMatch(/traffic, cargo, sensors/i);
     expect(createSmartCityRouteEvidence({
       time: 0,
       level: String(city!.controls.find((control) => control.key === "count")?.value ?? "medium"),
@@ -112,5 +114,27 @@ describe("smart city overlay and control bindings", () => {
       flythrough: Boolean(city!.controls.find((control) => control.key === "fly")?.value),
       pointer: { x: 0.5, y: 0.5 }
     }).towerInstances).toBeGreaterThan(0);
+  });
+
+  it("makes each instanced workload category identifiable in the shipped scene", () => {
+    const evidence = createSmartCityRouteEvidence({
+      time: 2,
+      level: "high",
+      selectedDistrict: "all",
+      traffic: true,
+      flythrough: false,
+      pointer: { x: 0.5, y: 0.5 }
+    });
+    expect(evidence.labels).toEqual(expect.arrayContaining([
+      "Yellow = traffic",
+      "Orange = cargo",
+      "Cyan = sensors"
+    ]));
+    expect(evidence.instanceBatches.find((batch) => batch.label === "traffic vehicles")?.material).toBe("traffic");
+    expect(evidence.instanceBatches.find((batch) => batch.label === "logistics cargo")?.material).toBe("logistics");
+    expect(evidence.instanceBatches.find((batch) => batch.label === "district sensor pulse")?.material).toBe("sensor");
+    expect(evidence.trafficInstances).toBeGreaterThan(0);
+    expect(evidence.logisticsInstances).toBeGreaterThan(0);
+    expect(evidence.sensorInstances).toBeGreaterThan(0);
   });
 });

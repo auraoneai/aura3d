@@ -546,6 +546,71 @@ html[data-review-capture="hero"] .loading-state {
   background: rgba(80, 255, 170, 0.18);
 }
 
+.workload-legend {
+  margin-top: 12px;
+  border: 1px solid rgba(72, 209, 255, 0.22);
+  border-radius: 6px;
+  padding: 9px;
+  background: rgba(8, 38, 54, 0.32);
+}
+
+.workload-legend h2 {
+  margin-top: 0;
+}
+
+.workload-legend p {
+  margin: 0 0 8px;
+}
+
+.workload-legend ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workload-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #c8d8ea;
+  font-size: 12px;
+}
+
+.workload-legend li b {
+  color: #f3f8ff;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 3px;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.legend-traffic {
+  color: #f3c04a;
+  background: #f3c04a;
+}
+
+.legend-logistics {
+  color: #ff7d3b;
+  background: #ff7d3b;
+}
+
+.legend-sensor {
+  color: #2bd9ff;
+  background: #2bd9ff;
+}
+
+.legend-city {
+  color: #5ec6c0;
+  background: linear-gradient(90deg, #4aa7e6 0 50%, #2eb89a 50% 100%);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -357,6 +357,7 @@ export function visibleProceduralItemsForRoute(
       || label === "facade window data pulse"
       || label === "selected district highlight"
       || label === "traffic vehicles"
+      || label === "logistics cargo"
       || label === "district light rail trail"
       || label === "district light rail car"
       || label === "aerial transit drone"

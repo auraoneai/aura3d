@@ -76,8 +76,8 @@ const DISTRICTS: readonly SmartCityDistrict[] = ["north", "harbor", "core", "ind
 
 /** Authored Tokyo district occupies the hero volume. Overlay pillars stay outside it. */
 export const SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS = 2.15;
-export const SMART_CITY_OVERLAY_MAX_WIDTH = 0.042;
-export const SMART_CITY_OVERLAY_MAX_HEIGHT = 0.62;
+export const SMART_CITY_OVERLAY_MAX_WIDTH = 0.06;
+export const SMART_CITY_OVERLAY_MAX_HEIGHT = 0.74;
 
 export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions): SmartCityRouteEvidence {
   const level = normalizeLevel(options.level);
@@ -162,7 +162,9 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
     systems: [
       "authored animated city district",
       "restrained district load holograms",
-      "logistics cargo and curb-flow instances",
+      "instanced yellow traffic fleet",
+      "instanced orange logistics cargo",
+      "instanced cyan sensor network",
       "traffic platoons and light-rail sweeps",
       "instanced facade/window bands",
       "batched facade, window, road, and logistics-yard detail",
@@ -175,6 +177,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       `${towerInstances.toLocaleString("en-US")} thin holographic load pillars sit outside the authored city keepout`,
       `${trafficInstances.toLocaleString("en-US")} traffic vehicles and ${logisticsBatch.count.toLocaleString("en-US")} logistics cargo markers are instanced overlays around the authored city`,
       `${sensorBatch.count.toLocaleString("en-US")} smart-infrastructure status pulses use instanced cubes, not individual render objects`,
+      "Yellow blocks are traffic, orange blocks are logistics cargo, cyan blocks are sensors, and colored pillars are district load.",
       `${facadeBandBatch.count.toLocaleString("en-US")} thin facade/window ticks use one instanced draw batch`,
       `${lineSegments.toLocaleString("en-US")} facade/window, road, rail, minimap, selection, and data-flow segments are batched line geometry`,
       `${pulsePoints.toLocaleString("en-US")} telemetry pulse points are batched point geometry`,
@@ -183,11 +186,15 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       "Authored GLB context remains the hero scene; procedural A3D layers provide scale, motion, selection, and instrumentation evidence."
     ],
     labels: [
+      `Load ${level}`,
       `Grid ${columns}x${columns}`,
+      "Yellow = traffic",
+      "Orange = cargo",
+      "Cyan = sensors",
       `${towerInstances.toLocaleString("en-US")} load pillars`,
-      `${trafficInstances.toLocaleString("en-US")} traffic`,
-      `${logisticsBatch.count.toLocaleString("en-US")} cargo`,
-      `${sensorBatch.count.toLocaleString("en-US")} sensors`,
+      `${trafficInstances.toLocaleString("en-US")} traffic vehicles`,
+      `${logisticsBatch.count.toLocaleString("en-US")} cargo instances`,
+      `${sensorBatch.count.toLocaleString("en-US")} sensor pulses`,
       `${facadeBandBatch.count.toLocaleString("en-US")} facade bands`,
       `${lineSegments.toLocaleString("en-US")} segments`,
       `District ${selectedDistrict}`,
@@ -211,7 +218,7 @@ function createTrafficBatches(time: number, columns: number, spacing: number): S
     for (let car = 0; car < perLane; car += 1) {
       const phase = (time * (0.22 + lane * 0.006) + car / perLane + hash01(lane * 71 + car * 13) * 0.14) % 1;
       const p = (phase - 0.5) * extent * 2.15;
-      const scale = car % 5 === 0 ? [0.18, 0.058, 0.095] as const : [0.12, 0.046, 0.074] as const;
+      const scale = car % 5 === 0 ? [0.26, 0.078, 0.14] as const : [0.17, 0.06, 0.105] as const;
       if (Math.hypot(p, offset) >= SMART_CITY_AUTHORED_CORE_KEEPOUT_RADIUS + 0.2) {
         pushMatrix(eastWest, [p, -0.325 + (lane % 2) * 0.012, offset], scale, [0, 0, 0]);
       }
@@ -238,9 +245,9 @@ function createLogisticsBatch(time: number, columns: number, spacing: number): S
     const x = anchor[0] + (slot - 3.5) * 0.16 + Math.sin(time * 0.22 + i) * 0.018;
     const z = anchor[1] + (rack % 5 - 2) * 0.18 + Math.cos(time * 0.18 + i * 0.4) * 0.018;
     const lift = ((time * 0.35 + i * 0.07) % 1) * 0.09;
-    pushMatrix(batch, [x, -0.34 + lift, z], [0.1, 0.075, 0.1], [0, (i % 4) * Math.PI / 2, 0]);
+    pushMatrix(batch, [x, -0.34 + lift, z], [0.16, 0.11, 0.15], [0, (i % 4) * Math.PI / 2, 0]);
   }
-  return toInstanceBatch("cube", "traffic", "traffic vehicles", batch);
+  return toInstanceBatch("cube", "logistics", "logistics cargo", batch);
 }
 
 function createSensorBatch(time: number, columns: number, spacing: number, selectedDistrict: SmartCityDistrict): SmartCityInstanceBatch {
@@ -253,14 +260,14 @@ function createSensorBatch(time: number, columns: number, spacing: number, selec
     const angle = i * 2.399 + time * 0.08;
     const ring = 0.34 + (i % 9) * 0.075;
     const selectedLift = selectedDistrict === district ? 0.22 : 0;
-    const size = 0.03 + (i % 4) * 0.006;
+    const size = 0.045 + (i % 4) * 0.008;
     pushMatrix(batch, [
       anchor[0] + Math.cos(angle) * ring,
       0.25 + selectedLift + (i % 5) * 0.08 + Math.sin(time * 0.7 + i) * 0.025,
       anchor[1] + Math.sin(angle) * ring * 0.72
     ], [size, size * 1.8, size], [0, angle, 0]);
   }
-  return toInstanceBatch("cube", "cyanGlow", "district sensor pulse", batch);
+  return toInstanceBatch("cube", "sensor", "district sensor pulse", batch);
 }
 
 function createFacadeBandBatch(time: number, columns: number, spacing: number, selectedDistrict: SmartCityDistrict): SmartCityInstanceBatch {
@@ -712,9 +719,9 @@ function cityTowerProfile(
   const selectedBoost = selectedDistrict === district ? 0.14 : 0;
   const height = Math.min(
     SMART_CITY_OVERLAY_MAX_HEIGHT,
-    0.16 + hash01(row * 83 + col * 41) * 0.32 + selectedBoost
+    0.18 + hash01(row * 83 + col * 41) * 0.38 + selectedBoost
   );
-  const width = Math.min(SMART_CITY_OVERLAY_MAX_WIDTH, 0.02 + hash01(col * 19 + row) * 0.016);
+  const width = Math.min(SMART_CITY_OVERLAY_MAX_WIDTH, 0.026 + hash01(col * 19 + row) * 0.024);
   const depth = width;
   return { x, z, district, height, width, depth };
 }
