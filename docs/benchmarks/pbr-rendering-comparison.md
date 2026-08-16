@@ -1,6 +1,6 @@
 # PBR Rendering Comparison Evidence
 
-Version: 2.0.2
+Version: 2.0.3
 
 PBR evidence comes from renderer code, material/lighting tests, glTF material routes, same-scene reports, and visual review reports.
 

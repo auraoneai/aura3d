@@ -458,6 +458,8 @@ h1 {
 @media (max-width: 760px) {
   .wrap { padding: 0 20px; }
   .nav-links { display: none; }
+  .nav-version { display: none; }
+  .nav-actions .btn-ghost { display: none; }
   .nav-social-link span:not(.npm-logo) { display: none; }
   .nav-social-link { width: 36px; padding: 0; }
   .nav-social-npm { width: 44px; }

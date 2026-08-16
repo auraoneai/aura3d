@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "enable:physics": "npm install @aura3d/physics@2.0.2 @aura3d/physics-rapier@2.0.2",
+    "enable:physics": "npm install @aura3d/physics@2.0.3 @aura3d/physics-rapier@2.0.3",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/animation": "2.0.2",
-    "@aura3d/engine": "2.0.2"
+    "@aura3d/animation": "2.0.3",
+    "@aura3d/engine": "2.0.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

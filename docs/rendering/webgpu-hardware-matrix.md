@@ -1,6 +1,6 @@
 # WebGPU Hardware Matrix
 
-Version: 2.0.2
+Version: 2.0.3
 
 This page records how WebGPU hardware evidence should be interpreted. Route and report coverage is documented separately in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 

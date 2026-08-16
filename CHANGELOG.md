@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 2.0.2
+Version: 2.0.3
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.2` is the coordinated patch across all 29 public packages; `2.0.1` and `2.0.0` remain historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.3` is the coordinated showcase and test-harness patch across all 29 public packages; `2.0.2`, `2.0.1`, and `2.0.0` remain historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-08-11): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -16,6 +16,17 @@ Comparison wording for the 1.6.0 entry is historical and limited to the named
 broadened into universal engine or ecosystem superiority. The current
 `three@0.185.1` comparison remains bounded by the published comparison reports
 and claim guidelines.
+
+## 2.0.3 (2026-08-16)
+
+Showcase and test-harness patch for the coordinated 2.0.3 release:
+
+- strips Vite 7 ANSI color codes before the gallery and wow screenshot harnesses match their ready lines, restoring 11 previously blocked gallery tests and the wow spec;
+- restores Smart City Stress Test density to 328 medium-level instances while retaining its Littlest Tokyo-only hero, authored keepout, and excluded tram/train/bus layer;
+- adds the promised interactive draw-range control to the geometry example through ↑/↓/Space/click while keeping every range partial;
+- removes 390px mobile overflow from the examples catalog and geometry-drawrange route;
+- adds favicon links to 15 route entry points, removing local-dev 404 noise while leaving the production favicon unchanged;
+- keeps the 2.0.2 claim boundaries intact: this patch changes showcase presentation, evidence harnesses, responsive chrome, and release documentation, not renderer or engine capability.
 
 ## 2.0.2 (2026-08-15)
 

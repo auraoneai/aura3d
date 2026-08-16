@@ -198,8 +198,10 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
 }
 
 function createTrafficBatches(time: number, columns: number, spacing: number): SmartCityInstanceBatch[] {
-  const laneCount = Math.max(8, Math.floor(columns / 2));
-  const perLane = 7;
+  // Platoons scale with the district grid so medium reads as a living city, not
+  // a token ring of cars. Every car still clears the authored Tokyo keepout.
+  const laneCount = Math.max(10, Math.floor(columns * 0.75));
+  const perLane = 9;
   const count = laneCount * perLane * 2;
   const eastWest: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
   const northSouth: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
@@ -243,7 +245,7 @@ function createLogisticsBatch(time: number, columns: number, spacing: number): S
 
 function createSensorBatch(time: number, columns: number, spacing: number, selectedDistrict: SmartCityDistrict): SmartCityInstanceBatch {
   const extent = columns * spacing * 0.5;
-  const count = Math.max(72, Math.floor(columns * 3.6));
+  const count = Math.max(96, Math.floor(columns * 5));
   const batch: MutableBatch = { transforms: new Float32Array(count * 16), count: 0 };
   for (let i = 0; i < count; i += 1) {
     const district = DISTRICTS[i % DISTRICTS.length]!;
@@ -269,7 +271,7 @@ function createFacadeBandBatch(time: number, columns: number, spacing: number, s
       const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict, "medium");
       if (!profile) continue;
       const selected = selectedDistrict === profile.district || (selectedDistrict === "all" && profile.district === "core");
-      const visibleDetailTower = selected || (row + col) % 4 === 0;
+      const visibleDetailTower = selected || (row + col) % 3 === 0;
       if (!visibleDetailTower) continue;
 
       const frontZ = profile.z - profile.depth * 0.64;

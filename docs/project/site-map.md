@@ -1,9 +1,9 @@
 # Site Map
 
-Version: 2.0.2
+Version: 2.0.3
 
-Date: 2026-08-15
-Status: Aura3D 2.0.2 site map
+Date: 2026-08-16
+Status: Aura3D 2.0.3 site map
 
 ## Public Marketing Pages
 
@@ -33,7 +33,7 @@ copy boundary and must not present prototypes as public release examples.
 - [Release process](release-process.md)
 - [Aura3D 2.0.0 release notes](aura3d-200-release-notes.md)
 - [Aura3D 2.0.1 release notes](aura3d-201-release-notes.md)
-- [Aura3D 2.0.2 release notes](aura3d-202-release-notes.md)
+- [Aura3D 2.0.3 release notes](aura3d-203-release-notes.md)
 - [2.0 platform architecture](../architecture/2.0-platform.md)
 - [2.0 removals and retrieval](../architecture/2.0-removals.md)
 - [Aura3D 2.0.0 Three.js comparison status](threejs-superiority-status.md)

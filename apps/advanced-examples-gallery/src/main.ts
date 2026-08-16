@@ -686,7 +686,7 @@ function renderShell(): void {
         <header>
           <span>A3D Advanced Gallery</span>
           <h1>Production-Grade Aura3D Showcases</h1>
-          <p>Launch ten ambitious browser 3D experiences built with Aura3D 2.0.2—authored assets, real interaction, motion, physics, animation, controls, and live performance telemetry included.</p>
+          <p>Launch ten ambitious browser 3D experiences built with Aura3D 2.0.3—authored assets, real interaction, motion, physics, animation, controls, and live performance telemetry included.</p>
         </header>
         <div class="gallery-grid">
           ${DEMOS.map((demo, index) => `
@@ -729,9 +729,9 @@ function renderShell(): void {
       </header>
       <section class="visual-review">
         <h2>Scene</h2>
-        <strong>Aura3D 2.0.2</strong>
+        <strong>Aura3D 2.0.3</strong>
         <p>${escapeHtml(selectedDemo.features.slice(0, 3).join(" · "))}</p>
-        <small>Interactive browser experience built with Aura3D 2.0.2</small>
+        <small>Interactive browser experience built with Aura3D 2.0.3</small>
       </section>
       <section class="stats-grid" id="stats-grid">
         ${metric("Status", runtime.status)}

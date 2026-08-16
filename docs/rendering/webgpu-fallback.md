@@ -1,6 +1,6 @@
 # WebGPU Availability And Fallback Behavior
 
-Version: 2.0.2
+Version: 2.0.3
 
 Aura3D has WebGPU package implementation, production-runtime, template, proof-test, and bounded root route surfaces. Browser/device availability remains conditional, so a named WebGPU route must either prove `a3d-webgpu` or show a structured unsupported state. The route, feature, and report inventory lives in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 

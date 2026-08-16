@@ -1,6 +1,6 @@
 # A3D vs Babylon.js Benchmark Evidence
 
-Version: 2.0.2
+Version: 2.0.3
 
 Babylon.js comparison evidence is narrower than the low-level renderer code parity work. It is useful as a benchmark/reference slice, not as a complete engine-positioning proof.
 

@@ -454,7 +454,10 @@ function waitForViteReady(child: ChildProcessWithoutNullStreams): Promise<string
     }, 30_000);
     const onData = (chunk: Buffer): void => {
       output += chunk.toString();
-      const match = output.match(/http:\/\/127\.0\.0\.1:(\d+)\//);
+      // Vite 7 colorizes the port number in its ready line, so the URL arrives
+      // as `http://127.0.0.1:\x1b[1m5191\x1b[22m/`. Strip ANSI codes before
+      // matching or the wait never resolves even though the server is up.
+      const match = stripAnsi(output).match(/http:\/\/127\.0\.0\.1:(\d+)\//);
       if (match) {
         clearTimeout(timeout);
         cleanup();
@@ -475,6 +478,11 @@ function waitForViteReady(child: ChildProcessWithoutNullStreams): Promise<string
     child.stderr.on("data", onData);
     child.once("exit", onExit);
   });
+}
+
+function stripAnsi(text: string): string {
+  // eslint-disable-next-line no-control-regex
+  return text.replace(/\u001b\[\d*m/g, "");
 }
 
 function closeVite(child: ChildProcessWithoutNullStreams): Promise<void> {

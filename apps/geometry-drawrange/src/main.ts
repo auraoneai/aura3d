@@ -34,8 +34,21 @@ interface CurrentRoutesGeometryDrawRangeRuntime {
 const APP_ID = "geometry-drawrange" as const;
 const WIDTH = 1280;
 const HEIGHT = 720;
-const INDEXED_RANGE: RenderItemDrawRange = { start: 6, count: 24 };
-const ARRAY_RANGE: RenderItemDrawRange = { start: 6, count: 6 };
+// The route keeps every selectable range partial: `count < totalCount` is the
+// route's own parity invariant, so a "full range" step is deliberately absent.
+const INDEXED_RANGE_STEPS = [12, 24] as const;
+const ARRAY_RANGE_STEPS = [6, 12] as const;
+let indexedRange: RenderItemDrawRange = { start: 6, count: INDEXED_RANGE_STEPS[1] };
+let arrayRange: RenderItemDrawRange = { start: 6, count: ARRAY_RANGE_STEPS[0] };
+let indexedRangeStep = INDEXED_RANGE_STEPS.length - 1;
+let arrayRangeStep = 0;
+
+function stepDrawRanges(direction: 1 | -1): void {
+  indexedRangeStep = (indexedRangeStep + direction + INDEXED_RANGE_STEPS.length) % INDEXED_RANGE_STEPS.length;
+  arrayRangeStep = (arrayRangeStep + direction + ARRAY_RANGE_STEPS.length) % ARRAY_RANGE_STEPS.length;
+  indexedRange = { start: 6, count: INDEXED_RANGE_STEPS[indexedRangeStep]! };
+  arrayRange = { start: 6, count: ARRAY_RANGE_STEPS[arrayRangeStep]! };
+}
 
 void run();
 
@@ -80,6 +93,22 @@ async function run(): Promise<void> {
     let fpsFrom = 0;
     let lastUi = 0;
 
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "ArrowUp" || event.code === "Space") {
+        event.preventDefault();
+        stepDrawRanges(1);
+        publish();
+      } else if (event.code === "ArrowDown") {
+        event.preventDefault();
+        stepDrawRanges(-1);
+        publish();
+      }
+    });
+    canvas.addEventListener("click", () => {
+      stepDrawRanges(1);
+      publish();
+    });
+
     const render = (now: number): void => {
       try {
         frameCount += 1;
@@ -101,7 +130,7 @@ async function run(): Promise<void> {
             {
               geometry: indexedCube,
               material: amber,
-              drawRange: INDEXED_RANGE,
+              drawRange: indexedRange,
               modelMatrix: multiply(translation(-0.78, 0.16, 0), scale(1.06, 1.06, 1.06)),
               label: "indexed-cube-draw-range"
             },
@@ -115,7 +144,7 @@ async function run(): Promise<void> {
             {
               geometry: arrayQuads,
               material: green,
-              drawRange: ARRAY_RANGE,
+              drawRange: arrayRange,
               modelMatrix: translation(0, 0, 0),
               label: "array-point-draw-range"
             }
@@ -158,11 +187,11 @@ function createRuntime(
     frameCount: patch.frameCount ?? 0,
     drawCalls: patch.drawCalls ?? 0,
     fps: patch.fps ?? 0,
-    indexedRangeStart: INDEXED_RANGE.start,
-    indexedRangeCount: INDEXED_RANGE.count,
+    indexedRangeStart: indexedRange.start,
+    indexedRangeCount: indexedRange.count,
     indexedTotalCount: indexedTotalCount || patch.indexedTotalCount || 0,
-    arrayRangeStart: ARRAY_RANGE.start,
-    arrayRangeCount: ARRAY_RANGE.count,
+    arrayRangeStart: arrayRange.start,
+    arrayRangeCount: arrayRange.count,
     arrayTotalCount: arrayTotalCount || patch.arrayTotalCount || 0,
     usesIndexedRange: true,
     usesArrayRange: true,
@@ -200,6 +229,7 @@ function renderUi(root: HTMLElement, runtime: CurrentRoutesGeometryDrawRangeRunt
       <div>
         <h1>CurrentRoutes Geometry DrawRange</h1>
         <p>Indexed and array draw ranges routed through A3D render commands.</p>
+        <p>Change draw ranges with ↑/↓, Space, or a click on the viewport.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>

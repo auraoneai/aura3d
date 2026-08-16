@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>A3D CurrentRoutes Geometry DrawRange</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/apps/common/src/styles.css">
     <style>
       body.geometry-drawrange {
@@ -21,6 +22,15 @@
 
       body.geometry-drawrange #app {
         padding: 18px;
+      }
+
+      /* Route-local grid must repeat the shared mobile collapse at the same
+         860px breakpoint; without this the 780px column floor keeps the fixed
+         canvas wider than a phone viewport. */
+      @media (max-width: 860px) {
+        body.geometry-drawrange {
+          grid-template-columns: 1fr;
+        }
       }
 
       .geometry-drawrange .metrics {

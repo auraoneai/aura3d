@@ -1,7 +1,7 @@
 # Aura3D 2.0 documentation index
 
-Date: 2026-08-15
-Status: current for Aura3D 2.0.2
+Date: 2026-08-16
+Status: current for Aura3D 2.0.3
 
 The current tree contains product documentation, executable evidence inputs,
 required package/app entry points, and the 2.0 release record. Superseded PRDs,
@@ -20,7 +20,7 @@ the archive.
 - Migration to 2.0: [`MIGRATION-2.0.md`](../../MIGRATION-2.0.md)
 - 2.0 release notes: [`aura3d-200-release-notes.md`](./aura3d-200-release-notes.md)
 - 2.0.1 release notes: [`aura3d-201-release-notes.md`](./aura3d-201-release-notes.md)
-- 2.0.2 release notes: [`aura3d-202-release-notes.md`](./aura3d-202-release-notes.md)
+- 2.0.3 release notes: [`aura3d-203-release-notes.md`](./aura3d-203-release-notes.md)
 
 ## Architecture
 

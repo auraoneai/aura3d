@@ -90,44 +90,45 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 2.0.2
+## Current Release: Aura3D 2.0.3
 
-Aura3D 2.0.2 is the coordinated patch release across all 29 public packages and
-is documented at [aura3d.auraone.ai](https://aura3d.auraone.ai). It retains the
-2.0 major-version competitive replatform and the 2.0.1 Rapier vehicle-contact
-fix while correcting playable-route passing and collectibles, catalog and
-homepage posters, Smart City composition, examples-catalog chrome, and
-documentation alignment. Public authoring is centered on typed assets and the
-safe root API, commodity subsystems have one declared owner, duplicate or
-misleading public hosts have been internalized, and every retained example is
-subject to separate canvas and full-page review. It is not promoted as a
-universal Three.js replacement. The comparison is bounded to the named,
-repository-locked `three@0.185.1` workloads and discloses remaining visual and
-ecosystem losses.
+Aura3D 2.0.3 is the coordinated showcase and test-harness patch across all 29
+public packages and is documented at
+[aura3d.auraone.ai](https://aura3d.auraone.ai). It retains the 2.0.2 playable,
+catalog, and Smart City corrections while restoring Vite 7-ready browser
+evidence, adding the promised draw-range interaction, tightening 390px route
+chrome, and removing local-dev favicon noise. Public authoring is centered on
+typed assets and the safe root API, commodity subsystems have one declared
+owner, duplicate or misleading public hosts have been internalized, and every
+retained example is subject to separate canvas and full-page review. It is not
+promoted as a universal Three.js replacement. The comparison is bounded to the
+named, repository-locked `three@0.185.1` workloads and discloses remaining
+visual and ecosystem losses.
 
-### What ships in 2.0.2
+### What ships in 2.0.3
 
-- **Playable-route corrections.** Turbo Drift Circuit widens visual asphalt so
-  the player can pass the rival on tarmac, with Rapier still owning solid
-  contact. Skyline Runner adds coins, score, and ember volleys through
-  `game.platformer`, with a 70–115 second Level 1 window.
-- **Catalog and homepage honesty.** Product Configurator posters show the
-  headphone studio, not the gallery car. The Smart City Control Room card uses
-  the control-room capture. The examples catalog uses homepage type and the
-  orbital Aura3D mark.
-- **Smart City composition.** The stress-test route keeps Littlest Tokyo as the
-  sole authored hero, excludes tram/train/bus authored nodes, and does not add
-  extra district GLBs.
-- **Asset and decoder hygiene.** Draco-compressed public assets load from
-  `/assets/draco`. Robot-rig and Damaged Helmet studio exposure is lowered.
-  The marketing site ships a real favicon.
-- **Templates pin 2.0.2.** All 19 public scaffolds install the packed 2.0.2
+- **Evidence harness recovery.** Vite 7’s colored port output is stripped before
+  the gallery and wow screenshot specs match their ready lines, restoring the
+  11 previously blocked gallery tests and the wow spec. Smart City’s medium
+  stress level is back above its gate at 328 instances without changing the
+  Tokyo-only hero or keepout.
+- **Interactive example proof.** Geometry Draw Range now exposes ↑/↓/Space/click
+  range control, and every selected range remains partial rather than stepping
+  into a full-range state.
+- **Responsive and local-dev hygiene.** The examples catalog and
+  geometry-drawrange route no longer overflow a 390px viewport, and 15 route
+  entry points link the existing favicon to remove development 404 noise.
+- **2.0.2 corrections retained.** Turbo Drift Circuit’s tarmac passing,
+  Skyline Runner’s collectibles and ember volleys, the corrected catalog
+  posters, Tokyo-only Smart City composition, Draco decoder path, and exposure
+  fixes remain part of the current release line.
+- **Templates pin 2.0.3.** All 19 public scaffolds install the packed 2.0.3
   dependency graph. Historical 2.0.0 exact-tarball lifecycle receipts remain
   historical.
 - **Claim boundary unchanged.** One public owner per capability, typed real
   assets on public routes, and the repository-locked `three@0.185.1`
   comparison remain in force. See
-  [`docs/project/aura3d-202-release-notes.md`](docs/project/aura3d-202-release-notes.md).
+  [`docs/project/aura3d-203-release-notes.md`](docs/project/aura3d-203-release-notes.md).
 
 ### Consolidated 2.0 outcomes
 
@@ -234,9 +235,9 @@ The current product boundary and evidence are documented in
 Install the current release:
 
 ```bash
-npm install @aura3d/engine@2.0.2
+npm install @aura3d/engine@2.0.3
 # or scaffold an app
-npx create-aura3d@2.0.2 my-product --template product-viewer
+npx create-aura3d@2.0.3 my-product --template product-viewer
 ```
 
 The current 2.0 candidate notes are in
@@ -266,7 +267,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 2.0 runtime launch track
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.2 is
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.3 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -729,7 +730,7 @@ Aura3D 2.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The published 2.0.2 patch packages carry the
+Expected current state — The published 2.0.3 patch packages carry the
 playable-route, catalog, and documentation corrections on this tag. The
 historical exact-installed 2.0.0 comparison against
 `three@0.185.1` passes its bounded local checks across 15 workloads. That

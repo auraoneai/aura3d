@@ -4,14 +4,14 @@ import { chromium } from "@playwright/test";
 
 const root = resolve(import.meta.dirname, "../..");
 const origin = process.env.A3D_AUDIT_ORIGIN ?? "http://127.0.0.1:7782";
-const outputDir = resolve(root, process.env.A3D_AUDIT_OUTPUT ?? "tests/reports/live-showcase-2.0.2");
+const outputDir = resolve(root, process.env.A3D_AUDIT_OUTPUT ?? "tests/reports/live-showcase-2.0.3");
 const catalog = await readFile(resolve(root, "apps/showcase-index/index.html"), "utf8");
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8")) as { version: string };
 const cards = [...catalog.matchAll(/<a class="showcase-card[^"]*" href="([^"]+)">\s*<span>(\d+)<\/span>\s*<strong>([^<]+)<\/strong>/g)]
   .map((match) => ({ url: match[1]!, number: match[2]!, title: match[3]! }));
 
 if (cards.length !== 36) throw new Error(`Expected 36 showcase cards, found ${cards.length}`);
-if (packageJson.version !== "2.0.2") throw new Error(`Expected Aura3D 2.0.2, found ${packageJson.version}`);
+if (packageJson.version !== "2.0.3") throw new Error(`Expected Aura3D 2.0.3, found ${packageJson.version}`);
 const requestedNumbers = new Set((process.env.A3D_AUDIT_NUMBERS ?? "").split(",").map((value) => value.trim()).filter(Boolean));
 const selectedCards = requestedNumbers.size > 0 ? cards.filter((card) => requestedNumbers.has(card.number)) : cards;
 if (selectedCards.length === 0) throw new Error("A3D_AUDIT_NUMBERS did not match a showcase card.");
