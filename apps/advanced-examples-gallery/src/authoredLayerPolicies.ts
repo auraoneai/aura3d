@@ -189,7 +189,10 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
       position: [0.9, -0.62, 0.16],
       scale: [1, 1, 1],
       targetHeight: 1.48,
-      yawRadians: 2.88,
+      // Robot Expressive is authored with its visor/front already on the
+      // hero-camera side. The old ~pi correction was for the Soldier axis and
+      // made this imported robot present its back in the robotics lab.
+      yawRadians: 0,
       animate: true,
       defaultClip: /idle|dance|walk/i,
       clipByControl: {
@@ -205,7 +208,7 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
       position: [1.58, -0.62, 0.96],
       scale: [1, 1, 1],
       targetHeight: 1.04,
-      yawRadians: 2.7,
+      yawRadians: 0,
       animate: true,
       defaultClip: /walk|run|dance|idle/i,
       clipByControl: {

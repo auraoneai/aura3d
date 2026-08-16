@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { authoredRouteAssetConfigs } from "../../../apps/advanced-examples-gallery/src/authoredLayerPolicies";
 
 describe("threejsParity advanced gallery route architecture containment", () => {
   it("keeps sceneBuilders as shared resource setup plus route dispatch", () => {
@@ -42,5 +43,13 @@ describe("threejsParity advanced gallery route architecture containment", () => 
     const authoredLayer = readFileSync("apps/advanced-examples-gallery/src/authoredLayer.ts", "utf8");
     expect(authoredLayer).toContain("/assets/draco/draco_decoder_nodejs.js");
     expect(authoredLayer).toContain("DRACO_DECODER_CANDIDATES");
+  });
+
+  it("keeps Robot Expressive actors facing the robotics-lab hero camera", () => {
+    const robotConfigs = authoredRouteAssetConfigs("robotics-lab")
+      .filter((config) => config.assetId === "robot-expressive");
+
+    expect(robotConfigs).toHaveLength(2);
+    expect(robotConfigs.map((config) => config.yawRadians)).toEqual([0, 0]);
   });
 });
