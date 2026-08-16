@@ -337,6 +337,62 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
   }
 });
 
+test("turbo collision recovery keeps the mounted frame loop advancing", async ({ page }, testInfo) => {
+  testInfo.setTimeout(120_000);
+  let server: ExampleDevServer | undefined;
+  const consoleErrors: string[] = [];
+  try {
+    server = await startExampleDevServer();
+    page.on("console", (message) => {
+      if (message.type() === "error" && !/favicon/i.test(message.text())) consoleErrors.push(message.text());
+    });
+    page.on("pageerror", (error) => consoleErrors.push(`pageerror: ${error.message}`));
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${server.origin}${ROUTE}`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { vehicleContact?: unknown } | undefined>)[name];
+      return Boolean(value?.vehicleContact);
+    }, GLOBAL_NAME, { timeout: 90_000 });
+
+    await page.keyboard.down("KeyW");
+    let impact: Record<string, unknown> | undefined;
+    // Alternate steering through the opening corners so the test exercises the
+    // same high-separation-velocity contact path that previously exceeded the
+    // route's CCD substep ceiling and terminated onFrame.
+    for (let phase = 0; phase < 12 && !impact; phase += 1) {
+      const steer = phase % 2 === 0 ? "KeyD" : "KeyA";
+      await page.keyboard.down(steer);
+      await page.waitForTimeout(650);
+      await page.keyboard.up(steer);
+      const evidence = await readEvidence(page);
+      const contact = evidence.vehicleContact as { impactResponse?: { responses?: number } } | undefined;
+      if ((contact?.impactResponse?.responses ?? 0) > 0) impact = evidence;
+    }
+    await page.keyboard.up("KeyW");
+
+    expect(impact, "the regression path must produce a vehicle contact").toBeDefined();
+    const impactFrame = Number(impact?.frameCount ?? 0);
+    const impactProgress = Number((impact?.raceState as { progress?: number } | undefined)?.progress ?? 0);
+    await page.waitForTimeout(1_200);
+    const after = await readEvidence(page);
+    const afterProgress = Number((after.raceState as { progress?: number } | undefined)?.progress ?? 0);
+
+    expect(consoleErrors, consoleErrors.join("\n")).toEqual([]);
+    expect(Number(after.frameCount ?? 0), "the frame loop stopped at collision").toBeGreaterThan(impactFrame + 5);
+    expect(
+      afterProgress !== impactProgress
+        || Number(after.lap ?? 1) !== Number(impact?.lap ?? 1)
+        || Number(after.checkpoint ?? 0) !== Number(impact?.checkpoint ?? 0),
+      "race state did not advance after collision"
+    ).toBe(true);
+  } finally {
+    await page.keyboard.up("KeyW").catch(() => undefined);
+    await page.keyboard.up("KeyA").catch(() => undefined);
+    await page.keyboard.up("KeyD").catch(() => undefined);
+    await server?.close();
+  }
+});
+
 test("turbo player overtakes the rival on the normal gameplay camera", async ({ page }, testInfo) => {
   testInfo.setTimeout(240_000);
   let server: ExampleDevServer | undefined;

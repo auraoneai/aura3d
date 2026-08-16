@@ -161,6 +161,23 @@ test.describe("built marketing preview", () => {
     expect(pageErrors).toEqual([]);
     expect(requestFailures).toEqual([]);
   });
+
+  test("opens a showcase poster with its live controls visible", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${server.origin}/index.html`, { waitUntil: "domcontentloaded" });
+    const poster = page.locator("iframe[data-route='/apps/showcase-product-configurator/']")
+      .locator("xpath=..")
+      .locator(".example-poster-action");
+    await poster.scrollIntoViewIfNeeded();
+    await expect(poster).toBeVisible();
+
+    const popupPromise = page.waitForEvent("popup");
+    await poster.click();
+    const popup = await popupPromise;
+    await expect.poll(() => popup.url(), { timeout: 10_000 }).toMatch(/chrome=visible/);
+    expect(new URL(popup.url()).searchParams.get("chrome")).toBe("visible");
+    await popup.close();
+  });
 });
 
 async function startStaticPreviewServer(root: string): Promise<StaticPreviewServer> {

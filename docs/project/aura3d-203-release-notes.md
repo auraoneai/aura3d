@@ -25,6 +25,15 @@ full public-example audit. It does not change renderer or engine capability.
   route-local grid so neither route overflows a 390px viewport.
 - **Favicon links.** Fifteen route entry points link `/favicon.svg`, removing
   local-dev favicon 404 noise. The production `/favicon.ico` remains unchanged.
+- **Collision recovery.** Turbo Drift Circuit now budgets enough adaptive CCD
+  substeps for the high-velocity separation frame after a Rapier impact. The
+  former ceiling could reject that frame, stop the mounted loop, and leave the
+  car and HUD frozen; the browser regression now drives through contact and
+  verifies that race frames and progress continue afterward.
+- **Example launch controls.** Marketing posters keep lightweight embedded
+  previews on `chrome=hidden`, while an intentional click opens the live route
+  with `chrome=visible` so its controls and option panels are immediately
+  available.
 
 ## Audit evidence retained
 
@@ -66,7 +75,7 @@ the exact message: `Aura3D 2.0.3 supersedes this release. Upgrade to 2.0.3.`
 The previously deprecated `2.0.1` versions remain deprecated. The active
 `2.0.3` versions are not deprecated.
 
-The release commit is pushed to `main` at `5a354bb7`. The marketing site was
+The release commit is pushed to `main` at `a89acd6d`. The marketing site was
 built from the monorepo and promoted through Vercel to the canonical
 `https://aura3d.auraone.ai/` domain. Production checks returned HTTP 200 for
 `/favicon.ico`, `/assets/draco/draco_decoder.wasm`, the examples catalog, the

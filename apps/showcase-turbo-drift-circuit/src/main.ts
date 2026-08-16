@@ -499,10 +499,13 @@ const vehicleContactWorld = game.planarCollisionWorld({
   enableSleeping: false,
   continuousCollision: {
     mode: "adaptive-substeps",
-    // Keep the sweep threshold below the narrowest fitted box half-extent. A retained
-    // full-stint steering frame requires 65 subdivisions, so 96 preserves rejection
-    // semantics while covering the route's bounded certified speed.
-    maxSubSteps: 96,
+    // Keep the sweep threshold below the narrowest fitted box half-extent. A normal
+    // full-stint steering frame needs roughly 65 subdivisions, but a Rapier contact
+    // can briefly return a much larger separating velocity (118 was observed on the
+    // reported freeze path). The previous 96-step ceiling rejected that frame, threw
+    // from `onFrame`, and left the HUD/car frozen at the collision. Keep the CCD
+    // guarantee while using a bounded 128-step ceiling for that transient.
+    maxSubSteps: 128,
     motionThreshold: 0.08
   }
 });

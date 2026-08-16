@@ -10,10 +10,10 @@ import "./styles.css";
 const APP_BASE = (window as unknown as { APP_BASE?: string }).APP_BASE
   ?? window.location.origin;
 
-function exampleUrl(iframe: HTMLIFrameElement): string | null {
+function exampleUrl(iframe: HTMLIFrameElement, chromeOverride?: string): string | null {
   const route = iframe.dataset.route;
   if (!route) return null;
-  const chrome = iframe.dataset.chrome ?? "hidden";
+  const chrome = chromeOverride ?? iframe.dataset.chrome ?? "hidden";
   const hash = iframe.dataset.hash;
   const sep = route.includes("?") ? "&" : "?";
   const hashPart = hash ? `#${hash}` : "";
@@ -29,7 +29,10 @@ function loadExample(iframe: HTMLIFrameElement): void {
 }
 
 function openExample(iframe: HTMLIFrameElement): void {
-  const url = exampleUrl(iframe);
+  // Posters are intentionally lightweight, but a deliberate click is an intent
+  // to use the example. Keep the route's controls and option panels visible in
+  // the opened experience; `chrome=hidden` is only for embedded previews.
+  const url = exampleUrl(iframe, "visible");
   if (!url) return;
   window.open(url, "_blank", "noopener,noreferrer");
 }
