@@ -75,7 +75,8 @@ the exact message: `Aura3D 2.0.3 supersedes this release. Upgrade to 2.0.3.`
 The previously deprecated `2.0.1` versions remain deprecated. The active
 `2.0.3` versions are not deprecated.
 
-The release commit is pushed to `main` at `a89acd6d`. The marketing site was
+The release commit is pushed to `main` at `a89acd6d`; the follow-up collision
+and marketing interaction fix is pushed at `fec457c2`. The marketing site was
 built from the monorepo and promoted through Vercel to the canonical
 `https://aura3d.auraone.ai/` domain. Production checks returned HTTP 200 for
 `/favicon.ico`, `/assets/draco/draco_decoder.wasm`, the examples catalog, the
