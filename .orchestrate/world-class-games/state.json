@@ -215,6 +215,14 @@
     {
       "at": "2026-08-17T10:07:32.433Z",
       "message": "skyline-player-feel: verification self-reported (unit-test-verified)"
+    },
+    {
+      "at": "2026-08-17T10:36:48.061Z",
+      "message": "clash-player-feel: run ended with status=cancelled; see /workspace/.orchestrate/world-class-games/handoffs/clash-player-feel.md"
+    },
+    {
+      "at": "2026-08-17T10:36:48.062Z",
+      "message": "clash-player-feel: synthetic failure handoff written to /workspace/.orchestrate/world-class-games/handoffs/clash-player-feel-failure.md"
     }
   ]
 }
