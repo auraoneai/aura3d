@@ -15,13 +15,13 @@
       "handoffPath": "handoffs/turbo-player-feel.md",
       "startedAt": "2026-08-17T09:59:50.920Z",
       "finishedAt": "2026-08-17T10:05:56.094Z",
-      "lastUpdate": "2026-08-17T10:05:56.094Z",
+      "lastUpdate": "2026-08-17T10:05:59.393Z",
       "note": "respawned by self-planner (was error; attempts=2)",
       "attempts": 3,
       "slackTs": null,
       "prNumber": 13,
       "failureMode": null,
-      "verification": null
+      "verification": "unit-test-verified"
     },
     {
       "name": "skyline-player-feel",
@@ -32,12 +32,12 @@
       "agentId": "bc-337eb420-3a41-4a3d-99d6-c43dc2ee06bd",
       "runId": "run-aee26287-4ebe-4a1b-b133-2b1d8779feeb",
       "parentAgentId": "bc-4f7217ad-0371-495d-9557-f387e85547de",
-      "status": "running",
-      "resultStatus": null,
-      "handoffPath": null,
+      "status": "handed-off",
+      "resultStatus": "finished",
+      "handoffPath": "handoffs/skyline-player-feel.md",
       "startedAt": "2026-08-17T09:59:59.836Z",
-      "finishedAt": null,
-      "lastUpdate": "2026-08-17T10:00:02.868Z",
+      "finishedAt": "2026-08-17T10:07:31.083Z",
+      "lastUpdate": "2026-08-17T10:07:31.084Z",
       "note": "respawned by self-planner (was error; attempts=2)",
       "attempts": 3,
       "slackTs": null,
@@ -75,15 +75,15 @@
       "dependsOn": [
         "turbo-player-feel"
       ],
-      "agentId": null,
-      "runId": null,
-      "parentAgentId": null,
+      "agentId": "bc-61b31db8-6100-4459-ba79-7c2f5d1785bf",
+      "runId": "run-d1740b40-1ef0-4d99-991e-6d1ae93f32a6",
+      "parentAgentId": "bc-4f7217ad-0371-495d-9557-f387e85547de",
       "status": "running",
       "resultStatus": null,
       "handoffPath": null,
       "startedAt": "2026-08-17T10:05:57.492Z",
       "finishedAt": null,
-      "lastUpdate": "2026-08-17T10:05:57.492Z",
+      "lastUpdate": "2026-08-17T10:06:00.262Z",
       "note": null,
       "slackTs": null,
       "prNumber": null,
@@ -198,6 +198,18 @@
     {
       "at": "2026-08-17T09:59:47.289Z",
       "message": "clash-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T10:05:59.394Z",
+      "message": "turbo-player-feel: verification self-reported (unit-test-verified)"
+    },
+    {
+      "at": "2026-08-17T10:07:07.591Z",
+      "message": "clash-player-feel: SSE idle 313357ms, polled status=running; watchdog still waiting"
+    },
+    {
+      "at": "2026-08-17T10:07:07.592Z",
+      "message": "clash-player-feel: tool_call idle 313359ms; last=2026-08-17T10:01:54.233Z"
     }
   ]
 }
