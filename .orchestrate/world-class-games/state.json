@@ -54,17 +54,17 @@
       "agentId": "bc-92aff38a-37ac-43d5-9e31-f0d54dbffa43",
       "runId": "run-c065d5de-9333-4794-86eb-9b82da4126eb",
       "parentAgentId": "bc-4f7217ad-0371-495d-9557-f387e85547de",
-      "status": "cancelled",
-      "resultStatus": null,
-      "handoffPath": null,
+      "status": "error",
+      "resultStatus": "cancelled",
+      "handoffPath": "handoffs/clash-player-feel.md",
       "startedAt": "2026-08-17T10:00:02.984Z",
-      "finishedAt": null,
-      "lastUpdate": "2026-08-17T10:36:44.399Z",
-      "note": "cancelled by operator via cli",
+      "finishedAt": "2026-08-17T10:36:46.851Z",
+      "lastUpdate": "2026-08-17T10:36:46.852Z",
+      "note": "respawned by self-planner (was error; attempts=2)",
       "attempts": 3,
       "slackTs": null,
       "prNumber": null,
-      "failureMode": null,
+      "failureMode": "unknown",
       "verification": null
     },
     {
@@ -85,11 +85,11 @@
       "finishedAt": "2026-08-17T10:09:20.670Z",
       "lastUpdate": "2026-08-17T10:09:20.670Z",
       "note": null,
-      "attempts": 1,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
-      "verification": null
+      "verification": null,
+      "attempts": 1
     },
     {
       "name": "skyline-verify",
@@ -109,11 +109,11 @@
       "finishedAt": "2026-08-17T10:11:36.377Z",
       "lastUpdate": "2026-08-17T10:11:36.378Z",
       "note": null,
-      "attempts": 1,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
-      "verification": null
+      "verification": null,
+      "attempts": 1
     },
     {
       "name": "clash-verify",
