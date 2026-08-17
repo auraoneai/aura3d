@@ -61,6 +61,7 @@ const aliasEntries = [
    */
   ["@aura3d/physics/solverless", "./packages/physics/src/solverless.ts"],
   ["@aura3d/physics/world", "./packages/physics/src/world.ts"],
+  ["@aura3d/physics-rapier", "./packages/physics-rapier/src/index.ts"],
   ["@aura3d/physics", "./packages/physics/src/index.ts"],
   ["@aura3d/product-studio", "./packages/product-studio/src/index.ts"],
   ["@aura3d/animation", "./packages/animation/src/browser-index.ts"],
