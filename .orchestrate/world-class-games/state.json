@@ -10,14 +10,14 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "pending",
+      "status": "running",
       "resultStatus": null,
       "handoffPath": null,
-      "startedAt": null,
+      "startedAt": "2026-08-17T09:59:50.920Z",
       "finishedAt": null,
-      "lastUpdate": "2026-08-17T09:59:43.047Z",
+      "lastUpdate": "2026-08-17T09:59:50.920Z",
       "note": "respawned by self-planner (was error; attempts=2)",
-      "attempts": 2,
+      "attempts": 3,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
@@ -193,6 +193,10 @@
     {
       "at": "2026-08-17T09:59:45.776Z",
       "message": "skyline-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:59:47.289Z",
+      "message": "clash-player-feel: respawned by self-planner (was error)"
     }
   ]
 }
