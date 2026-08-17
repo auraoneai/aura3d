@@ -18,7 +18,8 @@ score, and `KeyJ` fires ember volleys that defeat sentries through
 `input.clearHazardIds` and the kit `defeat` event. Jump-release scaling applies
 once per jump. The authored target is 95 seconds, and completion must occur
 between 70 and 115 seconds; reaching the finish early and waiting on a timer
-does not pass. Browser evidence separately proves the same keyboard controls,
+does not pass. `P` pauses/resumes traversal; `R` resets the full run. Browser
+evidence separately proves the same keyboard controls,
 checkpoint/fall/respawn chain, typed rendered actors, and real finish event.
 
 Duration is proven by `src/level-proof.ts`

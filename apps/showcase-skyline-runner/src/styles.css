@@ -173,6 +173,139 @@ button { font: inherit; }
 
 .metric--flow strong { color: #ffe993; }
 .metric--checkpoint strong { color: #9bf4d5; }
+.metric--lives strong { color: #ffb4a2; }
+.metric--act strong { color: #b8f4ff; font-size: 15px; }
+
+.checkpoint-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 10px;
+  border: 1px solid rgba(196, 246, 221, 0.16);
+  border-radius: 999px;
+  background: rgba(5, 22, 27, 0.68);
+}
+
+.checkpoint-label {
+  color: #9bcab8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.checkpoint-pips {
+  display: flex;
+  gap: 5px;
+}
+
+.checkpoint-pip {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(143, 227, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(143, 227, 255, 0.12);
+  box-shadow: 0 0 calc(12px * var(--skyline-checkpoint-pulse, 0)) rgba(143, 227, 255, 0.45);
+}
+
+.checkpoint-pip.is-active {
+  background: rgba(126, 240, 200, 0.82);
+  border-color: rgba(126, 240, 200, 0.95);
+}
+
+.checkpoint-pip.is-current {
+  box-shadow: 0 0 10px rgba(126, 240, 200, 0.65);
+}
+
+.debug-panel {
+  position: absolute;
+  top: 170px;
+  right: 30px;
+  width: min(240px, calc(100vw - 440px));
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px dashed rgba(196, 246, 221, 0.24);
+  border-radius: 10px;
+  background: rgba(5, 22, 27, 0.82);
+  color: #aac8bd;
+  font-size: 10px;
+}
+
+.debug-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.debug-row strong { color: #f4fbf7; }
+
+.runner-panel[data-paused="true"] .objective {
+  border-color: rgba(255, 233, 147, 0.42);
+  color: #ffe993;
+}
+
+#score-value.ember-deny {
+  color: #ff8866;
+  animation: ember-deny 0.22s ease;
+}
+
+@keyframes ember-deny {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.act-title-card {
+  position: fixed;
+  top: 42%;
+  left: 50%;
+  z-index: 4;
+  translate: -50% -50%;
+  padding: 14px 22px;
+  border: 1px solid rgba(196, 246, 221, 0.28);
+  border-radius: 14px;
+  background: rgba(5, 22, 27, 0.82);
+  color: #f4fbf7;
+  font-size: clamp(22px, 2.4vw, 34px);
+  font-weight: 820;
+  letter-spacing: -0.03em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.act-title-card[data-visible="true"] {
+  opacity: 1;
+}
+
+.score-pop {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  color: #ffe993;
+  font-size: 12px;
+  font-weight: 800;
+  animation: score-pop-rise 0.9s ease forwards;
+}
+
+@keyframes score-pop-rise {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-16px); }
+}
+
+.game-metrics {
+  grid-template-columns: repeat(5, minmax(72px, 1fr));
+}
+
+.game-hud .objective {
+  justify-self: stretch;
+  border-radius: 12px;
+  max-width: none;
+  text-align: center;
+}
+
+.route-contract { display: none; }
 
 .objective {
   justify-self: end;
