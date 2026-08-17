@@ -6,15 +6,27 @@ import {
   material,
   model,
   bindGameTouchControls,
-  blendSkyBandColor,
   planLayeredSceneComposition,
-  planSkyBackdrop,
-  skyBandCountForRamp,
   platformerCompositionSpec,
   primitives,
-  scene
+  scene,
+  type RuntimeNodeHandleLike
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import {
+  getSkylineActPalette,
+  planSkylineActBackdrop,
+  resolveSkylineAct,
+  resolveSkylineActIndex
+} from "./act-palette";
+import { SKYLINE_AUDIO_CUE_WISHLIST } from "./audio-cues";
+import { applySkylineActPaletteVisibility, createSkylineFeel } from "./feel";
+import {
+  buildSkylineHudSnapshot,
+  isSkylineDebugMode,
+  setupSkylineHud,
+  updateSkylineHud
+} from "./hud";
 import { gameGeometryContract } from "./generated/game-geometry";
 import {
   SKYLINE_AUTHORED_PLAYABLE_SECONDS,
@@ -34,6 +46,8 @@ import {
 } from "./level";
 import { createRunnerChallenge } from "./runner-challenge";
 
+const reducedMotion = typeof window !== "undefined"
+  && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const input = game.input({
   actions: {
     left: ["KeyA", "ArrowLeft"],
@@ -41,6 +55,7 @@ const input = game.input({
     jump: ["KeyW", "ArrowUp", "Space"],
     dash: ["ShiftLeft", "KeyK"],
     fire: ["KeyJ", "KeyL"],
+    pause: ["KeyP"],
     reset: ["KeyR"]
   },
   axes: { moveX: { negative: "left", positive: "right" } },
@@ -99,15 +114,15 @@ const skylineSentryNodes = SKYLINE_SENTRY_ENCOUNTERS.map((encounter, index) => {
     y: encounter.y
   });
   return model(assets.showcaseExpressiveRobot, {
-    name: `relay-sentry-${index + 1}`,
+    name: `relay-sentry-${encounter.id}`,
     scaleMode: "fit",
     targetHeight: SKYLINE_CHARACTER_HEIGHT * 0.92,
     castShadow: true,
     receiveShadow: true
   }).animate({ clip: "Standing", loop: true, captureTime: 0.35 })
     .position(sceneX, sceneY, GAMEPLAY_ACTOR_DEPTH)
-    .rotate(0, index % 2 === 0 ? -Math.PI / 2 : Math.PI / 2, 0)
-    .runtime(game.runtimeNode(`relay-sentry-${index + 1}`, {
+    .rotate(0, Math.PI / 2, 0)
+    .runtime(game.runtimeNode(`relay-sentry-${encounter.id}`, {
       tags: ["enemy", "typed-character", "hazard-aligned", `act-${SKYLINE_SECTION_LAYOUTS[encounter.section]?.act ?? 0}`]
     }));
 });
@@ -298,16 +313,7 @@ const levelSpan = platforms.reduce<readonly [number, number]>(
   ],
   [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]
 );
-/*
- * Convert the level span into **scene** units before planning.
- *
- * `levelSpan` is in the level's own game units (0 to ~16.75 here) while the planner's depths and scales
- * are consumed as scene units, where the whole level is only `targetSceneWidth` (6.4) across. Feeding the
- * game-unit span straight in derived depth bands from a world 2.6x too large and produced far-background
- * silhouettes larger than the play space, which the engine surfaced as
- * `RenderDeviceError: Renderer matrix inputs must be finite mat4 values`. Reading the binding's own
- * game-to-scene factor keeps this correct if the level or `targetSceneWidth` changes.
- */
+const initialActPalette = getSkylineActPalette(0);
 const sceneSpan = [
   levelSpan[0] * platformerScene.transform.scale + platformerScene.transform.offsetX,
   levelSpan[1] * platformerScene.transform.scale + platformerScene.transform.offsetX
@@ -377,68 +383,58 @@ const compositionPlan = planLayeredSceneComposition(platformerCompositionSpec({
  * The bands sit behind the far-background composition layer, so they never occlude a prop, a platform or
  * the hero, and every value below is read back from the plan.
  */
-/*
- * Backdrop colour ramps, declared once so the band count and the materials cannot disagree.
- *
- * Band count is derived from these ramps by `skyBandCountForRamp`, not chosen. The first version used a
- * hand-picked 5 bands and sampling the rendered frame down a backdrop-only column measured hard steps of
- * 21 per channel at the horizon -- visible banding, which trades one flat-frame defect for another.
- */
-const SKY_HORIZON = "#4e93b4";
-const SKY_EMISSIVE_HORIZON = "#79c2dd";
-const SKY_RAMP = [SKY_HORIZON, "#173a5c"] as const;
-const SKY_EMISSIVE_RAMP = [SKY_EMISSIVE_HORIZON, "#25507a"] as const;
-/*
- * Both ground ramps start from the sky's *horizon* colour, not from a separately chosen one.
- *
- * They previously started at `#41809f` against the sky's `#4e93b4`. Sampling the rendered frame down a
- * backdrop-only column measured a 22-per-channel step at exactly the horizon row: the two ramps met at
- * different colours, so the horizon read as a hard seam. Sharing the endpoint makes the join continuous by
- * construction rather than by matching two literals by eye.
- */
-const GROUND_RAMP = [SKY_HORIZON, "#123048"] as const;
-const GROUND_EMISSIVE_RAMP = [SKY_EMISSIVE_HORIZON, "#1b3d5a"] as const;
+const farBackgroundDepth = Math.min(...compositionPlan.layers.map((layer) => layer.depth)) - 2.4;
+const horizonY = platformerScene.toScenePoint({ x: 0, y: 0 })[1];
 
-const skyBackdrop = planSkyBackdrop({
-  span: sceneSpan,
-  // Behind the far-background layer, which the platformer preset places at gameplayDepth - width * 0.34.
-  depth: Math.min(...compositionPlan.layers.map((layer) => layer.depth)) - 2.4,
-  // Horizon sits on the level's own ground plane rather than at an assumed height.
-  horizonY: platformerScene.toScenePoint({ x: 0, y: 0 })[1],
-  height: 20,
-  // Derived from the ramp so the gradient cannot read as a stair; see SKY_RAMP above.
-  bands: skyBandCountForRamp(...SKY_RAMP),
-  /*
-   * Grade below the horizon too.
-   *
-   * The first banded sky cut the dominant colour bucket from 43.65% to 26.08%, but the *lower* frame then
-   * became the largest remaining flat region: the scene background showed through unmodulated below the
-   * play plane. Requesting the ground side grades it from the same plan, rather than adding a second
-   * hand-placed plane.
-   */
-  belowHorizonHeight: 14,
-  belowHorizonBands: skyBandCountForRamp(...GROUND_RAMP)
-});
-const skyBackdropNodes = skyBackdrop.bands.map((band) => {
-  const colorRamp = band.side === "sky" ? SKY_RAMP : GROUND_RAMP;
-  const emissiveRamp = band.side === "sky" ? SKY_EMISSIVE_RAMP : GROUND_EMISSIVE_RAMP;
-  return primitives.box({
-    name: `skyline ${band.side} band ${band.index}`,
-    material: material.emissive({
-      name: `graded dusk ${band.side} ${band.index}`,
-      // Horizon haze outward, interpolated by the plan's own blend factor. The ground ramp shares the
-      // horizon colour so the two sides meet without a seam, then descends cooler and darker.
-      color: blendSkyBandColor(colorRamp[0], colorRamp[1], band.blend),
-      emissive: blendSkyBandColor(emissiveRamp[0], emissiveRamp[1], band.blend),
-      emissiveIntensity: band.emissiveIntensity,
-      roughness: 0.9
-    })
-  }).position(0, band.centerY, band.z).scale([band.width, band.height, 0.2]);
+function createActSkyBackdropNodes(actIndex: number) {
+  const backdrop = planSkylineActBackdrop({
+    actIndex,
+    sceneSpan,
+    horizonY,
+    farBackgroundDepth
+  });
+  return backdrop.plan.bands.map((band, bandIndex) => {
+    const colors = backdrop.bandColors[bandIndex]!;
+    return primitives.box({
+      name: `skyline act-${actIndex} ${band.side} band ${band.index}`,
+      material: material.emissive({
+        name: `act-${actIndex} ${band.side} ${band.index}`,
+        color: colors.color,
+        emissive: colors.emissive,
+        emissiveIntensity: colors.emissiveIntensity,
+        roughness: 0.9
+      })
+    }).position(0, band.centerY, band.z).scale([band.width, band.height, 0.2]).runtime(
+      game.runtimeNode(`skyline-act-${actIndex}-${band.side}-${band.index}`, {
+        tags: ["backdrop", "sky-band", `act-${actIndex}`]
+      })
+    );
+  });
+}
+
+function createActFogNode(actIndex: number) {
+  const palette = getSkylineActPalette(actIndex);
+  return effects.fog({
+    name: `skyline act-${actIndex} distance haze`,
+    color: palette.fogColor,
+    density: palette.fogDensity,
+    intensity: palette.fogIntensity
+  }).runtime(game.runtimeNode(`skyline-act-${actIndex}-fog`, {
+    tags: ["backdrop", "fog", `act-${actIndex}`]
+  }));
+}
+
+const actSkyBackdropNodeBuilders = [0, 1, 2, 3, 4].flatMap((actIndex) => createActSkyBackdropNodes(actIndex));
+const actFogNodeBuilders = [0, 1, 2, 3, 4].map((actIndex) => createActFogNode(actIndex));
+const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
+  const palette = getSkylineActPalette(actIndex);
+  return {
+    ambient: lights.ambient({ name: `skyline act-${actIndex} fill`, color: palette.ambientLightColor, intensity: palette.ambientLightIntensity }),
+    key: lights.directional({ name: `skyline act-${actIndex} key`, color: palette.keyLightColor, intensity: palette.keyLightIntensity }).position(-3, 5, 4),
+    checkpoint: lights.point({ name: `skyline act-${actIndex} relay`, color: palette.checkpointLightColor, intensity: palette.checkpointLightIntensity }).position(1.7, 1.8, 2.4)
+  };
 });
 
-// Side-scroller framing target: the hero reads at roughly one-eighth of frame
-// height with the immediate traversal path visible ahead, so the world carries
-// the level rather than the mascot filling the frame.
 const platformerCamera = game.platformerCameraRig({
   sceneBinding: platformerScene,
   player: state.player,
@@ -503,7 +499,18 @@ const platformerCamera = game.platformerCameraRig({
   lookAhead: compactViewport ? 0.32 : 1.05,
   fov: compactViewport ? 48 : 42
 });
-setupPlatformerPanel();
+const cameraLookAhead = compactViewport ? 0.32 : 1.05;
+const cameraDistance = compactViewport ? 4.6 : 3.75;
+const cameraHeight = compactViewport ? 0.58 : 0.62;
+const skylineFeel = createSkylineFeel({
+  reducedMotion,
+  cameraBaseOffset: [round(cameraLookAhead * 0.42), round(cameraHeight), round(cameraDistance)],
+  cameraTargetOffset: [round(cameraLookAhead), 0.34, 0]
+});
+let hudElements: ReturnType<typeof setupSkylineHud> | undefined;
+let paused = false;
+let lastActPaletteIndex = 0;
+setupSkylineGameHud();
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
@@ -521,7 +528,7 @@ const app = createAuraApp("#app", {
   // pixels on this route.
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
   scene: scene()
-    .background("#1b3a52")
+    .background(initialActPalette.sceneBackground)
     /*
      * Background depth comes from the typed world, not from primitive stand-ins.
      *
@@ -543,7 +550,13 @@ const app = createAuraApp("#app", {
      * behind the traversal volume, and never stands in for a platform, hazard, checkpoint or
      * collectible.
      */
-    .addMany(skyBackdropNodes)
+    .addMany(actSkyBackdropNodeBuilders)
+    .addMany(actFogNodeBuilders)
+    .addMany(actPaletteLights.flatMap((palette, actIndex) => [
+      palette.ambient.runtime(game.runtimeNode(`skyline-act-${actIndex}-ambient`, { tags: ["light", `act-${actIndex}`] })),
+      palette.key.runtime(game.runtimeNode(`skyline-act-${actIndex}-key`, { tags: ["light", `act-${actIndex}`] })),
+      palette.checkpoint.runtime(game.runtimeNode(`skyline-act-${actIndex}-checkpoint-light`, { tags: ["light", `act-${actIndex}`] }))
+    ]))
     .addMany(skylineWorldNodes)
     .addMany(skylineSentryNodes)
     .addMany(skylineSummitBeaconNodes)
@@ -653,15 +666,35 @@ const app = createAuraApp("#app", {
     }))))
     .add(effects.ambientOcclusion({ intensity: 0.4 }))
     .add(effects.neonBloom({ intensity: 0.1 }))
-    .add(effects.fog({ name: "skyline layered distance haze", color: "#2a6182", density: 0.05, intensity: 0.5 }))
-    .add(lights.ambient({ name: "skyline sky fill", color: "#9fd0e4", intensity: 0.62 }))
-    .add(lights.directional({ name: "skyline warm traversal key", color: "#ffd59c", intensity: 1.12 }).position(-3, 5, 4))
-    .add(lights.point({ name: "checkpoint cyan lift", color: "#62f2df", intensity: 0.54 }).position(1.7, 1.8, 2.4))
     .add(lights.studio({ intensity: 0.86 }))
     .camera(platformerCamera)
 });
 
 const player = app.nodes.require("platformer-player");
+const sentryNodes = Object.fromEntries(
+  SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => [encounter.id, app.nodes.require(`relay-sentry-${encounter.id}`)])
+) as Record<string, RuntimeNodeHandleLike>;
+const actSkyBandSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
+  actIndex,
+  planSkylineActBackdrop({ actIndex, sceneSpan, horizonY, farBackgroundDepth }).plan.bands.map((band) =>
+    app.nodes.require(`skyline-act-${actIndex}-${band.side}-${band.index}`)
+  )
+])) as Record<number, RuntimeNodeHandleLike[]>;
+const actFogSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
+  actIndex,
+  app.nodes.require(`skyline-act-${actIndex}-fog`)
+])) as Record<number, RuntimeNodeHandleLike>;
+const actLightSets = Object.fromEntries([0, 1, 2, 3, 4].flatMap((actIndex) => ([
+  [`${actIndex}-ambient`, app.nodes.require(`skyline-act-${actIndex}-ambient`)],
+  [`${actIndex}-key`, app.nodes.require(`skyline-act-${actIndex}-key`)],
+  [`${actIndex}-checkpoint`, app.nodes.require(`skyline-act-${actIndex}-checkpoint-light`)]
+]))) as Record<string, RuntimeNodeHandleLike>;
+lastActPaletteIndex = applySkylineActPaletteVisibility(0, actSkyBandSets, actFogSets);
+for (const [key, node] of Object.entries(actLightSets)) {
+  const act = Number(key.split("-")[0]);
+  node.setVisible(act === lastActPaletteIndex);
+}
+skylineFeel.bindScorePopHost(hudElements?.score ?? null);
 /** Renderer-owned challenge feedback handles, updated from observed challenge state. */
 const feedbackNodes = {
   flow: app.nodes.require("skyline-flow-ribbon"),
@@ -757,19 +790,6 @@ function renderEmberVolleys(): void {
     node.setVisible(!taken);
     if (taken) node.setScale([...HIDDEN_FEEDBACK_SCALE]);
   }
-  for (const [index, encounter] of SKYLINE_SENTRY_ENCOUNTERS.entries()) {
-    const defeated = state.defeatedHazards.includes(encounter.id);
-    app.nodes.require(`relay-sentry-${index + 1}`).setVisible(!defeated);
-  }
-  for (const [index, node] of emberVolleyNodes.entries()) {
-    const volley = emberVolleys.find((entry) => entry.slot === index);
-    if (!volley) {
-      node.setVisible(false).setScale([...HIDDEN_FEEDBACK_SCALE]);
-      continue;
-    }
-    const [sx, sy] = platformerScene.toScenePoint({ x: volley.x, y: volley.y });
-    node.setVisible(true).setPosition(sx, sy, GAMEPLAY_ACTOR_DEPTH).setScale([0.1, 0.1, 0.1]);
-  }
 }
 let compositionSubjectSuppressed = false;
 /*
@@ -838,16 +858,6 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   },
   configurable: true
 });
-const hud = {
-  x: requireElement("x-value"),
-  score: requireElement("score-value"),
-  coins: requireElement("coin-value"),
-  ember: requireElement("ember-value"),
-  deaths: requireElement("death-value"),
-  checkpoint: requireElement("checkpoint-value"),
-  surface: requireElement("surface-value"),
-  challenge: requireElement("challenge-value")
-};
 /** Current locomotion snapshot, advanced from mounted player state each frame. */
 let locomotionSnapshot = locomotion.snapshot();
 
@@ -1122,7 +1132,9 @@ const mountedEvidence = {
     emberVolleyFired: false,
     emberDefeatedSentry: false,
     surfaceContactProven: initialSurfaceAlignment.feetOnSurface,
-    authoredPlayableSeconds
+    authoredPlayableSeconds,
+    pauseFreezesSimulation: false,
+    audioCueWishlist: SKYLINE_AUDIO_CUE_WISHLIST
   }
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_SKYLINE_RUNNER__", { value: mountedEvidence, configurable: true, writable: true });
@@ -1225,6 +1237,12 @@ function animationEvidence() {
 app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   input.update(step);
+  if (input.pressed("pause")) {
+    paused = skylineFeel.togglePause();
+    mountedEvidence.gameplay.pauseFreezesSimulation = paused;
+    publishPlatformerEvidence();
+    return;
+  }
   if (input.pressed("reset")) {
     state = platformerState.reset();
     challengeEvidence = runnerChallenge.reset();
@@ -1232,12 +1250,19 @@ app.onFrame(({ dt }) => {
     spentEmberCharges = 0;
     pendingDefeatedSentries.clear();
     playerFacing = 1;
+    paused = false;
+    skylineFeel.resetRuntime();
+    lastActPaletteIndex = applySkylineActPaletteVisibility(0, actSkyBandSets, actFogSets);
+    for (const [key, node] of Object.entries(actLightSets)) {
+      node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
+    }
     frameCount += 1;
     mountedEvidence.gameplay.resetWorks = true;
     kitContractProof.resetRestoresStart = state.checkpointId === "start"
       && state.collected.length === 0
       && state.deaths === 0
-      && state.score === 0;
+      && state.score === 0
+      && state.defeatedHazards.length === 0;
     recordKitEvents(state.events);
     completionProof.completed = false;
     completionProof.stable = false;
@@ -1250,22 +1275,38 @@ app.onFrame(({ dt }) => {
     publishPlatformerEvidence();
     return;
   }
+  if (paused) {
+    publishPlatformerEvidence();
+    return;
+  }
   const previous = state;
   const collectedEmbers = state.collected.filter((id) => id.includes("ember-charge")).length;
   const emberCharges = Math.max(0, collectedEmbers - spentEmberCharges);
+  const dashPressed = input.pressed("dash");
+  if (dashPressed) {
+    const pose = platformerScene.toScenePlayer(state.player);
+    skylineFeel.onDash(pose.position);
+  }
   if (input.pressed("fire") && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
     const slot = emberVolleyNodes.findIndex((_, index) => !emberVolleys.some((volley) => volley.slot === index));
     if (slot >= 0) {
       spentEmberCharges += 1;
+      const spawnX = state.player.x + playerFacing * 0.22;
+      const spawnY = state.player.y + SKYLINE_CHARACTER_HEIGHT * 0.55;
       emberVolleys.push({
-        x: state.player.x + playerFacing * 0.22,
-        y: state.player.y + SKYLINE_CHARACTER_HEIGHT * 0.55,
+        x: spawnX,
+        y: spawnY,
         vx: playerFacing * 6.4,
         life: 1.15,
         slot
       });
+      const [sx, sy] = platformerScene.toScenePoint({ x: spawnX, y: spawnY });
+      skylineFeel.onEmberFire([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
       mountedEvidence.gameplay.emberVolleyFired = true;
     }
+  } else if (input.pressed("fire") && emberCharges <= 0) {
+    const [sx, sy] = platformerScene.toScenePoint({ x: state.player.x, y: state.player.y });
+    skylineFeel.onEmberDeny([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
   }
   const clearedThisFrame: string[] = [...pendingDefeatedSentries];
   for (const volley of emberVolleys) {
@@ -1284,6 +1325,9 @@ app.onFrame(({ dt }) => {
         pendingDefeatedSentries.add(sentry.id);
         clearedThisFrame.push(sentry.id);
         volley.life = 0;
+        const [sx, sy] = platformerScene.toScenePoint({ x: volley.x, y: volley.y });
+        skylineFeel.onEmberImpact([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+        skylineFeel.onSentryDefeat([sx, sy, GAMEPLAY_ACTOR_DEPTH], 150);
         mountedEvidence.gameplay.emberDefeatedSentry = true;
       }
     }
@@ -1295,14 +1339,62 @@ app.onFrame(({ dt }) => {
     moveX: input.axis("moveX"),
     jumpPressed: input.pressed("jump"),
     jumpHeld: input.held("jump"),
-    dashPressed: input.pressed("dash"),
+    dashPressed,
     clearHazardIds: clearedThisFrame
   });
+  for (const event of state.events) {
+    if (event.type === "land") {
+      const pose = platformerScene.toScenePlayer(state.player);
+      skylineFeel.onLand(pose.position);
+    }
+    if (event.type === "collect") {
+      const collectible = level.collectibles?.find((item) => item.id === event.id);
+      if (collectible) {
+        const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
+        skylineFeel.onCollect([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+      }
+    }
+    if (event.type === "checkpoint") {
+      const act = resolveSkylineAct(state.player.x);
+      skylineFeel.onCheckpoint(act.title);
+    }
+    if (event.type === "defeat" || event.type === "stomp") {
+      const encounter = SKYLINE_SENTRY_ENCOUNTERS.find((entry) => entry.id === event.id);
+      if (encounter) {
+        const [sx, sy] = platformerScene.toScenePoint({ x: encounter.x, y: encounter.y });
+        skylineFeel.onSentryDefeat([sx, sy, GAMEPLAY_ACTOR_DEPTH], event.type === "stomp" ? 100 : 150);
+      }
+    }
+  }
   challengeEvidence = runnerChallenge.step(step, previous, state);
   // Flow, chain and objective state must be visible in the rendered scene, not only in
   // HUD text, so the feedback nodes are driven from the evidence that was just observed.
   renderChallengeFeedback();
   renderEmberVolleys();
+  const nextActIndex = resolveSkylineActIndex(state.player.x);
+  if (nextActIndex !== lastActPaletteIndex) {
+    lastActPaletteIndex = applySkylineActPaletteVisibility(nextActIndex, actSkyBandSets, actFogSets);
+    for (const [key, node] of Object.entries(actLightSets)) {
+      node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
+    }
+  }
+  skylineFeel.applyCameraShake(platformerCamera);
+  skylineFeel.updatePresentation(step, {
+    simTime: state.time,
+    playerX: state.player.x,
+    playerY: state.player.y,
+    playerFacing,
+    sceneBinding: platformerScene,
+    defeatedHazardIds: state.defeatedHazards,
+    sentryNodes,
+    emberVolleys,
+    emberVolleyNodes,
+    emberPickupNodes,
+    collectedIds: state.collected,
+    firePressed: input.pressed("fire"),
+    emberStock: emberCharges,
+    scoreElement: hudElements?.score ?? null
+  });
   frameCount += 1;
   mountedEvidence.gameplay.moveChangesX ||= Math.abs(state.player.x - previous.player.x) > 0.001;
   mountedEvidence.gameplay.jumpChangesY ||= Math.abs(state.player.y - previous.player.y) > 0.001;
@@ -1330,50 +1422,10 @@ app.onFrame(({ dt }) => {
   publishPlatformerEvidence();
 });
 
-function setupPlatformerPanel(): void {
+function setupSkylineGameHud(): void {
   const panel = document.getElementById("panel");
   if (!panel) return;
-  panel.innerHTML = `
-    <header class="runner-brand">
-      <span class="label"><i aria-hidden="true"></i> Verdant relay</span>
-      <h1>Skyline Runner</h1>
-      <p class="claim">Bank lumen coins, stock ember charges, stomp or volley the sentries, and restore the summit beacon.</p>
-    </header>
-    <section class="panel-metrics" aria-label="Live runner metrics">
-      <div class="metrics-row">
-        <article><span>Distance</span><strong id="x-value">0.00</strong></article>
-        <article><span>Score</span><strong id="score-value">0</strong></article>
-        <article><span>Coins</span><strong id="coin-value">0</strong></article>
-        <article><span>Ember</span><strong id="ember-value">0</strong></article>
-        <article class="metric--flow"><span>Flow chain</span><strong id="challenge-value">0</strong></article>
-        <article><span>Falls</span><strong id="death-value">0</strong></article>
-        <article class="metric--checkpoint"><span>Relay</span><strong id="checkpoint-value">start</strong></article>
-      </div>
-      <div class="objective" id="surface-value">Finding surface…</div>
-    </section>
-    <section class="runner-controls" aria-label="Runner controls">
-      <h2>Traverse</h2>
-      <div class="button-grid">
-        <button id="left-control" type="button" aria-label="Move left"><b aria-hidden="true">←</b><span>Left</span></button>
-        <button id="right-control" type="button" aria-label="Move right"><b aria-hidden="true">→</b><span>Right</span></button>
-        <button id="jump-control" type="button"><b aria-hidden="true">↑</b><span>Jump</span></button>
-        <button id="dash-control" type="button"><b aria-hidden="true">⇢</b><span>Dash</span></button>
-        <button id="fire-control" type="button"><b aria-hidden="true">✸</b><span>Ember</span></button>
-        <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
-      </div>
-      <ul class="controls-list"><li><kbd>A D</kbd> Run</li><li><kbd>Space</kbd> Jump · hold for height</li><li><kbd>Shift</kbd> Dash</li><li><kbd>J</kbd> Ember volley</li><li><kbd>R</kbd> Restart</li></ul>
-    </section>
-    <section class="route-contract" aria-label="Geometry contract">
-      <span class="contract-status"><i aria-hidden="true"></i> Surface locked</span>
-      <p>The rendered trail and character contacts share the certified mesh transform.</p>
-    </section>`;
-  /*
-   * On-screen controls come from the reusable binding layer.
-   *
-   * This route and Turbo had independently authored a byte-identical `bindHoldControl` + `pulseKey` pair --
-   * found by the replicability metric's repeated-cluster detector, not by reading the files. Both now declare
-   * which element maps to which key and `bindGameTouchControls` performs the wiring.
-   */
+  hudElements = setupSkylineHud(panel, checkpoints.length);
   bindGameTouchControls({
     hold: [
       { elementId: "left-control", code: "KeyA" },
@@ -1388,29 +1440,25 @@ function setupPlatformerPanel(): void {
   });
 }
 function updatePlatformerHud(): void {
-  hud.x.textContent = round(state.player.x).toFixed(2);
-  hud.score.textContent = String(challengeEvidence.challengeScore);
+  if (!hudElements) return;
   const coinCount = state.collected.filter((id) => id.includes("sky-shard")).length;
   const emberStock = Math.max(0, state.collected.filter((id) => id.includes("ember-charge")).length - spentEmberCharges);
-  hud.coins.textContent = String(coinCount);
-  hud.ember.textContent = String(emberStock);
-  hud.deaths.textContent = String(state.deaths);
-  const relayLabel = state.checkpointId === "start"
-    ? `00/${checkpoints.length}`
-    : `${String(state.activatedCheckpoints.length).padStart(2, "0")}/${checkpoints.length}`;
-  hud.checkpoint.textContent = relayLabel;
-  hud.challenge.textContent = `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`;
+  const snapshot = buildSkylineHudSnapshot({
+    score: challengeEvidence.challengeScore,
+    coinCount,
+    emberStock,
+    deaths: state.deaths,
+    lives: 3,
+    checkpointCount: checkpoints.length,
+    activatedCheckpointCount: state.activatedCheckpoints.length,
+    playerX: state.player.x,
+    objectiveMet: challengeEvidence.objectiveMet,
+    paused
+  });
   const alignment = playerSurfaceAlignment();
-  const sectionIndex = Math.max(0, Math.min(
-    SKYLINE_SECTION_COUNT - 1,
-    Math.floor(Math.max(0, state.player.x) / SKYLINE_SECTION_STRIDE)
-  ));
-  const act = SKYLINE_LEVEL_ACTS[SKYLINE_SECTION_LAYOUTS[sectionIndex]?.act ?? 0];
-  const objective = challengeEvidence.objectiveMet ? "Summit beacon restored" : act.objective;
-  hud.surface.textContent = `${act.title} · ${objective} · ${alignment.feetOnSurface ? "Grounded" : "Airborne"}`;
-}
-function requireElement(id: string): HTMLElement {
-  const element = document.getElementById(id);
-  if (!element) throw new Error("Missing element #" + id);
-  return element;
+  const act = resolveSkylineAct(state.player.x);
+  updateSkylineHud(hudElements, snapshot, isSkylineDebugMode() ? {
+    surfaceLabel: `${act.title} · ${snapshot.objective} · ${alignment.feetOnSurface ? "Grounded" : "Airborne"}`,
+    flowLabel: `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`
+  } : undefined);
 }
