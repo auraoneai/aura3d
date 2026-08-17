@@ -68,7 +68,7 @@ describe("Aura Clash player feel", () => {
     expect(rivalAiWantsDash("approach", 1.9, false)).toBe(true);
     expect(rivalAiWantsDash("space", 0.8, false)).toBe(true);
     expect(rivalAiWantsDash("punish-whiff", 1.3, false)).toBe(true);
-    expect(rivalAiWantsDash("neutral", 1.1, true)).toBe(true);
+    expect(rivalAiWantsDash("neutral", 1.05, true)).toBe(true);
     expect(rivalAiStrikeBias("punish-whiff").light).toBe(1);
     expect(rivalAiStrikeBias("meaty-wakeup").light).toBeGreaterThan(0.8);
   });
