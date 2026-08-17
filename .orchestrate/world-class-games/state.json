@@ -94,7 +94,7 @@
     {
       "name": "skyline-verify",
       "type": "verifier",
-      "branch": "orch/world-class-games/skyline-verify",
+      "branch": "orch/world-class-games/skyline-player-feel",
       "startingRef": "orch/world-class-games/skyline-player-feel",
       "dependsOn": [
         "skyline-player-feel"
@@ -102,12 +102,12 @@
       "agentId": "bc-25306b5e-78ab-49bc-86ae-90ca30520ee4",
       "runId": "run-87de2ec2-0fd3-4922-9cf8-ebc07741cc8c",
       "parentAgentId": "bc-4f7217ad-0371-495d-9557-f387e85547de",
-      "status": "running",
-      "resultStatus": null,
-      "handoffPath": null,
+      "status": "handed-off",
+      "resultStatus": "finished",
+      "handoffPath": "handoffs/skyline-verify.md",
       "startedAt": "2026-08-17T10:07:40.347Z",
-      "finishedAt": null,
-      "lastUpdate": "2026-08-17T10:07:43.243Z",
+      "finishedAt": "2026-08-17T10:11:36.377Z",
+      "lastUpdate": "2026-08-17T10:11:36.378Z",
       "note": null,
       "slackTs": null,
       "prNumber": null,
