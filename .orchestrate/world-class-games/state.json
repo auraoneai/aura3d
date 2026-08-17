@@ -54,17 +54,17 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "pending",
+      "status": "error",
       "resultStatus": null,
       "handoffPath": null,
       "startedAt": null,
       "finishedAt": null,
-      "lastUpdate": "2026-08-17T09:58:27.474Z",
-      "note": "respawned by self-planner (was error; attempts=1)",
-      "attempts": 1,
+      "lastUpdate": "2026-08-17T09:58:55.885Z",
+      "note": "spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids.",
+      "attempts": 2,
       "slackTs": null,
       "prNumber": null,
-      "failureMode": null,
+      "failureMode": "unknown",
       "verification": null
     },
     {
@@ -173,6 +173,14 @@
     {
       "at": "2026-08-17T09:58:42.239Z",
       "message": "skyline-player-feel: model \"cursor-grok-4.6-high-fast\" not in MODEL_CATALOG (spawning anyway). Run `bun cli.ts models` to see known slugs."
+    },
+    {
+      "at": "2026-08-17T09:58:49.678Z",
+      "message": "skyline-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids."
+    },
+    {
+      "at": "2026-08-17T09:58:49.679Z",
+      "message": "clash-player-feel: model \"cursor-grok-4.6-high-fast\" not in MODEL_CATALOG (spawning anyway). Run `bun cli.ts models` to see known slugs."
     }
   ]
 }
