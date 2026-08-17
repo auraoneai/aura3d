@@ -54,17 +54,17 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "error",
+      "status": "pending",
       "resultStatus": null,
       "handoffPath": null,
       "startedAt": null,
       "finishedAt": null,
-      "lastUpdate": "2026-08-17T09:58:55.885Z",
-      "note": "spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids.",
+      "lastUpdate": "2026-08-17T09:59:46.064Z",
+      "note": "respawned by self-planner (was error; attempts=2)",
       "attempts": 2,
       "slackTs": null,
       "prNumber": null,
-      "failureMode": "unknown",
+      "failureMode": null,
       "verification": null
     },
     {
@@ -189,6 +189,10 @@
     {
       "at": "2026-08-17T09:59:44.275Z",
       "message": "turbo-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:59:45.776Z",
+      "message": "skyline-player-feel: respawned by self-planner (was error)"
     }
   ]
 }
