@@ -1,4 +1,3 @@
-import { mkdirSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   decideTurboOpponentYield,
@@ -68,22 +67,6 @@ describe("turbo passing lane", () => {
       bodyHalfWidth: playerHalf,
       visualAsphaltHalfWidth: visualAsphalt / 2
     })).toBe(true);
-    mkdirSync("/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer", { recursive: true });
-    writeFileSync(
-      "/var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/grok-goal-d625ec9e6e37/implementer/turbo-widths.json",
-      `${JSON.stringify({
-        roadWidth: ROAD_WIDTH,
-        visualAsphaltWidth: visualAsphalt,
-        usableRoadWidth: lane.usableRoadWidth,
-        playerRenderedWidth: lane.playerRenderedWidth,
-        opponentRenderedWidth: lane.opponentRenderedWidth,
-        combinedRenderedWidth: lane.playerRenderedWidth + lane.opponentRenderedWidth,
-        twoCarPlusMarginWidth: lane.twoCarPlusMarginWidth,
-        legalPassingOffset: lane.legalPassingOffset,
-        sideBySideFit: lane.sideBySideFit,
-        yieldKeepsBothOnAsphalt: true
-      }, null, 2)}\n`
-    );
   });
 
   it("leaves a legal passing side when the player closes from behind", () => {

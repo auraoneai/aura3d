@@ -79,6 +79,8 @@ export interface TurboOpponentAiConfig {
   readonly bodyHalfWidth?: number;
   readonly visualAsphaltHalfWidth?: number;
   readonly yieldEnabled?: boolean;
+  /** Seeded drama variance for late-race apex errors. */
+  readonly dramaSeed?: number;
   /**
    * Proportional gain for returning to the racing line. Scale this with the route's
    * width: a gain tuned for a wide kart circuit under-corrects on a narrow one.
@@ -110,6 +112,8 @@ export interface TurboOpponentAiEvidence {
   readonly recentDecisions: readonly string[];
   readonly preferredSignedOffset: number;
   readonly yielding: boolean;
+  readonly defending: boolean;
+  readonly apexErrorSeconds: number;
   readonly offTrack: boolean;
   readonly signedTrackOffset: number;
   readonly onAsphalt: boolean;
@@ -141,6 +145,9 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
   let lastTargetSpeed = config.maxSpeed * cruiseRatio;
   let lastPreferredSignedOffset = 0;
   let lastYielding = false;
+  let lastDefending = false;
+  let apexErrorSeconds = 0;
+  const dramaSeed = config.dramaSeed ?? 20260817;
   const recentDecisions: string[] = [];
 
   function decide(playerProgress: number): TurboOpponentInput {
@@ -179,6 +186,8 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
    * The route-local fallback cannot: it only nulls present lateral offset.
    */
   function decideWithDriver(dt: number, driver: TurboOpponentDriver, playerSignedOffset = 0, playerProgress = 0): TurboOpponentInput {
+    const wrappedPlayerGap = wrappedGap(playerProgress, snapshot.progress);
+    const lateRace = snapshot.lap >= 3 || playerProgress > 0.55;
     const yieldDecision = config.yieldEnabled === false
       ? {
         preferredSignedOffset: 0,
@@ -187,14 +196,38 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
         mode: "racing-line" as const
       }
       : decideTurboOpponentYield({
-        wrappedPlayerGap: wrappedGap(playerProgress, snapshot.progress),
+        wrappedPlayerGap,
         playerSignedOffset,
         opponentSignedOffset: snapshot.signedTrackOffset,
         legalPassingOffset: config.legalPassingOffset ?? 0.06,
         ...(config.maxAsphaltOffset === undefined ? {} : { maxAsphaltOffset: config.maxAsphaltOffset })
       });
-    lastPreferredSignedOffset = yieldDecision.preferredSignedOffset;
+    let preferredSignedOffset = yieldDecision.preferredSignedOffset;
     lastYielding = yieldDecision.yielding;
+    lastDefending = lateRace
+      && !yieldDecision.yielding
+      && wrappedPlayerGap > -0.06
+      && wrappedPlayerGap < 0.018;
+    if (lastDefending) {
+      const defendSide: "left" | "right" = playerSignedOffset > 0.008 ? "right" : "left";
+      const cap = config.maxAsphaltOffset ?? Math.abs(preferredSignedOffset);
+      preferredSignedOffset = defendSide === "left" ? cap * 0.42 : -cap * 0.42;
+    }
+
+    const driverTelemetry = config.driver?.telemetry() ?? {};
+    const lookAheadCurvature = Number((driverTelemetry as { readonly upcomingCurvature?: number }).upcomingCurvature ?? 0);
+    const missedApex = lateRace
+      && Math.abs(lookAheadCurvature) > 0.55
+      && Math.abs(snapshot.signedTrackOffset) > (config.legalPassingOffset ?? 0.06) * 0.85
+      && Math.abs(snapshot.speed) > config.maxSpeed * 0.62;
+    if (missedApex) {
+      const seeded = seededUnit(dramaSeed, snapshot.progress, snapshot.lap);
+      apexErrorSeconds = Math.max(apexErrorSeconds, 0.12 + seeded * 0.22);
+    } else {
+      apexErrorSeconds = Math.max(0, apexErrorSeconds - dt);
+    }
+
+    lastPreferredSignedOffset = preferredSignedOffset;
     const decision = driver.decide(dt, {
       progress: snapshot.progress,
       speed: snapshot.speed,
@@ -202,14 +235,15 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       signedTrackOffset: snapshot.signedTrackOffset,
       position: snapshot.position,
       offTrack: snapshot.offTrack,
-      preferredSignedOffset: yieldDecision.preferredSignedOffset
+      preferredSignedOffset
     });
-    lastTargetSpeed = Number(driver.telemetry().targetSpeed ?? lastTargetSpeed);
+    const telemetryTarget = Number(driver.telemetry().targetSpeed ?? lastTargetSpeed);
+    const apexPenalty = apexErrorSeconds > 0 ? Math.max(0.55, 1 - apexErrorSeconds * 1.8) : 1;
+    lastTargetSpeed = telemetryTarget * apexPenalty;
+    const speedShortfall = Math.abs(snapshot.speed) < lastTargetSpeed - 0.025;
     return {
-      // The racing kit takes boolean throttle/brake; a proportional decision is
-      // applied above a deadband so light corrections do not chatter the pedals.
-      throttle: decision.throttle > 0.08,
-      brake: decision.brake > 0.08,
+      throttle: speedShortfall && decision.throttle > 0.08,
+      brake: !speedShortfall && (decision.brake > 0.08 || apexErrorSeconds > 0.08),
       steer: round(decision.steer)
     };
   }
@@ -242,6 +276,8 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       lastTargetSpeed = config.maxSpeed * cruiseRatio;
       lastPreferredSignedOffset = 0;
       lastYielding = false;
+      lastDefending = false;
+      apexErrorSeconds = 0;
       recentDecisions.length = 0;
       config.driver?.reset();
       snapshot = state.reset(config.startProgress);
@@ -263,6 +299,8 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
         recentDecisions: recentDecisions.slice(),
         preferredSignedOffset: round(lastPreferredSignedOffset),
         yielding: lastYielding,
+        defending: lastDefending,
+        apexErrorSeconds: round(apexErrorSeconds),
         offTrack: snapshot.offTrack,
         signedTrackOffset: round(snapshot.signedTrackOffset),
         onAsphalt: config.bodyHalfWidth !== undefined && config.visualAsphaltHalfWidth !== undefined
@@ -299,4 +337,9 @@ function clamp(value: number, min: number, max: number): number {
 
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
+}
+
+function seededUnit(seed: number, progress: number, lap: number): number {
+  const mixed = Math.sin(seed * 0.017 + progress * 41.3 + lap * 7.9) * 43758.5453;
+  return mixed - Math.floor(mixed);
 }

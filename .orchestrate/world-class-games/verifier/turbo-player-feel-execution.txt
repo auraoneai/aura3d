@@ -1,0 +1,28 @@
+# turbo-player-feel verifier execution log
+# branch: orch/world-class-games/turbo-player-feel
+# date: 2026-08-17
+
+## vitest (scoped suite)
+Command: pnpm exec vitest run tests/unit/apps/turbo-telemetry-coherence.test.ts tests/unit/apps/turbo-sixty-second-race.test.ts tests/unit/apps/turbo-passing-lane.test.ts tests/unit/apps/turbo-player-feel.test.ts
+Result: 4 files passed, 20 tests passed
+
+## typecheck
+Command (scoped goal): pnpm --filter @aura3d/showcase-turbo-drift-circuit typecheck
+Result: No projects matched the filters in "/workspace" (apps/ not in pnpm-workspace.yaml)
+
+Command (equivalent): cd apps/showcase-turbo-drift-circuit && pnpm typecheck
+Result: pass (tsc -p tsconfig.json --noEmit)
+
+## live UI attempt
+Command: pnpm dev in apps/showcase-turbo-drift-circuit + Playwright headless
+Result: blocked — Vite 500 resolving @aura3d/physics-rapier; pnpm build also fails same resolver
+Panel DOM never populated in browser session
+
+## source audit highlights
+- No three / GLTFLoader / production-runtime imports in app src
+- game-geometry.ts unchanged vs main
+- route-health.json, showcase-gameplay-proof.spec.ts unchanged vs main
+- index.html aria-label: "Race controls and HUD" (not evidence)
+- debug-section hidden unless ?debug=1 (hud.ts renderTurboHudPanel)
+- classification prototype-blocked in route-health.json (unchanged)
+- no visualReviewPass in app src; race-proof provesMountedKitPlayback: false preserved

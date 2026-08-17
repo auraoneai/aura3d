@@ -24,6 +24,25 @@ import { assets } from "../../../src/aura-assets";
 import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
 import { createTurboOpponentAi } from "./opponent-ai";
+import { TURBO_AUDIO_CUE_WISHLIST } from "./audio-cues";
+import {
+  advanceStartLights,
+  canSimulateRace,
+  createRaceSessionState,
+  maybeAwardHairpinNitro,
+  nitroSpeedMultiplier,
+  resetRaceSession,
+  togglePause,
+  updateFinishCameraBlend,
+  updateNitro,
+  updateRaceSessionTiming,
+  type RaceSessionState
+} from "./feel";
+import {
+  bindTurboHudElements,
+  renderTurboHudPanel,
+  updateTurboHud
+} from "./hud";
 import {
   measureTurboPassingLane,
   turboBodyOnAsphalt,
@@ -255,6 +274,15 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
 // makes the target-yaw chase camera orbit into the infield.
 const recoveryHeadingLimit = Math.PI / 90;
 
+const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+const accessibilitySettings = game.accessibility.settings([
+  game.accessibility.reducedMotion()
+]);
+const reducedMotion = accessibilitySettings.reducedMotion;
+const runtimeEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: false });
+let raceSession: RaceSessionState = createRaceSessionState();
+let driftSmokeFrame = 0;
+
 const input = game.input({
   actions: {
     throttle: ["KeyW", "ArrowUp"],
@@ -262,6 +290,7 @@ const input = game.input({
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
     drift: ["Space", "ShiftLeft"],
+    pause: ["KeyP", "Escape"],
     reset: ["KeyR"]
   },
   axes: {
@@ -404,6 +433,7 @@ const opponentAi = createTurboOpponentAi(opponentState, {
   bodyHalfWidth: passingLane.opponentRenderedWidth / 2,
   visualAsphaltHalfWidth: turboVisualAsphaltWidth(routeWidth) / 2,
   yieldEnabled: !collisionReviewCamera,
+  dramaSeed: 20260817,
   // The route-local controller is retained only as the state container; every
   // decision now comes from the reusable driver.
   driver: opponentDriver
@@ -701,6 +731,21 @@ let opponentChassisPose = opponentChassis.reset({
 const chaseDistance = Math.max(heroFraming.distance, CAR_SCENE_HEIGHT * 5.2);
 const chaseHeight = Math.max(heroFraming.height, CAR_SCENE_HEIGHT * 2.1);
 const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
+type MutableChaseCamera = { distance: number; height: number; sideOffset: number };
+const chaseCameraTuning: MutableChaseCamera = {
+  distance: collisionReviewCamera ? chaseDistance * 0.2 : chaseDistance,
+  height: collisionReviewCamera ? chaseHeight * 1.3 : chaseHeight,
+  sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset
+};
+function syncChaseCamera(finishBlend = 0): void {
+  const heroDistance = chaseDistance * (1 + finishBlend * 0.42);
+  const heroHeight = chaseHeight * (1 + finishBlend * 0.28);
+  const heroSide = heroFraming.sideOffset * (1 + finishBlend * 1.35);
+  chaseCameraTuning.distance = collisionReviewCamera ? chaseDistance * 0.2 : finishBlend > 0.001 ? heroDistance : chaseDistance;
+  chaseCameraTuning.height = collisionReviewCamera ? chaseHeight * 1.3 : finishBlend > 0.001 ? heroHeight : chaseHeight;
+  chaseCameraTuning.sideOffset = collisionReviewCamera ? chaseDistance * -1.5 : finishBlend > 0.001 ? heroSide : heroFraming.sideOffset;
+  Object.assign(racingCamera as unknown as MutableChaseCamera, chaseCameraTuning);
+}
 // Keep the complete near-circuit decision space inside the chase frame. At 52°
 // the player still read well, but the projected track occupied 83.7% of the
 // viewport and correctly failed the public composition gate as a proof-harness
@@ -744,12 +789,9 @@ setupRacingPanel();
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   scene: scene()
-    .background("#5f9fc0")
-    // Neutral generated HDR lighting preserves the texture's red/white/graphite palette
-    // and gives the bodywork readable broad reflections. Ambient lights alone provide a
-    // flat procedural gradient; the studio environment is the supported root API for a
-    // material-bearing hero that needs reflection definition in every camera heading.
-    .add(environments.studio({ name: "circuit neutral daylight reflections", intensity: 1.08, color: "#fff8ee" }))
+    .background("#6a8fa8")
+    // Late-afternoon key: warmer body reflections with a cooler distant grade.
+    .add(environments.studio({ name: "circuit late afternoon reflections", intensity: 1.12, color: "#ffe8cc" }))
     // The chase camera yaws with the car, so the sky is the scene background
     // rather than a finite wall whose edge would swing into frame. A distant
     // treeline band plus fog grade the ground into that sky.
@@ -841,19 +883,33 @@ const app = createAuraApp("#app", {
     // for the distances involved, which is why the frame read as near-night.
     .add(effects.fog({
       name: "circuit distance atmosphere",
-      color: "#93b6cc",
-      density: Number((0.032 * (5.4 / SCENE_SIZE)).toFixed(5)),
-      intensity: 0.32
+      color: "#7a9eb8",
+      density: Number((0.028 * (5.4 / SCENE_SIZE)).toFixed(5)),
+      intensity: 0.36
     }))
-    .add(lights.ambient({ name: "circuit sky fill", color: "#fff4e8", intensity: 1.08 }))
-    .add(lights.directional({ name: "circuit daylight key", color: "#fff1dc", intensity: 2.15 })
+    .add(lights.ambient({ name: "circuit sky fill", color: "#fff0dc", intensity: 1.02 }))
+    .add(lights.directional({ name: "circuit daylight key", color: "#ffd8a8", intensity: 2.35 })
       .position(-0.83 * SCENE_SIZE, 1.2 * SCENE_SIZE, 0.65 * SCENE_SIZE))
-    .add(lights.directional({ name: "circuit cool rim", color: "#d8ebff", intensity: 0.92 })
+    .add(lights.directional({ name: "circuit cool rim", color: "#c8dff5", intensity: 0.88 })
       .position(0.65 * SCENE_SIZE, 0.59 * SCENE_SIZE, -0.56 * SCENE_SIZE))
-    .add(lights.point({ name: "pit lane warm fill", color: "#ffd9b8", intensity: 0.34 })
+    .add(lights.point({ name: "pit lane warm fill", color: "#ffcfa0", intensity: 0.42 })
       .position(0.44 * SCENE_SIZE, 0.15 * SCENE_SIZE, -0.33 * SCENE_SIZE))
-    .add(lights.point({ name: "start line daylight fill", color: "#d9efff", intensity: 0.28 })
-      .position(-0.33 * SCENE_SIZE, 0.13 * SCENE_SIZE, 0.3 * SCENE_SIZE))
+    .add(lights.point({ name: "start line red glow", color: "#ff6b5a", intensity: 0.18 })
+      .position(-0.33 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.3 * SCENE_SIZE))
+    .add(lights.point({ name: "start line green glow", color: "#8dffb8", intensity: 0.12 })
+      .position(-0.28 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.34 * SCENE_SIZE))
+    .add(primitives.sphere({
+      name: "left drift smoke",
+      material: material.pbr({ name: "left tyre smoke", color: "#d8dde0", roughness: 0.95, metallic: 0, opacity: 0.42 })
+    }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-smoke", {
+      tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
+    })))
+    .add(primitives.sphere({
+      name: "right drift smoke",
+      material: material.pbr({ name: "right tyre smoke", color: "#d8dde0", roughness: 0.95, metallic: 0, opacity: 0.42 })
+    }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-smoke", {
+      tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
+    })))
     .camera(racingCamera)
 });
 
@@ -869,6 +925,8 @@ const rightDriftRibbons = [
   app.nodes.require("racing-right-drift-ribbon-middle"),
   app.nodes.require("racing-right-drift-ribbon-far")
 ] as AuraRuntimeNodeHandle[];
+const leftDriftSmoke = app.nodes.require("racing-left-drift-smoke");
+const rightDriftSmoke = app.nodes.require("racing-right-drift-smoke");
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "racing",
@@ -923,13 +981,7 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   },
   configurable: true
 });
-const hud = {
-  speed: requireElement("speed-value"),
-  lap: requireElement("lap-value"),
-  checkpoint: requireElement("checkpoint-value"),
-  status: requireElement("status-value"),
-  alignment: requireElement("alignment-value")
-};
+const hud = bindTurboHudElements();
 const routeProof = {
   routeAlignedToVisibleTrack: true,
   noDebugLocatorDisk: true,
@@ -1047,7 +1099,7 @@ const mountedEvidence = {
   schema: "aura3d-showcase-compiled-racing-route/1.0",
   appId: "showcase-turbo-drift-circuit",
   status: "ready",
-  controls: { keyboard: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyR"] },
+  controls: { keyboard: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyP", "Escape", "KeyR"] },
   systems: {
     input: "game.input",
     simulation: "game.racing",
@@ -1186,6 +1238,10 @@ const mountedEvidence = {
     finishProgression: false,
     opponentMovesIndependently: false,
     playerOvertookOpponent: false,
+    pauseFreezesBothCars: false,
+    countdownBeforeMotion: false,
+    resultCardAfterFinish: false,
+    audioCueWishlist: TURBO_AUDIO_CUE_WISHLIST,
     passingLane,
     authoredLapSeconds,
     routeAlignedToVisibleTrack: true,
@@ -1204,7 +1260,7 @@ const mountedEvidence = {
   diagnostics: app.diagnostics()
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { value: mountedEvidence, configurable: true, writable: true });
-updateRacingHud();
+updateTurboHudPanel();
 
 app.onFrame(({ dt }) => {
   // Freeze the complete solved state—not only the timer—while the evidence producer
@@ -1212,6 +1268,40 @@ app.onFrame(({ dt }) => {
   // briefly clear and re-enter the manifold, manufacturing a second impact on release.
   if ((collisionReviewContactHeld && vehicleImpactResponses > 0) || collisionReviewReactionHeld) return;
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+  input.update(step);
+  if (input.pressed("pause") && raceSnapshot.status !== "finished") {
+    raceSession = togglePause(raceSession);
+    updateTurboHudPanel();
+    return;
+  }
+  if (raceSession.paused) {
+    updateTurboHudPanel();
+    return;
+  }
+
+  const throttleHeld = input.held("throttle");
+  const driftHeld = input.held("drift");
+  if (!raceSession.startLights.complete) {
+    raceSession = {
+      ...raceSession,
+      startLights: advanceStartLights(
+        raceSession.startLights,
+        step,
+        throttleHeld || driftHeld
+      )
+    };
+  }
+  raceSession = updateFinishCameraBlend(raceSession, step, raceSnapshot.status === "finished");
+  raceSession = updateNitro(raceSession, step);
+  raceSession = updateRaceSessionTiming(raceSession, step, raceSnapshot.status === "finished", raceSnapshot.time);
+
+  if (!canSimulateRace(raceSession, raceSnapshot.status === "finished")) {
+    mountedEvidence.gameplay.countdownBeforeMotion = !raceSession.startLights.complete;
+    mountedEvidence.diagnostics = app.diagnostics();
+    updateTurboHudPanel();
+    return;
+  }
+
   edgeRecoverySeconds = Math.max(0, edgeRecoverySeconds - step);
   vehicleImpactRecoverySeconds = Math.max(0, vehicleImpactRecoverySeconds - step);
   const vehicleHitStopActive = vehicleHitStopSeconds > 0
@@ -1220,9 +1310,10 @@ app.onFrame(({ dt }) => {
   if (!(collisionReviewContactHeld && vehicleImpactResponses > 0)) {
     vehicleHitStopSeconds = Math.max(0, vehicleHitStopSeconds - step);
   }
-  input.update(step);
   if (input.pressed("reset")) {
     raceSnapshot = racingState.reset(0);
+    raceSession = resetRaceSession(raceSession);
+    runtimeEffects.clear();
     opponentRaceStarted = false;
     vehicleContactWasActive = false;
     vehicleImpactRecoverySeconds = 0;
@@ -1279,6 +1370,7 @@ app.onFrame(({ dt }) => {
     opponentContactBody.setPosition([resetOpponentPose.position[0], 0, resetOpponentPose.position[2]]);
     opponentContactBody.setRotation(yawQuaternion(resetOpponentPose.rotation[1]));
     opponentContactBody.setVelocity([0, 0, 0]);
+    syncChaseCamera(0);
     const resetOpponentAsphalt = asphaltAlignment(resetOpponent.signedTrackOffset, opponentBodyHalfWidth);
     mountedEvidence.opponent = {
       ...opponentAi.evidence(raceSnapshot.progress),
@@ -1290,14 +1382,15 @@ app.onFrame(({ dt }) => {
       outerEdge: resetOpponentAsphalt.outerEdge,
       visualAsphaltHalfWidth: resetOpponentAsphalt.visualAsphaltHalfWidth
     };
-    updateRacingHud();
+    updateTurboHudPanel();
     return;
   }
   const previous = raceSnapshot;
   const previousOpponent = opponentAi.snapshot();
-  opponentRaceStarted ||= input.held("throttle") || input.held("brake") || Math.abs(input.axis("steer")) > 0.01;
+  opponentRaceStarted ||= raceSession.startLights.complete;
+  const nitroMultiplier = nitroSpeedMultiplier(raceSession);
   raceSnapshot = vehicleHitStopActive && vehicleHitStopPlayerPoint
-    ? racingState.resolveContact(vehicleHitStopPlayerPoint, { speedMultiplier: 1, driftMultiplier: 1 })
+    ? racingState.resolveContact(vehicleHitStopPlayerPoint, { speedMultiplier: nitroMultiplier, driftMultiplier: 1 })
     : racingState.step(step, {
       // A hard rear impact interrupts drive torque briefly. Without this recovery
       // window, held throttle immediately erased the speed loss on the next frame and
@@ -1309,6 +1402,12 @@ app.onFrame(({ dt }) => {
       drift: input.held("drift"),
       steer: input.axis("steer")
     });
+  if (nitroMultiplier > 1 && raceSnapshot.speed > 0.01) {
+    raceSnapshot = racingState.resolveContact(raceSnapshot.position, {
+      speedMultiplier: nitroMultiplier,
+      driftMultiplier: 1
+    });
+  }
   const steppedOffTrack = raceSnapshot.offTrack
     || raceSnapshot.events.some((event) => event.type === "off-track");
   let opponent = vehicleHitStopActive && vehicleHitStopOpponentPoint
@@ -1569,6 +1668,43 @@ app.onFrame(({ dt }) => {
         .setVisible(driftVisible);
     });
   }
+  const playerAsphalt = asphaltAlignment(raceSnapshot.signedTrackOffset, playerBodyHalfWidth);
+  const driftSmokeVisible = driftVisible && playerAsphalt.onAsphalt && !reducedMotion;
+  const smokeScale = 0.08 + driftAmount * speedFraction * 0.16;
+  for (const [smoke, side] of [[leftDriftSmoke, -1], [rightDriftSmoke, 1]] as const) {
+    const rearX = playerPose.position[0] - Math.cos(heading) * (rearAxleOffset + tireExitGap * 0.4);
+    const rearZ = playerPose.position[2] - Math.sin(heading) * (rearAxleOffset + tireExitGap * 0.4);
+    smoke
+      .setPosition(rearX + sideX * side, playerPose.position[1] + 0.02, rearZ + sideZ * side)
+      .setScale(driftSmokeVisible ? [smokeScale, smokeScale * 0.55, smokeScale] : [0.001, 0.001, 0.001])
+      .setVisible(driftSmokeVisible);
+  }
+  if (driftSmokeVisible) {
+    driftSmokeFrame += 1;
+    if (driftSmokeFrame % 3 === 0) {
+      for (const side of [-1, 1] as const) {
+        const rearX = playerPose.position[0] - Math.cos(heading) * (rearAxleOffset + tireExitGap * 0.35);
+        const rearZ = playerPose.position[2] - Math.sin(heading) * (rearAxleOffset + tireExitGap * 0.35);
+        runtimeEffects.groundDust(
+          [rearX + sideX * side, playerPose.position[1] + 0.03, rearZ + sideZ * side],
+          { ownerId: "racing-player-car", intensity: 0.35 + driftAmount * 0.35, duration: 0.22, color: "#d8dde0" }
+        );
+      }
+    }
+  } else {
+    driftSmokeFrame = 0;
+  }
+  runtimeEffects.update(step);
+  const surfaceSample = racingLine.query(raceSnapshot.position);
+  raceSession = maybeAwardHairpinNitro({
+    session: raceSession,
+    driftVisible,
+    onAsphalt: playerAsphalt.onAsphalt,
+    progress: raceSnapshot.progress,
+    curvature: surfaceSample.curvature
+  });
+  const finishBlend = raceSession.finishCameraBlend;
+  syncChaseCamera(finishBlend);
   const opponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
   const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
   opponentChassisPose = opponentChassis.step(step, {
@@ -1728,46 +1864,21 @@ app.onFrame(({ dt }) => {
     playerLeadHoldSeconds = 0;
   }
   mountedEvidence.gameplay.playerOvertookOpponent ||= playerLeadHoldSeconds >= 0.45;
+  mountedEvidence.gameplay.pauseFreezesBothCars ||= raceSession.paused;
+  mountedEvidence.gameplay.countdownBeforeMotion ||= raceSession.startLights.complete;
+  mountedEvidence.gameplay.resultCardAfterFinish ||= raceSnapshot.status === "finished" && finishBlend > 0.35;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   recordRacingKitEvents(raceSnapshot.events);
   if (raceSnapshot.status === "finished") mountedEvidence.kitContractProof.finishedStatus = "finished";
   mountedEvidence.diagnostics = app.diagnostics();
-  updateRacingHud();
+  updateTurboHudPanel();
 });
 
 function setupRacingPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) return;
-  panel.innerHTML = `
-    <header class="race-brand">
-      <span class="panel__label"><i aria-hidden="true"></i> Tsukuba velocity trial</span>
-      <h1>Turbo Drift Circuit</h1>
-      <p class="panel__lede">Arcade handling. Four laps, six gates, one rival—carry speed through the apex and break the line.</p>
-    </header>
-    <section class="metrics-row" aria-label="Live race metrics">
-      <article class="metric metric--speed"><span>Speed · km/h</span><strong id="speed-value">0</strong></article>
-      <article class="metric"><span>Lap</span><strong id="lap-value">1</strong></article>
-      <article class="metric"><span>Gate</span><strong id="checkpoint-value">0</strong></article>
-      <article class="metric metric--status"><span>Race</span><strong id="status-value">Ready</strong></article>
-    </section>
-    <section class="track-contract" aria-label="Track contract">
-      <span id="alignment-status" class="contract-status" data-state="locked"><i aria-hidden="true"></i><strong id="alignment-value">Road locked</strong></span>
-      <p>The circuit and racing line share the certified mesh topology.</p>
-    </section>
-    <section class="race-controls" aria-label="Race controls">
-      <h2>Drive</h2>
-      <div class="control-cluster">
-        <button id="throttle-control" type="button"><b aria-hidden="true">↑</b><span>Throttle</span></button>
-        <button id="brake-control" type="button"><b aria-hidden="true">↓</b><span>Brake</span></button>
-        <button id="left-control" type="button"><b aria-hidden="true">←</b><span>Left</span></button>
-        <button id="right-control" type="button"><b aria-hidden="true">→</b><span>Right</span></button>
-        <button id="drift-control" type="button"><b aria-hidden="true">◆</b><span>Drift</span></button>
-        <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
-      </div>
-      <ul class="controls-list"><li><kbd>W S</kbd> Drive</li><li><kbd>A D</kbd> Steer</li><li><kbd>Space</kbd> Drift</li><li><kbd>R</kbd> Reset</li></ul>
-    </section>`;
-  // Reusable binding layer; see the note in Skyline's panel setup for why this was extracted.
+  panel.innerHTML = renderTurboHudPanel(debugMode);
   bindGameTouchControls({
     hold: [
       { elementId: "throttle-control", code: "KeyW" },
@@ -1779,36 +1890,22 @@ function setupRacingPanel(): void {
     pulse: [{ elementId: "reset-control", code: "KeyR" }]
   });
 }
-/**
- * Displayed race status.
- *
- * WS-5.3: the reported live-site defect was `SPEED 0` alongside `STATUS running`, which reads as a
- * broken simulation. It is not one — the HUD and the simulation share a single snapshot object, so
- * they cannot disagree. `game.racing`'s status is a two-state enum (`running` | `finished`) that
- * describes whether the *race* is over, and it is `running` from the first frame. A car nobody has
- * touched therefore correctly reports 0 km/h while correctly reporting `running`.
- *
- * The defect is that "running" is the wrong word for "nobody has pressed anything yet". Distinguish
- * the two here, in presentation, rather than adding a third state to the kit: whether a race has
- * received input is a property of this route's session, not of the racing model.
- */
-function racingStatusLabel(): string {
-  if (raceSnapshot.status === "finished") return "Finished";
-  // `opponentRaceStarted` is already the route's "has the player touched the controls" latch.
-  if (!opponentRaceStarted && Math.abs(raceSnapshot.speed) < 0.01) return "Ready";
-  return "Racing";
+
+function updateTurboHudPanel(): void {
+  const opponentProgress = opponentAi.snapshot().progress;
+  const alignment = roadAlignmentForSnapshot(raceSnapshot);
+  updateTurboHud(hud, {
+    snapshot: raceSnapshot,
+    session: raceSession,
+    opponentProgress,
+    routeLength: routeLineLength,
+    referenceSpeed: gameplayMaxSpeed,
+    onAsphalt: alignment.onAsphalt,
+    recoveryVisible: mountedEvidence.renderedFeedback.recoveryVisible === true,
+    debugMode
+  });
 }
 
-function updateRacingHud(): void {
-  hud.speed.textContent = String(Math.round(Math.abs(raceSnapshot.speed) * 36));
-  hud.lap.textContent = String(raceSnapshot.lap);
-  hud.checkpoint.textContent = `${Math.min(raceSnapshot.checkpoint, raceSnapshot.checkpointCount)} / ${raceSnapshot.checkpointCount}`;
-  hud.status.textContent = racingStatusLabel();
-  const recoveryVisible = mountedEvidence.renderedFeedback.recoveryVisible === true;
-  hud.alignment.textContent = recoveryVisible ? "Edge assist" : "Road locked";
-  const alignmentStatus = document.getElementById("alignment-status");
-  if (alignmentStatus) alignmentStatus.dataset.state = recoveryVisible ? "recovering" : "locked";
-}
 function requireElement(id: string): HTMLElement {
   const element = document.getElementById(id);
   if (!element) throw new Error("Missing element #" + id);

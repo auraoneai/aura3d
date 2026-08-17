@@ -1,0 +1,202 @@
+{
+  "rootSlug": "world-class-games",
+  "tasks": [
+    {
+      "name": "turbo-player-feel",
+      "type": "worker",
+      "branch": "orch/world-class-games/turbo-player-feel",
+      "startingRef": "cursor/world-class-games-47de",
+      "dependsOn": [],
+      "agentId": "bc-62ab10ab-4ed7-480a-9715-b09bb73eea36",
+      "runId": "run-3ec0292a-d0ae-46a9-b198-4692c6c50829",
+      "parentAgentId": "bc-4f7217ad-0371-495d-9557-f387e85547de",
+      "status": "running",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": "2026-08-17T09:59:50.920Z",
+      "finishedAt": null,
+      "lastUpdate": "2026-08-17T09:59:59.716Z",
+      "note": "respawned by self-planner (was error; attempts=2)",
+      "attempts": 3,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "skyline-player-feel",
+      "type": "worker",
+      "branch": "orch/world-class-games/skyline-player-feel",
+      "startingRef": "cursor/world-class-games-47de",
+      "dependsOn": [],
+      "agentId": "bc-337eb420-3a41-4a3d-99d6-c43dc2ee06bd",
+      "runId": "run-aee26287-4ebe-4a1b-b133-2b1d8779feeb",
+      "parentAgentId": "bc-4f7217ad-0371-495d-9557-f387e85547de",
+      "status": "running",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": "2026-08-17T09:59:59.836Z",
+      "finishedAt": null,
+      "lastUpdate": "2026-08-17T10:00:02.868Z",
+      "note": "respawned by self-planner (was error; attempts=2)",
+      "attempts": 3,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "clash-player-feel",
+      "type": "worker",
+      "branch": "orch/world-class-games/clash-player-feel",
+      "startingRef": "cursor/world-class-games-47de",
+      "dependsOn": [],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "running",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": "2026-08-17T10:00:02.984Z",
+      "finishedAt": null,
+      "lastUpdate": "2026-08-17T10:00:02.984Z",
+      "note": "respawned by self-planner (was error; attempts=2)",
+      "attempts": 3,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "turbo-verify",
+      "type": "verifier",
+      "branch": "orch/world-class-games/turbo-verify",
+      "startingRef": "orch/world-class-games/turbo-player-feel",
+      "dependsOn": [
+        "turbo-player-feel"
+      ],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "skyline-verify",
+      "type": "verifier",
+      "branch": "orch/world-class-games/skyline-verify",
+      "startingRef": "orch/world-class-games/skyline-player-feel",
+      "dependsOn": [
+        "skyline-player-feel"
+      ],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    },
+    {
+      "name": "clash-verify",
+      "type": "verifier",
+      "branch": "orch/world-class-games/clash-verify",
+      "startingRef": "orch/world-class-games/clash-player-feel",
+      "dependsOn": [
+        "clash-player-feel"
+      ],
+      "agentId": null,
+      "runId": null,
+      "parentAgentId": null,
+      "status": "pending",
+      "resultStatus": null,
+      "handoffPath": null,
+      "startedAt": null,
+      "finishedAt": null,
+      "lastUpdate": null,
+      "note": null,
+      "slackTs": null,
+      "prNumber": null,
+      "failureMode": null,
+      "verification": null
+    }
+  ],
+  "attention": [
+    {
+      "at": "2026-08-17T09:57:35.313Z",
+      "message": "turbo-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: [invalid_model] Model 'gpt-5.5' does not match a known variant. Call GET /v1/models to list valid id+params combinations. run `bun cli.ts models --check` to re-probe the catalog against /v1/agents."
+    },
+    {
+      "at": "2026-08-17T09:57:44.259Z",
+      "message": "skyline-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: [invalid_model] Model 'gpt-5.5' does not match a known variant. Call GET /v1/models to list valid id+params combinations. run `bun cli.ts models --check` to re-probe the catalog against /v1/agents."
+    },
+    {
+      "at": "2026-08-17T09:57:53.172Z",
+      "message": "clash-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: [invalid_model] Model 'gpt-5.5' does not match a known variant. Call GET /v1/models to list valid id+params combinations. run `bun cli.ts models --check` to re-probe the catalog against /v1/agents."
+    },
+    {
+      "at": "2026-08-17T09:58:25.718Z",
+      "message": "turbo-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:58:27.193Z",
+      "message": "skyline-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:58:28.677Z",
+      "message": "clash-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:58:33.898Z",
+      "message": "turbo-player-feel: model \"cursor-grok-4.6-high-fast\" not in MODEL_CATALOG (spawning anyway). Run `bun cli.ts models` to see known slugs."
+    },
+    {
+      "at": "2026-08-17T09:58:42.238Z",
+      "message": "turbo-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids."
+    },
+    {
+      "at": "2026-08-17T09:58:42.239Z",
+      "message": "skyline-player-feel: model \"cursor-grok-4.6-high-fast\" not in MODEL_CATALOG (spawning anyway). Run `bun cli.ts models` to see known slugs."
+    },
+    {
+      "at": "2026-08-17T09:58:49.678Z",
+      "message": "skyline-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids."
+    },
+    {
+      "at": "2026-08-17T09:58:49.679Z",
+      "message": "clash-player-feel: model \"cursor-grok-4.6-high-fast\" not in MODEL_CATALOG (spawning anyway). Run `bun cli.ts models` to see known slugs."
+    },
+    {
+      "at": "2026-08-17T09:58:57.031Z",
+      "message": "clash-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids."
+    },
+    {
+      "at": "2026-08-17T09:59:44.275Z",
+      "message": "turbo-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:59:45.776Z",
+      "message": "skyline-player-feel: respawned by self-planner (was error)"
+    },
+    {
+      "at": "2026-08-17T09:59:47.289Z",
+      "message": "clash-player-feel: respawned by self-planner (was error)"
+    }
+  ]
+}

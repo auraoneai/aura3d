@@ -2,25 +2,26 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { game } from "@aura3d/engine";
 import { gameGeometryContract } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
+import { createRaceSessionState, resolveRaceHudStatus } from "../../../apps/showcase-turbo-drift-circuit/src/feel";
 
 /**
  * WS-5.3 / WS-7.3: displayed values must match simulation state.
  *
  * The reported live-site defect was `SPEED 0` shown next to `STATUS running`, which reads as a
  * simulation that has died. Reproducing it first, as the PRD requires, showed it is not a
- * disagreement between two state objects: `updateRacingHud` reads `raceSnapshot`, and
- * `raceSnapshot` is exactly what `racingState.step()` returned on the same frame. There is only one
- * state.
+ * disagreement between two state objects: the HUD reads `raceSnapshot`, and `raceSnapshot` is
+ * exactly what `racingState.step()` returned on the same frame. There is only one state.
  *
  * The real problem is vocabulary. `game.racing`'s status is `running | finished` and describes
  * whether the *race* is over, so it is `running` from frame zero. A car nobody has touched is
  * therefore correctly 0 km/h and correctly `running` — and looks broken.
  *
- * Classification: application-authoring / presentation. Fixed in the route's HUD with a
- * `Ready` / `Racing` / `Finished` label rather than by adding a third state to the kit, because
+ * Classification: application-authoring / presentation. Fixed in the route HUD with a
+ * `Lights` / `Racing` / `Finished` label rather than by adding a third state to the kit, because
  * "has the player pressed anything" is a property of a session, not of the racing model.
  */
 const SOURCE = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
+const HUD_SOURCE = readFileSync("apps/showcase-turbo-drift-circuit/src/hud.ts", "utf8");
 
 function buildRacing() {
   const contract = gameGeometryContract;
@@ -76,19 +77,15 @@ describe("turbo drift telemetry is coherent with simulation", () => {
      */
     const code = SOURCE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
     expect(code).toMatch(/raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/);
-    expect(code).toMatch(/hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/);
+    expect(HUD_SOURCE).toMatch(/Math\.round\(Math\.abs\(input\.snapshot\.speed\)/);
   });
 
   it("the HUD does not label an untouched car as racing", () => {
-    // The actual fix. "running" is right for the race and wrong for an idle car.
-    const code = SOURCE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-    expect(code).toContain("function racingStatusLabel()");
-    expect(code).toMatch(/hud\.status\.textContent\s*=\s*racingStatusLabel\(\)/);
-    // Must distinguish all three, not just rename one.
-    for (const label of ['"Ready"', '"Racing"', '"Finished"']) {
-      expect(code, `status label ${label} missing`).toContain(label);
+    expect(resolveRaceHudStatus(createRaceSessionState(), false)).toBe("Lights");
+    expect(HUD_SOURCE).toContain("resolveRaceHudStatus");
+    for (const label of ["Lights", "Racing", "Finished"]) {
+      expect(HUD_SOURCE, `status label ${label} missing`).toContain(label);
     }
-    // And it must not print the raw enum, which is what produced the confusing display.
-    expect(code).not.toMatch(/hud\.status\.textContent\s*=\s*raceSnapshot\.status/);
+    expect(HUD_SOURCE).not.toMatch(/raceSnapshot\.status/);
   });
 });
