@@ -440,6 +440,30 @@ test("AuraClash updates HUD health", async ({ page }) => {
   await expect(page.locator("#toast")).toContainText(/lands|damage/i);
 });
 
+test("AuraClash public HUD keeps names, bars, and round marks without training copy", async ({ page }) => {
+  await loadPlayable(page);
+  await expect(page.locator("#player-name")).toHaveText(/Mara Volt/i);
+  await expect(page.locator("#rival-name")).toHaveText(/Rook Atlas/i);
+  await expect(page.locator("#player-health")).toBeVisible();
+  await expect(page.locator("#player-meter")).toBeVisible();
+  await expect(page.locator("#player-rounds")).toBeVisible();
+  await expect(page.locator("#rival-rounds")).toBeVisible();
+  await expect(page.locator("#combo-flash")).toHaveText("");
+  await expect(page.locator("#player-state")).toBeHidden();
+  await expect(page.locator("#toast")).toBeHidden();
+  const bodyText = ((await page.locator("body").textContent()) ?? "").toLowerCase();
+  expect(bodyText).not.toContain("hitbox");
+  expect(bodyText).not.toContain("hurtbox");
+  expect(bodyText).not.toContain("primitive fighter");
+});
+
+test("AuraClash training numbers appear only on the training query", async ({ page }) => {
+  await loadPlayable(page, "?debug=1");
+  await expect(page.locator("#player-state")).toBeVisible();
+  await expect(page.locator("#player-state")).toContainText("HP");
+  await expect(page.locator("#toast")).toBeVisible();
+});
+
 test("AuraClash supports pause", async ({ page }) => {
   await loadPlayable(page);
   await hold(page, "KeyP", 180);

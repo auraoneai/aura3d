@@ -276,6 +276,26 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(proof.audio?.sfxReady, "flagship route must have SFX readiness proof").toBe(true);
     expect(proof.audio?.enabled, "audio system must be initialized after user gesture or explicitly muted").toBe(true);
   });
+
+  test("fight HUD stays fighter-shaped and volumes stay off in normal play", async ({ page }) => {
+    const source = readFileSync(sourcePath, "utf8");
+    expect(source).toContain("debugVolumesEnabled: false");
+    expect(source).toContain("specialRequiresMeter: true");
+    expect(source).toMatch(/CLASH_INPUT_BUFFER_LIFETIME_MS/);
+
+    const proof = await loadPlayable(page);
+    expect(proof.controls?.specialRequiresMeter).toBe(true);
+    await expect(page.locator("#player-name")).toHaveText(/Mara Volt/i);
+    await expect(page.locator("#rival-name")).toHaveText(/Rook Atlas/i);
+    await expect(page.locator("#combo-flash")).toHaveCount(1);
+    await expect(page.locator("#player-rounds")).toBeVisible();
+    await expect(page.locator("#player-state")).toBeHidden();
+    const bodyText = ((await page.locator("body").textContent()) ?? "").toLowerCase();
+    expect(bodyText).not.toContain("hitbox");
+    expect(bodyText).not.toContain("hurtbox");
+    expect(bodyText).not.toContain("debug");
+    expect(bodyText).not.toContain("primitive fighter");
+  });
 });
 
 async function loadPlayable(page: Page, search = ""): Promise<AuraClashArenaProof> {

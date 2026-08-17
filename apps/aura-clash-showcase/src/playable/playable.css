@@ -347,6 +347,47 @@ input {
   text-transform: uppercase;
 }
 
+.aca-rounds {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.aca-rival-card .aca-rounds {
+  justify-content: flex-end;
+}
+
+.aca-rounds i {
+  display: block;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--aca-teal) 55%, transparent);
+  background: transparent;
+}
+
+.aca-rounds i[data-won="true"] {
+  background: var(--aca-amber);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--aca-amber) 70%, transparent);
+}
+
+.aca-combo-count {
+  display: block;
+  min-block-size: 1.1em;
+  margin-block-start: 8px;
+  color: var(--aca-amber);
+  font-style: normal;
+  font-family: "Saira Condensed", Impact, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.aca[data-training="false"] .aca-training,
+.aca[data-training="false"] .aca-toast {
+  display: none;
+}
+
 .aca-clock {
   display: flex;
   flex-direction: column;
@@ -474,6 +515,10 @@ input {
   text-align: center;
   font-size: 1.4rem;
   font-weight: 950;
+}
+
+.aca-combo:not(:empty) {
+  display: block;
 }
 
 .aca[data-motion="static"] .aca-brand span,
