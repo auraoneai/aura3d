@@ -23,6 +23,7 @@ Controls:
 - `A`/`ArrowLeft`: steer left
 - `D`/`ArrowRight`: steer right
 - `Space` or left `Shift`: drift
+- `P` or `Esc`: pause
 - `R`: reset
 
 The public claim is bounded to authored-unit arcade handling, certified track
