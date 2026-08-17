@@ -61,6 +61,17 @@ import { createArenaTweaksEvidence, collectArenaTweaksState, type AuraClashArena
 import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
 import { assertAuraClashFighterControllerBoundary } from "./combat/AuraClashFighterController";
 import {
+  CLASH_INPUT_BUFFER_LIFETIME_MS,
+  clashHitStopSeconds,
+  comboClockText,
+  comboFlashText,
+  readPlayableHudMode,
+  resolveRivalAiRole,
+  rivalAiStrikeBias,
+  rivalAiWantsDash,
+  type ClashMoveId
+} from "./combat/clashFeel";
+import {
   emptyComboState,
   registerComboHit,
   canCancelCombo,
@@ -380,7 +391,8 @@ const gameWindow = window as AuraClashWindow;
 export function mountAuraClashArenaApp(): void {
   const root = document.querySelector<HTMLDivElement>("#app");
   if (!root) throw new Error("Missing #app");
-  const testDriverEnabled = new URLSearchParams(window.location.search).has("auraTestDriver");
+  const hudMode = readPlayableHudMode(window.location);
+  const testDriverEnabled = hudMode.evidence && new URLSearchParams(window.location.search).has("auraTestDriver");
 
   gameWindow.__AURA_CLASH_VISUAL_REVIEW__ = {
     version: "aura-clash-visual-review/v1",
@@ -420,7 +432,7 @@ export function mountAuraClashArenaApp(): void {
   };
 
   root.innerHTML = `
-    <main class="aca" data-evidence-mode="${testDriverEnabled ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
+    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
       <nav class="aca-nav" aria-label="Aura Clash navigation">
         <h1 class="aca-title"><a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a></h1>
@@ -439,21 +451,24 @@ export function mountAuraClashArenaApp(): void {
           <span>Player one</span>
           <h2 id="player-name">Mara Volt</h2>
           <p>Skinned GLB fighter driven by Aura3D production animation runtime.</p>
+          <div class="aca-rounds" id="player-rounds" aria-label="Player rounds"></div>
           <div class="aca-bar aca-health" data-testid="player-health" aria-label="Player health"><i id="player-health"></i></div>
-          <div class="aca-bar aca-meter"><i id="player-meter"></i></div>
-          <b id="player-state">LOADING - 100 HP</b>
+          <div class="aca-bar aca-meter" aria-label="Player meter"><i id="player-meter"></i></div>
+          <b id="player-state" class="aca-training">LOADING - 100 HP</b>
         </article>
         <article class="aca-clock" data-testid="round-timer" aria-label="Round timer">
           <strong id="round-time">99</strong>
           <span id="callout">LOAD</span>
+          <em id="combo-count" class="aca-combo-count"></em>
         </article>
         <article class="aca-card aca-rival-card">
           <span>Rival AI</span>
           <h2 id="rival-name">Rook Atlas</h2>
           <p>Independent second GLB instance with its own clips, spacing, and hit windows.</p>
+          <div class="aca-rounds" id="rival-rounds" aria-label="Rival rounds"></div>
           <div class="aca-bar aca-health"><i id="rival-health"></i></div>
-          <div class="aca-bar aca-meter"><i id="rival-meter"></i></div>
-          <b id="rival-state">LOADING - 100 HP</b>
+          <div class="aca-bar aca-meter" aria-label="Rival meter"><i id="rival-meter"></i></div>
+          <b id="rival-state" class="aca-training">LOADING - 100 HP</b>
         </article>
       </section>
 
@@ -1303,7 +1318,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const renderStartedAt = performance.now();
     diagnostics = renderer.render(source);
     performanceProof = createPerformanceProof(dt, performance.now() - renderStartedAt, diagnostics.drawCalls);
-    updateHud(root, playerState, rivalState, roundTime, callout, toast);
+    updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
     writeProof({
       root,
       frame,
@@ -1332,7 +1347,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
   setText(root, "#render-status", "Aura3D production GLB animation runtime ready");
   setText(root, "#clip-status", "jab / cross / sword / guard clips bound");
-  updateHud(root, playerState, rivalState, roundTime, callout, toast);
+  updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
   let frameErrorLogged = false;
   gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
   gameApp.onFrame((runtimeFrame) => {
@@ -1399,7 +1414,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         engineCombat: engineCombatProof(combatSnapshot)
       });
       gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
-      updateHud(root, playerState, rivalState, roundTime, callout, toast);
+      updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
     }
   });
   gameApp.start();
@@ -1612,9 +1627,8 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
   return playerWon ? "WIN" : "KO";
 }
 
-// Buffer lifetime must outlive the longest non-actionable window (max hitstun 0.52 s + recovery
-// 0.18 s, knockdown stun) so a press during hitstun/an active attack still fires on wakeup.
-const INPUT_BUFFER_LIFETIME_MS = 800;
+// Fighter-length buffer (6–8 frames). Held buttons still cash in through canUseHeldAttack.
+const INPUT_BUFFER_LIFETIME_MS = CLASH_INPUT_BUFFER_LIFETIME_MS;
 
 function bufferInput(fighter: FighterState, move: MoveId): void {
   if (
@@ -1680,31 +1694,55 @@ function updateRivalAi(
   const distance = Math.abs(gap);
   const direction = gap === 0 ? rival.facing * -1 : Math.sign(gap);
   const opponentAlive = player.health > 0 && player.action !== "ko";
+  const playerAttacking = player.attack !== null;
+  const playerWhiffing = Boolean(
+    (player.attack && player.attack.elapsed >= player.attack.activeEnd && !player.attack.hit) ||
+    (player.recovery > 0 && !player.attack && player.action === "recover")
+  );
+  const role = resolveRivalAiRole({
+    distance,
+    opponentAlive,
+    playerAttacking,
+    playerWhiffing,
+    playerKnockdownRemaining: player.knockdownTimer,
+    playerWakeupInvulnerable: player.invulnerableTimer > 0,
+    playerGrounded: player.grounded
+  });
   const desired = !opponentAlive
     ? 0
-    : player.attack && distance < 1.58
-      ? 0
-      : !player.grounded && distance < 1.35
-        ? -direction
-        : distance > 1.28
-          ? direction
-          : distance < 0.88
-            ? -direction
-            : 0;
-  const canStrike = opponentAlive && rival.grounded && player.grounded && distance >= 0.9 && distance <= 1.28;
-  const playerAttacking = player.attack !== null;
+    : role === "approach"
+      ? direction
+      : role === "space"
+        ? distance < 0.92 ? -direction : 0
+        : role === "punish-whiff" || role === "meaty-wakeup"
+          ? distance > 1.04 ? direction : 0
+          : player.attack && distance < 1.58
+            ? 0
+            : !player.grounded && distance < 1.35
+              ? -direction
+              : distance > 1.28
+                ? direction
+                : distance < 0.88
+                  ? -direction
+                  : 0;
+  const meatyRange = role === "meaty-wakeup" && distance >= 0.82 && distance <= 1.4;
+  const canStrike = opponentAlive && rival.grounded && (player.grounded || role === "meaty-wakeup") && (
+    meatyRange || (distance >= 0.9 && distance <= 1.28)
+  );
   const incomingHeavy = playerAttacking && (player.attack?.id === "heavy" || player.attack?.id === "special");
-  const shouldGuard = opponentAlive && playerAttacking && distance < 1.4 && rival.grounded && !rival.attack;
-  const shouldBackdash = opponentAlive && incomingHeavy && distance < 1.1 && rival.grounded && rival.moveCooldown <= 0 && rival.dashGrace <= 0;
+  const shouldGuard = opponentAlive && playerAttacking && distance < 1.4 && rival.grounded && !rival.attack && role !== "punish-whiff";
+  const shouldDash = opponentAlive && rival.grounded && rival.moveCooldown <= 0 && rival.dashGrace <= 0 &&
+    rivalAiWantsDash(role, distance, incomingHeavy);
   const aggression = rival.health < START_HEALTH * 0.35 ? 0.65 : 1.0;
+  const bias = rivalAiStrikeBias(role);
   updateFighterIntents(rival, desired, {
     down: false,
-    jump: !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
-    dash: shouldBackdash,
+    jump: role !== "meaty-wakeup" && !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
+    dash: shouldDash,
     guard: shouldGuard && !passive,
-    light: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.04 && rng() < aggression,
-    heavy: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82 && rng() < aggression * 0.5,
-    special: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * 0.3
+    light: !passive && canStrike && rival.aiCooldown <= 0 && (role === "meaty-wakeup" || distance < 1.04) && rng() < aggression * bias.light,
+    heavy: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.28 && player.health < START_HEALTH * 0.82 && rng() < aggression * bias.heavy,
+    special: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * bias.special
   }, dt);
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
@@ -2301,7 +2339,7 @@ function fireAttackClipEvents(fighter: RuntimeFighter, audio: AudioRuntime, spar
 }
 
 function moveHitStop(id: MoveId): number {
-  return id === "special" ? 0.13 : id === "heavy" ? 0.075 : 0.052;
+  return clashHitStopSeconds(id as ClashMoveId);
 }
 
 // Hit-stop + impact impulse + spark burst on a confirmed hit. Both fighters freeze their visual pose
@@ -2562,13 +2600,28 @@ function fallbackAudioProof(enabled: boolean): AudioProof {
   };
 }
 
-function updateHud(root: HTMLElement, player: FighterState, rival: FighterState, roundTime: number, callout: string, toast: string): void {
+function updateHud(
+  root: HTMLElement,
+  player: FighterState,
+  rival: FighterState,
+  roundTime: number,
+  callout: string,
+  toast: string,
+  playerScore = 0,
+  rivalScore = 0
+): void {
   setText(root, "#round-time", String(Math.ceil(roundTime)).padStart(2, "0"));
   setText(root, "#callout", callout);
+  setText(root, "#player-name", player.name);
+  setText(root, "#rival-name", rival.name);
   setText(root, "#player-state", `${stateLabel(player)} - ${Math.round(player.health)} HP`);
   setText(root, "#rival-state", `${stateLabel(rival)} - ${Math.round(rival.health)} HP`);
   setText(root, "#toast", toast);
   setText(root, "#clip-status", `${player.clip} / ${rival.clip}`);
+  setText(root, "#combo-count", comboClockText(player.combo.count));
+  setText(root, "#combo-flash", comboFlashText(player.combo.count));
+  setRoundMarks(root, "#player-rounds", playerScore);
+  setRoundMarks(root, "#rival-rounds", rivalScore);
   setBar(root, "#player-health", player.health / START_HEALTH);
   setBar(root, "#rival-health", rival.health / START_HEALTH);
   setBar(root, "#player-meter", player.meter / 100);
@@ -2965,6 +3018,19 @@ function isPressed(input: ReturnType<typeof game.input>, controls: Controls, act
 function isHeld(input: ReturnType<typeof game.input>, controls: Controls, action: keyof typeof actionKeys): boolean {
   void input;
   return controls.held(action);
+}
+
+function setRoundMarks(root: HTMLElement, selector: string, wins: number, max = 2): void {
+  const host = root.querySelector<HTMLElement>(selector);
+  if (!host) return;
+  const marks = Math.max(0, Math.min(max, Math.round(wins)));
+  host.replaceChildren(
+    ...Array.from({ length: max }, (_, index) => {
+      const mark = document.createElement("i");
+      mark.dataset.won = index < marks ? "true" : "false";
+      return mark;
+    })
+  );
 }
 
 function setText(root: HTMLElement, selector: string, value: string): void {
