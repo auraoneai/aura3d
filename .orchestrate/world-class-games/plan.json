@@ -19,7 +19,7 @@
     {
       "name": "turbo-player-feel",
       "type": "worker",
-      "model": "gpt-5.5-high-fast",
+      "model": "cursor-grok-4.6-high-fast",
       "openPR": true,
       "maxAttempts": 2,
       "scopedGoal": "Upgrade existing Turbo Drift Circuit in apps/showcase-turbo-drift-circuit/ so it plays as an arcade race, not a driving proof. Read .orchestrate/world-class-games/refs/baseline.md and .orchestrate/world-class-games/refs/turbo-drift.md first and follow them. Keep typed cars, Tsukuba topology, four laps, six gates, Rapier contact, on-asphalt passing, chase framing, drift input, R reset, window.__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__, passing-lane.ts contracts, and race-proof.ts provesMountedKitPlayback:false. Do not hand-edit src/generated/game-geometry.ts. Do not run assets add or edit root src/aura-assets.ts, aura.assets.json, or public/aura-assets. Do not import three or production-runtime. Do not claim world-class, flagship, physical tyres, or flip classification. Implement: (1) player HUD vs debug — speed, lap 2/4, gate, gap to rival (+0.42s / P1/P2), last/best lap, status Lights/Racing/Finished; hide Road locked / Edge assist / alignment telemetry behind ?debug=1; off-track reads Off track; change aside aria-label so it is not evidence; (2) 3-2-1-GO start lights — input buffered, cars do not move until GO, jumping lights is a small time penalty; (3) pause on P/Esc freezes both cars, AI, and Rapier; R reset restores lights, laps, rival, camera; (4) late-race rival drama inside createTurboOpponentAi (defend inside when close, leave a passing lane when yielded, small seeded speed error after a missed apex) without breaking playerOvertookOpponent or on-asphalt pass; (5) drift commitment + existing ribbons + game.effects tyre smoke/dust only while drifting on asphalt, hidden in reduced motion; optional short arcade nitro after a clean hairpin; (6) finish camera 3/4 hero shot + result card (time, best lap, position); (7) late-afternoon lighting (warmer key, cooler fog, start-light glow) without fake shadow boxes. Update tests/unit/apps/turbo-telemetry-coherence.test.ts if Ready becomes Lights. Add tests/unit/apps/turbo-player-feel.test.ts for countdown-before-motion, pause-freezes-both-cars, result-card-after-finish, reset-restores-lights. Run: pnpm exec vitest run tests/unit/apps/turbo-telemetry-coherence.test.ts tests/unit/apps/turbo-sixty-second-race.test.ts tests/unit/apps/turbo-passing-lane.test.ts tests/unit/apps/turbo-player-feel.test.ts and pnpm --filter @aura3d/showcase-turbo-drift-circuit typecheck. Do not edit tests/browser/showcase-gameplay-proof.spec.ts or tests/reports/**. Leave an audio cue wishlist in the handoff for a later CLI wave.",
@@ -69,7 +69,7 @@
     {
       "name": "skyline-player-feel",
       "type": "worker",
-      "model": "gpt-5.5-high-fast",
+      "model": "cursor-grok-4.6-high-fast",
       "openPR": true,
       "maxAttempts": 2,
       "scopedGoal": "Upgrade existing Skyline Runner in apps/showcase-skyline-runner/ so it plays as a five-act journey, not a strip you prove. Read .orchestrate/world-class-games/refs/baseline.md and .orchestrate/world-class-games/refs/skyline-runner.md first and follow them. Keep five acts, ten districts, 95s authored / 70–115s finish window, typed hero + world, mesh surfaces, coins, ember volleys, sentries, dash, coyote, checkpoints, createSkylineLevel() as single level owner, window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__, settleSubjectPose(), and level-proof.ts provesMountedKitPlayback:false. Do not hand-edit src/generated/game-geometry.ts. Do not run assets add or edit root src/aura-assets.ts. Do not import three or production-runtime. Do not claim world-class or flip classification. Implement: (1) player HUD — score, coins, ember stock, current act title, checkpoint pips, lives/retries; hide raw x, surface IDs, Grounded/Airborne, and raw challenge multipliers unless ?debug=1; public layout must not show raw x; change aside aria-label so it is not evidence; (2) per-act scene palettes via planSkyBackdrop / blendSkyBandColor already imported — Home Grove warm gold-green, Broken Canopy stormier, Sentry Pass colder steel, Cloudstep Rise cooler lift, Aurora Crown dusk magenta/teal; (3) sentry face + idle + 0.4–0.6s telegraph before intercept; defeat is hide + game.effects burst + score pop; do not grow collision boxes; (4) ember volley muzzle/travel/impact in-scene, visible deny when stock empty; collectibles glitter in-scene; (5) summit beacon as a designed silhouette (plinth + mast + emissive core) if no catalog prop is already in the typed map — do not invent asset IDs; (6) land dip + dash punch via game.cameraDirector; reduced motion disables shake; (7) checkpoint act title card (DOM OK); (8) pause on P freezes sim/sentries; R reset restores act 1, coins, ember, deaths, sentries. If polish slows the route, retune spacing in level.ts / level-layout.ts so level-proof.ts stays inside 70–115s. Add tests/unit/apps/skyline-player-feel.test.ts for act-palette-changes, pause-freezes-sim, public-HUD-hides-raw-x. Run: pnpm exec vitest run tests/unit/apps/skyline-sixty-second-level.test.ts tests/unit/apps/skyline-platformer-loop.test.ts tests/unit/apps/skyline-challenge-feedback.test.ts tests/unit/apps/skyline-subject-pose-determinism.test.ts tests/unit/apps/skyline-player-feel.test.ts and pnpm --filter @aura3d/showcase-skyline-runner typecheck. Do not edit tests/browser/showcase-gameplay-proof.spec.ts or tests/reports/**. Leave an audio cue wishlist in the handoff.",
@@ -122,7 +122,7 @@
     {
       "name": "clash-player-feel",
       "type": "worker",
-      "model": "gpt-5.5-high-fast",
+      "model": "cursor-grok-4.6-high-fast",
       "openPR": true,
       "maxAttempts": 2,
       "scopedGoal": "Upgrade existing Aura Clash Arena in apps/aura-clash-showcase/ so a round hits, blocks, and ends like a fight, not a combat harness. Read .orchestrate/world-class-games/refs/baseline.md and .orchestrate/world-class-games/refs/aura-clash.md first and follow them. Keep both typed rigs, current arena, move table, clip maps, audio manifest, window.__AURA_CLASH_ARENA_PROOF__, KO lock, rematch, accessibility, and the production-runtime import boundary (OK here only). Do not invert startup/active/recovery in auraClashMoveData.ts. Do not add a third fighter or new stage. Do not import three. Do not mark flagship or write Street Fighter / reusable fighting kit claims. Live controls: A/D move, S down, Space dash, W jump, Shift/Q guard, J/K/L attacks, P/Esc pause, R reset — docs/agents/game-showcase-build.md Space=jump is stale; follow code+tests. Implement: (1) fighter HUD — names, HP bars, meter, timer, combo count, round marks; training numbers and proof JSON stay on /evidence/ or ?debug=1; wire #combo-flash if useful; (2) strengthen existing hit-stop + camera punch so hits change the picture (2–8 frames by strength, renderer-owned spark/impact, victim flash that is not a CSS light); keep hit-stop presentation-only; KO ignores residual hit-stop; (3) special (L) remains the showpiece and spends meter; controls.specialRequiresMeter stays true; (4) guard looks and sounds different from getting hit using existing SFX + renderer flash; (5) AI roles inside updateRivalAi — approach, space, punish whiff, respect meaty wakeup — keep seed 0x41435241 deterministic and preserve setRivalGuardSuppressed / passive test-driver paths; (6) tighten input buffer toward 6–8f if tests still pass; (7) pause already exists — verify it freezes both fighters, AI, timer, hitboxes; reset restores HP, meter, positions, clips, combo, audio; (8) debug volumes remain hidden in normal play; flagship body must not contain hitbox/hurtbox/debug/primitive fighter. Run: pnpm --dir apps/aura-clash-showcase typecheck && pnpm --dir apps/aura-clash-showcase test:playable && pnpm --dir apps/aura-clash-showcase test:flagship. Keep test:playable --workers=1. Extend playable/flagship/camera-feedback tests if needed for hit-stop+punch on a real hit.",
@@ -169,7 +169,7 @@
       "name": "turbo-verify",
       "type": "verifier",
       "verifies": "turbo-player-feel",
-      "model": "claude-opus-4-8",
+      "model": "cursor-grok-4.6-high-fast",
       "scopedGoal": "Verify turbo-player-feel against its acceptance criteria and verify plan. Do not implement features. Confirm unit tests pass on the target branch, public HUD is a game HUD, countdown/pause/result exist, evidence global and passing-lane contracts remain, and no forbidden imports or classification flip.",
       "acceptance": [
         "Target acceptance criteria are each marked met or not-met with evidence",
@@ -181,7 +181,7 @@
       "name": "skyline-verify",
       "type": "verifier",
       "verifies": "skyline-player-feel",
-      "model": "claude-opus-4-8",
+      "model": "cursor-grok-4.6-high-fast",
       "scopedGoal": "Verify skyline-player-feel against its acceptance criteria and verify plan. Do not implement features. Confirm unit tests pass on the target branch, public HUD hides raw x, act palettes change in scene code, 70–115s proof holds, settleSubjectPose remains, and no forbidden imports or classification flip.",
       "acceptance": [
         "Target acceptance criteria are each marked met or not-met with evidence",
@@ -193,7 +193,7 @@
       "name": "clash-verify",
       "type": "verifier",
       "verifies": "clash-player-feel",
-      "model": "claude-opus-4-8",
+      "model": "cursor-grok-4.6-high-fast",
       "scopedGoal": "Verify clash-player-feel against its acceptance criteria and verify plan. Do not implement features. Run or confirm test:playable and test:flagship on the target branch. Confirm proof object, hit-stop/camera punch, special meter spend, hidden debug volumes, and no flagship claim.",
       "acceptance": [
         "Target acceptance criteria are each marked met or not-met with evidence",
