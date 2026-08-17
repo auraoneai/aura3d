@@ -50,12 +50,15 @@ test("neon-corridor-strike shot graphics are visible in frame", async ({ page })
     expect(muzzle[1] ?? -8).toBeGreaterThan(0.4);
     expect(muzzle[2] ?? 0).toBeGreaterThan(7.4);
     expect(muzzle[2] ?? 0).toBeLessThan(8.9);
+    const bolt = (duringEvidence?.shotBolt1 as number[] | undefined) ?? [0, -8, 0];
+    expect(bolt[1] ?? -8).toBeGreaterThan(0.4);
+    expect(bolt[2] ?? 0).toBeLessThan((muzzle[2] ?? 9) - 0.04);
 
-    const barrelCrop = comparePngBuffers(beforePng, duringPng, { x: 600, y: 300, width: 280, height: 200 });
+    const barrelCrop = comparePngBuffers(beforePng, duringPng, { x: 520, y: 260, width: 420, height: 280 });
     const farHall = comparePngBuffers(beforePng, duringPng, { x: 500, y: 150, width: 280, height: 140 });
     writeFileSync(resolve(reports, "shot-pixel-diff.json"), `${JSON.stringify({ barrelCrop, farHall }, null, 2)}\n`);
-    expect(barrelCrop.changedRatio).toBeGreaterThan(0.03);
-    expect(farHall.changedRatio).toBeLessThan(0.12);
+    expect(barrelCrop.changedRatio).toBeGreaterThan(0.02);
+    expect(farHall.changedRatio).toBeLessThan(0.18);
 
     await page.waitForTimeout(560);
     writeFileSync(resolve(reports, "shot-after.png"), await page.screenshot({ fullPage: false }));

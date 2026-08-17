@@ -52,6 +52,7 @@ interface FpsEvidence {
   readonly shotFxVisible: boolean;
   readonly shotFxNodeCount: number;
   readonly shotBolt0: readonly number[];
+  readonly shotBolt1: readonly number[];
   readonly enemyVisualY: number;
   readonly bulletOnBulletContacts: number;
   readonly usedKit: false;
@@ -179,10 +180,17 @@ function muzzleBarrel(): readonly [number, number, number] {
 }
 
 function presentShot(shot: ShotTrace): void {
+  const barrel = muzzleBarrel();
   const dir = lookDirection(shot.yaw, 0);
-  const end: readonly [number, number, number] = [shot.end[0], shot.origin[1], shot.end[2]];
+  const reach = Math.max(2.4, Math.hypot(shot.end[0] - barrel[0], shot.end[2] - barrel[2]));
+  const end: readonly [number, number, number] = [
+    barrel[0] + dir[0] * reach,
+    barrel[1],
+    barrel[2] + dir[2] * reach
+  ];
   try {
-    showShot(app.nodes, shot.origin, dir, muzzleBarrel(), end, shot.yaw, shotClock);
+    showShot(app.nodes, shot.origin, dir, barrel, end, shot.yaw, shotClock);
+    effects.impactFlash(barrel, { color: "#ff7a18", intensity: 1.35, duration: 0.08, radius: 0.1, ownerId: "muzzle" });
   } catch {
     shotClock.visible = 0;
   }
@@ -257,6 +265,7 @@ function publishEvidence(): void {
     lastHitName: state.lastHitName,
     shotFxVisible: shotClock.visible > 0,
     shotBolt0: [...(app.nodes.get("muzzle-0")?.position ?? [0, 0, 0])],
+    shotBolt1: [...(app.nodes.get("muzzle-1")?.position ?? [0, 0, 0])],
     enemyVisualY: app.nodes.get("enemy-e1")?.position[1] ?? -1,
     shotFxNodeCount: ["shot-impact", ...Array.from({ length: 3 }, (_, i) => `muzzle-${i}`)].filter((id) => app.nodes.has(id)).length,
     bulletOnBulletContacts: 0,

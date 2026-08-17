@@ -5,7 +5,8 @@ interface FxNode {
 }
 
 export const MUZZLE_COUNT = 3;
-export const SHOT_HOLD = 0.5;
+export const SHOT_HOLD = 0.85;
+export const FLASH_HOLD = 0.28;
 
 export interface ShotPose {
   readonly barrel: readonly [number, number, number];
@@ -21,15 +22,26 @@ function handle(nodes: { get(id: string): FxNode | undefined }, id: string): FxN
   return nodes.get(id);
 }
 
+function lerp(
+  from: readonly [number, number, number],
+  to: readonly [number, number, number],
+  t: number
+): readonly [number, number, number] {
+  const clamped = Math.min(1, Math.max(0, t));
+  return [
+    from[0] + (to[0] - from[0]) * clamped,
+    from[1] + (to[1] - from[1]) * clamped,
+    from[2] + (to[2] - from[2]) * clamped
+  ];
+}
+
 export function hideShotFx(nodes: { get(id: string): FxNode | undefined }): void {
-  for (let i = 0; i < MUZZLE_COUNT; i += 1) {
-    const flash = handle(nodes, `muzzle-${i}`);
-    flash?.setPosition(0, -8, 0);
-    flash?.setScale(0.02);
+  for (const id of ["muzzle-0", "muzzle-1", "muzzle-2", "shot-impact"] as const) {
+    handle(nodes, id)?.setPosition(0, -8, 0);
   }
-  const impact = handle(nodes, "shot-impact");
-  impact?.setPosition(0, -8, 0);
-  impact?.setScale(0.02);
+  handle(nodes, "muzzle-0")?.setScale(0.02);
+  handle(nodes, "muzzle-1")?.setScale(0.02);
+  handle(nodes, "shot-impact")?.setScale(0.02);
 }
 
 export function showShot(
@@ -45,34 +57,47 @@ export function showShot(
   void direction;
   clock.pose = { barrel, end, yaw };
   clock.visible = SHOT_HOLD;
-  syncShotFx(nodes, clock.pose);
+  syncShotFx(nodes, clock.pose, clock.visible);
 }
 
 export function syncShotFx(
   nodes: { get(id: string): FxNode | undefined },
-  pose: ShotPose
+  pose: ShotPose,
+  remaining: number
 ): void {
+  const elapsed = Math.max(0, SHOT_HOLD - remaining);
+  const travel = Math.min(1, elapsed / SHOT_HOLD);
+  const flash = handle(nodes, "muzzle-0");
+  const punch = elapsed <= FLASH_HOLD ? 1 - elapsed / FLASH_HOLD : 0;
+  flash?.setPosition(pose.barrel[0], pose.barrel[1], pose.barrel[2]);
+  flash?.setRotation(0, pose.yaw, 0);
+  flash?.setScale(0.07 + punch * 0.05);
+
+  const bolt = handle(nodes, "muzzle-1");
+  const boltAt = lerp(pose.barrel, pose.end, Math.min(1, 0.08 + travel * 0.92));
+  bolt?.setPosition(boltAt[0], boltAt[1], boltAt[2]);
+  bolt?.setRotation(0, pose.yaw, 0);
+  bolt?.setScale(0.08);
+
+  const tracer = handle(nodes, "muzzle-2");
   const forwardX = -Math.sin(pose.yaw);
   const forwardZ = -Math.cos(pose.yaw);
-  const rightX = Math.cos(pose.yaw);
-  const rightZ = -Math.sin(pose.yaw);
-  const offsets: readonly (readonly [number, number, number])[] = [
-    [0, 0, 0],
-    [forwardX * 0.05 + rightX * 0.02, 0.03, forwardZ * 0.05 + rightZ * 0.02],
-    [forwardX * 0.02 - rightX * 0.04, 0.05, forwardZ * 0.02 - rightZ * 0.04]
-  ];
-  const sizes = [0.11, 0.075, 0.055];
-  for (let i = 0; i < MUZZLE_COUNT; i += 1) {
-    const flash = handle(nodes, `muzzle-${i}`);
-    const offset = offsets[i] ?? [0, 0, 0];
-    flash?.setPosition(pose.barrel[0] + offset[0], pose.barrel[1] + offset[1], pose.barrel[2] + offset[2]);
-    flash?.setRotation(0, pose.yaw, 0);
-    flash?.setScale(sizes[i] ?? 0.055);
-  }
+  tracer?.setPosition(
+    pose.barrel[0] + forwardX * 0.85,
+    pose.barrel[1],
+    pose.barrel[2] + forwardZ * 0.85
+  );
+  tracer?.setRotation(0, pose.yaw, 0);
+
   const impact = handle(nodes, "shot-impact");
-  impact?.setPosition(pose.end[0], pose.end[1], pose.end[2]);
-  impact?.setRotation(0, pose.yaw, 0);
-  impact?.setScale(0.07);
+  if (travel >= 0.88) {
+    impact?.setPosition(pose.end[0], pose.end[1], pose.end[2]);
+    impact?.setRotation(0, pose.yaw, 0);
+    impact?.setScale(0.07);
+  } else {
+    impact?.setPosition(0, -8, 0);
+    impact?.setScale(0.01);
+  }
 }
 
 export function updateShotFx(
@@ -81,7 +106,7 @@ export function updateShotFx(
   dt: number
 ): void {
   if (clock.visible > 0 && clock.pose) {
-    syncShotFx(nodes, clock.pose);
+    syncShotFx(nodes, clock.pose, clock.visible);
   } else {
     hideShotFx(nodes);
   }

@@ -81,14 +81,18 @@ export function buildScene() {
       name: "ceiling panel",
       material: material.emissive({ color: "#1a2634", emissive: "#1a2634", emissiveIntensity: 0.45 })
     }).position(0, 2.7, 1).scale([8, 0.08, 18]))
-    .addMany([
-      { id: 0, color: "#ff9d12" },
-      { id: 1, color: "#ff7a00" },
-      { id: 2, color: "#ffb020" }
-    ].map((flash) => primitives.sphere({
-      name: `muzzle flash ${flash.id}`,
-      material: material.glowingEmissive({ color: flash.color, emissive: flash.color, emissiveIntensity: 3.2 })
-    }).position(0, -8, 0).scale(0.02).runtime(game.runtimeNode(`muzzle-${flash.id}`, { tags: ["fx"] }))))
+    .add(primitives.sphere({
+      name: "muzzle flash 0",
+      material: material.glowingEmissive({ color: "#ff9d12", emissive: "#ff6a00", emissiveIntensity: 3.6 })
+    }).position(0, -8, 0).scale(0.02).runtime(game.runtimeNode("muzzle-0", { tags: ["fx"] })))
+    .add(primitives.sphere({
+      name: "muzzle flash 1",
+      material: material.glowingEmissive({ color: "#7ef8ff", emissive: "#3de8ff", emissiveIntensity: 3.8 })
+    }).position(0, -8, 0).scale(0.02).runtime(game.runtimeNode("muzzle-1", { tags: ["fx"] })))
+    .add(primitives.box({
+      name: "muzzle flash 2",
+      material: material.glowingEmissive({ color: "#ffb020", emissive: "#ff8a1a", emissiveIntensity: 3.8 })
+    }).position(0, -8, 0).scale([0.05, 0.05, 1.7]).runtime(game.runtimeNode("muzzle-2", { tags: ["fx"] })))
     .add(primitives.sphere({
       name: "shot impact",
       material: material.glowingEmissive({ color: "#ff7a18", emissive: "#ff7a18", emissiveIntensity: 2.2 })

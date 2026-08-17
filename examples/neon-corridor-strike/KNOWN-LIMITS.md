@@ -16,9 +16,9 @@ Route-local prototype. These are not public `@aura3d/engine` claims.
 - Corridor lighting is authored point/directional fill on the root API. Emissive
   floor rails are set dressing, not bloom. Do not claim bloom, SSAO, WebGPU,
   full PBR, skinned death clips, or DOOM parity.
-- Shot feedback is authored emissive primitives (muzzle, tracer, bolts, impact),
-  not `game.effects` particles or CSS flashes. Those engine effects are too dim
-  to read as a fire graphic on this route.
+- Shot feedback is an authored muzzle flash plus a traveling pulse bolt and
+  tail that leave the rifle along the hitscan. `game.effects` flashes are too
+  dim to carry the graphic alone. This is not a projectile physics kit.
 - Walk height is locked so the viewmodel does not inherit capsule bounce. Jump
   is not a supported mechanic on this route.
 - Playwright pointer lock may request without engaging in automation. Evidence
