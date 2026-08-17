@@ -155,6 +155,17 @@ const apps = [
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
     notes: "Public racing candidate with a typed Kenney race car, mesh-derived neon-circuit topology, certified car-to-road binding, evidence-selected framing, and retained gameplay evidence."
+  },
+  {
+    id: "neon-corridor-strike",
+    route: "/examples/neon-corridor-strike/",
+    routeHealth: "/examples/neon-corridor-strike/route-health.json",
+    classification: "prototype",
+    publicShowcase: true,
+    primaryAssetStatus: "typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "demoted",
+    notes: "Prototype first-person corridor shooter on createAuraApp with typed GLB subjects and hitscan. Not a reusable shooter kit."
   }
 ] as const;
 
@@ -197,7 +208,8 @@ const previewNames = [
   "tokyo-keyframes",
   "damaged-helmet-detail",
   "concept-car-cinema",
-  "advanced-gallery-console"
+  "advanced-gallery-console",
+  "neon-corridor-strike"
 ] as const;
 
 const experienceLabels = [
@@ -206,7 +218,7 @@ const experienceLabels = [
   "Data", "Product", "Animation", "Physics", "Environment", "Digital twin", "Asset loading",
   "Asset loading", "Textures", "Postprocess", "Controls", "Geometry", "Interaction", "Cameras",
   "XR", "Scene basics", "Animation", "Materials", "Materials", "GPU", "Animation", "Materials",
-  "Automotive", "Gallery"
+  "Automotive", "Gallery", "Playable game"
 ] as const;
 
 document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, index) => {

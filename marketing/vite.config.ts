@@ -18,7 +18,8 @@ const appInputs = [
   "apps/wow-simple-transforms/index.html",
   "apps/wow-standard-material-spheres/index.html",
   "apps/wow-tokyo-keyframes/index.html",
-  "apps/wow-webgpu-compute-particles/index.html"
+  "apps/wow-webgpu-compute-particles/index.html",
+  "examples/neon-corridor-strike/index.html"
 ];
 const htmlInputs = Object.fromEntries([
   ["index", resolve(marketingDir, "index.html")],
@@ -49,6 +50,7 @@ function copyMarketingPublicFiles() {
       }
 
       copyAuraClashApp(outDir);
+      copyNeonCorridorStrikeAssets(outDir);
 
       const auraClashAssetsDir = resolve(repoRoot, "apps/aura-clash-showcase/public/aura-assets");
       if (existsSync(auraClashAssetsDir)) {
@@ -66,6 +68,20 @@ function copyMarketingPublicFiles() {
       }
     }
   };
+}
+
+function copyNeonCorridorStrikeAssets(outDir: string): void {
+  const exampleDir = resolve(repoRoot, "examples/neon-corridor-strike");
+  const assetSource = resolve(exampleDir, "public/aura-assets");
+  const assetTarget = resolve(outDir, "examples/neon-corridor-strike/public/aura-assets");
+  if (!existsSync(assetSource)) {
+    throw new Error("Neon Corridor Strike typed assets are missing.");
+  }
+  copyDir(assetSource, assetTarget);
+  const thumbnail = resolve(exampleDir, "thumbnail.webp");
+  if (existsSync(thumbnail)) {
+    copyFileSync(thumbnail, resolve(outDir, "examples/neon-corridor-strike/thumbnail.webp"));
+  }
 }
 
 function copyAuraClashApp(outDir: string): void {

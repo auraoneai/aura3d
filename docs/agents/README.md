@@ -87,3 +87,14 @@ Release-facing examples must also satisfy the claim-boundary checklist: no raw
 model strings, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports,
 `GLTFLoader`, CSS particle stand-ins, primitive-only primary subjects, or
 renderer/game/WebGPU/animation claims that exceed root API evidence.
+
+## Copy-paste build prompts
+
+These are mission prompts for another coding agent. They are not extra public
+capability claims.
+
+- `docs/agents/world-class-showcase-games-prompt.md` — upgrade Turbo Drift,
+  Skyline Runner, and Aura Clash from their current playable baselines.
+- `docs/agents/fps-shooter-build-prompt.md` — scaffold a new FPS prototype.
+- `docs/agents/full-public-example-audit-prompt.md` — operate and fix every
+  public example.

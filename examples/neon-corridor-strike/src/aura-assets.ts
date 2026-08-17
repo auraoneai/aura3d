@@ -1,0 +1,2119 @@
+import { defineAuraAssets } from "@aura3d/engine";
+import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
+
+type AuraGeneratedAssetDefinitions = {
+  readonly "ammoCrate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "arena": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "impA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "impB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "medkit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "pulseRifle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+};
+
+export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
+  "ammoCrate": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/ammoCrate.94562738.glb",
+    hash: "sha256-945627385565fcfb5182fad294b66e1beaf23dcf0a42d9503f64ab2c8f5c339a",
+    bounds: [
+      2,
+      0.833,
+      0.856
+    ],
+    sizeBytes: 2960804,
+    metadata: {
+      "materials": [
+        "checker_material_2048x2048"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 28,
+        "meshCount": 13,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 28 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ammoCrate.94562738.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-101/320d935472354cc79590bc35ade9d855.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-101/320d935472354cc79590bc35ade9d855.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "Geoffroy.Sainte.Catherine",
+        "sourceFamily": "objaverse",
+        "attribution": "Geoffroy.Sainte.Catherine",
+        "sha256": "sha256-945627385565fcfb5182fad294b66e1beaf23dcf0a42d9503f64ab2c8f5c339a",
+        "retrievedAt": "2026-08-17T02:25:39.670Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:320d935472354cc79590bc35ade9d855",
+          "query": "ammo crate game prop",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0.86,
+          "scoreBreakdown": {
+            "semantic": 10.86,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 10.86",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-101/320d935472354cc79590bc35ade9d855.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "Geoffroy.Sainte.Catherine",
+          "attribution": "Geoffroy.Sainte.Catherine",
+          "semanticScore": 0.8131617334403828,
+          "postDownloadInspection": {
+            "bounds": [
+              2,
+              0.833,
+              0.856
+            ],
+            "materialCount": 1,
+            "textureCount": 3,
+            "animationClipCount": 0,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:320d935472354cc79590bc35ade9d855",
+            "title": "Old Ammo Crate",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-101/320d935472354cc79590bc35ade9d855.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/320d935472354cc79590bc35ade9d855/thumbnails/db94382e569642ddb3dd8380bc1f2e2c/9212e577481042fea23af0fe3fee051d.jpeg",
+            "attribution": "Geoffroy.Sainte.Catherine",
+            "score": 0.8131617334403828
+          }
+        },
+        "checkedAt": "2026-08-17T02:25:39.670Z"
+      },
+      "sourcePath": "public/aura-assets/ammoCrate.94562738.glb",
+      "outputPath": "public/aura-assets/ammoCrate.94562738.glb",
+      "license": "CC-BY-4.0",
+      "author": "Geoffroy.Sainte.Catherine",
+      "boundsMetadata": {
+        "min": [
+          -1,
+          -0.417,
+          -0.428
+        ],
+        "max": [
+          1,
+          0.417,
+          0.428
+        ],
+        "size": [
+          2,
+          0.833,
+          0.856
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "checker_material_2048x2048",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "Collada visual scene group",
+        "lock_b_03_low",
+        "defaultMaterial",
+        "lock_b_02_low",
+        "defaultMaterial",
+        "lock_b_01_low",
+        "defaultMaterial",
+        "lock_a_03_low",
+        "defaultMaterial",
+        "lock_a_02_low",
+        "defaultMaterial",
+        "lock_a_01_low",
+        "defaultMaterial",
+        "Rope_Handle_a_low",
+        "defaultMaterial",
+        "Rope_Handle_b_low",
+        "defaultMaterial",
+        "Hinges_low",
+        "defaultMaterial",
+        "Crate_Door_Support_low",
+        "defaultMaterial",
+        "Handle_b_low",
+        "defaultMaterial",
+        "Handle_a_low",
+        "defaultMaterial",
+        "Crate_low",
+        "defaultMaterial"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/ammoCrate.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+  "arena": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/arena.4fc319ea.glb",
+    hash: "sha256-4fc319ea864a8b498b246faddd6e74534683a02d7e8da66ac187634dd4e7cc4b",
+    bounds: [
+      20.046,
+      20.018,
+      66.301
+    ],
+    sizeBytes: 5855964,
+    metadata: {
+      "materials": [
+        "METAL",
+        "Twall",
+        "TUNNEL-METAL",
+        "R_Light",
+        "Y_Light",
+        "material_0",
+        "GLASS-glass4.1-1.001",
+        "Material.002",
+        "Material.003"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 75,
+        "meshCount": 27,
+        "materialCount": 9,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 6,
+        "messages": [
+          "Detected 75 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/arena.4fc319ea.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/7733bbe1ddd146fd8657272f8247a6bf.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/7733bbe1ddd146fd8657272f8247a6bf.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "J4747",
+        "sourceFamily": "objaverse",
+        "attribution": "J4747",
+        "sha256": "sha256-4fc319ea864a8b498b246faddd6e74534683a02d7e8da66ac187634dd4e7cc4b",
+        "retrievedAt": "2026-08-17T02:25:01.724Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:7733bbe1ddd146fd8657272f8247a6bf",
+          "query": "dark sci-fi corridor interior industrial",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 1.58,
+          "scoreBreakdown": {
+            "semantic": 11.58,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 11.58",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/7733bbe1ddd146fd8657272f8247a6bf.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "J4747",
+          "attribution": "J4747",
+          "semanticScore": 0.7672116008236358,
+          "postDownloadInspection": {
+            "bounds": [
+              20.046,
+              20.018,
+              66.301
+            ],
+            "materialCount": 9,
+            "textureCount": 1,
+            "animationClipCount": 0,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:7733bbe1ddd146fd8657272f8247a6bf",
+            "title": "Sci-fi Spaceship Corridor",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/7733bbe1ddd146fd8657272f8247a6bf.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/7733bbe1ddd146fd8657272f8247a6bf/thumbnails/86408d6cfbec45878c5ed274da1d51ab/259635aa07dd48938db9ca3ba8f5d427.jpeg",
+            "attribution": "J4747",
+            "score": 0.7672116008236358
+          }
+        },
+        "checkedAt": "2026-08-17T02:25:01.724Z"
+      },
+      "sourcePath": "public/aura-assets/arena.4fc319ea.glb",
+      "outputPath": "public/aura-assets/arena.4fc319ea.glb",
+      "license": "CC-BY-4.0",
+      "author": "J4747",
+      "boundsMetadata": {
+        "min": [
+          -10.023,
+          -10,
+          -39.998
+        ],
+        "max": [
+          10.023,
+          10.018,
+          26.303
+        ],
+        "size": [
+          20.046,
+          20.018,
+          66.301
+        ],
+        "center": [
+          0,
+          0.009,
+          -6.847
+        ],
+        "maxDimension": 66.301,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "METAL",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Twall",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TUNNEL-METAL",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "R_Light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Y_Light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "material_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GLASS-glass4.1-1.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.002",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.003",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "a191a033da614e668172b513f06f5653.fbx",
+        "RootNode",
+        "Light",
+        "Object_4",
+        "Object_5",
+        "Camera",
+        "Object_7",
+        "Ring Circle",
+        "Ring Circle_METAL_0",
+        "TWall",
+        "TWall_Twall_0",
+        "Area",
+        "Object_13",
+        "Object_14",
+        "Area.001",
+        "Object_16",
+        "Object_17",
+        "Area.002",
+        "Object_19",
+        "Object_20",
+        "Area.003",
+        "Object_22",
+        "Object_23",
+        "Area.004",
+        "Object_25",
+        "Object_26",
+        "Camera.001",
+        "Object_28",
+        "Wall Part",
+        "Wall Part_METAL_0",
+        "Floor",
+        "Floor_METAL_0",
+        "Floor_METAL_0",
+        "Floor Edge",
+        "Floor Edge_METAL_0",
+        "Pipe",
+        "Pipe_METAL_0",
+        "Door Part",
+        "Door Part_TUNNEL-METAL_0",
+        "Panel",
+        "Panel_TUNNEL-METAL_0",
+        "Warning Light",
+        "Warning Light_R Light_0",
+        "Warning Light_Y Light_0",
+        "Side Light",
+        "Side Light_Emission_0",
+        "Small Ball Light",
+        "Small Ball Light_Y Light_0",
+        "Small Ball Light_R Light_0",
+        "Side Ball Light",
+        "Side Ball Light_R Light_0",
+        "Light Box",
+        "Light Box_METAL_0",
+        "Exit Light",
+        "Exit Light_Y Light_0",
+        "Screen.001",
+        "Screen.001_GLASS-glass4.1-1.001_0",
+        "Screen",
+        "Screen_Material.002_0",
+        "Side Light.001",
+        "Side Light.001_METAL_0",
+        "Side Light.001_Emission_0",
+        "Light Box.001",
+        "Light Box.001_TUNNEL-METAL_0",
+        "Air Win",
+        "Air Win_METAL_0",
+        "Top Light",
+        "Top Light_Emission_0",
+        "Door",
+        "Door_TUNNEL-METAL_0",
+        "DoorWall ",
+        "DoorWall _Twall_0",
+        "Edge",
+        "Edge_Material.003_0"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/arena.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+  "impA": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/impA.8283c44f.glb",
+    hash: "sha256-8283c44fa3bc599535357be8b5259fce36b51bcb7531febef1310afeb1f24723",
+    bounds: [
+      35.089,
+      22.216,
+      44.685
+    ],
+    sizeBytes: 834864,
+    metadata: {
+      "materials": [
+        "Material.001",
+        "Material.003",
+        "Material.004",
+        "Material.005",
+        "Material.007",
+        "Material.006"
+      ],
+      "animations": [
+        "ArmatureAction"
+      ],
+      "animationClips": [
+        "ArmatureAction"
+      ],
+      "animationMetadata": {
+        "clipCount": 1,
+        "clips": [
+          {
+            "index": 0,
+            "name": "ArmatureAction",
+            "channelCount": 38,
+            "samplerCount": 38,
+            "targetPaths": [
+              "rotation",
+              "scale",
+              "translation"
+            ],
+            "targetNodes": [
+              "Chest_12",
+              "Neck_1",
+              "Head_0",
+              "Shoulder 1_6",
+              "Upper arm 1_5",
+              "Lower arm 1_4",
+              "Hand 1_3",
+              "finger 1_2",
+              "Shoulder 2_11",
+              "Upper arm 2_10",
+              "Lower arm 2_9",
+              "hand 2_8",
+              "finger 2_7"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 embedded animation clip."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 23,
+        "skins": [
+          {
+            "index": 0,
+            "name": "skin-0",
+            "jointCount": 23,
+            "joints": [
+              "GLTF_created_0_rootJoint",
+              "ROOT_21",
+              "BackBone_20",
+              "Mid back_13",
+              "Chest_12",
+              "Neck_1",
+              "Head_0",
+              "Shoulder 1_6",
+              "Upper arm 1_5",
+              "Lower arm 1_4",
+              "Hand 1_3",
+              "finger 1_2",
+              "Shoulder 2_11",
+              "Upper arm 2_10",
+              "Lower arm 2_9",
+              "hand 2_8",
+              "finger 2_7",
+              "upper leg 1_16",
+              "lower leg 1_15",
+              "foot 1_14",
+              "upper leg 2_19",
+              "lower leg 2_18",
+              "foot 2_17"
+            ],
+            "skeleton": "GLTF_created_0_rootJoint"
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 23 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 112,
+        "meshCount": 42,
+        "materialCount": 6,
+        "textureCount": 1,
+        "animationClipCount": 1,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 15,
+        "messages": [
+          "Detected 112 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/impA.8283c44f.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-088/3cc51bb456034f5e9da1f8ba1d3534d1.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-088/3cc51bb456034f5e9da1f8ba1d3534d1.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "Emi De Vogelaere",
+        "sourceFamily": "objaverse",
+        "attribution": "Emi De Vogelaere",
+        "sha256": "sha256-8283c44fa3bc599535357be8b5259fce36b51bcb7531febef1310afeb1f24723",
+        "retrievedAt": "2026-08-17T02:25:30.837Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:3cc51bb456034f5e9da1f8ba1d3534d1",
+          "query": "horror demon creature game enemy",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0,
+          "scoreBreakdown": {
+            "semantic": 10.04,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 10.04",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role",
+            "missing texture metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-088/3cc51bb456034f5e9da1f8ba1d3534d1.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "Emi De Vogelaere",
+          "attribution": "Emi De Vogelaere",
+          "semanticScore": 0.7345870211144752,
+          "postDownloadInspection": {
+            "bounds": [
+              35.089,
+              22.216,
+              44.685
+            ],
+            "materialCount": 6,
+            "textureCount": 1,
+            "animationClipCount": 1,
+            "skinCount": 1,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:3cc51bb456034f5e9da1f8ba1d3534d1",
+            "title": "Horror Creature",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-088/3cc51bb456034f5e9da1f8ba1d3534d1.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/3cc51bb456034f5e9da1f8ba1d3534d1/thumbnails/9101d18440fa4c90ad8d35dc72fc2894/cf8c961aae3e40cbb67cc18819286021.jpeg",
+            "attribution": "Emi De Vogelaere",
+            "score": 0.7345870211144752
+          }
+        },
+        "checkedAt": "2026-08-17T02:25:30.837Z"
+      },
+      "sourcePath": "public/aura-assets/impA.8283c44f.glb",
+      "outputPath": "public/aura-assets/impA.8283c44f.glb",
+      "license": "CC-BY-4.0",
+      "author": "Emi De Vogelaere",
+      "boundsMetadata": {
+        "min": [
+          -19.851,
+          -3.498,
+          -32.596
+        ],
+        "max": [
+          15.238,
+          18.718,
+          12.089
+        ],
+        "size": [
+          35.089,
+          22.216,
+          44.685
+        ],
+        "center": [
+          -2.307,
+          7.61,
+          -10.253
+        ],
+        "maxDimension": 44.685,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Material.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.003",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.004",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.005",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.007",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material.006",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "root",
+        "GLTF_SceneRootNode",
+        "Armature_59",
+        "GLTF_created_0",
+        "GLTF_created_0_rootJoint",
+        "Sphere.000_22",
+        "Object_7",
+        "Sphere.001_23",
+        "Object_9",
+        "Sphere.002_24",
+        "Object_11",
+        "Sphere.003_25",
+        "Object_13",
+        "Sphere.004_26",
+        "Object_15",
+        "Sphere.005_27",
+        "Object_17",
+        "Sphere.006_28",
+        "Object_19",
+        "Sphere.007_29",
+        "Object_21",
+        "Sphere.008_30",
+        "Object_23",
+        "Sphere.009_31",
+        "Object_25",
+        "Sphere.010_32",
+        "Object_27",
+        "Sphere.011_33",
+        "Object_29",
+        "Sphere.012_34",
+        "Object_31",
+        "Sphere.013_35",
+        "Object_33",
+        "Sphere.014_36",
+        "Object_35",
+        "Sphere.015_37",
+        "Object_37",
+        "Sphere.016_38",
+        "Object_39",
+        "Sphere.017_39",
+        "Object_41",
+        "Sphere.018_40",
+        "Object_43",
+        "Sphere.019_41",
+        "Object_45",
+        "Sphere.020_42",
+        "Object_47",
+        "Sphere.021_43",
+        "Object_49",
+        "Sphere.022_44",
+        "Object_51",
+        "Sphere.023_45",
+        "Object_53",
+        "Sphere.024_46",
+        "Object_55",
+        "Sphere.025_47",
+        "Object_57",
+        "Sphere.026_48",
+        "Object_59",
+        "Sphere.027_49",
+        "Object_61",
+        "Sphere.029_50",
+        "Object_63",
+        "Sphere.030_51",
+        "Object_65",
+        "Sphere.031_52",
+        "Object_67",
+        "Sphere.032_53",
+        "Object_69",
+        "Sphere.033_54",
+        "Object_71",
+        "Sphere.034_55",
+        "Object_73",
+        "Sphere.035_56",
+        "Object_75",
+        "Sphere.036_57",
+        "Object_77",
+        "Sphere.037_58",
+        "Object_79",
+        "ROOT_21",
+        "BackBone_20",
+        "Mid back_13",
+        "Chest_12",
+        "Neck_1",
+        "Head_0",
+        "Shoulder 1_6",
+        "Upper arm 1_5",
+        "Lower arm 1_4",
+        "Hand 1_3",
+        "finger 1_2",
+        "Shoulder 2_11",
+        "Upper arm 2_10",
+        "Lower arm 2_9",
+        "hand 2_8",
+        "finger 2_7",
+        "upper leg 1_16",
+        "lower leg 1_15",
+        "foot 1_14",
+        "upper leg 2_19",
+        "lower leg 2_18",
+        "foot 2_17",
+        "Plane.002_60",
+        "Object_103",
+        "Cube.006_61",
+        "Object_105",
+        "Cube.000_62",
+        "Object_107",
+        "Cube.001_63",
+        "Object_109",
+        "Cube.003_64",
+        "Object_111"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/impA.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+  "impB": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/impB.cf055563.glb",
+    hash: "sha256-cf05556377a7b8f686c52444adec62d24b73c392cccb51f9ca2ba916c1019a83",
+    bounds: [
+      79.144,
+      131.48,
+      83.403
+    ],
+    sizeBytes: 4314340,
+    metadata: {
+      "materials": [
+        "default"
+      ],
+      "animations": [
+        "Take 001"
+      ],
+      "animationClips": [
+        "Take 001"
+      ],
+      "animationMetadata": {
+        "clipCount": 1,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Take 001",
+            "channelCount": 315,
+            "samplerCount": 315,
+            "targetPaths": [
+              "translation",
+              "scale",
+              "rotation"
+            ],
+            "targetNodes": [
+              "Bip001 HeadNub_06",
+              "Bip001 JawNub_08",
+              "Bip001 Jaw_07",
+              "Bip001 Ear RNub_04",
+              "Bip001 Ear R_03",
+              "Bip001 Ear LNub_02",
+              "Bip001 Ear L_01",
+              "Bip001 Head_05",
+              "Bip001 Neck4_057",
+              "Bip001 Neck3_056",
+              "Bip001 Neck2_055",
+              "Bip001 Neck1_054",
+              "Bip001 L Finger0Nub_014",
+              "Bip001 L Finger02_013",
+              "Bip001 L Finger01_012",
+              "Bip001 L Finger0_011",
+              "Bip001 L Finger1Nub_018",
+              "Bip001 L Finger12_017",
+              "Bip001 L Finger11_016",
+              "Bip001 L Finger1_015",
+              "Bip001 L Finger2Nub_022",
+              "Bip001 L Finger22_021",
+              "Bip001 L Finger21_020",
+              "Bip001 L Finger2_019",
+              "Bip001 L Finger3Nub_026",
+              "Bip001 L Finger32_025",
+              "Bip001 L Finger31_024",
+              "Bip001 L Finger3_023",
+              "Bip001 L Finger4Nub_030",
+              "Bip001 L Finger42_029",
+              "Bip001 L Finger41_028",
+              "Bip001 L Finger4_027",
+              "Bip001 L Hand_036",
+              "Bip001 L Forearm_035",
+              "Bip001 L ForeTwist2_034",
+              "Bip001 L ForeTwist1_033",
+              "Bip001 L ForeTwist_032",
+              "Bip001 L UpperArm_046",
+              "Bip001 LUpArmTwist2_052",
+              "Bip001 LUpArmTwist1_051",
+              "Bip001 LUpArmTwist_050",
+              "Bip001 L Clavicle_010",
+              "Bip001 R Finger0Nub_064",
+              "Bip001 R Finger02_063",
+              "Bip001 R Finger01_062",
+              "Bip001 R Finger0_061",
+              "Bip001 R Finger1Nub_068",
+              "Bip001 R Finger12_067",
+              "Bip001 R Finger11_066",
+              "Bip001 R Finger1_065",
+              "Bip001 R Finger2Nub_072",
+              "Bip001 R Finger22_071",
+              "Bip001 R Finger21_070",
+              "Bip001 R Finger2_069",
+              "Bip001 R Finger3Nub_076",
+              "Bip001 R Finger32_075",
+              "Bip001 R Finger31_074",
+              "Bip001 R Finger3_073",
+              "Bip001 R Finger4Nub_080",
+              "Bip001 R Finger42_079",
+              "Bip001 R Finger41_078",
+              "Bip001 R Finger4_077",
+              "Bip001 R Hand_086",
+              "Bip001 R Forearm_085",
+              "Bip001 R ForeTwist2_084",
+              "Bip001 R ForeTwist1_083",
+              "Bip001 R ForeTwist_082",
+              "Bip001 R UpperArm_096",
+              "Bip001 RUpArmTwist2_0102",
+              "Bip001 RUpArmTwist1_0101",
+              "Bip001 RUpArmTwist_0100",
+              "Bip001 R Clavicle_060",
+              "Bip001 Neck_053",
+              "Bip001 Spine2_0105",
+              "Bip001 Spine1_0104",
+              "Bip001 L Toe0Nub_039",
+              "Bip001 L Toe0_038",
+              "Bip001 L Toe1Nub_041",
+              "Bip001 L Toe1_040",
+              "Bip001 L Toe2Nub_043",
+              "Bip001 L Toe2_042",
+              "Bip001 L Toe3Nub_045",
+              "Bip001 L Toe3_044",
+              "Bip001 L Foot_031",
+              "Bip001 L Calf_09",
+              "Bip001 L Thigh_037",
+              "Bip001 R Toe0Nub_089",
+              "Bip001 R Toe0_088",
+              "Bip001 R Toe1Nub_091",
+              "Bip001 R Toe1_090",
+              "Bip001 R Toe2Nub_093",
+              "Bip001 R Toe2_092",
+              "Bip001 R Toe3Nub_095",
+              "Bip001 R Toe3_094",
+              "Bip001 R Foot_081",
+              "Bip001 R Calf_059",
+              "Bip001 R Thigh_087",
+              "Bip001 RThighTwist2_099",
+              "Bip001 RThighTwist1_098",
+              "Bip001 RThighTwist_097",
+              "Bip001 LThighTwist2_049",
+              "Bip001 LThighTwist1_048",
+              "Bip001 LThighTwist_047",
+              "Bip001 Spine_0103",
+              "Bip001 Pelvis_058",
+              "Bip001_00"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 embedded animation clip."
+        ]
+      },
+      "humanoid": true,
+      "humanoidStatus": "humanoid",
+      "humanoidConfidence": "high",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 107,
+        "skins": [
+          {
+            "index": 0,
+            "name": "skin-0",
+            "jointCount": 107,
+            "joints": [
+              "_rootJoint",
+              "Bip001_00",
+              "Bip001 Pelvis_058",
+              "Bip001 Spine_0103",
+              "Bip001 Spine1_0104",
+              "Bip001 Spine2_0105",
+              "Bip001 Neck_053",
+              "Bip001 Neck1_054",
+              "Bip001 Neck2_055",
+              "Bip001 Neck3_056",
+              "Bip001 Neck4_057",
+              "Bip001 Head_05",
+              "Bip001 HeadNub_06",
+              "Bip001 Jaw_07",
+              "Bip001 JawNub_08",
+              "Bip001 Ear R_03",
+              "Bip001 Ear RNub_04",
+              "Bip001 Ear L_01",
+              "Bip001 Ear LNub_02",
+              "Bip001 L Clavicle_010",
+              "Bip001 L UpperArm_046",
+              "Bip001 L Forearm_035",
+              "Bip001 L Hand_036",
+              "Bip001 L Finger0_011",
+              "Bip001 L Finger01_012",
+              "Bip001 L Finger02_013",
+              "Bip001 L Finger0Nub_014",
+              "Bip001 L Finger1_015",
+              "Bip001 L Finger11_016",
+              "Bip001 L Finger12_017",
+              "Bip001 L Finger1Nub_018",
+              "Bip001 L Finger2_019",
+              "Bip001 L Finger21_020",
+              "Bip001 L Finger22_021",
+              "Bip001 L Finger2Nub_022",
+              "Bip001 L Finger3_023",
+              "Bip001 L Finger31_024",
+              "Bip001 L Finger32_025",
+              "Bip001 L Finger3Nub_026",
+              "Bip001 L Finger4_027",
+              "Bip001 L Finger41_028",
+              "Bip001 L Finger42_029",
+              "Bip001 L Finger4Nub_030",
+              "Bip001 L ForeTwist_032",
+              "Bip001 L ForeTwist1_033",
+              "Bip001 L ForeTwist2_034",
+              "Bip001 LUpArmTwist_050",
+              "Bip001 LUpArmTwist1_051",
+              "Bip001 LUpArmTwist2_052",
+              "Bip001 R Clavicle_060",
+              "Bip001 R UpperArm_096",
+              "Bip001 R Forearm_085",
+              "Bip001 R Hand_086",
+              "Bip001 R Finger0_061",
+              "Bip001 R Finger01_062",
+              "Bip001 R Finger02_063",
+              "Bip001 R Finger0Nub_064",
+              "Bip001 R Finger1_065",
+              "Bip001 R Finger11_066",
+              "Bip001 R Finger12_067",
+              "Bip001 R Finger1Nub_068",
+              "Bip001 R Finger2_069",
+              "Bip001 R Finger21_070",
+              "Bip001 R Finger22_071",
+              "Bip001 R Finger2Nub_072",
+              "Bip001 R Finger3_073",
+              "Bip001 R Finger31_074",
+              "Bip001 R Finger32_075",
+              "Bip001 R Finger3Nub_076",
+              "Bip001 R Finger4_077",
+              "Bip001 R Finger41_078",
+              "Bip001 R Finger42_079",
+              "Bip001 R Finger4Nub_080",
+              "Bip001 R ForeTwist_082",
+              "Bip001 R ForeTwist1_083",
+              "Bip001 R ForeTwist2_084",
+              "Bip001 RUpArmTwist_0100",
+              "Bip001 RUpArmTwist1_0101",
+              "Bip001 RUpArmTwist2_0102",
+              "Bip001 L Thigh_037",
+              "Bip001 L Calf_09",
+              "Bip001 L Foot_031",
+              "Bip001 L Toe0_038",
+              "Bip001 L Toe0Nub_039",
+              "Bip001 L Toe1_040",
+              "Bip001 L Toe1Nub_041",
+              "Bip001 L Toe2_042",
+              "Bip001 L Toe2Nub_043",
+              "Bip001 L Toe3_044",
+              "Bip001 L Toe3Nub_045",
+              "Bip001 R Thigh_087",
+              "Bip001 R Calf_059",
+              "Bip001 R Foot_081",
+              "Bip001 R Toe0_088",
+              "Bip001 R Toe0Nub_089",
+              "Bip001 R Toe1_090",
+              "Bip001 R Toe1Nub_091",
+              "Bip001 R Toe2_092",
+              "Bip001 R Toe2Nub_093",
+              "Bip001 R Toe3_094",
+              "Bip001 R Toe3Nub_095",
+              "Bip001 RThighTwist_097",
+              "Bip001 RThighTwist1_098",
+              "Bip001 RThighTwist2_099",
+              "Bip001 LThighTwist_047",
+              "Bip001 LThighTwist1_048",
+              "Bip001 LThighTwist2_049"
+            ],
+            "skeleton": "_rootJoint"
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 107 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 115,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 2,
+        "animationClipCount": 1,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 20,
+        "messages": [
+          "Detected 115 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/impB.cf055563.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/bba636efaee04b3ea988b2ae4487cfc1.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/bba636efaee04b3ea988b2ae4487cfc1.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "Lexington Dath",
+        "sourceFamily": "objaverse",
+        "attribution": "Lexington Dath",
+        "sha256": "sha256-cf05556377a7b8f686c52444adec62d24b73c392cccb51f9ca2ba916c1019a83",
+        "retrievedAt": "2026-08-17T02:25:33.108Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:bba636efaee04b3ea988b2ae4487cfc1",
+          "query": "horror demon creature game enemy",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0,
+          "scoreBreakdown": {
+            "semantic": 9.42,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 9.42",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role",
+            "missing texture metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/bba636efaee04b3ea988b2ae4487cfc1.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "Lexington Dath",
+          "attribution": "Lexington Dath",
+          "semanticScore": 0.7899905437107086,
+          "postDownloadInspection": {
+            "bounds": [
+              79.144,
+              131.48,
+              83.403
+            ],
+            "materialCount": 1,
+            "textureCount": 2,
+            "animationClipCount": 1,
+            "skinCount": 1,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:bba636efaee04b3ea988b2ae4487cfc1",
+            "title": "Pig Demon",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/bba636efaee04b3ea988b2ae4487cfc1.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/bba636efaee04b3ea988b2ae4487cfc1/thumbnails/5f4a2deb59ba481998452aacef10e9d1/1024x576.jpeg",
+            "attribution": "Lexington Dath",
+            "score": 0.7899905437107086
+          }
+        },
+        "checkedAt": "2026-08-17T02:25:33.108Z"
+      },
+      "sourcePath": "public/aura-assets/impB.cf055563.glb",
+      "outputPath": "public/aura-assets/impB.cf055563.glb",
+      "license": "CC-BY-4.0",
+      "author": "Lexington Dath",
+      "boundsMetadata": {
+        "min": [
+          -61.845,
+          -0.375,
+          -41.708
+        ],
+        "max": [
+          17.298,
+          131.105,
+          41.694
+        ],
+        "size": [
+          79.144,
+          131.48,
+          83.403
+        ],
+        "center": [
+          -22.274,
+          65.365,
+          -0.007
+        ],
+        "maxDimension": 131.48,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "default",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "885ce494737446d8873aa781b67ea84e.fbx",
+        "Object_2",
+        "RootNode",
+        "Object_4",
+        "_rootJoint",
+        "Object_6",
+        "Object_7",
+        "Bip001_00",
+        "Bip001 Pelvis_058",
+        "Bip001 Spine_0103",
+        "Bip001 Spine1_0104",
+        "Bip001 Spine2_0105",
+        "Bip001 Neck_053",
+        "Bip001 Neck1_054",
+        "Bip001 Neck2_055",
+        "Bip001 Neck3_056",
+        "Bip001 Neck4_057",
+        "Bip001 Head_05",
+        "Bip001 HeadNub_06",
+        "Bip001 Jaw_07",
+        "Bip001 JawNub_08",
+        "Bip001 Ear R_03",
+        "Bip001 Ear RNub_04",
+        "Bip001 Ear L_01",
+        "Bip001 Ear LNub_02",
+        "Bip001 L Clavicle_010",
+        "Bip001 L UpperArm_046",
+        "Bip001 L Forearm_035",
+        "Bip001 L Hand_036",
+        "Bip001 L Finger0_011",
+        "Bip001 L Finger01_012",
+        "Bip001 L Finger02_013",
+        "Bip001 L Finger0Nub_014",
+        "Bip001 L Finger1_015",
+        "Bip001 L Finger11_016",
+        "Bip001 L Finger12_017",
+        "Bip001 L Finger1Nub_018",
+        "Bip001 L Finger2_019",
+        "Bip001 L Finger21_020",
+        "Bip001 L Finger22_021",
+        "Bip001 L Finger2Nub_022",
+        "Bip001 L Finger3_023",
+        "Bip001 L Finger31_024",
+        "Bip001 L Finger32_025",
+        "Bip001 L Finger3Nub_026",
+        "Bip001 L Finger4_027",
+        "Bip001 L Finger41_028",
+        "Bip001 L Finger42_029",
+        "Bip001 L Finger4Nub_030",
+        "Bip001 L ForeTwist_032",
+        "Bip001 L ForeTwist1_033",
+        "Bip001 L ForeTwist2_034",
+        "Bip001 LUpArmTwist_050",
+        "Bip001 LUpArmTwist1_051",
+        "Bip001 LUpArmTwist2_052",
+        "Bip001 R Clavicle_060",
+        "Bip001 R UpperArm_096",
+        "Bip001 R Forearm_085",
+        "Bip001 R Hand_086",
+        "Bip001 R Finger0_061",
+        "Bip001 R Finger01_062",
+        "Bip001 R Finger02_063",
+        "Bip001 R Finger0Nub_064",
+        "Bip001 R Finger1_065",
+        "Bip001 R Finger11_066",
+        "Bip001 R Finger12_067",
+        "Bip001 R Finger1Nub_068",
+        "Bip001 R Finger2_069",
+        "Bip001 R Finger21_070",
+        "Bip001 R Finger22_071",
+        "Bip001 R Finger2Nub_072",
+        "Bip001 R Finger3_073",
+        "Bip001 R Finger31_074",
+        "Bip001 R Finger32_075",
+        "Bip001 R Finger3Nub_076",
+        "Bip001 R Finger4_077",
+        "Bip001 R Finger41_078",
+        "Bip001 R Finger42_079",
+        "Bip001 R Finger4Nub_080",
+        "Bip001 R ForeTwist_082",
+        "Bip001 R ForeTwist1_083",
+        "Bip001 R ForeTwist2_084",
+        "Bip001 RUpArmTwist_0100",
+        "Bip001 RUpArmTwist1_0101",
+        "Bip001 RUpArmTwist2_0102",
+        "Bip001 L Thigh_037",
+        "Bip001 L Calf_09",
+        "Bip001 L Foot_031",
+        "Bip001 L Toe0_038",
+        "Bip001 L Toe0Nub_039",
+        "Bip001 L Toe1_040",
+        "Bip001 L Toe1Nub_041",
+        "Bip001 L Toe2_042",
+        "Bip001 L Toe2Nub_043",
+        "Bip001 L Toe3_044",
+        "Bip001 L Toe3Nub_045",
+        "Bip001 R Thigh_087",
+        "Bip001 R Calf_059",
+        "Bip001 R Foot_081",
+        "Bip001 R Toe0_088",
+        "Bip001 R Toe0Nub_089",
+        "Bip001 R Toe1_090",
+        "Bip001 R Toe1Nub_091",
+        "Bip001 R Toe2_092",
+        "Bip001 R Toe2Nub_093",
+        "Bip001 R Toe3_094",
+        "Bip001 R Toe3Nub_095",
+        "Bip001 RThighTwist_097",
+        "Bip001 RThighTwist1_098",
+        "Bip001 RThighTwist2_099",
+        "Bip001 LThighTwist_047",
+        "Bip001 LThighTwist1_048",
+        "Bip001 LThighTwist2_049",
+        "Low Poly"
+      ],
+      "textures": [
+        "image-0",
+        "image-1"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/impB.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+  "medkit": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/medkit.1f82742f.glb",
+    hash: "sha256-1f82742fb4bc79b46884a991d4fdeb6f1a0a9a39f7982c1a006da2f9f8da3076",
+    bounds: [
+      1.876,
+      1.207,
+      0.76
+    ],
+    sizeBytes: 2309260,
+    metadata: {
+      "materials": [
+        "Chair_base",
+        "Chair_mechanics",
+        "Chair_bedding",
+        "Syringe"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 9,
+        "meshCount": 4,
+        "materialCount": 4,
+        "textureCount": 8,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 9 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/medkit.1f82742f.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/43736bb6a0b64fe8a824542bdbace6bc.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/43736bb6a0b64fe8a824542bdbace6bc.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "Ellie",
+        "sourceFamily": "objaverse",
+        "attribution": "Ellie",
+        "sha256": "sha256-1f82742fb4bc79b46884a991d4fdeb6f1a0a9a39f7982c1a006da2f9f8da3076",
+        "retrievedAt": "2026-08-17T02:25:42.017Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:43736bb6a0b64fe8a824542bdbace6bc",
+          "query": "health pickup game prop",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0.19,
+          "scoreBreakdown": {
+            "semantic": 10.19,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 10.19",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/43736bb6a0b64fe8a824542bdbace6bc.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "Ellie",
+          "attribution": "Ellie",
+          "semanticScore": 0.7487586728752733,
+          "postDownloadInspection": {
+            "bounds": [
+              1.876,
+              1.207,
+              0.76
+            ],
+            "materialCount": 4,
+            "textureCount": 8,
+            "animationClipCount": 0,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:43736bb6a0b64fe8a824542bdbace6bc",
+            "title": "Game Prop: Mental Asylum Gurney",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/43736bb6a0b64fe8a824542bdbace6bc.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/43736bb6a0b64fe8a824542bdbace6bc/thumbnails/f83d8f30644a46e3aa7e4aaa55a2e599/1024x576.jpeg",
+            "attribution": "Ellie",
+            "score": 0.7487586728752733
+          }
+        },
+        "checkedAt": "2026-08-17T02:25:42.017Z"
+      },
+      "sourcePath": "public/aura-assets/medkit.1f82742f.glb",
+      "outputPath": "public/aura-assets/medkit.1f82742f.glb",
+      "license": "CC-BY-4.0",
+      "author": "Ellie",
+      "boundsMetadata": {
+        "min": [
+          7.037,
+          -0.057,
+          1.238
+        ],
+        "max": [
+          8.913,
+          1.15,
+          1.998
+        ],
+        "size": [
+          1.876,
+          1.207,
+          0.76
+        ],
+        "center": [
+          7.975,
+          0.546,
+          1.618
+        ],
+        "maxDimension": 1.876,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Chair_base",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Chair_mechanics",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Chair_bedding",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Syringe",
+          "visible": true,
+          "readable": true,
+          "opacity": 0.334,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "3fe2003a632f49f19be4a10d9d723c32.fbx",
+        "RootNode",
+        "polySurface40",
+        "polySurface40_Chair_base_0",
+        "polySurface40_Chair_mechanics_0",
+        "polySurface40_Chair_bedding_0",
+        "pCylinder34",
+        "pCylinder34_Syringe_0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2",
+        "image-3",
+        "image-4",
+        "image-5",
+        "image-6",
+        "image-7"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/medkit.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+  "pulseRifle": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/pulseRifle.51157ad6.glb",
+    hash: "sha256-51157ad6e001d8a53c14c76b731634b6db58c2410492277aef2fb379bb74fe00",
+    bounds: [
+      1.637,
+      3.588,
+      14.312
+    ],
+    sizeBytes: 9047868,
+    metadata: {
+      "materials": [
+        "HandleFabric",
+        "DirtyMetal2",
+        "OrangeParts",
+        "Metal2",
+        "MainPlasticPart",
+        "OrangePartsTextured",
+        "DarkerPlastic",
+        "Screen2",
+        "DirtyMetal",
+        "Screen",
+        "DarkerPlasticInside",
+        "Emitter",
+        "GreenCable",
+        "BlueCable2"
+      ],
+      "animations": [
+        "Action",
+        "Empty.001Action"
+      ],
+      "animationClips": [
+        "Action",
+        "Empty.001Action"
+      ],
+      "animationMetadata": {
+        "clipCount": 2,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Action",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "Empty.001_23"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "Empty.001Action",
+            "channelCount": 1,
+            "samplerCount": 1,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "Empty.001_23"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 2 embedded animation clips."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 52,
+        "meshCount": 25,
+        "materialCount": 14,
+        "textureCount": 17,
+        "animationClipCount": 2,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 52 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/pulseRifle.51157ad6.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/eca46c628f49410081eb73391c62b4ca.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/eca46c628f49410081eb73391c62b4ca.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "gbarzu",
+        "sourceFamily": "objaverse",
+        "attribution": "gbarzu",
+        "sha256": "sha256-51157ad6e001d8a53c14c76b731634b6db58c2410492277aef2fb379bb74fe00",
+        "retrievedAt": "2026-08-17T02:25:36.704Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:eca46c628f49410081eb73391c62b4ca",
+          "query": "fps sci-fi gun weapon game ready",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0,
+          "scoreBreakdown": {
+            "semantic": 14.89,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 14.89",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role",
+            "missing texture metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/eca46c628f49410081eb73391c62b4ca.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "gbarzu",
+          "attribution": "gbarzu",
+          "semanticScore": 0.80859049463464,
+          "postDownloadInspection": {
+            "bounds": [
+              1.637,
+              3.588,
+              14.312
+            ],
+            "materialCount": 14,
+            "textureCount": 17,
+            "animationClipCount": 2,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:eca46c628f49410081eb73391c62b4ca",
+            "title": "Sci Fi Weapon. Gameready Gun / Rifle.",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/eca46c628f49410081eb73391c62b4ca.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/eca46c628f49410081eb73391c62b4ca/thumbnails/b8e64557ab534c33982118b50995c00d/5926ce2934a74f4f8c6df9a027948db2.jpeg",
+            "attribution": "gbarzu",
+            "score": 0.80859049463464
+          }
+        },
+        "checkedAt": "2026-08-17T02:25:36.704Z"
+      },
+      "sourcePath": "public/aura-assets/pulseRifle.51157ad6.glb",
+      "outputPath": "public/aura-assets/pulseRifle.51157ad6.glb",
+      "license": "CC-BY-4.0",
+      "author": "gbarzu",
+      "boundsMetadata": {
+        "min": [
+          -0.836,
+          -2.26,
+          -6.269
+        ],
+        "max": [
+          0.801,
+          1.329,
+          8.043
+        ],
+        "size": [
+          1.637,
+          3.588,
+          14.312
+        ],
+        "center": [
+          -0.017,
+          -0.465,
+          0.887
+        ],
+        "maxDimension": 14.312,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "HandleFabric",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "DirtyMetal2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "OrangeParts",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Metal2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "MainPlasticPart",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "OrangePartsTextured",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "DarkerPlastic",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Screen2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "DirtyMetal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Screen",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "DarkerPlasticInside",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Emitter",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GreenCable",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "BlueCable2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "root",
+        "GLTF_SceneRootNode",
+        "Cylinder.004_0",
+        "Object_4",
+        "Cylinder.009_1",
+        "Object_6",
+        "Object_7",
+        "Cube.006_2",
+        "Object_9",
+        "Cylinder.014_3",
+        "Object_11",
+        "Cylinder.021_4",
+        "Object_13",
+        "Cube.019_5",
+        "Object_15",
+        "Cube.020_6",
+        "Object_17",
+        "Object_18",
+        "Cube.024_7",
+        "Object_20",
+        "Cube.028_8",
+        "Object_22",
+        "Cube.031_9",
+        "Object_24",
+        "Cube.033_10",
+        "Object_26",
+        "Cylinder.025_12",
+        "Object_28",
+        "Cube.038_14",
+        "Object_30",
+        "Cylinder_15",
+        "Object_32",
+        "Cylinder.006_16",
+        "Object_34",
+        "Cylinder.012_17",
+        "Object_36",
+        "Cylinder.015_18",
+        "Object_38",
+        "Cube.013_19",
+        "Object_40",
+        "Cube.027_20",
+        "Object_42",
+        "Cube.036_21",
+        "Object_44",
+        "Cylinder.019_22",
+        "Object_46",
+        "Empty.001_23",
+        "BezierCurve.002_24",
+        "Object_49",
+        "BezierCurve.003_25",
+        "Object_51"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2",
+        "image-3",
+        "image-4",
+        "image-5",
+        "image-6",
+        "image-7",
+        "image-8",
+        "image-9",
+        "image-10",
+        "image-11",
+        "image-12",
+        "image-13",
+        "image-14",
+        "image-15",
+        "image-16"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/pulseRifle.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+} as const);
+
+export type AuraGeneratedAssets = typeof assets;
