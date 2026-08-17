@@ -181,6 +181,10 @@
     {
       "at": "2026-08-17T09:58:49.679Z",
       "message": "clash-player-feel: model \"cursor-grok-4.6-high-fast\" not in MODEL_CATALOG (spawning anyway). Run `bun cli.ts models` to see known slugs."
+    },
+    {
+      "at": "2026-08-17T09:58:57.031Z",
+      "message": "clash-player-feel: spawn failed after 3 transient sub-attempts: ConfigurationError: Model 'cursor-grok-4.6-high-fast' is not available or invalid. Call Cursor.models.list() to see valid model ids."
     }
   ]
 }
