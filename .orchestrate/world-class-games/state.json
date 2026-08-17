@@ -37,13 +37,13 @@
       "handoffPath": "handoffs/skyline-player-feel.md",
       "startedAt": "2026-08-17T09:59:59.836Z",
       "finishedAt": "2026-08-17T10:07:31.083Z",
-      "lastUpdate": "2026-08-17T10:07:31.084Z",
+      "lastUpdate": "2026-08-17T10:07:32.433Z",
       "note": "respawned by self-planner (was error; attempts=2)",
       "attempts": 3,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
-      "verification": null
+      "verification": "unit-test-verified"
     },
     {
       "name": "clash-player-feel",
@@ -102,17 +102,18 @@
       "agentId": null,
       "runId": null,
       "parentAgentId": null,
-      "status": "pending",
+      "status": "running",
       "resultStatus": null,
       "handoffPath": null,
-      "startedAt": null,
+      "startedAt": "2026-08-17T10:07:40.347Z",
       "finishedAt": null,
-      "lastUpdate": null,
+      "lastUpdate": "2026-08-17T10:07:40.347Z",
       "note": null,
       "slackTs": null,
       "prNumber": null,
       "failureMode": null,
-      "verification": null
+      "verification": null,
+      "attempts": 1
     },
     {
       "name": "clash-verify",
@@ -210,6 +211,10 @@
     {
       "at": "2026-08-17T10:07:07.592Z",
       "message": "clash-player-feel: tool_call idle 313359ms; last=2026-08-17T10:01:54.233Z"
+    },
+    {
+      "at": "2026-08-17T10:07:32.433Z",
+      "message": "skyline-player-feel: verification self-reported (unit-test-verified)"
     }
   ]
 }
