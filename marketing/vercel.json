@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm build",
-  "outputDirectory": "dist",
+  "buildCommand": "pnpm --dir marketing build",
+  "outputDirectory": "marketing/dist",
   "redirects": [
     {
       "source": "/docs/index.html",
