@@ -1,7 +1,7 @@
 {
-  "installCommand": "",
-  "buildCommand": "",
-  "outputDirectory": ".",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --dir marketing build",
+  "outputDirectory": "marketing/dist",
   "rewrites": [
     {
       "source": "/fonts/:path*",
