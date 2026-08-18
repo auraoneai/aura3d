@@ -24,6 +24,10 @@ interface FpsEvidence {
   readonly knownLimits: readonly string[];
   readonly rendererMode: string;
   readonly rendererFallback: string;
+  readonly audioUnlocked?: boolean;
+  readonly audioCuesPlayed?: number;
+  readonly reloading?: boolean;
+  readonly dryFireActive?: boolean;
 }
 
 test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
@@ -105,8 +109,9 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
     await page.waitForTimeout(2400);
     await page.keyboard.up("KeyW");
     await page.keyboard.up("ShiftLeft");
-    const won = await read();
-    expect(won?.status).toBe("won");
+    // The sprint is a fixed sim-time run; poll so a loaded host cannot fail the
+    // wall-clock read before the simulation has advanced to the exit sensor.
+    await expect.poll(async () => (await read())?.status, { timeout: 20_000 }).toBe("won");
     writeFileSync(resolve(reports, "win.png"), await page.screenshot({ fullPage: false }));
 
     await page.keyboard.press("KeyT");
@@ -114,9 +119,9 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
     await page.keyboard.down("KeyW");
     await page.waitForTimeout(850);
     await page.keyboard.up("KeyW");
-    await page.waitForTimeout(10000);
-    const lost = await read();
-    expect(lost?.status).toBe("lost");
+    // Swarm death is sim-timed (6s guard then the corridor wakes); poll until
+    // the run actually resolves instead of racing a fixed wall-clock window.
+    await expect.poll(async () => (await read())?.status, { timeout: 30_000 }).toBe("lost");
     writeFileSync(resolve(reports, "death.png"), await page.screenshot({ fullPage: false }));
 
     await page.keyboard.press("KeyT");
@@ -125,6 +130,41 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
     expect(afterDeathReset?.status).toBe("playing");
     expect(afterDeathReset?.hp).toBe(100);
     writeFileSync(resolve(reports, "death-reset.png"), await page.screenshot({ fullPage: false }));
+
+    // --- World-class feel extensions: pause freeze, reload window, dry fire, audio ---
+    expect(afterDeathReset?.audioUnlocked).toBe(true);
+    expect(afterDeathReset?.audioCuesPlayed ?? 0).toBeGreaterThan(0);
+
+    // Pause actually freezes the sim: player state must not drift while paused.
+    await page.keyboard.press("KeyP");
+    await expect.poll(async () => (await read())?.paused, { timeout: 2_000 }).toBe(true);
+    const pausedAt = await read();
+    await page.waitForTimeout(380);
+    const stillPaused = await read();
+    expect(stillPaused?.paused).toBe(true);
+    expect(stillPaused?.x).toBe(pausedAt?.x);
+    expect(stillPaused?.z).toBe(pausedAt?.z);
+    await page.keyboard.press("KeyP");
+    await expect.poll(async () => (await read())?.paused, { timeout: 2_000 }).toBe(false);
+
+    // Empty the mag, then prove the deny click and the timed reload window.
+    for (let i = 0; i < 12; i += 1) {
+      await page.keyboard.press("KeyJ");
+      await page.waitForTimeout(175);
+    }
+    await expect.poll(async () => (await read())?.ammo, { timeout: 2_000 }).toBe(0);
+    const cuesBeforeDry = (await read())?.audioCuesPlayed ?? 0;
+    await page.keyboard.press("KeyJ");
+    await expect.poll(async () => (await read())?.dryFireActive, { timeout: 1_000 }).toBe(true);
+    const cuesAfterDry = await read();
+    expect(cuesAfterDry?.audioCuesPlayed ?? 0).toBeGreaterThan(cuesBeforeDry);
+
+    await page.keyboard.press("KeyR");
+    await expect.poll(async () => (await read())?.reloading, { timeout: 1_000 }).toBe(true);
+    await expect.poll(async () => (await read())?.ammo, { timeout: 3_000 }).toBe(12);
+    const reloaded = await read();
+    expect(reloaded?.reserve).toBe(12);
+    expect(reloaded?.reloading).toBe(false);
 
     writeFileSync(resolve(reports, "route-health.json"), `${JSON.stringify({
       ready: true,

@@ -25,6 +25,7 @@ import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physic
 import { gameGeometryContract } from "./generated/game-geometry";
 import { createTurboOpponentAi } from "./opponent-ai";
 import { TURBO_AUDIO_CUE_WISHLIST } from "./audio-cues";
+import { createTurboAudio, type TurboAudioCue, type TurboAudioController } from "./turbo-audio";
 import {
   advanceStartLights,
   canSimulateRace,
@@ -280,8 +281,25 @@ const accessibilitySettings = game.accessibility.settings([
 ]);
 const reducedMotion = accessibilitySettings.reducedMotion;
 const runtimeEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: false });
+const turboAudio: TurboAudioController = createTurboAudio(reducedMotion);
+// A single user gesture (key press or pointer) unlocks the shared AudioContext,
+// then cue playback is gated by unlocked state so evidence stays honest.
+let audioUnlocked = false;
+const unlockAudio = () => {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  void turboAudio.unlock();
+};
 let raceSession: RaceSessionState = createRaceSessionState();
 let driftSmokeFrame = 0;
+// Audio cue edge-tracking: fire each loop/one-shot only on the state transition.
+let lastLightStep = -1;
+let goCueFired = false;
+let lastCheckpoint = 0;
+let lastLap = 1;
+let offTrackCueSuppressed = false;
+let finishCueFired = false;
+let engineLoopActive = false;
 
 const input = game.input({
   actions: {
@@ -298,6 +316,47 @@ const input = game.input({
   },
   bufferMs: 90
 });
+// Audio must be gesture-unlocked: a browser will not start an AudioContext until a
+// real user gesture. Unlock on the first keydown/pointerdown (budgeted, one listener).
+const unlockGesture = () => unlockAudio();
+window.addEventListener("keydown", unlockGesture, { once: true });
+window.addEventListener("pointerdown", unlockGesture, { once: true });
+/**
+ * Fire a cue only after the AudioContext is gesture-unlocked. Calling `cue` before
+ * that would just count suppression and record a false "playback attempted" state.
+ */
+const playCue = (cue: TurboAudioCue): void => {
+  if (!audioUnlocked) return;
+  void turboAudio.cue(cue);
+  publishAudioEvidenceOnce();
+};
+/**
+ * Refresh the audio evidence fields on the mounted window object. Called only on
+ * cue playback or gesture unlock (not every frame) so the frame loop stays lean
+ * and deterministic rather than allocating proof objects each step.
+ */
+function publishAudioEvidenceOnce(): void {
+  // Called only on cue playback or gesture unlock — real audio events — never from
+  // the per-frame loop, so the route's physics determinism is not perturbed.
+  const proof = turboAudio.proof();
+  const target = mountedEvidence?.audio as unknown as {
+    gestureUnlocked?: boolean;
+    recentCues?: string[];
+    audioErrors?: string[];
+    playedCueCount?: number;
+    contextState?: string;
+    unlocked?: boolean;
+    sfxReady?: boolean;
+  } | undefined;
+  if (!target) return;
+  target.gestureUnlocked = audioUnlocked;
+  target.recentCues = proof.recentCues.slice();
+  target.audioErrors = proof.audioErrors.slice();
+  target.playedCueCount = proof.playedCueCount;
+  target.contextState = proof.contextState;
+  target.unlocked = proof.unlocked;
+  target.sfxReady = proof.sfxReady;
+}
 
 const racingState = game.racing({
   route,
@@ -737,13 +796,18 @@ const chaseCameraTuning: MutableChaseCamera = {
   height: collisionReviewCamera ? chaseHeight * 1.3 : chaseHeight,
   sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset
 };
-function syncChaseCamera(finishBlend = 0): void {
+function syncChaseCamera(finishBlend = 0, offTrackNudge = 0): void {
   const heroDistance = chaseDistance * (1 + finishBlend * 0.42);
   const heroHeight = chaseHeight * (1 + finishBlend * 0.28);
   const heroSide = heroFraming.sideOffset * (1 + finishBlend * 1.35);
-  chaseCameraTuning.distance = collisionReviewCamera ? chaseDistance * 0.2 : finishBlend > 0.001 ? heroDistance : chaseDistance;
-  chaseCameraTuning.height = collisionReviewCamera ? chaseHeight * 1.3 : finishBlend > 0.001 ? heroHeight : chaseHeight;
-  chaseCameraTuning.sideOffset = collisionReviewCamera ? chaseDistance * -1.5 : finishBlend > 0.001 ? heroSide : heroFraming.sideOffset;
+  // A small decaying lateral nudge when the car is off-track sells the excursion
+  // without moving the camera off the road surface; it fades as recovery completes.
+  // 0..1 strength, reduced motion hides it entirely.
+  const nudgeAmt = reducedMotion ? 0 : Math.min(1, Math.max(0, offTrackNudge));
+  const nudgeSide = heroFraming.sideOffset * (0.12 + nudgeAmt * 0.18);
+  chaseCameraTuning.distance = collisionReviewCamera ? chaseDistance * 0.2 : finishBlend > 0.001 ? heroDistance : chaseDistance + nudgeAmt * -0.02;
+  chaseCameraTuning.height = collisionReviewCamera ? chaseHeight * 1.3 : finishBlend > 0.001 ? heroHeight : chaseHeight + nudgeAmt * 0.015;
+  chaseCameraTuning.sideOffset = collisionReviewCamera ? chaseDistance * -1.5 : (finishBlend > 0.001 ? heroSide : heroFraming.sideOffset) + nudgeSide;
   Object.assign(racingCamera as unknown as MutableChaseCamera, chaseCameraTuning);
 }
 // Keep the complete near-circuit decision space inside the chase frame. At 52°
@@ -1195,6 +1259,8 @@ const mountedEvidence = {
     speedFraction: 0,
     ribbonLength: 0,
     source: "game.racing drift + speed state",
+    driftSmokeVisible: false,
+    finishCameraBlend: 0,
     offTrack: false,
     recoveryVisible: false
   },
@@ -1241,12 +1307,26 @@ const mountedEvidence = {
     pauseFreezesBothCars: false,
     countdownBeforeMotion: false,
     resultCardAfterFinish: false,
+    finishCamera3Quarter: false,
+    driftSmokeObserved: false,
+    offTrackAudioFired: false,
+    audioGestureUnlocked: false,
     audioCueWishlist: TURBO_AUDIO_CUE_WISHLIST,
     passingLane,
     authoredLapSeconds,
     routeAlignedToVisibleTrack: true,
     noDebugLocatorDisk: true,
     carAlignedToVisibleRoad: initialRaceStateEvidence.roadAlignment.onRoad
+  },
+  audio: {
+    system: "engine.createGameAudio",
+    cueCount: turboAudio.proof().cueCount,
+    typedAssetCount: turboAudio.proof().typedAssetCount,
+    gestureUnlocked: false,
+    sfxReady: turboAudio.proof().sfxReady,
+    recentCues: [] as readonly string[],
+    audioErrors: [] as readonly string[],
+    playedCueCount: 0
   },
   physics: physicsProof.evidence,
   runtimeEvidence: app.evidence({
@@ -1271,6 +1351,7 @@ app.onFrame(({ dt }) => {
   input.update(step);
   if (input.pressed("pause") && raceSnapshot.status !== "finished") {
     raceSession = togglePause(raceSession);
+    playCue("ui-confirm");
     updateTurboHudPanel();
     return;
   }
@@ -1290,6 +1371,17 @@ app.onFrame(({ dt }) => {
         throttleHeld || driftHeld
       )
     };
+    // A countdown blip fires on each 3→2→1 step; the green flag fires once on GO.
+    const lightStep = raceSession.startLights.step;
+    if (lightStep !== lastLightStep) {
+      if (raceSession.startLights.complete && !goCueFired) {
+        playCue("go");
+        goCueFired = true;
+      } else if (!raceSession.startLights.complete && raceSession.startLights.jumpedLights === false) {
+        playCue("countdown");
+      }
+      lastLightStep = lightStep;
+    }
   }
   raceSession = updateFinishCameraBlend(raceSession, step, raceSnapshot.status === "finished");
   raceSession = updateNitro(raceSession, step);
@@ -1300,6 +1392,12 @@ app.onFrame(({ dt }) => {
     mountedEvidence.diagnostics = app.diagnostics();
     updateTurboHudPanel();
     return;
+  }
+  // Start the racing ambience (engine + wind loops) once, when the green flag drops.
+  if (!engineLoopActive) {
+    playCue("engine");
+    playCue("wind");
+    engineLoopActive = true;
   }
 
   edgeRecoverySeconds = Math.max(0, edgeRecoverySeconds - step);
@@ -1314,6 +1412,16 @@ app.onFrame(({ dt }) => {
     raceSnapshot = racingState.reset(0);
     raceSession = resetRaceSession(raceSession);
     runtimeEffects.clear();
+    playCue("ui-confirm");
+    // Restore audio cue edge-trackers to the pre-race state so a reset race
+    // replays the countdown/go/checkpoint/finish ceremony.
+    lastLightStep = -1;
+    goCueFired = false;
+    lastCheckpoint = 0;
+    lastLap = 1;
+    offTrackCueSuppressed = false;
+    finishCueFired = false;
+    engineLoopActive = false;
     opponentRaceStarted = false;
     vehicleContactWasActive = false;
     vehicleImpactRecoverySeconds = 0;
@@ -1599,7 +1707,17 @@ app.onFrame(({ dt }) => {
     };
   }
   vehicleContactWasActive = Boolean(activeVehicleContact);
-  if (steppedOffTrack || raceSnapshot.offTrack) edgeRecoverySeconds = 0.45;
+  if (steppedOffTrack || raceSnapshot.offTrack) {
+    edgeRecoverySeconds = 0.45;
+    // Off-track rumble fires on entering the grass/verge; it re-arms once the
+    // player is back on the road so a second excursion cues again.
+    if (!offTrackCueSuppressed) {
+      playCue("off-track");
+      offTrackCueSuppressed = true;
+    }
+  } else {
+    offTrackCueSuppressed = false;
+  }
 
   const playerPose = racingScene.toScenePose(raceSnapshot);
   /*
@@ -1669,6 +1787,10 @@ app.onFrame(({ dt }) => {
     });
   }
   const playerAsphalt = asphaltAlignment(raceSnapshot.signedTrackOffset, playerBodyHalfWidth);
+  // Drift scuff fires periodically while visibly drifting on asphalt (not on grass).
+  if (driftVisible && playerAsphalt.onAsphalt && audioUnlocked && Math.round(raceSnapshot.frame) % 10 === 0) {
+    playCue("drift-scuff");
+  }
   const driftSmokeVisible = driftVisible && playerAsphalt.onAsphalt && !reducedMotion;
   const smokeScale = 0.08 + driftAmount * speedFraction * 0.16;
   for (const [smoke, side] of [[leftDriftSmoke, -1], [rightDriftSmoke, 1]] as const) {
@@ -1704,7 +1826,9 @@ app.onFrame(({ dt }) => {
     curvature: surfaceSample.curvature
   });
   const finishBlend = raceSession.finishCameraBlend;
-  syncChaseCamera(finishBlend);
+  // Off-track camera nudge uses the decaying recovery window so the shake fades
+  // as the car returns to the road (hidden under reduced motion).
+  syncChaseCamera(finishBlend, edgeRecoverySeconds > 0 ? edgeRecoverySeconds / 0.45 : 0);
   const opponentPose = racingScene.toScenePose(opponent, opponentRacingLineOffset);
   const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
   opponentChassisPose = opponentChassis.step(step, {
@@ -1780,6 +1904,11 @@ app.onFrame(({ dt }) => {
     speedFraction: round(speedFraction),
     ribbonLength: round(ribbonLength),
     source: "game.racing drift + speed state",
+    // Tyre smoke/dust from game.effects while drifting on asphalt, hidden under
+    // reduced motion. Evidence that the drift reads in pixels beyond the ribbons.
+    driftSmokeVisible: driftSmokeVisible,
+    // Finish camera transition is a measured blend toward the 3/4 hero shot.
+    finishCameraBlend: round(raceSession.finishCameraBlend),
     // Certified recovery can clamp an excursion within one simulation frame. Retain
     // that real event for less than half a second so the player can see it and a
     // screenshot cannot miss it between display samples. Reset clears it immediately.
@@ -1867,10 +1996,32 @@ app.onFrame(({ dt }) => {
   mountedEvidence.gameplay.pauseFreezesBothCars ||= raceSession.paused;
   mountedEvidence.gameplay.countdownBeforeMotion ||= raceSession.startLights.complete;
   mountedEvidence.gameplay.resultCardAfterFinish ||= raceSnapshot.status === "finished" && finishBlend > 0.35;
+  // Finish camera: a near-complete blend toward the 3/4 hero shot is the observable
+  // transition the result card tracks (matches HUD result-card reveal threshold).
+  mountedEvidence.gameplay.finishCamera3Quarter ||= raceSnapshot.status === "finished" && finishBlend > 0.35;
+  mountedEvidence.gameplay.driftSmokeObserved ||= driftSmokeVisible;
+  mountedEvidence.gameplay.offTrackAudioFired ||= offTrackCueSuppressed;
+  mountedEvidence.gameplay.audioGestureUnlocked ||= audioUnlocked;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
+  // Audio evidence is published only on real audio events (playCue/unlock), not
+  // here per frame, so the simulation loop stays lean and deterministic.
   recordRacingKitEvents(raceSnapshot.events);
-  if (raceSnapshot.status === "finished") mountedEvidence.kitContractProof.finishedStatus = "finished";
+  if (raceSnapshot.status === "finished") {
+    mountedEvidence.kitContractProof.finishedStatus = "finished";
+    if (!finishCueFired) {
+      playCue("finish-fanfare");
+      finishCueFired = true;
+    }
+  }
+  // Ordered checkpoints chime on each gate credit (checkpoint wraps to 0 at a lap
+  // boundary, so compare lap too to avoid spurious re-chimes on the reset lap).
+  const checkpointAdvanced = raceSnapshot.checkpoint !== lastCheckpoint;
+  if (checkpointAdvanced && raceSnapshot.checkpoint > lastCheckpoint) {
+    playCue("checkpoint");
+  }
+  lastCheckpoint = raceSnapshot.checkpoint;
+  lastLap = raceSnapshot.lap;
   mountedEvidence.diagnostics = app.diagnostics();
   updateTurboHudPanel();
 });

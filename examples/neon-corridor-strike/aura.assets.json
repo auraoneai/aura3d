@@ -578,6 +578,1110 @@
       ]
     },
     {
+      "id": "corridorAlarmSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/alarm.wav",
+      "outputPath": "public/aura-assets/corridorAlarmSfx.e1f2e902.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorAlarmSfx.e1f2e902.wav",
+      "hash": "sha256-e1f2e902e4f312014e2a11594b368e2642c6085716599b0bda5488d1ee079e18",
+      "sizeBytes": 26504,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/alarm.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:43.345Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorAlarmSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorDryFireSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/dryFire.wav",
+      "outputPath": "public/aura-assets/corridorDryFireSfx.37d50fa4.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorDryFireSfx.37d50fa4.wav",
+      "hash": "sha256-37d50fa4c4892e66dc040ef0e5fab8e0230f63fa6ca4a847047924c719559b69",
+      "sizeBytes": 4012,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/dryFire.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:42.720Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorDryFireSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorFireSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/fire.wav",
+      "outputPath": "public/aura-assets/corridorFireSfx.2aa7223b.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorFireSfx.2aa7223b.wav",
+      "hash": "sha256-2aa7223b4ba3b4c40ca92e6c54c7f1c35274be568713c71a2f57a6d346f66875",
+      "sizeBytes": 9746,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/fire.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:41.672Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorFireSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorHitSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/hit.wav",
+      "outputPath": "public/aura-assets/corridorHitSfx.3b73140e.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorHitSfx.3b73140e.wav",
+      "hash": "sha256-3b73140e76078a7758ad76e32eaac694cc5c3ca96a3cc8b9c70b2ad1b0221c6e",
+      "sizeBytes": 7100,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/hit.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:41.886Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorHitSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorHurtSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/hurt.wav",
+      "outputPath": "public/aura-assets/corridorHurtSfx.bff55878.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorHurtSfx.bff55878.wav",
+      "hash": "sha256-bff558788dfb7c52d3fe2ce97dad32ba0d5ea77fd734b3beca24351704cf9917",
+      "sizeBytes": 13274,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/hurt.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:42.929Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorHurtSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorKillSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/kill.wav",
+      "outputPath": "public/aura-assets/corridorKillSfx.b95734da.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorKillSfx.b95734da.wav",
+      "hash": "sha256-b95734da029a178b2042f87eb612d5f62918de15a7ed6013a4d4ed63a8acc397",
+      "sizeBytes": 22094,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/kill.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:42.094Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorKillSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorLoseSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/lose.wav",
+      "outputPath": "public/aura-assets/corridorLoseSfx.0606a2cf.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorLoseSfx.0606a2cf.wav",
+      "hash": "sha256-0606a2cf8be21db43a90a2ed4cfb95ec10769cdd0cfb2c6f0c8b02ef0586048f",
+      "sizeBytes": 35324,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/lose.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:43.767Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorLoseSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorPickupSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/pickup.wav",
+      "outputPath": "public/aura-assets/corridorPickupSfx.af6af77a.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorPickupSfx.af6af77a.wav",
+      "hash": "sha256-af6af77a53ddcfe2da3792ef41c17a080de0faed0af7989bebab768978a091d6",
+      "sizeBytes": 15038,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/pickup.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:43.136Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorPickupSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorReloadDoneSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/reloadDone.wav",
+      "outputPath": "public/aura-assets/corridorReloadDoneSfx.7b334b63.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorReloadDoneSfx.7b334b63.wav",
+      "hash": "sha256-7b334b6367164eb45fc7b1a895aad47584ab579d67b30716a082c42a3d2a7118",
+      "sizeBytes": 10628,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/reloadDone.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:42.510Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorReloadDoneSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorReloadStartSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/reloadStart.wav",
+      "outputPath": "public/aura-assets/corridorReloadStartSfx.68fb4ecc.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorReloadStartSfx.68fb4ecc.wav",
+      "hash": "sha256-68fb4ecc3058f0945cd0140cc8c94c91c3cf8add746090ed223228b77a431fd7",
+      "sizeBytes": 9746,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/reloadStart.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:42.301Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorReloadStartSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorWarnSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/warn.wav",
+      "outputPath": "public/aura-assets/corridorWarnSfx.03f4cc46.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorWarnSfx.03f4cc46.wav",
+      "hash": "sha256-03f4cc46ee7fc8fee5f5938373ab3b9c53f5e64168e80c181fc04de221f1a468",
+      "sizeBytes": 5336,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/warn.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:43.981Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorWarnSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "corridorWinSfx",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/win.wav",
+      "outputPath": "public/aura-assets/corridorWinSfx.a2c01dc5.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorWinSfx.a2c01dc5.wav",
+      "hash": "sha256-a2c01dc5e3ec0f5f8fe23ac479f3921b864105935a8cf48f508237f5b9f3a8a2",
+      "sizeBytes": 39734,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/win.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:56:43.555Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorWinSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
       "id": "impA",
       "type": "model",
       "format": "glb",

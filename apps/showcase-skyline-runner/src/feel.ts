@@ -1,11 +1,14 @@
 import { game, type RuntimeNodeHandleLike } from "@aura3d/engine";
 import { resolveSkylineActIndex } from "./act-palette";
 import { SKYLINE_SENTRY_ENCOUNTERS } from "./level";
+import type { SkylineAudioCue } from "./skyline-audio-manifest";
+import type { SkylineAudioController } from "./skyline-audio";
 
 export interface SkylineFeelOptions {
   readonly reducedMotion: boolean;
   readonly cameraBaseOffset: readonly [number, number, number];
   readonly cameraTargetOffset: readonly [number, number, number];
+  readonly audio?: SkylineAudioController;
 }
 
 export interface SkylineFeelSnapshot {
@@ -19,14 +22,18 @@ export interface SkylineFeelController {
   togglePause(): boolean;
   resetPause(): void;
   resetRuntime(): void;
+  onJump(): void;
   onLand(scenePlayerPosition: readonly [number, number, number]): void;
   onDash(scenePlayerPosition: readonly [number, number, number]): void;
   onCollect(scenePoint: readonly [number, number, number]): void;
+  onEmberPickup(scenePoint: readonly [number, number, number]): void;
   onCheckpoint(actTitle: string): void;
   onSentryDefeat(scenePoint: readonly [number, number, number], scoreDelta: number): void;
   onEmberDeny(scenePoint: readonly [number, number, number]): void;
   onEmberFire(scenePoint: readonly [number, number, number]): void;
   onEmberImpact(scenePoint: readonly [number, number, number]): void;
+  onDeath(): void;
+  onSummit(): void;
   applyCameraShake(cameraSpec: {
     offset?: readonly [number, number, number];
     targetOffset?: readonly [number, number, number];
@@ -48,6 +55,11 @@ export interface SkylineFeelController {
     readonly scoreElement?: HTMLElement | null;
   }): void;
   bindScorePopHost(host: HTMLElement | null): void;
+  /** Evidence accessors surfacing the live ceremony state for the mounted proof. */
+  telegraphActive(): boolean;
+  sentryDefeatSeen(): boolean;
+  landDipSeen(): boolean;
+  dashPunchSeen(): boolean;
 }
 
 const HIDDEN_SCALE = [0.0001, 0.0001, 0.0001] as const;
@@ -59,6 +71,11 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     impactShake: !options.reducedMotion
   });
   const runtimeEffects = game.effects({ poolSize: 64, reducedMotion: options.reducedMotion });
+  // Optional audio wiring: feel handlers remain pure presentation if no controller is supplied.
+  const audio = options.audio;
+  const playCue = (cueId: SkylineAudioCue): void => {
+    audio?.cue(cueId).catch(() => { /* audio is optional; ignore unlock/suppress errors */ });
+  };
   let paused = false;
   let actIndex = 0;
   let scorePopHost: HTMLElement | null = null;
@@ -67,8 +84,14 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
   let muzzleFlashRemaining = 0;
   let checkpointPulseRemaining = 0;
   const sentryTelegraph = new Map<string, number>();
+  const sentriesHaveTelegraphed = new Map<string, boolean>();
   let cameraShakeOffset: [number, number, number] = [0, 0, 0];
   let lastTelegraphEffectAt = 0;
+  // Evidence-tracking flags so the route can publish ceremony state without reading DOM.
+  let telegraphWindowSeen = false;
+  let sentryDefeatSeenFlag = false;
+  let landDipSeenFlag = false;
+  let dashPunchSeenFlag = false;
 
   const ensureActCard = (): HTMLElement | null => {
     if (typeof document === "undefined") return null;
@@ -114,6 +137,7 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     },
     togglePause() {
       paused = !paused;
+      playCue("pause");
       return paused;
     },
     resetPause() {
@@ -127,42 +151,66 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       muzzleFlashRemaining = 0;
       checkpointPulseRemaining = 0;
       sentryTelegraph.clear();
+      sentriesHaveTelegraphed.clear();
       runtimeEffects.clear();
       hideActCard();
     },
     bindScorePopHost(host) {
       scorePopHost = host;
     },
+    onJump() {
+      playCue("jump");
+    },
     onLand(scenePlayerPosition) {
       cameraDirector.impact(0.42, 0.12);
       runtimeEffects.groundDust(scenePlayerPosition, { intensity: 0.35, duration: 0.12 });
+      playCue("land-dust");
+      landDipSeenFlag = true;
     },
     onDash(scenePlayerPosition) {
       cameraDirector.impact(0.58, 0.14);
       runtimeEffects.dashTrail(scenePlayerPosition, { intensity: 0.72, duration: 0.16 });
+      dashPunchSeenFlag = true;
     },
     onCollect(scenePoint) {
       runtimeEffects.hitSpark([scenePoint[0], scenePoint[1], 0.42], { intensity: 0.62, duration: 0.18, color: "#fff1a8" });
+      playCue("coin-chime");
     },
     onCheckpoint(actTitle) {
       checkpointPulseRemaining = 0.65;
       showActCard(actTitle);
+      playCue("checkpoint");
     },
     onSentryDefeat(scenePoint, scoreDelta) {
       runtimeEffects.auraBurst([scenePoint[0], scenePoint[1], 0.42], { intensity: 0.85, duration: 0.22, color: "#ffb070" });
       runtimeEffects.ringShockwave([scenePoint[0], scenePoint[1], 0.4], { intensity: 0.55, duration: 0.2, color: "#ffd08a" });
       spawnScorePop(scoreDelta);
+      playCue("sentry-defeat");
+      sentryDefeatSeenFlag = true;
     },
     onEmberDeny(scenePoint) {
       denyFlashRemaining = 0.22;
       runtimeEffects.impactFlash([scenePoint[0], scenePoint[1], 0.44], { intensity: 0.28, duration: 0.14, color: "#ff8866" });
+      playCue("ember-deny");
     },
     onEmberFire(scenePoint) {
       muzzleFlashRemaining = 0.12;
       runtimeEffects.impactFlash([scenePoint[0], scenePoint[1], 0.44], { intensity: 0.72, duration: 0.1, color: "#ffd08a" });
+      playCue("ember-fire");
     },
     onEmberImpact(scenePoint) {
       runtimeEffects.hitSpark([scenePoint[0], scenePoint[1], 0.42], { intensity: 0.95, duration: 0.16, color: "#ff7a32" });
+      playCue("ember-impact");
+    },
+    onEmberPickup(scenePoint) {
+      runtimeEffects.hitSpark([scenePoint[0], scenePoint[1], 0.34], { intensity: 0.7, duration: 0.18, color: "#ffb070" });
+      playCue("ember-pickup");
+    },
+    onDeath() {
+      playCue("death");
+    },
+    onSummit() {
+      playCue("summit");
     },
     applyCameraShake(cameraSpec) {
       const [sx, sy] = cameraShakeOffset;
@@ -176,6 +224,25 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
         options.cameraTargetOffset[1] + sy * 0.25,
         options.cameraTargetOffset[2]
       ];
+    },
+    telegraphActive() {
+      if (sentryTelegraph.size === 0) return false;
+      let anyActive = false;
+      for (const remaining of sentryTelegraph.values()) {
+        if (remaining > 0) { anyActive = true; break; }
+      }
+      // A telegraph was seen if any window has ever opened; treat the flag as sticky for evidence.
+      telegraphWindowSeen = telegraphWindowSeen || anyActive;
+      return telegraphWindowSeen;
+    },
+    sentryDefeatSeen() {
+      return sentryDefeatSeenFlag;
+    },
+    landDipSeen() {
+      return landDipSeenFlag;
+    },
+    dashPunchSeen() {
+      return dashPunchSeenFlag;
     },
     updatePresentation(step, input) {
       if (actCardRemaining > 0) {
@@ -238,6 +305,10 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
             ownerId: encounter.id
           });
           lastTelegraphEffectAt = input.simTime;
+        }
+        if (telegraph > 0 && !sentriesHaveTelegraphed.get(encounter.id)) {
+          sentriesHaveTelegraphed.set(encounter.id, true);
+          playCue("sentry-telegraph");
         }
       }
 

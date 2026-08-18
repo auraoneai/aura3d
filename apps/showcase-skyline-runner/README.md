@@ -30,3 +30,21 @@ browser playback and the retained visual states.
 
 Boundary: this is a bounded certified-surface platformer showcase. It does not
 claim arbitrary GLB-to-game conversion or general engine parity.
+
+## Sound
+
+Original CC0 synthesized SFX (author "Aura3D synthesis", license CC0-1.0) are
+generated in-repo by `scripts/build-sfx.mjs` and registered as typed audio
+assets via the CLI, then played through the public `createGameAudio` API with a
+gesture-unlocked AudioContext. Cue-to-asset mapping lives in
+`src/skyline-audio-manifest.ts`; playback/evidence in `src/skyline-audio.ts`.
+
+## Known limits (routes must disclose gaps)
+
+- Root `createAuraApp` does not yet stream or layer music/sound-design tracks;
+  the summit theme is a short synthesized sting, not a scored ambient bed.
+- Played audio in automated tests is reported via cue evidence (`feel.audio`
+  counts tried / suppressed cues) because headless browsers have no audio output.
+- Sentinel/hero articulated poses still come from a bounded procedural pose;
+  root skinned-GLB clip playback remains a root-integration gap (published as
+  `animation.skinnedClipPlaybackProvenAtRoot: false`), not a route claim.

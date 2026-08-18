@@ -29,6 +29,18 @@ export interface FpsRunState {
   exitReached: boolean;
   lastHitName: string;
   spawnGuard: number;
+  /** Authored reload window; fire is blocked while > 0. */
+  reloadClock: number;
+  /** Set when a reload completes so the HUD can flash "mag seated". */
+  reloadJustFinished: boolean;
+  /** DOM hit-marker timer (UI only). */
+  hitMarker: number;
+  /** DOM damage vignette timer (UI only). */
+  damageFlash: number;
+  /** Timestamp-ish counter of the last empty-mag deny (for the deny click). */
+  dryFirePulse: number;
+  /** Audio cues played this run, for evidence. */
+  audioCues: string[];
 }
 
 export const MAX_HP = 100;
@@ -68,7 +80,13 @@ export function createInitialState(): FpsRunState {
     collected: [],
     exitReached: false,
     lastHitName: "",
-    spawnGuard: 8
+    spawnGuard: 6,
+    reloadClock: 0,
+    reloadJustFinished: false,
+    hitMarker: 0,
+    damageFlash: 0,
+    dryFirePulse: 0,
+    audioCues: []
   };
 }
 

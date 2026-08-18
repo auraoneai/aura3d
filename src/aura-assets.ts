@@ -2,98 +2,117 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
-  readonly "propBoulder": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "propConifer": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "propPineTree": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "propRockA": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "propRockB": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "robotcand": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseAdventurerRunner": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseAnimatedRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseArcadeCabinet": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseArcadeController": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseArchitectureCityBlock": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseAssemblyLine": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseBeachRaceMap": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseBetterLowPolyTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseBlockfallCabinet": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseButterflyCircuit": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCartoonPlatformWorld": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCartoonRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCc0FormulaRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCcByFormulaOpponent": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCityVehicle": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCleanRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCleanSportsCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseCuteRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseDataStation": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseDesertRaceMap": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseDetailedRaceCircuit": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseDungeonGameLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseExpressiveRobot": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseFloatingIslandMap": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseFloatingIslandWorld": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseHeadphones": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseHighpolySportsCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseIndustrialAssemblyArm": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseIsometricRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseKartCircuitTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseKenneyNeonRaceCircuit": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseKenneyOobiPlatformerHero": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseKenneyRaceCarRed": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseKenneyVerdantPlatformerWorld": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseLowPolyCharacterPack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseLowPolyGameLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseLowPolyKidRunner": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseLowPolyRaceTrackAlt": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseMarbleTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseMiniRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseModernBuildingOne": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseModernOfficeBuilding": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseModularTrackRoads": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseMorphCube": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseMorphExpression": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseMotocrossTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseNeonRoadLoop": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseOrangeIndustrialRobot": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseParticleCore": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcasePlatformerBasicPack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcasePlatformerWorldLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcasePlatformHero": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcasePlatformRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRaceGameEnvironment": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRaceRoadTracks": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRaceTestTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRacingTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseReadableKartCircuit": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseReadablePlatformLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRoboticWeldingWorkcell": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRooftopParkourWorld": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRunnerGirl": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRunnerLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseRunnerRobot": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSidekickRunner": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSideScrollerPlatformLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSideScrollerWorld": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSkylineCity": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSlotCarTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSmallCarRacingEnvironment": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSouthGardaTrack": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseSouthGardaTrack2": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseStylizedMaleRunner": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseStylizedMiniFloatingIsland": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseStylizedSkeletonRunner": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseTeaHouse": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseTexturedSportsCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseTsukubaCircuit": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseVoxelBuilding": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseVrPlatformLevel": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseWalkAnimatedGirl": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "turboHeroCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "turboRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "propBoulder": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "propConifer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "propPineTree": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "propRockA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "propRockB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "robotcand": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseAdventurerRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseAnimatedRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseArcadeCabinet": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseArcadeController": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseArchitectureCityBlock": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseAssemblyLine": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseBeachRaceMap": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseBetterLowPolyTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseBlockfallCabinet": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseButterflyCircuit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCartoonPlatformWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCartoonRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCc0FormulaRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCcByFormulaOpponent": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCityVehicle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCleanRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCleanSportsCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseCuteRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseDataStation": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseDesertRaceMap": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseDetailedRaceCircuit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseDungeonGameLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseExpressiveRobot": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseFloatingIslandMap": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseFloatingIslandWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseHeadphones": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseHighpolySportsCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseIndustrialAssemblyArm": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseIsometricRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseKartCircuitTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseKenneyNeonRaceCircuit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseKenneyOobiPlatformerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseKenneyRaceCarRed": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseKenneyVerdantPlatformerWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseLowPolyCharacterPack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseLowPolyGameLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseLowPolyKidRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseLowPolyRaceTrackAlt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseMarbleTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseMiniRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseModernBuildingOne": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseModernOfficeBuilding": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseModularTrackRoads": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseMorphCube": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseMorphExpression": AuraAssetDefinition & { readonly type: "model"; readonly format: "gltf"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseMotocrossTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseNeonRoadLoop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseOrangeIndustrialRobot": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseParticleCore": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcasePlatformerBasicPack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcasePlatformerWorldLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcasePlatformHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcasePlatformRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRaceGameEnvironment": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRaceRoadTracks": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRaceTestTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRaceTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRacingTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseReadableKartCircuit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseReadablePlatformLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRoboticWeldingWorkcell": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRooftopParkourWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRunnerGirl": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRunnerLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseRunnerRobot": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSidekickRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSideScrollerPlatformLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSideScrollerWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSkylineCity": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSlotCarTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSmallCarRacingEnvironment": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSouthGardaTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseSouthGardaTrack2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseStylizedMaleRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseStylizedMiniFloatingIsland": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseStylizedSkeletonRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseTeaHouse": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseTexturedSportsCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseTsukubaCircuit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseVoxelBuilding": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseVrPlatformLevel": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "showcaseWalkAnimatedGirl": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "skylineCheckpointFanfareSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineCoinChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineDeathStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineEmberDenySfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineEmberFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineJumpSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineLandDustSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineSentryDefeatSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineSentryTelegraphSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineSummitThemeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboCheckpointChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboCountdownBlipSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboDriftScuffSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboEngineSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboFinishFanfareSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboGoSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboHeroCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "turboOffTrackRumbleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "turboUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -60988,6 +61007,1302 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "skylineCheckpointFanfareSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineCheckpointFanfareSfx.cc43b14b.wav",
+    hash: "sha256-cc43b14b13726bbac0e9560fccf7cc510b51fbac2c16e171d85044d3005b9e54",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 41498,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/checkpointFanfare.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:17.249Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/checkpointFanfare.wav",
+      "outputPath": "public/aura-assets/skylineCheckpointFanfareSfx.cc43b14b.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineCheckpointFanfareSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineCoinChimeSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineCoinChimeSfx.713c1c69.wav",
+    hash: "sha256-713c1c695157c301a08f040fdcc41635a974b29046b578211a4d6b3be3eae1bb",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 25622,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/coinChime.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:16.993Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/coinChime.wav",
+      "outputPath": "public/aura-assets/skylineCoinChimeSfx.713c1c69.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineCoinChimeSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineDeathStingSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineDeathStingSfx.f2ac6ea7.wav",
+    hash: "sha256-f2ac6ea71104cd8a08a51d9f9a8d65e61eab50d1e0bfbd82c2f21d920058d6cc",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 41498,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/deathSting.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:18.552Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/deathSting.wav",
+      "outputPath": "public/aura-assets/skylineDeathStingSfx.f2ac6ea7.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineDeathStingSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineEmberDenySfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineEmberDenySfx.03a241f7.wav",
+    hash: "sha256-03a241f7538b7881c902a9c3bdf4d265ea4215535f8ad901d2213b7479424ff7",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 18566,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/emberDeny.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:17.786Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/emberDeny.wav",
+      "outputPath": "public/aura-assets/skylineEmberDenySfx.03a241f7.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineEmberDenySfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineEmberFireSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineEmberFireSfx.3ac98aa6.wav",
+    hash: "sha256-3ac98aa664f72f865554823f1b246fef13bf4d7635605bb7929740d2eef80971",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 22094,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/emberFire.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:17.517Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/emberFire.wav",
+      "outputPath": "public/aura-assets/skylineEmberFireSfx.3ac98aa6.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineEmberFireSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineJumpSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineJumpSfx.1899b228.wav",
+    hash: "sha256-1899b228ecc33311907e0b3ba6b1b579d82d30913eb8ae5597fe95f7826ca6b7",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 18566,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/jump.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:16.507Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/jump.wav",
+      "outputPath": "public/aura-assets/skylineJumpSfx.1899b228.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineJumpSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineLandDustSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineLandDustSfx.396ea6e8.wav",
+    hash: "sha256-396ea6e8b0fe67f0b1f837fd1aaca7c4567f685b727b2dc7caa4a1979dc0ce64",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 20330,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/landDust.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:16.750Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/landDust.wav",
+      "outputPath": "public/aura-assets/skylineLandDustSfx.396ea6e8.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineLandDustSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineSentryDefeatSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineSentryDefeatSfx.233a86f9.wav",
+    hash: "sha256-233a86f97e6d35b3b0006103bba32febdc3be2e960cee9b29c8ca33702a125c4",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 25622,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/sentryDefeat.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:18.038Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/sentryDefeat.wav",
+      "outputPath": "public/aura-assets/skylineSentryDefeatSfx.233a86f9.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineSentryDefeatSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineSentryTelegraphSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineSentryTelegraphSfx.7aade3e0.wav",
+    hash: "sha256-7aade3e015930fa7feda99620d0e78b01de2572f650d0e860da775853de2de5f",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 48554,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/sentryTelegraph.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:18.288Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/sentryTelegraph.wav",
+      "outputPath": "public/aura-assets/skylineSentryTelegraphSfx.7aade3e0.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineSentryTelegraphSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "skylineSummitThemeSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/skylineSummitThemeSfx.ff67c538.wav",
+    hash: "sha256-ff67c538ab9603e26cc39798405ebff5cdb8a7fe1612310707c3873a77479855",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 110294,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/assets/sfx/summitTheme.wav",
+        "sourcePage": "apps/showcase-skyline-runner/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T12:49:18.811Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/assets/sfx/summitTheme.wav",
+      "outputPath": "public/aura-assets/skylineSummitThemeSfx.ff67c538.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineSummitThemeSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboCheckpointChimeSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboCheckpointChimeSfx.49910789.wav",
+    hash: "sha256-499107890362f0812cdd82559f6f9698f8f545e2a80463b643db81961a2fb0cb",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 30032,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/checkpointChime.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:47.096Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/checkpointChime.wav",
+      "outputPath": "public/aura-assets/turboCheckpointChimeSfx.49910789.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboCheckpointChimeSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboCountdownBlipSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboCountdownBlipSfx.444a1b4a.wav",
+    hash: "sha256-444a1b4aa1ca1e455e7d58cea25f54fd4e2e1abb819f5fdf890acfd0b65677ee",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 17684,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/countdownBlip.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:47.322Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/countdownBlip.wav",
+      "outputPath": "public/aura-assets/turboCountdownBlipSfx.444a1b4a.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboCountdownBlipSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboDriftScuffSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboDriftScuffSfx.b36c5c04.wav",
+    hash: "sha256-b36c5c04c6045159d317a026d4186e9cfcb69b1995deae9c5abfc5b8d0c92028",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 68838,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/driftScuff.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:46.627Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/driftScuff.wav",
+      "outputPath": "public/aura-assets/turboDriftScuffSfx.b36c5c04.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboDriftScuffSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboEngineSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboEngineSfx.52e16988.wav",
+    hash: "sha256-52e1698875eddaf82e13c5d66c9cb56820510af6dd70391c8c97f7c27bb07e2f",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 105884,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/engine.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:34.995Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/engine.wav",
+      "outputPath": "public/aura-assets/turboEngineSfx.52e16988.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboEngineSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboFinishFanfareSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboFinishFanfareSfx.9699c8de.wav",
+    hash: "sha256-9699c8de7e677984a46785711d903eb393cc0b1da7dc3e65bbe6c3b36260dc49",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 73250,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/finishFanfare.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:53.429Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/finishFanfare.wav",
+      "outputPath": "public/aura-assets/turboFinishFanfareSfx.9699c8de.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboFinishFanfareSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboGoSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboGoSfx.dd87bfaf.wav",
+    hash: "sha256-dd87bfafffe757eab97376fcf4d7133913d10e863bd0c44c3172c393006b1dc2",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 51200,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/go.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:53.199Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/go.wav",
+      "outputPath": "public/aura-assets/turboGoSfx.dd87bfaf.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboGoSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
   "turboHeroCar": {
     type: "model",
     format: "glb",
@@ -62180,6 +63495,87 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
     },
   },
+  "turboOffTrackRumbleSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboOffTrackRumbleSfx.e3e59952.wav",
+    hash: "sha256-e3e59952bc353d17dea572b499f1b8ab99bef2be723f4a01cfd22a32f47daabb",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 60018,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/offTrackRumble.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:53.655Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/offTrackRumble.wav",
+      "outputPath": "public/aura-assets/turboOffTrackRumbleSfx.e3e59952.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboOffTrackRumbleSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
   "turboRaceCar": {
     type: "model",
     format: "glb",
@@ -62450,6 +63846,168 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "blockers": []
         }
       }
+    },
+  },
+  "turboUiConfirmSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboUiConfirmSfx.2b7ded10.wav",
+    hash: "sha256-2b7ded10dfd6741fc933688e7be1da9c71efd067420f1b2fd92bc77bd36cc465",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 15920,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/uiConfirm.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:53.885Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/uiConfirm.wav",
+      "outputPath": "public/aura-assets/turboUiConfirmSfx.2b7ded10.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboUiConfirmSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboWindSfx": {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/turboWindSfx.bc66a289.wav",
+    hash: "sha256-bc66a2899e6340e8c579c4bbb0771f80a0225ba2df9c157bd1f109fc9eba745a",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 105884,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/wind.wav",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-17T13:17:46.866Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/sfx/wind.wav",
+      "outputPath": "public/aura-assets/turboWindSfx.bc66a289.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboWindSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
     },
   },
 } as const);

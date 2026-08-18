@@ -1,6 +1,9 @@
 /**
- * Audio cue wishlist for a later CLI registration wave.
- * No playback is wired here; routes should not claim shipped SFX.
+ * Audio cue wishlist — historical intent retained for compatibility.
+ *
+ * Shipped SFX now live in `skyline-audio-manifest.ts` (cue -> typed CLI-registered
+ * asset) and playback in `skyline-audio.ts` (createGameAudio). This constant is kept
+ * because evidence consumers already read `gameplay.audioCueWishlist`.
  */
 export const SKYLINE_AUDIO_CUE_WISHLIST = [
   { id: "jump", trigger: "hero leaves ground", mood: "light spring pluck" },

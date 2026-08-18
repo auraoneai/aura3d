@@ -176,6 +176,22 @@ export interface AuraClashArenaProof {
   readonly performance: AuraClashPerformanceProof;
   readonly audio: AuraClashAudioProof;
   readonly deterministicReplay: AuraClashDeterministicReplayProof;
+  /**
+   * New-feel evidence for the combat picture: victim flash, special screen freeze, and the running
+   * rival AI role. Presentation-only quantities measured from route state (no combat-sim mutation).
+   */
+  readonly feel?: {
+    /** Peak confirmed-hit flash seconds currently active on the player rig (0 at rest). */
+    readonly playerFlashStrength: number;
+    /** Peak confirmed-hit flash seconds currently active on the rival rig (0 at rest). */
+    readonly rivalFlashStrength: number;
+    /** Special screen-freeze seconds currently active on the player rig (0 at rest). */
+    readonly playerSpecialFreeze: number;
+    /** The rival AI role resolved for the current frame. */
+    readonly rivalAiRole: string;
+    /** Whether input buffering is fighter-length (6-8 frames). */
+    readonly fighterLengthBuffering: boolean;
+  };
   readonly engineCombat: {
     readonly frame: number;
     readonly activeAttacks: number;
@@ -227,6 +243,13 @@ export function createAuraClashArenaProof(input: AuraClashArenaProofInput): Aura
     performance: input.performance,
     audio: input.audio,
     deterministicReplay: input.deterministicReplay,
-    engineCombat: input.engineCombat
+    engineCombat: input.engineCombat,
+    feel: input.feel ?? {
+      playerFlashStrength: 0,
+      rivalFlashStrength: 0,
+      playerSpecialFreeze: 0,
+      rivalAiRole: "neutral",
+      fighterLengthBuffering: true
+    }
   };
 }

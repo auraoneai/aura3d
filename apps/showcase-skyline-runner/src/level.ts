@@ -140,6 +140,28 @@ export const SKYLINE_EMBER_PICKUPS = [1, 3, 6, 8].map((section, index) => {
   };
 });
 
+/**
+ * Optional high-risk reward shards — one per act (one per representative section),
+ * placed high above the certified run line so grabbing one costs a precise, elevated
+ * jump that the straight-line finish path never requires. They are strictly optional:
+ * the finished course and the acceptance window are unaffected by skipping them. The
+ * deterministic proof ignores them, which is exactly why the 70-115s window stays intact
+ * regardless of risk-taking.
+ */
+export const SKYLINE_HIGH_RISK_SHARDS = [0, 2, 4, 6, 8].map((section, index) => {
+  const platform = nearestPlatform(section, 9.2);
+  return {
+    section,
+    id: sectionId(section, `high-risk-shard-${index + 1}`),
+    x: platform.x + platform.width / 2,
+    // Sits ~0.9 units above the platform (about double the standard shard height) so it is
+    // reachable only by a deliberate full-variable jump, not by the ordinary traversal.
+    y: platform.y + platform.height + 0.92,
+    value: 120,
+    radius: 0.4
+  };
+});
+
 export const skylinePlayableSurfaceMap = {
   ...gameGeometryContract.surfaceMap,
   surfaces: [...gameGeometryContract.surfaceMap.surfaces],
@@ -211,7 +233,7 @@ export function createSkylineLevel() {
       checkpoints: extendedCheckpoints,
       hazards: [...extendedHazards, ...SKYLINE_SENTRY_ENCOUNTERS],
       movingPlatforms: SKYLINE_MOVING_PLATFORMS,
-      collectibles: [...extendedCollectibles, ...SKYLINE_EMBER_PICKUPS],
+      collectibles: [...extendedCollectibles, ...SKYLINE_EMBER_PICKUPS, ...SKYLINE_HIGH_RISK_SHARDS],
       // Keep collision and presentation in one scale contract. Without this,
       // game.platformer falls back to its 0.45 x 1.0 default collider even
       // though the rendered hero is only 0.44 units tall.

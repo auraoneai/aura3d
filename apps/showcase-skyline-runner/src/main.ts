@@ -21,6 +21,8 @@ import {
 } from "./act-palette";
 import { SKYLINE_AUDIO_CUE_WISHLIST } from "./audio-cues";
 import { applySkylineActPaletteVisibility, createSkylineFeel } from "./feel";
+import { createSkylineAudio, type SkylineAudioController, type SkylineAudioProof } from "./skyline-audio";
+import { skylineAudioManifest, type SkylineAudioCue } from "./skyline-audio-manifest";
 import {
   buildSkylineHudSnapshot,
   isSkylineDebugMode,
@@ -160,6 +162,7 @@ const skylineSummitBeaconNodes = [
 const platforms = level.platforms ?? [];
 const checkpoints = level.checkpoints ?? [];
 const hazards = level.hazards ?? [];
+const collectibles = level.collectibles ?? [];
 const characterScaleRatio = level.assetBinding.characterScaleRatio ?? 1;
 const platformerState = game.platformer(level);
 let state = platformerState.snapshot();
@@ -502,11 +505,22 @@ const platformerCamera = game.platformerCameraRig({
 const cameraLookAhead = compactViewport ? 0.32 : 1.05;
 const cameraDistance = compactViewport ? 4.6 : 3.75;
 const cameraHeight = compactViewport ? 0.58 : 0.62;
+const skylineAudio = createSkylineAudio(reducedMotion);
 const skylineFeel = createSkylineFeel({
   reducedMotion,
   cameraBaseOffset: [round(cameraLookAhead * 0.42), round(cameraHeight), round(cameraDistance)],
-  cameraTargetOffset: [round(cameraLookAhead), 0.34, 0]
+  cameraTargetOffset: [round(cameraLookAhead), 0.34, 0],
+  audio: skylineAudio
 });
+// Unlock the web-audio context on the first real interaction so autoplay policy
+// lets synth SFX play (mirrors the Clash gesture-unlock discipline).
+const skylineAudioUnlock = (): void => {
+  window.removeEventListener("pointerdown", skylineAudioUnlock);
+  window.removeEventListener("keydown", skylineAudioUnlock);
+  void skylineAudio.unlock();
+};
+window.addEventListener("pointerdown", skylineAudioUnlock);
+window.addEventListener("keydown", skylineAudioUnlock);
 let hudElements: ReturnType<typeof setupSkylineHud> | undefined;
 let paused = false;
 let lastActPaletteIndex = 0;
@@ -637,8 +651,33 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).rotate(Math.PI / 2, 0, 0).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-objective-pulse", {
       tags: ["feedback", "objective", "renderer-owned"]
     })))
+    /*
+     * Sky-shard collectibles render in the scene as emissive glitter gems (not just
+     * counter increments). Each carries a small catching halo; the feel loop pulses
+     * the scale so they visibly sparkle while idle. They are feedback/dressing only
+     * and never stand in for the typed hero or world.
+     */
+    .addMany(collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).map((collectible) => {
+      const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
+      return primitives.sphere({
+        name: "sky shard glitter " + collectible.id,
+        material: material.emissive({
+          name: "sky shard glow " + collectible.id,
+          color: "#fff1a8",
+          emissive: "#ffe9a8",
+          emissiveIntensity: 1.3,
+          roughness: 0.2
+        })
+      })
+        .position(sx, sy + 0.05, GAMEPLAY_ACTOR_DEPTH)
+        .scale([0.12, 0.12, 0.12])
+        .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
+          tags: ["pickup", "sky-shard", "collectible", "renderer-owned"]
+        }));
+    }))
     .addMany(SKYLINE_EMBER_PICKUPS.map((pickup, index) => {
       const [px, py] = platformerScene.toScenePoint({ x: pickup.x, y: pickup.y });
+      const collectible = collectibles.find((item) => item.id === pickup.id);
       return primitives.sphere({
         name: `ember charge ${index + 1}`,
         material: material.emissive({
@@ -705,6 +744,15 @@ const emberPickupNodes = Object.fromEntries(
   SKYLINE_EMBER_PICKUPS.map((pickup) => [pickup.id, app.nodes.require(`skyline-ember-pickup-${pickup.id}`)])
 );
 const emberVolleyNodes = [0, 1, 2, 3].map((index) => app.nodes.require(`skyline-ember-volley-${index}`));
+// Renderer-owned sky-shard glitter nodes, keyed by collectible id so the frame loop can
+// pulse them (idle sparkle) and hide them the moment the shard is collected.
+const skyShardGlitterNodes: Record<string, RuntimeNodeHandleLike> = Object.fromEntries(
+  collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).map(
+    (collectible) => [collectible.id, app.nodes.require(`skyline-pickup-glitter-${collectible.id}`)]
+  )
+);
+// Raised only when an idle glitter pulse was actually applied to at least one rendered shard node.
+const collectedIdleSparkleProof = { shardSparkleRendered: false, glitterNodeCount: Object.keys(skyShardGlitterNodes).length };
 interface EmberVolley {
   x: number;
   y: number;
@@ -789,6 +837,33 @@ function renderEmberVolleys(): void {
     const taken = state.collected.includes(pickup.id);
     node.setVisible(!taken);
     if (taken) node.setScale([...HIDDEN_FEEDBACK_SCALE]);
+  }
+  renderSkyShardGlitter();
+}
+
+/**
+ * Idle collectible glitter: each uncollected sky-shard pulses its emissive scale so
+ * shards read as live pickups in the scene, not just counters. The pulse is driven by
+ * sim time so it is deterministic; taken shards collapse to the hidden scale. This is
+ * renderer feedback via the public runtime node API, not a CSS overlay.
+ */
+function renderSkyShardGlitter(): void {
+  const t = state.time;
+  for (const collectible of collectibles) {
+    if (String(collectible.id).includes("ember-charge")) continue;
+    const node = skyShardGlitterNodes[collectible.id];
+    if (!node) continue;
+    if (state.collected.includes(collectible.id)) {
+      node.setVisible(false);
+      node.setScale([...HIDDEN_FEEDBACK_SCALE]);
+      continue;
+    }
+    // Gentle 1.6 Hz pulse with a small phase offset per shard so neighbours do not flicker in lockstep.
+    const phase = collectible.id.length * 0.7;
+    const pulse = 1 + Math.sin(t * 10 + phase) * 0.18;
+    node.setVisible(true);
+    node.setScale([0.12 * pulse, 0.12 * pulse, 0.12 * pulse]);
+    collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }
 let compositionSubjectSuppressed = false;
@@ -1104,6 +1179,21 @@ const mountedEvidence = {
     noDebugSurfaceGuides: true,
     independentVisualReviewStatus: "pending"
   },
+  /**
+   * Player-facing feel state published every frame so tests can assert the new
+   * ceremony without reading DOM. actIndex is resolved from traversal (not mounted
+   * guesswork); telegraph/sentryDefeat/pause are the live feel-loop booleans.
+   */
+  feel: {
+    actIndex: 0,
+    actTitle: "Home Grove",
+    telegraphActive: false,
+    sentryDefeated: false,
+    emberVolleySeen: false,
+    paused: false,
+    landDipApplied: false,
+    dashPunchApplied: false
+  },
   primaryAssets: ["showcaseKenneyOobiPlatformerHero", "showcaseKenneyVerdantPlatformerWorld"],
   platformer: {
     cameraIntent: "side-scroller",
@@ -1135,7 +1225,10 @@ const mountedEvidence = {
     authoredPlayableSeconds,
     pauseFreezesSimulation: false,
     audioCueWishlist: SKYLINE_AUDIO_CUE_WISHLIST
-  }
+  },
+  audio: skylineAudio.proof(),
+  // Renderer-owned idle sparkle pulses on sky-shards and ember pickups in the scene.
+  collectibleGlitter: collectedIdleSparkleProof
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_SKYLINE_RUNNER__", { value: mountedEvidence, configurable: true, writable: true });
 updatePlatformerHud();
@@ -1197,6 +1290,18 @@ function publishPlatformerEvidence(): void {
   // before the renderer's first draw, so pass and shadow state are not yet observable
   // and every claim would read as absent.
   mountedEvidence.rootRendererIntegration = rootRendererIntegrationEvidence();
+  mountedEvidence.audio = skylineAudio.proof();
+  mountedEvidence.collectibleGlitter = collectedIdleSparkleProof;
+  mountedEvidence.feel = {
+    actIndex: resolveSkylineActIndex(state.player.x),
+    actTitle: resolveSkylineAct(state.player.x).title,
+    telegraphActive: skylineFeel.snapshot().actIndex >= 0 && skylineFeel.telegraphActive(),
+    sentryDefeated: skylineFeel.sentryDefeatSeen(),
+    emberVolleySeen: mountedEvidence.gameplay.emberVolleyFired,
+    paused,
+    landDipApplied: skylineFeel.landDipSeen(),
+    dashPunchApplied: skylineFeel.dashPunchSeen()
+  };
   updatePlatformerHud();
 }
 
@@ -1343,6 +1448,9 @@ app.onFrame(({ dt }) => {
     clearHazardIds: clearedThisFrame
   });
   for (const event of state.events) {
+    if (event.type === "jump") {
+      skylineFeel.onJump();
+    }
     if (event.type === "land") {
       const pose = platformerScene.toScenePlayer(state.player);
       skylineFeel.onLand(pose.position);
@@ -1351,12 +1459,20 @@ app.onFrame(({ dt }) => {
       const collectible = level.collectibles?.find((item) => item.id === event.id);
       if (collectible) {
         const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
-        skylineFeel.onCollect([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+        // Ember charges carry their own pickup feel + cue; sky-shards get the coin chime.
+        if (String(event.id).includes("ember-charge")) {
+          skylineFeel.onEmberPickup([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+        } else {
+          skylineFeel.onCollect([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+        }
       }
     }
     if (event.type === "checkpoint") {
       const act = resolveSkylineAct(state.player.x);
       skylineFeel.onCheckpoint(act.title);
+    }
+    if (event.type === "hazard" || event.type === "fall") {
+      skylineFeel.onDeath();
     }
     if (event.type === "defeat" || event.type === "stomp") {
       const encounter = SKYLINE_SENTRY_ENCOUNTERS.find((entry) => entry.id === event.id);
@@ -1364,6 +1480,9 @@ app.onFrame(({ dt }) => {
         const [sx, sy] = platformerScene.toScenePoint({ x: encounter.x, y: encounter.y });
         skylineFeel.onSentryDefeat([sx, sy, GAMEPLAY_ACTOR_DEPTH], event.type === "stomp" ? 100 : 150);
       }
+    }
+    if (event.type === "complete") {
+      skylineFeel.onSummit();
     }
   }
   challengeEvidence = runnerChallenge.step(step, previous, state);

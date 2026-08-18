@@ -90,6 +90,14 @@ export type AuraClashArenaProof = {
     respondingToCombat: boolean;
     settled: boolean;
   };
+  /** New-feel combat picture evidence published from mounted runtime state. */
+  feel?: {
+    playerFlashStrength: number;
+    rivalFlashStrength: number;
+    playerSpecialFreeze: number;
+    rivalAiRole: string;
+    fighterLengthBuffering: boolean;
+  };
   lighting?: {
     contractId: "aura-clash-lighting-review-v1";
     presetId: string;

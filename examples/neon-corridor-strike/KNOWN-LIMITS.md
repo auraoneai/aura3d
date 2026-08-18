@@ -9,7 +9,11 @@ Route-local prototype. These are not public `@aura3d/engine` claims.
 - `@aura3d/engine/controls` `PointerLockControls` binds a renderer camera object.
   This route uses `game.input` pointer deltas plus document pointer lock on the
   `createAuraApp` canvas.
-- Enemy AI is distance patrol / aggro / chase. No Recast nav mesh.
+- Enemy AI is an authored alarm plus proximity rush: hostiles hold position
+  during the spawn guard, then all four charge when the corridor wakes up.
+  Swipes telegraph 0.42s before the damage frame. No Recast nav mesh.
+- Hostiles are solid against hitscan and walls but not against the player
+  capsule; touch damage is proximity-authored in route code.
 - Physics walls are an authored corridor hull. They are aligned to the playable
   volume, not a triangle mesh of the imported GLB.
 - `medkit` resolved to a medical gurney prop. Treat it as a health pickup stand-in.
@@ -17,7 +21,8 @@ Route-local prototype. These are not public `@aura3d/engine` claims.
   floor rails are set dressing, not bloom. Do not claim bloom, SSAO, WebGPU,
   full PBR, skinned death clips, or DOOM parity.
 - Shot feedback is an authored muzzle flash plus a traveling pulse bolt and
-  tail that leave the rifle along the hitscan. `game.effects` flashes are too
+  tail that leave the rifle along the hitscan, with a muzzle point light and
+  end-of-shot impact flashes. `game.effects` flashes are too
   dim to carry the graphic alone. This is not a projectile physics kit.
 - Walk height is locked so the viewmodel does not inherit capsule bounce. Jump
   is not a supported mechanic on this route.

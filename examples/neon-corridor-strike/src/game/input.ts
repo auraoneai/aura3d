@@ -8,7 +8,7 @@ export function createFpsInput(): GameInputController {
       back: ["KeyS", "ArrowDown"],
       left: ["KeyA", "ArrowLeft"],
       right: ["KeyD", "ArrowRight"],
-      jump: ["Space"],
+      // Jump is intentionally not bound: walk height is locked on this route.
       sprint: ["ShiftLeft", "ShiftRight"],
       fire: ["KeyJ", "KeyF"],
       reload: ["KeyR"],

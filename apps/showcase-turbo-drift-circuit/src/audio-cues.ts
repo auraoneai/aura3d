@@ -1,20 +1,21 @@
 /**
- * Audio cue wishlist for a later CLI registration wave.
- * No playback in this wave — names only, for orchestrator handoff.
+ * Turbo Drift Circuit committed audio cues.
+ *
+ * Each id maps to a synthesized CC0 WAV asset registered through the CLI
+ * (`assets.turbo*Sfx`) and played via `createGameAudio` in `turbo-audio.ts`.
+ * `audioCueWishlist` is retained as an evidence field name for compatibility;
+ * the list now reflects the cues actually implemented and played by the route.
  */
 export const TURBO_AUDIO_CUE_WISHLIST = [
-  "start-light-red-tick",
-  "start-light-go-blast",
-  "engine-rev-loop",
-  "tyre-scrub-loop",
-  "nitro-whoosh",
-  "rival-pass-doppler",
-  "checkpoint-beep",
-  "lap-complete-chime",
+  "engine",
+  "drift-scuff",
+  "wind",
+  "checkpoint",
+  "countdown",
+  "go",
   "finish-fanfare",
-  "pause-menu-blip",
-  "reset-confirm",
-  "off-track-grass-rumble"
+  "off-track",
+  "ui-confirm"
 ] as const;
 
 export type TurboAudioCueId = (typeof TURBO_AUDIO_CUE_WISHLIST)[number];

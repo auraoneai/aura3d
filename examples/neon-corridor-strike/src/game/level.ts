@@ -1,6 +1,7 @@
 import {
   camera,
   createCollisionLayers,
+  effects,
   game,
   groundedRenderedAssetPlacement,
   lights,
@@ -13,16 +14,28 @@ import { assets } from "../aura-assets";
 import { ENEMIES, ENEMY_BODY_Y, ENEMY_VISUAL_Y } from "./enemies";
 import { EYE_HEIGHT, LOOK_AHEAD, PLAYER_START } from "./state";
 
+/**
+ * Hostiles are solid against hitscan and the corridor hull, but NOT against the
+ * player capsule: touch damage is proximity-authored in enemies.ts, and keeping
+ * the player able to move through hostiles keeps the rush deterministic instead
+ * of turning corpses into physics wedges. Route-local design, documented in
+ * KNOWN-LIMITS.md.
+ */
 export const layers = createCollisionLayers({
-  player: ["wall", "pickup", "enemy"],
+  player: ["wall", "pickup"],
   bullet: ["enemy", "wall"],
-  enemy: ["bullet", "wall", "player"],
+  enemy: ["bullet", "wall"],
   wall: ["player", "bullet", "enemy"],
   pickup: ["player"]
 });
 
+/**
+ * ammo-1 sits on the playable spec's walk path (strafe right, then forward from
+ * spawn) so the pickup trigger is provably reachable. The others reward pushing
+ * deeper into the corridor.
+ */
 export const PICKUPS = [
-  { id: "ammo-1", kind: "ammo" as const, x: 1.8, z: 3.4 },
+  { id: "ammo-1", kind: "ammo" as const, x: 1.9, z: 7.4 },
   { id: "ammo-2", kind: "ammo" as const, x: -1.6, z: -3.1 },
   { id: "med-1", kind: "health" as const, x: 0.2, z: -1.2 }
 ] as const;
@@ -39,7 +52,7 @@ export function buildScene() {
     .add(model(assets.pulseRifle, { name: "pulse rifle viewmodel" }).position(0.28, 1.18, 5.7).scale(rifle.scale).runtime(game.runtimeNode("pulse-rifle", { tags: ["weapon"] })))
     .addMany(ENEMIES.map((enemy) => {
       const placed = groundedRenderedAssetPlacement(enemy.asset === "impA" ? assets.impA : assets.impB, {
-        targetHeight: 1.25,
+        targetHeight: 1.5,
         floorY: ENEMY_VISUAL_Y,
         x: enemy.x,
         z: enemy.z
@@ -67,11 +80,11 @@ export function buildScene() {
     }).position(0, -0.02, 1).scale([8.5, 0.08, 20]))
     .add(primitives.box({
       name: "left wall panel",
-      material: material.glowingEmissive({ color: "#1c6d88", emissive: "#38d6ff", emissiveIntensity: 1.4 })
+      material: material.pbr({ color: "#101a26", roughness: 0.55, metalness: 0.4 })
     }).position(-3.4, 1.4, 1).scale([0.08, 2.6, 18]))
     .add(primitives.box({
       name: "right wall panel",
-      material: material.glowingEmissive({ color: "#6a2a58", emissive: "#ff4fd0", emissiveIntensity: 1.2 })
+      material: material.pbr({ color: "#1a1022", roughness: 0.55, metalness: 0.4 })
     }).position(3.4, 1.4, 1).scale([0.08, 2.6, 18]))
     .add(primitives.box({
       name: "far wall panel",
@@ -79,7 +92,7 @@ export function buildScene() {
     }).position(0, 1.4, -8.8).scale([7, 2.6, 0.08]))
     .add(primitives.box({
       name: "ceiling panel",
-      material: material.emissive({ color: "#1a2634", emissive: "#1a2634", emissiveIntensity: 0.45 })
+      material: material.emissive({ color: "#141d29", emissive: "#141d29", emissiveIntensity: 0.28 })
     }).position(0, 2.7, 1).scale([8, 0.08, 18]))
     .add(primitives.sphere({
       name: "muzzle flash 0",
@@ -103,22 +116,67 @@ export function buildScene() {
     }).position(0, 1.1, -8.4).scale([0.35, 2.1, 0.18]).runtime(game.runtimeNode("exit-marker", { tags: ["exit"] })))
     .add(primitives.box({
       name: "neon rail left",
-      material: material.emissive({ color: "#38d6ff", emissive: "#38d6ff", emissiveIntensity: 1.15 })
+      material: material.emissive({ color: "#38d6ff", emissive: "#38d6ff", emissiveIntensity: 1.35 })
     }).position(-2.15, 0.08, -1).scale([0.05, 0.03, 8.4]))
     .add(primitives.box({
       name: "neon rail right",
-      material: material.emissive({ color: "#ff4fd0", emissive: "#ff4fd0", emissiveIntensity: 0.95 })
+      material: material.emissive({ color: "#ff4fd0", emissive: "#ff4fd0", emissiveIntensity: 1.15 })
     }).position(2.15, 0.08, -1).scale([0.05, 0.03, 8.4]))
-    .add(lights.ambient({ intensity: 0.72, color: "#9eb4cc" }))
-    .add(lights.directional({ position: [4, 8, 3], intensity: 2.4, color: "#fff1d6" }))
-    .add(lights.directional({ position: [-3, 3, -6], intensity: 1.6, color: "#4fd0ff" }))
-    .add(lights.point({ name: "spawn fill", position: [0, 2.2, 9], color: "#d7e8ff", intensity: 7.2 }))
-    .add(lights.point({ name: "forward fill", position: [0, 2.0, 5], color: "#9be7ff", intensity: 6.0 }))
-    .add(lights.point({ name: "enemy key", position: [0, 2.2, 0.6], color: "#ffe7c2", intensity: 5.6 }))
-    .add(lights.point({ name: "mid cyan practical", position: [0.2, 2.0, -0.2], color: "#38d6ff", intensity: 3.8 }))
-    .add(lights.point({ name: "warm side practical", position: [-2.1, 1.7, -2.4], color: "#ff9d5c", intensity: 2.8 }))
-    .add(lights.point({ name: "deep cyan", position: [1.4, 1.9, -5.2], color: "#38d6ff", intensity: 3.2 }))
-    .add(lights.point({ name: "exit glow", position: [0, 1.8, -7.6], color: "#3dffb0", intensity: 3.4 }))
+    .add(primitives.box({
+      name: "hazard strip left",
+      material: material.glowingEmissive({ color: "#5a3a12", emissive: "#ffb020", emissiveIntensity: 1.5 })
+    }).position(-3.3, 0.22, -3.4).scale([0.06, 0.05, 6.2]))
+    .add(primitives.box({
+      name: "hazard strip right",
+      material: material.glowingEmissive({ color: "#5a3a12", emissive: "#ffb020", emissiveIntensity: 1.5 })
+    }).position(3.3, 0.22, -3.4).scale([0.06, 0.05, 6.2]))
+    .add(primitives.box({
+      name: "ceiling strip near",
+      material: material.glowingEmissive({ color: "#274056", emissive: "#9be7ff", emissiveIntensity: 1.7 })
+    }).position(0, 2.62, 5.6).scale([3.2, 0.04, 0.14]))
+    .add(primitives.box({
+      name: "ceiling strip mid",
+      material: material.glowingEmissive({ color: "#274056", emissive: "#9be7ff", emissiveIntensity: 1.5 })
+    }).position(0, 2.62, 0.4).scale([3.2, 0.04, 0.14]))
+    .add(primitives.box({
+      name: "ceiling strip far",
+      material: material.glowingEmissive({ color: "#3d2a20", emissive: "#ffb020", emissiveIntensity: 1.4 })
+    }).position(0, 2.62, -5.4).scale([3.2, 0.04, 0.14]))
+    .addMany([
+      [-3.36, 6.2, "#38d6ff"],
+      [-3.36, 1.2, "#38d6ff"],
+      [-3.36, -3.8, "#38d6ff"],
+      [-3.36, -8.2, "#38d6ff"],
+      [3.36, 6.2, "#ff4fd0"],
+      [3.36, 1.2, "#ff4fd0"],
+      [3.36, -3.8, "#ff4fd0"],
+      [3.36, -8.2, "#ff4fd0"]
+    ].map(([x, z, color], index) =>
+      primitives.box({
+        name: "wall neon strip " + index,
+        material: material.glowingEmissive({ color: "#0a0f16", emissive: String(color), emissiveIntensity: 1.6 })
+      }).position(Number(x), 1.5, Number(z)).scale([0.05, 2.2, 0.09])
+    ))
+    // Scene fog: depth haze toward the exit, not a CSS wash.
+    .add(effects.fog({ density: 0.052, color: "#0a1520" }))
+    // Authored hierarchy: dim cool ambient, warm key from the corridor depths,
+    // cyan rim from behind the player so the rifle silhouette reads.
+    .add(lights.ambient({ intensity: 0.34, color: "#3a5570" }))
+    .add(lights.directional({ position: [0, 6, -10], intensity: 1.5, color: "#ffd9a0" }))
+    .add(lights.directional({ position: [0, 4, 12], intensity: 1.9, color: "#4fd0ff" }))
+    .add(lights.point({ name: "spawn fill", position: [0, 2.3, 9], color: "#bfe0ff", intensity: 4.2 }))
+    .add(lights.point({ name: "forward fill", position: [0, 2.1, 5.6], color: "#9be7ff", intensity: 4.6 }))
+    .add(lights.point({ name: "enemy key", position: [0, 2.2, 0.6], color: "#ffe7c2", intensity: 6.6 }))
+    .add(lights.point({ name: "mid cyan practical", position: [0.2, 2.0, -0.2], color: "#38d6ff", intensity: 3.4 }))
+    .add(lights.point({ name: "warm side practical", position: [-2.1, 1.7, -2.4], color: "#ff9d5c", intensity: 3.2 }))
+    .add(lights.point({ name: "deep cyan", position: [1.4, 1.9, -5.2], color: "#38d6ff", intensity: 3.0 }))
+    .add(lights.point({ name: "hazard amber practical", position: [2.6, 1.2, -3.4], color: "#ffb020", intensity: 2.4 }))
+    .add(lights.point({ name: "exit glow", position: [0, 1.8, -7.6], color: "#3dffb0", intensity: 3.6 }))
+    // Muzzle light: parked under the floor until a shot teleports it to the barrel.
+    // Runtime handles cannot change light intensity, so the attenuation does the
+    // hiding while it sits nine metres below the deck.
+    .add(lights.point({ name: "shot light", position: [0, -8, 0], color: "#ff9d12", intensity: 5.5 })
+      .runtime(game.runtimeNode("shot-light", { tags: ["fx"] })))
     .camera(camera.follow({
       targetNode: "look-target",
       offset: [0, 0.12, LOOK_AHEAD],

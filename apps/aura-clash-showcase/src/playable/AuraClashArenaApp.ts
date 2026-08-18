@@ -69,7 +69,8 @@ import {
   resolveRivalAiRole,
   rivalAiStrikeBias,
   rivalAiWantsDash,
-  type ClashMoveId
+  type ClashMoveId,
+  type RivalAiRole
 } from "./combat/clashFeel";
 import {
   emptyComboState,
@@ -157,6 +158,12 @@ interface FighterState {
     combo: ComboState;
     inputBuffer: { readonly move: MoveId; readonly expiresAt: number } | null;
     knockdownTimer: number;
+    /** Confirmed-hit material/emissive flash remaining (presentation-only). */
+    hitFlashRemaining: number;
+    /** True while an emissive flash is currently driving the fighter's materials. */
+    flashActive: boolean;
+    /** Special showpiece screen-freeze remaining (visual-only; combat sim keeps running). */
+    specialFreezeRemaining: number;
     invulnerableTimer: number;
     queuedAttack: MoveId | null;
     attack: ActiveAttack | null;
@@ -187,6 +194,8 @@ interface ActiveAttack {
 interface RuntimeFighter {
   state: FighterState;
   actor: TypedGLBActor;
+  /** Outfit/skin material handles flashed on confirmed hit; renderer material parameters, not a DOM/CSS overlay. */
+  flashMaterials: FighterFlashMaterial[];
   scale: number;
   yOffset: number;
   visualFacingMultiplier: 1 | -1;
@@ -720,12 +729,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     playerAvailableClips: playerActor.evidence.clips,
     rivalAvailableClips: rivalActor.evidence.clips
   });
-  applyFighterMaterialDirection(playerActor, "player");
-  applyFighterMaterialDirection(rivalActor, "rival");
+  const playerFlashMaterials = collectFighterFlashMaterials(playerActor, "player");
+  const rivalFlashMaterials = collectFighterFlashMaterials(rivalActor, "rival");
 
   const playerRuntime: RuntimeFighter = {
     state: playerState,
     actor: playerActor,
+    flashMaterials: playerFlashMaterials,
     scale: stage.fighterScale,
     yOffset: stage.fighterYOffset,
     visualFacingMultiplier: 1,
@@ -736,6 +746,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const rivalRuntime: RuntimeFighter = {
     state: rivalState,
     actor: rivalActor,
+    flashMaterials: rivalFlashMaterials,
     scale: stage.fighterScale,
     yOffset: stage.fighterYOffset,
     visualFacingMultiplier: 1,
@@ -817,9 +828,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   });
 
   const renderedStage = createRenderedArenaStage();
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const renderPreset = createSideViewGameRenderPreset({
     debugVolumesEnabled: false,
-    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    reducedMotion
   });
   const arenaLighting = createLightingRig({ preset: "urban-neon", intensityScale: 1.08, shadows: true });
 
@@ -960,11 +972,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const restingFrameWidthUnits = Number((restingBounds.max[0] - restingBounds.min[0]).toFixed(4));
     return {
       impactStrength: Number(impact.toFixed(4)),
-      punchIn: Number(clamp(impact / 0.13, 0, 1).toFixed(4)),
+      punchIn: Number((reducedMotion ? 0 : clamp(impact / 0.13, 0, 1)).toFixed(4)),
       roundOverFraming: roundOver,
       frameWidthUnits,
       restingFrameWidthUnits,
-      respondingToCombat: Math.abs(frameWidthUnits - restingFrameWidthUnits) > 1e-4,
+      respondingToCombat: !reducedMotion && Math.abs(frameWidthUnits - restingFrameWidthUnits) > 1e-4,
       settled: !roundOver || impact === 0
     };
   }
@@ -982,10 +994,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const baseBounds = restingCameraBounds();
     if (impact <= 0 && !roundOver) return baseBounds;
     // Hit-stop peaks at 0.13s (special). Normalise so light/heavy/special scale with move weight.
-    const punch = clamp(impact / 0.13, 0, 1);
+    const punchSource = clamp(impact / 0.13, 0, 1);
+    // Reduced motion disables the camera shake/punch (Phase 5 shared gate). The frame stays at the
+    // resting volume so a reduced-motion player gets no jitter or zoom from combat.
+    const punch = reducedMotion ? 0 : punchSource;
     // Deterministic jitter from the frame counter, scaled by the decaying impulse, so it settles.
-    const jitterX = roundOver ? 0 : Math.sin(frame * 2.7) * 0.045 * punch;
-    const jitterY = roundOver ? 0 : Math.cos(frame * 3.1) * 0.032 * punch;
+    const jitterX = roundOver || reducedMotion ? 0 : Math.sin(frame * 2.7) * 0.045 * punch;
+    const jitterY = roundOver || reducedMotion ? 0 : Math.cos(frame * 3.1) * 0.032 * punch;
     // Punch-in tightens by up to 9%; the KO frame widens by 6% and lifts the top of frame.
     const tighten = punch * 0.09;
     const koWiden = roundOver ? 0.06 : 0;
@@ -1015,6 +1030,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
   // Test-driver only; never set during normal play, so the shipped AI still guards and attacks.
   let rivalPassive = false;
+  let lastRivalAiRole: RivalAiRole = "neutral";
   let diagnostics: RenderDeviceDiagnostics = renderer.getDiagnostics();
   let performanceProof: PerformanceProof = { frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls, budgetOk: true };
   let combatSnapshot = combatWorld.snapshot();
@@ -1048,8 +1064,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         ...renderedStage.collect(tweaks, frame),
         ...collectFighterRenderItems(playerRuntime),
         ...collectFighterRenderItems(rivalRuntime),
-        ...createFighterEffectItems(playerRuntime),
-        ...createFighterEffectItems(rivalRuntime),
+        ...createFighterEffectItems(playerRuntime, reducedMotion),
+        ...createFighterEffectItems(rivalRuntime, reducedMotion),
         ...createSparkItems(sparks)
       ];
       lastSubmittedRenderLabels = items.flatMap((item) => (typeof item.label === "string" ? [item.label] : []));
@@ -1188,6 +1204,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           rivalState.aiCooldown = 8;
           playerState.attack = null;
           rivalState.attack = null;
+          playerState.hitFlashRemaining = 0;
+          rivalState.hitFlashRemaining = 0;
+          playerState.flashActive = false;
+          rivalState.flashActive = false;
+          playerState.specialFreezeRemaining = 0;
+          rivalState.specialFreezeRemaining = 0;
         },
         queuePlayerAttack(move: MoveId) {
           playerState.moveCooldown = 0;
@@ -1244,7 +1266,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           : "Special is cooling down.";
         audio.cue("special-denied");
       }
-      updateRivalAi(rivalState, playerState, dt, rivalAiRng, rivalPassive);
+      lastRivalAiRole = updateRivalAi(rivalState, playerState, dt, rivalAiRng, rivalPassive);
       clearExpiredAttack(playerState);
       clearExpiredAttack(rivalState);
       updateFighterPhysics(playerState, dt);
@@ -1312,6 +1334,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     applyFighterSecondaryMotion(playerRuntime, dt, audio, sparks);
     applyFighterSecondaryMotion(rivalRuntime, dt, audio, sparks);
     updateSparks(sparks, dt);
+    // Confirmed-hit victim flash: apply the material/emissive pulse to both rigs each frame. When the
+    // timer is zero this restores the authored look, so the flash can never stick. Reduced motion lowers
+    // the amplitude. Presentation-only.
+    applyFighterHitFlash(playerRuntime, reducedMotion);
+    applyFighterHitFlash(rivalRuntime, reducedMotion);
     // Re-anchor the per-fighter rim lights after the fighter roots are synced and before the frame is
     // submitted, so edge separation follows the action instead of staying at the round-start pose.
     updateFighterRimLights();
@@ -1340,7 +1367,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       clipReadiness,
       renderLabels: lastSubmittedRenderLabels,
       lightingRig: renderedLightingRigSummary,
-      camera: currentCameraEvidence()
+      camera: currentCameraEvidence(),
+      rivalAiRole: lastRivalAiRole
     });
     controls.endFrame();
   }
@@ -1502,7 +1530,10 @@ function createFighter(id: FighterId, name: string, subtitle: string, x: number,
     knockdownTimer: 0,
     invulnerableTimer: 0,
     queuedAttack: null,
-    attack: null
+    attack: null,
+    hitFlashRemaining: 0,
+    flashActive: false,
+    specialFreezeRemaining: 0
   };
 }
 
@@ -1544,6 +1575,9 @@ function resetFighter(fighter: FighterState, x: number, facing: 1 | -1): void {
   fighter.invulnerableTimer = 0;
   fighter.queuedAttack = null;
   fighter.attack = null;
+  fighter.hitFlashRemaining = 0;
+  fighter.flashActive = false;
+  fighter.specialFreezeRemaining = 0;
 }
 
 function registerCombatActors(combatWorld: ReturnType<typeof game.combatWorld>, player: FighterState, rival: FighterState): void {
@@ -1590,6 +1624,12 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
   rival.pendingImpulse = 0;
   player.inputBuffer = null;
   rival.inputBuffer = null;
+  player.hitFlashRemaining = 0;
+  rival.hitFlashRemaining = 0;
+  player.flashActive = false;
+  rival.flashActive = false;
+  player.specialFreezeRemaining = 0;
+  rival.specialFreezeRemaining = 0;
   player.prevClip = null;
   rival.prevClip = null;
   player.blendElapsed = 0;
@@ -1688,7 +1728,7 @@ function updateRivalAi(
   dt: number,
   rng: () => number,
   passive = false
-): void {
+): RivalAiRole {
   rival.aiCooldown = Math.max(0, rival.aiCooldown - dt);
   const gap = player.x - rival.x;
   const distance = Math.abs(gap);
@@ -1747,6 +1787,7 @@ function updateRivalAi(
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
   }
+  return role;
 }
 
 function updateFighterIntents(
@@ -1878,6 +1919,10 @@ function startAttack(fighter: FighterState, id: MoveId): boolean {
     if (fighter.meter < SPECIAL_METER_COST || fighter.specialCooldown > 0) return false;
     fighter.meter = Math.max(0, fighter.meter - SPECIAL_METER_COST);
     fighter.specialCooldown = SPECIAL_COOLDOWN;
+    // Special showpiece screen freeze: a brief visual-only beat at startup. The combat sim keeps
+    // running (damage timing and the deterministic replay are untouched); only the attacking fighter's
+    // clip clock pauses so the windup reads before the hit resolves.
+    fighter.specialFreezeRemaining = 0.09;
   }
   fighter.action = id;
   fighter.clip = fighter.clips[id];
@@ -2009,6 +2054,12 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     // Combo bookkeeping (HUD display only — the engine's damage is the single source of truth).
     const strength = moveIdToHitStrength(event.moveId ?? "light");
     attacker.combo = registerComboHit(attacker.combo, strength, now);
+    // Confirmed-hit victim flash: a short material/emissive pulse on the defender rig (presentation-only;
+    // does not touch combat state or the deterministic replay). The engine's damage is the single source
+    // of truth for HP; this only makes the *picture* read the moment of contact.
+    const flashDuration = strength === "special" ? 0.3 : strength === "heavy" ? 0.22 : 0.14;
+    defender.hitFlashRemaining = Math.max(defender.hitFlashRemaining, flashDuration);
+    defender.flashActive = true;
     if (event.targetId === player.id) playerDamage += rawDamage;
     if (event.targetId === rival.id) rivalDamage += rawDamage;
     defender.attack = null;
@@ -2042,6 +2093,11 @@ function updateFighterPhysics(fighter: FighterState, dt: number): void {
   }
   if (fighter.invulnerableTimer > 0) {
     fighter.invulnerableTimer = Math.max(0, fighter.invulnerableTimer - dt);
+  }
+  // Decay the confirmed-hit material/emissive flash so the rig returns to its authored look.
+  if (fighter.hitFlashRemaining > 0) {
+    fighter.hitFlashRemaining = Math.max(0, fighter.hitFlashRemaining - dt);
+    fighter.flashActive = fighter.hitFlashRemaining > 0;
   }
   if (fighter.hitstun > 0) {
     fighter.hitstun = Math.max(0, fighter.hitstun - dt);
@@ -2169,6 +2225,12 @@ function updateClips(fighter: FighterState, dt: number): void {
   // unaffected. The hitbox active window is the authored clip-event lane (T2.2).
   if (fighter.hitStopRemaining > 0) {
     fighter.hitStopRemaining = Math.max(0, fighter.hitStopRemaining - dt);
+    return;
+  }
+  // Special showpiece screen freeze: the attacking rig's clip clock pauses briefly at startup so the
+  // windup reads before the active window resolves. Visual-only; the combat sim keeps running.
+  if (fighter.specialFreezeRemaining > 0) {
+    fighter.specialFreezeRemaining = Math.max(0, fighter.specialFreezeRemaining - dt);
     return;
   }
   const speed = fighter.action === "light" ? 1.45 : fighter.action === "heavy" ? 1.06 : fighter.action === "special" ? 0.94 : fighter.action === "run" ? 1.18 : 1;
@@ -2406,28 +2468,90 @@ function attackLunge(id: MoveId, phase: number): number {
  * warmer, heavier treatment. Skin textures remain neutral and neither fighter
  * is replaced by overlay or primitive geometry.
  */
-function applyFighterMaterialDirection(actor: TypedGLBActor, owner: FighterId): void {
+interface FighterFlashMaterial {
+  readonly material: Material;
+  readonly baseColor: readonly number[];
+  readonly baseEnvironmentIntensity: number;
+  readonly hasEmissive: boolean;
+  readonly baseEmissive: readonly number[];
+  readonly baseEmissiveStrength: number;
+}
+
+function collectFighterFlashMaterials(actor: TypedGLBActor, owner: FighterId): FighterFlashMaterial[] {
   const seen = new Set<Material>();
+  const flashes: FighterFlashMaterial[] = [];
   for (const item of actor.collectRenderItems()) {
     const material = item.material;
     if (!(material instanceof Material) || seen.has(material)) continue;
     seen.add(material);
     const isOutfit = material.name.toLowerCase().includes("ranger");
+    const baseColor: readonly number[] = isOutfit
+      ? (owner === "player" ? [0.72, 0.92, 1, 1] : [1, 0.66, 0.42, 1])
+      : [1, 1, 1, 1];
     if (isOutfit) {
-      material.setParameter("u_baseColor", owner === "player"
-        ? [0.72, 0.92, 1, 1]
-        : [1, 0.66, 0.42, 1]);
+      material.setParameter("u_baseColor", [...baseColor]);
       material.setParameter("u_roughness", owner === "player" ? 0.27 : 0.34);
       material.setParameter("u_metallic", owner === "player" ? 0.16 : 0.22);
       material.setParameter("u_clearcoatFactor", owner === "player" ? 0.28 : 0.18);
       material.setParameter("u_clearcoatRoughnessFactor", 0.24);
     } else {
-      material.setParameter("u_baseColor", [1, 1, 1, 1]);
+      material.setParameter("u_baseColor", [...baseColor]);
       material.setParameter("u_roughness", 0.46);
       material.setParameter("u_metallic", 0.02);
     }
     material.setParameter("u_environmentIntensity", 1.35);
     material.setParameter("u_specularFactor", 1);
+    const hasEmissive = material.getParameter("u_emissiveColor") !== undefined;
+    flashes.push({
+      material,
+      baseColor,
+      baseEnvironmentIntensity: 1.35,
+      hasEmissive,
+      baseEmissive: [0, 0, 0],
+      baseEmissiveStrength: hasEmissive ? Number(material.getParameter("u_emissiveStrength") ?? 0) : 0
+    });
+  }
+  return flashes;
+}
+
+/**
+ * Apply a confirmed-hit victim flash to the fighter rig's own materials.
+ *
+ * This is a renderer material change (base color brightened toward white and, when the material has an
+ * emissive channel, an emissive pulse) on the real skinned-GLB draws -- not a DOM/CSS overlay pretending
+ * to be light. Strength is scaled by the defender's remaining flash timer so it returns to the authored
+ * look as it fades. Reduced motion lowers the flash amplitude; the decay itself is presentation-only and
+ * never touches combat state or the deterministic replay.
+ */
+function applyFighterHitFlash(fighter: RuntimeFighter, reducedMotion: boolean): void {
+  const active = fighter.state.flashActive;
+  const remaining = fighter.state.hitFlashRemaining;
+  for (const flash of fighter.flashMaterials) {
+    if (!active || remaining <= 0) {
+      flash.material.setParameter("u_baseColor", [...flash.baseColor]);
+      flash.material.setParameter("u_environmentIntensity", flash.baseEnvironmentIntensity);
+      if (flash.hasEmissive) {
+        flash.material.setParameter("u_emissiveStrength", flash.baseEmissiveStrength);
+      }
+      continue;
+    }
+    const intensity = Math.min(1, remaining / 0.2);
+    const amplitude = reducedMotion ? 0.35 : 1;
+    const flashAmount = intensity * amplitude;
+    const base = flash.baseColor;
+    // Brighten toward white; keeps the fighter's tint so it reads as *that fighter* flashing, not a
+    // neutral overlay.
+    const pulsed = [
+      Math.min(1, base[0]! + flashAmount * 0.6),
+      Math.min(1, base[1]! + flashAmount * 0.6),
+      Math.min(1, base[2]! + flashAmount * 0.6),
+      base[3] ?? 1
+    ];
+    flash.material.setParameter("u_baseColor", pulsed);
+    flash.material.setParameter("u_environmentIntensity", flash.baseEnvironmentIntensity + flashAmount * 1.1);
+    if (flash.hasEmissive) {
+      flash.material.setParameter("u_emissiveStrength", flash.baseEmissiveStrength + flashAmount * 0.8);
+    }
   }
 }
 
@@ -2443,8 +2567,32 @@ const rivalAuraMaterial = new UnlitMaterial({ name: "rook-ground-aura", color: [
 const hitImpactMaterial = new UnlitMaterial({ name: "combat-hit-impact", color: [1, 0.86, 0.3, 0.92] });
 const specialImpactMaterial = new UnlitMaterial({ name: "combat-special-impact", color: [0.12, 1, 0.72, 0.94] });
 const blockImpactMaterial = new UnlitMaterial({ name: "combat-block-impact", color: [0.28, 0.9, 1, 0.84] });
+const specialSilhouetteMaterial = new UnlitMaterial({ name: "combat-special-silhouette", color: [0.1, 1, 0.78, 0.16] });
 
-function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
+/**
+ * The special (L) showpiece silhouette: a renderer-owned halo that swells around the fighter's
+ * silhouette while the special is active, so the startup reads as a distinct power move (not a DOM
+ * overlay, and not debug geometry). Reduced motion holds it smaller.
+ */
+function createSpecialSilhouetteItems(fighter: RuntimeFighter, reducedMotion: boolean): RenderItem[] {
+  const attack = fighter.state.attack;
+  if (!attack || attack.id !== "special") return [];
+  const phase = clamp(attack.elapsed / attack.duration, 0, 1);
+  const swell = reducedMotion ? 0.85 : 1 + Math.sin(Math.PI * phase) * 0.5;
+  return [{
+    label: `aura-clash-special-silhouette:${fighter.state.id}`,
+    geometry: fighterAuraGeometry,
+    material: specialSilhouetteMaterial,
+    modelMatrix: composeMat4(
+      [fighter.state.x, 0.02, stage.z + 0.02],
+      quatFromEuler(Math.PI / 2, 0, 0),
+      [0.9 * swell, 0.22 * swell, 0.03]
+    ) as Mat4,
+    includeInAutoFrame: false
+  }];
+}
+
+function createFighterEffectItems(fighter: RuntimeFighter, reducedMotion: boolean): RenderItem[] {
   const attackPulse = fighter.state.attack
     ? 1 + Math.sin(Math.PI * clamp(fighter.state.attack.elapsed / fighter.state.attack.duration, 0, 1)) * 0.42
     : fighter.state.guard
@@ -2460,7 +2608,7 @@ function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
       [0.72 * attackPulse, 0.18 * attackPulse, 0.035]
     ) as Mat4,
     includeInAutoFrame: false
-  }];
+  }, ...createSpecialSilhouetteItems(fighter, reducedMotion)];
 }
 
 function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
@@ -2652,6 +2800,8 @@ function writeProof(input: {
   lightingRig: RenderedLightingRigSummary;
   /** Camera response measured from the frame volume the renderer received. */
   camera: AuraClashArenaProof["camera"];
+  /** The rival AI role resolved this frame, for the feel proof. */
+  rivalAiRole: RivalAiRole;
 }): void {
   const playerSnapshot = input.player.actor.evidence;
   const rivalSnapshot = input.rival.actor.evidence;
@@ -2708,7 +2858,14 @@ function writeProof(input: {
     performance: input.performanceProof,
     audio: input.audioProof,
     deterministicReplay: createDeterministicReplayProof(),
-    engineCombat: engineCombatProof(input.combatSnapshot)
+    engineCombat: engineCombatProof(input.combatSnapshot),
+    feel: {
+      playerFlashStrength: Number(input.player.state.hitFlashRemaining.toFixed(4)),
+      rivalFlashStrength: Number(input.rival.state.hitFlashRemaining.toFixed(4)),
+      playerSpecialFreeze: Number(input.player.state.specialFreezeRemaining.toFixed(4)),
+      rivalAiRole: input.rivalAiRole,
+      fighterLengthBuffering: true
+    }
   });
   gameWindow.__AURA_CLASH_ARENA_PROOF__ = proof;
   gameWindow.__AURA3D_GAME_EVIDENCE__ = {

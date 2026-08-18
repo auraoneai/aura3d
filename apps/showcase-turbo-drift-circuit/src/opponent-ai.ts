@@ -204,14 +204,20 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       });
     let preferredSignedOffset = yieldDecision.preferredSignedOffset;
     lastYielding = yieldDecision.yielding;
+    // Defend the inside whenever the player is close, ahead or a touch behind.
+    // The yield decision labels the whole side-by-side/defensive window "yielding",
+    // so gating this on !yielding made the defense branch unreachable and the rival
+    // never actually defended the inside line.
     lastDefending = lateRace
-      && !yieldDecision.yielding
       && wrappedPlayerGap > -0.06
       && wrappedPlayerGap < 0.018;
     if (lastDefending) {
+      // Defend the inside: commit harder toward the apex side than a simple racing
+      // line so the player must work around the rival. The defensive speed dip below
+      // trades a touch of pace for the line so a sharp driver can still undercut.
       const defendSide: "left" | "right" = playerSignedOffset > 0.008 ? "right" : "left";
       const cap = config.maxAsphaltOffset ?? Math.abs(preferredSignedOffset);
-      preferredSignedOffset = defendSide === "left" ? cap * 0.42 : -cap * 0.42;
+      preferredSignedOffset = defendSide === "left" ? cap * 0.52 : -cap * 0.52;
     }
 
     const driverTelemetry = config.driver?.telemetry() ?? {};
@@ -239,7 +245,10 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
     });
     const telemetryTarget = Number(driver.telemetry().targetSpeed ?? lastTargetSpeed);
     const apexPenalty = apexErrorSeconds > 0 ? Math.max(0.55, 1 - apexErrorSeconds * 1.8) : 1;
-    lastTargetSpeed = telemetryTarget * apexPenalty;
+    // Late-race defense costs a little pace while holding the inside line, which is
+    // what makes a human overtake possible rather than a blocking wall.
+    const defenseDip = lastDefending ? 0.94 : 1;
+    lastTargetSpeed = telemetryTarget * apexPenalty * defenseDip;
     const speedShortfall = Math.abs(snapshot.speed) < lastTargetSpeed - 0.025;
     return {
       throttle: speedShortfall && decision.throttle > 0.08,

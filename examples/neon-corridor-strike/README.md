@@ -17,10 +17,9 @@ replacement.
 | Click canvas | Pointer lock / start |
 | WASD | Move |
 | Mouse | Look |
-| Space | Jump |
 | Shift | Sprint |
 | J or F | Fire (hitscan). Mouse not required. |
-| R | Reload while playing; reset after win/lose |
+| R | Reload while playing (timed, blocks fire); reset after win/lose |
 | T | Reset run |
 | P / Esc | Pause |
 
@@ -47,13 +46,19 @@ CLI-resolved, license-verified GLB assets in `aura.assets.json`:
 
 ## What feels modern vs what stays prototype
 
-Modern-feeling: pointer-lock look, sprint/jump, hitscan with muzzle/impact
-effects, low-ammo HUD, pause, reset, and a dark corridor with typed GLB
-subjects.
+Modern-feeling: pointer-lock look, sprint, hitscan with muzzle/impact
+effects, telegraphed hostile swipes with flinch and death weight, timed
+reload with dry-fire deny, in-repo CC0 SFX, low-ammo HUD, pause, reset, and
+a dark corridor with typed GLB subjects. Jump is not a supported mechanic;
+walk height stays locked.
 
 Still prototype: yaw-led follow camera (pitch is hitscan-accurate),
-distance-only enemy AI, no nav mesh, no bloom/SSAO/WebGPU claim, and catalog
-medkit is a gurney rather than a packed aid kit. See `KNOWN-LIMITS.md`.
+proximity-rush enemy AI with an authored alarm (no nav mesh), hostiles pass
+through the player capsule (touch damage is proximity-authored), no
+bloom/SSAO/WebGPU claim, and catalog medkit is a gurney rather than a packed
+aid kit. Audio cues are synthesized in-repo (CC0) by
+`scripts/build-sfx.mjs` and registered through the asset CLI. See
+`KNOWN-LIMITS.md`.
 
 ## Verify
 
