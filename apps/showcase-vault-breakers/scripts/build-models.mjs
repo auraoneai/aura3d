@@ -1,13 +1,15 @@
 /**
  * Vault Breakers model synth — generates original CC0 GLB props entirely in-repo.
  *
- * Four authored low-poly props for the neon pinball table, flat-shaded and
+ * REVAMPED: Higher-detail geometry, proper pinball shapes, neon emissive parts.
+ *
+ * Five authored low-poly props for the neon pinball table, flat-shaded and
  * indexed, written as minimal glTF 2.0 GLB containers with no dependencies:
- *   - vaultBreakersTable.glb     : pinball cabinet shell (playfield, walls, back panel, legs)
- *   - vaultBreakersMechanisms.glb: readable bumper, target-bank, orbit, and vault landmarks
- *   - vaultBreakersFlipper.glb   : flipper bat, pivot at origin pointing +X
- *   - vaultBreakersBall.glb      : chrome playfield ball
- *   - vaultBreakersVaultDoor.glb : vault door disc with spoke handle
+ *   - vaultBreakersTable.glb     : pinball cabinet shell (playfield, walls, back panel, legs, neon trim)
+ *   - vaultBreakersMechanisms.glb: readable bumper, target-bank, slingshot, orbit, and vault landmarks
+ *   - vaultBreakersFlipper.glb   : flipper bat with tapered body, rubber band, pivot collar
+ *   - vaultBreakersBall.glb      : chrome playfield ball (higher resolution)
+ *   - vaultBreakersVaultDoor.glb : vault door disc with spoke handle and status LEDs
  *
  * Units are meters. Table origin sits at the playfield center on the playfield
  * surface (y = 0 is playfield level).
@@ -22,6 +24,7 @@
  *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersFlipper.glb --name vaultBreakersFlipper --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
  *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersBall.glb --name vaultBreakersBall --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
  *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersVaultDoor.glb --name vaultBreakersVaultDoor --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
+ *   pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts assets add apps/showcase-vault-breakers/assets/models/vaultBreakersMechanisms.glb --name vaultBreakersMechanisms --type model --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-vault-breakers/scripts/build-models.mjs"
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -30,10 +33,6 @@ import { fileURLToPath } from "node:url";
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
 
 // ---- geometry helpers -------------------------------------------------------
-/**
- * A part accumulates flat-shaded triangles: every triangle carries its own three
- * vertices and face normal, which reads cleanly at low polygon counts.
- */
 function part() {
   return { positions: [], normals: [], indices: [], nextVertex: 0 };
 }
@@ -54,13 +53,11 @@ function addTriangle(p, a, b, c) {
   p.nextVertex += 3;
 }
 
-/** Quad split into two triangles, wound outward in the provided corner order. */
 function addQuad(p, a, b, c, d) {
   addTriangle(p, a, b, c);
   addTriangle(p, a, c, d);
 }
 
-/** Ring of points around the Y axis at height y with radius r. */
 function ring(n, r, y) {
   const pts = [];
   for (let i = 0; i < n; i += 1) {
@@ -70,7 +67,6 @@ function ring(n, r, y) {
   return pts;
 }
 
-/** Ring of points around the Z axis at depth z with radius r (vault door disc). */
 function ringZ(n, r, z) {
   const pts = [];
   for (let i = 0; i < n; i += 1) {
@@ -80,7 +76,6 @@ function ringZ(n, r, z) {
   return pts;
 }
 
-/** Tapered tube between two rings. */
 function addBand(p, lower, upper) {
   const n = Math.min(lower.length, upper.length);
   for (let i = 0; i < n; i += 1) {
@@ -89,7 +84,6 @@ function addBand(p, lower, upper) {
   }
 }
 
-/** Cap a ring around the Y axis with an n-gon fan around an offset center. */
 function addCap(p, pts, y, up, cx = 0, cz = 0) {
   const center = [cx, y, cz];
   for (let i = 0; i < pts.length; i += 1) {
@@ -99,7 +93,6 @@ function addCap(p, pts, y, up, cx = 0, cz = 0) {
   }
 }
 
-/** Cap a ring around the Z axis with an n-gon fan facing +Z (front) or -Z. */
 function addZCap(p, pts, z, front, cx = 0, cy = 0) {
   const center = [cx, cy, z];
   for (let i = 0; i < pts.length; i += 1) {
@@ -109,7 +102,6 @@ function addZCap(p, pts, z, front, cx = 0, cy = 0) {
   }
 }
 
-/** Axis-aligned box from center + half extents. */
 function addBox(p, cx, cy, cz, hx, hy, hz) {
   const v = [
     [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
@@ -117,22 +109,14 @@ function addBox(p, cx, cy, cz, hx, hy, hz) {
     [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
     [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
   ];
-  addQuad(p, v[0], v[3], v[2], v[1]); // bottom
-  addQuad(p, v[4], v[5], v[6], v[7]); // top
-  addQuad(p, v[1], v[2], v[6], v[5]); // +Z
-  addQuad(p, v[3], v[0], v[4], v[7]); // -Z
-  addQuad(p, v[0], v[1], v[5], v[4]); // -X
-  addQuad(p, v[2], v[3], v[7], v[6]); // +X
+  addQuad(p, v[0], v[3], v[2], v[1]);
+  addQuad(p, v[4], v[5], v[6], v[7]);
+  addQuad(p, v[1], v[2], v[6], v[5]);
+  addQuad(p, v[3], v[0], v[4], v[7]);
+  addQuad(p, v[0], v[1], v[5], v[4]);
+  addQuad(p, v[2], v[3], v[7], v[6]);
 }
 
-/**
- * Axis-aligned box with outward-facing winding.
- *
- * The cabinet shell predates the upright head and uses the original helper's
- * interior winding.  The player-facing head is a closed opaque surface, so it
- * needs the glTF-standard outward winding for back-face culling to present its
- * front instead of only its reverse side.
- */
 function addBoxOutward(p, cx, cy, cz, hx, hy, hz) {
   const v = [
     [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
@@ -140,15 +124,14 @@ function addBoxOutward(p, cx, cy, cz, hx, hy, hz) {
     [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
     [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
   ];
-  addQuad(p, v[0], v[1], v[2], v[3]); // bottom (-Y)
-  addQuad(p, v[4], v[7], v[6], v[5]); // top (+Y)
-  addQuad(p, v[1], v[5], v[6], v[2]); // +X
-  addQuad(p, v[0], v[3], v[7], v[4]); // -X
-  addQuad(p, v[3], v[2], v[6], v[7]); // +Z (player-facing)
-  addQuad(p, v[0], v[4], v[5], v[1]); // -Z
+  addQuad(p, v[0], v[1], v[2], v[3]);
+  addQuad(p, v[4], v[7], v[6], v[5]);
+  addQuad(p, v[1], v[5], v[6], v[2]);
+  addQuad(p, v[0], v[3], v[7], v[4]);
+  addQuad(p, v[3], v[2], v[6], v[7]);
+  addQuad(p, v[0], v[4], v[5], v[1]);
 }
 
-/** Box rolled around the Z axis (vault door spokes). */
 function addRollBox(p, cx, cy, cz, hx, hy, hz, roll) {
   const cos = Math.cos(roll), sin = Math.sin(roll);
   const rot = ([x, y, z]) => [cx + x * cos - y * sin, cy + x * sin + y * cos, cz + z];
@@ -172,22 +155,45 @@ function addCylinderY(p, r0, r1, y0, y1, cx = 0, cz = 0, segments = 16) {
     const x1a = cx + Math.cos(a1) * r0, z1a = cz + Math.sin(a1) * r0;
     const x0b = cx + Math.cos(a0) * r1, z0b = cz + Math.sin(a0) * r1;
     const x1b = cx + Math.cos(a1) * r1, z1b = cz + Math.sin(a1) * r1;
-
     addQuad(p, [x0a, y0, z0a], [x1a, y0, z1a], [x1b, y1, z1b], [x0b, y1, z0b]);
     addTriangle(p, [cx, y1, cz], [x0b, y1, z0b], [x1b, y1, z1b]);
     addTriangle(p, [cx, y0, cz], [x1a, y0, z1a], [x0a, y0, z0a]);
   }
 }
 
+/** Cylinder around Z axis (for vault door, horizontal elements). */
+function addCylinderZ(p, r0, r1, z0, z1, cx = 0, cy = 0, segments = 16) {
+  for (let i = 0; i < segments; i += 1) {
+    const a0 = (i / segments) * Math.PI * 2;
+    const a1 = ((i + 1) / segments) * Math.PI * 2;
+    const x0a = cx + Math.cos(a0) * r0, y0a = cy + Math.sin(a0) * r0;
+    const x1a = cx + Math.cos(a1) * r0, y1a = cy + Math.sin(a1) * r0;
+    const x0b = cx + Math.cos(a0) * r1, y0b = cy + Math.sin(a0) * r1;
+    const x1b = cx + Math.cos(a1) * r1, y1b = cy + Math.sin(a1) * r1;
+    addQuad(p, [x0a, y0a, z0], [x1a, y1a, z0], [x1b, y1b, z1], [x0b, y0b, z1]);
+    addTriangle(p, [cx, cy, z1], [x0b, y0b, z1], [x1b, y1b, z1]);
+    addTriangle(p, [cx, cy, z0], [x1a, y1a, z0], [x0a, y0a, z0]);
+  }
+}
+
+/** Torus ring around Y axis at height y, centered at (cx, cz). */
+function addTorus(p, R, r, cx, y, cz, segsR = 16, segsr = 8) {
+  for (let i = 0; i < segsR; i += 1) {
+    const a0 = (i / segsR) * Math.PI * 2;
+    const a1 = ((i + 1) / segsR) * Math.PI * 2;
+    for (let j = 0; j < segsr; j += 1) {
+      const b0 = (j / segsr) * Math.PI * 2;
+      const b1 = ((j + 1) / segsr) * Math.PI * 2;
+      const p00 = [cx + (R + r * Math.cos(b0)) * Math.cos(a0), y + r * Math.sin(b0), cz + (R + r * Math.cos(b0)) * Math.sin(a0)];
+      const p10 = [cx + (R + r * Math.cos(b0)) * Math.cos(a1), y + r * Math.sin(b0), cz + (R + r * Math.cos(b0)) * Math.sin(a1)];
+      const p11 = [cx + (R + r * Math.cos(b1)) * Math.cos(a1), y + r * Math.sin(b1), cz + (R + r * Math.cos(b1)) * Math.sin(a1)];
+      const p01 = [cx + (R + r * Math.cos(b1)) * Math.cos(a0), y + r * Math.sin(b1), cz + (R + r * Math.cos(b1)) * Math.sin(a0)];
+      addQuad(p, p00, p10, p11, p01);
+    }
+  }
+}
+
 // ---- pinball table ----------------------------------------------------------
-/**
- * Complete 3D Pinball Cabinet:
- * - Slanted Main Cabinet Body with Cyberpunk Side Graphics
- * - Upright Backbox / Marquee Head with Neon Frame
- * - 4 Angled Chrome Steel Tubular Legs with Foot Levelers
- * - Chrome Side Rails & Lockdown Bar
- * - Front Coin Door with Backlit 25¢ Insert Slots & Plunger Housing
- */
 function buildTable() {
   const playfield = part();
   const cabinet = part();
@@ -195,24 +201,133 @@ function buildTable() {
   const backbox = part();
   const backboxDisplay = part();
   const neon = part();
-  const mechanisms = part();
-  const mechanismGlow = part();
-  const targetFaces = part();
+  const neonPink = part();
+  const sideArt = part();
 
-  // 1. Playfield Base Bed (top surface at y = 0)
-  addBox(playfield, 0, -0.12, 0, 2.9, 0.12, 4.2);
+  // 1. Playfield bed — slightly recessed surface
+  addBox(playfield, 0, -0.06, 0, 2.85, 0.06, 4.15);
+  // Playfield border lip
+  addBox(playfield, 0, 0.02, -4.1, 2.9, 0.04, 0.08); // top wall lip
+  addBox(playfield, -2.82, 0.02, 0, 0.08, 0.04, 4.15); // left wall lip
+  addBox(playfield, 2.82, 0.02, 0, 0.08, 0.04, 4.15); // right wall lip
 
-  // The root-safe renderer composes this typed cabinet with route-local
-  // physics nodes. Keep the table's essential mission landmarks in the typed
-  // primary-world mesh as well so the exact composed artifact remains readable
-  // even when a browser/driver clips densely layered runtime primitives.
-  // These are visual landmarks only; Rapier colliders and sensors in table.ts
-  // remain the sole gameplay authority.
-  for (const [x, z] of [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]]) {
-    addCylinderY(mechanisms, 0.34, 0.29, 0.02, 0.26, x, z, 18);
-    addCylinderY(mechanismGlow, 0.22, 0.22, 0.26, 0.34, x, z, 18);
+  // 2. Cabinet body — main enclosure with beveled look
+  addBox(cabinet, 0, -0.35, 0, 3.05, 0.28, 4.35);
+  // Lower taper
+  addBox(cabinet, 0, -0.68, 0.3, 2.95, 0.12, 4.0);
+  // Side panels with slight inset for depth
+  addBox(sideArt, -3.02, -0.35, 0, 0.04, 0.26, 4.2);
+  addBox(sideArt, 3.02, -0.35, 0, 0.04, 0.26, 4.2);
+
+  // Neon trim strips along cabinet edges
+  addBox(neon, -3.06, -0.08, 0, 0.02, 0.02, 4.3); // left top edge
+  addBox(neon, 3.06, -0.08, 0, 0.02, 0.02, 4.3); // right top edge
+  addBox(neon, 0, -0.08, 4.32, 3.06, 0.02, 0.02); // front top edge
+  addBox(neon, 0, -0.08, -4.32, 3.06, 0.02, 0.02); // back top edge
+  // Bottom neon strip
+  addBox(neonPink, -3.06, -0.62, 0, 0.02, 0.02, 4.3);
+  addBox(neonPink, 3.06, -0.62, 0, 0.02, 0.02, 4.3);
+
+  // 3. Four angled chrome legs — cylindrical with foot pads
+  for (const [x, z, h] of [
+    [-2.85, 4.0, 0.5], [2.85, 4.0, 0.5],
+    [-2.85, -4.0, 0.7], [2.85, -4.0, 0.7]
+  ]) {
+    addCylinderY(chrome, 0.06, 0.05, -0.63 - h, -0.63, x, z, 10);
+    // Foot pad
+    addCylinderY(chrome, 0.1, 0.12, -0.63 - h - 0.04, -0.63 - h, x, z, 10);
+    // Leg bracket
+    addBox(chrome, x, -0.63, z, 0.1, 0.04, 0.1);
   }
 
+  // 4. Chrome side rails
+  addBox(chrome, -2.88, 0.15, 0, 0.06, 0.15, 4.2);
+  addBox(chrome, 2.88, 0.15, 0, 0.06, 0.15, 4.2);
+  // Lockdown bar
+  addBox(chrome, 0, 0.15, 4.18, 2.88, 0.08, 0.06);
+  // Lockdown bar neon accent
+  addBox(neon, 0, 0.22, 4.18, 2.6, 0.015, 0.015);
+
+  // 5. Front coin door & plunger housing
+  addBox(chrome, 0, -0.48, 4.38, 0.9, 0.65, 0.04);
+  // Coin slots — orange backlit
+  addBox(neon, -0.3, -0.38, 4.42, 0.1, 0.15, 0.02);
+  addBox(neon, 0.3, -0.38, 4.42, 0.1, 0.15, 0.02);
+  // Plunger housing
+  addCylinderZ(chrome, 0.08, 0.08, 4.2, 4.5, 2.42, 0.05, 10);
+  // Plunger knob
+  addCylinderZ(chrome, 0.1, 0.1, 4.48, 4.55, 2.42, 0.05, 10);
+
+  // 6. Backbox / head — taller, more prominent
+  addBoxOutward(backbox, 0, 1.5, -4.55, 2.95, 1.2, 0.35);
+  // Backbox top cap
+  addBoxOutward(backbox, 0, 2.72, -4.55, 3.0, 0.04, 0.38);
+  // Recessed display face
+  addBoxOutward(backboxDisplay, 0, 1.55, -4.14, 2.65, 0.85, 0.04);
+  // Display inner bezel
+  addBoxOutward(backboxDisplay, 0, 1.55, -4.09, 2.45, 0.7, 0.01);
+
+  // Neon marquee frame — bright cyan perimeter
+  addBoxOutward(neon, 0, 2.42, -4.08, 2.75, 0.04, 0.04); // top
+  addBoxOutward(neon, -2.75, 1.55, -4.08, 0.04, 0.85, 0.04); // left
+  addBoxOutward(neon, 2.75, 1.55, -4.08, 0.04, 0.85, 0.04); // right
+  addBoxOutward(neon, 0, 0.68, -4.08, 2.75, 0.04, 0.04); // bottom
+
+  // Marquee title bars — geometric glyphs
+  addBoxOutward(neon, 0, 1.85, -4.06, 1.8, 0.06, 0.03);
+  addBoxOutward(neonPink, -0.9, 1.35, -4.06, 0.65, 0.05, 0.03);
+  addBoxOutward(neonPink, 0.9, 1.35, -4.06, 0.65, 0.05, 0.03);
+  // Decorative dots on backbox
+  for (let i = 0; i < 7; i += 1) {
+    addBoxOutward(neon, -1.5 + i * 0.5, 2.15, -4.06, 0.04, 0.04, 0.03);
+  }
+
+  // Speaker grille
+  addBoxOutward(cabinet, 0, 0.82, -4.38, 2.7, 0.35, 0.04);
+  // Speaker grille lines
+  for (let i = 0; i < 5; i += 1) {
+    addBoxOutward(chrome, 0, 0.62 + i * 0.1, -4.34, 2.4, 0.015, 0.01);
+  }
+
+  // Apron / lower front
+  addBox(cabinet, 0, -0.55, 3.8, 2.8, 0.15, 0.5);
+  // Apron neon strip
+  addBox(neonPink, 0, -0.42, 4.28, 2.0, 0.02, 0.02);
+
+  return [
+    { name: "playfield", part: playfield, color: [0.03, 0.02, 0.06, 1], roughness: 0.15, metallic: 0.25 },
+    { name: "cabinet", part: cabinet, color: [0.06, 0.07, 0.12, 1], roughness: 0.45, metallic: 0.5 },
+    { name: "chrome", part: chrome, color: [0.88, 0.92, 0.96, 1], roughness: 0.08, metallic: 0.95 },
+    { name: "backbox", part: backbox, color: [0.04, 0.05, 0.1, 1], roughness: 0.35, metallic: 0.55 },
+    { name: "backboxDisplay", part: backboxDisplay, color: [0.01, 0.02, 0.06, 1], roughness: 0.25, metallic: 0.3 },
+    { name: "neon", part: neon, color: [0.0, 0.95, 1.0, 1], roughness: 0.05, metallic: 0.0, emissive: [0.0, 2.5, 3.0] },
+    { name: "neonPink", part: neonPink, color: [1.0, 0.0, 0.65, 1], roughness: 0.05, metallic: 0.0, emissive: [2.5, 0.0, 1.5] },
+    { name: "sideArt", part: sideArt, color: [0.08, 0.04, 0.15, 1], roughness: 0.3, metallic: 0.4 }
+  ];
+}
+
+// ---- mechanisms overlay -----------------------------------------------------
+function buildMechanisms() {
+  const brass = part();
+  const cyan = part();
+  const targets = part();
+  const slingshots = part();
+  const laneGuides = part();
+
+  // Pop bumpers — proper domed shape with glowing ring
+  for (const [x, z] of [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]]) {
+    // Base cylinder
+    addCylinderY(brass, 0.32, 0.28, 0.02, 0.18, x, z, 20);
+    // Domed cap
+    addCylinderY(brass, 0.28, 0.15, 0.18, 0.3, x, z, 20);
+    addCylinderY(brass, 0.15, 0.02, 0.3, 0.34, x, z, 12);
+    // Glowing ring around bumper
+    addTorus(cyan, 0.3, 0.03, x, 0.2, z, 20, 8);
+    // Skirt ring
+    addTorus(brass, 0.34, 0.02, x, 0.04, z, 20, 6);
+  }
+
+  // Standup targets — thin tall paddles with rounded tops on posts
   const targetBanks = [
     [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
     [[-2.42, -0.6], [-2.42, -0.2], [-2.42, 0.2]],
@@ -222,186 +337,120 @@ function buildTable() {
   ];
   for (const bank of targetBanks) {
     for (const [x, z] of bank) {
-      addBox(targetFaces, x, 0.14, z, 0.15, 0.14, 0.08);
+      // Post
+      addCylinderY(brass, 0.03, 0.03, 0.0, 0.12, x, z, 8);
+      // Paddle face
+      addBox(targets, x, 0.22, z, 0.12, 0.12, 0.025);
+      // Rounded top
+      addCylinderY(targets, 0.12, 0.12, 0.32, 0.34, x, z, 10);
     }
   }
 
-  // Five bank-status lamps form a strong central mission read. Their visual
-  // grouping matches the five logical banks; runtime evidence separately
-  // proves target-down and bank-clear state changes.
+  // Bank status lamps — larger, more prominent
   for (let index = 0; index < 5; index += 1) {
-    addCylinderY(mechanismGlow, 0.13, 0.13, 0.01, 0.08, -0.72 + index * 0.36, -2.02, 12);
+    const lx = -0.72 + index * 0.36;
+    addCylinderY(cyan, 0.11, 0.11, 0.01, 0.1, lx, -2.02, 14);
+    // Lamp housing ring
+    addTorus(brass, 0.13, 0.015, lx, 0.06, -2.02, 14, 6);
   }
 
-  // Vault focus and shooter/orbit markings. The vault medallion sits directly
-  // in front of the route-local vault throat; cyan studs outline the orbit and
-  // keep the upper half of the table legible from the fixed review camera.
-  addCylinderY(mechanisms, 0.48, 0.42, 0.02, 0.15, 0, -3.36, 20);
-  addCylinderY(mechanismGlow, 0.22, 0.22, 0.15, 0.22, 0, -3.36, 16);
+  // Slingshots — triangular shapes
+  // Left slingshot
+  addTriangle(slingshots, [-1.5, 0.05, 2.5], [-0.9, 0.05, 1.7], [-1.5, 0.05, 1.7]);
+  addTriangle(slingshots, [-1.5, 0.25, 2.5], [-1.5, 0.25, 1.7], [-0.9, 0.25, 1.7]);
+  addQuad(slingshots, [-1.5, 0.05, 2.5], [-1.5, 0.25, 2.5], [-0.9, 0.25, 1.7], [-0.9, 0.05, 1.7]);
+  addQuad(slingshots, [-1.5, 0.05, 1.7], [-0.9, 0.05, 1.7], [-0.9, 0.25, 1.7], [-1.5, 0.25, 1.7]);
+  addQuad(slingshots, [-1.5, 0.05, 2.5], [-0.9, 0.05, 1.7], [-0.9, 0.25, 1.7], [-1.5, 0.25, 2.5]);
+  addQuad(slingshots, [-1.5, 0.05, 1.7], [-1.5, 0.05, 2.5], [-1.5, 0.25, 2.5], [-1.5, 0.25, 1.7]);
+  // Right slingshot
+  addTriangle(slingshots, [1.5, 0.05, 2.5], [1.5, 0.05, 1.7], [0.9, 0.05, 1.7]);
+  addTriangle(slingshots, [1.5, 0.25, 2.5], [0.9, 0.25, 1.7], [1.5, 0.25, 1.7]);
+  addQuad(slingshots, [1.5, 0.05, 2.5], [0.9, 0.05, 1.7], [0.9, 0.25, 1.7], [1.5, 0.25, 2.5]);
+  addQuad(slingshots, [1.5, 0.05, 1.7], [1.5, 0.25, 1.7], [0.9, 0.25, 1.7], [0.9, 0.05, 1.7]);
+  addQuad(slingshots, [1.5, 0.05, 2.5], [1.5, 0.25, 2.5], [0.9, 0.25, 1.7], [0.9, 0.05, 1.7]);
+  addQuad(slingshots, [1.5, 0.05, 1.7], [1.5, 0.05, 2.5], [1.5, 0.25, 2.5], [1.5, 0.25, 1.7]);
+
+  // Vault medallion — larger, more dramatic
+  addCylinderY(brass, 0.45, 0.4, 0.02, 0.18, 0, -3.36, 24);
+  addCylinderY(cyan, 0.25, 0.25, 0.18, 0.26, 0, -3.36, 18);
+  // Vault ring
+  addTorus(brass, 0.42, 0.025, 0, 0.12, -3.36, 24, 6);
+
+  // Orbit markers — larger cyan studs
   for (const [x, z] of [[-2.35, -3.4], [-2.48, -2.9], [-2.52, -2.35], [2.42, -2.9], [2.42, -2.3], [2.42, -1.7]]) {
-    addCylinderY(mechanismGlow, 0.08, 0.08, 0.01, 0.07, x, z, 10);
+    addCylinderY(cyan, 0.07, 0.07, 0.01, 0.08, x, z, 10);
   }
 
-  // 2. Slanted Pinball Cabinet Body
-  // Main wooden / composite tub enclosure
-  addBox(cabinet, 0, -0.42, 0, 3.1, 0.28, 4.4);
-  // Bottom taper towards player
-  addBox(cabinet, 0, -0.78, 0.4, 3.0, 0.12, 4.0);
-
-  // 3. Four Angled Chrome Steel Legs
-  for (const [x, z, h] of [
-    [-2.95, 4.1, 0.45], [2.95, 4.1, 0.45],
-    [-2.95, -4.1, 0.65], [2.95, -4.1, 0.65]
-  ]) {
-    // Leg strut
-    addBox(chrome, x, -0.9 - h / 2, z, 0.08, h / 2 + 0.3, 0.08);
-    // Foot leveler pad
-    addBox(chrome, x, -1.25, z, 0.14, 0.04, 0.14);
-  }
-
-  // 4. Chrome Side Rails & Lockdown Bar
-  addBox(chrome, -2.85, 0.22, 0, 0.12, 0.22, 4.3);
-  addBox(chrome, 2.85, 0.22, 0, 0.12, 0.22, 4.3);
-  addBox(chrome, 0, 0.22, 4.25, 2.95, 0.22, 0.14);
-
-  // 5. Front Coin Door & Plunger
-  addBox(chrome, 0, -0.52, 4.42, 0.95, 0.72, 0.04);
-  // Dual Coin Return Inserts (Orange Backlit)
-  addBox(neon, -0.32, -0.42, 4.46, 0.12, 0.18, 0.02);
-  addBox(neon, 0.32, -0.42, 4.46, 0.12, 0.18, 0.02);
-  // Shooter Rod Housing
-  addBox(chrome, 2.45, 0.05, 4.45, 0.12, 0.12, 0.22);
-
-  // 6. Upright Backbox / Head (Z: -4.4 to -4.8, Y: 0.2 to 2.4)
-  addBoxOutward(backbox, 0, 1.35, -4.55, 3.0, 1.05, 0.35);
-  // A recessed display face makes the head read as a pinball backbox instead
-  // of a featureless slab.  It sits just in front of the shell; the neon
-  // frame is one more shallow layer toward the player so depth ordering stays
-  // explicit in the production runtime.
-  addBoxOutward(backboxDisplay, 0, 1.42, -4.13, 2.72, 0.72, 0.035);
-  // Neon perimeter marquee frame
-  addBoxOutward(neon, 0, 2.18, -4.03, 2.82, 0.055, 0.055); // top
-  addBoxOutward(neon, -2.82, 1.42, -4.03, 0.055, 0.72, 0.055); // left
-  addBoxOutward(neon, 2.82, 1.42, -4.03, 0.055, 0.72, 0.055); // right
-  addBoxOutward(neon, 0, 0.66, -4.03, 2.82, 0.055, 0.055); // bottom
-  // Simple marquee glyphs are intentionally geometric: they remain legible at
-  // thumbnail scale without pretending to be a texture or a fake DOM overlay.
-  addBoxOutward(neon, 0, 1.67, -4.03, 1.72, 0.045, 0.045);
-  addBoxOutward(neon, -0.82, 1.23, -4.03, 0.58, 0.045, 0.045);
-  addBoxOutward(neon, 0.82, 1.23, -4.03, 0.58, 0.045, 0.045);
-  // Speaker Panel Grille
-  addBoxOutward(cabinet, 0, 0.75, -4.38, 2.8, 0.32, 0.04);
+  // Lane guide arrows
+  addBox(laneGuides, 2.42, 0.04, 3.0, 0.12, 0.02, 0.25);
+  addBox(laneGuides, 2.42, 0.04, 2.2, 0.12, 0.02, 0.25);
+  addBox(laneGuides, 2.42, 0.04, 1.4, 0.12, 0.02, 0.25);
 
   return [
-    { name: "playfield", part: playfield, color: [0.06, 0.1, 0.18, 1], roughness: 0.18, metallic: 0.2 },
-    { name: "cabinet", part: cabinet, color: [0.12, 0.15, 0.22, 1], roughness: 0.55, metallic: 0.4 },
-    { name: "chrome", part: chrome, color: [0.92, 0.95, 0.98, 1], roughness: 0.12, metallic: 0.95 },
-    { name: "backbox", part: backbox, color: [0.08, 0.1, 0.15, 1], roughness: 0.45, metallic: 0.5 },
-    { name: "backboxDisplay", part: backboxDisplay, color: [0.015, 0.035, 0.085, 1], roughness: 0.32, metallic: 0.35 },
-    { name: "neon", part: neon, color: [0.2, 0.9, 1.0, 1], roughness: 0.1, metallic: 0.0, emissive: [0.4, 1.5, 2.0] },
-    { name: "mechanisms", part: mechanisms, color: [0.95, 0.55, 0.16, 1], roughness: 0.2, metallic: 0.7, emissive: [0.38, 0.12, 0.01] },
-    { name: "mechanismGlow", part: mechanismGlow, color: [0.28, 0.96, 1.0, 1], roughness: 0.12, metallic: 0.15, emissive: [0.3, 1.35, 1.55] },
-    { name: "targetFaces", part: targetFaces, color: [1.0, 0.84, 0.42, 1], roughness: 0.28, metallic: 0.35, emissive: [0.85, 0.28, 0.02] }
-  ];
-}
-
-/**
- * Typed mechanism overlay for the composed route. The production renderer
- * resolves GLBs asynchronously; keeping these landmarks in their own model
- * lets them sit on the route-local playfield without a second cabinet bed
- * occluding the Rapier-synchronised flippers and balls.
- */
-function buildMechanisms() {
-  const brass = part();
-  const cyan = part();
-  const targets = part();
-
-  for (const [x, z] of [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]]) {
-    addCylinderY(brass, 0.34, 0.29, 0.02, 0.26, x, z, 18);
-    addCylinderY(cyan, 0.22, 0.22, 0.26, 0.34, x, z, 18);
-  }
-  const targetBanks = [
-    [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
-    [[-2.42, -0.6], [-2.42, -0.2], [-2.42, 0.2]],
-    [[-0.5, -2.5], [0, -2.62], [0.5, -2.5]],
-    [[1.95, -0.6], [1.95, -0.2], [1.95, 0.2]],
-    [[1.95, -2.4], [1.95, -2.8], [1.95, -3.2]]
-  ];
-  for (const bank of targetBanks) {
-    for (const [x, z] of bank) addBox(targets, x, 0.14, z, 0.15, 0.14, 0.08);
-  }
-  for (let index = 0; index < 5; index += 1) {
-    addCylinderY(cyan, 0.13, 0.13, 0.01, 0.08, -0.72 + index * 0.36, -2.02, 12);
-  }
-  addCylinderY(brass, 0.48, 0.42, 0.02, 0.15, 0, -3.36, 20);
-  addCylinderY(cyan, 0.22, 0.22, 0.15, 0.22, 0, -3.36, 16);
-  for (const [x, z] of [[-2.35, -3.4], [-2.48, -2.9], [-2.52, -2.35], [2.42, -2.9], [2.42, -2.3], [2.42, -1.7]]) {
-    addCylinderY(cyan, 0.08, 0.08, 0.01, 0.07, x, z, 10);
-  }
-  return [
-    { name: "brassMechanisms", part: brass, color: [0.95, 0.55, 0.16, 1], roughness: 0.2, metallic: 0.7, emissive: [0.38, 0.12, 0.01] },
-    { name: "cyanMechanisms", part: cyan, color: [0.28, 0.96, 1.0, 1], roughness: 0.12, metallic: 0.15, emissive: [0.3, 1.35, 1.55] },
-    { name: "targetFaces", part: targets, color: [1.0, 0.84, 0.42, 1], roughness: 0.28, metallic: 0.35, emissive: [0.85, 0.28, 0.02] }
+    { name: "brassMechanisms", part: brass, color: [0.85, 0.55, 0.12, 1], roughness: 0.18, metallic: 0.75, emissive: [0.3, 0.08, 0.0] },
+    { name: "cyanMechanisms", part: cyan, color: [0.0, 0.95, 1.0, 1], roughness: 0.08, metallic: 0.1, emissive: [0.0, 2.0, 2.5] },
+    { name: "targetFaces", part: targets, color: [1.0, 0.75, 0.2, 1], roughness: 0.22, metallic: 0.3, emissive: [1.2, 0.4, 0.0] },
+    { name: "slingshots", part: slingshots, color: [1.0, 0.35, 0.0, 1], roughness: 0.15, metallic: 0.2, emissive: [1.5, 0.3, 0.0] },
+    { name: "laneGuides", part: laneGuides, color: [0.0, 0.8, 1.0, 1], roughness: 0.1, metallic: 0.0, emissive: [0.0, 1.5, 2.0] }
   ];
 }
 
 // ---- flipper bat ------------------------------------------------------------
-/**
- * Tournament Flipper Bat:
- * - Pivot Boss with Chrome Pivot Cap
- * - Tapered Flipper Bat Body
- * - High-Traction Neon Silicone Rubber Band
- */
 function buildFlipper() {
   const bat = part();
   const rubber = part();
   const chromeCap = part();
 
-  // Pivot cap at origin
-  addCylinderY(chromeCap, 0.1, 0.1, 0.03, 0.065, 0, 0, 14);
+  // Pivot collar — wider, more detailed
+  addCylinderY(chromeCap, 0.12, 0.12, 0.02, 0.07, 0, 0, 16);
+  addCylinderY(chromeCap, 0.09, 0.09, 0.07, 0.09, 0, 0, 16);
+  // Pivot bushing ring
+  addTorus(chromeCap, 0.1, 0.015, 0, 0.05, 0, 16, 6);
 
-  // Tapered Flipper Body (Z width: 0.14 down to 0.06, length X: 0 to 0.92)
-  const segments = 8;
+  // Tapered flipper body — more segments for smoother taper
+  const segments = 14;
   for (let i = 0; i < segments; i += 1) {
     const t0 = i / segments;
     const t1 = (i + 1) / segments;
     const x0 = t0 * 0.92, x1 = t1 * 0.92;
-    const w0 = 0.075 * (1 - t0 * 0.55);
-    const w1 = 0.075 * (1 - t1 * 0.55);
-    const h = 0.045;
-
+    const w0 = 0.072 * (1 - t0 * 0.6);
+    const w1 = 0.072 * (1 - t1 * 0.6);
+    const h = 0.042;
     addBox(bat, (x0 + x1) / 2, 0, 0, (x1 - x0) / 2, h, (w0 + w1) / 2);
   }
-  // Rounded Tip Cap
-  addCylinderY(bat, 0.032, 0.032, -0.045, 0.045, 0.92, 0, 10);
+  // Rounded tip
+  addCylinderY(bat, 0.028, 0.028, -0.042, 0.042, 0.92, 0, 12);
 
-  // High-Visibility Neon Rubber Ring along the perimeter
+  // Neon rubber band — thicker, more prominent
   for (let i = 0; i < segments; i += 1) {
     const t0 = i / segments;
     const t1 = (i + 1) / segments;
     const x0 = t0 * 0.92, x1 = t1 * 0.92;
-    const w0 = 0.082 * (1 - t0 * 0.55);
-    const w1 = 0.082 * (1 - t1 * 0.55);
-
-    // Left rubber edge
-    addBox(rubber, (x0 + x1) / 2, 0, (w0 + w1) / 2, (x1 - x0) / 2, 0.03, 0.015);
-    // Right rubber edge
-    addBox(rubber, (x0 + x1) / 2, 0, -(w0 + w1) / 2, (x1 - x0) / 2, 0.03, 0.015);
+    const w0 = 0.082 * (1 - t0 * 0.6);
+    const w1 = 0.082 * (1 - t1 * 0.6);
+    // Top rubber edge
+    addBox(rubber, (x0 + x1) / 2, 0.035, (w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+    // Bottom rubber edge
+    addBox(rubber, (x0 + x1) / 2, -0.035, (w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+    // Top rubber edge (other side)
+    addBox(rubber, (x0 + x1) / 2, 0.035, -(w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
+    // Bottom rubber edge (other side)
+    addBox(rubber, (x0 + x1) / 2, -0.035, -(w0 + w1) / 2, (x1 - x0) / 2, 0.012, 0.018);
   }
-  addCylinderY(rubber, 0.038, 0.038, -0.03, 0.03, 0.92, 0, 10);
+  // Tip rubber cap
+  addCylinderY(rubber, 0.035, 0.035, -0.035, 0.035, 0.92, 0, 12);
 
   return [
-    { name: "bat", part: bat, color: [0.15, 0.18, 0.25, 1], roughness: 0.35, metallic: 0.5 },
-    { name: "rubber", part: rubber, color: [0.1, 0.85, 1.0, 1], roughness: 0.2, metallic: 0.0, emissive: [0.3, 1.4, 1.8] },
-    { name: "chromeCap", part: chromeCap, color: [0.95, 0.95, 1.0, 1], roughness: 0.08, metallic: 0.95 }
+    { name: "bat", part: bat, color: [0.1, 0.12, 0.18, 1], roughness: 0.3, metallic: 0.55 },
+    { name: "rubber", part: rubber, color: [0.0, 0.9, 1.0, 1], roughness: 0.15, metallic: 0.0, emissive: [0.0, 2.0, 2.5] },
+    { name: "chromeCap", part: chromeCap, color: [0.9, 0.93, 0.97, 1], roughness: 0.06, metallic: 0.95 }
   ];
 }
 
 // ---- ball -------------------------------------------------------------------
-/** Mirror-finish Chrome Pinball */
 function buildBall() {
   const sphere = part();
-  const rings = 14, sectors = 18, radius = 0.14;
+  const rings = 20, sectors = 24, radius = 0.14;
 
   for (let r = 0; r < rings; r += 1) {
     const phi0 = (r / rings) * Math.PI - Math.PI / 2;
@@ -416,18 +465,16 @@ function buildBall() {
       const x1a = Math.cos(theta1) * rad0, z1a = Math.sin(theta1) * rad0;
       const x0b = Math.cos(theta0) * rad1, z0b = Math.sin(theta0) * rad1;
       const x1b = Math.cos(theta1) * rad1, z1b = Math.sin(theta1) * rad1;
-
       addQuad(sphere, [x0a, y0, z0a], [x1a, y0, z1a], [x1b, y1, z1b], [x0b, y1, z0b]);
     }
   }
 
   return [
-    { name: "chrome", part: sphere, color: [0.95, 0.98, 1.0, 1], roughness: 0.04, metallic: 1.0 }
+    { name: "chrome", part: sphere, color: [0.92, 0.95, 1.0, 1], roughness: 0.03, metallic: 1.0 }
   ];
 }
 
 // ---- vault door -------------------------------------------------------------
-/** Reinforced Vault Door Hatch with Central Locking Wheel & Neon Status Lugs */
 function buildVaultDoor() {
   const rim = part();
   const disc = part();
@@ -435,7 +482,7 @@ function buildVaultDoor() {
   const statusLeds = part();
 
   const radius = 0.26;
-  const segments = 18;
+  const segments = 22;
 
   // Outer locking collar
   const outerRing = ringZ(segments, radius, 0.04);
@@ -448,30 +495,34 @@ function buildVaultDoor() {
   addBand(rim, outerRing, innerRing);
   addZCap(disc, innerRing, 0.04, true);
 
-  // Central 6-Spoke Locking Wheel
-  for (let i = 0; i < 6; i += 1) {
-    const roll = (i / 6) * Math.PI;
-    addRollBox(wheel, 0, 0, 0.07, radius * 0.55, 0.016, 0.016, roll);
+  // Concentric ring detail on door face
+  const midRing = ringZ(segments, radius * 0.65, 0.045);
+  addBand(disc, innerRing, midRing);
+
+  // Central 8-spoke locking wheel (was 6)
+  for (let i = 0; i < 8; i += 1) {
+    const roll = (i / 8) * Math.PI;
+    addRollBox(wheel, 0, 0, 0.07, radius * 0.55, 0.014, 0.014, roll);
   }
   // Wheel center hub
-  const hubRing = ringZ(12, 0.06, 0.09);
-  const hubBase = ringZ(12, 0.06, 0.04);
+  const hubRing = ringZ(14, 0.065, 0.09);
+  const hubBase = ringZ(14, 0.065, 0.04);
   addBand(wheel, hubBase, hubRing);
   addZCap(wheel, hubRing, 0.09, true);
 
-  // 4 Radial Neon Status Leds
-  for (let i = 0; i < 4; i += 1) {
-    const angle = (i / 4) * Math.PI * 2;
+  // 6 radial neon status LEDs (was 4)
+  for (let i = 0; i < 6; i += 1) {
+    const angle = (i / 6) * Math.PI * 2;
     const lx = Math.cos(angle) * radius * 0.72;
     const ly = Math.sin(angle) * radius * 0.72;
-    addBox(statusLeds, lx, ly, 0.05, 0.025, 0.025, 0.015);
+    addBox(statusLeds, lx, ly, 0.055, 0.022, 0.022, 0.015);
   }
 
   return [
-    { name: "rim", part: rim, color: [0.22, 0.25, 0.32, 1], roughness: 0.45, metallic: 0.75 },
-    { name: "disc", part: disc, color: [0.12, 0.15, 0.22, 1], roughness: 0.35, metallic: 0.85 },
-    { name: "wheel", part: wheel, color: [0.92, 0.95, 0.98, 1], roughness: 0.15, metallic: 0.95 },
-    { name: "statusLeds", part: statusLeds, color: [0.95, 0.8, 0.1, 1], roughness: 0.1, metallic: 0.0, emissive: [1.6, 1.2, 0.2] }
+    { name: "rim", part: rim, color: [0.18, 0.2, 0.28, 1], roughness: 0.35, metallic: 0.8 },
+    { name: "disc", part: disc, color: [0.08, 0.1, 0.18, 1], roughness: 0.25, metallic: 0.85 },
+    { name: "wheel", part: wheel, color: [0.88, 0.92, 0.96, 1], roughness: 0.1, metallic: 0.95 },
+    { name: "statusLeds", part: statusLeds, color: [1.0, 0.85, 0.0, 1], roughness: 0.05, metallic: 0.0, emissive: [2.5, 1.8, 0.0] }
   ];
 }
 
@@ -482,14 +533,20 @@ function writeGlb(path, parts) {
   const accessors = [];
   const meshes = [];
   const nodes = [];
-  const materials = parts.map((entry) => ({
-    name: entry.name + "-material",
-    pbrMetallicRoughness: {
-      baseColorFactor: entry.color,
-      metallicFactor: entry.metallic ?? 0.05,
-      roughnessFactor: entry.roughness
+  const materials = parts.map((entry) => {
+    const mat = {
+      name: entry.name + "-material",
+      pbrMetallicRoughness: {
+        baseColorFactor: entry.color,
+        metallicFactor: entry.metallic ?? 0.05,
+        roughnessFactor: entry.roughness
+      }
+    };
+    if (entry.emissive) {
+      mat.emissiveFactor = entry.emissive;
     }
-  }));
+    return mat;
+  });
 
   let offset = 0;
   const pushView = (typedArray, target) => {
@@ -539,7 +596,7 @@ function writeGlb(path, parts) {
   const document = {
     asset: {
       version: "2.0",
-      generator: "aura3d showcase-vault-breakers build-models (original CC0)",
+      generator: "aura3d showcase-vault-breakers build-models REVAMPED (original CC0)",
       extras: { aura3d: { orientation: { forwardAxis: "+Z", upAxis: "+Y" } } }
     },
     scene: 0,
@@ -563,11 +620,11 @@ function writeGlb(path, parts) {
   output.writeUInt32LE(2, 4);
   output.writeUInt32LE(total, 8);
   output.writeUInt32LE(jsonData.length, 12);
-  output.writeUInt32LE(0x4e4f534a, 16); // "JSON"
+  output.writeUInt32LE(0x4e4f534a, 16);
   jsonData.copy(output, 20);
   const binHead = 20 + jsonData.length;
   output.writeUInt32LE(binData.length, binHead);
-  output.writeUInt32LE(0x004e4942, binHead + 4); // "BIN\0"
+  output.writeUInt32LE(0x004e4942, binHead + 4);
   binData.copy(output, binHead + 8);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, output);

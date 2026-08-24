@@ -22,15 +22,15 @@ export const MISSION_LINES: readonly string[] = [
   "VAULT IS OPEN"
 ];
 
-const GOLD = "#ffd9a0";
-const TEAL = "#7ef8ff";
-const LABEL_MATERIAL = material.emissive({ name: "sb label", color: "#cfd8e3", emissive: TEAL, opacity: 0.9 });
-const DIGIT_MATERIAL = material.emissive({ name: "sb digit", color: GOLD, emissive: "#ffb14d" });
-const MISSION_MATERIAL = material.emissive({ name: "sb mission", color: "#e8f6ff", emissive: "#39d7e8" });
+const NEON_GOLD = "#ffcc00";
+const NEON_CYAN = "#00e5ff";
+const LABEL_MATERIAL = material.emissive({ name: "sb label", color: "#00e5ff", emissive: "#00b8d4" });
+const DIGIT_MATERIAL = material.emissive({ name: "sb digit", color: "#ffcc00", emissive: "#ff8800" });
+const MISSION_MATERIAL = material.emissive({ name: "sb mission", color: "#00ffcc", emissive: "#00cc99" });
 
 function textNode(id: string, text: string, x: number, y: number, size: number, mat: ReturnType<typeof material.emissive>): AuraSceneNode {
   return text3D(text, { name: id, material: mat, size, depth: 0.035, letterSpacing: 0.02 })
-    .position(x, y, -4.3)
+    .position(x, y, -4.05)
     .runtime(game.runtimeNode(id, { tags: ["scoreboard", "text3d"] }))
     .toJSON();
 }

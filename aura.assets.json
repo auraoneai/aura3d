@@ -104116,30 +104116,30 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-vault-breakers/assets/models/vaultBreakersBall.glb",
-      "outputPath": "public/aura-assets/vaultBreakersBall.5c94e527.glb",
-      "url": "/aura-assets/vaultBreakersBall.5c94e527.glb",
-      "hash": "sha256-5c94e5276ff405d3b12aad17a9733bd2eecf0e4a1af6c0ce2010fe211b0620ae",
-      "sizeBytes": 43408,
+      "outputPath": "public/aura-assets/vaultBreakersBall.49b8a09b.glb",
+      "url": "/aura-assets/vaultBreakersBall.49b8a09b.glb",
+      "hash": "sha256-49b8a09b2f9333b150eb24a9416073618c49bb11c7a48bc79174789791a17a31",
+      "sizeBytes": 81692,
       "bounds": [
         0.28,
         0.28,
-        0.276
+        0.28
       ],
       "boundsMetadata": {
         "min": [
           -0.14,
           -0.14,
-          -0.138
+          -0.14
         ],
         "max": [
           0.14,
           0.14,
-          0.138
+          0.14
         ],
         "size": [
           0.28,
           0.28,
-          0.276
+          0.28
         ],
         "center": [
           0,
@@ -104223,7 +104223,7 @@
       },
       "provenance": {
         "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersBall.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-models.mjs",
+        "sourcePage": "apps/showcase-vault-breakers/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/models/vaultBreakersBall.glb",
         "license": "CC0-1.0",
         "licenseName": "CC0 1.0 Universal",
@@ -104282,37 +104282,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-vault-breakers/assets/models/vaultBreakersFlipper.glb",
-      "outputPath": "public/aura-assets/vaultBreakersFlipper.75e0ac2d.glb",
-      "url": "/aura-assets/vaultBreakersFlipper.75e0ac2d.glb",
-      "hash": "sha256-75e0ac2dba50c6d4dda4b3f610380a7fc6f8022ea1d734dd2ffc07a604c9c267",
-      "sizeBytes": 38136,
+      "outputPath": "public/aura-assets/vaultBreakersFlipper.32e3cb7e.glb",
+      "url": "/aura-assets/vaultBreakersFlipper.32e3cb7e.glb",
+      "hash": "sha256-32e3cb7e0814fa98035ab789497c4254dcb057cf1d07184e55f5a3bdfff593e4",
+      "sizeBytes": 108060,
       "bounds": [
-        1.058,
-        0.11,
-        0.195
+        1.075,
+        0.137,
+        0.24
       ],
       "boundsMetadata": {
         "min": [
-          -0.1,
-          -0.045,
-          -0.097
+          -0.12,
+          -0.047,
+          -0.12
         ],
         "max": [
-          0.958,
-          0.065,
-          0.097
+          0.955,
+          0.09,
+          0.12
         ],
         "size": [
-          1.058,
-          0.11,
-          0.195
+          1.075,
+          0.137,
+          0.24
         ],
         "center": [
-          0.429,
-          0.01,
+          0.418,
+          0.022,
           0
         ],
-        "maxDimension": 1.058,
+        "maxDimension": 1.075,
         "grounded": true
       },
       "materials": [
@@ -104407,7 +104407,7 @@
       },
       "provenance": {
         "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersFlipper.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-models.mjs",
+        "sourcePage": "apps/showcase-vault-breakers/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/models/vaultBreakersFlipper.glb",
         "license": "CC0-1.0",
         "licenseName": "CC0 1.0 Universal",
@@ -104468,43 +104468,45 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-vault-breakers/assets/models/vaultBreakersMechanisms.glb",
-      "outputPath": "public/aura-assets/vaultBreakersMechanisms.355ab0fa.glb",
-      "url": "/aura-assets/vaultBreakersMechanisms.355ab0fa.glb",
-      "hash": "sha256-355ab0fab5eb16edcdc5a9519f012257b7edbab778937a4df168523754429ebc",
-      "sizeBytes": 106368,
+      "outputPath": "public/aura-assets/vaultBreakersMechanisms.274e6bf9.glb",
+      "url": "/aura-assets/vaultBreakersMechanisms.274e6bf9.glb",
+      "hash": "sha256-274e6bf9d38b2a7a6b78c977d8e0dc726d9139ae479c6af4a5c29dd5c237dbd6",
+      "sizeBytes": 460768,
       "bounds": [
-        5.1,
+        5.13,
         0.34,
-        4.12
+        7.06
       ],
       "boundsMetadata": {
         "min": [
-          -2.6,
+          -2.59,
           0,
-          -3.84
+          -3.81
         ],
         "max": [
-          2.5,
+          2.54,
           0.34,
-          0.28
+          3.25
         ],
         "size": [
-          5.1,
+          5.13,
           0.34,
-          4.12
+          7.06
         ],
         "center": [
-          -0.05,
+          -0.025,
           0.17,
-          -1.78
+          -0.28
         ],
-        "maxDimension": 5.1,
+        "maxDimension": 7.06,
         "grounded": true
       },
       "materials": [
         "brassMechanisms-material",
         "cyanMechanisms-material",
-        "targetFaces-material"
+        "targetFaces-material",
+        "slingshots-material",
+        "laneGuides-material"
       ],
       "materialMetadata": [
         {
@@ -104523,6 +104525,20 @@
         },
         {
           "name": "targetFaces-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "slingshots-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "laneGuides-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -104574,9 +104590,9 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 3,
-        "meshCount": 3,
-        "materialCount": 3,
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 5,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -104584,16 +104600,18 @@
         "rootNodeNames": [
           "brassMechanisms",
           "cyanMechanisms",
-          "targetFaces"
+          "targetFaces",
+          "slingshots",
+          "laneGuides"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 3 nodes across 3 roots."
+          "Detected 5 nodes across 5 roots."
         ]
       },
       "provenance": {
         "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersMechanisms.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-models.mjs",
+        "sourcePage": "apps/showcase-vault-breakers/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/models/vaultBreakersMechanisms.glb",
         "license": "CC0-1.0",
         "licenseName": "CC0 1.0 Universal",
@@ -104620,7 +104638,9 @@
       "nodeNames": [
         "brassMechanisms",
         "cyanMechanisms",
-        "targetFaces"
+        "targetFaces",
+        "slingshots",
+        "laneGuides"
       ],
       "thumbnailUrl": "/aura-assets/vaultBreakersMechanisms.thumb.svg",
       "quality": "release",
@@ -104654,37 +104674,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-vault-breakers/assets/models/vaultBreakersTable.glb",
-      "outputPath": "public/aura-assets/vaultBreakersTable.d36f4815.glb",
-      "url": "/aura-assets/vaultBreakersTable.d36f4815.glb",
-      "hash": "sha256-d36f4815b5c4171a4a0e443826bc9b2488407eb32afac2928e502468bcc9e300",
-      "sizeBytes": 138900,
+      "outputPath": "public/aura-assets/vaultBreakersTable.36cf7099.glb",
+      "url": "/aura-assets/vaultBreakersTable.36cf7099.glb",
+      "hash": "sha256-36cf709932ec1954984490af804587b5bfc5ecb51b4a26281581eb735517275f",
+      "sizeBytes": 91112,
       "bounds": [
-        6.2,
-        4.25,
-        9.57
+        6.16,
+        4.13,
+        9.48
       ],
       "boundsMetadata": {
         "min": [
-          -3.1,
-          -1.85,
-          -4.9
+          -3.08,
+          -1.37,
+          -4.93
         ],
         "max": [
-          3.1,
-          2.4,
-          4.67
+          3.08,
+          2.76,
+          4.55
         ],
         "size": [
-          6.2,
-          4.25,
-          9.57
+          6.16,
+          4.13,
+          9.48
         ],
         "center": [
           0,
-          0.275,
-          -0.115
+          0.695,
+          -0.19
         ],
-        "maxDimension": 9.57,
+        "maxDimension": 9.48,
         "grounded": false
       },
       "materials": [
@@ -104694,9 +104714,8 @@
         "backbox-material",
         "backboxDisplay-material",
         "neon-material",
-        "mechanisms-material",
-        "mechanismGlow-material",
-        "targetFaces-material"
+        "neonPink-material",
+        "sideArt-material"
       ],
       "materialMetadata": [
         {
@@ -104742,21 +104761,14 @@
           "reasons": []
         },
         {
-          "name": "mechanisms-material",
+          "name": "neonPink-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "mechanismGlow-material",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        },
-        {
-          "name": "targetFaces-material",
+          "name": "sideArt-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -104808,9 +104820,9 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 9,
-        "meshCount": 9,
-        "materialCount": 9,
+        "nodeCount": 8,
+        "meshCount": 8,
+        "materialCount": 8,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -104822,18 +104834,17 @@
           "backbox",
           "backboxDisplay",
           "neon",
-          "mechanisms",
-          "mechanismGlow",
-          "targetFaces"
+          "neonPink",
+          "sideArt"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 9 nodes across 9 roots."
+          "Detected 8 nodes across 8 roots."
         ]
       },
       "provenance": {
         "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersTable.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-models.mjs",
+        "sourcePage": "apps/showcase-vault-breakers/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/models/vaultBreakersTable.glb",
         "license": "CC0-1.0",
         "licenseName": "CC0 1.0 Universal",
@@ -104864,9 +104875,8 @@
         "backbox",
         "backboxDisplay",
         "neon",
-        "mechanisms",
-        "mechanismGlow",
-        "targetFaces"
+        "neonPink",
+        "sideArt"
       ],
       "thumbnailUrl": "/aura-assets/vaultBreakersTable.thumb.svg",
       "quality": "release",
@@ -104900,29 +104910,29 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-vault-breakers/assets/models/vaultBreakersVaultDoor.glb",
-      "outputPath": "public/aura-assets/vaultBreakersVaultDoor.ddb7304c.glb",
-      "url": "/aura-assets/vaultBreakersVaultDoor.ddb7304c.glb",
-      "hash": "sha256-ddb7304c0e473915dbf577c0207dd75b24093b8f2774cb2988a8869d7c7dbbbe",
-      "sizeBytes": 25420,
+      "outputPath": "public/aura-assets/vaultBreakersVaultDoor.af04f8d4.glb",
+      "url": "/aura-assets/vaultBreakersVaultDoor.af04f8d4.glb",
+      "hash": "sha256-af04f8d4b05a9bf42d11b9248d406d74040022f7fae88b228cf3e5f277d60467",
+      "sizeBytes": 35736,
       "bounds": [
         0.52,
-        0.512,
+        0.515,
         0.09
       ],
       "boundsMetadata": {
         "min": [
           -0.26,
-          -0.256,
+          -0.257,
           0
         ],
         "max": [
           0.26,
-          0.256,
+          0.257,
           0.09
         ],
         "size": [
           0.52,
-          0.512,
+          0.515,
           0.09
         ],
         "center": [
@@ -105034,7 +105044,7 @@
       },
       "provenance": {
         "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersVaultDoor.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-vault-breakers/scripts/build-models.mjs",
+        "sourcePage": "apps/showcase-vault-breakers/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-vault-breakers/assets/models/vaultBreakersVaultDoor.glb",
         "license": "CC0-1.0",
         "licenseName": "CC0 1.0 Universal",

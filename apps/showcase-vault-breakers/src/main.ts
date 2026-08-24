@@ -116,21 +116,20 @@ const audioCueLog: string[] = [];
 const lastCueFrame = new Map<string, number>();
 let doorSwing = -1; // -1 closed, 0..1 animating, 1 open
 const touchControlEvents: string[] = [];
-const liveBallMaterial = material.emissive({ name: "trackable chrome ball", color: "#f8fafc", emissive: "#67e8f9" });
-const liveFlipperMaterial = material.emissive({ name: "readable brass flipper", color: "#fef3c7", emissive: "#f59e0b" });
-const liveTargetMaterial = material.emissive({ name: "armed bank target", color: "#fde68a", emissive: "#f59e0b" });
-const liveDoorMaterial = material.emissive({ name: "vault door mission focus", color: "#d6d3d1", emissive: "#a16207" });
-const bankLampOffMaterial = material.emissive({ name: "bank lamp guarded", color: "#713f12", emissive: "#b45309" });
-const bankLampOnMaterial = material.emissive({ name: "bank lamp cleared", color: "#ccfbf1", emissive: "#0d9488" });
-const bumperBodyMaterial = material.emissive({ name: "brass pop bumper", color: "#fef3c7", emissive: "#d97706" });
-const bumperRingMaterial = material.emissive({ name: "cyan pop bumper ring", color: "#cffafe", emissive: "#0891b2" });
+// Neon palette — vibrant emissive colors against deep dark backgrounds
+const liveBallMaterial = material.emissive({ name: "neon chrome ball", color: "#e0f0ff", emissive: "#00d4ff" });
+const liveTargetArmedMaterial = material.emissive({ name: "neon target armed", color: "#ffb830", emissive: "#ff6a00" });
+const liveTargetHitMaterial = material.emissive({ name: "neon target hit", color: "#00f0ff", emissive: "#00e5ff" });
+const liveDoorMaterial = material.emissive({ name: "neon vault door", color: "#c0c0c0", emissive: "#d4a017" });
+const bankLampOffMaterial = material.emissive({ name: "neon lamp off", color: "#1a0e00", emissive: "#3d2200" });
+const bankLampOnMaterial = material.emissive({ name: "neon lamp on", color: "#00ffcc", emissive: "#00ffaa" });
 const mechanismStateMaterials = {
-  guarded: material.pbr({ name: "guarded mechanism state", color: "#d6a43b", roughness: 0.3, metallic: 0.35 }),
-  progress: material.pbr({ name: "bank progress mechanism state", color: "#16a34a", roughness: 0.28, metallic: 0.2 }),
-  vault: material.pbr({ name: "open vault mechanism state", color: "#f97316", roughness: 0.25, metallic: 0.35 }),
-  multiball: material.pbr({ name: "multiball mechanism state", color: "#06b6d4", roughness: 0.22, metallic: 0.4 }),
-  tilt: material.pbr({ name: "tilt mechanism state", color: "#dc2626", roughness: 0.32, metallic: 0.15 }),
-  gameOver: material.pbr({ name: "game over mechanism state", color: "#44403c", roughness: 0.72, metallic: 0.05 })
+  guarded: material.emissive({ name: "neon guarded", color: "#d4a017", emissive: "#8b6914" }),
+  progress: material.emissive({ name: "neon progress", color: "#00ff88", emissive: "#00cc66" }),
+  vault: material.emissive({ name: "neon vault open", color: "#ff6a00", emissive: "#ff4500" }),
+  multiball: material.emissive({ name: "neon multiball", color: "#00e5ff", emissive: "#00b8d4" }),
+  tilt: material.emissive({ name: "neon tilt", color: "#ff0044", emissive: "#cc0033" }),
+  gameOver: material.emissive({ name: "neon game over", color: "#333333", emissive: "#1a1a1a" })
 } as const;
 
 function pushCue(cue: Parameters<typeof audio.cue>[0]): void {
@@ -224,14 +223,7 @@ function visualNodes(): AuraSceneNode[] {
       nodes.push(primitiveNode(v));
     }
   }
-  for (const [index, [x, z]] of [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]].entries()) {
-    nodes.push(
-      primitives.box({ name: `readable-bumper-${index}`, material: bumperBodyMaterial })
-        .position(x, 1.5, z).scale([0.62, 0.3, 0.62]).toJSON(),
-      primitives.box({ name: `readable-bumper-ring-${index}`, material: bumperRingMaterial })
-        .position(x, 1.84, z).rotate(0, Math.PI / 4, 0).scale([0.46, 0.08, 0.46]).toJSON()
-    );
-  }
+  // Bumpers are now in the GLB mechanisms model — no redundant primitives needed.
   nodes.push(
     model(assets.vaultBreakersMechanisms, {
       name: "typed-vault-breakers-mechanisms",
@@ -267,12 +259,12 @@ function visualNodes(): AuraSceneNode[] {
 
 function buildScene(): ReturnType<typeof scene> {
   return scene()
-    .background("#070a12")
+    .background("#030308")
     .addMany(createVaultBreakersEnvironment())
     // Submit the playable mechanisms after the bounded cabinet shell so the
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
-    .addMany([effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.1 })])
+    .addMany([effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45 })])
     .camera(camera.perspective({ position: [0, 3.2, 9.2], target: [0, -0.5, 0.0], fov: 52 }));
 }
 
@@ -316,7 +308,8 @@ function resolveHandles(): void {
     const handle = app.nodes.get(name);
     if (handle) {
       const runtimeHandle = handle as AuraRuntimeNodeHandle;
-      runtimeHandle.setMaterial(name.startsWith("ball-") ? liveBallMaterial : liveFlipperMaterial);
+      // Only override ball material; let flipper GLB materials show through
+      if (name.startsWith("ball-")) runtimeHandle.setMaterial(liveBallMaterial);
       dynamicHandles.set(name, runtimeHandle);
     }
   }
@@ -325,7 +318,7 @@ function resolveHandles(): void {
     const handle = app.nodes.get(`target:${id}`);
     if (handle) {
       const runtimeHandle = handle as AuraRuntimeNodeHandle;
-      runtimeHandle.setMaterial(liveTargetMaterial);
+      runtimeHandle.setMaterial(liveTargetArmedMaterial);
       targetHandles.set(`target:${id}`, runtimeHandle);
     }
   }
@@ -429,7 +422,7 @@ function resetGame(): void {
   }
   for (const [id, handle] of targetHandles) {
     void id;
-    handle.setMaterial(material.emissive({ name: "standup amber", color: "#8a5a20", emissive: "#ffb14d", opacity: 0.92 }));
+    handle.setMaterial(liveTargetArmedMaterial);
   }
   hideResultCard();
   pushCue("bank-clear");
@@ -456,7 +449,7 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
         }
         const handle = targetHandles.get(`target:${event.id}`);
         if (handle) {
-          handle.setMaterial(material.emissive({ name: "standup teal", color: "#1a4a4a", emissive: "#7ef8ff", opacity: 0.95 }));
+          handle.setMaterial(liveTargetHitMaterial);
         }
         break;
       }

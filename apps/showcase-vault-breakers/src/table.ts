@@ -274,7 +274,7 @@ export function createTableSimulation(): TableSimulation {
   };
 
   // ---- playfield -------------------------------------------------------------
-  addStaticBox("felt", [2.85, 0.1, 4.15], [0, -0.1, 0], { friction: 0.1, restitution: 0.18, color: "#351622" });
+  addStaticBox("felt", [2.85, 0.1, 4.15], [0, -0.1, 0], { friction: 0.1, restitution: 0.18, color: "#0c0818", emissive: "#0e0620" });
   // Perimeter walls (invisible: the typed cabinet GLB carries the look).
   addStaticBox("wall-top", [2.85, 0.4, 0.1], [0, 0.4, -4.0], { visible: false, restitution: 0.42 });
   addStaticBox("wall-left", [0.1, 0.4, 4.15], [-2.7, 0.4, 0], { visible: false, restitution: 0.42 });
@@ -304,7 +304,7 @@ export function createTableSimulation(): TableSimulation {
   trackVisual({
     name: "lane-arrow",
     source: "primitive",
-    primitive: { shape: "box", size: [0.3, 0.02, 0.1], color: "#ffd9a0", emissive: "#ffb14d", opacity: 0.9 },
+    primitive: { shape: "box", size: [0.3, 0.02, 0.1], color: "#00d4ff", emissive: "#00aacc", opacity: 0.9 },
     position: [2.44, 0.03, 3.3],
     rotation: { x: 0, y: 0, z: 0 },
     dynamic: false
@@ -320,13 +320,13 @@ export function createTableSimulation(): TableSimulation {
     addStaticBox(bumper.id, [0.24, 0.14, 0.24], [bumper.x, 0.16, bumper.z], {
       restitution: 0.95,
       kick: { kind: "bumper" },
-      color: "#164e63",
-      emissive: "#22d3ee"
+      color: "#1a0e00",
+      emissive: "#ff6a00"
     });
     trackVisual({
       name: bumper.id + "-cap",
       source: "primitive",
-      primitive: { shape: "cylinder", size: [0.3, 0.16, 0.3], color: "#fff7d6", emissive: "#f59e0b" },
+      primitive: { shape: "cylinder", size: [0.3, 0.16, 0.3], color: "#ff8800", emissive: "#ff6a00" },
       position: [bumper.x, 0.36, bumper.z],
       rotation: { x: 0, y: 0, z: 0 },
       dynamic: false
@@ -343,8 +343,8 @@ export function createTableSimulation(): TableSimulation {
       rotationY: sling.yaw,
       restitution: 0.9,
       kick: { kind: "sling" },
-      color: "#7c2d12",
-      emissive: "#fb923c"
+      color: "#1a0800",
+      emissive: "#ff4500"
     });
   }
 
@@ -362,7 +362,7 @@ export function createTableSimulation(): TableSimulation {
   trackVisual({
     name: "orbit-marker",
     source: "primitive",
-    primitive: { shape: "torus", size: [0.5, 0.5, 0.04], color: "#7ef8ff", emissive: "#39d7e8", opacity: 0.7 },
+    primitive: { shape: "torus", size: [0.5, 0.5, 0.04], color: "#00e5ff", emissive: "#00b8d4", opacity: 0.85 },
     position: [0, 0.03, -3.05],
     rotation: { x: Math.PI / 2, y: 0, z: 0 },
     dynamic: false
@@ -407,7 +407,7 @@ export function createTableSimulation(): TableSimulation {
       trackVisual({
         name: `target:${id}`,
         source: "primitive",
-        primitive: { shape: "box", size: [0.28, 0.42, 0.08], color: "#fef3c7", emissive: "#f59e0b", opacity: 1 },
+        primitive: { shape: "box", size: [0.28, 0.42, 0.08], color: "#ffb830", emissive: "#ff6a00", opacity: 1 },
         position: [x, 0.2, z],
         rotation: { x: 0, y: 0, z: 0 },
         dynamic: false
@@ -424,7 +424,7 @@ export function createTableSimulation(): TableSimulation {
   trackVisual({
     name: "drain-visual",
     source: "primitive",
-    primitive: { shape: "box", size: [1.36, 0.02, 0.4], color: "#05070c", emissive: "#101820", opacity: 0.85 },
+    primitive: { shape: "box", size: [1.36, 0.02, 0.4], color: "#050510", emissive: "#0a0a20", opacity: 0.9 },
     position: [0, 0.012, 3.92],
     rotation: { x: 0, y: 0, z: 0 },
     dynamic: false
