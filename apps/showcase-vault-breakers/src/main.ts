@@ -273,7 +273,7 @@ function buildScene(): ReturnType<typeof scene> {
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.1 })])
-    .camera(camera.perspective({ position: [0, 4.6, 8.8], target: [0, 0.55, -2.25], fov: 44 }));
+    .camera(camera.perspective({ position: [0, 3.2, 9.2], target: [0, -0.5, 0.0], fov: 52 }));
 }
 
 // ---------------------------------------------------------------- mount ------
