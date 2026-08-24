@@ -255,21 +255,8 @@ export function createTableSimulation(): TableSimulation {
     });
     registerCollider(collider.id, name, options.sensor === true);
     if (options.kick) kickColliderIds.set(collider.id, { kind: options.kick.kind, id: name });
-    if (options.visible !== false) {
-      trackVisual({
-        name,
-        source: "primitive",
-        primitive: {
-          shape: "box",
-          size: [halfExtents[0] * 2, halfExtents[1] * 2, halfExtents[2] * 2],
-          color: options.color ?? "#1a2130",
-          ...(options.emissive ? { emissive: options.emissive } : {})
-        },
-        position,
-        rotation: euler,
-        dynamic: false
-      });
-    }
+    // Static box colliders are invisible — the GLB mechanisms model provides all playfield visuals.
+    // Only model-sourced visuals (ball, flipper, vault door) and explicit trackVisual calls remain.
     return body;
   };
 
@@ -301,14 +288,7 @@ export function createTableSimulation(): TableSimulation {
   // off the top wall back down the lane. Long enough to embed both ends deep
   // into the side walls so no gap lets the ball squeeze past.
   addStaticBox("lane-guide", [0.45, 0.14, 0.08], [2.44, 0.3, -3.05], { rotationY: 2.11, visible: false, restitution: 0.6 });
-  trackVisual({
-    name: "lane-arrow",
-    source: "primitive",
-    primitive: { shape: "box", size: [0.3, 0.02, 0.1], color: "#00d4ff", emissive: "#00aacc", opacity: 0.9 },
-    position: [2.44, 0.03, 3.3],
-    rotation: { x: 0, y: 0, z: 0 },
-    dynamic: false
-  });
+  // Lane arrow visual provided by GLB mechanisms model
 
   // ---- bumpers (pop bumpers: restitution + authored kick impulse) ------------
   const bumpers: { readonly id: string; readonly x: number; readonly z: number }[] = [
@@ -323,14 +303,7 @@ export function createTableSimulation(): TableSimulation {
       color: "#1a0e00",
       emissive: "#ff6a00"
     });
-    trackVisual({
-      name: bumper.id + "-cap",
-      source: "primitive",
-      primitive: { shape: "cylinder", size: [0.3, 0.16, 0.3], color: "#ff8800", emissive: "#ff6a00" },
-      position: [bumper.x, 0.36, bumper.z],
-      rotation: { x: 0, y: 0, z: 0 },
-      dynamic: false
-    });
+    // Bumper cap visual provided by GLB mechanisms model
   }
 
   // ---- slingshots ------------------------------------------------------------
@@ -359,14 +332,7 @@ export function createTableSimulation(): TableSimulation {
     const collider = world.createCollider(body, { shape: physics.box(0.55, 0.16, 0.2), sensor: true });
     registerCollider(collider.id, "orbit:pass", true);
   }
-  trackVisual({
-    name: "orbit-marker",
-    source: "primitive",
-    primitive: { shape: "torus", size: [0.5, 0.5, 0.04], color: "#00e5ff", emissive: "#00b8d4", opacity: 0.85 },
-    position: [0, 0.03, -3.05],
-    rotation: { x: Math.PI / 2, y: 0, z: 0 },
-    dynamic: false
-  });
+  // Orbit marker visual provided by GLB mechanisms model
 
   // ---- vault chamber ----------------------------------------------------------
   // Chamber behind z = -3.3, x in [-0.85, 0.85]; the door seals the opening.
@@ -404,10 +370,11 @@ export function createTableSimulation(): TableSimulation {
       const body = world.createBody({ type: "static", position: [x, 0.16, z] });
       const collider = world.createCollider(body, { shape: physics.box(0.12, 0.16, 0.06), sensor: true });
       registerCollider(collider.id, `target:${id}`, true);
+      // Target visual provided by GLB mechanisms; keep a tiny invisible node for runtime handle
       trackVisual({
         name: `target:${id}`,
         source: "primitive",
-        primitive: { shape: "box", size: [0.28, 0.42, 0.08], color: "#ffb830", emissive: "#ff6a00", opacity: 1 },
+        primitive: { shape: "box", size: [0.01, 0.01, 0.01], color: "#ffb830", emissive: "#ff6a00", opacity: 0 },
         position: [x, 0.2, z],
         rotation: { x: 0, y: 0, z: 0 },
         dynamic: false
@@ -421,14 +388,7 @@ export function createTableSimulation(): TableSimulation {
     const collider = world.createCollider(body, { shape: physics.box(0.68, 0.2, 0.2), sensor: true });
     registerCollider(collider.id, "drain:lane", true);
   }
-  trackVisual({
-    name: "drain-visual",
-    source: "primitive",
-    primitive: { shape: "box", size: [1.36, 0.02, 0.4], color: "#050510", emissive: "#0a0a20", opacity: 0.9 },
-    position: [0, 0.012, 3.92],
-    rotation: { x: 0, y: 0, z: 0 },
-    dynamic: false
-  });
+  // Drain visual provided by GLB table model
 
   // ---- flippers (VB-01 spike parameters, same-sign axis mirror) ---------------
   const makeFlipper = (side: "left" | "right"): FlipperRig => {

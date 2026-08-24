@@ -338,7 +338,10 @@ type AuraGeneratedAssetDefinitions = {
   readonly "vaultBallDrainSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultBankClearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultBreakersBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vaultBreakersCabinet": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vaultBreakersCabinetHigan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vaultBreakersFlipper": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "vaultBreakersFlipperReal": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vaultBreakersMechanisms": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vaultBreakersTable": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "vaultBreakersVaultDoor": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -100296,6 +100299,365 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "vaultBreakersCabinet": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vaultBreakersCabinet.56876a1a.glb",
+    hash: "sha256-56876a1a0007f86edda3172bf224d130e2e51ffbcfdb693e6fc17208c4a5a277",
+    bounds: [
+      0.698,
+      2,
+      1.254
+    ],
+    sizeBytes: 7932596,
+    metadata: {
+      "materials": [
+        "Danielle_20180610_2300_Body",
+        "Danielle_20180610_2300_Glass2",
+        "Danielle_20180610_2300_InnerParts",
+        "Danielle_20180610_2300_OuterParts"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 12,
+        "meshCount": 5,
+        "materialCount": 4,
+        "textureCount": 12,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 12 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersCabinet.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/77a31717604545b2b410011c14fd74f2.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-076/a52a3e4e62bd42c79e5b5153742cb095.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-076/a52a3e4e62bd42c79e5b5153742cb095.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "licenseRaw": "CC-BY-4.0",
+        "author": "dgeraci",
+        "sourceFamily": "objaverse",
+        "attribution": "dgeraci",
+        "sha256": "sha256-5d6e3fb37e917cdff04af7236da90cec9f9d1a816e1ef26847df6390d0a08536",
+        "retrievedAt": "2026-08-24T23:21:46.465Z",
+        "resolveCandidate": {
+          "catalogId": "objaverse:a52a3e4e62bd42c79e5b5153742cb095",
+          "query": "pinball machine",
+          "source": "objaverse",
+          "sourceFamily": "objaverse",
+          "scoreTotal": 0.87,
+          "scoreBreakdown": {
+            "semantic": 10.87,
+            "sourceQuality": 14,
+            "license": 13,
+            "inspection": 0,
+            "roleFit": 0
+          },
+          "reasons": [
+            "semantic/source score 10.87",
+            "download URL preserved",
+            "author/attribution preserved",
+            "verified CC-BY-4.0 license"
+          ],
+          "penalties": [
+            "missing source page",
+            "missing license URL/source evidence",
+            "missing bounds/dimensions metadata",
+            "missing material metadata for visual model role"
+          ],
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-076/a52a3e4e62bd42c79e5b5153742cb095.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseRaw": "CC-BY-4.0",
+          "author": "Owen Morris",
+          "attribution": "Owen Morris",
+          "semanticScore": 0.8146769839612863,
+          "postDownloadInspection": {
+            "bounds": [
+              0.523,
+              1.011,
+              1.223
+            ],
+            "materialCount": 1,
+            "textureCount": 3,
+            "animationClipCount": 0,
+            "skinCount": 0,
+            "morphTargetCount": 0,
+            "warnings": [
+              "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+            ]
+          },
+          "rawCatalogMetadata": {
+            "id": "objaverse:a52a3e4e62bd42c79e5b5153742cb095",
+            "title": "Pinball Machine",
+            "source": "objaverse",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-076/a52a3e4e62bd42c79e5b5153742cb095.glb",
+            "license": "CC-BY-4.0",
+            "thumbnail": "https://media.sketchfab.com/models/a52a3e4e62bd42c79e5b5153742cb095/thumbnails/29b4ab9b7e94423fa79ca6c2ccfd9092/fa1b1e9cdfe64d4c9b201ee17b852cad.jpeg",
+            "attribution": "Owen Morris",
+            "score": 0.8146769839612863
+          }
+        },
+        "checkedAt": "2026-08-24T23:21:46.465Z"
+      },
+      "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersCabinet.glb",
+      "outputPath": "public/aura-assets/vaultBreakersCabinet.56876a1a.glb",
+      "license": "CC-BY-4.0",
+      "author": "dgeraci",
+      "boundsMetadata": {
+        "min": [
+          -0.349,
+          -1,
+          -0.627
+        ],
+        "max": [
+          0.349,
+          1,
+          0.627
+        ],
+        "size": [
+          0.698,
+          2,
+          1.254
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Danielle_20180610_2300_Body",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Danielle_20180610_2300_Glass2",
+          "visible": true,
+          "readable": true,
+          "opacity": 0.25,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Danielle_20180610_2300_InnerParts",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Danielle_20180610_2300_OuterParts",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "Collada visual scene group",
+        "Danielle_20180610_2300:Danielle_20180610_2300:polySurface21",
+        "defaultMaterial",
+        "Danielle_20180610_2300:Danielle_20180610_2300:pCube7",
+        "defaultMaterial",
+        "Danielle_20180610_2300:Glass1",
+        "defaultMaterial",
+        "Danielle_20180610_2300:pCube2",
+        "defaultMaterial",
+        "Danielle_20180610_2300:pCube1",
+        "defaultMaterial"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2",
+        "image-3",
+        "image-4",
+        "image-5",
+        "image-6",
+        "image-7",
+        "image-8",
+        "image-9",
+        "image-10",
+        "image-11"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vaultBreakersCabinet.thumb.svg",
+      "quality": "candidate",
+      "role": "unknown",
+      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+    },
+  },
+  "vaultBreakersCabinetHigan": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vaultBreakersCabinetHigan.0e802847.glb",
+    hash: "sha256-0e80284736be8ff6d27254932b30dd6b9b2db01aed082fb1a984f86ad2937a79",
+    bounds: [
+      5.8,
+      12.5,
+      11.6
+    ],
+    sizeBytes: 1468740,
+    metadata: {
+      "materials": [
+        "palette"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 3,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 3,
+        "messages": [
+          "Detected 3 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersCabinetHigan.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/4e14ebb2feb04cce8f47742cb77c14cd.glb",
+        "license": "CC-BY-4.0",
+        "author": "higan69",
+        "checkedAt": "2026-08-24T23:40:55.778Z"
+      },
+      "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersCabinetHigan.glb",
+      "outputPath": "public/aura-assets/vaultBreakersCabinetHigan.0e802847.glb",
+      "license": "CC-BY-4.0",
+      "author": "higan69",
+      "boundsMetadata": {
+        "min": [
+          -2.6,
+          0,
+          -5.8
+        ],
+        "max": [
+          3.2,
+          12.5,
+          5.8
+        ],
+        "size": [
+          5.8,
+          12.5,
+          11.6
+        ],
+        "center": [
+          0.3,
+          6.25,
+          0
+        ],
+        "maxDimension": 12.5,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "palette",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "pinballMachine.obj.cleaner.materialmerger.gles",
+        "Object_2"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vaultBreakersCabinetHigan.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
   "vaultBreakersFlipper": {
     type: "model",
     format: "glb",
@@ -100464,6 +100826,132 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "height": 185
         }
       }
+    },
+  },
+  "vaultBreakersFlipperReal": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/vaultBreakersFlipperReal.ae70acd9.glb",
+    hash: "sha256-ae70acd937068af1b31ab1316272c2dedb6072542ed714052d74aec2614a4d16",
+    bounds: [
+      5.235,
+      1.394,
+      1.86
+    ],
+    sizeBytes: 256700,
+    metadata: {
+      "materials": [
+        "Material.002"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 6,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 6 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersFlipperReal.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-077/e4175e4ab1ae4e38bbe5682008874740.glb",
+        "license": "CC-BY-4.0",
+        "author": "avlasov",
+        "checkedAt": "2026-08-24T23:23:35.711Z"
+      },
+      "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersFlipperReal.glb",
+      "outputPath": "public/aura-assets/vaultBreakersFlipperReal.ae70acd9.glb",
+      "license": "CC-BY-4.0",
+      "author": "avlasov",
+      "boundsMetadata": {
+        "min": [
+          -2.692,
+          -0.389,
+          -0.93
+        ],
+        "max": [
+          2.543,
+          1.004,
+          0.93
+        ],
+        "size": [
+          5.235,
+          1.394,
+          1.86
+        ],
+        "center": [
+          -0.075,
+          0.308,
+          0
+        ],
+        "maxDimension": 5.235,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Material.002",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "Root",
+        "flipper",
+        "flipper_0",
+        "Sun",
+        "Sun"
+      ],
+      "textures": [
+        "image-0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/vaultBreakersFlipperReal.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
     },
   },
   "vaultBreakersMechanisms": {

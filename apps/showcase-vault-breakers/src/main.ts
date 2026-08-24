@@ -191,7 +191,6 @@ function visualNodes(): AuraSceneNode[] {
           .toJSON()
       );
     } else if (v.name.startsWith("target:")) {
-      // Standup targets get runtime handles so a banked target visibly changes material.
       nodes.push(
         primitives.box({
           name: v.name,
@@ -223,7 +222,6 @@ function visualNodes(): AuraSceneNode[] {
       nodes.push(primitiveNode(v));
     }
   }
-  // Bumpers are now in the GLB mechanisms model — no redundant primitives needed.
   nodes.push(
     model(assets.vaultBreakersMechanisms, {
       name: "typed-vault-breakers-mechanisms",
