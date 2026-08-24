@@ -252,7 +252,10 @@ function buildScene(): ReturnType<typeof scene> {
     // Put the table's long axis up the portrait viewport so all six pockets,
     // every ball, the cue, and the first line of action remain visible.
     ? camera.perspective({ position: [-4.2, 8.5, 0], target: [-0.4, -0.2, 0], fov: 66 })
-    : camera.perspective({ position: [0, 3.7, 2.75], target: [0, -0.25, 0], fov: 48 });
+    // The table is the product of this route. Keep the review camera close
+    // enough that the six pockets and live balls read immediately instead of
+    // spending the lower half of the frame on an empty lounge floor.
+    : camera.perspective({ position: [0, 3.3, 2.45], target: [0, -0.12, 0], fov: 46 });
   return scene()
     .background("#070b12")
     .addMany(visualNodes())

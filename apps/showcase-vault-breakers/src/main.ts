@@ -277,7 +277,10 @@ function buildScene(): ReturnType<typeof scene> {
       // is fed only by bumper, target, and scoreboard emissives.
       effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.1 })
     ])
-    .camera(camera.perspective({ position: [0, 8.8, 7.6], target: [0, 0.1, 1.2], fov: 43 }));
+    // Aim through the playfield rather than above it. The prior z target put
+    // the authored backbox outside the tall desktop frame, leaving a large
+    // dead band over the cabinet.
+    .camera(camera.perspective({ position: [0, 8.8, 7.6], target: [0, 0.1, 1.5], fov: 43 }));
 }
 
 // ---------------------------------------------------------------- mount ------

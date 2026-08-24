@@ -20,23 +20,23 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
   // 1. Materials
   const floorWoodMat = material.pbr({
     name: "parquet-floor",
-    color: "#2a170e",
-    roughness: 0.35,
-    metallic: 0.15
+    color: "#0b1018",
+    roughness: 0.62,
+    metallic: 0.05
   });
 
   const rugMat = material.pbr({
     name: "billiards-rug-burgundy",
-    color: "#4a0404",
+    color: "#111827",
     roughness: 0.9,
     metallic: 0.0
   });
 
   const rugBorderMat = material.pbr({
     name: "billiards-rug-gold-trim",
-    color: "#b45309",
-    roughness: 0.6,
-    metallic: 0.3
+    color: "#344356",
+    roughness: 0.68,
+    metallic: 0.16
   });
 
   const wallWoodMat = material.pbr({

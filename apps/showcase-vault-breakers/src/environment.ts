@@ -7,6 +7,7 @@ export function createVaultBreakersEnvironment(): AuraSceneNode[] {
   const cyan = material.emissive({ name: "vault cyan accents", color: "#cffafe", emissive: "#0891b2" });
   const burgundy = material.pbr({ name: "vault burgundy room", color: "#2a101c", roughness: 0.82, metallic: 0.08 });
   const blackLacquer = material.pbr({ name: "vault black lacquer", color: "#111827", roughness: 0.34, metallic: 0.52 });
+  const backboxFace = material.pbr({ name: "vault backbox face", color: "#162d4a", roughness: 0.48, metallic: 0.42 });
 
   return [
     lights.ambient({ name: "vault ambient", color: "#dbeafe", intensity: 2.4 }).toJSON(),
@@ -37,6 +38,23 @@ export function createVaultBreakersEnvironment(): AuraSceneNode[] {
     primitives.box({ name: "vault header top", material: cyan })
       .position(0, 1.88, -4.24).scale([5.9, 0.07, 0.07]).toJSON(),
     primitives.box({ name: "vault header bottom", material: brass })
-      .position(0, 0.42, -4.24).scale([5.9, 0.07, 0.07]).toJSON()
+      .position(0, 0.42, -4.24).scale([5.9, 0.07, 0.07]).toJSON(),
+    // A readable upright head above the playfield. The typed cabinet carries
+    // its own backbox, while this shallow face/trim keeps that pinball shape
+    // visible in the root-safe showcase composition at desktop aspect ratios.
+    primitives.plane({ name: "vault backbox face", material: backboxFace })
+      .position(0, 2.8, 1.5).scale([4.7, 0.72, 1]).toJSON(),
+    primitives.box({ name: "vault backbox top trim", material: cyan })
+      .position(0, 3.2, 1.55).scale([4.8, 0.08, 0.08]).toJSON(),
+    primitives.box({ name: "vault backbox left trim", material: cyan })
+      .position(-4.75, 2.8, 1.55).scale([0.08, 0.8, 0.08]).toJSON(),
+    primitives.box({ name: "vault backbox right trim", material: cyan })
+      .position(4.75, 2.8, 1.55).scale([0.08, 0.8, 0.08]).toJSON(),
+    primitives.box({ name: "vault backbox bottom trim", material: brass })
+      .position(0, 2.22, 1.55).scale([4.8, 0.08, 0.08]).toJSON(),
+    primitives.box({ name: "vault backbox left support", material: blackLacquer })
+      .position(-4.72, 1.42, 1.55).scale([0.12, 0.52, 0.12]).toJSON(),
+    primitives.box({ name: "vault backbox right support", material: blackLacquer })
+      .position(4.72, 1.42, 1.55).scale([0.12, 0.52, 0.12]).toJSON()
   ];
 }
