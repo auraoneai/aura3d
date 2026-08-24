@@ -272,20 +272,14 @@ function buildScene(): ReturnType<typeof scene> {
     // Submit the playable mechanisms after the bounded cabinet shell so the
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
-    .addMany([
-      // Vault-interior mood: warm gold key, cool teal rim, shallow fog; bloom
-      // is fed only by bumper, target, and scoreboard emissives.
-      effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.1 })
-    ])
-    // Aim through the playfield rather than above it. The prior z target put
-    // the authored backbox outside the tall desktop frame, leaving a large
-    // dead band over the cabinet.
-    .camera(camera.perspective({ position: [0, 8.8, 7.6], target: [0, 0.1, 1.5], fov: 43 }));
+    .addMany([effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.1 })])
+    .camera(camera.perspective({ position: [0, 4.6, 8.8], target: [0, 0.55, -2.25], fov: 44 }));
 }
 
 // ---------------------------------------------------------------- mount ------
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
+  renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
   input: {
     actions: {
       flipperLeft: ["KeyA", "ArrowLeft"],

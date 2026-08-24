@@ -100639,20 +100639,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "vaultBreakersTable": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/vaultBreakersTable.47da0739.glb",
-    hash: "sha256-47da0739ab0c982ca1bd874d1ecae5d141cfa8cf9b5e1a9ef1841e340f0d9eed",
+    url: "/aura-assets/vaultBreakersTable.d36f4815.glb",
+    hash: "sha256-d36f4815b5c4171a4a0e443826bc9b2488407eb32afac2928e502468bcc9e300",
     bounds: [
       6.2,
-      4.33,
+      4.25,
       9.57
     ],
-    sizeBytes: 134136,
+    sizeBytes: 138900,
     metadata: {
       "materials": [
         "playfield-material",
         "cabinet-material",
         "chrome-material",
         "backbox-material",
+        "backboxDisplay-material",
         "neon-material",
         "mechanisms-material",
         "mechanismGlow-material",
@@ -100687,9 +100688,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 8,
-        "meshCount": 8,
-        "materialCount": 8,
+        "nodeCount": 9,
+        "meshCount": 9,
+        "materialCount": 9,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -100699,6 +100700,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "cabinet",
           "chrome",
           "backbox",
+          "backboxDisplay",
           "neon",
           "mechanisms",
           "mechanismGlow",
@@ -100706,7 +100708,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 8 nodes across 8 roots."
+          "Detected 9 nodes across 9 roots."
         ]
       },
       "provenance": {
@@ -100726,7 +100728,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-24T01:00:00.000Z"
       },
       "sourcePath": "apps/showcase-vault-breakers/assets/models/vaultBreakersTable.glb",
-      "outputPath": "public/aura-assets/vaultBreakersTable.47da0739.glb",
+      "outputPath": "public/aura-assets/vaultBreakersTable.d36f4815.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -100737,17 +100739,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "max": [
           3.1,
-          2.48,
+          2.4,
           4.67
         ],
         "size": [
           6.2,
-          4.33,
+          4.25,
           9.57
         ],
         "center": [
           0,
-          0.315,
+          0.275,
           -0.115
         ],
         "maxDimension": 9.57,
@@ -100777,6 +100779,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         },
         {
           "name": "backbox-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "backboxDisplay-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -100824,6 +100833,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "cabinet",
         "chrome",
         "backbox",
+        "backboxDisplay",
         "neon",
         "mechanisms",
         "mechanismGlow",
@@ -100840,17 +100850,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=vaultBreakersTable",
-        "sha256": "sha256-8594b49904f1695d2bdc09005d7c6235903c910c85440361836335a0ba524a11",
-        "assetHash": "sha256-47da0739ab0c982ca1bd874d1ecae5d141cfa8cf9b5e1a9ef1841e340f0d9eed",
+        "sha256": "sha256-e11165d50dbe5f2a85d07cf2c86837cc3cf180e303f4adc94e2b905dbc81aac4",
+        "assetHash": "sha256-d36f4815b5c4171a4a0e443826bc9b2488407eb32afac2928e502468bcc9e300",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 47,
-        "checkedAt": "2026-08-24T01:58:43.688Z",
+        "colorBuckets": 46,
+        "checkedAt": "2026-08-24T12:47:54.358Z",
         "foregroundBounds": {
-          "x": 141,
-          "y": 114,
-          "width": 459,
+          "x": 140,
+          "y": 115,
+          "width": 461,
           "height": 394
         }
       }

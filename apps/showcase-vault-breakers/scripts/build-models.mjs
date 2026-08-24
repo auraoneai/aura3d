@@ -125,6 +125,29 @@ function addBox(p, cx, cy, cz, hx, hy, hz) {
   addQuad(p, v[2], v[3], v[7], v[6]); // +X
 }
 
+/**
+ * Axis-aligned box with outward-facing winding.
+ *
+ * The cabinet shell predates the upright head and uses the original helper's
+ * interior winding.  The player-facing head is a closed opaque surface, so it
+ * needs the glTF-standard outward winding for back-face culling to present its
+ * front instead of only its reverse side.
+ */
+function addBoxOutward(p, cx, cy, cz, hx, hy, hz) {
+  const v = [
+    [cx - hx, cy - hy, cz - hz], [cx + hx, cy - hy, cz - hz],
+    [cx + hx, cy - hy, cz + hz], [cx - hx, cy - hy, cz + hz],
+    [cx - hx, cy + hy, cz - hz], [cx + hx, cy + hy, cz - hz],
+    [cx + hx, cy + hy, cz + hz], [cx - hx, cy + hy, cz + hz]
+  ];
+  addQuad(p, v[0], v[1], v[2], v[3]); // bottom (-Y)
+  addQuad(p, v[4], v[7], v[6], v[5]); // top (+Y)
+  addQuad(p, v[1], v[5], v[6], v[2]); // +X
+  addQuad(p, v[0], v[3], v[7], v[4]); // -X
+  addQuad(p, v[3], v[2], v[6], v[7]); // +Z (player-facing)
+  addQuad(p, v[0], v[4], v[5], v[1]); // -Z
+}
+
 /** Box rolled around the Z axis (vault door spokes). */
 function addRollBox(p, cx, cy, cz, hx, hy, hz, roll) {
   const cos = Math.cos(roll), sin = Math.sin(roll);
@@ -170,6 +193,7 @@ function buildTable() {
   const cabinet = part();
   const chrome = part();
   const backbox = part();
+  const backboxDisplay = part();
   const neon = part();
   const mechanisms = part();
   const mechanismGlow = part();
@@ -249,20 +273,31 @@ function buildTable() {
   addBox(chrome, 2.45, 0.05, 4.45, 0.12, 0.12, 0.22);
 
   // 6. Upright Backbox / Head (Z: -4.4 to -4.8, Y: 0.2 to 2.4)
-  addBox(backbox, 0, 1.35, -4.55, 3.0, 1.05, 0.35);
-  // Neon Perimeter Marquee Frame
-  addBox(neon, 0, 2.42, -4.4, 2.95, 0.06, 0.06); // top
-  addBox(neon, -2.95, 1.35, -4.4, 0.06, 1.05, 0.06); // left
-  addBox(neon, 2.95, 1.35, -4.4, 0.06, 1.05, 0.06); // right
-  addBox(neon, 0, 0.35, -4.4, 2.95, 0.06, 0.06); // bottom
+  addBoxOutward(backbox, 0, 1.35, -4.55, 3.0, 1.05, 0.35);
+  // A recessed display face makes the head read as a pinball backbox instead
+  // of a featureless slab.  It sits just in front of the shell; the neon
+  // frame is one more shallow layer toward the player so depth ordering stays
+  // explicit in the production runtime.
+  addBoxOutward(backboxDisplay, 0, 1.42, -4.13, 2.72, 0.72, 0.035);
+  // Neon perimeter marquee frame
+  addBoxOutward(neon, 0, 2.18, -4.03, 2.82, 0.055, 0.055); // top
+  addBoxOutward(neon, -2.82, 1.42, -4.03, 0.055, 0.72, 0.055); // left
+  addBoxOutward(neon, 2.82, 1.42, -4.03, 0.055, 0.72, 0.055); // right
+  addBoxOutward(neon, 0, 0.66, -4.03, 2.82, 0.055, 0.055); // bottom
+  // Simple marquee glyphs are intentionally geometric: they remain legible at
+  // thumbnail scale without pretending to be a texture or a fake DOM overlay.
+  addBoxOutward(neon, 0, 1.67, -4.03, 1.72, 0.045, 0.045);
+  addBoxOutward(neon, -0.82, 1.23, -4.03, 0.58, 0.045, 0.045);
+  addBoxOutward(neon, 0.82, 1.23, -4.03, 0.58, 0.045, 0.045);
   // Speaker Panel Grille
-  addBox(cabinet, 0, 0.75, -4.38, 2.8, 0.32, 0.04);
+  addBoxOutward(cabinet, 0, 0.75, -4.38, 2.8, 0.32, 0.04);
 
   return [
     { name: "playfield", part: playfield, color: [0.06, 0.1, 0.18, 1], roughness: 0.18, metallic: 0.2 },
     { name: "cabinet", part: cabinet, color: [0.12, 0.15, 0.22, 1], roughness: 0.55, metallic: 0.4 },
     { name: "chrome", part: chrome, color: [0.92, 0.95, 0.98, 1], roughness: 0.12, metallic: 0.95 },
     { name: "backbox", part: backbox, color: [0.08, 0.1, 0.15, 1], roughness: 0.45, metallic: 0.5 },
+    { name: "backboxDisplay", part: backboxDisplay, color: [0.015, 0.035, 0.085, 1], roughness: 0.32, metallic: 0.35 },
     { name: "neon", part: neon, color: [0.2, 0.9, 1.0, 1], roughness: 0.1, metallic: 0.0, emissive: [0.4, 1.5, 2.0] },
     { name: "mechanisms", part: mechanisms, color: [0.95, 0.55, 0.16, 1], roughness: 0.2, metallic: 0.7, emissive: [0.38, 0.12, 0.01] },
     { name: "mechanismGlow", part: mechanismGlow, color: [0.28, 0.96, 1.0, 1], roughness: 0.12, metallic: 0.15, emissive: [0.3, 1.35, 1.55] },
