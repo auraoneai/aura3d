@@ -1,0 +1,403 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-24T02:36:07.162Z",
+  "appId": "showcase-vault-breakers",
+  "route": "/apps/showcase-vault-breakers/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "routeSourceSha256": "37c7e8ec4b19c29b2391b3319b38e99935cfbca5e2ff016c5316a679916b4a76",
+  "renderer": {
+    "path": "createGameApp root safe API",
+    "mode": "production with safe-basic fallback",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.vaultBreakersTable",
+      "hash": "sha256-47da0739ab0c982ca1bd874d1ecae5d141cfa8cf9b5e1a9ef1841e340f0d9eed",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.vaultBreakersMechanisms",
+      "hash": "sha256-355ab0fab5eb16edcdc5a9519f012257b7edbab778937a4df168523754429ebc",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.vaultBreakersBall",
+      "hash": "sha256-5c94e5276ff405d3b12aad17a9733bd2eecf0e4a1af6c0ce2010fe211b0620ae",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.vaultBreakersFlipper",
+      "hash": "sha256-75e0ac2dba50c6d4dda4b3f610380a7fc6f8022ea1d734dd2ffc07a604c9c267",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.vaultBreakersVaultDoor",
+      "hash": "sha256-ddb7304c0e473915dbf577c0207dd75b24093b8f2774cb2988a8869d7c7dbbbe",
+      "quality": "release",
+      "role": "prop"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.vaultFlipperSnapSfx",
+      "hash": "sha256-fe1b8fa89d41741152e78922d8f3abca8838065d1c08c55d7e5c04ebbbfdb1fb",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultBumperHitSfx",
+      "hash": "sha256-3bc7cbf44159f4542c2f2bfcdc7dcc92693b1b5f746bd9abeba6401040bc3d5d",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultSlingPopSfx",
+      "hash": "sha256-6802389226083ff3d7e6750f19336f79bdc69900a98816cf2f47a43cd9305f1d",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultRampRollSfx",
+      "hash": "sha256-d71f81f9da4dc81d48a90d60886daacd5970cb6b71ef333fbcee251821e5926d",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultTargetDownSfx",
+      "hash": "sha256-c7c05ed6931ceffabd105b1ad4536c8260b241b5d69c9b57d2f2bcc4e1b54f53",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultBankClearSfx",
+      "hash": "sha256-b2bc8c1c33708ae7fc0fd73f1e7de08a2ebcb5dbcc0927d5f08f2738ceaffe6d",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultVaultOpenSfx",
+      "hash": "sha256-1026c05adb2201c6a5c1e99eda178ac44060ad009d4f22dc68500ba4ea628fd6",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultMultiballSfx",
+      "hash": "sha256-ae70099e3858b58fce40e108606ca1b03e5876fe0fdde36be46a38d468efc3a4",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultBallDrainSfx",
+      "hash": "sha256-f6338054f902604a132d4798dbb86ec100d4cae4a2fb5c0cfe9c8e279ee4ed3c",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultTiltWarnSfx",
+      "hash": "sha256-16630e60f5e976aae68f1b20de6c048f891c30b1233864437ff503a694d8d8ce",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.vaultPlungerReleaseSfx",
+      "hash": "sha256-b2db18054ca768ab50b4bcd11eae8a0e000ef3562900baf81d33ff6117f08ece",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 19,
+    "primitiveBudget": 96,
+    "role": "subordinate felt, rails, slings, target state, lane, drain, lights, scoreboard, and feedback around typed primary assets",
+    "status": "no-primitive-primary-subjects"
+  },
+  "gameplay": {
+    "ballsPerGame": 3,
+    "controls": [
+      "charge/release serve",
+      "left/right joint flippers",
+      "nudge/tilt",
+      "pause",
+      "full reset"
+    ],
+    "keyboardAndTouch": true,
+    "rapierBackend": true,
+    "motorisedJoints": 2,
+    "targetBanks": 5,
+    "vaultMultiball": true,
+    "deterministicFixedStep": true,
+    "deterministicPoseHash": true,
+    "reducedMotionPreservesStateTruth": true
+  },
+  "accessibility": {
+    "semanticHeading": true,
+    "namedStatusRegions": true,
+    "namedTouchControls": 5,
+    "minimumTouchTargetPx": 44,
+    "keyboardAndTouchParity": true,
+    "pass": true
+  },
+  "performance": {
+    "schema": "aura3d.vault-breakers.performance/1.0",
+    "generatedAt": "2026-08-24T02:36:06.581Z",
+    "producer": "apps/showcase-vault-breakers/scripts/write-performance-report.ts",
+    "producerSourceSha256": "2ebff2cbf8eb0e388ce61a59795c8c3ca979f8e8bbf50264c1c36991f7dd6b5d",
+    "routeSourceFiles": [
+      "apps/showcase-vault-breakers/src/ball-flow.ts",
+      "apps/showcase-vault-breakers/src/environment.ts",
+      "apps/showcase-vault-breakers/src/flippers.ts",
+      "apps/showcase-vault-breakers/src/main.ts",
+      "apps/showcase-vault-breakers/src/missions.ts",
+      "apps/showcase-vault-breakers/src/pinball-audio.ts",
+      "apps/showcase-vault-breakers/src/plunger.ts",
+      "apps/showcase-vault-breakers/src/scoreboard.ts",
+      "apps/showcase-vault-breakers/src/scoring.ts",
+      "apps/showcase-vault-breakers/src/styles.css",
+      "apps/showcase-vault-breakers/src/table.ts"
+    ],
+    "routeSourceSha256": "37c7e8ec4b19c29b2391b3319b38e99935cfbca5e2ff016c5316a679916b4a76",
+    "scope": "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
+    "samples": 12000,
+    "fixedStepSeconds": 0.016666666666666666,
+    "budgets": {
+      "fixedStepCpuP95Ms": 1,
+      "drawCalls": 150
+    },
+    "observed": {
+      "fixedStepCpuP95Ms": 0.646,
+      "deterministicPoseSamples": 100,
+      "drawCalls": 114,
+      "renderSize": [
+        938,
+        800
+      ],
+      "physicsBodies": 33,
+      "motorisedJoints": 2
+    },
+    "pass": true
+  },
+  "deploy": {
+    "schema": "aura3d.vault-breakers.deploy/1.0",
+    "generatedAt": "2026-08-24T02:35:58.915Z",
+    "producer": "apps/showcase-vault-breakers/scripts/write-deploy-report.mjs",
+    "producerSourceSha256": "307f4b91341d87311113968ad656c56e1af1ab02a54223c55c68d48ce5ac7407",
+    "cli": "packages/aura3d-cli/dist/cli.js",
+    "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+    "distTreeSha256": "bab3ce8b0c3901f88f7d781f5e79167c940f53271917e6e9613f01092a317431",
+    "sourceTreeSha256": "ff014a67b1a136670d511ae2b89df0dc1204d441f1f41f0097a4838f59e27ac6",
+    "checks": {
+      "strictModels": {
+        "command": "check-deploy --release --source apps/showcase-vault-breakers/src --asset <5 typed models>",
+        "ok": true,
+        "assetCount": 5,
+        "assets": [
+          {
+            "id": "vaultBreakersBall",
+            "hash": "sha256-5c94e5276ff405d3b12aad17a9733bd2eecf0e4a1af6c0ce2010fe211b0620ae",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "vaultBreakersFlipper",
+            "hash": "sha256-75e0ac2dba50c6d4dda4b3f610380a7fc6f8022ea1d734dd2ffc07a604c9c267",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "vaultBreakersMechanisms",
+            "hash": "sha256-355ab0fab5eb16edcdc5a9519f012257b7edbab778937a4df168523754429ebc",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "vaultBreakersTable",
+            "hash": "sha256-47da0739ab0c982ca1bd874d1ecae5d141cfa8cf9b5e1a9ef1841e340f0d9eed",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "vaultBreakersVaultDoor",
+            "hash": "sha256-ddb7304c0e473915dbf577c0207dd75b24093b8f2774cb2988a8869d7c7dbbbe",
+            "quality": "release",
+            "role": "prop"
+          }
+        ],
+        "warnings": [],
+        "failures": []
+      },
+      "strictDistAndSource": {
+        "command": "check-deploy --release --source apps/showcase-vault-breakers/src --no-assets",
+        "ok": true,
+        "warnings": [],
+        "failures": []
+      }
+    },
+    "audioBoundary": "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "root-safe prototype",
+    "allowed": [
+      "typed original pinball cabinet, mechanism, ball, flipper, and vault-door assets",
+      "route-local Rapier ball, contacts, sensors, and two motorised flipper joints",
+      "route-local authored slope, kick, nudge, lane-assist, door, and mission rules",
+      "five target banks, vault multiball, tilt, three-ball game"
+    ],
+    "notAllowed": [
+      "reusable pinball or physics kit",
+      "ball angular-spin simulation",
+      "production-runtime-only rendering claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_VAULT_BREAKERS__",
+    "detailedGlobal": "window.__VAULT_BREAKERS_EVIDENCE__",
+    "sourceReview": "apps/showcase-vault-breakers/src/main.ts",
+    "exactArtifacts": [
+      {
+        "path": "tests/reports/vault-breakers/first-load-desktop.png",
+        "sha256": "2ccd3ace565a658b0d034deecc697f71bcb15b7ebbb3664061e23e3e944c71d2"
+      },
+      {
+        "path": "tests/reports/vault-breakers/plunger-charge-desktop.png",
+        "sha256": "c64cafe50b491f2437f5cdacbdd08e4bbc5e38e75b6303495055b2c99c5acbb9"
+      },
+      {
+        "path": "tests/reports/vault-breakers/serve-flipper-desktop.png",
+        "sha256": "1ace2054354455f5e83282f522361090bfbe0d2ff06b3b728db80b780a69e613"
+      },
+      {
+        "path": "tests/reports/vault-breakers/bank-near-complete-desktop.png",
+        "sha256": "dd276bd01bb134afd51c08ae003c789278e69545cdbe21ccb83975f5f4a198a3"
+      },
+      {
+        "path": "tests/reports/vault-breakers/vault-opening-desktop.png",
+        "sha256": "e1019212342b035365270aaf4552d0245017f9f3d607728af5d113f501a62136"
+      },
+      {
+        "path": "tests/reports/vault-breakers/multiball-desktop.png",
+        "sha256": "27139b6bc00b96d53cf4dfc3356859842700f16c1f28f0588593a68ff50eb652"
+      },
+      {
+        "path": "tests/reports/vault-breakers/tilt-desktop.png",
+        "sha256": "126b3258a14427f6f48cdc8ccde5b265fe3cbe19fa58a9bdf08a67cd888c8549"
+      },
+      {
+        "path": "tests/reports/vault-breakers/game-over-desktop.png",
+        "sha256": "623783c70b6ba1f33cb1b094aa308dbedb360be02a1afc216a769e34883aab58"
+      },
+      {
+        "path": "tests/reports/vault-breakers/reset-attract-desktop.png",
+        "sha256": "231fdb30dde49e6b3f25a91f8b8d2f379bd51b04d39f465670855013e05336dd"
+      },
+      {
+        "path": "tests/reports/vault-breakers/first-load-mobile.png",
+        "sha256": "b6158dbae7f9b00e2ae37c9ccc9e5d439b43206a11bb91ca2012f7e06b441ae0"
+      },
+      {
+        "path": "tests/reports/vault-breakers/touch-charge-mobile.png",
+        "sha256": "b6158dbae7f9b00e2ae37c9ccc9e5d439b43206a11bb91ca2012f7e06b441ae0"
+      },
+      {
+        "path": "tests/reports/vault-breakers/multiball-reduced-motion.png",
+        "sha256": "cd47f1c402e93044fa3a45923eaf9c0285d35ff37ddabc66f245af7d6acb09e0"
+      },
+      {
+        "path": "tests/reports/vault-breakers/visual.json",
+        "sha256": "6b1536aca46ce4029084c9fdf4cb8ce59a124ba90e88d3d3c41efec7f2240665"
+      }
+    ],
+    "browserReceipts": [
+      "tests/reports/vault-breakers/browser-evidence.json",
+      "tests/reports/vault-breakers/playable/browser-evidence.json"
+    ],
+    "assetProbes": [
+      {
+        "asset": "vaultBreakersTable",
+        "metadata": "tests/reports/showcase-release-asset-probes/vaultBreakersTable.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/vaultBreakersTable.png",
+        "assetHash": "sha256-47da0739ab0c982ca1bd874d1ecae5d141cfa8cf9b5e1a9ef1841e340f0d9eed"
+      },
+      {
+        "asset": "vaultBreakersMechanisms",
+        "metadata": "tests/reports/showcase-release-asset-probes/vaultBreakersMechanisms.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/vaultBreakersMechanisms.png",
+        "assetHash": "sha256-355ab0fab5eb16edcdc5a9519f012257b7edbab778937a4df168523754429ebc"
+      },
+      {
+        "asset": "vaultBreakersBall",
+        "metadata": "tests/reports/showcase-release-asset-probes/vaultBreakersBall.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/vaultBreakersBall.png",
+        "assetHash": "sha256-5c94e5276ff405d3b12aad17a9733bd2eecf0e4a1af6c0ce2010fe211b0620ae"
+      },
+      {
+        "asset": "vaultBreakersFlipper",
+        "metadata": "tests/reports/showcase-release-asset-probes/vaultBreakersFlipper.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/vaultBreakersFlipper.png",
+        "assetHash": "sha256-75e0ac2dba50c6d4dda4b3f610380a7fc6f8022ea1d734dd2ffc07a604c9c267"
+      },
+      {
+        "asset": "vaultBreakersVaultDoor",
+        "metadata": "tests/reports/showcase-release-asset-probes/vaultBreakersVaultDoor.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/vaultBreakersVaultDoor.png",
+        "assetHash": "sha256-ddb7304c0e473915dbf577c0207dd75b24093b8f2774cb2988a8869d7c7dbbbe"
+      }
+    ],
+    "performance": "apps/showcase-vault-breakers/performance-report.json",
+    "deploy": "apps/showcase-vault-breakers/deploy-report.json",
+    "routePrimary": "tests/reports/showcase-route-primary-probes/showcase-vault-breakers.json",
+    "unitSpecs": [
+      "tests/unit/apps/vault-breakers-flipper-spike.test.ts",
+      "tests/unit/apps/vault-breakers-scoring.test.ts",
+      "tests/unit/apps/vault-breakers-table.test.ts"
+    ],
+    "browserSpecs": [
+      "tests/browser/vault-breakers-playable.spec.ts",
+      "tests/browser/vault-breakers-table-visual.spec.ts"
+    ]
+  },
+  "determinismContract": {
+    "fixedStep": "1/60 via physics.world fixedDelta",
+    "serveHash": "FNV-1a pose hash",
+    "resetProof": "fresh ball/body reuse plus resetHashMatch",
+    "authoredNonPhysical": [
+      "playfield slope gravity component",
+      "nudge",
+      "bumper/slingshot kicks",
+      "vault-door swing",
+      "lane assist"
+    ]
+  }
+}

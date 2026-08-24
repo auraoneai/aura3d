@@ -117,6 +117,7 @@ const classifiedAppRoutes = [
   "animation-studio-web",
   "aura-clash-showcase",
   "showcase-asset-audition",
+  "showcase-aurora-lander",
   "showcase-blockfall-reactor",
   "showcase-cinematic-architecture",
   "showcase-data-galaxy",

@@ -309,9 +309,10 @@ test("AuraClash makes Space dash visibly even without a direction key", async ({
 
 test("AuraClash supports down and fast-fall input", async ({ page }) => {
   await loadPlayableWithPassiveRival(page);
-  await hold(page, "KeyS", 260);
+  await page.keyboard.down("KeyS");
   await expect.poll(async () => (await readProof(page)).player.action).toBe("down");
   await expect.poll(async () => (await readProof(page)).player.activeClip).toBe("Crouch_Idle_Loop");
+  await page.keyboard.up("KeyS");
   await hold(page, "KeyW", 100);
   await page.keyboard.down("KeyS");
   await expect.poll(async () => (await readProof(page)).controls.lastInput).toBe("down");
@@ -627,6 +628,54 @@ test("AuraClash repeated special input cannot pause, crash, or wedge the route",
     expect(proof.callout, `special press ${index + 1} should not pause the game`).not.toBe("PAUSE");
     expect(proof.controls.lastInput).toBe("special");
   }
+});
+
+/*
+ * AC-A2 — training exchange replay.
+ *
+ * The scrub strip must be structurally absent from the public playable route (debug-toggle law)
+ * and functional only on training/debug routes, where `[` / `]` step back and forward through the
+ * recorded exchange while live play snaps back to the present.
+ */
+test("AuraClash exchange replay scrubs only on training routes", async ({ page }) => {
+  test.setTimeout(60_000);
+  // Public route: no scrub element visibility, no training evidence.
+  await loadPlayable(page);
+  await hold(page, "KeyD", 200);
+  expect(await page.locator("#replay-scrub").isVisible()).toBe(false);
+  const publicProof = await readProof(page);
+  expect((publicProof as { trainingReplay?: { enabled: boolean } }).trainingReplay?.enabled ?? false).toBe(false);
+
+  // Training route: build a buffer with real movement, then scrub backward.
+  await loadPlayable(page, "?debug=1&auraTestDriver=1");
+  for (let index = 0; index < 4; index += 1) {
+    await hold(page, "KeyD", 260);
+    await hold(page, "KeyA", 260);
+  }
+  const trainingBefore = (await readProof(page)) as {
+    trainingReplay?: { enabled: boolean; samples: number; bufferedSeconds: number };
+  };
+  expect(trainingBefore.trainingReplay?.enabled).toBe(true);
+  expect(trainingBefore.trainingReplay?.samples ?? 0).toBeGreaterThan(60);
+  expect(trainingBefore.trainingReplay?.bufferedSeconds ?? 0).toBeGreaterThan(0.5);
+
+  await page.keyboard.press("BracketLeft");
+  await page.waitForTimeout(120);
+  expect(await page.locator("#replay-scrub").isVisible()).toBe(true);
+  const scrubbed = (await readProof(page)) as {
+    trainingReplay?: { scrubOffsetSeconds: number; scrubLabel: string | null };
+  };
+  expect(scrubbed.trainingReplay?.scrubOffsetSeconds ?? 0).toBeLessThan(0);
+  expect(scrubbed.trainingReplay?.scrubLabel ?? "").toContain("REPLAY");
+  expect(await page.locator("#replay-scrub").getAttribute("data-scrubbing")).toBe("true");
+
+  // Live play input cancels the scrub back to the present.
+  await hold(page, "KeyD", 150);
+  const restored = (await readProof(page)) as {
+    trainingReplay?: { scrubOffsetSeconds: number };
+  };
+  expect(await page.locator("#replay-scrub").getAttribute("data-scrubbing")).toBe("false");
+  expect(restored.trainingReplay?.scrubOffsetSeconds ?? -1).toBeGreaterThanOrEqual(-0.01);
 });
 
 /**

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep Recovery — Aura3D Submarine Salvage</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div id="app-container">
+      <div id="canvas-host"></div>
+
+      <!-- HUD Overlay -->
+      <div class="hud-overlay">
+        <!-- Top Telemetry & Status -->
+        <header class="hud-top">
+          <!-- Submarine Status -->
+          <div class="hud-card">
+            <div class="hud-brand">
+              <h1>Deep Recovery</h1>
+              <span id="dr-zone-badge" class="badge">Shallow Reef</span>
+              <span id="dr-breach-badge" class="badge rose" style="display: none;">HULL BREACH</span>
+            </div>
+            <div class="telemetry-row">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Oxygen</span>
+                <div class="meter-container">
+                  <div id="dr-oxygen-fill" class="meter-fill oxygen" style="width: 100%;"></div>
+                </div>
+                <span id="dr-oxygen-val" class="telemetry-value cyan">100%</span>
+              </div>
+              <div class="telemetry-item">
+                <span class="telemetry-label">Hull Integrity</span>
+                <div class="meter-container">
+                  <div id="dr-hull-fill" class="meter-fill hull" style="width: 100%;"></div>
+                </div>
+                <span id="dr-hull-val" class="telemetry-value emerald">100%</span>
+              </div>
+              <div class="telemetry-item">
+                <span class="telemetry-label">Depth</span>
+                <span id="dr-depth-val" class="telemetry-value amber">0.0 m</span>
+              </div>
+              <div class="telemetry-item">
+                <span class="telemetry-label">Speed</span>
+                <span id="dr-speed-val" class="telemetry-value">0.0 m/s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mission / Cargo Status -->
+          <div class="hud-card">
+            <div class="hud-brand">
+              <span id="dr-contract-title" class="badge amber">Mission: Descend and ping</span>
+              <span id="dr-tether-badge" class="badge">Tether: 0/1</span>
+            </div>
+            <div class="telemetry-row">
+              <div class="telemetry-item">
+                <span class="telemetry-label">Banked Value</span>
+                <span id="dr-banked-val" class="telemetry-value emerald">0 / 1,200 CR</span>
+              </div>
+              <div class="telemetry-item">
+                <span class="telemetry-label">Tethered Cargo</span>
+                <span id="dr-cargo-val" class="telemetry-value cyan">0 CR</span>
+              </div>
+              <div class="telemetry-item">
+                <span class="telemetry-label">Sonar Cooldown</span>
+                <span id="dr-sonar-cd" class="telemetry-value">READY</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Center Crosshair / Sonar Reticle -->
+        <div class="hud-center">
+          <aside id="dr-contact-panel" class="contact-panel" aria-live="polite" aria-label="Sonar contacts">
+            <strong>SONAR CONTACTS</strong>
+            <span id="dr-contact-list">No returns — pulse sonar</span>
+          </aside>
+          <div class="reticle-container">
+            <div class="reticle-crosshair"></div>
+          </div>
+          <div id="dr-objective" class="objective-callout" role="status">DESCEND TO 15 M · PULSE SONAR</div>
+        </div>
+
+        <!-- Bottom Controls & Action Buttons -->
+        <footer class="hud-bottom">
+          <div class="hud-card controls-hint">
+            <p><kbd>W</kbd>/<kbd>S</kbd> Throttle &nbsp;|&nbsp; <kbd>A</kbd>/<kbd>D</kbd> Turn &nbsp;|&nbsp; <kbd>Q</kbd>/<kbd>E</kbd> Dive / Surface &nbsp;|&nbsp; <kbd>Space</kbd> Sonar Ping</p>
+            <p><kbd>F</kbd> Grapple / Release &nbsp;|&nbsp; <kbd>C</kbd> Repair at buoy &nbsp;|&nbsp; <kbd>P</kbd> Pause &nbsp;|&nbsp; <kbd>R</kbd> Restart</p>
+          </div>
+
+          <div class="action-buttons">
+            <button id="dr-left-btn" class="btn touch-move" aria-label="Turn left">Left</button>
+            <button id="dr-forward-btn" class="btn touch-move" aria-label="Thrust forward">Thrust</button>
+            <button id="dr-right-btn" class="btn touch-move" aria-label="Turn right">Right</button>
+            <button id="dr-dive-btn" class="btn touch-move" aria-label="Dive">Dive</button>
+            <button id="dr-surface-btn" class="btn touch-move" aria-label="Surface">Surface</button>
+            <button id="dr-ping-btn" class="btn primary">Sonar Ping (Space)</button>
+            <button id="dr-grapple-btn" class="btn">Grapple (F)</button>
+            <button id="dr-repair-btn" class="btn">Repair (C)</button>
+            <button id="dr-pause-btn" class="btn">Pause (P)</button>
+            <button id="dr-restart-btn" class="btn">Reset (R)</button>
+          </div>
+        </footer>
+      </div>
+
+      <!-- End State Dialog -->
+      <div id="dr-modal" class="modal-backdrop">
+        <div id="dr-dialog" class="modal-dialog">
+          <h2 id="dr-modal-title">Contract Complete!</h2>
+          <p id="dr-modal-desc">You successfully secured the salvage quota.</p>
+          <div class="action-buttons" style="justify-content: center;">
+            <button id="dr-modal-action-btn" class="btn primary">Next Contract</button>
+            <button id="dr-modal-retry-btn" class="btn">Retry (R)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

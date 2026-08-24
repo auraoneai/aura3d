@@ -1,0 +1,234 @@
+/* Aurora Lander HUD chrome — DOM is UI only; all world rendering is Aura3D pixels. */
+:root {
+  --aurora-teal: #6ee7d7;
+  --aurora-dim: #274156;
+  --panel-bg: rgba(8, 14, 24, 0.82);
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --good: #4ade80;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #05070d;
+  color: #dbe7f3;
+  font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+}
+
+.shell {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.viewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.stage,
+#app {
+  position: absolute;
+  inset: 0;
+}
+
+.stage canvas { display: block; }
+
+.hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hud-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hud-chip {
+  background: var(--panel-bg);
+  border: 1px solid var(--aurora-dim);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.hud-chip .label { color: #7f96ad; margin-right: 6px; }
+.hud-chip.warn { border-color: var(--warn); color: var(--warn); }
+.hud-chip.bad { border-color: var(--bad); color: var(--bad); }
+.hud-chip.good { border-color: var(--good); color: var(--good); }
+
+.fuel-track {
+  width: 180px;
+  height: 10px;
+  border: 1px solid var(--aurora-dim);
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(10, 18, 30, 0.9);
+}
+
+.fuel-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--aurora-dim), var(--aurora-teal));
+  transition: width 120ms linear;
+}
+
+.banner {
+  font-size: clamp(20px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 18px rgba(110, 231, 215, 0.45);
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--aurora-dim);
+}
+
+.banner.grade-soft { color: var(--good); }
+.banner.grade-hard { color: var(--warn); }
+.banner.grade-crash { color: var(--bad); }
+.banner.site-clear { color: var(--aurora-teal); }
+
+.gust-flag {
+  color: var(--warn);
+  border-color: var(--warn);
+  animation: gust-pulse 600ms ease-in-out infinite alternate;
+}
+
+@keyframes gust-pulse {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+.panel {
+  width: 300px;
+  padding: 14px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--aurora-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.panel h1 {
+  font-size: 16px;
+  margin: 0 0 2px;
+  color: var(--aurora-teal);
+  letter-spacing: 0.06em;
+}
+
+.panel h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #7f96ad;
+  margin: 8px 0 4px;
+}
+
+.panel p, .panel li { font-size: 12px; line-height: 1.55; margin: 2px 0; }
+.panel ul { padding-left: 16px; margin: 2px 0; }
+.panel kbd {
+  background: #101c2c;
+  border: 1px solid var(--aurora-dim);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+.touch-controls {
+  display: grid;
+  grid-template-columns: 56px 56px 1fr 56px 56px;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.touch-slider {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 44px;
+  height: 130px;
+  accent-color: var(--aurora-teal);
+}
+
+.touch-button {
+  background: #101c2c;
+  border: 1px solid var(--aurora-dim);
+  color: #dbe7f3;
+  border-radius: 6px;
+  padding: 10px 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.touch-button:active { border-color: var(--aurora-teal); color: var(--aurora-teal); }
+
+.score-table { width: 100%; font-size: 11.5px; border-collapse: collapse; }
+.score-table td { padding: 2px 4px; border-bottom: 1px solid rgba(39, 65, 86, 0.55); }
+.score-table td:last-child { text-align: right; color: var(--aurora-teal); }
+
+.prototype-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #7f96ad;
+}
+
+@media (max-width: 760px) {
+  .shell { flex-direction: column; }
+  .viewport {
+    flex: 0 0 66vh;
+    min-height: 0;
+  }
+  .panel {
+    width: 100%;
+    height: 34vh;
+    max-height: none;
+    flex: 0 0 34vh;
+    border-left: none;
+    border-top: 1px solid var(--aurora-dim);
+    padding: 9px 12px;
+    gap: 6px;
+    position: relative;
+    z-index: 10;
+    background: #08101c;
+  }
+  .panel h1,
+  .panel h2,
+  .panel p,
+  .panel ul,
+  .panel table,
+  .panel .prototype-tag { display: none; }
+  .touch-controls {
+    grid-template-columns: 48px 48px 1fr 58px 58px;
+    margin-top: 0;
+  }
+  .touch-slider { height: 86px; }
+  .hud {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 5px;
+  }
+  .hud-row { gap: 5px; }
+  .hud-chip {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+  .banner { font-size: 20px; }
+}

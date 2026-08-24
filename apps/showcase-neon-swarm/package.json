@@ -1,0 +1,25 @@
+{
+  "name": "@aura3d/showcase-neon-swarm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D root-safe prototype: a finite five-wave horde-survival run with typed assets, risky pickups, deterministic outcome hashes, and a real 320-drone instanced finale.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "build-sfx": "node scripts/build-sfx.mjs",
+    "register-sfx": "node scripts/register-sfx.mjs",
+    "register-models": "node scripts/register-models.mjs",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "evidence:performance": "tsx scripts/write-performance-report.ts",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

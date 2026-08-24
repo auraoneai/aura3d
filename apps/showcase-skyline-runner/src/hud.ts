@@ -1,5 +1,6 @@
 import { SKYLINE_LEVEL_ACTS } from "./level-layout";
 import { resolveSkylineAct } from "./act-palette";
+import { SKYLINE_DISTRICTS, resolveSkylineDistrict } from "./districts";
 
 export interface SkylineHudSnapshot {
   readonly score: number;
@@ -24,6 +25,9 @@ export interface SkylineHudElements {
   readonly actTitle: HTMLElement;
   readonly checkpointPips: HTMLElement;
   readonly objective: HTMLElement;
+  /** SR-A1 ghost badge: OFF / ON·NO RECORDING / ON·PB <t>s. */
+  readonly ghostBadge: HTMLElement;
+  readonly ghostControl: HTMLButtonElement;
   readonly debugPanel: HTMLElement | null;
   readonly debugDistance: HTMLElement | null;
   readonly debugSurface: HTMLElement | null;
@@ -50,13 +54,14 @@ export function setupSkylineHud(panel: HTMLElement, checkpointCount: number): Sk
         <article><span>Coins</span><strong id="coin-value">0</strong></article>
         <article><span>Ember</span><strong id="ember-value">0</strong></article>
         <article class="metric--lives"><span>Lives</span><strong id="lives-value">3</strong></article>
-        <article class="metric--act"><span>Act</span><strong id="act-title-value">${SKYLINE_LEVEL_ACTS[0]?.title ?? "Home Grove"}</strong></article>
+        <article class="metric--act"><span>District</span><strong id="act-title-value">${SKYLINE_DISTRICTS[0]?.title ?? "Steel Dawn"}</strong></article>
       </div>
       <div class="checkpoint-row" aria-label="Relay checkpoints">
         <span class="checkpoint-label">Relays</span>
         <div id="checkpoint-pips" class="checkpoint-pips" data-total="${checkpointCount}"></div>
       </div>
-      <div class="objective" id="objective-value">${SKYLINE_LEVEL_ACTS[0]?.objective ?? ""}</div>
+      <div class="objective" id="objective-value" role="status" aria-live="polite" aria-atomic="true">${SKYLINE_LEVEL_ACTS[0]?.objective ?? ""}</div>
+      <div class="ghost-row"><span id="ghost-badge" data-state="off" role="status">GHOST OFF</span></div>
     </section>
     ${debug ? `
     <section class="debug-panel" aria-label="Debug telemetry">
@@ -72,6 +77,7 @@ export function setupSkylineHud(panel: HTMLElement, checkpointCount: number): Sk
         <button id="jump-control" type="button"><b aria-hidden="true">↑</b><span>Jump</span></button>
         <button id="dash-control" type="button"><b aria-hidden="true">⇢</b><span>Dash</span></button>
         <button id="fire-control" type="button"><b aria-hidden="true">✸</b><span>Ember</span></button>
+        <button id="ghost-control" type="button" aria-pressed="false"><b aria-hidden="true">◍</b><span>Ghost</span></button>
         <button id="reset-control" type="button"><b aria-hidden="true">↺</b><span>Reset</span></button>
       </div>
       <ul class="controls-list">
@@ -79,6 +85,7 @@ export function setupSkylineHud(panel: HTMLElement, checkpointCount: number): Sk
         <li><kbd>Space</kbd> Jump</li>
         <li><kbd>Shift</kbd> Dash</li>
         <li><kbd>J</kbd> Ember</li>
+        <li><kbd>G</kbd> Ghost</li>
         <li><kbd>P</kbd> Pause</li>
         <li><kbd>R</kbd> Reset</li>
       </ul>
@@ -98,6 +105,8 @@ export function setupSkylineHud(panel: HTMLElement, checkpointCount: number): Sk
     actTitle: requireElement("act-title-value"),
     checkpointPips,
     objective: requireElement("objective-value"),
+    ghostBadge: requireElement("ghost-badge"),
+    ghostControl: requireElement("ghost-control") as HTMLButtonElement,
     debugPanel: debug ? panel.querySelector(".debug-panel") : null,
     debugDistance: debug ? requireElement("x-value") : null,
     debugSurface: debug ? requireElement("surface-value") : null,
@@ -158,6 +167,7 @@ export function buildSkylineHudSnapshot(input: {
   readonly paused: boolean;
 }): SkylineHudSnapshot {
   const act = resolveSkylineAct(input.playerX);
+  const district = resolveSkylineDistrict(input.playerX);
   return {
     score: input.score,
     coinCount: input.coinCount,
@@ -167,7 +177,7 @@ export function buildSkylineHudSnapshot(input: {
     checkpointCount: input.checkpointCount,
     activatedCheckpointCount: input.activatedCheckpointCount,
     playerX: input.playerX,
-    actTitle: act.title,
+    actTitle: district.title,
     objective: input.objectiveMet ? "Summit beacon restored" : act.objective,
     paused: input.paused
   };

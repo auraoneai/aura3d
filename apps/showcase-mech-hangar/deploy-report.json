@@ -1,0 +1,125 @@
+{
+  "schema": "aura3d.mech-hangar.deploy/1.0",
+  "generatedAt": "2026-08-23T22:47:53.713Z",
+  "producer": "apps/showcase-mech-hangar/scripts/write-deploy-report.mjs",
+  "producerSourceSha256": "d4bb5978c7543cbbea158225544970968317e86dd39f56cf011c54cc767dda6d",
+  "cli": "packages/aura3d-cli/dist/cli.js",
+  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+  "distTreeSha256": "2fb0030eba24a37d575e840111914a0d30934b8eeb77a1bc6481bb6abb19d12f",
+  "sourceTreeSha256": "d9f615d4645ce15e6853e62752e180eaaba43a104183f05a7c01e8bbd5d7cccf",
+  "checks": {
+    "strictModels": {
+      "command": "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",
+      "ok": true,
+      "assetCount": 16,
+      "assets": [
+        {
+          "id": "mechArmsA",
+          "hash": "sha256-5d639e1fef3fddf28a4eed06f43dbd9fd6b5886757cf36190a0b4a64ede463d6",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechArmsB",
+          "hash": "sha256-64026612059e03681865f72eeb514f8d86bd5cdf9999629ad67032262e4dea9b",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechArmsC",
+          "hash": "sha256-cb9a416f2efd7273d496f6b09bee1fadce50b83d006694bec950222d54d25140",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechArmsD",
+          "hash": "sha256-a4e87fc58dc493f97c678334f2c4960efea1c95af05fc16d0c3684f3f238c3c9",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechChassisA",
+          "hash": "sha256-cf1a0af3a998acfb3c79f889bfaafc1f4390dbba475736f1ea0c24ece1838393",
+          "quality": "release",
+          "role": "character"
+        },
+        {
+          "id": "mechChassisB",
+          "hash": "sha256-45f69bc8eb367dcbd11a526d87789c67e42145fd497c6a986f6bde76d7030990",
+          "quality": "release",
+          "role": "character"
+        },
+        {
+          "id": "mechChassisC",
+          "hash": "sha256-39a7f7838fe6f0ab677ab1cda2dd4ea746e645a4095dd49202cb330eac793a50",
+          "quality": "release",
+          "role": "character"
+        },
+        {
+          "id": "mechChassisD",
+          "hash": "sha256-31df3a5cd200e7f11bd7c9324976f47c6bc9c716e26a6d2afbbd54216995bbbf",
+          "quality": "release",
+          "role": "character"
+        },
+        {
+          "id": "mechLegsA",
+          "hash": "sha256-e2f19ee1cbc22537ec74ff8e40df586bde453904cf0dd30ab72b4a7db687a9ca",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechLegsB",
+          "hash": "sha256-f6945593126287961461091b426826a85ccc187c5ae0aa7ad61e49df39168495",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechLegsC",
+          "hash": "sha256-dcca6ff45f4c1577d7243474af2796eabb16150ef4539c028749f26de4554e39",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechLegsD",
+          "hash": "sha256-0a9ded0491800ce5db3840a7c3a4138d732999349e963826c9b6aeabafeef742",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "mechWeaponA",
+          "hash": "sha256-3295439dac0be4e318a101427eeb2ed1b5b1de085c2ce6c23f23d52f78e52a20",
+          "quality": "release",
+          "role": "weapon"
+        },
+        {
+          "id": "mechWeaponB",
+          "hash": "sha256-67b9fed6706123f423710ea191793fc73571030f7fc1922a7627d273c60b2641",
+          "quality": "release",
+          "role": "weapon"
+        },
+        {
+          "id": "mechWeaponC",
+          "hash": "sha256-afcec455c67b5cd72f76d04c087b2f6b3adf033670ac4c90332b4a269cc5a5e5",
+          "quality": "release",
+          "role": "weapon"
+        },
+        {
+          "id": "mechWeaponD",
+          "hash": "sha256-72597e536acff9fc312048041462857637e33ec082ed07f8eaac6ba453559d7b",
+          "quality": "release",
+          "role": "weapon"
+        }
+      ],
+      "warnings": [],
+      "failures": []
+    },
+    "strictDistAndSource": {
+      "command": "check-deploy --release --source apps/showcase-mech-hangar/src --no-assets",
+      "ok": true,
+      "warnings": [],
+      "failures": []
+    }
+  },
+  "audioBoundary": "The ten WAV cues are independently validated as current candidate-quality typed CC0 assets by write-route-health.mjs; model-oriented release bounds validation is intentionally not applied to audio.",
+  "pass": true
+}

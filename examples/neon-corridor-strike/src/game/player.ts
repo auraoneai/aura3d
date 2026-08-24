@@ -14,6 +14,12 @@ const SPRINT_SPEED = 7.4;
 const LOOK_SENS = 0.0024;
 const PITCH_LIMIT = 1.15;
 
+export function applyTouchLook(state: FpsRunState, dx: number, dy: number, reducedMotion: boolean): void {
+  const scale = reducedMotion ? 0.45 : 1;
+  state.yaw -= dx * 0.006 * scale;
+  state.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, state.pitch - dy * 0.006 * scale));
+}
+
 export function updateLook(state: FpsRunState, input: GameInputController, reducedMotion: boolean): void {
   const scale = reducedMotion ? 0.45 : 1;
   state.yaw -= input.axis("lookX") * LOOK_SENS * scale;
@@ -62,8 +68,11 @@ export function playerEye(playerBody: AuraBodyHandle): readonly [number, number,
 
 export function lookTargetPoint(playerBody: AuraBodyHandle, state: FpsRunState): readonly [number, number, number] {
   const eye = playerEye(playerBody);
-  const dir = lookDirection(state.yaw, 0);
-  return [eye[0] + dir[0] * LOOK_AHEAD, eye[1], eye[2] + dir[2] * LOOK_AHEAD];
+  // The runtime follow target owns both axes. Keeping pitch out of this point
+  // left hitscan truth correct but let the authored camera target overwrite the
+  // vertical mouse-look result every frame.
+  const dir = lookDirection(state.yaw, state.pitch);
+  return [eye[0] + dir[0] * LOOK_AHEAD, eye[1] + dir[1] * LOOK_AHEAD, eye[2] + dir[2] * LOOK_AHEAD];
 }
 
 export function resetPlayer(playerBody: AuraBodyHandle): void {

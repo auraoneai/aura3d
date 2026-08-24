@@ -17,7 +17,12 @@ interface FlagshipGate {
 interface AuraClashFlagshipReadinessReport {
   readonly schema: "aura-clash-flagship-readiness";
   readonly ok: boolean;
-  readonly status: "flagship-ready" | "flagship-blocked";
+  /** Machine-gate status only. It never grants flagship or visual approval. */
+  readonly status: "development-showcase-machine-passed" | "development-showcase-machine-blocked";
+  readonly promotion: {
+    readonly approved: false;
+    readonly humanApprovalRequired: true;
+  };
   readonly generatedAt: string;
   readonly appRoot: string;
   readonly gates: readonly FlagshipGate[];
@@ -366,7 +371,11 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
   return {
     schema: "aura-clash-flagship-readiness",
     ok,
-    status: ok ? "flagship-ready" : "flagship-blocked",
+    status: ok ? "development-showcase-machine-passed" : "development-showcase-machine-blocked",
+    promotion: {
+      approved: false,
+      humanApprovalRequired: true
+    },
     generatedAt: new Date().toISOString(),
     appRoot: toRepo(root, appRoot),
     gates,

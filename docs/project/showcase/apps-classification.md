@@ -51,6 +51,21 @@ still not be a public release candidate.
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
 | `showcase-skyline-runner` | prototype-blocked | Materially rebuilt five-act Level 1 (authored 95 seconds, 70–115 completion window) with typed character/world, mesh-derived surfaces, sentries, coins, ember volleys, checkpoints, respawn, and mounted finish evidence; exact-artifact independent review is pending. |
 | `showcase-turbo-drift-circuit` | prototype-blocked | Materially rebuilt four-lap typed-car circuit with ordered gates, distinct typed rival, chase camera, drift feedback, per-wheel circuit contact, visual asphalt wide enough to pass on tarmac, and mounted race evidence; exact-artifact independent review is pending. Its handling claim remains arcade, not physical tyre simulation. |
+| `showcase-bank-shot` | prototype-blocked | Authored 8-ball billiards simulation with bank targeting, cue stick controls, and 3D lounge environment. |
+| `showcase-deep-recovery` | prototype-blocked | Oceanic abyss sub recovery exploration with multi-depth trench scenery and cargo grapple mechanics. |
+| `showcase-gallery-shift` | prototype-blocked | Museum stealth heist route with guard LOS occlusion raycasting, light pools, and artifact pedestals. |
+| `showcase-gravity-post` | prototype-blocked | Low-gravity platforming and postal delivery challenge across floating space outposts. |
+| `showcase-neon-swarm` | prototype-blocked | Finite five-wave root-safe horde-survival prototype with typed courier/props, deterministic route-local steering and outcome hash, risky charge pickups, upgrade choices, and a current 320-live-instance finale; public promotion is held for independent exact-artifact review. |
+| `showcase-patrol-wing` | prototype-blocked | Island flight patrol route with six ring gates, cannon firing, and landing pad. |
+| `showcase-rooftop-buckets` | prototype-blocked | Rooftop dusk basketball three-point shootout with backboard/rim collision and audio cues. |
+| `showcase-siege-golf` | prototype-blocked | Destructive physics castle mini-golf route with destructible battlements. |
+| `showcase-vault-breakers` | prototype-blocked | Pinball arcade route with flippers, slingshots, pop bumpers, and vault drop targets. |
+| `showcase-courier-rush` | prototype-blocked | Cyberpunk urban delivery route with traffic simulation, parcel drop zones, and engine audio. |
+| `showcase-aurora-lander` | prototype-blocked | Three-site precision-landing campaign with typed probe/beacons, route-local deterministic arcade thrust/RCS/gust motion, bounded prediction, hull/fuel progression, Rapier-owned static contact detection, strongest-whiteout/mobile/reduced-motion evidence, and extraction; machine gates pass and independent exact-artifact review is pending. |
+| `showcase-pulse-tunnel` | prototype-blocked | Rhythm neon tunnel glider with synchronized rhythm gate timings. |
+| `showcase-mech-hangar` | prototype-blocked | Mech assembly hangar with tactical weapons systems. |
+| `aura-clash-showcase` | development showcase | Development showcase multiplayer arena fighter. |
+| `neon-corridor-strike` | library demo | Neon corridor speed runner demo. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 ## Retained Engine Evidence

@@ -5,11 +5,11 @@
  * oscillators / noise with a small committed generator so provenance is
  * auditable (author "Aura3D synthesis", license CC0-1.0).
  *
- * Run from this app directory:  node scripts/build-sfx.mjs
+ * Generate from this app directory:  node scripts/build-sfx.mjs
  * Output: assets/sfx/*.wav  (16-bit PCM mono 44100 Hz)
  *
- * After generation, register each with the CLI, e.g.:
- *   node ../../packages/aura3d-cli/dist/cli.js assets add ./assets/sfx/skylineJumpSfx.wav --name skylineJumpSfx --type audio --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-skyline-runner/scripts/build-sfx.mjs"
+ * Register from the repository root so the canonical root manifest/typegen owns it, e.g.:
+ *   node packages/aura3d-cli/dist/cli.js assets add apps/showcase-skyline-runner/assets/sfx/jump.wav --name skylineJumpSfx --type audio --license CC0-1.0 --author "Aura3D synthesis" --source-page "apps/showcase-skyline-runner/scripts/build-sfx.mjs"
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -24,10 +24,11 @@ function noiseBuffer(length) {
   for (let i = 0; i < length; i += 1) out[i] = Math.random() * 2 - 1;
   return out;
 }
-function envelope(length, attack, decay, total) {
+function envelope(length, attack, decay, total, delay = 0) {
   const out = new Float32Array(length);
   for (let i = 0; i < length; i += 1) {
-    const t = i / SAMPLE_RATE; // elapsed seconds
+    const t = i / SAMPLE_RATE - delay; // elapsed seconds since part onset
+    if (t < 0) continue;
     const start = Math.min(1, t / attack);
     const end = Math.pow(Math.max(0, 1 - t / total), decay);
     out[i] = start * end;
@@ -49,13 +50,16 @@ function renderCue({ tone, noise }) {
   if (tone) {
     const tones = Array.isArray(tone) ? tone : [tone];
     for (const part of tones) {
-      const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2 } = part;
-      const env = envelope(length, attack, decay, total);
+      const { wave = "sine", freqStart, freqEnd = freqStart, amp = 0.5, attack = 0.005, decay = 3, total = 0.2, delay = 0 } = part;
+      const env = envelope(length, attack, decay, total, delay);
+      // Frequency phase also waits for the part's delay so staggered blips start clean.
+      const phaseDelay = delay;
       for (let i = 0; i < length; i += 1) {
         const t = i / SAMPLE_RATE;
-        const progress = Math.min(1, t / total);
+        const local = Math.max(0, t - phaseDelay);
+        const progress = Math.min(1, local / total);
         const f = freqStart + (freqEnd - freqStart) * progress;
-        const phase = 2 * Math.PI * f * t;
+        const phase = 2 * Math.PI * f * local;
         let v = 0;
         if (wave === "sine") v = Math.sin(phase);
         else if (wave === "triangle") v = 2 / Math.PI * Math.asin(Math.sin(phase));
@@ -70,6 +74,9 @@ function renderCue({ tone, noise }) {
   if (noise) {
     const { amp = 0.4, attack = 0.003, decay = 4, total = 0.15, hp = 0 } = noise;
     const raw = noiseBuffer(length);
+    // Compute the envelope once: evaluating it per sample made every noisy cue
+    // quadratic and stalled the new multi-second ambience stems entirely.
+    const noiseEnv = envelope(length, attack, decay, total);
     let lp = 0;
     for (let i = 0; i < length; i += 1) {
       let v = raw[i];
@@ -78,7 +85,7 @@ function renderCue({ tone, noise }) {
         lp += 0.9 * (v - lp);
         v = v - lp;
       }
-      out[i] += v * envelope(length, attack, decay, total)[i] * amp;
+      out[i] += v * noiseEnv[i] * amp;
     }
   }
 
@@ -95,6 +102,15 @@ function landDust() {
   const noise = { amp: 0.22, attack: 0.002, decay: 4, total: 0.16, hp: 200 };
   const tone = { wave: "sine", freqStart: 160, freqEnd: 90, amp: 0.5, attack: 0.004, decay: 3, total: 0.18 };
   return renderCue({ noise, tone });
+}
+/** Short forward wind slice for the authored dash burst. */
+function dashWind() {
+  return renderCue({
+    tone: [
+      { wave: "sawtooth", freqStart: 760, freqEnd: 210, amp: 0.2, attack: 0.002, decay: 5, total: 0.2 },
+      { wave: "sine", freqStart: 310, freqEnd: 125, amp: 0.24, attack: 0.003, decay: 5, total: 0.22 }
+    ]
+  });
 }
 /** Bright ascending coin chime. */
 function coinChime() {
@@ -144,6 +160,14 @@ function deathSting() {
     { wave: "sine", freqStart: 210, freqEnd: 60, amp: 0.3, attack: 0.004, decay: 6, total: 0.42 }
   ], noise: { amp: 0.1, attack: 0.002, decay: 5, total: 0.2 } });
 }
+/** Respawn recovery — a short low-to-high three-note resolve, distinct from death. */
+function respawnRecovery() {
+  return renderCue({ tone: [
+    { wave: "triangle", freqStart: 220, freqEnd: 330, amp: 0.32, attack: 0.006, decay: 4, total: 0.24 },
+    { wave: "sine", freqStart: 440, freqEnd: 554, amp: 0.25, attack: 0.08, decay: 4, total: 0.32 },
+    { wave: "sine", freqStart: 659, freqEnd: 784, amp: 0.2, attack: 0.16, decay: 4, total: 0.42 }
+  ] });
+}
 /** Summit theme — uplifting two-chord aurora swell. */
 function summitTheme() {
   const tone = [
@@ -152,6 +176,49 @@ function summitTheme() {
     { wave: "sine", freqStart: 784, freqEnd: 880, amp: 0.22, attack: 0.05, decay: 3, total: 1.2 }
   ];
   return renderCue({ tone });
+}
+
+// ---- ambience stems (SR-A6): seamless-ish loops, one per act pair ------------
+/** Fade both edges so a looping source never clicks at the seam. */
+function fadeEdges(samples, seconds = 0.08) {
+  const n = Math.floor(seconds * SAMPLE_RATE);
+  for (let i = 0; i < n && i < samples.length; i += 1) {
+    const g = i / n;
+    samples[i] *= g;
+    samples[samples.length - 1 - i] *= g;
+  }
+  return samples;
+}
+/** Home Grove / Broken Canopy: sparse birdsong blips over a soft bed. */
+function ambienceGrove() {
+  const blip = (delay, freq, amp) => ({ wave: "sine", freqStart: freq, freqEnd: freq * 0.82, amp, attack: 0.012, decay: 4, total: 0.14, delay });
+  const tone = [
+    { wave: "triangle", freqStart: 196, freqEnd: 180, amp: 0.05, attack: 0.6, decay: 0.7, total: 3.4 },
+    blip(0.20, 2093, 0.10), blip(0.38, 2349, 0.08), blip(0.52, 1976, 0.11),
+    blip(1.35, 2637, 0.09), blip(1.52, 2093, 0.07),
+    blip(2.30, 2489, 0.10), blip(2.44, 2637, 0.08), blip(2.61, 2217, 0.06),
+    { wave: "sine", freqStart: 392, freqEnd: 330, amp: 0.05, attack: 0.9, decay: 0.8, total: 2.6, delay: 0.5 }
+  ];
+  return renderCue({ tone });
+}
+/** Sentry Pass / Cloudstep Rise: steel wind — filtered gusts over a low drone. */
+function ambienceSteel() {
+  const tone = [
+    { wave: "triangle", freqStart: 62, freqEnd: 55, amp: 0.16, attack: 0.9, decay: 0.5, total: 3.6 },
+    { wave: "sine", freqStart: 124, freqEnd: 110, amp: 0.06, attack: 1.1, decay: 0.6, total: 3.2, delay: 0.4 }
+  ];
+  const noise = { amp: 0.13, attack: 1.2, decay: 0.9, total: 3.4, hp: 420 };
+  return renderCue({ tone, noise });
+}
+/** Aurora Crown: high shimmer with slow-beating partials. */
+function ambienceCrown() {
+  const tone = [
+    { wave: "sine", freqStart: 1568, freqEnd: 1560, amp: 0.07, attack: 1.1, decay: 0.5, total: 3.6 },
+    { wave: "sine", freqStart: 1976, freqEnd: 1986, amp: 0.055, attack: 1.3, decay: 0.5, total: 3.4, delay: 0.25 },
+    { wave: "sine", freqStart: 2637, freqEnd: 2620, amp: 0.04, attack: 1.5, decay: 0.5, total: 3.2, delay: 0.5 },
+    { wave: "triangle", freqStart: 523, freqEnd: 494, amp: 0.06, attack: 1.0, decay: 0.6, total: 3.5 }
+  ];
+  return renderCue({ tone, noise: { amp: 0.03, attack: 1.6, decay: 0.7, total: 3.2, hp: 1200 } });
 }
 
 // ---- WAV writer -------------------------------------------------------------
@@ -183,17 +250,40 @@ function writeWav(path, samples) {
 }
 
 const cues = {
-  jump, landDust, coinChime, checkpointFanfare, emberFire, emberDeny,
-  sentryDefeat, sentryTelegraph, deathSting, summitTheme
+  jump, landDust, dashWind, coinChime, checkpointFanfare, emberFire, emberDeny,
+  sentryDefeat, sentryTelegraph, deathSting, respawnRecovery, summitTheme
+};
+
+// Ambience stems loop in the scene, so they get seam fades on top of the cue body.
+const ambientCues = {
+  ambienceGrove: () => fadeEdges(ambienceGrove()),
+  ambienceSteel: () => fadeEdges(ambienceSteel()),
+  ambienceCrown: () => fadeEdges(ambienceCrown())
 };
 
 mkdirSync(OUT_DIR, { recursive: true });
 const report = {};
-for (const [name, fn] of Object.entries(cues)) {
+const onlyCue = process.argv.includes("--only")
+  ? process.argv[process.argv.indexOf("--only") + 1]
+  : undefined;
+const selectedCues = onlyCue
+  ? Object.entries({ ...cues, ...ambientCues }).filter(([name]) => name === onlyCue)
+  : Object.entries(cues);
+if (onlyCue && selectedCues.length === 0) {
+  throw new Error(`Unknown Skyline cue requested with --only: ${onlyCue}`);
+}
+for (const [name, fn] of selectedCues) {
   const samples = fn();
   const path = resolve(OUT_DIR, `${name}.wav`);
   const duration = writeWav(path, samples);
   report[name] = `${path}` + ` (${duration.toFixed(3)}s)`;
   console.log(`wrote ${report[name]}`);
 }
-console.log("\nGenerated", Object.keys(cues).length, "cues into", OUT_DIR);
+for (const [name, fn] of onlyCue ? [] : Object.entries(ambientCues)) {
+  const samples = fn();
+  const path = resolve(OUT_DIR, `${name}.wav`);
+  const duration = writeWav(path, samples);
+  report[name] = `${path}` + ` (${duration.toFixed(3)}s, loop)`;
+  console.log(`wrote ${report[name]}`);
+}
+console.log("\nGenerated", Object.keys(report).length, "cues into", OUT_DIR);

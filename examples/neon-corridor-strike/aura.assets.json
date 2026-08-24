@@ -670,6 +670,98 @@
       ]
     },
     {
+      "id": "corridorAmbientDrone",
+      "type": "audio",
+      "format": "wav",
+      "source": "assets/ambientDrone.wav",
+      "outputPath": "public/aura-assets/corridorAmbientDrone.9a522d34.wav",
+      "url": "/examples/neon-corridor-strike/public/aura-assets/corridorAmbientDrone.9a522d34.wav",
+      "hash": "sha256-9a522d3415cc3fb05dbc1b04de50eef2d6c8c2e07c96347f37058a13a86514f1",
+      "sizeBytes": 264644,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/ambientDrone.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-21T23:08:46.590Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorAmbientDrone.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
       "id": "corridorDryFireSfx",
       "type": "audio",
       "format": "wav",

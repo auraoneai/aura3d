@@ -70,6 +70,34 @@ export function createHud(): HTMLElement {
     <div data-hud="banner" style="position:absolute;left:50%;top:24%;transform:translateX(-50%);padding:16px 26px;border-radius:12px;background:rgba(4,8,14,.9);border:1px solid rgba(80,220,255,.4);font-size:24px;letter-spacing:.06em;display:none;text-align:center"></div>
     <div data-hud="pause" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,4,8,.42);font-size:18px;letter-spacing:.14em">PAUSED — press P to resume</div>
   `;
+  const responsive = document.createElement("style");
+  responsive.textContent = `
+    @media (max-width: 600px) {
+      #fps-hud { font-size: 12px !important; }
+      #fps-hud > div:nth-of-type(2) {
+        left: 8px !important; right: 8px !important; top: 8px !important;
+        min-width: 0 !important; max-width: none !important; padding: 8px 10px !important;
+      }
+      #fps-hud > div:nth-of-type(3) {
+        left: 8px !important; bottom: 8px !important; min-width: 142px !important;
+        width: 142px !important; padding: 8px 10px !important;
+      }
+      #fps-hud > div:nth-of-type(4) {
+        right: 8px !important; bottom: 68px !important; min-width: 132px !important;
+        padding: 7px 9px !important;
+      }
+      #fps-hud [data-hud="fire"] {
+        right: 8px !important; bottom: 8px !important; min-width: 132px;
+        min-height: 48px; padding: 12px 16px !important;
+      }
+      #fps-hud [data-hud="start"] { display: none !important; }
+      #fps-hud [data-hud="banner"] {
+        left: 12px !important; right: 12px !important; width: auto !important;
+        transform: none !important; padding: 13px 16px !important; font-size: 20px !important;
+      }
+    }
+  `;
+  root.append(responsive);
   document.body.append(root);
   const fire = root.querySelector("[data-hud=\"fire\"]");
   if (fire instanceof HTMLButtonElement) {
@@ -89,11 +117,12 @@ export function createHud(): HTMLElement {
   return root;
 }
 
-export function renderHud(root: HTMLElement, state: FpsRunState): void {
+export function renderHud(root: HTMLElement, state: FpsRunState, reducedFlash = false): void {
   const remaining = ENEMIES.length - state.killed.length;
 
   setText(root, "score", "SCORE " + state.score);
-  setText(root, "objective", state.objective);
+  const touchEnabled = document.body.dataset.aura3dTouch === "true";
+  setText(root, "objective", touchEnabled ? state.objective.replace("Press R to reset", "Tap RESET or press R") : state.objective);
   setText(root, "status", state.status + (state.paused ? " · paused" : "") + " · hostiles " + remaining + "/" + ENEMIES.length);
 
   // Hostile pips: one diamond per hostile, dimmed once down.
@@ -153,16 +182,20 @@ export function renderHud(root: HTMLElement, state: FpsRunState): void {
   const marker = root.querySelector("[data-hud=\"hit-marker\"]");
   if (marker instanceof HTMLElement) marker.style.opacity = state.hitMarker > 0 ? "1" : "0";
   const vignette = root.querySelector("[data-hud=\"vignette\"]");
-  if (vignette instanceof HTMLElement) vignette.style.opacity = state.damageFlash > 0 ? "1" : "0";
+  if (vignette instanceof HTMLElement) vignette.style.opacity = state.damageFlash > 0 ? (reducedFlash ? "0.28" : "1") : "0";
 
   const start = root.querySelector("[data-hud=\"start\"]");
   if (start instanceof HTMLElement) start.style.display = state.shotsFired > 0 ? "none" : "block";
   const pause = root.querySelector("[data-hud=\"pause\"]");
-  if (pause instanceof HTMLElement) pause.style.display = state.paused ? "flex" : "none";
+  if (pause instanceof HTMLElement) {
+    pause.textContent = touchEnabled ? "PAUSED — tap PAUSE to resume" : "PAUSED — press P to resume";
+    pause.style.display = state.paused ? "flex" : "none";
+  }
   const banner = root.querySelector("[data-hud=\"banner\"]");
   if (banner instanceof HTMLElement) {
-    const text = state.status === "won" ? "CORRIDOR CLEARED<br><span style=\"font-size:14px;opacity:.8\">Press R to reset</span>"
-      : state.status === "lost" ? "YOU ARE DOWN<br><span style=\"font-size:14px;opacity:.8\">Press R to reset</span>" : "";
+    const resetHint = touchEnabled ? "Tap RESET or press R" : "Press R to reset";
+    const text = state.status === "won" ? `CORRIDOR CLEARED<br><span style="font-size:14px;opacity:.8">${resetHint}</span>`
+      : state.status === "lost" ? `YOU ARE DOWN<br><span style="font-size:14px;opacity:.8">${resetHint}</span>` : "";
     if (cache.get("banner") !== text) {
       cache.set("banner", text);
       banner.innerHTML = text;

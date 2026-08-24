@@ -19,6 +19,18 @@ type AuraClashArenaEvidence = {
     routeMayCalculateHits?: boolean;
     routeMayCalculateDamage?: boolean;
   };
+  camera?: {
+    roundOverFraming?: boolean;
+    settled?: boolean;
+  };
+  /** AC-A4 additive: in-scene ceremony + set-dressing telemetry. */
+  presentation?: {
+    ceremonyText?: string | null;
+    crowdInstanceCount?: number;
+    crowdInstancedDrawItems?: 1;
+    signsSwinging?: boolean;
+    clipEventsFired?: Readonly<Record<string, number>>;
+  };
 };
 
 test("poster route exposes capture-ready layout", async ({ page }) => {
@@ -69,3 +81,49 @@ async function readAuraClashArenaEvidence(page: Page): Promise<AuraClashArenaEvi
     return (window as Window & { __AURA_CLASH_ARENA_PROOF__?: AuraClashArenaEvidence }).__AURA_CLASH_ARENA_PROOF__;
   });
 }
+
+test("playable route renders ROUND and K.O. text3D ceremonies in stills", async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
+  await page.goto("/playable/?auraTestDriver=1", { waitUntil: "networkidle" });
+  await expect.poll(
+    async () => (await readAuraClashArenaEvidence(page))?.status,
+    { timeout: 30_000, message: "playable route should mount" }
+  ).toBe("running");
+
+  // Round-intro ceremony: a reset starts the round with an in-scene "ROUND 1" glyph mesh.
+  await page.locator(".aca").focus();
+  await page.keyboard.press("KeyR");
+  await expect.poll(
+    async () => (await readAuraClashArenaEvidence(page))?.presentation?.ceremonyText ?? null,
+    { timeout: 5_000, message: "the round intro should show the ROUND 1 ceremony"
+    }
+  ).toBe("ROUND 1");
+  const roundIntro = await readAuraClashArenaEvidence(page);
+  // AC-A3 telemetry rides along: the crowd is one instanced draw item regardless of fan count.
+  expect(roundIntro?.presentation?.crowdInstanceCount ?? 0).toBeGreaterThan(0);
+  expect(roundIntro?.presentation?.crowdInstancedDrawItems).toBe(1);
+  await testInfo.attach("aura-clash-round-intro-ceremony", {
+    body: await page.screenshot(),
+    contentType: "image/png",
+  });
+
+  // KO ceremony: ending the round shows the in-scene K.O. glyphs over the widened round-over frame.
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: { setPlayerHealth(health: number): void };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash ceremony test driver was not installed.");
+    driver.setPlayerHealth(0);
+  });
+  await expect.poll(
+    async () => (await readAuraClashArenaEvidence(page))?.presentation?.ceremonyText ?? null,
+    { timeout: 5_000, message: "the KO should show the K.O. ceremony"
+    }
+  ).toBe("K.O.");
+  const ko = await readAuraClashArenaEvidence(page);
+  expect(ko?.camera?.roundOverFraming, "KO ceremony lands on the widened round-over framing").toBe(true);
+  await testInfo.attach("aura-clash-ko-ceremony", {
+    body: await page.screenshot(),
+    contentType: "image/png",
+  });
+});

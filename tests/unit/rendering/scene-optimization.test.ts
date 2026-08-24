@@ -91,6 +91,23 @@ describe("scene optimization helpers", () => {
     }])).toThrow(/finite mat4/);
   });
 
+  it("keeps shadow-casting intent through static batching and never merges opposite policies", () => {
+    const geometry = Geometry.cube(1);
+    const material = new UnlitMaterial({ name: "shadow-policy" });
+    const items = [
+      { geometry, material, modelMatrix: translatedMatrix(0, 0, 0), batchKey: "cube/static/shadow-on", castShadow: true },
+      { geometry, material, modelMatrix: translatedMatrix(1, 0, 0), batchKey: "cube/static/shadow-on", castShadow: true },
+      { geometry, material, modelMatrix: translatedMatrix(2, 0, 0), batchKey: "cube/static/shadow-off", castShadow: false },
+      { geometry, material, modelMatrix: translatedMatrix(3, 0, 0), batchKey: "cube/static/shadow-off", castShadow: false }
+    ];
+
+    const result = batchStaticRenderItems(items, { maxInstancesPerBatch: 64 });
+
+    expect(result.submittedItems).toBe(2);
+    expect(result.renderItems.map((item) => item.castShadow)).toEqual([true, false]);
+    expect(result.renderItems.every((item) => item.instanceTransforms?.length === 2 * 16)).toBe(true);
+  });
+
   it("builds a static bounds BVH and rejects whole branches during broad-phase bounds queries", () => {
     const items = Array.from({ length: 16 }, (_, index) => ({
       id: `box-${index}`,

@@ -1,5 +1,6 @@
 import {
   game,
+  instances,
   material,
   primitives,
   type AuraMaterialSpec,
@@ -7,6 +8,7 @@ import {
 } from "@aura3d/engine";
 import {
   BOARD_WIDTH,
+  PIECE_KINDS,
   VISIBLE_HEIGHT,
   type PieceKind
 } from "./rules";
@@ -314,4 +316,55 @@ export function clearFlashNodeId(row: number): string {
 
 export function lockedNodeKey(x: number, y: number): string {
   return `${x}:${y}`;
+}
+
+// ---- BF-A2 instanced board pools ---------------------------------------------
+//
+// The locked stack and the active piece render through instanced emissive pools
+// instead of one scene node per cell. The glow hue lives in each shared neon
+// material, so the locked stack is one instanced sub-pool per tetromino kind and
+// the active piece is a single four-instance pool whose material is swapped to the
+// active kind — two pool groups total. The transform spec arrays are owned by this
+// module and mutated in place by the mounted route; the runtime reads them fresh
+// every frame, so board updates need no scene rebuild.
+export interface MutableTransformSpec {
+  position: [number, number, number];
+  scale: [number, number, number];
+}
+
+export interface InstancedBoardPool {
+  readonly id: string;
+  readonly capacity: number;
+  /** Owned mutable specs; entries start hidden far below the room. */
+  readonly transforms: MutableTransformSpec[];
+  readonly node: ReturnType<typeof instances.box>;
+}
+
+function createInstancedPool(id: string, capacity: number, materialSpec: AuraMaterialSpec): InstancedBoardPool {
+  const transforms: MutableTransformSpec[] = Array.from({ length: capacity }, () => ({
+    position: [0, -50, 0] as [number, number, number],
+    // Unused instances park collapsed far below the room, out of every frame.
+    scale: [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]] as [number, number, number]
+  }));
+  const node = instances.box({
+    name: id,
+    material: materialSpec,
+    castShadow: true,
+    transforms
+  }).runtime(game.runtimeNode(id, { tags: ["blockfall", "instanced", "pool"] }));
+  return { id, capacity, transforms, node };
+}
+
+/** One emissive sub-pool per tetromino kind; together they draw the locked stack. */
+export function createLockedStackPools(capacityPerKind = 48): InstancedBoardPool[] {
+  // Default mirrors board-view's LOCKED_POOL_CAPACITY_PER_KIND; the route passes the
+  // board-view constant explicitly so the two cannot drift silently.
+  return PIECE_KINDS.map((kind) =>
+    createInstancedPool("blockfall-locked-instanced-" + kind.toLowerCase(), capacityPerKind, pieceMaterials[kind])
+  );
+}
+
+/** Single four-instance pool for the falling piece; its material swaps with the kind. */
+export function createActivePiecePool(): InstancedBoardPool {
+  return createInstancedPool("blockfall-active-instanced", 4, pieceMaterials.T);
 }

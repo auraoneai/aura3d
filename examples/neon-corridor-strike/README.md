@@ -22,6 +22,8 @@ replacement.
 | R | Reload while playing (timed, blocks fire); reset after win/lose |
 | T | Reset run |
 | P / Esc | Pause |
+| Touch D-pad / look pad | Move and look on coarse-pointer/mobile layouts |
+| Touch FIRE / RELOAD / PAUSE / RESET | Combat and lifecycle controls on mobile |
 
 ## Objective
 
@@ -49,8 +51,17 @@ CLI-resolved, license-verified GLB assets in `aura.assets.json`:
 Modern-feeling: pointer-lock look, sprint, hitscan with muzzle/impact
 effects, telegraphed hostile swipes with flinch and death weight, timed
 reload with dry-fire deny, in-repo CC0 SFX, low-ammo HUD, pause, reset, and
-a dark corridor with typed GLB subjects. Jump is not a supported mechanic;
+a compact touch surface, plus a dark corridor with typed GLB subjects. Jump is not a supported mechanic;
 walk height stays locked.
+
+Capability incorporations (all route-local, label stays `prototype`):
+dynamic debris props that scatter cosmetically on confirmed impacts (NC-A1),
+an overlap-sphere backup for pickup collection (NC-A2), sphereCast enemy
+line-of-sight so imps cannot aggro through corridor corners (NC-A3),
+spring-joint hanging practicals that sway when shots land nearby (NC-A4),
+two instanced LOD'd greeble pools along the walls (NC-A5), text3D sector
+signage at the junctions (NC-A6), and an ambient-drone audio bus that ducks
+on low-ammo/low-HP warnings (NC-A7).
 
 Still prototype: yaw-led follow camera (pitch is hitscan-accurate),
 proximity-rush enemy AI with an authored alarm (no nav mesh), hostiles pass
@@ -66,11 +77,18 @@ The playable evidence gate is the monorepo spec (uses `example-dev-server`):
 
 ```bash
 pnpm exec playwright test tests/browser/neon-corridor-strike.spec.ts --reporter=line
+pnpm exec playwright test tests/browser/neon-corridor-strike-{modes,pause-reset,quality,touch}.spec.ts --workers=1
+pnpm exec playwright test tests/browser/neon-corridor-strike-endurance.spec.ts --workers=1
 ```
 
-That spec writes first-load, mid-combat, after-kill, win, death, death-reset,
-and reset screenshots plus `route-health.json` under
-`tests/reports/neon-corridor-strike/`.
+These specs write desktop/mobile first-load, shot, pickup, alarm/damage,
+win/fail, reduced-mode, touch, pause/reset, pixel-diversity, frame-pacing, and
+route-health evidence under `tests/reports/neon-corridor-strike*/`. The
+endurance spec drives real input for at least 60 seconds and writes the
+before/after interaction recording to
+`tests/reports/neon-corridor-strike-endurance/ui-composition-before-after.webm`;
+its exact duration, gameplay counters, and video SHA-256 are bound in the
+adjacent `endurance.json`.
 
 From this folder, asset and deploy checks:
 

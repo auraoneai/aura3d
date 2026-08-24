@@ -1,5 +1,9 @@
 # World-Class Showcase Games Prompt
 
+**Superseded for the four-title pass.** If Neon Corridor Strike is in scope,
+copy `docs/agents/world-class-four-games-prompt.md` instead. This file remains
+the historical three-title mission (Turbo Drift, Skyline Runner, Aura Clash).
+
 Copy everything below the horizontal rule into an AI coding agent. The agent must
 upgrade the **existing** Turbo Drift, Skyline Runner, and Aura Clash routes — not
 scaffold replacements.

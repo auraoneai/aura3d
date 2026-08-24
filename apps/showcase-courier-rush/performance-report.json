@@ -1,0 +1,20 @@
+{
+  "schema": "aura3d-courier-rush-performance/1.0",
+  "generatedAt": "2026-08-23T20:49:49.816Z",
+  "scope": "Headless timing of route-local dispatch and seeded eight-car authored lane-loop simulation. GPU/frame-time parity is not claimed.",
+  "samples": 12000,
+  "fixedStepSeconds": 0.008333333333333333,
+  "budgets": {
+    "dispatchP95Ms": 0.25,
+    "trafficP95Ms": 1,
+    "trafficCars": 8,
+    "fullShiftDrawCalls": 600
+  },
+  "observed": {
+    "dispatchP95Ms": 0.0008,
+    "trafficP95Ms": 0.0088,
+    "trafficCars": 8,
+    "fullShiftDrawCalls": 376
+  },
+  "pass": true
+}

@@ -1,0 +1,216 @@
+/* Pulse Tunnel HUD chrome — UI only; all gameplay visuals render in-scene. */
+
+.pulse-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 16px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #d7f5ff;
+}
+
+.pulse-viewport {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  box-shadow: 0 0 32px rgba(56, 189, 248, 0.18);
+  background: #05010f;
+}
+
+.pulse-stage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 420px;
+}
+
+.pulse-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pulse-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pulse-hud {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 10px 18px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(120deg, rgba(9, 20, 40, 0.92), rgba(28, 8, 46, 0.88));
+  border: 1px solid rgba(148, 163, 255, 0.3);
+}
+
+.pulse-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.pulse-label {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  color: #7dd3fc;
+}
+
+.pulse-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pulse-section-name {
+  color: #f0abfc;
+}
+
+.pulse-meter {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.16);
+  overflow: hidden;
+}
+
+.pulse-meter-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22d3ee, #e879f9, #fbbf24);
+  transition: width 120ms linear;
+}
+
+.pulse-shields {
+  display: flex;
+  gap: 6px;
+}
+
+.pulse-pip {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(125, 211, 252, 0.6);
+}
+
+.pulse-pip-live {
+  background: radial-gradient(circle at 30% 30%, #a5f3fc, #0891b2);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+}
+
+.pulse-pip-lost {
+  background: rgba(30, 41, 59, 0.9);
+  box-shadow: none;
+}
+
+.pulse-state {
+  grid-column: 1 / -1;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 8px;
+  border-radius: 10px;
+  color: #fef3c7;
+  background: rgba(120, 53, 15, 0.4);
+}
+
+.pulse-state[data-state="ready"] {
+  color: #a5f3fc;
+  background: rgba(8, 51, 68, 0.55);
+}
+
+.pulse-state[data-state="summary"] {
+  color: #fecdd3;
+  background: rgba(136, 19, 55, 0.45);
+}
+
+.pulse-sync-badge {
+  grid-column: 1 / -1;
+  justify-self: end;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px dashed rgba(125, 211, 252, 0.6);
+  color: #67e8f9;
+}
+
+.pulse-sync-badge[data-mode="pattern"] {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.7);
+}
+
+.pulse-touch-pad {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pulse-touch-column {
+  display: flex;
+  gap: 10px;
+}
+
+.pulse-touch {
+  min-width: 76px;
+  min-height: 52px;
+  border-radius: 12px;
+  border: 1px solid rgba(103, 232, 249, 0.5);
+  background: rgba(8, 47, 73, 0.65);
+  color: #e0f2fe;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pulse-touch:active {
+  background: rgba(14, 116, 144, 0.85);
+}
+
+.pulse-touch-wide {
+  justify-self: start;
+  min-height: 34px;
+  min-width: 132px;
+}
+
+@media (max-width: 640px) {
+  html,
+  body {
+    width: 100%;
+    min-width: 320px;
+    margin: 0;
+    overflow: hidden;
+    background: #05010f;
+  }
+
+  .pulse-shell {
+    width: 100%;
+    height: 100vh;
+    padding: 7px;
+    gap: 7px;
+  }
+
+  .pulse-viewport { border-radius: 9px; }
+  .pulse-stage { height: 54vh; min-height: 0; aspect-ratio: auto; }
+
+  .pulse-hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 9px;
+    padding: 7px 9px;
+  }
+
+  .pulse-row { font-size: 12px; gap: 5px; }
+  .pulse-label { font-size: 9px; letter-spacing: 0.08em; }
+  .pulse-state { padding: 4px; font-size: 13px; }
+  .pulse-touch-wide { display: none; }
+  .pulse-touch-pad { gap: 7px; }
+  .pulse-touch-column { gap: 7px; }
+  .pulse-touch { min-width: 67px; min-height: 46px; border-radius: 10px; font-size: 13px; }
+}

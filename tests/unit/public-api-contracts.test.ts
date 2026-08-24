@@ -79,7 +79,11 @@ describe("public package API contracts", () => {
           expect(allowedPublicSpecifiers.has(specifier), `${file} imports ${specifier}`).toBe(true);
           continue;
         }
-        if (file.endsWith(".config.ts") && ["vite", "path", "fs", "url", "os", "crypto"].includes(specifier)) continue; // dev-only imports are allowed in build config files only
+        const bareSpecifier = specifier.startsWith("node:") ? specifier.slice(5) : specifier;
+        if (file.endsWith(".config.ts") && ["vite", "path", "fs", "url", "os", "crypto", "@playwright/test"].includes(bareSpecifier)) continue; // dev-only imports are allowed in build config files only
+        if (file.includes("/tests/") || file.endsWith(".spec.ts") || file.endsWith(".test.ts")) {
+          if (["@playwright/test", "vitest"].includes(specifier)) continue;
+        }
         expect(isLocalExampleImport(file, specifier), `${file} imports ${specifier}`).toBe(true);
       }
     }
@@ -277,6 +281,7 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
 
 function collectSourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
+    if (entry === "node_modules" || entry === "dist" || entry === "tests") continue;
     const path = `${dir}/${entry}`;
     const stats = statSync(path);
     if (stats.isDirectory()) {

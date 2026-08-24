@@ -237,7 +237,11 @@ describe("public showcase gameplay regressions", () => {
 
     const source = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
     expect(source).toContain("const gameplayPaceMultiplier = 4");
-    expect(source).toContain("Speed · km/h");
+    // The speed HUD markup lives in the panel renderer, so its contract is checked
+    // there; main.ts must still mount the panel through renderTurboHudPanel.
+    const hudSource = readFileSync("apps/showcase-turbo-drift-circuit/src/hud.ts", "utf8");
+    expect(hudSource).toContain("Speed · km/h");
+    expect(source).toContain("renderTurboHudPanel");
     expect(source).toContain("paceFraction: 0.82");
     expect(source).toContain("directRearImpact ? 0.5 : 0.86");
     expect(source).toContain("directRearImpact ? 0.2 : 0.1");

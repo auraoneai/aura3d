@@ -63,3 +63,44 @@ test("Aura Clash unlocks audio and publishes gameplay cue proof", async ({ page 
     message: "player KO should publish a dedicated KO audio cue"
   }).toBe("ko");
 });
+
+test("Aura Clash splits music/sfx/voice buses and ducks sfx on the round-over KO", async ({ page }) => {
+  await loadAuraClashArena(page, "?auraTestDriver=1");
+  await page.mouse.click(120, 120);
+
+  // AC-A6: the named buses publish their declared independent levels.
+  const proof = await readAuraClashProof(page);
+  const busLevels: Record<string, number> = {};
+  for (const bus of proof.audio?.buses ?? []) busLevels[bus.id] = bus.volume;
+  expect(busLevels).toMatchObject({ music: 0.55, sfx: 1, voice: 0.9, ui: 0.8 });
+
+  // AC-A1: the swing cue fires from the light attack's authored clip-event frame — with both
+  // fighters parked out of range, so no hit/block cue can be confused with it.
+  await setFighterTestState(page, { playerX: -2.4, rivalX: 2.4 });
+  await queuePlayerAttack(page, "light");
+  await expect.poll(async () => (await readAuraClashProof(page)).audio?.recentCues ?? [], {
+    message: "the authored sfx clip event should fire a swing cue"
+  }).toContain("swing");
+
+  // AC-A6: ending the round ducks the sfx bus, then restores its declared level.
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: { setPlayerHealth(health: number): void };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash duck test driver was not installed.");
+    driver.setPlayerHealth(0);
+  });
+  let sawDuck = false;
+  for (let index = 0; index < 30; index += 1) {
+    if ((await readAuraClashProof(page)).audio?.koDuckActive === true) {
+      sawDuck = true;
+      break;
+    }
+    await page.waitForTimeout(50);
+  }
+  expect(sawDuck, "the round-over KO duck must hold the sfx bus down").toBe(true);
+  await expect.poll(async () => (await readAuraClashProof(page)).audio?.koDuckActive, {
+    timeout: 6_000,
+    message: "the KO duck must restore the sfx bus after its window"
+  }).toBe(false);
+});

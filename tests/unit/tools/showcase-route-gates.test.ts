@@ -956,7 +956,10 @@ describe("showcase route gate registry", () => {
             `${route.id} deploy failure details`
           ).toBeGreaterThan(0);
         }
-        expect(launchRoute?.routePrimaryProbe?.required, `${route.id} route-primary probe required`).toBe(true);
+        const routePrimaryProbeRequired = route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true;
+        expect(launchRoute?.routePrimaryProbe?.required, `${route.id} route-primary probe requirement`).toBe(
+          routePrimaryProbeRequired
+        );
         if (launchRoute?.routePrimaryProbe?.ok === false) {
           expect(launchRoute.routePrimaryProbe.failures?.length ?? 0, `${route.id} route-primary probe failure details`).toBeGreaterThan(0);
         }

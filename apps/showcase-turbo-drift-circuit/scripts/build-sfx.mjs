@@ -145,62 +145,136 @@ function loopCue(durationSec, wave, freqStart, freqEnd) {
 }
 
 // ---- cue recipes ------------------------------------------------------------
-/** Engine loop: layered sawtooth drone with a slight rev character. */
+/** Engine loop: smooth, warm, low-rumble V8 purr (no harsh buzzing saw). */
 function engine() {
-  const base = loopCue(1.2, "sawtooth", 82, 110);
-  const octave = loopCue(1.2, "square", 164, 220);
-  const out = new Float32Array(base.length);
-  for (let i = 0; i < base.length; i += 1) out[i] = (base[i] + octave[i] * 0.5) * 0.6;
-  // gentle brown-ish body
-  return lowpass(out, 900);
+  const duration = 4.0;
+  const length = Math.floor(duration * SAMPLE_RATE);
+  const out = new Float32Array(length);
+  for (let i = 0; i < length; i++) {
+    const t = i / SAMPLE_RATE;
+    const sub = Math.sin(2 * Math.PI * 55 * t) * 0.5;
+    const fundamental = Math.sin(2 * Math.PI * 110 * t) * 0.35;
+    const rumble = Math.sin(2 * Math.PI * 165 * t + Math.sin(2 * Math.PI * 8 * t) * 0.5) * 0.15;
+    out[i] = (sub + fundamental + rumble) * 0.3;
+  }
+  const fade = Math.floor(0.05 * SAMPLE_RATE);
+  for (let i = 0; i < fade; i++) {
+    const k = i / fade;
+    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+  }
+  return lowpass(out, 340);
 }
-/** Drift scuff: filtered noise with a soft swash. */
+
+/** Drift scuff: smooth, filtered tire friction swash. */
 function driftScuff() {
   return renderCue({
-    noise: { amp: 0.7, attack: 0.03, decay: 5, total: 0.7, hp: 300, lp: 2400 },
-    tone: { wave: "sine", freqStart: 190, freqEnd: 120, amp: 0.12, attack: 0.04, decay: 3, total: 0.6 }
+    noise: { amp: 0.35, attack: 0.04, decay: 4.5, total: 0.6, hp: 250, lp: 1600 },
+    tone: { wave: "sine", freqStart: 160, freqEnd: 110, amp: 0.08, attack: 0.04, decay: 3, total: 0.5 }
   });
 }
-/** Wind: airy filtered noise. */
+
+/** Wind: airy, gentle aerodynamic breeze. */
 function wind() {
-  return loopCue(1.2, "sine", 60, 74);
+  const duration = 4.0;
+  const N = Math.floor(duration * SAMPLE_RATE);
+  const raw = noiseBuffer(N);
+  const band = lowpass(highpass(raw, 280), 1400);
+  const out = new Float32Array(N);
+  for (let i = 0; i < N; i += 1) out[i] = band[i] * 0.18;
+  const fade = Math.floor(0.08 * SAMPLE_RATE);
+  for (let i = 0; i < fade; i += 1) {
+    const k = i / fade;
+    out[i] = out[i] * k + out[N - fade + i] * (1 - k);
+  }
+  return out;
 }
-/** Checkpoint chime: bright two-note bell. */
+
+/** Checkpoint chime: delicate, soft two-tone harmonic chime. */
 function checkpointChime() {
   return renderCue({ tone: [
-    { wave: "sine", freqStart: 880, amp: 0.4, attack: 0.002, decay: 5, total: 0.22 },
-    { wave: "sine", freqStart: 1318.5, amp: 0.3, attack: 0.002, decay: 5, total: 0.26 }
+    { wave: "sine", freqStart: 880, amp: 0.25, attack: 0.003, decay: 6, total: 0.2 },
+    { wave: "sine", freqStart: 1318.5, amp: 0.18, attack: 0.003, decay: 6, total: 0.25 }
   ] });
 }
-/** Countdown blip: single short tick. */
+
+/** Countdown blip: soft tactile tick. */
 function countdownBlip() {
-  return renderCue({ tone: { wave: "square", freqStart: 640, freqEnd: 520, amp: 0.3, attack: 0.003, decay: 5, total: 0.12 } });
+  return renderCue({ tone: { wave: "sine", freqStart: 580, freqEnd: 520, amp: 0.2, attack: 0.003, decay: 6, total: 0.08 } });
 }
-/** Go: strong ascending blast. */
+
+/** Go: warm harmonic start tone. */
 function go() {
   return renderCue({
-    tone: { wave: "sawtooth", freqStart: 300, freqEnd: 620, amp: 0.4, attack: 0.004, decay: 4, total: 0.5 },
-    noise: { amp: 0.18, attack: 0.002, decay: 4, total: 0.3, hp: 500 }
+    tone: [
+      { wave: "triangle", freqStart: 392, amp: 0.28, attack: 0.005, decay: 4, total: 0.4 },
+      { wave: "sine", freqStart: 784, amp: 0.22, attack: 0.005, decay: 4, total: 0.45 }
+    ]
   });
 }
-/** Finish fanfare: three-note warm fanfare. */
+
+/** Finish fanfare: lush, warm four-note victory chord. */
 function finishFanfare() {
   return renderCue({ tone: [
-    { wave: "triangle", freqStart: 523.25, amp: 0.4, attack: 0.008, decay: 4, total: 0.3 },
-    { wave: "triangle", freqStart: 659.25, amp: 0.4, attack: 0.22, decay: 4, total: 0.45 },
-    { wave: "triangle", freqStart: 783.99, amp: 0.42, attack: 0.46, decay: 3.5, total: 0.75 }
+    { wave: "triangle", freqStart: 523.25, amp: 0.25, attack: 0.01, decay: 4, total: 0.3 },
+    { wave: "triangle", freqStart: 659.25, amp: 0.25, attack: 0.15, decay: 4, total: 0.45 },
+    { wave: "triangle", freqStart: 783.99, amp: 0.28, attack: 0.3, decay: 3.5, total: 0.65 },
+    { wave: "sine", freqStart: 1046.50, amp: 0.3, attack: 0.45, decay: 3, total: 0.85 }
   ] });
 }
-/** Off-track rumble: low rumbling noise. */
+
+/** Off-track rumble: soft low-frequency vibration. */
 function offTrackRumble() {
   return renderCue({
-    noise: { amp: 0.6, attack: 0.03, decay: 4, total: 0.6, hp: 60, lp: 400 },
-    tone: { wave: "sine", freqStart: 70, freqEnd: 48, amp: 0.3, attack: 0.03, decay: 3, total: 0.6 }
+    noise: { amp: 0.3, attack: 0.04, decay: 4, total: 0.5, hp: 50, lp: 280 },
+    tone: { wave: "sine", freqStart: 60, freqEnd: 45, amp: 0.2, attack: 0.04, decay: 3, total: 0.5 }
   });
 }
-/** UI confirm: short soft click. */
+
+/** UI confirm: soft velvet click. */
 function uiConfirm() {
-  return renderCue({ tone: { wave: "triangle", freqStart: 880, freqEnd: 700, amp: 0.25, attack: 0.002, decay: 5, total: 0.09 } });
+  return renderCue({ tone: { wave: "triangle", freqStart: 660, freqEnd: 550, amp: 0.15, attack: 0.002, decay: 6, total: 0.06 } });
+}
+
+/**
+ * Music loop: lush, soothing 16-second late-afternoon Japanese synthwave / chillout groove.
+ * Evolving progression: Ebmaj7 -> Bb/D -> Cm7 -> Abmaj7.
+ * Warm filtered analog pads, velvet sub-bass, soft breathing LFO, zero ear fatigue.
+ */
+function musicLoop() {
+  const durationSec = 16.0;
+  const length = Math.floor(durationSec * SAMPLE_RATE);
+  const out = new Float32Array(length);
+
+  const chords = [
+    [155.56, 233.08, 293.66, 349.23], // Ebmaj7 (Eb3, Bb3, D4, F4)
+    [146.83, 220.00, 293.66, 349.23], // Bb/D (D3, A3, D4, F4)
+    [130.81, 196.00, 261.63, 311.13], // Cm7 (C3, G3, C4, Eb4)
+    [103.83, 155.56, 207.65, 261.63]  // Abmaj7 (Ab2, Eb3, Ab3, C4)
+  ];
+
+  for (let i = 0; i < length; i++) {
+    const t = i / SAMPLE_RATE;
+    const chordIndex = Math.floor((t / durationSec) * chords.length) % chords.length;
+    const chordProgress = (t % (durationSec / chords.length)) / (durationSec / chords.length);
+    const chordEnv = Math.sin(Math.PI * chordProgress);
+    const chord = chords[chordIndex];
+
+    let sample = 0;
+    for (const freq of chord) {
+      const phase = 2 * Math.PI * freq * t;
+      const wave = Math.sin(phase) + 0.2 * Math.sin(phase * 2);
+      sample += wave * 0.035;
+    }
+    const breath = 0.8 + 0.2 * Math.sin(2 * Math.PI * 0.125 * t);
+    out[i] = sample * chordEnv * breath * 0.14;
+  }
+
+  const fade = Math.floor(0.08 * SAMPLE_RATE);
+  for (let i = 0; i < fade; i++) {
+    const k = i / fade;
+    out[i] = out[i] * k + out[length - fade + i] * (1 - k);
+  }
+  return lowpass(out, 650);
 }
 
 // ---- WAV writer -------------------------------------------------------------
@@ -233,7 +307,8 @@ function writeWav(path, samples) {
 
 const cues = {
   engine, driftScuff, wind, checkpointChime,
-  countdownBlip, go, finishFanfare, offTrackRumble, uiConfirm
+  countdownBlip, go, finishFanfare, offTrackRumble, uiConfirm,
+  musicLoop
 };
 
 mkdirSync(OUT_DIR, { recursive: true });

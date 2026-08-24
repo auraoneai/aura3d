@@ -41,6 +41,8 @@ export interface FpsRunState {
   dryFirePulse: number;
   /** Audio cues played this run, for evidence. */
   audioCues: string[];
+  /** NC-A2 robustness counter: overlap-sphere pickup sweeps run this run. */
+  overlapPickupChecks: number;
 }
 
 export const MAX_HP = 100;
@@ -86,7 +88,8 @@ export function createInitialState(): FpsRunState {
     hitMarker: 0,
     damageFlash: 0,
     dryFirePulse: 0,
-    audioCues: []
+    audioCues: [],
+    overlapPickupChecks: 0
   };
 }
 

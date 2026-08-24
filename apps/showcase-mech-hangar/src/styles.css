@@ -1,0 +1,319 @@
+/* Mech Hangar chrome — UI only; every 3D claim is rendered scene pixels. */
+:root {
+  --mech-bg: #0a0e14;
+  --mech-panel-bg: rgba(10, 15, 22, 0.86);
+  --mech-edge: #1d2b3a;
+  --mech-accent: #59d7ff;
+  --mech-warm: #ffb454;
+  --mech-danger: #ff5a5a;
+  --mech-ok: #6ef0b8;
+  --mech-text: #d7e6f2;
+  --mech-dim: #7d93a8;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--mech-bg);
+  color: var(--mech-text);
+  font-family: "SF Mono", "Cascadia Code", ui-monospace, Menlo, Consolas, monospace;
+}
+
+.mech-shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(240px, 26vw, 330px);
+}
+
+.mech-viewport {
+  position: relative;
+  overflow: hidden;
+}
+
+.mech-stage {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.mech-panel {
+  position: relative;
+  z-index: 5;
+  overflow-y: auto;
+  padding: 14px 16px 24px;
+  background: var(--mech-panel-bg);
+  border-left: 1px solid var(--mech-edge);
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mech-panel-title {
+  font-size: 14px;
+  letter-spacing: 0.22em;
+  color: var(--mech-accent);
+  margin-bottom: 10px;
+}
+
+.mech-section-title {
+  margin: 12px 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--mech-dim);
+}
+
+.mech-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mech-slot-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.mech-slot-button {
+  font: inherit;
+  color: var(--mech-dim);
+  background: transparent;
+  border: 1px solid var(--mech-edge);
+  border-radius: 4px;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+.mech-slot-button.is-active {
+  color: #04121c;
+  background: var(--mech-accent);
+  border-color: var(--mech-accent);
+}
+
+.mech-option-label {
+  color: var(--mech-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mech-bar {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.mech-bar-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--mech-dim);
+}
+
+.mech-bar-track {
+  height: 9px;
+  border-radius: 5px;
+  background: #101b26;
+  border: 1px solid var(--mech-edge);
+  overflow: hidden;
+}
+
+.mech-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #2e8fb0, var(--mech-accent));
+  transition: width 140ms ease-out;
+}
+
+.mech-bar.is-player .mech-bar-fill {
+  background: linear-gradient(90deg, #2f9d74, var(--mech-ok));
+}
+
+.mech-bar.is-rival .mech-bar-fill {
+  background: linear-gradient(90deg, #b05a35, var(--mech-danger));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mech-bar-fill { transition: none; }
+}
+
+.mech-assembly-status {
+  margin-top: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--mech-edge);
+  color: var(--mech-dim);
+}
+
+.mech-assembly-status.is-ok {
+  border-color: var(--mech-ok);
+  color: var(--mech-ok);
+}
+
+.mech-assembly-status.is-bad {
+  border-color: var(--mech-danger);
+  color: var(--mech-danger);
+}
+
+.mech-passport {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mech-passport-card {
+  border: 1px solid var(--mech-edge);
+  border-left: 3px solid var(--mech-accent);
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.mech-passport-head {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.mech-passport-line {
+  color: var(--mech-dim);
+  font-size: 11px;
+}
+
+.mech-passport-line.is-warn {
+  color: var(--mech-warm);
+}
+
+.mech-passport-link {
+  font-size: 11px;
+  color: var(--mech-accent);
+}
+
+.mech-lock-button {
+  width: 100%;
+  margin-top: 12px;
+  font: inherit;
+  letter-spacing: 0.12em;
+  padding: 9px 10px;
+  color: #04121c;
+  background: var(--mech-accent);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mech-lock-button:disabled {
+  background: #27394a;
+  color: var(--mech-dim);
+  cursor: not-allowed;
+}
+
+/* Arena HUD */
+.mech-arena-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mech-aggression-card,
+.mech-bout-card {
+  margin-top: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--mech-edge);
+  border-radius: 4px;
+  letter-spacing: 0.12em;
+  color: var(--mech-warm);
+}
+
+.mech-bout-card {
+  color: var(--mech-dim);
+}
+
+.mech-controls-hint {
+  margin-top: 12px;
+  color: var(--mech-dim);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.mech-ko-card {
+  display: none;
+  margin: 18px 0 0;
+  padding: 14px;
+  text-align: center;
+  font-size: 20px;
+  letter-spacing: 0.3em;
+  border: 2px solid var(--mech-warm);
+  border-radius: 8px;
+  color: var(--mech-warm);
+  background: rgba(20, 14, 6, 0.72);
+}
+
+.mech-ko-card[data-visible="true"] {
+  display: block;
+}
+
+.mech-ko-card[data-result="win"] {
+  border-color: var(--mech-ok);
+  color: var(--mech-ok);
+}
+
+.mech-ko-sub {
+  margin-top: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--mech-dim);
+}
+
+/* Touch controls: dual-zone buttons mirroring the arena keys. */
+#mech-touch {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.mech-touch-zone {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.mech-touch-zone button {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--mech-edge);
+  background: rgba(16, 24, 33, 0.72);
+  color: var(--mech-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.mech-touch-zone button:active {
+  background: var(--mech-accent);
+  color: #04121c;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #mech-touch { display: none; }
+}
+
+@media (max-width: 720px) {
+  .mech-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .mech-panel {
+    max-height: 42vh;
+    border-left: none;
+    border-top: 1px solid var(--mech-edge);
+  }
+}

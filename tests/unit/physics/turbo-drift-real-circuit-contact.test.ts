@@ -59,8 +59,10 @@ describe("turbo drift grounds on the real circuit mesh", () => {
       topology,
       route,
       trackAsset: "showcaseTsukubaCircuit",
-      targetSceneSize: 3.25,
-      trackModelTargetMaxDimension: 90.413,
+      // Match the current mounted route exactly; stale pre-redesign fit constants
+      // cannot prove contact on the geometry the browser actually renders.
+      targetSceneSize: 55.518,
+      trackModelTargetMaxDimension: 128.386,
       trackY: -0.12,
       carY: -0.12,
       ghostY: -0.14
@@ -71,6 +73,21 @@ describe("turbo drift grounds on the real circuit mesh", () => {
     const query = binding().surfaceQuery();
     expect(query).toBeDefined();
     expect(query!.kind).toBe("aura-mesh-surface-query");
+  });
+
+  it("the finite fitted tyre patch spans the retained sparse seam without hiding a real verge", () => {
+    const scene = binding();
+    const outsideFrontAtSparseSeam = { x: -12.666880329130842, z: 22.33834106040252 };
+    const point = scene.vehicleSurface()!.sample(outsideFrontAtSparseSeam.x, outsideFrontAtSparseSeam.z);
+    const fittedTyreRadius = 0.124676;
+    const finiteTyre = scene.vehicleSurface({ contactPatchRadius: fittedTyreRadius * 2 })!
+      .sample(outsideFrontAtSparseSeam.x, outsideFrontAtSparseSeam.z);
+
+    expect(point.hit, "the extracted seam must remain a genuine point-query miss").toBe(false);
+    expect(finiteTyre.hit, "the measured finite tyre envelope must reach the adjacent road triangle").toBe(true);
+    expect(finiteTyre.grip ?? 0).toBeGreaterThan(point.grip ?? 0);
+    // Far beyond the circuit remains a real miss; the finite patch is not a broad fallback.
+    expect(scene.vehicleSurface({ contactPatchRadius: fittedTyreRadius * 2 })!.sample(9999, 9999).hit).toBe(false);
   });
 
   it("four wheels across the road width get four independent heights", () => {

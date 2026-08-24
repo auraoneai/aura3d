@@ -319,6 +319,10 @@ function writeAuraClash106Evidence(deployedEvidence) {
     route: "/playable/",
     release: "1.0.6",
     contextualRoute: "Aura Clash Arena",
+    promotion: {
+      approved: false,
+      humanApprovalRequired: true
+    },
     artifacts: {
       screenshots: screenshotResults,
       deployedProof: "launch-evidence/deployed-106-proof.json",

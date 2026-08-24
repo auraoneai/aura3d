@@ -196,3 +196,42 @@ export function resetRaceSession(session: RaceSessionState): RaceSessionState {
 export function togglePause(session: RaceSessionState): RaceSessionState {
   return { ...session, paused: !session.paused };
 }
+
+/**
+ * Gantry lap-board states (PRD TDC-A4, additive).
+ *
+ * The gantry prebuilds one text3D board per label and toggles visibility, so the label
+ * list is a pure function of `lapsToWin` and the mounted board is resolved purely from
+ * session state. Labels stay inside the engine's A-Z/0-9 glyph set (there is no `/`
+ * glyph), so lap counts are written with words: "LAP 2 OF 4".
+ */
+export function turboSignageBoardLabels(lapsToWin: number): readonly string[] {
+  const laps = Math.max(1, Math.floor(lapsToWin));
+  const labels: string[] = ["GET READY"];
+  for (let lap = 1; lap <= laps; lap += 1) {
+    labels.push(lap === laps ? "FINAL LAP" : `LAP ${lap} OF ${laps}`);
+  }
+  labels.push("FINISH");
+  return labels;
+}
+
+/**
+ * Resolves which prebuilt board is lit for the current race state.
+ *
+ * Before the green flag the board reads GET READY; while racing it shows the current
+ * lap (FINAL LAP on the last lap); after the finish it holds FINISH. Returns the index
+ * into {@link turboSignageBoardLabels}.
+ */
+export function resolveTurboSignageLabelIndex(
+  session: RaceSessionState,
+  lap: number,
+  lapsToWin: number,
+  raceFinished: boolean
+): number {
+  const labels = turboSignageBoardLabels(lapsToWin);
+  if (raceFinished) return labels.length - 1;
+  if (!session.startLights.complete) return 0;
+  const laps = Math.max(1, Math.floor(lapsToWin));
+  // lap 1 -> labels[1] ... last lap -> FINAL LAP index.
+  return Math.min(Math.max(1, Math.floor(lap)), laps);
+}

@@ -142,4 +142,18 @@ writeWav("warn.wav", render(0.12, (i, t) => {
   return Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 30) * 0.5;
 }));
 
+// 13. Ambient drone (NC-A7): its own looped bus under the SFX cues. Slow
+// detuned low sines + a breathing LFO + faint ventilation noise. Six seconds,
+// loop-safe by construction (phases wrap at whole cycles over the duration).
+writeWav("ambientDrone.wav", render(6, (i, t) => {
+  const breathe = 0.72 + 0.28 * Math.sin(2 * Math.PI * (2 / 6) * t);
+  const base = Math.sin(2 * Math.PI * 55 * t);
+  const fifth = Math.sin(2 * Math.PI * 82.5 * t + 1.3);
+  const shimmer = Math.sin(2 * Math.PI * 220 * t) * 0.12;
+  const air = noise() * 0.05;
+  // Short crossfade window at both ends keeps the loop seam inaudible.
+  const seam = Math.min(1, t / 0.25, (6 - t) / 0.25);
+  return (base * 0.32 + fifth * 0.2 + shimmer + air) * breathe * seam * 0.55;
+}));
+
 console.log("done");

@@ -1,0 +1,38 @@
+{
+  "schema": "aura3d.rooftop-buckets.performance/1.0",
+  "generatedAt": "2026-08-24T00:56:26.539Z",
+  "producer": "apps/showcase-rooftop-buckets/scripts/write-performance-report.ts",
+  "producerSourceSha256": "58c29536b6ae2dfd37df5ab4a28b12b2a799174c4dc3096a7c51ac35acdbcaeb",
+  "routeSourceFiles": [
+    "apps/showcase-rooftop-buckets/src/buckets-audio.ts",
+    "apps/showcase-rooftop-buckets/src/court.ts",
+    "apps/showcase-rooftop-buckets/src/environment.ts",
+    "apps/showcase-rooftop-buckets/src/main.ts",
+    "apps/showcase-rooftop-buckets/src/rim.ts",
+    "apps/showcase-rooftop-buckets/src/scoring.ts",
+    "apps/showcase-rooftop-buckets/src/shot.ts",
+    "apps/showcase-rooftop-buckets/src/styles.css"
+  ],
+  "routeSourceSha256": "c6bbef7f80efa63675bace0ce00e9e9816266f58d96a7e6afc3a9a239cd2e120",
+  "scope": "Route-local deterministic authored basketball step CPU timing plus browser-observed root createGameApp draw calls. This does not claim Rapier, rigid bodies, GPU frame-time parity, or a reusable sports simulation.",
+  "samples": 12000,
+  "fixedStepSeconds": 0.016666666666666666,
+  "budgets": {
+    "ballisticCpuP95Ms": 0.25,
+    "drawCalls": 150,
+    "authoredPhysicsBodies": 0
+  },
+  "observed": {
+    "ballisticCpuP95Ms": 0.002,
+    "deterministicPoseSamples": 100,
+    "drawCalls": 118,
+    "renderSize": [
+      1280,
+      800
+    ],
+    "authoredPhysicsBodies": 0,
+    "predictionPoints": 25,
+    "heatModes": 5
+  },
+  "pass": true
+}

@@ -28,6 +28,21 @@ test.describe("Aura Clash camera combat feedback", () => {
     expect(resting.camera?.punchIn).toBe(0);
     expect(resting.camera?.frameWidthUnits).toBe(resting.camera?.restingFrameWidthUnits);
     expect(resting.camera?.settled).toBe(true);
+    expect(resting.camera?.fighterFraming).toMatchObject({
+      playerFullBodyInFrame: true,
+      rivalFullBodyInFrame: true,
+      stableGroundLine: true
+    });
+
+    // Maximum authored separation expands the resting volume instead of cropping
+    // either manifest-bound fighter envelope at the stage clamp.
+    await setFighterTestState(page, { playerX: -2.7, rivalX: 2.7 });
+    await expect.poll(async () => (await readAuraClashProof(page)).player.x).toBe(-2.7);
+    const widest = await readAuraClashProof(page);
+    expect(widest.camera?.fighterFraming?.playerFullBodyInFrame).toBe(true);
+    expect(widest.camera?.fighterFraming?.rivalFullBodyInFrame).toBe(true);
+    expect(widest.camera?.fighterFraming?.minimumMarginUnits ?? -1).toBeGreaterThanOrEqual(0.075);
+    await setFighterTestState(page, { playerX: -1.25, rivalX: 1.25 });
 
     await installCameraRecorder(page);
 
@@ -63,6 +78,13 @@ test.describe("Aura Clash camera combat feedback", () => {
       .toBeLessThan(resting.camera!.restingFrameWidthUnits);
 
     // Every responding frame must be backed by a non-zero hit-stop the simulation set.
+    const clippedRespondingFrames = responding.filter((sample) =>
+      sample.fighterFraming?.playerFullBodyInFrame !== true
+      || sample.fighterFraming?.rivalFullBodyInFrame !== true
+      || (sample.fighterFraming?.minimumMarginUnits ?? -1) < 0
+    );
+    expect(clippedRespondingFrames, "minimum zoom must retain both complete fighter envelopes")
+      .toEqual([]);
     for (const sample of responding) {
       expect(sample.impactStrength, "camera response must be backed by real hit-stop state").toBeGreaterThan(0);
     }
@@ -82,6 +104,13 @@ type CameraSample = {
   restingFrameWidthUnits: number;
   respondingToCombat: boolean;
   settled: boolean;
+  fighterFraming?: {
+    playerFullBodyInFrame: boolean;
+    rivalFullBodyInFrame: boolean;
+    minimumMarginUnits: number;
+    groundLineMarginUnits: number;
+    stableGroundLine: boolean;
+  };
 };
 
 /** Record camera evidence every animation frame, so the sub-0.13s hit-stop window is not missed. */

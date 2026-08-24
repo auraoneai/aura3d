@@ -1,7 +1,9 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { createReadStream } from "node:fs";
+import { dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import rootConfig from "../vite.config";
 
 const marketingDir = dirname(fileURLToPath(import.meta.url));
@@ -34,6 +36,81 @@ const htmlInputs = Object.fromEntries([
     resolve(repoRoot, file)
   ] as const)
 ]);
+
+function serveRootAuraAssets() {
+  /*
+   * Dev-server middleware: serve /aura-assets/ from the repo-root public dir.
+   *
+   * The marketing Vite config sets `publicDir: marketing/public`, so the dev
+   * server only serves files from `marketing/public/aura-assets/` — which has
+   * Aura Clash fighter assets but NOT the game showcase assets (circuit, car,
+   * lander, etc.) that live in `public/aura-assets/` at the repo root. Without
+   * this middleware, `/aura-assets/showcaseTsukubaCircuit.8c139a57.glb` gets the
+   * Vite SPA HTML fallback, the GLB loader tries to parse HTML as binary, and
+   * every game renders a blank canvas with a silent `SyntaxError: Unexpected
+   * token '<'` in diagnostics().errors.
+   *
+   * This only affects dev — the production build copies assets from both dirs
+   * via `copyAuraAssets()` in build-showcase-routes.mjs.
+   */
+  const rootAuraAssetsDir = resolve(repoRoot, "public/aura-assets");
+  const marketingAuraAssetsDir = resolve(marketingDir, "public/aura-assets");
+  return {
+    name: "aura3d-serve-root-aura-assets",
+    configureServer(server: { middlewares: { use: (m: (req: IncomingMessage, res: ServerResponse, next: () => void) => void) => void } }) {
+      server.middlewares.use((request: IncomingMessage, response: ServerResponse, next: () => void) => {
+        const path = (request.url ?? "").split("?")[0] ?? "";
+        if (!path.startsWith("/aura-assets/") && !path.startsWith("/previews/")) {
+          next();
+          return;
+        }
+        let candidates: string[] = [];
+        if (path.startsWith("/aura-assets/")) {
+          const file = path.replace(/^\/aura-assets\//, "");
+          candidates = [
+            resolve(marketingAuraAssetsDir, file),
+            resolve(rootAuraAssetsDir, file),
+            resolve(repoRoot, "apps/aura-clash-showcase/public/aura-assets", file),
+            resolve(repoRoot, "apps/aura-clash-showcase/dist/aura-assets", file),
+            resolve(repoRoot, "apps/showcase-mech-hangar/public/aura-assets", file),
+            resolve(repoRoot, "apps/showcase-mech-hangar/dist/aura-assets", file),
+            resolve(repoRoot, "examples/neon-corridor-strike/public/aura-assets", file),
+            resolve(repoRoot, "examples/neon-corridor-strike/dist/aura-assets", file),
+          ];
+        } else if (path.startsWith("/previews/")) {
+          const file = path.replace(/^\/previews\//, "");
+          candidates = [
+            resolve(marketingDir, "public/previews", file),
+            resolve(repoRoot, "public/previews", file),
+            resolve(marketingDir, "public/previews/showcase-index", file),
+            resolve(repoRoot, "public/previews/showcase-index", file),
+          ];
+        }
+        const found = candidates.find((candidate) => existsSync(candidate));
+        if (!found) {
+          next();
+          return;
+        }
+        const ext = extname(found);
+        const contentTypes: Record<string, string> = {
+          ".glb": "model/gltf-binary",
+          ".gltf": "model/gltf+json",
+          ".wasm": "application/wasm",
+          ".svg": "image/svg+xml",
+          ".webp": "image/webp",
+          ".png": "image/png",
+          ".jpg": "image/jpeg",
+          ".wav": "audio/wav",
+          ".mp3": "audio/mpeg",
+          ".ogg": "audio/ogg",
+          ".json": "application/json",
+        };
+        response.setHeader("Content-Type", contentTypes[ext] ?? "application/octet-stream");
+        createReadStream(found).pipe(response);
+      });
+    }
+  };
+}
 
 function copyMarketingPublicFiles() {
   return {
@@ -242,6 +319,7 @@ export default defineConfig({
   publicDir: resolve(marketingDir, "public"),
   plugins: [
     ...(rootConfig.plugins ?? []),
+    serveRootAuraAssets(),
     copyMarketingPublicFiles()
   ],
   resolve: rootConfig.resolve,

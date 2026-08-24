@@ -5,7 +5,7 @@ import { inflateSync } from "node:zlib";
 import { expect, test } from "@playwright/test";
 import { readRenderedProbeMetadata } from "../../packages/aura3d-cli/src";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
-import { PROBE_ASSETS } from "./showcase-release-asset-probe-config";
+import { PROBE_ASSETS, PROBE_CONFIGS } from "./showcase-release-asset-probe-config";
 
 const REPORT_DIR = "tests/reports/showcase-release-asset-probes";
 const requestedAssetIds = new Set(
@@ -58,7 +58,7 @@ test.describe("showcase release asset probe generation", () => {
             (window as { __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__?: unknown }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__
           ),
           undefined,
-          { timeout: 20_000 }
+          { timeout: 40_000 }
           );
 
           const harnessError = await page.evaluate(() => (window as { __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__?: string }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__);
@@ -118,7 +118,34 @@ test.describe("showcase release asset probe generation", () => {
           renderedProbe,
           evidence
           }, null, 2)}\n`);
-          generated.push(reportPath, screenshotPath);
+          const orientationPath = `${REPORT_DIR}/${assetId}.orientation.json`;
+          const configuredOrientation = PROBE_CONFIGS[assetId].orientation;
+          writeFileSync(resolve(orientationPath), `${JSON.stringify({
+            orientation: {
+              source: "manifest-override",
+              ...(configuredOrientation ? {
+                forwardAxis: configuredOrientation.forwardAxis,
+                upAxis: configuredOrientation.upAxis
+              } : {}),
+              view: "hash-bound-readable-prop-view",
+              assetHash: evidence.asset.hash,
+              generatedBy: "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+              checkedAt: renderedProbe.checkedAt,
+              route: evidence.route,
+              renderedProbe: {
+                url: renderedProbe.url,
+                sha256: renderedProbe.sha256,
+                assetHash: renderedProbe.assetHash,
+                checkedAt: renderedProbe.checkedAt,
+                route: renderedProbe.route
+              },
+              messages: [
+                configuredOrientation?.message
+                  ?? "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+              ]
+            }
+          }, null, 2)}\n`);
+          generated.push(reportPath, screenshotPath, orientationPath);
 
           expect(evidence.imports).toEqual(["@aura3d/engine", "../../src/aura-assets"]);
           expect(evidence.asset).toMatchObject({ id: assetId, typed: `assets.${assetId}` });

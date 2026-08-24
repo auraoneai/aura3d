@@ -1,0 +1,25 @@
+{
+  "name": "@aura3d/showcase-gravity-post",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Gravity Post prototype: authored arcade gravity-well slingshot courier gameplay on a solar kit backdrop, with station dock sensors, live prediction lines, assist chaining, and route-local evidence.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "build:sfx": "node scripts/build-sfx.mjs",
+    "register:sfx": "node scripts/register-sfx.mjs",
+    "register:models": "node scripts/register-models.mjs",
+    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "evidence:route-health": "node scripts/write-route-health.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

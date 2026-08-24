@@ -198,6 +198,9 @@ function runtimeSourceFiles(): string[] {
   return walk(join(root, "packages"))
     .map((path) => relative(root, path).replaceAll("\\", "/"))
     .filter((path) => /^packages\/[^/]+\/src\/.+\.ts$/.test(path))
+    // Declarations are generated API descriptions, not executable runtime
+    // implementations that can own edge-case behavior.
+    .filter((path) => !path.endsWith(".d.ts"))
     .filter((path) => !path.endsWith("/index.ts"))
     .sort();
 }

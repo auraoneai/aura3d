@@ -35,6 +35,8 @@ export interface RenderItem {
   readonly instanceColors?: Float32Array | readonly number[];
   readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];
   readonly boundingBoxCenter?: readonly [number, number, number];
+  /** Exclude supporting/decorative geometry from renderer-owned shadow depth passes. */
+  readonly castShadow?: boolean;
 }
 
 export interface RenderItemDrawRange {

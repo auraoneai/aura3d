@@ -7,8 +7,14 @@ import {
   type GLTFScenePose,
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/gltf-runtime";
-import { type Material, type RenderItem } from "@aura3d/rendering";
-import { multiplyMat4, type Mat4 } from "@aura3d/scene";
+import {
+  consolidateStaticMeshes,
+  type Material,
+  type MeshConsolidationInput,
+  type MeshConsolidationResult,
+  type RenderItem
+} from "@aura3d/rendering";
+import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 export interface TypedGLBActorAsset {
   readonly url: string;
@@ -36,6 +42,11 @@ export interface TypedGLBActorOptions {
   readonly deduplicateIdenticalMaterials?: boolean;
   /** Exact imported glTF node names that should not contribute renderables. */
   readonly hiddenNodeNames?: readonly string[];
+  /**
+   * Bake an animation-free actor's child meshes into shared-material buffers once at load time.
+   * Intended for large static world GLBs; moving/skinned/morphed actors are rejected.
+   */
+  readonly consolidateStaticMeshes?: boolean;
 }
 
 export interface TypedGLBActorTintOptions {
@@ -75,6 +86,12 @@ export interface TypedGLBActorEvidence {
   readonly lastMorphApply?: TypedGLBActorMorphApplyResult;
   readonly missingTargets: readonly string[];
   readonly warnings: readonly string[];
+  readonly staticConsolidation?: {
+    readonly inputItems: number;
+    readonly submittedItems: number;
+    readonly mergedMeshes: number;
+    readonly drawCallReduction: number;
+  };
 }
 
 export interface TypedGLBActorMorphApplyResult {
@@ -92,6 +109,8 @@ export interface TypedGLBActor {
   readonly name: string;
   readonly asset: TypedGLBActorAsset;
   readonly pipeline: ProductionGLTFRenderPipeline;
+  readonly staticRenderItems?: readonly RenderItem[];
+  readonly staticConsolidation?: TypedGLBActorEvidence["staticConsolidation"];
   readonly animation: GLTFSceneAnimationRuntime;
   readonly evidence: TypedGLBActorEvidence;
   playClip(name: string, time: number): GLTFSceneAnimationApplyResult;
@@ -111,6 +130,7 @@ export interface TypedGLBActor {
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   setTint(options: TypedGLBActorTintOptions): void;
+  dispose(): void;
 }
 
 export async function createTypedGLBActor(options: TypedGLBActorOptions): Promise<TypedGLBActor> {
@@ -138,6 +158,9 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   let lastMorphApply: TypedGLBActorMorphApplyResult | undefined;
   const setTint = (tint: TypedGLBActorTintOptions): void => tintTypedGLBActorMaterials(pipeline, tint);
   if (options.tint) setTint(options.tint);
+  const staticConsolidation = options.consolidateStaticMeshes
+    ? createTypedGLBActorStaticConsolidation(pipeline, options.id)
+    : undefined;
 
   const actor: TypedGLBActor = {
     kind: "aura-typed-glb-actor",
@@ -146,6 +169,15 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     asset: options.asset,
     pipeline,
     animation,
+    ...(staticConsolidation ? {
+      staticRenderItems: staticConsolidation.renderItems,
+      staticConsolidation: {
+        inputItems: staticConsolidation.inputItems,
+        submittedItems: staticConsolidation.submittedItems,
+        mergedMeshes: staticConsolidation.mergedMeshes,
+        drawCallReduction: staticConsolidation.drawCallReduction
+      }
+    } : {}),
     get evidence() {
       return createTypedGLBActorEvidence(actor, lastApply, lastMorphApply);
     },
@@ -171,12 +203,27 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     snapshot() {
       return animation.snapshot();
     },
-    setTint
+    setTint,
+    dispose() {
+      for (const item of staticConsolidation?.renderItems ?? []) {
+        if (staticConsolidation?.ownedGeometries.has(item.geometry)) item.geometry.dispose();
+      }
+      pipeline.dispose();
+    }
   };
   return actor;
 }
 
 export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: TypedGLBActorTransformOptions = {}): RenderItem[] {
+  if (actor.staticRenderItems) {
+    return actor.staticRenderItems.map((item) => ({
+      ...item,
+      modelMatrix: resolveTypedGLBActorModelMatrix(
+        (item.modelMatrix ?? identityMat4()) as Mat4,
+        options.modelMatrix
+      )
+    }));
+  }
   const resources = actor.pipeline.resources;
   const items: RenderItem[] = [];
   resources.scene.updateWorldTransforms();
@@ -192,10 +239,40 @@ export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: T
       material,
       modelMatrix: resolveTypedGLBActorModelMatrix(node.transform.worldMatrix, options.modelMatrix),
       ...(renderable.skinning ? { skinning: renderable.skinning } : {}),
+      ...(renderable.instanceTransforms ? { instanceTransforms: renderable.instanceTransforms } : {}),
+      ...(renderable.instanceColors ? { instanceColors: renderable.instanceColors } : {}),
       ...(morphTargets && renderable.morphWeights.length > 0 ? { morphTargets, morphWeights: renderable.morphWeights } : {})
     });
   }
   return items;
+}
+
+function createTypedGLBActorStaticConsolidation(
+  pipeline: ProductionGLTFRenderPipeline,
+  actorId: string
+): (MeshConsolidationResult & { readonly ownedGeometries: ReadonlySet<RenderItem["geometry"]> }) | undefined {
+  if (pipeline.asset.animations.length > 0) return undefined;
+  pipeline.resources.scene.updateWorldTransforms();
+  const inputs: MeshConsolidationInput[] = [];
+  for (const { node, renderable } of pipeline.resources.scene.collectRenderables()) {
+    const geometry = pipeline.resources.geometryLibrary.get(renderable.geometry);
+    const material = pipeline.resources.materialLibrary.get(renderable.material);
+    const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
+    if (!geometry || !material) continue;
+    if (renderable.skinning || renderable.instanceTransforms || (morphTargets && morphTargets.length > 0)) return undefined;
+    inputs.push({ geometry, material, modelMatrix: node.transform.worldMatrix, label: `${actorId}:${node.name}` });
+  }
+  const result = consolidateStaticMeshes(inputs, {
+    labelPrefix: `${actorId}-static-world`,
+    maxVerticesPerMesh: 65_536
+  });
+  const sourceGeometries = new Set(inputs.map((input) => input.geometry));
+  return {
+    ...result,
+    ownedGeometries: new Set(result.renderItems
+      .map((item) => item.geometry)
+      .filter((geometry) => !sourceGeometries.has(geometry)))
+  };
 }
 
 function resolveTypedGLBActorModelMatrix(nodeMatrix: Mat4, rootMatrix?: Mat4 | readonly number[]): Mat4 {
@@ -242,7 +319,8 @@ export function createTypedGLBActorEvidence(
       ...(snapshot.skinningBindingCount < 1 ? ["No skinning bindings were detected for this typed GLB actor."] : []),
       ...(snapshot.clips.length < 1 ? ["No animation clips were detected for this typed GLB actor."] : []),
       ...(morphTargetCount < 1 ? ["No morph targets were detected for this typed GLB actor."] : [])
-    ]
+    ],
+    ...(actor.staticConsolidation ? { staticConsolidation: actor.staticConsolidation } : {})
   };
 }
 

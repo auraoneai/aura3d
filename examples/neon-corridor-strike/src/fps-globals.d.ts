@@ -11,11 +11,20 @@ interface FpsEvidenceGlobal {
   readonly pickups: number;
   readonly resets: number;
   readonly paused: boolean;
+  readonly mountId?: string;
+  readonly touch?: {
+    readonly enabled: boolean;
+    readonly actions: Readonly<Record<string, number>>;
+    readonly lookGestures: number;
+  };
+  readonly reducedMotion?: boolean;
+  readonly reducedFlash?: boolean;
   readonly pointerLockRequested: number;
   readonly pointerLockActive: boolean;
   readonly ignoreFireUntil?: number;
   readonly yaw: number;
   readonly pitch: number;
+  readonly lookTarget?: readonly number[];
   readonly x: number;
   readonly y: number;
   readonly z: number;
@@ -27,9 +36,36 @@ interface FpsEvidenceGlobal {
   readonly exitReached: boolean;
   readonly lastHitName: string;
   readonly shotFxVisible?: boolean;
+  readonly shotClock?: number;
+  readonly shotExpiresInMs?: number;
   readonly shotFxNodeCount?: number;
+  readonly cameraShake?: number;
+  readonly effectFlashIntensity?: number;
   readonly shotBolt0?: readonly number[];
   readonly enemyVisualY?: number;
+  readonly enemyBodyY?: number;
+  readonly enemyBodyPositions?: readonly (readonly number[])[];
+  readonly propBodyPositions?: readonly (readonly number[])[];
+  readonly shotBolt1?: readonly number[];
+  readonly reloading?: boolean;
+  readonly reloadClock?: number;
+  readonly spawnGuard?: number;
+  readonly weaponCooldown?: number;
+  readonly weaponRecoil?: number;
+  readonly hitMarkerActive?: boolean;
+  readonly audioUnlocked?: boolean;
+  readonly audioCuesPlayed?: number;
+  readonly audioPaused?: boolean;
+  readonly dryFireActive?: boolean;
+  readonly propsScatteredEvents: number;
+  readonly overlapPickupChecks: number;
+  readonly losBlockedEnemies: readonly string[];
+  readonly droneActive: boolean;
+  readonly droneDucked: boolean;
+  readonly shotAgeMs: number;
+  readonly fxHideCount: number;
+  readonly fxLastReason: string;
+  readonly fxLastAliveAgoMs: number;
   readonly bulletOnBulletContacts: number;
   readonly usedKit: false;
   readonly typedAssets: readonly string[];
@@ -43,4 +79,7 @@ interface FpsEvidenceGlobal {
 interface Window {
   __AURA3D_FPS_EVIDENCE__?: FpsEvidenceGlobal;
   __AURA3D_ROUTE_READY__?: { readonly ready: boolean; readonly diagnostics?: unknown };
+  __AURA3D_FPS_CAPTURE__?: {
+    setWeaponVisible(visible: boolean): void;
+  };
 }

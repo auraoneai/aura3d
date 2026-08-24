@@ -1,0 +1,360 @@
+/*
+ * Siege Golf HUD chrome. DOM UI only: every gameplay truth (toppled stacks,
+ * sunk targets, ball position) is rendered in the Aura3D scene; this sheet
+ * styles panels, meters, and result banners that sit above the canvas.
+ */
+:root {
+  --felt-deep: #0b3d23;
+  --felt-mid: #14532d;
+  --lamp-warm: #ffd9a0;
+  --rim-cool: #9fd8ff;
+  --ink: #f4f7ee;
+  --ink-dim: #b8c6ae;
+  --panel-bg: rgba(35, 31, 26, 0.86);
+  --panel-edge: rgba(255, 217, 160, 0.28);
+  --accent: #ffc15b;
+  --danger: #ff6b5e;
+  --ok: #74ff91;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: #5f5143;
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+
+.shell {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+.viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.stage,
+.stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.panel {
+  width: 300px;
+  flex: 0 0 300px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-edge);
+  padding: 14px 16px;
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
+}
+
+.sg-brand h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+}
+
+.sg-brand .eyebrow {
+  margin: 0 0 2px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  color: var(--ink-dim);
+}
+
+.sg-strip {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.stat-grid article,
+.sg-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.stat-grid span,
+.sg-stat span {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-dim);
+}
+
+.stat-grid strong,
+.sg-stat strong {
+  display: block;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Power meter: fill width is driven by real charge each frame. */
+.power-meter {
+  margin-top: 14px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-edge);
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.power-meter > span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7dd87d 0%, var(--accent) 55%, var(--danger) 100%);
+  transition: width 40ms linear;
+}
+
+.power-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  margin-top: 4px;
+}
+
+.precision-shot {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.16);
+  pointer-events: auto;
+}
+
+.precision-shot label {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-dim);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+
+.precision-shot output {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.precision-shot input { width: 100%; }
+
+.precision-shot button {
+  margin-top: 3px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--panel-edge);
+  color: var(--ink);
+  background: rgba(255, 217, 160, 0.1);
+}
+
+.controls-list {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  list-style: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+  display: grid;
+  gap: 4px;
+}
+
+.controls-list b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  pointer-events: auto;
+}
+
+.action-row button {
+  flex: 1 1 44%;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-edge);
+  background: rgba(255, 217, 160, 0.08);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.action-row button:hover { background: rgba(255, 217, 160, 0.18); }
+.action-row button:active { transform: translateY(1px); }
+
+.evidence-strip {
+  margin-top: 14px;
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  display: grid;
+  gap: 4px;
+}
+
+.evidence-strip code {
+  color: var(--rim-cool);
+  word-break: break-all;
+}
+
+/* Top-center hole banner and result cards live over the canvas. */
+.hole-banner {
+  align-self: center;
+  margin-top: 14px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-edge);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.result-card {
+  align-self: center;
+  margin-bottom: 12vh;
+  padding: 22px 34px;
+  border-radius: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-edge);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.result-card h2 {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+}
+
+.result-card p {
+  margin: 0;
+  color: var(--ink-dim);
+}
+
+.result-card .stars {
+  font-size: 2rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+.result-card.is-failed h2 { color: var(--danger); }
+.result-card.is-hidden { display: none; }
+
+.mobile-shot-controls { display: none; }
+
+.star-row {
+  font-size: 1.4rem;
+  letter-spacing: 0.24em;
+  color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .shell { flex-direction: column; }
+  .panel {
+    display: none;
+  }
+  .hole-banner {
+    margin-top: max(10px, env(safe-area-inset-top));
+    max-width: calc(100vw - 24px);
+    padding: 7px 13px;
+    font-size: 0.74rem;
+  }
+  .result-card { margin-bottom: 18vh; padding: 16px 22px; }
+  .mobile-shot-controls {
+    display: grid;
+    align-self: center;
+    width: min(360px, calc(100vw - 22px));
+    margin: auto 11px max(12px, env(safe-area-inset-bottom));
+    padding: 9px 10px 10px;
+    gap: 8px;
+    border: 1px solid rgba(255, 232, 190, 0.42);
+    border-radius: 16px;
+    background: rgba(39, 34, 28, 0.88);
+    box-shadow: 0 8px 30px rgba(24, 19, 14, 0.28);
+    backdrop-filter: blur(7px);
+    pointer-events: auto;
+  }
+  .mobile-shot-readout {
+    display: grid;
+    grid-template-columns: 72px 1fr 38px;
+    align-items: center;
+    gap: 8px;
+    color: #fff2d9;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+  .mobile-shot-readout strong { text-align: right; }
+  .mobile-power-meter {
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.42);
+    border: 1px solid rgba(255, 240, 212, 0.28);
+  }
+  .mobile-power-meter > span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #f8d56b 0%, #ed9b4a 58%, #c9473a 100%);
+  }
+  .mobile-shot-buttons {
+    display: grid;
+    grid-template-columns: 58px 1fr 58px;
+    gap: 8px;
+  }
+  .mobile-shot-buttons button {
+    min-height: 44px;
+    border: 1px solid rgba(255, 232, 190, 0.36);
+    border-radius: 11px;
+    background: rgba(180, 88, 42, 0.34);
+    color: #fff7e8;
+    font: 700 0.82rem/1 "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    touch-action: none;
+  }
+  .mobile-shot-buttons button:first-child,
+  .mobile-shot-buttons button:last-child { font-size: 1.35rem; }
+  .mobile-shot-buttons button:active { background: rgba(220, 125, 55, 0.62); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .power-meter > span { transition: none; }
+}

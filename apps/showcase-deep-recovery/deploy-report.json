@@ -1,0 +1,59 @@
+{
+  "schema": "aura3d.deep-recovery.deploy/1.0",
+  "generatedAt": "2026-08-24T04:23:04.676Z",
+  "producer": "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs",
+  "producerSourceSha256": "07c95fda8e5d9c1f587425f4375a09a692a62fe5fa588c58d6df958fc01b5341",
+  "cli": "packages/aura3d-cli/dist/cli.js",
+  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+  "distTreeSha256": "d3b36897078fc446bc139dc184439f24c56dee982810ae5ce3f6c15550cd3ed3",
+  "sourceTreeSha256": "c5bc109819c5da4bb5c06eeb644654de74452a1eb29102bdb9de104f0e8eb3c1",
+  "checks": {
+    "strictModels": {
+      "command": "check-deploy --release --source apps/showcase-deep-recovery/src --asset <5 typed models>",
+      "ok": true,
+      "assetCount": 5,
+      "assets": [
+        {
+          "id": "deepRecoveryBuoyBeacon",
+          "hash": "sha256-446c27b5c46c47f4abdb01c183469b37e7b9042eab3435a0c85e63f79293e337",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "deepRecoveryCrateHeavy",
+          "hash": "sha256-b4848ad9a23be8b8b9064f84a820bf5dc9fc1fe70e8c30a8de7dd055c2aed7c5",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "deepRecoveryCrateStandard",
+          "hash": "sha256-778ab9b98a48b26ef4ca24761f90dec58a3b11bb2f2d21944db7ad6465c72bac",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "deepRecoverySub",
+          "hash": "sha256-d579451ffaa346ad54d57aa25e4c8732bf2bc93ca9a2c95ac436080358867bba",
+          "quality": "release",
+          "role": "vehicle"
+        },
+        {
+          "id": "deepRecoveryWreckHull",
+          "hash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+          "quality": "release",
+          "role": "prop"
+        }
+      ],
+      "warnings": [],
+      "failures": []
+    },
+    "strictDistAndSource": {
+      "command": "check-deploy --release --source apps/showcase-deep-recovery/src --no-assets",
+      "ok": true,
+      "warnings": [],
+      "failures": []
+    }
+  },
+  "audioBoundary": "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+  "pass": true
+}

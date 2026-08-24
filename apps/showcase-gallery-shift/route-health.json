@@ -1,0 +1,442 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-24T03:35:58.467Z",
+  "appId": "showcase-gallery-shift",
+  "route": "/apps/showcase-gallery-shift/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "routeSourceSha256": "7a84fa612d8ee90d6dd24dfafc41bc01a97d67f771c2af32fd085d8c01433763",
+  "renderer": {
+    "path": "createGameApp root safe API",
+    "mode": "production with safe-basic fallback",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.galleryShiftMuseumInterior",
+      "hash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+      "quality": "release",
+      "role": "environment"
+    },
+    {
+      "typedRef": "assets.galleryShiftPedestal",
+      "hash": "sha256-c9af6f418b688bff7dab3bbe9d905b9456d8d82e4c9af94e4a84b3aae8fb22fc",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.galleryShiftExhibitA",
+      "hash": "sha256-dc7c4d90c6a325bdf51987026dd053b845fa9c18ff72444a2ceb89089f224113",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.galleryShiftExhibitB",
+      "hash": "sha256-71b229c6afea8e58ce80a41c2f85dfac714eef20df0d782f1b969fc1e61f8147",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.galleryShiftExhibitC",
+      "hash": "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.galleryShiftDisplayCase",
+      "hash": "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f",
+      "quality": "release",
+      "role": "prop"
+    }
+  ],
+  "supportingCharacterAssets": [
+    {
+      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
+      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "quality": "release",
+      "role": "character"
+    },
+    {
+      "typedRef": "assets.showcaseExpressiveRobot",
+      "hash": "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+      "quality": "release",
+      "role": "character"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.galleryShiftSneakStepSfx",
+      "hash": "sha256-ae09a6ceb5f42b81bb88feea568d9fe6a265af4aaca26976651e7757d899d3ce",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftWalkStepSfx",
+      "hash": "sha256-2d6838e01292d9838d55b6f3b4c7de7f08d7b553214cbfd91449da90ef6d952c",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftGuardAlertSfx",
+      "hash": "sha256-e1243271e6aa7dfc3d6c9b6771932f6906f301e7e54a9c9d0a60985a1adc9122",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftAlertRiseSfx",
+      "hash": "sha256-d5ab8d415621ae560504c70402794db41c0bcaa2c7091057c69fede118be9def",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftExhibitLiftSfx",
+      "hash": "sha256-ee5b976a9713fd25a03f930854030f73dc54988272f0477018405c49bebba2c9",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftLaserTripSfx",
+      "hash": "sha256-6d132493d315566c5b9d195a77ee48a12c237915c656e0fe22f180e01bbe8061",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftCameraWhirSfx",
+      "hash": "sha256-7a817888dd28c7d9a7d0c76ed05e1f4394d34c111438aa8c81e4cb2cb98aa849",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftCaughtStingSfx",
+      "hash": "sha256-323b95b8cbbe883bf33382c8ca0d93bc0849a6f91f08d731c1e3ce1ef69e42d3",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftFloorClearSfx",
+      "hash": "sha256-588cc59fbd175301ad2550203594f8402415ce9ab5f7beb380cb6a9cdab20763",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftAmbientHallSfx",
+      "hash": "sha256-87c33c16d630f2a8873f94b0fde8cdee09b97e0d47a5fd89992bc4b99566b97b",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.galleryShiftExitWinSfx",
+      "hash": "sha256-88ac04329614f7980f53d010dd29ee0ef774237b15e27d1c998fdf5470e30167",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 12,
+    "primitiveBudget": 20,
+    "role": "subordinate floor-two shell, light pools, laser beams, exit/alarm markers, frames, inlays, fixtures, debug-only diagnostics, and UI around typed primary assets",
+    "status": "no-primitive-primary-subjects"
+  },
+  "gameplay": {
+    "exhibits": 3,
+    "floors": 2,
+    "controls": [
+      "walk",
+      "sneak",
+      "sprint",
+      "hold lift",
+      "pause",
+      "floor/full reset"
+    ],
+    "keyboardAndTouch": true,
+    "rapierBackend": true,
+    "publicPhysicsLos": true,
+    "authoredHearingRadii": {
+      "walk": 3,
+      "sneak": 0,
+      "sprint": 6
+    },
+    "authoredWaypointNavigation": true,
+    "recastClaimed": false,
+    "exactOnceSensors": true,
+    "alarmEscapeGraceSeconds": 2,
+    "reducedMotionPreservesStateTruth": true
+  },
+  "accessibility": {
+    "semanticHeading": true,
+    "namedStatusRegions": true,
+    "namedTouchControls": 8,
+    "minimumTouchTargetPx": 44,
+    "keyboardAndTouchParity": true,
+    "colorIndependentStatusText": true,
+    "pass": true
+  },
+  "performance": {
+    "schema": "aura3d.gallery-shift.performance/1.0",
+    "generatedAt": "2026-08-24T03:35:58.092Z",
+    "producer": "apps/showcase-gallery-shift/scripts/write-performance-report.ts",
+    "producerSourceSha256": "da2066f24cb0dba4e2636863090e9c84c0d00132fc7fbbdd5b5a2e71b1d30047",
+    "routeSourceFiles": [
+      "apps/showcase-gallery-shift/src/environment.ts",
+      "apps/showcase-gallery-shift/src/floor.ts",
+      "apps/showcase-gallery-shift/src/guard.ts",
+      "apps/showcase-gallery-shift/src/heist-audio.ts",
+      "apps/showcase-gallery-shift/src/main.ts",
+      "apps/showcase-gallery-shift/src/styles.css",
+      "apps/showcase-gallery-shift/src/thief.ts",
+      "apps/showcase-gallery-shift/src/vision.ts"
+    ],
+    "routeSourceSha256": "7a84fa612d8ee90d6dd24dfafc41bc01a97d67f771c2af32fd085d8c01433763",
+    "scope": "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
+    "samples": 20000,
+    "fixedStepSeconds": 0.016666666666666666,
+    "budgets": {
+      "routeLogicCpuP95Ms": 0.2,
+      "drawCalls": 190
+    },
+    "observed": {
+      "routeLogicCpuP95Ms": 0.002,
+      "deterministicStateHash": "5301c77b",
+      "drawCalls": 174,
+      "renderSize": [
+        938,
+        800
+      ]
+    },
+    "pass": true
+  },
+  "deploy": {
+    "schema": "aura3d.gallery-shift.deploy/1.0",
+    "generatedAt": "2026-08-24T03:35:55.588Z",
+    "producer": "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs",
+    "producerSourceSha256": "3d6de45ed31af5b913558b62f542d00a9e66f3f6142e924200d410a7e4aa3fcf",
+    "cli": "packages/aura3d-cli/dist/cli.js",
+    "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+    "distTreeSha256": "d1ec449181887bb18def163cbe9057855e22a6acd79affb9d3e1dafa9193f5bf",
+    "sourceTreeSha256": "2ad5274e3b61d22c80568820f621f82f87a9782bf2fa8f840f4ee3bd529566a1",
+    "checks": {
+      "strictModels": {
+        "command": "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>",
+        "ok": true,
+        "assetCount": 6,
+        "assets": [
+          {
+            "id": "galleryShiftDisplayCase",
+            "hash": "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "galleryShiftExhibitA",
+            "hash": "sha256-dc7c4d90c6a325bdf51987026dd053b845fa9c18ff72444a2ceb89089f224113",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "galleryShiftExhibitB",
+            "hash": "sha256-71b229c6afea8e58ce80a41c2f85dfac714eef20df0d782f1b969fc1e61f8147",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "galleryShiftExhibitC",
+            "hash": "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "galleryShiftMuseumInterior",
+            "hash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+            "quality": "release",
+            "role": "environment"
+          },
+          {
+            "id": "galleryShiftPedestal",
+            "hash": "sha256-c9af6f418b688bff7dab3bbe9d905b9456d8d82e4c9af94e4a84b3aae8fb22fc",
+            "quality": "release",
+            "role": "prop"
+          }
+        ],
+        "warnings": [],
+        "failures": []
+      },
+      "strictDistAndSource": {
+        "command": "check-deploy --release --source apps/showcase-gallery-shift/src --no-assets",
+        "ok": true,
+        "warnings": [],
+        "failures": []
+      }
+    },
+    "audioBoundary": "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "root-safe prototype",
+    "allowed": [
+      "typed museum, pedestal, exhibit, display-case, thief, and guard assets",
+      "route-local public-physics LOS and exact-entry sensors",
+      "route-local authored hearing radii, collision pushout, gait, guard patrols, and two-floor navigation",
+      "three-exhibit mission, third-lift alarm, caught/reset, and win"
+    ],
+    "notAllowed": [
+      "reusable stealth, guard-AI, hearing, or navigation kit",
+      "Recast/navmesh ownership",
+      "clip-event footsteps",
+      "production-runtime-only rendering claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_GALLERY_SHIFT__",
+    "detailedGlobal": "window.__GALLERY_SHIFT_EVIDENCE__",
+    "sourceReview": "apps/showcase-gallery-shift/src/main.ts",
+    "exactArtifacts": [
+      {
+        "path": "tests/reports/gallery-shift/first-load-desktop.png",
+        "sha256": "6e6d9c26752d0f9c3406f832a17667f4f5cb365187eb1d461d341b4856904893"
+      },
+      {
+        "path": "tests/reports/gallery-shift/mid-sneak-desktop.png",
+        "sha256": "8f5493e3baa937422b6ddd61eaa2b6f0c980d807ff13acc4d6c769b4fc0a5746"
+      },
+      {
+        "path": "tests/reports/gallery-shift/near-detection-desktop.png",
+        "sha256": "9b00ba92aaf580b48dc2edec0c4289b5dd7933ded547979333de9e51f7c9b29f"
+      },
+      {
+        "path": "tests/reports/gallery-shift/caught-desktop.png",
+        "sha256": "487c025563adb7cb9556f310e248c6d119a1ddc46f07e7ca121beb7f55821b80"
+      },
+      {
+        "path": "tests/reports/gallery-shift/exhibit-lift-desktop.png",
+        "sha256": "7be8431d417cb86e22d758fdda039359077e2cfae2118efc26e3532bb1480ae0"
+      },
+      {
+        "path": "tests/reports/gallery-shift/stair-crossing-desktop.png",
+        "sha256": "f1058660e2dd9d2d51e7053330483a6796b97c667c2e741063afada5193dabe5"
+      },
+      {
+        "path": "tests/reports/gallery-shift/camera-sweep-desktop.png",
+        "sha256": "f148bb12121feec4b7dcfb4ca6d42737ecbf5c2fb3557c4a1d14e3c8c783c9a7"
+      },
+      {
+        "path": "tests/reports/gallery-shift/alarm-return-desktop.png",
+        "sha256": "a431c9ee83d7f14b36aad2dfc9f9a7efb30cbcee88ab83af88af3fd400268b90"
+      },
+      {
+        "path": "tests/reports/gallery-shift/exit-win-desktop.png",
+        "sha256": "2a382166d0a1507b845de5a53a4faff77b9baab8be5dc567ffda1f22a68b2f80"
+      },
+      {
+        "path": "tests/reports/gallery-shift/first-load-mobile.png",
+        "sha256": "50344d9ffd0ecbd2b92f185830e66e10a206ee5ba967ca1c467e7a0bdcf68ac9"
+      },
+      {
+        "path": "tests/reports/gallery-shift/reduced-motion-lobby.png",
+        "sha256": "402b45af725ac82754d378b8c5e36de04a7d809643e6ca22695a8d2cad0630fc"
+      },
+      {
+        "path": "tests/reports/gallery-shift/visual.json",
+        "sha256": "66c982cad1cb71fb01301c552a147acc954918e20086bee2025a8ffd67b1e648"
+      }
+    ],
+    "browserReceipts": [
+      "tests/reports/gallery-shift/browser-evidence.json",
+      "tests/reports/gallery-shift/playable/browser-evidence.json"
+    ],
+    "assetProbes": [
+      {
+        "asset": "galleryShiftMuseumInterior",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftMuseumInterior.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftMuseumInterior.png",
+        "assetHash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200"
+      },
+      {
+        "asset": "galleryShiftPedestal",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftPedestal.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftPedestal.png",
+        "assetHash": "sha256-c9af6f418b688bff7dab3bbe9d905b9456d8d82e4c9af94e4a84b3aae8fb22fc"
+      },
+      {
+        "asset": "galleryShiftExhibitA",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftExhibitA.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftExhibitA.png",
+        "assetHash": "sha256-dc7c4d90c6a325bdf51987026dd053b845fa9c18ff72444a2ceb89089f224113"
+      },
+      {
+        "asset": "galleryShiftExhibitB",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftExhibitB.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftExhibitB.png",
+        "assetHash": "sha256-71b229c6afea8e58ce80a41c2f85dfac714eef20df0d782f1b969fc1e61f8147"
+      },
+      {
+        "asset": "galleryShiftExhibitC",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftExhibitC.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftExhibitC.png",
+        "assetHash": "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63"
+      },
+      {
+        "asset": "galleryShiftDisplayCase",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftDisplayCase.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftDisplayCase.png",
+        "assetHash": "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f"
+      },
+      {
+        "asset": "showcaseKenneyOobiPlatformerHero",
+        "metadata": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png",
+        "assetHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+      },
+      {
+        "asset": "showcaseExpressiveRobot",
+        "metadata": "tests/reports/showcase-release-asset-probes/showcaseExpressiveRobot.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/showcaseExpressiveRobot.png",
+        "assetHash": "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"
+      }
+    ],
+    "performance": "apps/showcase-gallery-shift/performance-report.json",
+    "deploy": "apps/showcase-gallery-shift/deploy-report.json",
+    "routePrimary": "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json",
+    "unitSpecs": [
+      "tests/unit/apps/gallery-shift-vision.test.ts",
+      "tests/unit/apps/gallery-shift-patrols.test.ts"
+    ],
+    "browserSpecs": [
+      "tests/browser/gallery-shift-playable.spec.ts",
+      "tests/browser/gallery-shift-scene.spec.ts"
+    ]
+  },
+  "determinismContract": {
+    "fixedStep": "1/60",
+    "guardPatrols": "authored waypoint order without randomness",
+    "cameraSweep": "authored sine of floor time",
+    "perception": "range + field angle + public-physics filtered LOS",
+    "hearing": "explicit authored radius events",
+    "animationBoundary": "embedded clips for presentation; authored gait because clip event metadata is absent"
+  }
+}

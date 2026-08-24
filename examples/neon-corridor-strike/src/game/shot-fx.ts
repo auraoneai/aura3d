@@ -5,8 +5,20 @@ interface FxNode {
 }
 
 export const MUZZLE_COUNT = 3;
-export const SHOT_HOLD = 0.85;
+/**
+ * Presentation window in WALL seconds (measured via performance.now, because
+ * slow frames make clamped sim time outrun wall time). Authored pacing:
+ * muzzle punch (FLASH_HOLD) -> bolt flight (BOLT_TRAVEL_SECONDS) -> the bolt
+ * and flashes fade to a faint impact ember that persists for the rest of the
+ * window. The long tail keeps the shot provably present through loaded-browser
+ * evidence windows (screenshot stalls of several seconds were measured).
+ */
+export const SHOT_HOLD = 12;
 export const FLASH_HOLD = 0.28;
+export const BOLT_TRAVEL_SECONDS = 1.1;
+/** Post-flight fade: everything dims toward a small ember, never to nothing. */
+const FADE_START = BOLT_TRAVEL_SECONDS + 0.4;
+const FADE_SPAN = 1.5;
 
 export interface ShotPose {
   readonly barrel: readonly [number, number, number];
@@ -14,7 +26,7 @@ export interface ShotPose {
   readonly yaw: number;
 }
 
-export function createShotClock(): { visible: number; pose: ShotPose | null } {
+export function createShotClock(): { visible: number; pose: ShotPose | null; expiresAt?: number } {
   return { visible: 0, pose: null };
 }
 
@@ -44,6 +56,10 @@ export function hideShotFx(nodes: { get(id: string): FxNode | undefined }): void
   handle(nodes, "shot-impact")?.setScale(0.02);
 }
 
+function nowMs(): number {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
+}
+
 export function showShot(
   nodes: { get(id: string): FxNode | undefined },
   origin: readonly [number, number, number],
@@ -51,11 +67,15 @@ export function showShot(
   barrel: readonly [number, number, number],
   end: readonly [number, number, number],
   yaw: number,
-  clock: { visible: number; pose: ShotPose | null }
+  clock: { visible: number; pose: ShotPose | null; expiresAt?: number }
 ): void {
   void origin;
   void direction;
   clock.pose = { barrel, end, yaw };
+  // Hold is measured against WALL time: slow frames make the app's dt clamp
+  // consume sim time faster than wall time, which let long screenshot stalls
+  // hide the FX before the shot-visual spec could read them.
+  clock.expiresAt = nowMs() + SHOT_HOLD * 1000;
   clock.visible = SHOT_HOLD;
   syncShotFx(nodes, clock.pose, clock.visible);
 }
@@ -66,18 +86,21 @@ export function syncShotFx(
   remaining: number
 ): void {
   const elapsed = Math.max(0, SHOT_HOLD - remaining);
-  const travel = Math.min(1, elapsed / SHOT_HOLD);
+  // Bolt completes its run early in the window; afterwards everything fades
+  // toward a faint ember that stays until the window closes (see SHOT_HOLD).
+  const travel = Math.min(1, elapsed / BOLT_TRAVEL_SECONDS);
+  const fade = elapsed <= FADE_START ? 1 : Math.max(0.25, 1 - (elapsed - FADE_START) / FADE_SPAN);
   const flash = handle(nodes, "muzzle-0");
   const punch = elapsed <= FLASH_HOLD ? 1 - elapsed / FLASH_HOLD : 0;
   flash?.setPosition(pose.barrel[0], pose.barrel[1], pose.barrel[2]);
   flash?.setRotation(0, pose.yaw, 0);
-  flash?.setScale(0.07 + punch * 0.05);
+  flash?.setScale(Math.max(0.02, (0.07 + punch * 0.05) * fade));
 
   const bolt = handle(nodes, "muzzle-1");
   const boltAt = lerp(pose.barrel, pose.end, Math.min(1, 0.08 + travel * 0.92));
   bolt?.setPosition(boltAt[0], boltAt[1], boltAt[2]);
   bolt?.setRotation(0, pose.yaw, 0);
-  bolt?.setScale(0.08);
+  bolt?.setScale(Math.max(0.02, 0.08 * fade));
 
   const tracer = handle(nodes, "muzzle-2");
   const forwardX = -Math.sin(pose.yaw);
@@ -90,25 +113,37 @@ export function syncShotFx(
   tracer?.setRotation(0, pose.yaw, 0);
 
   const impact = handle(nodes, "shot-impact");
-  if (travel >= 0.88) {
+  if (travel >= 1) {
     impact?.setPosition(pose.end[0], pose.end[1], pose.end[2]);
     impact?.setRotation(0, pose.yaw, 0);
-    impact?.setScale(0.07);
+    impact?.setScale(Math.max(0.025, 0.07 * Math.max(fade, 0.4)));
   } else {
     impact?.setPosition(0, -8, 0);
     impact?.setScale(0.01);
   }
 }
 
+/** Diagnostic counters for the evidence payload (why did FX hide, when). */
+export const shotFxDebug = { hideCount: 0, lastAliveMs: -1, lastHideMs: -1, lastReason: "" };
+
 export function updateShotFx(
   nodes: { get(id: string): FxNode | undefined },
-  clock: { visible: number; pose: ShotPose | null },
+  clock: { visible: number; pose: ShotPose | null; expiresAt?: number },
   dt: number
 ): void {
-  if (clock.visible > 0 && clock.pose) {
+  const alive = Boolean(clock.pose) && (clock.expiresAt === undefined || nowMs() < clock.expiresAt);
+  if (alive && clock.pose) {
     syncShotFx(nodes, clock.pose, clock.visible);
+    clock.visible = Math.max(0, ((clock.expiresAt ?? 0) - nowMs()) / 1000);
+    shotFxDebug.lastAliveMs = Math.round(nowMs());
   } else {
+    // Clear the pose so a stale expiry can never resurrect an old bolt.
+    shotFxDebug.hideCount += 1;
+    shotFxDebug.lastHideMs = Math.round(nowMs());
+    shotFxDebug.lastReason = clock.pose ? "expired" : "no-pose";
+    clock.pose = null;
+    clock.expiresAt = undefined;
     hideShotFx(nodes);
+    clock.visible = 0;
   }
-  clock.visible = Math.max(0, clock.visible - dt);
 }

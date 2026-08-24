@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Aura3D Vault Breakers prototype: neon pinball with motorised flipper joints, five target banks, and a vault multiball jackpot." />
+    <title>Aura3D - Vault Breakers</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell" aria-label="Vault Breakers pinball">
+      <section class="viewport">
+        <div id="app" class="stage" data-testid="vault-breakers-stage"></div>
+        <div id="hud" aria-label="Vault Breakers HUD"></div>
+      </section>
+      <aside id="panel" class="panel" aria-label="Vault Breakers controls and score"></aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

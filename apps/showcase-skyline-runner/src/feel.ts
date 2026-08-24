@@ -1,13 +1,13 @@
 import { game, type RuntimeNodeHandleLike } from "@aura3d/engine";
 import { resolveSkylineActIndex } from "./act-palette";
+import { skylineCameraFrame, type SkylineCameraFrame, type SkylineCameraTuning } from "./camera-readability";
 import { SKYLINE_SENTRY_ENCOUNTERS } from "./level";
 import type { SkylineAudioCue } from "./skyline-audio-manifest";
 import type { SkylineAudioController } from "./skyline-audio";
 
 export interface SkylineFeelOptions {
   readonly reducedMotion: boolean;
-  readonly cameraBaseOffset: readonly [number, number, number];
-  readonly cameraTargetOffset: readonly [number, number, number];
+  readonly cameraTuning: SkylineCameraTuning;
   readonly audio?: SkylineAudioController;
 }
 
@@ -15,29 +15,84 @@ export interface SkylineFeelSnapshot {
   readonly paused: boolean;
   readonly actIndex: number;
   readonly simFrozen: boolean;
+  readonly reducedMotion: boolean;
+  readonly cameraShakeOffset: readonly [number, number, number];
+  readonly maximumCameraShakeMagnitude: number;
+  readonly cameraImpactRequests: number;
+  readonly cameraImpactsSuppressed: number;
 }
+
+export type SkylineRequiredFeedbackEvent =
+  | "jump"
+  | "land"
+  | "dash"
+  | "collect"
+  | "relay"
+  | "hazard"
+  | "defeat"
+  | "respawn"
+  | "finish";
+
+export interface SkylineEventFeedbackObservation {
+  readonly event: SkylineRequiredFeedbackEvent;
+  readonly kitEvent: "jump" | "land" | "dash" | "collect" | "checkpoint" | "hazard-or-fall" | "defeat-or-stomp" | "respawn" | "complete";
+  readonly sceneSignature: string;
+  readonly audioCue: SkylineAudioCue;
+  readonly observedCount: number;
+  readonly sceneEffectApplied: boolean;
+  readonly audioCueRequested: boolean;
+}
+
+export interface SkylineEventFeedbackProof {
+  readonly scope: "mounted-session-cumulative";
+  readonly requiredEventCount: number;
+  readonly observedEventCount: number;
+  readonly allRequiredObserved: boolean;
+  readonly distinctSceneSignatureCount: number;
+  readonly distinctAudioCueCount: number;
+  readonly events: Readonly<Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackObservation>>;
+}
+
+/**
+ * Canonical SR-06 contract. Every entry owns a distinct rendered response and a
+ * distinct typed cue, and handlers are called only from the matching public-kit
+ * event in main.ts.
+ */
+export const SKYLINE_REQUIRED_EVENT_FEEDBACK = Object.freeze({
+  jump: { kitEvent: "jump", sceneSignature: "cyan-lift-ring", audioCue: "jump" },
+  land: { kitEvent: "land", sceneSignature: "mint-ground-dust-camera-dip", audioCue: "land-dust" },
+  dash: { kitEvent: "dash", sceneSignature: "lavender-dash-trail-camera-punch", audioCue: "dash" },
+  collect: { kitEvent: "collect", sceneSignature: "gold-pickup-hit-spark", audioCue: "coin-chime" },
+  relay: { kitEvent: "checkpoint", sceneSignature: "cyan-relay-ring-wave-and-pulse", audioCue: "checkpoint" },
+  hazard: { kitEvent: "hazard-or-fall", sceneSignature: "coral-impact-flash-camera-hit", audioCue: "death" },
+  defeat: { kitEvent: "defeat-or-stomp", sceneSignature: "orange-aura-burst-and-ring", audioCue: "sentry-defeat" },
+  respawn: { kitEvent: "respawn", sceneSignature: "cyan-recovery-dust-and-ring", audioCue: "respawn" },
+  finish: { kitEvent: "complete", sceneSignature: "emerald-summit-burst-and-double-ring", audioCue: "summit" }
+} satisfies Record<SkylineRequiredFeedbackEvent, Omit<SkylineEventFeedbackObservation, "event" | "observedCount" | "sceneEffectApplied" | "audioCueRequested">>);
 
 export interface SkylineFeelController {
   readonly snapshot: () => SkylineFeelSnapshot;
+  readonly eventFeedbackProof: () => SkylineEventFeedbackProof;
   togglePause(): boolean;
   resetPause(): void;
   resetRuntime(): void;
-  onJump(): void;
+  onJump(scenePlayerPosition: readonly [number, number, number]): void;
   onLand(scenePlayerPosition: readonly [number, number, number]): void;
   onDash(scenePlayerPosition: readonly [number, number, number]): void;
   onCollect(scenePoint: readonly [number, number, number]): void;
   onEmberPickup(scenePoint: readonly [number, number, number]): void;
-  onCheckpoint(actTitle: string): void;
+  onCheckpoint(actTitle: string, scenePoint: readonly [number, number, number]): void;
   onSentryDefeat(scenePoint: readonly [number, number, number], scoreDelta: number): void;
   onEmberDeny(scenePoint: readonly [number, number, number]): void;
   onEmberFire(scenePoint: readonly [number, number, number]): void;
   onEmberImpact(scenePoint: readonly [number, number, number]): void;
-  onDeath(): void;
-  onSummit(): void;
+  onHazard(scenePoint: readonly [number, number, number]): void;
+  onRespawn(scenePoint: readonly [number, number, number]): void;
+  onSummit(scenePoint: readonly [number, number, number]): void;
   applyCameraShake(cameraSpec: {
     offset?: readonly [number, number, number];
     targetOffset?: readonly [number, number, number];
-  }): void;
+  }, playerFacing: number): SkylineCameraFrame;
   updatePresentation(step: number, input: {
     readonly simTime: number;
     readonly playerX: number;
@@ -46,10 +101,9 @@ export interface SkylineFeelController {
     readonly sceneBinding: { readonly toScenePoint: (point: { readonly x: number; readonly y: number }, elevation?: number) => readonly [number, number, number] };
     readonly defeatedHazardIds: readonly string[];
     readonly sentryNodes: Readonly<Record<string, RuntimeNodeHandleLike>>;
+    readonly sentryAccentNodes: Readonly<Record<string, readonly RuntimeNodeHandleLike[]>>;
     readonly emberVolleys: readonly { readonly x: number; readonly y: number; readonly slot: number }[];
     readonly emberVolleyNodes: readonly RuntimeNodeHandleLike[];
-    readonly emberPickupNodes: Readonly<Record<string, RuntimeNodeHandleLike>>;
-    readonly collectedIds: readonly string[];
     readonly firePressed: boolean;
     readonly emberStock: number;
     readonly scoreElement?: HTMLElement | null;
@@ -86,12 +140,40 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
   const sentryTelegraph = new Map<string, number>();
   const sentriesHaveTelegraphed = new Map<string, boolean>();
   let cameraShakeOffset: [number, number, number] = [0, 0, 0];
+  let maximumCameraShakeMagnitude = 0;
+  let cameraImpactRequests = 0;
+  let cameraImpactsSuppressed = 0;
   let lastTelegraphEffectAt = 0;
   // Evidence-tracking flags so the route can publish ceremony state without reading DOM.
   let telegraphWindowSeen = false;
   let sentryDefeatSeenFlag = false;
   let landDipSeenFlag = false;
   let dashPunchSeenFlag = false;
+  const eventFeedback = Object.fromEntries(
+    Object.entries(SKYLINE_REQUIRED_EVENT_FEEDBACK).map(([event, contract]) => [event, {
+      event,
+      ...contract,
+      observedCount: 0,
+      sceneEffectApplied: false,
+      audioCueRequested: false
+    }])
+  ) as Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackObservation>;
+
+  const recordEventFeedback = (event: SkylineRequiredFeedbackEvent): void => {
+    const current = eventFeedback[event];
+    eventFeedback[event] = {
+      ...current,
+      observedCount: current.observedCount + 1,
+      sceneEffectApplied: true,
+      audioCueRequested: true
+    };
+  };
+
+  const requestCameraImpact = (intensity: number, duration: number): void => {
+    cameraImpactRequests += 1;
+    if (options.reducedMotion) cameraImpactsSuppressed += 1;
+    cameraDirector.impact(intensity, duration);
+  };
 
   const ensureActCard = (): HTMLElement | null => {
     if (typeof document === "undefined") return null;
@@ -133,7 +215,31 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
 
   return {
     snapshot() {
-      return { paused, actIndex, simFrozen: paused };
+      return {
+        paused,
+        actIndex,
+        simFrozen: paused,
+        reducedMotion: options.reducedMotion,
+        cameraShakeOffset: [...cameraShakeOffset],
+        maximumCameraShakeMagnitude,
+        cameraImpactRequests,
+        cameraImpactsSuppressed
+      };
+    },
+    eventFeedbackProof() {
+      const events = Object.fromEntries(
+        Object.entries(eventFeedback).map(([event, observation]) => [event, { ...observation }])
+      ) as Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackObservation>;
+      const observed = Object.values(events).filter((entry) => entry.observedCount > 0);
+      return {
+        scope: "mounted-session-cumulative",
+        requiredEventCount: Object.keys(SKYLINE_REQUIRED_EVENT_FEEDBACK).length,
+        observedEventCount: observed.length,
+        allRequiredObserved: observed.length === Object.keys(SKYLINE_REQUIRED_EVENT_FEEDBACK).length,
+        distinctSceneSignatureCount: new Set(Object.values(events).map((entry) => entry.sceneSignature)).size,
+        distinctAudioCueCount: new Set(Object.values(events).map((entry) => entry.audioCue)).size,
+        events
+      };
     },
     togglePause() {
       paused = !paused;
@@ -153,33 +259,52 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       sentryTelegraph.clear();
       sentriesHaveTelegraphed.clear();
       runtimeEffects.clear();
+      cameraShakeOffset = [0, 0, 0];
+      maximumCameraShakeMagnitude = 0;
+      cameraImpactRequests = 0;
+      cameraImpactsSuppressed = 0;
       hideActCard();
     },
     bindScorePopHost(host) {
       scorePopHost = host;
     },
-    onJump() {
+    onJump(scenePlayerPosition) {
+      runtimeEffects.ringShockwave(
+        [scenePlayerPosition[0], scenePlayerPosition[1] - 0.14, 0.4],
+        { intensity: 0.26, duration: 0.12, color: "#8ef0ff" }
+      );
       playCue("jump");
+      recordEventFeedback("jump");
     },
     onLand(scenePlayerPosition) {
-      cameraDirector.impact(0.42, 0.12);
+      requestCameraImpact(0.42, 0.12);
       runtimeEffects.groundDust(scenePlayerPosition, { intensity: 0.35, duration: 0.12 });
       playCue("land-dust");
       landDipSeenFlag = true;
+      recordEventFeedback("land");
     },
     onDash(scenePlayerPosition) {
-      cameraDirector.impact(0.58, 0.14);
+      requestCameraImpact(0.58, 0.14);
       runtimeEffects.dashTrail(scenePlayerPosition, { intensity: 0.72, duration: 0.16 });
+      playCue("dash");
       dashPunchSeenFlag = true;
+      recordEventFeedback("dash");
     },
     onCollect(scenePoint) {
       runtimeEffects.hitSpark([scenePoint[0], scenePoint[1], 0.42], { intensity: 0.62, duration: 0.18, color: "#fff1a8" });
       playCue("coin-chime");
+      recordEventFeedback("collect");
     },
-    onCheckpoint(actTitle) {
+    onCheckpoint(actTitle, scenePoint) {
       checkpointPulseRemaining = 0.65;
       showActCard(actTitle);
+      runtimeEffects.ringShockwave([scenePoint[0], scenePoint[1] + 0.18, 0.4], {
+        intensity: 0.72,
+        duration: 0.4,
+        color: "#22d3ee"
+      });
       playCue("checkpoint");
+      recordEventFeedback("relay");
     },
     onSentryDefeat(scenePoint, scoreDelta) {
       runtimeEffects.auraBurst([scenePoint[0], scenePoint[1], 0.42], { intensity: 0.85, duration: 0.22, color: "#ffb070" });
@@ -187,6 +312,7 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       spawnScorePop(scoreDelta);
       playCue("sentry-defeat");
       sentryDefeatSeenFlag = true;
+      recordEventFeedback("defeat");
     },
     onEmberDeny(scenePoint) {
       denyFlashRemaining = 0.22;
@@ -206,24 +332,56 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       runtimeEffects.hitSpark([scenePoint[0], scenePoint[1], 0.34], { intensity: 0.7, duration: 0.18, color: "#ffb070" });
       playCue("ember-pickup");
     },
-    onDeath() {
+    onHazard(scenePoint) {
+      requestCameraImpact(0.86, 0.2);
+      runtimeEffects.impactFlash([scenePoint[0], scenePoint[1] + 0.12, 0.44], {
+        intensity: 0.9,
+        duration: 0.2,
+        color: "#f43f5e"
+      });
+      runtimeEffects.auraBurst([scenePoint[0], scenePoint[1] + 0.08, 0.42], {
+        intensity: 0.58,
+        duration: 0.24,
+        color: "#ff8a9b"
+      });
       playCue("death");
+      recordEventFeedback("hazard");
     },
-    onSummit() {
+    onRespawn(scenePoint) {
+      runtimeEffects.groundDust(scenePoint, { intensity: 0.52, duration: 0.32, color: "#8ef0ff" });
+      runtimeEffects.ringShockwave([scenePoint[0], scenePoint[1] + 0.12, 0.4], {
+        intensity: 0.68,
+        duration: 0.55,
+        color: "#8ef0ff"
+      });
+      playCue("respawn");
+      recordEventFeedback("respawn");
+    },
+    onSummit(scenePoint) {
+      requestCameraImpact(0.52, 0.3);
+      runtimeEffects.auraBurst([scenePoint[0], scenePoint[1] + 0.2, 0.42], {
+        intensity: 1,
+        duration: 0.72,
+        color: "#64e8c4"
+      });
+      runtimeEffects.ringShockwave([scenePoint[0], scenePoint[1] + 0.18, 0.4], {
+        intensity: 0.9,
+        duration: 0.75,
+        color: "#64e8c4"
+      });
+      runtimeEffects.ringShockwave([scenePoint[0], scenePoint[1] + 0.18, 0.39], {
+        intensity: 0.58,
+        duration: 1.05,
+        color: "#f7c948"
+      });
       playCue("summit");
+      recordEventFeedback("finish");
     },
-    applyCameraShake(cameraSpec) {
-      const [sx, sy] = cameraShakeOffset;
-      cameraSpec.offset = [
-        options.cameraBaseOffset[0] + sx,
-        options.cameraBaseOffset[1] + sy,
-        options.cameraBaseOffset[2]
-      ];
-      cameraSpec.targetOffset = [
-        options.cameraTargetOffset[0] + sx * 0.35,
-        options.cameraTargetOffset[1] + sy * 0.25,
-        options.cameraTargetOffset[2]
-      ];
+    applyCameraShake(cameraSpec, playerFacing) {
+      const frame = skylineCameraFrame(options.cameraTuning, playerFacing, cameraShakeOffset);
+      cameraSpec.offset = frame.offset;
+      cameraSpec.targetOffset = frame.targetOffset;
+      return frame;
     },
     telegraphActive() {
       if (sentryTelegraph.size === 0) return false;
@@ -262,11 +420,16 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
       cameraShakeOffset = cameraFrame.shake > 0
         ? [cameraFrame.shake * 0.04, -cameraFrame.shake * 0.02, 0]
         : [0, 0, 0];
+      maximumCameraShakeMagnitude = Math.max(
+        maximumCameraShakeMagnitude,
+        Math.hypot(cameraShakeOffset[0], cameraShakeOffset[1], cameraShakeOffset[2])
+      );
       runtimeEffects.update(step);
 
       for (const encounter of SKYLINE_SENTRY_ENCOUNTERS) {
         if (input.defeatedHazardIds.includes(encounter.id)) {
           input.sentryNodes[encounter.id]?.setVisible(false);
+          for (const accent of input.sentryAccentNodes[encounter.id] ?? []) accent.setVisible(false);
           continue;
         }
         const node = input.sentryNodes[encounter.id];
@@ -296,6 +459,15 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
           .setPosition(sceneX, sceneY, 0.42)
           .setRotation(0, faceYaw, 0)
           .setScale(telegraphPulse);
+        for (const accent of input.sentryAccentNodes[encounter.id] ?? []) {
+          accent
+            .setVisible(true)
+            .setPosition(sceneX, sceneY + 0.075, 0.395)
+            // Runtime transforms replace authored transforms. Preserve the compact
+            // crossed-warning silhouette instead of expanding each slash to a
+            // full-size foreground box when the sentry starts moving.
+            .setScale([0.12 * telegraphPulse, 0.018 * telegraphPulse, 0.022 * telegraphPulse]);
+        }
 
         if (telegraph > 0 && input.simTime - lastTelegraphEffectAt > 0.12) {
           runtimeEffects.ringShockwave([sceneX, sceneY + 0.18, 0.42], {
@@ -312,12 +484,6 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
         }
       }
 
-      for (const [pickupId, node] of Object.entries(input.emberPickupNodes)) {
-        const taken = input.collectedIds.some((id) => id === pickupId);
-        node.setVisible(!taken);
-        if (taken) node.setScale([...HIDDEN_SCALE]);
-      }
-
       if (input.firePressed && input.emberStock <= 0) {
         const [px, py] = input.sceneBinding.toScenePoint({ x: input.playerX, y: input.playerY });
         this.onEmberDeny([px, py, 0.42]);
@@ -331,7 +497,11 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
         }
         const [sx, sy] = input.sceneBinding.toScenePoint({ x: volley.x, y: volley.y });
         const scaleBoost = muzzleFlashRemaining > 0 && volley.slot === index ? 0.05 : 0;
-        node.setVisible(true).setPosition(sx, sy, 0.42).setScale([0.1 + scaleBoost, 0.1 + scaleBoost, 0.1 + scaleBoost]);
+        node.setVisible(true).setPosition(sx, sy, 0.42).setScale([
+          0.14 + scaleBoost,
+          0.045 + scaleBoost * 0.35,
+          0.045 + scaleBoost * 0.35
+        ]);
       }
 
       if (denyFlashRemaining > 0) input.scoreElement?.classList.add("ember-deny");

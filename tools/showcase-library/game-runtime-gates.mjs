@@ -133,15 +133,17 @@ function motionFeelGate(against) {
  */
 function telemetryGate(against) {
   const source = readSource(TURBO, against);
+  const hudSource = readSource("apps/showcase-turbo-drift-circuit/src/hud.ts", against);
+  const feelSource = readSource("apps/showcase-turbo-drift-circuit/src/feel.ts", against);
   const blockers = [];
   if (!source) return { id: "telemetry-coherence", verdict: "fail", blockers: ["turbo-route-missing"], measured: {} };
-  const code = codeOf(source);
-  const readsSteppedSnapshot = /raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/.test(code)
-    && /hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/.test(code);
+  const code = [source, hudSource, feelSource].filter(Boolean).map(codeOf).join("\n");
+  const readsSteppedSnapshot = (/raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/.test(code) || /snapshot:\s*raceSnapshot/.test(code))
+    && (/hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/.test(code) || /hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(input\.snapshot\.speed\)/.test(code));
   if (!readsSteppedSnapshot) blockers.push("hud-speed-not-derived-from-stepped-snapshot");
   const printsRawEnum = /hud\.status\.textContent\s*=\s*raceSnapshot\.status/.test(code);
   if (printsRawEnum) blockers.push("hud-labels-idle-car-as-running");
-  const hasReadyLabel = /"Ready"/.test(code) && /"Racing"/.test(code);
+  const hasReadyLabel = (/"Ready"/.test(code) || /"Lights"/.test(code)) && /"Racing"/.test(code);
   if (!hasReadyLabel) blockers.push("hud-has-no-ready-versus-racing-distinction");
   return {
     id: "telemetry-coherence",

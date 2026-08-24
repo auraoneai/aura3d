@@ -596,7 +596,7 @@ export class Renderer {
       const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
         shadowOptions,
         source,
-        items,
+        items: items.filter((item) => item.castShadow !== false),
         lights,
         ownedTargets,
         ownedShadowPasses,
@@ -737,7 +737,7 @@ export class Renderer {
       const rendererShadowMap = explicitShadowMap ?? this.executeRendererShadowMap({
         shadowOptions,
         source,
-        items,
+        items: items.filter((item) => item.castShadow !== false),
         lights,
         ownedTargets,
         ownedShadowPasses,
@@ -2289,7 +2289,8 @@ function applyRendererOwnedStaticBatching(source: RenderSource, items: readonly 
         material: item.material,
         modelMatrix: item.modelMatrix ?? identityMat4(),
         batchKey: staticBatchKey(item),
-        label: item.label
+        label: item.label,
+        castShadow: item.castShadow
       });
     } else {
       passthrough.push(item);
@@ -2316,7 +2317,7 @@ function isStaticBatchCandidate(item: RenderItem): item is RenderItem & { readon
 }
 
 function staticBatchKey(item: RenderItem & { readonly material: RenderMaterial }): string {
-  return `${resourceId(staticBatchGeometryIds, item.geometry)}:${resourceId(staticBatchMaterialIds, item.material)}`;
+  return `${resourceId(staticBatchGeometryIds, item.geometry)}:${resourceId(staticBatchMaterialIds, item.material)}:shadow-${item.castShadow !== false ? "on" : "off"}`;
 }
 
 function resourceId<T extends object>(ids: WeakMap<T, number>, resource: T): number {

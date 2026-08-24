@@ -1,15 +1,15 @@
 {
   "schema": "aura-clash-106-deployed-proof",
-  "generatedAt": "2026-07-31T16:53:51.779Z",
+  "generatedAt": "2026-08-23T13:44:34.374Z",
   "route": "/playable/",
   "source": "collect-launch-evidence-probes",
-  "ok": false,
+  "ok": true,
   "deployedEvidence": {
     "origin": "https://aura3d.auraone.ai",
     "canonicalBasePath": "/showcase/aura-clash",
     "appBasePath": "/apps/aura-clash-showcase",
-    "targetCount": 33,
-    "failedCount": 1,
+    "targetCount": 25,
+    "failedCount": 0,
     "kindStatus": {
       "route": {
         "ok": true,
@@ -22,9 +22,9 @@
         "failed": 0
       },
       "glb": {
-        "ok": false,
-        "total": 12,
-        "failed": 1
+        "ok": true,
+        "total": 4,
+        "failed": 0
       },
       "audio": {
         "ok": true,
@@ -37,6 +37,6 @@
     "id": "deployed-playable-playwright",
     "ok": true,
     "command": "npm run test:deployed-playable",
-    "durationMs": 4097
+    "durationMs": 4670
   }
 }

@@ -1,0 +1,648 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-23T23:45:43.877Z",
+  "appId": "showcase-bank-shot",
+  "route": "/apps/showcase-bank-shot/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "routeSourceSha256": "fc492c8d71d9e513f060c6a06b4d9f4911406072b79cfa1fa94f2af89771567d",
+  "renderer": {
+    "path": "createGameApp root safe API",
+    "mode": "production with safe-basic fallback",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.bankShotTable",
+      "hash": "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotCue",
+      "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall00",
+      "hash": "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4",
+      "quality": "release",
+      "role": "prop"
+    }
+  ],
+  "typedModelFamily": [
+    {
+      "typedRef": "assets.bankShotTable",
+      "hash": "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotCue",
+      "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall00",
+      "hash": "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall01",
+      "hash": "sha256-e0364deb31ba496456d342d72f0ca3b978c83d46715ebfc511e261c2aeb4c019",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall02",
+      "hash": "sha256-282df9e0b5690e1a25eaa157bc9ed06f19b80c4c1ee108f0e2c719305b2e17e9",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall03",
+      "hash": "sha256-42b14dd48487ebd6d7a06c521bdb3a6c96ac41d15e5327cf6e19bc18415ea103",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall04",
+      "hash": "sha256-d50d4099cac2ff32ac18306cc9f422728d64e405c1a60fd37454ce2b435b16e8",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall05",
+      "hash": "sha256-7d458809c6a76c37995696a698aadeab80806234d20c81426a9950fa1a789c9f",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall06",
+      "hash": "sha256-69110907c5309b40dab19daae85d001cadf165ac7f1657cc27b6512257401501",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall07",
+      "hash": "sha256-a451b5088c7cffcd42d72d81754f8935a4eb6159abbd96998c6391cc5df917ef",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall08",
+      "hash": "sha256-d52a8f8cc30060172be18ebe9b715eddd06c07e2c9a9693061c0105c6c60305a",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall09",
+      "hash": "sha256-d6aee2540e554956df6f06a92944c8dcf746f5ea473e0216737b9e46158cf8fa",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall10",
+      "hash": "sha256-ebdeb8bc907261007f55d8ae1f572f10cb62ef2bd664721717b6a0c90cd11af8",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall11",
+      "hash": "sha256-4db2efcc9de3c32125e912eeea4af27553a3566c70bed593a9ea06739fcb302c",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall12",
+      "hash": "sha256-da59c251c48ff1eccfa19758951c9cf64be6f1d12e7b68ea3564141bee6223b8",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall13",
+      "hash": "sha256-16b0f39ef1d84dec924f949795d5488ffc6650e2a9f1df966b8fda6f4589a77e",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall14",
+      "hash": "sha256-920a6eb321ee29cccec400e75e584959ec0e95b3d5ef49c7b18e41864ebbdcf4",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.bankShotBall15",
+      "hash": "sha256-40fd0d17fbe880ca3ad5d4d721c546575a4b7132acde5f59b8918a141caa16d0",
+      "quality": "release",
+      "role": "prop"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.bankShotAmbientHallSfx",
+      "hash": "sha256-dd9f1de814c6d842d872bb610bd5e7655239b659e8df37c4ea2132e5d38a7b97",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotBallHitSfx",
+      "hash": "sha256-97e8103a928276c3a0a8873edd49535dd783fdfcf3d94c0885d4dd4288374075",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotComboChimeSfx",
+      "hash": "sha256-42171c98cdfeee61de84772d0df370c103dafe954f9c7e6a7a0c9e4c3cd8cddd",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotCueStrikeSfx",
+      "hash": "sha256-458c80896e71175be8293b9a838fbc0929870f03b4d8ff5466935877f9fa94fe",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotCushionHitSfx",
+      "hash": "sha256-67b035c7c85436a6a150c18ea2bbcdfa13dab71f2d6f3fcb93ebd1fb6ca88d2a",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotEightWinSfx",
+      "hash": "sha256-dae450ea83d7fd03c501e7f40c7f1ec46ca7989caf1f96aeea60036cd389b417",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotFoulWhistleSfx",
+      "hash": "sha256-631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotPocketDropSfx",
+      "hash": "sha256-0ea6570ce36826ab8d0c24fd723869f818b2d0c5b61a2a3aa73fe41a14eca2f0",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotRackClearSfx",
+      "hash": "sha256-b2bc8c1c33708ae7fc0fd73f1e7de08a2ebcb5dbcc0927d5f08f2738ceaffe6d",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.bankShotRackFailSfx",
+      "hash": "sha256-e9275302dfc891fc3484b83e237f569421aea1eafce02ad1f84d0bb1a47ca47e",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 6,
+    "primitiveBudget": 18,
+    "role": "pool-hall architecture, rail sights, chalk, aim/bank guides, contact marker, and lighting only",
+    "status": "no-primitive-primary-subjects"
+  },
+  "gameplay": {
+    "racks": 3,
+    "rackClocksMs": [
+      240000,
+      210000,
+      180000
+    ],
+    "publicRapierBodies": 34,
+    "pocketSensors": 6,
+    "controls": [
+      "aim",
+      "top/draw authored contact nudge",
+      "charge/strike",
+      "ball-in-hand placement",
+      "pause",
+      "full reset"
+    ],
+    "keyboardAndTouch": true,
+    "settledStateLock": true,
+    "oncePerEntryPocketTruth": true,
+    "deterministicOutcomes": [
+      "legal pot",
+      "scratch",
+      "no-rail",
+      "wrong-ball-first",
+      "three fouls",
+      "early eight",
+      "legal eight",
+      "three-rack session clear"
+    ],
+    "reducedMotionPreservesAimAndContactTruth": true
+  },
+  "performance": {
+    "schema": "aura3d.bank-shot.performance/1.0",
+    "generatedAt": "2026-08-23T23:45:32.164Z",
+    "producer": "apps/showcase-bank-shot/scripts/write-performance-report.ts",
+    "producerSourceSha256": "5d560bf31a624d32d27998c91b71061c567ead40c896365d1fa5e29fb5327349",
+    "routeSourceFiles": [
+      "apps/showcase-bank-shot/src/billiards-audio.ts",
+      "apps/showcase-bank-shot/src/cue.ts",
+      "apps/showcase-bank-shot/src/environment.ts",
+      "apps/showcase-bank-shot/src/main.ts",
+      "apps/showcase-bank-shot/src/racks.ts",
+      "apps/showcase-bank-shot/src/rules.ts",
+      "apps/showcase-bank-shot/src/styles.css",
+      "apps/showcase-bank-shot/src/table.ts"
+    ],
+    "routeSourceSha256": "fc492c8d71d9e513f060c6a06b4d9f4911406072b79cfa1fa94f2af89771567d",
+    "scope": "Route-local fixed-step public Rapier billiards CPU timing plus browser-observed root createGameApp draw calls. Host scheduling wait and GPU frame-time parity are not claimed.",
+    "samples": 12000,
+    "fixedStepSeconds": 0.016666666666666666,
+    "budgets": {
+      "simulationCpuP95Ms": 5.5,
+      "drawCalls": 220,
+      "physicsBodies": 40
+    },
+    "observed": {
+      "simulationCpuP95Ms": 5.061,
+      "deterministicPoseSamples": 20,
+      "drawCalls": 162,
+      "renderSize": [
+        912,
+        800
+      ],
+      "physicsBodies": 34,
+      "liveBalls": 15,
+      "pocketSensors": 6
+    },
+    "pass": true
+  },
+  "deploy": {
+    "schema": "aura3d.bank-shot.deploy/1.0",
+    "generatedAt": "2026-08-23T23:45:42.473Z",
+    "producer": "apps/showcase-bank-shot/scripts/write-deploy-report.mjs",
+    "producerSourceSha256": "629c54eb86371dd2ae66da8205bb91069a17fdeb8e349b6e22ccc4183541404f",
+    "cli": "packages/aura3d-cli/dist/cli.js",
+    "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+    "distTreeSha256": "c8e5dd7b92cc0fff9705e7b89263dc3d928f91112465076366e0b27962aa95df",
+    "sourceTreeSha256": "935da1b909d372a84d659427986191534f4e40618770d6a843b834d0559ed407",
+    "checks": {
+      "strictModels": {
+        "command": "check-deploy --release --source apps/showcase-bank-shot/src --asset <table, cue, and all 16 balls>",
+        "ok": true,
+        "assetCount": 18,
+        "assets": [
+          {
+            "id": "bankShotBall00",
+            "hash": "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall01",
+            "hash": "sha256-e0364deb31ba496456d342d72f0ca3b978c83d46715ebfc511e261c2aeb4c019",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall02",
+            "hash": "sha256-282df9e0b5690e1a25eaa157bc9ed06f19b80c4c1ee108f0e2c719305b2e17e9",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall03",
+            "hash": "sha256-42b14dd48487ebd6d7a06c521bdb3a6c96ac41d15e5327cf6e19bc18415ea103",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall04",
+            "hash": "sha256-d50d4099cac2ff32ac18306cc9f422728d64e405c1a60fd37454ce2b435b16e8",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall05",
+            "hash": "sha256-7d458809c6a76c37995696a698aadeab80806234d20c81426a9950fa1a789c9f",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall06",
+            "hash": "sha256-69110907c5309b40dab19daae85d001cadf165ac7f1657cc27b6512257401501",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall07",
+            "hash": "sha256-a451b5088c7cffcd42d72d81754f8935a4eb6159abbd96998c6391cc5df917ef",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall08",
+            "hash": "sha256-d52a8f8cc30060172be18ebe9b715eddd06c07e2c9a9693061c0105c6c60305a",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall09",
+            "hash": "sha256-d6aee2540e554956df6f06a92944c8dcf746f5ea473e0216737b9e46158cf8fa",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall10",
+            "hash": "sha256-ebdeb8bc907261007f55d8ae1f572f10cb62ef2bd664721717b6a0c90cd11af8",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall11",
+            "hash": "sha256-4db2efcc9de3c32125e912eeea4af27553a3566c70bed593a9ea06739fcb302c",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall12",
+            "hash": "sha256-da59c251c48ff1eccfa19758951c9cf64be6f1d12e7b68ea3564141bee6223b8",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall13",
+            "hash": "sha256-16b0f39ef1d84dec924f949795d5488ffc6650e2a9f1df966b8fda6f4589a77e",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall14",
+            "hash": "sha256-920a6eb321ee29cccec400e75e584959ec0e95b3d5ef49c7b18e41864ebbdcf4",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotBall15",
+            "hash": "sha256-40fd0d17fbe880ca3ad5d4d721c546575a4b7132acde5f59b8918a141caa16d0",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotCue",
+            "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "bankShotTable",
+            "hash": "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2",
+            "quality": "release",
+            "role": "prop"
+          }
+        ],
+        "warnings": [],
+        "failures": []
+      },
+      "strictDistAndSource": {
+        "command": "check-deploy --release --source apps/showcase-bank-shot/src --no-assets",
+        "ok": true,
+        "warnings": [],
+        "failures": []
+      }
+    },
+    "audioBoundary": "The ten synthesized WAV cues are independently validated as current candidate-quality typed CC0 assets by write-route-health.mjs; model-oriented release bounds validation is intentionally not applied to audio.",
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "root-safe prototype",
+    "allowed": [
+      "typed original billiards asset family",
+      "public Rapier sphere/cushion/pocket-sensor path",
+      "route-local deterministic three-rack rules",
+      "bounded first-contact prediction",
+      "authored spin velocity nudge"
+    ],
+    "notAllowed": [
+      "reusable cue-sports or billiards kit",
+      "angular ball simulation",
+      "multi-contact prediction certainty",
+      "production-runtime-only rendering claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_BANK_SHOT__",
+    "detailedGlobal": "window.__BANK_SHOT_EVIDENCE__",
+    "sourceReview": "apps/showcase-bank-shot/src/main.ts",
+    "exactArtifacts": [
+      {
+        "path": "tests/reports/bank-shot/first-load-desktop.png",
+        "sha256": "25d44af8ec07a6f3c5708bb0f2706cee2b0ca9a964963a8fd17725aa29a6c051"
+      },
+      {
+        "path": "tests/reports/bank-shot/aim-charge-desktop.png",
+        "sha256": "afc7a7eca3847b60e073e951cf3516b756cde721df69e325023e24d9cacd3dfa"
+      },
+      {
+        "path": "tests/reports/bank-shot/cue-contact-desktop.png",
+        "sha256": "d9f1a941af8979819e2159fcbe77460afdc34dbeec250242dbece406e04546cb"
+      },
+      {
+        "path": "tests/reports/bank-shot/break-desktop.png",
+        "sha256": "c6c0c690041eda13dd914697f1f633b13704fdbc074ae158f81ce106cf58aeb5"
+      },
+      {
+        "path": "tests/reports/bank-shot/mid-rack-desktop.png",
+        "sha256": "52cd6d3c7f604dbd32a96c245d73dd94121c6a861acf0deddf64a2d8e4147362"
+      },
+      {
+        "path": "tests/reports/bank-shot/pocket-desktop.png",
+        "sha256": "9335cff25ea3e45ca8944748c77b12fd1a1f426b448f8ff019597bb3fc739195"
+      },
+      {
+        "path": "tests/reports/bank-shot/foul-desktop.png",
+        "sha256": "2e9f094eaac7065f49d78c36d47b57fb0efa8099ed332413f8f1a44aa37a7023"
+      },
+      {
+        "path": "tests/reports/bank-shot/rack-fail-desktop.png",
+        "sha256": "7df9b1501fce955c2990759715a035ee38b306fff48444209a6eec5540a07858"
+      },
+      {
+        "path": "tests/reports/bank-shot/eight-ball-finish-desktop.png",
+        "sha256": "57c9213932bb65ed1e9f412f23ccbdeb18f2647048181484bfae5c6d4872d6f4"
+      },
+      {
+        "path": "tests/reports/bank-shot/first-load-mobile.png",
+        "sha256": "68862bab0d1fccf01990f1827a7dba0e5680cfb4ecbb9a34d1add054a19a48e6"
+      },
+      {
+        "path": "tests/reports/bank-shot/mobile-active.png",
+        "sha256": "9403f7086a5cb3aa082e1c0fea1fdf5964231800bd6174a91e42e507f33711be"
+      },
+      {
+        "path": "tests/reports/bank-shot/reduced-motion-aim.png",
+        "sha256": "043ab3bdaeb71298d98ab105b8ae9669162746592263e8871ada48dd86c59b15"
+      },
+      {
+        "path": "tests/reports/bank-shot/visual.json",
+        "sha256": "df36a61970c8ef7d2f0fff6da740d837a4292db0bdd094090bf41623ce6770e1"
+      }
+    ],
+    "browserReceipts": [
+      "tests/reports/bank-shot/browser-evidence.json",
+      "tests/reports/bank-shot/playable/browser-evidence.json"
+    ],
+    "assetProbes": [
+      {
+        "asset": "bankShotTable",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotTable.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotTable.png",
+        "assetHash": "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2"
+      },
+      {
+        "asset": "bankShotCue",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotCue.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotCue.png",
+        "assetHash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b"
+      },
+      {
+        "asset": "bankShotBall00",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall00.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall00.png",
+        "assetHash": "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4"
+      },
+      {
+        "asset": "bankShotBall01",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall01.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall01.png",
+        "assetHash": "sha256-e0364deb31ba496456d342d72f0ca3b978c83d46715ebfc511e261c2aeb4c019"
+      },
+      {
+        "asset": "bankShotBall02",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall02.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall02.png",
+        "assetHash": "sha256-282df9e0b5690e1a25eaa157bc9ed06f19b80c4c1ee108f0e2c719305b2e17e9"
+      },
+      {
+        "asset": "bankShotBall03",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall03.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall03.png",
+        "assetHash": "sha256-42b14dd48487ebd6d7a06c521bdb3a6c96ac41d15e5327cf6e19bc18415ea103"
+      },
+      {
+        "asset": "bankShotBall04",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall04.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall04.png",
+        "assetHash": "sha256-d50d4099cac2ff32ac18306cc9f422728d64e405c1a60fd37454ce2b435b16e8"
+      },
+      {
+        "asset": "bankShotBall05",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall05.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall05.png",
+        "assetHash": "sha256-7d458809c6a76c37995696a698aadeab80806234d20c81426a9950fa1a789c9f"
+      },
+      {
+        "asset": "bankShotBall06",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall06.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall06.png",
+        "assetHash": "sha256-69110907c5309b40dab19daae85d001cadf165ac7f1657cc27b6512257401501"
+      },
+      {
+        "asset": "bankShotBall07",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall07.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall07.png",
+        "assetHash": "sha256-a451b5088c7cffcd42d72d81754f8935a4eb6159abbd96998c6391cc5df917ef"
+      },
+      {
+        "asset": "bankShotBall08",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall08.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall08.png",
+        "assetHash": "sha256-d52a8f8cc30060172be18ebe9b715eddd06c07e2c9a9693061c0105c6c60305a"
+      },
+      {
+        "asset": "bankShotBall09",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall09.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall09.png",
+        "assetHash": "sha256-d6aee2540e554956df6f06a92944c8dcf746f5ea473e0216737b9e46158cf8fa"
+      },
+      {
+        "asset": "bankShotBall10",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall10.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall10.png",
+        "assetHash": "sha256-ebdeb8bc907261007f55d8ae1f572f10cb62ef2bd664721717b6a0c90cd11af8"
+      },
+      {
+        "asset": "bankShotBall11",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall11.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall11.png",
+        "assetHash": "sha256-4db2efcc9de3c32125e912eeea4af27553a3566c70bed593a9ea06739fcb302c"
+      },
+      {
+        "asset": "bankShotBall12",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall12.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall12.png",
+        "assetHash": "sha256-da59c251c48ff1eccfa19758951c9cf64be6f1d12e7b68ea3564141bee6223b8"
+      },
+      {
+        "asset": "bankShotBall13",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall13.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall13.png",
+        "assetHash": "sha256-16b0f39ef1d84dec924f949795d5488ffc6650e2a9f1df966b8fda6f4589a77e"
+      },
+      {
+        "asset": "bankShotBall14",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall14.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall14.png",
+        "assetHash": "sha256-920a6eb321ee29cccec400e75e584959ec0e95b3d5ef49c7b18e41864ebbdcf4"
+      },
+      {
+        "asset": "bankShotBall15",
+        "metadata": "tests/reports/showcase-release-asset-probes/bankShotBall15.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/bankShotBall15.png",
+        "assetHash": "sha256-40fd0d17fbe880ca3ad5d4d721c546575a4b7132acde5f59b8918a141caa16d0"
+      }
+    ],
+    "performance": "apps/showcase-bank-shot/performance-report.json",
+    "deploy": "apps/showcase-bank-shot/deploy-report.json",
+    "routePrimary": "tests/reports/showcase-route-primary-probes/showcase-bank-shot.json",
+    "browserSpecs": [
+      "tests/browser/bank-shot-playable.spec.ts",
+      "tests/browser/bank-shot-shot-visual.spec.ts"
+    ],
+    "unitSpecs": [
+      "tests/unit/apps/bank-shot-determinism.test.ts",
+      "tests/unit/apps/bank-shot-rules.test.ts"
+    ],
+    "deployCommands": [
+      "check-deploy --release --source apps/showcase-bank-shot/src --asset <18 model assets>",
+      "check-deploy --release --source apps/showcase-bank-shot/src --no-assets"
+    ]
+  }
+}

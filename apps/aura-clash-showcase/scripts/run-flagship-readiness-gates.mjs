@@ -62,7 +62,13 @@ const failed = results.filter((result) => !result.ok);
 const report = {
   schema: "aura-clash-flagship-gates",
   ok: failed.length === 0,
-  status: failed.length === 0 ? "flagship-ready" : "flagship-blocked",
+  // Legacy filenames/scripts remain stable, but this is a machine-gate report
+  // for a production-runtime development showcase, never promotion approval.
+  status: failed.length === 0 ? "development-showcase-machine-passed" : "development-showcase-machine-blocked",
+  promotion: {
+    approved: false,
+    humanApprovalRequired: true
+  },
   startedAt,
   generatedAt: new Date().toISOString(),
   appRoot,

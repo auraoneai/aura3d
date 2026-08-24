@@ -59,7 +59,27 @@ import {
 } from "./arena/AuraClashArenaStage";
 import { createArenaTweaksEvidence, collectArenaTweaksState, type AuraClashArenaTweaksState } from "./arena/ArenaTweaksPanel";
 import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
+import { createCrowdInstances } from "./arena/CrowdInstances";
+import { createRoundCeremony, roundCeremonyTextForCallout, roundCeremonyTextForRound, type RoundCeremonyText } from "./arena/RoundCeremony";
+import { createHangingNeonSigns, isSpringJointSignSettled } from "./arena/SpringJointSigns";
 import { assertAuraClashFighterControllerBoundary } from "./combat/AuraClashFighterController";
+import {
+  createAuraClashClipEventBridge,
+  type AuraClashClipEventBridge,
+  type AuraClashFighterId,
+  type AuraClashPresentationEventInvocation
+} from "./combat/clipEventBridge";
+import {
+  DEFAULT_CLASH_AI_ROLE,
+  clashAiRolePresets,
+  decideClashAiRole,
+  type ClashAiRolePreset
+} from "./combat/clashAiRoles";
+import {
+  createExchangeReplayRecorder,
+  stepScrubOffset,
+  type ExchangeReplayRecorder
+} from "./training/ExchangeReplay";
 import {
   CLASH_INPUT_BUFFER_LIFETIME_MS,
   clashHitStopSeconds,
@@ -80,7 +100,13 @@ import {
 } from "../fighters/ComboSystem";
 import { defaultGuardBreakRules } from "../fighters/GuardBreakSystem";
 import { defaultKnockdownRules } from "../fighters/KnockdownRecovery";
-import { auraClashAudioAssets, auraClashAudioManifest } from "./audio/auraClashAudioManifest";
+import {
+  auraClashAudioAssets,
+  auraClashAudioBusLevels,
+  auraClashAudioKoDuck,
+  auraClashAudioManifest
+} from "./audio/auraClashAudioManifest";
+import { createFightHudReplayControlsModel, type FightHudReplayControlsModel } from "../ui/FightHud";
 import type {
   AuraClashArenaProof,
   AuraClashAudioProof as AudioProof,
@@ -109,9 +135,13 @@ type AuraClashWindow = Window & {
     setPlayerHealth(health: number): void;
     setRivalHealth(health: number): void;
     setPlayerMeter(meter: number): void;
+    setRivalGuardMeter(meter: number): void;
     setPositions(playerX: number, rivalX: number): void;
     setRivalGuardSuppressed(suppressed: boolean): void;
+    setRivalGuardForced(forced: boolean): void;
     pauseOnNextHit(): void;
+    pauseOnNextWhiff(): void;
+    pauseForCapture(): void;
     queuePlayerAttack(move: MoveId): void;
   };
 };
@@ -143,6 +173,8 @@ interface FighterState {
   guard: boolean;
     hitstun: number;
     recovery: number;
+    /** Authored late-attack pose held during a whiff recovery; null for hit recovery. */
+    recoveryClip: ClipName | null;
     /** Visual-only hit-stop freeze remaining (seconds). Does not touch the combat sim / replay. */
     hitStopRemaining: number;
     /** One-shot impact impulse (land/hit) consumed by the secondary-motion vertical squash spring. */
@@ -211,11 +243,15 @@ interface Spark {
   age: number;
   life: number;
   facing: 1 | -1;
-  kind: MoveId | "block";
+  kind: MoveId | "block" | "guard-break";
 }
 
 interface AudioRuntime {
   cue(name: string): void;
+  /** AC-A6: drop the sfx bus for the round-over KO duck window. */
+  beginKoDuck(): void;
+  /** AC-A6: advance duck restore timing; call once per frame. */
+  update(dt: number): void;
   proof(): AudioProof;
 }
 
@@ -489,6 +525,8 @@ export function mountAuraClashArenaApp(): void {
         </div>
         <div id="toast" class="aca-toast">Loading Aura Clash Arena production GLB fighter route.</div>
         <div id="combo-flash" class="aca-combo" aria-live="polite"></div>
+        <!-- AC-A2: training-only exchange-replay strip. Hidden outside debug/training mode. -->
+        <div id="replay-scrub" class="aca-replay-scrub" aria-live="polite" hidden></div>
       </section>
 
       <section class="aca-controls" aria-label="Controls">
@@ -929,6 +967,114 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const sparks: Spark[] = [];
 
   /*
+   * AC-A1 — clip-event presentation bridges.
+   *
+   * One bridge per fighter routes authored `sfx` / `vfx` / `camera.impulse` metadata frames through
+   * an `onEvent` subscription. Handlers here are strictly presentational: cues, sparks, and a
+   * decaying camera-impulse accumulator. Combat state is never read or written.
+   */
+  const clipBridges: Record<AuraClashFighterId, AuraClashClipEventBridge> = {
+    player: createAuraClashClipEventBridge(),
+    rival: createAuraClashClipEventBridge()
+  };
+  let clipImpulse = 0;
+  const presentationEventCounts: Record<string, number> = {};
+  const handlePresentationEvent = (event: AuraClashPresentationEventInvocation): void => {
+    presentationEventCounts[event.name] = (presentationEventCounts[event.name] ?? 0) + 1;
+    if (event.name === "sfx") {
+      audio.cue(String(event.payload.cue ?? "swing"));
+      recordClipEventFired("sfx");
+    } else if (event.name === "vfx") {
+      const fighter = event.fighterId === "rival" ? rivalRuntime : playerRuntime;
+      // The metadata timestamp is authored, but contact is still required. A whiff retains the
+      // swing cue and recovery pose while emitting no fake impact spark.
+      if (fighter.state.attack?.hit) {
+        sparks.push({
+          x: fighter.state.x + fighter.state.facing * 0.5,
+          y: 0.95,
+          z: stage.z,
+          age: 0,
+          life: 0.18,
+          facing: fighter.state.facing,
+          kind: event.moveId
+        });
+      }
+      recordClipEventFired("vfx");
+    } else if (event.name === "camera.impulse") {
+      const strength = Number(event.payload.strength ?? 0);
+      const fighter = event.fighterId === "rival" ? rivalRuntime : playerRuntime;
+      if (fighter.state.attack?.hit && !reducedMotion && Number.isFinite(strength)) {
+        clipImpulse = Math.min(1.4, clipImpulse + strength);
+      }
+      recordClipEventFired("camera.impulse");
+    }
+  };
+  const unsubscribePresentationEvents = [
+    clipBridges.player.onEvent(handlePresentationEvent),
+    clipBridges.rival.onEvent(handlePresentationEvent)
+  ];
+  // Attack-instance identity per fighter, so a fresh attack restarts its bridge clocks.
+  const presentationAttacks = new Map<FighterId, unknown>();
+  function advanceFighterPresentation(fighter: RuntimeFighter): void {
+    const attack = fighter.state.attack;
+    const id = fighter.state.id;
+    if (!attack) {
+      if (presentationAttacks.delete(id)) clipBridges[id].resetFighter(id);
+      return;
+    }
+    // A different attack instance for the same fighter restarts its metadata clocks.
+    if (presentationAttacks.get(id) !== attack) {
+      presentationAttacks.set(id, attack);
+      clipBridges[id].resetFighter(id);
+    }
+    clipBridges[id].advance(id, attack.id as MoveId, Math.max(0, attack.elapsed));
+  }
+
+  /*
+   * AC-A3 / AC-A5 — instanced rooftop crowd pool and spring-joint neon signs.
+   *
+   * Both are pure set dressing outside the combat lane. `crowdCheer` rises on heavy/special
+   * connects and decays; `slamImpulse` carries one frame of slam energy into the sign springs,
+   * signed toward the side the defender was on. Reduced motion freezes both (no bob, no swing).
+   */
+  const crowdPool = createCrowdInstances();
+  let crowdCheer = 0;
+  const hangingSigns = createHangingNeonSigns();
+  let slamImpulse = 0;
+
+  /* AC-A4 — round/KO text3D ceremony state. */
+  const ceremony = createRoundCeremony();
+  const ROUND_INTRO_SECONDS = 1.35;
+  let ceremonyText: RoundCeremonyText | null = null;
+  let ceremonyShowSeconds = 0;
+  let ceremonyIntroRemaining = 0;
+
+  /* AC-A2 — training-only exchange replay (last N seconds, scrubbed with [ / ]). */
+  const trainingMode = readPlayableHudMode(window.location).training;
+  const exchangeReplay: ExchangeReplayRecorder = createExchangeReplayRecorder({});
+  let scrubOffsetSeconds = 0;
+  if (trainingMode) {
+    // Scrub keys are installed only on training/debug routes; normal play never binds them.
+    window.addEventListener(
+      "keydown",
+      (event: KeyboardEvent) => {
+        if (event.code === "BracketLeft") {
+          event.preventDefault();
+          scrubOffsetSeconds = stepScrubOffset(scrubOffsetSeconds, -1, exchangeReplay.bufferedSeconds());
+        } else if (event.code === "BracketRight") {
+          event.preventDefault();
+          scrubOffsetSeconds = stepScrubOffset(scrubOffsetSeconds, 1, exchangeReplay.bufferedSeconds());
+        }
+      },
+      { capture: true }
+    );
+  }
+
+  /* AC-A7 — the named createCombatAi preset driving the rival this session. */
+  let activeAiPreset: ClashAiRolePreset = clashAiRolePresets[DEFAULT_CLASH_AI_ROLE];
+  let lastAiDecisionReason = "initial";
+
+  /*
    * Camera impact and round-flow framing, driven by real combat state.
    *
    * `cameraFrameBounds` was a fixed literal, so the camera never responded to anything the fight did:
@@ -942,21 +1088,31 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * animation clock, so a shake cannot exist without a hit that actually landed.
    */
   const CAMERA_BASE_BOUNDS = { min: [-2.65, -0.08, -0.82] as const, max: [2.65, 2.15, 0.82] as const };
+  const PLAYER_HALF_WIDTH = (assets.auraClashPlayerRig.bounds?.[0] ?? 1.669) * stage.fighterScale * 0.5;
+  const RIVAL_HALF_WIDTH = (assets.auraClashRivalRig.bounds?.[0] ?? 1.799) * stage.fighterScale * 0.5;
+  const PLAYER_HEIGHT = (assets.auraClashPlayerRig.bounds?.[1] ?? 1.788) * stage.fighterScale;
+  const RIVAL_HEIGHT = (assets.auraClashRivalRig.bounds?.[1] ?? 1.869) * stage.fighterScale;
+  const FIGHTER_FRAME_MARGIN = 0.14;
   function restingCameraBounds(): { min: readonly [number, number, number]; max: readonly [number, number, number] } {
-    // Keep an airborne fighter's entire silhouette in frame. The old fixed 2.05 top bound cropped
-    // Mara at the apex even though the actor itself was animating correctly.
-    const airborneHeadroom = Math.max(0, playerState.y, rivalState.y) * 0.9;
+    // Expand from the authored poster frame only when the live fighter envelopes need it. This
+    // retains the close neutral composition while guaranteeing full-body margins at stage edges,
+    // jump apex, mobile tracking, and every later punch-in/round-over transform.
+    // Divide the horizontal envelope by the maximum 9% punch-in scale so the
+    // tightest combat frame still retains the same full-body safety margin.
+    const left = (Math.min(playerState.x - PLAYER_HALF_WIDTH, rivalState.x - RIVAL_HALF_WIDTH) - FIGHTER_FRAME_MARGIN) / 0.91;
+    const right = (Math.max(playerState.x + PLAYER_HALF_WIDTH, rivalState.x + RIVAL_HALF_WIDTH) + FIGHTER_FRAME_MARGIN) / 0.91;
+    const top = (Math.max(playerState.y + PLAYER_HEIGHT, rivalState.y + RIVAL_HEIGHT) + FIGHTER_FRAME_MARGIN) / 0.91;
     if (arenaCanvas.clientWidth > 600) {
       return {
-        min: CAMERA_BASE_BOUNDS.min,
-        max: [CAMERA_BASE_BOUNDS.max[0], CAMERA_BASE_BOUNDS.max[1] + airborneHeadroom, CAMERA_BASE_BOUNDS.max[2]]
+        min: [Math.min(CAMERA_BASE_BOUNDS.min[0], left), CAMERA_BASE_BOUNDS.min[1], CAMERA_BASE_BOUNDS.min[2]],
+        max: [Math.max(CAMERA_BASE_BOUNDS.max[0], right), Math.max(CAMERA_BASE_BOUNDS.max[1], top), CAMERA_BASE_BOUNDS.max[2]]
       };
     }
     const center = clamp((playerState.x + rivalState.x) * 0.5, -0.9, 0.9);
     const halfWidth = clamp(Math.abs(rivalState.x - playerState.x) * 0.5 + 0.72, 1.72, 2.75);
     return {
-      min: [center - halfWidth, -0.08, -0.82],
-      max: [center + halfWidth, 2.08 + airborneHeadroom, 0.82]
+      min: [Math.min(center - halfWidth, left), -0.08, -0.82],
+      max: [Math.max(center + halfWidth, right), Math.max(2.08, top), 0.82]
     };
   }
   /** Peak hit-stop across both fighters; this is the impulse the camera responds to. */
@@ -970,6 +1126,18 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const impact = currentImpactStrength();
     const frameWidthUnits = Number((bounds.max[0] - bounds.min[0]).toFixed(4));
     const restingFrameWidthUnits = Number((restingBounds.max[0] - restingBounds.min[0]).toFixed(4));
+    const margins = [
+      playerState.x - PLAYER_HALF_WIDTH - bounds.min[0],
+      bounds.max[0] - (playerState.x + PLAYER_HALF_WIDTH),
+      rivalState.x - RIVAL_HALF_WIDTH - bounds.min[0],
+      bounds.max[0] - (rivalState.x + RIVAL_HALF_WIDTH),
+      playerState.y - bounds.min[1],
+      bounds.max[1] - (playerState.y + PLAYER_HEIGHT),
+      rivalState.y - bounds.min[1],
+      bounds.max[1] - (rivalState.y + RIVAL_HEIGHT)
+    ];
+    const playerInFrame = margins[0]! >= 0 && margins[1]! >= 0 && margins[4]! >= 0 && margins[5]! >= 0;
+    const rivalInFrame = margins[2]! >= 0 && margins[3]! >= 0 && margins[6]! >= 0 && margins[7]! >= 0;
     return {
       impactStrength: Number(impact.toFixed(4)),
       punchIn: Number((reducedMotion ? 0 : clamp(impact / 0.13, 0, 1)).toFixed(4)),
@@ -977,7 +1145,15 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       frameWidthUnits,
       restingFrameWidthUnits,
       respondingToCombat: !reducedMotion && Math.abs(frameWidthUnits - restingFrameWidthUnits) > 1e-4,
-      settled: !roundOver || impact === 0
+      settled: !roundOver || impact === 0,
+      frameBounds: { min: bounds.min, max: bounds.max },
+      fighterFraming: {
+        playerFullBodyInFrame: playerInFrame,
+        rivalFullBodyInFrame: rivalInFrame,
+        minimumMarginUnits: Number(Math.min(...margins).toFixed(4)),
+        groundLineMarginUnits: Number(Math.min(playerState.y - bounds.min[1], rivalState.y - bounds.min[1]).toFixed(4)),
+        stableGroundLine: Math.abs(bounds.min[1] - CAMERA_BASE_BOUNDS.min[1]) < 0.05
+      }
     };
   }
   /**
@@ -998,9 +1174,16 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     // Reduced motion disables the camera shake/punch (Phase 5 shared gate). The frame stays at the
     // resting volume so a reduced-motion player gets no jitter or zoom from combat.
     const punch = reducedMotion ? 0 : punchSource;
+    /*
+     * AC-A1: authored `camera.impulse` clip events only ever modulate the jitter *amplitude while a
+     * real hit-stop is decaying* — they can never create camera response at rest, so an idle round
+     * still reports `respondingToCombat: false` and every responding frame stays backed by
+     * simulation-owned hit-stop (camera-combat-feedback.spec asserts both).
+     */
+    const clipImpulseBoost = 1 + 0.4 * Math.min(1.4, clipImpulse);
     // Deterministic jitter from the frame counter, scaled by the decaying impulse, so it settles.
-    const jitterX = roundOver || reducedMotion ? 0 : Math.sin(frame * 2.7) * 0.045 * punch;
-    const jitterY = roundOver || reducedMotion ? 0 : Math.cos(frame * 3.1) * 0.032 * punch;
+    const jitterX = roundOver || reducedMotion ? 0 : Math.sin(frame * 2.7) * 0.045 * punch * clipImpulseBoost;
+    const jitterY = roundOver || reducedMotion ? 0 : Math.cos(frame * 3.1) * 0.032 * punch * clipImpulseBoost;
     // Punch-in tightens by up to 9%; the KO frame widens by 6% and lifts the top of frame.
     const tighten = punch * 0.09;
     const koWiden = roundOver ? 0.06 : 0;
@@ -1013,6 +1196,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   }
   let paused = false;
   let pauseOnNextHit = false;
+  let pauseOnNextWhiff = false;
   let frame = 0;
   let totalHits = 0;
   let lastHitFrame = 0;
@@ -1023,6 +1207,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let postResetInputLock = 0;
   let lastInput = "none";
   let callout = "FIGHT";
+  let calloutHoldSeconds = 0;
+  let lastCombatPresentationOutcome: NonNullable<AuraClashArenaProof["presentation"]>["lastOutcome"] = "neutral";
   let toast = "Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.";
   let playerScore = 0;
   let rivalScore = 0;
@@ -1030,10 +1216,34 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
   // Test-driver only; never set during normal play, so the shipped AI still guards and attacks.
   let rivalPassive = false;
+  let rivalForceGuard = false;
+  let rivalForcedGuardDepleted = false;
   let lastRivalAiRole: RivalAiRole = "neutral";
   let diagnostics: RenderDeviceDiagnostics = renderer.getDiagnostics();
   let performanceProof: PerformanceProof = { frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls, budgetOk: true };
   let combatSnapshot = combatWorld.snapshot();
+  const lowHealthTensionActive = (): boolean => {
+    const lowestLivingHealth = Math.min(
+      playerState.health > 0 ? playerState.health : START_HEALTH,
+      rivalState.health > 0 ? rivalState.health : START_HEALTH
+    );
+    return !roundOver && lowestLivingHealth <= START_HEALTH * 0.25;
+  };
+  const publishPlayerWhiff = (move: MoveId | null): void => {
+    if (!move || roundOver) return;
+    callout = "WHIFF";
+    calloutHoldSeconds = 0.8;
+    toast = `${playerState.name}'s ${move} misses. Recover before the punish.`;
+    lastCombatPresentationOutcome = "whiff";
+    // A miss has no contact-owned picture. Remove transient impact shards and authored impulse
+    // accumulated during the swing so the recovery pose, not a fake collision, is what reads.
+    sparks.length = 0;
+    clipImpulse = 0;
+    if (pauseOnNextWhiff) {
+      pauseOnNextWhiff = false;
+      paused = true;
+    }
+  };
 
   // Arena tweaks are read from the DOM. Sampling them per call cost multiple
   // layout-touching queries every frame (collectRenderItems plus the
@@ -1062,6 +1272,16 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           ? arenaBackdropRenderItems
           : []),
         ...renderedStage.collect(tweaks, frame),
+        // AC-A3: one instanced crowd pool (a single draw call regardless of fan count).
+        ...crowdPool.collect({
+          elapsedSeconds: frame / 60,
+          cheer: lowHealthTensionActive() ? Math.min(crowdCheer, 0.12) : crowdCheer,
+          reducedMotion: reducedMotion || lowHealthTensionActive()
+        }),
+        // AC-A5: spring-joint neon signs (static rest pose under reduced motion).
+        ...hangingSigns.collect({ reducedMotion: reducedMotion || lowHealthTensionActive() }),
+        // AC-A4: in-scene round/KO ceremony glyphs (single merged geometry per phrase).
+        ...ceremony.collect({ text: ceremonyText, showSeconds: ceremonyShowSeconds, elapsedSeconds: frame / 60, reducedMotion }),
         ...collectFighterRenderItems(playerRuntime),
         ...collectFighterRenderItems(rivalRuntime),
         ...createFighterEffectItems(playerRuntime, reducedMotion),
@@ -1127,6 +1347,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       resetCombatWorld(combatWorld, playerState, rivalState);
       rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
       rivalPassive = false;
+      rivalForceGuard = false;
+      rivalForcedGuardDepleted = false;
       combatSnapshot = combatWorld.snapshot();
       totalHits = 0;
       lastHitFrame = 0;
@@ -1134,8 +1356,23 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       roundTime = 99;
       roundOver = false;
       callout = "FIGHT";
+      calloutHoldSeconds = 0;
+      lastCombatPresentationOutcome = "neutral";
+      pauseOnNextWhiff = false;
       toast = `Round ${roundIndex} reset. FIGHT!`;
       sparks.length = 0;
+      // AC-A4: in-scene ROUND n ceremony over the intro window.
+      ceremonyText = roundCeremonyTextForRound(roundIndex);
+      ceremonyShowSeconds = 0;
+      ceremonyIntroRemaining = ROUND_INTRO_SECONDS;
+      // AC-A1/A2/A3: presentation state resets with the round.
+      clipBridges.player.reset();
+      clipBridges.rival.reset();
+      presentationAttacks.clear();
+      clipImpulse = 0;
+      crowdCheer = 0;
+      scrubOffsetSeconds = 0;
+      exchangeReplay.clear();
       audio.cue("reset");
     };
 
@@ -1160,6 +1397,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         setPlayerMeter(meter: number) {
           playerState.meter = clamp(meter, 0, 100);
         },
+        setRivalGuardMeter(meter: number) {
+          rivalState.guardMeter = clamp(meter, 0, 100);
+        },
         setRivalGuardSuppressed(suppressed: boolean) {
           rivalPassive = suppressed === true;
           if (rivalPassive) {
@@ -1168,8 +1408,31 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
             rivalState.attack = null;
           }
         },
+        setRivalGuardForced(forced: boolean) {
+          rivalForceGuard = forced === true;
+          rivalForcedGuardDepleted = rivalForceGuard
+            && rivalState.guardMeter <= defaultGuardBreakRules.breakThreshold;
+          if (rivalForceGuard) {
+            rivalPassive = false;
+            // Enter the guarded state immediately so a deliberately depleted
+            // guard fixture cannot regenerate during the one frame between the
+            // test-driver call and the forced-guard branch in the normal loop.
+            rivalState.attack = null;
+            rivalState.guard = true;
+            rivalState.action = "guard";
+            rivalState.clip = rivalState.clips.guard;
+          }
+        },
         pauseOnNextHit() {
           pauseOnNextHit = true;
+        },
+        pauseOnNextWhiff() {
+          pauseOnNextWhiff = true;
+        },
+        pauseForCapture() {
+          // Evidence latch only: preserve the exact current runtime pose/callout without synthesizing
+          // combat state. The next normal pause input resumes through the ordinary control path.
+          paused = true;
         },
         setPositions(playerX: number, rivalX: number) {
           playerState.x = clamp(playerX, stage.minX, stage.maxX);
@@ -1190,6 +1453,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           rivalState.hitstun = 0;
           playerState.recovery = 0;
           rivalState.recovery = 0;
+          playerState.recoveryClip = null;
+          rivalState.recoveryClip = null;
           playerState.knockdownTimer = 0;
           rivalState.knockdownTimer = 0;
           playerState.invulnerableTimer = 0;
@@ -1215,6 +1480,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           playerState.moveCooldown = 0;
           playerState.hitstun = 0;
           playerState.recovery = 0;
+          playerState.recoveryClip = null;
           playerState.knockdownTimer = 0;
           playerState.invulnerableTimer = 0;
           playerState.guard = false;
@@ -1247,7 +1513,17 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       const dashPressed = isPressed(runtimeInput, controls, "dash");
       const jumpAccepted = jumpPressed && playerState.grounded;
       const wasSpecial = playerState.attack?.id === "special";
+      const inputBeforeUpdate = lastInput;
       lastInput = updatePlayer(playerState, runtimeInput, controls, dt, lastInput);
+      // AC-A2: any fresh live play input cancels the replay scrub (back to live).
+      if (
+        trainingMode &&
+        scrubOffsetSeconds < 0 &&
+        lastInput !== inputBeforeUpdate &&
+        lastInput !== "none" && lastInput !== "pause" && lastInput !== "reset"
+      ) {
+        scrubOffsetSeconds = 0;
+      }
       if (jumpAccepted && playerState.action === "jump") {
         audio.cue("jump");
       }
@@ -1266,9 +1542,22 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           : "Special is cooling down.";
         audio.cue("special-denied");
       }
-      lastRivalAiRole = updateRivalAi(rivalState, playerState, dt, rivalAiRng, rivalPassive);
-      clearExpiredAttack(playerState);
+      lastRivalAiRole = updateRivalAi(rivalState, playerState, dt, rivalAiRng, rivalPassive, {
+        preset: activeAiPreset,
+        onDecision(reason) {
+          lastAiDecisionReason = reason;
+        }
+      });
+      if (rivalForceGuard && rivalState.health > 0) {
+        rivalState.attack = null;
+        rivalState.guard = true;
+        if (rivalForcedGuardDepleted) rivalState.guardMeter = 0;
+        rivalState.action = "guard";
+        rivalState.clip = rivalState.clips.guard;
+      }
+      const playerWhiffed = clearExpiredAttack(playerState);
       clearExpiredAttack(rivalState);
+      publishPlayerWhiff(playerWhiffed);
       updateFighterPhysics(playerState, dt);
       updateFighterPhysics(rivalState, dt);
       resolvePushback(playerState, rivalState);
@@ -1281,6 +1570,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         totalHits += Number(combatResult.rivalDamage > 0) + Number(combatResult.playerDamage > 0);
         lastHitFrame = frame;
         callout = combatResult.rivalDamage ? "HIT" : "HURT";
+        calloutHoldSeconds = 0.8;
         toast = combatResult.rivalDamage
           ? `${playerState.name} lands ${playerMove} for ${combatResult.rivalDamage} damage.`
           : `${rivalState.name} catches ${playerState.name} with ${rivalMove}.`;
@@ -1289,7 +1579,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         const attacker = combatResult.rivalDamage ? playerState : rivalState;
         const defender = combatResult.rivalDamage ? rivalState : playerState;
         const moveId = (attacker.attack?.id ?? "light") as MoveId;
+        lastCombatPresentationOutcome = moveId === "special" ? "special" : "hit";
         applyHitStopAndImpact(attacker, defender, moveId);
+        // AC-A3/A5: heavy/special connects excite the crowd cheer and kick the near-side sign spring.
+        if (moveId !== "light") {
+          crowdCheer = Math.min(1, crowdCheer + (moveId === "special" ? 1 : 0.7));
+          slamImpulse = (moveId === "special" ? 1.15 : 0.8) * (defender.x < 0 ? 1 : -1);
+        }
         // Test-only capture latch: freeze the exact simulation frame that produced the real hit.
         // It does not synthesize an effect or bypass combat; it only prevents the next RAF from
         // advancing the authored pose and render-item spark before evidence capture finishes.
@@ -1298,15 +1594,50 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           paused = true;
         }
       } else if (combatResult.blocked) {
-        callout = "BLOCK";
-        toast = `${combatResult.blockedBy === "player" ? playerState.name : rivalState.name} guards the strike.`;
-        audio.cue("guard");
-      } else if (frame % 90 === 0 && callout !== "KO") {
+        if (combatResult.guardBroken) {
+          if (combatResult.blockedBy === "rival") {
+            rivalForceGuard = false;
+            rivalForcedGuardDepleted = false;
+          }
+          callout = "GUARD BREAK";
+          calloutHoldSeconds = 0.9;
+          toast = `${combatResult.blockedBy === "player" ? playerState.name : rivalState.name}'s guard breaks.`;
+          lastCombatPresentationOutcome = "guard-break";
+          const blockSpark = [...sparks].reverse().find((spark) => spark.kind === "block");
+          if (blockSpark) {
+            blockSpark.kind = "guard-break";
+            blockSpark.life = Math.max(blockSpark.life, 0.48);
+          }
+          const defender = combatResult.blockedBy === "player" ? playerState : rivalState;
+          defender.hitStopRemaining = Math.max(defender.hitStopRemaining, 0.1);
+          clipImpulse = Math.min(1.4, clipImpulse + 0.45);
+          audio.cue("guard-break");
+        } else {
+          callout = "BLOCK";
+          calloutHoldSeconds = 0.8;
+          toast = `${combatResult.blockedBy === "player" ? playerState.name : rivalState.name} guards the strike.`;
+          lastCombatPresentationOutcome = "block";
+          audio.cue("guard");
+        }
+      } else if (calloutHoldSeconds <= 0 && frame % 90 === 0 && callout !== "KO") {
         callout = "FIGHT";
+      }
+      // AC-A2: capture the exchange into the training-only replay ring.
+      if (trainingMode) {
+        exchangeReplay.push({
+          frame,
+          time: Number((99 - roundTime).toFixed(4)),
+          playerX: Number(playerState.x.toFixed(4)),
+          rivalX: Number(rivalState.x.toFixed(4)),
+          playerHp: playerState.health,
+          rivalHp: rivalState.health,
+          activeAttack: playerState.attack?.id ?? null
+        });
       }
       if (playerState.health <= 0 || rivalState.health <= 0 || roundTime <= 0) {
         roundOver = true;
         callout = finishRound(playerState, rivalState, roundTime);
+        lastCombatPresentationOutcome = "ko";
         resetFighterSecondaryMotion(playerRuntime.secondary, playerState.x);
         resetFighterSecondaryMotion(rivalRuntime.secondary, rivalState.x);
         if (callout === "WIN") playerScore++;
@@ -1319,20 +1650,50 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
             ? `${rivalState.name} wins! ${scoreText}. Press R to reset.`
             : `Draw! ${scoreText}. Press R to reset.`;
         sparks.length = 0;
+        // AC-A4: hold the K.O./WIN/DRAW ceremony through the round-over tableau.
+        ceremonyText = roundCeremonyTextForCallout(callout, roundIndex);
+        ceremonyShowSeconds = 0;
+        // AC-A6: duck combat sfx so the round-over stinger/announcer line reads.
+        audio.beginKoDuck();
+        // AC-A3/A5: a finisher is the biggest slam of the round.
+        crowdCheer = Math.min(1, crowdCheer + (callout === "DRAW" ? 0.5 : 1));
+        slamImpulse = callout === "KO" ? 1.2 : 0.9;
         audio.cue(callout.toLowerCase());
       }
     }
 
     updateClips(playerState, dt);
     updateClips(rivalState, dt);
-    clearExpiredAttack(playerState);
+    publishPlayerWhiff(clearExpiredAttack(playerState));
     clearExpiredAttack(rivalState);
+    calloutHoldSeconds = Math.max(0, calloutHoldSeconds - dt);
     applyFighterAnimation(playerRuntime);
     applyFighterAnimation(rivalRuntime);
     syncFighterRoot(playerRuntime);
     syncFighterRoot(rivalRuntime);
     applyFighterSecondaryMotion(playerRuntime, dt, audio, sparks);
     applyFighterSecondaryMotion(rivalRuntime, dt, audio, sparks);
+    // AC-A1: advance each fighter's presentation bridge along its attack clock.
+    advanceFighterPresentation(playerRuntime);
+    advanceFighterPresentation(rivalRuntime);
+    // AC-A3/A5: decaying crowd cheer and one fixed step of the sign springs (presentation only).
+    clipImpulse = Math.max(0, clipImpulse - dt * 3.2);
+    crowdCheer = Math.max(0, crowdCheer - dt * 1.6);
+    const lowHealthTension = lowHealthTensionActive();
+    if (lowHealthTension) crowdCheer = Math.min(crowdCheer, 0.12);
+    hangingSigns.step({
+      dt,
+      slamImpulse: lowHealthTension ? 0 : slamImpulse,
+      reducedMotion: reducedMotion || lowHealthTension
+    });
+    slamImpulse = 0;
+    audio.update(dt);
+    // AC-A4 ceremony clock: intro countdown clears the round text; round-over text holds.
+    if (ceremonyIntroRemaining > 0) {
+      ceremonyIntroRemaining = Math.max(0, ceremonyIntroRemaining - dt);
+      if (ceremonyIntroRemaining === 0 && !roundOver) ceremonyText = null;
+    }
+    if (ceremonyText !== null) ceremonyShowSeconds += dt;
     updateSparks(sparks, dt);
     // Confirmed-hit victim flash: apply the material/emissive pulse to both rigs each frame. When the
     // timer is zero this restores the authored look, so the flash can never stick. Reduced motion lowers
@@ -1345,7 +1706,13 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const renderStartedAt = performance.now();
     diagnostics = renderer.render(source);
     performanceProof = createPerformanceProof(dt, performance.now() - renderStartedAt, diagnostics.drawCalls);
-    updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore);
+    // AC-A2: training-only replay HUD + evidence state for this frame.
+    const replayControls = createFightHudReplayControlsModel({
+      training: trainingMode,
+      scrubOffsetSeconds,
+      bufferedSeconds: exchangeReplay.bufferedSeconds()
+    });
+    updateHud(root, playerState, rivalState, roundTime, callout, toast, playerScore, rivalScore, replayControls);
     writeProof({
       root,
       frame,
@@ -1368,7 +1735,28 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       renderLabels: lastSubmittedRenderLabels,
       lightingRig: renderedLightingRigSummary,
       camera: currentCameraEvidence(),
-      rivalAiRole: lastRivalAiRole
+      rivalAiRole: lastRivalAiRole,
+      presentation: {
+        clipEventsFired: { ...presentationEventCounts },
+        crowdInstanceCount: crowdPool.instanceCount,
+        crowdInstancedDrawItems: 1,
+        signsSwinging: hangingSigns.states().some((state) => !isSpringJointSignSettled(state)),
+        ceremonyText,
+        lastOutcome: lastCombatPresentationOutcome,
+        activeImpactKinds: [...new Set(sparks.map((spark) => spark.kind))]
+      },
+      trainingReplay: {
+        enabled: trainingMode,
+        bufferedSeconds: Number(exchangeReplay.bufferedSeconds().toFixed(2)),
+        scrubOffsetSeconds: Number(scrubOffsetSeconds.toFixed(2)),
+        samples: exchangeReplay.size(),
+        scrubLabel: replayControls.scrubLabel
+      },
+      clipImpulse,
+      crowdCheer,
+      lowHealthTension,
+      aiPresetId: activeAiPreset.id,
+      aiDecisionReason: lastAiDecisionReason
     });
     controls.endFrame();
   }
@@ -1515,6 +1903,7 @@ function createFighter(id: FighterId, name: string, subtitle: string, x: number,
     guard: false,
     hitstun: 0,
     recovery: 0,
+    recoveryClip: null,
     hitStopRemaining: 0,
     pendingImpulse: 0,
     aiCooldown: id === "rival" ? 1.18 : 0.72,
@@ -1559,6 +1948,7 @@ function resetFighter(fighter: FighterState, x: number, facing: 1 | -1): void {
   fighter.guard = false;
   fighter.hitstun = 0;
   fighter.recovery = 0;
+  fighter.recoveryClip = null;
   fighter.hitStopRemaining = 0;
   fighter.pendingImpulse = 0;
   fighter.aiCooldown = fighter.id === "rival" ? 1.18 : 0.72;
@@ -1727,7 +2117,9 @@ function updateRivalAi(
   player: FighterState,
   dt: number,
   rng: () => number,
-  passive = false
+  passive = false,
+  /** AC-A7: when provided, strike appetite flows through the named createCombatAi preset. */
+  ai?: { readonly preset: ClashAiRolePreset; onDecision?(reason: string): void }
 ): RivalAiRole {
   rival.aiCooldown = Math.max(0, rival.aiCooldown - dt);
   const gap = player.x - rival.x;
@@ -1775,14 +2167,28 @@ function updateRivalAi(
     rivalAiWantsDash(role, distance, incomingHeavy);
   const aggression = rival.health < START_HEALTH * 0.35 ? 0.65 : 1.0;
   const bias = rivalAiStrikeBias(role);
+  // AC-A7: the named createCombatAi preset gates strike appetite (and reports its reason).
+  const aiDecision = ai
+    ? decideClashAiRole(ai.preset, {
+        distance,
+        playerAttacking,
+        playerMoveId: player.attack?.id ?? null,
+        playerAttackElapsed: player.attack?.elapsed ?? 0,
+        stunned: rival.hitstun > 0 || rival.recovery > 0 || rival.knockdownTimer > 0
+      })
+    : null;
+  ai?.onDecision?.(aiDecision?.reason ?? "preset-off");
+  const strikeGate = aiDecision ? Math.max(0, aiDecision.strikeGate) : 1;
   updateFighterIntents(rival, desired, {
     down: false,
     jump: role !== "meaty-wakeup" && !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
     dash: shouldDash,
+    // Guard appetite keeps its existing window (combat-feel coverage); the preset modulates
+    // strike appetite, which is where measurable role differences live.
     guard: shouldGuard && !passive,
-    light: !passive && canStrike && rival.aiCooldown <= 0 && (role === "meaty-wakeup" || distance < 1.04) && rng() < aggression * bias.light,
-    heavy: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.28 && player.health < START_HEALTH * 0.82 && rng() < aggression * bias.heavy,
-    special: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * bias.special
+    light: !passive && canStrike && rival.aiCooldown <= 0 && (role === "meaty-wakeup" || distance < 1.04) && rng() < aggression * bias.light * strikeGate,
+    heavy: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.28 && player.health < START_HEALTH * 0.82 && rng() < aggression * bias.heavy * strikeGate,
+    special: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * bias.special * strikeGate
   }, dt);
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
@@ -1844,8 +2250,9 @@ function updateFighterIntents(
   if (fighter.attack) {
     fighter.attack.elapsed += dt;
     if (fighter.attack.elapsed >= fighter.attack.duration) {
-      fighter.attack = null;
-      fighter.action = fighter.grounded ? "idle" : "jump";
+      // `clearExpiredAttack` owns finalization so it can distinguish a connect from a whiff and
+      // publish the authored recovery hold. Keep the instance until that post-update pass.
+      fighter.attack.elapsed = fighter.attack.duration;
       // Combo cancel window: if a combo is active, reduce cooldown so the next attack chains sooner
       if (canCancelCombo(fighter.combo, performance.now())) {
         fighter.moveCooldown = Math.min(fighter.moveCooldown, 0.08);
@@ -1933,13 +2340,29 @@ function startAttack(fighter: FighterState, id: MoveId): boolean {
   return true;
 }
 
-function clearExpiredAttack(fighter: FighterState): void {
-  if (!fighter.attack) return;
+function clearExpiredAttack(fighter: FighterState): MoveId | null {
+  if (!fighter.attack) return null;
   const clipTimedOut = fighter.clip === fighter.attack.clip && fighter.clipTime >= fighter.attack.duration * 1.25;
   const wallTimedOut = performance.now() - fighter.attack.startedAtMs >= Math.max(900, fighter.attack.duration * 1800);
-  if (fighter.attack.elapsed < fighter.attack.duration && !clipTimedOut && !wallTimedOut) return;
+  if (fighter.attack.elapsed < fighter.attack.duration && !clipTimedOut && !wallTimedOut) return null;
+  const expiredAttack = fighter.attack;
+  const whiffedMove = expiredAttack.hit ? null : expiredAttack.id;
   fighter.attack = null;
-  if (fighter.action !== "ko" && fighter.action !== "knockdown" && fighter.hitstun <= 0) fighter.action = fighter.grounded ? "idle" : "jump";
+  if (fighter.action !== "ko" && fighter.action !== "knockdown" && fighter.hitstun <= 0) {
+    if (whiffedMove && fighter.grounded) {
+      // Hold the authored end pose briefly so a whiff reads as recovery. This is presentation and
+      // control lock only; hitbox windows remain wholly owned by the canonical frame data.
+      fighter.action = "recover";
+      fighter.recovery = Math.max(fighter.recovery, 0.18);
+      fighter.recoveryClip = expiredAttack.clip;
+      fighter.clip = expiredAttack.clip;
+      fighter.clipTime = expiredAttack.activeEnd + (expiredAttack.duration - expiredAttack.activeEnd) * 0.55;
+    } else {
+      fighter.action = fighter.grounded ? "idle" : "jump";
+      fighter.recoveryClip = null;
+    }
+  }
+  return whiffedMove;
 }
 
 function resolveEngineCombat(
@@ -2010,11 +2433,13 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
   rivalDamage: number;
   blocked: boolean;
   blockedBy: FighterId | null;
+  guardBroken: boolean;
 } {
   let playerDamage = 0;
   let rivalDamage = 0;
   let blocked = false;
   let blockedBy: FighterId | null = null;
+  let guardBroken = false;
   const now = performance.now();
   for (const event of events) {
     if (event.type === "blocked" && event.targetId) {
@@ -2022,12 +2447,14 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
       blockedBy = event.targetId === player.id ? player.id : rival.id;
       const defender = event.targetId === player.id ? player : rival;
       const attacker = event.attackerId === player.id ? player : rival;
+      if (attacker.attack) attacker.attack.hit = true;
       const guardDamage = event.guardDamage ?? 8;
       defender.guardMeter = Math.max(0, defender.guardMeter - guardDamage);
       const chip = Math.round(guardDamage * defaultGuardBreakRules.chipDamageMultiplier);
       defender.health = Math.max(0, defender.health - chip);
       if (defender.guardMeter <= defaultGuardBreakRules.breakThreshold) {
         // Guard break — extended stun
+        guardBroken = true;
         defender.hitstun = Math.max(defender.hitstun, defaultGuardBreakRules.recoveryMs / 1000);
         defender.action = "hurt";
         defender.clip = defender.clips.hurtHeavy ?? defender.clips.hurt;
@@ -2044,6 +2471,7 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     if (event.type !== "hit" || !event.targetId) continue;
     const defender = event.targetId === player.id ? player : rival;
     const attacker = event.attackerId === player.id ? player : rival;
+    if (attacker.attack) attacker.attack.hit = true;
     const rawDamage = Math.max(0, Math.round(event.damage ?? 0));
     if (defender.invulnerableTimer > 0) {
       // Wakeup invulnerability: refund the engine-applied damage and skip every hit reaction
@@ -2079,7 +2507,7 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     }
     attacker.meter = clamp(attacker.meter + 18, 0, 100);
   }
-  return { playerDamage, rivalDamage, blocked, blockedBy };
+  return { playerDamage, rivalDamage, blocked, blockedBy, guardBroken };
 }
 
 function updateFighterPhysics(fighter: FighterState, dt: number): void {
@@ -2104,12 +2532,14 @@ function updateFighterPhysics(fighter: FighterState, dt: number): void {
     if (fighter.hitstun === 0 && fighter.action === "hurt") {
       fighter.action = "recover";
       fighter.recovery = 0.18;
+      fighter.recoveryClip = null;
     }
   }
   if (fighter.recovery > 0) {
     fighter.recovery = Math.max(0, fighter.recovery - dt);
     if (fighter.recovery === 0 && fighter.action === "recover" && !fighter.guard) {
       fighter.action = "idle";
+      fighter.recoveryClip = null;
     }
   }
   if (!fighter.grounded) {
@@ -2180,7 +2610,7 @@ function updateClips(fighter: FighterState, dt: number): void {
   } else if (fighter.action === "hurt") {
     fighter.clip = resolveAuraClashHurtClip(fighter.clips, fighter.hurtVariant, false);
   } else if (fighter.action === "recover") {
-    fighter.clip = fighter.clips.idle;
+    fighter.clip = fighter.recoveryClip ?? fighter.clips.idle;
   } else if (fighter.action === "knockdown") {
     fighter.clip = fighter.clips.hurtHeavy ?? fighter.clips.hurt;
   } else if (fighter.action === "ko") {
@@ -2233,6 +2663,7 @@ function updateClips(fighter: FighterState, dt: number): void {
     fighter.specialFreezeRemaining = Math.max(0, fighter.specialFreezeRemaining - dt);
     return;
   }
+  if (fighter.action === "recover" && fighter.recoveryClip) return;
   const speed = fighter.action === "light" ? 1.45 : fighter.action === "heavy" ? 1.06 : fighter.action === "special" ? 0.94 : fighter.action === "run" ? 1.18 : 1;
   fighter.clipTime += dt * speed;
   fighter.locomotionTime += dt; // continuous base clock for upper-body-layered attacks
@@ -2357,15 +2788,16 @@ function applyFighterSecondaryMotion(fighter: RuntimeFighter, dt: number, audio:
     audio.cue("footstep");
     sparks.push({ x: s.x, y: 0.04, z: stage.z, age: 0, life: 0.16, facing: s.facing, kind: "block" });
   }
-  fireAttackClipEvents(fighter, audio, sparks);
+  fireAttackClipEvents(fighter, audio);
   recordSecondaryMotionProof(fighter, result);
 }
 
-// Fires the authored footstep/VFX markers (T2.2 event tracks) as an attack plays. The hitbox lane
-// already drives combat active-frames; this drives the cosmetic footstep + VFX-spark lanes from the
-// same authored clip events. Deterministic (a pure function of the attack's elapsed time).
+// Fires the authored footstep marker (T2.2 event track lane) as an attack plays. The hitbox lane
+// already drives combat active-frames; the AC-A1 clip-event bridge now owns the sfx/vfx/camera
+// presentation lanes, so this path only keeps the original footstep behavior byte-compatible.
+// Deterministic (a pure function of the attack's elapsed time).
 const attackEventCursors = new Map<string, { attack: unknown; cursor: number }>();
-function fireAttackClipEvents(fighter: RuntimeFighter, audio: AudioRuntime, sparks: Spark[]): void {
+function fireAttackClipEvents(fighter: RuntimeFighter, audio: AudioRuntime): void {
   const attack = fighter.state.attack;
   const key = fighter.state.id;
   if (!attack) {
@@ -2391,10 +2823,6 @@ function fireAttackClipEvents(fighter: RuntimeFighter, audio: AudioRuntime, spar
     if (type === "footstep") {
       audio.cue("footstep");
       recordClipEventFired("footstep");
-    } else if (type === "vfx") {
-      // Telegraph spark in front of the attacker on the authored VFX frame.
-      sparks.push({ x: fighter.state.x + fighter.state.facing * 0.5, y: 0.95, z: stage.z, age: 0, life: 0.18, facing: fighter.state.facing, kind: attack.id });
-      recordClipEventFired("vfx");
     }
   }
   entry.cursor = to;
@@ -2567,6 +2995,7 @@ const rivalAuraMaterial = new UnlitMaterial({ name: "rook-ground-aura", color: [
 const hitImpactMaterial = new UnlitMaterial({ name: "combat-hit-impact", color: [1, 0.86, 0.3, 0.92] });
 const specialImpactMaterial = new UnlitMaterial({ name: "combat-special-impact", color: [0.12, 1, 0.72, 0.94] });
 const blockImpactMaterial = new UnlitMaterial({ name: "combat-block-impact", color: [0.28, 0.9, 1, 0.84] });
+const guardBreakImpactMaterial = new UnlitMaterial({ name: "combat-guard-break-impact", color: [1, 0.3, 0.76, 0.96] });
 const specialSilhouetteMaterial = new UnlitMaterial({ name: "combat-special-silhouette", color: [0.1, 1, 0.78, 0.16] });
 
 /**
@@ -2615,9 +3044,15 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
   return sparks.flatMap((spark, sparkIndex) => {
     const progress = clamp(spark.age / Math.max(spark.life, 0.001), 0, 1);
     const fadeScale = Math.max(0.02, 1 - progress);
-    const burstScale = (spark.kind === "special" ? 0.34 : spark.kind === "heavy" ? 0.14 : 0.1) * fadeScale;
-    const material = spark.kind === "block" ? blockImpactMaterial : spark.kind === "special" ? specialImpactMaterial : hitImpactMaterial;
-    const rayCount = spark.kind === "special" ? 6 : 3;
+    const burstScale = (spark.kind === "special" ? 0.34 : spark.kind === "guard-break" ? 0.27 : spark.kind === "heavy" ? 0.14 : 0.1) * fadeScale;
+    const material = spark.kind === "guard-break"
+      ? guardBreakImpactMaterial
+      : spark.kind === "block"
+        ? blockImpactMaterial
+        : spark.kind === "special"
+          ? specialImpactMaterial
+          : hitImpactMaterial;
+    const rayCount = spark.kind === "guard-break" ? 8 : spark.kind === "special" ? 6 : 3;
     const core: RenderItem = {
       label: `aura-clash-impact:${sparkIndex}:core`,
       geometry: impactCoreGeometry,
@@ -2631,7 +3066,7 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
     };
     const shards = Array.from({ length: rayCount }, (_, ray) => {
       const angle = (ray / rayCount) * Math.PI * 2 + progress * 0.72;
-      const travel = 0.09 + progress * (spark.kind === "special" ? 0.54 : 0.28);
+      const travel = 0.09 + progress * (spark.kind === "special" || spark.kind === "guard-break" ? 0.54 : 0.28);
       return {
         label: `aura-clash-impact:${sparkIndex}:${ray}`,
         geometry: impactShardGeometry,
@@ -2693,15 +3128,14 @@ function createAudioRuntime(): AudioRuntime {
       }
     ])
   ) as unknown as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
+  // AC-A6: music/sfx/voice buses with independent declared levels (ui stays separate), replacing
+  // the previous combat/round pair so guard-block vs hit cues sit on a duckable sfx layer.
   const audio: GameAudio<keyof typeof auraClashAudioManifest> = createGameAudio({
     browserContext: true,
-    buses: [
-      { id: "ui", volume: 0.8 },
-      { id: "combat", volume: 1 },
-      { id: "round", volume: 0.9 }
-    ],
+    buses: Object.entries(auraClashAudioBusLevels).map(([id, volume]) => ({ id, volume })),
     cues: cueEntries
   });
+  let koDuckRemaining = 0;
 
   function cue(name: string): void {
     const definition = auraClashAudioManifest[name as keyof typeof auraClashAudioManifest];
@@ -2713,6 +3147,17 @@ function createAudioRuntime(): AudioRuntime {
 
   return {
     cue,
+    beginKoDuck() {
+      koDuckRemaining = auraClashAudioKoDuck.restoreAfterSeconds;
+      audio.setBusVolume(auraClashAudioKoDuck.bus, auraClashAudioKoDuck.duckedLevel);
+    },
+    update(dt: number) {
+      if (koDuckRemaining <= 0) return;
+      koDuckRemaining = Math.max(0, koDuckRemaining - dt);
+      if (koDuckRemaining === 0) {
+        audio.setBusVolume(auraClashAudioKoDuck.bus, auraClashAudioBusLevels.sfx);
+      }
+    },
     proof() {
       const evidence = audio.evidence;
       return {
@@ -2726,7 +3171,11 @@ function createAudioRuntime(): AudioRuntime {
         typedAssetCount: assetUrls.length,
         assetUrls,
         oscillatorFallback: false,
-        audioErrors: evidence.errors
+        audioErrors: evidence.errors,
+        // AC-A6 additive telemetry.
+        buses: evidence.buses.filter((bus) => bus.id in auraClashAudioBusLevels || bus.id === "master"),
+        koDuckActive: koDuckRemaining > 0,
+        koDuckLevel: koDuckRemaining > 0 ? auraClashAudioKoDuck.duckedLevel : null
       };
     }
   };
@@ -2756,7 +3205,8 @@ function updateHud(
   callout: string,
   toast: string,
   playerScore = 0,
-  rivalScore = 0
+  rivalScore = 0,
+  replayControls?: FightHudReplayControlsModel
 ): void {
   setText(root, "#round-time", String(Math.ceil(roundTime)).padStart(2, "0"));
   setText(root, "#callout", callout);
@@ -2774,6 +3224,28 @@ function updateHud(
   setBar(root, "#rival-health", rival.health / START_HEALTH);
   setBar(root, "#player-meter", player.meter / 100);
   setBar(root, "#rival-meter", rival.meter / 100);
+  // Static HUD emphasis only. Renderer-owned crowd/sign items above carry the actual presentation
+  // simplification; CSS does not stand in for stage lighting or gameplay effects.
+  const hudShell = root.matches(".aca") ? root : root.querySelector<HTMLElement>(".aca");
+  if (hudShell) hudShell.dataset.lowHealthTension =
+    Math.min(
+      player.health > 0 ? player.health : START_HEALTH,
+      rival.health > 0 ? rival.health : START_HEALTH
+    ) <= START_HEALTH * 0.25
+      ? "true"
+      : "false";
+  // AC-A2: the training-only replay strip stays hidden outside debug/training mode.
+  const scrubHost = root.querySelector<HTMLElement>("#replay-scrub");
+  if (scrubHost) {
+    if (!replayControls || !replayControls.visible) {
+      scrubHost.hidden = true;
+      scrubHost.textContent = "";
+    } else {
+      scrubHost.hidden = false;
+      scrubHost.textContent = replayControls.scrubLabel ?? replayControls.hint;
+      scrubHost.dataset.scrubbing = replayControls.scrubLabel ? "true" : "false";
+    }
+  }
 }
 
 function writeProof(input: {
@@ -2802,6 +3274,19 @@ function writeProof(input: {
   camera: AuraClashArenaProof["camera"];
   /** The rival AI role resolved this frame, for the feel proof. */
   rivalAiRole: RivalAiRole;
+  /** AC-A1/A3/A4/A5 presentation telemetry (additive). */
+  presentation?: NonNullable<AuraClashArenaProof["presentation"]>;
+  /** AC-A2 training replay evidence (debug-gated). */
+  trainingReplay?: NonNullable<AuraClashArenaProof["trainingReplay"]>;
+  /** AC-A1: decaying camera impulse accumulated from authored clip events this frame. */
+  clipImpulse: number;
+  /** AC-A3: crowd cheer strength this frame. */
+  crowdCheer: number;
+  /** Match-arc tension phase derived from living fighter HP. */
+  lowHealthTension: boolean;
+  /** AC-A7: the active createCombatAi preset id and its last decision reason. */
+  aiPresetId: string;
+  aiDecisionReason: string;
 }): void {
   const playerSnapshot = input.player.actor.evidence;
   const rivalSnapshot = input.rival.actor.evidence;
@@ -2864,8 +3349,17 @@ function writeProof(input: {
       rivalFlashStrength: Number(input.rival.state.hitFlashRemaining.toFixed(4)),
       playerSpecialFreeze: Number(input.player.state.specialFreezeRemaining.toFixed(4)),
       rivalAiRole: input.rivalAiRole,
-      fighterLengthBuffering: true
-    }
+      fighterLengthBuffering: true,
+      // AC-A1/A3/A7 additive feel telemetry.
+      clipImpulseStrength: Number(input.clipImpulse.toFixed(4)),
+      rivalAiPreset: input.aiPresetId,
+      rivalAiDecisionReason: input.aiDecisionReason,
+      crowdCheer: Number(input.crowdCheer.toFixed(4)),
+      lowHealthTension: input.lowHealthTension,
+      lowHealthSecondaryMotionSuppressed: input.lowHealthTension
+    },
+    ...(input.presentation ? { presentation: input.presentation } : {}),
+    ...(input.trainingReplay ? { trainingReplay: input.trainingReplay } : {})
   });
   gameWindow.__AURA_CLASH_ARENA_PROOF__ = proof;
   gameWindow.__AURA3D_GAME_EVIDENCE__ = {

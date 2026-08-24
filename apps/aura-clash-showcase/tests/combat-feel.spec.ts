@@ -112,6 +112,75 @@ test.describe("Aura Clash combat feel", () => {
     });
     expect(rmResponded, "reduced motion must disable the camera punch/shake").toBe(false);
   });
+
+  test("low health enters a static tension phase and suppresses secondary stage motion", async ({ page }) => {
+    await loadAuraClashArena(page, "?auraTestDriver=1");
+    await setFighterTestState(page, {
+      playerX: -1.2,
+      rivalX: 1.2,
+      playerHealth: 80,
+      rivalHealth: 360,
+      suppressRivalGuard: true
+    });
+
+    await expect.poll(async () => (await readAuraClashProof(page)).feel?.lowHealthTension).toBe(true);
+    const proof = await readAuraClashProof(page);
+    expect(proof.feel?.lowHealthSecondaryMotionSuppressed).toBe(true);
+    expect(proof.feel?.crowdCheer ?? 1).toBeLessThanOrEqual(0.12);
+    await expect(page.locator(".aca")).toHaveAttribute("data-low-health-tension", "true");
+    await expect(page.locator(".aca-clock")).toHaveCSS("animation-name", "none");
+  });
+
+  test("a whiff holds recovery without impact VFX, hit audio, or camera response", async ({ page }) => {
+    await loadAuraClashArena(page, "?auraTestDriver=1");
+    await setFighterTestState(page, {
+      playerX: -2.2,
+      rivalX: 2.2,
+      rivalHealth: 360,
+      suppressRivalGuard: true
+    });
+    await queuePlayerAttack(page, "heavy");
+
+    let sawRecovery = false;
+    let outcome: string | undefined;
+    for (let attempt = 0; attempt < 500 && outcome !== "whiff"; attempt += 1) {
+      const proof = await readAuraClashProof(page);
+      sawRecovery ||= proof.player.action === "recover";
+      outcome = proof.presentation?.lastOutcome;
+      if (outcome !== "whiff") await page.waitForTimeout(20);
+    }
+    expect(outcome).toBe("whiff");
+    const proof = await readAuraClashProof(page);
+    expect(sawRecovery, "the missed strike must expose an authored recovery hold").toBe(true);
+    expect(proof.callout).toBe("WHIFF");
+    expect(proof.presentation?.activeImpactKinds ?? []).toEqual([]);
+    expect(proof.camera?.respondingToCombat).toBe(false);
+    expect(proof.audio?.recentCues ?? []).not.toContain("player-hit");
+  });
+
+  test("guard break has a distinct pose, impact, audio cue, callout, and camera beat", async ({ page }) => {
+    await loadAuraClashArena(page, "?auraTestDriver=1");
+    await setFighterTestState(page, {
+      playerX: -0.5,
+      rivalX: 0.5,
+      rivalHealth: 360,
+      rivalGuardMeter: 0,
+      forceRivalGuard: true
+    });
+    await queuePlayerAttack(page, "heavy");
+
+    let proof = await readAuraClashProof(page);
+    for (let attempt = 0; attempt < 500 && proof.presentation?.lastOutcome !== "guard-break"; attempt += 1) {
+      await page.waitForTimeout(20);
+      proof = await readAuraClashProof(page);
+    }
+    expect(proof.presentation?.lastOutcome).toBe("guard-break");
+    expect(proof.callout).toBe("GUARD BREAK");
+    expect(proof.rival.action).toBe("hurt");
+    expect(proof.presentation?.activeImpactKinds ?? []).toContain("guard-break");
+    expect(proof.audio?.lastCue).toBe("guard-break");
+    expect(proof.camera?.respondingToCombat).toBe(true);
+  });
 });
 
 async function withReducedMotion(browser: Browser, run: (page: Page) => Promise<boolean>): Promise<boolean> {

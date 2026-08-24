@@ -8,10 +8,13 @@ import {
   material,
   model,
   primitives,
-  scene
+  scene,
+  text3D
 } from "@aura3d/engine";
 import { assets } from "../aura-assets";
+import { buildGreebleNodes } from "./greebles";
 import { ENEMIES, ENEMY_BODY_Y, ENEMY_VISUAL_Y } from "./enemies";
+import { LAMPS, PROPS } from "./props";
 import { EYE_HEIGHT, LOOK_AHEAD, PLAYER_START } from "./state";
 
 /**
@@ -25,8 +28,11 @@ export const layers = createCollisionLayers({
   player: ["wall", "pickup"],
   bullet: ["enemy", "wall"],
   enemy: ["bullet", "wall"],
-  wall: ["player", "bullet", "enemy"],
-  pickup: ["player"]
+  wall: ["player", "bullet", "enemy", "debris"],
+  pickup: ["player"],
+  // NC-A1: debris touches only walls and itself — combat/pickup/exit pairs are
+  // unchanged, so scatter can never drift hitscan or trigger results.
+  debris: ["wall", "debris"]
 });
 
 /**
@@ -157,6 +163,66 @@ export function buildScene() {
         material: material.glowingEmissive({ color: "#0a0f16", emissive: String(color), emissiveIntensity: 1.6 })
       }).position(Number(x), 1.5, Number(z)).scale([0.05, 2.2, 0.09])
     ))
+    // NC-A5 instanced greebles: two LOD'd pools of pipes/rails/vents. Set
+    // dressing with no physics bodies, so lanes and sight lines stay clean.
+    .addMany(buildGreebleNodes())
+    // NC-A1 debris visuals. Bodies are dynamic boxes created by createPropWorld;
+    // these runtime nodes follow them each frame in main.ts.
+    .addMany(PROPS.map((prop) => {
+      const sizeY = prop.halfExtents[1] * 2;
+      const node = prop.kind === "barrel"
+        ? primitives.cylinder({
+          name: "debris " + prop.id,
+          material: material.pbr({ color: "#43331d", roughness: 0.66, metalness: 0.5 })
+        })
+        : primitives.box({
+          name: "debris " + prop.id,
+          material: material.pbr({ color: "#4a3a26", roughness: 0.72, metalness: 0.35 })
+        });
+      return node
+        .position(prop.x, prop.halfExtents[1] + 0.03, prop.z)
+        .scale([prop.halfExtents[0] * 2, sizeY, prop.halfExtents[2] * 2])
+        .runtime(game.runtimeNode("prop-" + prop.id, { tags: ["debris"] }));
+    }))
+    // NC-A4 spring-lamp practicals: shade + bulb follow their spring bodies.
+    .addMany(LAMPS.flatMap((lamp) => [
+      primitives.cylinder({
+        name: lamp.id + " shade",
+        material: material.pbr({ color: "#20242c", roughness: 0.5, metalness: 0.7 })
+      }).position(lamp.anchor[0], lamp.anchor[1] - lamp.hang + 0.09, lamp.anchor[2])
+        .scale([0.18, 0.08, 0.18])
+        .runtime(game.runtimeNode(lamp.id + "-shade", { tags: ["lamp"] })),
+      primitives.sphere({
+        name: lamp.id + " bulb",
+        material: material.glowingEmissive({ color: "#9be7ff", emissive: "#7ef8ff", emissiveIntensity: 2.6 })
+      }).position(lamp.anchor[0], lamp.anchor[1] - lamp.hang, lamp.anchor[2])
+        .scale(0.09)
+        .runtime(game.runtimeNode(lamp.id + "-bulb", { tags: ["lamp"] }))
+    ]))
+    // NC-A6 wayfinding as world geometry: uppercase/digits only, which is exactly
+    // what the public text3D glyph set supports. Signs never cover the viewmodel
+    // or the crosshair center; they hang on walls above the junctions.
+    .add(text3D("SECTOR 1", {
+      name: "sector 1 sign",
+      size: 0.26,
+      depth: 0.06,
+      letterSpacing: 0.03,
+      material: material.glowingEmissive({ color: "#0a0f16", emissive: "#38d6ff", emissiveIntensity: 1.5 })
+    }).position(-3.32, 1.85, 5.4).rotate(0, Math.PI / 2, 0))
+    .add(text3D("SECTOR 2", {
+      name: "sector 2 sign",
+      size: 0.26,
+      depth: 0.06,
+      letterSpacing: 0.03,
+      material: material.glowingEmissive({ color: "#160a14", emissive: "#ff4fd0", emissiveIntensity: 1.4 })
+    }).position(3.32, 1.85, -3.4).rotate(0, -Math.PI / 2, 0))
+    .add(text3D("EXIT", {
+      name: "exit sign",
+      size: 0.3,
+      depth: 0.07,
+      letterSpacing: 0.04,
+      material: material.glowingEmissive({ color: "#07160f", emissive: "#3dffb0", emissiveIntensity: 1.6 })
+    }).position(0, 2.15, -8.28))
     // Scene fog: depth haze toward the exit, not a CSS wash.
     .add(effects.fog({ density: 0.052, color: "#0a1520" }))
     // Authored hierarchy: dim cool ambient, warm key from the corridor depths,

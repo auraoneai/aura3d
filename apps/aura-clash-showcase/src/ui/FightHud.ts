@@ -20,6 +20,38 @@ export interface FightHudModel {
   accessibilityText: string;
 }
 
+export interface FightHudReplayControlsModel {
+  /** The scrub strip only exists in training/debug mode; normal play never shows it. */
+  readonly visible: boolean;
+  readonly hint: string;
+  /** Present while scrubbing; null at live play. */
+  readonly scrubLabel: string | null;
+}
+
+/**
+ * AC-A2 — debug-gated exchange-replay controls.
+ *
+ * Pure model for the HUD's training-only replay strip. `training` comes from
+ * `readPlayableHudMode(...).training`, so the controls are structurally hidden on the public
+ * playable path (debug-toggle law) and the DOM node stays inert there.
+ */
+export function createFightHudReplayControlsModel(input: {
+  training: boolean;
+  scrubOffsetSeconds: number;
+  bufferedSeconds: number;
+}): FightHudReplayControlsModel {
+  if (!input.training) {
+    return { visible: false, hint: "", scrubLabel: null };
+  }
+  const buffered = Math.max(0, input.bufferedSeconds);
+  const scrubbing = input.scrubOffsetSeconds < -1e-4 && buffered > 0;
+  return {
+    visible: true,
+    hint: `[ / ] replay last exchange (${buffered.toFixed(1)}s buffered)`,
+    scrubLabel: scrubbing ? `REPLAY −${Math.abs(input.scrubOffsetSeconds).toFixed(2)}s` : null
+  };
+}
+
 export function createFightHudModel(input: {
   roundTimer: number;
   playerName: string;

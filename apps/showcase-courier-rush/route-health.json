@@ -1,0 +1,278 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-23T21:47:09.982Z",
+  "appId": "showcase-courier-rush",
+  "route": "/apps/showcase-courier-rush/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.courierVan",
+      "role": "primary-vehicle",
+      "status": "release-validated-typed-asset",
+      "quality": "release",
+      "hash": "sha256-1984ad81b67bd760732f82fa39d4a5086a655c728b2729e3d630ccafd2b87991",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)",
+      "renderedProbeSha256": "sha256-c821baf2c188ae0caa7be83f0c7f18965bf029ace26bcf1065f5863e7a096101"
+    },
+    {
+      "typedRef": "assets.courierParcel",
+      "role": "visible-cargo",
+      "status": "release-validated-typed-asset",
+      "quality": "release",
+      "hash": "sha256-b04bff687523a449ea633259c8203c727878a5fcb8e18f29e2719b63f56bc4f4",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "macriciox (https://sketchfab.com/macriciox)",
+      "renderedProbeSha256": "sha256-972ea709611b42332b29645b7c6c530116054e662ffc6fb6ff56a58b1f4cb611"
+    }
+  ],
+  "supportingAssets": [
+    {
+      "typedRef": "assets.courierTrafficSedan",
+      "role": "authored-lane-loop-traffic",
+      "status": "release-validated-typed-supporting-asset",
+      "quality": "release",
+      "hash": "sha256-69f41bfaa087f0caf7eeb4609309728f7cb26f461d048fc24ff6479c64b7e3c7",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)",
+      "renderedProbeSha256": "sha256-13278464141f02526aefa519afb1d9c7d55e99e076803fbad368ba3e523d0d21"
+    },
+    {
+      "typedRef": "assets.courierTrafficHatch",
+      "role": "authored-lane-loop-traffic",
+      "status": "release-validated-typed-supporting-asset",
+      "quality": "release",
+      "hash": "sha256-ee239312a0f7f51f6a78c5fa09f60188347e85bcafc2f1f3177a8422467ba48f",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Daniel Zhabotinsky (https://sketchfab.com/DanielZhabotinsky)",
+      "renderedProbeSha256": "sha256-7060ee10f62fac4b3bdce2012a05a960dd3572ec55af4b62097858c5187dad1b"
+    },
+    {
+      "typedRef": "assets.courierZoneAwning",
+      "role": "zone-landmark-prop",
+      "status": "release-validated-typed-supporting-asset",
+      "quality": "release",
+      "hash": "sha256-97e715389628c95fcb33ae6d4776481a3efc46072723b6bc1e04dd5dc87141bf",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Pixel_Monster (https://sketchfab.com/ar.jethin)",
+      "renderedProbeSha256": "sha256-a8e2daef034bcc1d9140d55f84c79ad32f08cf451aa9557244cff3041c376452"
+    },
+    {
+      "typedRef": "assets.courierZoneBollard",
+      "role": "zone-landmark-prop",
+      "status": "release-validated-typed-supporting-asset",
+      "quality": "release",
+      "hash": "sha256-a696b2f70a052d887b4560138a6f6d80258d8c5cdfa520a6abccb4a5b0d6e412",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "chriskujath2 (https://sketchfab.com/chriskujath2)",
+      "renderedProbeSha256": "sha256-38b5744e7aeef381b1befa35fe423fdc9d35f6dce3d150e6180397eb98373ddd"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.courierAmbientCitySfx",
+      "quality": "candidate",
+      "hash": "sha256-995b1230697415d1aa56abf95135d10f27d9b778709bed34caa78f36205bb024",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierDispatchBlipSfx",
+      "quality": "candidate",
+      "hash": "sha256-8f47ba514fcbac57761264a77c2a617d4a0fafaf51afde40fe3d40ebef97c09e",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierEarlyBonusSfx",
+      "quality": "candidate",
+      "hash": "sha256-bd2aa40241b19813225b02aa787ce5ed717ac0217ed0a83f6cdee3349e7706e6",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierEngineSfx",
+      "quality": "candidate",
+      "hash": "sha256-0cc87f79f6f680bcae5f289ddc94d639a84a62626880cfcdc0c4125b18bf8fa7",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierHornNearSfx",
+      "quality": "candidate",
+      "hash": "sha256-8271dceda2c48f819789d53a1c83da4ff59382d67baf018397672b9c9b11f4bc",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierParcelDropSfx",
+      "quality": "candidate",
+      "hash": "sha256-69469dfaf7854a98c382abd52f7f199a4e781cb5a44ca8fe7ff7f4da768af02f",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierParcelPickupSfx",
+      "quality": "candidate",
+      "hash": "sha256-86c6b345a32b73c02f9b9304434baab1e465b75d6e2d217dd29eb8795feef740",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierShiftClearSfx",
+      "quality": "candidate",
+      "hash": "sha256-d6d76276eefcda93c2fe15852f5722f1b5e82223061c19cce0f1c306d46128dc",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierShiftFailSfx",
+      "quality": "candidate",
+      "hash": "sha256-b93788363910dd46585c68280e825e0e78fb0a0ed8723c3f861878ca9827ce1b",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.courierStrikeHitSfx",
+      "quality": "candidate",
+      "hash": "sha256-c75e32f00e819d03e3c251128a6e8e88e3e3492db6f12e7f453c8a4be182fd4a",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 3,
+    "primitiveBudget": 40,
+    "role": "street/zone guides, light pools, feedback, and non-subject set dressing",
+    "status": "within-stated-role-and-budget"
+  },
+  "gameplay": {
+    "deliveries": 5,
+    "arc": [
+      "nearby-zone-teach",
+      "cross-traffic",
+      "two-route-choice",
+      "fragile-express-pressure",
+      "combined-final-run"
+    ],
+    "traffic": "eight seeded cars on two authored lane loops with courtesy windows; no navmesh or free-roam claim",
+    "sensors": "route-local pickup/drop containment transitions scene-visible typed parcel state exactly once",
+    "failures": "three pinned collision strikes or one expired dispatch timer ends the shift",
+    "fullShiftEvidence": "tests/reports/showcase-courier-rush/full-shift-evidence.json"
+  },
+  "performance": {
+    "schema": "aura3d-courier-rush-performance/1.0",
+    "generatedAt": "2026-08-23T20:49:49.816Z",
+    "scope": "Headless timing of route-local dispatch and seeded eight-car authored lane-loop simulation. GPU/frame-time parity is not claimed.",
+    "samples": 12000,
+    "fixedStepSeconds": 0.008333333333333333,
+    "budgets": {
+      "dispatchP95Ms": 0.25,
+      "trafficP95Ms": 1,
+      "trafficCars": 8,
+      "fullShiftDrawCalls": 600
+    },
+    "observed": {
+      "dispatchP95Ms": 0.0008,
+      "trafficP95Ms": 0.0088,
+      "trafficCars": 8,
+      "fullShiftDrawCalls": 376
+    },
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "prototype",
+    "allowed": [
+      "five-delivery route-local arcade courier prototype",
+      "seeded authored lane-loop traffic with courtesy windows",
+      "typed van, parcel, traffic, landmarks, and ten state-driven audio cues",
+      "root-safe pickup/drop scene state and deterministic scoring/failure rules"
+    ],
+    "notAllowed": [
+      "physical suspension, tyre, damage, or open-world navigation claims",
+      "production renderer, HDR/IBL, WebGPU, or postprocess claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_COURIER_RUSH__",
+    "sourceReview": "apps/showcase-courier-rush/src/main.ts",
+    "detailedGameplayGlobal": "window.__COURIER_RUSH_EVIDENCE__",
+    "fullShift": "tests/reports/showcase-courier-rush/full-shift-evidence.json",
+    "failure": "tests/reports/showcase-courier-rush/failure-evidence.json",
+    "mobile": "tests/reports/showcase-courier-rush/mobile-evidence.json",
+    "reducedMotion": "tests/reports/showcase-courier-rush/reduced-motion-evidence.json",
+    "acceptanceArtifacts": [
+      {
+        "path": "tests/reports/showcase-courier-rush/load.png",
+        "sha256": "f04ebb496b71500f0cb5803e3915be9282f3c02c65f59a270ff3f24baca9d605"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/pickup-zone.png",
+        "sha256": "9686c711e90f63fd4d783d1c6d3585908072a4630923450b1470813bbeb37871"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/parcel-in-bed.png",
+        "sha256": "66643978df235835f0f771e7ddabbfa4ffc87c126a22e176c74479dd51edf467"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/busy-intersection.png",
+        "sha256": "cc488751692ad097931b275ff782367e7e3dca6ac78c324c8198b616f605200b"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/drop-flash.png",
+        "sha256": "430e3112c68de9eb57649285c0507afd85cfcf1848e96879f08b3c31e888d3e8"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/traffic-strike-fail.png",
+        "sha256": "f9e34873efd4f4f3192f3b57a25ecfa3cffcf3bda081f3f9c319700b31ac0969"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/timer-fail-summary.png",
+        "sha256": "02fd4fd0d6698b90fd6ce7b64922f7614a2effbd85826e1282a40951386f9279"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/shift-clear.png",
+        "sha256": "5853aefe7123c24e816c173d5964359fcf23a070bb94bed88fe1b3415a35b2ee"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/mobile.png",
+        "sha256": "c87018b7380b1bd998ec7886ce31a02cb00ed8a68f9639570578ac228a951c9a"
+      },
+      {
+        "path": "tests/reports/showcase-courier-rush/reduced-motion.png",
+        "sha256": "f40ed7b8359f6c504d070de831549fd5de5bca1034f926b19793d621f4da7dc5"
+      }
+    ],
+    "performance": "apps/showcase-courier-rush/performance-report.json",
+    "browserSpecs": [
+      "tests/browser/courier-rush-playable.spec.ts",
+      "tests/browser/courier-rush-scene.spec.ts"
+    ],
+    "unitSpecs": [
+      "tests/unit/apps/courier-rush-dispatch.test.ts",
+      "tests/unit/apps/courier-rush-traffic.test.ts"
+    ],
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-courier-rush/dist --release --source apps/showcase-courier-rush/src --asset courierVan --asset courierParcel --asset courierTrafficSedan --asset courierTrafficHatch --asset courierZoneAwning --asset courierZoneBollard"
+  }
+}

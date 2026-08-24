@@ -1,0 +1,306 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-23T21:50:52.691Z",
+  "appId": "showcase-pulse-tunnel",
+  "route": "/apps/showcase-pulse-tunnel/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "visualSubject": {
+    "kind": "abstract rhythm visualization",
+    "typedVisualPrimaryClaimed": false,
+    "statement": "The glider, tunnel frames, gates, lane rails, washes, and feedback are deliberate abstract primitives; no named real-world or character subject is claimed."
+  },
+  "audioAssets": [
+    {
+      "typedRef": "assets.pulseDrumsStem",
+      "quality": "candidate",
+      "hash": "sha256-03a34f7d2b05a1351fa319a59c6ce9daefc38f0c58734307d6ad55315a2d4d8f",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseBassStem",
+      "quality": "candidate",
+      "hash": "sha256-830c8785b1ec8036df68d84ba83a6a26ec72aaccb7d5c8c1728ad45c1619b2cf",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseLeadStem",
+      "quality": "candidate",
+      "hash": "sha256-0c9a6130c2b1b682a5a0844fc71672f3c80ee79959d53411e5259c4e3a35b873",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseAirStem",
+      "quality": "candidate",
+      "hash": "sha256-612320fcc89d78494e7fdf1a0c12e7648ea90db3e9993713133029106a6865fc",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseLaneSwitchSfx",
+      "quality": "candidate",
+      "hash": "sha256-04ec063bf597e2b6b7a3a4b821a5ae25b9abe1bb2237e6c71114ef6596927999",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseJumpSfx",
+      "quality": "candidate",
+      "hash": "sha256-7dd11a3063cd4fdf24378346d4f4cbea44754a9fb559074ab84f548fbfa8e9fb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseSlideSfx",
+      "quality": "candidate",
+      "hash": "sha256-b88a1c77a16957811b71f00c2de012b4918af5f2e01fbdbe2409e83da3e210fc",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseGrazeSfx",
+      "quality": "candidate",
+      "hash": "sha256-d5477d250fc4058dc28f84c65f6fb88c24ef46429a0f47e75548510066ca2080",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseShieldHitSfx",
+      "quality": "candidate",
+      "hash": "sha256-6c2b8476915941ba9e3a4abbea5ae18e61fcc7e0dcf0a4754aa9223e92dbb20f",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseShieldBreakSfx",
+      "quality": "candidate",
+      "hash": "sha256-11fdb8917d84e0fdd81b0caecd20150c33f429b423fda41f5d7643657ed26be5",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseSectionRiseSfx",
+      "quality": "candidate",
+      "hash": "sha256-6118617ebaf747ae03a3980e2f59ff0547c24d64c7a3d05f471a6d2fb8be9c76",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseRunOverSfx",
+      "quality": "candidate",
+      "hash": "sha256-9245490ea8b305ad05a71f1d2893f3e4a57bbfc770ef7aa00991bdf593d9521e",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.pulseUiConfirmSfx",
+      "quality": "candidate",
+      "hash": "sha256-0f07af091851320279eb7a5976df249e960f1328fbb3b70abb27b752730a5f27",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 11,
+    "primitiveBudget": 160,
+    "role": "abstract tunnel structure, obstacles, player marker, telegraph, and state-driven feedback",
+    "status": "within-abstract-role-and-budget"
+  },
+  "clockContract": {
+    "decision": "NO-GO-BROWSER-PROFILE",
+    "toleranceMs": 80,
+    "naturalFlip": true,
+    "fallbackFlip": {
+      "proven": true,
+      "reason": "drift-tolerance-exceeded",
+      "flippedAtTime": 2.8880000000000017,
+      "gameplayContinued": true
+    },
+    "measuredDriftSamples": [
+      {
+        "t": 0,
+        "driftMs": 0
+      },
+      {
+        "t": 0.883,
+        "driftMs": 119.13
+      },
+      {
+        "t": 1.885,
+        "driftMs": 116.87
+      },
+      {
+        "t": 2.888,
+        "driftMs": 120.5
+      },
+      {
+        "t": 3.882,
+        "driftMs": 0
+      },
+      {
+        "t": 4.888,
+        "driftMs": 0
+      },
+      {
+        "t": 5.887,
+        "driftMs": 0
+      },
+      {
+        "t": 6.884,
+        "driftMs": 0
+      },
+      {
+        "t": 7.88,
+        "driftMs": 0
+      }
+    ],
+    "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "claim": "Beat mode is conditional on measured tolerance; this measured profile runs the authored chart in deterministic pattern mode after the proven fallback."
+  },
+  "gameplay": {
+    "runLengthSeconds": 90,
+    "sections": [
+      "intro",
+      "build",
+      "drop",
+      "finale"
+    ],
+    "actions": [
+      "lane-left",
+      "lane-right",
+      "jump",
+      "slide"
+    ],
+    "mechanics": [
+      "telegraph",
+      "avoid",
+      "collision",
+      "graze",
+      "style",
+      "three-shield-failure",
+      "pause",
+      "restart",
+      "completion"
+    ],
+    "keyboardAndTouch": true,
+    "reducedMotionPreservesTimingAndCollision": true
+  },
+  "performance": {
+    "schema": "aura3d-pulse-tunnel-performance/1.0",
+    "generatedAt": "2026-08-23T21:50:52.332Z",
+    "producer": "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts",
+    "producerSourceSha256": "b0bf7ffa5aaa9b2860eb31fc44b322f61f876c285b2aaf3331f1fc6dc93e89e2",
+    "routeSourceSha256": "33ccfb5f30d07a70cc4289b1d950d300d72d6b105d46acae32d097bcc52a4bf2",
+    "scope": "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
+    "samples": 12000,
+    "fixedStepSeconds": 0.008333333333333333,
+    "budgets": {
+      "simulationP95Ms": 1,
+      "fullRunDrawCalls": 600
+    },
+    "observed": {
+      "simulationP95Ms": 0.0006,
+      "chartEntries": 51,
+      "fullRunDrawCalls": 119
+    },
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "abstract root-safe prototype",
+    "allowed": [
+      "90-second authored obstacle chart",
+      "four typed stems and nine typed state-driven cues",
+      "measured clock tolerance with deterministic pattern fallback",
+      "root-safe abstract tunnel gameplay"
+    ],
+    "notAllowed": [
+      "perfect or universal beat accuracy",
+      "typed visual primary asset",
+      "production renderer, HDR/IBL, native WebGPU, or postprocess parity",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_PULSE_TUNNEL__",
+    "sourceReview": "apps/showcase-pulse-tunnel/src/main.ts",
+    "detailedGameplayGlobal": "window.__PULSE_TUNNEL_EVIDENCE__",
+    "playable": "tests/reports/pulse-tunnel/playable-evidence.json",
+    "mobile": "tests/reports/pulse-tunnel/mobile-evidence.json",
+    "completion": "tests/reports/pulse-tunnel/completion-evidence.json",
+    "sync": "tests/reports/pulse-tunnel/sync-report.json",
+    "acceptanceArtifacts": [
+      {
+        "path": "tests/reports/pulse-tunnel/playable-load.png",
+        "sha256": "5a4c89cbb99ea624ee1c251c56ce969cb86c2a1c706aa62adb35dec3ff9c0c45"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-lane-switch.png",
+        "sha256": "3a3568cdc6f68fc92b05d794cd778e44253a190f6f1d6930af9bf995cc2e4a4d"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-jump.png",
+        "sha256": "d53042caf38a96c1b8c9efc73c4b7ac4fbd1d5e40073bc0a73ab282cec2b1cf4"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-graze.png",
+        "sha256": "4efe97e47625e8c8fdf565b07cebbc35e57c38dec0ce0382f39fb95630062786"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-drop-section.png",
+        "sha256": "93afaa950674ae5ffa03031d447ad31b759da4c9c617751141c8cdcf27e033f0"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-shield-break.png",
+        "sha256": "5671e4e947d45350f81b203230d6792f1dd3238455f98e3f6cb353e5b145dd47"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-finale.png",
+        "sha256": "a1811524a5a023d7b3f41f202cd99aea1f364736333c5424084b8f5cddcc7e06"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-summary.png",
+        "sha256": "584242fa3f16424c15172b8f280df80f3e0309bbb1c45172726cfb14e179ea7a"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/playable-finished.png",
+        "sha256": "50bdc99d1ce8e9b1f2d5410555dd67033b8d3f09705ac05f86388fb5841e2341"
+      },
+      {
+        "path": "tests/reports/pulse-tunnel/mobile.png",
+        "sha256": "da60165e93f02eb368e38e1a5434e3ffaa6fe5109f2f78d3e2986173b9a11878"
+      }
+    ],
+    "performance": "apps/showcase-pulse-tunnel/performance-report.json",
+    "browserSpecs": [
+      "tests/browser/pulse-tunnel-playable.spec.ts",
+      "tests/browser/pulse-tunnel-sync.spec.ts"
+    ],
+    "unitSpecs": [
+      "tests/unit/apps/pulse-tunnel-clock.test.ts"
+    ],
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-pulse-tunnel/dist --release --source apps/showcase-pulse-tunnel/src --no-assets",
+    "deployAssetBoundary": "The route has no typed visual primary subject. The deploy check uses --no-assets so the model-oriented release validator does not attempt 3D bounds extraction on WAV files; all 13 live typed audio references are independently hash/provenance/quality-validated by this generator."
+  }
+}

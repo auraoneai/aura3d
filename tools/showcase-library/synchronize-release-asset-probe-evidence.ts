@@ -16,12 +16,25 @@ import { readPngRenderedProbeMetrics } from "./png-foreground.mjs";
  * trips the role-aware readability rule.
  *
  * Usage: synchronize-release-asset-probe-evidence <asset-id>
+ *   [--quality release] [--suitability <text>] [--orientation-json <path>]
  */
 
 const assetId = process.argv[2];
 if (!assetId) {
-  throw new Error("Usage: synchronize-release-asset-probe-evidence <asset-id>");
+  throw new Error("Usage: synchronize-release-asset-probe-evidence <asset-id> [--quality release] [--suitability <text>] [--orientation-json <path>]");
 }
+
+function readOption(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  if (index < 0) return undefined;
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith("--")) throw new Error(`${name} requires a value`);
+  return value;
+}
+
+const quality = readOption("--quality");
+const suitabilityReason = readOption("--suitability");
+const orientationPath = readOption("--orientation-json");
 
 const root = resolve(process.cwd());
 const manifest = JSON.parse(readFileSync(resolve(root, "aura.assets.json"), "utf8")) as {
@@ -60,9 +73,26 @@ const renderedProbe = {
   ...(foregroundBounds ? { foregroundBounds } : {})
 };
 
-const orientation = asset.orientation && typeof asset.orientation === "object"
+const authoredOrientationDocument = orientationPath
+  ? JSON.parse(readFileSync(resolve(root, orientationPath), "utf8")) as Record<string, unknown>
+  : undefined;
+// The browser producer writes a self-describing `{ orientation: {...} }`
+// document so the retained artifact is unambiguous. Accept both that public
+// artifact shape and the older bare orientation record at this synchronization
+// boundary.
+const authoredOrientation = authoredOrientationDocument?.orientation
+  && typeof authoredOrientationDocument.orientation === "object"
+  ? authoredOrientationDocument.orientation as Record<string, unknown>
+  : authoredOrientationDocument;
+const storedOrientation = authoredOrientation ?? (asset.orientation && typeof asset.orientation === "object"
+  ? asset.orientation as Record<string, unknown>
+  : undefined);
+const orientation = storedOrientation?.source === "manifest-override"
   ? {
-      ...(asset.orientation as Record<string, unknown>),
+      ...storedOrientation,
+      assetHash,
+      checkedAt: renderedProbe.checkedAt,
+      route: renderedProbe.route,
       renderedProbe: {
         url: renderedProbe.url,
         sha256: renderedProbe.sha256,
@@ -79,6 +109,8 @@ const result = addAsset({
   name: assetId,
   copy: false,
   renderedProbe,
+  ...(quality ? { quality: quality as never } : {}),
+  ...(suitabilityReason ? { suitabilityReason } : {}),
   ...(orientation ? { orientation: orientation as never } : {})
 });
 console.log(`${assetId}: ${result.ok ? "synchronized" : "failed"} ${renderedProbe.sha256} fg=${foregroundBounds?.width}x${foregroundBounds?.height}`);

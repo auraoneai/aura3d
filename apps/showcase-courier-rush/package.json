@@ -1,0 +1,25 @@
+{
+  "name": "@aura3d/showcase-courier-rush",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Courier Rush, a night-shift delivery prototype on the cityBlock night kit with createGameArcadeVehicle van handling, createVehicleDriverAi traffic loops, sensor pickup/drop zones, strike/timer fail model, and combo scoring.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "build-sfx": "node scripts/build-sfx.mjs",
+    "register:models": "node scripts/register-models.mjs",
+    "register:sfx": "node scripts/register-sfx.mjs",
+    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "evidence:route-health": "node scripts/write-route-health.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

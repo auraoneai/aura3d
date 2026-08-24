@@ -5,21 +5,27 @@ import {
   type AuraBodyHandle
 } from "@aura3d/engine";
 import { assets } from "./aura-assets";
-import { ENEMIES, ENEMY_VISUAL_Y, damageEnemy, registerHitReaction, resetEnemies, updateEnemies } from "./game/enemies";
+import { ENEMIES, ENEMY_VISUAL_Y, damageEnemy, enemyLosBlockedIds, registerHitReaction, resetEnemies, updateEnemies } from "./game/enemies";
 import { createHud, renderHud } from "./game/hud";
 import { createCorridorAudio } from "./game/audio";
-import { bindFireKeys } from "./game/fire-bus";
+import { collectPickupByName, collectPickupsNearPlayer } from "./game/pickups";
+import { bindFireKeys, fireBus } from "./game/fire-bus";
 import { bindPointerLock, createFpsInput } from "./game/input";
 import { buildScene, createLevelBodies, layers, PICKUPS } from "./game/level";
-import { lookTargetPoint, playerEye, resetPlayer, updateLook, updatePlayer } from "./game/player";
+import { applyLampSupport, createPropWorld, resetPropEvidence, resetProps, scatterEvents, scatterPropsAt, syncPropNodes } from "./game/props";
+import { applyTouchLook, lookTargetPoint, playerEye, resetPlayer, updateLook, updatePlayer } from "./game/player";
 import { MAG_SIZE, MAX_HP, START_RESERVE, WALK_Y, createInitialState, lookDirection, rightDirection, type FpsRunState } from "./game/state";
-import { createShotClock, hideShotFx, showShot, updateShotFx } from "./game/shot-fx";
+import { createShotClock, hideShotFx, shotFxDebug, showShot, updateShotFx } from "./game/shot-fx";
 import { createWeaponClock, fireHitscan, updateWeapon, type ShotTrace } from "./game/weapons";
+import { createCorridorTouchControls } from "./game/touch";
 
 declare global {
   interface Window {
     __AURA3D_ROUTE_READY__?: { readonly ready: boolean; readonly diagnostics?: unknown };
     __AURA3D_FPS_SHOOT__?: () => void;
+    __AURA3D_FPS_CAPTURE__?: {
+      setWeaponVisible(visible: boolean): void;
+    };
   }
 }
 
@@ -71,18 +77,22 @@ interface FpsEvidence {
 }
 
 const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+const reducedFlash = reducedMotion || new URLSearchParams(window.location.search).get("reducedFlash") === "1";
 const input = createFpsInput();
 const reducedMotionSource = game.accessibility.reducedMotion({ enabled: reducedMotion });
+const reducedFlashSource = game.accessibility.reducedFlash({ enabled: reducedFlash });
 const pauseControls = game.accessibility.pauseControls({ actions: ["pause", "KeyP"] });
-const effects = game.effects({ poolSize: 48, reducedMotion });
+const effects = game.effects({ poolSize: 48, reducedMotion, reducedFlash });
 const director = game.cameraDirector({ reducedMotion, mode: "follow" });
 const hud = createHud();
 const weaponClock = createWeaponClock();
 const shotClock = createShotClock();
 const state = createInitialState();
 const audio = createCorridorAudio(state);
+const mountId = `neon-corridor-strike-${performance.timeOrigin}`;
 let lastWarnAmmo = MAG_SIZE;
 let lastStatus: string = "playing";
+let pausedAtMs: number | undefined;
 const rifleScale = groundedRenderedAssetPlacement(assets.pulseRifle, { targetMaxDimension: 0.85, floorY: 0 }).scale;
 
 const app = createAuraApp("#app", {
@@ -93,6 +103,15 @@ const app = createAuraApp("#app", {
 
 createLevelBodies(app.physics);
 const physics = app.physics;
+// NC-A1/NC-A4: dynamic debris bodies + spring-lamp joints live on the same
+// runtime; their visuals were declared in buildScene and are synced per frame.
+createPropWorld(physics);
+// Shared collection effects for both the trigger path and the NC-A2 sweep.
+const pickupHooks = {
+  removeBody: (name: string) => physics.removeBody(name),
+  hideNode: (name: string) => app.nodes.get(name)?.setVisible(false),
+  onCollected: () => audio.play("pickup")
+};
 const playerBody = physics.bodies.require("player") as AuraBodyHandle;
 const lookNode = app.nodes.require("look-target");
 const rifleNode = app.nodes.require("pulse-rifle");
@@ -103,29 +122,23 @@ for (const enemy of ENEMIES) {
   app.nodes.get(`enemy-${enemy.id}`)?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
 }
 
+function reachExit(): void {
+  if (state.status !== "playing") return;
+  state.exitReached = true;
+  state.status = "won";
+  state.score += 250;
+  state.objective = "Exit reached. Press R to reset";
+}
+
 physics.onTriggerEnter((event) => {
   const names = [event.nodeA, event.nodeB];
   const pickup = names.find((name) => name?.startsWith("pickup-"));
-  if (pickup && !state.collected.includes(pickup)) {
-    state.collected.push(pickup);
-    state.pickups += 1;
-    if (pickup.includes("ammo")) {
-      state.reserve += 8;
-      state.objective = "Ammo crate cracked";
-    } else {
-      state.hp = Math.min(MAX_HP, state.hp + 35);
-      state.objective = "Field dressing applied";
-    }
-    physics.removeBody(pickup);
-    app.nodes.get(pickup)?.setVisible(false);
-    audio.play("pickup");
+  if (pickup) {
+    // Collection effects live in pickups.ts so the NC-A2 overlap sweep and this
+    // trigger path cannot drift apart. The sensor stays authoritative first.
+    collectPickupByName(state, pickupHooks, pickup);
   }
-  if (names.includes("exit") && state.status === "playing") {
-    state.exitReached = true;
-    state.status = "won";
-    state.score += 250;
-    state.objective = "Exit reached. Press R to reset";
-  }
+  if (names.includes("exit")) reachExit();
 });
 
 function resetRun(): void {
@@ -139,6 +152,8 @@ function resetRun(): void {
   state.reloads = 0;
   state.pickups = 0;
   state.paused = false;
+  pausedAtMs = undefined;
+  audio.reset();
   state.yaw = 0;
   state.pitch = 0;
   state.ignoreFireUntil = 0;
@@ -158,7 +173,14 @@ function resetRun(): void {
   state.damageFlash = 0;
   state.dryFirePulse = 0;
   state.audioCues = [];
+  state.overlapPickupChecks = 0;
+  fireBus().held = false;
+  fireBus().queued = false;
+  weaponClock.cooldown = 0;
+  weaponClock.recoil = 0;
   state.resets += 1;
+  resetProps(physics);
+  resetPropEvidence();
   lastWarnAmmo = MAG_SIZE;
   lastStatus = "playing";
   resetPlayer(playerBody);
@@ -186,6 +208,13 @@ function resetRun(): void {
     app.nodes.get(id)?.setVisible(true);
   }
   hideShotFx(app.nodes);
+  // Kill any live wall-clock presentation window so a pre-reset bolt cannot
+  // resurrect on the next frame.
+  shotClock.visible = 0;
+  shotClock.pose = null;
+  shotClock.expiresAt = undefined;
+  lastShotWallMs = -1;
+  effects.update(60);
   app.resume();
 }
 
@@ -200,6 +229,11 @@ function muzzleBarrel(): readonly [number, number, number] {
   ];
 }
 
+let lastShotWallMs = -1;
+function nowMs(): number {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
+}
+
 function presentShot(shot: ShotTrace): void {
   const barrel = muzzleBarrel();
   const dir = lookDirection(shot.yaw, 0);
@@ -211,6 +245,7 @@ function presentShot(shot: ShotTrace): void {
   ];
   try {
     showShot(app.nodes, shot.origin, dir, barrel, end, shot.yaw, shotClock);
+    lastShotWallMs = nowMs();
     effects.impactFlash(barrel, { color: "#ff7a18", intensity: 1.35, duration: 0.08, radius: 0.1, ownerId: "muzzle" });
     // Enemy hits already spark via effects.hitSpark; wall hits get an end flash.
     if (!state.lastHitName.startsWith("enemy-")) {
@@ -218,7 +253,10 @@ function presentShot(shot: ShotTrace): void {
     }
     app.nodes.get("shot-light")?.setPosition(barrel[0], barrel[1], barrel[2]);
   } catch {
+    // Never leave a half-presented shot resumable by the wall-clock hold.
     shotClock.visible = 0;
+    shotClock.pose = null;
+    shotClock.expiresAt = undefined;
   }
 }
 
@@ -246,41 +284,58 @@ function shootNow(): void {
     state.dryFirePulse = 0.22;
     audio.play("dry-fire");
     weaponClock.cooldown = 0.16;
-    renderHud(hud, state);
+    renderHud(hud, state, reducedFlash);
     publishEvidence();
     return;
   }
-  const shot = fireHitscan(state, physics, playerBody, effects, applyHit);
+  const shot = fireHitscan(state, physics, playerBody, effects, applyHit, (point) => scatterPropsAt(physics, point));
   if (shot) {
     presentShot(shot);
     audio.play("fire");
   }
   weaponClock.cooldown = 0.16;
   weaponClock.recoil = 1;
-  renderHud(hud, state);
+  renderHud(hud, state, reducedFlash);
   publishEvidence();
 }
 
 bindFireKeys(shootNow);
 window.__AURA3D_FPS_SHOOT__ = shootNow;
+const touchControls = createCorridorTouchControls({
+  input,
+  onLook: (dx, dy) => applyTouchLook(state, dx, dy, reducedMotion)
+});
+window.__AURA3D_FPS_CAPTURE__ = {
+  setWeaponVisible(visible: boolean): void {
+    rifleNode.setVisible(visible);
+  }
+};
 
 function syncWeaponViewmodel(): void {
   const eye = playerEye(playerBody);
   const forward = lookDirection(state.yaw, 0);
   const right = rightDirection(state.yaw);
   const recoil = weaponClock.recoil;
+  const compact = window.innerWidth <= 600;
+  const forwardOffset = compact ? 0.42 : 0.46;
+  const rightOffset = compact ? 0.08 : 0.22;
+  const verticalOffset = 0.18;
+  const viewmodelScale = rifleScale * (compact ? 0.4 : 0.48);
   rifleNode
     .setPosition(
-      eye[0] + forward[0] * (0.46 - 0.05 * recoil) + right[0] * 0.22,
-      eye[1] - 0.2 - 0.02 * recoil,
-      eye[2] + forward[2] * (0.46 - 0.05 * recoil) + right[2] * 0.22
+      eye[0] + forward[0] * (forwardOffset - 0.05 * recoil) + right[0] * rightOffset,
+      eye[1] - verticalOffset - 0.02 * recoil,
+      eye[2] + forward[2] * (forwardOffset - 0.05 * recoil) + right[2] * rightOffset
     )
     .setRotation(0, state.yaw, 0)
-    .setScale(rifleScale);
+    .setScale(viewmodelScale);
 }
 
 function publishEvidence(): void {
   const at = playerBody.position();
+  const evidenceNow = state.paused && pausedAtMs !== undefined ? pausedAtMs : nowMs();
+  const lookTarget = app.nodes.get("look-target")?.position ?? [0, 0, 0];
+  const firstEnemyBody = physics.bodies.get("enemy-e1")?.position() ?? [0, 0, 0];
   const diagnostics = app.diagnostics() as { readonly renderer?: { readonly mode?: string; readonly fallback?: string }; readonly backend?: string };
   window.__AURA3D_FPS_EVIDENCE__ = {
     status: state.status,
@@ -295,10 +350,15 @@ function publishEvidence(): void {
     pickups: state.pickups,
     resets: state.resets,
     paused: state.paused,
+    mountId,
+    touch: touchControls.snapshot(),
+    reducedMotion,
+    reducedFlash,
     pointerLockRequested: state.pointerLockRequested,
     pointerLockActive: state.pointerLockActive,
     yaw: state.yaw,
     pitch: state.pitch,
+    lookTarget: [...lookTarget],
     x: at[0],
     y: at[1],
     z: at[2],
@@ -310,19 +370,45 @@ function publishEvidence(): void {
     exitReached: state.exitReached,
     lastHitName: state.lastHitName,
     shotFxVisible: shotClock.visible > 0,
+    shotClock: shotClock.visible,
+    shotExpiresInMs: shotClock.expiresAt === undefined ? -1 : Math.max(0, Math.round(shotClock.expiresAt - evidenceNow)),
     reloading: state.reloadClock > 0,
+    reloadClock: state.reloadClock,
+    spawnGuard: state.spawnGuard,
+    weaponCooldown: weaponClock.cooldown,
+    weaponRecoil: weaponClock.recoil,
     hitMarkerActive: state.hitMarker > 0,
     audioUnlocked: audio.unlocked(),
     audioCuesPlayed: audio.cuesPlayed().length,
+    droneActive: audio.ambientBus().active,
+    droneDucked: audio.ambientBus().ducked,
+    audioPaused: audio.ambientBus().paused,
+    shotAgeMs: lastShotWallMs < 0 ? -1 : Math.round(evidenceNow - lastShotWallMs),
+    fxHideCount: shotFxDebug.hideCount,
+    fxLastReason: shotFxDebug.lastReason,
+    fxLastAliveAgoMs: shotFxDebug.lastAliveMs < 0 ? -1 : Math.round(nowMs() - shotFxDebug.lastAliveMs),
     dryFireActive: state.dryFirePulse > 0,
     shotBolt0: [...(app.nodes.get("muzzle-0")?.position ?? [0, 0, 0])],
     shotBolt1: [...(app.nodes.get("muzzle-1")?.position ?? [0, 0, 0])],
     enemyVisualY: app.nodes.get("enemy-e1")?.position[1] ?? -1,
+    enemyBodyY: firstEnemyBody[1],
+    enemyBodyPositions: ENEMIES.map((enemy) => [...(physics.bodies.get(`enemy-${enemy.id}`)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])]),
+    propBodyPositions: [
+      ...["barrel-1", "barrel-2", "barrel-3", "crate-1", "crate-2", "crate-3"].map((id) => [...(physics.bodies.get(`prop-${id}`)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])]),
+      ...["lamp-near", "lamp-far"].map((id) => [...(physics.bodies.get(id)?.position() ?? [Number.NaN, Number.NaN, Number.NaN])])
+    ],
     shotFxNodeCount: ["shot-impact", ...Array.from({ length: 3 }, (_, i) => `muzzle-${i}`)].filter((id) => app.nodes.has(id)).length,
+    cameraShake: director.snapshot().shake,
+    effectFlashIntensity: Math.max(0, ...effects.snapshot().effects.filter((effect) => effect.kind === "impact-flash" || effect.kind === "super-flash").map((effect) => effect.intensity)),
     bulletOnBulletContacts: 0,
     usedKit: false,
     typedAssets: Object.keys(assets),
-    primitiveCount: 26,
+    // 26 authored base prims + 6 debris props + 4 lamp parts + 2 greeble pools
+    // + 3 text3D signs. Greeble instances are additional instanced transforms.
+    primitiveCount: 41,
+    propsScatteredEvents: scatterEvents(),
+    overlapPickupChecks: state.overlapPickupChecks,
+    losBlockedEnemies: [...enemyLosBlockedIds()],
     rendererMode: diagnostics.renderer?.mode ?? diagnostics.backend ?? "unknown",
     rendererFallback: diagnostics.renderer?.fallback ?? "none",
     knownLimits: [
@@ -331,7 +417,10 @@ function publishEvidence(): void {
       "no nav mesh; hostiles rush by proximity after the corridor alarm",
       "hostiles are solid to hitscan but not to the player capsule; touch damage is proximity-authored",
       "medkit catalog match is a medical gurney prop, not a packed first-aid box",
-      "audio cues are in-repo CC0 synthesis registered through the asset CLI, not a music score"
+      "audio cues are in-repo CC0 synthesis registered through the asset CLI, not a music score",
+      "debris scatter and lamp sway are cosmetic physics; no damage model reads prop poses",
+      "enemy aggro sight lines use public sphereCast against the wall hull, not a nav mesh",
+      "greebles are two instanced LOD pools of set dressing; signage glyphs are uppercase/digits only"
     ],
     frame: app.runtime.frame
   };
@@ -339,28 +428,42 @@ function publishEvidence(): void {
 
 app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
-  state.spawnGuard = Math.max(0, state.spawnGuard - step);
   input.update(step);
   if (input.pressed("pause") && state.status === "playing") {
     state.paused = !state.paused;
+    if (state.paused) {
+      pausedAtMs = nowMs();
+    } else if (pausedAtMs !== undefined) {
+      const pausedFor = nowMs() - pausedAtMs;
+      if (shotClock.expiresAt !== undefined) shotClock.expiresAt += pausedFor;
+      if (lastShotWallMs >= 0) lastShotWallMs += pausedFor;
+      pausedAtMs = undefined;
+    }
+    audio.setPaused(state.paused);
   }
-  if (input.pressed("reset") || (input.pressed("reload") && state.status !== "playing")) {
+  if (input.pressed("reset") || (state.status !== "playing" && input.pressed("reload"))) {
     resetRun();
   }
   if (state.paused) {
-    renderHud(hud, state);
+    renderHud(hud, state, reducedFlash);
     publishEvidence();
     return;
   }
+
+  state.spawnGuard = Math.max(0, state.spawnGuard - step);
 
   updateLook(state, input, reducedMotion);
   updatePlayer(state, input, physics, playerBody, step);
   updateWeapon(state, input, physics, playerBody, effects, weaponClock, step, applyHit, presentShot, {
     onReloadStart: () => audio.play("reload-start"),
     onReloadComplete: () => audio.play("reload-done"),
-    onDryFire: () => audio.play("dry-fire")
+    onDryFire: () => audio.play("dry-fire"),
+    onImpactPoint: (point) => scatterPropsAt(physics, point)
   });
 
+  // NC-A4: keep the spring-carried practicals neutrally supported while the
+  // solver advances, so sway is the only thing the spring has to do.
+  applyLampSupport(physics);
   physics.step(step);
   const stepped = playerBody.position();
   playerBody.teleport([stepped[0], WALK_Y, stepped[2]]);
@@ -368,6 +471,15 @@ app.onFrame(({ dt }) => {
     onPlayerDamaged: () => audio.play("hurt"),
     onAlarm: () => audio.play("alarm")
   });
+  // NC-A1/NC-A4 set dressing follows its bodies; NC-A2 overlap-sweep backup
+  // runs every frame but can only ever agree with the authoritative sensor.
+  syncPropNodes(app.nodes, step);
+  collectPickupsNearPlayer(state, physics, playerBody.position(), pickupHooks);
+  // Trigger-enter remains the primary exit signal. Confirm the authored exit
+  // overlap after stepping as a fixed-clock robustness path, matching the
+  // pickup query backup and preventing a throttled frame from missing the win.
+  const exitOverlap = physics.queries.overlapSphere(playerBody.position(), 0.6, { layers: ["pickup"] });
+  if (exitOverlap.some((body) => body.nodeName === "exit")) reachExit();
 
   const look = lookTargetPoint(playerBody, state);
   lookNode.setPosition(look[0], look[1], look[2]).setRotation(0, state.yaw, 0);
@@ -403,19 +515,19 @@ app.onFrame(({ dt }) => {
   }
   lastWarnAmmo = state.ammo;
 
-  renderHud(hud, state);
+  renderHud(hud, state, reducedFlash);
   publishEvidence();
   game.evidence(app, {
     input,
     effects,
     camera: director,
-    accessibility: [reducedMotionSource, pauseControls],
+    accessibility: [reducedMotionSource, reducedFlashSource, pauseControls],
     assets: { typedAssets: Object.keys(assets).length }
   });
 });
 
 publishEvidence();
-renderHud(hud, state);
+renderHud(hud, state, reducedFlash);
 
 void app.ready().then(() => {
   const diagnostics = app.diagnostics();

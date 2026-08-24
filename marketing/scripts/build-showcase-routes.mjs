@@ -43,6 +43,14 @@ const showcaseRoutes = [
   "showcase-blockfall-reactor",
   "showcase-turbo-drift-circuit",
   "showcase-skyline-runner",
+  "showcase-gravity-post",
+  "showcase-aurora-lander",
+  "showcase-siege-golf",
+  "showcase-neon-swarm",
+  "showcase-courier-rush",
+  "showcase-pulse-tunnel",
+  "showcase-mech-hangar",
+  "showcase-vault-breakers",
   "showcase-data-galaxy",
   "showcase-webgpu-particle-lab"
 ];

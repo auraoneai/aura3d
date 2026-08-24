@@ -30,6 +30,8 @@ export interface WeaponEvents {
   readonly onReloadStart?: () => void;
   readonly onReloadComplete?: () => void;
   readonly onDryFire?: () => void;
+  /** NC-A1: fired after ANY confirmed impact (enemy or wall), with the hit point. */
+  readonly onImpactPoint?: (point: readonly [number, number, number]) => void;
 }
 
 export function createWeaponClock(): WeaponClock {
@@ -74,7 +76,7 @@ export function updateWeapon(
       }
     } else if (clock.cooldown <= 0) {
       state.paused = false;
-      const shot = fireHitscan(state, physics, playerBody, effects, onHit);
+      const shot = fireHitscan(state, physics, playerBody, effects, onHit, events.onImpactPoint);
       if (shot) {
         onShot(shot);
         clock.recoil = 1;
@@ -108,7 +110,8 @@ export function fireHitscan(
   physics: AuraPhysicsRuntime,
   playerBody: AuraBodyHandle,
   effects: GameEffectsController,
-  onHit: (enemyId: string, point: readonly [number, number, number]) => void
+  onHit: (enemyId: string, point: readonly [number, number, number]) => void,
+  afterImpact?: (point: readonly [number, number, number]) => void
 ): ShotTrace | null {
   if (state.ammo <= 0 || state.reloadClock > 0) {
     if (state.ammo <= 0) state.objective = "Empty mag. Press R to reload";
@@ -135,6 +138,8 @@ export function fireHitscan(
     return { origin, direction, yaw: state.yaw, pitch: state.pitch, end };
   }
   const point = hit.point;
+  // NC-A1 cosmetic scatter hook: confirmed impact point drives debris impulses.
+  afterImpact?.(point);
   const named = hit.nodeName ?? hit.body.nodeName ?? "";
   const matchedEnemy = ENEMY_IDS.find((id) => physics.bodies.get(id)?.id === hit.body.id) ?? (named.startsWith("enemy-") ? named : "");
   const name = matchedEnemy || named;

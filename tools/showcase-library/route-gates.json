@@ -254,6 +254,482 @@
           "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json proves the required racing interactions and category floor"
         ]
       }
+    },
+    {
+      "id": "showcase-siege-golf",
+      "label": "Siege Golf",
+      "path": "/apps/showcase-siege-golf/",
+      "globalName": "__AURA3D_SHOWCASE_SIEGE_GOLF__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": [
+        "siegeGolfBall",
+        "siegeWoodenCrate",
+        "siegeWoodenBarrel",
+        "siegePlankSet"
+      ],
+      "primaryAssetRoles": {
+        "siegeGolfBall": "weighted-gameplay-ball",
+        "siegeWoodenCrate": "destructible-prop",
+        "siegeWoodenBarrel": "destructible-prop",
+        "siegePlankSet": "jointed-structure"
+      },
+      "routePrimaryHeroAsset": "siegeGolfBall",
+      "secondaryPrimaryAssets": [
+        "siegeWoodenCrate",
+        "siegeWoodenBarrel",
+        "siegePlankSet"
+      ],
+      "primitiveBudget": 40,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "physics-golf",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:siege-golf-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound desktop, mobile, mechanic, and course-complete Siege Golf artifacts.",
+          "Retain fresh route-primary, route-health, deploy, performance, and launch evidence after that approval.",
+          "Promote a public showcase card only after the PRD execution ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/siege-golf/course-completion/ contains mounted all-nine-hole completion artifacts and evidence JSON",
+          "tests/reports/showcase-route-primary-probes/showcase-siege-golf.png is the current typed-ball route-primary artifact",
+          "apps/showcase-siege-golf/performance-report.json records the bounded route-local Rapier performance run",
+          "apps/showcase-siege-golf/route-health.json retains publicShowcase false and the pending-review blocker"
+        ]
+      }
+    },
+    {
+      "id": "showcase-aurora-lander",
+      "label": "Aurora Lander",
+      "path": "/apps/showcase-aurora-lander/",
+      "globalName": "__AURA3D_SHOWCASE_AURORA_LANDER__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": [
+        "auroraLanderProbe",
+        "auroraPadBeacon"
+      ],
+      "primaryAssetRoles": {
+        "auroraLanderProbe": "primary-vehicle",
+        "auroraPadBeacon": "landing-zone-prop"
+      },
+      "routePrimaryHeroAsset": "auroraLanderProbe",
+      "secondaryPrimaryAssets": [
+        "auroraPadBeacon"
+      ],
+      "primitiveBudget": 20,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "precision-flight",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:aurora-lander-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound approach, gust, whiteout, contact, extraction, mobile, and reduced-motion artifacts.",
+          "Retain fresh route-primary, route-health, deploy, performance, and launch evidence after that approval.",
+          "Promote a public showcase card only after the Aurora Lander PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/aurora-lander-campaign/ contains the current three-site, hard-contact, mobile, and reduced-motion artifacts with screenshot hashes",
+          "tests/reports/aurora-lander-terrain/contact-evidence.json records canonical Rapier contact plus BVH query agreement",
+          "apps/showcase-aurora-lander/performance-report.json records bounded route-local timing and strongest-whiteout draw calls",
+          "apps/showcase-aurora-lander/route-health.json retains publicShowcase false and the pending-review blocker"
+        ]
+      }
+    },
+    {
+      "id": "showcase-neon-swarm",
+      "label": "Neon Swarm",
+      "path": "/apps/showcase-neon-swarm/",
+      "globalName": "__AURA3D_SHOWCASE_NEON_SWARM__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": [
+        "neonCourierAvatar",
+        "neonBarricadeProp",
+        "neonStreetLampProp"
+      ],
+      "primaryAssetRoles": {
+        "neonCourierAvatar": "primary-character",
+        "neonBarricadeProp": "street-obstacle-prop",
+        "neonStreetLampProp": "street-landmark-prop"
+      },
+      "routePrimaryHeroAsset": "neonCourierAvatar",
+      "secondaryPrimaryAssets": [
+        "neonBarricadeProp",
+        "neonStreetLampProp"
+      ],
+      "primitiveBudget": 40,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "abstract-swarm",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:neon-swarm-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound opening, density, burst, elite, upgrade, failure, mobile, reduced-motion, and completion artifacts.",
+          "Retain fresh route-primary, route-health, deploy, performance, and launch evidence after that approval.",
+          "Promote a public showcase card only after the Neon Swarm PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/neon-swarm/ contains the current source-bound gameplay, five-stage campaign, mobile, reduced-motion, and 320-instance artifacts",
+          "tests/reports/showcase-route-primary-probes/showcase-neon-swarm.png is the typed-courier route-primary artifact",
+          "apps/showcase-neon-swarm/performance-report.json records bounded 320-drone route-local simulation and renderer telemetry",
+          "apps/showcase-neon-swarm/route-health.json retains publicShowcase false and the pending-review blocker"
+        ]
+      }
+    },
+    {
+      "id": "showcase-gravity-post",
+      "label": "Gravity Post",
+      "path": "/apps/showcase-gravity-post/",
+      "globalName": "__AURA3D_SHOWCASE_GRAVITY_POST__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": [
+        "gravityPostMailPod",
+        "gravityPostDockBeacon"
+      ],
+      "primaryAssetRoles": {
+        "gravityPostMailPod": "primary-vehicle",
+        "gravityPostDockBeacon": "dock-landmark-prop"
+      },
+      "routePrimaryHeroAsset": "gravityPostMailPod",
+      "secondaryPrimaryAssets": [
+        "gravityPostDockBeacon"
+      ],
+      "primitiveBudget": 40,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "arcade-trajectory",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:gravity-post-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound planning, assist, chain, dock, collision, final-route, mobile, and reduced-motion artifacts.",
+          "Retain fresh route-primary, route-health, deploy, performance, asset, and launch evidence after that approval.",
+          "Promote a public showcase card only after the Gravity Post PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/gravity-post/ contains current mounted gameplay and full four-delivery evidence",
+          "tests/reports/showcase-route-primary-probes/showcase-gravity-post.png is the required typed-pod route-primary artifact",
+          "apps/showcase-gravity-post/route-health.json must retain publicShowcase false and the pending-review blocker"
+        ]
+      }
+    },
+    {
+      "id": "showcase-courier-rush",
+      "label": "Courier Rush",
+      "path": "/apps/showcase-courier-rush/",
+      "globalName": "__AURA3D_SHOWCASE_COURIER_RUSH__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["courierVan", "courierParcel"],
+      "primaryAssetRoles": {
+        "courierVan": "primary-vehicle",
+        "courierParcel": "visible-cargo"
+      },
+      "routePrimaryHeroAsset": "courierVan",
+      "secondaryPrimaryAssets": ["courierParcel"],
+      "primitiveBudget": 40,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "arcade-delivery",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:courier-rush-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound dispatch, pickup, parcel, traffic, drop, failure, completion, mobile, and reduced-motion artifacts.",
+          "Retain fresh route-primary, route-health, deploy, performance, asset, and launch evidence after that approval.",
+          "Promote a public showcase card only after the Courier Rush PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/showcase-courier-rush/ contains current source-bound gameplay, mobile, reduced-motion, and full-shift evidence",
+          "tests/reports/showcase-route-primary-probes/showcase-courier-rush.png is the required typed-van route-primary artifact",
+          "apps/showcase-courier-rush/route-health.json must retain publicShowcase false and the pending-review blocker"
+        ]
+      }
+    },
+    {
+      "id": "showcase-pulse-tunnel",
+      "label": "Pulse Tunnel",
+      "path": "/apps/showcase-pulse-tunnel/",
+      "globalName": "__AURA3D_SHOWCASE_PULSE_TUNNEL__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": [],
+      "primaryAssetRoles": {},
+      "secondaryPrimaryAssets": [],
+      "primitiveBudget": 160,
+      "requiresTypedPrimaryAssets": false,
+      "requiresKeyboardDelta": true,
+      "requiresRoutePrimaryProbe": false,
+      "gameTemplateStatus": {
+        "category": "abstract-rhythm-runner",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:pulse-tunnel-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound telegraph, lane, jump, graze, drop, shield, finale, result, mobile, and reduced-motion artifacts.",
+          "Retain fresh source-bound sync-spike, route-health, deploy, performance, typed-audio, and launch evidence after that approval.",
+          "Promote a public showcase card only after the Pulse Tunnel PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/pulse-tunnel/ contains the current measured sync receipt, gameplay, mobile, reduced-motion, and full-run artifacts",
+          "apps/showcase-pulse-tunnel/route-health.json must retain publicShowcase false and the pending-review blocker",
+          "The route is deliberately abstract and claims typed audio, not a typed visual primary subject"
+        ]
+      }
+    },
+    {
+      "id": "showcase-mech-hangar",
+      "label": "Mech Hangar",
+      "path": "/apps/showcase-mech-hangar/",
+      "globalName": "__AURA3D_SHOWCASE_MECH_HANGAR__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
+      "primaryAssetRoles": {
+        "mechChassisA": "primary-base-body",
+        "mechArmsA": "primary-chest-attachment",
+        "mechLegsA": "primary-hips-attachment",
+        "mechWeaponA": "primary-right-hand-attachment"
+      },
+      "routePrimaryHeroAsset": "mechChassisA",
+      "secondaryPrimaryAssets": ["mechArmsA", "mechLegsA", "mechWeaponA"],
+      "primitiveBudget": 32,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "modular-mech-arena",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:mech-hangar-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound hangar, all-slot swap, passport, arena, hit, KO, mobile, and reduced-motion artifacts.",
+          "Retain fresh 16-part curation, root asset probes, route-primary, route-health, deploy, performance, and launch evidence after that approval.",
+          "Promote a public showcase card only after the Mech Hangar PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "apps/showcase-mech-hangar/parts-curation-report.json proves the deterministic 16-part MH-2M family and must remain 16/16 compatible, release-proven, and unique.",
+          "tests/reports/mech-hangar/part-matrix.json binds all sixteen live selections to distinct rendered assembly hashes and owning gameplay stats.",
+          "apps/showcase-mech-hangar/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
+    },
+    {
+      "id": "showcase-vault-breakers",
+      "label": "Vault Breakers",
+      "path": "/apps/showcase-vault-breakers/",
+      "globalName": "__AURA3D_SHOWCASE_VAULT_BREAKERS__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor"],
+      "primaryAssetRoles": {
+        "vaultBreakersTable": "primary-cabinet-and-play-surface",
+        "vaultBreakersMechanisms": "primary-mission-mechanisms",
+        "vaultBreakersBall": "primary-player-ball",
+        "vaultBreakersFlipper": "primary-player-actuator",
+        "vaultBreakersVaultDoor": "primary-mission-door"
+      },
+      "routePrimaryHeroAsset": "vaultBreakersMechanisms",
+      "secondaryPrimaryAssets": ["vaultBreakersTable", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor"],
+      "primitiveBudget": 96,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "route-local-pinball",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:vault-breakers-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound opening, charge, serve/flipper, bank, vault, multiball, tilt, game-over, reset, mobile, touch, and reduced-motion artifacts.",
+          "Retain fresh five-model asset probes, route-primary, route-health, strict deploy, performance, and source-bound browser evidence after that approval.",
+          "Promote a public showcase card only after the Vault Breakers PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/vault-breakers/browser-evidence.json binds the exact visual artifact family to current route and producer source.",
+          "tests/reports/vault-breakers/playable/browser-evidence.json binds keyboard/touch serve, joint flippers, mission progression, tilt, drain, pause, game-over, and reset to current route source.",
+          "apps/showcase-vault-breakers/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
+    },
+    {
+      "id": "showcase-rooftop-buckets",
+      "label": "Rooftop Buckets",
+      "path": "/apps/showcase-rooftop-buckets/",
+      "globalName": "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopDefender"],
+      "primaryAssetRoles": {
+        "rooftopCourt": "primary-play-surface",
+        "rooftopBackboard": "primary-target-backboard",
+        "rooftopRim": "primary-target-rim",
+        "rooftopBall": "primary-player-ball",
+        "rooftopDefender": "primary-pressure-character"
+      },
+      "routePrimaryHeroAsset": "rooftopBackboard",
+      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall", "rooftopDefender"],
+      "primitiveBudget": 96,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "arcade-basketball-heats",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:rooftop-buckets-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound opening, charge, release, swish, miss, contest, fire, buzzer, gold, mobile, touch-active, and reduced-motion artifacts.",
+          "Retain fresh five-model asset probes, route-primary, route-health, deploy, performance, accessibility, and source-bound browser evidence after that approval.",
+          "Promote a public showcase card only after the Rooftop Buckets PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/rooftop-buckets/browser-evidence.json binds the exact desktop, mobile, interaction, outcome, and reduced-motion artifact family to current route and producer source.",
+          "tests/reports/rooftop-buckets/playable/browser-evidence.json binds naturally driven keyboard/touch flight, five heat outcomes, pause, and reset to current route source.",
+          "apps/showcase-rooftop-buckets/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
+    },
+    {
+      "id": "showcase-gallery-shift",
+      "label": "Gallery Shift",
+      "path": "/apps/showcase-gallery-shift/",
+      "globalName": "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["galleryShiftMuseumInterior", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
+      "primaryAssetRoles": {
+        "galleryShiftMuseumInterior": "primary-museum-world",
+        "galleryShiftPedestal": "primary-objective-fixture",
+        "galleryShiftExhibitA": "primary-objective-one",
+        "galleryShiftExhibitB": "primary-objective-two",
+        "galleryShiftExhibitC": "primary-objective-three",
+        "galleryShiftDisplayCase": "primary-cover-fixture"
+      },
+      "routePrimaryHeroAsset": "galleryShiftMuseumInterior",
+      "secondaryPrimaryAssets": ["galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
+      "primitiveBudget": 20,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "route-local-stealth-heist",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:gallery-shift-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound lobby, cover, detection, caught, exhibit, floor-transition, camera, alarm-return, exit, mobile, and reduced-motion artifacts.",
+          "Retain fresh six-model probes, route-primary, route-health, strict deploy, performance, accessibility, and source-bound browser evidence after that approval.",
+          "Promote a public showcase card only after the Gallery Shift PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/gallery-shift/browser-evidence.json binds the exact visual artifact family to current route and producer source.",
+          "tests/reports/gallery-shift/playable/browser-evidence.json binds movement, LOS/occlusion, caught/reset, the three-exhibit two-floor mission, alarm return, keyboard/touch, and pause to current route source.",
+          "apps/showcase-gallery-shift/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
+    },
+    {
+      "id": "showcase-deep-recovery",
+      "label": "Deep Recovery",
+      "path": "/apps/showcase-deep-recovery/",
+      "globalName": "__AURA3D_SHOWCASE_DEEP_RECOVERY__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon"],
+      "primaryAssetRoles": {
+        "deepRecoverySub": "primary-player-vehicle",
+        "deepRecoveryWreckHull": "primary-mission-world",
+        "deepRecoveryCrateStandard": "primary-standard-objective",
+        "deepRecoveryCrateHeavy": "primary-heavy-objective",
+        "deepRecoveryBuoyBeacon": "primary-bank-repair-surface-station"
+      },
+      "routePrimaryHeroAsset": "deepRecoverySub",
+      "secondaryPrimaryAssets": ["deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon"],
+      "primitiveBudget": 72,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "route-local-submarine-salvage",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:deep-recovery-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound descent, sonar, wreck, grapple, heavy-tow, breach, low-oxygen, surface, blackout, mobile, and reduced-motion artifacts.",
+          "Retain fresh five-model probes, route-primary, route-health, strict deploy, performance, accessibility, and source-bound browser evidence after that approval.",
+          "Promote a public showcase card only after the Deep Recovery PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/deep-recovery/playable/browser-evidence.json binds the exact visual artifact family and full mission to current route and producer source.",
+          "tests/reports/deep-recovery/playable/mission-touch.json records movement, sonar, grapple/drop, standard/heavy bank, collision breach, explicit repair, oxygen warning, blackout, surface win, reset, touch, and reduced-motion truth.",
+          "apps/showcase-deep-recovery/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
+    },
+    {
+      "id": "showcase-patrol-wing",
+      "label": "Patrol Wing",
+      "path": "/apps/showcase-patrol-wing/",
+      "globalName": "__AURA3D_SHOWCASE_PATROL_WING__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
+      "primaryAssetRoles": {
+        "patrolWingPlane": "primary-player-aircraft",
+        "patrolWingDroneA": "primary-intercept-target-a",
+        "patrolWingDroneB": "primary-intercept-target-b",
+        "patrolWingPadBeacon": "primary-landing-objective"
+      },
+      "routePrimaryHeroAsset": "patrolWingPlane",
+      "secondaryPrimaryAssets": ["patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon"],
+      "primitiveBudget": 80,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "route-local-arcade-flight-patrol",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:patrol-wing-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound takeoff, ring, drone, hit, canyon, low-hull, approach, touchdown, mobile, and reduced-motion artifacts.",
+          "Retain fresh four-model probes, route-primary, route-health, strict deploy, performance, accessibility, and source-bound browser evidence after that approval.",
+          "Promote a public showcase card only after the Patrol Wing PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/patrol-wing/playable/browser-evidence.json binds the exact visual artifact family and complete acceptance patrol to current route and producer source.",
+          "tests/reports/patrol-wing/playable/mission-touch.json records flight axes, ordered ring, drone wave, fire, hull failure, landing, reset, touch, pause, and reduced-motion truth.",
+          "apps/showcase-patrol-wing/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
+    },
+    {
+      "id": "showcase-bank-shot",
+      "label": "Bank Shot",
+      "path": "/apps/showcase-bank-shot/",
+      "globalName": "__AURA3D_SHOWCASE_BANK_SHOT__",
+      "published": true,
+      "releaseClass": "prototype-blocked",
+      "primaryAssets": ["bankShotTable", "bankShotCue", "bankShotBall00"],
+      "primaryAssetRoles": {
+        "bankShotTable": "primary-play-surface",
+        "bankShotCue": "primary-interaction-prop",
+        "bankShotBall00": "primary-player-ball"
+      },
+      "routePrimaryHeroAsset": "bankShotTable",
+      "secondaryPrimaryAssets": ["bankShotCue", "bankShotBall00"],
+      "primitiveBudget": 18,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "arcade-billiards",
+        "publicTemplateReady": false,
+        "blocker": "visual-review:bank-shot-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain independent approval of the exact hash-bound attract, aim, cue-contact, motion, pocket, foul, rack-fail, eight-ball finish, mobile, and reduced-motion artifacts.",
+          "Retain fresh 18-model asset probes, route-primary, route-health, deploy, performance, and source-bound browser evidence after that approval.",
+          "Promote a public showcase card only after the Bank Shot PRD ledger records the independent verdict."
+        ],
+        "evidence": [
+          "tests/reports/bank-shot/browser-evidence.json binds the exact desktop, mobile, interaction, outcome, and reduced-motion artifact family to current route and producer source.",
+          "tests/reports/bank-shot/playable/browser-evidence.json binds naturally driven public-Rapier shots, settle lock, pause, and reset to current route source.",
+          "apps/showcase-bank-shot/route-health.json must retain publicShowcase false and the pending-review blocker."
+        ]
+      }
     }
   ]
 }

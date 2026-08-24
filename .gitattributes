@@ -4,5 +4,9 @@ examples/neon-corridor-strike/public/aura-assets/*.glb filter=lfs diff=lfs merge
 # keeps the git pack small enough to push: a ~40MB blob payload in a single pack was
 # reproducibly rejected mid-transfer by the remote.
 public/aura-assets/*.glb filter=lfs diff=lfs merge=lfs -text
+public/aura-assets/*.wav filter=lfs diff=lfs merge=lfs -text
+public/aura-assets/*.ogg filter=lfs diff=lfs merge=lfs -text
+apps/showcase-*/assets/**/*.glb filter=lfs diff=lfs merge=lfs -text
+apps/showcase-*/assets/**/*.wav filter=lfs diff=lfs merge=lfs -text
 assets/source/**/*.glb filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/**/*.glb filter=lfs diff=lfs merge=lfs -text

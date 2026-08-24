@@ -18,6 +18,10 @@ test("neon-corridor-strike shot graphics are visible in frame", async ({ page })
     await page.goto(`${server.origin}/examples/neon-corridor-strike/`, { waitUntil: "domcontentloaded" });
     await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 90_000 }).toBe("true");
 
+    // NC-A6/NC-10 additive evidence only: first-load frame that includes the
+    // SECTOR 1 / SECTOR 2 / EXIT text3D signage. No assertions added or edited.
+    writeFileSync(resolve(reports, "signage-firstload.png"), await page.screenshot({ fullPage: false }));
+
     const beforeEvidence = await page.evaluate(() => (window as unknown as { __AURA3D_FPS_EVIDENCE__?: Record<string, unknown> }).__AURA3D_FPS_EVIDENCE__);
     writeFileSync(resolve(reports, "shot-before.json"), `${JSON.stringify(beforeEvidence, null, 2)}\n`);
     const beforePng = await page.screenshot({ fullPage: false });

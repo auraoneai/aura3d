@@ -1,0 +1,38 @@
+{
+  "schema": "aura3d.bank-shot.performance/1.0",
+  "generatedAt": "2026-08-23T23:45:32.164Z",
+  "producer": "apps/showcase-bank-shot/scripts/write-performance-report.ts",
+  "producerSourceSha256": "5d560bf31a624d32d27998c91b71061c567ead40c896365d1fa5e29fb5327349",
+  "routeSourceFiles": [
+    "apps/showcase-bank-shot/src/billiards-audio.ts",
+    "apps/showcase-bank-shot/src/cue.ts",
+    "apps/showcase-bank-shot/src/environment.ts",
+    "apps/showcase-bank-shot/src/main.ts",
+    "apps/showcase-bank-shot/src/racks.ts",
+    "apps/showcase-bank-shot/src/rules.ts",
+    "apps/showcase-bank-shot/src/styles.css",
+    "apps/showcase-bank-shot/src/table.ts"
+  ],
+  "routeSourceSha256": "fc492c8d71d9e513f060c6a06b4d9f4911406072b79cfa1fa94f2af89771567d",
+  "scope": "Route-local fixed-step public Rapier billiards CPU timing plus browser-observed root createGameApp draw calls. Host scheduling wait and GPU frame-time parity are not claimed.",
+  "samples": 12000,
+  "fixedStepSeconds": 0.016666666666666666,
+  "budgets": {
+    "simulationCpuP95Ms": 5.5,
+    "drawCalls": 220,
+    "physicsBodies": 40
+  },
+  "observed": {
+    "simulationCpuP95Ms": 5.061,
+    "deterministicPoseSamples": 20,
+    "drawCalls": 162,
+    "renderSize": [
+      912,
+      800
+    ],
+    "physicsBodies": 34,
+    "liveBalls": 15,
+    "pocketSensors": 6
+  },
+  "pass": true
+}

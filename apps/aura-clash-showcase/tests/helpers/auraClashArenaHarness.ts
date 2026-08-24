@@ -89,6 +89,17 @@ export type AuraClashArenaProof = {
     restingFrameWidthUnits: number;
     respondingToCombat: boolean;
     settled: boolean;
+    frameBounds?: {
+      min: readonly [number, number, number];
+      max: readonly [number, number, number];
+    };
+    fighterFraming?: {
+      playerFullBodyInFrame: boolean;
+      rivalFullBodyInFrame: boolean;
+      minimumMarginUnits: number;
+      groundLineMarginUnits: number;
+      stableGroundLine: boolean;
+    };
   };
   /** New-feel combat picture evidence published from mounted runtime state. */
   feel?: {
@@ -97,6 +108,31 @@ export type AuraClashArenaProof = {
     playerSpecialFreeze: number;
     rivalAiRole: string;
     fighterLengthBuffering: boolean;
+    /** AC-A1/A3/A7 additive feel telemetry. */
+    clipImpulseStrength?: number;
+    rivalAiPreset?: string;
+    rivalAiDecisionReason?: string;
+    crowdCheer?: number;
+    lowHealthTension?: boolean;
+    lowHealthSecondaryMotionSuppressed?: boolean;
+  };
+  /** AC-A1/A3/A4/A5 presentation telemetry (additive). */
+  presentation?: {
+    clipEventsFired: Readonly<Record<string, number>>;
+    crowdInstanceCount: number;
+    crowdInstancedDrawItems: 1;
+    signsSwinging: boolean;
+    ceremonyText: string | null;
+    lastOutcome?: "neutral" | "hit" | "block" | "whiff" | "guard-break" | "special" | "ko";
+    activeImpactKinds?: readonly string[];
+  };
+  /** AC-A2 training replay evidence (debug-gated). */
+  trainingReplay?: {
+    enabled: boolean;
+    bufferedSeconds: number;
+    scrubOffsetSeconds: number;
+    samples: number;
+    scrubLabel: string | null;
   };
   lighting?: {
     contractId: "aura-clash-lighting-review-v1";
@@ -139,6 +175,11 @@ export type AuraClashArenaProof = {
     assetUrls: readonly string[];
     oscillatorFallback: false;
     audioErrors: readonly string[];
+    /** AC-A6 additive: named bus levels. */
+    buses?: readonly { id: string; volume: number; muted: boolean }[];
+    /** AC-A6 additive: round-over KO duck state. */
+    koDuckActive?: boolean;
+    koDuckLevel?: number | null;
   };
   deterministicReplay: {
     kind: "aura-clash-deterministic-replay-proof";
@@ -194,8 +235,11 @@ export async function setFighterTestState(
   options: {
     playerX?: number;
     rivalX?: number;
+    playerHealth?: number;
     rivalHealth?: number;
     playerMeter?: number;
+    rivalGuardMeter?: number;
+    forceRivalGuard?: boolean;
     /**
      * Stop the rival raising guard. The AI guards whenever the player attacks within 1.4 units, so
      * a queued strike is blocked nearly every time — and a blocked strike deals only chip damage,
@@ -210,19 +254,27 @@ export async function setFighterTestState(
   await page.evaluate((input) => {
     const driver = (window as Window & {
       __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+        setPlayerHealth(health: number): void;
         setRivalHealth(health: number): void;
         setPlayerMeter(meter: number): void;
+        setRivalGuardMeter(meter: number): void;
         setPositions(playerX: number, rivalX: number): void;
         setRivalGuardSuppressed(suppressed: boolean): void;
+        setRivalGuardForced(forced: boolean): void;
         queuePlayerAttack(move: AuraClashMoveId): void;
       };
     }).__AURA_CLASH_ARENA_TEST_DRIVER__;
     if (!driver) throw new Error("Aura Clash test driver was not installed.");
     driver.setPositions(input.playerX ?? -0.86, input.rivalX ?? 0.44);
+    driver.setPlayerHealth(input.playerHealth ?? 360);
     driver.setRivalHealth(input.rivalHealth ?? 300);
     driver.setPlayerMeter(input.playerMeter ?? 100);
+    if (input.rivalGuardMeter !== undefined) driver.setRivalGuardMeter(input.rivalGuardMeter);
     if (input.suppressRivalGuard !== undefined) {
       driver.setRivalGuardSuppressed(input.suppressRivalGuard);
+    }
+    if (input.forceRivalGuard !== undefined) {
+      driver.setRivalGuardForced(input.forceRivalGuard);
     }
   }, options);
 }

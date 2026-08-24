@@ -1,0 +1,26 @@
+{
+  "name": "@aura3d/showcase-bank-shot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Bank Shot prototype: arcade 8-ball under the hall lamp - 16 simultaneous dynamic spheres on the public physics surface with a route-local rules state machine, three clocked racks, fouls, and combo scoring.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "build:sfx": "node scripts/build-sfx.mjs",
+    "build:models": "node scripts/build-models.mjs",
+    "register:assets": "node scripts/register-assets.mjs",
+    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "evidence:deploy": "node scripts/write-deploy-report.mjs",
+    "write:route-health": "node scripts/write-route-health.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

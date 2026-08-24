@@ -331,6 +331,13 @@ input {
   box-shadow: 0 0 14px color-mix(in oklab, var(--aca-amber) 55%, transparent);
 }
 
+/* Low-health tension is deliberately static: stronger hierarchy without a pulse or strobe. */
+.aca[data-low-health-tension="true"] .aca-clock {
+  border-color: color-mix(in oklab, var(--aca-amber) 78%, white);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--aca-amber) 34%, transparent);
+  animation: none;
+}
+
 .aca-meter i {
   inline-size: 0%;
   background: linear-gradient(90deg, var(--aca-p1-dark), var(--aca-p1), var(--aca-cyan));
@@ -861,4 +868,23 @@ input {
   .aca-topline span:first-child::before {
     animation: none;
   }
+}
+
+/* AC-A2 — training-only exchange-replay strip. Rendered `hidden` outside debug/training mode. */
+.aca-replay-scrub {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 44px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.aca-replay-scrub[hidden] {
+  display: none;
+}
+
+.aca-replay-scrub[data-scrubbing="true"] {
+  color: #ffe978;
+  text-shadow: 0 0 8px rgba(255, 233, 120, 0.55);
 }

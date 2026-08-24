@@ -106,12 +106,62 @@ interface TurboEvidence {
   readonly physics?: PhysicsRouteEvidence;
 }
 
+interface SkylineEventFeedbackEvidence {
+  readonly requiredEventCount: number;
+  readonly observedEventCount: number;
+  readonly allRequiredObserved: boolean;
+  readonly distinctSceneSignatureCount: number;
+  readonly distinctAudioCueCount: number;
+  readonly mountedVisualCount: number;
+  readonly observedVisualCount: number;
+  readonly allVisualNodesMounted: boolean;
+  readonly allRequiredVisualsObserved: boolean;
+  readonly events: Readonly<Record<string, {
+    readonly kitEvent: string;
+    readonly sceneSignature: string;
+    readonly audioCue: string;
+    readonly observedCount: number;
+    readonly sceneEffectApplied: boolean;
+    readonly audioCueRequested: boolean;
+  }>>;
+  readonly visualNodes: Readonly<Record<string, {
+    readonly nodeId: string;
+    readonly shape: string;
+    readonly color: string;
+    readonly duration: number;
+    readonly mounted: boolean;
+    readonly observed: boolean;
+  }>>;
+}
+
 interface SkylineEvidence {
   readonly frameCount: number;
   readonly score: number;
   readonly coins: number;
   readonly deaths: number;
   readonly checkpointId: string;
+  readonly districts?: {
+    readonly count: number;
+    readonly currentId: string;
+    readonly currentTitle: string;
+  };
+  readonly visualLanguage?: {
+    readonly encoding: string;
+    readonly roleCount: number;
+    readonly uniqueSignatureCount: number;
+    readonly allRolesMounted: boolean;
+    readonly standaloneOrbGameplayMarkerCount: number;
+    readonly roleCoverage: Readonly<Record<string, {
+      readonly mountedNodeCount: number;
+      readonly semanticElementCount: number;
+      readonly activeCount?: number;
+    }>>;
+  };
+  readonly eventFeedback?: SkylineEventFeedbackEvidence;
+  readonly audio?: {
+    readonly cueAttempts?: Readonly<Record<string, number>>;
+    readonly audioErrors?: readonly string[];
+  };
   readonly challenge?: {
     readonly kind: string;
     readonly elapsedSeconds: number;
@@ -229,7 +279,14 @@ test.describe("showcase gameplay proof", () => {
     // reached the named condition, so a filename cannot claim an unreached state.
     const turboCaptures: Record<string, ScreenshotEvidence> = { start: beforePng };
 
+    // TDC-10 robustness: the start-lights ceremony gates all motion, so hold
+    // throttle through it and begin the scripted captures from the green flag
+    // rather than racing a fixed wall-clock offset against it.
     await page.keyboard.down("KeyW");
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { gameplay?: { countdownBeforeMotion?: boolean } } | undefined>)[name];
+      return value?.startLightsComplete === true;
+    }, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { timeout: 30_000 });
     // Capture the launch while the car is still on the opening straight. Waiting 900 ms
     // carried an unsteered car into the first bend, so the frame raced the boundary
     // recovery even though its sampled telemetry was still on-road.
@@ -290,6 +347,20 @@ test.describe("showcase gameplay proof", () => {
       turboCaptures.checkpoint = await capture(page, "showcase-turbo-drift-circuit", "checkpoint");
     }
 
+    /*
+     * TDC-10 robustness: prove throttle-driven progress with a bounded wait rather
+     * than one fixed-wall-clock sample. Under a fully loaded scene the sim clock is
+     * clamped per frame, so a single early sample can undershoot the threshold even
+     * though throttle is advancing the race exactly as designed. Hold throttle until
+     * the same threshold is met (or the bounded window ends) and use that sample.
+     */
+    let throttled = after;
+    for (let sample = 0; sample < 30 && !((throttled.raceState?.progress ?? 0) > (before.raceState?.progress ?? 0) + 0.015); sample += 1) {
+      await page.keyboard.down("KeyW");
+      await page.waitForTimeout(220);
+      throttled = await readTurbo(page);
+    }
+    await page.keyboard.up("KeyW");
     // Off-track: drive across the certified boundary and capture only after the
     // route has made that transient clamp/recovery state visibly legible. Start
     // this scenario from a reset race so the capture proves recovery rather than
@@ -298,21 +369,27 @@ test.describe("showcase gameplay proof", () => {
     await page.waitForTimeout(260);
     await page.keyboard.down("KeyW");
     await page.keyboard.down("KeyA");
+    await page.waitForFunction((name) => {
+      const value = (window as unknown as Record<string, { gameplay?: { countdownBeforeMotion?: boolean } } | undefined>)[name];
+      return value?.startLightsComplete === true;
+    }, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { timeout: 30_000 });
     let offTrack = gated;
-    let recoveryStatus = await page.locator("#alignment-status").getAttribute("data-state");
+    /*
+     * TDC-10 repair: the route's own rendered-feedback evidence is the authoritative
+     * recovery signal on every page; the `#alignment-status` DOM state only updates
+     * under ?debug=1, so requiring it here made the capture impossible on the
+     * public page regardless of driving.
+     */
     for (let sample = 0; sample < 40 && (
       offTrack.renderedFeedback?.offTrack !== true ||
-      offTrack.renderedFeedback?.recoveryVisible !== true ||
-      recoveryStatus !== "recovering"
+      offTrack.renderedFeedback?.recoveryVisible !== true
     ); sample += 1) {
       await page.waitForTimeout(180);
       offTrack = await readTurbo(page);
-      recoveryStatus = await page.locator("#alignment-status").getAttribute("data-state");
     }
     if (
       offTrack.renderedFeedback?.offTrack === true &&
-      offTrack.renderedFeedback?.recoveryVisible === true &&
-      recoveryStatus === "recovering"
+      offTrack.renderedFeedback?.recoveryVisible === true
     ) {
       turboCaptures["off-track"] = await capture(page, "showcase-turbo-drift-circuit", "off-track");
     }
@@ -330,7 +407,14 @@ test.describe("showcase gameplay proof", () => {
     // increases screenshot encode time. The retained high-speed frame and its telemetry are the
     // direct evidence for this assertion.
     check(atSpeed.speed > before.speed + 0.04, blockers, "throttle did not increase visible car speed");
-    check((after.raceState?.progress ?? 0) > (before.raceState?.progress ?? 0) + 0.015, blockers, "throttle did not advance race progress");
+    /*
+     * TDC-10 repair: the grid slot sits ON the closed-loop seam, so the pre-motion
+     * projection can legitimately read progress as 1 rather than 0. Compare cyclically
+     * (wrapped to [-0.5, 0.5)) so forward motion past the seam still counts as advance.
+     */
+    const throttleProgressAdvance =
+      (((throttled.raceState?.progress ?? 0) - (before.raceState?.progress ?? 0)) % 1 + 1.5) % 1 - 0.5;
+    check(throttleProgressAdvance > 0.015, blockers, "throttle did not advance race progress");
     check(Math.abs((after.raceState?.heading ?? 0) - (before.raceState?.heading ?? 0)) > 0.008, blockers, "steering did not change heading");
     check((after.raceState?.x ?? 0) !== (before.raceState?.x ?? 0) || (after.raceState?.z ?? 0) !== (before.raceState?.z ?? 0), blockers, "car position did not change");
     check(after.kitContractProof?.checkpointAdvances === true || after.checkpoint > before.checkpoint || after.lap > before.lap, blockers, "checkpoint/lap progression is not proven");
@@ -445,16 +529,31 @@ test.describe("showcase gameplay proof", () => {
     if (traversing.diagnostics?.snapshot?.grounded === false) {
       skylineCaptures.jump = await capture(page, "showcase-skyline-runner", "jump");
     }
+    const landCountBefore = traversing.eventFeedback?.events.land?.observedCount ?? 0;
     await page.keyboard.up("Space");
-    await page.waitForTimeout(240);
     await page.keyboard.up("KeyD");
-    await page.waitForTimeout(580);
+    await expect.poll(async () => {
+      const current = await readSkyline(page);
+      return current.diagnostics?.snapshot?.grounded === true
+        && (current.eventFeedback?.events.land?.observedCount ?? 0) > landCountBefore;
+    }, {
+      timeout: 2_000,
+      intervals: [16, 24, 32],
+      message: "landing event should drive its scene response before capture"
+    }).toBe(true);
     const after = await readSkyline(page);
     const afterPng = await capture(page, "showcase-skyline-runner", "after-input");
-    // Landing: back in contact with a surface after the jump.
-    if (after.diagnostics?.snapshot?.grounded === true) {
-      skylineCaptures.landing = await capture(page, "showcase-skyline-runner", "landing");
-    }
+    // Landing: capture on the actual kit event while its ground marker is live.
+    skylineCaptures.landing = await capture(page, "showcase-skyline-runner", "landing");
+
+    // Dash proof is bound to the public kit's emitted `dash` event, not merely
+    // the input edge. This would stay zero during cooldown or respawn lock.
+    await page.keyboard.press("ShiftLeft");
+    await expect.poll(async () =>
+      (await readSkyline(page)).eventFeedback?.events.dash?.observedCount ?? 0,
+    { timeout: 2_000, message: "public platformer dash event should drive presentation" }).toBeGreaterThan(0);
+    const dashed = await readSkyline(page);
+    skylineCaptures.dash = await capture(page, "showcase-skyline-runner", "dash");
 
     const rightFacing = after.diagnostics?.snapshot;
     await page.keyboard.down("KeyA");
@@ -492,6 +591,8 @@ test.describe("showcase gameplay proof", () => {
     // route death, then prove that the active checkpoint owns the recovery.
     await expect.poll(async () => (await readSkylineDriver(page)).deaths, { timeout: 10_000 }).toBeGreaterThan(checkpointDeaths);
     await page.keyboard.up("KeyD");
+    const hazardFeedback = await readSkyline(page);
+    skylineCaptures.hazard = await capture(page, "showcase-skyline-runner", "hazard");
     // A death is observable on the same browser frame that starts the respawn.
     // Do not treat that transient, falling frame as the recovered checkpoint state:
     // keep input neutral until the new body has actually landed on the certified
@@ -538,14 +639,60 @@ test.describe("showcase gameplay proof", () => {
     let completed = await readSkyline(page);
     let completionDriver = await readSkylineCompletionDriver(page);
     const completionLevel = createSkylineLevel();
+    const orderedCompletionPlatforms = [...(completionLevel.platforms ?? [])]
+      .sort((left, right) => left.x - right.x);
+    const finalGap = orderedCompletionPlatforms.reduce<{
+      readonly takeoffX: number;
+      readonly landingX: number;
+    } | undefined>((latest, platform, index) => {
+      const next = orderedCompletionPlatforms[index + 1];
+      if (!next) return latest;
+      const takeoffX = platform.x + platform.width;
+      return next.x - takeoffX > 0.05 ? { takeoffX, landingX: next.x } : latest;
+    }, undefined);
+    expect(finalGap, "certified Skyline course must expose a final positive gap").toBeDefined();
+    const skylineDistrictsSeen = new Set<string>();
+    if (before.districts?.currentTitle) skylineDistrictsSeen.add(before.districts.currentTitle);
     await startSkylineManualDriver(page);
     // Drive the mounted Aura app through its public deterministic lifecycle. Each
-    // batch advances real `app.onFrame` callbacks, `game.input`, `game.platformer`,
-    // collisions, checkpoints, renderer output, and route evidence by exactly 60
-    // fixed 1/60-second frames. Only wall-clock RAF scheduling is removed.
-    for (let second = 0; second < 180 && completionDriver.completed !== true; second += 1) {
-      completionDriver = await stepSkylineManualDriver(page, completionLevel, 60);
+    // Each batch advances real `app.onFrame` callbacks, `game.input`,
+    // `game.platformer`, collisions, checkpoints, renderer output, and route
+    // evidence. Near the final certified gap, use six-frame batches so the
+    // retained artifact is the airborne crossing itself rather than a filename
+    // attached to a frame after the landing.
+    for (let elapsedFrames = 0; elapsedFrames < 180 * 60 && completionDriver.completed !== true;) {
+      const previousX = completionDriver.snapshot?.x ?? 0;
+      const needsFinalGapPrecision = skylineCaptures["final-gap"] === undefined
+        && finalGap !== undefined
+        && previousX >= finalGap.takeoffX - 3;
+      const batchFrames = needsFinalGapPrecision ? 6 : 60;
+      completionDriver = await stepSkylineManualDriver(page, completionLevel, batchFrames);
+      elapsedFrames += batchFrames;
+      for (const feedbackEvent of completionDriver.feedbackEvents) {
+        if (skylineCaptures[feedbackEvent] !== undefined) continue;
+        await presentSkylineManualDriver(page);
+        skylineCaptures[feedbackEvent] = await captureScene(page, "showcase-skyline-runner", feedbackEvent);
+      }
       const x = completionDriver.snapshot?.x ?? 0;
+      if (
+        skylineCaptures["final-gap"] === undefined
+        && finalGap !== undefined
+        && completionDriver.snapshot?.grounded === false
+        && x >= finalGap.takeoffX - 0.3
+        && x <= finalGap.landingX + 0.4
+      ) {
+        await presentSkylineManualDriver(page);
+        skylineCaptures["final-gap"] = await captureScene(page, "showcase-skyline-runner", "final-gap");
+      }
+      // Read the route's mounted identity at district boundaries; deriving the
+      // label from x in the test would not prove that the shipped HUD/scene did it.
+      const expectedDistrictIndex = x >= SKYLINE_SECTION_STRIDE * 8 ? 2 : x >= SKYLINE_SECTION_STRIDE * 4 ? 1 : 0;
+      const expectedDistrictTitle = ["Steel Dawn", "Hanging Grove", "Crown Heights"][expectedDistrictIndex]!;
+      if (!skylineDistrictsSeen.has(expectedDistrictTitle)) {
+        await presentSkylineManualDriver(page);
+        const districtState = await readSkyline(page);
+        if (districtState.districts?.currentTitle) skylineDistrictsSeen.add(districtState.districts.currentTitle);
+      }
       for (const act of SKYLINE_LEVEL_ACTS.slice(1)) {
         const label = `act-${act.id}`;
         const actStartX = act.sections[0] * SKYLINE_SECTION_STRIDE;
@@ -599,6 +746,11 @@ test.describe("showcase gameplay proof", () => {
       "checkpoint/finish progression is not proven"
     );
     check(completed.diagnostics?.completionProof?.completed === true, blockers, "completion proof does not reach the finish");
+    check(
+      ["Steel Dawn", "Hanging Grove", "Crown Heights"].every((title) => skylineDistrictsSeen.has(title)),
+      blockers,
+      `mounted district progression is incomplete: ${JSON.stringify([...skylineDistrictsSeen])}`
+    );
     check((completed.diagnostics?.completionProof?.finalTime ?? 0) >= 70, blockers, "physical completion occurred before the responsive Level 1 floor");
     check((completed.diagnostics?.completionProof?.finalTime ?? Number.POSITIVE_INFINITY) <= 115, blockers, "physical completion exceeded the responsive Level 1 ceiling");
     check(completed.diagnostics?.completionProof?.stable === true && ((completed.diagnostics.completionProof.checkpoints?.length ?? 0) > 0 || (completed.diagnostics.completionProof.eventCounts?.respawn ?? 0) > 0), blockers, "stable checkpoint/hazard route progression proof is missing");
@@ -610,13 +762,40 @@ test.describe("showcase gameplay proof", () => {
     check(after.challenge?.kind === "skyline-runner-flow-challenge", blockers, "runner flow challenge evidence is missing");
     check((after.challenge?.elapsedSeconds ?? 0) > (before.challenge?.elapsedSeconds ?? 0), blockers, "runner challenge clock did not advance");
     check((after.challenge?.maxFlow ?? 0) > 0, blockers, "movement and jumping did not build runner flow");
+    check(after.visualLanguage?.encoding === "shape-plus-color", blockers, "shape-plus-color visual language is not mounted");
+    check(after.visualLanguage?.roleCount === 8 && after.visualLanguage.uniqueSignatureCount === 8, blockers, "gameplay roles do not have eight distinct visual signatures");
+    check(after.visualLanguage?.allRolesMounted === true, blockers, "one or more gameplay visual roles has no mounted scene node");
+    check(after.visualLanguage?.standaloneOrbGameplayMarkerCount === 0, blockers, "ambiguous standalone orb gameplay markers remain");
+    check((completed.visualLanguage?.roleCoverage.relay?.activeCount ?? 0) > 0, blockers, "activated relay visual state was not observed in the completed run");
+    check((dashed.eventFeedback?.events.dash?.observedCount ?? 0) > 0, blockers, "dash feedback was not driven by the public dash event");
+    check((hazardFeedback.eventFeedback?.events.hazard?.observedCount ?? 0) > 0, blockers, "hazard feedback was not driven by hazard/fall truth");
+    check((respawned.eventFeedback?.events.respawn?.observedCount ?? 0) > 0, blockers, "respawn feedback was not driven by the public respawn event");
+    check(completed.eventFeedback?.requiredEventCount === 9, blockers, "required event-feedback contract is not nine events");
+    check(completed.eventFeedback?.observedEventCount === 9 && completed.eventFeedback.allRequiredObserved === true, blockers, "not every required event produced mounted feedback");
+    check(completed.eventFeedback?.distinctSceneSignatureCount === 9, blockers, "required events do not have nine distinct scene signatures");
+    check(completed.eventFeedback?.distinctAudioCueCount === 9, blockers, "required events do not have nine distinct audio cues");
+    check(completed.eventFeedback?.mountedVisualCount === 9 && completed.eventFeedback.allVisualNodesMounted === true, blockers, "nine event-feedback scene nodes are not mounted");
+    check(completed.eventFeedback?.observedVisualCount === 9 && completed.eventFeedback.allRequiredVisualsObserved === true, blockers, "not every actual event displayed its scene feedback node");
+    for (const eventName of ["jump", "land", "dash", "collect", "relay", "hazard", "defeat", "respawn", "finish"]) {
+      const observation = completed.eventFeedback?.events[eventName];
+      check(
+        (observation?.observedCount ?? 0) > 0
+          && observation?.sceneEffectApplied === true
+          && observation.audioCueRequested === true,
+        blockers,
+        `actual-event scene/audio feedback was not observed: ${eventName}`
+      );
+      check((completed.audio?.cueAttempts?.[observation?.audioCue ?? ""] ?? 0) > 0, blockers, `typed audio cue was not attempted for ${eventName}`);
+      check(completed.eventFeedback?.visualNodes[eventName]?.observed === true, blockers, `scene feedback node was not displayed for ${eventName}`);
+    }
+    check((completed.audio?.audioErrors?.length ?? 0) === 0, blockers, "event-feedback audio reported runtime errors");
     check((reset.challenge?.resets ?? 0) > (before.challenge?.resets ?? 0), blockers, "reset did not restart the flow challenge");
     check(reset.checkpointId === "start" && reset.coins === 0, blockers, "reset did not restore the start checkpoint");
     // FS-103: every named state must have been genuinely reached and captured.
     for (const requiredState of [
-      "first-load", "traversal", "jump", "landing", "collection-chain",
-      "checkpoint", "respawn", "act-broken-canopy", "act-sentry-pass",
-      "act-cloudstep-rise", "act-aurora-crown", "finish", "reset"
+      "first-load", "traversal", "jump", "landing", "dash", "collect", "collection-chain",
+      "checkpoint", "hazard", "respawn", "defeat", "act-broken-canopy", "act-sentry-pass",
+      "act-cloudstep-rise", "act-aurora-crown", "final-gap", "finish", "reset"
     ]) {
       check(
         skylineCaptures[requiredState] !== undefined,
@@ -633,6 +812,7 @@ test.describe("showcase gameplay proof", () => {
       continued,
       completed,
       reset,
+      districtsSeen: [...skylineDistrictsSeen],
       namedCaptures: skylineCaptures
     });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
@@ -1000,11 +1180,13 @@ async function readSkyline(page: Page): Promise<SkylineEvidence> {
 async function readSkylineCompletionDriver(page: Page): Promise<{
   readonly completed: boolean;
   readonly snapshot?: { readonly x: number; readonly y: number; readonly grounded: boolean };
+  readonly feedbackEvents: readonly ("collect" | "defeat")[];
 }> {
   return page.evaluate(() => {
     const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
     return {
       completed: evidence?.diagnostics?.completionProof?.completed === true,
+      feedbackEvents: [],
       snapshot: evidence?.diagnostics?.snapshot === undefined
         ? undefined
         : {
@@ -1023,6 +1205,8 @@ async function startSkylineManualDriver(page: Page): Promise<void> {
         lastJumpFrame: number;
         observedDeaths: number;
         recoveryFrames: number;
+        observedCollectFeedback: number;
+        observedDefeatFeedback: number;
       };
       __AURA3D_LIVE_APPS__?: {
         pauseAll(): number;
@@ -1035,7 +1219,9 @@ async function startSkylineManualDriver(page: Page): Promise<void> {
     host.__AURA3D_SKYLINE_TEST_DRIVER__ = {
       lastJumpFrame: Number.NEGATIVE_INFINITY,
       observedDeaths: window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.deaths ?? 0,
-      recoveryFrames: 0
+      recoveryFrames: 0,
+      observedCollectFeedback: window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.eventFeedback?.events.collect?.observedCount ?? 0,
+      observedDefeatFeedback: window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.eventFeedback?.events.defeat?.observedCount ?? 0
     };
   });
 }
@@ -1051,6 +1237,8 @@ async function stepSkylineManualDriver(
         lastJumpFrame: number;
         observedDeaths: number;
         recoveryFrames: number;
+        observedCollectFeedback: number;
+        observedDefeatFeedback: number;
       };
       __AURA3D_LIVE_APPS__?: {
         all(): readonly { advance(dt?: number): void; step(dt?: number): void }[];
@@ -1060,6 +1248,7 @@ async function stepSkylineManualDriver(
     const driver = host.__AURA3D_SKYLINE_TEST_DRIVER__;
     const app = host.__AURA3D_LIVE_APPS__?.all()[0];
     if (!driver || !app) throw new Error("Skyline manual driver requires one mounted Aura app.");
+    const feedbackEvents: ("collect" | "defeat")[] = [];
     const dispatch = (type: "keydown" | "keyup", code: string) => {
       window.dispatchEvent(new KeyboardEvent(type, { code, key: code === "Space" ? " " : code, bubbles: true }));
     };
@@ -1121,11 +1310,24 @@ async function stepSkylineManualDriver(
         dispatch("keyup", "Space");
       }
       app.advance(1 / 60);
+      const liveFeedback = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.eventFeedback?.events;
+      const collectCount = liveFeedback?.collect?.observedCount ?? 0;
+      const defeatCount = liveFeedback?.defeat?.observedCount ?? 0;
+      if (collectCount > driver.observedCollectFeedback) {
+        driver.observedCollectFeedback = collectCount;
+        feedbackEvents.push("collect");
+      }
+      if (defeatCount > driver.observedDefeatFeedback) {
+        driver.observedDefeatFeedback = defeatCount;
+        feedbackEvents.push("defeat");
+      }
       if (driver.recoveryFrames > 0) driver.recoveryFrames -= 1;
+      if (feedbackEvents.length > 0) break;
     }
     const evidence = window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__;
     return {
       completed: evidence?.diagnostics?.completionProof?.completed === true,
+      feedbackEvents,
       snapshot: evidence?.diagnostics?.snapshot === undefined
         ? undefined
         : {
@@ -1317,8 +1519,14 @@ function createCategoryProof(appId: string, evidence: object): object | undefine
       platformer: {
         movementChangesPosition: (evidence.after.diagnostics?.snapshot?.x ?? 0) > (evidence.before.diagnostics?.snapshot?.x ?? 0) + 0.35,
         jumpChangesState: (evidence.after.animation?.stateHistory ?? []).some((entry) => entry.state === "jump") || Math.abs(evidence.after.diagnostics?.snapshot?.vy ?? 0) > 0.05,
-        checkpointProgression: evidence.after.kitContractProof?.checkpointEvent === true,
-        hazardRespawn: evidence.after.kitContractProof?.hazardEvent === true && evidence.after.kitContractProof.respawnEvent === true,
+        // These are cumulative event contracts, but each proof must come from the
+        // sample that actually drove the event. `after` is the short input sample;
+        // the deliberate miss/respawn and full-course completion happen later.
+        checkpointProgression: evidence.completed?.kitContractProof?.checkpointEvent === true,
+        hazardRespawn:
+          (evidence.respawned?.kitContractProof?.hazardEvent === true || evidence.respawned?.kitContractProof?.fallEvent === true)
+          && evidence.respawned?.kitContractProof?.respawnEvent === true
+          && evidence.respawned?.kitContractProof?.hazardRespawnOrRetry === true,
         finishProgression:
           evidence.completed?.kitContractProof?.finishEvent === true &&
           evidence.completed.diagnostics?.completionProof?.completed === true,

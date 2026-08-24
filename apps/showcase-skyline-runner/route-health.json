@@ -39,23 +39,13 @@
       "route-local-platformer-gameplay: tests/reports/showcase-gameplay/showcase-skyline-runner.json"
     ],
     "notAllowed": [
-      "evidence:gameplay-proof:platformer:checkpoint-missing",
-      "evidence:gameplay-proof:platformer:hazard-respawn-missing",
       "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
-      "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
-      "evidence:deploy-artifact:not-passing",
-      "evidence:deploy-artifact:has-warnings",
-      "evidence:deploy-artifact:has-failures"
+      "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch"
     ]
   },
   "blockers": [
-    "evidence:gameplay-proof:platformer:checkpoint-missing",
-    "evidence:gameplay-proof:platformer:hazard-respawn-missing",
     "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
-    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
-    "evidence:deploy-artifact:not-passing",
-    "evidence:deploy-artifact:has-warnings",
-    "evidence:deploy-artifact:has-failures"
+    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch"
   ],
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
@@ -84,14 +74,14 @@
     ],
     "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
     "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-    "screenshotSha256": "sha256-371a4f0eb0b28a071976dc3c37d16316c922d63fecd926b6597364a809c7c039",
+    "screenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
     "geometryEvidence": {
       "category": "platformer",
       "kind": "platformer-playable-surface-map",
       "source": "asset-mesh-extracted",
       "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-      "routePrimaryScreenshotSha256": "sha256-371a4f0eb0b28a071976dc3c37d16316c922d63fecd926b6597364a809c7c039",
+      "routePrimaryScreenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
       "assets": [
         {
           "id": "showcaseKenneyOobiPlatformerHero",
@@ -389,7 +379,7 @@
       "characterWorldScaleCompatible": true,
       "styleCompatible": true,
       "primitivePrimaryWorldRejected": true,
-      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
       "assetPairEvidence": {
         "category": "platformer",
         "assets": [
@@ -398,14 +388,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-        "screenshotSha256": "sha256-371a4f0eb0b28a071976dc3c37d16316c922d63fecd926b6597364a809c7c039",
+        "screenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
         "geometryEvidence": {
           "category": "platformer",
           "kind": "platformer-playable-surface-map",
           "source": "asset-mesh-extracted",
-          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-jLwHO3/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-371a4f0eb0b28a071976dc3c37d16316c922d63fecd926b6597364a809c7c039",
+          "routePrimaryScreenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
           "assets": [
             {
               "id": "showcaseKenneyOobiPlatformerHero",

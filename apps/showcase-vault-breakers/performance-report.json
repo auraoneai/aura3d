@@ -1,0 +1,39 @@
+{
+  "schema": "aura3d.vault-breakers.performance/1.0",
+  "generatedAt": "2026-08-24T02:36:06.581Z",
+  "producer": "apps/showcase-vault-breakers/scripts/write-performance-report.ts",
+  "producerSourceSha256": "2ebff2cbf8eb0e388ce61a59795c8c3ca979f8e8bbf50264c1c36991f7dd6b5d",
+  "routeSourceFiles": [
+    "apps/showcase-vault-breakers/src/ball-flow.ts",
+    "apps/showcase-vault-breakers/src/environment.ts",
+    "apps/showcase-vault-breakers/src/flippers.ts",
+    "apps/showcase-vault-breakers/src/main.ts",
+    "apps/showcase-vault-breakers/src/missions.ts",
+    "apps/showcase-vault-breakers/src/pinball-audio.ts",
+    "apps/showcase-vault-breakers/src/plunger.ts",
+    "apps/showcase-vault-breakers/src/scoreboard.ts",
+    "apps/showcase-vault-breakers/src/scoring.ts",
+    "apps/showcase-vault-breakers/src/styles.css",
+    "apps/showcase-vault-breakers/src/table.ts"
+  ],
+  "routeSourceSha256": "37c7e8ec4b19c29b2391b3319b38e99935cfbca5e2ff016c5316a679916b4a76",
+  "scope": "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
+  "samples": 12000,
+  "fixedStepSeconds": 0.016666666666666666,
+  "budgets": {
+    "fixedStepCpuP95Ms": 1,
+    "drawCalls": 150
+  },
+  "observed": {
+    "fixedStepCpuP95Ms": 0.646,
+    "deterministicPoseSamples": 100,
+    "drawCalls": 114,
+    "renderSize": [
+      938,
+      800
+    ],
+    "physicsBodies": 33,
+    "motorisedJoints": 2
+  },
+  "pass": true
+}

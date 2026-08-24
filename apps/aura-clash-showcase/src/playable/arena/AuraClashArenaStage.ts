@@ -73,7 +73,11 @@ export const auraClashArenaStageElements: readonly AuraClashArenaStageElement[] 
   element("practical-motion", "rendered practical brightness pulse", "practical-glow-", "lighting", "motion"),
   element("typed-arena-environment", "typed Neon Downtown arena environment", "aura-clash-arena-architecture", "typed-asset", "backdrop"),
   element("atmospheric-motes", "rendered atmospheric motes", "atmospheric-mote-", "atmosphere", "particles"),
-  element("floor-sheen", "rendered floor sheen", "floor-sheen", "platform", "reflections")
+  element("floor-sheen", "rendered floor sheen", "floor-sheen", "platform", "reflections"),
+  // AC-A3/AC-A5 additions. Both always submit geometry (reduced motion freezes motion, it never
+  // removes the items), so declared elements stay evidence-backed on observed frames.
+  element("rooftop-crowd", "instanced rooftop crowd silhouettes (one instanced pool)", "crowd-fan-pool", "backdrop", null),
+  element("hanging-signs", "spring-joint hanging neon signs outside the combat lane", "hanging-sign-", "backdrop", null)
 ];
 
 export function annotateAuraClashArenaStage(root: ParentNode): void {

@@ -1,0 +1,28 @@
+{
+  "name": "@aura3d/showcase-mech-hangar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D prototype: hangar-to-arena mech builder where typed, provenance-tracked catalog parts are the mechanic — assemble a mech from validated parts, watch stats move, then fight a createCombatAi rival.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "models": "node scripts/build-models.mjs",
+    "register:models": "node scripts/register-models.mjs",
+    "sfx": "node scripts/build-sfx.mjs",
+    "register:sfx": "node scripts/register-sfx.mjs",
+    "curate:parts": "node scripts/curate-parts.mjs",
+    "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "evidence:deploy": "node scripts/write-deploy-report.mjs",
+    "evidence:route-health": "node scripts/write-route-health.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

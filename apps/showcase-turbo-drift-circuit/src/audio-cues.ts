@@ -10,6 +10,7 @@ export const TURBO_AUDIO_CUE_WISHLIST = [
   "engine",
   "drift-scuff",
   "wind",
+  "music",
   "checkpoint",
   "countdown",
   "go",

@@ -1,0 +1,96 @@
+/* Patrol Wing HUD chrome — DOM is UI only; every gameplay truth is 3D. */
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #060b14; color: #e8eef8; font-family: "Inter", system-ui, sans-serif; }
+body { overflow: hidden; }
+
+.shell { display: flex; gap: 14px; height: 100vh; padding: 14px; }
+.viewport { position: relative; flex: 1 1 auto; min-width: 0; }
+.stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #060b14; }
+#app canvas { display: block; width: 100%; height: 100%; }
+
+#hud { position: absolute; inset: 0; pointer-events: none; }
+.flight-banner {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  padding: 6px 16px; border-radius: 999px; font-size: 13px; letter-spacing: 0.14em;
+  background: rgba(7, 12, 24, 0.78); border: 1px solid rgba(255, 177, 77, 0.3); color: #ffd9a0;
+  white-space: nowrap;
+}
+.result-card {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  min-width: 300px; padding: 22px 26px; border-radius: 14px; text-align: center;
+  background: rgba(9, 13, 24, 0.94); border: 1px solid rgba(126, 248, 255, 0.35); pointer-events: auto;
+}
+.result-card h2 { margin: 0 0 6px; font-size: 22px; color: #7ef8ff; letter-spacing: 0.08em; }
+.result-card p { margin: 0 0 14px; color: #b8c4d8; font-size: 14px; }
+.is-hidden { display: none !important; }
+
+.panel {
+  flex: 0 0 300px; display: flex; flex-direction: column; gap: 14px; padding: 16px;
+  border-radius: 12px; background: rgba(10, 15, 28, 0.85); border: 1px solid rgba(126, 248, 255, 0.14);
+  overflow-y: auto;
+}
+.pw-brand .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.22em; color: #7ef8ff; text-transform: uppercase; }
+.pw-brand h1 { margin: 4px 0 6px; font-size: 24px; letter-spacing: 0.04em; color: #ffd9a0; }
+.pw-brand .blurb { margin: 0; font-size: 12.5px; line-height: 1.5; color: #a9b6cc; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat-grid article {
+  padding: 8px 10px; border-radius: 8px; background: rgba(13, 19, 34, 0.9);
+  border: 1px solid rgba(126, 248, 255, 0.1);
+}
+.stat-grid span { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8ba3; }
+.stat-grid strong { display: block; margin-top: 2px; font-size: 16px; color: #e8eef8; font-variant-numeric: tabular-nums; }
+
+.throttle-meter {
+  height: 12px; border-radius: 999px; background: rgba(20, 28, 46, 0.9);
+  border: 1px solid rgba(255, 217, 160, 0.25); overflow: hidden;
+}
+.throttle-meter span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #7ef8ff, #ffb14d); transition: width 0.08s linear; }
+.throttle-meta { display: flex; justify-content: space-between; font-size: 11px; color: #7d8ba3; letter-spacing: 0.08em; }
+
+.hull-meter {
+  height: 12px; border-radius: 999px; background: rgba(20, 28, 46, 0.9);
+  border: 1px solid rgba(255, 106, 61, 0.25); overflow: hidden;
+}
+.hull-meter span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff6a3d, #ffd166); transition: width 0.12s linear; }
+
+.mission-line {
+  margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 12px; letter-spacing: 0.1em;
+  color: #9feefc; background: rgba(10, 26, 32, 0.7); border: 1px solid rgba(126, 248, 255, 0.18);
+  font-variant-numeric: tabular-nums;
+}
+
+.controls-list { margin: 0; padding: 0 0 0 16px; font-size: 12px; line-height: 1.8; color: #a9b6cc; }
+.controls-list b { color: #ffd9a0; }
+
+.action-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.action-row button {
+  flex: 1 1 auto; min-height: 44px; padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 12.5px; letter-spacing: 0.06em; color: #dceafa;
+  background: rgba(24, 34, 56, 0.9); border: 1px solid rgba(126, 248, 255, 0.2);
+}
+.action-row button:hover { background: rgba(32, 46, 76, 0.95); border-color: rgba(126, 248, 255, 0.4); }
+.action-row button:active { transform: translateY(1px); }
+
+.flight-pad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.flight-pad button {
+  min-height: 44px; padding: 8px 6px; border-radius: 8px; cursor: pointer;
+  color: #e8eef8; background: rgba(17, 35, 52, 0.94); border: 1px solid rgba(126, 248, 255, 0.28);
+  touch-action: none;
+}
+.flight-pad button:active { background: rgba(36, 74, 91, 0.98); transform: translateY(1px); }
+
+.evidence-strip { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #66748c; }
+.evidence-strip code { color: #9feefc; font-size: 11px; }
+
+@media (max-width: 860px) {
+  .shell { flex-direction: column; padding: 8px; }
+  .panel { flex: 0 0 auto; max-height: 42vh; }
+  .flight-banner { font-size: 11px; }
+  .panel { gap: 10px; padding: 12px; }
+  .controls-list { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
+}

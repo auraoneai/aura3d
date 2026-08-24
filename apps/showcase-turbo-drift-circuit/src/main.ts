@@ -3,16 +3,19 @@ import {
   createAuraApp,
   createVehicleChassis,
   createVehicleDriverAi,
+  distanceLod,
   environments,
   effects,
   game,
   groundedFittedModelPosition,
+  instances,
   lights,
   material,
   model,
   primitives,
   resolveChaseFraming,
   scene,
+  text3D,
   vehicleChassisSpecFromBounds,
   type AuraRuntimeNodeHandle,
   type AuraVec3,
@@ -30,15 +33,49 @@ import {
   advanceStartLights,
   canSimulateRace,
   createRaceSessionState,
+  formatLapClock,
   maybeAwardHairpinNitro,
   nitroSpeedMultiplier,
   resetRaceSession,
+  resolveTurboSignageLabelIndex,
+  turboSignageBoardLabels,
   togglePause,
   updateFinishCameraBlend,
   updateNitro,
   updateRaceSessionTiming,
   type RaceSessionState
 } from "./feel";
+import {
+  createTurboGhostPlayer,
+  createTurboGhostRecorder,
+  parseTurboGhostRecording,
+  serializeTurboGhostRecording,
+  turboGhostPathHash,
+  type TurboGhostPlayer,
+  type TurboGhostRecording
+} from "./ghost";
+import {
+  auditTurboPropCorridorClearance,
+  planTurboTrackProps,
+  type TurboTrackPropPlacement
+} from "./track-props";
+import {
+  planTurboScenery,
+  TURBO_LATE_AFTERNOON_MOOD
+} from "./scenery";
+import {
+  assertTurboSignageLabels,
+  planTurboGantry
+} from "./signage";
+import {
+  collectTurboBoostRing,
+  createTurboBoostState,
+  planTurboBoostRings,
+  turboBoostEnabledFromSearch,
+  TURBO_BOOST_SPEED_MULTIPLIER,
+  updateTurboBoost,
+  type TurboBoostState
+} from "./boost-rings";
 import {
   bindTurboHudElements,
   renderTurboHudPanel,
@@ -276,8 +313,15 @@ const vehicleBoundaryInset = turboVehicleBoundaryInset({
 const recoveryHeadingLimit = Math.PI / 90;
 
 const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+// Query-gated deterministic driver used only to produce bounded, repeatable visual
+// acceptance frames from genuine checkpoint/lap state. Keyboard and touch remain
+// separately browser-proven and this mode is never enabled on the public route.
+const evidenceDriverEnabled = new URLSearchParams(window.location.search).get("evidenceDriver") === "1";
 const accessibilitySettings = game.accessibility.settings([
-  game.accessibility.reducedMotion()
+  game.accessibility.reducedMotion({
+    enabled: typeof window.matchMedia === "function"
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  })
 ]);
 const reducedMotion = accessibilitySettings.reducedMotion;
 const runtimeEffects = game.effects({ poolSize: 48, reducedMotion, reducedFlash: false });
@@ -300,6 +344,27 @@ let lastLap = 1;
 let offTrackCueSuppressed = false;
 let finishCueFired = false;
 let engineLoopActive = false;
+// --- TDC-A1: time-trial ghost session state -------------------------------
+/** Records the lap currently being driven; sealed on each lap boundary. */
+const turboGhostRecorder = createTurboGhostRecorder();
+let bestGhostRecording: TurboGhostRecording | null = null;
+let bestGhostHash: string | null = null;
+let bestGhostLapMs: number | null = null;
+let ghostReplayPlayer: TurboGhostPlayer | null = null;
+/** Player-facing toggle; the ghost only shows once a best lap exists. */
+let ghostToggleEnabled = true;
+let previousRaceLapForGhost = 1;
+// --- TDC-A2: prop follow state ---------------------------------------------
+let trackPropsClampEvents = 0;
+let trackPropsScatteredCount = 0;
+/** Distinct props displaced from their authored rest pose this session. */
+const trackPropsDisplaced = new Set<string>();
+/** Accumulated sim time between half-rate props world steps. */
+let propsWorldAccum = 0;
+// --- TDC-A4: active gantry board index -------------------------------------
+let signageActiveLabelIndex = 0;
+// --- TDC-A6: boost state (initialized once the flag/plans resolve) ----------
+let turboBoostLastLap = 1;
 
 const input = game.input({
   actions: {
@@ -309,7 +374,9 @@ const input = game.input({
     right: ["KeyD", "ArrowRight"],
     drift: ["Space", "ShiftLeft"],
     pause: ["KeyP", "Escape"],
-    reset: ["KeyR"]
+    reset: ["KeyR"],
+    // TDC-A1: toggle the time-trial ghost replay.
+    ghostToggle: ["KeyG"]
   },
   axes: {
     steer: { negative: "left", positive: "right" }
@@ -347,6 +414,9 @@ function publishAudioEvidenceOnce(): void {
     contextState?: string;
     unlocked?: boolean;
     sfxReady?: boolean;
+    // Additive TDC-A5 fields.
+    busIds?: readonly string[];
+    musicDucked?: boolean;
   } | undefined;
   if (!target) return;
   target.gestureUnlocked = audioUnlocked;
@@ -356,6 +426,9 @@ function publishAudioEvidenceOnce(): void {
   target.contextState = proof.contextState;
   target.unlocked = proof.unlocked;
   target.sfxReady = proof.sfxReady;
+  // Additive TDC-A5 fields: dedicated buses and music-duck state.
+  target.busIds = proof.busIds.slice();
+  target.musicDucked = proof.musicDucked;
 }
 
 const racingState = game.racing({
@@ -442,6 +515,18 @@ const driverRoute: DriverRoute = {
     return { x: sample.x, y: sample.y, heading: sample.heading };
   }
 };
+const playerEvidenceDriver = evidenceDriverEnabled
+  ? createVehicleDriverAi(driverRoute, {
+      maxSpeed: gameplayMaxSpeed,
+      paceFraction: 0.98,
+      lookAheadSeconds: 1.25,
+      minLookAhead: Math.max(0.05, routeLineLength * 0.012),
+      corneringAcceleration: Number(((gameplayMaxSpeed * gameplayMaxSpeed) / Math.max(1e-6, tightestCornerRadius) * 0.5).toFixed(4)),
+      aggression: "balanced",
+      reactionSeconds: 0,
+      seed: 20260823
+    })
+  : null;
 const opponentTargetMaxDimension = 0.91;
 const opponentAssetScale = opponentTargetMaxDimension / Math.max(...assets.showcaseCcByFormulaOpponent.bounds);
 const opponentRenderedSize: AuraVec3 = [
@@ -515,6 +600,327 @@ const opponentChassisSpec = {
   contactTolerance: fittedOpponentChassisSpec.wheelRadius * 0.15
 };
 
+/*
+ * ============================================================================
+ * TDC incorporations (PRD 01-Turbo-Drift-Circuit.md): shared planning.
+ *
+ * Ghost replay, dynamic track props, instanced scenery, gantry signage and the
+ * flag-gated boost rings all place themselves from the certified centreline via
+ * the engine's own surface query, so a topology regeneration moves every
+ * incorporation with it. Nothing here changes vehicle-contact or passing-lane
+ * contracts.
+ * ============================================================================
+ */
+/** Visual grey-asphalt half width in game units. Same measure the lane contracts use. */
+const visualAsphaltHalfWidthGame = turboVisualAsphaltWidth(routeWidth) / 2;
+const sceneScaleFromBinding = racingScene.transform.scale;
+const sampleCentreline = (progress: number) => {
+  const sample = racingLine.sampleAt(progress);
+  return { x: sample.x, y: sample.y, heading: sample.heading };
+};
+/** Converts a game-plane *length* (widths, radii) into scene units. */
+const gamePointToSceneLength = (gameUnits: number) => gameUnits * sceneScaleFromBinding;
+/** Game-plane point -> scene position on the track reference plane. */
+const gamePointToScene = (point: { readonly x: number; readonly y: number }) =>
+  racingScene.toScenePoint(point, TRACK_REFERENCE_Y);
+
+// --- TDC-A2: dynamic track-side props -------------------------------------
+const trackPropsPlan = planTurboTrackProps({
+  sampleAt: sampleCentreline,
+  visualAsphaltHalfWidthGame,
+  laneMarginGame: 0.008,
+  maxOffsetGame: routeWidth * 0.85,
+  radiusGameByKind: { cone: 0.012, "tire-stack": 0.02 },
+  massKgByKind: { cone: 4, "tire-stack": 12 },
+  coneCount: 14,
+  tireStackCount: 8,
+  seed: 20260821,
+  // Probe-verified placement: candidates are re-measured against the live
+  // centreline so folded sections cannot smuggle a prop onto the racing line.
+  signedOffsetAt: (point) => Math.abs(racingLine.query(point).signedTrackOffset)
+});
+const trackPropsClearance = auditTurboPropCorridorClearance({
+  placements: trackPropsPlan.placements,
+  signedOffsetAt: (point) => Math.abs(racingLine.query(point).signedTrackOffset),
+  corridorHalfWidthGame: trackPropsPlan.corridorHalfWidthGame
+});
+if (!trackPropsClearance.clear) {
+  // Loud rather than visually lying: a placement reaching the passing corridor is
+  // a broken invariant, not set dressing to nudge by hand.
+  throw new Error(
+    "Turbo track props violate the passing-lane corridor: "
+    + JSON.stringify(trackPropsClearance.violations)
+  );
+}
+
+// --- TDC-A3: instanced scenery plan ---------------------------------------
+const trackBoundsGame = (() => {
+  let minX = Number.POSITIVE_INFINITY;
+  let minZ = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxZ = Number.NEGATIVE_INFINITY;
+  for (const point of routeGeometry.points) {
+    minX = Math.min(minX, point.x);
+    minZ = Math.min(minZ, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxZ = Math.max(maxZ, point.y);
+  }
+  return { minX, minZ, maxX, maxZ };
+})();
+const sceneryPlan = planTurboScenery({
+  sampleAt: sampleCentreline,
+  curvatureAt: (progress) => racingLine.query(sampleCentreline(progress)).curvature,
+  visualAsphaltHalfWidthGame,
+  vergeMarginGame: 0.05,
+  trackBoundsGame,
+  counts: { crowdStands: 6, treeClusters: 26, tireWalls: 10 },
+  seed: 20260822
+});
+
+// --- TDC-A4: gantry signage plan ------------------------------------------
+const raceLapsToWin = 4;
+const signageBoardLabels = turboSignageBoardLabels(raceLapsToWin);
+// Fails fast at mount time if any board text leaves the engine A-Z/0-9 glyph set.
+assertTurboSignageLabels(signageBoardLabels);
+const gantryPlan = planTurboGantry({
+  startLine: sampleCentreline(0),
+  toScenePoint: racingScene.toScenePoint,
+  roadHalfWidthScene: gamePointToSceneLength(turboVisualAsphaltWidth(routeWidth)) / 2,
+  trackY: TRACK_REFERENCE_Y,
+  crossbarHeightScene: 1.62
+});
+
+// --- TDC-A6: boost rings, flag-gated (default OFF) ------------------------
+const boostEnabled = turboBoostEnabledFromSearch(window.location.search);
+const boostRingPlan = boostEnabled
+  ? planTurboBoostRings({
+      sampleAt: sampleCentreline,
+      curvatureAt: (progress) => racingLine.query(sampleCentreline(progress)).curvature,
+      straightCurvatureThreshold: 0.55,
+      ringCount: 3,
+      minSeparation: 0.12
+    })
+  : [];
+let turboBoost: TurboBoostState = createTurboBoostState(boostEnabled);
+
+/*
+ * TDC incorporations: scene node construction.
+ *
+ * Builders below are pure functions of the plans above so the declarative scene chain
+ * stays readable. Props are individual nodes because they move independently under
+ * Rapier; scenery uses the instancing surface (one draw call per primitive) plus a
+ * distance-LOD treeline band; signage boards are real text3D glyph meshes.
+ */
+const PROP_VISUALS = {
+  cone: { sizeScene: [0.05, 0.07, 0.05] as const, color: "#ff7a2f", name: "trackside cone" },
+  "tire-stack": { sizeScene: [0.085, 0.055, 0.085] as const, color: "#23282b", name: "tire stack" }
+} as const;
+
+function buildTurboPropNodes() {
+  return trackPropsPlan.placements.map((prop) => {
+    const visual = PROP_VISUALS[prop.kind];
+    const position = gamePointToScene(prop.point);
+    const options = {
+      name: visual.name + " " + prop.id,
+      material: material.pbr({
+        name: visual.name + " material",
+        color: visual.color,
+        roughness: prop.kind === "cone" ? 0.7 : 0.96,
+        metallic: 0.02
+      }),
+      // No shadow casting: 22 tiny verge casters measurably hurt the
+      // load-sensitive grounding stint more than they add to the look.
+      castShadow: false,
+      receiveShadow: false
+    };
+    const node = prop.kind === "cone"
+      ? primitives.cylinder(options)
+      : primitives.box(options);
+    return node
+      .position(position[0], TRACK_REFERENCE_Y + visual.sizeScene[1] / 2, position[2])
+      // Primitive constructors start at unit size. The placement plan stores the
+      // measured scene-space dimensions; omitting this scale mounted every cone
+      // and tyre stack as a full-size obstacle, producing the giant orange drums
+      // and black blocks that obscured the certified road in retained frames.
+      .scale(visual.sizeScene)
+      .runtime(game.runtimeNode("turbo-prop-node-" + prop.id, {
+        tags: ["track-prop", "visual-only-physics-follow"]
+      }));
+  });
+}
+
+function buildTurboSceneryNodes() {
+  const standTransforms = sceneryPlan.crowdStands.map((stand) => ({
+    position: (() => {
+      const p = gamePointToScene(stand.point);
+      return [p[0], TRACK_REFERENCE_Y + stand.sizeScene[1] / 2, p[2]] as [number, number, number];
+    })(),
+    rotation: [0, -stand.headingGame + Math.PI / 2, 0] as [number, number, number],
+    scale: [stand.sizeScene[0], stand.sizeScene[1], stand.sizeScene[2]] as [number, number, number]
+  }));
+  const trunkTransforms = sceneryPlan.trees.map((tree) => ({
+    position: (() => {
+      const p = gamePointToScene(tree.point);
+      return [p[0], TRACK_REFERENCE_Y + tree.sizeScene[1] * 0.22, p[2]] as [number, number, number];
+    })(),
+    rotation: [0, 0, 0] as [number, number, number],
+    scale: [tree.sizeScene[0] * 0.34, tree.sizeScene[1] * 0.44, tree.sizeScene[0] * 0.34] as [number, number, number]
+  }));
+  const canopyTransforms = sceneryPlan.trees.map((tree) => ({
+    position: (() => {
+      const p = gamePointToScene(tree.point);
+      return [p[0], TRACK_REFERENCE_Y + tree.sizeScene[1] * 0.58, p[2]] as [number, number, number];
+    })(),
+    rotation: [0, 0, 0] as [number, number, number],
+    scale: [tree.sizeScene[0] * 1.6, tree.sizeScene[1] * 0.62, tree.sizeScene[0] * 1.6] as [number, number, number]
+  }));
+  // Tyre walls: rows of flat torus tyres along each wall anchor's tangent.
+  const tireTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (const wall of sceneryPlan.tireWalls) {
+    const along = { x: Math.cos(wall.headingGame), z: Math.sin(wall.headingGame) };
+    for (let tyre = 0; tyre < 4; tyre += 1) {
+      const offsetAlong = (tyre - 1.5) * 0.075;
+      const point = {
+        x: wall.point.x + along.x * offsetAlong,
+        y: wall.point.y + along.z * offsetAlong
+      };
+      const p = gamePointToScene(point);
+      tireTransforms.push({
+        position: [p[0], TRACK_REFERENCE_Y + 0.014, p[2]],
+        rotation: [Math.PI / 2, 0, 0],
+        scale: [0.09, 0.09, 0.55]
+      });
+    }
+  }
+  return [
+    instances.box({
+      name: "scenery crowd stands (instanced)",
+      castShadow: false,
+      material: material.pbr({ name: "crowd stand", color: "#c8b89a", roughness: 0.85, metallic: 0.03 }),
+      instanceColors: sceneryPlan.crowdStands.map((_, index) => index % 2 === 0 ? "#c8b89a" : "#b3a284"),
+      transforms: standTransforms
+    }),
+    instances.cylinder({
+      name: "scenery tree trunks (instanced)",
+      castShadow: false,
+      material: material.pbr({ name: "tree trunk", color: "#6d4a33", roughness: 0.95 }),
+      transforms: trunkTransforms
+    }),
+    instances.sphere({
+      name: "scenery tree canopies (instanced)",
+      castShadow: false,
+      material: material.pbr({ name: "tree canopy", color: "#3f6b3a", roughness: 0.9 }),
+      transforms: canopyTransforms
+    }),
+    instances.torus({
+      name: "scenery tyre walls (instanced)",
+      castShadow: false,
+      material: material.pbr({ name: "wall tyre", color: "#1d2124", roughness: 0.97 }),
+      transforms: tireTransforms
+    })
+  ];
+}
+
+/** Far treeline bands: distanceLod drops their detail once the chase camera closes in. */
+function buildTurboTreelineBands() {
+  const midX = (trackBoundsGame.minX + trackBoundsGame.maxX) / 2;
+  const midZ = (trackBoundsGame.minZ + trackBoundsGame.maxZ) / 2;
+  const spanX = ((trackBoundsGame.maxX - trackBoundsGame.minX) / 2) * 1.45 * sceneScaleFromBinding;
+  const spanZ = ((trackBoundsGame.maxZ - trackBoundsGame.minZ) / 2) * 1.45 * sceneScaleFromBinding;
+  const anchors: readonly [number, number][] = [
+    [midX - spanX, midZ],
+    [midX + spanX, midZ],
+    [midX, midZ - spanZ],
+    [midX, midZ + spanZ]
+  ];
+  return anchors.map((anchor, index) => distanceLod({
+    name: "scenery far treeline band " + index,
+    levels: [
+      { name: "near trees", maxDistance: SCENE_SIZE * 0.9, primitive: "cylinder", material: material.pbr({ name: "treeline near", color: "#3f6b3a", roughness: 0.92 }) },
+      { name: "far band", primitive: "box", material: material.pbr({ name: "treeline far", color: "#35513a", roughness: 0.95 }) }
+    ],
+    hysteresis: SCENE_SIZE * 0.04
+  }).position(anchor[0] * sceneScaleFromBinding, TRACK_REFERENCE_Y + 0.16, anchor[1] * sceneScaleFromBinding)
+    .scale([SCENE_SIZE * 0.24, 0.32, 0.06]));
+}
+
+/** Rough glyph-run width used to centre text3D labels on their boards. */
+function estimateTurboTextWidth(label: string, size: number): number {
+  let units = 0;
+  for (const character of label) units += character === " " ? 0.64 : 0.8543;
+  return units * size;
+}
+
+const SIGNAGE_TEXT_SIZE = 0.052;
+
+function buildTurboSignageNodes() {
+  const plan = gantryPlan;
+  const yaw = plan.boardYaw;
+  const postNodes = plan.postPositions.map((position, index) =>
+    primitives.cylinder({
+      name: "signage gantry post " + index,
+      material: material.pbr({ name: "gantry steel", color: "#8b9299", roughness: 0.5, metallic: 0.6 }),
+      castShadow: false
+    }).position(...position).scale([plan.postSize[0], plan.postSize[1], plan.postSize[2]]).runtime(game.runtimeNode("signage gantry post " + index, { tags: ["signage", "set-dressing"] }))
+  );
+  const crossbar = primitives.box({
+    name: "signage gantry crossbar",
+    material: material.pbr({ name: "gantry beam", color: "#767d84", roughness: 0.55, metallic: 0.55 }),
+    castShadow: false
+  }).position(...plan.crossbarCenter).rotate(0, yaw, 0).scale(plan.crossbarSize).runtime(game.runtimeNode("signage gantry crossbar", { tags: ["signage", "set-dressing"] }));
+  const backing = primitives.box({
+    name: "signage board backing",
+    material: material.pbr({ name: "board backing", color: "#10151a", roughness: 0.85 }),
+    castShadow: false
+  }).position(
+      (plan.circuitBoardCenter[0] + plan.lapBoardCenter[0]) / 2,
+      (plan.circuitBoardCenter[1] + plan.lapBoardCenter[1]) / 2,
+      plan.circuitBoardCenter[2]
+    ).rotate(0, yaw, 0).scale(plan.backingSize).runtime(game.runtimeNode("signage board backing", { tags: ["signage", "set-dressing"] }));
+  // Local X axis after yaw, used to centre glyph runs on the board.
+  const localX = { x: Math.cos(yaw), z: -Math.sin(yaw) };
+  const centeredAt = (center: readonly [number, number, number], label: string): [number, number, number] => {
+    const halfWidth = estimateTurboTextWidth(label, SIGNAGE_TEXT_SIZE) / 2;
+    return [center[0] - localX.x * halfWidth, center[1], center[2] - localX.z * halfWidth];
+  };
+  const circuitBoard = text3D("TSUKUBA", {
+    name: "signage circuit board TSUKUBA",
+    size: SIGNAGE_TEXT_SIZE,
+    depth: 0.012,
+    letterSpacing: SIGNAGE_TEXT_SIZE * 0.14,
+    material: material.pbr({ name: "board glyphs warm", color: "#ffd8a8", emissive: "#ffb066", emissiveIntensity: 0.55, roughness: 0.4 })
+  }).position(...centeredAt(plan.circuitBoardCenter, "TSUKUBA")).rotate(0, yaw, 0).runtime(game.runtimeNode("signage circuit board TSUKUBA", { tags: ["signage", "text3d-board"] }));
+  const lapBoards = signageBoardLabels.map((label, index) =>
+    text3D(label, {
+      name: "signage lap board " + index + " " + label.replace(/ /g, "_"),
+      size: SIGNAGE_TEXT_SIZE,
+      depth: 0.01,
+      letterSpacing: SIGNAGE_TEXT_SIZE * 0.14,
+      material: material.pbr({ name: "board glyphs cool", color: "#b9f7ff", emissive: "#57e6ff", emissiveIntensity: 0.6, roughness: 0.4 })
+    }).position(...centeredAt(plan.lapBoardCenter, label)).rotate(0, yaw, 0).runtime(game.runtimeNode("signage lap board " + index + " " + label.replace(/ /g, "_"), { tags: ["signage", "text3d-board", "lap-state"] }))
+  );
+  return [...postNodes, crossbar, backing, circuitBoard, ...lapBoards];
+}
+
+const CAR_SCENE_HOVER = CAR_SCENE_HEIGHT * 0.62;
+
+function buildTurboBoostRingNodes() {
+  return boostRingPlan.map((ring) => {
+    const position = gamePointToScene(ring.point);
+    return primitives.torus({
+      name: "boost ring " + ring.id,
+      material: material.pbr({
+        name: "boost ring emissive",
+        color: "#57e6ff",
+        emissive: "#57e6ff",
+        emissiveIntensity: 1.4,
+        roughness: 0.3
+      })
+    }).position(position[0], TRACK_REFERENCE_Y + CAR_SCENE_HOVER, position[2])
+      .rotate(Math.PI / 2, ring.headingGame, 0)
+      .scale([ring.radiusScene / 0.43, ring.radiusScene / 0.43, ring.radiusScene / 0.43]);
+  });
+}
 /**
  * Vehicle surface: the circuit's own road triangles, sampled per wheel.
  *
@@ -543,10 +949,11 @@ const circuitSurface: VehicleSurface = (() => {
     // a lane, curb, divider, or adjacent branch. The former 40%-of-road probe could
     // select a remote higher surface and made telemetry look grounded while the
     // retained image contradicted it. Keep recovery inside the physical tyre envelope.
-    // The extracted Tsukuba mesh has one sparse seam near progress 0.728. A real
-    // Formula tyre spans that seam; 1.55 radii remains below the measured half-track
-    // and lane separation, so it cannot jump to an adjacent road branch.
-    contactPatchRadius: carChassisSpec.wheelRadius * 1.55
+    // The extracted Tsukuba mesh has one sparse seam near progress 0.728. The retained
+    // outside-front contact is 0.225 scene units from the next drivable triangle;
+    // 2 fitted tyre radii (0.249 scene units) cover that measured extraction gap while remaining below
+    // the 0.31-unit half-track/lane separation, so it cannot jump to another branch.
+    contactPatchRadius: carChassisSpec.wheelRadius * 2
   });
   if (!surface) {
     // Loud rather than silently flat: a missing mesh means the contract was regenerated
@@ -594,6 +1001,8 @@ const vehicleContactWorld = game.planarCollisionWorld({
     // reported freeze path). The previous 96-step ceiling rejected that frame, threw
     // from `onFrame`, and left the HUD/car frozen at the collision. Keep the CCD
     // guarantee while using a bounded 128-step ceiling for that transient.
+    // (TDC-A2: verge props do NOT share this world precisely so this two-car
+    // budget stays authoritative - see the trackPropsContactWorld note below.)
     maxSubSteps: 128,
     motionThreshold: 0.08
   }
@@ -710,6 +1119,58 @@ const opponentContactBody = vehicleContactWorld.addBox("opponent-race-car", oppo
   material: { friction: 0.8, restitution: 0.05 },
   rigidBody: { mass: 760, linearDamping: 0.08, angularDamping: 1 }
 });
+
+// --- TDC-A2/A6: verge-prop rigid bodies + boost-ring sensors ---------------
+// Props live in their OWN planar world, deliberately WITHOUT continuous collision:
+// the vehicle-contact world runs adaptive-substep CCD whose plan is sized by the
+// smallest collider anywhere inside it, so tiny prop spheres would inflate the
+// whole world's substep demand (observed live: a required 317 substeps, above any
+// sane ceiling) and freeze the mounted frame loop mid-stint. A mass-760 player
+// bumper proxy mirrors the solved player pose into this world every frame, so
+// props still receive genuine rigid-body shoves while the racing contract keeps
+// its exact previous CCD budget and vehicle-contact evidence semantics.
+const trackPropsContactWorld = game.planarCollisionWorld({
+  fixedDelta: 1 / 120,
+  solverIterations: 4
+});
+/** Player stand-in that pushes props; driven from the solved main-world pose. */
+const playerPropProxy = trackPropsContactWorld.addBox("player-bumper-proxy", playerContactHalfExtents, {
+  type: "dynamic",
+  position: [initialPlayerContactPoint[0], 0, initialPlayerContactPoint[2]],
+  tags: ["bumper-proxy"],
+  material: { friction: 0.4, restitution: 0.3 },
+  rigidBody: { mass: 760, linearDamping: 0.08, angularDamping: 1 }
+});
+const trackPropBodies = trackPropsPlan.placements.map((prop) => {
+  const position = gamePointToScene(prop.point);
+  return trackPropsContactWorld.addSphere(prop.id, prop.radiusGame * sceneScaleFromBinding, {
+    type: "dynamic",
+    position: [position[0], 0, position[2]],
+    tags: ["track-prop"],
+    material: { friction: 0.55, restitution: 0.4 },
+    rigidBody: { mass: prop.massKg, linearDamping: 1.2, angularDamping: 1 }
+  });
+});
+/** Scene-unit speed ceiling for verge props; keeps CCD plans small. */
+const TRACK_PROP_MAX_SPEED_SCENE = 1.1;
+
+/** Authored rest pose per prop (scene space) used for sync and reset. */
+const trackPropRestPositions = new Map(trackPropsPlan.placements.map((prop) => {
+  const position = gamePointToScene(prop.point);
+  const restY = TRACK_REFERENCE_Y + PROP_VISUALS[prop.kind].sizeScene[1] / 2;
+  return [prop.id, [position[0], restY, position[2]] as AuraVec3];
+}));
+// Boost-ring sensors are static and sensor-only: they report overlaps but never
+// resolve penetration, so nothing about vehicle contact evidence changes.
+boostRingPlan.forEach((ring) => {
+  const position = gamePointToScene(ring.point);
+  vehicleContactWorld.addSphere(ring.id + "-sensor", ring.radiusScene * 0.9, {
+    type: "static",
+    sensor: true,
+    position: [position[0], 0, position[2]],
+    tags: ["turbo-boost-sensor"]
+  });
+});
 let vehicleContactCount = 0;
 let vehicleContactFrames = 0;
 let maximumVehiclePenetration = 0;
@@ -790,6 +1251,11 @@ let opponentChassisPose = opponentChassis.reset({
 const chaseDistance = Math.max(heroFraming.distance, CAR_SCENE_HEIGHT * 5.2);
 const chaseHeight = Math.max(heroFraming.height, CAR_SCENE_HEIGHT * 2.1);
 const chaseLookAhead = Math.max(1.05, CAR_SCENE_HEIGHT * 3.6);
+// The generic 0.045 follow blend trails several car lengths behind at Turbo's
+// authored arcade pace, allowing the player to leave its own chase frame. A
+// firmer frame-rate-independent response keeps the hero in the lower third while
+// retaining enough damping to avoid horizon snap through bends and recovery.
+const chaseSmoothing = 0.18;
 type MutableChaseCamera = { distance: number; height: number; sideOffset: number };
 const chaseCameraTuning: MutableChaseCamera = {
   distance: collisionReviewCamera ? chaseDistance * 0.2 : chaseDistance,
@@ -846,7 +1312,7 @@ const racingCamera = game.racingCameraRig({
   sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset,
   lookAhead: chaseLookAhead,
   fov: collisionReviewCamera ? 48 : chaseFov,
-  smoothing: 0.045
+  smoothing: chaseSmoothing
 });
 setupRacingPanel();
 
@@ -914,6 +1380,28 @@ const app = createAuraApp("#app", {
     })).rotate(opponentChassisPose.rotation[0], opponentPresentationRotation(initialOpponentPose.rotation)[1], opponentChassisPose.rotation[2]).runtime(game.runtimeNode("racing-opponent-car", {
       tags: ["opponent", "vehicle", "typed-secondary-asset", "route-local-ai"]
     })))
+    // TDC-A1: visual-only time-trial ghost. Same typed hero asset with a translucent
+    // material override; it owns no collision body and never enters gap/position logic.
+    .add(model(assets.showcaseCc0FormulaRaceCar, {
+      name: "racing-time-trial-ghost",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.1,
+      castShadow: false,
+      receiveShadow: false,
+      visible: false,
+      material: material.pbr({
+        name: "time trial ghost shell",
+        color: "#8fd8ff",
+        emissive: "#2f9dd8",
+        emissiveIntensity: 0.35,
+        roughness: 0.35,
+        metallic: 0,
+        opacity: 0.34
+      })
+    }).position(...initialPlayerPose.position).runtime(game.runtimeNode("racing-time-trial-ghost", {
+      tags: ["ghost", "visual-only", "no-collision"]
+    })))
     .add(primitives.box({
       name: "left drift ribbon near",
       material: material.pbr({ name: "fresh left tire mark", color: "#252a2c", roughness: 0.98, metallic: 0.01 })
@@ -934,6 +1422,13 @@ const app = createAuraApp("#app", {
       .position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-ribbon-far", { tags: ["vehicle-feedback", "drift", "renderer-owned"] })))
     .add(primitives.box({ name: "right drift ribbon far", material: material.pbr({ color: "#303537", roughness: 0.98, metallic: 0.01 }) })
       .position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-ribbon-far", { tags: ["vehicle-feedback", "drift", "renderer-owned"] })))
+    // TDC-A2 dynamic props, TDC-A3 instanced scenery + LOD bands, TDC-A4 text3D
+    // gantry signage, and the flag-gated TDC-A6 boost rings (empty when OFF).
+    .addMany(buildTurboPropNodes())
+    .addMany(buildTurboSceneryNodes())
+    .addMany(buildTurboTreelineBands())
+    .addMany(buildTurboSignageNodes())
+    .addMany(buildTurboBoostRingNodes())
     // Keep contact definition without crushing the Formula car's red palette into black.
     // The former 0.42 AO pass was appropriate for the pale untextured car and visibly
     // over-occluded the textured cockpit, sidepods and rear wing of the new hero.
@@ -979,6 +1474,14 @@ const app = createAuraApp("#app", {
 
 const playerCar = app.nodes.require("racing-player-car");
 const opponentCar = app.nodes.require("racing-opponent-car");
+// TDC incorporation runtime handles.
+const ghostCarNode = app.nodes.require("racing-time-trial-ghost");
+const trackPropNodes = trackPropsPlan.placements.map((prop) =>
+  app.nodes.require("turbo-prop-node-" + prop.id));
+const signageLapBoardNodes = signageBoardLabels.map((label, index) =>
+  app.nodes.require("signage lap board " + index + " " + label.replace(/ /g, "_")));
+// Only the GET READY board starts lit; the panel updater owns transitions.
+signageLapBoardNodes.forEach((node, index) => node.setVisible(index === 0));
 const leftDriftRibbons = [
   app.nodes.require("racing-left-drift-ribbon"),
   app.nodes.require("racing-left-drift-ribbon-middle"),
@@ -1012,7 +1515,17 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       // snapshot omits chassis surface height, pitch, roll and raster clearance.
       return { position: playerCar.position, rotation: playerCar.rotation, targetSize: CAR_SCENE_HEIGHT };
     },
-    playSpacePoints: route.points.map((point) => racingScene.toScenePoint(point, TRACK_REFERENCE_Y)),
+    // Composition evaluates the drivable segment around the live subject, not
+    // the entire circuit projected to the viewport edges. The geometry/report
+    // still owns the full lap; this local sample answers the visual question:
+    // is enough nearby road visible to read the next driving decision?
+    get playSpacePoints() {
+      const [carX, , carZ] = playerCar.position;
+      return route.points
+        .map((point) => racingScene.toScenePoint(point, TRACK_REFERENCE_Y))
+        .sort((a, b) => Math.hypot(a[0] - carX, a[2] - carZ) - Math.hypot(b[0] - carX, b[2] - carZ))
+        .slice(0, 6);
+    },
     // Derived from the car's own pose, not from `route.points[0]`. The subject the probe
     // measures is the car where it actually stands; sampling the route's first point put
     // the reference at a different place on the circuit, so a correct car-on-road frame
@@ -1024,11 +1537,12 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
        * the near rear tyre substantially lower in the frame; that tyre is the visible
        * silhouette/road junction the composition validator is meant to verify.
        *
-       * The camera's positive lateral offset makes rear-left the near contact for every
-       * heading because both camera and chassis rotate with the vehicle.  This is a real
-       * wheel sample from `VehicleChassis`, not a screenshot-tuned screen coordinate.
+       * `VehicleChassis` defines positive lateral as right. The chase rig also uses a
+       * positive lateral offset, so rear-right is the near contact for every heading
+       * because both camera and chassis rotate with the vehicle. This is a real wheel
+       * sample from `VehicleChassis`, not a screenshot-tuned screen coordinate.
        */
-      const nearRearWheel = playerChassisPose.wheels.find((wheel) => wheel.id === "rear-left")
+      const nearRearWheel = playerChassisPose.wheels.find((wheel) => wheel.id === "rear-right")
         ?? playerChassisPose.wheels[0];
       if (!nearRearWheel) return playerChassisPose.groundedPosition;
       return [
@@ -1039,7 +1553,11 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     },
     setSubjectSuppressed: (suppressed: boolean) => {
       app.pause();
-      playerCar.setScale(suppressed ? 0.0001 : 1);
+      // Keep the runtime follow target present while reducing the rendered
+      // subject enough for a pixel-difference mask. A quarter-scale reference
+      // avoids the full-frame renderer invalidation produced by visibility
+      // toggling while still yielding a strong car-only delta.
+      playerCar.setScale(suppressed ? 0.15 : 1);
       app.step(0);
     }
   },
@@ -1179,6 +1697,12 @@ const mountedEvidence = {
   /** Populated per frame from the live Rapier car-contact world. */
   vehicleContact: undefined as unknown,
   claimBoundary: "Bounded arcade-handling asset-topology racing presentation with route-selected Rapier collision fidelity proof and a reusable deterministic opponent driver; does not claim a physical tyre, suspension, drivetrain, or motorsport simulation.",
+  reducedMotion,
+  evidenceDriver: {
+    enabled: evidenceDriverEnabled,
+    controller: playerEvidenceDriver?.kind ?? null,
+    publicDefault: false
+  },
   frameCount: 0,
   speed: raceSnapshot.speed,
   lap: raceSnapshot.lap,
@@ -1241,7 +1765,8 @@ const mountedEvidence = {
     height: collisionReviewCamera ? chaseHeight * 1.3 : chaseHeight,
     sideOffset: collisionReviewCamera ? chaseDistance * -1.5 : heroFraming.sideOffset,
     lookAhead: chaseLookAhead,
-    fov: collisionReviewCamera ? 48 : chaseFov
+    fov: collisionReviewCamera ? 48 : chaseFov,
+    smoothing: chaseSmoothing
   },
   collisionCapture: {
     mode: collisionReviewCamera ? "held-first-contact-side-profile" : "disabled",
@@ -1328,6 +1853,65 @@ const mountedEvidence = {
     audioErrors: [] as readonly string[],
     playedCueCount: 0
   },
+  /** TDC-A1 additive: time-trial ghost state (visual-only replay). */
+  ghost: {
+    system: "turbo-ghost-replay/1.0",
+    active: false,
+    toggleKey: "KeyG",
+    toggleEnabled: true,
+    hasBestLap: false,
+    bestLapMs: null as number | null,
+    replayPathHash: null as string | null,
+    recordedSamples: 0,
+    currentLapRecordedSamples: 0
+  },
+  /** TDC-A2 additive: dynamic verge props (cosmetic Rapier bodies). */
+  trackProps: {
+    system: "game.planarCollisionWorld:Rapier",
+    count: trackPropsPlan.placements.length,
+    corridorHalfWidthGame: round(trackPropsPlan.corridorHalfWidthGame),
+    clearanceClear: true,
+    clearanceMinEdgeGame: round(trackPropsClearance.minMeasuredEdgeGame),
+    clampEvents: 0,
+    displacedDistinctCount: 0,
+    /**
+     * Evidence-only probe (mirrors collisionCapture): nudges a verge prop so a
+     * browser test can prove rigid-body scatter and render follow deterministically
+     * without depending on where a driven car happens to clip a cone.
+     */
+    probe: {
+      kick: (index = 0) => {
+        const handle = trackPropBodies[index];
+        if (!handle) return;
+        handle.setVelocity([0.9, 0, 0.55]);
+      }
+    }
+  },
+  /** TDC-A3 additive: instanced scenery, LOD bands, formalised mood. */
+  scenery: {
+    crowdStands: sceneryPlan.crowdStands.length,
+    trees: sceneryPlan.trees.length,
+    tireWalls: sceneryPlan.tireWalls.length,
+    lodTreelineBands: 4,
+    mood: TURBO_LATE_AFTERNOON_MOOD.name
+  },
+  /** TDC-A4 additive: gantry boards (real text3D glyph meshes). */
+  signage: {
+    boardLabels: signageBoardLabels,
+    activeLabelIndex: 0,
+    glyphPattern: "A-Z 0-9 space",
+    staticBoard: "TSUKUBA"
+  },
+  /** TDC-A5/A6-era additive: live (non-sticky) start-lights state for tests. */
+  startLightsComplete: false,
+  /** TDC-A6 additive: flag-gated boost rings; default OFF keeps lap evidence valid. */
+  boost: {
+    flag: "boost",
+    enabled: boostEnabled,
+    ringCount: boostRingPlan.length,
+    hits: 0,
+    active: false
+  },
   physics: physicsProof.evidence,
   runtimeEvidence: app.evidence({
     collisionWorld: physicsProof.collisionWorld,
@@ -1359,16 +1943,33 @@ app.onFrame(({ dt }) => {
     updateTurboHudPanel();
     return;
   }
+  // TDC-A1: G (or the panel button) toggles ghost visibility.
+  if (input.pressed("ghostToggle")) {
+    ghostToggleEnabled = !ghostToggleEnabled;
+    playCue("ui-confirm");
+  }
 
   const throttleHeld = input.held("throttle");
-  const driftHeld = input.held("drift");
+  const evidenceDriverInput = playerEvidenceDriver?.decide(step, {
+    progress: raceSnapshot.progress,
+    speed: raceSnapshot.speed,
+    heading: raceSnapshot.heading,
+    signedTrackOffset: raceSnapshot.signedTrackOffset,
+    position: raceSnapshot.position,
+    offTrack: raceSnapshot.offTrack
+  });
+  const resolvedThrottleHeld = evidenceDriverInput ? evidenceDriverInput.throttle > 0.05 : throttleHeld;
+  const resolvedBrakeHeld = evidenceDriverInput ? evidenceDriverInput.brake > 0.05 : input.held("brake");
+  const resolvedDriftHeld = evidenceDriverInput ? evidenceDriverInput.drift : input.held("drift");
+  const resolvedSteer = evidenceDriverInput?.steer ?? input.axis("steer");
+  const driftHeld = resolvedDriftHeld;
   if (!raceSession.startLights.complete) {
     raceSession = {
       ...raceSession,
       startLights: advanceStartLights(
         raceSession.startLights,
         step,
-        throttleHeld || driftHeld
+        resolvedThrottleHeld || driftHeld
       )
     };
     // A countdown blip fires on each 3→2→1 step; the green flag fires once on GO.
@@ -1389,6 +1990,25 @@ app.onFrame(({ dt }) => {
 
   if (!canSimulateRace(raceSession, raceSnapshot.status === "finished")) {
     mountedEvidence.gameplay.countdownBeforeMotion = !raceSession.startLights.complete;
+    if (raceSnapshot.status === "finished") {
+      // Vehicle simulation stops at the flag, but the result presentation must
+      // continue. Apply the session blend to the mounted camera, HUD, and proof
+      // surface instead of freezing them on the final racing frame.
+      const finishBlend = raceSession.finishCameraBlend;
+      syncChaseCamera(finishBlend);
+      mountedEvidence.renderedFeedback.finishCameraBlend = round(finishBlend);
+      mountedEvidence.gameplay.resultCardAfterFinish ||= finishBlend > 0.35;
+      mountedEvidence.gameplay.finishCamera3Quarter ||= finishBlend > 0.35;
+      mountedEvidence.kitContractProof.finishedStatus = "finished";
+      mountedEvidence.status = raceSnapshot.status;
+      mountedEvidence.lap = raceSnapshot.lap;
+      mountedEvidence.checkpoint = raceSnapshot.checkpoint;
+      if (!finishCueFired) {
+        turboAudio.setMusicDucked(true);
+        playCue("finish-fanfare");
+        finishCueFired = true;
+      }
+    }
     mountedEvidence.diagnostics = app.diagnostics();
     updateTurboHudPanel();
     return;
@@ -1397,6 +2017,8 @@ app.onFrame(({ dt }) => {
   if (!engineLoopActive) {
     playCue("engine");
     playCue("wind");
+    // TDC-A5: registered music loop rides its own bus so fanfare can duck it.
+    playCue("music");
     engineLoopActive = true;
   }
 
@@ -1423,6 +2045,18 @@ app.onFrame(({ dt }) => {
     finishCueFired = false;
     engineLoopActive = false;
     opponentRaceStarted = false;
+    // TDC incorporations: ghost, props, signage and boost return to their
+    // authored start so a reset race replays the same ceremony.
+    turboGhostRecorder.abort();
+    turboGhostRecorder.start();
+    previousRaceLapForGhost = 1;
+    ghostReplayPlayer?.restart();
+    turboBoost = createTurboBoostState(boostEnabled);
+    turboBoostLastLap = 1;
+    trackPropsClampEvents = 0;
+    trackPropsScatteredCount = 0;
+    trackPropsDisplaced.clear();
+    turboAudio.setMusicDucked(false);
     vehicleContactWasActive = false;
     vehicleImpactRecoverySeconds = 0;
     vehicleHitStopSeconds = 0;
@@ -1478,6 +2112,17 @@ app.onFrame(({ dt }) => {
     opponentContactBody.setPosition([resetOpponentPose.position[0], 0, resetOpponentPose.position[2]]);
     opponentContactBody.setRotation(yawQuaternion(resetOpponentPose.rotation[1]));
     opponentContactBody.setVelocity([0, 0, 0]);
+    playerPropProxy.setPosition([resetPose.position[0], 0, resetPose.position[2]]);
+    playerPropProxy.setRotation(yawQuaternion(resetPose.rotation[1]));
+    playerPropProxy.setVelocity([0, 0, 0]);
+    // TDC-A2: put every verge prop back on its authored rest pose.
+    for (let propIndex = 0; propIndex < trackPropBodies.length; propIndex += 1) {
+      const handle = trackPropBodies[propIndex]!;
+      const rest = trackPropRestPositions.get(trackPropsPlan.placements[propIndex]!.id)!;
+      handle.setPosition([rest[0], 0, rest[2]]);
+      handle.setVelocity([0, 0, 0]);
+      trackPropNodes[propIndex]?.setPosition(rest[0], rest[1], rest[2]);
+    }
     syncChaseCamera(0);
     const resetOpponentAsphalt = asphaltAlignment(resetOpponent.signedTrackOffset, opponentBodyHalfWidth);
     mountedEvidence.opponent = {
@@ -1503,18 +2148,57 @@ app.onFrame(({ dt }) => {
       // A hard rear impact interrupts drive torque briefly. Without this recovery
       // window, held throttle immediately erased the speed loss on the next frame and
       // the collision looked like two cars merely touching.
-      throttle: input.held("throttle") && vehicleImpactRecoverySeconds <= 0,
-      brake: input.held("brake"),
+      throttle: resolvedThrottleHeld && vehicleImpactRecoverySeconds <= 0,
+      brake: resolvedBrakeHeld,
       // The handbrake is what builds real slip in game.racing. Without it the
       // kit's drift value stays zero and no drift feedback can honestly render.
-      drift: input.held("drift"),
-      steer: input.axis("steer")
+      drift: resolvedDriftHeld,
+      steer: resolvedSteer
     });
-  if (nitroMultiplier > 1 && raceSnapshot.speed > 0.01) {
+  // TDC-A6 boost combines with nitro through the same kit contact-resolution path.
+  const boostMultiplier = turboBoost.remainingSeconds > 0 ? TURBO_BOOST_SPEED_MULTIPLIER : 1;
+  const burstMultiplier = nitroMultiplier * boostMultiplier;
+  if (burstMultiplier > 1 && raceSnapshot.speed > 0.01) {
     raceSnapshot = racingState.resolveContact(raceSnapshot.position, {
-      speedMultiplier: nitroMultiplier,
+      speedMultiplier: burstMultiplier,
       driftMultiplier: 1
     });
+  }
+  if (boostEnabled) {
+    const ringHits = vehicleContactWorld.overlaps({ includeSensors: true });
+    for (const hit of ringHits) {
+      if (hit.a.id !== "player-race-car" && hit.b.id !== "player-race-car") continue;
+      const sensorId = hit.a.id === "player-race-car" ? hit.b.id : hit.a.id;
+      if (!sensorId.startsWith("turbo-boost-ring-")) continue;
+      const collected = collectTurboBoostRing(turboBoost, sensorId.replace("-sensor", ""), raceSnapshot.lap, turboBoostLastLap);
+      turboBoost = collected.state;
+      turboBoostLastLap = collected.lastBoostLap;
+    }
+  }
+  turboBoost = updateTurboBoost(turboBoost, step);
+
+  // TDC-A1: record this lap while it drives; seal on each lap boundary. `previous`
+  // still holds the pre-step snapshot, whose lapTime is the lap that just ended.
+  turboGhostRecorder.record({
+    t: raceSnapshot.lapTime,
+    x: raceSnapshot.position.x,
+    y: raceSnapshot.position.y,
+    heading: raceSnapshot.heading,
+    speed: raceSnapshot.speed,
+    progress: raceSnapshot.progress
+  });
+  if (raceSnapshot.lap !== previousRaceLapForGhost) {
+    const candidate = turboGhostRecorder.finish(previous.lapTime);
+    previousRaceLapForGhost = raceSnapshot.lap;
+    if (candidate && (bestGhostLapMs === null || candidate.lapSeconds * 1000 < bestGhostLapMs)) {
+      // Canonical export -> import round trip: the stored form is what replays.
+      const serialized = serializeTurboGhostRecording(candidate);
+      bestGhostRecording = parseTurboGhostRecording(serialized);
+      bestGhostHash = turboGhostPathHash(bestGhostRecording);
+      bestGhostLapMs = Math.round(bestGhostRecording.lapSeconds * 1000);
+      ghostReplayPlayer = createTurboGhostPlayer(bestGhostRecording);
+    }
+    turboGhostRecorder.start();
   }
   const steppedOffTrack = raceSnapshot.offTrack
     || raceSnapshot.events.some((event) => event.type === "off-track");
@@ -1733,9 +2417,9 @@ app.onFrame(({ dt }) => {
     // The GLB presentation yaw is separate and is applied only when rendering below.
     heading: raceSnapshot.heading,
     speed: raceSnapshot.speed,
-    steer: input.axis("steer"),
-    throttle: input.held("throttle") && vehicleImpactRecoverySeconds <= 0 ? 1 : 0,
-    brake: input.held("brake") ? 1 : 0,
+    steer: resolvedSteer,
+    throttle: resolvedThrottleHeld && vehicleImpactRecoverySeconds <= 0 ? 1 : 0,
+    brake: resolvedBrakeHeld ? 1 : 0,
     slip: Math.min(1, Math.abs(raceSnapshot.drift))
   });
   /*
@@ -1817,6 +2501,56 @@ app.onFrame(({ dt }) => {
     driftSmokeFrame = 0;
   }
   runtimeEffects.update(step);
+
+  // TDC-A2: drive the bumper proxy from the solved player pose, advance the props
+  // world (CCD-free by design) at half frame rate with accumulated dt - cosmetic
+  // scatter reads identically at 30 Hz while halving its per-frame cost - then
+  // follow solved bodies and keep every prop outside the passing corridor.
+  propsWorldAccum += step;
+  if (raceSnapshot.frame % 2 === 0 || propsWorldAccum > 0.06) {
+    playerPropProxy.setRotation(yawQuaternion(proposedPlayerPose.rotation[1]));
+    playerPropProxy.setPosition([playerContactBody.position[0], 0, playerContactBody.position[2]]);
+    playerPropProxy.setVelocity(playerContactBody.velocity);
+    for (const propHandle of trackPropBodies) {
+      const propVelocity = propHandle.velocity;
+      const propSpeed = Math.hypot(propVelocity[0], propVelocity[2]);
+      if (propSpeed > TRACK_PROP_MAX_SPEED_SCENE) {
+        const scale = TRACK_PROP_MAX_SPEED_SCENE / propSpeed;
+        propHandle.setVelocity([propVelocity[0] * scale, 0, propVelocity[2] * scale]);
+      }
+    }
+    trackPropsContactWorld.step(propsWorldAccum);
+    propsWorldAccum = 0;
+  for (let propIndex = 0; propIndex < trackPropBodies.length; propIndex += 1) {
+    const handle = trackPropBodies[propIndex]!;
+    const placement = trackPropsPlan.placements[propIndex]!;
+    const bodyPosition = handle.position;
+    const surfaceQueryPoint = racingScene.toGamePoint(bodyPosition[0], bodyPosition[2]);
+    const nearest = racingLine.query(surfaceQueryPoint);
+    const minAbsOffset = trackPropsPlan.corridorHalfWidthGame + placement.radiusGame;
+    if (Math.abs(nearest.signedTrackOffset) < minAbsOffset) {
+      const sideSign = Math.sign(nearest.signedTrackOffset) || 1;
+      const anchor = sampleCentreline(nearest.progress);
+      const leftX = Math.sin(anchor.heading);
+      const leftZ = -Math.cos(anchor.heading);
+      const correctedGame = {
+        x: anchor.x + leftX * sideSign * minAbsOffset,
+        y: anchor.y + leftZ * sideSign * minAbsOffset
+      };
+      const correctedScene = gamePointToScene(correctedGame);
+      handle.setPosition([correctedScene[0], 0, correctedScene[2]]);
+      handle.setVelocity([0, 0, 0]);
+      trackPropsClampEvents += 1;
+    }
+    const solved = handle.position;
+    // Displacement from the authored rest pose is the honest scatter signal:
+    // velocity can be zeroed by the corridor clamp in the same frame it peaks.
+    const rest = trackPropRestPositions.get(placement.id)!;
+    if (Math.hypot(solved[0] - rest[0], solved[2] - rest[2]) > 0.008) trackPropsDisplaced.add(placement.id);
+    trackPropNodes[propIndex]?.setPosition(solved[0], TRACK_REFERENCE_Y + PROP_VISUALS[placement.kind].sizeScene[1] / 2, solved[2]);
+  }
+  } // end half-rate props world block
+  trackPropsScatteredCount = Math.max(trackPropsScatteredCount, trackPropsDisplaced.size);
   const surfaceSample = racingLine.query(raceSnapshot.position);
   raceSession = maybeAwardHairpinNitro({
     session: raceSession,
@@ -1845,6 +2579,18 @@ app.onFrame(({ dt }) => {
     contactClearance: opponentChassisSpec.wheelRadius * 0.06
   }));
   opponentCar.setRotation(opponentChassisPose.rotation[0], opponentPose.rotation[1], opponentChassisPose.rotation[2]);
+  // TDC-A1: drive the translucent ghost from the best-lap replay.
+  const ghostReplayActive = ghostToggleEnabled && ghostReplayPlayer !== null
+    && raceSession.startLights.complete && raceSnapshot.status !== "finished";
+  if (ghostReplayActive && ghostReplayPlayer) {
+    const ghostPose = ghostReplayPlayer.advance(step);
+    const ghostScenePose = racingScene.toScenePose({ position: { x: ghostPose.x, y: ghostPose.y }, heading: ghostPose.heading });
+    ghostCarNode.setPosition(ghostScenePose.position[0], CAR_REFERENCE_Y, ghostScenePose.position[2]);
+    ghostCarNode.setRotation(0, ghostScenePose.rotation[1], 0);
+    ghostCarNode.setVisible(true);
+  } else {
+    ghostCarNode.setVisible(false);
+  }
   mountedEvidence.status = raceSnapshot.status;
   mountedEvidence.frameCount = raceSnapshot.frame;
   mountedEvidence.speed = raceSnapshot.speed;
@@ -2002,6 +2748,25 @@ app.onFrame(({ dt }) => {
   mountedEvidence.gameplay.driftSmokeObserved ||= driftSmokeVisible;
   mountedEvidence.gameplay.offTrackAudioFired ||= offTrackCueSuppressed;
   mountedEvidence.gameplay.audioGestureUnlocked ||= audioUnlocked;
+  // TDC incorporations: live additive evidence.
+  mountedEvidence.ghost.toggleEnabled = ghostToggleEnabled;
+  mountedEvidence.ghost.active = ghostReplayActive;
+  mountedEvidence.ghost.hasBestLap = bestGhostRecording !== null;
+  mountedEvidence.ghost.bestLapMs = bestGhostLapMs;
+  mountedEvidence.ghost.replayPathHash = bestGhostHash;
+  // Once a best lap is sealed, `turboGhostRecorder` immediately starts the next
+  // lap and its sample count returns to zero. Publish the replayable recording's
+  // sample count as the primary proof field; keep the live recorder count
+  // separately so browser evidence cannot mistake a successful round trip for an
+  // empty recording at the lap boundary.
+  mountedEvidence.ghost.recordedSamples = bestGhostRecording?.samples.length ?? turboGhostRecorder.sampleCount;
+  mountedEvidence.ghost.currentLapRecordedSamples = turboGhostRecorder.sampleCount;
+  mountedEvidence.trackProps.clampEvents = trackPropsClampEvents;
+  mountedEvidence.trackProps.displacedDistinctCount = trackPropsScatteredCount;
+  mountedEvidence.signage.activeLabelIndex = signageActiveLabelIndex;
+  mountedEvidence.startLightsComplete = raceSession.startLights.complete;
+  mountedEvidence.boost.hits = turboBoost.hits;
+  mountedEvidence.boost.active = turboBoost.remainingSeconds > 0;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   // Audio evidence is published only on real audio events (playCue/unlock), not
@@ -2010,6 +2775,8 @@ app.onFrame(({ dt }) => {
   if (raceSnapshot.status === "finished") {
     mountedEvidence.kitContractProof.finishedStatus = "finished";
     if (!finishCueFired) {
+      // TDC-A5: duck the music bus under the fanfare, restore on reset/restart.
+      turboAudio.setMusicDucked(true);
       playCue("finish-fanfare");
       finishCueFired = true;
     }
@@ -2038,13 +2805,27 @@ function setupRacingPanel(): void {
       { elementId: "right-control", code: "KeyD" },
       { elementId: "drift-control", code: "Space" }
     ],
-    pulse: [{ elementId: "reset-control", code: "KeyR" }]
+    pulse: [
+      { elementId: "reset-control", code: "KeyR" },
+      { elementId: "ghost-toggle-control", code: "KeyG" }
+    ]
   });
 }
 
 function updateTurboHudPanel(): void {
   const opponentProgress = opponentAi.snapshot().progress;
   const alignment = roadAlignmentForSnapshot(raceSnapshot);
+  // TDC-A4: light the gantry board matching the race feel state.
+  const nextLabelIndex = resolveTurboSignageLabelIndex(
+    raceSession,
+    raceSnapshot.lap,
+    raceLapsToWin,
+    raceSnapshot.status === "finished"
+  );
+  if (nextLabelIndex !== signageActiveLabelIndex) {
+    signageLapBoardNodes.forEach((node, index) => node.setVisible(index === nextLabelIndex));
+    signageActiveLabelIndex = nextLabelIndex;
+  }
   updateTurboHud(hud, {
     snapshot: raceSnapshot,
     session: raceSession,
@@ -2053,7 +2834,10 @@ function updateTurboHudPanel(): void {
     referenceSpeed: gameplayMaxSpeed,
     onAsphalt: alignment.onAsphalt,
     recoveryVisible: mountedEvidence.renderedFeedback.recoveryVisible === true,
-    debugMode
+    debugMode,
+    ghostAvailable: bestGhostRecording !== null,
+    ghostEnabled: ghostToggleEnabled,
+    ghostBestLabel: formatLapClock(bestGhostLapMs !== null ? bestGhostLapMs / 1000 : undefined)
   });
 }
 

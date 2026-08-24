@@ -49,7 +49,7 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-a9626b99ac63f81aadb147927df3ad192743c7a2a2a2db86ba327b3fd14c9377",
+    "contentHash": "sha256-2cf962828d9a8207b8c3185a70b60438874730f2ce12e0ec25cc1c2cc625def9",
     "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
     "sourceReportHash": "sha256-c30ac50923e222c4474c2f54ca3bf3e3f419b7464047a91756f6a6a694b3afe0"
   }

@@ -36,6 +36,8 @@ describe("createAuraApp production bridge boundary", () => {
     expect(sceneRenderer).toContain("Production bridge failed and safe-basic fallback rendered instead:");
 
     expect(runtimeRenderer).toContain("createTypedGLBActor");
+    expect(runtimeRenderer).toContain('node.role === "primaryWorld" ? { consolidateStaticMeshes: true }');
+    expect(runtimeRenderer).toContain("actor.dispose()");
     expect(runtimeRenderer).toContain("modelNodes.length > 0");
     expect(runtimeRenderer).toContain("ProductionRuntimeRenderer.create");
     expect(runtimeRenderer).toContain("renderInteractiveFrame");
@@ -46,6 +48,7 @@ describe("createAuraApp production bridge boundary", () => {
     expect(runtimeRenderer).toContain("productionRenderer.onDeviceRestored");
 
     expect(inputBuilder).toContain("entry.actor.collectRenderItems");
+    expect(inputBuilder).toContain("castShadow: currentNode.castShadow");
     expect(inputBuilder).toContain("applyProductionActorAnimation");
     expect(inputBuilder).toContain("attachProductionActorEvidence");
     expect(inputBuilder).toContain("collectedLights,");

@@ -1,0 +1,25 @@
+{
+  "name": "@aura3d/showcase-aurora-lander",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Aurora Lander prototype: thrust-managed landing over a seeded static heightfield terrain with mesh surface queries, touchdown grading, and an input-replay ghost of your best attempt.",
+  "scripts": {
+    "build-sfx": "node scripts/build-sfx.mjs",
+    "register-sfx": "node scripts/register-sfx.mjs",
+    "build-models": "node scripts/build-models.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "evidence:performance": "tsx scripts/write-performance-report.ts",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

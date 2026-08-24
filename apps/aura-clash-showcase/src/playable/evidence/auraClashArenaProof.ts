@@ -44,6 +44,12 @@ export interface AuraClashAudioProof {
   readonly assetUrls: readonly string[];
   readonly oscillatorFallback: false;
   readonly audioErrors: readonly string[];
+  /** AC-A6: named bus levels, published so independent levels are observable evidence. */
+  readonly buses?: readonly { readonly id: string; readonly volume: number; readonly muted: boolean }[];
+  /** AC-A6: true while the round-over KO duck holds the sfx bus down. */
+  readonly koDuckActive?: boolean;
+  /** AC-A6: the sfx bus level while ducked (null when no duck is active). */
+  readonly koDuckLevel?: number | null;
 }
 
 export interface AuraClashDeterministicReplayProof {
@@ -168,6 +174,19 @@ export interface AuraClashArenaProof {
     readonly respondingToCombat: boolean;
     /** Round-over presentation has no residual hit-stop or camera jitter. */
     readonly settled: boolean;
+    /** Exact frame volume submitted to the renderer for this proof frame. */
+    readonly frameBounds?: {
+      readonly min: readonly [number, number, number];
+      readonly max: readonly [number, number, number];
+    };
+    /** Manifest-bound full-body clearance inside the submitted frame volume. */
+    readonly fighterFraming?: {
+      readonly playerFullBodyInFrame: boolean;
+      readonly rivalFullBodyInFrame: boolean;
+      readonly minimumMarginUnits: number;
+      readonly groundLineMarginUnits: number;
+      readonly stableGroundLine: boolean;
+    };
   };
   readonly tweaks: AuraClashArenaTweaksEvidence;
   readonly fighterController: AuraClashFighterControllerBoundary;
@@ -191,6 +210,42 @@ export interface AuraClashArenaProof {
     readonly rivalAiRole: string;
     /** Whether input buffering is fighter-length (6-8 frames). */
     readonly fighterLengthBuffering: boolean;
+    /** AC-A1: decaying camera impulse accumulated from authored `camera.impulse` clip events. */
+    readonly clipImpulseStrength?: number;
+    /** AC-A7: the named createCombatAi preset driving the rival this frame. */
+    readonly rivalAiPreset?: string;
+    /** AC-A7: the engine AI's last decision reason (diagnostics). */
+    readonly rivalAiDecisionReason?: string;
+    /** AC-A3: synchronized crowd cheer strength in [0, 1] this frame. */
+    readonly crowdCheer?: number;
+    /** True while a living fighter is at or below the authored low-health threshold. */
+    readonly lowHealthTension?: boolean;
+    /** Low-health tension freezes crowd/sign secondary motion instead of adding flashes. */
+    readonly lowHealthSecondaryMotionSuppressed?: boolean;
+  };
+  /** AC-A1/AC-A3/AC-A4/AC-A5 presentation telemetry (additive). */
+  readonly presentation?: {
+    /** Cosmetic clip-event firings by lane since mount (`sfx`, `vfx`, `camera.impulse`, `footstep`). */
+    readonly clipEventsFired: Readonly<Record<string, number>>;
+    /** Crowd pool size — one instanced draw call regardless of this count. */
+    readonly crowdInstanceCount: number;
+    readonly crowdInstancedDrawItems: 1;
+    /** True when either spring-joint sign is still swinging. */
+    readonly signsSwinging: boolean;
+    /** The ceremony phrase currently rendered in-scene, or null. */
+    readonly ceremonyText: string | null;
+    /** Latest combat-language state, published from resolved runtime events. */
+    readonly lastOutcome?: "neutral" | "hit" | "block" | "whiff" | "guard-break" | "special" | "ko";
+    /** Renderer-owned active impact kinds; whiffs intentionally publish an empty list. */
+    readonly activeImpactKinds?: readonly string[];
+  };
+  /** AC-A2 training replay state (debug-gated; absent fields mean the feature is off). */
+  readonly trainingReplay?: {
+    readonly enabled: boolean;
+    readonly bufferedSeconds: number;
+    readonly scrubOffsetSeconds: number;
+    readonly samples: number;
+    readonly scrubLabel: string | null;
   };
   readonly engineCombat: {
     readonly frame: number;
@@ -250,6 +305,8 @@ export function createAuraClashArenaProof(input: AuraClashArenaProofInput): Aura
       playerSpecialFreeze: 0,
       rivalAiRole: "neutral",
       fighterLengthBuffering: true
-    }
+    },
+    ...(input.presentation ? { presentation: input.presentation } : {}),
+    ...(input.trainingReplay ? { trainingReplay: input.trainingReplay } : {})
   };
 }

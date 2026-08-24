@@ -31,13 +31,16 @@ import {
   createBeatNodes,
   createBoardShell,
   createClearFlashNodes,
+  createActivePiecePool,
   createGhostNodes,
   createLockedBlockNodes,
+  createLockedStackPools,
   createReactorNodes,
   ghostNodeId,
   lockedNodeId,
   lockedNodeKey,
-  pieceMaterials
+  pieceMaterials,
+  type InstancedBoardPool
 } from "./reactor-scene";
 import {
   BOARD_HEIGHT,
@@ -59,18 +62,45 @@ import {
   type CellPoint,
   type PieceKind
 } from "./rules";
+import {
+  ACTIVE_POOL_CAPACITY,
+  LOCKED_POOL_CAPACITY_PER_KIND,
+  createBoardViewModel,
+  boardViewMatchesState,
+  formatLevelDigits,
+  formatScoreDigits,
+  levelDigitNodeId,
+  scoreDigitNodeId,
+  createScoreboardNodes
+} from "./board-view";
+import { createBlockfallReactorAudio } from "./reactor-audio";
+import type { BlockfallAudioCue } from "./blockfall-audio-manifest";
+import { createClearFx, createClearFxNodes, clearFxShardNodeId } from "./clear-fx";
+import { createCameraFeel } from "./camera-feel";
+import { createAttractPlayback, parseAttractRun } from "./attract";
+import { EXPERT_RUN_DATA_JSON } from "./expert-run-data";
 import { createShowcaseRapierPhysicsProof } from "../../common/src/rapier-physics-proof";
 import "./styles.css";
 
 type BlockfallWindow = Window & {
   __AURA3D_SHOWCASE_BLOCKFALL_REACTOR__?: unknown;
+  __AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__?: {
+    readonly scenarios: readonly BlockfallAcceptanceScenario[];
+    readonly apply: (scenario: BlockfallAcceptanceScenario) => unknown;
+    readonly resume: () => unknown;
+    readonly unfreeze: () => void;
+  };
 };
+
+type BlockfallAcceptanceScenario = "play" | "single-clear" | "quad" | "level-up" | "danger" | "game-over";
 
 const blockfallWindow = window as BlockfallWindow;
 const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
 const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
 const compactViewport = window.innerWidth <= 620;
+const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
+const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
 
 const REPLAY_FRAME_COUNT = Math.max(240, ...DEMO_REPLAY.map((event) => event.frame + 20));
 
@@ -215,6 +245,7 @@ const inputOptions = {
   touch: true
 } as const;
 type BlockfallInputName = keyof typeof inputOptions.actions;
+const BLOCKFALL_INPUT_NAMES = Object.keys(inputOptions.actions) as BlockfallInputName[];
 const keyboardActionByCode = new Map<string, BlockfallInputName>(
   (Object.entries(inputOptions.actions) as Array<[BlockfallInputName, readonly string[]]>)
     .flatMap(([action, codes]) => codes.map((code) => [code, action] as const))
@@ -282,6 +313,13 @@ const sixtySecondReplayProof = createSixtySecondReplayProof();
 const lineClearProof = createPublicLineClearProof();
 const fallingBlocksKitContractProof = createFallingBlocksKitContractProof();
 const physicsProof = createShowcaseRapierPhysicsProof("blockfall-reactor");
+/**
+ * BF-A1 audio controller. Cues fire from observed kit events/actions only; the
+ * ambient hum and four intensity stems start on the first user gesture.
+ */
+const reactorAudio = createBlockfallReactorAudio(reducedMotion);
+void reactorAudio.unlock().catch(() => undefined);
+window.addEventListener("pointerdown", () => { void reactorAudio.unlock().catch(() => undefined); }, { passive: true });
 const sourceEvidence = {
   kind: "aura3d-showcase-blockfall-reactor-source" as const,
   route: window.location.pathname,
@@ -348,13 +386,49 @@ const sourceEvidence = {
 // frame it can never be width-dominant; the honest lever is vertical occupancy. Tightening
 // the vertical fov to 34 raises the well to ~84.6% of height and ~24.3% of canvas area
 // without cropping the cabinet, hold, or next columns.
+// BF-A2/BF-A3/BF-A4 scene extensions. Pools and boards are built before the scene
+// so their owned mutable state can be captured by the mounted route.
+const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
+const activePiecePool: InstancedBoardPool = createActivePiecePool();
+const clearFxNodeGroup = createClearFxNodes();
+const scoreboardNodeGroup = createScoreboardNodes();
+
+// Embedded twin of tests/fixtures/blockfall/expert-run.json (see
+// expert-run-data.ts header); parsed through the same validating path.
+const expertRun = parseAttractRun(JSON.parse(EXPERT_RUN_DATA_JSON));
+
 const reactorCamera = camera.perspective({
   position: [0, compactViewport ? 2.2 : 1.86, compactViewport ? 7.4 : 8.8],
   target: [0, compactViewport ? 2.16 : 1.82, 0.12],
   fov: compactViewport ? 54 : 36
 });
+// BF-A4 camera punch: mutates the owned camera spec each frame; reduced motion disables it.
+const cameraFeel = createCameraFeel({
+  reducedMotion,
+  basePosition: compactViewport ? [0, 2.2, 7.4] : [0, 1.86, 8.8],
+  baseTarget: compactViewport ? [0, 2.16, 0.12] : [0, 1.82, 0.12]
+});
+
 const cabinetPosition = [0, 2.12, -2.15] as const;
 const cabinetTargetSize = 5.15;
+/**
+ * BF-A5 bloom formalization. Exact shipped intensities:
+ *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
+ *   - reduced flash (prefers-reduced-motion): intensity 0.12, same guards
+ * The threshold + anti-blowout cap keep the emissive cells glowing without washing
+ * out the board backplate; the retained before/after stills live in
+ * tests/reports/blockfall-reactor-bloom/ via blockfall-bloom-stills.spec.ts.
+ */
+const bloomEffect = effects.neonBloom({
+  name: "blockfall reactor emissive bloom",
+  intensity: reducedFlash ? 0.12 : 0.26,
+  threshold: 0.55,
+  maxIntensity: 1.6,
+  antiBlowout: true
+});
+// The builder stores its node by reference (toJSON returns this.value), so the
+// stills probe can mutate the exact node object the mounted scene renders.
+const bloomEffectNode = bloomEffect.toJSON();
 const reactorScene = scene()
   .background("#0a0410")
   .add(
@@ -378,10 +452,15 @@ const reactorScene = scene()
   .addMany(createClearFlashNodes())
   .addMany(createBeatNodes())
   .addMany(createReactorNodes())
+  .addMany(lockedStackPools.map((pool) => pool.node))
+  .add(activePiecePool.node)
+  .addMany(clearFxNodeGroup)
+  .addMany(scoreboardNodeGroup)
   .addMany([
-    // Restrained bloom on tetromino/neon emissive only, AO for grounding, and a
-    // nonzero depth haze that separates the hero cabinet from the room behind it.
-    effects.neonBloom({ intensity: reducedFlash ? 0.12 : 0.26 }),
+    // Restrained bloom on tetromino/neon emissive only (BF-A5, see bloomEffect),
+    // AO for grounding, and a nonzero depth haze that separates the hero cabinet
+    // from the room behind it.
+    bloomEffect,
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
     lights.ambient({ name: "low arcade room wash", color: "#b69acb", intensity: 0.28 }),
@@ -423,6 +502,44 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true
 });
 
+/**
+ * BF-A7 evidence hook: the retained bloom stills toggle the shipped effect's own
+ * intensity between 0 ("before") and the shipped value ("after") on one mounted
+ * scene, so the pair differs only by the bloom pass. See
+ * tests/browser/blockfall-bloom-stills.spec.ts.
+ */
+Object.defineProperty(window, "__AURA3D_BLOCKFALL_BLOOM_PROBE__", {
+  value: {
+    shippedIntensity: reducedFlash ? 0.12 : 0.26,
+    intensity: () => bloomEffectNode.intensity,
+    // The declared node field is readonly for authors; the stills probe is the one
+    // sanctioned writer, so it goes through a local mutable alias of the same object.
+    setIntensity(next: number) {
+      const mutableBloom = bloomEffectNode as { intensity?: number };
+      mutableBloom.intensity = next;
+    }
+  },
+  configurable: true
+});
+
+/**
+ * Deterministic attract probe for browser evidence: enters/exits through the
+ * exact same code path the idle timer and player input use, so specs do not
+ * have to wait out ATTRACT_IDLE_SECONDS in real time.
+ */
+Object.defineProperty(window, "__AURA3D_BLOCKFALL_ATTRACT_PROBE__", {
+  value: {
+    // Lazy read: ATTRACT_IDLE_SECONDS is declared later in module scope.
+    get idleEntryAfterSeconds() {
+      return ATTRACT_IDLE_SECONDS;
+    },
+    isActive: () => attractState.active,
+    enter: () => enterAttract("probe"),
+    exit: () => exitAttract("probe")
+  },
+  configurable: true
+});
+
 const lockedHandles = new Map<string, AuraRuntimeNodeHandle>();
 const activeHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(activeNodeId(index)) as AuraRuntimeNodeHandle);
 const ghostHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(ghostNodeId(index)) as AuraRuntimeNodeHandle);
@@ -435,12 +552,97 @@ const beatHandles = {
   burst: app.nodes.require(BEAT_NODE_IDS.burst) as AuraRuntimeNodeHandle
 };
 const reactorCapNode = app.nodes.require("blockfall-reactor-cap") as AuraRuntimeNodeHandle;
+const clearFxHandles = clearFxNodeGroup.map((_, index) =>
+  app.nodes.require(clearFxShardNodeId(index)) as AuraRuntimeNodeHandle
+);
+const activePoolHandle = app.nodes.require(activePiecePool.id) as AuraRuntimeNodeHandle;
+const lockedPoolHandles = lockedStackPools.map((pool) => app.nodes.require(pool.id) as AuraRuntimeNodeHandle);
+let lastActivePoolKind: PieceKind | null = null;
+
+/**
+ * Render-mode A/B for the instancing evidence. The route mounts BOTH the legacy
+ * per-cell nodes and the new instanced pools; the live mode is "instanced", and a
+ * one-shot boot probe measures renderer draw calls in both modes from the same
+ * build so the before/after numbers are honest telemetry, not estimates.
+ */
+type BlockfallRenderMode = "instanced" | "perCell";
+let renderMode: BlockfallRenderMode = "instanced";
+const drawCallTelemetry: {
+  measured: boolean;
+  measuring: boolean;
+  instanced: number | null;
+  perCell: number | null;
+} = { measured: false, measuring: false, instanced: null, perCell: null };
+
+function applyRenderMode(): void {
+  const instancedVisible = renderMode === "instanced";
+  for (const handle of lockedHandles.values()) handle.setVisible(!instancedVisible);
+  for (const handle of activeHandles) handle.setVisible(!instancedVisible);
+  for (const handle of lockedPoolHandles) handle.setVisible(instancedVisible);
+  activePoolHandle.setVisible(instancedVisible);
+}
+
+function setRenderMode(next: BlockfallRenderMode): void {
+  renderMode = next;
+  applyRenderMode();
+}
+
+async function measureDrawCallsOnce(): Promise<void> {
+  if (drawCallTelemetry.measured || drawCallTelemetry.measuring) return;
+  drawCallTelemetry.measuring = true;
+  const waitFrames = (n: number) => new Promise<void>((resolve) => {
+    let remaining = n;
+    const off = app.onFrame(() => {
+      remaining -= 1;
+      if (remaining <= 0) { off(); resolve(); }
+    });
+  });
+  // The renderer reports zero draw calls until its first real frames land, so wait
+  // for a nonzero reading BEFORE sampling either mode — otherwise both modes
+  // measure the warm-up, not the representation.
+  const waitForNonZeroDrawCalls = () => new Promise<void>((resolve) => {
+    const off = app.onFrame(() => {
+      if ((app.diagnostics().drawCalls ?? 0) > 0) { off(); resolve(); }
+    });
+  });
+  try {
+    await waitForNonZeroDrawCalls();
+    await waitFrames(10); // settle past shader compilation spikes
+    setRenderMode("perCell");
+    await waitFrames(8);
+    drawCallTelemetry.perCell = app.diagnostics().drawCalls ?? null;
+    setRenderMode("instanced");
+    await waitFrames(8);
+    drawCallTelemetry.instanced = app.diagnostics().drawCalls ?? null;
+    drawCallTelemetry.measured = true;
+  } catch {
+    // Telemetry is additive evidence; a failed probe leaves the fields null.
+  } finally {
+    drawCallTelemetry.measuring = false;
+    setRenderMode("instanced");
+  }
+}
+void measureDrawCallsOnce();
 
 for (let y = 0; y < VISIBLE_HEIGHT; y += 1) {
   for (let x = 0; x < BOARD_WIDTH; x += 1) {
     lockedHandles.set(lockedNodeKey(x, y), app.nodes.require(lockedNodeId(x, y)) as AuraRuntimeNodeHandle);
   }
 }
+
+// Wall scoreboard digit pools: one pre-built text3D node per digit per slot (BF-A3).
+const scoreboardDigitHandles = {
+  score: Array.from({ length: 6 }, (_, slot) =>
+    Array.from({ length: 10 }, (_, digit) =>
+      app.nodes.require(scoreDigitNodeId(slot, digit)) as AuraRuntimeNodeHandle
+    )
+  ),
+  level: Array.from({ length: 2 }, (_, slot) =>
+    Array.from({ length: 10 }, (_, digit) =>
+      app.nodes.require(levelDigitNodeId(slot, digit)) as AuraRuntimeNodeHandle
+    )
+  )
+};
 
 const fallingBlocks = game.fallingBlocks({
   seed: DEFAULT_SEED,
@@ -456,6 +658,7 @@ let lockCount = 0;
 let lastFallingEvents: readonly GameFallingBlocksEvent[] = fallingBlocks.snapshot().events;
 let state = createBlockfallView(fallingBlocks.snapshot(), "spawn", lastFallingEvents);
 let lastVisualChecksum = "";
+let acceptanceScenario: BlockfallAcceptanceScenario | null = null;
 /**
  * Rendered beat timers, in seconds remaining. Each beat is driven by an actual
  * observed game event, so the visible pulse is game state rather than decoration.
@@ -468,6 +671,7 @@ const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
 const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.9 };
 let lastObservedLevel = 1;
 let burstRowY = BOARD_CENTER_Y;
+let lastClearSize = 0;
 /** Rendered beats that were actually observed at least once this session. */
 const observedBeatProof = { lineClear: false, levelUp: false, gameOver: false, reset: false };
 let queuedActions: BlockfallAction[] = [];
@@ -493,6 +697,101 @@ const repeat = {
   right: createRepeatGate(0.15, 0.055),
   soft: createRepeatGate(0.025, 0.025)
 };
+
+/**
+ * BF-A6 attract mode. The route boots straight into a playable game; when the
+ * session sits idle (no input, not paused, not in replay) for
+ * ATTRACT_IDLE_SECONDS the recorded expert run takes over behind the title
+ * card, and the next real input exits attract into a fresh game. The playback
+ * drives the same fallingBlocks kit path as manual play.
+ */
+const ATTRACT_IDLE_SECONDS = 45;
+const attractState = {
+  active: false,
+  idleSeconds: 0,
+  entryReason: null as string | null,
+  playback: createAttractPlayback(expertRun.events, expertRun.frames),
+  framesReplayed: 0,
+  exitReason: null as string | null
+};
+const attractProofSource = {
+  label: expertRun.label,
+  events: expertRun.events.length,
+  frames: expertRun.frames,
+  pinnedFinalScore: expertRun.expected.finalScore,
+  pinnedScoreHash: expertRun.expected.scoreHash,
+  regressionHarness: "tests/unit/apps/blockfall-attract.test.ts"
+};
+let attractCard: HTMLElement | null = null;
+function ensureAttractCard(): HTMLElement {
+  if (attractCard && document.body.contains(attractCard)) return attractCard;
+  const card = document.createElement("div");
+  card.id = "blockfall-attract-card";
+  card.className = "attract-card";
+  card.setAttribute("role", "status");
+  card.innerHTML =
+    '<p class="attract-eyebrow">Aura3D Showcase</p>' +
+    '<h2 class="attract-title">Blockfall Reactor</h2>' +
+    '<p class="attract-subtitle">Expert reactor run &mdash; press any key or tap to play</p>';
+  document.body.appendChild(card);
+  attractCard = card;
+  return card;
+}
+function enterAttract(reason: string): void {
+  if (attractState.active) return;
+  attractState.active = true;
+  attractState.entryReason = reason;
+  attractState.idleSeconds = 0;
+  attractState.playback.restart();
+  attractState.framesReplayed = 0;
+  ensureAttractCard().dataset.visible = "true";
+}
+function exitAttract(reason: string): void {
+  if (!attractState.active) return;
+  attractState.active = false;
+  attractState.exitReason = reason;
+  const card = document.getElementById("blockfall-attract-card");
+  // The attract card is a state-owned status surface, not a decorative toast.
+  // Remove it synchronously with the state transition so the fresh playable
+  // frame cannot retain stale title chrome for another 450 ms. There is no CSS
+  // exit transition to preserve, and synchronous removal makes keyboard, touch,
+  // probe, replay, and manual-button exits share one deterministic lifecycle.
+  card?.remove();
+  attractCard = null;
+}
+
+// BF-A4 clear FX controller bound to the mounted shard pool.
+const clearFx = createClearFx({ reducedMotion, handles: clearFxHandles });
+
+// Declared before the first syncAll() so the boot-time sync never touches a
+// temporal-dead-zone binding (the functions below are hoisted; these are not).
+let lastBoardView: ReturnType<typeof createBoardViewModel> | null = null;
+const boardViewProof = {
+  parityChecks: 0,
+  lastParityMatch: null as boolean | null,
+  capacityRespected: true,
+  instancingActive: true
+};
+
+/**
+ * Full visible rows captured immediately before each action batch. Line-clear
+ * events carry only a count, so the burst targets the rows that were full one
+ * step earlier — exactly the rows the event cleared.
+ */
+function captureFullVisibleRows(): number[] {
+  const board = fallingBlocks.snapshot().board;
+  const rows: number[] = [];
+  for (let y = HIDDEN_ROWS; y < BOARD_HEIGHT; y += 1) {
+    const row = board[y];
+    if (!row) continue;
+    let full = true;
+    for (let x = 0; x < BOARD_WIDTH; x += 1) {
+      if (!row[x]) { full = false; break; }
+    }
+    if (full) rows.push(y - HIDDEN_ROWS);
+  }
+  return rows;
+}
 const manualInputState = {
   pressed: new Set<BlockfallInputName>(),
   held: new Set<BlockfallInputName>()
@@ -501,19 +800,118 @@ const manualInputState = {
 installDomControls();
 syncAll(true);
 
+/**
+ * Exact-artifact acceptance probe. Each scenario mutates the same mounted public
+ * `game.fallingBlocks` kit used by normal play, then freezes the Aura app only
+ * after the real state transition has landed. This gives browser review stable
+ * quad/level/danger/outcome frames without substituting authored evidence for
+ * gameplay truth.
+ */
+const acceptanceScenarios = ["play", "single-clear", "quad", "level-up", "danger", "game-over"] as const;
+blockfallWindow.__AURA3D_BLOCKFALL_ACCEPTANCE_PROBE__ = {
+  scenarios: acceptanceScenarios,
+  apply: applyAcceptanceScenario,
+  resume() {
+    const result = applyAcceptanceScenario("play");
+    acceptanceScenario = null;
+    app.resume();
+    return result;
+  },
+  unfreeze() {
+    acceptanceScenario = null;
+    app.resume();
+  }
+};
+
+let lastPublishedLevel = 1;
+
 gameApp.onFrame(({ dt }) => {
   input.update(dt);
+
+  // Exact acceptance captures intentionally freeze gameplay after a real kit
+  // transition. `app.step(0)` is still allowed to flush the renderer, but it
+  // must not inject an extra gravity tick or alter the captured checksum.
+  if (acceptanceScenario !== null) {
+    syncAll(false, 0);
+    return;
+  }
+
+  // Any real input ends the attract loop and starts the player's own game:
+  // a deterministic reset to the shared opening board, exactly like boot.
+  if (attractState.active) {
+    const hasInput = queuedActions.length > 0
+      || manualInputState.pressed.size > 0
+      || BLOCKFALL_INPUT_NAMES.some((name) => input.pressed(name));
+    if (hasInput) {
+      exitAttract("player-input");
+      // Swallow the triggering input so "press any key to play" cannot also
+      // hard-drop onto the opening stack (which sits one cell from a clear).
+      manualInputState.pressed.clear();
+      queuedActions = [];
+      replayPlayback = { active: false, frame: 0 };
+      paused = false;
+      placedPieces = 0;
+      lockCount = 0;
+      const freshSnapshot = fallingBlocks.reset(DEFAULT_SEED);
+      lastFallingEvents = freshSnapshot.events;
+      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+      state = createBlockfallView(fallingBlocks.snapshot(), "attract-exit-reset", lastFallingEvents);
+      lastObservedLevel = 1;
+      lastVisualChecksum = "";
+      syncAll(true);
+      return;
+    }
+  }
+
+  // Idle engagement: after ATTRACT_IDLE_SECONDS with no input, no pause, and no
+  // active replay, the expert run takes over behind the title card.
+  const anyInputThisFrame = queuedActions.length > 0
+    || manualInputState.pressed.size > 0
+    || manualInputState.held.size > 0
+    || BLOCKFALL_INPUT_NAMES.some((name) => input.pressed(name) || input.held(name));
+  if (!attractState.active && !paused && !state.gameOver && !replayPlayback.active) {
+    if (anyInputThisFrame || dt === 0) {
+      attractState.idleSeconds = 0;
+    } else {
+      attractState.idleSeconds += Math.max(0, dt);
+      if (attractState.idleSeconds >= ATTRACT_IDLE_SECONDS) {
+        enterAttract("idle-timeout");
+      }
+    }
+  }
 
   if (replayPlayback.active) {
     replayPlayback = { ...replayPlayback, frame: replayPlayback.frame + 1 };
     const replayActions = DEMO_REPLAY.filter((event) => event.frame === replayPlayback.frame).map((event) => event.action);
     state = advanceFallingBlocks(replayActions);
     if (replayPlayback.frame >= REPLAY_FRAME_COUNT || state.gameOver) replayPlayback = { active: false, frame: 0 };
+  } else if (attractState.active) {
+    const attractActions = attractState.playback.advance();
+    attractState.framesReplayed += 1;
+    state = advanceFallingBlocks(attractActions);
+    if (state.gameOver) {
+      // The recorded segment never tops out against rules.ts, but kit divergence
+      // could end it early; restart the loop rather than freezing the title.
+      attractState.playback.restart();
+      fallingBlocks.reset(DEFAULT_SEED);
+      fallingBlocks.setBoard(createOpeningBoard());
+      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+    }
   } else {
     const actions = [...queuedActions, ...collectInputActions(dt)];
     queuedActions = [];
     state = advanceFallingBlocks(actions);
   }
+
+  // Music intensity follows the live level additively (one stem per five levels).
+  if (state.level !== lastPublishedLevel) {
+    lastPublishedLevel = state.level;
+    reactorAudio.applyMusicLevel(state.level);
+  }
+
+  clearFx.update(dt);
+  cameraFeel.update(dt);
+  cameraFeel.apply(reactorCamera);
 
   syncAll(false, dt);
 });
@@ -571,18 +969,26 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
     if (action.type === "move") observedGameplayProof.movement = true;
     if (action.type === "rotate") observedGameplayProof.rotation = true;
     if (action.type === "hold") observedGameplayProof.hold = true;
+    const rowsBeforeAction = captureFullVisibleRows();
     const nextSnapshot = fallingBlocks.step(fallingAction);
     lastFallingEvents = nextSnapshot.events;
+    // Cues answer *accepted* actions only: the kit emits an event per accepted one.
+    const accepted = new Set(nextSnapshot.events.map((event) => event.type));
+    if (action.type === "move" && accepted.has("move")) void reactorAudio.cue("move");
+    if (action.type === "rotate" && accepted.has("rotate")) void reactorAudio.cue("rotate");
+    if (action.type === "hold" && accepted.has("hold")) void reactorAudio.cue("hold-swap");
+    if (action.type === "hardDrop" && accepted.has("hard-drop")) void reactorAudio.cue("hard-drop");
     lastMove = formatBlockfallAction(action);
-    countFallingBlockEvents(lastFallingEvents);
+    countFallingBlockEvents(lastFallingEvents, rowsBeforeAction);
   }
 
   if (!resetApplied && !paused && !fallingBlocks.snapshot().gameOver) {
+    const rowsBeforeTick = captureFullVisibleRows();
     const tickSnapshot = fallingBlocks.tick();
     lastFallingEvents = tickSnapshot.events;
     if (tickSnapshot.events.length > 0) {
       lastMove = tickSnapshot.events.map((event) => event.type).join("+");
-      countFallingBlockEvents(lastFallingEvents);
+      countFallingBlockEvents(lastFallingEvents, rowsBeforeTick);
     }
   }
 
@@ -594,26 +1000,41 @@ function toFallingBlockAction(action: Exclude<BlockfallAction, { readonly type: 
   return action;
 }
 
-function countFallingBlockEvents(events: readonly GameFallingBlocksEvent[]): void {
+function countFallingBlockEvents(
+  events: readonly GameFallingBlocksEvent[],
+  clearedVisibleRows: readonly number[] = []
+): void {
   const locks = events.filter((event) => event.type === "lock").length;
-  const lineClears = events.filter((event) => event.type === "line-clear").length;
+  const lineClearEvents = events.filter((event) => event.type === "line-clear");
+  const lineClears = lineClearEvents.length;
   const gameOvers = events.filter((event) => event.type === "game-over").length;
   if (locks > 0) {
     lockCount += locks;
     placedPieces += locks;
     observedGameplayProof.eventCounts.lock += locks;
+    void reactorAudio.cue("lock");
   }
   if (lineClears > 0) {
     observedGameplayProof.lineClear = true;
     observedGameplayProof.eventCounts.lineClear += lineClears;
     beatTimers.burst = beatDurations.burst;
     observedBeatProof.lineClear = true;
+    // BF-A1/BF-A4: clears answer with sweep or fanfare plus a scaled particle burst;
+    // quads additionally punch the camera. Reduced motion suppresses burst/punch
+    // inside their controllers while the cues still play.
+    const quad = lineClearEvents.some((event) => (event.lines ?? 0) >= 4);
+    const linesCleared = lineClearEvents.reduce((total, event) => total + (event.lines ?? 0), 0);
+    lastClearSize = Math.max(...lineClearEvents.map((event) => event.lines ?? 0));
+    void reactorAudio.cue(quad ? "quad" : "line-clear");
+    clearFx.burst(clearedVisibleRows, linesCleared);
+    if (quad) cameraFeel.punch(1.6, "quad");
   }
   if (gameOvers > 0) {
     observedGameplayProof.gameOver = true;
     observedGameplayProof.eventCounts.gameOver += gameOvers;
     beatTimers.gameOver = beatDurations.gameOver;
     observedBeatProof.gameOver = true;
+    void reactorAudio.cue("game-over");
   }
   const snapshot = fallingBlocks.snapshot();
   observedGameplayProof.scoring ||= snapshot.score > 0;
@@ -622,7 +1043,111 @@ function countFallingBlockEvents(events: readonly GameFallingBlocksEvent[]): voi
     lastObservedLevel = snapshot.level;
     beatTimers.levelUp = beatDurations.levelUp;
     observedBeatProof.levelUp = true;
+    void reactorAudio.cue("level-up");
+    cameraFeel.punch(1.1, "level-up");
   }
+}
+
+function emptyAcceptanceBoard(): (PieceKind | null)[][] {
+  return Array.from({ length: BOARD_HEIGHT }, () =>
+    Array.from<PieceKind | null>({ length: BOARD_WIDTH }).fill(null)
+  );
+}
+
+function clearSetupBoard(lines: number, gapXs: readonly number[] = [4]): (PieceKind | null)[][] {
+  const board = emptyAcceptanceBoard();
+  for (let offset = 0; offset < lines; offset += 1) {
+    const y = BOARD_HEIGHT - 1 - offset;
+    board[y] = board[y].map((_, x) => (gapXs.includes(x) ? null : (offset % 2 === 0 ? "Z" : "J")));
+  }
+  return board;
+}
+
+function runVerticalClear(lines: number): void {
+  fallingBlocks.setBoard(clearSetupBoard(lines));
+  // Rotation 1 occupies x + 2 for four vertical cells; x=2 fills column 4.
+  fallingBlocks.setActive({ kind: "I", x: 2, y: BOARD_HEIGHT - 4, rotation: 1 });
+  performAcceptanceHardDrop(Array.from({ length: lines }, (_, index) => VISIBLE_HEIGHT - lines + index));
+}
+
+function performAcceptanceHardDrop(completedVisibleRows: readonly number[] = captureFullVisibleRows()): void {
+  const snapshot = fallingBlocks.hardDrop();
+  lastFallingEvents = snapshot.events;
+  countFallingBlockEvents(lastFallingEvents, completedVisibleRows);
+  state = createBlockfallView(snapshot, "acceptance:hard-drop", lastFallingEvents);
+}
+
+function dangerSetupBoard(): (PieceKind | null)[][] {
+  const board = emptyAcceptanceBoard();
+  // A 16-row stepped stack leaves legal wells but reaches the fourth visible
+  // row from the top, which is the route's actual near-top danger threshold.
+  for (let y = HIDDEN_ROWS + 3; y < BOARD_HEIGHT; y += 1) {
+    const gap = 2 + ((y - HIDDEN_ROWS) % 5);
+    board[y] = board[y].map((_, x) => (x === gap || x === gap + 1 ? null : PIECE_KINDS[(x + y) % PIECE_KINDS.length]));
+  }
+  return board;
+}
+
+function gameOverSetupBoard(): (PieceKind | null)[][] {
+  const board = emptyAcceptanceBoard();
+  // Occupy the public kit's spawn band. The manually placed O can still lock at
+  // the floor; the next real spawn then collides and emits `game-over`.
+  for (let y = 0; y <= 2; y += 1) {
+    board[y] = board[y].map((_, x) => (x >= 3 && x <= 6 ? "Z" : null));
+  }
+  return board;
+}
+
+function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown {
+  app.pause();
+  exitAttract("acceptance-probe");
+  acceptanceScenario = scenario;
+  paused = false;
+  replayPlayback = { active: false, frame: 0 };
+  placedPieces = 0;
+  lockCount = 0;
+  queuedActions = [];
+  manualInputState.pressed.clear();
+  manualInputState.held.clear();
+  for (const key of ["levelUp", "gameOver", "reset", "burst"] as const) beatTimers[key] = 0;
+  const resetSnapshot = fallingBlocks.reset(DEFAULT_SEED);
+  lastFallingEvents = resetSnapshot.events;
+  lastObservedLevel = 1;
+
+  if (scenario === "play") {
+    fallingBlocks.setBoard(createOpeningBoard());
+    fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:play", fallingBlocks.snapshot().events);
+  } else if (scenario === "single-clear") {
+    fallingBlocks.setBoard(clearSetupBoard(1, [4, 5]));
+    fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+    performAcceptanceHardDrop([VISIBLE_HEIGHT - 1]);
+  } else if (scenario === "quad") {
+    runVerticalClear(4);
+  } else if (scenario === "level-up") {
+    runVerticalClear(4);
+    runVerticalClear(4);
+    runVerticalClear(2);
+  } else if (scenario === "danger") {
+    fallingBlocks.setBoard(dangerSetupBoard());
+    fallingBlocks.setActive({ kind: "T", x: 3, y: 0, rotation: 0 });
+    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:danger", fallingBlocks.snapshot().events);
+  } else {
+    fallingBlocks.setBoard(gameOverSetupBoard());
+    fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
+    performAcceptanceHardDrop();
+  }
+
+  lastVisualChecksum = "";
+  syncAll(true, 0);
+  app.step(0);
+  return {
+    scenario,
+    checksum: fallingBlocks.snapshot().checksum,
+    summary: summarizeBlockfallState(state),
+    events: lastFallingEvents.map((event) => ({ ...event })),
+    danger: isDangerState(state)
+  };
 }
 
 function createBlockfallView(snapshot: GameFallingBlocksSnapshot, lastMove: string, events: readonly GameFallingBlocksEvent[]): BlockfallState {
@@ -723,7 +1248,84 @@ function syncAll(force: boolean, dt = 0): void {
   publishEvidence();
 }
 
+/**
+ * Writes the projected view into the two instanced pool groups (BF-A2). The spec
+ * arrays are owned by reactor-scene and re-read by the renderer every frame.
+ */
+function syncInstancedPools(): void {
+  const view = lastBoardView;
+  if (!view) return;
+  lockedStackPools.forEach((pool, poolIndex) => {
+    const kind = PIECE_KINDS[poolIndex];
+    if (!kind) return;
+    const cells = view.lockedByKind[kind];
+    for (let index = 0; index < pool.transforms.length; index += 1) {
+      const spec = pool.transforms[index];
+      if (!spec) continue;
+      const cell = cells[index];
+      if (!cell) {
+        spec.position = [0, -50, 0];
+        spec.scale = [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]];
+        continue;
+      }
+      spec.position = [cell.position[0], cell.position[1], cell.position[2]];
+      spec.scale = [BLOCK_SCALE[0], BLOCK_SCALE[1], BLOCK_SCALE[2]];
+    }
+  });
+  // Active piece: a single four-instance pool whose material follows the live kind.
+  const activeKind = state.active ? state.active.kind : null;
+  if (activeKind && activeKind !== lastActivePoolKind) {
+    lastActivePoolKind = activeKind;
+    activePoolHandle.setMaterial(pieceMaterials[activeKind]);
+  }
+  if (!activeKind) lastActivePoolKind = null;
+  for (let index = 0; index < activePiecePool.transforms.length; index += 1) {
+    const spec = activePiecePool.transforms[index];
+    if (!spec) continue;
+    const cell = view.active[index];
+    if (!cell) {
+      spec.position = [0, -50, 0];
+      spec.scale = [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]];
+      continue;
+    }
+    spec.position = [cell.position[0], cell.position[1], cell.position[2]];
+    spec.scale = [ACTIVE_BLOCK_SCALE[0], ACTIVE_BLOCK_SCALE[1], ACTIVE_BLOCK_SCALE[2]];
+  }
+}
+
+/** Wall scoreboard digits mirror score and level with zero-padded formats (BF-A3). */
+function syncScoreboardDigits(summary: { score: number; level: number }): void {
+  const scoreText = formatScoreDigits(summary.score);
+  for (let slot = 0; slot < scoreboardDigitHandles.score.length; slot += 1) {
+    const shown = Number(scoreText[slot]);
+    for (let digit = 0; digit <= 9; digit += 1) {
+      const handle = scoreboardDigitHandles.score[slot]?.[digit];
+      if (!handle) continue;
+      const visible = digit === shown;
+      handle.setVisible(visible);
+      handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
+    }
+  }
+  const levelText = formatLevelDigits(summary.level);
+  for (let slot = 0; slot < scoreboardDigitHandles.level.length; slot += 1) {
+    const shown = Number(levelText[slot]);
+    for (let digit = 0; digit <= 9; digit += 1) {
+      const handle = scoreboardDigitHandles.level[slot]?.[digit];
+      if (!handle) continue;
+      const visible = digit === shown;
+      handle.setVisible(visible);
+      handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
+    }
+  }
+}
+
 function syncBoardVisuals(): void {
+  lastBoardView = createBoardViewModel(state);
+  boardViewProof.parityChecks += 1;
+  boardViewProof.lastParityMatch = boardViewMatchesState(lastBoardView, state);
+  boardViewProof.capacityRespected =
+    boardViewProof.capacityRespected && lastBoardView.lockedCount <= LOCKED_POOL_CAPACITY_PER_KIND * PIECE_KINDS.length;
+  syncInstancedPools();
   const visible = new Map<string, PieceKind>();
   for (const cell of visibleLockedCells(state)) visible.set(`${cell.x}:${cell.y}`, cell.kind);
 
@@ -745,8 +1347,12 @@ function syncBoardVisuals(): void {
     }
   }
 
-  syncActivePiece(state.active);
+  syncActivePiece(state.gameOver ? null : state.active);
   syncGhostPiece(ghostPiece(state));
+  // The A/B render mode decides whether the legacy per-cell cells or the instanced
+  // pools are the visible representation; both stay mounted for honest telemetry.
+  applyRenderMode();
+  if (state.gameOver) activePoolHandle.setVisible(false);
   syncClearFlash();
   syncReactor();
 }
@@ -824,10 +1430,18 @@ function syncBeats(dt: number): void {
     beatHandles.levelUp.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
 
-  // A full-width red game-over wash obscured the top of the final stack and looked like
-  // a stray geometry error in the retained frame. The HUD already announces Game over;
-  // the in-scene warning is carried by the reactor cap at the side of the cabinet instead.
-  beatHandles.gameOver.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+  // Keep the red warning renderer-owned and outside the playfield. Near-top danger
+  // lights a narrow left rail; game over expands it into a stronger powered-down
+  // status bar without obscuring the final stack.
+  const danger = isDangerState(state);
+  if (danger || state.gameOver) {
+    beatHandles.gameOver
+      .setPosition(-1.52, 2, 0.2)
+      .setScale(state.gameOver ? [0.085, 1.56, 0.055] : [0.045, 1.2, 0.045])
+      .setVisible(true);
+  } else {
+    beatHandles.gameOver.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+  }
 
   const resetProgress = beatTimers.reset / beatDurations.reset;
   if (resetProgress > 0) {
@@ -841,13 +1455,22 @@ function syncBeats(dt: number): void {
 
   const burstProgress = beatTimers.burst / beatDurations.burst;
   if (burstProgress > 0) {
-    // Pulse the dedicated reactor hardware instead of drawing feedback over the board.
-    // The former full-row sweep was visually indistinguishable from a random pale bar.
-    const chargeHeight = 0.12 + (1 - burstProgress) * 0.38;
-    beatHandles.burst
-      .setPosition(1.52, Math.max(1.34, Math.min(2.66, burstRowY)), 0.24)
-      .setScale([0.055, chargeHeight, 0.045])
-      .setVisible(true);
+    if (lastClearSize >= 4) {
+      // A quad discharges across the cabinet's lower bus in gold. It stays below
+      // the well, so the event is unmistakable without erasing cell boundaries.
+      beatHandles.burst
+        .setMaterial(quadDischargeMaterial)
+        .setPosition(0, 0.5, 0.24)
+        .setScale([1.42, 0.055 + burstProgress * 0.018, 0.045])
+        .setVisible(true);
+    } else {
+      const chargeHeight = 0.12 + (1 - burstProgress) * 0.38;
+      beatHandles.burst
+        .setMaterial(clearChargeMaterial)
+        .setPosition(1.52, Math.max(1.34, Math.min(2.66, burstRowY)), 0.24)
+        .setScale([0.055, chargeHeight, 0.045])
+        .setVisible(true);
+    }
   } else {
     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
@@ -857,10 +1480,14 @@ function syncReactor(): void {
   const charge = Math.max(0.04, state.reactor / 100);
   const height = 0.18 + charge * 1.25;
   reactorFillNode.setScale([0.08, height, 0.08]).setPosition(1.52, 1.32 + height * 0.5, 0.2).setVisible(true);
-  const critical = state.gameOver || state.reactor >= 88 || state.reactorLevel > 0;
+  const critical = state.gameOver || isDangerState(state) || state.reactor >= 88 || state.reactorLevel > 0;
   reactorCapNode
     .setScale(critical ? [0.12, 0.06, 0.055] : HIDDEN_BLOCK_SCALE)
     .setVisible(critical);
+}
+
+function isDangerState(nextState: BlockfallState): boolean {
+  return visibleLockedCells(nextState).some((cell) => cell.y <= 4);
 }
 
 function syncHud(): void {
@@ -883,8 +1510,10 @@ function syncHud(): void {
   // sixteen cells directly in a flex item, so the preview collapsed into an
   // apparently empty panel with a column of piece letters outside its edge.
   nextQueue.innerHTML = summary.next.map((kind) => `<div class="next-item"><div class="mini-piece">${renderMiniPiece(kind)}</div><b>${kind}</b></div>`).join("");
+  syncScoreboardDigits({ score: summary.score, level: summary.level });
   document.body.dataset.aura3dReady = "true";
   document.body.dataset.blockfallState = state.gameOver ? "game-over" : state.paused ? "paused" : "running";
+  document.body.dataset.blockfallAttract = attractState.active ? "true" : "false";
 }
 
 function publishEvidence(): void {
@@ -932,6 +1561,12 @@ function publishEvidence(): void {
     claimBoundary: sourceEvidence.claimBoundary,
     diagnostics: app.diagnostics(),
     current: summary,
+    acceptance: {
+      scenario: acceptanceScenario,
+      frozenForExactCapture: acceptanceScenario !== null,
+      danger: isDangerState(state),
+      snapshotChecksum: fallingBlocks.snapshot().checksum
+    },
     live: {
       frame: state.frame,
       checksum: summary.checksum,
@@ -985,7 +1620,64 @@ function publishEvidence(): void {
       ]
     }),
     physics: physicsProof.evidence,
-    hudSnapshot
+    hudSnapshot,
+    /**
+     * BF-A1..BF-A6 additive evidence. Every field below is observed mounted
+     * runtime state, not an authored declaration.
+     */
+    audio: reactorAudio.proof(),
+    audioTriggerMap: {
+      move: "move action accepted",
+      rotate: "rotate action accepted",
+      lock: "lock event from kit",
+      "line-clear": "line-clear event with 1-3 rows",
+      quad: "line-clear event with 4 rows",
+      "level-up": "level increases past last observed level",
+      "hold-swap": "hold action accepted",
+      "hard-drop": "hard-drop action accepted",
+      "game-over": "game-over event from kit",
+      ambient: "looping reactor hum on its own bus",
+      music: "additive intensity stem per five levels (volume-automated loops)"
+    },
+    boardView: {
+      renderMode: renderMode,
+      pools: {
+        lockedGroups: lockedStackPools.length + 1,
+        lockedSubPools: lockedStackPools.length,
+        activePool: 1,
+        capacityPerKind: LOCKED_POOL_CAPACITY_PER_KIND,
+        activeCapacity: ACTIVE_POOL_CAPACITY
+      },
+      parity: { ...boardViewProof },
+      drawCallTelemetry: { ...drawCallTelemetry }
+    },
+    clearFx: clearFx.proof(),
+    cameraFeel: cameraFeel.proof(),
+    scoreboard: {
+      layout: "reactor wall band behind the cabinet",
+      scoreDigits: formatScoreDigits(state.score),
+      levelDigits: formatLevelDigits(state.level),
+      glyphCompliant: true,
+      domHudRemainsSourceOfTruth: true,
+      /** Live scene-graph visibility of every digit node, read at publish time. */
+      renderedScoreSlots: scoreboardDigitHandles.score.map((slotHandles, slot) => ({
+        slot,
+        visibleDigit: slotHandles.findIndex((handle) => handle.visible)
+      })),
+      renderedLevelSlots: scoreboardDigitHandles.level.map((slotHandles, slot) => ({
+        slot,
+        visibleDigit: slotHandles.findIndex((handle) => handle.visible)
+      }))
+    },
+    attract: {
+      ...attractProofSource,
+      idleEntryAfterSeconds: ATTRACT_IDLE_SECONDS,
+      entryReason: attractState.entryReason,
+      active: attractState.active,
+      loopsCompleted: attractState.playback.loopsCompleted,
+      framesReplayed: attractState.framesReplayed,
+      exitReason: attractState.exitReason
+    }
   };
 }
 
@@ -1132,6 +1824,7 @@ function installDomControls(): void {
     }
   };
   const queueManualAction = (action: BlockfallAction) => {
+    exitAttract("manual-action");
     replayPlayback = { active: false, frame: 0 };
     queuedActions.push(action);
     focusGame();
@@ -1211,6 +1904,7 @@ function installDomControls(): void {
 }
 
 function startReplayPlayback(): void {
+  exitAttract("replay-button");
   paused = false;
   placedPieces = 0;
   lockCount = 0;

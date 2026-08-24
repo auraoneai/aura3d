@@ -14,6 +14,7 @@ export type TurboAudioCue =
   | "engine"
   | "drift-scuff"
   | "wind"
+  | "music"
   | "checkpoint"
   | "countdown"
   | "go"
@@ -26,6 +27,7 @@ export type TurboAudioAssetKey =
   | "turboEngineSfx"
   | "turboDriftScuffSfx"
   | "turboWindSfx"
+  | "turboMusicLoopSfx"
   | "turboCheckpointChimeSfx"
   | "turboCountdownBlipSfx"
   | "turboGoSfx"
@@ -37,6 +39,7 @@ export const turboAudioCueAssetKeys: Record<TurboAudioCue, TurboAudioAssetKey> =
   engine: "turboEngineSfx",
   "drift-scuff": "turboDriftScuffSfx",
   wind: "turboWindSfx",
+  music: "turboMusicLoopSfx",
   checkpoint: "turboCheckpointChimeSfx",
   countdown: "turboCountdownBlipSfx",
   go: "turboGoSfx",
@@ -45,9 +48,27 @@ export const turboAudioCueAssetKeys: Record<TurboAudioCue, TurboAudioAssetKey> =
   "ui-confirm": "turboUiConfirmSfx"
 };
 
+/**
+ * Dedicated buses (PRD TDC-A5 / C10, WS-A): engine and wind each own a bus so their
+ * mix can be tuned independently, and the registered music loop plays on its own
+ * `music` bus so the finish fanfare can duck it without touching gameplay cues.
+ */
+export type TurboAudioBusId = "player" | "engine" | "wind" | "music" | "ui";
+
+export const TURBO_AUDIO_BUS_VOLUMES: Record<TurboAudioBusId, number> = {
+  player: 0.8,
+  engine: 0.55,
+  wind: 0.42,
+  music: 0.34,
+  ui: 0.6
+};
+
+/** Music-bus level while the finish fanfare plays (ducked). */
+export const TURBO_AUDIO_MUSIC_DUCK_VOLUME = 0.08;
+
 export interface TurboAudioCueDefinition {
   readonly cue: TurboAudioCue;
-  readonly bus: "player" | "ambience" | "ui";
+  readonly bus: TurboAudioBusId;
   readonly intent: string;
   readonly loop: boolean;
   readonly assetKey: TurboAudioAssetKey;
@@ -99,9 +120,10 @@ function define(
 
 /** Committed cue -> bus/intent/asset/volume manifest. */
 export const turboAudioManifest: Record<TurboAudioCue, TurboAudioCueDefinition> = {
-  engine: define("engine", "ambience", "Driving engine loop, gated by throttle presence.", true, 0.5),
+  engine: define("engine", "engine", "Driving engine loop, gated by throttle presence.", true, 0.5),
   "drift-scuff": define("drift-scuff", "player", "Tyres scuffing while the car is drifting.", false, 0.7),
-  wind: define("wind", "ambience", "Ambient wind loop at speed.", true, 0.25),
+  wind: define("wind", "wind", "Ambient wind loop at speed.", true, 0.25),
+  music: define("music", "music", "Registered late-afternoon music loop (seamless by synthesis).", true, 0.32),
   checkpoint: define("checkpoint", "player", "Ordered gate credited.", false, 0.6),
   countdown: define("countdown", "player", "Start-light countdown tick.", false, 0.5),
   go: define("go", "player", "Green-flag start blast.", false, 0.65),
@@ -131,11 +153,16 @@ export interface TurboAudioProof {
   readonly assetUrls: readonly string[];
   readonly audioErrors: readonly string[];
   readonly gestureUnlocked: boolean;
+  /** Additive (TDC-A5): dedicated bus ids and the current music-duck state. */
+  readonly busIds: readonly string[];
+  readonly musicDucked: boolean;
 }
 
 export interface TurboAudioController {
   readonly cue: (name: TurboAudioCue) => Promise<void>;
   readonly unlock: () => Promise<void>;
+  /** Duck or restore the music bus (finish fanfare ducking). */
+  readonly setMusicDucked: (ducked: boolean) => void;
   readonly proof: () => TurboAudioProof;
   readonly dispose: () => Promise<void>;
 }
@@ -163,15 +190,15 @@ export function createTurboAudio(reducedMotion = false): TurboAudioController {
 
     cachedAudio = createGameAudio({
       browserContext: true,
-      buses: [
-        { id: "player", volume: 0.8 },
-        { id: "ambience", volume: 0.5 },
-        { id: "ui", volume: 0.6 }
-      ],
+      buses: (Object.keys(TURBO_AUDIO_BUS_VOLUMES) as TurboAudioBusId[]).map((id) => ({
+        id,
+        volume: TURBO_AUDIO_BUS_VOLUMES[id]
+      })),
       cues: cueEntries
     });
   }
   const audio = cachedAudio;
+  let musicDucked = false;
 
   async function cue(name: TurboAudioCue): Promise<void> {
     recentCues.push(name);
@@ -186,6 +213,11 @@ export function createTurboAudio(reducedMotion = false): TurboAudioController {
     async unlock() {
       await audio.unlock();
       gestureUnlocked = true;
+    },
+    setMusicDucked(ducked) {
+      musicDucked = ducked;
+      // Duck only the music bus; engine/wind/gameplay cues keep their levels.
+      audio.setBusVolume("music", ducked ? TURBO_AUDIO_MUSIC_DUCK_VOLUME : TURBO_AUDIO_BUS_VOLUMES.music);
     },
     proof() {
       const evidence = audio.evidence;
@@ -206,7 +238,9 @@ export function createTurboAudio(reducedMotion = false): TurboAudioController {
         typedAssetCount: assetUrls.length,
         assetUrls: assetUrls.slice(),
         audioErrors: evidence.errors.slice(),
-        gestureUnlocked
+        gestureUnlocked,
+        busIds: Object.keys(TURBO_AUDIO_BUS_VOLUMES),
+        musicDucked
       };
     },
     async dispose() {

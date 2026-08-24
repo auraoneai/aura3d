@@ -1,10 +1,14 @@
 {
   "schema": "aura-clash-106-readiness",
-  "generatedAt": "2026-07-31T16:53:51.780Z",
-  "ok": false,
+  "generatedAt": "2026-08-23T13:44:34.374Z",
+  "ok": true,
   "route": "/playable/",
   "release": "1.0.6",
   "contextualRoute": "Aura Clash Arena",
+  "promotion": {
+    "approved": false,
+    "humanApprovalRequired": true
+  },
   "artifacts": {
     "screenshots": [
       {
@@ -12,24 +16,24 @@
         "ok": true,
         "source": "launch-evidence/aura-clash-arena-first-frame.png",
         "output": "launch-evidence/playable-106-first-frame.png",
-        "sourceBytes": 278238,
-        "outputBytes": 278238
+        "sourceBytes": 785528,
+        "outputBytes": 785528
       },
       {
         "id": "combat-frame",
         "ok": true,
         "source": "launch-evidence/aura-clash-arena-combat-frame.png",
         "output": "launch-evidence/playable-106-combat-frame.png",
-        "sourceBytes": 270237,
-        "outputBytes": 270237
+        "sourceBytes": 798792,
+        "outputBytes": 798792
       },
       {
         "id": "ko-reset",
         "ok": true,
         "source": "launch-evidence/aura-clash-visual-ko-reset.png",
         "output": "launch-evidence/playable-106-ko-reset.png",
-        "sourceBytes": 271274,
-        "outputBytes": 271274
+        "sourceBytes": 821992,
+        "outputBytes": 821992
       }
     ],
     "deployedProof": "launch-evidence/deployed-106-proof.json",
@@ -39,19 +43,19 @@
   "gates": {
     "flagshipGates": {
       "ok": true,
-      "status": "flagship-ready",
-      "generatedAt": "2026-06-07T20:10:37.904Z",
+      "status": "development-showcase-machine-passed",
+      "generatedAt": "2026-08-23T13:44:20.752Z",
       "commandCount": 8,
       "failedCount": 0
     },
     "flagshipReadiness": {
       "ok": true,
-      "status": "flagship-ready",
-      "generatedAt": "2026-06-07T20:09:20.786Z",
+      "status": "development-showcase-machine-passed",
+      "generatedAt": "2026-08-23T13:42:46.419Z",
       "gateCount": 14
     },
     "deployedProof": {
-      "ok": false,
+      "ok": true,
       "source": "collect-launch-evidence-probes"
     }
   },

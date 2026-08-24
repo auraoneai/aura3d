@@ -1,0 +1,330 @@
+/* Neon Swarm HUD chrome. All overlay styling here is UI only: it never stands
+   in for renderer features. In-scene sparks, flashes, and telegraphs are real
+   instanced scene geometry updated through the root safe API. */
+:root {
+  color-scheme: dark;
+  --neon-magenta: #ff4fd8;
+  --neon-cyan: #35e6ff;
+  --neon-amber: #ffc857;
+  --hud-panel: rgba(7, 10, 22, 0.78);
+  --hud-edge: rgba(53, 230, 255, 0.42);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #04050c;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: #dbe7ff;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#app canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  z-index: 10;
+}
+
+.ns-panel {
+  position: absolute;
+  background: var(--hud-panel);
+  border: 1px solid var(--hud-edge);
+  border-radius: 10px;
+  padding: 10px 14px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 18px rgba(53, 230, 255, 0.12);
+}
+
+.ns-panel--top-left {
+  top: 14px;
+  left: 14px;
+  min-width: 210px;
+}
+
+.ns-panel--top-right {
+  top: 14px;
+  right: 14px;
+  text-align: right;
+}
+
+.ns-eyebrow {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--neon-magenta);
+  margin-bottom: 2px;
+}
+
+.ns-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: #eef4ff;
+}
+
+.ns-stats {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2px 14px;
+  font-size: 12px;
+}
+
+.ns-stats span {
+  color: #8fa3c8;
+}
+
+.ns-stats strong {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ns-combo {
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 79, 216, 0.16);
+  overflow: hidden;
+}
+
+.ns-combo i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+  transition: width 90ms linear;
+}
+
+.ns-hp {
+  display: flex;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.ns-hp b {
+  width: 15px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid rgba(53, 230, 255, 0.5);
+  background: var(--neon-cyan);
+  box-shadow: 0 0 7px rgba(53, 230, 255, 0.65);
+}
+
+.ns-hp b[data-empty="true"] {
+  background: transparent;
+  box-shadow: none;
+  border-color: rgba(143, 163, 200, 0.35);
+}
+
+.ns-help {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #93a5c9;
+  background: rgba(7, 10, 22, 0.62);
+  border-radius: 999px;
+  padding: 5px 14px;
+  white-space: nowrap;
+}
+
+.ns-banner {
+  position: absolute;
+  top: 26%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.ns-banner h2 {
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 22px rgba(255, 79, 216, 0.75), 0 0 44px rgba(53, 230, 255, 0.45);
+}
+
+.ns-banner p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #b7c6e6;
+}
+
+.ns-summary {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #d5e1fa;
+}
+
+.ns-summary strong {
+  color: #fff;
+}
+
+.ns-doors {
+  position: absolute;
+  bottom: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.ns-door {
+  appearance: none;
+  cursor: grab;
+  background: var(--hud-panel);
+  color: #eaf2ff;
+  border: 1px solid var(--hud-edge);
+  border-radius: 12px;
+  padding: 10px 16px;
+  min-width: 148px;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.ns-door small {
+  display: block;
+  margin-top: 3px;
+  color: #93a5c9;
+  font-size: 11px;
+}
+
+.ns-door:hover,
+.ns-door:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(53, 230, 255, 0.35);
+  outline: none;
+}
+
+.ns-door[data-chosen="true"] {
+  border-color: var(--neon-amber);
+  box-shadow: 0 0 22px rgba(255, 200, 87, 0.4);
+}
+
+.ns-burst-button {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  pointer-events: auto;
+  border: 1px solid rgba(255, 200, 87, 0.65);
+  border-radius: 999px;
+  padding: 10px 15px;
+  background: rgba(32, 18, 9, 0.82);
+  color: #ffc857;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  opacity: 0.58;
+}
+
+.ns-burst-button small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.03em;
+}
+
+.ns-burst-button[data-ready] {
+  opacity: 1;
+  box-shadow: 0 0 24px rgba(255, 200, 87, 0.45);
+}
+
+.ns-touch-stick {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(53, 230, 255, 0.4);
+  background: rgba(53, 230, 255, 0.08);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.ns-touch-knob {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 79, 216, 0.55);
+  border: 1px solid rgba(255, 79, 216, 0.8);
+  pointer-events: none;
+}
+
+.ns-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(255, 79, 216, 0.32) 100%);
+}
+
+.ns-vignette[data-active="true"] {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .ns-panel--top-left {
+    top: 8px;
+    left: 8px;
+    min-width: 176px;
+    padding: 8px 10px;
+  }
+
+  .ns-title {
+    font-size: 13px;
+  }
+
+  .ns-panel--top-right {
+    top: 8px;
+    right: 8px;
+    padding: 7px 9px;
+  }
+
+  .ns-help {
+    display: none;
+  }
+
+  /* Keep the dedicated burst action above, never beneath, the fire stick. */
+  .ns-burst-button {
+    right: 12px;
+    bottom: 180px;
+  }
+
+  .ns-banner {
+    top: 31%;
+    width: calc(100% - 28px);
+  }
+
+  .ns-banner h2 {
+    font-size: 24px;
+  }
+
+  .ns-doors {
+    bottom: 270px;
+    width: calc(100% - 20px);
+    gap: 5px;
+  }
+
+  .ns-door {
+    min-width: 0;
+    flex: 1;
+    padding: 8px 5px;
+    font-size: 10px;
+  }
+}

@@ -466,3 +466,32 @@ button { font: inherit; }
   .button-grid button b { font-size: 19px; }
   .controls-list { display: none; }
 }
+
+/* ---- SR-A1 ghost badge --------------------------------------------------- */
+.ghost-row {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+#ghost-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid rgba(142, 240, 255, 0.35);
+  border-radius: 999px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #bfe9f2;
+  background: rgba(12, 32, 40, 0.55);
+}
+
+#ghost-badge[data-state='live'] {
+  color: #eafcff;
+  border-color: rgba(94, 224, 255, 0.75);
+  box-shadow: 0 0 10px rgba(94, 224, 255, 0.28);
+}
+
+#ghost-badge[data-state='empty'] {
+  color: #cfd8de;
+  border-color: rgba(207, 216, 222, 0.4);
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Aura3D Aurora Lander prototype: manage thrust, fuel, hull and attitude to touch down gently on three aurora-lit research pads through gusts and whiteout." />
+    <title>Aura3D - Aurora Lander</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell" aria-label="Aurora Lander">
+      <section class="viewport">
+        <div id="app" class="stage" data-testid="aurora-lander-stage"></div>
+        <div id="hud" class="hud" aria-label="Flight telemetry"></div>
+      </section>
+      <aside id="panel" class="panel" aria-label="Lander controls and site briefing"></aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

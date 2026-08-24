@@ -75,6 +75,12 @@ type AuraClashArenaProof = {
     koLocked: boolean;
     resetCount: number;
   };
+  stage?: {
+    domSceneElementCount: 0;
+    evidenceBacked: boolean;
+    evidenceSource: string;
+    missingElementIds: readonly string[];
+  };
   performance?: {
     frameTimeMs: number;
     fps: number;
@@ -295,6 +301,30 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(bodyText).not.toContain("hurtbox");
     expect(bodyText).not.toContain("debug");
     expect(bodyText).not.toContain("primitive fighter");
+  });
+
+  test("broadcast HUD stays outside the renderer and the complete rooftop stage is observed", async ({ page }) => {
+    const proof = await loadPlayable(page);
+    expect(proof.stage).toMatchObject({
+      domSceneElementCount: 0,
+      evidenceBacked: true,
+      evidenceSource: "observed-render-items",
+      missingElementIds: []
+    });
+
+    for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport);
+      await page.waitForTimeout(100);
+      const hud = await page.locator(".aca-hud").boundingBox();
+      const canvas = await page.locator("#aura-clash-arena-canvas").boundingBox();
+      expect(hud).toBeTruthy();
+      expect(canvas).toBeTruthy();
+      expect(hud!.y + hud!.height, "broadcast HUD must end before the renderer begins").toBeLessThanOrEqual(canvas!.y);
+      await expect(page.locator("#player-name")).toHaveText("Mara Volt");
+      await expect(page.locator("#rival-name")).toHaveText("Rook Atlas");
+      await expect(page.locator("#player-rounds")).toHaveAttribute("aria-label", /Player rounds/i);
+      await expect(page.locator("#rival-rounds")).toHaveAttribute("aria-label", /Rival rounds/i);
+    }
   });
 });
 

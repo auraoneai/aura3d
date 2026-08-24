@@ -123,9 +123,8 @@ test.describe("root renderer integration reference route", () => {
     // Every claimed feature must be backed by an independently observed signal.
     const claimChecks: Record<string, boolean> = {
       "root-typed-glb-production-bridge": liveDiagnostics.runtimeBackend === "production-runtime",
-      "root-pixel-backed-tone-mapping-color-grade-fxaa-chain":
-        liveDiagnostics.pixelBacked
-        && ["tone-mapping", "color-grade", "fxaa"].every((pass) => liveDiagnostics.actualPasses.includes(pass)),
+      "root-pixel-backed-tone-mapping":
+        liveDiagnostics.pixelBacked && liveDiagnostics.actualPasses.includes("tone-mapping"),
       "root-bloom-pass": liveDiagnostics.bloomPass,
       "root-environment-fog": liveDiagnostics.fogEnabled,
       "root-single-directional-pcf-shadow-map": liveDiagnostics.shadowMapRendered && liveDiagnostics.shadowMapSampled
@@ -188,7 +187,7 @@ test.describe("root renderer integration reference route", () => {
     // runtime diagnostic, never from what the scene authored.
     expect(integration.claimedFeatures).toEqual(expect.arrayContaining([
       "root-typed-glb-production-bridge",
-      "root-pixel-backed-tone-mapping-color-grade-fxaa-chain",
+      "root-pixel-backed-tone-mapping",
       "root-bloom-pass",
       "root-environment-fog",
       "root-single-directional-pcf-shadow-map"

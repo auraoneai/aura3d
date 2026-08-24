@@ -1,8 +1,12 @@
 {
   "schema": "aura-clash-flagship-readiness",
   "ok": true,
-  "status": "flagship-ready",
-  "generatedAt": "2026-08-11T22:06:30.561Z",
+  "status": "development-showcase-machine-passed",
+  "promotion": {
+    "approved": false,
+    "humanApprovalRequired": true
+  },
+  "generatedAt": "2026-08-24T06:29:33.872Z",
   "appRoot": "apps/aura-clash-showcase",
   "gates": [
     {

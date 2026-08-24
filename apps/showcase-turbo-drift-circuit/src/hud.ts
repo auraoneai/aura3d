@@ -26,6 +26,9 @@ export interface TurboHudElements {
   resultPosition: HTMLElement;
   debugSection: HTMLElement | null;
   alignment: HTMLElement;
+  /** TDC-A1 additive ghost controls. */
+  ghostState: HTMLElement;
+  ghostBest: HTMLElement;
 }
 
 export interface TurboHudUpdateInput {
@@ -37,6 +40,10 @@ export interface TurboHudUpdateInput {
   readonly onAsphalt: boolean;
   readonly recoveryVisible: boolean;
   readonly debugMode: boolean;
+  /** TDC-A1 additive ghost fields. */
+  readonly ghostAvailable: boolean;
+  readonly ghostEnabled: boolean;
+  readonly ghostBestLabel: string;
 }
 
 export function requireHudElement(id: string): HTMLElement {
@@ -62,7 +69,9 @@ export function bindTurboHudElements(): TurboHudElements {
     resultBest: requireHudElement("result-best-value"),
     resultPosition: requireHudElement("result-position-value"),
     debugSection: document.getElementById("debug-section"),
-    alignment: requireHudElement("alignment-value")
+    alignment: requireHudElement("alignment-value"),
+    ghostState: requireHudElement("ghost-state-value"),
+    ghostBest: requireHudElement("ghost-best-value")
   };
 }
 
@@ -100,6 +109,10 @@ export function renderTurboHudPanel(debugMode: boolean): string {
       <article class="metric metric--compact"><span>Best</span><strong id="best-lap-value">--:--.--</strong></article>
       <article class="metric metric--compact"><span>Track</span><strong id="track-state-value">On track</strong></article>
     </section>
+    <section class="lap-times" aria-label="Time-trial ghost">
+      <button id="ghost-toggle-control" type="button" aria-pressed="false"><b aria-hidden="true">G</b><span id="ghost-state-value">Ghost OFF</span></button>
+      <article class="metric metric--compact"><span>Ghost best</span><strong id="ghost-best-value">--:--.--</strong></article>
+    </section>
     <section id="result-card" class="result-card result-card--hidden" aria-label="Race results" hidden>
       <h2>Race complete</h2>
       <dl>
@@ -126,6 +139,7 @@ export function renderTurboHudPanel(debugMode: boolean): string {
         <li><kbd>Space</kbd> Drift</li>
         <li><kbd>P</kbd> Pause</li>
         <li><kbd>R</kbd> Reset</li>
+        <li><kbd>G</kbd> Ghost</li>
       </ul>
     </section>`;
 }
@@ -154,6 +168,10 @@ export function updateTurboHud(hud: TurboHudElements, input: TurboHudUpdateInput
 
   updateStartLightsDom(hud.startLights, input.session);
   updateResultCard(hud, input, gap, raceFinished);
+
+  // TDC-A1 additive ghost controls.
+  hud.ghostState.textContent = input.ghostAvailable && input.ghostEnabled ? "Ghost ON" : "Ghost OFF";
+  hud.ghostBest.textContent = input.ghostAvailable ? input.ghostBestLabel : "--:--.--";
 
   if (input.debugMode && hud.debugSection) {
     hud.debugSection.hidden = false;

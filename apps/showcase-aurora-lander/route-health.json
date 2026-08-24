@@ -1,0 +1,220 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-23T18:22:22.270Z",
+  "appId": "showcase-aurora-lander",
+  "route": "/apps/showcase-aurora-lander/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "observedBackend": "webgl2",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.auroraLanderProbe",
+      "role": "primaryVehicle",
+      "status": "typed-primary-asset",
+      "quality": "release",
+      "hash": "sha256-bff8e15b8a4004d6631f42d55d2b5d664b3fe77c1564c9fa7def85dcd61b40cd",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraPadBeacon",
+      "role": "landingZoneProp",
+      "status": "typed-primary-asset",
+      "quality": "release",
+      "hash": "sha256-c94a5b6b45fa0c3d52fa5c9b3e863aaa37c540e1d9fb57ec09c46956f4af14ef",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.auroraThrustLoopSfx",
+      "hash": "sha256-4f7d418d00551615602a64959b5fedb226f5d18f7945a5f0ae31b012f3777718",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraRcsPuffSfx",
+      "hash": "sha256-ea3dec5ecb384a8c4b6f4dd9aa6ca8bbf16c0a5ca40008001111bf52e0942dd2",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraTouchSoftSfx",
+      "hash": "sha256-fd22c577f3d47a42c943e9f57257473779dac386737420ec04eabcb9a32f21d7",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraTouchHardSfx",
+      "hash": "sha256-04fd097df25a5c49b6e1a51dbfcf611719525f250812635df172108747012799",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraCrashSfx",
+      "hash": "sha256-229631bf83ebe6a19d2e6ac5e76fc67e2d4e163b1b633b2ffea076c1ef8cdef9",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraPadLockSfx",
+      "hash": "sha256-88f2f87a8498a5e7989511ac306452ea1d9bfee5d7f59ea64411c6a7445a9819",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraFuelLowSfx",
+      "hash": "sha256-9913efb195cb228a15f8d4116dc2e1a19e832279f311c9457fa21dd90b1bbcb1",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraSiteClearSfx",
+      "hash": "sha256-bc8fac938076b498a05657de90d1364b5fc0c6ffef8346e0df607046998ca7b4",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraGustWarnSfx",
+      "hash": "sha256-5e46a84265e3e82098335dcf9a4c081ec6401a5730f77d5efc498e5f08c168c7",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.auroraAmbientWindSfx",
+      "hash": "sha256-5e9491ddf425feb60d81eb4469704a1ed96f973a064dd76173b732f76bc842dd",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 15,
+    "primitiveBudget": 20,
+    "role": "terrain/weather/pad/effect support around typed vehicle and beacon assets",
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "prototype-blocked",
+    "label": "prototype",
+    "allowed": [
+      "authored deterministic arcade landing dynamics",
+      "Rapier static-heightfield contact detection witnessed by a route-owned proxy",
+      "createMeshSurfaceQuery BVH terrain reads",
+      "bounded eight-second current-control landing estimate",
+      "player-facing input replay ghost",
+      "three-site campaign with gust, whiteout, hull, scoring, and extraction"
+    ],
+    "notAllowed": [
+      "physical-simulation parity or orbital mechanics",
+      "deformable or dynamic terrain",
+      "production rendering, PBR parity, HDR/IBL, or WebGPU claims",
+      "reusable lander or precision-flight game kit",
+      "public showcase promotion before independent exact-artifact review"
+    ]
+  },
+  "performance": {
+    "report": "apps/showcase-aurora-lander/performance-report.json",
+    "budgets": {
+      "fixedStepP95Ms": 1,
+      "boundedPredictionP95Ms": 3,
+      "terrainBuildP95Ms": 50,
+      "strongestWhiteoutDrawCalls": 60
+    },
+    "observed": {
+      "maxFixedStepP95Ms": 0.0004,
+      "maxPredictionP95Ms": 0.0895,
+      "terrainBuildP95Ms": 2.3214,
+      "strongestWhiteoutDrawCalls": 53,
+      "strongestWhiteoutVisibleNodes": 45
+    },
+    "sitesCompleted": 3,
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "requiresKeyboardDelta": true,
+    "pass": true
+  },
+  "blockers": [
+    "visual-review:aurora-lander-independent-review-pending"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_AURORA_LANDER__",
+    "detailedGameplayGlobal": "window.__AURORA_LANDER_EVIDENCE__",
+    "sourceReview": "apps/showcase-aurora-lander/src/main.ts",
+    "campaignArtifacts": [
+      {
+        "report": "tests/reports/aurora-lander-campaign/01-approach.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/01-approach.png",
+        "sha256": "sha256-50b26736590ddd8735d316b7ab08db7b6febae4c3ce373007e22597e661e4d45"
+      },
+      {
+        "report": "tests/reports/aurora-lander-campaign/02-gust-correction.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/02-gust-correction.png",
+        "sha256": "sha256-c631ab9adc155717b658917c6226d6646886d83ff06dc56f3ad07c6e1e8402ba"
+      },
+      {
+        "report": "tests/reports/aurora-lander-campaign/03-strongest-whiteout.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/03-strongest-whiteout.png",
+        "sha256": "sha256-7f3f9cbbc206c88d0e8aa0b16c8f302276272552216ce4e3bb75441f98079c46"
+      },
+      {
+        "report": "tests/reports/aurora-lander-campaign/04-final-extraction.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/04-final-extraction.png",
+        "sha256": "sha256-f91ea3261dd2f35821af0df4ba5b2131bc6af643da85c975631a10a3a4eaffdb"
+      },
+      {
+        "report": "tests/reports/aurora-lander-campaign/05-hard-contact.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/05-hard-contact.png",
+        "sha256": "sha256-466452c35f99195d4907cd9e847b2d99b206d02ca29426210a79351d0d54edca"
+      },
+      {
+        "report": "tests/reports/aurora-lander-campaign/06-mobile-active-play.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/06-mobile-active-play.png",
+        "sha256": "sha256-c8b899e0fce40b635cc37fdfc30dfd3388b3663031f93ba2d0f0cb756ed0840a"
+      },
+      {
+        "report": "tests/reports/aurora-lander-campaign/07-reduced-motion-whiteout.json",
+        "screenshot": "tests/reports/aurora-lander-campaign/07-reduced-motion-whiteout.png",
+        "sha256": "sha256-a6f1747dc58029d5e64db6d320c72a095ccc96a8eb82524851f6db9ce208c984"
+      }
+    ],
+    "contactEvidence": "tests/reports/aurora-lander-terrain/contact-evidence.json",
+    "performanceEvidence": "apps/showcase-aurora-lander/performance-report.json",
+    "unitSuites": [
+      "tests/unit/apps/aurora-lander-touchdown.test.ts",
+      "tests/unit/apps/aurora-lander-ghost.test.ts"
+    ],
+    "browserSpecs": [
+      "tests/browser/aurora-lander-campaign.spec.ts",
+      "tests/browser/aurora-lander-playable.spec.ts",
+      "tests/browser/aurora-lander-terrain.spec.ts"
+    ],
+    "observed": {
+      "completedSites": 3,
+      "campaignScore": 9790,
+      "extractionTableau": true,
+      "strongestWhiteoutDensity": 0.62,
+      "strongestWhiteoutVisibleNodes": 45,
+      "hardLandingHull": 0.7,
+      "contactEventSeen": true,
+      "contactQueryAgreement": true,
+      "terrainQueryFps": 60,
+      "reducedMotion": true,
+      "mobileBoundedPrediction": true
+    },
+    "notes": "Machine evidence is current and passing. Automated visual checks are not independent human approval; the route remains prototype-blocked and absent from the public card slate.",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-aurora-lander/dist --release --source apps/showcase-aurora-lander/src --asset auroraLanderProbe --asset auroraPadBeacon"
+  }
+}

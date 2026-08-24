@@ -164,7 +164,9 @@ export const CONSTANT_CATEGORIES = Object.freeze({
      */
     "TRACK_REFERENCE_Y", "CAR_TARGET_MAX_DIMENSION", "cabinetTargetSize", "SCENE_SIZE",
     // The *input* depth of the world plane. Consumers read the resolved value back from the binding.
-    "WORLD_PLANE_DEPTH", "GAMEPLAY_ACTOR_DEPTH", "opponentTargetMaxDimension", "CONTACT_CLEARANCE", "chaseFov"
+    "WORLD_PLANE_DEPTH", "GAMEPLAY_ACTOR_DEPTH", "opponentTargetMaxDimension", "CONTACT_CLEARANCE", "chaseSmoothing", "chaseFov",
+    "raceLapsToWin", "SIGNAGE_TEXT_SIZE", "TRACK_PROP_MAX_SPEED_SCENE", "TELEGRAPH_SECONDS",
+    "PUNCH_DURATION", "SHARD_LIFETIME", "SHARD_SPEED_MIN", "SHARD_SPEED_MAX", "ATTRACT_IDLE_SECONDS", "DEFAULT_WINDOW_SECONDS"
   ],
   /**
    * 2: Reusable genre defaults. Belong in a shared preset.
@@ -175,7 +177,10 @@ export const CONSTANT_CATEGORIES = Object.freeze({
    * frames while the route's move table is in seconds. The engine could own the
    * conversion; until it does, this is honestly a genre default sitting in a route.
    */
-  "genre-default": ["AURA_CLASH_FPS"],
+  "genre-default": [
+    "AURA_CLASH_FPS", "DEFAULT_FPS", "QUANT_DECIMALS", "SCATTER_QUANT",
+    "BACKDROP_LOD_HYSTERESIS", "BACKDROP_NEAR_LOD_MAX_DISTANCE", "MAX_DT", "QUANTUM", "RELAY_SENSOR_MARGIN"
+  ],
   /** 3: Asset-derived values that must be computed, never restated. */
   "asset-derived": [],
   /** 4: Temporary visual patches that should be removed. */

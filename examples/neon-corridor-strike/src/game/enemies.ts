@@ -1,5 +1,5 @@
 import type { AuraPhysicsRuntime } from "@aura3d/engine";
-import type { FpsRunState } from "./state";
+import { EYE_HEIGHT, type FpsRunState } from "./state";
 
 interface MutableNode {
   setPosition(x: number, y: number, z: number): unknown;
@@ -45,6 +45,39 @@ const FLINCH = 0.2;
 /** Crumple window before the corpse hides. Instant hide is the floor, not the target. */
 const DEATH_CRUMPLE = 0.55;
 
+/** NC-A3: aggro sight line uses a swept sphere so imps cannot see through corners. */
+export const LOS_RADIUS = 0.22;
+/** Stop the cast this far short of the target so the sphere cannot clip it. */
+const LOS_MARGIN = 0.25;
+const losBlocked = new Map<string, boolean>();
+
+/**
+ * Public-surface sphereCast along the sight line: true when no wall body blocks
+ * the segment. Route-local aggro gating — combat itself stays hitscan.
+ */
+export function enemyLineOfSight(
+  physics: AuraPhysicsRuntime,
+  from: readonly [number, number, number],
+  to: readonly [number, number, number]
+): boolean {
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const dz = to[2] - from[2];
+  const dist = Math.hypot(dx, dy, dz);
+  if (!(dist > 1e-4)) return true;
+  const direction: readonly [number, number, number] = [dx / dist, dy / dist, dz / dist];
+  const hit = physics.queries.sphereCast(from, LOS_RADIUS, direction, {
+    layers: ["wall"],
+    maxDistance: Math.max(0.01, dist - LOS_MARGIN)
+  });
+  return !hit;
+}
+
+/** Evidence/test hook: ids of live enemies whose sight line is currently blocked. */
+export function enemyLosBlockedIds(): readonly string[] {
+  return [...losBlocked.entries()].filter(([, blocked]) => blocked).map(([id]) => id);
+}
+
 const attackClock = new Map<string, number>();
 const telegraphClock = new Map<string, number>();
 const flinchClock = new Map<string, number>();
@@ -83,6 +116,7 @@ export function resetEnemies(physics: AuraPhysicsRuntime): void {
   flinchClock.clear();
   dyingClock.clear();
   facing.clear();
+  losBlocked.clear();
   alarmed = false;
   for (const enemy of ENEMIES) {
     health.set("enemy-" + enemy.id, 68);
@@ -184,7 +218,17 @@ export function updateEnemies(
 
     let telegraph = Math.max(0, (telegraphClock.get(id) ?? 0) - dt);
 
-    if (alarmed && distance > ATTACK) {
+    // NC-A3: re-read the sight line every frame while it matters. Dormant guard
+    // phase and point-blank attacks do not need it.
+    const eyeY = ENEMY_BODY_Y + 0.55;
+    const seesPlayer = enemyLineOfSight(physics, [x, eyeY, z], [playerAt[0], EYE_HEIGHT, playerAt[2]]);
+    losBlocked.set(id, !seesPlayer);
+
+    if (alarmed && !seesPlayer && distance > ATTACK) {
+      // Blocked: hold position facing the last known spot instead of charging
+      // through corridor corners. The rush resumes the moment the lane opens.
+      telegraph = 0;
+    } else if (alarmed && distance > ATTACK) {
       // Rush with intent: straight at the player.
       x += (dx / distance) * CHASE * dt;
       z += (dz / distance) * CHASE * dt;

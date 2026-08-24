@@ -1,6 +1,38 @@
 import type { AuraVec3 } from "@aura3d/engine";
 
 export type ProbeAssetId =
+  | "bankShotTable" | "bankShotCue"
+  | "bankShotBall00" | "bankShotBall01" | "bankShotBall02" | "bankShotBall03"
+  | "bankShotBall04" | "bankShotBall05" | "bankShotBall06" | "bankShotBall07"
+  | "bankShotBall08" | "bankShotBall09" | "bankShotBall10" | "bankShotBall11"
+  | "bankShotBall12" | "bankShotBall13" | "bankShotBall14" | "bankShotBall15"
+  | "rooftopCourt" | "rooftopBackboard" | "rooftopRim" | "rooftopBall" | "rooftopDefender"
+  | "vaultBreakersTable" | "vaultBreakersMechanisms" | "vaultBreakersBall" | "vaultBreakersFlipper" | "vaultBreakersVaultDoor"
+  | "galleryShiftMuseumInterior" | "galleryShiftPedestal" | "galleryShiftExhibitA" | "galleryShiftExhibitB" | "galleryShiftExhibitC" | "galleryShiftDisplayCase"
+  | "deepRecoverySub" | "deepRecoveryWreckHull" | "deepRecoveryCrateStandard" | "deepRecoveryCrateHeavy" | "deepRecoveryBuoyBeacon"
+  | "patrolWingPlane" | "patrolWingDroneA" | "patrolWingDroneB" | "patrolWingPadBeacon"
+  | "showcaseExpressiveRobot"
+  | "mechChassisA" | "mechChassisB" | "mechChassisC" | "mechChassisD"
+  | "mechArmsA" | "mechArmsB" | "mechArmsC" | "mechArmsD"
+  | "mechLegsA" | "mechLegsB" | "mechLegsC" | "mechLegsD"
+  | "mechWeaponA" | "mechWeaponB" | "mechWeaponC" | "mechWeaponD"
+  | "neonCourierAvatar"
+  | "neonBarricadeProp"
+  | "neonStreetLampProp"
+  | "auroraLanderProbe"
+  | "auroraPadBeacon"
+  | "gravityPostMailPod"
+  | "gravityPostDockBeacon"
+  | "courierVan"
+  | "courierParcel"
+  | "courierTrafficSedan"
+  | "courierTrafficHatch"
+  | "courierZoneAwning"
+  | "courierZoneBollard"
+  | "siegeGolfBall"
+  | "siegeWoodenCrate"
+  | "siegeWoodenBarrel"
+  | "siegePlankSet"
   | "turboRaceCar"
   | "propPineTree"
   | "propBoulder"
@@ -59,9 +91,46 @@ export interface ProbeConfig {
   readonly rotation?: AuraVec3;
   readonly minForegroundWidth: number;
   readonly minForegroundHeight: number;
+  readonly orientation?: {
+    readonly forwardAxis: "+Z" | "-Z" | "+X" | "-X";
+    readonly upAxis: "+Y" | "-Y" | "+Z" | "-Z";
+    readonly message: string;
+  };
 }
 
 export const PROBE_ASSETS = [
+  "bankShotTable", "bankShotCue",
+  "bankShotBall00", "bankShotBall01", "bankShotBall02", "bankShotBall03",
+  "bankShotBall04", "bankShotBall05", "bankShotBall06", "bankShotBall07",
+  "bankShotBall08", "bankShotBall09", "bankShotBall10", "bankShotBall11",
+  "bankShotBall12", "bankShotBall13", "bankShotBall14", "bankShotBall15",
+  "rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopDefender",
+  "vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor",
+  "galleryShiftMuseumInterior", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase",
+  "deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon",
+  "patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
+  "showcaseExpressiveRobot",
+  "mechChassisA", "mechChassisB", "mechChassisC", "mechChassisD",
+  "mechArmsA", "mechArmsB", "mechArmsC", "mechArmsD",
+  "mechLegsA", "mechLegsB", "mechLegsC", "mechLegsD",
+  "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD",
+  "neonCourierAvatar",
+  "neonBarricadeProp",
+  "neonStreetLampProp",
+  "auroraLanderProbe",
+  "auroraPadBeacon",
+  "gravityPostMailPod",
+  "gravityPostDockBeacon",
+  "courierVan",
+  "courierParcel",
+  "courierTrafficSedan",
+  "courierTrafficHatch",
+  "courierZoneAwning",
+  "courierZoneBollard",
+  "siegeGolfBall",
+  "siegeWoodenCrate",
+  "siegeWoodenBarrel",
+  "siegePlankSet",
   "showcaseArchitectureCityBlock",
   "showcaseArcadeCabinet",
   "showcaseArcadeController",
@@ -104,7 +173,553 @@ const propView = {
   minForegroundHeight: 64
 } as const satisfies Omit<ProbeConfig, "rotation">;
 
+const mechPartView = {
+  targetMaxDimension: 3.4,
+  cameraTargetMaxDimension: 3.4,
+  padding: 1.14,
+  fov: 31,
+  azimuth: 0.68,
+  elevation: 0.16,
+  rotation: [0, 0.5, 0] as AuraVec3,
+  minForegroundWidth: 80,
+  minForegroundHeight: 80
+} as const satisfies ProbeConfig;
+
+const mechChassisView = {
+  ...mechPartView,
+  minForegroundWidth: 140,
+  minForegroundHeight: 110,
+  orientation: {
+    forwardAxis: "+Z", upAxis: "+Y",
+    message: "The hash-bound original MH-2M torso is presented +Y-up and +Z-forward at its authored metre scale. It is a rigid modular character part only; no rig, skin, animation, or controller capability is inferred."
+  }
+} as const satisfies ProbeConfig;
+
+const mechArmsView = { ...mechPartView, minForegroundWidth: 190, minForegroundHeight: 64 } as const satisfies ProbeConfig;
+const mechLegsView = { ...mechPartView, minForegroundWidth: 115, minForegroundHeight: 120 } as const satisfies ProbeConfig;
+const mechWeaponView = {
+  ...mechPartView,
+  minForegroundWidth: 75,
+  minForegroundHeight: 110,
+  orientation: {
+    forwardAxis: "+Z", upAxis: "+Y",
+    message: "The hash-bound original MH-2M weapon is presented +Y-up with its authored working end along +Z. This proves static held-weapon readability and socket orientation only; combat behavior remains route-local."
+  }
+} as const satisfies ProbeConfig;
+
+const bankShotBallView = {
+  targetMaxDimension: 2.8,
+  cameraTargetMaxDimension: 2.8,
+  padding: 1.08,
+  fov: 30,
+  azimuth: 0.7,
+  elevation: 0.62,
+  minForegroundWidth: 135,
+  minForegroundHeight: 135,
+  orientation: {
+    forwardAxis: "+Z", upAxis: "+Y",
+    message: "The hash-bound original Bank Shot ball is presented +Y-up from above so its renderer-owned solid/stripe treatment and high-contrast top identity mark are inspectable. Live translation comes from the public Rapier sphere body; no angular simulation is inferred."
+  }
+} as const satisfies ProbeConfig;
+
 export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
+  bankShotTable: {
+    targetMaxDimension: 5.2,
+    cameraTargetMaxDimension: 5.2,
+    padding: 1.08,
+    fov: 33,
+    azimuth: 0.72,
+    elevation: 0.52,
+    rotation: [0, 0.35, 0],
+    minForegroundWidth: 260,
+    minForegroundHeight: 145,
+    orientation: {
+      forwardAxis: "+X", upAxis: "+Y",
+      message: "The original metre-scale Bank Shot table is presented +Y-up with its long play axis along +X. This proves static table, rail, felt, leg, and six mouth readability only; contacts and pocket truth are separately route-tested."
+    }
+  },
+  bankShotCue: {
+    targetMaxDimension: 4.4,
+    cameraTargetMaxDimension: 4.4,
+    padding: 1.08,
+    fov: 30,
+    azimuth: 0.38,
+    elevation: 0.28,
+    rotation: [0, 0.35, 0.75],
+    minForegroundWidth: 220,
+    minForegroundHeight: 96,
+    orientation: {
+      forwardAxis: "+X", upAxis: "+Y",
+      message: "The original Bank Shot cue is presented +Y-up with its strike tip at the local origin and shaft extending toward -X. Route-local aim/charge poses it; no cue-sports controller is inferred."
+    }
+  },
+  bankShotBall00: bankShotBallView,
+  bankShotBall01: bankShotBallView,
+  bankShotBall02: bankShotBallView,
+  bankShotBall03: bankShotBallView,
+  bankShotBall04: bankShotBallView,
+  bankShotBall05: bankShotBallView,
+  bankShotBall06: bankShotBallView,
+  bankShotBall07: bankShotBallView,
+  bankShotBall08: bankShotBallView,
+  bankShotBall09: bankShotBallView,
+  bankShotBall10: bankShotBallView,
+  bankShotBall11: bankShotBallView,
+  bankShotBall12: bankShotBallView,
+  bankShotBall13: bankShotBallView,
+  bankShotBall14: bankShotBallView,
+  bankShotBall15: bankShotBallView,
+  rooftopCourt: {
+    targetMaxDimension: 20,
+    cameraTargetMaxDimension: 20,
+    padding: 1.08,
+    fov: 34,
+    azimuth: 0.7,
+    elevation: 0.48,
+    rotation: [0, 0.25, 0],
+    minForegroundWidth: 280,
+    minForegroundHeight: 120,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Rooftop Buckets court is presented +Y-up at its authored metre scale. This proves only its readable world slab and bounds; route-local spots, lines, contacts, and ballistics are separately tested."
+    }
+  },
+  rooftopBackboard: {
+    targetMaxDimension: 3,
+    cameraTargetMaxDimension: 3,
+    padding: 1.08,
+    fov: 30,
+    azimuth: 0.38,
+    elevation: 0.22,
+    minForegroundWidth: 230,
+    minForegroundHeight: 130,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Rooftop Buckets backboard is presented +Y-up and front-facing. Its metre-scale prop bounds align with the separately tested route-local board region."
+    }
+  },
+  rooftopRim: {
+    targetMaxDimension: 1,
+    cameraTargetMaxDimension: 1,
+    padding: 1.08,
+    fov: 28,
+    azimuth: 0.72,
+    elevation: 0.72,
+    minForegroundWidth: 180,
+    minForegroundHeight: 110,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Rooftop Buckets rim is presented +Y-up from an elevated readable angle. The probe proves the prop only; composed contact and scoring authority remain route-local."
+    }
+  },
+  rooftopBall: {
+    targetMaxDimension: 2,
+    cameraTargetMaxDimension: 2,
+    padding: 1.08,
+    fov: 28,
+    azimuth: 0.65,
+    elevation: 0.5,
+    minForegroundWidth: 160,
+    minForegroundHeight: 160,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original unit-normalized Rooftop Buckets ball is presented +Y-up. The route scales it to 0.24 metres and binds translation to the separately tested authored flight state."
+    }
+  },
+  rooftopDefender: {
+    targetHeight: 2.4,
+    cameraTargetHeight: 2.4,
+    padding: 1.42,
+    fov: 32,
+    azimuth: 0.16,
+    elevation: 0.1,
+    minForegroundWidth: 110,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Rooftop Buckets defender standee is presented +Y-up and front-facing. The route's deterministic telegraph controls its pose; no animation or reusable defender system is inferred."
+    }
+  },
+  vaultBreakersTable: {
+    targetMaxDimension: 10,
+    cameraTargetMaxDimension: 10,
+    padding: 1.18,
+    fov: 34,
+    azimuth: 0.68,
+    elevation: 0.58,
+    minForegroundWidth: 250,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Vault Breakers cabinet is presented +Y-up at metre scale. This proves its cabinet silhouette and materials only; the route-local playfield physics and mission mechanisms are separately tested."
+    }
+  },
+  vaultBreakersMechanisms: {
+    targetMaxDimension: 5.05,
+    cameraTargetMaxDimension: 5.05,
+    padding: 1.12,
+    fov: 32,
+    azimuth: 0.48,
+    elevation: 0.62,
+    minForegroundWidth: 240,
+    minForegroundHeight: 150,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Vault Breakers mechanism overlay is presented +Y-up at its authored metre scale. It proves static bumper, target-bank, orbit, and vault landmark readability only; route-local Rapier bodies and sensors remain gameplay authority."
+    }
+  },
+  vaultBreakersBall: {
+    targetMaxDimension: 0.3,
+    cameraTargetMaxDimension: 0.3,
+    padding: 1.12,
+    fov: 28,
+    azimuth: 0.64,
+    elevation: 0.48,
+    minForegroundWidth: 170,
+    minForegroundHeight: 170,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Vault Breakers chrome ball is presented +Y-up at its authored 0.28 metre diameter. Rapier motion and contact authority are separately proven by route tests."
+    }
+  },
+  vaultBreakersFlipper: {
+    targetMaxDimension: 1.1,
+    cameraTargetMaxDimension: 1.1,
+    padding: 1.18,
+    fov: 28,
+    azimuth: 0.62,
+    elevation: 0.46,
+    minForegroundWidth: 230,
+    minForegroundHeight: 90,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Vault Breakers flipper is presented +Y-up with its pivot at the authored origin. The motorised hinge behavior and mirrored-axis workaround are separately pinned."
+    }
+  },
+  vaultBreakersVaultDoor: {
+    targetMaxDimension: 0.55,
+    cameraTargetMaxDimension: 0.55,
+    padding: 1.16,
+    fov: 28,
+    azimuth: 0.45,
+    elevation: 0.2,
+    minForegroundWidth: 180,
+    minForegroundHeight: 180,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Vault Breakers vault door is presented +Y-up and front-readable. Its route-local authored opening and multiball transition are separately tested."
+    }
+  },
+  galleryShiftMuseumInterior: {
+    targetMaxDimension: 20.8,
+    cameraTargetMaxDimension: 20.8,
+    padding: 1.08,
+    fov: 34,
+    azimuth: 0.62,
+    elevation: 0.52,
+    minForegroundWidth: 280,
+    minForegroundHeight: 170,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The original Gallery Shift museum interior is presented +Y-up at its authored metre scale. It proves the floor-one shell, partitions, and service throat only; route-local colliders and perception queries remain separate gameplay authority."
+    }
+  },
+  galleryShiftPedestal: {
+    targetHeight: 1,
+    cameraTargetHeight: 1,
+    padding: 1.16,
+    fov: 29,
+    azimuth: 0.7,
+    elevation: 0.28,
+    minForegroundWidth: 130,
+    minForegroundHeight: 190,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original Gallery Shift pedestal is presented +Y-up at one metre tall; objective state and occlusion are separately route-tested." }
+  },
+  galleryShiftExhibitA: {
+    targetMaxDimension: 0.44, cameraTargetMaxDimension: 0.44, padding: 1.14, fov: 28, azimuth: 0.7, elevation: 0.3,
+    minForegroundWidth: 180, minForegroundHeight: 150,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original lunar-orb exhibit is presented +Y-up; exact-once collection and visible removal are route-tested." }
+  },
+  galleryShiftExhibitB: {
+    targetHeight: 0.48, cameraTargetHeight: 0.48, padding: 1.14, fov: 28, azimuth: 0.7, elevation: 0.28,
+    minForegroundWidth: 140, minForegroundHeight: 180,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original stacked-statue exhibit is presented +Y-up; exact-once collection and visible removal are route-tested." }
+  },
+  galleryShiftExhibitC: {
+    targetHeight: 0.31, cameraTargetHeight: 0.31, padding: 1.14, fov: 28, azimuth: 0.7, elevation: 0.28,
+    minForegroundWidth: 140, minForegroundHeight: 180,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original capsule exhibit is presented +Y-up; its third-lift alarm transition is separately route-tested." }
+  },
+  galleryShiftDisplayCase: {
+    targetMaxDimension: 1, cameraTargetMaxDimension: 1, padding: 1.14, fov: 29, azimuth: 0.7, elevation: 0.3,
+    minForegroundWidth: 180, minForegroundHeight: 170,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original Gallery Shift display case is presented +Y-up; its matching solid collider and LOS occlusion are separately route-tested." }
+  },
+  deepRecoverySub: {
+    targetMaxDimension: 3.2, cameraTargetMaxDimension: 3.2, padding: 1.18, fov: 29, azimuth: 0.72, elevation: 0.2,
+    rotation: [0, 0.36, 0], minForegroundWidth: 190, minForegroundHeight: 120,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original Deep Recovery research submarine is presented +Y-up with its authored bow facing +Z. Route-local thrust, drag, buoyancy, collision, and grapple behavior are separately tested and are not inferred from this static probe." }
+  },
+  deepRecoveryWreckHull: {
+    targetMaxDimension: 6.5, cameraTargetMaxDimension: 6.5, padding: 1.15, fov: 31, azimuth: 0.7, elevation: 0.36,
+    minForegroundWidth: 220, minForegroundHeight: 150,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original Deep Recovery ironclad wreck is presented +Y-up at metre scale; authored collision spheres and sonar occlusion volumes remain separate route-local query authority." }
+  },
+  deepRecoveryCrateStandard: {
+    targetMaxDimension: 1, cameraTargetMaxDimension: 1, padding: 1.15, fov: 29, azimuth: 0.68, elevation: 0.26,
+    minForegroundWidth: 170, minForegroundHeight: 160,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original blue standard salvage pod is presented +Y-up; its 120 kg authored handling and bank value are separately route-tested." }
+  },
+  deepRecoveryCrateHeavy: {
+    targetMaxDimension: 1.4, cameraTargetMaxDimension: 1.4, padding: 1.15, fov: 29, azimuth: 0.68, elevation: 0.26,
+    minForegroundWidth: 180, minForegroundHeight: 165,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original amber heavy salvage pod is presented +Y-up; its 280+ kg authored tow drag and higher value are separately route-tested." }
+  },
+  deepRecoveryBuoyBeacon: {
+    targetMaxDimension: 5.5, cameraTargetMaxDimension: 5.5, padding: 1.16, fov: 31, azimuth: 0.72, elevation: 0.28,
+    minForegroundWidth: 180, minForegroundHeight: 160,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The original Deep Recovery buoy station is presented +Y-up; its route-local bank, repair, oxygen, and surface zones are separately tested." }
+  },
+  patrolWingPlane: {
+    targetMaxDimension: 2.3, cameraTargetMaxDimension: 2.3, padding: 1.2, fov: 29, azimuth: 0.72, elevation: 0.24,
+    rotation: [0, 0.48, 0], minForegroundWidth: 210, minForegroundHeight: 110,
+    orientation: { forwardAxis: "+X", upAxis: "+Y", message: "The original Patrol Wing cream/red aircraft is presented +Y-up with its authored nose facing +X. Route-local arcade response, collision, and landing classification are separately tested; this probe makes no aerodynamic claim." }
+  },
+  patrolWingDroneA: {
+    targetMaxDimension: 1.45, cameraTargetMaxDimension: 1.45, padding: 1.16, fov: 29, azimuth: 0.68, elevation: 0.24,
+    rotation: [0, 0.44, 0], minForegroundWidth: 160, minForegroundHeight: 150,
+    orientation: { forwardAxis: "+X", upAxis: "+Y", message: "The original black/orange Patrol Wing drone A is presented +Y-up and +X-forward; seeded pursuit and combat hit truth are separately route-tested." }
+  },
+  patrolWingDroneB: {
+    targetMaxDimension: 1.25, cameraTargetMaxDimension: 1.25, padding: 1.16, fov: 29, azimuth: 0.68, elevation: 0.24,
+    rotation: [0, 0.44, 0], minForegroundWidth: 160, minForegroundHeight: 150,
+    orientation: { forwardAxis: "+X", upAxis: "+Y", message: "The original alternate Patrol Wing drone B is presented +Y-up and +X-forward; seeded pursuit and combat hit truth are separately route-tested." }
+  },
+  patrolWingPadBeacon: {
+    targetMaxDimension: 4.5, cameraTargetMaxDimension: 4.5, padding: 1.15, fov: 30, azimuth: 0.7, elevation: 0.42,
+    minForegroundWidth: 220, minForegroundHeight: 120,
+    orientation: { forwardAxis: "+X", upAxis: "+Y", message: "The original Patrol Wing pad/beacon assembly is presented +Y-up; its pinned sensor radius, approach bounds, and touchdown classification are separately route-tested." }
+  },
+  showcaseExpressiveRobot: {
+    targetHeight: 1.9, cameraTargetHeight: 1.9, padding: 1.15, fov: 30, azimuth: 0.72, elevation: 0.16,
+    rotation: [0, 0.35, 0], minForegroundWidth: 120, minForegroundHeight: 190,
+    orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The repository-locked CC0 expressive robot is presented +Y-up as Gallery Shift's typed guard silhouette. Its clips are presentation only; authored patrol and perception truth are separately tested." }
+  },
+  mechChassisA: mechChassisView,
+  mechChassisB: mechChassisView,
+  mechChassisC: mechChassisView,
+  mechChassisD: mechChassisView,
+  mechArmsA: mechArmsView,
+  mechArmsB: mechArmsView,
+  mechArmsC: mechArmsView,
+  mechArmsD: mechArmsView,
+  mechLegsA: mechLegsView,
+  mechLegsB: mechLegsView,
+  mechLegsC: mechLegsView,
+  mechLegsD: mechLegsView,
+  mechWeaponA: mechWeaponView,
+  mechWeaponB: mechWeaponView,
+  mechWeaponC: mechWeaponView,
+  mechWeaponD: mechWeaponView,
+  neonCourierAvatar: {
+    targetHeight: 2.8,
+    cameraTargetHeight: 2.8,
+    padding: 1.26,
+    fov: 30,
+    azimuth: 0.72,
+    elevation: 0.16,
+    rotation: [0, 0.64, 0],
+    minForegroundWidth: 100,
+    minForegroundHeight: 160,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The current hash-bound courier is mounted upright (+Y) and uses the route's declared +Z neutral facing before authored yaw. This proves only a readable static character view; no rig, clip, or humanoid-controller claim is inferred."
+    }
+  },
+  neonBarricadeProp: {
+    ...propView,
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    rotation: [0, 0.62, 0],
+    minForegroundWidth: 130,
+    minForegroundHeight: 130
+  },
+  neonStreetLampProp: {
+    ...propView,
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    rotation: [0, 0.48, 0],
+    minForegroundWidth: 80,
+    minForegroundHeight: 170
+  },
+  auroraLanderProbe: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.72,
+    elevation: 0.22,
+    rotation: [0, 0.62, 0],
+    minForegroundWidth: 120,
+    minForegroundHeight: 110,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The original lander is authored +Y-up and uses +Z as its declared neutral forward axis; its flight model is intentionally single-lateral-axis, so no aerodynamic heading or physical thrust-vector claim is inferred."
+    }
+  },
+  auroraPadBeacon: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.16,
+    fov: 31,
+    azimuth: 0.68,
+    elevation: 0.2,
+    rotation: [0, 0.54, 0],
+    minForegroundWidth: 75,
+    minForegroundHeight: 130
+  },
+  gravityPostMailPod: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.15,
+    fov: 31,
+    azimuth: 0.78,
+    elevation: 0.18,
+    rotation: [0, 0.64, 0],
+    minForegroundWidth: 130,
+    minForegroundHeight: 110,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The current hash-bound pod is presented +Y-up with +Z as the route's neutral authored yaw reference. This is a readable static vehicle view only; it does not infer physical spacecraft orientation, thrust, or flight dynamics."
+    }
+  },
+  gravityPostDockBeacon: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.72,
+    elevation: 0.24,
+    rotation: [0, 0.52, 0],
+    minForegroundWidth: 150,
+    minForegroundHeight: 100
+  },
+  courierVan: {
+    targetMaxDimension: 4.2,
+    cameraTargetMaxDimension: 4.2,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.78,
+    elevation: 0.2,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 150,
+    minForegroundHeight: 85,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound van is presented +Y-up with +Z as the route's neutral authored heading before route-local yaw. This proves only static readability and normalization; no physical vehicle orientation or dynamics are inferred."
+    }
+  },
+  courierParcel: {
+    targetMaxDimension: 3.0,
+    cameraTargetMaxDimension: 3.0,
+    padding: 1.18,
+    fov: 31,
+    azimuth: 0.7,
+    elevation: 0.25,
+    rotation: [0, 0.5, 0],
+    minForegroundWidth: 110,
+    minForegroundHeight: 90,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound parcel is presented +Y-up with +Z as its route-authored neutral view before it is visibly attached to the van bed."
+    }
+  },
+  courierTrafficSedan: {
+    targetMaxDimension: 4.0,
+    cameraTargetMaxDimension: 4.0,
+    padding: 1.14,
+    fov: 31,
+    azimuth: 0.78,
+    elevation: 0.2,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 145,
+    minForegroundHeight: 75,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound sedan is presented +Y-up with +Z as the route's neutral lane heading before authored lane-loop yaw; no physical driving claim is inferred."
+    }
+  },
+  courierTrafficHatch: {
+    targetMaxDimension: 4.0,
+    cameraTargetMaxDimension: 4.0,
+    padding: 1.14,
+    fov: 31,
+    azimuth: 0.78,
+    elevation: 0.2,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 140,
+    minForegroundHeight: 80,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound hatch is presented +Y-up with +Z as the route's neutral lane heading before authored lane-loop yaw; no physical driving claim is inferred."
+    }
+  },
+  courierZoneAwning: {
+    targetMaxDimension: 3.6,
+    cameraTargetMaxDimension: 3.6,
+    padding: 1.16,
+    fov: 32,
+    azimuth: 0.7,
+    elevation: 0.24,
+    rotation: [0, 0.48, 0],
+    minForegroundWidth: 120,
+    minForegroundHeight: 100,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound awning is presented +Y-up with a +Z neutral landmark view; it remains typed set dressing beside route-local sensor truth."
+    }
+  },
+  courierZoneBollard: {
+    targetMaxDimension: 3.0,
+    cameraTargetMaxDimension: 3.0,
+    padding: 1.18,
+    fov: 31,
+    azimuth: 0.7,
+    elevation: 0.2,
+    rotation: [0, 0.4, 0],
+    minForegroundWidth: 70,
+    minForegroundHeight: 120,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound bollard is presented +Y-up with a +Z neutral prop view; it remains typed curb and zone dressing, not the gameplay sensor."
+    }
+  },
+  siegeGolfBall: {
+    targetMaxDimension: 2.8,
+    cameraTargetMaxDimension: 2.8,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.72,
+    elevation: 0.2,
+    minForegroundWidth: 130,
+    minForegroundHeight: 130
+  },
+  siegeWoodenCrate: { ...propView, rotation: [0, 0.62, 0], minForegroundWidth: 130, minForegroundHeight: 130 },
+  siegeWoodenBarrel: { ...propView, rotation: [0, 0.54, 0], minForegroundWidth: 110, minForegroundHeight: 150 },
+  siegePlankSet: {
+    targetMaxDimension: 4.2,
+    cameraTargetMaxDimension: 4.2,
+    padding: 1.08,
+    fov: 31,
+    azimuth: 0.7,
+    elevation: 0.24,
+    rotation: [0.18, 0.68, 0],
+    minForegroundWidth: 100,
+    minForegroundHeight: 150
+  },
   showcaseDetailedRaceCircuit: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.12, fov: 34, azimuth: 0.62, elevation: 0.58, rotation: [-1.5708, 0, 0], minForegroundWidth: 180, minForegroundHeight: 120 },
   showcaseRaceGameEnvironment: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.12, fov: 34, azimuth: 0.62, elevation: 0.5, minForegroundWidth: 180, minForegroundHeight: 120 },
   showcaseIsometricRaceTrack: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.1, fov: 34, azimuth: 0.62, elevation: 0.62, minForegroundWidth: 180, minForegroundHeight: 120 },
@@ -377,17 +992,23 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     // targetHeight and cameraTargetHeight move together, so raising both only rescales
     // camera and model in lockstep and changes nothing on screen. Framing is controlled
     // by padding below.
-    targetHeight: 4.6,
-    cameraTargetHeight: 4.6,
+    targetMaxDimension: 8,
+    // Render at the route's max-dimension normalization, then inspect a
+    // representative center crop so terrain/material readability is measurable
+    // instead of shrinking the complete 838-unit strip into a 17 px sliver.
+    cameraTargetMaxDimension: 0.62,
     // Padding below 1 deliberately crops the extreme horizontal ends of this strip so
     // the playable band is large enough to inspect. At 1.02 the subject measured
     // 510x135 px against a 150 px minimum height; 0.86 brings the height above the
     // minimum while the width stays inside the probe canvas.
     padding: 0.86,
     fov: 34,
-    azimuth: 0.45,
-    elevation: 0.24,
-    rotation: [0, -0.12, 0],
+    azimuth: 0,
+    elevation: 0.08,
+    // Keep the long strip on its authored side-scroller plane. Even a small yaw
+    // rotates its far-offset geometry around the GLB origin and moves every
+    // primitive outside the camera frustum.
+    rotation: [0, 0, 0],
     minForegroundWidth: 280,
     minForegroundHeight: 150
   },

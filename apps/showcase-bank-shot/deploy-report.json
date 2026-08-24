@@ -1,0 +1,137 @@
+{
+  "schema": "aura3d.bank-shot.deploy/1.0",
+  "generatedAt": "2026-08-23T23:45:42.473Z",
+  "producer": "apps/showcase-bank-shot/scripts/write-deploy-report.mjs",
+  "producerSourceSha256": "629c54eb86371dd2ae66da8205bb91069a17fdeb8e349b6e22ccc4183541404f",
+  "cli": "packages/aura3d-cli/dist/cli.js",
+  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+  "distTreeSha256": "c8e5dd7b92cc0fff9705e7b89263dc3d928f91112465076366e0b27962aa95df",
+  "sourceTreeSha256": "935da1b909d372a84d659427986191534f4e40618770d6a843b834d0559ed407",
+  "checks": {
+    "strictModels": {
+      "command": "check-deploy --release --source apps/showcase-bank-shot/src --asset <table, cue, and all 16 balls>",
+      "ok": true,
+      "assetCount": 18,
+      "assets": [
+        {
+          "id": "bankShotBall00",
+          "hash": "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall01",
+          "hash": "sha256-e0364deb31ba496456d342d72f0ca3b978c83d46715ebfc511e261c2aeb4c019",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall02",
+          "hash": "sha256-282df9e0b5690e1a25eaa157bc9ed06f19b80c4c1ee108f0e2c719305b2e17e9",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall03",
+          "hash": "sha256-42b14dd48487ebd6d7a06c521bdb3a6c96ac41d15e5327cf6e19bc18415ea103",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall04",
+          "hash": "sha256-d50d4099cac2ff32ac18306cc9f422728d64e405c1a60fd37454ce2b435b16e8",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall05",
+          "hash": "sha256-7d458809c6a76c37995696a698aadeab80806234d20c81426a9950fa1a789c9f",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall06",
+          "hash": "sha256-69110907c5309b40dab19daae85d001cadf165ac7f1657cc27b6512257401501",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall07",
+          "hash": "sha256-a451b5088c7cffcd42d72d81754f8935a4eb6159abbd96998c6391cc5df917ef",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall08",
+          "hash": "sha256-d52a8f8cc30060172be18ebe9b715eddd06c07e2c9a9693061c0105c6c60305a",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall09",
+          "hash": "sha256-d6aee2540e554956df6f06a92944c8dcf746f5ea473e0216737b9e46158cf8fa",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall10",
+          "hash": "sha256-ebdeb8bc907261007f55d8ae1f572f10cb62ef2bd664721717b6a0c90cd11af8",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall11",
+          "hash": "sha256-4db2efcc9de3c32125e912eeea4af27553a3566c70bed593a9ea06739fcb302c",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall12",
+          "hash": "sha256-da59c251c48ff1eccfa19758951c9cf64be6f1d12e7b68ea3564141bee6223b8",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall13",
+          "hash": "sha256-16b0f39ef1d84dec924f949795d5488ffc6650e2a9f1df966b8fda6f4589a77e",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall14",
+          "hash": "sha256-920a6eb321ee29cccec400e75e584959ec0e95b3d5ef49c7b18e41864ebbdcf4",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotBall15",
+          "hash": "sha256-40fd0d17fbe880ca3ad5d4d721c546575a4b7132acde5f59b8918a141caa16d0",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotCue",
+          "hash": "sha256-2db8d57dfc541a626ba5e3ab091e594a42927f5ce8f363c0c1fe6fefc632956b",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "bankShotTable",
+          "hash": "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2",
+          "quality": "release",
+          "role": "prop"
+        }
+      ],
+      "warnings": [],
+      "failures": []
+    },
+    "strictDistAndSource": {
+      "command": "check-deploy --release --source apps/showcase-bank-shot/src --no-assets",
+      "ok": true,
+      "warnings": [],
+      "failures": []
+    }
+  },
+  "audioBoundary": "The ten synthesized WAV cues are independently validated as current candidate-quality typed CC0 assets by write-route-health.mjs; model-oriented release bounds validation is intentionally not applied to audio.",
+  "pass": true
+}

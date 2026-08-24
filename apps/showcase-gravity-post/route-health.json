@@ -1,0 +1,282 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-23T21:42:43.868Z",
+  "appId": "showcase-gravity-post",
+  "route": "/apps/showcase-gravity-post/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.gravityPostMailPod",
+      "role": "primary-vehicle",
+      "status": "release-validated-typed-primary-asset",
+      "quality": "release",
+      "hash": "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "futaba@blender (https://sketchfab.com/futaba_blender)"
+    },
+    {
+      "typedRef": "assets.gravityPostDockBeacon",
+      "role": "dock-landmark-prop",
+      "status": "release-validated-typed-primary-asset",
+      "quality": "release",
+      "hash": "sha256-171e21cba4f1cca3abeaaa58ec54c3e672274d719bd1e5a7318e3ef681c72a14",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "DjalalxJay (https://sketchfab.com/djalalxjay)"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.gravityPostLaunchWhooshSfx",
+      "quality": "candidate",
+      "hash": "sha256-8c15c174fb90c513c1518057be892a2cf5ad454af27e7a645fda77e99df09459",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostBurnLoopSfx",
+      "quality": "candidate",
+      "hash": "sha256-18c2fb61ce4f8749a62cc185043eac7d225fbc559113db6d37ec99443e2dffc7",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostDockLockSfx",
+      "quality": "candidate",
+      "hash": "sha256-4671b1408b1de1314637332832ed9cb5617860e59e4b41765f1a42dab912e568",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostBounceOffSfx",
+      "quality": "candidate",
+      "hash": "sha256-35c12a5be9f1725cfdc47ff90ea6e24a267f7296195004f51d9018b94c7e8792",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostPodLostSfx",
+      "quality": "candidate",
+      "hash": "sha256-6853703e080537daba09b71f3de8ddd5a29b0efe64c0f538ea37230db2ce7065",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostContractClearSfx",
+      "quality": "candidate",
+      "hash": "sha256-8bf23421f86005bff1f6b988cc3cd7304810435b973e9e6ae1fbbd70858ef736",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostAssistChimeSfx",
+      "quality": "candidate",
+      "hash": "sha256-2e56c4e5e92505d5f929ac7a1245499b6a43510cda24f516bb0562ae76d94fa7",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostWarpHumSfx",
+      "quality": "candidate",
+      "hash": "sha256-51a2dcb0638c0eb30d49e372d56beca8bacd5812c30a371a7a8c2e8ca8562aff",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostUiConfirmSfx",
+      "quality": "candidate",
+      "hash": "sha256-24f9ac47e5d2d78e70651f49667bf1419be01a9ffc40bc28a01d8588a541a55b",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.gravityPostAmbientSpaceSfx",
+      "quality": "candidate",
+      "hash": "sha256-a55f2f7ce60ba7618cc0750a39292e7e9027e2b0701cc965087ae05fb2fa3901",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 14,
+    "primitiveBudget": 40,
+    "role": "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons",
+    "status": "within-stated-role-and-budget"
+  },
+  "physics": {
+    "sensors": "six static dock sensors; capture truth originates from app.physics.onTriggerEnter",
+    "pod": "kinematic physics mirror of the route-local fixed-step authored integrator",
+    "claim": "sensor ownership only; authored arcade gravity is explicitly non-physical"
+  },
+  "gameplay": {
+    "deliveries": 4,
+    "arc": [
+      "direct",
+      "single-assist",
+      "chained-assist",
+      "hazard-avoidance"
+    ],
+    "correction": "zero tokens on the teaching route, exactly one bounded prograde/retrograde token on routes 2-4",
+    "timeout": "per-contract real-time limit consumes one of three hulls",
+    "predictionTolerance": 0.02,
+    "campaignEvidence": "tests/reports/gravity-post/full-campaign-evidence.json"
+  },
+  "performance": {
+    "schema": "aura3d-gravity-post-performance/1.0",
+    "generatedAt": "2026-08-23T20:11:53.782Z",
+    "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
+    "budgets": {
+      "fixedStepP95Ms": 1,
+      "boundedPredictionP95Ms": 3,
+      "maximumRouteSeconds": 48,
+      "campaignCompleteDrawCalls": 600
+    },
+    "observed": {
+      "maxFixedStepP95Ms": 0.0025,
+      "maxPredictionP95Ms": 0.1663,
+      "campaignCompleteDrawCalls": 538
+    },
+    "routes": [
+      {
+        "contractId": "GP-CON-1",
+        "capture": true,
+        "elapsedSeconds": 3.242,
+        "arrivalSpeed": 0,
+        "assists": [],
+        "requiredAssists": [],
+        "assistPass": true,
+        "fixedStepMs": {
+          "samples": 389,
+          "p95": 0.0025,
+          "max": 0.395
+        },
+        "predictionMs": {
+          "samples": 50,
+          "p95": 0.1663,
+          "max": 0.365
+        }
+      },
+      {
+        "contractId": "GP-CON-2",
+        "capture": true,
+        "elapsedSeconds": 7.267,
+        "arrivalSpeed": 0,
+        "assists": [
+          "verdance"
+        ],
+        "requiredAssists": [
+          "verdance"
+        ],
+        "assistPass": true,
+        "fixedStepMs": {
+          "samples": 872,
+          "p95": 0.0008,
+          "max": 0.0491
+        },
+        "predictionMs": {
+          "samples": 50,
+          "p95": 0.0853,
+          "max": 0.1033
+        }
+      },
+      {
+        "contractId": "GP-CON-3",
+        "capture": true,
+        "elapsedSeconds": 17.4,
+        "arrivalSpeed": 0,
+        "assists": [
+          "sol",
+          "gale"
+        ],
+        "requiredAssists": [
+          "sol",
+          "gale"
+        ],
+        "assistPass": true,
+        "fixedStepMs": {
+          "samples": 2088,
+          "p95": 0.0008,
+          "max": 0.0453
+        },
+        "predictionMs": {
+          "samples": 50,
+          "p95": 0.0657,
+          "max": 0.0852
+        }
+      },
+      {
+        "contractId": "GP-CON-4",
+        "capture": true,
+        "elapsedSeconds": 3.383,
+        "arrivalSpeed": 0,
+        "assists": [],
+        "requiredAssists": [],
+        "assistPass": true,
+        "fixedStepMs": {
+          "samples": 406,
+          "p95": 0.0003,
+          "max": 0.0064
+        },
+        "predictionMs": {
+          "samples": 50,
+          "p95": 0.0636,
+          "max": 0.0689
+        }
+      }
+    ],
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "prototype",
+    "allowed": [
+      "four-delivery authored arcade-gravity courier prototype",
+      "fixed-step live/prediction integration with published 0.02 positional tolerance",
+      "real root-safe dock sensor entry with route-local capture-speed evaluation",
+      "typed registered pod, beacon, and ten deterministic synthesized audio cues"
+    ],
+    "notAllowed": [
+      "orbital mechanics, n-body, or physical simulation claims",
+      "production renderer, HDR/IBL, WebGPU, or physics-parity claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_GRAVITY_POST__",
+    "sourceReview": "apps/showcase-gravity-post/src/main.ts",
+    "detailedGameplayGlobal": "window.__GRAVITY_POST_EVIDENCE__",
+    "campaign": "tests/reports/gravity-post/full-campaign-evidence.json",
+    "mobile": "tests/reports/gravity-post/mobile-evidence.json",
+    "reducedMotion": "tests/reports/gravity-post/reduced-motion-evidence.json",
+    "collisionFailure": "tests/reports/gravity-post/failure-evidence.json",
+    "performance": "apps/showcase-gravity-post/performance-report.json",
+    "unitSpecs": [
+      "tests/unit/apps/gravity-post-wells.test.ts",
+      "tests/unit/apps/gravity-post-scoring.test.ts",
+      "tests/unit/apps/gravity-post-flyby.test.ts"
+    ],
+    "browserSpecs": [
+      "tests/browser/gravity-post-playable.spec.ts",
+      "tests/browser/gravity-post-scene.spec.ts"
+    ],
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon"
+  }
+}

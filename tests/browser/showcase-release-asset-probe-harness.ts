@@ -128,7 +128,25 @@ function isProbeAssetId(value: string): value is ProbeAssetId {
 }
 
 async function waitForAppDraw(app: ReturnType<typeof createAuraApp>): Promise<void> {
-  await waitFor(() => app.diagnostics().drawCalls > 0 && app.diagnostics().renderSize[0] > 0, 12_000);
+  // Certified world assets can contain hundreds of primitives. Keep the wait
+  // bounded, but allow their production-runtime upload to finish on slower CI
+  // workers before evaluating the unchanged pixel/readability thresholds.
+  try {
+    await waitFor(() => app.diagnostics().drawCalls > 0 && app.diagnostics().renderSize[0] > 0, 30_000);
+  } catch (error) {
+    const diagnostics = app.diagnostics();
+    throw new Error(
+      `${error instanceof Error ? error.message : String(error)} Diagnostics: ${JSON.stringify({
+        backend: diagnostics.backend,
+        drawCalls: diagnostics.drawCalls,
+        renderSize: diagnostics.renderSize,
+        assets: diagnostics.assets,
+        warnings: diagnostics.warnings,
+        errors: diagnostics.errors,
+        renderer: diagnostics.renderer?.runtime
+      })}`
+    );
+  }
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 

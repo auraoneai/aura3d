@@ -1,0 +1,402 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-24T04:23:11.903Z",
+  "appId": "showcase-deep-recovery",
+  "route": "/apps/showcase-deep-recovery/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "routeSourceSha256": "394097f3b9202b1ab543547ecc40208a1626e160616e8a0c8e8a4bd89d75a43c",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "production with safe-basic fallback",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.deepRecoverySub",
+      "hash": "sha256-d579451ffaa346ad54d57aa25e4c8732bf2bc93ca9a2c95ac436080358867bba",
+      "quality": "release",
+      "role": "vehicle"
+    },
+    {
+      "typedRef": "assets.deepRecoveryWreckHull",
+      "hash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.deepRecoveryCrateStandard",
+      "hash": "sha256-778ab9b98a48b26ef4ca24761f90dec58a3b11bb2f2d21944db7ad6465c72bac",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.deepRecoveryCrateHeavy",
+      "hash": "sha256-b4848ad9a23be8b8b9064f84a820bf5dc9fc1fe70e8c30a8de7dd055c2aed7c5",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.deepRecoveryBuoyBeacon",
+      "hash": "sha256-446c27b5c46c47f4abdb01c183469b37e7b9042eab3435a0c85e63f79293e337",
+      "quality": "release",
+      "role": "prop"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.deepRecoverySonarPingSfx",
+      "hash": "sha256-e555e792f9a5b5d689f200b8e0316ddd56d9c5125e6c47bf7d3e6eccbf134f42",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoverySonarReturnSfx",
+      "hash": "sha256-07f0b6dbae8f8f0c4899c43f8e1b4304d0b92a8f427fec96fcdfaefcda09d7bd",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryHullCreakSfx",
+      "hash": "sha256-0db0a532d829b9ffdce46e17bf927db28ba614d07c152317ba1ccead8d8f3e5e",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryBreachAlarmSfx",
+      "hash": "sha256-852ff3c83eee4ce100049f98c89db8337edc2351e38469b99e9b555460448f8e",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryPatchSealSfx",
+      "hash": "sha256-c570e2ace080c373afcb72128b96120d488b8ef93d9959d93ccf38fb42ade558",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryGrappleLatchSfx",
+      "hash": "sha256-8713fa47d876805c5f77f1f45b762d4874f060c8cdfe60a54282208542690647",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryCrateBankSfx",
+      "hash": "sha256-f685bcbb395d8f5099255f8af1f5888f197ff2690beb9e1f46472110eeefef9c",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryOxygenWarnSfx",
+      "hash": "sha256-364767e80e6d417d02af8e0ad0c7a83c9fa4aaf7c192ca65d00dafc0a737c272",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryBlackoutSfx",
+      "hash": "sha256-32fbddcef183282e991e64aafb7d145ec1d1dddd16ca46e0c792a70f7735f906",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoverySurfaceBreakSfx",
+      "hash": "sha256-eee9833bab78bc7d87d58e0328cf6c879641f33b7d8dcaa22d106be2a6ad8c5c",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.deepRecoveryAmbientDeepSfx",
+      "hash": "sha256-e162eca04cbd872889bdc92626eb4d75dbe7456af3b1a1d9558542e590f344b6",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 24,
+    "primitiveBudget": 72,
+    "role": "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets",
+    "status": "no-primitive-primary-subjects"
+  },
+  "gameplay": {
+    "mission": [
+      "descent",
+      "wreck approach",
+      "standard salvage",
+      "collision breach",
+      "explicit buoy repair",
+      "heavy salvage",
+      "ascent/surface win"
+    ],
+    "authoredMotion": {
+      "thrust": true,
+      "linearDrag": true,
+      "angularDrag": true,
+      "neutralBuoyancy": true,
+      "worldAndWreckCollision": true
+    },
+    "physicsOwner": "route-local deterministic TypeScript",
+    "rapierClaimed": false,
+    "recastClaimed": false,
+    "sonarOwner": "route-local spherical live-target query plus authored wreck-sphere line-segment occlusion",
+    "worldSpaceReturns": true,
+    "standardMassKg": 120,
+    "firstHeavyMassKg": 280,
+    "massDependentTow": true,
+    "bankRequiresSubAndCrateInsideBuoy": true,
+    "keyboardAndTouch": true,
+    "pauseFreezeResume": true,
+    "fullReset": true,
+    "blackoutFail": true,
+    "surfaceWin": true,
+    "reducedMotionPreservesStateTruth": true
+  },
+  "accessibility": {
+    "semanticHeading": true,
+    "namedStatusRegions": true,
+    "namedTouchControls": 14,
+    "minimumTouchTargetPx": 44,
+    "keyboardAndTouchParity": true,
+    "colorIndependentStatusText": true,
+    "pass": true
+  },
+  "performance": {
+    "schema": "aura3d.deep-recovery.performance/1.0",
+    "generatedAt": "2026-08-24T04:23:05.724Z",
+    "producer": "apps/showcase-deep-recovery/scripts/write-performance-report.ts",
+    "producerSourceSha256": "e209be0cfd04b530e8b606b40e958f80ea38e1ef30c013184e847b8be8f37d44",
+    "routeSourceFiles": [
+      "apps/showcase-deep-recovery/src/deep-audio.ts",
+      "apps/showcase-deep-recovery/src/environment.ts",
+      "apps/showcase-deep-recovery/src/main.ts",
+      "apps/showcase-deep-recovery/src/oxygen.ts",
+      "apps/showcase-deep-recovery/src/reef.ts",
+      "apps/showcase-deep-recovery/src/salvage.ts",
+      "apps/showcase-deep-recovery/src/sonar.ts",
+      "apps/showcase-deep-recovery/src/styles.css",
+      "apps/showcase-deep-recovery/src/sub.ts"
+    ],
+    "routeSourceSha256": "394097f3b9202b1ab543547ecc40208a1626e160616e8a0c8e8a4bd89d75a43c",
+    "scope": "Route-local authored submarine/tether/sonar CPU sampling plus browser-observed root createAuraApp draw calls; no GPU frame-time, fluid-simulation, reusable submarine-kit, physics-engine, or renderer-parity claim.",
+    "samples": 20000,
+    "fixedStepSeconds": 0.016666666666666666,
+    "budgets": {
+      "routeLogicCpuP95Ms": 0.2,
+      "drawCalls": 240
+    },
+    "observed": {
+      "routeLogicCpuP95Ms": 0.002,
+      "deterministicStateHash": "ebc8fe50",
+      "drawCalls": 81,
+      "renderSize": [
+        1280,
+        800
+      ]
+    },
+    "pass": true
+  },
+  "deploy": {
+    "schema": "aura3d.deep-recovery.deploy/1.0",
+    "generatedAt": "2026-08-24T04:23:04.676Z",
+    "producer": "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs",
+    "producerSourceSha256": "07c95fda8e5d9c1f587425f4375a09a692a62fe5fa588c58d6df958fc01b5341",
+    "cli": "packages/aura3d-cli/dist/cli.js",
+    "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+    "distTreeSha256": "d3b36897078fc446bc139dc184439f24c56dee982810ae5ce3f6c15550cd3ed3",
+    "sourceTreeSha256": "c5bc109819c5da4bb5c06eeb644654de74452a1eb29102bdb9de104f0e8eb3c1",
+    "checks": {
+      "strictModels": {
+        "command": "check-deploy --release --source apps/showcase-deep-recovery/src --asset <5 typed models>",
+        "ok": true,
+        "assetCount": 5,
+        "assets": [
+          {
+            "id": "deepRecoveryBuoyBeacon",
+            "hash": "sha256-446c27b5c46c47f4abdb01c183469b37e7b9042eab3435a0c85e63f79293e337",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "deepRecoveryCrateHeavy",
+            "hash": "sha256-b4848ad9a23be8b8b9064f84a820bf5dc9fc1fe70e8c30a8de7dd055c2aed7c5",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "deepRecoveryCrateStandard",
+            "hash": "sha256-778ab9b98a48b26ef4ca24761f90dec58a3b11bb2f2d21944db7ad6465c72bac",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "deepRecoverySub",
+            "hash": "sha256-d579451ffaa346ad54d57aa25e4c8732bf2bc93ca9a2c95ac436080358867bba",
+            "quality": "release",
+            "role": "vehicle"
+          },
+          {
+            "id": "deepRecoveryWreckHull",
+            "hash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+            "quality": "release",
+            "role": "prop"
+          }
+        ],
+        "warnings": [],
+        "failures": []
+      },
+      "strictDistAndSource": {
+        "command": "check-deploy --release --source apps/showcase-deep-recovery/src --no-assets",
+        "ok": true,
+        "warnings": [],
+        "failures": []
+      }
+    },
+    "audioBoundary": "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "root-safe prototype",
+    "allowed": [
+      "five original typed CC0 primary assets",
+      "route-local authored submarine motion/collision and oxygen/hull rules",
+      "route-local sonar range/occlusion with renderer-owned world-space returns",
+      "mass-dependent grapple/tow and two-class banking",
+      "full breach/repair/blackout/surface mission with keyboard and touch"
+    ],
+    "notAllowed": [
+      "Rapier or Recast ownership",
+      "fluid or acoustic simulation",
+      "reusable submarine, sonar, collision, oxygen, or salvage kit",
+      "production-runtime-only rendering claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_DEEP_RECOVERY__",
+    "detailedGlobal": "window.__DEEP_RECOVERY_EVIDENCE__",
+    "sourceReview": "apps/showcase-deep-recovery/src/main.ts",
+    "exactArtifacts": [
+      {
+        "path": "tests/reports/deep-recovery/playable/descent.png",
+        "sha256": "ef389e25074e34373ae279c9412c7d78af747fd163a9e61d73c8bc62b2e33876"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/sonar-reveal.png",
+        "sha256": "35281f26036e76a674a39cd0305b38b816446113f773e0b8e9ddea101505cf02"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/wreck-approach.png",
+        "sha256": "5e499371a92969ffc739b960c8848c1c1a5a5d5ca55b692d69d3606db9adc2e0"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/grapple-standard.png",
+        "sha256": "0b69ec8d9dbd6846abae12eb7ee81ae0b32df63974194e73ef7aed4a51211824"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/breach.png",
+        "sha256": "a657642aab9942d0d32358e5a76989e30fe26c8b87d74b135306b80b6b84850a"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/heavy-tow.png",
+        "sha256": "dff5f017db4f56a9eea08497468c1a48087ac4bfdf2138fd431476bceb2fc623"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/low-oxygen.png",
+        "sha256": "ebf9eab548a56d8f52913e44c467c9f744f5688c872af2688025cde322b8e33a"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/surface-complete.png",
+        "sha256": "73d08082462b5f0f7d5295941921151886501bf5fe63b6eef9c0736354b0bc57"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/blackout.png",
+        "sha256": "208a51084fa7483f07364f7eb01e8e664cdf9d8c4f1f8da66b4dfa6b05189ca4"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/mobile-touch.png",
+        "sha256": "7fc51214675e6be8ea82f81a4db44339f8977f85fa3b0f5206da68e4679e03f2"
+      },
+      {
+        "path": "tests/reports/deep-recovery/playable/reduced-motion.png",
+        "sha256": "c14daa2e1ff77466854027252c6202578e29549e306630d642ec56da8e302d5b"
+      }
+    ],
+    "browserReceipt": "tests/reports/deep-recovery/playable/browser-evidence.json",
+    "assetProbes": [
+      {
+        "asset": "deepRecoverySub",
+        "metadata": "tests/reports/showcase-release-asset-probes/deepRecoverySub.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/deepRecoverySub.png",
+        "assetHash": "sha256-d579451ffaa346ad54d57aa25e4c8732bf2bc93ca9a2c95ac436080358867bba"
+      },
+      {
+        "asset": "deepRecoveryWreckHull",
+        "metadata": "tests/reports/showcase-release-asset-probes/deepRecoveryWreckHull.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/deepRecoveryWreckHull.png",
+        "assetHash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b"
+      },
+      {
+        "asset": "deepRecoveryCrateStandard",
+        "metadata": "tests/reports/showcase-release-asset-probes/deepRecoveryCrateStandard.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/deepRecoveryCrateStandard.png",
+        "assetHash": "sha256-778ab9b98a48b26ef4ca24761f90dec58a3b11bb2f2d21944db7ad6465c72bac"
+      },
+      {
+        "asset": "deepRecoveryCrateHeavy",
+        "metadata": "tests/reports/showcase-release-asset-probes/deepRecoveryCrateHeavy.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/deepRecoveryCrateHeavy.png",
+        "assetHash": "sha256-b4848ad9a23be8b8b9064f84a820bf5dc9fc1fe70e8c30a8de7dd055c2aed7c5"
+      },
+      {
+        "asset": "deepRecoveryBuoyBeacon",
+        "metadata": "tests/reports/showcase-release-asset-probes/deepRecoveryBuoyBeacon.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/deepRecoveryBuoyBeacon.png",
+        "assetHash": "sha256-446c27b5c46c47f4abdb01c183469b37e7b9042eab3435a0c85e63f79293e337"
+      }
+    ],
+    "performance": "apps/showcase-deep-recovery/performance-report.json",
+    "deploy": "apps/showcase-deep-recovery/deploy-report.json",
+    "routePrimary": "tests/reports/showcase-route-primary-probes/showcase-deep-recovery.json",
+    "unitSpecs": [
+      "tests/unit/apps/deep-recovery-sonar.test.ts",
+      "tests/unit/apps/deep-recovery-oxygen.test.ts",
+      "tests/unit/apps/deep-recovery-salvage.test.ts",
+      "tests/unit/apps/deep-recovery-sub.test.ts"
+    ],
+    "browserSpecs": [
+      "tests/browser/deep-recovery-playable.spec.ts",
+      "tests/browser/deep-recovery-scene.spec.ts"
+    ]
+  },
+  "determinismContract": {
+    "fixedStep": "1/60",
+    "motion": "authored thrust/drag/buoyancy with no randomness",
+    "sonar": "live target coordinates, spherical range, authored wreck-sphere occlusion",
+    "tether": "mass-derived drag and deterministic spring",
+    "mission": "explicit ordered standard/breach/repair/heavy/surface state"
+  }
+}

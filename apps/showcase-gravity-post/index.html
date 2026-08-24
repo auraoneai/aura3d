@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#05080f">
+    <meta
+      name="description"
+      content="Aura3D Gravity Post, an authored arcade gravity-well courier prototype: slingshot mail pods between orbit stations using non-physical route-local gravity wells, station dock sensors, and live prediction lines."
+    >
+    <title>Aura3D - Gravity Post</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <main class="gp-shell" aria-label="Gravity Post">
+      <section class="gp-viewport">
+        <div id="app" class="gp-stage" data-testid="gravity-post-stage"></div>
+      </section>
+      <aside id="hud" class="gp-hud" aria-label="Gravity Post game HUD"></aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -29,6 +29,7 @@ import {
   SKYLINE_SECTION_LAYOUTS,
   SKYLINE_SECTION_STRIDE
 } from "./level-layout";
+import { resolveSkylineDistrictIndex, skylineDistrictForAct, type SkylineDistrictId } from "./districts";
 export {
   SKYLINE_LEVEL_ACTS,
   SKYLINE_SECTION_COUNT,
@@ -215,6 +216,125 @@ export const skylineMotion = solvePlatformerMotion(extendedPlatforms, {
   targetSessionSeconds: 80,
   traversalFraction: 1
 });
+
+/*
+ * ---------------------------------------------------------------------------
+ * Additive incorporation exports (PRD 05-Skyline-Runner, SR-A2..SR-A5).
+ *
+ * Everything below is *derived* from the certified geometry already owned by this
+ * module. None of it feeds back into createSkylineLevel()'s gameplay fields, so
+ * the 70-115s completion window and the byte-identical generated contract are
+ * untouched by construction.
+ * ---------------------------------------------------------------------------
+ */
+import { SKYLINE_TERRAIN_PROFILES } from "./level-layout";
+
+/** Sections where the act changes while running right (the act-gate sites). */
+export interface SkylineActGate {
+  readonly id: string;
+  /** Act the gate welcomes the player into. */
+  readonly act: number;
+  readonly title: string;
+  /** Course x of the section boundary the gate straddles. */
+  readonly x: number;
+  /** Elevation of the certified surface under the gate, for scene placement. */
+  readonly surfaceY: number;
+}
+
+const actGateSurfaceY = (section: number): number => {
+  const platform = nearestPlatform(section, 1.2);
+  return platform.y + platform.height;
+};
+
+export const SKYLINE_ACT_GATES: readonly SkylineActGate[] =
+  SKYLINE_SECTION_LAYOUTS.flatMap((layout, section) => {
+    if (section === 0 || layout.act === SKYLINE_SECTION_LAYOUTS[section - 1]?.act) return [];
+    return [{
+      id: 'act-gate-' + layout.act + '-' + layout.name,
+      act: layout.act,
+      title: SKYLINE_LEVEL_ACTS[layout.act]?.title ?? ('Act ' + (layout.act + 1)),
+      x: sectionOffset(section),
+      surfaceY: actGateSurfaceY(section)
+    }];
+  });
+
+/**
+ * Overlap-sensor backing for the relay checkpoints (SR-A5).
+ *
+ * The kit activates a relay when the *player centre* is within radius of the
+ * checkpoint centre. Each sensor here is an axis-aligned box that strictly contains
+ * that whole trigger circle (plus a small margin), so any radial activation implies
+ * sensor overlap. Sensors are robustness telemetry only: they never activate,
+ * deactivate, or move anything.
+ */
+export interface SkylineRelaySensor {
+  readonly id: string;
+  readonly checkpointId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly halfWidth: number;
+  readonly halfHeight: number;
+}
+
+const RELAY_SENSOR_MARGIN = 0.02;
+
+export const skylineRelaySensors: readonly SkylineRelaySensor[] = extendedCheckpoints.map((checkpoint) => ({
+  id: checkpoint.id + '-overlap-sensor',
+  checkpointId: String(checkpoint.id),
+  x: checkpoint.x,
+  y: checkpoint.y,
+  halfWidth: Math.max(checkpoint.radius ?? 0.7, 0) + RELAY_SENSOR_MARGIN,
+  halfHeight: Math.max(checkpoint.radius ?? 0.7, 0) + RELAY_SENSOR_MARGIN
+}));
+
+/** True when the player centre overlaps the sensor box. */
+export function skylineRelaySensorOverlaps(
+  sensor: SkylineRelaySensor,
+  player: { readonly x: number; readonly y: number }
+): boolean {
+  return Math.abs(player.x - sensor.x) <= sensor.halfWidth
+    && Math.abs(player.y - sensor.y) <= sensor.halfHeight;
+}
+
+/**
+ * Deterministic per-district anchors consumed by the foliage pools (SR-A2) and the
+ * LOD backdrop bands (SR-A3). Purely descriptive geometry: heights come from the
+ * authored terrain profiles so the skyline reads as a city receding without any
+ * hand-placed magic numbers.
+ */
+export interface SkylineDistrictAnchor {
+  readonly section: number;
+  readonly act: number;
+  readonly district: number;
+  readonly districtId: SkylineDistrictId;
+  /** Course-x centre of the district. */
+  readonly centerX: number;
+  /** Terrain-profile elevation sampled at the district midpoint (0..~1). */
+  readonly elevation: number;
+  readonly startX: number;
+  readonly endX: number;
+}
+
+function skylineTerrainElevation(section: number, localX: number): number {
+  const profile = SKYLINE_TERRAIN_PROFILES[section] ?? SKYLINE_TERRAIN_PROFILES[0]!;
+  const normalized = Math.max(0, Math.min(1, localX / SKYLINE_SECTION_STRIDE));
+  const sample = normalized * (profile.length - 1);
+  const left = Math.floor(sample);
+  const right = Math.min(profile.length - 1, left + 1);
+  return profile[left]! + (profile[right]! - profile[left]!) * (sample - left);
+}
+
+export const SKYLINE_DISTRICT_ANCHORS: readonly SkylineDistrictAnchor[] =
+  SKYLINE_SECTION_LAYOUTS.map((layout, section) => ({
+    section,
+    act: layout.act,
+    district: resolveSkylineDistrictIndex(sectionOffset(section)),
+    districtId: skylineDistrictForAct(layout.act).id,
+    startX: sectionOffset(section),
+    endX: sectionOffset(section) + SKYLINE_SECTION_STRIDE,
+    centerX: sectionOffset(section) + SKYLINE_SECTION_STRIDE / 2,
+    elevation: skylineTerrainElevation(section, SKYLINE_SECTION_STRIDE / 2)
+  }));
 
 /** The route's asset-bound level, with motion derived rather than authored. */
 export function createSkylineLevel() {

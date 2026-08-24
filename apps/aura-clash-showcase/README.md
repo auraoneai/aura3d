@@ -67,6 +67,59 @@ npm run routes:check
 - `L`: Aura Burst special
 - `R`: restart round
 - `P`: pause or resume round
+- `[` / `]`: scrub the training exchange replay (training/debug routes only)
+
+## Capability incorporations (02-Aura-Clash-Arena)
+
+Implemented per `CurrentGames-PRD/02-Aura-Clash-Arena.md`. Label stays
+`production-runtime` / `development showcase` — never "flagship", no kit claims.
+The `@aura3d/engine/production-runtime` imports remain allowed on this app only.
+Frame data in `src/playable/combat/auraClashMoveData.ts` stayed byte-identical;
+all proof-object additions are optional fields.
+
+- **AC-A1 · Clip-event presentation bridge** — authored `sfx` / `vfx` /
+  `camera.impulse` metadata (`src/playable/animation/auraClashClipMaps.ts`) is
+  sampled at exact clip frames by `src/playable/combat/clipEventBridge.ts` and
+  delivered through an `onEvent` subscription. Presentation only; the `hitbox`
+  lane stays the sole combat authority. Unit:
+  `tests/unit/apps/clash-clip-events.test.ts`; audio spec asserts the swing cue
+  fires from the event, not a timer.
+- **AC-A2 · Training exchange replay** — `src/playable/training/ExchangeReplay.ts`
+  records the last 6 s of mirrored engine state; `[` / `]` scrub it on
+  training/debug routes and live input snaps back. Hidden on the public playable
+  path. Unit: `tests/unit/apps/clash-exchange-replay.test.ts` (identical HP
+  timeline round-trip); smoke spec covers visibility gating.
+- **AC-A3 · Instanced rooftop crowd** — `src/playable/arena/CrowdInstances.ts`
+  renders every fan silhouette as ONE instanced draw item
+  (`InstancedUnlitMaterial` + `instanceTransforms`) with deterministic per-fan
+  bob and a synchronized cheer bounce on heavy/special connects. Never enters
+  the fighter lane; frozen under reduced motion.
+- **AC-A4 · Round ceremony text3D** — `src/playable/arena/RoundCeremony.ts`
+  renders ROUND n / K.O. / WIN / DRAW as extruded glyph meshes
+  (`createAuraText3DGeometry`); complements the DOM HUD, never replaces it.
+  Screenshot spec captures round-intro and KO stills.
+- **AC-A5 · Spring-joint neon signs** — `src/playable/arena/SpringJointSigns.ts`
+  hangs two signs outside the lane on deterministic damped springs that react to
+  slams and settle to the same rest state every run. Reduced motion keeps them
+  rendered but static.
+- **AC-A6 · Audio bus separation** — cues are split across `music` / `sfx` /
+  `voice` / `ui` buses with independent levels
+  (`src/playable/audio/auraClashAudioManifest.ts`); a round-over KO duck drops
+  the sfx bus for 1.3 s and restores it. Bus levels and duck state publish on
+  the audio proof.
+- **AC-A7 · Formal rival roles** — three seeded `createCombatAi` presets
+  (rushdown 0.8 / balanced 0.55 / keep-away 0.35) in
+  `src/playable/combat/clashAiRoles.ts` gate strike appetite behind the existing
+  role system. Deterministic for replay tests. Unit:
+  `tests/unit/apps/clash-ai-roles.test.ts`.
+
+The AC-01 audit note lives at `docs/ac-01-ai-and-event-audit.md`.
+
+## Human visual review
+
+Automated evidence is green locally, but per repo policy the exact final
+artifacts require independent human review before any promotion claim
+(`window.__AURA_CLASH_VISUAL_REVIEW__.humanApprovalRequired` stays `true`).
 
 ## Current completion boundary
 

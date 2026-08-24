@@ -1,0 +1,105 @@
+{
+  "schema": "aura3d-gravity-post-performance/1.0",
+  "generatedAt": "2026-08-23T20:11:53.782Z",
+  "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
+  "budgets": {
+    "fixedStepP95Ms": 1,
+    "boundedPredictionP95Ms": 3,
+    "maximumRouteSeconds": 48,
+    "campaignCompleteDrawCalls": 600
+  },
+  "observed": {
+    "maxFixedStepP95Ms": 0.0025,
+    "maxPredictionP95Ms": 0.1663,
+    "campaignCompleteDrawCalls": 538
+  },
+  "routes": [
+    {
+      "contractId": "GP-CON-1",
+      "capture": true,
+      "elapsedSeconds": 3.242,
+      "arrivalSpeed": 0,
+      "assists": [],
+      "requiredAssists": [],
+      "assistPass": true,
+      "fixedStepMs": {
+        "samples": 389,
+        "p95": 0.0025,
+        "max": 0.395
+      },
+      "predictionMs": {
+        "samples": 50,
+        "p95": 0.1663,
+        "max": 0.365
+      }
+    },
+    {
+      "contractId": "GP-CON-2",
+      "capture": true,
+      "elapsedSeconds": 7.267,
+      "arrivalSpeed": 0,
+      "assists": [
+        "verdance"
+      ],
+      "requiredAssists": [
+        "verdance"
+      ],
+      "assistPass": true,
+      "fixedStepMs": {
+        "samples": 872,
+        "p95": 0.0008,
+        "max": 0.0491
+      },
+      "predictionMs": {
+        "samples": 50,
+        "p95": 0.0853,
+        "max": 0.1033
+      }
+    },
+    {
+      "contractId": "GP-CON-3",
+      "capture": true,
+      "elapsedSeconds": 17.4,
+      "arrivalSpeed": 0,
+      "assists": [
+        "sol",
+        "gale"
+      ],
+      "requiredAssists": [
+        "sol",
+        "gale"
+      ],
+      "assistPass": true,
+      "fixedStepMs": {
+        "samples": 2088,
+        "p95": 0.0008,
+        "max": 0.0453
+      },
+      "predictionMs": {
+        "samples": 50,
+        "p95": 0.0657,
+        "max": 0.0852
+      }
+    },
+    {
+      "contractId": "GP-CON-4",
+      "capture": true,
+      "elapsedSeconds": 3.383,
+      "arrivalSpeed": 0,
+      "assists": [],
+      "requiredAssists": [],
+      "assistPass": true,
+      "fixedStepMs": {
+        "samples": 406,
+        "p95": 0.0003,
+        "max": 0.0064
+      },
+      "predictionMs": {
+        "samples": 50,
+        "p95": 0.0636,
+        "max": 0.0689
+      }
+    }
+  ],
+  "pass": true
+}

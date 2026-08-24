@@ -5,10 +5,13 @@ import {
   SKYLINE_SECTION_LAYOUTS,
   SKYLINE_SECTION_STRIDE
 } from "./level-layout";
+import { skylineDistrictForAct, type SkylineDistrictId } from "./districts";
 
 export interface SkylineActPalette {
   readonly actIndex: number;
   readonly actId: string;
+  readonly districtId: SkylineDistrictId;
+  readonly districtTitle: string;
   readonly title: string;
   readonly skyRamp: readonly [string, string];
   readonly skyEmissiveRamp: readonly [string, string];
@@ -30,97 +33,107 @@ const ACT_PALETTES: readonly SkylineActPalette[] = [
   {
     actIndex: 0,
     actId: "home-grove",
+    districtId: "steel-dawn",
+    districtTitle: "Steel Dawn",
     title: "Home Grove",
-    skyRamp: ["#6fa86a", "#2f5a48"],
-    skyEmissiveRamp: ["#c8e878", "#4a8058"],
-    groundRamp: ["#6fa86a", "#1f4238"],
-    groundEmissiveRamp: ["#c8e878", "#2f5848"],
-    sceneBackground: "#234636",
-    fogColor: "#3d7258",
-    fogDensity: 0.042,
+    skyRamp: ["#0284c7", "#070b12"],
+    skyEmissiveRamp: ["#38bdf8", "#0f172a"],
+    groundRamp: ["#0284c7", "#030712"],
+    groundEmissiveRamp: ["#38bdf8", "#070b12"],
+    sceneBackground: "#070b12",
+    fogColor: "#0b1329",
+    fogDensity: 0.025,
     fogIntensity: 0.42,
-    ambientLightColor: "#b8ddb0",
-    ambientLightIntensity: 0.66,
-    keyLightColor: "#ffd59c",
-    keyLightIntensity: 1.14,
-    checkpointLightColor: "#8ef0c8",
-    checkpointLightIntensity: 0.56
+    ambientLightColor: "#93c5fd",
+    ambientLightIntensity: 0.78,
+    keyLightColor: "#38bdf8",
+    keyLightIntensity: 1.35,
+    checkpointLightColor: "#38bdf8",
+    checkpointLightIntensity: 0.75
   },
   {
     actIndex: 1,
-    actId: "broken-canopy",
-    title: "Broken Canopy",
-    skyRamp: ["#4f7088", "#1a3348"],
-    skyEmissiveRamp: ["#7aa0b8", "#2a4860"],
-    groundRamp: ["#4f7088", "#142838"],
-    groundEmissiveRamp: ["#7aa0b8", "#1e3850"],
-    sceneBackground: "#1a2f42",
-    fogColor: "#2a4a62",
-    fogDensity: 0.058,
-    fogIntensity: 0.56,
-    ambientLightColor: "#9ec0d8",
-    ambientLightIntensity: 0.58,
-    keyLightColor: "#c8d4e0",
-    keyLightIntensity: 0.92,
-    checkpointLightColor: "#72d8f0",
-    checkpointLightIntensity: 0.5
+    actId: "emerald-canopy",
+    districtId: "steel-dawn",
+    districtTitle: "Steel Dawn",
+    title: "Emerald Canopy",
+    skyRamp: ["#0e7490", "#07111f"],
+    skyEmissiveRamp: ["#67e8f9", "#164e63"],
+    groundRamp: ["#155e75", "#030712"],
+    groundEmissiveRamp: ["#22d3ee", "#0c2438"],
+    sceneBackground: "#07111f",
+    fogColor: "#0b1e32",
+    fogDensity: 0.026,
+    fogIntensity: 0.44,
+    ambientLightColor: "#bae6fd",
+    ambientLightIntensity: 0.76,
+    keyLightColor: "#67e8f9",
+    keyLightIntensity: 1.36,
+    checkpointLightColor: "#22d3ee",
+    checkpointLightIntensity: 0.75
   },
   {
     actIndex: 2,
-    actId: "sentry-pass",
-    title: "Sentry Pass",
-    skyRamp: ["#5a7080", "#1c2a38"],
-    skyEmissiveRamp: ["#8aa0b0", "#304050"],
-    groundRamp: ["#5a7080", "#141e28"],
-    groundEmissiveRamp: ["#8aa0b0", "#243038"],
-    sceneBackground: "#182430",
-    fogColor: "#324858",
-    fogDensity: 0.052,
-    fogIntensity: 0.54,
-    ambientLightColor: "#a8bcc8",
-    ambientLightIntensity: 0.54,
-    keyLightColor: "#b8c8d8",
-    keyLightIntensity: 0.88,
-    checkpointLightColor: "#68e0f0",
-    checkpointLightIntensity: 0.48
+    actId: "amber-bastion",
+    districtId: "hanging-grove",
+    districtTitle: "Hanging Grove",
+    title: "Amber Bastion",
+    skyRamp: ["#9a6b32", "#10251f"],
+    skyEmissiveRamp: ["#f0c878", "#14532d"],
+    groundRamp: ["#3f6b47", "#081a15"],
+    groundEmissiveRamp: ["#86c56f", "#163d27"],
+    sceneBackground: "#0b1b16",
+    fogColor: "#3a3321",
+    fogDensity: 0.028,
+    fogIntensity: 0.48,
+    ambientLightColor: "#d9f99d",
+    ambientLightIntensity: 0.75,
+    keyLightColor: "#f0c878",
+    keyLightIntensity: 1.35,
+    checkpointLightColor: "#a7f3d0",
+    checkpointLightIntensity: 0.75
   },
   {
     actIndex: 3,
-    actId: "cloudstep-rise",
-    title: "Cloudstep Rise",
-    skyRamp: ["#6a90b0", "#284868"],
-    skyEmissiveRamp: ["#9ec8e8", "#3a6890"],
-    groundRamp: ["#6a90b0", "#1e3858"],
-    groundEmissiveRamp: ["#9ec8e8", "#2a5078"],
-    sceneBackground: "#1e3a58",
-    fogColor: "#3a6890",
-    fogDensity: 0.038,
+    actId: "violet-nebula",
+    districtId: "hanging-grove",
+    districtTitle: "Hanging Grove",
+    title: "Violet Nebula",
+    skyRamp: ["#b77945", "#17352a"],
+    skyEmissiveRamp: ["#f4cf91", "#166534"],
+    groundRamp: ["#4d7c5b", "#0b2118"],
+    groundEmissiveRamp: ["#a3d977", "#23563a"],
+    sceneBackground: "#10261d",
+    fogColor: "#59452e",
+    fogDensity: 0.025,
     fogIntensity: 0.46,
-    ambientLightColor: "#b8d8f0",
-    ambientLightIntensity: 0.64,
-    keyLightColor: "#d8ecff",
-    keyLightIntensity: 1.02,
-    checkpointLightColor: "#78f0ff",
-    checkpointLightIntensity: 0.58
+    ambientLightColor: "#ecfccb",
+    ambientLightIntensity: 0.78,
+    keyLightColor: "#f4cf91",
+    keyLightIntensity: 1.4,
+    checkpointLightColor: "#86efac",
+    checkpointLightIntensity: 0.8
   },
   {
     actIndex: 4,
     actId: "aurora-crown",
+    districtId: "crown-heights",
+    districtTitle: "Crown Heights",
     title: "Aurora Crown",
-    skyRamp: ["#7a4898", "#1a3858"],
-    skyEmissiveRamp: ["#c878d8", "#3898a8"],
-    groundRamp: ["#7a4898", "#142840"],
-    groundEmissiveRamp: ["#c878d8", "#2890a0"],
-    sceneBackground: "#241840",
-    fogColor: "#483878",
-    fogDensity: 0.048,
+    skyRamp: ["#f59e0b", "#7c2d3e"],
+    skyEmissiveRamp: ["#fde68a", "#fb7185"],
+    groundRamp: ["#b45309", "#4c1d2f"],
+    groundEmissiveRamp: ["#fbbf24", "#9f1239"],
+    sceneBackground: "#2a1019",
+    fogColor: "#5c2a2f",
+    fogDensity: 0.025,
     fogIntensity: 0.52,
-    ambientLightColor: "#c8b0e8",
-    ambientLightIntensity: 0.6,
-    keyLightColor: "#e8a8d8",
-    keyLightIntensity: 1.08,
-    checkpointLightColor: "#78f8e8",
-    checkpointLightIntensity: 0.62
+    ambientLightColor: "#fef3c7",
+    ambientLightIntensity: 0.82,
+    keyLightColor: "#fbbf24",
+    keyLightIntensity: 1.45,
+    checkpointLightColor: "#fde68a",
+    checkpointLightIntensity: 0.85
   }
 ] as const;
 
@@ -145,6 +158,19 @@ export function skylineActPaletteSignature(palette: SkylineActPalette): string {
     palette.actId,
     palette.skyRamp[0],
     palette.skyRamp[1],
+    palette.fogColor,
+    palette.keyLightColor
+  ].join("|");
+}
+
+export function skylineDistrictPaletteSignature(actIndex: number): string {
+  const district = skylineDistrictForAct(actIndex);
+  const palette = getSkylineActPalette(district.actIndexes[0] ?? actIndex);
+  return [
+    district.id,
+    palette.skyRamp[0],
+    palette.skyRamp[1],
+    palette.groundRamp[0],
     palette.fogColor,
     palette.keyLightColor
   ].join("|");

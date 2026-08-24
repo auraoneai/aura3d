@@ -728,6 +728,17 @@ describe("game runtime source gates", () => {
     expect(collisionResolved.speed).toBeLessThan(beforeContact.speed);
     expect(collisionResolved.progress).toBeGreaterThan(0);
 
+    const footprintConstrainedContactRace = game.racing({
+      route: {
+        width: 2,
+        points: [{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 4 }, { x: 0, y: 4 }]
+      },
+      boundaryInset: 0.4
+    });
+    const footprintResolved = footprintConstrainedContactRace.resolveContact({ x: 2, y: 0.9 });
+    expect(footprintResolved.trackOffset).toBeLessThanOrEqual(0.6);
+    expect(footprintResolved.position).not.toEqual({ x: 2, y: 0.9 });
+
     const wrongOrder = game.racing({
       route: {
         points: [

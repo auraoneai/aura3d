@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0e14">
+    <meta
+      name="description"
+      content="Aura3D Mech Hangar, a prototype where typed, provenance-tracked catalog parts are the mechanic: assemble a mech from validated characterAssembly plans, read the stat holograms, then fight a rival mech in the pit."
+    >
+    <title>Aura3D - Mech Hangar</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <main class="mech-shell" aria-label="Mech Hangar">
+      <section class="mech-viewport">
+        <div id="app" class="mech-stage" data-testid="mech-hangar-stage"></div>
+      </section>
+      <aside id="panel" class="mech-panel" aria-label="Mech Hangar HUD"></aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

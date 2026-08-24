@@ -33,6 +33,10 @@ function walkSourceFiles(root: string): string[] {
     if (relativePath.includes("node_modules") || relativePath.includes("/dist/")) return;
     const stat = statSync(current);
     if (stat.isDirectory()) {
+      // Asset registration and evidence-generation scripts are pipeline
+      // inputs. They may name raw upstream model URLs so the CLI can validate
+      // and generate typed route assets; they are not shipped visual source.
+      if (current !== absoluteRoot && current.endsWith(`${join("", "scripts")}`)) return;
       for (const entry of readdirSync(current)) visit(join(current, entry));
       return;
     }

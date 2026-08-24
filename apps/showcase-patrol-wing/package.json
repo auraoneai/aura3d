@@ -1,0 +1,26 @@
+{
+  "name": "@aura3d/showcase-patrol-wing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Patrol Wing prototype: authored six-axis flight over an island arena, ordered ring sensors, aerial combatWorld dogfights, and an input-replay ghost.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "build:sfx": "node scripts/build-sfx.mjs",
+    "build:models": "node scripts/build-models.mjs",
+    "register:assets": "node scripts/register-assets.mjs",
+    "write:deploy": "node scripts/write-deploy-report.mjs",
+    "write:performance": "pnpm exec tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "write:route-health": "node scripts/write-route-health.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

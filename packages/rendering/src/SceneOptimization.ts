@@ -28,6 +28,7 @@ export interface StaticBatchInput {
   readonly modelMatrix: Float32Array | readonly number[];
   readonly batchKey: string;
   readonly label?: string;
+  readonly castShadow?: boolean;
 }
 
 export interface StaticBatchOptions {
@@ -197,7 +198,8 @@ export function batchStaticRenderItems(items: readonly StaticBatchInput[], optio
           geometry: item.geometry,
           material: item.material,
           modelMatrix: item.modelMatrix,
-          label: item.label ?? `${labelPrefix}-${batchKey}-${start}`
+          label: item.label ?? `${labelPrefix}-${batchKey}-${start}`,
+          castShadow: item.castShadow
         });
         unbatchedItems += 1;
         continue;
@@ -212,7 +214,8 @@ export function batchStaticRenderItems(items: readonly StaticBatchInput[], optio
         material: chunk[0]!.material,
         modelMatrix: identityMatrix(),
         instanceTransforms: transforms,
-        label: `${labelPrefix}-${batchKey}-${Math.floor(start / maxInstancesPerBatch)}`
+        label: `${labelPrefix}-${batchKey}-${Math.floor(start / maxInstancesPerBatch)}`,
+        castShadow: chunk[0]!.castShadow
       });
     }
   }

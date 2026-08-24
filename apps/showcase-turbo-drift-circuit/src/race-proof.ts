@@ -109,6 +109,13 @@ export interface TurboRaceProof {
     readonly opponentAdvancesIndependently: boolean;
     readonly resetReturnsToStart: boolean;
   };
+  /**
+   * Additive TDC-A1 fields. The headless kit simulation drives no ghost car, so it
+   * reports that honestly rather than inventing a replay; mounted-route ghost state
+   * lives on the route evidence object under `ghost`.
+   */
+  readonly ghostActive: false;
+  readonly ghostLapMs: null;
 }
 
 /**
@@ -166,7 +173,12 @@ export function createSixtySecondRaceProof(): TurboRaceProof {
       opponentAdvancesIndependently:
         run.opponentCheckpointsCredited > 0 && run.finalOpponentProgress !== run.finalProgress,
       resetReturnsToStart: resetSnapshot.lap === 1 && resetSnapshot.speed === 0 && resetSnapshot.progress === 0
-    }
+    },
+    // Additive TDC-A1 fields. The headless kit simulation drives no ghost car, so it
+    // reports that honestly rather than inventing a replay; mounted-route ghost state
+    // lives on the route evidence object under `ghost`.
+    ghostActive: false as const,
+    ghostLapMs: null as null
   };
 }
 

@@ -5,6 +5,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "ammoCrate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "arena": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "corridorAlarmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "corridorAmbientDrone": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "corridorDryFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "corridorFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "corridorHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -641,6 +642,87 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorAlarmSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "corridorAmbientDrone": {
+    type: "audio",
+    format: "wav",
+    url: "/examples/neon-corridor-strike/public/aura-assets/corridorAmbientDrone.9a522d34.wav",
+    hash: "sha256-9a522d3415cc3fb05dbc1b04de50eef2d6c8c2e07c96347f37058a13a86514f1",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 264644,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/ambientDrone.wav",
+        "sourcePage": "examples/neon-corridor-strike/scripts/build-sfx.mjs",
+        "license": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-21T23:08:46.590Z"
+      },
+      "sourcePath": "assets/ambientDrone.wav",
+      "outputPath": "public/aura-assets/corridorAmbientDrone.9a522d34.wav",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/corridorAmbientDrone.thumb.svg",
       "quality": "ungraded",
       "role": "unknown"
     },

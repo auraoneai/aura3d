@@ -1,0 +1,25 @@
+{
+  "name": "@aura3d/showcase-rooftop-buckets",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --port 4189",
+    "build:sfx": "node scripts/build-sfx.mjs",
+    "build:models": "node scripts/build-models.mjs",
+    "register:assets": "node scripts/register-assets.mjs",
+    "evidence:performance": "pnpm exec tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
+    "evidence:deploy": "node scripts/write-deploy-report.mjs",
+    "write-route-health": "node scripts/write-route-health.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0"
+  }
+}

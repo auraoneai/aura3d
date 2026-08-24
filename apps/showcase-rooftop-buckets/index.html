@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rooftop Buckets — Aura3D Ballistics Showcase</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div id="canvas-host" role="img" aria-label="Aura3D summer-night rooftop basketball court with ball, hoop, shot guide, and defender"></div>
+
+  <main id="hud-root" aria-label="Rooftop Buckets game and controls">
+    <!-- Top Status Bar -->
+    <header class="hud-panel hud-top-bar">
+      <div class="game-title-group">
+        <h1>
+          Rooftop Buckets
+          <span id="rb-heat-badge" class="heat-badge" aria-live="polite">Heat 1</span>
+          <span id="rb-fire-badge" class="on-fire-badge hidden" aria-live="polite">ON FIRE ×2</span>
+        </h1>
+        <p>Rooftop Court at Dusk · Composed Rim Physics</p>
+      </div>
+
+      <div class="score-stats">
+        <div class="stat-item">
+          <span class="stat-label">Score</span>
+          <span id="rb-score-val" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Target</span>
+          <span id="rb-target-val" class="stat-value">12</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Streak</span>
+          <span id="rb-streak-val" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Heat Time</span>
+          <span id="rb-heat-timer" class="stat-value">45s</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Center Shot Meter -->
+    <div id="rb-shot-meter" class="shot-meter-container hud-panel">
+      <div class="meter-label">
+        <span id="rb-spot-desc">Spot 1 (2-pt)</span>
+        <span id="rb-shot-type">Standard Ball</span>
+      </div>
+      <div class="meter-track">
+        <div id="rb-sweet-zone" class="meter-sweet-zone" style="left: 65%; width: 16%;"></div>
+        <div id="rb-meter-fill" class="meter-fill"></div>
+      </div>
+      <div class="meter-label">
+        <span>[SPACE] Hold to Charge</span>
+        <span id="rb-last-result" role="status" aria-live="polite">Ready</span>
+      </div>
+    </div>
+
+    <!-- Bottom Controls & Shot Clock Bar -->
+    <footer class="hud-panel hud-bottom-bar">
+      <div class="controls-hint">
+        <p><kbd>A</kbd> / <kbd>D</kbd> Change Spot &nbsp;|&nbsp; <kbd>W</kbd> / <kbd>S</kbd> Fine Aim Arc &nbsp;|&nbsp; <kbd>Space</kbd> Shoot &nbsp;|&nbsp; <kbd>P</kbd> Pause &nbsp;|&nbsp; <kbd>R</kbd> Reset</p>
+        <div class="touch-controls" aria-label="Touch basketball controls">
+          <button id="rb-touch-spot-left" type="button">Spot ←</button>
+          <button id="rb-touch-spot-right" type="button">Spot →</button>
+          <button id="rb-touch-aim-down" type="button">Arc ↓</button>
+          <button id="rb-touch-aim-up" type="button">Arc ↑</button>
+          <button id="rb-touch-shoot" class="shoot" type="button">Hold + release</button>
+          <button id="rb-touch-pause" type="button">Pause</button>
+          <button id="rb-touch-reset" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="shot-clock-card">
+        <div class="stat-item">
+          <span class="stat-label">Shot Clock</span>
+          <span id="rb-shot-clock" class="clock-timer">8.0</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Pause / Game Over Modal -->
+  <div id="rb-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="rb-modal-title" aria-describedby="rb-modal-desc">
+    <div class="modal-content">
+      <h2 id="rb-modal-title">Heat Cleared!</h2>
+      <p id="rb-modal-desc">Advance to Heat 2: Lateral Hoop Sway active.</p>
+      <button id="rb-modal-btn" class="btn-primary">Continue</button>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

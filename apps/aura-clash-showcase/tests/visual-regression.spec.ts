@@ -3,12 +3,13 @@ import {
   holdKey,
   loadAuraClashArena,
   queueNearKoHeavy,
+  queuePlayerAttack,
   readAuraClashProof,
   setFighterTestState
 } from "./helpers/auraClashArenaHarness";
 
 test.describe("Aura Clash visual regression states", () => {
-  test("captures first, movement, jump, guard, attack, hit, KO, reset, and mobile states", async ({ page }) => {
+  test("captures first, movement, jump, guard, hit, whiff, guard-break, KO, reset, and mobile states", async ({ page }) => {
     test.setTimeout(90_000);
     await loadAuraClashArena(page, "?auraTestDriver=1");
     await expectReadableVisualProof(page, "first");
@@ -90,7 +91,44 @@ test.describe("Aura Clash visual regression states", () => {
     await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
     await expectReadableVisualProof(page, "action");
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-hit.png", fullPage: true });
-    await page.keyboard.press("KeyP");
+    await resumeFromCapture(page);
+
+    await setFighterTestState(page, { playerX: -2.2, rivalX: 2.2, rivalHealth: 360, suppressRivalGuard: true });
+    await page.evaluate(() => {
+      const driver = (window as Window & {
+        __AURA_CLASH_ARENA_TEST_DRIVER__?: { pauseOnNextWhiff(): void };
+      }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+      if (!driver) throw new Error("Aura Clash test driver was not installed.");
+      driver.pauseOnNextWhiff();
+    });
+    await queuePlayerAttack(page, "heavy");
+    await expect.poll(async () => (await readAuraClashProof(page)).presentation?.lastOutcome, {
+      message: "whiff capture must follow a real out-of-range attack"
+    }).toBe("whiff");
+    await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
+    const whiff = await readAuraClashProof(page);
+    expect(whiff.callout).toBe("WHIFF");
+    expect(whiff.presentation?.activeImpactKinds ?? []).toEqual([]);
+    await page.screenshot({ path: "launch-evidence/aura-clash-visual-whiff.png", fullPage: true });
+    await resumeFromCapture(page);
+
+    await setFighterTestState(page, {
+      playerX: -0.5,
+      rivalX: 0.5,
+      rivalHealth: 360,
+      rivalGuardMeter: 0,
+      forceRivalGuard: true
+    });
+    await queuePlayerAttack(page, "heavy");
+    await expect.poll(async () => (await readAuraClashProof(page)).presentation?.lastOutcome, {
+      message: "guard-break capture must follow a depleted guarded strike"
+    }).toBe("guard-break");
+    await pauseCurrentPose(page);
+    const guardBreak = await readAuraClashProof(page);
+    expect(guardBreak.callout).toBe("GUARD BREAK");
+    expect(guardBreak.presentation?.activeImpactKinds ?? []).toContain("guard-break");
+    await page.screenshot({ path: "launch-evidence/aura-clash-visual-guard-break.png", fullPage: true });
+    await resumeFromCapture(page);
 
     await queueNearKoHeavy(page);
     await expect.poll(async () => (await readAuraClashProof(page)).rival.health).toBe(0);
@@ -106,6 +144,22 @@ test.describe("Aura Clash visual regression states", () => {
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-mobile.png", fullPage: true });
   });
 });
+
+async function pauseCurrentPose(page: Parameters<typeof readAuraClashProof>[0]): Promise<void> {
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: { pauseForCapture(): void };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash test driver was not installed.");
+    driver.pauseForCapture();
+  });
+  await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("paused");
+}
+
+async function resumeFromCapture(page: Parameters<typeof readAuraClashProof>[0]): Promise<void> {
+  await page.keyboard.press("KeyP");
+  await expect.poll(async () => (await readAuraClashProof(page)).status).toBe("running");
+}
 
 async function expectReadableVisualProof(page: Parameters<typeof readAuraClashProof>[0], state: "first" | "action" | "ko"): Promise<void> {
   const proof = await readAuraClashProof(page);

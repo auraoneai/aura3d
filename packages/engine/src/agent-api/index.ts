@@ -149,6 +149,19 @@ export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";
 export * from "./VehicleChassis.js";
 export * from "./VehicleDriverAi.js";
+/**
+ * Deliberate public surface for the shared arcade vehicle core. The racing kit
+ * owns the certified circuit path; exporting the bare motion helper lets routes
+ * such as showcase-courier-rush prove a different driving personality on their
+ * own topology without touching kit internals. Pinned by unit test.
+ */
+export {
+  createGameArcadeVehicle,
+  type GameArcadeVehicle,
+  type GameArcadeVehicleInput,
+  type GameArcadeVehicleOptions,
+  type GameArcadeVehicleState
+} from "./GameRuntime.js";
 export * from "./PlatformerMotion.js";
 export * from "./CombatFrameData.js";
 export * from "./SceneQueries.js";
@@ -11736,6 +11749,7 @@ async function createProductionRuntimeSceneRenderer(
             width: canvas.width,
             height: canvas.height,
             ...(node.hiddenNodeNames ? { hiddenNodeNames: node.hiddenNodeNames } : {}),
+            ...(node.role === "primaryWorld" ? { consolidateStaticMeshes: true } : {}),
             ...(node.material?.color ? {
               tint: {
                 baseColor: colorToLinearRgba(node.material.color),
@@ -11866,7 +11880,7 @@ async function createProductionRuntimeSceneRenderer(
     },
     dispose() {
       productionRenderer.dispose();
-      for (const { actor } of actorEntries) actor.pipeline.dispose();
+      for (const { actor } of actorEntries) actor.dispose();
       for (const { resources } of primitiveEntries) {
         for (const { geometry, material } of resources) {
           geometry.dispose();
@@ -11904,7 +11918,7 @@ function createProductionRuntimeRendererInput(
       time
     )];
     const actorItems = entry.actor.collectRenderItems({ modelMatrix });
-    items.push(...actorItems);
+    items.push(...actorItems.map((item) => ({ ...item, castShadow: currentNode.castShadow })));
     attachProductionActorEvidence(currentNode, entry.actor, actorItems, runtimeNodes);
   }
   for (const entry of primitiveEntries) {
@@ -11916,6 +11930,7 @@ function createProductionRuntimeRendererInput(
       material: resource.material,
       modelMatrix: createModelMatrix(currentState.node, resource.bounds, false, time),
       label: currentState.node.name ?? `aura-primitive-${currentState.node.primitive}`,
+      castShadow: currentState.node.castShadow,
       includeInAutoFrame: false,
       ...(currentState.node.instances ? { instanceTransforms: createProductionInstanceTransforms(currentState.node.instances, currentState.node), instanceColors: createProductionInstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
     });

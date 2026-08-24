@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Aura3D Bank Shot prototype: arcade 8-ball billiards with 16 simultaneous dynamic spheres, pocket sensors, fouls, and clocked racks." />
+    <title>Aura3D - Bank Shot</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell" aria-label="Bank Shot 8-ball">
+      <section class="viewport">
+        <div id="app" class="stage" data-testid="bank-shot-stage"></div>
+        <div id="hud" aria-label="Bank Shot HUD"></div>
+      </section>
+      <aside id="panel" class="panel" aria-label="Bank Shot controls and score"></aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

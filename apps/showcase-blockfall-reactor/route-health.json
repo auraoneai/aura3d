@@ -1,11 +1,11 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-09T01:20:46.326Z",
+  "generatedAt": "2026-08-24T06:09:22.863Z",
   "appId": "showcase-blockfall-reactor",
   "route": "/apps/showcase-blockfall-reactor/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
-  "promotionStatus": "blocked-pending-independent-human-visual-review",
+  "promotionStatus": "typed-cabinet-and-gameplay-evidence-bounded-candidate",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",
@@ -21,7 +21,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 40,
+    "sourceOccurrences": 47,
     "primitiveBudget": 40,
     "role": "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
     "status": "gameplay-geometry-with-typed-primary-cabinet"
@@ -44,11 +44,110 @@
     ]
   },
   "blockers": [
-    "visual-review:independent-human-approval-pending"
+    "independent exact-artifact review pending"
   ],
+  "audioFxPass": {
+    "schema": "aura3d-blockfall-audio-fx/1.0",
+    "prd": "CurrentGames-PRD/04-Blockfall-Reactor.md",
+    "labelUnchanged": true,
+    "audio": {
+      "generator": "apps/showcase-blockfall-reactor/scripts/build-sfx.mjs",
+      "provenance": "CC0-1.0, author Aura3D synthesis, CLI-registered typed WAVs",
+      "gameplayCues": [
+        "move",
+        "rotate",
+        "lock",
+        "line-clear",
+        "quad",
+        "level-up",
+        "hold-swap",
+        "hard-drop",
+        "game-over"
+      ],
+      "ambientBus": "blockfallReactorHumLoop (looping, own bus)",
+      "musicLayering": "additive intensity stem every five levels via per-stem bus volumes"
+    },
+    "boardView": {
+      "projectionModule": "src/board-view.ts",
+      "pools": "locked stack per-kind instanced sub-pools + single active-piece pool",
+      "parityTest": "tests/unit/apps/blockfall-board-view.test.ts",
+      "drawCallTelemetry": "mounted A/B probe; see window evidence boardView.drawCallTelemetry"
+    },
+    "clearFx": {
+      "module": "src/clear-fx.ts",
+      "cameraPunch": "src/camera-feel.ts",
+      "reducedMotionGated": true
+    },
+    "scoreboard": {
+      "module": "src/board-view.ts (createScoreboardNodes)",
+      "format": "zero-padded SCORE 000000 / LEVEL 01 via engine text3D glyph set"
+    },
+    "attract": {
+      "module": "src/attract.ts",
+      "fixture": "tests/fixtures/blockfall/expert-run.json",
+      "regressionHarness": "tests/unit/apps/blockfall-attract.test.ts"
+    },
+    "bloom": {
+      "shippedIntensity": 0.26,
+      "reducedFlashIntensity": 0.12,
+      "guards": {
+        "threshold": 0.55,
+        "maxIntensity": 1.6,
+        "antiBlowout": true
+      },
+      "stills": "tests/reports/blockfall-reactor-bloom/ (before bloom-off / after shipped)"
+    },
+    "browserSpecs": [
+      "tests/browser/blockfall-reactor-audio-fx.spec.ts",
+      "tests/browser/blockfall-bloom-stills.spec.ts"
+    ]
+  },
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
     "sourceReview": "apps/showcase-blockfall-reactor/src/main.ts",
+    "sourceSha256": "195715c1dc926c84ddf698dbbbb5f25f5f5455a1db1993ff24f9426eb17ba1ef",
+    "exactAcceptanceStates": {
+      "report": "tests/reports/blockfall-reactor-fx/acceptance-states.json",
+      "source": "mounted public game.fallingBlocks transitions",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "states": {
+        "play": {
+          "checksum": "756ca627",
+          "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-play.png",
+          "screenshotSha256": "fa69faf3986854cca3162220a582ae1379627a22bd0f40020c852db84834cb65"
+        },
+        "single-clear": {
+          "checksum": "76ab5f2d",
+          "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-single-clear.png",
+          "screenshotSha256": "6c03aa6a4deb5f4927f74dff742a026549c1fa0f983ecbc04498c6af7d2c4794"
+        },
+        "quad": {
+          "checksum": "81f35c5f",
+          "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-quad.png",
+          "screenshotSha256": "9d97881bd853149883893bc9d746135900dbda478c1b1217821ab34221d5417b"
+        },
+        "level-up": {
+          "checksum": "391498a2",
+          "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-level-up.png",
+          "screenshotSha256": "add240f842032a1683206c20cf8821a6aeb2b0bb9e6e2e48d873224d3c45e6c6"
+        },
+        "danger": {
+          "checksum": "d9b9746f",
+          "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-danger.png",
+          "screenshotSha256": "325cc52844ffaa34323d6e05ef25fe3b3eb969f842b79aef51192c8dc5e0c3fa"
+        },
+        "game-over": {
+          "checksum": "dd2a74fc",
+          "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-game-over.png",
+          "screenshotSha256": "2726580ecd0156203fe3391f03dbd088c79b3d737edde00a295af5f49ddf21df"
+        }
+      }
+    },
+    "reducedMotionScreenshot": "tests/reports/blockfall-reactor-fx/reduced-motion.png",
+    "currentMobileScreenshot": "tests/reports/blockfall-reactor-fx/acceptance-mobile-play.png",
     "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.json",
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
     "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",

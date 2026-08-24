@@ -16,8 +16,8 @@ import { SKYLINE_LEVEL_ACTS } from "../../../apps/showcase-skyline-runner/src/le
 describe("Skyline SFX manifest is CLI-registered and CC0-synthesized", () => {
   it("defines every required gameplay cue", () => {
     const required = [
-      "jump", "land-dust", "coin-chime", "ember-pickup", "ember-fire", "ember-deny",
-      "ember-impact", "sentry-telegraph", "sentry-defeat", "death", "checkpoint", "summit"
+      "jump", "land-dust", "dash", "coin-chime", "ember-pickup", "ember-fire", "ember-deny",
+      "ember-impact", "sentry-telegraph", "sentry-defeat", "death", "respawn", "checkpoint", "summit"
     ];
     for (const cue of required) {
       expect(skylineAudioManifest[cue as keyof typeof skylineAudioManifest]).toBeDefined();
@@ -42,8 +42,10 @@ describe("Skyline SFX manifest is CLI-registered and CC0-synthesized", () => {
 
   it("at least ten distinct audio asset keys are routed to typed assets", () => {
     const distinctKeys = new Set(Object.values(skylineAudioCueAssetKeys));
-    expect(distinctKeys.size).toBeGreaterThanOrEqual(10);
-    expect(Object.keys(skylineAudioAssets).length).toBeGreaterThanOrEqual(10);
+    expect(distinctKeys.size).toBeGreaterThanOrEqual(11);
+    expect(Object.keys(skylineAudioAssets).length).toBeGreaterThanOrEqual(11);
+    expect(skylineAudioCueAssetKeys.respawn).toBe("skylineRespawnRecoverySfx");
+    expect(assets.skylineRespawnRecoverySfx.hash).toBe("sha256-9f650a0e0d4ca99ec12b94ea7fb3826fca8e95905c26c86d92a8bd0a57865e3e");
   });
 });
 

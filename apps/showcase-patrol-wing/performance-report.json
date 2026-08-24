@@ -1,0 +1,37 @@
+{
+  "schema": "aura3d.patrol-wing.performance/1.0",
+  "generatedAt": "2026-08-24T05:02:20.117Z",
+  "producer": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
+  "producerSourceSha256": "a2f7608ca273e6120ee35c902f8df89d78f294fa515ec254b1ea9a49afe72a18",
+  "routeSourceFiles": [
+    "apps/showcase-patrol-wing/src/drones.ts",
+    "apps/showcase-patrol-wing/src/flight.ts",
+    "apps/showcase-patrol-wing/src/ghost.ts",
+    "apps/showcase-patrol-wing/src/main.ts",
+    "apps/showcase-patrol-wing/src/patrol.ts",
+    "apps/showcase-patrol-wing/src/sky.ts",
+    "apps/showcase-patrol-wing/src/styles.css",
+    "apps/showcase-patrol-wing/src/weapons.ts",
+    "apps/showcase-patrol-wing/src/wing-audio.ts"
+  ],
+  "routeSourceSha256": "a4d77a3dedebc88e949559d9366d834391bb3e61abd423c100c8c3593baa6746",
+  "scope": "Route-local authored arcade-flight/ring CPU sampling plus route-primary root-renderer draw calls when available; no GPU frame-time, aerodynamic, reusable flight-kit, or renderer-parity claim.",
+  "samples": 20000,
+  "fixedStepSeconds": 0.016666666666666666,
+  "budgets": {
+    "routeLogicCpuP95Ms": 0.2,
+    "drawCalls": 240
+  },
+  "observed": {
+    "routeLogicCpuP95Ms": 0.004,
+    "deterministicStateHash": "54dcd06e",
+    "drawCalls": 133,
+    "renderSize": [
+      1098,
+      900
+    ],
+    "browserFrameCount": 30
+  },
+  "drawEvidencePending": false,
+  "pass": true
+}

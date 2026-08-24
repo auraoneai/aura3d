@@ -1,3 +1,5 @@
+import { auraClashMoveTable, type AuraClashMoveId } from "../combat/auraClashMoveData";
+
 export type AuraClashClipName = string;
 
 export type AuraClashFighterClipKey =
@@ -179,3 +181,45 @@ export function assertAuraClashClipReadiness(input: AuraClashClipReadinessInput 
   }
   return readiness;
 }
+
+/*
+ * AC-A1 — authored presentation-event metadata, declared beside the clip maps.
+ *
+ * These are the clip-local frames presentation cues land on (`sfx`, `vfx`, `camera.impulse`).
+ * Every time is **derived** from the move table in `auraClashMoveData.ts`, never re-typed, so this
+ * metadata can never drift from frame data — and it is strictly additive: the `hitbox` lane in
+ * `auraClashMoveEventTracks` remains the single authority for hit windows. Presentation only.
+ */
+
+/** Presentation cue lanes routed through the AC-A1 clip-event bridge. */
+export type AuraClashPresentationEventName = "sfx" | "vfx" | "camera.impulse";
+
+export interface AuraClashClipPresentationEvent {
+  readonly name: AuraClashPresentationEventName;
+  /** Exact clip-local time (seconds) this cue lands on. Derived from move frame data. */
+  readonly time: number;
+  readonly payload: Readonly<Record<string, string | number>>;
+}
+
+/** Halfway into startup — the same lead-in convention as the authored footstep marker. */
+function swingCueTime(id: AuraClashMoveId): number {
+  return Number((auraClashMoveTable[id].activeStart * 0.5).toFixed(4));
+}
+
+function attackPresentationEvents(id: AuraClashMoveId): readonly AuraClashClipPresentationEvent[] {
+  const move = auraClashMoveTable[id];
+  // Camera-impulse strength scales with the same move weight the hit-stop clock already uses.
+  const impulseStrength = id === "special" ? 1 : id === "heavy" ? 0.6 : 0.35;
+  return [
+    { name: "sfx", time: swingCueTime(id), payload: { cue: "swing" } },
+    { name: "vfx", time: Number(move.activeStart.toFixed(4)), payload: { effect: `${id}-spark` } },
+    { name: "camera.impulse", time: Number(move.activeStart.toFixed(4)), payload: { strength: impulseStrength } }
+  ];
+}
+
+/** Authored presentation metadata per attack move, built once (pure + deterministic). */
+export const auraClashAttackPresentationEvents: Record<AuraClashMoveId, readonly AuraClashClipPresentationEvent[]> = {
+  light: attackPresentationEvents("light"),
+  heavy: attackPresentationEvents("heavy"),
+  special: attackPresentationEvents("special")
+};

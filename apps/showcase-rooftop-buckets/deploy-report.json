@@ -1,0 +1,59 @@
+{
+  "schema": "aura3d.rooftop-buckets.deploy/1.0",
+  "generatedAt": "2026-08-24T00:54:11.013Z",
+  "producer": "apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs",
+  "producerSourceSha256": "925a4e0b82ddbf0b7a690c93f6d8c29b64c120e9540074e8552e4c4b69c85bcc",
+  "cli": "packages/aura3d-cli/dist/cli.js",
+  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+  "distTreeSha256": "e250c38fa052fb37998fa323264163273a881ade2c5542865c6dd661a9c360f8",
+  "sourceTreeSha256": "70b9162efa1f98fcf76f6cb6e8224bb1184d5925c76209068b08634e065721c8",
+  "checks": {
+    "strictModels": {
+      "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, defender>",
+      "ok": true,
+      "assetCount": 5,
+      "assets": [
+        {
+          "id": "rooftopBackboard",
+          "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "rooftopBall",
+          "hash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "rooftopCourt",
+          "hash": "sha256-fcb2628d04be8e86d0a1cb0513bc44b5077c47935e0717d12f4d44a4945350ed",
+          "quality": "release",
+          "role": "world"
+        },
+        {
+          "id": "rooftopDefender",
+          "hash": "sha256-86c2629717f0f6bf077e889990e8ebdc171a08667df7a18b2560c6e12f437e4b",
+          "quality": "release",
+          "role": "character"
+        },
+        {
+          "id": "rooftopRim",
+          "hash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023",
+          "quality": "release",
+          "role": "prop"
+        }
+      ],
+      "warnings": [],
+      "failures": []
+    },
+    "strictDistAndSource": {
+      "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets",
+      "ok": true,
+      "warnings": [],
+      "failures": []
+    }
+  },
+  "audioBoundary": "Ten deterministic synthesized WAV cues are current candidate-quality typed CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+  "pass": true
+}

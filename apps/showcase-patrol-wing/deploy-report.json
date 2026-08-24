@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.patrol-wing.deploy/1.0",
+  "generatedAt": "2026-08-24T04:54:31.694Z",
+  "producer": "apps/showcase-patrol-wing/scripts/write-deploy-report.mjs",
+  "producerSourceSha256": "92bdc8ea8eb70b2f17926422c325d015ae5016e7aaa5436638ca8d36733f36b6",
+  "cli": "packages/aura3d-cli/dist/cli.js",
+  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+  "distTreeSha256": "d5505ead427eda571b38db2f8df8c88f9dad4f81adc70c9245831b2511102641",
+  "sourceTreeSha256": "207fba80d946022273717e705d62383569e730e0b0ddbcacbd2ceb07e471898e",
+  "checks": {
+    "strictModels": {
+      "command": "check-deploy --release --source apps/showcase-patrol-wing/src --asset <4 typed models>",
+      "ok": true,
+      "assetCount": 4,
+      "assets": [
+        {
+          "id": "patrolWingDroneA",
+          "hash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+          "quality": "release",
+          "role": "vehicle"
+        },
+        {
+          "id": "patrolWingDroneB",
+          "hash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+          "quality": "release",
+          "role": "vehicle"
+        },
+        {
+          "id": "patrolWingPadBeacon",
+          "hash": "sha256-e91f821164182982b3223a1ba7055c74c76cf80ffc081140269aea7dcf3de0e4",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "patrolWingPlane",
+          "hash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+          "quality": "release",
+          "role": "vehicle"
+        }
+      ],
+      "warnings": [],
+      "failures": []
+    },
+    "strictDistAndSource": {
+      "command": "check-deploy --release --source apps/showcase-patrol-wing/src --no-assets",
+      "ok": true,
+      "warnings": [],
+      "failures": []
+    }
+  },
+  "audioBoundary": "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+  "pass": true
+}

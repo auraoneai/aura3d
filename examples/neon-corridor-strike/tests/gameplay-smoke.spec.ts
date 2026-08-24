@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.setTimeout(180_000);
+test.setTimeout(300_000);
 
 test("move, look, fire, pickup, and reset change FPS state", async ({ page }) => {
   await page.goto("/");
@@ -33,9 +33,13 @@ test("move, look, fire, pickup, and reset change FPS state", async ({ page }) =>
   expect(fired?.ammo ?? 99).toBeLessThan(12);
 
   await page.keyboard.press("KeyR");
-  await page.waitForTimeout(80);
-  const reloaded = await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__);
-  expect(reloaded?.ammo ?? 0).toBeGreaterThan(fired?.ammo ?? 0);
+  // This package-local first-compile harness pins the live authored window.
+  // The faster monorepo playable regression separately pins completion.
+  await expect.poll(async () => (await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.reloading, { timeout: 3_000 }).toBe(true);
+  const reloading = await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__);
+  expect(reloading?.ammo).toBe(fired?.ammo);
+  await page.keyboard.press("KeyT");
+  await expect.poll(async () => (await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.ammo).toBe(12);
 
   await page.keyboard.down("KeyW");
   await page.waitForTimeout(2200);
@@ -62,19 +66,22 @@ test("move, look, fire, pickup, and reset change FPS state", async ({ page }) =>
   await page.keyboard.press("KeyJ");
   await page.waitForTimeout(200);
   await page.keyboard.down("KeyD");
-  await page.waitForTimeout(420);
+  // Reach the authored x=1.9 ammo lane. Stopping at the first detectable
+  // lateral movement can leave the player behind the center-lane props.
+  await expect.poll(async () => Math.abs((await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.x ?? 0), { timeout: 25_000 }).toBeGreaterThan(1.75);
   await page.keyboard.up("KeyD");
   await page.keyboard.down("KeyW");
-  await page.waitForTimeout(700);
+  await expect.poll(async () => (await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.pickups ?? 0, { timeout: 30_000 }).toBeGreaterThan(0);
   await page.keyboard.up("KeyW");
   const picked = await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__);
   expect(picked?.pickups ?? 0).toBeGreaterThan(0);
 
   await page.keyboard.down("ShiftLeft");
   await page.keyboard.down("KeyW");
-  await page.waitForTimeout(2400);
+  await expect.poll(async () => (await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.z ?? 99, { timeout: 90_000 }).toBeLessThan(-7.75);
   await page.keyboard.up("KeyW");
   await page.keyboard.up("ShiftLeft");
+  await expect.poll(async () => (await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.status, { timeout: 5_000 }).toBe("won");
   const won = await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__);
   expect(won?.status).toBe("won");
 

@@ -1,0 +1,65 @@
+{
+  "schema": "aura3d.gallery-shift.deploy/1.0",
+  "generatedAt": "2026-08-24T03:35:55.588Z",
+  "producer": "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs",
+  "producerSourceSha256": "3d6de45ed31af5b913558b62f542d00a9e66f3f6142e924200d410a7e4aa3fcf",
+  "cli": "packages/aura3d-cli/dist/cli.js",
+  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+  "distTreeSha256": "d1ec449181887bb18def163cbe9057855e22a6acd79affb9d3e1dafa9193f5bf",
+  "sourceTreeSha256": "2ad5274e3b61d22c80568820f621f82f87a9782bf2fa8f840f4ee3bd529566a1",
+  "checks": {
+    "strictModels": {
+      "command": "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>",
+      "ok": true,
+      "assetCount": 6,
+      "assets": [
+        {
+          "id": "galleryShiftDisplayCase",
+          "hash": "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "galleryShiftExhibitA",
+          "hash": "sha256-dc7c4d90c6a325bdf51987026dd053b845fa9c18ff72444a2ceb89089f224113",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "galleryShiftExhibitB",
+          "hash": "sha256-71b229c6afea8e58ce80a41c2f85dfac714eef20df0d782f1b969fc1e61f8147",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "galleryShiftExhibitC",
+          "hash": "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63",
+          "quality": "release",
+          "role": "prop"
+        },
+        {
+          "id": "galleryShiftMuseumInterior",
+          "hash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+          "quality": "release",
+          "role": "environment"
+        },
+        {
+          "id": "galleryShiftPedestal",
+          "hash": "sha256-c9af6f418b688bff7dab3bbe9d905b9456d8d82e4c9af94e4a84b3aae8fb22fc",
+          "quality": "release",
+          "role": "prop"
+        }
+      ],
+      "warnings": [],
+      "failures": []
+    },
+    "strictDistAndSource": {
+      "command": "check-deploy --release --source apps/showcase-gallery-shift/src --no-assets",
+      "ok": true,
+      "warnings": [],
+      "failures": []
+    }
+  },
+  "audioBoundary": "Eleven deterministic synthesized WAV cues are typed candidate-quality CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+  "pass": true
+}

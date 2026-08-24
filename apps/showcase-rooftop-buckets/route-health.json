@@ -1,0 +1,408 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-08-24T00:56:26.946Z",
+  "appId": "showcase-rooftop-buckets",
+  "route": "/apps/showcase-rooftop-buckets/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
+  "machinePass": true,
+  "routeSourceSha256": "c6bbef7f80efa63675bace0ce00e9e9816266f58d96a7e6afc3a9a239cd2e120",
+  "renderer": {
+    "path": "createGameApp root safe API",
+    "mode": "production with safe-basic fallback",
+    "nativeWebGPU": false,
+    "productionRuntimeClaimed": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.rooftopCourt",
+      "hash": "sha256-fcb2628d04be8e86d0a1cb0513bc44b5077c47935e0717d12f4d44a4945350ed",
+      "quality": "release",
+      "role": "world"
+    },
+    {
+      "typedRef": "assets.rooftopBackboard",
+      "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.rooftopRim",
+      "hash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.rooftopBall",
+      "hash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739",
+      "quality": "release",
+      "role": "prop"
+    },
+    {
+      "typedRef": "assets.rooftopDefender",
+      "hash": "sha256-86c2629717f0f6bf077e889990e8ebdc171a08667df7a18b2560c6e12f437e4b",
+      "quality": "release",
+      "role": "character"
+    }
+  ],
+  "audioAssets": [
+    {
+      "typedRef": "assets.rooftopBucketsAmbientRooftopSfx",
+      "hash": "sha256-6cdec8823512c0ce5a633e1fc6db7c1955d6416065fec5c047e710c30730b919",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsBoardThudSfx",
+      "hash": "sha256-f8b856751031ec089ceec36847e04ba1d4c3b518db7062ff5f4127172620c223",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsBrickMissSfx",
+      "hash": "sha256-1d29f2928e1b503eb5b486682579c1f15dba02ef290d30b50430fb58a3ef9e57",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsBuzzerFailSfx",
+      "hash": "sha256-0ffe086399c8d73f433e3e4c328c7cb115228a40329e94d94d8cce09027e3a66",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsChargeTickSfx",
+      "hash": "sha256-c0fbfa2ac2be59ec9e1dfa416ddc528f1605103b9dac637b5ecfaa5b2e98e19d",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsFireIgniteSfx",
+      "hash": "sha256-1f4baf30d7c9b7e5cf553e4f7c040e9b6af2eb3d46c5966000c4d40c4f9075a3",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsGoldBallSfx",
+      "hash": "sha256-31841c8dca6487fae8e0ac212058c57fd5d735fae1022a2abb475f8e9c81d8f4",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsHeatAdvanceSfx",
+      "hash": "sha256-2c514523373ca36d3ca9472a7c273232abcb3a8d3f4dd6ad8d4bddf3c3538a60",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsRimClankSfx",
+      "hash": "sha256-6fee35201443c106394307fe5e5251d6c55b5f314dda6fbc0ce313dd3b23fc58",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    },
+    {
+      "typedRef": "assets.rooftopBucketsSwishSfx",
+      "hash": "sha256-cc849aa5b7f54326f12e759378d5e83d433e07fc213c325ea835609852d7dfd5",
+      "quality": "candidate",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 8,
+    "primitiveBudget": 96,
+    "role": "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only",
+    "status": "no-primitive-primary-subjects"
+  },
+  "gameplay": {
+    "heats": 5,
+    "heatModes": [
+      "open",
+      "spots",
+      "pressure",
+      "fire",
+      "gold"
+    ],
+    "controls": [
+      "spot",
+      "aim arc",
+      "charge/release",
+      "pause",
+      "full reset"
+    ],
+    "keyboardAndTouch": true,
+    "deterministicAuthoredFlight": true,
+    "sharedPreviewIntegrator": true,
+    "topToBottomRimSequence": true,
+    "physicsBodies": 0,
+    "defenderInfluence": "visible deterministic pre-launch aim offset",
+    "deterministicOutcomes": [
+      "swish",
+      "bank",
+      "rim-in",
+      "rim-out",
+      "brick",
+      "blocked",
+      "clock violation",
+      "heat clear",
+      "gold fail",
+      "gold victory"
+    ],
+    "reducedMotionPreservesAimAndOutcomeTruth": true
+  },
+  "accessibility": {
+    "semanticMainAndHeading": true,
+    "namedCanvasRegion": true,
+    "namedTouchControls": 7,
+    "minimumTouchTargetPx": 44,
+    "sequentialFocusProven": true,
+    "liveHeatFireAndResultStatus": true,
+    "pass": true
+  },
+  "performance": {
+    "schema": "aura3d.rooftop-buckets.performance/1.0",
+    "generatedAt": "2026-08-24T00:56:26.539Z",
+    "producer": "apps/showcase-rooftop-buckets/scripts/write-performance-report.ts",
+    "producerSourceSha256": "58c29536b6ae2dfd37df5ab4a28b12b2a799174c4dc3096a7c51ac35acdbcaeb",
+    "routeSourceFiles": [
+      "apps/showcase-rooftop-buckets/src/buckets-audio.ts",
+      "apps/showcase-rooftop-buckets/src/court.ts",
+      "apps/showcase-rooftop-buckets/src/environment.ts",
+      "apps/showcase-rooftop-buckets/src/main.ts",
+      "apps/showcase-rooftop-buckets/src/rim.ts",
+      "apps/showcase-rooftop-buckets/src/scoring.ts",
+      "apps/showcase-rooftop-buckets/src/shot.ts",
+      "apps/showcase-rooftop-buckets/src/styles.css"
+    ],
+    "routeSourceSha256": "c6bbef7f80efa63675bace0ce00e9e9816266f58d96a7e6afc3a9a239cd2e120",
+    "scope": "Route-local deterministic authored basketball step CPU timing plus browser-observed root createGameApp draw calls. This does not claim Rapier, rigid bodies, GPU frame-time parity, or a reusable sports simulation.",
+    "samples": 12000,
+    "fixedStepSeconds": 0.016666666666666666,
+    "budgets": {
+      "ballisticCpuP95Ms": 0.25,
+      "drawCalls": 150,
+      "authoredPhysicsBodies": 0
+    },
+    "observed": {
+      "ballisticCpuP95Ms": 0.002,
+      "deterministicPoseSamples": 100,
+      "drawCalls": 118,
+      "renderSize": [
+        1280,
+        800
+      ],
+      "authoredPhysicsBodies": 0,
+      "predictionPoints": 25,
+      "heatModes": 5
+    },
+    "pass": true
+  },
+  "deploy": {
+    "schema": "aura3d.rooftop-buckets.deploy/1.0",
+    "generatedAt": "2026-08-24T00:54:11.013Z",
+    "producer": "apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs",
+    "producerSourceSha256": "925a4e0b82ddbf0b7a690c93f6d8c29b64c120e9540074e8552e4c4b69c85bcc",
+    "cli": "packages/aura3d-cli/dist/cli.js",
+    "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
+    "distTreeSha256": "e250c38fa052fb37998fa323264163273a881ade2c5542865c6dd661a9c360f8",
+    "sourceTreeSha256": "70b9162efa1f98fcf76f6cb6e8224bb1184d5925c76209068b08634e065721c8",
+    "checks": {
+      "strictModels": {
+        "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, defender>",
+        "ok": true,
+        "assetCount": 5,
+        "assets": [
+          {
+            "id": "rooftopBackboard",
+            "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "rooftopBall",
+            "hash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739",
+            "quality": "release",
+            "role": "prop"
+          },
+          {
+            "id": "rooftopCourt",
+            "hash": "sha256-fcb2628d04be8e86d0a1cb0513bc44b5077c47935e0717d12f4d44a4945350ed",
+            "quality": "release",
+            "role": "world"
+          },
+          {
+            "id": "rooftopDefender",
+            "hash": "sha256-86c2629717f0f6bf077e889990e8ebdc171a08667df7a18b2560c6e12f437e4b",
+            "quality": "release",
+            "role": "character"
+          },
+          {
+            "id": "rooftopRim",
+            "hash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023",
+            "quality": "release",
+            "role": "prop"
+          }
+        ],
+        "warnings": [],
+        "failures": []
+      },
+      "strictDistAndSource": {
+        "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets",
+        "ok": true,
+        "warnings": [],
+        "failures": []
+      }
+    },
+    "audioBoundary": "Ten deterministic synthesized WAV cues are current candidate-quality typed CC0 assets; model-oriented release bounds validation is intentionally not applied to audio.",
+    "pass": true
+  },
+  "routeGate": {
+    "config": "tools/showcase-library/route-gates.json",
+    "releaseClass": "prototype-blocked",
+    "published": true,
+    "publicTemplateReady": false,
+    "pass": true
+  },
+  "claimStatus": {
+    "status": "blocked-pending-human-review",
+    "label": "root-safe prototype",
+    "allowed": [
+      "typed original court/target/ball/defender assets",
+      "route-local deterministic authored basketball flight",
+      "composed route-local rim/board/defender regions",
+      "five route-local heat objectives",
+      "bounded first-flight prediction"
+    ],
+    "notAllowed": [
+      "reusable basketball or sports kit",
+      "Rapier or rigid-body basketball simulation",
+      "generic rim or collision system",
+      "prediction after first contact",
+      "production-runtime-only rendering claims",
+      "public promotion before independent exact-artifact review"
+    ]
+  },
+  "blockers": [
+    "independent human visual review pending for exact final artifacts"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
+    "detailedGlobal": "window.__ROOFTOP_BUCKETS_EVIDENCE__",
+    "sourceReview": "apps/showcase-rooftop-buckets/src/main.ts",
+    "exactArtifacts": [
+      {
+        "path": "tests/reports/rooftop-buckets/opening-desktop.png",
+        "sha256": "258d72621e8ae1200e9361f5b1de0116bc468cc057968374bd7e8a9a1a1fb7bd"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/charge-arc-desktop.png",
+        "sha256": "6125a1aae70d747027e3afcd276cf3be4b63c7e1e839c2ccf8a1a1e49183eb85"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/release-desktop.png",
+        "sha256": "2628abe92f8fb34c0c699b143aee9f8fd50dc1a3159e805d9287170d7807fd4b"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/swish-desktop.png",
+        "sha256": "1ed42cb8b7687a4742792b928e70bcb9dd40f64b9f3c7c3918d15ae814616279"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/rim-miss-desktop.png",
+        "sha256": "859049e78a0924b5cf978134931204630f9e9644f2b19724687d6393412621df"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/defender-contest-desktop.png",
+        "sha256": "31eda0faa2653ebd6f67af9fa926d876bb7cb721e66668772f5a448e437ca56a"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/fire-desktop.png",
+        "sha256": "718794043852d652fc2e06f36db8e1ba9c786b56dced39dff4e0b911858727c8"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/buzzer-desktop.png",
+        "sha256": "0311427f8c0b9389871b69fec0fbca3fd8f318ad407895f6969acad2d0fda214"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/gold-win-desktop.png",
+        "sha256": "b9292ee2580aa3cc01b5179c61afd96b0c1908e6e8aad9cf1e9139574abed783"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/opening-mobile.png",
+        "sha256": "834b246dd483d807a3cff917b5a4bfb282aac2b5c6464e108bd3226319b75b57"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/mobile-touch-active.png",
+        "sha256": "a69d52aa16ca1927b17b0d482ea9d0b191d9824e87b6e70ede1de228c290468a"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/reduced-motion-arc.png",
+        "sha256": "a45a428ed395ed345eb76e839cc91d2e153c424fa5f5fe40e4d26f56377a6b16"
+      },
+      {
+        "path": "tests/reports/rooftop-buckets/visual.json",
+        "sha256": "71e414fc150d20f67f99ee5676c5b6067dfe8ad3e9b2d5d2fd3e80a580983a4c"
+      }
+    ],
+    "browserReceipts": [
+      "tests/reports/rooftop-buckets/browser-evidence.json",
+      "tests/reports/rooftop-buckets/playable/browser-evidence.json"
+    ],
+    "assetProbes": [
+      {
+        "asset": "rooftopCourt",
+        "metadata": "tests/reports/showcase-release-asset-probes/rooftopCourt.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/rooftopCourt.png",
+        "assetHash": "sha256-fcb2628d04be8e86d0a1cb0513bc44b5077c47935e0717d12f4d44a4945350ed"
+      },
+      {
+        "asset": "rooftopBackboard",
+        "metadata": "tests/reports/showcase-release-asset-probes/rooftopBackboard.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/rooftopBackboard.png",
+        "assetHash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e"
+      },
+      {
+        "asset": "rooftopRim",
+        "metadata": "tests/reports/showcase-release-asset-probes/rooftopRim.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/rooftopRim.png",
+        "assetHash": "sha256-6ebed2bc98fa62f4750afd35707a7be6fbb1dac770b7c89fa7310d867c774023"
+      },
+      {
+        "asset": "rooftopBall",
+        "metadata": "tests/reports/showcase-release-asset-probes/rooftopBall.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/rooftopBall.png",
+        "assetHash": "sha256-0254c7b974d15d377597c7b59552eeb53bcac228e73ded83bc850a063fb07739"
+      },
+      {
+        "asset": "rooftopDefender",
+        "metadata": "tests/reports/showcase-release-asset-probes/rooftopDefender.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/rooftopDefender.png",
+        "assetHash": "sha256-86c2629717f0f6bf077e889990e8ebdc171a08667df7a18b2560c6e12f437e4b"
+      }
+    ],
+    "performance": "apps/showcase-rooftop-buckets/performance-report.json",
+    "deploy": "apps/showcase-rooftop-buckets/deploy-report.json",
+    "routePrimary": "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
+    "browserSpecs": [
+      "tests/browser/rooftop-buckets-playable.spec.ts",
+      "tests/browser/rooftop-buckets-shot-visual.spec.ts"
+    ],
+    "unitSpecs": [
+      "tests/unit/apps/rooftop-buckets-heats.test.ts",
+      "tests/unit/apps/rooftop-buckets-scoring.test.ts"
+    ],
+    "deployCommands": [
+      "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <5 model assets>",
+      "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets"
+    ]
+  }
+}

@@ -1441,10 +1441,36 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
     position: GameKitVec2,
     correction: { readonly heading?: number; readonly speedMultiplier?: number; readonly driftMultiplier?: number } = {}
   ) => {
-    const contact = surfaceQuery.query(position);
+    let resolvedPosition = position;
+    let contact = surfaceQuery.query(resolvedPosition);
+    /*
+     * A collision solver owns separation, but it must not bypass the racing kit's
+     * certified centre corridor. `step()` applies `boundaryInset`; historically
+     * `resolveContact()` accepted the solver position verbatim, so repeated side
+     * contact could push a long car's outside wheels off the road while telemetry
+     * still called its centre on-track. Clamp only certified routes and only when
+     * the caller explicitly reserved a physical footprint via `boundaryInset`.
+     * Unlike automatic off-track recovery, this does not require certification:
+     * the explicit inset is itself the caller's contact-resolution contract.
+     */
+    if (boundaryInset > 0) {
+      const vehicleCenterHalfWidth = Math.max(
+        0.001,
+        contact.roadHalfWidth - Math.min(boundaryInset, contact.roadHalfWidth * 0.95)
+      );
+      if (contact.trackOffset > vehicleCenterHalfWidth) {
+        const center = sampleRaceRoute(segments, length, contact.progress);
+        const dx = resolvedPosition.x - center.x;
+        const dy = resolvedPosition.y - center.y;
+        const recoveryHalfWidth = vehicleCenterHalfWidth * 0.92;
+        const scale = contact.trackOffset > 0 ? recoveryHalfWidth / contact.trackOffset : 0;
+        resolvedPosition = { x: center.x + dx * scale, y: center.y + dy * scale };
+        contact = surfaceQuery.query(resolvedPosition);
+      }
+    }
     const vehicle = motion.constrain({
-      x: position.x,
-      z: position.y,
+      x: resolvedPosition.x,
+      z: resolvedPosition.y,
       heading: correction.heading,
       speedMultiplier: correction.speedMultiplier,
       driftMultiplier: correction.driftMultiplier

@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-07-31T16:53:51.756Z",
-  "startedAt": "2026-07-31T16:53:36.253Z",
+  "generatedAt": "2026-08-23T13:44:34.368Z",
+  "startedAt": "2026-08-23T13:44:31.703Z",
   "origin": "https://aura3d.auraone.ai",
   "canonicalBasePath": "/showcase/aura-clash",
   "appBasePath": "/apps/aura-clash-showcase",
   "manifestPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/aura.assets.json",
   "routeCount": 6,
   "metadataCount": 4,
-  "manifestGlbCount": 12,
+  "manifestGlbCount": 4,
   "manifestAudioCount": 11,
-  "targetCount": 33,
-  "ok": false,
-  "failedCount": 1,
+  "targetCount": 25,
+  "ok": true,
+  "failedCount": 0,
   "kindStatus": {
     "route": {
       "ok": true,
@@ -24,9 +24,9 @@
       "failed": 0
     },
     "glb": {
-      "ok": false,
-      "total": 12,
-      "failed": 1
+      "ok": true,
+      "total": 4,
+      "failed": 0
     },
     "audio": {
       "ok": true,
@@ -34,17 +34,17 @@
       "failed": 0
     }
   },
-  "prdGateCoverage": [
+  "documentationGateCoverage": [
     {
       "id": "deployed-route-and-glb-200",
-      "prdLineHint": 465,
-      "prdLabel": "Confirm deployed route and GLB URLs return 200.",
+      "documentationLineHint": 465,
+      "documentationLabel": "Confirm deployed route and GLB URLs return 200.",
       "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
       "requiredKinds": [
         "route",
         "glb"
       ],
-      "ok": false,
+      "ok": true,
       "requiredKindStatus": {
         "route": {
           "ok": true,
@@ -52,23 +52,23 @@
           "failed": 0
         },
         "glb": {
-          "ok": false,
-          "total": 12,
-          "failed": 1
+          "ok": true,
+          "total": 4,
+          "failed": 0
         }
       }
     },
     {
       "id": "deployed-route-confirmed",
-      "prdLineHint": 494,
-      "prdLabel": "Deployed route confirmed.",
+      "documentationLineHint": 494,
+      "documentationLabel": "Deployed route confirmed.",
       "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
       "requiredKinds": [
         "route",
         "metadata",
         "glb"
       ],
-      "ok": false,
+      "ok": true,
       "requiredKindStatus": {
         "route": {
           "ok": true,
@@ -81,9 +81,9 @@
           "failed": 0
         },
         "glb": {
-          "ok": false,
-          "total": 12,
-          "failed": 1
+          "ok": true,
+          "total": 4,
+          "failed": 0
         }
       }
     }
@@ -99,8 +99,8 @@
       "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/",
       "contentType": "text/html; charset=utf-8",
       "contentLength": null,
-      "byteLength": 3503,
-      "durationMs": 1139
+      "byteLength": 3734,
+      "durationMs": 239
     },
     {
       "kind": "route",
@@ -112,8 +112,8 @@
       "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/playable/",
       "contentType": "text/html; charset=utf-8",
       "contentLength": null,
-      "byteLength": 3503,
-      "durationMs": 267
+      "byteLength": 3734,
+      "durationMs": 24
     },
     {
       "kind": "route",
@@ -125,8 +125,8 @@
       "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/evidence/",
       "contentType": "text/html; charset=utf-8",
       "contentLength": null,
-      "byteLength": 3503,
-      "durationMs": 197
+      "byteLength": 3734,
+      "durationMs": 47
     },
     {
       "kind": "route",
@@ -138,8 +138,8 @@
       "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/accessibility/",
       "contentType": "text/html; charset=utf-8",
       "contentLength": null,
-      "byteLength": 3503,
-      "durationMs": 265
+      "byteLength": 3734,
+      "durationMs": 45
     },
     {
       "kind": "route",
@@ -151,8 +151,8 @@
       "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/deploy-check/",
       "contentType": "text/html; charset=utf-8",
       "contentLength": null,
-      "byteLength": 3503,
-      "durationMs": 245
+      "byteLength": 3734,
+      "durationMs": 383
     },
     {
       "kind": "route",
@@ -164,8 +164,8 @@
       "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/poster/",
       "contentType": "text/html; charset=utf-8",
       "contentLength": null,
-      "byteLength": 3503,
-      "durationMs": 280
+      "byteLength": 3734,
+      "durationMs": 31
     },
     {
       "kind": "metadata",
@@ -178,7 +178,7 @@
       "contentType": "text/plain; charset=utf-8",
       "contentLength": 395,
       "byteLength": 395,
-      "durationMs": 192
+      "durationMs": 23
     },
     {
       "kind": "metadata",
@@ -190,8 +190,8 @@
       "finalUrl": "https://aura3d.auraone.ai/sitemap.xml",
       "contentType": "application/xml",
       "contentLength": null,
-      "byteLength": 5180,
-      "durationMs": 746
+      "byteLength": 5084,
+      "durationMs": 386
     },
     {
       "kind": "metadata",
@@ -204,7 +204,7 @@
       "contentType": "application/xml",
       "contentLength": null,
       "byteLength": 1239,
-      "durationMs": 233
+      "durationMs": 26
     },
     {
       "kind": "metadata",
@@ -217,163 +217,59 @@
       "contentType": "text/plain; charset=utf-8",
       "contentLength": 368,
       "byteLength": 368,
-      "durationMs": 435
+      "durationMs": 97
     },
     {
       "kind": "glb",
-      "label": "/aura-assets/arenaNeonDowntown.56a42b19.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntown.56a42b19.glb",
+      "label": "/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
       "ok": true,
       "status": 200,
       "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntown.56a42b19.glb",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntownTextured.312f2320.glb",
       "contentType": "model/gltf-binary",
       "contentLength": null,
-      "byteLength": 16459256,
-      "durationMs": 1546
+      "byteLength": 8877352,
+      "durationMs": 379
     },
     {
       "kind": "glb",
       "label": "/aura-assets/arenaRooftopBuilding.3e351f48.glb",
       "url": "https://aura3d.auraone.ai/aura-assets/arenaRooftopBuilding.3e351f48.glb",
-      "ok": false,
-      "status": 404,
-      "statusText": "Not Found",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
       "finalUrl": "https://aura3d.auraone.ai/aura-assets/arenaRooftopBuilding.3e351f48.glb",
-      "contentType": "text/plain; charset=utf-8",
-      "contentLength": 79,
-      "byteLength": 79,
-      "durationMs": 196
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 1573928,
+      "durationMs": 70
     },
     {
       "kind": "glb",
-      "label": "/aura-assets/auraClashDuelStage.09735d3b.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/auraClashDuelStage.09735d3b.glb",
+      "label": "/aura-assets/auraClashPlayerRig.3318d671.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.3318d671.glb",
       "ok": true,
       "status": 200,
       "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashDuelStage.09735d3b.glb",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.3318d671.glb",
       "contentType": "model/gltf-binary",
       "contentLength": null,
-      "byteLength": 11157588,
-      "durationMs": 1216
+      "byteLength": 7822664,
+      "durationMs": 121
     },
     {
       "kind": "glb",
-      "label": "/aura-assets/auraClashPlayableScene.15296b6b.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayableScene.15296b6b.glb",
+      "label": "/aura-assets/auraClashRivalRig.c8d844dc.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.c8d844dc.glb",
       "ok": true,
       "status": 200,
       "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashPlayableScene.15296b6b.glb",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.c8d844dc.glb",
       "contentType": "model/gltf-binary",
       "contentLength": null,
-      "byteLength": 14270384,
-      "durationMs": 1474
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/auraClashPlayerRig.d8672924.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 8114364,
-      "durationMs": 640
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 8061600,
-      "durationMs": 534
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/fighterJinFlux.6404abf6.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/fighterJinFlux.6404abf6.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterJinFlux.6404abf6.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 677320,
-      "durationMs": 339
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/fighterKadeEmber.5e387f1c.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/fighterKadeEmber.5e387f1c.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterKadeEmber.5e387f1c.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 677228,
-      "durationMs": 326
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/fighterMaraVolt.18af93d3.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/fighterMaraVolt.18af93d3.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterMaraVolt.18af93d3.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 1047560,
-      "durationMs": 321
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/fighterNyxVale.13e7bfa8.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/fighterNyxVale.13e7bfa8.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterNyxVale.13e7bfa8.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 1031856,
-      "durationMs": 309
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/fighterRookAtlas.09571256.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/fighterRookAtlas.09571256.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterRookAtlas.09571256.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 665164,
-      "durationMs": 420
-    },
-    {
-      "kind": "glb",
-      "label": "/aura-assets/fighterSableIron.3d88a3a7.glb",
-      "url": "https://aura3d.auraone.ai/aura-assets/fighterSableIron.3d88a3a7.glb",
-      "ok": true,
-      "status": 200,
-      "statusText": "OK",
-      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterSableIron.3d88a3a7.glb",
-      "contentType": "model/gltf-binary",
-      "contentLength": null,
-      "byteLength": 935824,
-      "durationMs": 357
+      "byteLength": 4732472,
+      "durationMs": 268
     },
     {
       "kind": "audio",
@@ -386,7 +282,7 @@
       "contentType": "audio/ogg",
       "contentLength": 7286,
       "byteLength": 7286,
-      "durationMs": 233
+      "durationMs": 29
     },
     {
       "kind": "audio",
@@ -399,7 +295,7 @@
       "contentType": "audio/ogg",
       "contentLength": 7373,
       "byteLength": 7373,
-      "durationMs": 655
+      "durationMs": 27
     },
     {
       "kind": "audio",
@@ -412,7 +308,7 @@
       "contentType": "audio/ogg",
       "contentLength": 4848,
       "byteLength": 4848,
-      "durationMs": 313
+      "durationMs": 52
     },
     {
       "kind": "audio",
@@ -425,7 +321,7 @@
       "contentType": "audio/ogg",
       "contentLength": 7117,
       "byteLength": 7117,
-      "durationMs": 270
+      "durationMs": 25
     },
     {
       "kind": "audio",
@@ -438,7 +334,7 @@
       "contentType": "audio/ogg",
       "contentLength": 11617,
       "byteLength": 11617,
-      "durationMs": 254
+      "durationMs": 25
     },
     {
       "kind": "audio",
@@ -451,7 +347,7 @@
       "contentType": "audio/ogg",
       "contentLength": 201216,
       "byteLength": 201216,
-      "durationMs": 724
+      "durationMs": 57
     },
     {
       "kind": "audio",
@@ -464,7 +360,7 @@
       "contentType": "audio/ogg",
       "contentLength": 14317,
       "byteLength": 14317,
-      "durationMs": 324
+      "durationMs": 24
     },
     {
       "kind": "audio",
@@ -477,7 +373,7 @@
       "contentType": "audio/ogg",
       "contentLength": 25566,
       "byteLength": 25566,
-      "durationMs": 276
+      "durationMs": 34
     },
     {
       "kind": "audio",
@@ -490,7 +386,7 @@
       "contentType": "audio/ogg",
       "contentLength": 8968,
       "byteLength": 8968,
-      "durationMs": 274
+      "durationMs": 56
     },
     {
       "kind": "audio",
@@ -503,7 +399,7 @@
       "contentType": "audio/ogg",
       "contentLength": 7369,
       "byteLength": 7369,
-      "durationMs": 225
+      "durationMs": 166
     },
     {
       "kind": "audio",
@@ -516,7 +412,7 @@
       "contentType": "audio/ogg",
       "contentLength": 12391,
       "byteLength": 12391,
-      "durationMs": 275
+      "durationMs": 30
     }
   ]
 }

@@ -1,7 +1,11 @@
 import {
   createAuraApp,
+  distanceLod,
   effects,
   game,
+  geometry,
+  group,
+  instances,
   lights,
   material,
   model,
@@ -10,6 +14,7 @@ import {
   platformerCompositionSpec,
   primitives,
   scene,
+  text3D,
   type RuntimeNodeHandleLike
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
@@ -17,10 +22,33 @@ import {
   getSkylineActPalette,
   planSkylineActBackdrop,
   resolveSkylineAct,
-  resolveSkylineActIndex
+  resolveSkylineActIndex,
+  skylineDistrictPaletteSignature
 } from "./act-palette";
 import { SKYLINE_AUDIO_CUE_WISHLIST } from "./audio-cues";
-import { applySkylineActPaletteVisibility, createSkylineFeel } from "./feel";
+import {
+  SKYLINE_BACKDROP_CLOSE_TRIANGLES,
+  SKYLINE_BACKDROP_DISTANT_TRIANGLES,
+  SKYLINE_BACKDROP_MAX_NORMALIZED_SILHOUETTE_DELTA,
+  SKYLINE_BACKDROP_NEAR_LOD_MAX_DISTANCE,
+  planSkylineBackdropChunks,
+  skylineBackdropLodSpec
+} from "./backdrop";
+import {
+  SKYLINE_REQUIRED_EVENT_FEEDBACK,
+  applySkylineActPaletteVisibility,
+  createSkylineFeel,
+  type SkylineRequiredFeedbackEvent
+} from "./feel";
+import { skylineCameraFrame, skylineCameraTuning } from "./camera-readability";
+import {
+  planSkylineFoliage,
+  planSkylineShardSparkles,
+  skylineFoliageNodeId,
+  skylineFoliageTint,
+  skylineSparkleNodeId,
+  skylineSparkleTint
+} from "./foliage";
 import { createSkylineAudio, type SkylineAudioController, type SkylineAudioProof } from "./skyline-audio";
 import { skylineAudioManifest, type SkylineAudioCue } from "./skyline-audio-manifest";
 import {
@@ -31,9 +59,25 @@ import {
 } from "./hud";
 import { gameGeometryContract } from "./generated/game-geometry";
 import {
+  createSkylineGhostReplay,
+  createSkylineGhostRecorder,
+  parseSkylineGhostRecording,
+  serializeSkylineGhostRecording,
+  shouldReplaceGhostRecording,
+  skylineGhostTimelineHash,
+  SKYLINE_GHOST_TICK_SECONDS,
+  SKYLINE_GHOST_STORAGE_KEY,
+  type SkylineGhostRecorder,
+  type SkylineGhostRecording,
+  type SkylineGhostReplay,
+  type SkylineGhostStore
+} from "./ghost";
+import {
+  SKYLINE_ACT_GATES,
   SKYLINE_AUTHORED_PLAYABLE_SECONDS,
   SKYLINE_CHARACTER_HEIGHT,
   SKYLINE_CHARACTER_WIDTH,
+  SKYLINE_DISTRICT_ANCHORS,
   SKYLINE_LEVEL_ACTS,
   SKYLINE_MAX_TARGET_PLAYABLE_SECONDS,
   SKYLINE_MIN_PLAYABLE_SECONDS,
@@ -42,11 +86,24 @@ import {
   SKYLINE_SECTION_STRIDE,
   SKYLINE_SENTRY_ENCOUNTERS,
   SKYLINE_EMBER_PICKUPS,
+  SKYLINE_MOVING_PLATFORMS,
   createSkylineLevel,
   skylinePlayableSurfaceMap,
+  skylineRelaySensorOverlaps,
+  skylineRelaySensors,
   skylineMotion
 } from "./level";
 import { createRunnerChallenge } from "./runner-challenge";
+import {
+  SKYLINE_DISTRICTS,
+  resolveSkylineDistrict,
+  resolveSkylineDistrictIndex
+} from "./districts";
+import {
+  SKYLINE_SHARD_GEOMETRY,
+  SKYLINE_VISUAL_LANGUAGE,
+  skylineVisualLanguageEvidence
+} from "./visual-language";
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -58,7 +115,8 @@ const input = game.input({
     dash: ["ShiftLeft", "KeyK"],
     fire: ["KeyJ", "KeyL"],
     pause: ["KeyP"],
-    reset: ["KeyR"]
+    reset: ["KeyR"],
+    ghostToggle: ["KeyG"]
   },
   axes: { moveX: { negative: "left", positive: "right" } },
   bufferMs: 120
@@ -96,6 +154,10 @@ const skylineWorldNodes = [
   model(assets.showcaseKenneyVerdantPlatformerWorld, {
     name: "platformer-bound-level-one-world",
     role: "primaryWorld",
+    // The certified Aura surfaces and live hero own gameplay contact shadows.
+    // This large supporting world is flat-color environmental depth and does not
+    // need to be redrawn into the shadow map.
+    castShadow: false,
     scaleMode: "fit",
     targetMaxDimension: platformerScene.worldModel.targetMaxDimension
   }).position(
@@ -141,24 +203,157 @@ const summitCoreMaterial = material.pbr({
   metallic: 0.2,
   roughness: 0.18
 });
+const summitBeaconBlock = (name: string) => primitives.box({ name, material: summitBeaconMaterial });
 const skylineSummitBeaconNodes = [
   // A compact, grounded summit marker replaces the former full-height square
   // frame and floating side orbs. That frame read as unexplained architecture
   // rather than a goal. The stepped plinth, mast and single core now form one
   // unmistakable beacon silhouette beside the certified finish surface.
-  primitives.box({ name: "summit beacon plinth", material: summitBeaconMaterial })
+  summitBeaconBlock("summit beacon plinth")
     .position(finishPoint[0], finishPoint[1] + 0.055, platformerScene.worldZ + 0.4)
-    .scale([0.48, 0.11, 0.22]),
-  primitives.box({ name: "summit beacon pedestal", material: summitBeaconMaterial })
+    .scale([0.48, 0.11, 0.22])
+    .runtime(game.runtimeNode("summit-beacon-plinth", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
+  summitBeaconBlock("summit beacon pedestal")
     .position(finishPoint[0], finishPoint[1] + 0.15, platformerScene.worldZ + 0.4)
-    .scale([0.3, 0.09, 0.18]),
-  primitives.box({ name: "summit beacon mast", material: summitBeaconMaterial })
+    .scale([0.3, 0.09, 0.18])
+    .runtime(game.runtimeNode("summit-beacon-pedestal", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
+  summitBeaconBlock("summit beacon mast")
     .position(finishPoint[0], finishPoint[1] + 0.35, platformerScene.worldZ + 0.4)
-    .scale([0.1, 0.38, 0.12]),
+    .scale([0.1, 0.38, 0.12])
+    .runtime(game.runtimeNode("summit-beacon-mast", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] })),
   primitives.sphere({ name: "summit beacon core", material: summitCoreMaterial })
     .position(finishPoint[0], finishPoint[1] + 0.62, platformerScene.worldZ + 0.42)
     .scale([0.16, 0.21, 0.14])
+    .runtime(game.runtimeNode("summit-beacon-core", { tags: ["district-landmark", "crown-heights", "set-dressing", "finish-language", "shape-plus-color"] }))
 ];
+
+const steelLandmarkMaterial = material.emissive({
+  name: "steel dawn relay crane",
+  color: "#17364d",
+  emissive: "#4cc9e8",
+  emissiveIntensity: 0.42,
+  roughness: 0.76
+});
+const groveLandmarkMaterial = material.emissive({
+  name: "hanging grove frame",
+  color: "#36543a",
+  emissive: "#9fcf72",
+  emissiveIntensity: 0.38,
+  roughness: 0.82
+});
+// Section 2 keeps the crane inside the second Steel Dawn act's accepted camera
+// window instead of clipping it at the far-left edge of the first-relay frame.
+const steelLandmarkAnchor = SKYLINE_DISTRICT_ANCHORS.find((anchor) => anchor.section === 2)!;
+const groveLandmarkAnchor = SKYLINE_DISTRICT_ANCHORS.find((anchor) => anchor.section === 6)!;
+const [steelLandmarkX, steelLandmarkY] = platformerScene.toScenePoint({
+  x: steelLandmarkAnchor.centerX,
+  y: steelLandmarkAnchor.elevation
+});
+const [groveLandmarkX, groveLandmarkY] = platformerScene.toScenePoint({
+  x: groveLandmarkAnchor.centerX,
+  y: groveLandmarkAnchor.elevation
+});
+/** Non-colliding silhouette landmarks; typed world remains the primary environment. */
+const skylineDistrictLandmarkNodes = [
+  primitives.box({ name: "Steel Dawn crane mast", material: steelLandmarkMaterial })
+    .position(steelLandmarkX, steelLandmarkY + 0.72, WORLD_PLANE_DEPTH - 0.18)
+    .scale([0.1, 1.38, 0.12])
+    .runtime(game.runtimeNode("steel-dawn-crane-mast", { tags: ["district-landmark", "steel-dawn", "set-dressing", "non-colliding"] })),
+  primitives.box({ name: "Steel Dawn crane arm", material: steelLandmarkMaterial })
+    .position(steelLandmarkX + 0.48, steelLandmarkY + 1.32, WORLD_PLANE_DEPTH - 0.18)
+    .scale([1.06, 0.09, 0.12])
+    .runtime(game.runtimeNode("steel-dawn-crane-arm", { tags: ["district-landmark", "steel-dawn", "set-dressing", "non-colliding"] })),
+  primitives.box({ name: "Steel Dawn crane counterweight", material: steelLandmarkMaterial })
+    .position(steelLandmarkX - 0.1, steelLandmarkY + 1.12, WORLD_PLANE_DEPTH - 0.17)
+    .scale([0.22, 0.22, 0.16])
+    .runtime(game.runtimeNode("steel-dawn-crane-counterweight", { tags: ["district-landmark", "steel-dawn", "set-dressing", "non-colliding"] })),
+  primitives.capsule({ name: "Hanging Grove left pier", material: groveLandmarkMaterial })
+    .position(groveLandmarkX - 0.58, groveLandmarkY + 0.62, WORLD_PLANE_DEPTH - 0.16)
+    .scale([0.13, 0.86, 0.13])
+    .runtime(game.runtimeNode("hanging-grove-pier-left", { tags: ["district-landmark", "hanging-grove", "set-dressing", "non-colliding"] })),
+  primitives.capsule({ name: "Hanging Grove right pier", material: groveLandmarkMaterial })
+    .position(groveLandmarkX + 0.58, groveLandmarkY + 0.62, WORLD_PLANE_DEPTH - 0.16)
+    .scale([0.13, 0.86, 0.13])
+    .runtime(game.runtimeNode("hanging-grove-pier-right", { tags: ["district-landmark", "hanging-grove", "set-dressing", "non-colliding"] })),
+  primitives.box({ name: "Hanging Grove canopy", material: groveLandmarkMaterial })
+    .position(groveLandmarkX, groveLandmarkY + 1.08, WORLD_PLANE_DEPTH - 0.16)
+    .scale([1.34, 0.12, 0.18])
+    .runtime(game.runtimeNode("hanging-grove-canopy", { tags: ["district-landmark", "hanging-grove", "set-dressing", "non-colliding"] }))
+];
+/*
+ * ---------------------------------------------------------------------------
+ * Incorporation nodes (SR-A2 foliage + sparkle, SR-A3 LOD backdrop, SR-A4 gates,
+ * SR-A1 ghost echo). All planned from the certified geometry; all strictly set
+ * dressing or visual-only echoes behind/around the traversal volume.
+ * ---------------------------------------------------------------------------
+ */
+
+/**
+ * SR-A2: per-act instanced pools. One instanced node per act keeps the whole
+ * layer a fixed handful of draw calls; pool materials carry the existing act
+ * palette tints so foliage and shard halos inherit the sky they stand under.
+ */
+interface InstancedPoolPlacement {
+  readonly act: number;
+  readonly x: number;
+  readonly y: number;
+  readonly depthBias: number;
+  readonly scale: number;
+}
+
+type SkylineInstancedPoolBuilder = ReturnType<typeof instances.capsule>;
+
+function buildInstancedActPools(
+  placements: readonly InstancedPoolPlacement[],
+  options: {
+    readonly nodeId: (act: number) => string;
+    readonly primitive: "capsule" | "sphere" | "torus";
+    readonly tint: (act: number) => { readonly color: string; readonly emissive: string };
+    readonly zBase: number;
+    readonly zSpread: number;
+    readonly baseScale: readonly [number, number, number];
+    readonly yLift: number;
+    readonly tags: readonly string[];
+  }
+): SkylineInstancedPoolBuilder[] {
+  const byAct = new Map<number, InstancedPoolPlacement[]>();
+  for (const placement of placements) {
+    const list = byAct.get(placement.act) ?? [];
+    list.push(placement);
+    byAct.set(placement.act, list);
+  }
+  return [...byAct.entries()].map(([act, items]) => {
+    const tint = options.tint(act);
+    const sharedMaterial = material.emissive({
+      name: options.nodeId(act) + " tint",
+      color: tint.color,
+      emissive: tint.emissive,
+      emissiveIntensity: 0.55,
+      roughness: 0.6
+    });
+    const transforms = items.map((item) => {
+      const [sx, sy] = platformerScene.toScenePoint({ x: item.x, y: item.y });
+      return {
+        position: [sx, sy + options.yLift * item.scale, options.zBase + item.depthBias * options.zSpread] as [number, number, number],
+        rotation: [0, item.depthBias * Math.PI, 0] as [number, number, number],
+        scale: [
+          options.baseScale[0] * item.scale,
+          options.baseScale[1] * item.scale,
+          options.baseScale[2] * item.scale
+        ] as [number, number, number]
+      };
+    });
+    const builder = options.primitive === "capsule"
+      ? instances.capsule({ name: options.nodeId(act), material: sharedMaterial, transforms })
+      : options.primitive === "torus"
+        ? instances.torus({ name: options.nodeId(act), material: sharedMaterial, transforms })
+        : instances.sphere({ name: options.nodeId(act), material: sharedMaterial, transforms });
+    return builder.runtime(game.runtimeNode(options.nodeId(act), {
+      tags: [...options.tags, "instanced", "act-" + act]
+    }));
+  });
+}
+
 const platforms = level.platforms ?? [];
 const checkpoints = level.checkpoints ?? [];
 const hazards = level.hazards ?? [];
@@ -273,8 +468,62 @@ const locomotion = game.locomotion({
 });
 /** Effectively-zero scale used to hide a feedback node without removing it. */
 const HIDDEN_FEEDBACK_SCALE = [0.0001, 0.0001, 0.0001] as const;
+
+interface SkylineEventFeedbackVisualSpec {
+  readonly nodeId: string;
+  readonly shape: "torus" | "capsule" | "diamond";
+  readonly color: string;
+  readonly emissive: string;
+  readonly scale: readonly [number, number, number];
+  readonly duration: number;
+  readonly rotationZ?: number;
+}
+
+/**
+ * Small, bounded scene markers make the actual event response retainable in a
+ * screenshot. They supplement game.effects and never stand in for a subject,
+ * collision body, collectible, relay, or finish target.
+ */
+const SKYLINE_EVENT_FEEDBACK_VISUALS: Readonly<Record<SkylineRequiredFeedbackEvent, SkylineEventFeedbackVisualSpec>> = Object.freeze({
+  jump: { nodeId: "skyline-event-feedback-jump", shape: "torus", color: "#8ef0ff", emissive: "#d8fbff", scale: [0.18, 0.18, 0.03], duration: 0.38 },
+  land: { nodeId: "skyline-event-feedback-land", shape: "torus", color: "#7ef0c8", emissive: "#c8ffe9", scale: [0.24, 0.075, 0.03], duration: 0.46 },
+  // Capsules are authored along local Y. Rotate that long axis into the travel
+  // direction; putting the long value in X before the rotation produced a tall
+  // white slab instead of a restrained horizontal dash echo.
+  dash: { nodeId: "skyline-event-feedback-dash", shape: "capsule", color: "#c7b8ff", emissive: "#d8d0ff", scale: [0.04, 0.22, 0.035], duration: 0.36, rotationZ: Math.PI / 2 },
+  collect: { nodeId: "skyline-event-feedback-collect", shape: "diamond", color: "#f7c948", emissive: "#fff1a8", scale: [0.14, 0.14, 0.025], duration: 0.5, rotationZ: Math.PI / 4 },
+  relay: { nodeId: "skyline-event-feedback-relay", shape: "torus", color: "#22d3ee", emissive: "#d8fbff", scale: [0.3, 0.3, 0.035], duration: 0.7 },
+  hazard: { nodeId: "skyline-event-feedback-hazard", shape: "diamond", color: "#f43f5e", emissive: "#ffd0d7", scale: [0.24, 0.24, 0.032], duration: 0.62, rotationZ: Math.PI / 4 },
+  defeat: { nodeId: "skyline-event-feedback-defeat", shape: "torus", color: "#ff7a32", emissive: "#ffd08a", scale: [0.34, 0.34, 0.04], duration: 0.72 },
+  respawn: { nodeId: "skyline-event-feedback-respawn", shape: "capsule", color: "#67e8f9", emissive: "#d8fbff", scale: [0.065, 0.34, 0.065], duration: 0.82 },
+  finish: { nodeId: "skyline-event-feedback-finish", shape: "torus", color: "#64e8c4", emissive: "#fff1a8", scale: [0.48, 0.48, 0.055], duration: 1.05 }
+});
+
+const skylineEventFeedbackVisualNodes = Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => {
+  const visualMaterial = material.emissive({
+    name: `skyline ${event} event feedback`,
+    color: spec.color,
+    emissive: spec.emissive,
+    emissiveIntensity: 1.2,
+    roughness: 0.2,
+    opacity: 0.9
+  });
+  const builder = spec.shape === "torus"
+    ? primitives.torus({ name: `${event} event ring`, material: visualMaterial })
+    : spec.shape === "capsule"
+      ? primitives.capsule({ name: `${event} event capsule`, material: visualMaterial })
+      : primitives.box({ name: `${event} event diamond`, material: visualMaterial });
+  return builder
+    .position(0, -100, GAMEPLAY_ACTOR_DEPTH + 0.12)
+    .rotate(0, 0, spec.rotationZ ?? 0)
+    .scale(HIDDEN_FEEDBACK_SCALE)
+    .runtime(game.runtimeNode(spec.nodeId, {
+      tags: ["event-feedback", event, "actual-event-driven", "non-colliding", "renderer-owned"]
+    }));
+});
 /** Matches the stylesheet's compact breakpoint so camera and CSS agree on "mobile". */
 const compactViewport = window.innerWidth <= 620;
+const cameraTuning = skylineCameraTuning(compactViewport);
 const animationStateHistory: { state: string; clip: string }[] = [
   { state: "idle", clip: HERO_LOCOMOTION_CLIP_MAP.idle }
 ];
@@ -438,6 +687,201 @@ const actPaletteLights = [0, 1, 2, 3, 4].map((actIndex) => {
   };
 });
 
+/** SR-A3: two silhouette bands, one distanceLod chunk per certified district. */
+const skylineBackdropChunks = planSkylineBackdropChunks(SKYLINE_DISTRICT_ANCHORS);
+const skylineBackdropNodes = skylineBackdropChunks.map((chunk) => {
+  const lod = skylineBackdropLodSpec(chunk);
+  const [sceneX] = platformerScene.toScenePoint({ x: chunk.centerX, y: 0 });
+  const z = chunk.band === "far" ? farBackgroundDepth - 0.9 : farBackgroundDepth - 0.45;
+  return distanceLod({
+    name: chunk.id,
+    levels: lod.levels,
+    hysteresis: lod.hysteresis,
+    castShadow: false,
+    receiveShadow: false
+  })
+    .position(sceneX, horizonY + chunk.height / 2 - 0.35, z)
+    .scale([chunk.width * platformerScene.transform.scale, chunk.height, 0.3])
+    .runtime(game.runtimeNode(chunk.id, {
+      tags: ["backdrop", "distance-lod", "skyline-silhouette", "act-" + chunk.act, chunk.districtId]
+    }));
+});
+
+/**
+ * SR-A4: extruded act-gate glyphs straddling the path at every act transition.
+ * They complement the CSS act title card, which stays the accessible authority.
+ */
+const skylineActGateNodes = SKYLINE_ACT_GATES.map((gate) => {
+  const palette = getSkylineActPalette(gate.act);
+  const [sceneX, surfaceSceneY] = platformerScene.toScenePoint({ x: gate.x, y: gate.surfaceY });
+  return text3D("ACT " + (gate.act + 1), {
+    name: gate.id,
+    size: 0.34,
+    depth: 0.1,
+    letterSpacing: 0.05,
+    material: material.emissive({
+      name: gate.id + " glow",
+      color: "#0d2418",
+      emissive: palette.checkpointLightColor,
+      emissiveIntensity: 1.05,
+      roughness: 0.35
+    })
+  })
+    .position(sceneX, surfaceSceneY + 1.12, GAMEPLAY_ACTOR_DEPTH - 0.28)
+    .runtime(game.runtimeNode(gate.id, {
+      tags: ["act-gate", "text3d", "ceremony", "act-" + gate.act]
+    }));
+});
+
+/** SR-A2 foliage: ferns/scrub/grass per district, instanced per act. */
+const skylineFoliagePlacements = planSkylineFoliage({ platforms });
+const skylineFoliagePoolNodes = buildInstancedActPools(skylineFoliagePlacements, {
+  nodeId: skylineFoliageNodeId,
+  primitive: "capsule",
+  tint: (act) => ({ color: skylineFoliageTint(act, 0.5), emissive: skylineFoliageTint(act, 0.85) }),
+  // Between the world plane (-0.46) and the gameplay plane: dressing depth.
+  zBase: -0.3,
+  zSpread: 0.26,
+  baseScale: [0.055, 0.13, 0.055],
+  yLift: 0.06,
+  tags: ["foliage", "act-tinted", "renderer-owned"]
+});
+
+/** SR-A2 sparkle halos: every sky-shard halo consolidated into one pool per act. */
+const skylineSparklePlacements = planSkylineShardSparkles(
+  collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge"))
+);
+const skylineSparklePoolNodes = buildInstancedActPools(skylineSparklePlacements, {
+  nodeId: skylineSparkleNodeId,
+  primitive: "torus",
+  tint: (act) => ({ color: skylineSparkleTint(act, 0.35), emissive: skylineSparkleTint(act, 0.8) }),
+  zBase: GAMEPLAY_ACTOR_DEPTH - 0.14,
+  zSpread: 0.02,
+  baseScale: [0.13, 0.13, 0.035],
+  yLift: 0.04,
+  tags: ["sparkle", "coin-halo", "act-tinted", "renderer-owned"]
+});
+
+const hazardLanguage = SKYLINE_VISUAL_LANGUAGE.hazard;
+const hazardWarningMaterial = material.emissive({
+  name: "skyline crossed hazard warning",
+  color: hazardLanguage.primaryColor,
+  emissive: hazardLanguage.accentColor,
+  emissiveIntensity: 0.72,
+  roughness: 0.38
+});
+/**
+ * Every collision hazard gets the same coral crossed mark. The typed sentry or
+ * typed world still owns the subject; this small non-colliding mark supplies an
+ * invariant silhouette/color cue even when the underlying asset is neutral.
+ */
+const skylineHazardLanguageNodes = hazards.map((hazard) => {
+  const rect = platformerScene.surfaceToSceneRect(hazard);
+  const armLength = Math.max(0.1, Math.min(0.22, rect.size[0] * 0.62));
+  return group(`crossed hazard mark ${hazard.id}`, [
+    primitives.box({ name: `hazard slash rising ${hazard.id}`, material: hazardWarningMaterial })
+      .rotate(0, 0, Math.PI * 0.22)
+      .scale([armLength, 0.022, 0.026])
+      .runtime(game.runtimeNode(`skyline-hazard-language-${hazard.id}-rising`, {
+        tags: [hazardLanguage.nodeTag, "shape-plus-color", "non-colliding", "renderer-owned"]
+      })),
+    primitives.box({ name: `hazard slash falling ${hazard.id}`, material: hazardWarningMaterial })
+      .rotate(0, 0, -Math.PI * 0.22)
+      .scale([armLength, 0.022, 0.026])
+      .runtime(game.runtimeNode(`skyline-hazard-language-${hazard.id}-falling`, {
+        tags: [hazardLanguage.nodeTag, "shape-plus-color", "non-colliding", "renderer-owned"]
+      }))
+  ])
+    .position(rect.center[0], rect.center[1], GAMEPLAY_ACTOR_DEPTH - 0.025);
+});
+
+const relayLanguage = SKYLINE_VISUAL_LANGUAGE.relay;
+const relayRingMaterial = material.emissive({
+  name: "skyline relay cyan ring",
+  color: relayLanguage.primaryColor,
+  emissive: relayLanguage.accentColor,
+  emissiveIntensity: 0.68,
+  roughness: 0.32
+});
+const relayPostMaterial = material.pbr({
+  name: "skyline relay dark post",
+  color: "#17364d",
+  metallic: 0.24,
+  roughness: 0.58
+});
+/** Explicit ring-on-post relays; collision remains exclusively in game.platformer. */
+const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
+  const [x, y] = platformerScene.toScenePoint(checkpoint, 0.02);
+  return group(`relay ring on post ${checkpoint.id}`, [
+    primitives.box({ name: `relay post ${checkpoint.id}`, material: relayPostMaterial })
+      .position(0, 0.13, 0)
+      .scale([0.026, 0.26, 0.026]),
+    primitives.torus({ name: `relay ring ${checkpoint.id}`, material: relayRingMaterial })
+      .position(0, 0.32, 0)
+      .scale([0.13, 0.13, 0.035])
+      .runtime(game.runtimeNode(`skyline-relay-language-${checkpoint.id}`, {
+        tags: [relayLanguage.nodeTag, "checkpoint", "shape-plus-color", "non-colliding", "renderer-owned"]
+      }))
+  ])
+    .position(x, y, GAMEPLAY_ACTOR_DEPTH - 0.08);
+});
+
+/**
+ * SR-A1 ghost echo: a second, visual-only hero shell driven by input replay of the
+ * best finish. It shares no state with the live kit instance (see src/ghost.ts).
+ */
+const ghostEchoNode = model(assets.showcaseKenneyOobiPlatformerHero, {
+  name: "skyline-ghost-echo",
+  role: "primaryCharacter",
+  scaleMode: "fit",
+  targetHeight: SKYLINE_CHARACTER_HEIGHT * 0.98,
+  castShadow: false,
+  receiveShadow: false,
+  // Mount the typed GLB so the runtime creates its render item; the handle is
+  // hidden immediately after mount and shown only by replay. Authoring it hidden
+  // prevented the safe renderer from creating a later-toggleable model item.
+  visible: true,
+  material: material.pbr({
+    name: "skyline ghost echo shell",
+    color: "#21c4df",
+    emissive: "#12a5c7",
+    emissiveIntensity: 0.18,
+    roughness: 0.55,
+    opacity: 0.62
+  })
+})
+  .position(...initialPlayerPose.position)
+  .rotate(0, playerYawForFacing(1), 0)
+  .runtime(game.runtimeNode("skyline-ghost-echo", {
+    tags: ["ghost", "visual-only", "input-replay", "ghost-language", "shape-plus-color", "renderer-owned"]
+  }));
+
+/**
+ * Three alpha-blended echo rings keep the best-run silhouette unmistakable when
+ * it crosses the live hero or a pale part of the skyline. They are subordinate
+ * feedback around the same typed character, never a replacement primary subject,
+ * and own no physics/runtime gameplay component.
+ */
+const ghostEchoAccentNodes = [
+  { id: "skyline-ghost-echo-ring-core", opacity: 0.3, scale: [0.29, 0.38, 0.022] as const },
+  { id: "skyline-ghost-echo-ring-trail-a", opacity: 0.2, scale: [0.22, 0.3, 0.018] as const },
+  { id: "skyline-ghost-echo-ring-trail-b", opacity: 0.12, scale: [0.16, 0.22, 0.014] as const }
+].map((spec) => primitives.torus({
+  name: spec.id,
+  material: material.emissive({
+    name: `${spec.id} translucent cyan`,
+    color: "#8ef0ff",
+    emissive: "#5ee0ff",
+    emissiveIntensity: 0.72,
+    opacity: spec.opacity
+  })
+})
+  .position(...initialPlayerPose.position)
+  .scale(spec.scale)
+  .runtime(game.runtimeNode(spec.id, {
+    tags: ["ghost", "ghost-accent", "visual-only", "non-colliding", "alpha-blended", "renderer-owned"]
+  })));
+
 const platformerCamera = game.platformerCameraRig({
   sceneBinding: platformerScene,
   player: state.player,
@@ -497,21 +941,90 @@ const platformerCamera = game.platformerCameraRig({
   // Portrait needs a closer, nearly centered follow view. The former 1.35-unit
   // look-ahead pushed the hero half outside the left edge while distance 6.0
   // reduced the playable band to a thin strip across the middle of the phone.
-  distance: compactViewport ? 4.6 : 3.75,
-  height: compactViewport ? 0.58 : 0.62,
-  lookAhead: compactViewport ? 0.32 : 1.05,
-  fov: compactViewport ? 48 : 42
+  distance: cameraTuning.distance,
+  height: cameraTuning.height,
+  lookAhead: cameraTuning.lookAhead,
+  fov: cameraTuning.fov
 });
-const cameraLookAhead = compactViewport ? 0.32 : 1.05;
-const cameraDistance = compactViewport ? 4.6 : 3.75;
-const cameraHeight = compactViewport ? 0.58 : 0.62;
 const skylineAudio = createSkylineAudio(reducedMotion);
 const skylineFeel = createSkylineFeel({
   reducedMotion,
-  cameraBaseOffset: [round(cameraLookAhead * 0.42), round(cameraHeight), round(cameraDistance)],
-  cameraTargetOffset: [round(cameraLookAhead), 0.34, 0],
+  cameraTuning,
   audio: skylineAudio
 });
+let activeCameraFrame = skylineCameraFrame(cameraTuning, 1);
+const observedCameraFacing = new Set<"left" | "right">(["right"]);
+let airborneFramingObserved = false;
+
+const minimumFoliageEdgeClearance = skylineFoliagePlacements.reduce((minimum, placement) => {
+  const supportingSurface = platforms.find((surface) =>
+    placement.x >= surface.x && placement.x <= surface.x + surface.width
+  );
+  if (!supportingSurface) return minimum;
+  const gameSpaceClearance = Math.min(
+    placement.x - supportingSurface.x,
+    supportingSurface.x + supportingSurface.width - placement.x
+  );
+  const sceneSpaceClearance = gameSpaceClearance * platformerScene.transform.scale;
+  const foliageHalfWidth = 0.055 * placement.scale;
+  return Math.min(minimum, sceneSpaceClearance - foliageHalfWidth);
+}, Number.POSITIVE_INFINITY);
+
+function skylineCameraReadabilityEvidence() {
+  return {
+    source: "game.platformerCameraRig + route-local facing director",
+    viewport: cameraTuning.viewport,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    mode: platformerCamera.mode,
+    targetNode: platformerCamera.targetNode,
+    verticalFollowTarget: platformerCamera.mode === "follow" && platformerCamera.targetNode === "platformer-player",
+    tuning: { ...cameraTuning },
+    activeFrame: { ...activeCameraFrame, offset: [...activeCameraFrame.offset], targetOffset: [...activeCameraFrame.targetOffset] },
+    observedFacingDirections: [...observedCameraFacing].sort(),
+    bothFacingDirectionsObserved: observedCameraFacing.size === 2,
+    airborneFramingObserved,
+    jumpApex: solvedMotion.apex,
+    decorativeDepthContract: {
+      actorDepth: GAMEPLAY_ACTOR_DEPTH,
+      worldDepth: platformerScene.worldZ,
+      nearestBackgroundDressingDepth: -0.04,
+      allBackgroundDressingBehindActor: -0.04 < GAMEPLAY_ACTOR_DEPTH,
+      renderedForegroundPropCount: 0
+    },
+    playableEdgeContract: {
+      certifiedSurfaceCount: platforms.length,
+      foliagePlacementCount: skylineFoliagePlacements.length,
+      minimumFoliageEdgeClearance: round(Number.isFinite(minimumFoliageEdgeClearance) ? minimumFoliageEdgeClearance : 0),
+      foliageClearsEveryLandingEdge: minimumFoliageEdgeClearance > 0
+    }
+  };
+}
+
+function skylineMotionPreferenceEvidence() {
+  const feel = skylineFeel.snapshot();
+  return {
+    source: "prefers-reduced-motion + game.cameraDirector + game.effects + route-local secondary-motion policy",
+    reducedMotion,
+    gameplayTruthPreserved: true,
+    essentialMotionRetained: ["player locomotion", "moving platforms", "sentry hazards", "ghost race reference"],
+    camera: {
+      impactRequests: feel.cameraImpactRequests,
+      impactsSuppressed: feel.cameraImpactsSuppressed,
+      currentShakeOffset: [...feel.cameraShakeOffset],
+      maximumShakeMagnitude: Number(feel.maximumCameraShakeMagnitude.toFixed(6)),
+      impulsesRemoved: reducedMotion
+        && feel.cameraImpactsSuppressed === feel.cameraImpactRequests
+        && feel.maximumCameraShakeMagnitude === 0
+    },
+    secondaryMotion: {
+      collectiblePulseAmplitude: reducedMotion ? 0 : 0.18,
+      eventScalePulseAmplitude: reducedMotion ? 0 : 0.24,
+      runtimeEffectsReduced: reducedMotion,
+      excessiveMotionRemoved: reducedMotion
+    }
+  };
+}
 // Unlock the web-audio context on the first real interaction so autoplay policy
 // lets synth SFX play (mirrors the Clash gesture-unlock discipline).
 const skylineAudioUnlock = (): void => {
@@ -574,17 +1087,25 @@ const app = createAuraApp("#app", {
     .addMany(skylineWorldNodes)
     .addMany(skylineSentryNodes)
     .addMany(skylineSummitBeaconNodes)
+    .addMany(skylineDistrictLandmarkNodes)
+    .addMany(skylineBackdropNodes)
+    .addMany(skylineActGateNodes)
+    .addMany(skylineFoliagePoolNodes)
+    .addMany(skylineSparklePoolNodes)
+    .addMany(skylineHazardLanguageNodes)
+    .addMany(skylineRelayLanguageNodes)
+    .addMany(skylineEventFeedbackVisualNodes)
     .addMany(game.platformerPresentationSurfaces({
       sceneBinding: platformerScene,
       level,
       mode: "asset-overlay",
       guideVisibility: "public",
-      platformColor: "#5d7a6a",
-      platformTrimColor: "#c9f7b8",
-      hazardColor: "#ff5a3c",
-      checkpointColor: "#8fe3ff",
-      collectibleColor: "#fff1a8",
-      finishColor: "#a6f7b2"
+      platformColor: "#1e293b",
+      platformTrimColor: "#38bdf8",
+      hazardColor: "#f43f5e",
+      checkpointColor: "#38bdf8",
+      collectibleColor: "#fbbf24",
+      finishColor: "#34d399"
     }))
     .add(model(assets.showcaseKenneyOobiPlatformerHero, {
       name: "platformer-readable-character",
@@ -599,8 +1120,10 @@ const app = createAuraApp("#app", {
       // clips through the runtime handle as the mounted state changes.
       .animate({ clip: HERO_LOCOMOTION_CLIP_MAP.idle, loop: true, captureTime: 0.4 })
       .position(...initialPlayerPose.position).rotate(0, playerYawForFacing(playerFacing), 0).runtime(game.runtimeNode("platformer-player", {
-      tags: ["player", "character", "typed-primary-asset"]
+      tags: ["player", "character", "typed-primary-asset", "player-language", "shape-plus-color"]
     })))
+    .add(ghostEchoNode)
+    .addMany(ghostEchoAccentNodes)
     /*
      * Renderer-owned flow/chain feedback.
      *
@@ -625,8 +1148,8 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode("skyline-flow-ribbon", {
       tags: ["feedback", "flow", "renderer-owned"]
     })))
-    .add(primitives.sphere({
-      name: "collection chain orb",
+    .add(primitives.torus({
+      name: "collection chain ring",
       material: material.emissive({
         name: "chain orb",
         color: "#25b995",
@@ -659,7 +1182,7 @@ const app = createAuraApp("#app", {
      */
     .addMany(collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).map((collectible) => {
       const [sx, sy] = platformerScene.toScenePoint({ x: collectible.x, y: collectible.y });
-      return primitives.sphere({
+      return geometry.custom(SKYLINE_SHARD_GEOMETRY, {
         name: "sky shard glitter " + collectible.id,
         material: material.emissive({
           name: "sky shard glow " + collectible.id,
@@ -672,26 +1195,34 @@ const app = createAuraApp("#app", {
         .position(sx, sy + 0.05, GAMEPLAY_ACTOR_DEPTH)
         .scale([0.12, 0.12, 0.12])
         .runtime(game.runtimeNode("skyline-pickup-glitter-" + collectible.id, {
-          tags: ["pickup", "sky-shard", "collectible", "renderer-owned"]
+          tags: ["pickup", "sky-shard", "collectible", "sky-shard-language", "shape-plus-color", "renderer-owned"]
         }));
     }))
     .addMany(SKYLINE_EMBER_PICKUPS.map((pickup, index) => {
       const [px, py] = platformerScene.toScenePoint({ x: pickup.x, y: pickup.y });
       const collectible = collectibles.find((item) => item.id === pickup.id);
-      return primitives.sphere({
-        name: `ember charge ${index + 1}`,
-        material: material.emissive({
-          name: `ember charge glow ${index + 1}`,
-          color: "#ff7a32",
-          emissive: "#ffb070",
-          emissiveIntensity: 1.25,
-          roughness: 0.28
-        })
-      }).position(px, py, GAMEPLAY_ACTOR_DEPTH).scale([0.13, 0.13, 0.13]).runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}`, {
-        tags: ["pickup", "ember", "renderer-owned"]
-      }));
+      const emberLanguage = SKYLINE_VISUAL_LANGUAGE["ember-charge"];
+      const emberMaterial = material.emissive({
+        name: `ember charge glow ${index + 1}`,
+        color: emberLanguage.primaryColor,
+        emissive: emberLanguage.accentColor,
+        emissiveIntensity: 1.05,
+        roughness: 0.28
+      });
+      return group(`ringed ember charge ${index + 1}`, [
+        primitives.capsule({ name: `ember charge capsule ${index + 1}`, material: emberMaterial })
+          .scale([0.045, 0.1, 0.045])
+          .runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}-core`, {
+            tags: ["pickup", "ember", emberLanguage.nodeTag, "shape-plus-color", "renderer-owned"]
+          })),
+        primitives.torus({ name: `ember charge ring ${index + 1}`, material: emberMaterial })
+          .scale([0.11, 0.11, 0.026])
+          .runtime(game.runtimeNode(`skyline-ember-pickup-${pickup.id}-ring`, {
+            tags: ["pickup", "ember", emberLanguage.nodeTag, "shape-plus-color", "renderer-owned"]
+          }))
+      ]).position(px, py, GAMEPLAY_ACTOR_DEPTH);
     }))
-    .addMany([0, 1, 2, 3].map((index) => primitives.sphere({
+    .addMany([0, 1, 2, 3].map((index) => primitives.capsule({
       name: `ember volley ${index + 1}`,
       material: material.emissive({
         name: `ember volley glow ${index + 1}`,
@@ -700,10 +1231,9 @@ const app = createAuraApp("#app", {
         emissiveIntensity: 1.4,
         roughness: 0.22
       })
-    }).position(...initialPlayerPose.position).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
-      tags: ["projectile", "ember", "renderer-owned"]
+    }).position(...initialPlayerPose.position).rotate(0, 0, Math.PI / 2).scale(HIDDEN_FEEDBACK_SCALE).runtime(game.runtimeNode(`skyline-ember-volley-${index}`, {
+      tags: ["projectile", "ember", "capsule-bolt", "shape-plus-color", "renderer-owned"]
     }))))
-    .add(effects.ambientOcclusion({ intensity: 0.4 }))
     .add(effects.neonBloom({ intensity: 0.1 }))
     .add(lights.studio({ intensity: 0.86 }))
     .camera(platformerCamera)
@@ -713,6 +1243,82 @@ const player = app.nodes.require("platformer-player");
 const sentryNodes = Object.fromEntries(
   SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => [encounter.id, app.nodes.require(`relay-sentry-${encounter.id}`)])
 ) as Record<string, RuntimeNodeHandleLike>;
+const sentryAccentNodes = Object.fromEntries(
+  SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => [encounter.id, [
+    app.nodes.require(`skyline-hazard-language-${encounter.id}-rising`),
+    app.nodes.require(`skyline-hazard-language-${encounter.id}-falling`)
+  ]])
+) as Record<string, RuntimeNodeHandleLike[]>;
+const relayLanguageNodes = Object.fromEntries(
+  checkpoints.map((checkpoint) => [checkpoint.id, app.nodes.require(`skyline-relay-language-${checkpoint.id}`)])
+) as Record<string, RuntimeNodeHandleLike>;
+const eventFeedbackVisualHandles = Object.fromEntries(
+  Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => [event, app.nodes.require(spec.nodeId)])
+) as unknown as Record<SkylineRequiredFeedbackEvent, RuntimeNodeHandleLike>;
+const eventFeedbackVisualTimers = Object.fromEntries(
+  Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS).map((event) => [event, 0])
+) as Record<SkylineRequiredFeedbackEvent, number>;
+const observedEventFeedbackVisuals = new Set<SkylineRequiredFeedbackEvent>();
+
+function triggerEventFeedbackVisual(
+  event: SkylineRequiredFeedbackEvent,
+  scenePoint: readonly [number, number, number]
+): void {
+  const spec = SKYLINE_EVENT_FEEDBACK_VISUALS[event];
+  eventFeedbackVisualTimers[event] = spec.duration;
+  observedEventFeedbackVisuals.add(event);
+  eventFeedbackVisualHandles[event]
+    .setPosition(scenePoint[0], scenePoint[1] + (event === "land" ? -0.12 : 0.12), GAMEPLAY_ACTOR_DEPTH + 0.12)
+    .setScale([...spec.scale])
+    .setVisible(true);
+}
+
+function updateEventFeedbackVisuals(step: number): void {
+  for (const event of Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS) as SkylineRequiredFeedbackEvent[]) {
+    const spec = SKYLINE_EVENT_FEEDBACK_VISUALS[event];
+    const remaining = Math.max(0, eventFeedbackVisualTimers[event] - step);
+    eventFeedbackVisualTimers[event] = remaining;
+    const node = eventFeedbackVisualHandles[event];
+    if (remaining <= 0) {
+      node.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
+      continue;
+    }
+    const progress = 1 - remaining / spec.duration;
+    // Reduced motion retains the event's readable shape/color state without the
+    // secondary scale oscillation. Gameplay truth and the timer remain intact.
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(progress * Math.PI) * 0.24;
+    node.setScale(spec.scale.map((value) => value * pulse) as [number, number, number]);
+  }
+}
+
+function clearActiveEventFeedbackVisuals(): void {
+  for (const event of Object.keys(SKYLINE_EVENT_FEEDBACK_VISUALS) as SkylineRequiredFeedbackEvent[]) {
+    eventFeedbackVisualTimers[event] = 0;
+    eventFeedbackVisualHandles[event].setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);
+  }
+}
+
+function buildSkylineEventFeedbackEvidence() {
+  const feedback = skylineFeel.eventFeedbackProof();
+  const visualNodes = Object.fromEntries(
+    Object.entries(SKYLINE_EVENT_FEEDBACK_VISUALS).map(([event, spec]) => [event, {
+      nodeId: spec.nodeId,
+      shape: spec.shape,
+      color: spec.color,
+      duration: spec.duration,
+      mounted: app.nodes.has(spec.nodeId),
+      observed: observedEventFeedbackVisuals.has(event as SkylineRequiredFeedbackEvent)
+    }])
+  );
+  return {
+    ...feedback,
+    visualNodes,
+    mountedVisualCount: Object.values(visualNodes).filter((entry) => entry.mounted).length,
+    observedVisualCount: Object.values(visualNodes).filter((entry) => entry.observed).length,
+    allVisualNodesMounted: Object.values(visualNodes).every((entry) => entry.mounted),
+    allRequiredVisualsObserved: Object.values(visualNodes).every((entry) => entry.observed)
+  };
+}
 const actSkyBandSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
   actIndex,
   planSkylineActBackdrop({ actIndex, sceneSpan, horizonY, farBackgroundDepth }).plan.bands.map((band) =>
@@ -733,6 +1339,192 @@ for (const [key, node] of Object.entries(actLightSets)) {
   const act = Number(key.split("-")[0]);
   node.setVisible(act === lastActPaletteIndex);
 }
+/*
+ * Incorporation runtime state (SR-A1..SR-A6). Handles + honest evidence only;
+ * none of this can alter the certified simulation contract.
+ */
+/** SR-A2/SR-A3: instanced pools follow the act palette; backdrop chunks are static. */
+const foliagePoolSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
+  actIndex, app.nodes.require(skylineFoliageNodeId(actIndex))
+])) as Record<number, RuntimeNodeHandleLike>;
+const sparklePoolSets = Object.fromEntries([0, 1, 2, 3, 4].map((actIndex) => [
+  actIndex, app.nodes.require(skylineSparkleNodeId(actIndex))
+])) as Record<number, RuntimeNodeHandleLike>;
+function applySkylineInstancedPoolVisibility(actIndex: number): void {
+  for (const [key, node] of Object.entries(foliagePoolSets)) node.setVisible(Number(key) === actIndex);
+  for (const [key, node] of Object.entries(sparklePoolSets)) node.setVisible(Number(key) === actIndex);
+}
+applySkylineInstancedPoolVisibility(0);
+skylineAudio.setAmbienceAct(0);
+const skylineFoliageEvidence = {
+  planner: "src/foliage.ts",
+  seed: 20260817,
+  poolCount: skylineFoliagePoolNodes.length,
+  instanceCount: skylineFoliagePlacements.length,
+  sparklePoolCount: skylineSparklePoolNodes.length,
+  sparkleInstanceCount: skylineSparklePlacements.length,
+  discipline: "one-instanced-node-per-act",
+  tintSource: "existing-act-palettes",
+  activeActPoolsVisible: 0 as number
+};
+
+/** SR-A3 plan facts; mounted selections and native submissions are added below. */
+const skylineBackdropStaticEvidence = {
+  planner: "src/backdrop.ts",
+  chunkCount: skylineBackdropChunks.length,
+  bandChunkCounts: {
+    far: skylineBackdropChunks.filter((chunk) => chunk.band === "far").length,
+    near: skylineBackdropChunks.filter((chunk) => chunk.band === "near").length
+  },
+  lodLevelsPerChunk: 2,
+  hysteresis: 0.4,
+  distantBeyondDistance: SKYLINE_BACKDROP_NEAR_LOD_MAX_DISTANCE,
+  closeTrianglesPerChunk: SKYLINE_BACKDROP_CLOSE_TRIANGLES,
+  distantTrianglesPerChunk: SKYLINE_BACKDROP_DISTANT_TRIANGLES,
+  distantTriangleReductionRatio: round(1 - SKYLINE_BACKDROP_DISTANT_TRIANGLES / SKYLINE_BACKDROP_CLOSE_TRIANGLES),
+  maximumNormalizedSilhouetteDelta: SKYLINE_BACKDROP_MAX_NORMALIZED_SILHOUETTE_DELTA,
+  chunkIds: skylineBackdropChunks.map((chunk) => chunk.id)
+};
+const observedSkylineLodLevels = new Map<string, Set<number>>();
+const lastSkylineLodLevels = new Map<string, number>();
+const skylineLodTransitions: { nodeName: string; from: number; to: number }[] = [];
+let skylineDensityCaptureGameX: number | null = null;
+const skylineCameraOriginalSmoothing = platformerCamera.smoothing;
+
+function buildSkylineBackdropEvidence() {
+  const renderer = app.diagnostics().renderer;
+  const runtime = renderer?.runtime;
+  const selections = (runtime?.lodSelections ?? []).filter((selection) =>
+    selection.nodeName.startsWith("skyline-backdrop-"));
+  for (const selection of selections) {
+    const observed = observedSkylineLodLevels.get(selection.nodeName) ?? new Set<number>();
+    observed.add(selection.levelIndex);
+    observedSkylineLodLevels.set(selection.nodeName, observed);
+    const previous = lastSkylineLodLevels.get(selection.nodeName);
+    if (previous !== undefined && previous !== selection.levelIndex) {
+      skylineLodTransitions.push({ nodeName: selection.nodeName, from: previous, to: selection.levelIndex });
+    }
+    lastSkylineLodLevels.set(selection.nodeName, selection.levelIndex);
+  }
+  const logicalInstanceCount = skylineFoliagePlacements.length + skylineSparklePlacements.length;
+  const authoredPoolCount = skylineFoliagePoolNodes.length + skylineSparklePoolNodes.length;
+  const activeLogicalInstanceCount = skylineFoliagePlacements.filter((entry) => entry.act === lastActPaletteIndex).length
+    + skylineSparklePlacements.filter((entry) => entry.act === lastActPaletteIndex).length;
+  const currentCounts = {
+    close: selections.filter((selection) => selection.levelIndex === 0).length,
+    distant: selections.filter((selection) => selection.levelIndex === 1).length
+  };
+  return {
+    ...skylineBackdropStaticEvidence,
+    mountedRuntime: {
+      backend: runtime?.backend ?? "scene-plan",
+      selectionCount: selections.length,
+      currentCounts,
+      nativeInstancedSubmissions: runtime?.nativeInstancedSubmissions ?? 0,
+      submittedObjects: runtime?.submittedObjects ?? 0,
+      selections: selections.map((selection) => ({ ...selection })),
+      observedLevelsByNode: Object.fromEntries(
+        [...observedSkylineLodLevels.entries()].map(([nodeName, levels]) => [nodeName, [...levels].sort()])
+      ),
+      transitions: skylineLodTransitions.slice(),
+      observedClose: [...observedSkylineLodLevels.values()].some((levels) => levels.has(0)),
+      observedDistant: [...observedSkylineLodLevels.values()].some((levels) => levels.has(1))
+    },
+    captureCameraGameX: skylineDensityCaptureGameX,
+    instancing: {
+      logicalInstanceCount,
+      authoredPoolCount,
+      estimatedDrawObjectsWithoutInstancing: logicalInstanceCount,
+      estimatedDrawObjectsWithInstancing: authoredPoolCount,
+      estimatedDrawObjectReduction: logicalInstanceCount - authoredPoolCount,
+      estimatedDrawObjectReductionRatio: round(1 - authoredPoolCount / logicalInstanceCount),
+      activePoolCount: 2,
+      activeLogicalInstanceCount,
+      activeEstimatedDrawObjectReduction: activeLogicalInstanceCount - 2,
+      activeEstimatedDrawObjectReductionRatio: round(1 - 2 / activeLogicalInstanceCount),
+      collisionBodiesAdded: 0,
+      foregroundInstances: 0
+    }
+  };
+}
+
+/** SR-A4 evidence: gates exist as text3D scene nodes; CSS card stays authoritative. */
+const skylineActGateEvidence = {
+  count: SKYLINE_ACT_GATES.length,
+  renderedVia: "text3d-extruded-glyphs",
+  cssCardRemainsAccessibilityAuthority: true,
+  gates: SKYLINE_ACT_GATES.map((gate) => ({ id: gate.id, act: gate.act, title: gate.title, x: gate.x }))
+};
+
+function buildSkylineDistrictEvidence(playerX: number) {
+  const current = resolveSkylineDistrict(playerX);
+  return {
+    count: SKYLINE_DISTRICTS.length,
+    currentIndex: current.index,
+    currentId: current.id,
+    currentTitle: current.title,
+    definitions: SKYLINE_DISTRICTS.map((district) => ({
+      id: district.id,
+      title: district.title,
+      actIndexes: [...district.actIndexes],
+      sections: [...district.sections],
+      paletteSignature: skylineDistrictPaletteSignature(district.actIndexes[0] ?? 0),
+      ambienceStem: district.ambienceStem,
+      silhouette: district.silhouette,
+      silhouetteChunkCount: skylineBackdropChunks.filter((chunk) => chunk.districtId === district.id).length,
+      landmark: district.landmark,
+      landmarkNodeIds: [...district.landmarkNodeIds],
+      landmarkNodesMounted: district.landmarkNodeIds.every((id) => Boolean(app.nodes.require(id))),
+      mechanicEmphasis: district.mechanicEmphasis,
+      sentryCount: SKYLINE_SENTRY_ENCOUNTERS.filter((entry) => district.sections.includes(entry.section)).length,
+      movingPlatformCount: SKYLINE_MOVING_PLATFORMS.filter((entry) => {
+        const section = Number(String(entry.id).match(/^district-(\d+)-/)?.[1] ?? 0) - 1;
+        return district.sections.includes(section);
+      }).length,
+      checkpointCount: checkpoints.filter((checkpoint) => {
+        const section = Math.max(0, Math.min(SKYLINE_SECTION_COUNT - 1, Math.floor(checkpoint.x / SKYLINE_SECTION_STRIDE)));
+        return district.sections.includes(section);
+      }).length
+    }))
+  };
+}
+
+/**
+ * SR-A5 relay overlap sensors. Containment guarantees every radial activation is
+ * sensor-covered; the missed list exists to catch any future drift, not to act.
+ */
+const relaySensorState = skylineRelaySensors.map((sensor) => ({
+  sensorId: sensor.id,
+  checkpointId: sensor.checkpointId,
+  overlapped: false
+}));
+const relaySensorKnownActivations = new Set<string>();
+const skylineRelayEvidence = {
+  sensorCount: relaySensorState.length,
+  coveredCount: 0,
+  missedCheckpointIds: [] as string[],
+  backingOnly: true
+};
+function updateRelaySensorEvidence(): void {
+  let covered = 0;
+  const missed: string[] = [];
+  for (const entry of relaySensorState) {
+    if (!entry.overlapped) {
+      const sensor = skylineRelaySensors.find((candidate) => candidate.id === entry.sensorId);
+      if (sensor && skylineRelaySensorOverlaps(sensor, state.player)) entry.overlapped = true;
+    }
+    if (entry.overlapped && state.activatedCheckpoints.includes(entry.checkpointId)) covered += 1;
+  }
+  for (const checkpointId of state.activatedCheckpoints) {
+    if (relaySensorKnownActivations.has(checkpointId)) continue;
+    relaySensorKnownActivations.add(checkpointId);
+    const entry = relaySensorState.find((candidate) => candidate.checkpointId === checkpointId);
+    if (entry && !entry.overlapped) missed.push(checkpointId);
+  }
+  skylineRelayEvidence.coveredCount = covered;
+  skylineRelayEvidence.missedCheckpointIds = missed;
+}
+
 skylineFeel.bindScorePopHost(hudElements?.score ?? null);
 /** Renderer-owned challenge feedback handles, updated from observed challenge state. */
 const feedbackNodes = {
@@ -741,7 +1533,10 @@ const feedbackNodes = {
   objective: app.nodes.require("skyline-objective-pulse")
 };
 const emberPickupNodes = Object.fromEntries(
-  SKYLINE_EMBER_PICKUPS.map((pickup) => [pickup.id, app.nodes.require(`skyline-ember-pickup-${pickup.id}`)])
+  SKYLINE_EMBER_PICKUPS.map((pickup) => [pickup.id, [
+    app.nodes.require(`skyline-ember-pickup-${pickup.id}-core`),
+    app.nodes.require(`skyline-ember-pickup-${pickup.id}-ring`)
+  ]])
 );
 const emberVolleyNodes = [0, 1, 2, 3].map((index) => app.nodes.require(`skyline-ember-volley-${index}`));
 // Renderer-owned sky-shard glitter nodes, keyed by collectible id so the frame loop can
@@ -753,6 +1548,196 @@ const skyShardGlitterNodes: Record<string, RuntimeNodeHandleLike> = Object.fromE
 );
 // Raised only when an idle glitter pulse was actually applied to at least one rendered shard node.
 const collectedIdleSparkleProof = { shardSparkleRendered: false, glitterNodeCount: Object.keys(skyShardGlitterNodes).length };
+
+/*
+ * SR-A1 speedrun ghost runtime.
+ *
+ * The recorder slices live input into fixed ticks; the replay drives a separate
+ * kit instance from those ticks (src/ghost.ts). The echo node is positioned from
+ * the replay snapshot and NOTHING else: no collision, no pickups, no sentries,
+ * and no path back into the live simulation or the completion window.
+ */
+const ghostEchoHandle = app.nodes.require("skyline-ghost-echo");
+const ghostEchoAccentHandles = [
+  app.nodes.require("skyline-ghost-echo-ring-core"),
+  app.nodes.require("skyline-ghost-echo-ring-trail-a"),
+  app.nodes.require("skyline-ghost-echo-ring-trail-b")
+];
+ghostEchoHandle.setVisible(false);
+ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+const ghostStore: SkylineGhostStore = {
+  load: () => {
+    try {
+      return window.localStorage.getItem(SKYLINE_GHOST_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  },
+  save: (value) => {
+    try {
+      window.localStorage.setItem(SKYLINE_GHOST_STORAGE_KEY, value);
+    } catch {
+      /* private-mode storage: the ghost simply does not persist */
+    }
+  }
+};
+const ghostRecorder: SkylineGhostRecorder = createSkylineGhostRecorder();
+let ghostReplay: SkylineGhostReplay | null = null;
+let ghostRecording: SkylineGhostRecording | null = null;
+let ghostEnabled = false;
+let ghostRunFinalized = false;
+const skylineGhostEvidence = {
+  visualOnly: true,
+  driver: "input-replay",
+  deterministicTickSeconds: SKYLINE_GHOST_TICK_SECONDS,
+  storageKey: SKYLINE_GHOST_STORAGE_KEY,
+  appearance: {
+    typedCharacterAsset: "showcaseKenneyOobiPlatformerHero",
+    modelOpacity: 0.62,
+    accentOpacities: [0.3, 0.2, 0.12] as readonly number[],
+    palette: ["#8ef0ff", "#5ee0ff"] as readonly string[],
+    alphaBlended: true,
+    distinctFromLiveHero: "cyan emissive shell plus three receding translucent echo rings"
+  },
+  truthIsolation: {
+    simulationOwner: "separate-game.platformer-kit",
+    collision: false,
+    collectibles: false,
+    hazards: false,
+    checkpoints: false,
+    score: false,
+    completion: false,
+    liveStateReads: false,
+    liveStateWrites: false
+  },
+  available: false,
+  enabled: false,
+  playbackActive: false,
+  visibleThisSession: false,
+  accentNodesRenderedThisSession: 0,
+  bestFinishSeconds: null as number | null,
+  timelineHash: ""
+};
+
+function updateGhostBadge(): void {
+  const badge = hudElements?.ghostBadge ?? null;
+  if (!badge) return;
+  hudElements?.ghostControl.setAttribute("aria-pressed", String(ghostEnabled));
+  if (!ghostEnabled) {
+    badge.textContent = "GHOST OFF";
+    badge.dataset.state = "off";
+  } else if (!ghostRecording) {
+    badge.textContent = "GHOST ON · NO RECORDING";
+    badge.dataset.state = "empty";
+  } else {
+    badge.textContent = "GHOST ON · PB " + ghostRecording.finishSeconds.toFixed(1) + "s";
+    badge.dataset.state = "live";
+  }
+}
+
+function applyGhostRecording(recording: SkylineGhostRecording | null): void {
+  ghostRecording = recording;
+  ghostReplay = recording ? createSkylineGhostReplay(recording) : null;
+  skylineGhostEvidence.available = Boolean(recording);
+  skylineGhostEvidence.bestFinishSeconds = recording?.finishSeconds ?? null;
+  skylineGhostEvidence.timelineHash = recording ? skylineGhostTimelineHash(recording) : "";
+  updateGhostBadge();
+}
+
+function loadGhostFromStore(): void {
+  const json = ghostStore.load();
+  if (!json) {
+    applyGhostRecording(null);
+    return;
+  }
+  try {
+    applyGhostRecording(parseSkylineGhostRecording(json));
+  } catch {
+    // A corrupt or stale recording must never break the route: drop it.
+    try {
+      window.localStorage.removeItem(SKYLINE_GHOST_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+    applyGhostRecording(null);
+  }
+}
+
+function toggleSkylineGhost(): boolean {
+  ghostEnabled = !ghostEnabled;
+  if (ghostEnabled && !ghostRecording) loadGhostFromStore();
+  if (!ghostEnabled) {
+    ghostEchoHandle.setVisible(false);
+    ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+    skylineGhostEvidence.playbackActive = false;
+  }
+  skylineGhostEvidence.enabled = ghostEnabled;
+  updateGhostBadge();
+  return ghostEnabled;
+}
+loadGhostFromStore();
+
+/** Advances and renders the echo; visual-only by construction. */
+function renderSkylineGhost(stepSeconds: number): void {
+  if (!ghostEnabled || !ghostReplay || ghostReplay.recording.tickCount === 0) {
+    ghostEchoHandle.setVisible(false);
+    ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+    skylineGhostEvidence.playbackActive = false;
+    return;
+  }
+  const snap = ghostReplay.advance(stepSeconds);
+  if (snap.exhausted) {
+    ghostEchoHandle.setVisible(false);
+    ghostEchoAccentHandles.forEach((node) => node.setVisible(false));
+    skylineGhostEvidence.playbackActive = false;
+    return;
+  }
+  const scenePose = platformerScene.toScenePlayer({
+    x: snap.x,
+    y: snap.y,
+    vx: 0,
+    vy: snap.vy,
+    grounded: snap.grounded,
+    facing: snap.facing >= 0 ? 1 : -1
+  });
+  ghostEchoHandle
+    .setPosition(scenePose.position[0], scenePose.position[1], GAMEPLAY_ACTOR_DEPTH)
+    .setRotation(0, playerYawForFacing(snap.facing >= 0 ? 1 : -1), 0)
+    .setVisible(true);
+  const direction = snap.facing >= 0 ? 1 : -1;
+  const echoOffsets = [0, -0.16 * direction, -0.3 * direction] as const;
+  const echoScales = [
+    [0.29, 0.38, 0.022],
+    [0.22, 0.3, 0.018],
+    [0.16, 0.22, 0.014]
+  ] as const;
+  ghostEchoAccentHandles.forEach((node, index) => {
+    const pulse = 1 + Math.sin((snap.tickIndex + index * 7) * 0.11) * 0.045;
+    const scale = echoScales[index]!;
+    node
+      .setPosition(
+        scenePose.position[0] + echoOffsets[index]!,
+        scenePose.position[1] + SKYLINE_CHARACTER_HEIGHT * 0.48,
+        GAMEPLAY_ACTOR_DEPTH + 0.015 + index * 0.004
+      )
+      .setScale([scale[0] * pulse, scale[1] * pulse, scale[2]])
+      .setVisible(true);
+  });
+  skylineGhostEvidence.playbackActive = true;
+  skylineGhostEvidence.visibleThisSession = true;
+  skylineGhostEvidence.accentNodesRenderedThisSession = ghostEchoAccentHandles.length;
+}
+
+function finalizeGhostRecordingIfFinished(elapsedSeconds: number): void {
+  if (ghostRunFinalized) return;
+  ghostRunFinalized = true;
+  const candidate = ghostRecorder.finalize(elapsedSeconds);
+  if (!candidate) return;
+  if (shouldReplaceGhostRecording(ghostRecording, candidate)) {
+    ghostStore.save(serializeSkylineGhostRecording(candidate));
+    applyGhostRecording(parseSkylineGhostRecording(serializeSkylineGhostRecording(candidate)));
+  }
+}
 interface EmberVolley {
   x: number;
   y: number;
@@ -832,11 +1817,12 @@ function renderChallengeFeedback(): void {
 
 function renderEmberVolleys(): void {
   for (const pickup of SKYLINE_EMBER_PICKUPS) {
-    const node = emberPickupNodes[pickup.id];
-    if (!node) continue;
+    const nodes = emberPickupNodes[pickup.id] ?? [];
     const taken = state.collected.includes(pickup.id);
-    node.setVisible(!taken);
-    if (taken) node.setScale([...HIDDEN_FEEDBACK_SCALE]);
+    for (const node of nodes) {
+      node.setVisible(!taken);
+      if (taken) node.setScale([...HIDDEN_FEEDBACK_SCALE]);
+    }
   }
   renderSkyShardGlitter();
 }
@@ -860,9 +1846,10 @@ function renderSkyShardGlitter(): void {
     }
     // Gentle 1.6 Hz pulse with a small phase offset per shard so neighbours do not flicker in lockstep.
     const phase = collectible.id.length * 0.7;
-    const pulse = 1 + Math.sin(t * 10 + phase) * 0.18;
+    // Keep pickup truth visible while removing only its non-essential shimmer.
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(t * 10 + phase) * 0.18;
     node.setVisible(true);
-    node.setScale([0.12 * pulse, 0.12 * pulse, 0.12 * pulse]);
+    node.setScale([0.085 * pulse, 0.13 * pulse, 0.075 * pulse]);
     collectedIdleSparkleProof.shardSparkleRendered = true;
   }
 }
@@ -891,9 +1878,10 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     setSubjectSuppressed: (suppressed: boolean) => {
       compositionSubjectSuppressed = suppressed;
       app.pause();
-      // Visibility is exact; an effectively-zero skinned mesh can still cover
-      // a subpixel and make the diagnostic screenshot depend on raster rounding.
-      player.setVisible(!suppressed);
+      // Keep the runtime target visible so the follow camera does not fall back
+      // to its authored target and trigger unrelated LOD/camera differences.
+      // The frame loop applies the exact 0.0001 suppression scale below.
+      player.setVisible(true);
       player.setScale(1);
       app.step(0);
     },
@@ -993,9 +1981,9 @@ function playerSurfaceAlignment() {
  *
  * Every field is read back from mounted diagnostics rather than declared, so the
  * route cannot report a feature the runtime did not actually run. `claimedFeatures`
- * deliberately lists only the features those contracts prove; SSAO is authored in
- * this scene but is reported as executed-only because its visible contribution is
- * not proven at root, and no field here generalizes to arbitrary-scene parity.
+ * deliberately lists only the features those contracts prove. The route does not
+ * request SSAO because the root contract proves execution but not a visible
+ * contribution, and no field here generalizes to arbitrary-scene parity.
  */
 function rootRendererIntegrationEvidence() {
   const diagnostics = app.diagnostics();
@@ -1029,8 +2017,8 @@ function rootRendererIntegrationEvidence() {
     // shadow-receiving geometry, but the safe path does not render those passes.
     claimedFeatures: [
       ...(renderer?.runtime.backend === "production-runtime" ? ["root-typed-glb-production-bridge"] : []),
-      ...(postprocess?.pixelBacked === true && ["tone-mapping", "color-grade", "fxaa"].every((pass) => actualPasses.includes(pass))
-        ? ["root-pixel-backed-tone-mapping-color-grade-fxaa-chain"]
+      ...(postprocess?.pixelBacked === true && actualPasses.includes("tone-mapping")
+        ? ["root-pixel-backed-tone-mapping"]
         : []),
       ...(postprocess?.bloomPass === true ? ["root-bloom-pass"] : []),
       ...(renderer?.fog.enabled === true && renderer?.runtime.backend === "production-runtime" ? ["root-environment-fog"] : []),
@@ -1070,6 +2058,64 @@ function routeDiagnostics() {
     surfaceContact: platformerScene.contactPointForPlayer(state.player),
     surfaceContactAlignment: playerSurfaceAlignment(),
     completionProof
+  };
+}
+
+function buildSkylineVisualLanguageEvidence() {
+  const contract = skylineVisualLanguageEvidence();
+  const skyShardCount = collectibles.filter((collectible) => !String(collectible.id).includes("ember-charge")).length;
+  const hazardRuntimeIds = hazards.flatMap((hazard) => [
+    `skyline-hazard-language-${hazard.id}-rising`,
+    `skyline-hazard-language-${hazard.id}-falling`
+  ]);
+  const emberRuntimeIds = SKYLINE_EMBER_PICKUPS.flatMap((pickup) => [
+    `skyline-ember-pickup-${pickup.id}-core`,
+    `skyline-ember-pickup-${pickup.id}-ring`
+  ]);
+  const relayRuntimeIds = checkpoints.map((checkpoint) => `skyline-relay-language-${checkpoint.id}`);
+  const roleCoverage = {
+    "safe-surface": {
+      mountedNodeCount: skylineWorldNodes.length,
+      semanticElementCount: platforms.length,
+      source: "typed-world + certified-surface-map"
+    },
+    hazard: {
+      mountedNodeCount: hazardRuntimeIds.length,
+      semanticElementCount: hazards.length,
+      typedSentryCount: SKYLINE_SENTRY_ENCOUNTERS.length
+    },
+    collectible: {
+      mountedNodeCount: Object.keys(skyShardGlitterNodes).length + skylineSparklePoolNodes.length,
+      semanticElementCount: skyShardCount,
+      primitive: "custom-indexed-faceted-diamond + instanced-torus-halo"
+    },
+    "ember-charge": {
+      mountedNodeCount: emberRuntimeIds.length,
+      semanticElementCount: SKYLINE_EMBER_PICKUPS.length,
+      primitive: "capsule + torus"
+    },
+    relay: {
+      mountedNodeCount: Object.keys(relayLanguageNodes).length,
+      semanticElementCount: checkpoints.length,
+      activeCount: state.activatedCheckpoints.length,
+      primitive: "torus + post"
+    },
+    finish: {
+      mountedNodeCount: skylineSummitBeaconNodes.length,
+      semanticElementCount: 1,
+      primitive: "stepped boxes + single core"
+    },
+    player: { mountedNodeCount: 1, semanticElementCount: 1, source: "typed-GLB" },
+    ghost: { mountedNodeCount: 1, semanticElementCount: 1, source: "typed-GLB translucent echo" }
+  };
+  return {
+    ...contract,
+    roleCoverage,
+    allRolesMounted: Object.values(roleCoverage).every((coverage) => coverage.mountedNodeCount > 0)
+      && [...hazardRuntimeIds, ...emberRuntimeIds, ...relayRuntimeIds, "platformer-player", "skyline-ghost-echo"]
+        .every((id) => app.nodes.has(id)),
+    standaloneOrbGameplayMarkerCount: 0,
+    sphereUseBoundary: "only a subordinate finish core or non-role effect may be spherical"
   };
 }
 const initialSurfaceAlignment = playerSurfaceAlignment();
@@ -1130,6 +2176,9 @@ const mountedEvidence = {
     apexReference: "character-height",
     characterHeight: SKYLINE_CHARACTER_HEIGHT
   },
+  cameraReadability: skylineCameraReadabilityEvidence(),
+  motionPreferences: skylineMotionPreferenceEvidence(),
+  visualLanguage: buildSkylineVisualLanguageEvidence(),
   claimBoundary: "Bounded certified-surface platformer presentation; no physics-engine, automatic GLB-to-game, or unsupported skinned-animation claim.",
   platformerStateStatus: state.status,
   /**
@@ -1164,7 +2213,8 @@ const mountedEvidence = {
   levelDesign: {
     authoredPlayableSeconds: level.assetBinding.authoredPlayableSeconds,
     minimumMeaningfulPlaySeconds: SKYLINE_MIN_PLAYABLE_SECONDS,
-    districtCount: SKYLINE_SECTION_COUNT,
+    districtCount: SKYLINE_DISTRICTS.length,
+    sectionCount: SKYLINE_SECTION_COUNT,
     actCount: SKYLINE_LEVEL_ACTS.length,
     acts: SKYLINE_LEVEL_ACTS.map((act) => ({ ...act, sections: [...act.sections] })),
     targetCompletionWindowSeconds: [SKYLINE_MIN_PLAYABLE_SECONDS, SKYLINE_MAX_TARGET_PLAYABLE_SECONDS],
@@ -1187,6 +2237,8 @@ const mountedEvidence = {
   feel: {
     actIndex: 0,
     actTitle: "Home Grove",
+    districtIndex: 0,
+    districtTitle: "Steel Dawn",
     telegraphActive: false,
     sentryDefeated: false,
     emberVolleySeen: false,
@@ -1194,6 +2246,7 @@ const mountedEvidence = {
     landDipApplied: false,
     dashPunchApplied: false
   },
+  eventFeedback: buildSkylineEventFeedbackEvidence(),
   primaryAssets: ["showcaseKenneyOobiPlatformerHero", "showcaseKenneyVerdantPlatformerWorld"],
   platformer: {
     cameraIntent: "side-scroller",
@@ -1204,7 +2257,8 @@ const mountedEvidence = {
       ...gameGeometryContract.design,
       minPlayableSeconds: SKYLINE_MIN_PLAYABLE_SECONDS,
       minCheckpoints: checkpoints.length,
-      transformedAssetBackedDistricts: SKYLINE_SECTION_COUNT,
+      transformedAssetBackedSections: SKYLINE_SECTION_COUNT,
+      visualDistricts: SKYLINE_DISTRICTS.map((district) => ({ ...district, actIndexes: [...district.actIndexes], sections: [...district.sections], landmarkNodeIds: [...district.landmarkNodeIds] })),
       storyActs: SKYLINE_LEVEL_ACTS.map((act) => ({ ...act, sections: [...act.sections] })),
       districtLayouts: SKYLINE_SECTION_LAYOUTS.map((layout) => ({ ...layout }))
     },
@@ -1228,16 +2282,83 @@ const mountedEvidence = {
   },
   audio: skylineAudio.proof(),
   // Renderer-owned idle sparkle pulses on sky-shards and ember pickups in the scene.
-  collectibleGlitter: collectedIdleSparkleProof
+  collectibleGlitter: collectedIdleSparkleProof,
+  // ---- incorporations (05-Skyline-Runner): additive evidence fields ----
+  ghost: { ...skylineGhostEvidence },
+  foliage: { ...skylineFoliageEvidence },
+  backdrop: buildSkylineBackdropEvidence(),
+  districts: buildSkylineDistrictEvidence(state.player.x),
+  actGates: skylineActGateEvidence,
+  relaySensors: { ...skylineRelayEvidence }
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_SKYLINE_RUNNER__", { value: mountedEvidence, configurable: true, writable: true });
+/**
+ * Deterministic SR-08 evidence seam. It moves only the mounted camera target while
+ * the route simulation is frozen; certified player/game truth is never teleported.
+ */
+Object.defineProperty(window, "__AURA3D_SKYLINE_DENSITY_CAPTURE__", {
+  value: {
+    setCameraGameX: (gameX: number) => {
+      skylineDensityCaptureGameX = Math.max(
+        0,
+        Math.min(SKYLINE_SECTION_COUNT * SKYLINE_SECTION_STRIDE, Number(gameX) || 0)
+      );
+      app.pause();
+      // Capture needs exact positions rather than a wall-clock-dependent follow
+      // settle. Disable only camera interpolation while this evidence seam owns
+      // the target; the render/LOD paths remain the production paths.
+      (platformerCamera as { smoothing?: number }).smoothing = 0;
+      app.step(1 / 60);
+      // `step` renders after frame callbacks. Republish once after it returns so
+      // evidence reads that completed submission without paying for a second draw.
+      publishPlatformerEvidence();
+    },
+    clear: () => {
+      skylineDensityCaptureGameX = null;
+      (platformerCamera as { smoothing?: number }).smoothing = skylineCameraOriginalSmoothing;
+      app.resume();
+    }
+  },
+  configurable: true
+});
+/**
+ * Test seam (mirrors the composition probe pattern): lets browser specs seed a
+ * valid ghost recording without a full 95-second playthrough. It goes through the
+ * same parse/store path as a real finish, so it cannot inject anything the route
+ * would not otherwise accept.
+ */
+Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_SEED__", {
+  value: (json: string) => {
+    ghostStore.save(json);
+    loadGhostFromStore();
+  },
+  configurable: true
+});
+/**
+ * Deterministic browser-evidence seam. It advances only the isolated replay and
+ * renderer-owned echo while the live game is paused, allowing paired frames to
+ * prove ghost visibility without changing any live game truth.
+ */
+Object.defineProperty(window, "__AURA3D_SKYLINE_GHOST_CAPTURE_STEP__", {
+  value: (tickCount: number) => {
+    const boundedTicks = Math.max(0, Math.min(600, Math.floor(tickCount)));
+    for (let index = 0; index < boundedTicks; index += 1) {
+      renderSkylineGhost(SKYLINE_GHOST_TICK_SECONDS);
+    }
+    publishPlatformerEvidence();
+  },
+  configurable: true
+});
 updatePlatformerHud();
 
 function publishPlatformerEvidence(): void {
   rememberAnimationState();
   const scenePlayer = platformerScene.toScenePlayer(state.player);
   if (Math.abs(state.player.vx) > 0.01) playerFacing = state.player.vx >= 0 ? 1 : -1;
-  player.setPosition(...scenePlayer.position);
+  const presentedPlayer = skylineDensityCaptureGameX === null
+    ? scenePlayer
+    : platformerScene.toScenePlayer({ ...state.player, x: skylineDensityCaptureGameX });
+  player.setPosition(...presentedPlayer.position);
   player.setRotation(0, playerYawForFacing(playerFacing), 0);
   const visualState = readAnimationState();
   // Request the hero's embedded clip for the current locomotion state. Root
@@ -1291,10 +2412,29 @@ function publishPlatformerEvidence(): void {
   // and every claim would read as absent.
   mountedEvidence.rootRendererIntegration = rootRendererIntegrationEvidence();
   mountedEvidence.audio = skylineAudio.proof();
+  mountedEvidence.eventFeedback = buildSkylineEventFeedbackEvidence();
   mountedEvidence.collectibleGlitter = collectedIdleSparkleProof;
+  mountedEvidence.ghost = { ...skylineGhostEvidence };
+  mountedEvidence.foliage = { ...skylineFoliageEvidence, activeActPoolsVisible: lastActPaletteIndex };
+  mountedEvidence.backdrop = buildSkylineBackdropEvidence();
+  mountedEvidence.relaySensors = { ...skylineRelayEvidence };
+  for (const checkpoint of checkpoints) {
+    const active = state.activatedCheckpoints.includes(checkpoint.id);
+    const pulse = active ? 1.14 : 1;
+    // Runtime scale replaces the authored torus scale, so retain the relay's
+    // compact ring proportions while giving an activated relay a subtle pulse.
+    relayLanguageNodes[checkpoint.id]?.setScale([0.13 * pulse, 0.13 * pulse, 0.035 * pulse]);
+  }
+  mountedEvidence.districts = buildSkylineDistrictEvidence(state.player.x);
+  mountedEvidence.cameraReadability = skylineCameraReadabilityEvidence();
+  mountedEvidence.motionPreferences = skylineMotionPreferenceEvidence();
+  mountedEvidence.visualLanguage = buildSkylineVisualLanguageEvidence();
+  const currentDistrict = resolveSkylineDistrict(state.player.x);
   mountedEvidence.feel = {
     actIndex: resolveSkylineActIndex(state.player.x),
     actTitle: resolveSkylineAct(state.player.x).title,
+    districtIndex: currentDistrict.index,
+    districtTitle: currentDistrict.title,
     telegraphActive: skylineFeel.snapshot().actIndex >= 0 && skylineFeel.telegraphActive(),
     sentryDefeated: skylineFeel.sentryDefeatSeen(),
     emberVolleySeen: mountedEvidence.gameplay.emberVolleyFired,
@@ -1342,6 +2482,24 @@ function animationEvidence() {
 app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
   input.update(step);
+  if (compositionPoseSettled) {
+    // Route-primary evidence owns a fixed imported clip, scale, renderer time,
+    // camera, and LOD state. `app.step(0)` may publish handle changes, but it may
+    // not advance pickup pulses or any other route simulation between the paired
+    // visible/suppressed frames.
+    publishPlatformerEvidence();
+    return;
+  }
+  if (skylineDensityCaptureGameX !== null) {
+    // Evidence-only camera traversal: publish the mounted target/diagnostics but
+    // do not advance the certified platformer, challenge, events, or recorder.
+    publishPlatformerEvidence();
+    return;
+  }
+  // SR-A1 HUD toggle: works while running or paused; never touches the sim.
+  if (input.pressed("ghostToggle")) {
+    toggleSkylineGhost();
+  }
   if (input.pressed("pause")) {
     paused = skylineFeel.togglePause();
     mountedEvidence.gameplay.pauseFreezesSimulation = paused;
@@ -1357,7 +2515,21 @@ app.onFrame(({ dt }) => {
     playerFacing = 1;
     paused = false;
     skylineFeel.resetRuntime();
+    clearActiveEventFeedbackVisuals();
+    // Incorporation resets: the ghost recording survives resets (it is the saved
+    // best), but an in-progress capture and the echo playback start over.
+    ghostRecorder.reset();
+    ghostRunFinalized = false;
+    if (ghostReplay) ghostReplay.reset();
+    relaySensorState.forEach((entry) => {
+      entry.overlapped = false;
+    });
+    relaySensorKnownActivations.clear();
+    skylineRelayEvidence.coveredCount = 0;
+    skylineRelayEvidence.missedCheckpointIds = [];
     lastActPaletteIndex = applySkylineActPaletteVisibility(0, actSkyBandSets, actFogSets);
+    applySkylineInstancedPoolVisibility(0);
+    skylineAudio.setAmbienceAct(0);
     for (const [key, node] of Object.entries(actLightSets)) {
       node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
     }
@@ -1388,10 +2560,6 @@ app.onFrame(({ dt }) => {
   const collectedEmbers = state.collected.filter((id) => id.includes("ember-charge")).length;
   const emberCharges = Math.max(0, collectedEmbers - spentEmberCharges);
   const dashPressed = input.pressed("dash");
-  if (dashPressed) {
-    const pose = platformerScene.toScenePlayer(state.player);
-    skylineFeel.onDash(pose.position);
-  }
   if (input.pressed("fire") && emberCharges > 0 && emberVolleys.length < emberVolleyNodes.length) {
     const slot = emberVolleyNodes.findIndex((_, index) => !emberVolleys.some((volley) => volley.slot === index));
     if (slot >= 0) {
@@ -1432,7 +2600,6 @@ app.onFrame(({ dt }) => {
         volley.life = 0;
         const [sx, sy] = platformerScene.toScenePoint({ x: volley.x, y: volley.y });
         skylineFeel.onEmberImpact([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
-        skylineFeel.onSentryDefeat([sx, sy, GAMEPLAY_ACTOR_DEPTH], 150);
         mountedEvidence.gameplay.emberDefeatedSentry = true;
       }
     }
@@ -1448,12 +2615,19 @@ app.onFrame(({ dt }) => {
     clearHazardIds: clearedThisFrame
   });
   for (const event of state.events) {
+    const [eventSceneX, eventSceneY] = platformerScene.toScenePoint({ x: event.x, y: event.y });
+    const eventScenePoint = [eventSceneX, eventSceneY, GAMEPLAY_ACTOR_DEPTH] as const;
     if (event.type === "jump") {
-      skylineFeel.onJump();
+      skylineFeel.onJump(eventScenePoint);
+      triggerEventFeedbackVisual("jump", eventScenePoint);
     }
     if (event.type === "land") {
-      const pose = platformerScene.toScenePlayer(state.player);
-      skylineFeel.onLand(pose.position);
+      skylineFeel.onLand(eventScenePoint);
+      triggerEventFeedbackVisual("land", eventScenePoint);
+    }
+    if (event.type === "dash") {
+      skylineFeel.onDash(eventScenePoint);
+      triggerEventFeedbackVisual("dash", eventScenePoint);
     }
     if (event.type === "collect") {
       const collectible = level.collectibles?.find((item) => item.id === event.id);
@@ -1464,40 +2638,74 @@ app.onFrame(({ dt }) => {
           skylineFeel.onEmberPickup([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
         } else {
           skylineFeel.onCollect([sx, sy, GAMEPLAY_ACTOR_DEPTH]);
+          triggerEventFeedbackVisual("collect", [sx, sy, GAMEPLAY_ACTOR_DEPTH]);
         }
       }
     }
     if (event.type === "checkpoint") {
       const act = resolveSkylineAct(state.player.x);
-      skylineFeel.onCheckpoint(act.title);
+      const district = resolveSkylineDistrict(state.player.x);
+      skylineFeel.onCheckpoint(`${district.title} · ${act.title}`, eventScenePoint);
+      triggerEventFeedbackVisual("relay", eventScenePoint);
     }
     if (event.type === "hazard" || event.type === "fall") {
-      skylineFeel.onDeath();
+      // The kit emits hazard/fall and respawn in the same step. Anchor the damage
+      // echo to the newly visible player position so the response is retained in
+      // the rendered recovery frame rather than disappearing off-camera.
+      const hazardVisiblePoint = platformerScene.toScenePlayer(state.player).position;
+      skylineFeel.onHazard(hazardVisiblePoint);
+      triggerEventFeedbackVisual("hazard", hazardVisiblePoint);
+    }
+    if (event.type === "respawn") {
+      skylineFeel.onRespawn(eventScenePoint);
+      triggerEventFeedbackVisual("respawn", eventScenePoint);
     }
     if (event.type === "defeat" || event.type === "stomp") {
       const encounter = SKYLINE_SENTRY_ENCOUNTERS.find((entry) => entry.id === event.id);
       if (encounter) {
         const [sx, sy] = platformerScene.toScenePoint({ x: encounter.x, y: encounter.y });
         skylineFeel.onSentryDefeat([sx, sy, GAMEPLAY_ACTOR_DEPTH], event.type === "stomp" ? 100 : 150);
+        triggerEventFeedbackVisual("defeat", [sx, sy, GAMEPLAY_ACTOR_DEPTH]);
       }
     }
     if (event.type === "complete") {
-      skylineFeel.onSummit();
+      skylineFeel.onSummit(eventScenePoint);
+      triggerEventFeedbackVisual("finish", eventScenePoint);
     }
   }
+  updateEventFeedbackVisuals(step);
   challengeEvidence = runnerChallenge.step(step, previous, state);
+  // SR-A1: capture the live input at fixed ticks while the run is live, and
+  // finalize exactly once when the physical finish fires. A faster finish replaces
+  // the stored best; slower ones are discarded.
+  if (state.status === "playing") {
+    ghostRecorder.tick(step, {
+      moveX: input.axis("moveX"),
+      jumpPressed: input.pressed("jump"),
+      jumpHeld: input.held("jump")
+    });
+  } else if (state.status === "completed") {
+    finalizeGhostRecordingIfFinished(challengeEvidence.elapsedSeconds);
+  }
   // Flow, chain and objective state must be visible in the rendered scene, not only in
   // HUD text, so the feedback nodes are driven from the evidence that was just observed.
   renderChallengeFeedback();
   renderEmberVolleys();
+  renderSkylineGhost(step);
+  updateRelaySensorEvidence();
   const nextActIndex = resolveSkylineActIndex(state.player.x);
   if (nextActIndex !== lastActPaletteIndex) {
     lastActPaletteIndex = applySkylineActPaletteVisibility(nextActIndex, actSkyBandSets, actFogSets);
     for (const [key, node] of Object.entries(actLightSets)) {
       node.setVisible(Number(key.split("-")[0]) === lastActPaletteIndex);
     }
+    // SR-A2 pools + SR-A6 ambience stem follow the same traversal-derived act.
+    applySkylineInstancedPoolVisibility(lastActPaletteIndex);
+    skylineAudio.setAmbienceAct(lastActPaletteIndex);
   }
-  skylineFeel.applyCameraShake(platformerCamera);
+  activeCameraFrame = skylineFeel.applyCameraShake(platformerCamera, playerFacing);
+  observedCameraFacing.add(activeCameraFrame.leadDirection);
+  airborneFramingObserved ||= !state.player.grounded && Math.abs(state.player.vy) > 0.05;
   skylineFeel.updatePresentation(step, {
     simTime: state.time,
     playerX: state.player.x,
@@ -1506,10 +2714,9 @@ app.onFrame(({ dt }) => {
     sceneBinding: platformerScene,
     defeatedHazardIds: state.defeatedHazards,
     sentryNodes,
+    sentryAccentNodes,
     emberVolleys,
     emberVolleyNodes,
-    emberPickupNodes,
-    collectedIds: state.collected,
     firePressed: input.pressed("fire"),
     emberStock: emberCharges,
     scoreElement: hudElements?.score ?? null
@@ -1554,9 +2761,12 @@ function setupSkylineGameHud(): void {
     pulse: [
       { elementId: "dash-control", code: "ShiftLeft" },
       { elementId: "fire-control", code: "KeyJ" },
+      { elementId: "ghost-control", code: "KeyG" },
       { elementId: "reset-control", code: "KeyR" }
     ]
   });
+  // Initial badge text ships in the template as GHOST OFF; the ghost runtime
+  // (declared later, after the app mounts) owns every later refresh.
 }
 function updatePlatformerHud(): void {
   if (!hudElements) return;
@@ -1576,8 +2786,9 @@ function updatePlatformerHud(): void {
   });
   const alignment = playerSurfaceAlignment();
   const act = resolveSkylineAct(state.player.x);
+  const district = resolveSkylineDistrict(state.player.x);
   updateSkylineHud(hudElements, snapshot, isSkylineDebugMode() ? {
-    surfaceLabel: `${act.title} · ${snapshot.objective} · ${alignment.feetOnSurface ? "Grounded" : "Airborne"}`,
+    surfaceLabel: `${district.title} · ${act.title} · ${snapshot.objective} · ${alignment.feetOnSurface ? "Grounded" : "Airborne"}`,
     flowLabel: `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`
   } : undefined);
 }

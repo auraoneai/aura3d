@@ -53,7 +53,9 @@ describe("Skyline's composition subject is measured in a deterministic pose", ()
     expect(source).toContain("compositionPoseSettled = true");
     expect(source).toContain("captureTime: 0.4");
     expect(source).toMatch(/if \(compositionPoseSettled\)[\s\S]*player\.play\(HERO_LOCOMOTION_CLIP_MAP\.idle, \{ loop: false, captureTime: 0\.4 \}\)/);
-    expect(source).toContain("player.setVisible(!suppressed)");
+    expect(source).toContain("player.setVisible(true)");
+    expect(source).toContain("compositionSubjectSuppressed");
+    expect(source).toContain("? 0.0001");
   });
 
   it("keeps the retained scaleDelta well inside the composition threshold", () => {

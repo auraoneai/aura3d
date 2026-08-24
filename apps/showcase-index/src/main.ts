@@ -132,7 +132,7 @@ const apps = [
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Bounded falling-block candidate with passing route-primary, deploy/release, and gameplay proof."
+    notes: "Bounded falling-block candidate with passing route-primary, deploy/release, and gameplay proof; ships a synthesized nine-cue audio pass with additive level stems, an instanced two-pool board view, reduced-motion-gated clear FX and camera punch, extruded wall scoreboards, and tuned retained-bloom stills."
   },
   {
     id: "showcase-skyline-runner",
@@ -157,87 +157,203 @@ const apps = [
     notes: "Public racing candidate with a typed Kenney race car, mesh-derived neon-circuit topology, certified car-to-road binding, evidence-selected framing, and retained gameplay evidence."
   },
   {
-    id: "neon-corridor-strike",
-    route: "/examples/neon-corridor-strike/",
-    routeHealth: "/examples/neon-corridor-strike/route-health.json",
-    classification: "prototype",
-    publicShowcase: true,
-    primaryAssetStatus: "typed-primary-assets",
+    id: "showcase-siege-golf",
+    route: "/apps/showcase-siege-golf/",
+    routeHealth: "/apps/showcase-siege-golf/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
-    claimStatus: "demoted",
-    notes: "Prototype first-person corridor shooter on createAuraApp with typed GLB subjects and hitscan. Not a reusable shooter kit."
+    claimStatus: "bounded",
+    notes: "Nine-hole route-local Rapier demolition-golf prototype with typed ball and structure props, complete machine evidence, and public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-aurora-lander",
+    route: "/apps/showcase-aurora-lander/",
+    routeHealth: "/apps/showcase-aurora-lander/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets-with-current-root-probes",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Three-site authored arcade landing prototype with typed probe/beacons, static Rapier terrain contact, bounded prediction, and public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-neon-swarm",
+    route: "/apps/showcase-neon-swarm/",
+    routeHealth: "/apps/showcase-neon-swarm/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Five-wave abstract horde-survival prototype with a typed courier and street props, deterministic route-local steering, a real 320-instance finale, and public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-gravity-post",
+    route: "/apps/showcase-gravity-post/",
+    routeHealth: "/apps/showcase-gravity-post/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "typed-primary-assets-pending-current-release-probes",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Four-delivery authored arcade-gravity courier prototype with a typed mail pod and dock beacons, fixed-step prediction telemetry, real dock sensors, and public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-courier-rush",
+    route: "/apps/showcase-courier-rush/",
+    routeHealth: "/apps/showcase-courier-rush/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Five-dispatch arcade courier prototype with typed van, parcel, traffic, and zone landmarks; machine evidence is complete and public promotion remains held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-pulse-tunnel",
+    route: "/apps/showcase-pulse-tunnel/",
+    routeHealth: "/apps/showcase-pulse-tunnel/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "primitive-only",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Explicitly abstract 90-second tunnel runner with 13 typed audio assets and a measured deterministic pattern fallback; no typed visual-primary claim, and public promotion remains held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-mech-hangar",
+    route: "/apps/showcase-mech-hangar/",
+    routeHealth: "/apps/showcase-mech-hangar/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe hangar-to-arena prototype with a deterministic original CC0 16-part MH-2M family, validated rigid socket assembly, route-local combat, and public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-vault-breakers",
+    route: "/apps/showcase-vault-breakers/",
+    routeHealth: "/apps/showcase-vault-breakers/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe route-local pinball prototype with typed original cabinet, mechanism overlay, ball, flipper, and vault-door assets on public Rapier contacts; public promotion remains held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-rooftop-buckets",
+    route: "/apps/showcase-rooftop-buckets/",
+    routeHealth: "/apps/showcase-rooftop-buckets/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe five-heat rooftop shooting prototype with an original CC0 typed court, backboard, rim, regulation-scaled ball, and player-shaped defender standee; public promotion remains held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-bank-shot",
+    route: "/apps/showcase-bank-shot/",
+    routeHealth: "/apps/showcase-bank-shot/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe three-rack billiards prototype with an original CC0 typed table, cue, and individually marked 16-ball family on public Rapier contacts; public promotion remains held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-gallery-shift",
+    route: "/apps/showcase-gallery-shift/",
+    routeHealth: "/apps/showcase-gallery-shift/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe two-floor stealth prototype with six original CC0 museum/exhibit assets, public-physics LOS and sensors, authored route-local hearing/patrol navigation, and public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-deep-recovery",
+    route: "/apps/showcase-deep-recovery/",
+    routeHealth: "/apps/showcase-deep-recovery/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe route-local submarine salvage prototype with five original CC0 typed sub, wreck, standard/heavy pod, and buoy assets; authored thrust, drag, buoyancy, collision, sonar, oxygen, and tow rules; public promotion held for independent exact-artifact review."
+  },
+  {
+    id: "showcase-patrol-wing",
+    route: "/apps/showcase-patrol-wing/",
+    routeHealth: "/apps/showcase-patrol-wing/route-health.json",
+    classification: "prototype-blocked",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Root-safe route-local authored arcade-flight patrol with four original CC0 typed aircraft, drone, and pad assets; Rapier-backed route-local sensors, root combat-world hits, and public promotion held for independent exact-artifact review."
   }
 ] as const;
+
+const GAME_APP_IDS = new Set([
+  "showcase-turbo-drift-circuit",
+  "showcase-skyline-runner",
+  "showcase-blockfall-reactor",
+  "aura-clash-showcase",
+  "neon-corridor-strike",
+  "showcase-siege-golf",
+  "showcase-neon-swarm",
+  "showcase-aurora-lander",
+  "showcase-gravity-post",
+  "showcase-courier-rush",
+  "showcase-pulse-tunnel",
+  "showcase-mech-hangar",
+  "showcase-vault-breakers",
+  "showcase-bank-shot",
+  "showcase-patrol-wing",
+  "showcase-gallery-shift",
+  "showcase-deep-recovery",
+  "showcase-rooftop-buckets"
+]);
 
 const publicApps = apps.filter((entry) => entry.publicShowcase);
 const routes = publicApps.map((entry) => entry.route);
 
-const previewNames = [
-  "product-configurator-studio",
-  "smart-city-control-room",
-  "cinematic-architecture-tour",
-  "digital-twin-operations-center",
-  "blockfall-reactor",
-  "turbo-drift-circuit",
-  "skyline-runner",
-  "aura-clash-arena",
-  "interactive-water-lab",
-  "ocean-surface-showcase",
-  "cinematic-post-pipeline",
-  "smart-city-stress-test",
-  "ai-data-galaxy",
-  "concept-car-configurator",
-  "animated-robotics-lab",
-  "physics-manipulation-lab",
-  "fog-cathedral",
-  "factory-digital-twin",
-  "gltf-material-variants",
-  "obj-loader",
-  "texture-anisotropy",
-  "depth-outline",
-  "trackball-controls",
-  "geometry-draw-range",
-  "interactive-picking",
-  "multiple-camera-views",
-  "webxr-interactions",
-  "simple-transforms",
-  "expressive-robot-rig",
-  "avocado-texture-lab",
-  "material-spheres",
-  "accelerated-particle-field",
-  "tokyo-keyframes",
-  "damaged-helmet-detail",
-  "concept-car-cinema",
-  "advanced-gallery-console",
-  "neon-corridor-strike"
-] as const;
-
-const experienceLabels = [
-  "Product", "Operations", "Architecture", "Digital twin", "Playable game", "Playable game",
-  "Playable game", "Playable game", "Simulation", "Environment", "Post pipeline", "Stress test",
-  "Data", "Product", "Animation", "Physics", "Environment", "Digital twin", "Asset loading",
-  "Asset loading", "Textures", "Postprocess", "Controls", "Geometry", "Interaction", "Cameras",
-  "XR", "Scene basics", "Animation", "Materials", "Materials", "GPU", "Animation", "Materials",
-  "Automotive", "Gallery", "Playable game"
-] as const;
-
 document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, index) => {
   const title = card.querySelector("strong")?.textContent?.trim() ?? `Aura3D experience ${index + 1}`;
   const description = card.querySelector("small");
+  const previewSlug = card.dataset.preview;
+  const badgeText = card.dataset.badge || "Experience";
+
   const media = document.createElement("figure");
   media.className = "showcase-card__media";
 
   const image = document.createElement("img");
-  image.src = `/previews/showcase-index/${String(index + 1).padStart(2, "0")}-${previewNames[index]}.webp`;
+  const primarySrc = previewSlug
+    ? `/previews/showcase-index/${previewSlug}.webp`
+    : `/previews/showcase-index/${String(index + 1).padStart(2, "0")}.webp`;
+  image.src = primarySrc;
   image.alt = `${title} live preview`;
   image.width = 720;
   image.height = 450;
-  image.loading = index < 4 ? "eager" : "lazy";
+  image.loading = index < 6 ? "eager" : "lazy";
   image.decoding = "async";
+  image.onerror = () => {
+    if (previewSlug && !image.dataset.retried) {
+      image.dataset.retried = "true";
+      image.src = `/previews/${previewSlug}.webp`;
+    }
+  };
 
   const label = document.createElement("span");
   label.className = "showcase-card__label";
-  label.textContent = experienceLabels[index];
+  label.textContent = badgeText;
   media.append(image, label);
   card.insertBefore(media, description ?? null);
 
@@ -250,15 +366,11 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
 window.__AURA3D_SHOWCASE_INDEX__ = {
   status: "ready",
   appCount: publicApps.length,
-  gameCount: publicApps.filter((entry) =>
-    entry.id === "showcase-blockfall-reactor" ||
-    entry.id === "showcase-turbo-drift-circuit" ||
-    entry.id === "showcase-skyline-runner"
-  ).length,
+  gameCount: apps.filter((entry) => GAME_APP_IDS.has(entry.id)).length,
   routes,
   remediation: {
     schema: "aura3d-showcase-route-health-index/1.0",
-    generatedAt: "2026-06-21",
+    generatedAt: "2026-08-22",
     launchReady: false,
     routeHealthRequired: true,
     apps

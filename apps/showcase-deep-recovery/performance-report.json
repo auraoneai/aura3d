@@ -1,0 +1,35 @@
+{
+  "schema": "aura3d.deep-recovery.performance/1.0",
+  "generatedAt": "2026-08-24T04:23:05.724Z",
+  "producer": "apps/showcase-deep-recovery/scripts/write-performance-report.ts",
+  "producerSourceSha256": "e209be0cfd04b530e8b606b40e958f80ea38e1ef30c013184e847b8be8f37d44",
+  "routeSourceFiles": [
+    "apps/showcase-deep-recovery/src/deep-audio.ts",
+    "apps/showcase-deep-recovery/src/environment.ts",
+    "apps/showcase-deep-recovery/src/main.ts",
+    "apps/showcase-deep-recovery/src/oxygen.ts",
+    "apps/showcase-deep-recovery/src/reef.ts",
+    "apps/showcase-deep-recovery/src/salvage.ts",
+    "apps/showcase-deep-recovery/src/sonar.ts",
+    "apps/showcase-deep-recovery/src/styles.css",
+    "apps/showcase-deep-recovery/src/sub.ts"
+  ],
+  "routeSourceSha256": "394097f3b9202b1ab543547ecc40208a1626e160616e8a0c8e8a4bd89d75a43c",
+  "scope": "Route-local authored submarine/tether/sonar CPU sampling plus browser-observed root createAuraApp draw calls; no GPU frame-time, fluid-simulation, reusable submarine-kit, physics-engine, or renderer-parity claim.",
+  "samples": 20000,
+  "fixedStepSeconds": 0.016666666666666666,
+  "budgets": {
+    "routeLogicCpuP95Ms": 0.2,
+    "drawCalls": 240
+  },
+  "observed": {
+    "routeLogicCpuP95Ms": 0.002,
+    "deterministicStateHash": "ebc8fe50",
+    "drawCalls": 81,
+    "renderSize": [
+      1280,
+      800
+    ]
+  },
+  "pass": true
+}

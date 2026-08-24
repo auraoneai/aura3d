@@ -1,0 +1,181 @@
+{
+  "schema": "aura3d-siege-golf-performance/1.0",
+  "generatedAt": "2026-08-23T16:59:56.681Z",
+  "scope": "headless route-local Rapier fixed-step simulation; rendering performance is not claimed",
+  "budgets": {
+    "maxWorldBodies": 32,
+    "maxConstraints": 8,
+    "physicsStepP95Ms": 16.7
+  },
+  "observed": {
+    "maxWorldBodies": 26,
+    "maxConstraints": 3,
+    "maxPhysicsP95Ms": 0.5823
+  },
+  "holes": [
+    {
+      "holeId": "hole-01-open-fairway",
+      "trackedGameplayBodies": 4,
+      "worldBodies": 16,
+      "colliders": 16,
+      "constraints": 0,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        341
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 341,
+        "mean": 0.1307,
+        "p95": 0.3184,
+        "max": 0.9343
+      }
+    },
+    {
+      "holeId": "hole-02-gate-crash",
+      "trackedGameplayBodies": 5,
+      "worldBodies": 17,
+      "colliders": 17,
+      "constraints": 2,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.113,
+        "p95": 0.1596,
+        "max": 0.4984
+      }
+    },
+    {
+      "holeId": "hole-03-flip-panel",
+      "trackedGameplayBodies": 4,
+      "worldBodies": 17,
+      "colliders": 17,
+      "constraints": 1,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.1897,
+        "p95": 0.3832,
+        "max": 0.5685
+      }
+    },
+    {
+      "holeId": "hole-04-barrel-alley",
+      "trackedGameplayBodies": 5,
+      "worldBodies": 18,
+      "colliders": 18,
+      "constraints": 0,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.0992,
+        "p95": 0.1843,
+        "max": 0.2842
+      }
+    },
+    {
+      "holeId": "hole-05-springboard",
+      "trackedGameplayBodies": 7,
+      "worldBodies": 20,
+      "colliders": 20,
+      "constraints": 3,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.1368,
+        "p95": 0.2658,
+        "max": 0.7217
+      }
+    },
+    {
+      "holeId": "hole-06-pendulum-pass",
+      "trackedGameplayBodies": 4,
+      "worldBodies": 19,
+      "colliders": 19,
+      "constraints": 1,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.165,
+        "p95": 0.2913,
+        "max": 0.481
+      }
+    },
+    {
+      "holeId": "hole-07-tower-topple",
+      "trackedGameplayBodies": 6,
+      "worldBodies": 18,
+      "colliders": 18,
+      "constraints": 1,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.2426,
+        "p95": 0.5823,
+        "max": 0.7917
+      }
+    },
+    {
+      "holeId": "hole-08-double-flip",
+      "trackedGameplayBodies": 7,
+      "worldBodies": 22,
+      "colliders": 22,
+      "constraints": 3,
+      "canonicalStrokes": 1,
+      "resolutionFrames": [
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 360,
+        "mean": 0.2081,
+        "p95": 0.4672,
+        "max": 0.5632
+      }
+    },
+    {
+      "holeId": "hole-09-wrecking-green",
+      "trackedGameplayBodies": 9,
+      "worldBodies": 26,
+      "colliders": 26,
+      "constraints": 2,
+      "canonicalStrokes": 2,
+      "resolutionFrames": [
+        360,
+        360
+      ],
+      "completed": true,
+      "physicsStepMs": {
+        "samples": 720,
+        "mean": 0.2791,
+        "p95": 0.5337,
+        "max": 0.653
+      }
+    }
+  ],
+  "pass": true
+}
