@@ -202,7 +202,7 @@ function ensureBuiltRouteFavicons() {
 function copyAuraAssets() {
   const manifest = readJson(path.join(repoRoot, "aura.assets.json"));
   const manifestAssets = new Map(manifest.assets.map((asset) => [asset.id, asset]));
-  const routeAssetIds = collectRouteAssetIds();
+  const routeAssetIds = collectRouteAssetIds(manifestAssets);
   const ignoredTokens = new Set();
   const copiedAssetIds = new Set();
 
@@ -232,13 +232,39 @@ function resolveShowcaseAssetBaseUrl() {
   return configuredBase.replace(/\/+$/, "");
 }
 
-function collectRouteAssetIds() {
+function collectRouteAssetIds(manifestAssets) {
   const routeAssetIds = new Set();
   const assetReferencePattern = /\bassets\.([A-Za-z0-9_$]+)\b/g;
   for (const route of publicRoutes) {
     const routeDir = path.join(repoRoot, "apps", route, "src");
     if (!existsSync(routeDir)) continue;
-    for (const file of collectRouteFiles(routeDir)) {
+    const routeFiles = collectRouteFiles(routeDir);
+    const routeSource = routeFiles.map((file) => readFileSync(file, "utf8")).join("\n");
+
+    /*
+     * Keep route-local assets even when a game selects them through a
+     * generated key (for example `bankShotBall${number}`) instead of a
+     * statically analyzable `assets.foo` member. The old collector copied only
+     * the first ball and left the rest as production 404s, which caused the
+     * renderer to wait on an incomplete scene and present a blank canvas.
+     * Matching the manifest source path also keeps this bounded to the route's
+     * own authored asset folder rather than shipping the entire catalog.
+     * Shared set-dressing IDs are included when their literal typed key is
+     * present in the route source (for example Patrol Wing's island props).
+     */
+    for (const [assetId, asset] of manifestAssets) {
+      const sourcePaths = [asset.source, asset.provenance?.sourcePath].filter(
+        (value) => typeof value === "string"
+      );
+      if (
+        sourcePaths.some((value) => value.replaceAll("\\", "/").startsWith(`apps/${route}/`))
+        || routeSource.includes(assetId)
+      ) {
+        routeAssetIds.add(assetId);
+      }
+    }
+
+    for (const file of routeFiles) {
       const content = readFileSync(file, "utf8");
       for (const match of content.matchAll(assetReferencePattern)) {
         routeAssetIds.add(match[1]);

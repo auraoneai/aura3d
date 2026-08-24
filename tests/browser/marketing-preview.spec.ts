@@ -18,10 +18,18 @@ interface PreviewManifest {
   }[];
 }
 
+interface AuraAssetManifest {
+  readonly assets: readonly {
+    readonly id: string;
+    readonly url: string;
+  }[];
+}
+
 const manifest = JSON.parse(readFileSync(
   resolve("marketing/public/previews/final-preview-manifest.json"),
   "utf8"
 )) as PreviewManifest;
+const auraAssetManifest = JSON.parse(readFileSync(resolve("aura.assets.json"), "utf8")) as AuraAssetManifest;
 
 const showcaseRoutes = [
   "/apps/showcase-product-configurator/",
@@ -145,6 +153,22 @@ test.describe("built marketing preview", () => {
       const bytes = await response.body();
       expect(bytes.subarray(0, 4).toString("ascii"), `${thumbnailUrl} RIFF header`).toBe("RIFF");
       expect(bytes.subarray(8, 12).toString("ascii"), `${thumbnailUrl} WebP signature`).toBe("WEBP");
+    }
+  });
+
+  test("publishes dynamically selected game assets used by production scenes", async ({ request }) => {
+    const dynamicAssetIds = [
+      ...Array.from({ length: 15 }, (_, index) => `bankShotBall${String(index + 1).padStart(2, "0")}`),
+      "propRockA",
+      "propRockB",
+      "propConifer"
+    ];
+    for (const assetId of dynamicAssetIds) {
+      const asset = auraAssetManifest.assets.find((candidate) => candidate.id === assetId);
+      expect(asset, `${assetId} must exist in the typed asset manifest`).toBeDefined();
+      const response = await request.get(`${server.origin}${asset!.url}`);
+      expect(response.status(), `${assetId} production asset response`).toBe(200);
+      expect(response.headers()["content-type"], `${assetId} content type`).toContain("model/gltf-binary");
     }
   });
 
