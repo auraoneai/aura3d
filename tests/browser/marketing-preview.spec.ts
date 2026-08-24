@@ -28,10 +28,24 @@ const showcaseRoutes = [
   "/apps/showcase-smart-city-control/",
   "/apps/showcase-cinematic-architecture/",
   "/apps/showcase-digital-twin-ops/",
-  "/apps/showcase-blockfall-reactor/",
-  "/showcase/aura-clash/playable/",
   "/apps/showcase-turbo-drift-circuit/",
-  "/apps/showcase-skyline-runner/"
+  "/showcase/aura-clash/playable/",
+  "/examples/neon-corridor-strike/",
+  "/apps/showcase-blockfall-reactor/",
+  "/apps/showcase-skyline-runner/",
+  "/apps/showcase-siege-golf/",
+  "/apps/showcase-neon-swarm/",
+  "/apps/showcase-aurora-lander/",
+  "/apps/showcase-gravity-post/",
+  "/apps/showcase-courier-rush/",
+  "/apps/showcase-pulse-tunnel/",
+  "/apps/showcase-mech-hangar/",
+  "/apps/showcase-vault-breakers/",
+  "/apps/showcase-bank-shot/",
+  "/apps/showcase-patrol-wing/",
+  "/apps/showcase-gallery-shift/",
+  "/apps/showcase-deep-recovery/",
+  "/apps/showcase-rooftop-buckets/"
 ] as const;
 
 test.describe("built marketing preview", () => {
@@ -98,7 +112,7 @@ test.describe("built marketing preview", () => {
     await expect(page.locator("body")).toContainText("Three.js 0.185.1");
   });
 
-  test("serves every reviewed poster and public card route from production output", async ({ request }) => {
+  test("serves every reviewed poster, public card, and machine-complete game route from production output", async ({ request }) => {
     expect(manifest.status).toBe("machine-reviewed-human-approval-pending");
     expect(manifest.previews).toHaveLength(8);
     for (const preview of manifest.previews) {

@@ -51,6 +51,11 @@ const showcaseRoutes = [
   "showcase-pulse-tunnel",
   "showcase-mech-hangar",
   "showcase-vault-breakers",
+  "showcase-bank-shot",
+  "showcase-patrol-wing",
+  "showcase-gallery-shift",
+  "showcase-deep-recovery",
+  "showcase-rooftop-buckets",
   "showcase-data-galaxy",
   "showcase-webgpu-particle-lab"
 ];
