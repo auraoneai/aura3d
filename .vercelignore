@@ -1,6 +1,9 @@
 node_modules/
 apps/**/dist/
 apps/**/node_modules/
+apps/*/dist/
+apps/*/node_modules/
+marketing/dist/
 .git/
 tests/
 test-results/
