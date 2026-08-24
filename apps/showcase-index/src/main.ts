@@ -329,15 +329,17 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
   const title = card.querySelector("strong")?.textContent?.trim() ?? `Aura3D experience ${index + 1}`;
   const description = card.querySelector("small");
   const previewSlug = card.dataset.preview;
+  const canonicalPreviewSlug = previewSlug ?? title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   const badgeText = card.dataset.badge || "Experience";
 
   const media = document.createElement("figure");
   media.className = "showcase-card__media";
 
   const image = document.createElement("img");
-  const primarySrc = previewSlug
-    ? `/previews/showcase-index/${previewSlug}.webp`
-    : `/previews/showcase-index/${String(index + 1).padStart(2, "0")}.webp`;
+  const primarySrc = `/previews/showcase-index/${canonicalPreviewSlug}.webp`;
   image.src = primarySrc;
   image.alt = `${title} live preview`;
   image.width = 720;
@@ -345,9 +347,9 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
   image.loading = index < 6 ? "eager" : "lazy";
   image.decoding = "async";
   image.onerror = () => {
-    if (previewSlug && !image.dataset.retried) {
+    if (!image.dataset.retried) {
       image.dataset.retried = "true";
-      image.src = `/previews/${previewSlug}.webp`;
+      image.src = `/previews/${canonicalPreviewSlug}.webp`;
     }
   };
 

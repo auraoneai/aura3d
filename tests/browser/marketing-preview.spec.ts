@@ -130,6 +130,24 @@ test.describe("built marketing preview", () => {
     }
   });
 
+  test("renders all 18 game cards and resolves every showcase thumbnail", async ({ page, request }) => {
+    await page.goto(`${server.origin}/apps/showcase-index/`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".portfolio-strip")).toContainText("18 playable games");
+    await expect(page.locator(".games-library .showcase-card")).toHaveCount(18);
+    await expect(page.locator(".showcase-card__media img")).toHaveCount(50);
+
+    const thumbnailUrls = await page.locator(".showcase-card__media img").evaluateAll((images) =>
+      images.map((image) => (image as HTMLImageElement).src)
+    );
+    for (const thumbnailUrl of new Set(thumbnailUrls)) {
+      const response = await request.get(thumbnailUrl);
+      expect(response.status(), `${thumbnailUrl} thumbnail response`).toBe(200);
+      const bytes = await response.body();
+      expect(bytes.subarray(0, 4).toString("ascii"), `${thumbnailUrl} RIFF header`).toBe("RIFF");
+      expect(bytes.subarray(8, 12).toString("ascii"), `${thumbnailUrl} WebP signature`).toBe("WEBP");
+    }
+  });
+
   test("opens a showcase card through its keyboard interaction", async ({ page }) => {
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
