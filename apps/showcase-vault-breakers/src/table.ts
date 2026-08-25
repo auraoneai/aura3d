@@ -23,9 +23,17 @@ export type SimWorld = ReturnType<typeof physics.world>;
 export type SimJoint = ReturnType<SimWorld["createConstraint"]>;
 
 export const BALL_RADIUS = 0.14;
-export const BALL_MASS = 0.28;
-/** Authored playfield slope: gravity's +Z component pulls toward the drain. */
-export const SLOPE_ACCELERATION = 2.35;
+export const BALL_MASS = 0.08;
+/**
+ * Playfield slope angle in radians (~6.5°). Applied as a per-frame authored
+ * force on the ball rather than tilting gravity, so the felt collider stays
+ * flat and the ball rolls realistically downhill toward the drain (+Z).
+ */
+export const SLOPE_ANGLE = 0.113;
+/** Downhill acceleration from slope: g * sin(angle) ≈ 9.81 * 0.113 ≈ 1.11 m/s² */
+export const SLOPE_ACCELERATION = 9.81 * Math.sin(SLOPE_ANGLE);
+/** Cross-slope damping to keep the ball from drifting sideways unrealistically. */
+export const SLOPE_CROSS_DAMPING = 0.98;
 /**
  * Flipper pivots at |x| = 0.85: the resting tips leave a 0.32 m surface gap
  * (a 0.28 m ball falls through to the drain), while the raised tips close to
@@ -37,14 +45,19 @@ export const FLIPPER_REST_YAW = -0.62;
 export const FLIPPER_UP_YAW = 0.5;
 export const RIGHT_REST_YAW = Math.PI - FLIPPER_REST_YAW;
 export const RIGHT_UP_YAW = Math.PI - FLIPPER_UP_YAW;
-export const FLIPPER_RAISE_SPEED = 60;
-export const FLIPPER_RETURN_SPEED = -10;
-export const FLIPPER_MOTOR_TORQUE = 240;
-export const FLIPPER_BAT_MASS = 0.18;
+export const FLIPPER_RAISE_SPEED = 90;
+export const FLIPPER_RETURN_SPEED = -25;
+export const FLIPPER_MOTOR_TORQUE = 600;
+export const FLIPPER_BAT_MASS = 0.35;
 export const RIGHT_JOINT_LIMITS: readonly [number, number] = [-RIGHT_REST_YAW, -RIGHT_UP_YAW];
 
-export const BUMPER_KICK = 2.6;
-export const SLING_KICK = 2.2;
+/** Fixed outgoing speed after bumper reflection (m/s). */
+export const BUMPER_REFLECT_SPEED = 4.0;
+/** Fixed outgoing speed after slingshot reflection (m/s). */
+export const SLING_REFLECT_SPEED = 3.5;
+/** Legacy aliases kept for any external references. */
+export const BUMPER_KICK = BUMPER_REFLECT_SPEED;
+export const SLING_KICK = SLING_REFLECT_SPEED;
 export const PLUNGER_MIN_SPEED = 5.4;
 export const PLUNGER_MAX_SPEED = 11.4;
 
@@ -186,13 +199,17 @@ export interface TableSimulation {
 
 export function createTableSimulation(): TableSimulation {
   const world = physics.world({
-    gravity: [0, -9.81, SLOPE_ACCELERATION],
+    // Pure downward gravity — slope is applied as an authored per-frame force
+    // on the ball (see stepFixed), not baked into gravity. This keeps the felt
+    // collider flat and produces realistic rolling acceleration.
+    gravity: [0, -9.81, 0],
     fixedDelta: 1 / 60,
-    solverIterations: 8,
+    solverIterations: 12,
     enableSleeping: true,
-    sleepVelocityThreshold: 0.06,
-    sleepDelay: 0.45,
-    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 256, motionThreshold: 0.35 }
+    // Much more conservative sleep: ball must be nearly stopped for 1.5s
+    sleepVelocityThreshold: 0.02,
+    sleepDelay: 1.5,
+    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 256, motionThreshold: 0.25 }
   });
 
   const visuals: PropVisual[] = [];
@@ -211,6 +228,11 @@ export function createTableSimulation(): TableSimulation {
   const balls: BallEntry[] = [];
   let nextBallIndex = 0;
   const laneRestFrames = new Map<number, number>();
+  // Flipper-gap stall: a ball trapped in the V between the resting flipper
+  // tips (just above the drain threshold, z in [3.3, 3.5]) is an honest drain.
+  // The counter resets whenever the ball moves, so a live flipper shot that
+  // kicks the ball back up the table never gets drained by it.
+  const drainGapStallFrames = new Map<number, number>();
 
   const registerCollider = (colliderId: number, name: string, sensor: boolean): void => {
     colliderNameById.set(colliderId, name);
@@ -261,11 +283,12 @@ export function createTableSimulation(): TableSimulation {
   };
 
   // ---- playfield -------------------------------------------------------------
-  addStaticBox("felt", [2.85, 0.1, 4.15], [0, -0.1, 0], { friction: 0.1, restitution: 0.18, color: "#0c0818", emissive: "#0e0620" });
+  // Felt: very low friction so the ball rolls freely; slope force handles downhill motion
+  addStaticBox("felt", [2.85, 0.1, 4.15], [0, -0.1, 0], { friction: 0.05, restitution: 0.15 });
   // Perimeter walls (invisible: the typed cabinet GLB carries the look).
-  addStaticBox("wall-top", [2.85, 0.4, 0.1], [0, 0.4, -4.0], { visible: false, restitution: 0.42 });
-  addStaticBox("wall-left", [0.1, 0.4, 4.15], [-2.7, 0.4, 0], { visible: false, restitution: 0.42 });
-  addStaticBox("wall-right", [0.1, 0.4, 4.15], [2.7, 0.4, 0], { visible: false, restitution: 0.42 });
+  addStaticBox("wall-top", [2.85, 0.4, 0.1], [0, 0.4, -4.0], { visible: false, restitution: 0.6, friction: 0.3 });
+  addStaticBox("wall-left", [0.1, 0.4, 4.15], [-2.7, 0.4, 0], { visible: false, restitution: 0.6, friction: 0.3 });
+  addStaticBox("wall-right", [0.1, 0.4, 4.15], [2.7, 0.4, 0], { visible: false, restitution: 0.6, friction: 0.3 });
   // Bottom wall with the center drain gap (x in [-0.7, 0.7]).
   addStaticBox("wall-bottom-left", [2.0, 0.4, 0.1], [-2.7 + 0.8, 0.4, 4.0], { visible: false, restitution: 0.3 });
   addStaticBox("wall-bottom-right", [2.0, 0.4, 0.1], [2.7 - 0.8, 0.4, 4.0], { visible: false, restitution: 0.3 });
@@ -384,8 +407,8 @@ export function createTableSimulation(): TableSimulation {
 
   // ---- drain sensor -----------------------------------------------------------
   {
-    const body = world.createBody({ type: "static", position: [0, 0.05, 3.92] });
-    const collider = world.createCollider(body, { shape: physics.box(0.68, 0.2, 0.2), sensor: true });
+    const body = world.createBody({ type: "static", position: [0, 0.05, 3.85] });
+    const collider = world.createCollider(body, { shape: physics.box(1.2, 0.2, 0.3), sensor: true });
     registerCollider(collider.id, "drain:lane", true);
   }
   // Drain visual provided by GLB table model
@@ -417,9 +440,10 @@ export function createTableSimulation(): TableSimulation {
       linearDamping: 0.4,
       angularDamping: 0.3
     });
+    // Larger collider to match the visual flipper and reliably hit the ball
     const collider = world.createCollider(bat, {
-      shape: physics.box(0.4, 0.055, 0.065),
-      material: { friction: 0.55, restitution: 0.65 }
+      shape: physics.box(0.45, 0.08, 0.1),
+      material: { friction: 0.4, restitution: 0.7 }
     });
     registerCollider(collider.id, `flipper-${side}`, false);
     const joint = world.createConstraint({
@@ -484,10 +508,10 @@ export function createTableSimulation(): TableSimulation {
       type: "dynamic",
       position: [...position] as [number, number, number],
       mass: BALL_MASS,
-      friction: 0.16,
-      restitution: 0.5,
-      linearDamping: 0.05,
-      angularDamping: 0.2
+      friction: 0.08,
+      restitution: 0.45,
+      linearDamping: 0.02,
+      angularDamping: 0.1
     });
     const collider = world.createCollider(body, { shape: physics.sphere(BALL_RADIUS) });
     registerCollider(collider.id, `ball-${index}`, false);
@@ -519,9 +543,30 @@ export function createTableSimulation(): TableSimulation {
     const approach = -(normal[0] * v[0] + normal[1] * v[1] + normal[2] * v[2]);
     if (approach < 0.4) return;
     kickCooldown.set(key, stepIndex);
-    const strength = kind === "bumper" ? BUMPER_KICK : SLING_KICK;
+    // Reflect the incoming velocity across the contact normal, then scale to a
+    // fixed outgoing speed. This gives consistent bumper/sling behavior regardless
+    // of incoming speed — a slow ball and a fast ball both leave at the same rate,
+    // like real pop bumpers.
+    const outSpeed = kind === "bumper" ? BUMPER_REFLECT_SPEED : SLING_REFLECT_SPEED;
+    // Normalize the contact normal
+    const nLen = Math.hypot(normal[0], normal[1], normal[2]) || 1;
+    const nx = normal[0] / nLen, ny = normal[1] / nLen, nz = normal[2] / nLen;
+    // Reflection: v' = v - 2(v·n)n, then rescale to outSpeed preserving the
+    // tangential component ratio. Simpler robust approach: outgoing velocity =
+    // reflection direction scaled to outSpeed.
+    const dot = v[0] * nx + v[1] * ny + v[2] * nz;
+    let rx = v[0] - 2 * dot * nx;
+    let ry = v[1] - 2 * dot * ny;
+    let rz = v[2] - 2 * dot * nz;
+    const rLen = Math.hypot(rx, ry, rz);
+    if (rLen < 0.001) {
+      // Ball was moving straight into the surface — bounce straight back along normal
+      rx = nx; ry = ny; rz = nz;
+    } else {
+      rx /= rLen; ry /= rLen; rz /= rLen;
+    }
     entry.body.wake();
-    entry.body.setVelocity([v[0] + normal[0] * strength, v[1] + normal[1] * strength * 0.2, v[2] + normal[2] * strength]);
+    entry.body.setVelocity([rx * outSpeed, Math.max(ry * outSpeed, -0.5), rz * outSpeed]);
   };
 
   const serveBall = (charge: number): boolean => {
@@ -584,6 +629,17 @@ export function createTableSimulation(): TableSimulation {
   const stepFixed = (steps = 1): void => {
     for (let index = 0; index < steps; index += 1) {
       stepIndex += 1;
+      // Authored playfield slope: accelerate live balls downhill (+Z) each fixed
+      // step. Applied as a velocity change rather than tilting gravity, so the
+      // felt stays flat and the ball accelerates realistically (v += a·dt).
+      const dt = 1 / 60;
+      for (const entry of balls) {
+        if (entry.state === "drained") continue;
+        if (!entry.body.sleeping) {
+          const v = entry.body.velocity;
+          entry.body.setVelocity([v[0] * SLOPE_CROSS_DAMPING, v[1], v[2] + SLOPE_ACCELERATION * dt]);
+        }
+      }
       const events = world.step(1 / 60);
       for (const event of events) {
         const contact = event.contact;
@@ -640,12 +696,30 @@ export function createTableSimulation(): TableSimulation {
           laneRestFrames.set(entry.index, 0);
         }
         // The drain lane: between the flipper tips the ball settles into the
-        // bottom gap (the physical gap is narrower than the ball, so the catch
-        // zone mirrors the drain sensor region — a ball through the flippers
-        // has drained).
-        if (p[2] > 3.72 && Math.abs(p[0]) < 0.68) {
+        // bottom gap. Widened zone catches balls that roll past the flippers
+        // on either side as well as straight down the middle.
+        if (p[2] > 3.5 && Math.abs(p[0]) < 1.2) {
           entry.state = "drained";
           parkBall(entry);
+          drainGapStallFrames.delete(entry.index);
+        }
+        // Flipper-gap stall: a ball resting in the V between the flipper tips
+        // (z in [3.3, 3.5], |x| < 1.0) with near-zero speed is an honest drain —
+        // real tables drain a ball trapped between the flippers. The counter
+        // resets any frame the ball moves (is saveable by flipping), so a live
+        // flipper shot never drains through this path.
+        if (entry.state !== "drained" && entry.state === "play" && p[2] > 3.3 && p[2] <= 3.5 && Math.abs(p[0]) < 1.0) {
+          const v = entry.body.velocity;
+          const speed = Math.hypot(v[0], v[1], v[2]);
+          const stall = speed < 0.25 ? (drainGapStallFrames.get(entry.index) ?? 0) + 1 : 0;
+          drainGapStallFrames.set(entry.index, stall);
+          if (stall >= 90) {
+            entry.state = "drained";
+            parkBall(entry);
+            drainGapStallFrames.delete(entry.index);
+          }
+        } else if (entry.state !== "drained") {
+          drainGapStallFrames.delete(entry.index);
         }
         // Safety: a play ball below the felt or outside the cabinet is a drain.
         if (entry.state !== "drained" && (p[1] < -1.5 || Math.abs(p[0]) > 3.4 || Math.abs(p[2]) > 4.6)) {
@@ -761,6 +835,7 @@ export function createTableSimulation(): TableSimulation {
         entry.state = "drained";
         parkBall(entry);
       }
+      drainGapStallFrames.clear();
     },
     debugBallBody(index: number): SimBody | undefined {
       return balls.find((entry) => entry.index === index)?.body;

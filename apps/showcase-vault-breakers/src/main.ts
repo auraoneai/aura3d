@@ -493,11 +493,15 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
 
 // --------------------------------------------------------- per-frame sync ----
 function syncVisuals(): void {
+  // Visual Y offset: matches the offset applied when creating the dynamic visual
+  // nodes (physics Y=0 is playfield level; scene nodes sit 0.28 above to appear
+  // on the cabinet GLB playfield surface).
+  const VISUAL_Y_OFFSET = 0.28;
   for (const pose of flow.sim.poses()) {
     const handle = dynamicHandles.get(pose.name);
     if (!handle) continue;
     const e = quatToEuler(pose.rotation);
-    handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
+    handle.setPosition(pose.position[0], pose.position[1] + VISUAL_Y_OFFSET, pose.position[2]);
     handle.setRotation(e.x, e.y, e.z);
   }
   const banksDown = flow.snapshot().banksDown;

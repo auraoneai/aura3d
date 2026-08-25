@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.vault-breakers.deploy/1.0",
-  "generatedAt": "2026-08-24T02:35:58.915Z",
+  "generatedAt": "2026-08-25T05:35:45.131Z",
   "producer": "apps/showcase-vault-breakers/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "307f4b91341d87311113968ad656c56e1af1ab02a54223c55c68d48ce5ac7407",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "bab3ce8b0c3901f88f7d781f5e79167c940f53271917e6e9613f01092a317431",
-  "sourceTreeSha256": "ff014a67b1a136670d511ae2b89df0dc1204d441f1f41f0097a4838f59e27ac6",
+  "distTreeSha256": "821c82966279ec54134ed5c3a578647ac9eeb81aee3bb758925d7e778c67e40d",
+  "sourceTreeSha256": "91c88f2084e3e56c6c5268aea79dea39d75b911bbebbeeacb6d2c2e23fe6606e",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-vault-breakers/src --asset <5 typed models>",
@@ -15,31 +15,31 @@
       "assets": [
         {
           "id": "vaultBreakersBall",
-          "hash": "sha256-5c94e5276ff405d3b12aad17a9733bd2eecf0e4a1af6c0ce2010fe211b0620ae",
+          "hash": "sha256-49b8a09b2f9333b150eb24a9416073618c49bb11c7a48bc79174789791a17a31",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "vaultBreakersFlipper",
-          "hash": "sha256-75e0ac2dba50c6d4dda4b3f610380a7fc6f8022ea1d734dd2ffc07a604c9c267",
+          "hash": "sha256-32e3cb7e0814fa98035ab789497c4254dcb057cf1d07184e55f5a3bdfff593e4",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "vaultBreakersMechanisms",
-          "hash": "sha256-355ab0fab5eb16edcdc5a9519f012257b7edbab778937a4df168523754429ebc",
+          "hash": "sha256-274e6bf9d38b2a7a6b78c977d8e0dc726d9139ae479c6af4a5c29dd5c237dbd6",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "vaultBreakersTable",
-          "hash": "sha256-47da0739ab0c982ca1bd874d1ecae5d141cfa8cf9b5e1a9ef1841e340f0d9eed",
+          "hash": "sha256-36cf709932ec1954984490af804587b5bfc5ecb51b4a26281581eb735517275f",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "vaultBreakersVaultDoor",
-          "hash": "sha256-ddb7304c0e473915dbf577c0207dd75b24093b8f2774cb2988a8869d7c7dbbbe",
+          "hash": "sha256-af04f8d4b05a9bf42d11b9248d406d74040022f7fae88b228cf3e5f277d60467",
           "quality": "release",
           "role": "prop"
         }
