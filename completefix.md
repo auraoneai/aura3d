@@ -2593,3 +2593,46 @@ the top of this file. No machine-green route-health, browser, deploy, or
 performance result is being promoted to a visual `ours` verdict. The next
 receipt entry will record the scoped commit, remote push, and Vercel deployment
 result after those operations complete.
+
+## 2026-09-01 current commit/push/deployment receipt
+
+The scoped source/evidence changes were committed as
+`da98fbc77e5016c832d9780f9b193a2444c0b134` with subject
+`Finish showcase visual gauntlet evidence and release gates`, then pushed
+successfully to `origin/main` (GitHub advanced `ea331d2e` → `da98fbc7`; seven
+Git LFS objects uploaded). The worktree still contains intentionally retained
+untracked scratch/candidate material; none of that material was staged.
+
+Vercel deployment used the linked `veerone/aura3d` project
+(`prj_5YTxFIgwQtNLwik68yFPUbovJpyA`) and the documented prebuilt workflow.
+The local production build completed with 23 showcase routes and nine evidence
+routes. To keep the deployment payload bounded, the build used the supported
+external asset base bound to the pushed commit:
+
+`https://media.githubusercontent.com/media/auraoneai/aura3d/da98fbc7/public/aura-assets`
+
+The first direct source upload exceeded Vercel's 15,000-file limit; the
+prebuilt tar upload then hit a transient CLI `fetch failed` while using the
+machine's Node 26 runtime. Retrying the same prebuilt output with Node 22
+completed successfully. This is recorded as an operational transport detail,
+not a source or build failure.
+
+Production deployment `dpl_9S3vNFdBn26B11f86oJHM7hcWEs2` was created from
+commit `da98fbc77e5016c832d9780f9b193a2444c0b134`, reached `READY`, and is
+aliased at:
+
+- `https://aura3d.auraone.ai`
+- `https://aura3d.vercel.app`
+- `https://aura3d-veerone.vercel.app`
+- deployment URL: `https://aura3d-1cnmkow2f-veerone.vercel.app`
+
+Headless Chromium verification against `https://aura3d.vercel.app` loaded
+Turbo Drift Circuit, Gravity Post, Pulse Tunnel, Gallery Shift, and Rooftop
+Buckets. Each returned HTTP 200, created one canvas, exposed its route title/UI,
+and produced zero page errors, console errors, or failed network requests.
+
+This deployment receipt proves transport and runtime availability only. It does
+not alter the visual verdicts: the strict unresolved set remains Turbo Drift
+Circuit, Gravity Post, Pulse Tunnel, Gallery Shift, Rooftop Buckets, and Mech
+Hangar. Their machine-green route/deploy evidence must not be relabeled as
+visual `ours`; fresh independent label-hidden comparison is still required.
