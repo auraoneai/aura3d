@@ -182,17 +182,18 @@ its retained floating-black frame, while Smart City, Digital Twin, and
 Cinematic Architecture remain **reference** after fresh blind review. No
 generated report is hand-authored by this receipt.
 
-**Deployment status:** commit `12482d03` is pushed to `origin/main`, and the
-local Vercel production build completed successfully. Three bounded Vercel
-upload attempts (source archive, prebuilt, and prebuilt `--no-wait`) failed at
-the upload transport before creating a deployment record; the production alias
-therefore still points to the prior deployment and can still show the stale
-black/white Mech Hangar slabs. This is a deployment transport hold, not visual
-evidence, and it must be cleared before claiming the live site reflects this
-commit.
+**Deployment status:** source commit `2d06f7de` and this receipt commit
+`2878cbe7` are pushed to `origin/main`, and the local Vercel production build
+completed successfully. Three bounded Vercel upload attempts (source archive,
+prebuilt, and prebuilt `--no-wait`) failed at the upload transport before
+creating a deployment record; the production alias therefore still points to
+the prior deployment and can still show the stale black/white Mech Hangar
+slabs. This is a deployment transport hold, not visual evidence, and it must
+be cleared before claiming the live site reflects `2878cbe7`.
 
 The next required actions are: resolve the Vercel upload transport, verify the
-live Mech Hangar HTML/assets against commit `12482d03`, continue only the
+live Mech Hangar HTML/assets against source commit `2d06f7de` and receipt
+`2878cbe7`, continue only the
 finite bounded visual lanes listed above, regenerate their named producers,
 run independent blind reviews on any new artifacts, and run focused/release
 gates. Do not turn a reference or insufficient-evidence result into `ours`.
