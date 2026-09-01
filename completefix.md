@@ -2402,3 +2402,47 @@ rendering-presentation blocker, not permission for another camera, primitive,
 HUD, or procedural-world loop. Full V10 provenance and the stop condition are
 recorded in
 `apps/showcase-pulse-tunnel/art-review/quaternius-presentation-v10-PROVENANCE.md`.
+
+## 2026-09-01 final commit and production deployment receipt
+
+The complete bounded five-game pass is committed and pushed to `origin/main`
+as `08cc7e1c6bb10d735079cfd35ebc0da0f82f6063` with subject
+`feat(showcase): complete bounded visual production passes`. Direct remote
+verification confirmed that both the local `HEAD` and GitHub `main` resolve to
+that exact commit. The repository-wide `pnpm typecheck` and `pnpm build`
+commands passed; the latter finalized all 29 package exports.
+
+The marketing production build then passed for all 23 showcase routes and nine
+evidence routes. It used the repository-supported external asset-base rewrite
+bound to the exact pushed commit:
+
+`https://media.githubusercontent.com/media/auraoneai/aura3d/08cc7e1c/public/aura-assets`
+
+Direct byte-range checks for the newly retained
+`gravityPostCourierSkiff.a32c76ed.glb` (408,704 bytes) and
+`turboCircuitEnvironmentV2.c9fdaf1e.glb` (4,967,136 bytes) returned HTTP 206,
+`Access-Control-Allow-Origin: *`, their exact full sizes, and the binary `glTF`
+header. Rewritten JavaScript bundles were content-renamed by the existing
+cache-busting build path.
+
+Vercel production deployment `dpl_7YGyiybweQYu4s8MyQaR4MCxioNf` reached
+`READY` and was aliased to `https://aura3d.vercel.app`. A final headless
+Chromium pass loaded Turbo Drift Circuit, Gravity Post, Pulse Tunnel, Gallery
+Shift, and Rooftop Buckets from that production alias. Every route returned
+HTTP 200, created one canvas, rendered route-specific UI, emitted zero page or
+console errors, and recorded zero failed network requests.
+
+This operational release is complete. Visual comparator status remains
+truthful and separate: all five routes remain **`reference`** after fresh
+anonymous comparisons. Rooftop retains its cleaner court, lighting, live-ball
+echoes, causal trajectory and HUD pass. Gravity retains the release-probed
+parcel skiff and crane-free focal composition, but its route/camera/effect lane
+is exhausted pending a higher-detail animated/textured courier and richer
+freight world. Turbo retains the candidate modeled circuit pass but is not
+release-promoted; the procedural environment lane is exhausted pending richer
+scenery/elevation/material/atmosphere assets. Gallery retains its green closer
+composition and real bounded LOS cue, but needs a higher-detail distinct actor
+family, richer authored museum treatment, explicit real patrol/objective
+visualization, and integrated HUD. Pulse V6 through V10 remain rejected and
+unregistered; the next valid work is deeper authored arena/material/light and
+combat-effect integration, not another procedural or camera loop.
