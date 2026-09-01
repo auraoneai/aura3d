@@ -86,6 +86,7 @@ def material(
     roughness: float,
     emissive: tuple[float, float, float] | None = None,
     emission_strength: float = 0.0,
+    stripe: tuple[float, float, float, float] | None = None,
 ) -> bpy.types.Material:
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
@@ -108,6 +109,31 @@ def material(
                 bsdf.inputs["Emission"].default_value = (*emissive, 1.0)
             if "Emission Strength" in bsdf.inputs:
                 bsdf.inputs["Emission Strength"].default_value = emission_strength
+        if stripe is not None:
+            # Packed micro-panel paint gives the authored freight district a
+            # genuine material hierarchy at gameplay distance. The image is
+            # deterministic, embedded in the GLB, and intentionally tiny: it
+            # is not a runtime URL, CSS texture, or external dependency.
+            image = bpy.data.images.new(name + " packed panel paint", width=32, height=32, alpha=False)
+            pixels: list[float] = []
+            for y in range(32):
+                for x in range(32):
+                    # Fine diagonal bands break large wall planes while still
+                    # preserving the district's restrained cargo palette.
+                    source = stripe if ((x + y * 2) // 5) % 2 else color
+                    pixels.extend(source[:3])
+                    pixels.append(1.0)
+            image.pixels = pixels
+            image.pack()
+            nodes = mat.node_tree.nodes
+            links = mat.node_tree.links
+            texcoord = nodes.new("ShaderNodeTexCoord")
+            image_node = nodes.new("ShaderNodeTexImage")
+            image_node.name = name + " packed panel texture"
+            image_node.image = image
+            image_node.interpolation = "Linear"
+            links.new(texcoord.outputs["UV"], image_node.inputs["Vector"])
+            links.new(image_node.outputs["Color"], bsdf.inputs["Base Color"])
     return mat
 
 
@@ -119,6 +145,19 @@ def track(obj: bpy.types.Object, mat: bpy.types.Material, name: str) -> bpy.type
         obj.data.materials[0] = mat
     obj["aura3d_non_colliding"] = True
     obj["aura3d_art_role"] = "renderer-owned freight-world"
+    # Blender's primitive generators provide UVs, but the authored footprint
+    # and beam meshes do not.  Unwrap those custom surfaces before material
+    # merge so a packed base-color texture never exports a `texCoord: -1`
+    # binding that would force the production bridge to fall back.
+    if obj.type == "MESH" and len(obj.data.uv_layers) == 0:
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.uv.smart_project(angle_limit=1.15192, island_margin=0.03)
+        bpy.ops.object.mode_set(mode="OBJECT")
+        obj.select_set(False)
     OBJECTS_BY_MATERIAL.setdefault(mat.name, []).append(obj)
     return obj
 
@@ -267,15 +306,24 @@ def build() -> None:
     reset_scene()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    deck = material("GPFD deck graphite", (0.055, 0.095, 0.125, 1.0), 0.62, 0.34)
-    alloy = material("GPFD structural alloy", (0.42, 0.55, 0.61, 1.0), 0.78, 0.24)
-    dark = material("GPFD machinery navy", (0.075, 0.14, 0.18, 1.0), 0.54, 0.38)
-    rust = material("GPFD oxidized cargo cladding", (0.46, 0.19, 0.105, 1.0), 0.32, 0.5)
-    cargo_blue = material("GPFD cargo blue", (0.08, 0.27, 0.35, 1.0), 0.34, 0.46)
-    cargo_cream = material("GPFD cargo cream", (0.56, 0.49, 0.35, 1.0), 0.26, 0.54)
-    glass = material("GPFD operations glass", (0.045, 0.22, 0.27, 1.0), 0.18, 0.16, (0.03, 0.38, 0.46), 0.36)
-    cyan = material("GPFD cyan guidance", (0.01, 0.25, 0.3, 1.0), 0.18, 0.22, (0.0, 0.92, 1.0), 5.2)
-    amber = material("GPFD amber hazard", (0.32, 0.095, 0.02, 1.0), 0.16, 0.28, (1.0, 0.27, 0.025), 4.6)
+    deck = material("GPFD deck graphite", (0.055, 0.095, 0.125, 1.0), 0.62, 0.34,
+                    stripe=(0.095, 0.16, 0.19, 1.0))
+    alloy = material("GPFD structural alloy", (0.42, 0.55, 0.61, 1.0), 0.78, 0.24,
+                     stripe=(0.27, 0.38, 0.43, 1.0))
+    dark = material("GPFD machinery navy", (0.075, 0.14, 0.18, 1.0), 0.54, 0.38,
+                    stripe=(0.11, 0.2, 0.24, 1.0))
+    rust = material("GPFD oxidized cargo cladding", (0.46, 0.19, 0.105, 1.0), 0.32, 0.5,
+                    stripe=(0.62, 0.26, 0.12, 1.0))
+    cargo_blue = material("GPFD cargo blue", (0.08, 0.27, 0.35, 1.0), 0.34, 0.46,
+                          stripe=(0.13, 0.37, 0.43, 1.0))
+    cargo_cream = material("GPFD cargo cream", (0.56, 0.49, 0.35, 1.0), 0.26, 0.54,
+                           stripe=(0.7, 0.59, 0.4, 1.0))
+    glass = material("GPFD operations glass", (0.045, 0.22, 0.27, 1.0), 0.18, 0.16, (0.03, 0.38, 0.46), 0.36,
+                     stripe=(0.08, 0.34, 0.39, 1.0))
+    cyan = material("GPFD cyan guidance", (0.01, 0.25, 0.3, 1.0), 0.18, 0.22, (0.0, 0.92, 1.0), 5.2,
+                    stripe=(0.025, 0.12, 0.17, 1.0))
+    amber = material("GPFD amber hazard", (0.32, 0.095, 0.02, 1.0), 0.16, 0.28, (1.0, 0.27, 0.025), 4.6,
+                     stripe=(0.64, 0.18, 0.025, 1.0))
 
     # One connected, chamfered deck with broad outer service aprons and an
     # unobstructed central courier channel. The asymmetrical outline keeps the
@@ -399,6 +447,80 @@ def build() -> None:
         for side in (-1.0, 1.0):
             box(f"approach lamp post {index} {side:+.0f}", (x, side * 0.86, 0.16), (0.035, 0.035, 0.3), dark, 0.005)
             box(f"approach lamp head {index} {side:+.0f}", (x, side * 0.84, 0.32), (0.08, 0.07, 0.055), cyan if index > 1 else amber, 0.008)
+
+    # Additional verticality and material cadence are deliberately confined to
+    # the outer aprons.  These open loading towers, stacked freight modules,
+    # and service bridges establish a layered city depth behind the live
+    # courier channel instead of another row of anonymous ground slabs.
+    for index, (x, side, height, width) in enumerate([
+        (0.34, -1.02, 1.18, 0.56),
+        (1.18, 1.06, 1.42, 0.68),
+        (2.02, -1.08, 1.08, 0.62),
+        (2.78, 1.02, 1.58, 0.72),
+    ]):
+        tower_mat = dark if index % 2 else rust
+        box(f"outer loading tower shell {index + 1}", (x, side, height * 0.5),
+            (width, 0.28, height), tower_mat, 0.035)
+        # Three inset window bands produce readable occupancy and scale without
+        # creating separate material/draw submissions after the merge.
+        for band in range(3):
+            z = 0.26 + band * (height * 0.24)
+            box(f"outer loading tower window {index + 1} {band + 1}",
+                (x - width * 0.12, side - math.copysign(0.151, side), z),
+                (width * 0.48, 0.026, 0.085), glass, 0.004)
+        box(f"outer loading tower cap {index + 1}", (x, side, height + 0.06),
+            (width * 1.18, 0.36, 0.09), alloy, 0.012)
+        box(f"outer loading tower beacon {index + 1}",
+            (x + width * 0.32, side - math.copysign(0.17, side), height * 0.75),
+            (0.045, 0.03, 0.14), cyan if index % 2 else amber, 0.004)
+
+    # Staggered container stacks give the district a believable freight rhythm;
+    # each stack has a contrasting cap and a recessed label stripe, rather than
+    # the repetitive untextured block silhouettes that failed the prior review.
+    stack_specs = [
+        (0.42, -1.43, 0.34, cargo_blue), (0.42, -1.43, 0.68, cargo_cream),
+        (1.1, 1.42, 0.34, cargo_cream), (1.1, 1.42, 0.68, cargo_blue),
+        (1.9, -1.5, 0.34, cargo_cream), (2.42, 1.43, 0.34, cargo_blue),
+        (2.42, 1.43, 0.68, cargo_cream),
+    ]
+    for index, (x, y, z, cargo_mat) in enumerate(stack_specs):
+        box(f"stacked freight crate {index + 1}", (x, y, z), (0.52, 0.32, 0.26), cargo_mat, 0.026)
+        box(f"stacked freight crate label {index + 1}",
+            (x, y - math.copysign(0.167, y), z + 0.015),
+            (0.26, 0.018, 0.07), amber if index % 2 else cyan, 0.004)
+
+    # Elevated dispatch bridges frame (but do not cover) the courier corridor.
+    # Their diagonal braces and alternating signal bars create perspective
+    # depth toward the Gale terminal, with all geometry still renderer-owned.
+    for index, x in enumerate((0.54, 1.48, 2.42)):
+        bridge_height = 1.42 + (index % 2) * 0.16
+        for side in (-1.0, 1.0):
+            beam_between(f"dispatch bridge upright {index} {side:+.0f}",
+                         (x, side * 1.04, 0.18), (x, side * 1.04, bridge_height),
+                         0.065, alloy)
+            beam_between(f"dispatch bridge diagonal {index} {side:+.0f}",
+                         (x - 0.26, side * 1.04, 0.24), (x + 0.18, side * 1.04, bridge_height - 0.12),
+                         0.04, dark)
+        box(f"dispatch bridge crown {index}", (x, 0.0, bridge_height),
+            (0.14, 2.24, 0.08), alloy, 0.012)
+        box(f"dispatch bridge route beacon {index}", (x + 0.04, 0.0, bridge_height + 0.055),
+            (0.24, 0.08, 0.026), cyan if index > 0 else amber, 0.004)
+
+    # A pair of deep backline silhouettes provides the terminal with an actual
+    # skyline, while remaining low enough that the destination crown and
+    # courier parcel remain the focal subjects in the review lens.
+    for index, (x, y, width, height, facade) in enumerate([
+        (0.2, -2.0, 0.66, 1.1, rust),
+        (1.05, 2.05, 0.52, 1.34, dark),
+        (2.02, -2.02, 0.72, 1.5, dark),
+        (2.9, 2.04, 0.58, 1.22, rust),
+    ]):
+        box(f"backline freight skyline {index + 1}", (x, y, height * 0.5),
+            (width, 0.26, height), facade, 0.038)
+        for row in range(3):
+            box(f"backline skyline window {index + 1} {row + 1}",
+                (x - width * 0.08, y - math.copysign(0.14, y), 0.26 + row * 0.3),
+                (width * 0.36, 0.02, 0.085), glass, 0.003)
 
     # Convert and merge strictly by material. The detailed authored district
     # therefore remains an estimated nine draw submissions rather than one per

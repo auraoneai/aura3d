@@ -210,6 +210,8 @@ type AuraGeneratedAssetDefinitions = {
   readonly "pulseTerminalSentry": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pulseUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "robotcand": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopAthleteDefender": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopAthleteShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopBackboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopBucketsAmbientRooftopSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -224,9 +226,12 @@ type AuraGeneratedAssetDefinitions = {
   readonly "rooftopBucketsSwishSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "rooftopCourt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopDefender": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopDefenderV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopLayupScorer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopRim": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopShooterV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopVenueV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseAdventurerRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseAnimatedRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseArcadeCabinet": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -15067,14 +15072,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "gravityPostCourierSkiff": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/gravityPostCourierSkiff.a32c76ed.glb",
-    hash: "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+    url: "/aura-assets/gravityPostCourierSkiff.15e45d11.glb",
+    hash: "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
     bounds: [
       1.67,
       0.978,
-      2.37
+      2.375
     ],
-    sizeBytes: 408704,
+    sizeBytes: 900260,
     metadata: {
       "materials": [
         "GPCS amber drive light",
@@ -15120,7 +15125,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "nodeCount": 10,
         "meshCount": 10,
         "materialCount": 10,
-        "textureCount": 0,
+        "textureCount": 9,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
@@ -15151,14 +15156,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "author": "Aura3D synthesis",
         "sourceFamily": "aura3d-original",
         "attribution": "Aura3D synthesis — original CC0 Gravity Post courier skiff",
-        "retrievedAt": "2026-09-01T03:02:00.000Z",
+        "retrievedAt": "2026-09-01T10:09:00.000Z",
         "evidence": [
+          "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the layered courier hull, cyan canopy and running rails, side armor/fairings, four grounded contact-drive pods with rim/hub detail, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge; nine packed deterministic paint textures are embedded in the GLB. Route-local authored motion remains the sole gameplay owner.",
           "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the low courier chassis, cyan canopy and running rails, four grounded contact-drive pods and skids, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge. Route-local authored motion remains the sole gameplay owner."
         ],
-        "checkedAt": "2026-09-01T03:02:00.000Z"
+        "checkedAt": "2026-09-01T10:09:00.000Z"
       },
       "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
-      "outputPath": "public/aura-assets/gravityPostCourierSkiff.a32c76ed.glb",
+      "outputPath": "public/aura-assets/gravityPostCourierSkiff.15e45d11.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -15170,19 +15176,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "max": [
           0.835,
           0.978,
-          1.15
+          1.155
         ],
         "size": [
           1.67,
           0.978,
-          2.37
+          2.375
         ],
         "center": [
           0,
           0.489,
-          -0.035
+          -0.033
         ],
-        "maxDimension": 2.37,
+        "maxDimension": 2.375,
         "grounded": true
       },
       "materialMetadata": [
@@ -15262,15 +15268,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+        "assetHash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-09-01T03:52:57.234Z",
+        "checkedAt": "2026-09-01T17:47:39.082Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
-          "sha256": "sha256-13d61e81490afff5298f2d2b3c79866a5f34be38b89720b2b4c629742ffcfdf9",
-          "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
-          "checkedAt": "2026-09-01T03:52:57.234Z",
+          "sha256": "sha256-3943c1947237a2b14fd6fd73678503027d1ad1a22cd8b4578d8552d779971d1f",
+          "assetHash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
+          "checkedAt": "2026-09-01T17:47:39.082Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff"
         },
         "messages": [
@@ -15289,29 +15295,39 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "GPCS postal identity",
         "GPCS postal navy"
       ],
-      "textures": [],
+      "textures": [
+        "GPCS brushed alloy packed paint",
+        "GPCS cyan canopy packed paint",
+        "GPCS cyan running light packed paint",
+        "GPCS graphite armored hull packed paint",
+        "GPCS landing skid packed paint",
+        "GPCS parcel amber packed paint",
+        "GPCS parcel cream packed paint",
+        "GPCS postal identity packed paint",
+        "GPCS postal navy packed paint"
+      ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostCourierSkiff.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. Its intentionally untextured stylized flat-color solid materials use ten readable color-separated PBR groups and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative.",
+      "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, layered beveled armor, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. Its ten readable color-separated PBR groups use embedded deterministic micro-panel paint textures plus emissive running lights, and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or imported animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
-        "sha256": "sha256-13d61e81490afff5298f2d2b3c79866a5f34be38b89720b2b4c629742ffcfdf9",
-        "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+        "sha256": "sha256-3943c1947237a2b14fd6fd73678503027d1ad1a22cd8b4578d8552d779971d1f",
+        "assetHash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 80,
-        "checkedAt": "2026-09-01T03:52:57.234Z",
+        "nonBlankPixels": 450007,
+        "colorBuckets": 95,
+        "checkedAt": "2026-09-01T17:47:39.082Z",
         "foregroundBounds": {
-          "x": 194,
-          "y": 217,
-          "width": 338,
-          "height": 220
+          "x": 195,
+          "y": 218,
+          "width": 337,
+          "height": 219
         }
       }
     },
@@ -17249,14 +17265,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "gravityPostFreightDistrict": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/gravityPostFreightDistrict.cb33a415.glb",
-    hash: "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+    url: "/aura-assets/gravityPostFreightDistrict.0536a528.glb",
+    hash: "sha256-0536a528ab3a4b5ea8ba3b8962827fc9b34c7e2de0c531d1f6dbff05685c1a04",
     bounds: [
       15.985,
       9.898,
-      16.056
+      16.956
     ],
-    sizeBytes: 1339888,
+    sizeBytes: 1892592,
     metadata: {
       "materials": [
         "GPFD amber hazard",
@@ -17301,7 +17317,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "nodeCount": 10,
         "meshCount": 9,
         "materialCount": 9,
-        "textureCount": 0,
+        "textureCount": 9,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
@@ -17325,12 +17341,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "attribution": "Aura3D synthesis — original CC0 Gravity Post freight district",
         "retrievedAt": "2026-08-31T23:40:00.000Z",
         "evidence": [
+          "Generated in Blender 5.2.1 from the committed route-local Python source. Nine merged material groups retain a connected chamfered deck, rails, loading hangar, gantry crane, stacked cargo, tank farm, terminal architecture, outer loading towers, and elevated dispatch bridges; nine packed deterministic panel textures are embedded in the GLB; the asset owns no collision or gameplay.",
           "Generated in Blender 5.2.1 from the committed route-local Python source. Nine merged material groups retain the connected deck, rails, loading hangar, gantry crane, cargo, tank farm, and terminal architecture; the asset owns no collision or gameplay."
         ],
         "checkedAt": "2026-08-31T23:40:00.000Z"
       },
       "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
-      "outputPath": "public/aura-assets/gravityPostFreightDistrict.cb33a415.glb",
+      "outputPath": "public/aura-assets/gravityPostFreightDistrict.0536a528.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -17342,19 +17359,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "max": [
           11.16,
           7.848,
-          8.25
+          9.15
         ],
         "size": [
           15.985,
           9.898,
-          16.056
+          16.956
         ],
         "center": [
           3.167,
           2.899,
-          0.222
+          0.672
         ],
-        "maxDimension": 16.056,
+        "maxDimension": 16.956,
         "grounded": false
       },
       "materialMetadata": [
@@ -17427,15 +17444,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+X",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+        "assetHash": "sha256-0536a528ab3a4b5ea8ba3b8962827fc9b34c7e2de0c531d1f6dbff05685c1a04",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-09-01T00:13:34.143Z",
+        "checkedAt": "2026-09-01T17:46:42.591Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostFreightDistrict",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.png",
-          "sha256": "sha256-a1d9bc4f4ee42af6fde4943e00cd3bd2be36ec145e1e66be712c5adab7e16f86",
-          "assetHash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
-          "checkedAt": "2026-09-01T00:13:34.143Z",
+          "sha256": "sha256-f84ecfeb57f1a233944b042ae67749db39e15ff0e6fbe2b44cdecf7f0fabb629",
+          "assetHash": "sha256-0536a528ab3a4b5ea8ba3b8962827fc9b34c7e2de0c531d1f6dbff05685c1a04",
+          "checkedAt": "2026-09-01T17:46:42.591Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostFreightDistrict"
         },
         "messages": [
@@ -17454,29 +17471,39 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "GPFD_structural_alloy",
         "GravityPostFreightDistrict_ROOT"
       ],
-      "textures": [],
+      "textures": [
+        "GPFD amber hazard packed panel paint",
+        "GPFD cargo blue packed panel paint",
+        "GPFD cargo cream packed panel paint",
+        "GPFD cyan guidance packed panel paint",
+        "GPFD deck graphite packed panel paint",
+        "GPFD machinery navy packed panel paint",
+        "GPFD operations glass packed panel paint",
+        "GPFD oxidized cargo cladding packed panel paint",
+        "GPFD structural alloy packed panel paint"
+      ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostFreightDistrict.thumb.svg",
       "quality": "release",
       "role": "world",
-      "suitabilityReason": "Original CC0 +Y-up, +X-forward non-colliding freight world authored at a gameplay-scale footprint and fitted to the real Rust Exchange to Gale Terminal vector. Its intentionally stylized flat-color procedural materials provide nine readable color-separated groups without texture dependencies: connected chamfered deck, service rails, dispatch building, gabled loading hangar, articulated crane, cargo modules, tank farm, and asymmetric terminal/dock destination. Route-local pod motion, wells, dock sensors, collision, scoring, and camera remain authoritative.",
+      "suitabilityReason": "Original CC0 +Y-up, +X-forward non-colliding freight world authored at a gameplay-scale footprint and fitted to the real Rust Exchange to Gale Terminal vector. Its nine readable color-separated PBR groups combine embedded deterministic micro-panel paint textures with bevelled geometry: connected chamfered deck, service rails, dispatch building, gabled loading hangar, articulated crane, stacked cargo modules, tank farm, outer loading towers, elevated dispatch bridges, backline skyline, and asymmetric terminal/dock destination. Route-local pod motion, wells, dock sensors, collision, scoring, and camera remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostFreightDistrict",
-        "sha256": "sha256-a1d9bc4f4ee42af6fde4943e00cd3bd2be36ec145e1e66be712c5adab7e16f86",
-        "assetHash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+        "sha256": "sha256-f84ecfeb57f1a233944b042ae67749db39e15ff0e6fbe2b44cdecf7f0fabb629",
+        "assetHash": "sha256-0536a528ab3a4b5ea8ba3b8962827fc9b34c7e2de0c531d1f6dbff05685c1a04",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 60,
-        "checkedAt": "2026-09-01T00:13:34.143Z",
+        "nonBlankPixels": 451151,
+        "colorBuckets": 64,
+        "checkedAt": "2026-09-01T17:46:42.591Z",
         "foregroundBounds": {
-          "x": 182,
-          "y": 170,
-          "width": 394,
-          "height": 302
+          "x": 164,
+          "y": 177,
+          "width": 412,
+          "height": 292
         }
       }
     },
@@ -36832,9 +36859,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     url: "/aura-assets/robotcand.f71a4701.glb",
     hash: "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
     bounds: [
-      30.263,
-      24.11,
-      15.313
+      15.914,
+      25.053,
+      10.001
     ],
     sizeBytes: 3901144,
     metadata: {
@@ -36875,20 +36902,39 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 13,
+        "meshCount": 7,
+        "materialCount": 7,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 13 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/robotcand.f71a4701.glb",
-        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
-        "license": "CC-BY-4.0",
-        "author": "isramtz",
-        "sourceFamily": "objaverse",
-        "attribution": "isramtz",
-        "sha256": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
-        "retrievedAt": "2026-06-08T01:44:54.833Z",
-        "checkedAt": "2026-06-08T01:44:56.014Z",
         "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
-        "licenseName": "CC-BY-4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-002/21092c6569e64cc1ae1a07174a1b1786.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "isramtz",
+        "sourceFamily": "objaverse",
+        "attribution": "Robotcand by isramtz (CC BY 4.0), adapted as an Aura3D Mech Hangar visual shell",
+        "sha256": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
+        "retrievedAt": "2026-06-08T01:44:54.833Z",
+        "evidence": [
+          "The retained Objaverse/Sketchfab source bytes are hash-bound in the root manifest. The route uses the complete textured body as a static shell; MH-2M typed weapon hardpoints and route-local combat remain separate and authoritative."
+        ],
+        "checkedAt": "2026-06-08T01:44:54.833Z"
       },
       "sourcePath": "public/aura-assets/robotcand.f71a4701.glb",
       "outputPath": "public/aura-assets/robotcand.f71a4701.glb",
@@ -36896,26 +36942,26 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "author": "isramtz",
       "boundsMetadata": {
         "min": [
-          -16.151,
-          -4.938,
-          -7.35
+          -7.957,
+          -22.826,
+          -5.33
         ],
         "max": [
-          14.112,
-          19.171,
-          7.964
+          7.957,
+          2.227,
+          4.671
         ],
         "size": [
-          30.263,
-          24.11,
-          15.313
+          15.914,
+          25.053,
+          10.001
         ],
         "center": [
-          -1.02,
-          7.116,
-          0.307
+          0,
+          -10.299,
+          -0.33
         ],
-        "maxDimension": 30.263,
+        "maxDimension": 25.053,
         "grounded": false
       },
       "materialMetadata": [
@@ -36970,9 +37016,23 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T20:48:30.653Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=robotcand",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/robotcand.png",
+          "sha256": "sha256-2f75cbe0aaeb701ac467994ef24b147dd21c766da3e3eea1364b228987dab918",
+          "assetHash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
+          "checkedAt": "2026-09-01T20:48:30.653Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=robotcand"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The hash-bound CC-BY-4.0 Robotcand source by isramtz is presented +Y-up in a readable three-quarter mech view. Its ceramic, metal, cable, and optic materials are retained as a static typed visual shell; the route owns grounding, hardpoint mounting, and combat behavior."
         ]
       },
       "nodeNames": [
@@ -36997,8 +37057,520 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/robotcand.thumb.svg",
-      "quality": "ungraded",
-      "role": "unknown"
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Continuous textured robot/mech visual shell with ceramic armor, metal mechanisms, cable details, and optic materials. Grounding, selected hardpoint mounting, build stats, and arena combat remain route-local; no modular, skinning, animation, or reusable-mech-kit capability is claimed.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/robotcand.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=robotcand",
+        "sha256": "sha256-2f75cbe0aaeb701ac467994ef24b147dd21c766da3e3eea1364b228987dab918",
+        "assetHash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 450831,
+        "colorBuckets": 49,
+        "checkedAt": "2026-09-01T20:48:30.653Z",
+        "foregroundBounds": {
+          "x": 282,
+          "y": 214,
+          "width": 180,
+          "height": 302
+        }
+      }
+    },
+  },
+  "rooftopAthleteDefender": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopAthleteDefender.c0947539.glb",
+    hash: "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+    bounds: [
+      0.998,
+      1.95,
+      0.606
+    ],
+    sizeBytes: 1935316,
+    metadata: {
+      "materials": [
+        "Body_Mid_5",
+        "Body_Mid_2",
+        "Body_Mid_1",
+        "Eye_trans",
+        "Body_Mid_4",
+        "Body_Mid_3",
+        "Eye_trans_0",
+        "Body_Mid",
+        "Body_Mid_0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 9,
+        "meshCount": 9,
+        "materialCount": 9,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "H_DDS_MidRes__Body_Mid_0",
+          "m_L_eye__Body_Mid_0",
+          "m_L_gland__Body_Mid_0",
+          "m_L_trans__Eye_trans_0",
+          "m_R_eye__Body_Mid_0",
+          "m_R_gland__Body_Mid_0",
+          "m_R_trans__Eye_trans_0",
+          "m_TeethDown__Body_Mid_0",
+          "m_TeethUp__Body_Mid_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 9 nodes across 9 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteDefender.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/basketball-player-9a1be0ed25f94e9998adee1df3a2d218",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "3DDomino",
+        "sourceFamily": "objaverse",
+        "attribution": "Basketball player by 3DDomino (CC BY 4.0); Aura3D route-local derivative",
+        "retrievedAt": "2026-08-31T00:00:00.000Z",
+        "evidence": [
+          "Official Objaverse/Sketchfab source bytes were hash-verified before adaptation. Derived from the same CC-BY source: the complete ball hierarchy was removed, the two arm islands were opened into an asymmetric contest V, uniform texels were recolored blue/gold, and the mesh was normalized to 1.95 m."
+        ],
+        "checkedAt": "2026-08-31T00:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteDefender.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteDefender.c0947539.glb",
+      "license": "CC-BY-4.0",
+      "author": "3DDomino",
+      "boundsMetadata": {
+        "min": [
+          -0.499,
+          0,
+          -0.303
+        ],
+        "max": [
+          0.499,
+          1.95,
+          0.303
+        ],
+        "size": [
+          0.998,
+          1.95,
+          0.606
+        ],
+        "center": [
+          0,
+          0.975,
+          0
+        ],
+        "maxDimension": 1.95,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Body_Mid_5",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_1",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans",
+          "visible": true,
+          "readable": true,
+          "opacity": 0.14,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_4",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_3",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T19:22:38.203Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteDefender.png",
+          "sha256": "sha256-e16ff91c0df7e40c49506b211738c5b05b0e0c7827db99809e18e6480f606482",
+          "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+          "checkedAt": "2026-09-01T19:22:38.203Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender"
+        },
+        "messages": [
+          "The hash-bound CC-BY-4.0 Basketball player by 3DDomino is presented +Y-up as an asymmetric ball-free contest derivative. It shares the licensed source identity with the shooter variant; route-local contest and collision-region state remain authoritative."
+        ]
+      },
+      "nodeNames": [
+        "H_DDS_MidRes__Body_Mid_0",
+        "m_L_eye__Body_Mid_0",
+        "m_L_gland__Body_Mid_0",
+        "m_L_trans__Eye_trans_0",
+        "m_R_eye__Body_Mid_0",
+        "m_R_gland__Body_Mid_0",
+        "m_R_trans__Eye_trans_0",
+        "m_TeethDown__Body_Mid_0",
+        "m_TeethUp__Body_Mid_0"
+      ],
+      "textures": [
+        "defender-uniform-texture"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopAthleteDefender.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Static, continuous textured contest defender variant with an asymmetric raised-arm silhouette. It is a visual player variant derived from the same licensed source identity; route-local contest and collision-region state remain authoritative.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteDefender.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender",
+        "sha256": "sha256-e16ff91c0df7e40c49506b211738c5b05b0e0c7827db99809e18e6480f606482",
+        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451198,
+        "colorBuckets": 64,
+        "checkedAt": "2026-09-01T19:22:38.203Z",
+        "foregroundBounds": {
+          "x": 261,
+          "y": 181,
+          "width": 229,
+          "height": 419
+        }
+      }
+    },
+  },
+  "rooftopAthleteShooter": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopAthleteShooter.49b62313.glb",
+    hash: "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+    bounds: [
+      0.486,
+      1.95,
+      0.592
+    ],
+    sizeBytes: 983868,
+    metadata: {
+      "materials": [
+        "Body_Mid_5",
+        "Body_Mid_2",
+        "Body_Mid_1",
+        "Eye_trans",
+        "Body_Mid_4",
+        "Body_Mid_3",
+        "Eye_trans_0",
+        "Body_Mid",
+        "Body_Mid_0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 9,
+        "meshCount": 9,
+        "materialCount": 9,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "H_DDS_MidRes__Body_Mid_0",
+          "m_L_eye__Body_Mid_0",
+          "m_L_gland__Body_Mid_0",
+          "m_L_trans__Eye_trans_0",
+          "m_R_eye__Body_Mid_0",
+          "m_R_gland__Body_Mid_0",
+          "m_R_trans__Eye_trans_0",
+          "m_TeethDown__Body_Mid_0",
+          "m_TeethUp__Body_Mid_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 9 nodes across 9 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteShooter.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/basketball-player-9a1be0ed25f94e9998adee1df3a2d218",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "3DDomino",
+        "sourceFamily": "objaverse",
+        "attribution": "Basketball player by 3DDomino (CC BY 4.0); Aura3D route-local derivative",
+        "retrievedAt": "2026-08-31T00:00:00.000Z",
+        "evidence": [
+          "Official Objaverse/Sketchfab source bytes were hash-verified before adaptation. Ball hierarchy removed from the CC-BY source; the route-owned typed basketball remains the sole gameplay ball. Pose, meshes, and packed textures are preserved."
+        ],
+        "checkedAt": "2026-08-31T00:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteShooter.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteShooter.49b62313.glb",
+      "license": "CC-BY-4.0",
+      "author": "3DDomino",
+      "boundsMetadata": {
+        "min": [
+          -0.243,
+          0,
+          -0.296
+        ],
+        "max": [
+          0.243,
+          1.95,
+          0.296
+        ],
+        "size": [
+          0.486,
+          1.95,
+          0.592
+        ],
+        "center": [
+          0,
+          0.975,
+          0
+        ],
+        "maxDimension": 1.95,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Body_Mid_5",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_1",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans",
+          "visible": true,
+          "readable": true,
+          "opacity": 0.14,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_4",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_3",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T19:22:32.722Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteShooter.png",
+          "sha256": "sha256-b3875c60fffbf8e875f19cf0cd1f572e7ee9d1ee698c268884e9186fe0da8696",
+          "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "checkedAt": "2026-09-01T19:22:32.722Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter"
+        },
+        "messages": [
+          "The hash-bound CC-BY-4.0 Basketball player by 3DDomino is presented +Y-up in its authored raised-ball shooting pose. This route-local ball-free derivative is a static visual subject; the typed route ball, contest state, and deterministic flight remain authoritative."
+        ]
+      },
+      "nodeNames": [
+        "H_DDS_MidRes__Body_Mid_0",
+        "m_L_eye__Body_Mid_0",
+        "m_L_gland__Body_Mid_0",
+        "m_L_trans__Eye_trans_0",
+        "m_R_eye__Body_Mid_0",
+        "m_R_gland__Body_Mid_0",
+        "m_R_trans__Eye_trans_0",
+        "m_TeethDown__Body_Mid_0",
+        "m_TeethUp__Body_Mid_0"
+      ],
+      "textures": [
+        "Image_0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopAthleteShooter.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; no animation or controller capability is claimed.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteShooter.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter",
+        "sha256": "sha256-b3875c60fffbf8e875f19cf0cd1f572e7ee9d1ee698c268884e9186fe0da8696",
+        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 63,
+        "checkedAt": "2026-09-01T19:22:32.722Z",
+        "foregroundBounds": {
+          "x": 316,
+          "y": 171,
+          "width": 121,
+          "height": 429
+        }
+      }
     },
   },
   "rooftopBackboard": {
@@ -40427,6 +40999,382 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "rooftopDefenderV2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopDefenderV2.65bc306f.glb",
+    hash: "sha256-65bc306fad33dccdf14e75ec8e4e2a5fb900e491479ebf9d2c048f9258762216",
+    bounds: [
+      2,
+      2.17,
+      0.79
+    ],
+    sizeBytes: 781496,
+    metadata: {
+      "materials": [
+        "crimson defender jersey",
+        "compression sleeve",
+        "tailored shorts",
+        "warm skin",
+        "close-cropped hair",
+        "amber defender piping",
+        "high top graphite"
+      ],
+      "animations": [
+        "Plant",
+        "Telegraph",
+        "Jump",
+        "Contest"
+      ],
+      "animationClips": [
+        "Plant",
+        "Telegraph",
+        "Jump",
+        "Contest"
+      ],
+      "animationMetadata": {
+        "clipCount": 4,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Plant",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "Telegraph",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          },
+          {
+            "index": 2,
+            "name": "Jump",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          },
+          {
+            "index": 3,
+            "name": "Contest",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 4 embedded animation clips."
+        ]
+      },
+      "humanoid": true,
+      "humanoidStatus": "humanoid",
+      "humanoidConfidence": "high",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 12,
+        "skins": [
+          {
+            "index": 0,
+            "name": "RooftopDefenderV2",
+            "jointCount": 12,
+            "joints": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 12 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 36,
+        "meshCount": 23,
+        "materialCount": 7,
+        "textureCount": 0,
+        "animationClipCount": 4,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "RooftopDefenderV2"
+        ],
+        "maxDepth": 6,
+        "messages": [
+          "Detected 36 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopDefenderV2.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-v2-art.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/rooftopDefenderV2.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets V2 art",
+        "retrievedAt": "2026-08-31T21:00:00.000Z",
+        "evidence": [
+          "Deterministically authored from committed Blender source; local Aura CLI inspection verifies metre bounds, materials, orientation, skins, and named clips before registration."
+        ],
+        "checkedAt": "2026-08-31T21:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopDefenderV2.glb",
+      "outputPath": "public/aura-assets/rooftopDefenderV2.65bc306f.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -1,
+          -0.015,
+          -0.34
+        ],
+        "max": [
+          1,
+          2.155,
+          0.45
+        ],
+        "size": [
+          2,
+          2.17,
+          0.79
+        ],
+        "center": [
+          0,
+          1.07,
+          0.055
+        ],
+        "maxDimension": 2.17,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "crimson defender jersey",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "compression sleeve",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tailored shorts",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "warm skin",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "close-cropped hair",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "amber defender piping",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "high top graphite",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-65bc306fad33dccdf14e75ec8e4e2a5fb900e491479ebf9d2c048f9258762216",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T21:16:53.097Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefenderV2",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopDefenderV2.png",
+          "sha256": "sha256-f65f03c7fc16055100875aace4e5acf3e032c313d4e37e3e3c8ec24dca6eef2c",
+          "assetHash": "sha256-65bc306fad33dccdf14e75ec8e4e2a5fb900e491479ebf9d2c048f9258762216",
+          "checkedAt": "2026-08-31T21:16:53.097Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefenderV2"
+        },
+        "messages": [
+          "The original Rooftop Buckets V2 defender is presented +Y-up and +Z-forward. Its real 12-joint skin and Plant, Telegraph, Jump, and Contest clips are hash-bound; the route-local contest state remains authoritative."
+        ]
+      },
+      "nodeNames": [
+        "LeftLowerLeg",
+        "LeftUpperLeg",
+        "RightLowerLeg",
+        "RightUpperLeg",
+        "Head",
+        "LeftForearm",
+        "LeftUpperArm",
+        "RightForearm",
+        "RightUpperArm",
+        "Spine",
+        "Pelvis",
+        "Root",
+        "Cone",
+        "Cone.001",
+        "Cone.002",
+        "Cone.003",
+        "Cone.004",
+        "Cone.005",
+        "Cone.006",
+        "Cone.007",
+        "Cone.008",
+        "hair braid 00",
+        "hair braid 01",
+        "hair braid 02",
+        "hair cap",
+        "jersey chest panel",
+        "jersey number",
+        "Left high top",
+        "Left knee pad",
+        "Left palm",
+        "Right high top",
+        "Right knee pad",
+        "Right palm",
+        "sculpted head",
+        "tailored shorts",
+        "RooftopDefenderV2"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopDefenderV2.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Original CC0 metre-scale Rooftop Buckets defender with seven readable uniform/body materials, a real 12-joint skin, and exact Plant, Telegraph, Jump, and Contest clips. It faces +Z and stands +Y-up; route-local contest and collision-region state own gameplay truth.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopDefenderV2.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefenderV2",
+        "sha256": "sha256-f65f03c7fc16055100875aace4e5acf3e032c313d4e37e3e3c8ec24dca6eef2c",
+        "assetHash": "sha256-65bc306fad33dccdf14e75ec8e4e2a5fb900e491479ebf9d2c048f9258762216",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 62,
+        "checkedAt": "2026-08-31T21:16:53.097Z",
+        "foregroundBounds": {
+          "x": 218,
+          "y": 181,
+          "width": 332,
+          "height": 390
+        }
+      }
+    },
+  },
   "rooftopLayupScorer": {
     type: "model",
     format: "glb",
@@ -42410,6 +43358,651 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "y": 191,
           "width": 97,
           "height": 403
+        }
+      }
+    },
+  },
+  "rooftopShooterV2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopShooterV2.602fe28f.glb",
+    hash: "sha256-602fe28f56e3eb5c15f03b86ce54aa9191c4afd336daa03bf6c2da6232b59de3",
+    bounds: [
+      2,
+      2.17,
+      0.788
+    ],
+    sizeBytes: 840856,
+    metadata: {
+      "materials": [
+        "midnight teal jersey",
+        "shooting sleeve",
+        "tailored shorts",
+        "warm skin",
+        "braided hair",
+        "ice jersey piping",
+        "high top white"
+      ],
+      "animations": [
+        "Load",
+        "Release",
+        "FollowThrough"
+      ],
+      "animationClips": [
+        "Load",
+        "Release",
+        "FollowThrough"
+      ],
+      "animationMetadata": {
+        "clipCount": 3,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Load",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "Release",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          },
+          {
+            "index": 2,
+            "name": "FollowThrough",
+            "channelCount": 36,
+            "samplerCount": 36,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 3 embedded animation clips."
+        ]
+      },
+      "humanoid": true,
+      "humanoidStatus": "humanoid",
+      "humanoidConfidence": "high",
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 12,
+        "skins": [
+          {
+            "index": 0,
+            "name": "RooftopShooterV2",
+            "jointCount": 12,
+            "joints": [
+              "Root",
+              "Pelvis",
+              "LeftUpperLeg",
+              "LeftLowerLeg",
+              "RightUpperLeg",
+              "RightLowerLeg",
+              "Spine",
+              "Head",
+              "LeftUpperArm",
+              "LeftForearm",
+              "RightUpperArm",
+              "RightForearm"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 12 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 36,
+        "meshCount": 23,
+        "materialCount": 7,
+        "textureCount": 0,
+        "animationClipCount": 3,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "RooftopShooterV2"
+        ],
+        "maxDepth": 6,
+        "messages": [
+          "Detected 36 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopShooterV2.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-v2-art.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/rooftopShooterV2.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets V2 art",
+        "retrievedAt": "2026-08-31T21:00:00.000Z",
+        "evidence": [
+          "Deterministically authored from committed Blender source; local Aura CLI inspection verifies metre bounds, materials, orientation, skins, and named clips before registration."
+        ],
+        "checkedAt": "2026-08-31T21:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopShooterV2.glb",
+      "outputPath": "public/aura-assets/rooftopShooterV2.602fe28f.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -1,
+          -0.015,
+          -0.338
+        ],
+        "max": [
+          1,
+          2.155,
+          0.45
+        ],
+        "size": [
+          2,
+          2.17,
+          0.788
+        ],
+        "center": [
+          0,
+          1.07,
+          0.056
+        ],
+        "maxDimension": 2.17,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "midnight teal jersey",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "shooting sleeve",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tailored shorts",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "warm skin",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "braided hair",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "ice jersey piping",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "high top white",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-602fe28f56e3eb5c15f03b86ce54aa9191c4afd336daa03bf6c2da6232b59de3",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T21:16:45.549Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooterV2",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopShooterV2.png",
+          "sha256": "sha256-719c3b4bf50240ab9440a132f376379e202790bc7d3d991d313b86973eefc88a",
+          "assetHash": "sha256-602fe28f56e3eb5c15f03b86ce54aa9191c4afd336daa03bf6c2da6232b59de3",
+          "checkedAt": "2026-08-31T21:16:45.549Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooterV2"
+        },
+        "messages": [
+          "The original Rooftop Buckets V2 shooter is presented +Y-up and +Z-forward. Its real 12-joint skin and Load, Release, and FollowThrough clips are hash-bound; the route-local ball flight and scoring remain authoritative."
+        ]
+      },
+      "nodeNames": [
+        "LeftLowerLeg",
+        "LeftUpperLeg",
+        "RightLowerLeg",
+        "RightUpperLeg",
+        "Head",
+        "LeftForearm",
+        "LeftUpperArm",
+        "RightForearm",
+        "RightUpperArm",
+        "Spine",
+        "Pelvis",
+        "Root",
+        "Cone",
+        "Cone.001",
+        "Cone.002",
+        "Cone.003",
+        "Cone.004",
+        "Cone.005",
+        "Cone.006",
+        "Cone.007",
+        "Cone.008",
+        "hair braid 00",
+        "hair braid 01",
+        "hair braid 02",
+        "hair braid 03",
+        "hair braid 04",
+        "hair cap",
+        "jersey chest panel",
+        "jersey number",
+        "Left high top",
+        "Left palm",
+        "Right high top",
+        "Right palm",
+        "sculpted head",
+        "tailored shorts",
+        "RooftopShooterV2"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopShooterV2.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Original CC0 metre-scale Rooftop Buckets shooter with seven readable uniform/body materials, a real 12-joint skin, and exact Load, Release, and FollowThrough clips. It faces +Z and stands +Y-up; route-local ballistics, scoring, and input own gameplay truth.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopShooterV2.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooterV2",
+        "sha256": "sha256-719c3b4bf50240ab9440a132f376379e202790bc7d3d991d313b86973eefc88a",
+        "assetHash": "sha256-602fe28f56e3eb5c15f03b86ce54aa9191c4afd336daa03bf6c2da6232b59de3",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 52,
+        "checkedAt": "2026-08-31T21:16:45.549Z",
+        "foregroundBounds": {
+          "x": 218,
+          "y": 180,
+          "width": 332,
+          "height": 391
+        }
+      }
+    },
+  },
+  "rooftopVenueV2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopVenueV2.222289e3.glb",
+    hash: "sha256-222289e3dc07ed20f45f73022be4413537594645762cfea852f4b15bab3e0cdc",
+    bounds: [
+      22.4,
+      7.04,
+      19.645
+    ],
+    sizeBytes: 109468,
+    metadata: {
+      "materials": [
+        "painted steel",
+        "bleacher seating",
+        "cool city practical",
+        "brick service core",
+        "amber street practical",
+        "weathered concrete"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 48,
+        "meshCount": 48,
+        "materialCount": 6,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "bleacher handrail base 1",
+          "bleacher handrail base -1",
+          "bleacher tier 1 0",
+          "bleacher tier 1 1",
+          "bleacher tier 1 2",
+          "bleacher tier 1 3",
+          "bleacher tier -1 0",
+          "bleacher tier -1 1",
+          "bleacher tier -1 2",
+          "bleacher tier -1 3",
+          "Cylinder",
+          "Cylinder.001",
+          "Cylinder.002",
+          "Cylinder.003",
+          "Cylinder.004",
+          "Cylinder.005",
+          "Cylinder.006",
+          "Cylinder.007",
+          "Cylinder.008",
+          "Cylinder.009",
+          "Cylinder.010",
+          "Cylinder.011",
+          "Cylinder.012",
+          "Cylinder.013",
+          "Cylinder.014",
+          "Cylinder.015",
+          "Cylinder.016",
+          "Cylinder.017",
+          "service tower",
+          "service tower.001",
+          "service tower.002",
+          "service tower.003",
+          "service tower.004",
+          "streetlight banner",
+          "streetlight banner.001",
+          "streetlight banner.002",
+          "streetlight banner.003",
+          "streetlight banner.004",
+          "tower illuminated band",
+          "tower illuminated band.001",
+          "tower illuminated band.002",
+          "tower illuminated band.003",
+          "tower illuminated band.004",
+          "under-court roof deck",
+          "venue flood bar",
+          "venue flood bar.001",
+          "venue flood bar.002",
+          "venue flood bar.003"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 48 nodes across 48 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopVenueV2.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-v2-art.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/rooftopVenueV2.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets V2 art",
+        "retrievedAt": "2026-08-31T21:00:00.000Z",
+        "evidence": [
+          "Deterministically authored from committed Blender source; local Aura CLI inspection verifies metre bounds, materials, orientation, skins, and named clips before registration."
+        ],
+        "checkedAt": "2026-08-31T21:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopVenueV2.glb",
+      "outputPath": "public/aura-assets/rooftopVenueV2.222289e3.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -11.2,
+          -0.72,
+          -6.695
+        ],
+        "max": [
+          11.2,
+          6.32,
+          12.95
+        ],
+        "size": [
+          22.4,
+          7.04,
+          19.645
+        ],
+        "center": [
+          0,
+          2.8,
+          3.128
+        ],
+        "maxDimension": 22.4,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "painted steel",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "bleacher seating",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "cool city practical",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "brick service core",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "amber street practical",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "weathered concrete",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-222289e3dc07ed20f45f73022be4413537594645762cfea852f4b15bab3e0cdc",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T21:17:00.706Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopVenueV2",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopVenueV2.png",
+          "sha256": "sha256-d2c0155d9d6753cd84a8b2ed59c7a1b7baeeeca77694a9ee2f49be38c2482a8c",
+          "assetHash": "sha256-222289e3dc07ed20f45f73022be4413537594645762cfea852f4b15bab3e0cdc",
+          "checkedAt": "2026-08-31T21:17:00.706Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopVenueV2"
+        },
+        "messages": [
+          "The original Rooftop Buckets V2 venue is presented +Y-up at its authored metre scale. Bleachers, service towers, lights, and water-tower dressing surround the existing 16 by 14 metre active court; it deliberately contains no hoop, rim, net, or collision authority."
+        ]
+      },
+      "nodeNames": [
+        "bleacher handrail base 1",
+        "bleacher handrail base -1",
+        "bleacher tier 1 0",
+        "bleacher tier 1 1",
+        "bleacher tier 1 2",
+        "bleacher tier 1 3",
+        "bleacher tier -1 0",
+        "bleacher tier -1 1",
+        "bleacher tier -1 2",
+        "bleacher tier -1 3",
+        "Cylinder",
+        "Cylinder.001",
+        "Cylinder.002",
+        "Cylinder.003",
+        "Cylinder.004",
+        "Cylinder.005",
+        "Cylinder.006",
+        "Cylinder.007",
+        "Cylinder.008",
+        "Cylinder.009",
+        "Cylinder.010",
+        "Cylinder.011",
+        "Cylinder.012",
+        "Cylinder.013",
+        "Cylinder.014",
+        "Cylinder.015",
+        "Cylinder.016",
+        "Cylinder.017",
+        "service tower",
+        "service tower.001",
+        "service tower.002",
+        "service tower.003",
+        "service tower.004",
+        "streetlight banner",
+        "streetlight banner.001",
+        "streetlight banner.002",
+        "streetlight banner.003",
+        "streetlight banner.004",
+        "tower illuminated band",
+        "tower illuminated band.001",
+        "tower illuminated band.002",
+        "tower illuminated band.003",
+        "tower illuminated band.004",
+        "under-court roof deck",
+        "venue flood bar",
+        "venue flood bar.001",
+        "venue flood bar.002",
+        "venue flood bar.003"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopVenueV2.thumb.svg",
+      "quality": "release",
+      "role": "environment",
+      "suitabilityReason": "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopVenueV2.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopVenueV2",
+        "sha256": "sha256-d2c0155d9d6753cd84a8b2ed59c7a1b7baeeeca77694a9ee2f49be38c2482a8c",
+        "assetHash": "sha256-222289e3dc07ed20f45f73022be4413537594645762cfea852f4b15bab3e0cdc",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 59,
+        "checkedAt": "2026-08-31T21:17:00.706Z",
+        "foregroundBounds": {
+          "x": 118,
+          "y": 144,
+          "width": 529,
+          "height": 304
         }
       }
     },

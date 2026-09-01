@@ -10,6 +10,7 @@ import { bindGameTouchControls } from "@aura3d/engine";
 
 export interface PulseHudElements {
   readonly shields: HTMLElement;
+  readonly combatState: HTMLElement;
   readonly styleLabel: HTMLElement;
   readonly styleBar: HTMLElement;
   readonly distance: HTMLElement;
@@ -26,6 +27,7 @@ export interface PulseHudSnapshot {
   readonly score: number;
   readonly distanceMeters: number;
   readonly sectionId: string;
+  readonly combatState: string;
   readonly state: string;
   readonly message: string;
   readonly debug: boolean;
@@ -45,6 +47,7 @@ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | nul
       <div class="pulse-mission" aria-hidden="true">
         <span class="pulse-mission-kicker">FINAL BEAT</span>
         <strong>BREAK THE SENTINEL</strong>
+        <span id="pulse-combat-state" class="pulse-combat-state">APPROACH // NEXT GATE</span>
       </div>
       <div class="pulse-row pulse-shields" id="pulse-shields" aria-label="Shields"></div>
       <div class="pulse-row">
@@ -98,6 +101,7 @@ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | nul
   });
   return {
     shields: require("pulse-shields"),
+    combatState: require("pulse-combat-state"),
     styleLabel: require("pulse-style-label"),
     styleBar: require("pulse-style-bar"),
     distance: require("pulse-distance"),
@@ -116,6 +120,7 @@ export function updatePulseHud(elements: PulseHudElements | null, snapshot: Puls
     pip.className = index < snapshot.shields ? "pulse-pip pulse-pip-live" : "pulse-pip pulse-pip-lost";
     elements.shields.appendChild(pip);
   }
+  elements.combatState.textContent = snapshot.combatState;
   elements.styleLabel.textContent = `x${snapshot.multiplier.toFixed(1)}`;
   elements.styleBar.style.width = `${Math.round((snapshot.styleHeat / 3) * 100)}%`;
   elements.distance.textContent = `${Math.round(snapshot.distanceMeters)} m`;

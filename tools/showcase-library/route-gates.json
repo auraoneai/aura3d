@@ -496,16 +496,14 @@
       "globalName": "__AURA3D_SHOWCASE_MECH_HANGAR__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
+      "primaryAssets": ["robotcand", "mechWeaponA"],
       "primaryAssetRoles": {
-        "mechChassisA": "primary-base-body",
-        "mechArmsA": "primary-chest-attachment",
-        "mechLegsA": "primary-hips-attachment",
+        "robotcand": "primary-character-shell",
         "mechWeaponA": "primary-right-hand-attachment"
       },
-      "routePrimaryHeroAsset": "mechChassisA",
-      "secondaryPrimaryAssets": ["mechArmsA", "mechLegsA", "mechWeaponA"],
-      "primitiveBudget": 32,
+      "routePrimaryHeroAsset": "robotcand",
+      "secondaryPrimaryAssets": ["mechWeaponA"],
+      "primitiveBudget": 40,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
       "gameTemplateStatus": {
@@ -567,17 +565,17 @@
       "globalName": "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
+      "primaryAssets": ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"],
       "primaryAssetRoles": {
         "rooftopCourt": "primary-play-surface",
         "rooftopBackboard": "primary-target-backboard",
         "rooftopRim": "primary-target-rim",
         "rooftopBall": "primary-player-ball",
-        "rooftopLayupScorer": "primary-review-release-character",
-        "rooftopDefender": "primary-pressure-character"
+        "rooftopAthleteShooter": "primary-review-release-character",
+        "rooftopAthleteDefender": "primary-pressure-character"
       },
       "routePrimaryHeroAsset": "rooftopBackboard",
-      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
+      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"],
       "primitiveBudget": 96,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,

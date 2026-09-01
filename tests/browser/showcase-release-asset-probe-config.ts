@@ -6,12 +6,12 @@ export type ProbeAssetId =
   | "bankShotBall04" | "bankShotBall05" | "bankShotBall06" | "bankShotBall07"
   | "bankShotBall08" | "bankShotBall09" | "bankShotBall10" | "bankShotBall11"
   | "bankShotBall12" | "bankShotBall13" | "bankShotBall14" | "bankShotBall15"
-  | "rooftopCourt" | "rooftopBackboard" | "rooftopRim" | "rooftopBall" | "rooftopShooter" | "rooftopDefender" | "rooftopLayupScorer"
+  | "rooftopCourt" | "rooftopBackboard" | "rooftopRim" | "rooftopBall" | "rooftopShooter" | "rooftopDefender" | "rooftopLayupScorer" | "rooftopAthleteShooter" | "rooftopAthleteDefender"
   | "vaultBreakersTable" | "vaultBreakersMechanisms" | "vaultBreakersBall" | "vaultBreakersFlipper" | "vaultBreakersVaultDoor"
   | "galleryShiftMuseumInterior" | "galleryShiftCutawayMuseumWorld" | "galleryShiftPedestal" | "galleryShiftExhibitA" | "galleryShiftExhibitB" | "galleryShiftExhibitC" | "galleryShiftDisplayCase"
   | "deepRecoverySub" | "deepRecoveryWreckHull" | "deepRecoveryCrateStandard" | "deepRecoveryCrateHeavy" | "deepRecoveryBuoyBeacon"
   | "patrolWingPlane" | "patrolWingDroneA" | "patrolWingDroneB" | "patrolWingPadBeacon"
-  | "showcaseExpressiveRobot"
+  | "showcaseExpressiveRobot" | "robotcand"
   | "mechChassisA" | "mechChassisB" | "mechChassisC" | "mechChassisD"
   | "mechArmsA" | "mechArmsB" | "mechArmsC" | "mechArmsD"
   | "mechLegsA" | "mechLegsB" | "mechLegsC" | "mechLegsD"
@@ -124,12 +124,12 @@ export const PROBE_ASSETS = [
   "bankShotBall04", "bankShotBall05", "bankShotBall06", "bankShotBall07",
   "bankShotBall08", "bankShotBall09", "bankShotBall10", "bankShotBall11",
   "bankShotBall12", "bankShotBall13", "bankShotBall14", "bankShotBall15",
-  "rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopShooter", "rooftopDefender", "rooftopLayupScorer",
+  "rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopShooter", "rooftopDefender", "rooftopLayupScorer", "rooftopAthleteShooter", "rooftopAthleteDefender",
   "vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor",
   "galleryShiftMuseumInterior", "galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase",
   "deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon",
   "patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
-  "showcaseExpressiveRobot",
+  "showcaseExpressiveRobot", "robotcand",
   "mechChassisA", "mechChassisB", "mechChassisC", "mechChassisD",
   "mechArmsA", "mechArmsB", "mechArmsC", "mechArmsD",
   "mechLegsA", "mechLegsB", "mechLegsC", "mechLegsD",
@@ -408,6 +408,39 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
       message: "The hash-bound CC-BY-4.0 Rooftop Buckets scorer derivative is presented +Y-up and front-facing. Its 191-joint skin and Ready, Load, Release, and FollowThrough clips are retained as authored deformation evidence; root translation, the separately typed ball, and deterministic flight remain route-local."
     }
   },
+  rooftopAthleteShooter: {
+    targetHeight: 2.1,
+    cameraTargetHeight: 2.1,
+    padding: 1.2,
+    fov: 31,
+    azimuth: 0.18,
+    elevation: 0.12,
+    rotation: [0, 0.22, 0],
+    // The source is a full-height, front-facing athlete. Keep the width gate
+    // strict enough to catch a missing/side-on load without rejecting the
+    // authored narrow silhouette that is visibly present in the root probe.
+    minForegroundWidth: 100,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound CC-BY-4.0 Basketball player by 3DDomino is presented +Y-up in its authored raised-ball shooting pose. This route-local ball-free derivative is a static visual subject; the typed route ball, contest state, and deterministic flight remain authoritative."
+    }
+  },
+  rooftopAthleteDefender: {
+    targetHeight: 2.1,
+    cameraTargetHeight: 2.1,
+    padding: 1.2,
+    fov: 31,
+    azimuth: 0.18,
+    elevation: 0.12,
+    rotation: [0, 0.22, 0],
+    minForegroundWidth: 100,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound CC-BY-4.0 Basketball player by 3DDomino is presented +Y-up as an asymmetric ball-free contest derivative. It shares the licensed source identity with the shooter variant; route-local contest and collision-region state remain authoritative."
+    }
+  },
   vaultBreakersTable: {
     targetMaxDimension: 10,
     cameraTargetMaxDimension: 10,
@@ -586,6 +619,14 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     targetHeight: 1.9, cameraTargetHeight: 1.9, padding: 1.15, fov: 30, azimuth: 0.72, elevation: 0.16,
     rotation: [0, 0.35, 0], minForegroundWidth: 120, minForegroundHeight: 190,
     orientation: { forwardAxis: "+Z", upAxis: "+Y", message: "The repository-locked CC0 expressive robot is presented +Y-up as Gallery Shift's typed guard silhouette. Its clips are presentation only; authored patrol and perception truth are separately tested." }
+  },
+  robotcand: {
+    targetHeight: 2.72, cameraTargetHeight: 2.72, padding: 1.16, fov: 31, azimuth: 0.42, elevation: 0.18,
+    rotation: [0, 0.18, 0], minForegroundWidth: 120, minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound CC-BY-4.0 Robotcand source by isramtz is presented +Y-up in a readable three-quarter mech view. Its ceramic, metal, cable, and optic materials are retained as a static typed visual shell; the route owns grounding, hardpoint mounting, and combat behavior."
+    }
   },
   mechChassisA: mechChassisView,
   mechChassisB: mechChassisView,

@@ -107,7 +107,7 @@ const systems = [
   "typed robotic welding workcell model(assets.showcaseRoboticWeldingWorkcell) is the route-primary industrial subject",
   "compiler-selected orange robot asset is rejected from the live primary path after human visual review",
   "bounded operations dashboard uses deterministic sample telemetry only",
-  "supporting floor, status ring, conveyor pulses, workpieces, and scanner sweep stay secondary to the typed workcell asset",
+  "supporting floor, gantry, conveyor rails, pulses, workpieces, and scanner sweep stay secondary to the typed workcell asset",
   "every helper element is placed by the reusable asset-relative anchoring system (engine.resolveBoundsAnchor / resolveSemanticRegion), not by literal world coordinates",
   "zone selection feedback comes from the reusable focus system (engine.focusSemanticRegion)",
   "spatial invariants are published so helper placement is verified against the asset's bounds rather than judged by eye",
@@ -131,7 +131,10 @@ const zoneLabels: Record<ZoneId, string> = {
  * scene is derived from the asset's placed bounds rather than repeated literals.
  */
 const WORKCELL_POSITION: readonly [number, number, number] = [-0.08, 0.058, -0.04];
-const WORKCELL_TARGET_MAX_DIMENSION = 2.35;
+// Give the typed cell a confident hero scale.  The previous 2.35-unit fit left
+// the robot and weld bays visually subordinate to the surrounding empty stage;
+// all bay, conveyor, and label anchors below still derive from these bounds.
+const WORKCELL_TARGET_MAX_DIMENSION = 2.7;
 
 /**
  * Operational zones as normalized regions of the workcell's own bounds.
@@ -236,9 +239,12 @@ const SECONDS_PER_STEP = 2;
 function overviewCamera(): { position: readonly [number, number, number]; target: readonly [number, number, number]; fov: number } {
   const compactViewport = window.innerWidth < 680;
   return {
-    position: compactViewport ? [4.8, 2.55, 6.5] : [3.4, 2.05, 4.8],
-    target: [-0.04, 0.5, 0.02],
-    fov: compactViewport ? 45 : 37
+    // The workcell is a wide, low industrial asset. A closer, slightly lower
+    // camera gives its robot bays and conveyor a readable hero silhouette while
+    // leaving enough breathing room for the four asset-relative callouts.
+    position: compactViewport ? [4.35, 2.4, 5.8] : [3.12, 1.86, 4.34],
+    target: [-0.04, 0.48, 0.02],
+    fov: compactViewport ? 43 : 34
   };
 }
 let cameraPose: { position: readonly [number, number, number]; target: readonly [number, number, number]; fov: number } = overviewCamera();
@@ -249,6 +255,7 @@ let throughput = 1280;
 let energyMw = 4.8;
 let zones: ZoneState[] = createZones();
 let eventLog: readonly string[] = ["Robotic welding workcell mounted with deterministic telemetry."];
+let subjectSuppressed = false;
 let lastMotionProof: DigitalTwinEvidence["motionProof"] = {
   conveyorSegmentX: -0.48,
   robotArmRadians: 0,
@@ -299,6 +306,58 @@ function rebindRuntimeNodes(): void {
   beltPulseNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`ops-belt-pulse-${index + 1}`));
 }
 
+/**
+ * Route-owned subject isolation for the independent route-primary probe.
+ *
+ * The workcell is made of many fence, robot, and fixture meshes. A generic
+ * connected-component foreground pass can therefore select one thin rail
+ * instead of the actual hero. This contract lets the producer diff the real
+ * typed GLB against the same scene with that one runtime node suppressed; it
+ * does not hide supporting set dressing or change any visual threshold.
+ */
+function installCompositionProbe(): void {
+  (window as unknown as {
+    __AURA3D_COMPOSITION_PROBE__?: {
+      readonly category: "application";
+      readonly camera: {
+        readonly mode: "fixed";
+        readonly position: readonly [number, number, number];
+        readonly target: readonly [number, number, number];
+        readonly fov: number;
+      };
+      readonly subject: {
+        readonly position: readonly [number, number, number];
+        readonly rotation: readonly [number, number, number];
+        readonly targetSize: number;
+      };
+      setSubjectSuppressed: (suppressed: boolean) => void;
+      settleSubjectPose: () => void;
+    };
+  }).__AURA3D_COMPOSITION_PROBE__ = {
+    category: "application",
+    camera: {
+      mode: "fixed",
+      position: [...cameraPose.position],
+      target: [...cameraPose.target],
+      fov: cameraPose.fov
+    },
+    subject: {
+      position: [...WORKCELL_POSITION],
+      rotation: [0, -0.2, 0],
+      targetSize: WORKCELL_TARGET_MAX_DIMENSION
+    },
+    setSubjectSuppressed: (suppressed) => {
+      subjectSuppressed = suppressed;
+      workcell.setVisible(!suppressed);
+    },
+    settleSubjectPose: () => {
+      subjectSuppressed = false;
+      workcell.setVisible(true);
+    }
+  };
+}
+
+installCompositionProbe();
 renderConsole();
 syncUi();
 publishEvidence("ready");
@@ -331,15 +390,16 @@ app.onFrame(({ dt }) => {
 
 function buildOpsScene() {
   return scene()
-    .background("#051011")
+    .background("#071923")
     .addMany(createWorkcellPresentation())
-    .add(lights.ambient({ name: "workcell ambient fill", intensity: 0.48, color: "#dff6f0" }))
-    .add(lights.directional({ name: "factory key light", position: [2.1, 3.2, 2.4], intensity: 1.28, color: "#fff4df" }))
-    .add(lights.point({ name: "workcell cyan practical", position: [-0.75, 1.05, 0.5], intensity: 0.7, color: "#7ee8c4" }))
-    .add(lights.point({ name: "workcell warm inspection light", position: [0.62, 0.95, -0.25], intensity: 0.72, color: "#f2b15a" }))
-    .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.42, radius: 0.76 }))
-    .add(effects.bloom({ name: "workcell status glow", intensity: 0.12, threshold: 0.8, radius: 0.18 }))
-    .add(effects.fog({ name: "bounded ops depth haze", density: 0.0035, color: "#061012", intensity: 0.04 }))
+    .add(lights.ambient({ name: "workcell ambient fill", intensity: 0.6, color: "#d7f5f2" }))
+    .add(lights.directional({ name: "factory key light", position: [2.1, 3.6, 2.8], intensity: 1.62, color: "#fff1d2" }))
+    .add(lights.directional({ name: "factory cool rim", position: [-2.4, 2.4, -2.4], intensity: 0.74, color: "#78cbe3" }))
+    .add(lights.point({ name: "workcell cyan practical", position: [-0.82, 1.24, 0.62], intensity: 1.15, color: "#54e7dc" }))
+    .add(lights.point({ name: "workcell warm inspection light", position: [0.76, 1.08, -0.28], intensity: 1.08, color: "#f3ad59" }))
+    .add(effects.ambientOcclusion({ name: "workcell contact occlusion", intensity: 0.56, radius: 0.82 }))
+    .add(effects.bloom({ name: "workcell status glow", intensity: 0.18, threshold: 0.78, radius: 0.22 }))
+    .add(effects.fog({ name: "bounded ops depth haze", density: 0.0021, color: "#0a1a23", intensity: 0.06 }))
     .add(interactions.orbit())
     .camera(camera.perspective({ position: [...cameraPose.position], target: [...cameraPose.target], fov: cameraPose.fov }));
 }
@@ -349,21 +409,23 @@ function createWorkcellPresentation(): AuraNodeInput[] {
   const { belt, deckHeight, workpieceY } = conveyorDimensions();
   // Floor and plinth are sized to the workcell's own footprint with margin, so a
   // larger or smaller asset still stands on a stage that fits it.
-  const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.2, 1, bounds.size[2] * 1.3];
+  const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.42, 1, bounds.size[2] * 1.54];
   const alarmAnchor = resolveBoundsAnchor(bounds, "top-left", { offset: Math.max(...bounds.size) * 0.1 });
   const scannerAnchor = resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 });
 
   const nodes: AuraNodeInput[] = [
-    primitives.plane({ name: "quiet ops floor", material: material.pbr({ color: "#071013", roughness: 0.86, metallic: 0.02 }) })
+    primitives.plane({ name: "quiet ops floor", material: material.reflectiveFloor({ color: "#0a1b24", roughness: 0.38, metallic: 0.28 }) })
       .position(bounds.center[0], bounds.floorY - 0.082, bounds.center[2])
       .scale([...floorScale]),
-    primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#1d3034", roughness: 0.7, metallic: 0.1 }) })
+    primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#233e47", roughness: 0.56, metallic: 0.2, emissive: "#07151b", emissiveIntensity: 0.16 }) })
       .position(bounds.center[0], bounds.floorY - 0.04, bounds.center[2])
-      .scale([bounds.size[0] * 1.04, 0.035, bounds.size[2] * 1.1]),
+      .scale([bounds.size[0] * 1.14, 0.035, bounds.size[2] * 1.2]),
+    ...createOperationsBay(bounds),
     model(workcellAsset, {
       name: "typed robotic welding workcell route-primary hero",
       scaleMode: "fit",
       targetMaxDimension: WORKCELL_TARGET_MAX_DIMENSION,
+      visible: !subjectSuppressed,
       castShadow: true,
       receiveShadow: true
     })
@@ -395,6 +457,169 @@ function createWorkcellPresentation(): AuraNodeInput[] {
 
   nodes.push(...createWorkpieces());
   nodes.push(...createBeltPulses());
+  return nodes;
+}
+
+/**
+ * A restrained operations bay around the typed workcell. These pieces are
+ * deliberately secondary set dressing: they establish a believable factory
+ * inspection environment, add depth cues behind the safety glass, and keep the
+ * workcell's own geometry as the only route-primary subject. Every placement is
+ * derived from the placed asset bounds so a future replacement asset remains
+ * grounded without another round of eyeballed coordinates.
+ */
+function createOperationsBay(bounds: ReturnType<typeof workcellBounds>): AuraNodeInput[] {
+  const sizeX = bounds.size[0];
+  const sizeY = bounds.size[1];
+  const sizeZ = bounds.size[2];
+  const floorY = bounds.floorY;
+  const backZ = bounds.min[2] - sizeZ * 0.48;
+  const frontZ = bounds.max[2] + sizeZ * 0.36;
+  const bayTop = floorY + sizeY * 1.32;
+  const baySide = sizeX * 0.72;
+  const { belt, deckHeight, surfaceY } = conveyorDimensions();
+  const wallMaterial = material.pbr({
+    name: "operations bay graphite wall",
+    color: "#102b35",
+    roughness: 0.62,
+    metallic: 0.24,
+    emissive: "#06141b",
+    emissiveIntensity: 0.18
+  });
+  const railMaterial = material.metal({
+    name: "operations bay structural rail",
+    color: "#254a56",
+    roughness: 0.38,
+    metallic: 0.72,
+    emissive: "#0a252d",
+    emissiveIntensity: 0.24
+  });
+  const cyanMaterial = material.emissive({
+    name: "operations bay cyan status rail",
+    color: "#5ee7df",
+    emissive: "#36d8dc",
+    emissiveIntensity: 1.05,
+    opacity: 0.88
+  });
+  const amberMaterial = material.emissive({
+    name: "operations bay amber status rail",
+    color: "#f6bd68",
+    emissive: "#ec8f38",
+    emissiveIntensity: 0.9,
+    opacity: 0.88
+  });
+  const floorLineMaterial = material.pbr({
+    name: "operations bay floor inlay",
+    color: "#1c4a56",
+    roughness: 0.44,
+    metallic: 0.58,
+    emissive: "#0c2933",
+    emissiveIntensity: 0.28
+  });
+  const safetyAmberMaterial = material.emissive({
+    name: "operations bay safety amber",
+    color: "#f6bb61",
+    emissive: "#d86e2b",
+    emissiveIntensity: 0.86,
+    opacity: 0.9
+  });
+  const beltRailMaterial = material.metal({
+    name: "packaging conveyor rail",
+    color: "#76969a",
+    roughness: 0.28,
+    metallic: 0.82
+  });
+  const beltSurfaceMaterial = material.clearcoatPaint({
+    name: "packaging conveyor belt surface",
+    color: "#143b43",
+    roughness: 0.32,
+    clearcoat: 0.48,
+    emissive: "#06252b",
+    emissiveIntensity: 0.2
+  });
+  const nodes: AuraNodeInput[] = [
+    primitives.box({ name: "operations bay rear wall", material: wallMaterial, receiveShadow: true })
+      .position(bounds.center[0], floorY + sizeY * 0.57, backZ)
+      .scale([sizeX * 1.22, sizeY * 0.78, 0.045]),
+    primitives.box({ name: "operations bay rear wall lower rail", material: railMaterial, receiveShadow: true })
+      .position(bounds.center[0], floorY + sizeY * 0.16, backZ + 0.055)
+      .scale([sizeX * 1.2, 0.035, 0.035]),
+    primitives.box({ name: "operations bay rear cyan diagnostic rail", material: cyanMaterial })
+      .position(bounds.center[0] - sizeX * 0.12, floorY + sizeY * 0.92, backZ + 0.07)
+      .scale([sizeX * 0.48, 0.014, 0.016]),
+    primitives.box({ name: "operations bay rear amber diagnostic rail", material: amberMaterial })
+      .position(bounds.center[0] + sizeX * 0.42, floorY + sizeY * 0.92, backZ + 0.07)
+      .scale([sizeX * 0.18, 0.014, 0.016]),
+    // Overhead beam and uprights frame the scene like a real inspection cell and
+    // create a strong vertical silhouette around the lower workcell asset.
+    primitives.box({ name: "operations bay overhead beam", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0], bayTop, backZ + sizeZ * 0.08)
+      .scale([sizeX * 1.18, 0.038, 0.042]),
+    primitives.box({ name: "operations bay front overhead beam", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0], bayTop - sizeY * 0.11, frontZ - sizeZ * 0.12)
+      .scale([sizeX * 1.18, 0.038, 0.042]),
+    primitives.box({ name: "operations bay gantry left depth rail", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0] - baySide, bayTop - sizeY * 0.11, bounds.center[2] - sizeZ * 0.08)
+      .scale([0.032, 0.032, sizeZ * 0.6]),
+    primitives.box({ name: "operations bay gantry right depth rail", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0] + baySide, bayTop - sizeY * 0.11, bounds.center[2] - sizeZ * 0.08)
+      .scale([0.032, 0.032, sizeZ * 0.6]),
+    primitives.box({ name: "operations bay gantry trolley housing", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0] + sizeX * 0.16, bayTop - sizeY * 0.15, bounds.center[2] - sizeZ * 0.12)
+      .scale([sizeX * 0.055, 0.04, sizeZ * 0.065]),
+    primitives.box({ name: "operations bay gantry pendant", material: railMaterial, castShadow: true })
+      .position(bounds.center[0] + sizeX * 0.16, bayTop - sizeY * 0.3, bounds.center[2] - sizeZ * 0.12)
+      .scale([0.012, sizeY * 0.12, 0.012]),
+    primitives.box({ name: "operations bay left upright", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0] - baySide, floorY + sizeY * 0.66, backZ + sizeZ * 0.08)
+      .scale([0.034, sizeY * 0.68, 0.034]),
+    primitives.box({ name: "operations bay right upright", material: railMaterial, castShadow: true, receiveShadow: true })
+      .position(bounds.center[0] + baySide, floorY + sizeY * 0.66, backZ + sizeZ * 0.08)
+      .scale([0.034, sizeY * 0.68, 0.034]),
+    primitives.box({ name: "operations bay overhead cyan worklight", material: cyanMaterial })
+      .position(bounds.center[0] - sizeX * 0.18, bayTop - sizeY * 0.08, backZ + sizeZ * 0.16)
+      .scale([sizeX * 0.38, 0.018, 0.026]),
+    primitives.box({ name: "operations bay overhead amber worklight", material: amberMaterial })
+      .position(bounds.center[0] + sizeX * 0.36, bayTop - sizeY * 0.08, backZ + sizeZ * 0.16)
+      .scale([sizeX * 0.16, 0.018, 0.026]),
+    // Inlaid lines point toward the hero and make the conveyor/front edge read as
+    // an intentional machine lane instead of an isolated slab.
+    primitives.box({ name: "operations bay front cyan lane inlay", material: cyanMaterial })
+      .position(bounds.center[0] - sizeX * 0.18, floorY - 0.001, frontZ)
+      .scale([0.018, 0.006, sizeZ * 0.16]),
+    primitives.box({ name: "operations bay front amber lane inlay", material: amberMaterial })
+      .position(bounds.center[0] + sizeX * 0.34, floorY - 0.001, frontZ)
+      .scale([0.018, 0.006, sizeZ * 0.16]),
+    primitives.box({ name: "operations bay left floor guide", material: floorLineMaterial })
+      .position(bounds.center[0] - sizeX * 0.48, floorY - 0.004, bounds.center[2] + sizeZ * 0.06)
+      .scale([0.012, 0.008, sizeZ * 0.52]),
+    primitives.box({ name: "operations bay right floor guide", material: floorLineMaterial })
+      .position(bounds.center[0] + sizeX * 0.48, floorY - 0.004, bounds.center[2] + sizeZ * 0.06)
+      .scale([0.012, 0.008, sizeZ * 0.52]),
+    // Raised belt rails and a contrasting surface turn the single dark slab
+    // into a legible packaging lane with contact and scale cues.
+    primitives.box({ name: "packaging conveyor surface", material: beltSurfaceMaterial, castShadow: true, receiveShadow: true })
+      .position(belt.center[0], surfaceY + deckHeight * 0.4, belt.center[2])
+      .scale([belt.size[0], deckHeight * 0.28, belt.size[2] * 0.94]),
+    primitives.box({ name: "packaging conveyor left guide rail", material: beltRailMaterial, castShadow: true, receiveShadow: true })
+      .position(belt.center[0], surfaceY + deckHeight * 0.84, belt.center[2] - belt.size[2] * 0.45)
+      .scale([belt.size[0], deckHeight * 0.32, 0.018]),
+    primitives.box({ name: "packaging conveyor right guide rail", material: beltRailMaterial, castShadow: true, receiveShadow: true })
+      .position(belt.center[0], surfaceY + deckHeight * 0.84, belt.center[2] + belt.size[2] * 0.45)
+      .scale([belt.size[0], deckHeight * 0.32, 0.018]),
+    ...Array.from({ length: 5 }, (_, index) => primitives.box({
+      name: `packaging conveyor roller ${index + 1}`,
+      material: beltRailMaterial,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(
+        belt.min[0] + belt.size[0] * (0.12 + index * 0.19),
+        surfaceY + deckHeight * 0.82,
+        belt.center[2]
+      )
+      .scale([0.018, deckHeight * 0.19, belt.size[2] * 0.4]))
+  ];
   return nodes;
 }
 
@@ -712,6 +937,22 @@ function renderConsole(): void {
         <div class="console__metric"><span class="console__label">Mode</span><strong id="ops-mode" class="console__value">normal</strong></div>
       </div>
     </section>
+    <section class="console__section console__section--context">
+      <div class="context-heading">
+        <div>
+          <h2>Cell context</h2>
+          <p>LINE 04 · CELL A-17 · NIGHT SHIFT</p>
+        </div>
+        <span id="ops-health" class="context-status"><i></i> nominal</span>
+      </div>
+      <div class="context-grid">
+        <div><span class="console__label">Cycle</span><strong id="ops-cycle" class="console__value">01:42</strong></div>
+        <div><span class="console__label">Queue</span><strong id="ops-queue" class="console__value">08 units</strong></div>
+        <div><span class="console__label">OEE</span><strong id="ops-oee" class="console__value">92.4%</strong></div>
+        <div><span class="console__label">Last check</span><strong id="ops-last-check" class="console__value">02m ago</strong></div>
+      </div>
+      <div class="context-signal"><span>Flow integrity</span><b id="ops-flow-value">89%</b><i><em id="ops-flow-bar"></em></i></div>
+    </section>
     <section class="console__section">
       <h2>Event Log</h2>
       <ul id="ops-event-log" class="event-log"></ul>
@@ -825,14 +1066,18 @@ function injectAlert(): void {
 }
 
 function syncUi(): void {
+  const alerts = zones.reduce((sum, zone) => sum + zone.incidents, 0);
   const telemetry = document.querySelector<HTMLElement>("#telemetry");
   if (telemetry) {
-    const alerts = zones.reduce((sum, zone) => sum + zone.incidents, 0);
+    const throughputPct = clamp(Math.round((throughput / 1400) * 100), 12, 98);
+    const energyPct = clamp(Math.round((energyMw / 6) * 100), 12, 98);
+    const alertPct = alerts > 0 ? 82 : 16;
+    const zonePct = clamp(Math.round(zones.find((zone) => zone.id === selectedZone)?.load ?? 0), 12, 98);
     telemetry.innerHTML = `
-      <article class="telemetry__card"><span>Throughput</span><strong>${throughput}</strong><em>units/hour</em></article>
-      <article class="telemetry__card"><span>Energy</span><strong>${energyMw.toFixed(2)}</strong><em>MW draw</em></article>
-      <article class="telemetry__card"><span>Alerts</span><strong>${alerts}</strong><em>${mode}</em></article>
-      <article class="telemetry__card"><span>Selected Zone</span><strong>${zoneLabels[selectedZone]}</strong><em>${zoneSummary(selectedZone)}</em></article>
+      <article class="telemetry__card"><span>Throughput</span><strong>${throughput}</strong><em>units/hour</em><div class="telemetry__trend"><i style="width:${throughputPct}%"></i></div></article>
+      <article class="telemetry__card"><span>Energy</span><strong>${energyMw.toFixed(2)}</strong><em>MW draw</em><div class="telemetry__trend"><i style="width:${energyPct}%"></i></div></article>
+      <article class="telemetry__card"><span>Alerts</span><strong>${alerts}</strong><em>${mode}</em><div class="telemetry__trend"><i style="width:${alertPct}%"></i></div></article>
+      <article class="telemetry__card"><span>Selected Zone</span><strong>${zoneLabels[selectedZone]}</strong><em>${zoneSummary(selectedZone)}</em><div class="telemetry__trend"><i style="width:${zonePct}%"></i></div></article>
     `;
   }
 
@@ -855,6 +1100,25 @@ function syncUi(): void {
   setText("#ops-backend", app.backend);
   setText("#ops-mode", mode);
   setText("#ops-accessible-summary", accessibilitySummary());
+  const cycleSeconds = Math.floor((uptime * 1.8) % 180);
+  const cycleMinutes = String(Math.floor(cycleSeconds / 60)).padStart(2, "0");
+  const cycleRemainder = String(cycleSeconds % 60).padStart(2, "0");
+  const queueUnits = Math.max(0, Math.round(throughput / 180 - (isolatedZone ? 3 : 0)));
+  const oee = clamp(92.4 - (mode === "maintenance" ? 8.5 : 0) - (mode === "incident" ? 17.2 : 0) - (isolatedZone ? 5.4 : 0), 48, 99.9);
+  const flow = clamp(Math.round(89 - (mode === "maintenance" ? 12 : 0) - (mode === "incident" ? 27 : 0) - (isolatedZone ? 18 : 0)), 22, 96);
+  setText("#ops-cycle", `${cycleMinutes}:${cycleRemainder}`);
+  setText("#ops-queue", `${String(queueUnits).padStart(2, "0")} units`);
+  setText("#ops-oee", `${oee.toFixed(1)}%`);
+  setText("#ops-last-check", `${Math.max(0, Math.floor((uptime * 0.7) % 9))}m ago`);
+  setText("#ops-flow-value", `${flow}%`);
+  const flowBar = document.querySelector<HTMLElement>("#ops-flow-bar");
+  if (flowBar) flowBar.style.width = `${flow}%`;
+  const health = document.querySelector<HTMLElement>("#ops-health");
+  if (health) {
+    const healthState = alerts > 0 || mode === "incident" ? "attention" : mode === "maintenance" ? "service" : "nominal";
+    health.className = `context-status context-status--${healthState}`;
+    health.innerHTML = `<i></i> ${healthState}`;
+  }
   const log = document.querySelector<HTMLElement>("#ops-event-log");
   if (log) {
     log.innerHTML = eventLog.map((item, index) => `<li><time>${String(index + 1).padStart(2, "0")}</time><b>${escapeHtml(item)}</b></li>`).join("");

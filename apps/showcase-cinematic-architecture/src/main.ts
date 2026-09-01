@@ -95,7 +95,7 @@ const moods: Record<MoodId, {
 }> = {
   dawn: {
     label: "Dawn",
-    background: "#10100d",
+    background: "#152235",
     floor: "#2b271f",
     stone: "#8c8170",
     stoneDark: "#403b33",
@@ -109,7 +109,7 @@ const moods: Record<MoodId, {
   },
   gallery: {
     label: "Gallery",
-    background: "#0a0d0d",
+    background: "#081722",
     floor: "#18201f",
     stone: "#b8b2a2",
     stoneDark: "#2a302d",
@@ -123,7 +123,7 @@ const moods: Record<MoodId, {
   },
   nocturne: {
     label: "Nocturne",
-    background: "#090a0d",
+    background: "#060d18",
     floor: "#111318",
     stone: "#6f7782",
     stoneDark: "#1d2028",
@@ -150,9 +150,9 @@ const cameraPaths: Record<CameraPathId, {
       return camera.path({
         from: compactViewport ? [1.72, 0.72, 4.12] : [1.74, 0.72, 2.72],
         to: compactViewport ? [1.42, 0.62, 3.72] : [1.34, 0.58, 2.28],
-        target: compactViewport ? [0.14, -0.16, -0.62] : [0.08, -0.2, -0.62],
+        target: compactViewport ? [0.14, -0.34, -0.62] : [0.08, -0.34, -0.62],
         seconds: 9,
-        fov: compactViewport ? 40 : 32,
+        fov: compactViewport ? 40 : 34,
         captureTime: 0.35
       });
     }
@@ -165,9 +165,9 @@ const cameraPaths: Record<CameraPathId, {
       return camera.dolly({
         from: compactViewport ? [1.68, 0.7, 4.04] : [1.62, 0.68, 2.62],
         to: compactViewport ? [1.28, 0.58, 3.58] : [1.04, 0.52, 2.06],
-        target: compactViewport ? [0.14, -0.16, -0.62] : [0.08, -0.2, -0.62],
+        target: compactViewport ? [0.14, -0.34, -0.62] : [0.08, -0.34, -0.62],
         seconds: 11,
-        fov: compactViewport ? 40 : 32,
+        fov: compactViewport ? 40 : 34,
         captureTime: 0.58
       });
     }
@@ -180,9 +180,9 @@ const cameraPaths: Record<CameraPathId, {
       return camera.path({
         from: compactViewport ? [-1.5, 0.72, 4.08] : [-1.36, 0.68, 2.62],
         to: compactViewport ? [-1.14, 0.6, 3.62] : [-0.82, 0.52, 2.08],
-        target: compactViewport ? [0.14, -0.16, -0.62] : [0.08, -0.2, -0.62],
+        target: compactViewport ? [0.14, -0.34, -0.62] : [0.08, -0.34, -0.62],
         seconds: 8,
-        fov: compactViewport ? 40 : 32,
+        fov: compactViewport ? 40 : 34,
         captureTime: 0.48
       });
     }
@@ -221,11 +221,11 @@ const architectureKit = createArchitectureKit({
 
 const cinematicKit = createCinematicKit({
   shots: [
-    { id: "establish", seconds: 9, from: [1.74, 0.72, 2.72], to: [1.34, 0.58, 2.28], target: [0.08, -0.2, -0.62], transition: "ease" },
-    { id: "glide", seconds: 11, from: [1.62, 0.68, 2.62], to: [1.04, 0.52, 2.06], target: [0.08, -0.2, -0.62], transition: "linear" },
-    { id: "balcony", seconds: 8, from: [-1.36, 0.68, 2.62], to: [-0.82, 0.52, 2.08], target: [0.08, -0.2, -0.62], transition: "ease" }
+    { id: "establish", seconds: 9, from: [1.74, 0.72, 2.72], to: [1.34, 0.58, 2.28], target: [0.08, -0.34, -0.62], transition: "ease" },
+    { id: "glide", seconds: 11, from: [1.62, 0.68, 2.62], to: [1.04, 0.52, 2.06], target: [0.08, -0.34, -0.62], transition: "linear" },
+    { id: "balcony", seconds: 8, from: [-1.36, 0.68, 2.62], to: [-0.82, 0.52, 2.08], target: [0.08, -0.34, -0.62], transition: "ease" }
   ],
-  fov: 32
+  fov: 34
 });
 
 let controls: ArchitectureControls = {
@@ -279,7 +279,22 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       castShadow: true,
       receiveShadow: true,
       scaleMode: "fit",
-      targetMaxDimension: compactViewport ? 1.28 : 1.58
+      targetMaxDimension: compactViewport ? 1.46 : 1.78,
+      // The catalog model includes six high-altitude cloud meshes as optional
+      // sky dressing. Keep the typed district and its grounded platform as the
+      // presentation subject; hiding only those named meshes prevents the
+      // clouds from consuming the hero frame while retaining every building,
+      // street, tree, vehicle, and platform in the imported asset.
+      hiddenNodeNames: [
+        "Cube.061__0",
+        "Cube.070__0",
+        "Icosphere.156_TEXTURE FINALE.002_0",
+        "Icosphere.159_TEXTURE FINALE.002_0",
+        "Icosphere.160_TEXTURE FINALE.002_0",
+        "Icosphere.158_TEXTURE FINALE.002_0",
+        "Icosphere.087_TEXTURE FINALE.002_0",
+        "Icosphere.088_TEXTURE FINALE.002_0"
+      ]
     })
       .position(0.2, compactViewport ? -0.28 : -0.36, -0.62)
       .rotate(0, -0.28, 0)

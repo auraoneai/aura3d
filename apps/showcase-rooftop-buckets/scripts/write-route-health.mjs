@@ -8,7 +8,7 @@ const repoRoot = resolve(appDir, "../..");
 const reportDir = join(repoRoot, "tests/reports/rooftop-buckets");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
-const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
+const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"];
 const audioIds = [
   "rooftopBucketsAmbientRooftopSfx", "rooftopBucketsBoardThudSfx", "rooftopBucketsBrickMissSfx",
   "rooftopBucketsBuzzerFailSfx", "rooftopBucketsChargeTickSfx", "rooftopBucketsFireIgniteSfx",
@@ -45,8 +45,8 @@ for (const id of modelIds) {
       && ["Daniel Darko", "Daffa Haekal", "3DDomino", "RiverofCreative"].some((author) => asset.provenance?.author?.startsWith(author));
   if (!approvedProvenance || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable model provenance is incomplete`);
   if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
-  if ((id === "rooftopLayupScorer" || id === "rooftopDefender") && ((asset.animations?.length ?? 0) < 4 || (asset.skeleton?.jointCount ?? 0) < 100)) {
-    throw new Error(`${id} release asset must retain a skinned humanoid and four role-specific clips`);
+  if ((id === "rooftopAthleteShooter" || id === "rooftopAthleteDefender") && (asset.skeleton?.skinCount ?? 0) > 0) {
+    throw new Error(`${id} is a static pose derivative; unexpected skin metadata would overstate its runtime capability`);
   }
   if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
 }

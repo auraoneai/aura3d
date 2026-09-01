@@ -6,6 +6,7 @@ import {
   distanceLod,
   environments,
   effects,
+  geometry,
   game,
   groundedFittedModelPosition,
   instances,
@@ -228,6 +229,13 @@ const CAR_SCENE_HEIGHT = heroFraming.subject.height;
  * sits — which is why the thirty-line comment that used to defend it is gone.
  */
 const TRACK_REFERENCE_Y = -0.12;
+/**
+ * The authored V2 venue's visible asphalt is lifted above the certified contact
+ * triangles by the source model's road-wear shell. Keep renderer-only lane
+ * language on that shell while leaving the mesh-derived vehicle contact plane
+ * authoritative below it.
+ */
+const ROAD_DETAIL_SURFACE_LIFT = 0.075;
 /**
  * Scene Y used to place the car node and its telemetry reference.
  *
@@ -540,7 +548,13 @@ const reviewVenuePlate = new URLSearchParams(window.location.search).get("venueP
 // previous compact track; at Formula scale its tents/walls enclosed the chase
 // camera and occluded the certified circuit. Keep it out of this route rather
 // than hiding the topology behind redundant set dressing.
-const supplementalHairpinVenueEnabled = false;
+// Keep one authored hairpin venue kit in the review frame.  It is renderer-owned
+// set dressing (the typed Formula circuit remains route/contact authority), but
+// the previous all-disabled branch left the held drift capture as cars on an
+// undifferentiated asphalt slab.  The runtime placement below keeps the kit
+// beyond the shoulder and follows the live review pose, so it supplies real
+// 3-D tents, timber rails, rocks and spectators without entering gameplay.
+const supplementalHairpinVenueEnabled = true;
 const VISUAL_DRIFT_PLUME_COUNT = 12;
 let visualCaptureHeld = false;
 // The collision proof route holds the exact solved first-contact pose until the
@@ -1129,6 +1143,211 @@ function buildHairpinRubberNodes() {
         }));
     });
   });
+}
+
+/** Return the same mesh-derived height used by the four-wheel chassis. */
+function sampleTurboRoadHeight(x: number, z: number): number {
+  const sample = racingScene.surfaceQuery()?.sample(x, z);
+  return sample && sample.hit && Number.isFinite(sample.height)
+    ? sample.height
+    // The fallback is only for an authored detail vertex outside a sparse
+    // extracted triangle; it is never used for vehicle contact.
+    : TRACK_REFERENCE_Y + 0.07;
+}
+
+/**
+ * Route-bound road language for the public frame.
+ *
+ * The environment GLB owns the actual asphalt and collision topology.  These
+ * renderer-only instances add the visual cues a chase camera needs to read a
+ * corner at speed: broken centre dashes, alternating kerb blocks, and two
+ * darker rubber lanes that continue through the opening bend.  They are all
+ * sampled from the same racing-line query as the cars, so a topology swap moves
+ * the details with the route instead of leaving a decorative flat plane behind.
+ * Instancing keeps this material pass to three draw calls rather than one node
+ * per dash/kerb and does not enter Rapier or the route's contact width.
+ */
+function buildTurboRoadDetailNodes() {
+  const segmentCount = 44;
+  const asphaltPositions: [number, number, number][] = [];
+  const asphaltNormals: [number, number, number][] = [];
+  const asphaltIndices: number[] = [];
+  const aggregatePositions: [number, number, number][] = [];
+  const aggregateNormals: [number, number, number][] = [];
+  const aggregateIndices: number[] = [];
+  const curbTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const curbColors: string[] = [];
+  const centreDashTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const rubberTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+
+  for (let index = 0; index < segmentCount; index += 1) {
+    const startProgress = index / segmentCount;
+    const endProgress = (index + 0.86) / segmentCount;
+    const midpointProgress = (startProgress + endProgress) / 2;
+    const midpoint = sampleCentreline(midpointProgress);
+    const start = gamePointToScene(sampleCentreline(startProgress));
+    const end = gamePointToScene(sampleCentreline(endProgress));
+    const segmentLength = Math.max(0.08, Math.hypot(end[0] - start[0], end[2] - start[2]));
+    const pose = racingScene.toScenePose({
+      position: { x: midpoint.x, y: midpoint.y },
+      heading: midpoint.heading
+    });
+    const roadY = sampleTurboRoadHeight(pose.position[0], pose.position[2]);
+    const roadDetailY = roadY + ROAD_DETAIL_SURFACE_LIFT;
+    const edgeOffset = visualAsphaltHalfWidthGame * 0.97;
+    const leftX = Math.sin(midpoint.heading);
+    const leftZ = -Math.cos(midpoint.heading);
+    for (const side of [-1, 1] as const) {
+      const edge = gamePointToScene({
+        x: midpoint.x + leftX * edgeOffset * side,
+        y: midpoint.y + leftZ * edgeOffset * side
+      });
+      curbTransforms.push({
+        position: [edge[0], roadDetailY + 0.014, edge[2]],
+        rotation: [0, pose.rotation[1], 0],
+        // Keep the kerb just outside the certified asphalt edge.  Its narrow
+        // cross-section reads as a curb stripe without changing the contact
+        // plane used by either chassis.
+        scale: [0.082, 0.022, segmentLength * 0.9]
+      });
+      curbColors.push((index + (side > 0 ? 0 : 1)) % 2 === 0 ? "#e35f48" : "#f0d9b9");
+    }
+
+    // Leave a purposeful gap between centre dashes.  The line is painted onto
+    // the road's own plane, so its perspective continues through the bend and
+    // never becomes a floating HUD element.
+    if (index % 2 === 0) {
+      centreDashTransforms.push({
+        position: [pose.position[0], roadDetailY + 0.012, pose.position[2]],
+        rotation: [0, pose.rotation[1], 0],
+        scale: [0.042, 0.009, Math.min(0.42, segmentLength * 0.5)]
+      });
+    }
+
+    // A paired, offset tyre lane gives the opening hairpin visible racing
+    // history even before the live drift feedback appears.  Keep the marks
+    // narrow and low-contrast so they support the car silhouettes rather than
+    // competing with them.
+    if (midpointProgress >= 0.12 && midpointProgress <= 0.34) {
+      const rubberOffset = routeWidth * 0.095;
+      for (const side of [-1, 1] as const) {
+        const rubber = gamePointToScene({
+          x: midpoint.x + leftX * rubberOffset * side,
+          y: midpoint.y + leftZ * rubberOffset * side
+        });
+        rubberTransforms.push({
+          position: [rubber[0], roadDetailY + 0.01, rubber[2]],
+          rotation: [0, pose.rotation[1], 0],
+          scale: [0.026, 0.006, Math.min(0.36, segmentLength * 0.54)]
+        });
+      }
+    }
+  }
+
+  // Build one continuous ribbon for the road material instead of stacking
+  // disconnected boxes.  A quad per sampled centreline segment keeps the dark
+  // tarmac unbroken through the bend while preserving the certified GLB as the
+  // authoritative geometry/contact source underneath.
+  for (let index = 0; index <= segmentCount; index += 1) {
+    const sample = sampleCentreline(index / segmentCount);
+    const centre = gamePointToScene(sample);
+    const roadY = sampleTurboRoadHeight(centre[0], centre[2]);
+    const roadDetailY = roadY + ROAD_DETAIL_SURFACE_LIFT;
+    const leftX = Math.sin(sample.heading);
+    const leftZ = -Math.cos(sample.heading);
+    const halfWidth = gamePointToSceneLength(routeWidth * 0.46);
+    asphaltPositions.push(
+      [centre[0] + leftX * halfWidth, roadDetailY, centre[2] + leftZ * halfWidth],
+      [centre[0] - leftX * halfWidth, roadDetailY, centre[2] - leftZ * halfWidth]
+    );
+    asphaltNormals.push([0, 1, 0], [0, 1, 0]);
+    // Two subtle aggregate bands break up the long asphalt read without
+    // introducing a second, disconnected road plane. They share every sample
+    // and height with the continuous ribbon, so the bend and its banking remain
+    // legible from the chase lens.
+    const aggregateOffset = gamePointToSceneLength(routeWidth * 0.22);
+    const aggregateHalfWidth = gamePointToSceneLength(routeWidth * 0.075);
+    for (const side of [-1, 1] as const) {
+      const aggregateCentreX = centre[0] + leftX * aggregateOffset * side;
+      const aggregateCentreZ = centre[2] + leftZ * aggregateOffset * side;
+      aggregatePositions.push(
+        [aggregateCentreX + leftX * aggregateHalfWidth, roadDetailY + 0.008, aggregateCentreZ + leftZ * aggregateHalfWidth],
+        [aggregateCentreX - leftX * aggregateHalfWidth, roadDetailY + 0.008, aggregateCentreZ - leftZ * aggregateHalfWidth]
+      );
+      aggregateNormals.push([0, 1, 0], [0, 1, 0]);
+    }
+    if (index === 0) continue;
+    const previous = (index - 1) * 2;
+    const current = index * 2;
+    asphaltIndices.push(previous, previous + 1, current, previous + 1, current + 1, current);
+    const aggregatePrevious = (index - 1) * 4;
+    const aggregateCurrent = index * 4;
+    for (const sideOffset of [0, 2]) {
+      aggregateIndices.push(
+        aggregatePrevious + sideOffset,
+        aggregatePrevious + sideOffset + 1,
+        aggregateCurrent + sideOffset,
+        aggregatePrevious + sideOffset + 1,
+        aggregateCurrent + sideOffset + 1,
+        aggregateCurrent + sideOffset
+      );
+    }
+  }
+
+  return [
+    geometry.custom(geometry.define({
+      positions: asphaltPositions,
+      normals: asphaltNormals,
+      indices: asphaltIndices
+    }), {
+      name: "route-bound continuous asphalt ribbon",
+      // Warm the renderer-owned road one grade above the contact mesh.  The
+      // former blue-charcoal ribbon absorbed the late-afternoon key and read as
+      // a featureless black plane in the held drift frame; this keeps the same
+      // geometry/authority while exposing aggregate and tyre language.
+      material: material.pbr({ name: "layered asphalt", color: "#5a554e", roughness: 0.84, metallic: 0 }),
+      castShadow: false,
+      receiveShadow: true
+    }),
+    geometry.custom(geometry.define({
+      positions: aggregatePositions,
+      normals: aggregateNormals,
+      indices: aggregateIndices
+    }), {
+      name: "route-bound asphalt aggregate bands",
+      material: material.pbr({ name: "asphalt aggregate variation", color: "#746d62", roughness: 0.78, metallic: 0 }),
+      castShadow: false,
+      receiveShadow: false
+    }),
+    instances.box({
+      name: "route-bound alternating kerbs (instanced)",
+      material: material.pbr({ name: "route kerb paint", color: "#ef6a4f", roughness: 0.68, metallic: 0 }),
+      instanceColors: curbColors,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: curbTransforms
+    }),
+    instances.box({
+      name: "route-bound centre dashes (instanced)",
+      material: material.emissive({
+        name: "warm lane paint",
+        color: "#ffe0ad",
+        emissive: "#e7a160",
+        emissiveIntensity: 0.28,
+        roughness: 0.46
+      }),
+      castShadow: false,
+      receiveShadow: false,
+      transforms: centreDashTransforms
+    }),
+    instances.box({
+      name: "route-bound hairpin rubber (instanced)",
+      material: material.pbr({ name: "hairpin rubber lane", color: "#35312e", roughness: 0.96, metallic: 0 }),
+      castShadow: false,
+      receiveShadow: false,
+      transforms: rubberTransforms
+    })
+  ];
 }
 
 /** Far treeline bands: distanceLod drops their detail once the chase camera closes in. */
@@ -1837,10 +2056,10 @@ const app = createAuraApp("#app", {
       route,
       mode: "asset-overlay",
       guideVisibility: "public",
-      roadColor: "#4a4643",
-      terrainColor: "#43513d",
-      curbColor: "#e65e45",
-      laneColor: "#ffd7a1"
+      roadColor: "#5a554e",
+      terrainColor: "#456344",
+      curbColor: "#ed6a4f",
+      laneColor: "#ffe0ad"
     }))
     .add(primitives.sphere({
       name: "racing action camera focus",
@@ -1947,7 +2166,7 @@ const app = createAuraApp("#app", {
     ) : [])
     .add(primitives.box({
       name: "opponent car contact shadow",
-      material: material.pbr({ name: "opponent contact shadow", color: "#080807", roughness: 1, metallic: 0, opacity: 0.46 }),
+      material: material.pbr({ name: "opponent contact shadow", color: "#101416", roughness: 1, metallic: 0, opacity: 0.28 }),
       castShadow: false,
       receiveShadow: false
     }).position(initialOpponentPose.position[0], initialOpponentPose.position[1] + 0.008, initialOpponentPose.position[2]).scale([0.29, 0.008, 0.54]).runtime(game.runtimeNode("racing-opponent-contact-shadow", {
@@ -1956,16 +2175,17 @@ const app = createAuraApp("#app", {
     // TDC-A2 dynamic props, TDC-A3 instanced scenery + LOD bands, TDC-A4 text3D
     // gantry signage, and the flag-gated TDC-A6 boost rings (empty when OFF).
     .addMany(buildTurboPropNodes())
-    // Capture mode needs the same authored trackside world as live play.  The
-    // prior empty-array branch removed every tree, shrub, tyre wall and stand
-    // from the review artifact, leaving only a barren outfield around the car.
-    .addMany([])
-    .addMany([])
-    .addMany([])
-    // The coarse LOD bands are useful beyond the public chase distance, but in
-    // the held close review they projected as tall black slabs above the road.
-    // The denser real tree instances already close this capture's horizon.
-    .addMany([])
+    // Keep the authored venue language in the mounted route.  Earlier review
+    // passes left these branches as four empty arrays after hiding a bad
+    // backdrop; that made the exact racing frame a car on an undifferentiated
+    // asphalt plane even though the route had a typed stand/tree/tyre plan.
+    // These are real scene nodes derived from the certified centreline: the
+    // instanced stands and trees establish scale/parallax, the segmented curbs
+    // and worked-in rubber establish a continuous corner, and the distant LOD
+    // bands close the horizon without entering gameplay/contact state.
+    .addMany(buildTurboSceneryNodes())
+    .addMany(buildTurboRoadDetailNodes())
+    .addMany(visualCaptureCamera ? buildTurboTreelineBands() : [])
     .addMany(buildTurboSignageNodes())
     .addMany(buildTurboBoostRingNodes())
     // Keep contact definition without crushing the Formula car's red palette into black.
@@ -2025,27 +2245,43 @@ const app = createAuraApp("#app", {
       .position(-0.28 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.34 * SCENE_SIZE))
     .add(primitives.sphere({
       name: "left drift smoke",
-      material: material.pbr({ name: "left tyre smoke", color: "#e3ebe8", roughness: 0.98, metallic: 0, opacity: 0.025 })
+      material: material.pbr({
+        name: "left tyre smoke",
+        color: "#d7d2c5",
+        roughness: 0.92,
+        metallic: 0,
+        opacity: visualCaptureCamera ? 0.09 : 0.07
+      })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-smoke", {
       tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
     })))
     .add(primitives.sphere({
       name: "right drift smoke",
-      material: material.pbr({ name: "right tyre smoke", color: "#e3ebe8", roughness: 0.98, metallic: 0, opacity: 0.025 })
+      material: material.pbr({
+        name: "right tyre smoke",
+        color: "#d7d2c5",
+        roughness: 0.92,
+        metallic: 0,
+        opacity: visualCaptureCamera ? 0.09 : 0.07
+      })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-smoke", {
       tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
     })))
     .addMany(Array.from({ length: VISUAL_DRIFT_PLUME_COUNT }, (_, index) =>
-      // A low road-parallel translucent strip reads as sheared tyre haze from
-      // the chase camera. The prior spheres projected as detached gray coins.
-      primitives.box({
+      // Real 3-D puffs are deliberately staggered behind both rear tyres.  The
+      // previous translucent boxes collapsed into two flat rails at the held
+      // review distance; soft spheres with varied warm-grey materials preserve
+      // the road contact while giving the drift a readable billow.
+      primitives.sphere({
         name: `drift dust history ${index + 1}`,
         material: material.pbr({
           name: `warm drift dust ${index + 1}`,
-          color: index % 3 === 0 ? "#e4ece9" : "#cbd8d5",
-          roughness: 1,
+          color: index % 3 === 0 ? "#e6ded0" : index % 3 === 1 ? "#c7c7bd" : "#b8bbb5",
+          roughness: 0.94,
           metallic: 0,
-          opacity: Math.max(0.025, 0.075 - index * 0.004)
+          opacity: visualCaptureCamera
+            ? Math.max(0.045, 0.14 - index * 0.009)
+            : Math.max(0.045, 0.14 - index * 0.008)
         })
       })
         .position(...initialPlayerPose.position)
@@ -3280,13 +3516,21 @@ app.onFrame(({ dt }) => {
   const contactTelemetry = playerChassis.telemetry();
   const contactStrength = contactTelemetry.groundedWheels / 4;
   const contactCompression = Math.max(0, Math.min(1, contactTelemetry.averageCompression));
+  // The visible V2 road shell sits above the certified contact triangles. Keep
+  // renderer-owned contact cues on that same shell so the tyres read seated in
+  // the rendered lane while chassis telemetry continues to report the actual
+  // mesh contact plane below it.
+  const playerPresentationRoadY = sampleTurboRoadHeight(
+    playerChassisPose.groundedPosition[0],
+    playerChassisPose.groundedPosition[2]
+  ) + ROAD_DETAIL_SURFACE_LIFT;
   playerContactShadow
     // Follow the chassis-owned contact plane, not the route centre sample. On a
     // banked corner those are different Y values; using the latter detached the
     // patch even while all four wheel probes were grounded.
     .setPosition(
       playerChassisPose.groundedPosition[0] - Math.cos(playerPose.heading) * (visualCaptureCamera ? 0.035 : 0),
-      playerChassisPose.groundedPosition[1] + 0.012,
+      playerPresentationRoadY + 0.012,
       playerChassisPose.groundedPosition[2] - Math.sin(playerPose.heading) * (visualCaptureCamera ? 0.035 : 0)
     )
     .setRotation(0, playerPose.rotation[1] + reviewSlipYaw, 0)
@@ -3301,7 +3545,7 @@ app.onFrame(({ dt }) => {
       shadow
         .setPosition(
           wheel.position[0],
-          playerChassisPose.groundedPosition[1] + 0.014,
+          sampleTurboRoadHeight(wheel.position[0], wheel.position[2]) + ROAD_DETAIL_SURFACE_LIFT + 0.014,
           wheel.position[2]
         )
         .setRotation(0, playerPose.rotation[1] + reviewSlipYaw, 0)
@@ -3372,14 +3616,14 @@ app.onFrame(({ dt }) => {
     // axle made valid smoke telemetry disappear inside the bodywork from the
     // chase camera, particularly in the exact review frame.
     const smokeTrail = visualCaptureCamera
-      ? rearAxleOffset + tireExitGap * 0.2
+      ? rearAxleOffset + tireExitGap * 0.2 + smokeScale * 0.68
       : rearAxleOffset + tireExitGap + smokeScale * 1.1;
     const rearX = playerPose.position[0] - Math.cos(heading) * smokeTrail;
     const rearZ = playerPose.position[2] - Math.sin(heading) * smokeTrail;
     smoke
       .setPosition(
         rearX + sideX * side * 0.72,
-        playerGroundedVisual[1] + (visualCaptureCamera ? 0.045 : 0.08 + smokeScale * 0.34),
+        playerGroundedVisual[1] + (visualCaptureCamera ? 0.14 : 0.08 + smokeScale * 0.34),
         rearZ + sideZ * side * 0.72
       )
       // The two live feedback spheres are useful in normal gameplay, but at the
@@ -3388,7 +3632,7 @@ app.onFrame(({ dt }) => {
       // same real slip/asphalt visibility condition.
       .setScale(driftSmokeVisible
         ? (visualCaptureCamera
-          ? [0.045, 0.006, 0.13]
+          ? [smokeScale * 0.34, smokeScale * 0.24, smokeScale * 0.52]
           : [smokeScale * 0.68, smokeScale * 0.38, smokeScale * 1.35])
         : [0.001, 0.001, 0.001])
       .setVisible(driftSmokeVisible);
@@ -3412,42 +3656,41 @@ app.onFrame(({ dt }) => {
     const historyAge = index / Math.max(1, visualDriftPlumes.length - 1);
     const reviewPuffIndex = Math.floor(index / 2);
     const reviewSide = reviewPuffIndex % 2 === 0 ? -1 : 1;
-    const reviewWakeDistance = 0.18 + historyAge * 1.34;
-    const reviewLaneSpread = reviewSide * (0.04 + historyAge * 0.052)
-      + reviewTrailCurveSign * historyAge * historyAge * 0.24;
-    const reviewRadius = 0.048 + historyAge * 0.066;
+    const reviewWakeDistance = 0.28 + historyAge * 1.18;
+    const reviewLaneSpread = reviewSide * (0.12 + historyAge * 0.1)
+      + reviewTrailCurveSign * historyAge * historyAge * 0.2;
+    const reviewRadius = 0.028 + historyAge * 0.04;
     const radius = Math.max(0.018, 0.038 - index * 0.0045) * (0.82 + driftAmount * speedFraction * 0.32);
     // The transformed scene-space forward vector keeps every puff attached to
     // the rendered car even though the source circuit is rotated in scene space.
     // Real slip bends the paired wake laterally, while age expands and lifts it.
-    // Eight staggered ellipsoids read as a broken dust wake; rendering every
-    // pooled sphere produced a regular bead-chain of circular alpha edges.
-    // The held comparison frame pauses on the measured drift pose. Pooled mesh
-    // history cannot evolve after that pause, and both spheres and boxes read as
-    // frozen coins/strips. Keep live renderer dust + road-following skid marks;
-    // reserve pooled history for normal unpaused gameplay.
-    const reviewPuffVisible = false;
+    // The held comparison frame pauses on the measured drift pose, so the
+    // review wake must be a solved, road-following tableau rather than waiting
+    // for transient runtime particles.  Stagger the puffs along the rear arc
+    // and vary their footprint/opacity with age so the result reads as a short
+    // dust cloud, not a bead-chain of identical decals.
+    const reviewPuffVisible = visualCaptureCamera;
     plume
       .setPosition(
         reviewPuffVisible
           ? playerPose.position[0] - reviewTrailForwardX * reviewWakeDistance + reviewTrailSideX * reviewLaneSpread
           : playerPose.position[0] - Math.cos(heading) * distance + sideX * spread,
-        playerChassisPose.groundedPosition[1] + (reviewPuffVisible ? 0.035 + historyAge * 0.052 : 0.035 + radius * (0.38 + index * 0.015)),
+        playerChassisPose.groundedPosition[1] + (reviewPuffVisible ? 0.14 + historyAge * 0.08 : 0.035 + radius * (0.38 + index * 0.015)),
         reviewPuffVisible
           ? playerPose.position[2] - reviewTrailForwardZ * reviewWakeDistance + reviewTrailSideZ * reviewLaneSpread
           : playerPose.position[2] - Math.sin(heading) * distance + sideZ * spread
       )
       .setRotation(0, reviewPuffVisible ? Math.atan2(reviewTrailDx, reviewTrailDz) : heading, 0)
-      .setScale(driftSmokeVisible
+    .setScale(driftSmokeVisible
         ? (reviewPuffVisible
-          ? [reviewRadius * 0.44, 0.004, reviewRadius * 2.1]
+          ? [reviewRadius * (0.64 + (index % 3) * 0.09), reviewRadius * (0.26 + (index % 2) * 0.08), reviewRadius * (1.05 + historyAge * 0.55)]
           : [radius * 1.05, radius * 0.5, radius * 1.65])
         : [0.001, 0.001, 0.001])
       // Keep a sparse, staggered wake in the exact drift frame.  Only every
       // other pooled entry is used and each one is stretched along the solved
       // route heading, so the feedback reads as tyre smoke trailing the real
       // slide rather than detached circular decals.
-      .setVisible(driftSmokeVisible && (!visualCaptureCamera || reviewPuffVisible));
+      .setVisible(driftSmokeVisible && (!visualCaptureCamera || (reviewPuffVisible && index % 2 === 0)));
   }
   if (driftSmokeVisible) {
     driftSmokeFrame += 1;
@@ -3549,9 +3792,19 @@ app.onFrame(({ dt }) => {
   );
   opponentCar.setRotation(opponentChassisPose.rotation[0], opponentPose.rotation[1], opponentChassisPose.rotation[2]);
   opponentContactShadow
-    .setPosition(opponentPose.position[0], opponentPose.position[1] + 0.045, opponentPose.position[2])
+    // Keep the rival's contact cue under its actual four-wheel chassis pose. The
+    // former route-centre rectangle stayed at a fixed height and read as a
+    // floating black placeholder once the layered road was lifted for review.
+    .setPosition(
+      opponentChassisPose.groundedPosition[0],
+      sampleTurboRoadHeight(
+        opponentChassisPose.groundedPosition[0],
+        opponentChassisPose.groundedPosition[2]
+      ) + ROAD_DETAIL_SURFACE_LIFT + 0.012,
+      opponentChassisPose.groundedPosition[2]
+    )
     .setRotation(0, opponentPose.rotation[1], 0)
-    .setScale(visualCaptureCamera ? [0.34, 0.012, 0.58] : [0.29, 0.008, 0.54]);
+    .setScale(visualCaptureCamera ? [0.24, 0.006, 0.42] : [0.2, 0.004, 0.34]);
   // Runtime transform writes can remount a retained model after its initial
   // visibility assignment. Enforce the exact review contract after every
   // opponent pose update so the solo drift frame cannot regress into two

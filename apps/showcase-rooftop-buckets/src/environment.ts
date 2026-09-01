@@ -115,16 +115,19 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   });
   const pavilionBrick = material.pbr({
     name: "rooftop pavilion brick",
-    color: "#30283b",
-    roughness: 0.72,
+    // The review composition reads as a finished indoor night-league bay;
+    // retain the deeper rooftop brick in normal play while warming the
+    // visible review bays so the typed athletes do not disappear into navy.
+    color: options.reviewCapture ? "#633a43" : "#30283b",
+    roughness: options.reviewCapture ? 0.64 : 0.72,
     metallic: 0.05,
     clearcoat: 0.1
   });
   const pavilionGlass = material.emissive({
     name: "rooftop pavilion glass",
-    color: "#102d42",
-    emissive: "#1b7892",
-    emissiveIntensity: 0.19,
+    color: options.reviewCapture ? "#1a5b70" : "#102d42",
+    emissive: options.reviewCapture ? "#32b8c8" : "#1b7892",
+    emissiveIntensity: options.reviewCapture ? 0.46 : 0.19,
     opacity: 0.92
   });
   const pavilionTrim = material.pbr({
@@ -135,10 +138,37 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   });
   const pavilionInterior = material.emissive({
     name: "rooftop pavilion occupied warm interior",
-    color: "#6f3928",
+    color: options.reviewCapture ? "#a65135" : "#6f3928",
     emissive: "#ff9b52",
-    emissiveIntensity: 0.36,
+    emissiveIntensity: options.reviewCapture ? 0.7 : 0.36,
     opacity: 0.9
+  });
+  const reviewWindowArch = material.pbr({
+    name: "night league arched window trim",
+    color: "#b9774b",
+    roughness: 0.3,
+    metallic: 0.58,
+    clearcoat: 0.32
+  });
+  const reviewWindowGlow = material.emissive({
+    name: "night league arched window glow",
+    color: "#b8f3ff",
+    emissive: "#38bdf8",
+    emissiveIntensity: 0.72,
+    opacity: 0.84
+  });
+  const reviewScoreboard = material.pbr({
+    name: "night league scoreboard bezel",
+    color: "#172235",
+    roughness: 0.28,
+    metallic: 0.68,
+    clearcoat: 0.28
+  });
+  const reviewScoreGlow = material.emissive({
+    name: "night league scoreboard digits",
+    color: "#fbbf24",
+    emissive: "#f97316",
+    emissiveIntensity: 1.55
   });
 
   const buildings = [
@@ -240,8 +270,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   // 2. Rooftop Platform & Court Slab
   const courtAsphaltMat = material.pbr({
     name: "court-tartan-floor",
-    color: "#351d2a",
-    roughness: 0.72,
+    color: options.reviewCapture ? "#54313b" : "#351d2a",
+    roughness: options.reviewCapture ? 0.62 : 0.72,
     metallic: 0.04
   });
   const parapetMat = material.pbr({
@@ -849,6 +879,49 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         material: clubSign
       })
         .position(-2.4, 7.58, -6.06)
+        .toJSON()
+    );
+
+    // Three shallow arched window portals make the review frame read as a
+    // finished night-league gym rather than a dark collection of rectangles.
+    // They are decorative facade geometry behind the real hoop/court and do
+    // not participate in the route's ball or player contacts.
+    for (const [index, x] of [-5.25, 0, 5.25].entries()) {
+      nodes.push(
+        primitives.torus({ name: `review arched window trim ${index + 1}`, material: reviewWindowArch })
+          .position(x, 5.0, -6.12)
+          .scale([1.76, 2.18, 0.08])
+          .toJSON(),
+        primitives.box({ name: `review arched window mullion ${index + 1}`, material: reviewWindowArch })
+          .position(x, 4.62, -6.0)
+          .scale([0.08, 2.12, 0.1])
+          .toJSON(),
+        primitives.box({ name: `review arched window glow ${index + 1}`, material: reviewWindowGlow })
+          .position(x + (index - 1) * 0.22, 5.12, -6.02)
+          .scale([1.34, 1.48, 0.035])
+          .toJSON()
+      );
+    }
+
+    // A compact scorer's display gives the right side of the composition a
+    // believable venue anchor and a second warm/cool practical. The HUD still
+    // owns score truth; these are visual set-dressing digits only.
+    nodes.push(
+      primitives.box({ name: "review venue scoreboard bezel", material: reviewScoreboard })
+        .position(7.05, 5.65, -5.98)
+        .scale([2.0, 0.9, 0.12])
+        .toJSON(),
+      primitives.box({ name: "review venue scoreboard cyan bar", material: reviewWindowGlow })
+        .position(6.65, 5.65, -5.82)
+        .scale([0.68, 0.055, 0.035])
+        .toJSON(),
+      primitives.box({ name: "review venue scoreboard amber bar", material: reviewScoreGlow })
+        .position(7.42, 5.65, -5.82)
+        .scale([0.42, 0.055, 0.035])
+        .toJSON(),
+      primitives.box({ name: "review venue scoreboard lower bar", material: reviewScoreGlow })
+        .position(7.05, 5.22, -5.82)
+        .scale([1.12, 0.045, 0.035])
         .toJSON()
     );
   }

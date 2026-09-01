@@ -11,6 +11,7 @@ import {
   focusObject,
   game,
   groups,
+  instances,
   interactions,
   fitSizeToRegion,
   labels,
@@ -21,7 +22,9 @@ import {
   primitives,
   resolveBoundsAnchor,
   resolveSemanticRegion,
+  scene,
   sceneKits,
+  shadows,
   timeline,
   ui
 } from "@aura3d/engine";
@@ -44,12 +47,17 @@ if (embeddedChromeMode === "hidden") document.documentElement.dataset.chrome = "
 /**
  * Extent of the procedural city, as a level-design decision.
  *
- * `sceneKits.cityBlock({ blocks: 8 })` lays out a city centred on the origin. This states
+ * `sceneKits.cityBlock({ blocks: 14 })` lays out a city centred on the origin. This states
  * the footprint the route stages against, once, so every district, overlay, telemetry
  * pulse and label is derived from it rather than each carrying its own literal.
  */
 const CITY_EXTENT = 11.4;
 const CITY_HEIGHT = 5;
+// Keep the command view dense enough to read as an operational district rather
+// than a handful of isolated towers. The city kit supports the full 20-building
+// workload (and the QA state below already audits that workload); rendering the
+// same density keeps the visual scene and its diagnostics in agreement.
+const CITY_BLOCK_COUNT = 14;
 
 /** The city's placed bounds, so helpers can be anchored to it. */
 function cityBounds() {
@@ -105,17 +113,19 @@ const smartCityKit = createSmartCityKit({
  * in either place is how a probe ends up describing a subject that is not what
  * the route actually draws.
  */
-const VEHICLE_STATION_REGION: SemanticRegion = { id: "vehicle-station", u: 0.47, v: 0.54, w: 0.58 };
+const VEHICLE_STATION_REGION: SemanticRegion = { id: "vehicle-station", u: 0.47, v: 0.16, w: 0.64 };
 const VEHICLE_STATION_FOOTPRINT_REGION: SemanticRegion = {
   id: "vehicle-station-footprint",
   u: 0.47,
-  v: 0.54,
-  w: 0.58,
-  // A 15%-of-city station presents the hero at roughly 40% of the 3.8-unit
+  v: 0.16,
+  w: 0.64,
+  // A 18%-of-city station presents the hero at roughly 40% of the 3.8-unit
   // city footprint: readable, but still far below the rejected 64% occluding
   // scale. The prior 12% station sat too close to the primary-pixel floor and
-  // produced sequence-dependent 2,126–2,500-pixel probe results.
-  extent: [0.15, 0.1, 0.15]
+  // produced sequence-dependent 2,126–2,500-pixel probe results. The slightly
+  // larger pad is staged on the open central avenue so the vehicle is not hidden
+  // behind the tower family in the command view.
+  extent: [0.18, 0.1, 0.18]
 };
 
 /** Bounds-derived world size for the hero vehicle. Never a hardcoded multiplier. */
@@ -279,9 +289,11 @@ app.onFrame(({ frame, time }) => {
 
 function buildSmartCityScene(): SceneBuild {
   const kit = sceneKits.cityBlock({
-    blocks: 8,
+    blocks: CITY_BLOCK_COUNT,
     timeOfDay: controls.timeOfDay
   });
+  const kitScene = kit.scene().toJSON();
+  const depthNodes = createSmartCityDepthNodes();
   const buildingFocus = createSelectedBuildingFocus(kit.nodes);
   const activeCamera = controls.cameraMode === "command" && buildingFocus.camera
     ? widenBuildingFocusCamera(buildingFocus.camera)
@@ -289,12 +301,18 @@ function buildSmartCityScene(): SceneBuild {
   const qaState = city.createState({ blocks: 20, litWindows: true, timeOfDay: controls.timeOfDay });
   const changedNodes = qaState.toggleTimeOfDay();
   const qa = city.visualQA(changedNodes, { changed: qaState.lastChange });
-  const builder = kit.scene()
-    .background(controls.timeOfDay === "night" ? "#050706" : "#c9ecff")
+  const builder = scene()
+    .background(controls.timeOfDay === "night" ? "#071727" : "#c9ecff")
+    // The kit's default HUD duplicates the route command bar and is anchored
+    // to the same top-left screen corner. Keep the city geometry, lights,
+    // effects, and interaction contract while leaving that corner clear for
+    // the route chrome.
+    .addMany(kitScene.nodes.filter((node) => !(node.kind === "label" && node.name === "city scene kit hud")))
+    .addMany(depthNodes)
     .add(effects.fog({
       name: "smart city operational depth haze",
       density: controls.timeOfDay === "night" ? 0.018 : 0.012,
-      color: controls.timeOfDay === "night" ? "#1b2a20" : "#d7f4ff",
+      color: controls.timeOfDay === "night" ? "#17334a" : "#d7f4ff",
       // Keep night depth without laying a pale veil over the Command camera.
       intensity: controls.timeOfDay === "night" ? 0.2 : 0.24
     }))
@@ -354,6 +372,8 @@ function buildSmartCityScene(): SceneBuild {
     controls.traffic ? "traffic pulses enabled" : "traffic pulses throttled",
     "runtime telemetry pulse nodes",
     "camera and flythrough modes",
+    "authored skyline depth and transit spine",
+    "bounds-derived road detail and vehicle contact shadow",
     `${controls.timeOfDay} operations lighting`
   ];
   return {
@@ -400,10 +420,165 @@ function buildSmartCityScene(): SceneBuild {
         };
       })(),
       nodeCount: snapshot.nodes.length,
+      visualDepthNodes: depthNodes.length,
       labelCount: snapshot.nodes.filter((node) => node.kind === "label").length,
       district: controls.district
     }
   };
+}
+
+/**
+ * A compact, bounds-derived visual layer that gives the procedural city a
+ * believable control-room silhouette without replacing the city kit. The kit
+ * remains the source of the roads, tower family, windows, props and traffic;
+ * these instanced accents only add near/mid/far depth, material rhythm and a
+ * readable operational lane for the typed command vehicle.
+ */
+function createSmartCityDepthNodes(): AuraNodeInput[] {
+  const bounds = cityBounds();
+  const skyline = [
+    { x: -5.18, z: -5.16, height: 2.92, width: 0.78, depth: 0.72, color: "#123249" },
+    { x: -3.72, z: -5.34, height: 3.56, width: 0.62, depth: 0.68, color: "#1d3550" },
+    { x: -2.28, z: -5.26, height: 2.42, width: 0.74, depth: 0.66, color: "#24485a" },
+    { x: -0.86, z: -5.4, height: 3.18, width: 0.58, depth: 0.72, color: "#213a5d" },
+    { x: 2.82, z: -5.32, height: 2.64, width: 0.72, depth: 0.68, color: "#173e52" },
+    { x: 4.22, z: -5.18, height: 3.74, width: 0.62, depth: 0.72, color: "#2b3c61" },
+    { x: 5.18, z: -4.5, height: 2.18, width: 0.72, depth: 0.66, color: "#234d59" },
+    { x: -5.28, z: -3.22, height: 2.16, width: 0.56, depth: 0.58, color: "#1d4253" },
+    { x: 5.24, z: -2.72, height: 2.84, width: 0.58, depth: 0.62, color: "#1a3653" }
+  ] as const;
+
+  const skylineTransforms = skyline.map((tower) => ({
+    position: [tower.x, bounds.floorY + tower.height / 2, tower.z] as [number, number, number],
+    rotation: [0, 0, 0] as [number, number, number],
+    scale: [tower.width, tower.height, tower.depth] as [number, number, number]
+  }));
+  const skylineColors = skyline.map((tower) => tower.color);
+
+  const roofTransforms = skyline.map((tower, index) => ({
+    position: [tower.x, bounds.floorY + tower.height + 0.1, tower.z] as [number, number, number],
+    rotation: [0, (index % 3) * 0.22, 0] as [number, number, number],
+    scale: [tower.width * (index % 2 === 0 ? 0.7 : 0.52), 0.16, tower.depth * 0.68] as [number, number, number]
+  }));
+
+  const antennaTransforms = skyline
+    .filter((_, index) => index % 2 === 1)
+    .map((tower, index) => ({
+      position: [tower.x, bounds.floorY + tower.height + 0.38 + (index % 2) * 0.08, tower.z] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: [0.025 + (index % 2) * 0.012, 0.42 + (index % 3) * 0.08, 0.025 + (index % 2) * 0.012] as [number, number, number]
+    }));
+
+  const windowTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const windowColors: string[] = [];
+  const windowPalette = ["#8de9ef", "#f6c96a", "#86b6ff", "#e39ad7"] as const;
+  for (const [towerIndex, tower] of skyline.entries()) {
+    // Front-facing vertical window stacks keep the far skyline readable from
+    // the command camera while leaving the central typed vehicle unobscured.
+    for (let row = 0; row < 3; row += 1) {
+      windowTransforms.push({
+        position: [tower.x - tower.width * 0.18, bounds.floorY + 0.62 + row * 0.62, tower.z + tower.depth * 0.53] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
+        scale: [0.045, 0.19 + (towerIndex % 2) * 0.035, 0.035] as [number, number, number]
+      });
+      windowColors.push(windowPalette[(towerIndex + row) % windowPalette.length]!);
+      windowTransforms.push({
+        position: [tower.x + tower.width * 0.2, bounds.floorY + 0.62 + row * 0.62, tower.z + tower.depth * 0.53] as [number, number, number],
+        rotation: [0, 0, 0] as [number, number, number],
+        scale: [0.045, 0.19 + (row % 2) * 0.035, 0.035] as [number, number, number]
+      });
+      windowColors.push(windowPalette[(towerIndex + row + 1) % windowPalette.length]!);
+    }
+  }
+
+  const roadMarkerTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const roadMarkerColors: string[] = [];
+  for (let index = -4; index <= 4; index += 1) {
+    const offset = index * 1.08;
+    roadMarkerTransforms.push({
+      position: [offset, bounds.floorY + 0.074, -2.68] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: [0.26, 0.024, 0.052] as [number, number, number]
+    });
+    roadMarkerColors.push(index % 3 === 0 ? "#f8d478" : "#9ce9e2");
+    roadMarkerTransforms.push({
+      position: [2.55, bounds.floorY + 0.076, offset] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      scale: [0.052, 0.024, 0.26] as [number, number, number]
+    });
+    roadMarkerColors.push(index % 2 === 0 ? "#77d5ef" : "#f8d478");
+  }
+
+  const transitTransforms = [
+    { position: [-2.4, 1.12, -4.82] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: [2.15, 0.055, 0.08] as [number, number, number] },
+    { position: [2.1, 1.58, -4.82] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: [2.5, 0.055, 0.08] as [number, number, number] },
+    { position: [-4.94, 0.84, -3.58] as [number, number, number], rotation: [0, 1.5708, 0] as [number, number, number], scale: [1.05, 0.05, 0.07] as [number, number, number] },
+    { position: [4.94, 1.18, -3.06] as [number, number, number], rotation: [0, 1.5708, 0] as [number, number, number], scale: [1.18, 0.05, 0.07] as [number, number, number] }
+  ];
+
+  const treePositions = [
+    [-4.86, 0.34, -2.52], [-4.64, 0.34, 1.72], [4.78, 0.34, -1.94], [4.62, 0.34, 2.44],
+    [-2.92, 0.34, 4.72], [2.18, 0.34, 4.78]
+  ] as const;
+  const treeTrunks = treePositions.map(([x, y, z], index) => ({
+    position: [x, y, z] as [number, number, number],
+    rotation: [0, 0, 0] as [number, number, number],
+    scale: [0.045, 0.34 + (index % 2) * 0.08, 0.045] as [number, number, number]
+  }));
+  const treeCanopies = treePositions.map(([x, y, z], index) => ({
+    position: [x, y + 0.56 + (index % 2) * 0.08, z] as [number, number, number],
+    rotation: [0, index * 0.27, 0] as [number, number, number],
+    scale: [0.32 + (index % 3) * 0.07, 0.45 + (index % 2) * 0.1, 0.32 + (index % 2) * 0.05] as [number, number, number]
+  }));
+
+  return [
+    instances.box({
+      name: "smart city far skyline massing",
+      transforms: skylineTransforms,
+      colors: skylineColors,
+      material: material.pbr({ name: "far skyline midnight teal", color: "#19384b", roughness: 0.62, metallic: 0.18 })
+    }),
+    instances.box({
+      name: "smart city skyline roof caps",
+      transforms: roofTransforms,
+      colors: skyline.map((tower, index) => index % 3 === 0 ? "#46a9b4" : tower.color),
+      material: material.metal({ name: "skyline roof metal", color: "#21475a", roughness: 0.32, metallic: 0.62 })
+    }),
+    instances.cylinder({
+      name: "smart city skyline antenna spines",
+      transforms: antennaTransforms,
+      material: material.metal({ name: "skyline antenna metal", color: "#6c9cab", roughness: 0.26, metallic: 0.68 })
+    }),
+    instances.box({
+      name: "smart city skyline window cadence",
+      transforms: windowTransforms,
+      colors: windowColors,
+      material: material.emissive({ name: "skyline practical windows", color: "#9deef0", emissive: "#70d9e7", emissiveIntensity: 0.84, opacity: 0.86 })
+    }),
+    instances.box({
+      name: "smart city operational lane markings",
+      transforms: roadMarkerTransforms,
+      colors: roadMarkerColors,
+      material: material.emissive({ name: "operational lane accents", color: "#92e8e1", emissive: "#5fd4cb", emissiveIntensity: 0.7, opacity: 0.82 })
+    }),
+    instances.box({
+      name: "smart city elevated transit spine",
+      transforms: transitTransforms,
+      colors: ["#6be1e8", "#f2c66d", "#67c6dc", "#eea874"],
+      material: material.metal({ name: "transit spine metal", color: "#315469", roughness: 0.34, metallic: 0.58 })
+    }),
+    instances.cylinder({
+      name: "smart city green corridor trunks",
+      transforms: treeTrunks,
+      material: material.pbr({ name: "green corridor trunks", color: "#4a3e36", roughness: 0.9, metallic: 0.02 })
+    }),
+    instances.sphere({
+      name: "smart city green corridor canopies",
+      transforms: treeCanopies,
+      colors: ["#2f6d62", "#3f7861", "#315d68", "#4b7354", "#326f6c", "#56764e"],
+      material: material.emissive({ name: "green corridor foliage", color: "#3a887b", emissive: "#1f5c55", emissiveIntensity: 0.34, opacity: 0.94 })
+    })
+  ];
 }
 
 function widenBuildingFocusCamera(intent: NonNullable<FocusResult["camera"]>): AuraCameraSpec {
@@ -467,6 +642,7 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
    * leader line stays attached to the element it annotates.
    */
   const bounds = cityBounds();
+  const compactViewport = window.innerWidth < 700;
   const selectedRegion = districtRegion(controls.district);
   const selected = districtAnchor(controls.district);
   const highlightColor = controls.district === "all" ? "#50d891" : districtColor(controls.district);
@@ -491,6 +667,32 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
     }).position(...eastCorridor.center)
       .scale([eastCorridor.size[0], 0.038, eastCorridor.size[2]])
       .runtime(game.runtimeNode("city-traffic-east")),
+    // A small, bounds-derived landing pad gives the typed command vehicle a
+    // convincing operational contact point. It is set dressing around the
+    // registered vehicle, not a replacement for the primary asset.
+    primitives.cylinder({
+      name: "command vehicle landing pad",
+      material: material.metal({ color: "#243a4a", roughness: 0.34, metallic: 0.72 })
+    }).position(vehicleStation.center[0], bounds.floorY + 0.055, vehicleStation.center[2])
+      .scale([CITY_EXTENT * 0.072, 0.055, CITY_EXTENT * 0.072]),
+    primitives.torus({
+      name: "command vehicle landing pad ring",
+      material: material.neon({ color: "#65d8e8", emissive: "#65d8e8", emissiveIntensity: 1.25, opacity: 0.9 })
+    }).position(vehicleStation.center[0], bounds.floorY + 0.12, vehicleStation.center[2])
+      .rotate(1.5708, 0, 0)
+      .scale([CITY_EXTENT * 0.065, CITY_EXTENT * 0.065, 0.016]),
+    primitives.cylinder({
+      name: "command vehicle docking beacon",
+      material: material.neon({ color: "#65d8e8", emissive: "#65d8e8", emissiveIntensity: 1.45, opacity: 0.88 })
+    }).position(vehicleStation.center[0], bounds.floorY + 0.32, vehicleStation.center[2])
+      .scale([CITY_EXTENT * 0.008, CITY_HEIGHT * 0.22, CITY_EXTENT * 0.008]),
+    shadows.contact({
+      name: "command vehicle contact shadow",
+      position: [vehicleStation.center[0], bounds.floorY + 0.042, vehicleStation.center[2]],
+      footprint: [CITY_EXTENT * 0.1, CITY_EXTENT * 0.06],
+      opacity: 0.3,
+      color: "#040b12"
+    }),
     // Size comes from the vehicle's own station region rather than a hardcoded
     // multiplier, so the hero stays proportionate to the city when CITY_EXTENT
     // changes or the asset is swapped. The previous `.scale(1.58)` rendered the
@@ -553,26 +755,36 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
       size: 0.18,
       color: "#f8fbff"
     }),
-    labels.callout("Mobility", "city traffic east pulse", {
-      name: "traffic telemetry label",
-      position: [eastCorridor.center[0] + CITY_EXTENT * 0.41, eastCorridor.center[1] + CITY_HEIGHT * 0.19, eastCorridor.center[2] - CITY_EXTENT * 0.07],
-      anchorWorldPosition: eastCorridor.center,
-      size: 0.16,
-      color: "#dfffee"
+    labels.callout("Command vehicle", "typed command vehicle route-primary hero", {
+      name: "command vehicle label",
+      position: [vehicleStation.center[0] - CITY_EXTENT * 0.12, vehicleStation.center[1] + CITY_HEIGHT * 0.28, vehicleStation.center[2]],
+      anchorWorldPosition: vehicleStation.center,
+      size: 0.15,
+      color: "#b9f4ff"
     }),
-    labels.callout("Energy", "core infrastructure data pulse", {
-      name: "energy telemetry label",
-      position: [coreSpire.center[0] + CITY_EXTENT * 0.09, coreSpire.center[1] + CITY_HEIGHT * 0.22, coreSpire.center[2] + CITY_EXTENT * 0.05],
-      anchorWorldPosition: coreSpire.center,
-      size: 0.16,
-      color: "#fff2c7"
-    }),
-    labels.hud(`Smart City | ${controls.timeOfDay} | ${controls.cameraMode}`, {
-      name: "smart city route evidence hud",
-      screenAnchor: "bottom-left",
-      size: 0.24
-    })
   ];
+
+  // Keep secondary telemetry labels on the wide command view where they have
+  // room to breathe. On a phone they otherwise land over the camera controls;
+  // the telemetry panel still exposes the same mobility and energy values.
+  if (!compactViewport) {
+    nodes.push(
+      labels.callout("Mobility", "city traffic east pulse", {
+        name: "traffic telemetry label",
+        position: [eastCorridor.center[0] + CITY_EXTENT * 0.41, eastCorridor.center[1] + CITY_HEIGHT * 0.19, eastCorridor.center[2] - CITY_EXTENT * 0.07],
+        anchorWorldPosition: eastCorridor.center,
+        size: 0.16,
+        color: "#dfffee"
+      }),
+      labels.callout("Energy", "core infrastructure data pulse", {
+        name: "energy telemetry label",
+        position: [coreSpire.center[0] + CITY_EXTENT * 0.09, coreSpire.center[1] + CITY_HEIGHT * 0.22, coreSpire.center[2] + CITY_EXTENT * 0.05],
+        anchorWorldPosition: coreSpire.center,
+        size: 0.16,
+        color: "#fff2c7"
+      })
+    );
+  }
 
   const anchors = [
     { district: "core" as const, label: "Core", color: "#f4c35d" },
@@ -674,8 +886,8 @@ function smartCityCamera(mode: SmartCityCameraMode, timeOfDay: SmartCityTimeOfDa
   return camera.autoFrame({
     bounds: { min: bounds.min, max: bounds.max },
     target,
-    padding: compactViewport ? 2.35 : timeOfDay === "night" ? 1.62 : 1.68,
-    fov: 42
+    padding: compactViewport ? 2.35 : timeOfDay === "night" ? 1.18 : 1.68,
+    fov: 40
   });
 }
 

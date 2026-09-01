@@ -1,14 +1,14 @@
 :root {
   color-scheme: dark;
-  --ink: #f4efe6;
-  --muted: #a7b0ad;
-  --panel: rgba(12, 13, 13, 0.86);
-  --panel-strong: rgba(20, 23, 22, 0.94);
-  --line: rgba(244, 239, 230, 0.14);
-  --amber: #d9a74e;
-  --cyan: #5dd3d6;
-  --rose: #c77a83;
-  --green: #7aa16e;
+  --ink: #f2f6f4;
+  --muted: #aab8bb;
+  --panel: rgba(8, 18, 27, 0.88);
+  --panel-strong: rgba(13, 28, 39, 0.92);
+  --line: rgba(155, 204, 219, 0.2);
+  --amber: #e4b65d;
+  --cyan: #62d4e2;
+  --rose: #d68b9a;
+  --green: #8dcf9a;
 }
 
 * {
@@ -20,7 +20,7 @@ body {
   width: 100%;
   min-height: 100%;
   margin: 0;
-  background: #090b0c;
+  background: #07131f;
   color: var(--ink);
   font-family:
     Inter,
@@ -40,42 +40,42 @@ input {
 .shell {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 25vw, 390px);
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 360px);
   min-height: 100vh;
   overflow: hidden;
-  background: #090b0c;
+  background: #07131f;
 }
 
 .viewport {
   position: relative;
   min-width: 0;
   min-height: 100vh;
-  background: #050707;
+  background: #0a1a28;
 }
 
 .aura-scene {
   width: 100%;
   height: 100vh;
   min-height: 100vh;
-  background: #090b0c;
+  background: #0a1a28;
 }
 
 .aura-scene canvas {
   width: 100% !important;
   height: 100% !important;
-  background: #050707 !important;
+  background: #0a1a28 !important;
 }
 
 .control-panel {
   z-index: 4;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   min-height: 100vh;
   padding: clamp(20px, 2.4vw, 34px);
   border-left: 1px solid var(--line);
   background:
-    linear-gradient(180deg, rgba(9, 11, 12, 0.74), rgba(19, 19, 17, 0.92)),
+    linear-gradient(180deg, rgba(9, 22, 32, 0.72), rgba(8, 16, 25, 0.96)),
     var(--panel);
   box-shadow: -22px 0 54px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(18px);
@@ -98,10 +98,11 @@ input {
 
 h1 {
   margin: 0;
-  color: #fff7e8;
-  font-size: clamp(2rem, 4vw, 3.35rem);
-  line-height: 0.95;
-  letter-spacing: 0;
+  color: #f3f8f6;
+  font-size: clamp(1.95rem, 3.2vw, 2.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
 }
 
 .summary {
@@ -116,8 +117,9 @@ h1 {
 .evidence-panel {
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--panel-strong);
+  box-shadow: inset 0 1px 0 rgba(185, 232, 241, 0.04), 0 14px 30px rgba(0, 0, 0, 0.14);
 }
 
 .segmented {
@@ -131,16 +133,17 @@ h1 {
   min-height: 42px;
   padding: 0 10px;
   border: 1px solid rgba(244, 239, 230, 0.16);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--ink);
   background: rgba(255, 255, 255, 0.045);
   cursor: pointer;
 }
 
 .segmented button[aria-pressed="true"] {
-  border-color: rgba(217, 167, 78, 0.62);
-  color: #fff8eb;
-  background: linear-gradient(180deg, rgba(217, 167, 78, 0.22), rgba(93, 211, 214, 0.12));
+  border-color: rgba(228, 182, 93, 0.72);
+  color: #f5fbf9;
+  background: linear-gradient(180deg, rgba(228, 182, 93, 0.24), rgba(98, 212, 226, 0.13));
+  box-shadow: 0 0 0 1px rgba(98, 212, 226, 0.08), 0 8px 18px rgba(4, 13, 22, 0.34);
 }
 
 .range-label {
@@ -188,7 +191,7 @@ dt {
 dd {
   min-width: 0;
   margin: 0;
-  color: #fff7e8;
+  color: #f3f8f6;
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;

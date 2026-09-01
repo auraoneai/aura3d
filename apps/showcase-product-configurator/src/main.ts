@@ -341,18 +341,64 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
 }
 
 function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSceneNode[] {
-  const warmStudioMaterial = material.pbr({
-    name: "warm product studio plinth material",
-    color: nextState.variant === "ceramic" ? "#d8d2c4" : "#27231e",
-    roughness: 0.58,
-    metallic: 0.04,
-    opacity: 0.94
+  // The product needs a photographic context, not an empty black canvas. Keep
+  // this stage route-owned so the light/material choices stay tuned to the
+  // copper/ceramic/graphite finishes instead of inheriting the bright generic
+  // product-stage backdrop (which overwhelms the foreground probe and flattens
+  // the selected material). Every item here is staging around the typed GLB;
+  // it is never presented as a product part.
+  const floor = material.pbr({
+    name: "deep slate studio floor",
+    color: nextState.variant === "ceramic" ? "#1c2a36" : "#0d1a27",
+    roughness: 0.68,
+    metallic: 0.1,
+    opacity: 0.98
   });
+  const wall = material.pbr({
+    name: "deep slate seamless photo sweep",
+    color: nextState.variant === "ceramic" ? "#15212b" : "#070e16",
+    roughness: 0.66,
+    metallic: 0.06
+  });
+  const plinth = material.clearcoat({
+    name: "low smoked glass product plinth",
+    color: "#263944",
+    roughness: 0.26,
+    metallic: 0.28,
+    clearcoat: 0.68,
+    envMapIntensity: 0.8
+  });
+  const pedestalBase = material.pbr({
+    name: "grounded smoked glass pedestal base",
+    color: "#172631",
+    roughness: 0.46,
+    metallic: 0.18,
+    opacity: 0.98
+  });
+  const contact = material.pbr({
+    name: "soft product contact shadow",
+    color: "#02050a",
+    roughness: 0.94,
+    metallic: 0,
+    opacity: 0.58
+  });
+  const cyan = material.emissive({ color: "#3bc7de", emissive: "#3bc7de", emissiveIntensity: 0.18, opacity: 0.24 });
+  const amber = material.emissive({ color: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissive: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissiveIntensity: 0.14, opacity: 0.22 });
   return [
-    primitives.cylinder({
-      name: "low oval product studio plinth",
-      material: warmStudioMaterial
-    }).position(0, -0.1, -0.18).scale([0.92, 0.045, 0.56]).toJSON()
+    primitives.plane({ name: "deep slate product studio floor", material: floor })
+      .position(0, -0.018, -0.62).scale([3.6, 1, 2.6]).toJSON(),
+    primitives.plane({ name: "deep slate seamless product backdrop", material: wall })
+      .position(0, 1.2, -2.35).rotate(1.5708, 0, 0).scale([6.2, 1, 3.2]).toJSON(),
+    primitives.cylinder({ name: "grounded smoked glass pedestal base", material: pedestalBase })
+      .position(0, 0.22, -0.45).scale([0.76, 0.22, 0.5]).toJSON(),
+    primitives.cylinder({ name: "low smoked glass product plinth", material: plinth })
+      .position(0, 0.402, -0.45).scale([0.82, 0.055, 0.58]).toJSON(),
+    primitives.cylinder({ name: "soft product contact shadow", material: contact })
+      .position(0, 0.458, -0.45).scale([0.58, 0.008, 0.36]).toJSON(),
+    primitives.box({ name: "cool cyan studio reflection panel", material: cyan })
+      .position(-3.25, 1.1, -2.18).scale([0.06, 1.08, 0.018]).toJSON(),
+    primitives.box({ name: "warm amber studio reflection panel", material: amber })
+      .position(3.25, 1.12, -2.16).scale([0.06, 1.1, 0.018]).toJSON()
   ];
 }
 

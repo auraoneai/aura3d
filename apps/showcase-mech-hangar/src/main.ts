@@ -162,7 +162,7 @@ function fitForSlot(slot: MechSlot): { scaleMode: "fit"; targetHeight?: number; 
   if (slot === "chassis") return { scaleMode: "fit", targetHeight: 1.05 };
   if (slot === "legs") return { scaleMode: "fit", targetHeight: 0.84 };
   if (slot === "arms") return { scaleMode: "fit", targetMaxDimension: 2.18 };
-  return { scaleMode: "fit", targetMaxDimension: 1.25 };
+  return { scaleMode: "fit", targetMaxDimension: 0.68 };
 }
 
 function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
@@ -188,32 +188,33 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
 }
 
 // The validated MH-2M slots remain the mechanic, but the default presentation
-// also needs a connected, production-probed body silhouette. The repository's
-// CC0 expressive robot is a typed, grounded, multi-material fixture; it is used
-// as the visual chassis shell while the selected MH-2M parts remain visible as
-// authored hardpoints. This prevents a schema-valid but visibly disconnected
-// four-part blockout from being mistaken for a finished character.
+// also needs a connected, production-probed body silhouette. The acquired
+// CC-BY robotcand is a continuous, textured whole-body source with authored
+// ceramic, metal, cable, and optic materials; it is used as the visual shell
+// while the selected typed weapon remains a real hardpoint. The old procedural
+// chassis/arms/legs are kept in the catalog for the assembly contract but are
+// not painted over the shell in the presentation frame.
 function mechShellBuilder(side: "player" | "rival"): ReturnType<typeof model> {
-  return model(assets.showcaseExpressiveRobot, {
+  return model(assets.robotcand, {
     name: "mech-" + side + "-visual-shell",
     role: "primaryCharacter",
     castShadow: true,
     receiveShadow: true,
     scaleMode: "fit",
-    targetHeight: 2.38
+    targetHeight: 2.72
   }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-" + side + "-visual-shell", {
     tags: ["mech-shell", side, "typed-primary-asset", "grounded-visual-shell"]
   }));
 }
-
-const playerShellBuilder = mechShellBuilder("player");
-const rivalShellBuilder = mechShellBuilder("rival");
 
 const camAnchorBuilder = primitives.sphere({
   name: "mech cam anchor",
   material: material.emissive({ name: "cam anchor mat", color: "#101418", emissive: "#000000", emissiveIntensity: 0 })
 }).position(HANGAR_CENTER[0], 1.05, HANGAR_CENTER[2]).scale([0.001, 0.001, 0.001])
   .runtime(game.runtimeNode("mech-cam-anchor", { tags: ["camera-anchor"] }));
+
+const playerShellBuilder = mechShellBuilder("player");
+const rivalShellBuilder = mechShellBuilder("rival");
 
 const sparkMaterial = material.emissive({ name: "hit spark mat", color: "#ffd27a", emissive: "#ffb454", emissiveIntensity: 2.2 });
 const dustMaterial = material.pbr({ name: "pit dust mat", color: "#8b93a1", roughness: 1, metallic: 0 });
@@ -231,10 +232,70 @@ const dustBuilders = Array.from({ length: DUST_COUNT }, (_, index) =>
     .runtime(game.runtimeNode("mech-dust-" + index, { tags: ["particle", "renderer-owned"] }))
 );
 
+// A compact impact-ring pool makes the authored hit point legible at the
+// camera distance used by the arena.  The ring is renderer-owned feedback; the
+// bout still owns hit windows, damage, and the event that drives this pool.
+const impactRingMaterials = [
+  material.emissive({ name: "impact ring amber", color: "#ffd27a", emissive: "#ff9d42", emissiveIntensity: 2.35, opacity: 0.92 }),
+  material.emissive({ name: "impact ring white", color: "#f5fbff", emissive: "#c8f4ff", emissiveIntensity: 2.1, opacity: 0.9 })
+] as const;
+const impactRingBuilders = Array.from({ length: 8 }, (_, index) =>
+  primitives.torus({ name: "mech-impact-ring-" + index, material: impactRingMaterials[index % impactRingMaterials.length]! })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-impact-ring-" + index, { tags: ["particle", "renderer-owned", "impact-feedback"] }))
+);
+
+// Team markers are deliberately small and embedded in the authored scene: a
+// cyan player base, a coral rival base, and a matching chest chevron.  They
+// keep the two otherwise identical Robotcand shells separable during the
+// arena exchange without replacing either typed character asset.
+const teamMarkerMaterials = {
+  player: material.emissive({ name: "player identity marker", color: "#7de9ff", emissive: "#22c9ff", emissiveIntensity: 1.3, opacity: 0.88 }),
+  rival: material.emissive({ name: "rival identity marker", color: "#ff91b6", emissive: "#ff3f79", emissiveIntensity: 1.2, opacity: 0.88 })
+} as const;
+const teamMarkerBuilders = (["player", "rival"] as const).flatMap((side) => [
+  primitives.torus({ name: "mech-" + side + "-identity-ring", material: teamMarkerMaterials[side] })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-" + side + "-identity-ring", { tags: ["team-marker", side, "renderer-owned"] })),
+  primitives.box({ name: "mech-" + side + "-identity-chevron", material: teamMarkerMaterials[side] })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-" + side + "-identity-chevron", { tags: ["team-marker", side, "renderer-owned"] }))
+]);
+
+// One ring per typed weapon option gives each hardpoint a compact, readable
+// muzzle signature while the GLB remains the actual mounted weapon.  The
+// selected ring follows the same authored +Z-forward yaw as the weapon node.
+const weaponAccentMaterials = [
+  material.emissive({ name: "weapon accent bolt", color: "#7de9ff", emissive: "#25d6ff", emissiveIntensity: 1.65, opacity: 0.94 }),
+  material.emissive({ name: "weapon accent arc", color: "#ffd36e", emissive: "#ff9b3e", emissiveIntensity: 1.55, opacity: 0.94 }),
+  material.emissive({ name: "weapon accent plasma", color: "#ff8bcb", emissive: "#ff3e9c", emissiveIntensity: 1.7, opacity: 0.94 }),
+  material.emissive({ name: "weapon accent siege", color: "#ffad79", emissive: "#ff653f", emissiveIntensity: 1.6, opacity: 0.94 })
+] as const;
+const weaponAccentBuilders = (["player", "rival"] as const).flatMap((side) =>
+  PART_OPTIONS.weapon.map((def, index) =>
+    primitives.torus({ name: "mech-" + side + "-weapon-accent-" + def.assetKey, material: weaponAccentMaterials[index % weaponAccentMaterials.length]! })
+      .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("mech-" + side + "-weapon-accent-" + def.assetKey, { tags: ["weapon-accent", side, "renderer-owned"] }))
+  )
+);
+
 const turntableBuilder = primitives.cylinder({
   name: "hangar turntable",
   material: material.pbr({ name: "turntable steel", color: "#344c61", roughness: 0.48, metallic: 0.68 })
 }).position(HANGAR_CENTER[0], 0.055, HANGAR_CENTER[2]).scale([2.35, 0.11, 2.35]);
+
+// A separate matte insert gives the feet a readable receiver surface. It is
+// authored scene dressing (not a fake DOM shadow) and keeps the black turntable
+// from swallowing the contact point under the typed shell.
+const turntableContactBuilder = primitives.cylinder({
+  name: "hangar turntable contact insert",
+  material: material.pbr({ name: "turntable contact insert", color: "#0c1724", roughness: 0.92, metallic: 0.12 })
+}).position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2]).scale([1.82, 0.018, 1.82]);
 
 const hangarTurntableRimBuilder = primitives.torus({
   name: "hangar turntable rim",
@@ -268,6 +329,40 @@ const hangarBeamLightBuilder = primitives.box({
   name: "hangar upper light",
   material: material.emissive({ name: "hangar upper light material", color: "#76426d", emissive: "#ff8ecf", emissiveIntensity: 0.72 })
 }).position(HANGAR_CENTER[0], 5.38, HANGAR_CENTER[2] - 5.72).scale([6.8, 0.055, 0.035]);
+
+const hangarBaySignMaterial = material.emissive({
+  name: "hangar bay sign material",
+  color: "#194b62",
+  emissive: "#5fdcff",
+  emissiveIntensity: 0.86,
+  opacity: 0.92
+});
+const hangarBaySignBuilders = [
+  text3D("BAY 07", {
+    name: "hangar bay seven sign",
+    size: 0.42,
+    depth: 0.05,
+    letterSpacing: 0.045,
+    material: hangarBaySignMaterial
+  }).position(-2.65, 4.78, HANGAR_CENTER[2] - 5.69),
+  text3D("AEGIS // ASSEMBLY DECK", {
+    name: "hangar assembly deck sign",
+    size: 0.18,
+    depth: 0.03,
+    letterSpacing: 0.024,
+    material: material.emissive({ name: "hangar deck sign material", color: "#5c315f", emissive: "#ff99c8", emissiveIntensity: 0.78 })
+  }).position(-0.6, 4.73, HANGAR_CENTER[2] - 5.68)
+];
+const hangarFloorInsetBuilder = primitives.box({
+  name: "hangar floor presentation inset",
+  material: material.pbr({ name: "hangar floor presentation steel", color: "#243a50", roughness: 0.42, metallic: 0.62, clearcoat: 0.18, clearcoatRoughness: 0.24 })
+}).position(HANGAR_CENTER[0], 0.008, HANGAR_CENTER[2] + 0.35).scale([5.8, 0.02, 4.2]);
+const hangarFloorEdgeBuilders = [-1, 1].flatMap((side) => [
+  primitives.box({ name: `hangar floor cyan edge ${side}`, material: hangarStripMaterial })
+    .position(side * 5.55, 0.035, HANGAR_CENTER[2] + 0.35).scale([0.035, 0.025, 3.8]),
+  primitives.box({ name: `hangar floor warm edge ${side}`, material: material.emissive({ name: `hangar floor warm edge material ${side}`, color: "#6c3a55", emissive: "#ff91bf", emissiveIntensity: 0.58 }) })
+    .position(side * 4.75, 0.035, HANGAR_CENTER[2] - 3.42).scale([0.75, 0.025, 0.028])
+]);
 
 const pitFloorBuilder = primitives.box({
   name: "arena armored floor",
@@ -474,9 +569,10 @@ const app = createAuraApp("#app", {
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
       lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.8, color: "#cfe5ff" }),
-      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 2.6, color: "#ffb454" }),
-      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 2.0, color: "#ff9a3d" }),
-      lights.ambient({ name: "global fill", intensity: 0.82, color: "#6b8ead" }),
+      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.25, color: "#ffb454" }),
+      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 2.6, color: "#ff9a3d" }),
+      lights.point({ name: "workshop frontal fill", position: [0, 3.4, 3.6], intensity: 2.9, color: "#9edbff" }),
+      lights.ambient({ name: "global fill", intensity: 1.04, color: "#7d9dbd" }),
       // Arena floodlights over the pit.
       lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: visualReviewCapture ? 2.05 : 2.65, color: "#eaf4ff" }),
       lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: visualReviewCapture ? 1.6 : 2.05, color: "#cfe2ff" }),
@@ -484,12 +580,16 @@ const app = createAuraApp("#app", {
       lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 3.35, color: "#47cfff" }),
       lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 3.0, color: "#ff7a5c" }),
       turntableBuilder,
+      turntableContactBuilder,
       hangarTurntableRimBuilder,
       hangarFloorBuilder,
+      hangarFloorInsetBuilder,
+      ...hangarFloorEdgeBuilders,
       hangarBackdropBuilder,
       ...hangarBayBuilders,
       hangarBeamBuilder,
       hangarBeamLightBuilder,
+      ...hangarBaySignBuilders,
       pitFloorBuilder,
       pitBackdropBuilder,
       camAnchorBuilder
@@ -509,6 +609,9 @@ const app = createAuraApp("#app", {
       ...pitVerticalLightBuilders,
       ...sparkBuilders,
       ...dustBuilders,
+      ...impactRingBuilders,
+      ...teamMarkerBuilders,
+      ...weaponAccentBuilders,
       playerShellBuilder,
       rivalShellBuilder,
       ...partNodeBuilders("player"),
@@ -516,7 +619,7 @@ const app = createAuraApp("#app", {
     ])
     .camera(camera.follow({
       targetNode: "mech-cam-anchor",
-      distance: visualReviewCapture ? 5.85 : 7.35,
+      distance: visualReviewCapture ? 5.55 : 6.55,
       // target-yaw rotates the offset by the anchor's yaw, so spinning the anchor
       // orbits the camera around the framed point while still looking at it.
       offsetMode: "target-yaw",
@@ -524,8 +627,8 @@ const app = createAuraApp("#app", {
       // and both 1.7m fighters inside the frame while retaining a readable
       // three-quarter arena view; the wider combat framing prevents a close
       // strike from cropping one silhouette out of the review frame.
-      offset: visualReviewCapture ? [0, 1.9, 5.35] : [0, 1.72, 6.55],
-      fov: visualReviewCapture ? 52 : (reducedMotion ? 54 : 55),
+      offset: visualReviewCapture ? [0, 1.82, 4.95] : [0, 1.66, 5.72],
+      fov: visualReviewCapture ? 52 : (reducedMotion ? 53 : 54),
       // Exact review captures must frame the current exchange, not the camera
       // anchor's prior location. Runtime play keeps the eased chase motion.
       smoothing: visualReviewCapture ? 0 : 0.16
@@ -555,9 +658,22 @@ for (const slot of MECH_SLOTS) {
 }
 const sparkNodes = sparkBuilders.map((_, index) => app.nodes.require("mech-spark-" + index) as RuntimeNodeHandleLike);
 const dustNodes = dustBuilders.map((_, index) => app.nodes.require("mech-dust-" + index) as RuntimeNodeHandleLike);
+const impactRingNodes = impactRingBuilders.map((_, index) => app.nodes.require("mech-impact-ring-" + index) as RuntimeNodeHandleLike);
+const teamMarkerNodes = new Map<"player" | "rival", { ring: RuntimeNodeHandleLike; chevron: RuntimeNodeHandleLike }>(
+  (["player", "rival"] as const).map((side) => [side, {
+    ring: app.nodes.require("mech-" + side + "-identity-ring") as RuntimeNodeHandleLike,
+    chevron: app.nodes.require("mech-" + side + "-identity-chevron") as RuntimeNodeHandleLike
+  }])
+);
+const weaponAccentNodes = new Map<string, RuntimeNodeHandleLike>();
+for (const side of ["player", "rival"] as const) {
+  for (const def of PART_OPTIONS.weapon) {
+    weaponAccentNodes.set(side + ":" + def.assetKey, app.nodes.require("mech-" + side + "-weapon-accent-" + def.assetKey) as RuntimeNodeHandleLike);
+  }
+}
 
 const { createMechHangarFeel } = await import("./arena/feel");
-const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes });
+const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes, impactNodes: impactRingNodes });
 
 // ---- mounting ---------------------------------------------------------------
 function mountSide(
@@ -567,6 +683,7 @@ function mountSide(
   yaw: number,
   nodes: Map<string, RuntimeNodeHandleLike>
 ): void {
+  const parts = selectedParts(selection);
   const shell = shellNodes.get(side);
   if (shell) {
     shell.setVisible(true);
@@ -586,7 +703,6 @@ function mountSide(
       ? baseScale * selectionScale
       : [baseScale[0] * selectionScale, baseScale[1] * selectionScale, baseScale[2] * selectionScale]);
   }
-  const parts = selectedParts(selection);
   for (const slot of MECH_SLOTS) {
     for (const def of PART_OPTIONS[slot]) {
       const handle = nodes.get(def.assetKey);
@@ -609,6 +725,51 @@ function mountSide(
       handle.setPosition(t.position[0], t.position[1], t.position[2]);
       handle.setRotation(0, t.yaw, 0);
     }
+  }
+
+  // Presentation-only identity accents are kept in the same mount pass as the
+  // typed shell and hardpoint.  They follow the fighter root, so movement,
+  // jumps, and the hangar turntable cannot leave a stale marker behind.
+  const marker = teamMarkerNodes.get(side);
+  if (marker) {
+    const markerRadius = side === "player" ? 0.84 : 0.78;
+    marker.ring.setVisible(true);
+    marker.ring.setPosition(rootPosition[0], 0.21, rootPosition[2]);
+    marker.ring.setRotation(Math.PI / 2, 0, 0);
+    marker.ring.setScale([markerRadius, markerRadius, 0.032]);
+    marker.chevron.setVisible(true);
+    // Keep the badge on the chest plane rather than floating above the head;
+    // the silhouette stays dominant while the color key remains visible.
+    marker.chevron.setPosition(rootPosition[0], rootPosition[1] + 1.56, rootPosition[2] + 0.58);
+    marker.chevron.setRotation(0, 0, Math.PI / 4);
+    marker.chevron.setScale([0.115, 0.115, 0.032]);
+  }
+
+  const selectedWeapon = parts.find((part) => part.slot === "weapon");
+  for (const weaponDef of PART_OPTIONS.weapon) {
+    const accent = weaponAccentNodes.get(side + ":" + weaponDef.assetKey);
+    if (!accent) continue;
+    const active = selectedWeapon?.assetKey === weaponDef.assetKey;
+    accent.setVisible(active);
+    if (!active) {
+      accent.setScale([0.001, 0.001, 0.001]);
+      continue;
+    }
+    const weaponTransform = mountTransformForPart(weaponDef, parts, rootPosition, yaw);
+    // Catalog weapons are +Z-forward and part-centred.  A 0.30 m forward
+    // offset lands this compact muzzle halo just beyond the fitted 0.68 m
+    // hardpoint, making the attachment read as a held tool rather than a pink
+    // rod floating through the torso.
+    const muzzleOffset = 0.3;
+    accent.setPosition(
+      weaponTransform.position[0] + Math.sin(yaw) * muzzleOffset,
+      weaponTransform.position[1] + 0.03,
+      weaponTransform.position[2] + Math.cos(yaw) * muzzleOffset
+    );
+    // Face the review camera (rather than the weapon axis) so the ring remains
+    // a readable circular cue for both opposing yaw directions.
+    accent.setRotation(0, 0, 0);
+    accent.setScale([0.105, 0.105, 0.028]);
   }
 }
 
@@ -769,7 +930,7 @@ const ROUTE_SYSTEMS = {
   assembly: "characterAssembly plan -> validateCharacterAssemblyPlan -> typed part node mounting",
   combat: "route-local fixed-step bout rules (windows, guard break, power, KO)",
   rival: "createCombatAi with rematch aggression presets (keep-away/balanced/rushdown)",
-  feel: "renderer-owned spark/dust particle pool + follow-camera punch",
+  feel: "renderer-owned spark/dust/impact-ring pools + player/rival identity markers + follow-camera punch",
   audio: "createGameAudio 4-bus mixer over CLI-registered synthesized cues",
   curation: "deterministic in-repo MH-2M family gate (16 original CC0 parts, explicit sockets/metre scale)"
 } as const;
@@ -864,6 +1025,10 @@ let timeWarp = 1;
     bout.pushInputs(inputs);
     const snap = bout.step(1 / 60);
     for (const event of snap.events) handleBoutEvent(event);
+    // The synchronous evidence driver uses the same renderer-owned feel event
+    // pipeline as the display loop, but without waiting for a frame callback.
+    // This keeps impact rings and dust available for the exact post-tick frame.
+    feel.onEvents(snap.events);
     lastFighterPositions = { playerX: snap.player.x, rivalX: snap.rival.x };
     const boutStats = bout.stats();
     lastFighterVitals = {
@@ -918,7 +1083,7 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     mode,
     slots: MECH_SLOTS,
     selectedParts: selected.map((part) => part.assetKey),
-    primaryAssetRefs: ["assets.showcaseExpressiveRobot", ...selected.map((part) => `assets.${part.assetKey}`)],
+    primaryAssetRefs: ["assets.robotcand", ...selected.map((part) => `assets.${part.assetKey}`)],
     stats: aggregateStats(hangar.selection),
     assemblyValidated: currentAssemblyReady(),
     boutState: snapshot?.phase ?? lastBoutState,
@@ -961,8 +1126,6 @@ function handleBoutEvent(event: BoutEvent): void {
     void audio.cue("mechKoStingSfx");
     publishedKoEvents.push({ victimId: event.victimId, x: event.x, frame: event.frame });
     showKoCard(arenaHud, event.victimId === "rival", bout.preset());
-  } else if (event.type === "land" && event.attackerId === "player") {
-    feel.onEvents([{ type: "land", frame: event.frame, attackerId: "player", victimId: null, damage: 0, x: event.x, y: ARENA_CENTER_Z, heavy: false }]);
   }
 }
 

@@ -30,9 +30,10 @@ body {
 
 body {
   background:
+    radial-gradient(circle at 76% 18%, rgba(44, 124, 161, 0.17), transparent 34%),
     linear-gradient(135deg, rgba(126, 232, 196, 0.08), transparent 34%),
     linear-gradient(215deg, rgba(230, 184, 90, 0.08), transparent 38%),
-    #060807;
+    #06111a;
 }
 
 button,
@@ -65,13 +66,13 @@ input {
   z-index: 5;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--surface-1);
+  background: linear-gradient(145deg, rgba(7, 20, 27, 0.94), rgba(10, 15, 13, 0.84));
   box-shadow: 0 24px 72px rgba(0, 0, 0, 0.36);
   backdrop-filter: blur(18px);
 }
 
 .commandbar {
-  top: 18px;
+  top: 48px;
   left: 18px;
   right: 18px;
   display: grid;
@@ -196,6 +197,15 @@ h1 {
   padding: 16px;
 }
 
+.commandbar::after {
+  content: "";
+  position: absolute;
+  inset: auto 16px -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(101, 216, 232, 0.72), rgba(126, 232, 196, 0.42), transparent);
+  pointer-events: none;
+}
+
 .controls {
   left: 18px;
   bottom: 18px;
@@ -303,6 +313,7 @@ html[data-chrome="hidden"] .panel {
   }
 
   .commandbar {
+    top: 48px;
     grid-template-columns: 1fr;
     align-items: stretch;
   }

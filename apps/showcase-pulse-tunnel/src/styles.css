@@ -64,6 +64,16 @@ body {
   display: none;
 }
 
+.pulse-combat-state {
+  display: block;
+  margin-top: 2px;
+  color: #67e8f9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
 .pulse-row {
   display: flex;
   align-items: center;
@@ -261,6 +271,12 @@ body[data-capture="review"] .pulse-mission-kicker {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.24em;
+}
+
+body[data-capture="review"] .pulse-combat-state {
+  color: #fbbf24;
+  font-size: 8px;
+  letter-spacing: 0.14em;
 }
 
 body[data-capture="review"] .pulse-row {

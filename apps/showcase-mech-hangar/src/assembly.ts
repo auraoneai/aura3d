@@ -26,7 +26,10 @@ const MOUNT_TARGETS = {
   // the visual arena does not need an oversized attachment to read the hit.
   arms: { targetMaxDimension: 2.18 },
   legs: { targetHeight: 0.84 },
-  weapon: { targetMaxDimension: 1.25 }
+  // The acquired shell's wrist is deliberately compact. Keep the selected
+  // hardpoint below the full one-metre catalog envelope so the weapon reads as
+  // something the hand can carry instead of a floating slab across the torso.
+  weapon: { targetMaxDimension: 0.68 }
 } as const;
 
 export interface ScaledPartPlacement {
@@ -128,9 +131,13 @@ export function localOffsetForPart(scaled: ScaledPartPlacement, all: readonly Sc
     case "arms":
       return [0, legTop + (chassis?.scaledSize[1] ?? 1) * 0.58, (chassis?.scaledSize[2] ?? 1) * 0.06];
     case "weapon":
+      // The visual shell exposes a right wrist at roughly x=.6, y=1.45,
+      // z=.1 in its 2.7-metre local envelope. The weapon node is grounded by
+      // the renderer, so raise its base to put the grip at wrist height rather
+      // than leaving the old low, oversized slab under the hand.
       return [
-        (arms?.scaledSize[0] ?? 1.8) * 0.43,
-        legTop + (chassis?.scaledSize[1] ?? 1) * 0.43,
+        Math.min(0.58, Math.max(0.48, (arms?.scaledSize[0] ?? 1.8) * 0.27)),
+        legTop + (chassis?.scaledSize[1] ?? 1) * 0.53,
         (chassis?.scaledSize[2] ?? 0.65) * 0.12
       ];
     default:

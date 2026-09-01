@@ -11,6 +11,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "models": "node scripts/build-models.mjs",
     "register:models": "node scripts/register-models.mjs",
+    "register:shell": "node scripts/register-robotcand-shell.mjs",
     "sfx": "node scripts/build-sfx.mjs",
     "register:sfx": "node scripts/register-sfx.mjs",
     "curate:parts": "node scripts/curate-parts.mjs",

@@ -27,6 +27,59 @@ PREVIEW_PATH = OUT_DIR / "gravityPostCourierSkiff.preview.png"
 GROUPS: dict[str, list[bpy.types.Object]] = {}
 
 
+def image_material(name: str, color: tuple[float, float, float, float], metallic: float,
+                   roughness: float, stripe: tuple[float, float, float, float] | None = None,
+                   emission: tuple[float, float, float] | None = None,
+                   strength: float = 0.0) -> bpy.types.Material:
+    """Create a glTF-safe authored paint material with a tiny packed texture.
+
+    A flat base color was the largest visual weakness in the previous skiff:
+    every panel collapsed into one undifferentiated color at gameplay distance.
+    The deterministic two-tone image is intentionally small and packed into the
+    GLB, so the route has real material evidence without a runtime URL or a
+    network dependency.  Blender's primitive UVs carry the pattern across the
+    beveled panel pieces.
+    """
+    value = bpy.data.materials.new(name)
+    value.use_nodes = True
+    value.diffuse_color = color
+    value.metallic = metallic
+    value.roughness = roughness
+    nodes = value.node_tree.nodes
+    links = value.node_tree.links
+    bsdf = nodes.get("Principled BSDF")
+    if bsdf is None:
+        return value
+    bsdf.inputs["Metallic"].default_value = metallic
+    bsdf.inputs["Roughness"].default_value = roughness
+    if emission:
+        key = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+        bsdf.inputs[key].default_value = (*emission, 1.0)
+        if "Emission Strength" in bsdf.inputs:
+            bsdf.inputs["Emission Strength"].default_value = strength
+    texture = bpy.data.images.new(name + " packed paint", width=32, height=32, alpha=False)
+    accent = stripe or color
+    pixels: list[float] = []
+    for y in range(32):
+        for x in range(32):
+            # Fine diagonal micro-stripes break up broad surfaces while keeping
+            # the working courier's navy/cyan/amber language coherent.
+            use_accent = ((x + y * 2) // 4) % 2 == 1
+            source = accent if use_accent else color
+            pixels.extend(source[:3])
+            pixels.append(1.0)
+    texture.pixels = pixels
+    texture.pack()
+    image_node = nodes.new("ShaderNodeTexImage")
+    image_node.name = name + " packed texture"
+    image_node.image = texture
+    image_node.interpolation = "Linear"
+    texcoord = nodes.new("ShaderNodeTexCoord")
+    links.new(texcoord.outputs["UV"], image_node.inputs["Vector"])
+    links.new(image_node.outputs["Color"], bsdf.inputs["Base Color"])
+    return value
+
+
 def reset() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
@@ -65,6 +118,16 @@ def finish(obj: bpy.types.Object, material: bpy.types.Material, name: str,
         bpy.ops.object.modifier_apply(modifier=modifier.name)
     obj["aura3d_art_role"] = "primary courier vehicle"
     obj["aura3d_non_colliding"] = True
+    # Keep the tiny UV islands from primitive panels intact for the packed
+    # material textures.  Custom wedge surfaces remain valid flat-color faces.
+    if obj.type == "MESH" and len(obj.data.uv_layers) == 0:
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.uv.smart_project(angle_limit=1.15192, island_margin=0.03)
+        bpy.ops.object.mode_set(mode="OBJECT")
+        obj.select_set(False)
     GROUPS.setdefault(material.name, []).append(obj)
     return obj
 
@@ -88,6 +151,20 @@ def cylinder(name: str, location: tuple[float, float, float], radius: float,
                                        depth=depth, location=location,
                                        rotation=rotation)
     return finish(bpy.context.object, material, name, 0.012)
+
+
+def torus(name: str, location: tuple[float, float, float], major: float,
+          minor: float, material: bpy.types.Material,
+          rotation: tuple[float, float, float] = (0, 0, 0)) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=major,
+        minor_radius=minor,
+        major_segments=24,
+        minor_segments=8,
+        location=location,
+        rotation=rotation,
+    )
+    return finish(bpy.context.object, material, name, min(minor * 0.35, 0.008))
 
 
 def wedge(name: str, location: tuple[float, float, float],
@@ -115,29 +192,51 @@ def build() -> None:
     reset()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    graphite = mat("GPCS graphite armored hull", (0.035, 0.065, 0.085, 1), 0.72, 0.27)
-    navy = mat("GPCS postal navy", (0.025, 0.16, 0.22, 1), 0.5, 0.31)
-    alloy = mat("GPCS brushed alloy", (0.43, 0.58, 0.64, 1), 0.8, 0.2)
-    canopy = mat("GPCS cyan canopy", (0.025, 0.38, 0.47, 1), 0.24, 0.12,
-                 (0.02, 0.38, 0.48), 0.65)
-    parcel = mat("GPCS parcel amber", (0.82, 0.22, 0.025, 1), 0.36, 0.36,
-                 (0.55, 0.07, 0.005), 0.18)
-    parcel_light = mat("GPCS parcel cream", (0.9, 0.62, 0.17, 1), 0.22, 0.42)
-    cyan = mat("GPCS cyan running light", (0.01, 0.26, 0.34, 1), 0.18, 0.2,
-               (0.0, 0.9, 1.0), 4.0)
+    # Real packed two-tone paint maps keep the route's broad panels from
+    # collapsing into single flat color patches.  Every texture is generated
+    # deterministically and embedded in the candidate GLB by image_material.
+    graphite = image_material("GPCS graphite armored hull", (0.035, 0.065, 0.085, 1), 0.72, 0.27,
+                             (0.075, 0.13, 0.16, 1))
+    navy = image_material("GPCS postal navy", (0.025, 0.16, 0.22, 1), 0.5, 0.31,
+                          (0.04, 0.25, 0.31, 1))
+    alloy = image_material("GPCS brushed alloy", (0.43, 0.58, 0.64, 1), 0.8, 0.2,
+                           (0.22, 0.36, 0.42, 1))
+    canopy = image_material("GPCS cyan canopy", (0.025, 0.38, 0.47, 1), 0.24, 0.12,
+                            (0.02, 0.23, 0.3, 1), (0.02, 0.38, 0.48), 0.65)
+    parcel = image_material("GPCS parcel amber", (0.82, 0.22, 0.025, 1), 0.36, 0.36,
+                            (0.48, 0.09, 0.012, 1), (0.55, 0.07, 0.005), 0.18)
+    parcel_light = image_material("GPCS parcel cream", (0.9, 0.62, 0.17, 1), 0.22, 0.42,
+                                  (0.64, 0.3, 0.045, 1))
+    cyan = image_material("GPCS cyan running light", (0.01, 0.26, 0.34, 1), 0.18, 0.2,
+                          (0.02, 0.12, 0.17, 1), (0.0, 0.9, 1.0), 4.0)
     amber = mat("GPCS amber drive light", (0.34, 0.06, 0.005, 1), 0.2, 0.24,
                 (1.0, 0.22, 0.015), 4.5)
-    rubber = mat("GPCS landing skid", (0.015, 0.022, 0.027, 1), 0.1, 0.68)
-    white = mat("GPCS postal identity", (0.78, 0.91, 0.93, 1), 0.34, 0.32,
-                (0.2, 0.55, 0.62), 0.25)
+    rubber = image_material("GPCS landing skid", (0.015, 0.022, 0.027, 1), 0.1, 0.68,
+                            (0.035, 0.045, 0.05, 1))
+    white = image_material("GPCS postal identity", (0.78, 0.91, 0.93, 1), 0.34, 0.32,
+                           (0.36, 0.58, 0.63, 1), (0.2, 0.55, 0.62), 0.25)
 
     # Low, forward-weighted hull — clearly a working courier skiff, not a
     # capital ship. +Z is the declared travel direction.
     wedge("courier armored nose", (0, 0.42, 0.56), (1.26, 0.36, 1.18), navy)
     box("courier central chassis", (0, 0.34, -0.22), (1.34, 0.34, 1.08), graphite)
     box("courier belly pan", (0, 0.2, 0), (1.18, 0.13, 1.92), alloy)
+    # Layered shoulder and keel plates make the hull read as a purpose-built
+    # courier rather than a cube with a payload box.  Their bevels catch the
+    # route's cool key and warm rim at the same scale as the parcel hardware.
+    for side in (-1, 1):
+        wedge(f"courier shoulder fairing {side}", (side * 0.62, 0.42, 0.08),
+              (0.26, 0.3, 1.38), navy, forward=True)
+        box(f"courier side armor inset {side}", (side * 0.7, 0.34, -0.08),
+            (0.055, 0.2, 0.78), alloy, bevel=0.012)
+        box(f"courier route stripe {side}", (side * 0.73, 0.49, 0.33),
+            (0.025, 0.075, 0.74), cyan, bevel=0.006)
+    box("courier lower keel blade", (0, 0.12, 0.18), (0.5, 0.08, 1.34), graphite, bevel=0.014)
     wedge("courier cyan canopy", (0, 0.66, 0.47), (0.76, 0.31, 0.64), canopy)
     box("canopy center mullion", (0, 0.72, 0.47), (0.035, 0.33, 0.66), graphite, bevel=0.006)
+    for side in (-1, 1):
+        box(f"canopy side frame {side}", (side * 0.31, 0.68, 0.47), (0.055, 0.08, 0.58), alloy, bevel=0.008)
+    box("courier canopy visor", (0, 0.83, 0.64), (0.5, 0.045, 0.16), canopy, bevel=0.01)
 
     # A large, unmistakable detachable parcel module occupies the rear third.
     # Its corner guards, straps and illuminated latch remain readable from the
@@ -149,6 +248,10 @@ def build() -> None:
     for z in (-0.84, -0.32):
         box(f"parcel horizontal guard {z}", (0, 0.62, z),
             (0.96, 0.08, 0.08), parcel_light, bevel=0.012)
+    for side in (-1, 1):
+        box(f"parcel side route chevron {side}", (side * 0.475, 0.62, -0.58),
+            (0.025, 0.36, 0.26), parcel_light, rotation=(0, side * 0.45, 0), bevel=0.006)
+    box("parcel lower shock cradle", (0, 0.27, -0.58), (1.02, 0.09, 0.84), graphite, bevel=0.018)
     box("parcel illuminated latch", (0, 0.64, -0.975), (0.3, 0.18, 0.035), amber, bevel=0.008)
     # Raised envelope glyph: rectangular letter plus diagonal fold lines.
     box("postal envelope badge", (0, 0.95, -0.58), (0.46, 0.025, 0.3), white, bevel=0.016)
@@ -161,12 +264,15 @@ def build() -> None:
     for x in (-0.68, 0.68):
         for z in (-0.55, 0.5):
             box(f"drive arm {x} {z}", (x * 0.82, 0.26, z), (0.3, 0.12, 0.18), alloy)
+            box(f"drive arm outer brace {x} {z}", (x * 0.92, 0.16, z), (0.12, 0.1, 0.36), graphite, bevel=0.01)
             cylinder(f"contact drive pod {x} {z}", (x, 0.2, z), 0.2, 0.19,
                      rubber, rotation=(0, math.pi / 2, 0))
             cylinder(f"drive hub {x} {z}", (x + (0.101 if x > 0 else -0.101), 0.2, z),
                      0.11, 0.025, cyan if z > 0 else amber,
                      rotation=(0, math.pi / 2, 0), vertices=20)
             box(f"ground contact pad {x} {z}", (x, 0.055, z), (0.31, 0.07, 0.24), rubber)
+            torus(f"drive pod rim {x} {z}", (x + (0.101 if x > 0 else -0.101), 0.2, z), 0.135, 0.018,
+                  alloy, rotation=(0, math.pi / 2, 0))
 
     # Direction and propulsion: twin aft nozzles plus long illuminated postal
     # rails make the nose/engine relationship legible even at thumbnail scale.
@@ -177,6 +283,10 @@ def build() -> None:
                  amber, rotation=(math.pi / 2, 0, 0), vertices=20)
         box(f"postal running rail {x}", (x, 0.53, 0.08), (0.045, 0.045, 1.65), cyan, bevel=0.008)
     box("front dispatch lightbar", (0, 0.45, 1.08), (0.7, 0.06, 0.05), cyan, bevel=0.01)
+    box("front dispatch bumper", (0, 0.3, 1.1), (0.82, 0.16, 0.08), alloy, bevel=0.018)
+    for side in (-1, 1):
+        cylinder(f"front nav lens {side}", (side * 0.33, 0.44, 1.11), 0.045, 0.028,
+                 cyan if side > 0 else amber, rotation=(math.pi / 2, 0, 0), vertices=16)
     box("parcel route number plate", (0, 0.53, -1.01), (0.42, 0.18, 0.025), white, bevel=0.008)
 
     # Bake every authored placement before material merging. Blender joins into

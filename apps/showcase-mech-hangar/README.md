@@ -5,10 +5,10 @@
 Aura3D's typed, provenance-tracked assets are the mechanic. Assemble a mech from the
 original in-repository MH-2M modular family (chassis / arms / legs / weapon, 4 options each), watch
 the stat holograms move, validate the build, lock in, and fight a rival mech driven by the
-engine's `createCombatAi`. The hangar and arena use the release-probed CC0 expressive-robot
-asset as the connected visual shell; the selected MH-2M parts remain the socketed build
-contract and the selected weapon is mounted as a visible hardpoint. Rematches cycle rival
-aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
+engine's `createCombatAi`. The hangar and arena use the release-probed CC-BY Robotcand
+asset as a continuous textured visual shell; the selected MH-2M parts remain the socketed
+build contract and the selected weapon is mounted as a visible hardpoint. Rematches cycle
+rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
 
 ## Claim boundary (read before quoting this route)
 
@@ -21,8 +21,10 @@ aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
   no such claim is made anywhere in this route.
 - **Primitives are set dressing** (hangar floor/wall, turntable, pit rims) or
   renderer-owned feedback particles (hit sparks, landing dust). The connected mech silhouette
-  is a typed, release-probed GLB shell, while the build contract remains the typed MH-2M
-  assembly plan and its visible weapon hardpoint; a build is never a CSS recolor or a skin swap.
+  is the typed, release-probed Robotcand GLB shell, while the build contract remains the
+  typed MH-2M assembly plan and its visible weapon hardpoint; a build is never a CSS recolor
+  or a skin swap. Robotcand is a whole-body visual shell, not a reusable modular or animation
+  kit; the four typed MH-2M slots remain the route-local rigid assembly contract.
 - **Prototype.** Independent human visual review is pending; this route is not a public
   release candidate.
 
@@ -36,6 +38,11 @@ out-of-envelope bounds, missing silhouette/material layers, stale manifest metad
 missing root-rendered probes. The current gate is **16/16 compatible, 16/16 release-proven,
 16/16 unique geometry hashes: GO**. The report is `parts-curation-report.json`; the hangar
 passport reads its source, author, and CC0 license records.
+
+The connected presentation shell is the separately registered CC-BY-4.0
+`assets.robotcand` source by isramtz/Objaverse, with explicit attribution and a
+hash-bound root-renderer probe. It contributes no gameplay simulation or
+modular-kit claim.
 
 ## Assembly pipeline (player-visible)
 
@@ -93,7 +100,7 @@ KO and walk cadence are wired to sim events.
 - Source- and producer-bound screenshots/receipts are retained under
   `tests/reports/mech-hangar/`. `hangar-default.png` and `hangar-swap.png` are the mandatory
   default-state visual pair; `build-core-evidence.json` binds both to the current route source
-  and `assets.showcaseExpressiveRobot` hash. The route-primary proof is retained under
+  and `assets.robotcand` hash. The route-primary proof is retained under
   `tests/reports/showcase-route-primary-probes/`.
 
 ## Commands
@@ -104,6 +111,7 @@ pnpm typecheck           # strict tsc over src/
 pnpm build               # production bundle
 pnpm models              # regenerate the original 16-part MH-2M GLB family
 pnpm register:models     # register models; consumes current root-rendered probes
+pnpm register:shell      # register the attributed Robotcand visual shell after its root probe
 pnpm sfx                 # regenerate the ten WAV cues
 pnpm register:sfx        # idempotent CLI registration into the root manifest
 pnpm curate:parts        # deterministic local 16-part compatibility/release gate

@@ -307,6 +307,8 @@ async function writeRoutePrimaryProbe(
     // typed-pod foreground capture.
     const routeUrl = route.id === "showcase-gallery-shift" || route.id === "showcase-gravity-post"
       ? `${route.path}${route.path.includes("?") ? "&" : "?"}capture=review&debug=1`
+      : route.id === "showcase-turbo-drift-circuit"
+        ? `${route.path}${route.path.includes("?") ? "&" : "?"}capture=overview&evidenceDriver=1`
       : route.path;
     const response = await page.goto(`${server.origin}${routeUrl}`, { waitUntil: "domcontentloaded" });
     if (!response?.ok()) failures.push(`route-response:${String(response?.status())}`);
@@ -315,6 +317,9 @@ async function writeRoutePrimaryProbe(
     await page.waitForTimeout(500);
     if (route.id === "showcase-gallery-shift") {
       await stageGalleryShiftPrimaryMoment(page);
+    }
+    if (route.id === "showcase-turbo-drift-circuit") {
+      await stageTurboDriftPrimaryMoment(page);
     }
     canvasCrop = await largestCanvasCrop(page);
     if (!canvasCrop) failures.push("missing-visible-canvas");
@@ -325,7 +330,11 @@ async function writeRoutePrimaryProbe(
       : undefined;
     // Settle an animated subject into its declared neutral pose before anything is captured, so the
     // retained screenshot and the scale-contract measurement taken from it describe the same pose.
-    await settleCompositionSubjectPose(page);
+    // Turbo's route-primary producer intentionally stages a held drift seam above: pausing/resetting
+    // it here would erase the continuous hero+rival action that this racing composition must prove.
+    if (route.id !== "showcase-turbo-drift-circuit") {
+      await settleCompositionSubjectPose(page);
+    }
     renderer = await waitForRendererDiagnostics(page, route.globalName);
     failures.push(...rendererDiagnosticFailures(renderer));
   } catch (error) {
@@ -501,26 +510,34 @@ async function stageGalleryShiftPrimaryMoment(page: Page): Promise<void> {
     type GalleryWindow = Window & {
       __GALLERY_SHIFT_EVIDENCE__?: GalleryEvidence;
       __GS_PUMP__?: (frames: number) => number;
+      __GS_RESET_CAPTURE__?: () => number;
       __GS_TELEPORT__?: (x: number, z: number, preserveDetection?: boolean) => unknown;
     };
     const gallery = window as GalleryWindow;
-    gallery.__GS_PUMP__?.(300);
+    // Reset the deterministic patrol before composing the review moment. A
+    // 300-frame warmup fills the meter and opens the caught card before the
+    // visual probe can retain an action frame; 240 frames leaves the real
+    // guard-1 LOS intercept in the live, alert state while still giving the
+    // renderer its settled boot window and keeping both patrol silhouettes in
+    // the open foyer composition.
+    gallery.__GS_RESET_CAPTURE__?.();
+    gallery.__GS_PUMP__?.(240);
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const guard = gallery.__GALLERY_SHIFT_EVIDENCE__?.guardStates?.find((sample) => sample.id === "guard-1");
       if (!guard) break;
       // Keep the real LOS intercept inside the museum's central lane while
       // leaving a full body-width between the typed guard and infiltrator.
       // Three metres was mechanically valid but projected both actors into a
-      // single silhouette in the oblique review lens; 3.3m plus a small
-      // cone-axis offset preserves separation while the review camera centres
-      // the foyer encounter.
+      // single silhouette in the oblique review lens; 3.3m plus a deliberate
+      // cone-axis offset preserves a readable body-width gap while remaining
+      // inside the guard's real 90-degree LOS cone.
       const forwardX = Math.sin(guard.yaw);
       const forwardZ = Math.cos(guard.yaw);
       const lateralX = Math.cos(guard.yaw);
       const lateralZ = -Math.sin(guard.yaw);
       gallery.__GS_TELEPORT__?.(
         guard.x + forwardX * 3.3 + lateralX * 0.78,
-        guard.z + forwardZ * 3.3 + lateralZ * 0.78,
+        guard.z + forwardZ * 3.3 + lateralZ * 1.1,
         true
       );
       gallery.__GS_PUMP__?.(5);
@@ -538,6 +555,46 @@ async function stageGalleryShiftPrimaryMoment(page: Page): Promise<void> {
   });
   if (staged.detection <= 0.3 || !staged.seesThief) {
     throw new Error(`gallery-shift-primary-moment-not-staged:detection=${staged.detection}:seesThief=${staged.seesThief}`);
+  }
+}
+
+/**
+ * Stage the Turbo route-primary artifact on a real held drift state.
+ *
+ * The normal Turbo probe settles a reset car so the contact/scale contract is
+ * deterministic.  That neutral pose is useful for the geometry check but it
+ * cannot prove the blocker under review (continuous two-car action).  Capture
+ * mode already has a route-owned fixed-step driver and a hold-on-qualifying
+ * frame seam; this producer drives that seam with real keyboard input, then
+ * releases the keys before the common neutral-pose call can pause the frame.
+ */
+async function stageTurboDriftPrimaryMoment(page: Page): Promise<void> {
+  await expect.poll(async () => {
+    const frame = await page.screenshot({ animations: "disabled" });
+    return frame.length >= 250_000;
+  }, {
+    timeout: 90_000,
+    intervals: [250, 500, 1_000]
+  }).toBe(true);
+  await page.keyboard.down("KeyW");
+  await page.keyboard.down("KeyD");
+  await page.keyboard.down("Space");
+  try {
+    await page.waitForFunction((name) => (window as any)[name]?.startLightsComplete === true,
+      "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { timeout: 30_000 });
+    await page.waitForFunction((name) => (window as any)[name]?.raceState?.progress >= 0.17,
+      "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { timeout: 45_000 });
+    await page.waitForFunction((name) => {
+      const evidence = (window as any)[name];
+      return evidence?.renderedFeedback?.driftVisible === true
+        && evidence.renderedFeedback.driftAmount > 0.35
+        && evidence.renderedFeedback.speedFraction >= 0.6;
+    }, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { timeout: 30_000 });
+    await page.waitForFunction(() => document.body.dataset.turboReviewHeld === "true", undefined, { timeout: 15_000 });
+  } finally {
+    await page.keyboard.up("Space");
+    await page.keyboard.up("KeyD");
+    await page.keyboard.up("KeyW");
   }
 }
 

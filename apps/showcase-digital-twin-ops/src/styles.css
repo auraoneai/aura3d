@@ -3,8 +3,8 @@
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  background: #06080b;
-  color: #edf5f5;
+  background: #07131b;
+  color: #eaf7f6;
 }
 
 * {
@@ -33,8 +33,7 @@ button {
   width: 100vw;
   height: 100vh;
   background:
-    linear-gradient(135deg, rgba(7, 11, 12, 0.98), rgba(12, 18, 22, 0.96) 50%, rgba(15, 13, 18, 0.98)),
-    #06080b;
+    linear-gradient(135deg, #07131b 0%, #0d2029 48%, #101b28 100%);
 }
 
 .ops-viewport {
@@ -43,8 +42,9 @@ button {
   min-height: 0;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(28, 42, 45, 0.42), rgba(4, 7, 9, 0.08) 44%, rgba(5, 8, 10, 0.54)),
-    #05090b;
+    radial-gradient(circle at 48% 46%, rgba(31, 78, 89, 0.28), transparent 54%),
+    linear-gradient(180deg, rgba(18, 52, 62, 0.42), rgba(6, 18, 25, 0.2) 54%, rgba(5, 12, 18, 0.68)),
+    #07151d;
 }
 
 .ops-stage {
@@ -58,7 +58,7 @@ button {
   display: block;
   width: 100%;
   height: 100%;
-  background: #05090b;
+  background: #071923;
 }
 
 .telemetry {
@@ -76,26 +76,51 @@ button {
 .telemetry__card,
 .console__section,
 .mode-bar {
-  border: 1px solid rgba(174, 199, 202, 0.2);
-  border-radius: 8px;
-  background: rgba(7, 13, 15, 0.76);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.26);
+  border: 1px solid rgba(108, 211, 211, 0.24);
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(10, 29, 37, 0.88), rgba(6, 17, 24, 0.82));
+  box-shadow: 0 18px 38px rgba(0, 8, 14, 0.32), inset 0 1px 0 rgba(177, 247, 235, 0.04);
   backdrop-filter: blur(12px);
 }
 
 .telemetry__card {
   min-width: 0;
-  padding: 9px;
+  padding: 10px 11px 9px;
+  position: relative;
+  overflow: hidden;
+}
+
+.telemetry__card::after {
+  position: absolute;
+  right: 11px;
+  bottom: 9px;
+  width: 32px;
+  height: 3px;
+  border-radius: 3px;
+  background: #5ee7df;
+  box-shadow: 0 0 10px rgba(94, 231, 223, 0.72);
+  content: "";
+  opacity: 0.72;
+}
+
+.telemetry__card:nth-child(2)::after {
+  background: #f6bd68;
+  box-shadow: 0 0 10px rgba(246, 189, 104, 0.66);
+}
+
+.telemetry__card:nth-child(3)::after {
+  background: #f2715c;
+  box-shadow: 0 0 10px rgba(242, 113, 92, 0.62);
 }
 
 .telemetry__card span,
 .console__label,
 .event-log time {
   display: block;
-  color: #9fb5b7;
+  color: #8eb9bf;
   font-size: 11px;
   font-weight: 740;
-  letter-spacing: 0;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -103,17 +128,49 @@ button {
   display: block;
   margin-top: 4px;
   overflow-wrap: anywhere;
-  color: #f6fbfb;
-  font-size: 17px;
+  color: #effffc;
+  font-size: 18px;
   line-height: 1.12;
 }
 
 .telemetry__card em {
   display: block;
   margin-top: 5px;
-  color: #bfd1d3;
+  color: #b5d4d6;
   font-size: 12px;
   font-style: normal;
+}
+
+.telemetry__trend {
+  position: relative;
+  height: 3px;
+  margin-top: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(136, 181, 185, 0.14);
+}
+
+.telemetry__trend i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #5ee7df;
+  box-shadow: 0 0 12px rgba(94, 231, 223, 0.7);
+}
+
+.telemetry__card:nth-child(2) .telemetry__trend i {
+  background: #f6bd68;
+  box-shadow: 0 0 12px rgba(246, 189, 104, 0.6);
+}
+
+.telemetry__card:nth-child(3) .telemetry__trend i {
+  background: #f2715c;
+  box-shadow: 0 0 12px rgba(242, 113, 92, 0.56);
+}
+
+.telemetry__card:nth-child(4) .telemetry__trend i {
+  background: #9fdbff;
+  box-shadow: 0 0 12px rgba(159, 219, 255, 0.56);
 }
 
 .console {
@@ -122,9 +179,9 @@ button {
   gap: 12px;
   min-width: 0;
   min-height: 0;
-  padding: 14px;
-  border-left: 1px solid rgba(174, 199, 202, 0.18);
-  background: rgba(5, 9, 11, 0.93);
+  padding: 16px;
+  border-left: 1px solid rgba(94, 231, 223, 0.25);
+  background: linear-gradient(180deg, rgba(6, 18, 26, 0.96), rgba(5, 14, 22, 0.98));
   overflow: auto;
 }
 
@@ -135,13 +192,16 @@ button {
 }
 
 .console h1 {
-  font-size: 18px;
+  color: #eafffb;
+  font-size: 20px;
+  letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 .console h2 {
-  color: #dceeee;
+  color: #a9d9d8;
   font-size: 13px;
+  letter-spacing: 0.1em;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -149,7 +209,7 @@ button {
 .console__section {
   display: grid;
   gap: 10px;
-  padding: 12px;
+  padding: 13px;
 }
 
 .mode-bar {
@@ -167,10 +227,10 @@ button {
   min-width: 0;
   min-height: 36px;
   padding: 0 8px;
-  border: 1px solid rgba(177, 206, 205, 0.28);
+  border: 1px solid rgba(135, 202, 205, 0.32);
   border-radius: 7px;
-  background: rgba(15, 25, 26, 0.82);
-  color: #edf5f5;
+  background: rgba(12, 35, 43, 0.78);
+  color: #e5f8f7;
   cursor: pointer;
   font-size: 12px;
   line-height: 1.12;
@@ -183,8 +243,9 @@ button {
 .console__section button:hover,
 .mode-bar button[aria-pressed="true"],
 .console__section button[aria-pressed="true"] {
-  border-color: rgba(126, 232, 196, 0.78);
-  background: rgba(22, 61, 50, 0.74);
+  border-color: rgba(94, 231, 223, 0.92);
+  background: linear-gradient(135deg, rgba(20, 93, 95, 0.78), rgba(13, 63, 73, 0.82));
+  box-shadow: 0 0 0 1px rgba(94, 231, 223, 0.12), 0 8px 20px rgba(0, 8, 12, 0.26);
 }
 
 .console__grid {
@@ -193,18 +254,130 @@ button {
   gap: 8px;
 }
 
+.console__section--context {
+  gap: 12px;
+  border-color: rgba(246, 189, 104, 0.24);
+  background: linear-gradient(145deg, rgba(17, 37, 44, 0.92), rgba(7, 18, 26, 0.88));
+}
+
+.context-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.context-heading h2 {
+  margin: 0;
+}
+
+.context-heading p {
+  margin: 5px 0 0;
+  color: #789ca2;
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+}
+
+.context-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 5px 7px;
+  border: 1px solid rgba(94, 231, 223, 0.35);
+  border-radius: 999px;
+  color: #8ef3db;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.context-status i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.context-status--service {
+  border-color: rgba(246, 189, 104, 0.46);
+  color: #f6bd68;
+}
+
+.context-status--attention {
+  border-color: rgba(242, 113, 92, 0.5);
+  color: #ff917d;
+}
+
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.context-grid > div {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(143, 208, 210, 0.12);
+  border-radius: 7px;
+  background: rgba(99, 173, 180, 0.08);
+}
+
+.context-grid .console__value {
+  font-size: 14px;
+}
+
+.context-signal {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 7px 10px;
+  color: #b9d5d5;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.context-signal b {
+  color: #8ef3db;
+  font-size: 12px;
+}
+
+.context-signal > i {
+  grid-column: 1 / -1;
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(136, 181, 185, 0.14);
+}
+
+.context-signal > i em {
+  display: block;
+  width: 89%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3ecdc7, #8ef3db);
+  box-shadow: 0 0 12px rgba(94, 231, 223, 0.56);
+  transition: width 220ms ease;
+}
+
 .console__metric {
   min-width: 0;
   padding: 9px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.055);
+  background: rgba(129, 201, 205, 0.075);
+  border: 1px solid rgba(141, 210, 210, 0.1);
 }
 
 .console__value {
   display: block;
   margin-top: 4px;
   overflow-wrap: anywhere;
-  color: #f6fbfb;
+  color: #effffc;
   font-size: 15px;
   font-weight: 760;
 }
@@ -226,22 +399,23 @@ button {
   gap: 8px;
   padding: 8px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(141, 210, 210, 0.1);
+  background: rgba(129, 201, 205, 0.07);
 }
 
 .event-log b {
   display: block;
   margin-bottom: 2px;
-  color: #f2fbfb;
+  color: #e7fbf8;
   font-size: 12px;
 }
 
 .event-log span {
-  color: #b9cbcd;
+  color: #b8d5d7;
 }
 
 .claim {
-  color: #aebfc0;
+  color: #b2cccf;
   font-size: 12px;
   line-height: 1.42;
 }

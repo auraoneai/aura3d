@@ -107,40 +107,16 @@ const ROUTE_SYSTEMS = {
   flight: "route-local deterministic authored ballistic integrator shared by preview and actual first flight",
   scoring: "route-local five-heat objective, sensor-sequence, streak, gold, clock, and shot-lock rules",
   contest: "visible deterministic defender telegraph creates a documented pre-launch aim offset",
-  presentation: "typed court, backboard, rim, ball, and defender with renderer-owned trajectory markers",
+  presentation: "typed court, backboard, rim, ball, and pose-authored athletes with renderer-owned trajectory markers",
   audio: "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
 } as const;
 const ROUTE_CONTROLS = ["A/D change spot", "W/S aim arc", "hold/release Space shoot", "P pause", "R reset", "touch aim/spot/shoot/pause/reset"] as const;
-const SHOOTER_CLIPS = ["Ready", "Load", "Release", "FollowThrough"] as const;
-const DEFENDER_CLIPS = ["Plant", "Telegraph", "Jump", "Contest"] as const;
-
-function animationCaptureTime(clip: string): number {
-  switch (clip) {
-    case "Load":
-    case "Telegraph":
-      return 0.28;
-    case "Release":
-    case "Jump":
-      return 0.34;
-    case "FollowThrough":
-    case "Contest":
-      return 0.48;
-    case "Plant":
-      return 0.16;
-    case "Ready":
-      return 0.38;
-    default:
-      return 0;
-  }
-}
-
-function playAthleteClip(node: AuraRuntimeNodeHandle, clip: string, loop: boolean): void {
-  node.play(clip, {
-    loop,
-    restart: true,
-    captureTime: animationCaptureTime(clip)
-  });
-}
+// The acquired athlete derivatives are static, pose-authored GLBs. These
+// labels describe the one baked visual pose rather than inventing animation
+// clips that are not present in the files; route-local root transforms still
+// stage charge, release, lift, contest, and landing.
+const SHOOTER_CLIPS = ["StaticReleasePose"] as const;
+const DEFENDER_CLIPS = ["StaticContestPose"] as const;
 
 // ---------------- Game State ----------------
 const audio = new BucketsAudioController();
@@ -168,11 +144,9 @@ let elapsedPlayTime = 0;
 let chargeTickAccumulator = 0;
 let touchAimDirection = 0;
 let touchShootHeld = false;
-// Keep the initial state distinct from the clip name so the first runtime
-// frame explicitly binds the authored Ready clip after the typed GLB actor has
-// mounted.  Setting the clip on the model declaration races async actor
-// loading and can leave a skinned mesh with only a partially applied palette.
-let shooterAnimationState = "unbound";
+// Keep the initial state explicit: the acquired athlete derivatives are static
+// pose-authored meshes, so these are route pose states rather than GLB clips.
+let shooterAnimationState = "static-release-pose";
 let defenderAnimationState = "hidden";
 let shooterMotionPhase = "ready";
 let defenderMotionPhase = "hidden";
@@ -241,7 +215,7 @@ const contestReactionHandles = [0, 1].map((index) =>
 const AIM_POINT_COUNT = 25;
 const AIM_SEGMENT_COUNT = AIM_POINT_COUNT - 1;
 const aimMaterial = material.emissive({ name: "predicted-first-flight", color: "#38bdf8", emissive: "#0284c7" });
-const flightMaterial = material.emissive({ name: "live-flight-guide", color: "#ffe08a", emissive: "#ff7a1a", emissiveIntensity: visualReviewCapture ? 2.0 : 1.4 });
+const flightMaterial = material.emissive({ name: "live-flight-guide", color: visualReviewCapture ? "#ffd166" : "#ffe08a", emissive: "#ff6a00", emissiveIntensity: visualReviewCapture ? 2.35 : 1.4 });
 const goldMaterial = material.emissive({ name: "gold-ball-live", color: "#fbbf24", emissive: "#d97706" });
 const orangeMaterial = material.pbr({ name: "orange-ball-live", color: "#ea580c", roughness: 0.55, metallic: 0.05 });
 const backboardMaterial = material.pbr({
@@ -253,6 +227,13 @@ const backboardMaterial = material.pbr({
   opacity: 0.92
 });
 const rimMaterial = material.emissive({ name: "readable-rim", color: "#fb923c", emissive: "#ea580c" });
+const rimGlowMaterial = material.emissive({
+  name: "readable-rim-contact halo",
+  color: "#ffd166",
+  emissive: "#f97316",
+  emissiveIntensity: visualReviewCapture ? 1.65 : 1.15,
+  opacity: 0.82
+});
 const fireHaloMaterial = material.emissive({ name: "fire-streak-halo", color: "#fbbf24", emissive: "#f97316" });
 const victoryHaloMaterial = material.emissive({ name: "gold-victory-halo", color: "#fde68a", emissive: "#f59e0b" });
 const failureHaloMaterial = material.emissive({ name: "buzzer-failure-halo", color: "#fb7185", emissive: "#e11d48" });
@@ -264,14 +245,6 @@ const contactMissMaterial = material.emissive({ name: "miss contact burst", colo
 const blockContactMaterial = material.emissive({ name: "defender block burst", color: "#f0abfc", emissive: "#c026d3", emissiveIntensity: 2.35, opacity: 0.88 });
 const releaseBurstMaterial = material.emissive({ name: "ball release burst", color: "#fde68a", emissive: "#fb923c", emissiveIntensity: 2.15, opacity: 0.82 });
 const contestReactionMaterial = material.emissive({ name: "live contest reaction", color: "#e879f9", emissive: "#a21caf", emissiveIntensity: 1.9, opacity: 0.76 });
-const reviewCourtMaterial = material.pbr({
-  name: "rooftop league sealed court",
-  color: "#26324f",
-  roughness: 0.5,
-  metallic: 0.08,
-  clearcoat: 0.42
-});
-
 function buildScene() {
   return scene()
     .background("#20183f")
@@ -297,9 +270,14 @@ function buildScene() {
         name: "typed-rooftop-court",
         role: "primaryWorld",
         scaleMode: "world",
-        receiveShadow: true,
-        material: visualReviewCapture ? reviewCourtMaterial : undefined
-      }).position(0, -0.1, 4),
+        receiveShadow: true
+      })
+        // The source venue keeps its authored teal/warm crowd and violet
+        // bleacher materials in the review frame. A modest review-only scale
+        // gives the athletes and hoop the focal weight instead of letting the
+        // rear seating geometry swallow the action.
+        .scale(visualReviewCapture ? [0.68, 0.68, 0.68] : [1, 1, 1])
+        .position(0, -0.1, 4),
 
       // Hoop Backboard
       model(assets.rooftopBackboard, {
@@ -321,6 +299,13 @@ function buildScene() {
       })
         .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z)
         .runtime(rimHandle),
+      // A thin renderer-owned target halo keeps the real rim legible against
+      // the darker backboard and gives the live ball/contact effects a clear
+      // visual destination. Collision truth remains in rim.ts.
+      primitives.torus({ name: "rim target contact halo", material: rimGlowMaterial })
+        .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z)
+        .rotate(-Math.PI / 2, 0, 0)
+        .scale(visualReviewCapture ? [0.34, 0.34, 0.022] : [0.29, 0.29, 0.018]),
       // The authored venue owns the target box and open net assembly. Keep a
       // single lower gather ring here so the goal reads as one constructed
       // object rather than two overlapping sets of decorative strands.
@@ -329,32 +314,30 @@ function buildScene() {
         .rotate(-Math.PI / 2, 0, 0)
         .scale([0.19, 0.19, 0.024]),
 
-      // Ball-free verified CC-BY number-24 layup scorer. This is a real
-      // textured skinned athlete with route-authored Ready/Load/Release/
-      // FollowThrough clips. Gameplay still owns root motion and the separate
-      // typed route ball; the GLB contributes character deformation only.
-      model(assets.rooftopLayupScorer, {
+      // Ball-free, continuously modeled CC-BY athlete derivative in a raised
+      // shooting pose. The separately typed route ball and route-local root
+      // transforms own all gameplay and action timing.
+      model(assets.rooftopAthleteShooter, {
         name: "shooter-player-mesh",
         role: "primaryCharacter",
         castShadow: true,
         receiveShadow: true
       })
         .position(COURT_SPOTS[0]!.x, 0, COURT_SPOTS[0]!.z)
-        .scale(visualReviewCapture ? [1.08, 1.08, 1.08] : [0.96, 0.96, 0.96])
+        .scale(visualReviewCapture ? [1.22, 1.22, 1.22] : [1.08, 1.08, 1.08])
         .runtime(shooterHandle),
 
-      // Ball-free CC-BY adaptation of the same verified source. Its real
-      // Plant/Telegraph/Jump/Contest clips make the contest readable while
-      // route-local telegraph/collision/root transforms remain the only
-      // gameplay authority.
-      model(assets.rooftopDefender, {
+      // Ball-free asymmetric contest derivative from the same verified source.
+      // It is a static visual variant (not a second identity or animation rig);
+      // route-local telegraph/collision/root transforms remain authoritative.
+      model(assets.rooftopAthleteDefender, {
         name: "contest-defender-mesh",
         role: "primaryCharacter",
         castShadow: true,
         receiveShadow: true
       })
         .position(0, -10, 0) // Hidden initially
-        .scale(visualReviewCapture ? [1.08, 1.08, 1.08] : [0.96, 0.96, 0.96])
+        .scale(visualReviewCapture ? [1.2, 1.2, 1.2] : [1.06, 1.06, 1.06])
         .runtime(defenderHandle),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
         .position(COURT_SPOTS[0]!.x, 0.026, COURT_SPOTS[0]!.z)
@@ -479,9 +462,9 @@ function buildScene() {
         // airborne defender, and rim share one readable diagonal. It is close
         // enough for the verified athletes to read as characters while still
         // retaining court grounding and the complete ballistic chain.
-        position: visualReviewCapture ? [5.55, 3.62, 7.55] : [0, 4.95, 10.55],
-        target: visualReviewCapture ? [-0.52, 2.24, 1.32] : [0, 2.45, 1.1],
-        fov: visualReviewCapture ? 41 : 47
+        position: visualReviewCapture ? [4.7, 3.25, 6.65] : [0, 4.95, 10.55],
+        target: visualReviewCapture ? [-0.28, 2.12, 1.22] : [0, 2.45, 1.1],
+        fov: visualReviewCapture ? 43 : 47
       })
     );
 }
@@ -821,8 +804,8 @@ function syncTransforms(): void {
   const hoopDistance = Math.max(0.001, Math.hypot(hoopDx, hoopDz));
   // The root drive is continuous with the authored flight state: the athlete
   // compresses behind the spot, rises through release, and lands slightly
-  // toward the hoop. It complements the typed multi-joint clips rather than
-  // presenting each clip as a disconnected mannequin pose.
+      // toward the hoop. It complements the continuous pose-authored athlete
+      // meshes rather than presenting an ungrounded label-only animation state.
   const releaseDrive = visualReviewCapture
     ? Math.min(0.34, ballState.flightTimer * 0.9) - shooterBodyCompression * 0.08
     : 0;
@@ -837,11 +820,10 @@ function syncTransforms(): void {
         : "Ready";
     if (nextShooterAnimation !== shooterAnimationState) {
       shooterAnimationState = nextShooterAnimation;
-      playAthleteClip(shooterNode!, nextShooterAnimation, nextShooterAnimation === "Load" || nextShooterAnimation === "Ready");
     }
     // Placement, squash, lean, and facing are route-authored root transforms
-    // keyed from the real ballistic state; limb deformation comes from the
-    // named skinned clip selected above.
+    // keyed from the real ballistic state; the acquired GLB contributes its
+    // continuous modeled release pose without claiming runtime skinning.
     const followLean = ballState.inFlight ? Math.sin(Math.min(1, flightMotionPhase / 0.72) * Math.PI / 2) : 0;
     const landingSettle = flightMotionPhase > 0.78 ? (flightMotionPhase - 0.78) / 0.22 : 0;
     shooterNode
@@ -927,7 +909,6 @@ function syncTransforms(): void {
             : "Plant";
         if (nextDefenderAnimation !== defenderAnimationState) {
           defenderAnimationState = nextDefenderAnimation;
-          playAthleteClip(defenderNode, nextDefenderAnimation, nextDefenderAnimation === "Plant");
         }
         defenderMotionPhase = hoopState.defenderTelegraph === "windup"
           ? "compression"
@@ -1180,7 +1161,7 @@ function publishEvidence(): RooftopBucketsEvidence {
     physicsBodyCount: 0,
     simulationOwner: "route-local authored deterministic ballistic integrator; composed rim/board/defender regions are not Rapier bodies",
     predictionPointCount: AIM_POINT_COUNT,
-    primaryAssets: ["assets.rooftopCourt", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"],
+    primaryAssets: ["assets.rooftopCourt", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender"],
     systems: ROUTE_SYSTEMS,
     controls: ROUTE_CONTROLS,
     claimBoundary: "Root-safe prototype with route-local authored basketball flight, composed sensor/region contacts, and five-heat scoring; no reusable sports, physics, rim, or defender kit claimed.",
@@ -1231,6 +1212,8 @@ function publishEvidence(): RooftopBucketsEvidence {
   releaseShot(0.56, 0.02);
   // Progress the genuine flight to the ball-between-players-and-rim beat.
   // Every step uses the same authored integrator as player input.
+  // Hold at the authored live release/follow-through beat so the review image
+  // captures both athletes, the airborne ball, and the contest reaction.
   for (let frame = 0; frame < 20; frame += 1) {
     ballState = stepBall(ballState, hoopState, 1 / 60).ball;
   }

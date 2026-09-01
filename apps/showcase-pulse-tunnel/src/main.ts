@@ -214,15 +214,21 @@ const reviewAmber = material.emissive({
 });
 const reviewCyan = material.emissive({
   name: "pulse review cyan pulse",
-  color: "#c9fbff",
-  emissive: "#06b6d4",
-  emissiveIntensity: 1.48
+  color: "#55d6e7",
+  emissive: "#0789a3",
+  emissiveIntensity: 0.92
 });
 const reviewRose = material.emissive({
   name: "pulse review rose pulse",
-  color: "#ffd0dc",
-  emissive: "#e11d48",
-  emissiveIntensity: 1.32
+  color: "#f47e9b",
+  emissive: "#b51f4a",
+  emissiveIntensity: 0.88
+});
+const reviewRunnerGlowMaterial = material.emissive({
+  name: "pulse review runner drive marker",
+  color: "#2cc6d9",
+  emissive: "#08778b",
+  emissiveIntensity: 0.54
 });
 
 const gateSlotBuilders = (() => {
@@ -334,9 +340,9 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
   // The review lens gives the terminal its own, farther right-hand depth plane.
   // It is still purely non-colliding presentation: runner movement, lanes, and
   // the beat chart retain their existing coordinates and authority.
-  .position(visualReviewCapture ? 1.55 : 0, visualReviewCapture ? 0.12 : 0.08, visualReviewCapture ? -4.42 : -5.16)
+  .position(visualReviewCapture ? 1.38 : 0, visualReviewCapture ? 0.22 : 0.08, visualReviewCapture ? -3.72 : -5.16)
   .rotate(0, Math.PI + 0.18, 0)
-  .scale(visualReviewCapture ? 1.12 : 0.86)
+  .scale(visualReviewCapture ? 1.24 : 0.86)
   .runtime(game.runtimeNode("pulse-finale-terminal-sentry", {
     tags: ["finale-target", "typed-terminal-sentry", "renderer-owned", "non-colliding"]
   }));
@@ -723,36 +729,292 @@ const reviewDeckMaterial = material.pbr({
   // The review deck is a distinct mid-value surface, not a black mirror. That
   // gives the pod a readable cool landing plane while the terminal stays the
   // warm focal endpoint at the next depth plane.
-  color: "#44546c",
+  color: "#516a7d",
   roughness: 0.44,
   metallic: 0.48,
   emissive: "#145a78",
-  emissiveIntensity: 0.26
+  emissiveIntensity: 0.34
 });
 const reviewShoulderMaterial = material.pbr({
   name: "pulse reactor deck shoulders",
-  color: "#374257",
+  color: "#42566b",
   roughness: 0.54,
   metallic: 0.44,
-  emissive: "#293c67",
-  emissiveIntensity: 0.2
+  emissive: "#294a67",
+  emissiveIntensity: 0.26
 });
 const reviewRibMaterial = material.pbr({
   name: "pulse tunnel rib steel",
   // Ribs deliberately sit one value step below the deck. Their steel blue is
   // visible as architecture, but cannot merge with either typed combatant.
-  color: "#2a3b52",
+  color: "#345068",
   roughness: 0.46,
   metallic: 0.64,
   emissive: "#164b71",
-  emissiveIntensity: 0.19
+  emissiveIntensity: 0.28
 });
 const reviewAccentMaterial = material.emissive({
   name: "pulse tunnel amber beat accent",
   color: "#ffd166",
   emissive: "#d97706",
-  emissiveIntensity: 0.92
+  emissiveIntensity: 0.58
 });
+const reviewContactMaterial = material.pbr({
+  name: "pulse encounter contact graphite",
+  color: "#07111d",
+  roughness: 0.86,
+  metallic: 0.18,
+  emissive: "#071e2d",
+  emissiveIntensity: 0.18
+});
+const reviewBeamMaterial = material.pbr({
+  name: "pulse encounter structural beam",
+  color: "#345a72",
+  roughness: 0.42,
+  metallic: 0.58,
+  emissive: "#0d425c",
+  emissiveIntensity: 0.30
+});
+const reviewPanelMaterial = material.pbr({
+  name: "pulse encounter wall panel",
+  color: "#203b53",
+  roughness: 0.52,
+  metallic: 0.40,
+  emissive: "#0b3048",
+  emissiveIntensity: 0.24
+});
+const reviewSignalMaterial = material.emissive({
+  name: "pulse encounter signal strip",
+  color: "#4bc7d8",
+  emissive: "#126c80",
+  emissiveIntensity: 0.72
+});
+const reviewRearMaterial = material.pbr({
+  name: "pulse encounter rear reactor panel",
+  color: "#30223f",
+  roughness: 0.58,
+  metallic: 0.34,
+  emissive: "#5e214c",
+  emissiveIntensity: 0.30
+});
+const reviewTrailCyan = material.emissive({
+  name: "pulse runner lance trail",
+  color: "#6debf2",
+  emissive: "#0b7185",
+  emissiveIntensity: 0.58,
+  opacity: 0.78
+});
+const reviewTrailRose = material.emissive({
+  name: "pulse warden cutter trail",
+  color: "#f7a3b6",
+  emissive: "#9f1d4b",
+  emissiveIntensity: 0.74,
+  opacity: 0.78
+});
+// Packet cores are deliberately spherical and high-value.  The previous
+// capsule-only packets rasterized as a row of vertical spikes in the frozen
+// review frame, which made the exchange read as decoration rather than fire.
+// A bright core plus a separate directional wake keeps the projectile as a
+// legible volume while the wake communicates travel direction.
+const reviewProjectileCoreCyan = material.emissive({
+  name: "pulse runner lance packet core",
+  color: "#e8feff",
+  emissive: "#11d9f3",
+  emissiveIntensity: 2.35
+});
+const reviewProjectileCoreRose = material.emissive({
+  name: "pulse warden cutter packet core",
+  color: "#ffe8ee",
+  emissive: "#f02f72",
+  emissiveIntensity: 2.15
+});
+
+// Grounding geometry is deliberately separate from the typed models. It makes
+// the contact points and exchange planes unambiguous at review distance while
+// leaving the route-owned lane/collider math untouched.
+const reviewContactBuilders = visualReviewCapture ? [
+  primitives.cylinder({ name: "pulse runner contact shadow", material: reviewContactMaterial })
+    .position(-1.38, 0.035, 0.42).scale([1.32, 0.028, 0.58])
+    .runtime(game.runtimeNode("pulse-review-runner-contact", { tags: ["encounter-grounding", "renderer-owned", "non-colliding"] })),
+  primitives.cylinder({ name: "pulse sentry contact shadow", material: reviewContactMaterial })
+    .position(1.38, 0.035, -3.72).scale([1.48, 0.035, 0.72])
+    .runtime(game.runtimeNode("pulse-review-sentry-contact", { tags: ["encounter-grounding", "renderer-owned", "non-colliding"] }))
+] : [];
+
+// A sparse set of asymmetrical bulkheads and signal braces gives the review
+// lens an authored room profile instead of a blank gradient. These stay outside
+// all three gameplay lanes and are not collision or timing surfaces.
+const reviewStructureBuilders = visualReviewCapture
+  ? [
+      primitives.box({ name: "pulse review rear bulkhead left", material: reviewPanelMaterial })
+        .position(-2.35, 1.30, -5.85).rotate(0, 0.04, 0.02).scale([1.02, 1.38, 0.12]),
+      primitives.box({ name: "pulse review rear bulkhead right", material: reviewPanelMaterial })
+        .position(2.58, 1.0, -5.35).rotate(0, -0.06, -0.025).scale([0.72, 1.08, 0.12]),
+      primitives.box({ name: "pulse review left buttress", material: reviewBeamMaterial })
+        .position(-2.72, 1.15, -2.3).rotate(0.04, 0.02, -0.14).scale([0.22, 1.26, 2.62]),
+      primitives.box({ name: "pulse review right buttress", material: reviewBeamMaterial })
+        .position(2.78, 1.36, -2.95).rotate(-0.03, -0.03, 0.16).scale([0.22, 1.48, 2.38]),
+      primitives.box({ name: "pulse review overhead bridge", material: reviewBeamMaterial })
+        .position(0.18, 3.18, -3.82).rotate(0, 0.03, 0.02).scale([2.72, 0.14, 0.20]),
+      primitives.box({ name: "pulse review bridge signal", material: reviewSignalMaterial })
+        .position(0.18, 3.02, -3.58).scale([1.44, 0.035, 0.035]),
+      primitives.box({ name: "pulse review left floor edge", material: reviewBeamMaterial })
+        .position(-2.18, 0.05, -2.10).rotate(0, -0.08, 0).scale([0.12, 0.10, 3.10]),
+      primitives.box({ name: "pulse review right floor edge", material: reviewBeamMaterial })
+        .position(2.12, 0.05, -2.42).rotate(0, 0.10, 0).scale([0.12, 0.10, 2.88]),
+      ...[-1, 1].flatMap((side) => [
+        primitives.box({ name: `pulse review side hazard rail ${side}`, material: reviewAccentMaterial })
+          .position(side * 2.18, 0.36, -1.10).rotate(0, side * 0.12, 0).scale([0.035, 0.035, 1.35]),
+        primitives.box({ name: `pulse review side hazard rail rear ${side}`, material: reviewAccentMaterial })
+          .position(side * 2.34, 0.52, -4.80).rotate(0, side * -0.10, 0).scale([0.035, 0.035, 1.06])
+      ])
+    ]
+  : [];
+
+// The review composition previously stopped at two dark buttresses and a
+// single backplate. These restrained reactor panels add a visible rear plane,
+// repeatable floor scale, and a warm/cool material cadence without becoming
+// a second hero asset. They are renderer-owned set dressing only; the chart,
+// lanes, and collision systems remain unchanged.
+const reviewArchitectureAccentBuilders = visualReviewCapture
+  ? [
+      primitives.box({ name: "pulse review rear reactor panel", material: reviewRearMaterial })
+        .position(0.08, 1.55, -5.72).rotate(0, 0.018, 0).scale([2.62, 1.54, 0.10]),
+      primitives.box({ name: "pulse review rear reactor panel left seam", material: reviewSignalMaterial })
+        .position(-1.38, 1.56, -5.57).scale([0.035, 1.18, 0.035]),
+      primitives.box({ name: "pulse review rear reactor panel right seam", material: reviewAccentMaterial })
+        .position(1.54, 1.56, -5.53).scale([0.035, 1.06, 0.035]),
+      primitives.box({ name: "pulse review rear reactor header", material: reviewBeamMaterial })
+        .position(0.10, 2.88, -5.56).rotate(0, 0.02, 0).scale([2.86, 0.12, 0.14]),
+      primitives.box({ name: "pulse review rear reactor header signal", material: reviewRose })
+        .position(0.10, 2.70, -5.38).scale([1.04, 0.026, 0.026]),
+      ...Array.from({ length: 8 }, (_, index) => {
+        const z = 1.58 - index * 0.86;
+        const side = index % 2 === 0 ? -1 : 1;
+        return primitives.box({
+          name: `pulse review floor cadence plate ${index + 1}`,
+          material: index % 3 === 0 ? reviewAccentMaterial : reviewPanelMaterial
+        })
+          .position(side * 0.38, 0.045, z)
+          .rotate(0, side * 0.04, 0)
+          .scale([0.76 + (index % 3) * 0.10, 0.018, 0.16]);
+      }),
+      ...[-1, 1].flatMap((side) => [
+        primitives.box({ name: `pulse review rear vertical truss ${side}`, material: reviewBeamMaterial })
+          .position(side * 2.18, 1.44, -5.18).rotate(0.04, side * 0.08, side * 0.10).scale([0.10, 1.72, 0.14]),
+        primitives.box({ name: `pulse review rear truss signal ${side}`, material: side < 0 ? reviewCyan : reviewRose })
+          .position(side * 2.02, 1.50, -5.02).rotate(0.04, side * 0.08, side * 0.10).scale([0.024, 1.22, 0.024])
+      ])
+    ]
+  : [];
+
+// Broken basalt plates and hot/cool seams give the encounter a terrain story
+// closer to the comparator's playable arena.  They sit outside the authored
+// three-lane collider envelope and are renderer-owned set dressing only.
+const reviewTerrainMaterial = material.pbr({
+  name: "pulse encounter basalt plate",
+  color: "#46647a",
+  roughness: 0.72,
+  metallic: 0.24,
+  emissive: "#163a55",
+  emissiveIntensity: 0.24
+});
+const reviewTerrainWarmMaterial = material.pbr({
+  name: "pulse encounter warm basalt plate",
+  color: "#70445f",
+  roughness: 0.76,
+  metallic: 0.18,
+  emissive: "#9a2b50",
+  emissiveIntensity: 0.28
+});
+const reviewTerrainGlowMaterial = material.emissive({
+  name: "pulse encounter molten seam",
+  color: "#ffb66b",
+  emissive: "#f0445d",
+  emissiveIntensity: 1.12
+});
+const reviewTerrainBuilders = visualReviewCapture
+  ? [
+      ...[
+        { x: -2.25, z: 1.62, sx: 1.05, sz: 0.74, yaw: -0.08, warm: false },
+        { x: 2.18, z: 1.38, sx: 1.18, sz: 0.88, yaw: 0.10, warm: true },
+        { x: -2.38, z: -0.05, sx: 1.24, sz: 0.92, yaw: 0.07, warm: true },
+        { x: 2.36, z: -0.36, sx: 1.32, sz: 1.02, yaw: -0.12, warm: false },
+        { x: -2.28, z: -2.08, sx: 1.42, sz: 1.26, yaw: -0.05, warm: false },
+        { x: 2.26, z: -2.22, sx: 1.48, sz: 1.18, yaw: 0.09, warm: true },
+        { x: -2.12, z: -4.03, sx: 1.56, sz: 1.10, yaw: 0.12, warm: true },
+        { x: 2.12, z: -4.08, sx: 1.62, sz: 1.16, yaw: -0.08, warm: false }
+      ].map((plate, index) =>
+        primitives.box({
+          name: `pulse encounter fractured basalt plate ${index + 1}`,
+          material: plate.warm ? reviewTerrainWarmMaterial : reviewTerrainMaterial
+        })
+          .position(plate.x, -0.06 + (index % 3) * 0.018, plate.z)
+          .rotate(0, plate.yaw, (index % 2 === 0 ? -1 : 1) * 0.03)
+          .scale([plate.sx, 0.10 + (index % 2) * 0.035, plate.sz])
+          .runtime(game.runtimeNode(`pulse-review-terrain-plate-${index}`, { tags: ["terrain-dressing", "renderer-owned", "non-colliding"] }))
+      ),
+      ...[-1, 1].flatMap((side) =>
+        [0.92, -0.18, -1.46, -2.74, -4.08].map((z, index) =>
+          primitives.box({
+            name: `pulse encounter molten seam ${side} ${index + 1}`,
+            material: reviewTerrainGlowMaterial
+          })
+            .position(side * (2.12 + (index % 2) * 0.12), 0.065, z)
+            .rotate(0, 0, side * (0.08 + (index % 3) * 0.035))
+            .scale([0.038 + (index % 2) * 0.014, 0.026, 0.34 + (index % 3) * 0.14])
+            .runtime(game.runtimeNode(`pulse-review-terrain-seam-${side}-${index}`, { tags: ["terrain-dressing", "renderer-owned", "non-colliding"] }))
+        )
+      ),
+      // A few raised shards catch the cool/warm practicals and close the
+      // horizon without blocking either typed combatant.
+      ...[-1, 1].flatMap((side) =>
+        [
+          { z: -1.45, h: 0.72, r: 0.24 },
+          { z: -3.06, h: 0.98, r: 0.30 },
+          { z: -4.62, h: 0.78, r: 0.22 }
+        ].map((shard, index) =>
+          primitives.cylinder({
+            name: `pulse encounter basalt shard ${side} ${index + 1}`,
+            material: index === 1 ? reviewTerrainWarmMaterial : reviewTerrainMaterial
+          })
+            .position(side * (2.78 + (index % 2) * 0.16), shard.h * 0.48 - 0.04, shard.z)
+            .rotate(0.06, side * 0.15, side * 0.08)
+            .scale([shard.r, shard.h, shard.r * 0.72])
+            .runtime(game.runtimeNode(`pulse-review-terrain-shard-${side}-${index}`, { tags: ["terrain-dressing", "renderer-owned", "non-colliding"] }))
+        )
+      )
+    ]
+  : [];
+
+// Readability accents are attached to the typed silhouettes, not substitutes
+// for them: a cool edge traces the runner's wing line, a warm return marker
+// identifies the sentry's fire lane, and a small impact cluster marks the
+// actual exchange midpoint. Each node is renderer-owned support geometry with
+// no gameplay or collision role.
+const reviewCombatAccentBuilders = visualReviewCapture
+  ? [
+      primitives.box({ name: "pulse runner cyan wing edge left", material: reviewSignalMaterial })
+        .position(-1.82, 0.48, 0.28).rotate(0, -0.08, -0.05).scale([0.72, 0.028, 0.042]),
+      primitives.box({ name: "pulse runner cyan wing edge right", material: reviewSignalMaterial })
+        .position(-0.94, 0.48, 0.28).rotate(0, 0.08, 0.05).scale([0.72, 0.028, 0.042]),
+      primitives.capsule({ name: "pulse runner drive wake left", material: reviewCyan })
+        .position(-1.72, 0.30, 0.78).rotate(Math.PI / 2, 0, 0).scale([0.055, 0.42, 0.055]),
+      primitives.capsule({ name: "pulse runner drive wake right", material: reviewCyan })
+        .position(-1.04, 0.30, 0.78).rotate(Math.PI / 2, 0, 0).scale([0.055, 0.42, 0.055]),
+      primitives.box({ name: "pulse sentry fire lane marker", material: reviewAccentMaterial })
+        .position(1.38, 1.14, -3.02).rotate(0, 0, 0).scale([0.46, 0.026, 0.026]),
+      primitives.torus({ name: "pulse exchange impact outer", material: reviewAmber })
+        .position(0.04, 0.96, -2.18).scale([0.34, 0.34, 0.042])
+        .runtime(game.runtimeNode("pulse-review-impact-outer", { tags: ["combat-impact", "renderer-owned", "non-colliding"] })),
+      primitives.torus({ name: "pulse exchange impact inner", material: reviewCyan })
+        .position(0.04, 0.96, -2.18).scale([0.16, 0.16, 0.055])
+        .runtime(game.runtimeNode("pulse-review-impact-inner", { tags: ["combat-impact", "renderer-owned", "non-colliding"] })),
+      primitives.sphere({ name: "pulse exchange impact core", material: reviewRose })
+        .position(0.04, 0.96, -2.18).scale([0.09, 0.09, 0.09])
+        .runtime(game.runtimeNode("pulse-review-impact-core", { tags: ["combat-impact", "renderer-owned", "non-colliding"] }))
+    ]
+  : [];
 
 // The final visual pass uses a purpose-built, three-plane encounter stage. The
 // old custom footprint prism was broad enough to become a single blank floor
@@ -771,9 +1033,9 @@ const reviewArenaWorldBuilders = visualReviewCapture
       primitives.box({ name: "pulse review runner launch apron", material: reviewShoulderMaterial })
         .position(-1.65, -0.02, 0.18).rotate(0, -0.08, 0).scale([1.1, 0.1, 1.15]),
       primitives.box({ name: "pulse review sentinel raised dock", material: reviewSteelEdge })
-        .position(1.55, -0.01, -4.58).rotate(0, 0.12, 0).scale([1.36, 0.18, 1.16]),
+        .position(1.38, -0.01, -3.92).rotate(0, 0.12, 0).scale([1.56, 0.18, 1.16]),
       primitives.box({ name: "pulse review sentinel backplate", material: reviewSteel })
-        .position(1.55, 1.52, -5.95).scale([2.25, 1.46, 0.16]),
+        .position(1.38, 1.68, -4.8).scale([2.46, 1.72, 0.16]),
       primitives.box({ name: "pulse review runner launch spine", material: reviewSteelEdge })
         .position(-1.55, 0.18, 0.52).rotate(0, -0.08, 0).scale([1.08, 0.08, 0.9]),
       primitives.torus({ name: "pulse review runner launch ring", material: reviewCyan })
@@ -794,16 +1056,14 @@ const reviewArenaWorldBuilders = visualReviewCapture
         primitives.box({ name: `pulse review overhead rib left ${index}`, material: reviewSteelEdge })
           .position(-2.25, 2.62, z).rotate(0, 0, -0.24).scale([1.75, 0.11, 0.16]),
         primitives.box({ name: `pulse review overhead rib right ${index}`, material: reviewSteelEdge })
-          .position(2.25, 2.62, z).rotate(0, 0, 0.24).scale([1.75, 0.11, 0.16]),
-        primitives.box({ name: `pulse review overhead spine ${index}`, material: reviewAmber })
-          .position(0, 3.05, z).scale([0.66, 0.055, 0.055])
+          .position(2.25, 2.62, z).rotate(0, 0, 0.24).scale([1.75, 0.11, 0.16])
       ]),
       // A warm reactor iris anchors the boss side; cyan floor markers point
       // toward it and establish the direction of the combat exchange.
       primitives.torus({ name: "pulse review reactor iris", material: reviewRose })
-        .position(1.55, 1.6, -5.72).rotate(0, 0, 0).scale([1.0, 1.0, 0.08]),
+        .position(1.38, 1.78, -4.56).rotate(0, 0, 0).scale([1.16, 1.16, 0.08]),
       primitives.sphere({ name: "pulse review reactor core", material: reviewAmber })
-        .position(1.55, 1.6, -5.55).scale([0.26, 0.26, 0.18]),
+        .position(1.38, 1.78, -4.38).scale([0.31, 0.31, 0.21]),
       ...[-1.95, -1.05, -0.15, 0.75].map((z, index) =>
         primitives.box({ name: `pulse review lane marker ${index}`, material: reviewCyan })
           .position(-0.35, 0.04, z).rotate(0, 0, 0).scale([0.58, 0.028, 0.045])
@@ -812,26 +1072,73 @@ const reviewArenaWorldBuilders = visualReviewCapture
       // separate from the HUD: one halo marks the warden's attack origin and
       // the near plane catches a returning cutter stream.
       primitives.torus({ name: "pulse boss attack origin halo", material: reviewRose })
-        .position(1.55, 1.12, -4.92).scale([0.72, 0.72, 0.055])
+        .position(1.38, 1.14, -3.34).scale([0.82, 0.82, 0.055])
         .runtime(game.runtimeNode("pulse-review-attack-origin", { tags: ["finale-arena", "attack-origin", "renderer-owned"] })),
       primitives.torus({ name: "pulse player shield impact plane", material: reviewCyan })
-        .position(-1.18, 0.72, 0.42).rotate(0, -0.12, 0.06).scale([0.64, 0.64, 0.045])
-        .runtime(game.runtimeNode("pulse-review-impact-plane", { tags: ["finale-arena", "impact-plane", "renderer-owned", "non-colliding"] }))
+        .position(-1.18, 0.72, -0.08).rotate(0, -0.12, 0.06).scale([0.54, 0.54, 0.045])
+        .runtime(game.runtimeNode("pulse-review-impact-plane", { tags: ["finale-arena", "impact-plane", "renderer-owned", "non-colliding"] })),
+      primitives.torus({ name: "pulse terminal lock ring", material: reviewRose })
+        .position(1.38, 1.34, -3.20).rotate(0.08, 0.02, 0).scale([0.58, 0.58, 0.05])
     ]
   : [];
 
-// Compact modeled packets replace the old review cylinders, whose safe-basic
-// orientation could rasterize as opaque cards. They are still renderer-owned
-// three-dimensional scene nodes: the route animates them between typed actors,
-// while the gate chart remains the only gameplay authority.
+// Compact modeled packet cores replace the old review cylinders, whose
+// safe-basic orientation could rasterize as opaque cards or vertical spikes.
+// They are still renderer-owned three-dimensional scene nodes: the route
+// animates them between typed actors, while the gate chart remains the only
+// gameplay authority.
 const reviewProjectileBuilders = visualReviewCapture
   ? Array.from({ length: 16 }, (_, index) =>
-      primitives.box({
+      primitives.sphere({
         name: `pulse review ${index < 8 ? "runner lance" : "warden cutter"} packet ${index + 1}`,
-        material: index < 8 ? reviewCyan : reviewRose
+        material: index < 8 ? reviewProjectileCoreCyan : reviewProjectileCoreRose
       })
-        .position(0, 0.4, -2.2).scale([0.055, 0.055, 0.3])
+        .position(0, 0.4, -2.2).scale([0.10, 0.10, 0.10])
         .runtime(game.runtimeNode(`pulse-review-projectile-${index}`, { tags: ["finale-projectile", "renderer-owned", index < 8 ? "runner-lance" : "warden-cutter"] }))
+    )
+  : [];
+
+// Each authored packet now leaves a short, dimmer 3D wake. The wakes are
+// intentionally separate nodes so their direction and depth can be inspected
+// in the exact frame; they are not CSS trails or gameplay/collision geometry.
+const reviewProjectileTrailBuilders = visualReviewCapture
+  ? Array.from({ length: 16 }, (_, index) =>
+      primitives.capsule({
+        name: `pulse review ${index < 8 ? "runner lance" : "warden cutter"} trail ${index + 1}`,
+        material: index < 8 ? reviewTrailCyan : reviewTrailRose
+      })
+        .position(0, 0.4, -2.2).scale([0.034, 0.034, 0.28])
+        .runtime(game.runtimeNode(`pulse-review-projectile-trail-${index}`, { tags: ["finale-projectile-trail", "renderer-owned", "non-colliding"] }))
+    )
+  : [];
+
+// A small radial burst at the exchange midpoint supplies an authored impact
+// hierarchy between the two typed actors. It remains a presentation cue only;
+// shield loss, graze, and chart timing continue to come from gateSystem.
+const reviewImpactShardBuilders = visualReviewCapture
+  ? Array.from({ length: 8 }, (_, index) =>
+      primitives.sphere({
+        name: `pulse review impact shard ${index + 1}`,
+        material: index % 2 === 0 ? reviewTrailCyan : reviewTrailRose
+      })
+        .position(0.04, 0.96, -2.18).scale([0.06, 0.06, 0.06])
+        .runtime(game.runtimeNode(`pulse-review-impact-shard-${index}`, { tags: ["combat-impact", "renderer-owned", "non-colliding"] }))
+    )
+  : [];
+
+// Impact sparks are separate emissive scene nodes rather than a single bright
+// card.  Their radial placement and pulse give the frozen capture a readable
+// contact moment between the opposing streams; they remain presentation-only
+// and never feed shield, gate, or score state.
+const reviewImpactBurstBuilders = visualReviewCapture
+  ? Array.from({ length: 10 }, (_, index) =>
+      primitives.sphere({
+        name: `pulse review impact burst orb ${index + 1}`,
+        material: index % 3 === 0 ? reviewProjectileCoreRose : index % 3 === 1 ? reviewProjectileCoreCyan : reviewAmber
+      })
+        .position(0.04, 0.96, -2.18)
+        .scale([0.07, 0.07, 0.07])
+        .runtime(game.runtimeNode(`pulse-review-impact-burst-${index}`, { tags: ["combat-impact", "renderer-owned", "non-colliding"] }))
     )
   : [];
 
@@ -846,7 +1153,7 @@ const tunnelBackdrop = prefabs.neonTunnel({ rings: 8 }).filter((node) => {
 
 const app = createAuraApp("#app", {
   scene: scene()
-    .background(visualReviewCapture ? "#101b2d" : "#180b28")
+    .background(visualReviewCapture ? "#171a38" : "#180b28")
     .addMany([
       ...(visualReviewCapture ? [] : tunnelBackdrop),
       ...hueBuilders,
@@ -862,6 +1169,11 @@ const app = createAuraApp("#app", {
       ...reviewCavernButtressBuilders,
       ...reviewCavernCrownBuilders,
       ...reviewArenaWorldBuilders,
+      ...reviewStructureBuilders,
+      ...reviewArchitectureAccentBuilders,
+      ...reviewTerrainBuilders,
+      ...reviewContactBuilders,
+      ...reviewCombatAccentBuilders,
       finaleBeaconBuilder,
       finaleBossRingBuilder,
       ...finaleBossWingBuilders,
@@ -872,22 +1184,26 @@ const app = createAuraApp("#app", {
       finaleTerminalSentryBuilder,
       ...finaleProjectileBuilders,
       ...reviewProjectileBuilders,
+      ...reviewProjectileTrailBuilders,
+      ...reviewImpactShardBuilders,
+      ...reviewImpactBurstBuilders,
       ...finaleVectorBuilders,
-      effects.neonBloom({ intensity: visualReviewCapture ? 0.26 : reducedMotion ? 0.2 : 0.82, threshold: 0.74, maxIntensity: 0.72, antiBlowout: true }),
+      effects.neonBloom({ intensity: visualReviewCapture ? 0.16 : reducedMotion ? 0.2 : 0.82, threshold: visualReviewCapture ? 0.84 : 0.74, maxIntensity: visualReviewCapture ? 0.42 : 0.72, antiBlowout: true }),
       effects.fog({ name: "pulse downbeat fog pulse", density: visualReviewCapture ? 0.009 : 0.065, color: visualReviewCapture ? "#11192a" : "#241044" })
         .runtime(game.runtimeNode("pulse-fog-pulse", { tags: ["downbeat-fog"] })),
       // Review capture uses a deliberate three-plane lighting setup: neutral
       // front key on the player, warm terminal key, and a cooler crown/rim on
       // the deck and ribs. This is all renderer lighting—not an overlay—and
       // preserves the same world/material language in the playable route.
-      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c9e4ff" : "#38bdf8", intensity: visualReviewCapture ? 1.25 : 1.6 }).position(-5, 10, 6),
-      lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.85 : 0.34 }).position(4.5, 5.8, -3.6),
-      lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#50647f" : "#1e1b4b", intensity: visualReviewCapture ? 0.92 : 1.2 }),
-      lights.point({ name: "runner silhouette front key", color: "#d6edff", intensity: visualReviewCapture ? 1.7 : 0 }).position(-0.7, 1.72, 3.2),
-      lights.point({ name: "runner cyan underside bounce", color: "#48dfff", intensity: visualReviewCapture ? 1.05 : 0 }).position(-1.5, 0.42, 1.25),
-      lights.point({ name: "terminal amber detail key", color: "#ffbd72", intensity: visualReviewCapture ? 1.9 : 0 }).position(1.5, 2.0, -3.2),
-      lights.point({ name: "terminal magenta rim", color: "#ff72ac", intensity: visualReviewCapture ? 1.25 : 0 }).position(-1.2, 1.62, -4.0),
-      lights.point({ name: "deck cyan depth practical", color: "#39d9f2", intensity: visualReviewCapture ? 1.3 : 0 }).position(-2.85, 1.8, -1.85),
+      lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6 }).position(-5, 10, 6),
+      lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.72 : 0.34 }).position(4.5, 5.8, -3.6),
+      lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#5a537b" : "#1e1b4b", intensity: visualReviewCapture ? 0.72 : 1.2 }),
+      lights.point({ name: "runner silhouette front key", color: "#d6edff", intensity: visualReviewCapture ? 0.84 : 0 }).position(-0.7, 1.72, 3.2),
+      lights.point({ name: "runner cyan underside bounce", color: "#48dfff", intensity: visualReviewCapture ? 0.82 : 0 }).position(-1.5, 0.42, 1.25),
+      lights.point({ name: "terminal amber detail key", color: "#ffbd72", intensity: visualReviewCapture ? 1.28 : 0 }).position(1.5, 2.0, -3.2),
+      lights.point({ name: "terminal magenta rim", color: "#ff72ac", intensity: visualReviewCapture ? 0.94 : 0 }).position(-1.2, 1.62, -4.0),
+      lights.point({ name: "deck cyan depth practical", color: "#39d9f2", intensity: visualReviewCapture ? 0.88 : 0 }).position(-2.85, 1.8, -1.85),
+      lights.point({ name: "exchange impact key", color: "#ffb46b", intensity: visualReviewCapture ? 0.66 : 0 }).position(0.04, 1.1, -2.18),
       lights.point({ name: "cavern cyan practical", color: "#22d3ee", intensity: 1.35 }).position(-2.8, 1.1, -5),
       lights.point({ name: "cavern magenta practical", color: "#d946ef", intensity: 1.25 }).position(2.8, 1.4, -9),
       lights.point({ name: "cavern ember practical", color: "#fb7185", intensity: 1.1 }).position(0.3, 0.9, -14),
@@ -939,7 +1255,20 @@ const app = createAuraApp("#app", {
       // Typed player craft. This release-validated textured spacecraft already
       // has a readable nose-to-engine silhouette and durable CC-BY provenance;
       // route-local movement still owns every lane/jump/slide transform.
-      model(assets.pulseRunnerCraft, { name: "pulse original runner craft", targetMaxDimension: 2.408 })
+      model(assets.pulseRunnerCraft, {
+        name: "pulse original runner craft",
+        targetMaxDimension: 2.408,
+        // The authored cyan-drive group includes tiny emissive exhaust caps,
+        // while the graphite group contains the pair of cylindrical drive pods;
+        // both become high-contrast white/black blocks in safe-basic at review
+        // distance. Suppress those two named GLB groups only in the review lens;
+        // the typed hull, canopy, foils, pearl edge, and copper trim stay
+        // visible, and the review-owned low-intensity drive wakes below retain
+        // the propulsion cue without altering the gameplay vehicle or source.
+        hiddenNodeNames: visualReviewCapture
+          ? ["pulse runner cyan drive", "pulse runner graphite chassis"]
+          : undefined
+      })
         .position(0, 0.08, PULSE_PLAYER_Z)
         .rotate(0, 0, 0)
         .scale(0.8)
@@ -952,7 +1281,7 @@ const app = createAuraApp("#app", {
       ...sparkBuilders
     ])
     .camera(camera.perspective(visualReviewCapture
-      ? { position: [0.15, 2.55, 7.4], target: [0.1, 0.72, -2.55], fov: 43 }
+      ? { position: [0.10, 2.72, 6.55], target: [0.02, 0.92, -2.02], fov: 47 }
       : { position: [0, 0.72, 3.8], target: [0, 0.32, -8], fov: 56 })),
   diagnostics: false,
   autoStart: true
@@ -985,11 +1314,20 @@ const finaleArenaShell = requireHandle("pulse-finale-arena-shell");
 const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
 const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHandle("pulse-finale-projectile-" + index));
 const reviewProjectiles = reviewProjectileBuilders.map((_, index) => requireHandle(`pulse-review-projectile-${index}`));
+const reviewProjectileTrails = reviewProjectileTrailBuilders.map((_, index) => requireHandle(`pulse-review-projectile-trail-${index}`));
+const reviewImpactShards = reviewImpactShardBuilders.map((_, index) => requireHandle(`pulse-review-impact-shard-${index}`));
+const reviewImpactBursts = reviewImpactBurstBuilders.map((_, index) => requireHandle(`pulse-review-impact-burst-${index}`));
 const finaleVectors = finaleVectorBuilders.map((_, index) => requireHandle("pulse-finale-vector-" + index));
 const rainHandles = rainBuilders.map((_, index) => requireHandle("pulse-rain-" + index));
 const reviewAttackOrigin = visualReviewCapture ? requireHandle("pulse-review-attack-origin") : null;
 const reviewImpactPlane = visualReviewCapture ? requireHandle("pulse-review-impact-plane") : null;
+const reviewRunnerContact = visualReviewCapture ? requireHandle("pulse-review-runner-contact") : null;
+const reviewSentryContact = visualReviewCapture ? requireHandle("pulse-review-sentry-contact") : null;
+const reviewImpactOuter = visualReviewCapture ? requireHandle("pulse-review-impact-outer") : null;
+const reviewImpactInner = visualReviewCapture ? requireHandle("pulse-review-impact-inner") : null;
+const reviewImpactCore = visualReviewCapture ? requireHandle("pulse-review-impact-core") : null;
 const reviewGantries: RuntimeNodeHandleLike[] = [];
+if (visualReviewCapture) (shipGlow as PulseNodeHandle).setMaterial(reviewRunnerGlowMaterial);
 // Preserve each typed asset's authored material separation in review capture.
 // Replacing all sub-materials with one finish collapsed the runner/sentry into
 // high-contrast slabs, hiding the primary silhouettes that the exact frame must
@@ -1007,10 +1345,18 @@ finaleArenaShell.setVisible(false);
 finaleTerminalSentry.setVisible(false);
 for (const projectile of finaleProjectiles) projectile.setVisible(false);
 for (const projectile of reviewProjectiles) projectile.setVisible(false);
+for (const trail of reviewProjectileTrails) trail.setVisible(false);
+for (const shard of reviewImpactShards) shard.setVisible(false);
+for (const burst of reviewImpactBursts) burst.setVisible(false);
 for (const vector of finaleVectors) vector.setVisible(false);
 for (const rain of rainHandles) rain.setVisible(false);
 reviewAttackOrigin?.setVisible(false);
 reviewImpactPlane?.setVisible(false);
+reviewRunnerContact?.setVisible(false);
+reviewSentryContact?.setVisible(false);
+reviewImpactOuter?.setVisible(false);
+reviewImpactInner?.setVisible(false);
+reviewImpactCore?.setVisible(false);
 for (const gantry of reviewGantries) gantry.setVisible(false);
 
 const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
@@ -1166,7 +1512,7 @@ function applySection(sectionId: PulseSectionId, announce: boolean): void {
   if (!evidence.sectionsVisited.includes(sectionId)) evidence.sectionsVisited.push(sectionId);
   tunnelAudio.applySection(sectionId);
   for (const id of Object.keys(hueHandles) as PulseSectionId[]) {
-    const active = id === sectionId;
+    const active = !visualReviewCapture && id === sectionId;
     for (const handle of hueHandles[id]) handle.setVisible(active);
   }
   if (announce) void tunnelAudio.sfx("sectionRise");
@@ -1369,15 +1715,15 @@ function renderWorld(dt: number): void {
   // silhouette is the player-side anchor for the terminal exchange; only its
   // route-local transform changes, never the player collider or controls.
   const craftScale = visualReviewCapture
-    ? [0.52, playerState.sliding ? 0.34 : 0.52, 0.52] as const
+    ? [1.16, playerState.sliding ? 0.74 : 1.16, 1.16] as const
     : playerState.sliding ? [0.76, 0.54, 0.76] as const : [0.8, 0.8, 0.8] as const;
-  const reviewPlayerX = visualReviewCapture ? playerState.x - 1.55 : playerState.x;
-  const reviewPlayerZ = visualReviewCapture ? 0.24 : PULSE_PLAYER_Z;
-  shipBody.setPosition(reviewPlayerX, playerState.y + 0.16, reviewPlayerZ)
+  const reviewPlayerX = visualReviewCapture ? playerState.x - 1.38 : playerState.x;
+  const reviewPlayerZ = visualReviewCapture ? 0.42 : PULSE_PLAYER_Z;
+  shipBody.setPosition(reviewPlayerX, playerState.y + 0.34, reviewPlayerZ)
     .setScale(craftScale)
     .setRotation(0, visualReviewCapture ? 0.12 : 0, laneBank);
-  shipGlow.setPosition(reviewPlayerX, playerState.y + 0.28, reviewPlayerZ + 0.34)
-    .setScale(visualReviewCapture ? [0.2, 0.2, 0.2] : [0.34, 0.34, 0.34]);
+  shipGlow.setPosition(reviewPlayerX, playerState.y + 0.44, reviewPlayerZ + 0.34)
+    .setScale(visualReviewCapture ? [0.14, 0.14, 0.14] : [0.34, 0.34, 0.34]);
   const blinking = playerState.invulnRemaining > 0 && Math.floor(performance.now() / 100) % 2 === 0;
   shipBody.setVisible(!blinking);
   shipGlow.setVisible(!blinking);
@@ -1402,6 +1748,10 @@ function renderWorld(dt: number): void {
   // release world remains the live/default-route enclosure, but showing both
   // worlds at once duplicated its oversized impact anchor and produced the
   // opaque white card in the comparison frame.
+  // The registered reactor world remains the live-route enclosure. Its
+  // embedded impact anchor is intentionally hidden in the review lens;
+  // the lens uses a dedicated encounter stage below so that anchor cannot
+  // rasterize as an opaque card over the typed runner.
   finaleArenaShell.setVisible(finaleActive && !visualReviewCapture);
   finaleTerminalSentry.setVisible(finaleActive);
   // Continuous line bars from the previous composition are intentionally
@@ -1419,15 +1769,57 @@ function renderWorld(dt: number): void {
   // torso, so it is intentionally retired instead of obscuring the target.
   reviewAttackOrigin?.setVisible(false);
   reviewImpactPlane?.setVisible(finaleActive);
+  reviewRunnerContact?.setVisible(finaleActive);
+  reviewSentryContact?.setVisible(finaleActive);
+  reviewImpactOuter?.setVisible(finaleActive);
+  reviewImpactInner?.setVisible(finaleActive);
+  reviewImpactCore?.setVisible(finaleActive);
+  for (const trail of reviewProjectileTrails) trail.setVisible(finaleActive);
+  for (const shard of reviewImpactShards) shard.setVisible(finaleActive);
+  for (const burst of reviewImpactBursts) burst.setVisible(finaleActive);
   for (const gantry of reviewGantries) gantry.setVisible(finaleActive);
   if (finaleActive) {
-    const pulse = performance.now() / 1000;
+    // Review captures pause on a deterministic scheduler time. Using the
+    // scheduler here keeps the final actor/impact pose stable across clean
+    // contexts while live mode retains its continuous motion clock.
+    const pulse = visualReviewCapture ? evidence.runSeconds : performance.now() / 1000;
+    reviewRunnerContact?.setPosition(reviewPlayerX, 0.035, reviewPlayerZ)
+      .setScale([1.44, 0.028, 0.68]);
+    reviewSentryContact?.setPosition(1.38, 0.035, -3.72)
+      .setScale([1.60, 0.035, 0.82]);
+    const impactX = 0.04;
+    const impactY = 0.96;
+    const impactZ = -2.18;
+    const impactPulse = 1 + (Math.sin(pulse * 4.2) * 0.5 + 0.5) * 0.14;
+    reviewImpactOuter?.setPosition(impactX, impactY, impactZ).setScale([0.44 * impactPulse, 0.44 * impactPulse, 0.052]);
+    reviewImpactInner?.setPosition(impactX, impactY, impactZ).setScale([0.22 * impactPulse, 0.22 * impactPulse, 0.064]);
+    reviewImpactCore?.setPosition(impactX, impactY, impactZ).setScale([0.13 * impactPulse, 0.13 * impactPulse, 0.13]);
+    reviewImpactShards.forEach((shard, index) => {
+      const angle = index / reviewImpactShards.length * Math.PI * 2 + pulse * 0.42;
+      const radius = (0.24 + (index % 2) * 0.07) * impactPulse;
+      shard.setPosition(
+        impactX + Math.cos(angle) * radius,
+        impactY + Math.sin(angle) * radius * 0.72,
+        impactZ + Math.sin(angle * 1.7) * 0.05
+      )
+        .setScale([0.06 * impactPulse, 0.06 * impactPulse, 0.06 * impactPulse]);
+    });
+    reviewImpactBursts.forEach((burst, index) => {
+      const angle = index / reviewImpactBursts.length * Math.PI * 2 + pulse * 0.56;
+      const radius = (0.34 + (index % 3) * 0.08) * impactPulse;
+      const yRadius = 0.22 + (index % 2) * 0.08;
+      burst.setPosition(
+        impactX + Math.cos(angle) * radius,
+        impactY + Math.sin(angle) * yRadius * impactPulse,
+        impactZ + Math.sin(angle * 1.9) * 0.12
+      ).setScale([0.052 + (index % 2) * 0.018, 0.052 + (index % 2) * 0.018, 0.052 + (index % 2) * 0.018]);
+    });
     finaleBeacon.setRotation(0, 0, pulse * 0.75);
     finaleBossRing.setRotation(0, 0, pulse * -0.32);
     finaleTerminalSentry
-      .setPosition(visualReviewCapture ? 1.55 : 0, (visualReviewCapture ? 0.12 : 0.08) + Math.sin(pulse * 1.7) * 0.024, visualReviewCapture ? -4.42 : -5.16)
+      .setPosition(visualReviewCapture ? 1.38 : 0, (visualReviewCapture ? 0.22 : 0.08) + Math.sin(pulse * 1.7) * 0.024, visualReviewCapture ? -3.72 : -5.16)
       .setRotation(0, Math.PI + 0.18 + Math.sin(pulse * 1.1) * 0.025, 0)
-      .setScale(visualReviewCapture ? [1.12, 1.12, 1.12] : [0.86, 0.86, 0.86]);
+      .setScale(visualReviewCapture ? [1.46, 1.46, 1.46] : [0.86, 0.86, 0.86]);
     const arenaPulse = 1 + (Math.sin(pulse * 3.2) * 0.5 + 0.5) * 0.08;
     reviewAttackOrigin?.setScale([0.92 * arenaPulse, 0.92 * arenaPulse, 0.055]);
     reviewImpactPlane?.setScale([0.72 + (arenaPulse - 1) * 0.8, 0.72 + (arenaPulse - 1) * 0.8, 0.045]);
@@ -1459,25 +1851,41 @@ function renderWorld(dt: number): void {
         const localIndex = outgoing ? index : index - 8;
         const column = localIndex % 4 - 1.5;
         const row = Math.floor(localIndex / 4);
+        // Keep the two streams on distinct depth bands: the runner's cyan
+        // lances lead the exchange, while the warden's rose cutters return
+        // from farther back. This prevents the packets from collapsing into
+        // one noisy central pile at screenshot scale.
         const progress = outgoing
-          ? 0.18 + (localIndex % 4) * 0.19 + row * 0.07
-          : 0.16 + (localIndex % 4) * 0.18 + row * 0.08;
-        const sourceZ = outgoing ? reviewPlayerZ - 0.32 : -4.56;
-        const targetZ = outgoing ? -4.28 : 0.2;
-        const sourceX = outgoing ? reviewPlayerX + column * 0.12 : 1.55 + column * 0.08;
-        const targetX = outgoing ? 1.55 + column * 0.09 : reviewPlayerX + column * 0.14;
+          ? 0.08 + (localIndex % 4) * 0.18 + row * 0.10
+          : 0.22 + (localIndex % 4) * 0.18 + row * 0.10;
+        const sourceZ = outgoing ? reviewPlayerZ - 0.32 : -3.84;
+        const targetZ = outgoing ? -3.56 : reviewPlayerZ;
+        const sourceX = outgoing ? reviewPlayerX + column * 0.20 : 1.38 + column * 0.18;
+        const targetX = outgoing ? 1.38 + column * 0.20 : reviewPlayerX + column * 0.22;
         const x = sourceX + (targetX - sourceX) * progress;
         const z = sourceZ + (targetZ - sourceZ) * progress;
         const y = outgoing
-          ? 0.46 + row * 0.18 + progress * 0.72 + column * 0.025
-          : 1.2 + row * 0.24 - progress * 0.46 + column * 0.03;
+          ? 0.46 + row * 0.24 + progress * 0.72 + column * 0.055
+          : 1.2 + row * 0.28 - progress * 0.46 + column * 0.065;
         projectile.setVisible(true)
           .setPosition(x, y, z)
-          .setScale(outgoing ? [0.038, 0.038, 0.3] : [0.046, 0.046, 0.34])
-          .setRotation(0.12, outgoing ? -0.22 : 0.22, outgoing ? 0.16 : -0.16);
+          .setScale(outgoing ? [0.115, 0.115, 0.115] : [0.12, 0.12, 0.12]);
+        const trailProgress = Math.max(0.02, progress - (outgoing ? 0.14 : 0.16));
+        const trailX = sourceX + (targetX - sourceX) * trailProgress;
+        const trailZ = sourceZ + (targetZ - sourceZ) * trailProgress;
+        const trailY = outgoing
+          ? 0.46 + row * 0.24 + trailProgress * 0.72 + column * 0.055
+          : 1.2 + row * 0.28 - trailProgress * 0.46 + column * 0.065;
+        reviewProjectileTrails[index].setVisible(true)
+          .setPosition(trailX, trailY, trailZ)
+          .setScale(outgoing ? [0.022, 0.022, 0.19] : [0.026, 0.026, 0.21])
+          .setRotation(Math.PI / 2, outgoing ? -0.16 : 0.16, outgoing ? 0.08 : -0.08);
       });
     } else {
       for (const projectile of reviewProjectiles) projectile.setVisible(false);
+      for (const trail of reviewProjectileTrails) trail.setVisible(false);
+      for (const shard of reviewImpactShards) shard.setVisible(false);
+      for (const burst of reviewImpactBursts) burst.setVisible(false);
     }
     rainHandles.forEach((rain, index) => {
       const column = index % 10;
@@ -1493,6 +1901,14 @@ function renderWorld(dt: number): void {
     for (const rain of rainHandles) rain.setVisible(false);
     reviewAttackOrigin?.setVisible(false);
     reviewImpactPlane?.setVisible(false);
+    reviewRunnerContact?.setVisible(false);
+    reviewSentryContact?.setVisible(false);
+    reviewImpactOuter?.setVisible(false);
+    reviewImpactInner?.setVisible(false);
+    reviewImpactCore?.setVisible(false);
+    for (const trail of reviewProjectileTrails) trail.setVisible(false);
+    for (const shard of reviewImpactShards) shard.setVisible(false);
+    for (const burst of reviewImpactBursts) burst.setVisible(false);
     for (const gantry of reviewGantries) gantry.setVisible(false);
   }
 
@@ -1665,6 +2081,7 @@ function publish(styleSnapshot?: ReturnType<typeof styleSystem.step>): void {
     score: snapshot.score,
     distanceMeters: snapshot.distance * 10,
     sectionId: lastSection,
+    combatState: combatHudState(),
     state: runState,
     message: hudMessage(),
     debug: debugHud,
@@ -1693,6 +2110,22 @@ function hudMessage(): string {
     default:
       return "";
   }
+}
+
+/**
+ * The review HUD's second mission line is a compact, truthful state cue. It is
+ * derived only from the same section/run state that drives the chart and outcome
+ * evidence; it does not invent projectile hits or expose a cosmetic timer.
+ */
+function combatHudState(): string {
+  if (runState === "summary") {
+    return evidence.finishedReason === "shields-exhausted"
+      ? "SENTINEL // SHIELDS LOST"
+      : "SENTINEL // BREACHED";
+  }
+  if (runState === "paused") return "EXCHANGE // PAUSED";
+  if (lastSection === "finale") return "EXCHANGE // LIVE FIRE";
+  return "APPROACH // NEXT GATE";
 }
 
 applySection("intro", false);

@@ -24,7 +24,22 @@ body[data-capture="review"] .shell {
 }
 body[data-capture="review"] .stage { border-radius: 0; }
 body[data-capture="review"] #panel,
-body[data-capture="review"] #hud { opacity: 0; pointer-events: none; }
+body[data-capture="review"] #panel { opacity: 0; pointer-events: none; }
+/* Keep a restrained, integrated mission read in the exact frame. The panel
+ * remains hidden so the museum still owns the canvas, while the banner and
+ * detection meter communicate the live heist state alongside the world labels. */
+body[data-capture="review"] #hud { opacity: 1; pointer-events: none; }
+body[data-capture="review"] .hall-banner {
+  top: 18px; left: 24px; transform: none; padding: 8px 13px;
+  background: rgba(5, 11, 21, 0.82); border-color: rgba(126, 248, 255, 0.38);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24); font-size: 11px;
+}
+body[data-capture="review"] .detection-wrap {
+  top: 18px; right: 24px; width: 224px; padding: 9px 11px;
+  background: rgba(5, 11, 21, 0.84); border-color: rgba(255, 177, 77, 0.34);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
 .viewport { position: relative; min-width: 0; min-height: 0; }
 .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #04060b; }
 #app canvas { display: block; width: 100%; height: 100%; }

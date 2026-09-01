@@ -122,7 +122,7 @@ test("real keyboard aim, charge, release, authored flight, score, pause, and res
   expect(boot.physicsBodyCount).toBe(0);
   expect(boot.simulationOwner).toContain("authored deterministic ballistic integrator");
   expect(boot.primaryAssets).toEqual([
-    "assets.rooftopCourt", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"
+    "assets.rooftopCourt", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender"
   ]);
   expect(Object.keys(boot.systems).sort()).toEqual(["audio", "contest", "flight", "presentation", "scoring"]);
   expect(boot.predictionPointCount).toBe(25);

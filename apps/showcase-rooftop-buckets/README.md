@@ -20,11 +20,11 @@ All primary subjects are provenance-bound typed assets registered through the Au
 - `assets.rooftopBackboard`: metre-scale backboard aligned with the composed board region.
 - `assets.rooftopRim`: 0.48 metre readable hoop aligned with the composed rim/scoring regions.
 - `assets.rooftopBall`: unit-normalized basketball scaled by the route to a 0.24 metre diameter.
-- `assets.rooftopLayupScorer`: CC-BY-4.0 textured humanoid derivative of the retained Sketchfab Man Player source. It carries one 191-joint skin and four route-authored clips (`Ready`, `Load`, `Release`, `FollowThrough`); root translation and the separately typed ball still belong to the route.
-- `assets.rooftopDefender`: CC-BY-4.0 textured humanoid derivative of the same retained source with a distinct crimson team material family. It carries one 191-joint skin and four route-authored clips (`Plant`, `Telegraph`, `Jump`, `Contest`); telegraph timing, root placement, and the composed block region remain route-local.
+- `assets.rooftopAthleteShooter`: CC-BY-4.0 textured static shooter derivative of the retained Sketchfab Basketball Player source by 3DDomino. The source ball hierarchy is removed, the continuous raised-ball release pose and packed materials are preserved, and the route owns the typed gameplay ball plus all pose/state staging.
+- `assets.rooftopAthleteDefender`: CC-BY-4.0 textured static contest derivative of the same retained source by 3DDomino. The source ball hierarchy is removed and the arms are opened into an asymmetric contest silhouette with a blue/gold team recolor; it is one licensed source identity adapted into a second route visual variant, not a reusable animation kit.
 - Ten `assets.rooftopBuckets*Sfx` members: deterministic seeded/oscillator CC0 ambience, charge, contact, make/miss, fire, heat, gold, and buzzer cues.
 
-The manifest retains durable source/download URLs, license, author, hash, role, suitability, orientation, and current hash-bound root-renderer probes for all six models. Audio is candidate-quality and is validated separately because model release-bounds checks do not apply to WAV files.
+The manifest retains durable source/download URLs, license, author, hash, role, suitability, orientation, and current hash-bound root-renderer probes for all six models. The two athlete derivatives intentionally have no embedded skins or animation clips: route-local state names (`Ready`, `Load`, `Release`, `FollowThrough`, `Telegraph`, and `Contest`) describe deterministic placement, compression, and contest staging only. Audio is candidate-quality and is validated separately because model release-bounds checks do not apply to WAV files.
 
 ## Evidence boundary
 

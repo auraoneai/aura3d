@@ -15,7 +15,7 @@ const assetIds = [
   "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"
 ];
 const initialPrimaryAssets = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
-const visualPrimaryAssetIds = ["showcaseExpressiveRobot"];
+const visualPrimaryAssetIds = ["robotcand"];
 const audioIds = [
   "mechServoCycleSfx", "mechLockInSfx", "mechWalkHeavySfx", "mechLightHitSfx", "mechHeavyHitSfx",
   "mechGuardBlockSfx", "mechGuardBreakSfx", "mechSpecialFireSfx", "mechKoStingSfx", "mechAmbientHangarSfx"

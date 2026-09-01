@@ -101,6 +101,7 @@ async function canvasData(page: Page): Promise<string> {
 
 function glbJson(path: string): {
   readonly nodes?: readonly { readonly name?: string }[];
+  readonly meshes?: readonly unknown[];
   readonly animations?: readonly { readonly name?: string; readonly channels?: readonly unknown[] }[];
   readonly skins?: readonly { readonly joints?: readonly unknown[] }[];
   readonly asset?: { readonly extras?: { readonly aura3d?: { readonly authoredClips?: readonly string[]; readonly role?: string } } };
@@ -111,26 +112,30 @@ function glbJson(path: string): {
   return JSON.parse(buffer.subarray(20, 20 + jsonLength).toString("utf8"));
 }
 
-test("production athlete GLBs preserve textured humanoid skins, authored clips, and no embedded basketball", () => {
-  const shooterPath = "apps/showcase-rooftop-buckets/assets/models/rooftopLayupScorer.glb";
-  const defenderPath = "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb";
+test("production athlete GLBs preserve continuous textured poses, attribution, and no embedded basketball", () => {
+  const shooterPath = "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteShooter.glb";
+  const defenderPath = "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteDefender.glb";
   const shooter = glbJson(shooterPath);
   const defender = glbJson(defenderPath);
-  expect(sha256(shooterPath)).toBe("03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a");
-  expect(sha256(defenderPath)).toBe("6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b");
-  expect(shooter.skins).toHaveLength(1);
-  expect(defender.skins).toHaveLength(1);
-  expect(shooter.skins?.[0]?.joints?.length ?? 0).toBeGreaterThanOrEqual(100);
-  expect(defender.skins?.[0]?.joints?.length ?? 0).toBeGreaterThanOrEqual(100);
-  expect(shooter.animations?.map((clip) => clip.name)).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
-  expect(defender.animations?.map((clip) => clip.name)).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
-  expect(shooter.asset?.extras?.aura3d).toMatchObject({ role: "shooter", authoredClips: ["Ready", "Load", "Release", "FollowThrough"] });
-  expect(defender.asset?.extras?.aura3d).toMatchObject({ role: "defender", authoredClips: ["Plant", "Telegraph", "Jump", "Contest"] });
+  expect(sha256(shooterPath)).toBe("49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3");
+  expect(sha256(defenderPath)).toBe("c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8");
+  expect(shooter.skins ?? []).toHaveLength(0);
+  expect(defender.skins ?? []).toHaveLength(0);
+  expect(shooter.animations ?? []).toHaveLength(0);
+  expect(defender.animations ?? []).toHaveLength(0);
+  expect(shooter.asset?.extras?.aura3d).toBeUndefined();
+  expect(defender.asset?.extras?.aura3d).toBeUndefined();
+  expect(shooter.meshes?.length ?? 0).toBeGreaterThanOrEqual(8);
+  expect(defender.meshes?.length ?? 0).toBeGreaterThanOrEqual(8);
   for (const athlete of [shooter, defender]) {
     const names = athlete.nodes?.map((node) => node.name ?? "") ?? [];
-    expect(names.length).toBeGreaterThanOrEqual(200);
+    // The acquired derivatives preserve the source mesh/material family but
+    // intentionally collapse the source node hierarchy to nine renderable
+    // meshes. The old 191-joint hierarchy assertion belonged to the rejected
+    // skinned route-local derivatives and must not be carried forward.
+    expect(names.length).toBeGreaterThanOrEqual(9);
     expect(names.some((name) => /basketball/i.test(name))).toBe(false);
-    expect(athlete.animations?.every((clip) => (clip.channels?.length ?? 0) > 0)).toBe(true);
+    expect(athlete.animations ?? []).toHaveLength(0);
   }
 });
 
@@ -147,8 +152,8 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     expect(opening.state).toBe("playing");
     expect(opening.predictionPointCount).toBe(25);
     expect(opening.primaryAssets).toHaveLength(6);
-    expect(opening.primaryAssets).toContain("assets.rooftopLayupScorer");
-    expect(opening.primaryAssets).toContain("assets.rooftopDefender");
+    expect(opening.primaryAssets).toContain("assets.rooftopAthleteShooter");
+    expect(opening.primaryAssets).toContain("assets.rooftopAthleteDefender");
     expect(opening.renderer.drawCalls).toBeGreaterThan(0);
     const initialCanvas = await canvasData(page);
     expect(initialCanvas.length).toBeGreaterThan(4_000);
@@ -182,8 +187,8 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     expect(activeShot.shooterBodyCompression).toBe(0);
     expect(activeShot.contestReactionActive).toBe(true);
     expect(activeShot.defenderReach).toBeGreaterThan(0.24);
-    expect(activeShot.shooterClips).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
-    expect(activeShot.defenderClips).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
+    expect(activeShot.shooterClips).toEqual(["StaticReleasePose"]);
+    expect(activeShot.defenderClips).toEqual(["StaticContestPose"]);
     await capture(page, "release-desktop.png");
     expect(await canvasData(page)).not.toBe(initialCanvas);
 

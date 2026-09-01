@@ -1,5 +1,189 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## Coordinator receipt — 2026-09-01T22:10Z
+
+This receipt records the current execution state after the latest parallel
+passes. It is deliberately not a completion claim. The strict visual gate is
+still **11 accepted / 6 unresolved**; a machine-green route remains held until
+its current exact artifact wins an independent label-hidden comparison.
+
+Parallel lanes completed or refreshed in this pass:
+
+- **Turbo Drift Circuit:** the route-primary producer now stages a real held
+  W+D+Space drift instead of allowing the common settle hook to erase the
+  action. The fresh producer passed (`pass: true`, readability `84`, renderer
+  draw calls `132`) and wrote
+  `tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png`
+  with SHA-256
+  `dedcccacbe2a3da980ee6e77292d28418f93af53b0b6291567a85628d87f1a1a`.
+  Focused gameplay/type checks are green. The bounded follow-up adds a typed
+  hairpin venue set-dressing branch, warmer varied asphalt/kerbs, a wider road
+  ribbon, denser typed trees, and raised drift smoke. Fresh route-primary is
+  still machine-green (draw calls `224`, readability `84`) with screenshot SHA
+  `2b17a0d42b092de3c187f21bcb70754fb5453991f4a6c6d37fe67f23a7833285` and
+  source SHA
+  `sha256-76d42262d52e7b7e98453c2ce55a8628c3fd3e672a846164072b6b5650fb482b`.
+  Existing signage/timing gates still fail, and the blind visual review is
+  pending; do not promote it.
+- **Gravity Post:** the final bounded lane keeps the canonical playable producer
+  green (`gravity-post-playable.spec.ts` 7/7 and scene 1/1) and retains the
+  typed freight-district asset on the normal planning board, but omits that
+  compact GLB from the review composition so the procedural freightway is the
+  visible route. The review courier is enlarged to `0.68`, receives a
+  renderer-only corridor pose, visible streak/plume/contact wakes, an elevated
+  deck contact shadow, brighter blue-hour/key/warm lighting, and staggered
+  logistics towers. The source-current route-primary producer is green with an
+  unclipped `221x214` subject and `475` color buckets; route-primary PNG SHA is
+  `b23954114ecdcbc601b8c702c503aa7f4b04559ce5952fd7bc1a3424fb34bf87`, JSON
+  SHA is `0e3c0465de7c2ba66bac6279cbe3d7548e3c6620c60deb742f4de727680597c7`,
+  main source SHA is
+  `6463e28b4f0481cc96ff7c04e119f2dfb5b82d87668604680209a97620a67878`,
+  freightway source SHA is
+  `bac667123f78864732eb1912fa408ddfbf5930daf724cf32fd230f7de5dea751`, and
+  producer SHA is
+  `6f71545dd9d16e50403ca4dd66454d15bb8089b2e6d68434748ab4824a55eff3`.
+  A fresh independent blind critic still returned **reference**: there is no
+  readable driver identity, the courier remains low-poly, freight geometry is
+  flat, tire/contact and momentum are weak, the framing reads overhead/debug,
+  and the HUD is mid-route rather than integrated with the delivery moment.
+  Gravity remains held; this is the final bounded attempt for this lane.
+- **Mech Hangar:** the default presentation now uses the attributed, textured
+  CC-BY Robotcand shell (`assets.robotcand`, manifest SHA
+  `sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516`)
+  rather than the old black/white slab presentation. The typed weapon remains a
+  real hardpoint and was reduced/fitted to the wrist (`targetMaxDimension: 0.68`).
+  Typecheck plus build/arena tests pass (`5/5`), and the latest local default
+  and arena captures are readable (`hangar-default` SHA
+  `d0312b6e8454308960404b426cd93b97e69ce21d10d6d70870db7f69dcc65247`,
+  `hangar-swap` SHA
+  `fee5d2bfd3f9ec8ae4d391276cbac8573e3eb6467484a9293c50322b4910fa87`,
+  `arena-opening` SHA
+  `989f09732a035d834466f21c4e94cab0742d6f17e3a1dcc5d0d047f55c844c34`).
+  The latest bounded source pass adds cyan/coral team floor rings, compact
+  chest identity diamonds, per-weapon muzzle rings, and renderer-owned impact
+  pulse rings. Fresh hangar/arena/hit captures are respectively
+  `5577ba0760c98a997606ab2906475e935c616c3087405fbf85e6f33bfc08d151`,
+  `56c4ca02c38d92e9bcee5a83109551dcd3d18a6c1c72fc854c835b1b89ff4fee`, and
+  `eafcadd88216fdb6a362b772902e71513d18953ca4d45500444fb1ed119c7a58`;
+  source SHAs are main
+  `ca9fb56206ba6df03109d3affe8809bf224300288a0899e3363b5426628558c7`,
+  assembly `170838eb5d99e2892832041a599ca2302456687e67dab9c8cbf93f45ede63339`,
+  and feel `df5141bd7925c7f1c6b54c325b7e6c35f6b4e472051aa5d77872948a706dab94`.
+  A fresh label-hidden critic still returned **reference** (BallisticNG, with
+  the cross-genre comparison caveat): the shell is readable/grounded, but the
+  rods/cables/white armor are noisy, the MH-2M passport conflicts with the
+  visible Robotcand body, the weapon contact remains ambiguous, and player vs
+  rival identity is mostly floor-ring color. The arena hit disk obscures the
+  fighters and does not establish muzzle-to-contact-to-damage causality; the
+  wall/beams and overexposed center remain flat. Mech stays unresolved.
+  The route-primary gate now names `robotcand` as the hero and `mechWeaponA`
+  as the attached secondary; the fresh source-bound probe is still red on
+  generic foreground occupancy (`foreground width 61`, `1784` pixels), so
+  that evidence is not promoted. A fresh label-hidden critic returned
+  **reference**: the shell is coherent, but the weapon reads detached, the
+  player/rival are visually identical, the arena action/contact cause-effect
+  is weak, and the modular identity is not visible. This does **not** close
+  Mech: Robotcand is a whole-body shell, not the required coherent modular
+  family, and the default, swap, and arena states still need the authoritative
+  modular/material/assembly gate and fresh independent reviews.
+- **Rooftop Buckets:** acquired typed static athletes and the corrected court
+  orientation are in the route; the release/playable/probe producers are green.
+  The second bounded pass adds warm court materials, arched window portals,
+  scorer display, and brighter rim/flight target lighting. Fresh route-primary
+  SHA is `45a3f1ab3432dd911a5290e475f44700bc10c22aaecb8f653ca999f91f64b96c`,
+  release SHA `737e9bf13460a71ece1bf6d5e3aa0b060d5fc670a7944e36384fbcd9515d9061`,
+  main source SHA
+  `daed7a9037ec6210315454e13ccb3bdb8241561195b060df20c98dd20ef34592`, and
+  environment SHA
+  `4f7f604043efbdbe044342c73bb044243a67398ddbe7cd54888a92af23730cac`.
+  A fresh blind critic still returned **reference**: the venue remains a dark
+  purple/teal bleacher blockout, the typed athletes are small/partly cropped,
+  the hoop/ball contact has no convincing net or impact response, and the HUD
+  is detached from the action. Keep Rooftop held.
+- **Gallery Shift:** the fresh route-primary producer passes with the closer
+  museum composition (PNG SHA
+  `b7fed216a85cc84e8c69e5e826e10e01fb3e6a88012755cfd892dde518f0ac3b`), but the
+  fresh blind critic still returned **reference** for world/actor detail,
+  lighting, and action staging. The enlarged typed actors and stronger LOS
+  wedge are retained as the next review baseline.
+- **Pulse Tunnel:** the current exact finale artifact
+  `tests/reports/pulse-tunnel/playable-finale.png` has SHA-256
+  `54ab0bcbec46aa3a150753a66a2dfd60c32a75242c35e674cca18dce5154bff9` and is
+  bound to the current route source SHA
+  `be2779186a50b3aaea408b96bfdff0ddb69f776c9b6f7f8535d0a9a644bd6142`.
+  The bounded pass adds warmer fractured terrain plates, separated typed
+  craft/sentry framing, bright orb exchange, shorter wakes, and radial contact
+  bursts while leaving gameplay authority untouched. The fresh blind critic
+  still returned **reference**: the arena remains dark/flat with floating rails,
+  thin silhouettes, sparse static-looking packets, weak recoil/terrain reaction,
+  and a HUD disconnected from action.
+
+- **Product Configurator:** the fresh route-primary frame now shows the typed
+  copper headphone hero on a dark studio floor/plinth with contact context. A
+  blind critic returned **ours** over the retained floating-black frame, while
+  noting that the floor/plinth are still simple and nearly black. The build
+  row remains `visualReview: needs-work` until its independent human review is
+  recorded.
+
+- **Smart City Control:** the latest source-bound route-primary pass is green
+  (`readability 69`, `7,452` subject pixels, no clipping/UI occlusion) with
+  source SHA `sha256-c65023e4da66bdc6a870a3dbad15631646fb8e8221d9a8d7f86bdb059e9993e9`
+  and screenshot SHA
+  `sha256-b5afb8faceebbcedbdf820bc1f1a54f1a427e212e05444f905f8fb25f9e0a780`.
+  The bounded pass adds a layered skyline, varied roof caps/antennae, 54
+  practical windows, lane accents, an elevated transit spine, green corridor
+  dressing, and typed-vehicle contact. The fresh blind critic still returned
+  **reference**: the city remains a sparse mid-rise blockout with flat dark
+  facades, limited road/vehicle interaction, and weak city-scale depth versus
+  the dense typed skyline comparator. It is not promoted from
+  `visualReview: needs-work`.
+
+- **Digital Twin Ops:** the operations-bay pass adds bounds-derived wall/rail,
+  overhead worklights, floor inlays, a larger plinth, and a closer teal/amber
+  camera. The second bounded pass enlarges the typed workcell, adds a
+  bounds-derived gantry/trolley/pendant, a physical conveyor with guide rails
+  and rollers, stronger metallic lighting, and an integrated Cell Context/OEE
+  telemetry panel. Fresh route-primary is green (`418` WebGL2 draws,
+  foreground `936x672`, readability `100`) with PNG SHA
+  `23e00bc5202fe84d5744b2db7dd8bf452973675d0ead5caf9bb9bfc52c6349d7` and
+  main source SHA
+  `ecec80ea44734712fb97bf9cfcf5edc421e01d35e80a87e50f78e242e598fdf3`.
+  The overview capture SHA is
+  `5c3afc21dab5c4f03e7adece84ec14a2c1df5322a67e385e1f1d3453d80991a1`;
+  the fresh blind critic still returned **reference**: the workcell remains a
+  small enclosed cell on a raised slab, rails/equipment are gray and flat,
+  the robot/conveyor/gantry are partly occluded, and telemetry remains mostly
+  UI-only versus the reference's dense multi-lane factory context. Keep the
+  route held.
+
+- **Cinematic Architecture:** the bounded pass deepens the blue architectural
+  field, removes named cloud meshes that occluded the typed skyline, scales the
+  city hero, and repairs the shell/panel typography. The fresh route-primary
+  producer is green; screenshot SHA
+  `da31b1bd12771c43fbfc4d0e05cae354688c4e6593a91b135110ed83ebed9473` with
+  main source SHA `eb78bbc2b83c4107726c6825c0e1ea1d93884be459c6eb5f544371710a410d2c`
+  and CSS source SHA
+  `b6beb9fe8833e5adba59894f4671c3d0ac6f61eba6499e51e7190e39ca4b3245`.
+  A fresh blind critic still returned **reference**: the city is a clear but
+  small low-detail diorama in the lower middle, leaving a large empty dark
+  upper field; architecture/roads/props lack vertical layering and contact
+  depth, and the HUD copy overstates visible rendering finish. It is not
+  promoted yet.
+
+The four non-game build-and-check rows that currently report
+`visualReview: needs-work` (Product Configurator, Smart City Control,
+Cinematic Architecture, and Digital Twin Ops) remain separate release
+blockers. Product Configurator's fresh blind review now returns **ours** over
+its retained floating-black frame, while Smart City, Digital Twin, and
+Cinematic Architecture remain **reference** after fresh blind review. No
+generated report is hand-authored by this receipt.
+
+The next required actions are: finish the active parallel source passes,
+regenerate their named producers, run independent blind reviews on any new
+artifacts, run focused and release gates, then update this receipt with the
+actual hashes and remaining holds before any commit/push/deploy. Do not turn a
+reference or insufficient-evidence result into `ours`.
+
 You are the senior Aura3D engineer, technical artist, gameplay engineer, and
 evidence reviewer responsible for finishing the repository's premium-indie
 visual gauntlet. Work in `/Users/gurbakshchahal/platforms/aura3d`.

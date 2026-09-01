@@ -215,6 +215,30 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
     appendBox(windows, point(progress - 0.04, lateral + (lateral === 0 ? 0.01 : Math.sign(lateral) * -0.2), input.playPlaneY + height * 0.7), [0.16, 0.1, 0.026], tangent, cross);
   }
 
+  // A small set of offset logistics towers gives the corridor an actual
+  // freight-city skyline instead of a single plane of rails. They are kept
+  // outside the ±0.72 courier channel, staggered in depth and height, and
+  // broken into facade/window/signals meshes so the oblique lens can read
+  // material variation and scale. These are renderer-owned set dressing only.
+  for (const [progress, lateral, height, width, facade] of [
+    [0.12, -2.38, 1.72, 0.62, "dark"],
+    [0.29, 2.28, 1.38, 0.54, "warm"],
+    [0.47, -2.52, 2.06, 0.72, "warm"],
+    [0.66, 2.44, 1.64, 0.58, "dark"],
+    [0.86, -2.34, 1.9, 0.68, "warm"]
+  ] as const) {
+    const facadeMesh = facade === "warm" ? cladding : structure;
+    appendBox(facadeMesh, point(progress, lateral, input.playPlaneY + height / 2 - 0.04), [length * 0.105, height, width], tangent, cross);
+    // A recessed dark service spine behind each tower gives the facade a
+    // readable second plane instead of a monolithic colored slab.
+    appendBox(structure, point(progress + 0.018, lateral + Math.sign(lateral) * 0.04, input.playPlaneY + height * 0.42), [length * 0.058, height * 0.76, width * 0.72], tangent, cross);
+    for (let band = 0; band < 4; band += 1) {
+      const bandY = input.playPlaneY + 0.24 + band * Math.max(0.22, height * 0.19);
+      appendBox(windows, point(progress - 0.056, lateral - Math.sign(lateral) * width * 0.52, bandY), [length * 0.036, 0.095, width * 0.62], tangent, cross);
+    }
+    appendBox(signals, point(progress + 0.05, lateral - Math.sign(lateral) * width * 0.54, input.playPlaneY + height * 0.82), [length * 0.022, 0.05, width * 0.18], tangent, cross);
+  }
+
   const structuralMaterial = material.pbr({ name: "Gale freightway weathered blue alloy", color: "#31596a", roughness: 0.62, metallic: 0.36, emissive: "#153746", emissiveIntensity: 0.18 });
   const claddingMaterial = material.pbr({ name: "Rust Gale oxidized cargo cladding", color: "#8b523f", roughness: 0.68, metallic: 0.2, emissive: "#48261f", emissiveIntensity: 0.14 });
   const windowMaterial = material.emissive({ name: "Gale terminal cargo windows", color: "#245d68", emissive: "#55bdc9", emissiveIntensity: 0.52, opacity: 0.86 });

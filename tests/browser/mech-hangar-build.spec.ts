@@ -35,7 +35,7 @@ const ROUTE_SOURCE_FILES = [
   "apps/showcase-mech-hangar/src/styles.css"
 ] as const;
 
-const VISUAL_PRIMARY_ASSET_IDS = ["showcaseExpressiveRobot"] as const;
+const VISUAL_PRIMARY_ASSET_IDS = ["robotcand"] as const;
 
 function visualAssetBindings(): readonly { readonly id: string; readonly hash: string; readonly renderedProbe?: string }[] {
   const manifest = JSON.parse(readFileSync("aura.assets.json", "utf8")) as { assets?: readonly Record<string, unknown>[] };
@@ -152,7 +152,7 @@ test.describe("Mech Hangar build", () => {
     expect(evidence.curationVerdict).toBe("GO");
     expect(evidence.slots).toEqual(["chassis", "arms", "legs", "weapon"]);
     expect(evidence.selectedParts).toHaveLength(4);
-    expect(evidence.primaryAssetRefs).toContain("assets.showcaseExpressiveRobot");
+    expect(evidence.primaryAssetRefs).toContain("assets.robotcand");
     expect(evidence.assemblyValidated).toBe(true);
     expect(evidence.registeredAudioCues).toBe(10);
 

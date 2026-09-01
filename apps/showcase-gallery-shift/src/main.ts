@@ -107,8 +107,24 @@ const LIVE_OBJECTIVE_MATERIAL = material.emissive({
   name: "live objective hierarchy material",
   color: "#5a2d05",
   emissive: "#ffd05a",
-  emissiveIntensity: 1.3,
+  emissiveIntensity: 1.48,
   opacity: 1
+});
+const THIEF_DETAIL_MATERIAL = material.metal({
+  name: "infiltrator identity harness",
+  color: "#0f756e",
+  emissive: "#46f4d7",
+  emissiveIntensity: 0.42,
+  roughness: 0.28,
+  metallic: 0.62
+});
+const GUARD_DETAIL_MATERIAL = material.metal({
+  name: "sentry identity harness",
+  color: "#7d2143",
+  emissive: "#ff4b7b",
+  emissiveIntensity: 0.42,
+  roughness: 0.3,
+  metallic: 0.62
 });
 const ALERT_WEDGE_GEOMETRY = geometry.define({
   // One flat, camera-facing triangle in local +Z. Runtime guard yaw rotates it
@@ -131,6 +147,71 @@ const ALERT_BEAM_GEOMETRY = geometry.define({
   indices: [0, 1, 2],
   bounds: { min: [-0.07, 0, 0], max: [0.07, 0, 4.1] }
 });
+
+/**
+ * Small renderer-owned identity harnesses for the two typed actor families.
+ * The human and robot GLBs remain the primary subjects; these authored meshes
+ * provide a consistent waist/shoulder/visor silhouette and state colour at the
+ * review distance where the source assets' neutral materials otherwise merge
+ * into the dark floor. They follow actor transforms only and never stand in
+ * for the typed character geometry.
+ */
+type ActorDetailMesh = {
+  readonly positions: Array<readonly [number, number, number]>;
+  readonly normals: Array<readonly [number, number, number]>;
+  readonly indices: number[];
+};
+
+function actorDetailMesh(): ActorDetailMesh {
+  return { positions: [], normals: [], indices: [] };
+}
+
+function addActorBox(mesh: ActorDetailMesh, center: readonly [number, number, number], size: readonly [number, number, number]): void {
+  const [cx, cy, cz] = center;
+  const [sx, sy, sz] = size;
+  const min: [number, number, number] = [cx - sx / 2, cy - sy / 2, cz - sz / 2];
+  const max: [number, number, number] = [cx + sx / 2, cy + sy / 2, cz + sz / 2];
+  const faces: readonly {
+    readonly normal: readonly [number, number, number];
+    readonly vertices: readonly (readonly [number, number, number])[];
+  }[] = [
+    { normal: [0, 0, 1], vertices: [[min[0], min[1], max[2]], [max[0], min[1], max[2]], [max[0], max[1], max[2]], [min[0], max[1], max[2]]] },
+    { normal: [0, 0, -1], vertices: [[max[0], min[1], min[2]], [min[0], min[1], min[2]], [min[0], max[1], min[2]], [max[0], max[1], min[2]]] },
+    { normal: [-1, 0, 0], vertices: [[min[0], min[1], min[2]], [min[0], min[1], max[2]], [min[0], max[1], max[2]], [min[0], max[1], min[2]]] },
+    { normal: [1, 0, 0], vertices: [[max[0], min[1], max[2]], [max[0], min[1], min[2]], [max[0], max[1], min[2]], [max[0], max[1], max[2]]] },
+    { normal: [0, 1, 0], vertices: [[min[0], max[1], max[2]], [max[0], max[1], max[2]], [max[0], max[1], min[2]], [min[0], max[1], min[2]]] },
+    { normal: [0, -1, 0], vertices: [[min[0], min[1], min[2]], [max[0], min[1], min[2]], [max[0], min[1], max[2]], [min[0], min[1], max[2]]] }
+  ];
+  for (const face of faces) {
+    const base = mesh.positions.length;
+    mesh.positions.push(...face.vertices);
+    mesh.normals.push(...face.vertices.map(() => face.normal as readonly [number, number, number]));
+    mesh.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+}
+
+function defineActorDetail(mesh: ActorDetailMesh): ReturnType<typeof geometry.define> {
+  return geometry.define({ positions: mesh.positions, normals: mesh.normals, indices: mesh.indices });
+}
+
+const thiefDetailMesh = actorDetailMesh();
+// Shoulder mantle, slim pack, belt and visor keep the typed infiltrator's
+// readable human outline while leaving the face/body materials visible.
+addActorBox(thiefDetailMesh, [0, 1.48, 0], [0.96, 0.1, 0.22]);
+addActorBox(thiefDetailMesh, [0, 1.18, -0.29], [0.36, 0.58, 0.1]);
+addActorBox(thiefDetailMesh, [0, 0.86, 0], [0.7, 0.08, 0.24]);
+addActorBox(thiefDetailMesh, [0, 2.03, 0.14], [0.46, 0.09, 0.06]);
+const THIEF_DETAIL_GEOMETRY = defineActorDetail(thiefDetailMesh);
+
+const guardDetailMesh = actorDetailMesh();
+// Robot sentries get a broad chest plate and front visor that read red at a
+// glance without pretending to replace their typed animated bodies.
+addActorBox(guardDetailMesh, [0, 1.38, 0], [0.98, 0.48, 0.16]);
+addActorBox(guardDetailMesh, [0, 1.78, 0.17], [0.78, 0.08, 0.06]);
+addActorBox(guardDetailMesh, [0, 2.34, 0.24], [0.86, 0.1, 0.08]);
+addActorBox(guardDetailMesh, [-0.5, 1.52, 0], [0.08, 0.3, 0.24]);
+addActorBox(guardDetailMesh, [0.5, 1.52, 0], [0.08, 0.3, 0.24]);
+const GUARD_DETAIL_GEOMETRY = defineActorDetail(guardDetailMesh);
 const debugValue = new URLSearchParams(window.location.search).get("debug");
 const debugMode = debugValue !== null;
 const showDebugOverlay = debugValue === "visual";
@@ -374,10 +455,20 @@ function guardCharacterNodes(): AuraSceneNode[] {
         // Keep the real typed robot human-scale in the authored metre layout;
         // the larger target is paired with a contact footprint so the actor
         // reads as a standing sentry rather than a floating token.
-        targetMaxDimension: 3.2
+        targetMaxDimension: 4.25
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
+        .toJSON(),
+      geometry.custom(GUARD_DETAIL_GEOMETRY, {
+        name: `${spawn.id} sentry identity detail`,
+        material: GUARD_DETAIL_MATERIAL
+      })
+        .position(spawn.x, 0, spawn.z)
+        .scale([0.92, 0.92, 0.92])
+        .runtime(game.runtimeNode(`${spawn.id} sentry identity detail`, {
+          tags: ["typed-set-dressing", "guard-identity", "renderer-owned", "authored-movement"]
+        }))
         .toJSON(),
       shadows.contact({
         name: `${spawn.id} contact shadow`,
@@ -393,7 +484,10 @@ function guardCharacterNodes(): AuraSceneNode[] {
 
 function pedestalAndExhibitNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
-  for (let slot = 0; slot < 4; slot += 1) {
+  // FloorLayout owns exactly three mission pedestals (p1/p2 on floor 1 and
+  // p3 on floor 2). Keep the shared visual slots tight to that contract rather
+  // than submitting an unused fourth pedestal and three hidden exhibit models.
+  for (let slot = 0; slot < 3; slot += 1) {
     nodes.push(
       model(assets.galleryShiftPedestal, {
         name: `pedestal-${slot}`,
@@ -556,9 +650,8 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#5d1026", emissive: "#ff315f", emissiveIntensity: 0.82, opacity: 0.42 });
-  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#8e1636", emissive: "#ff7897", emissiveIntensity: 1.35, opacity: 0.92 });
-  const highlightMaterial = material.emissive({ name: "release guard highlight", color: "#55102b", emissive: "#ff557f", emissiveIntensity: 0.7, opacity: 0.82 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#68112d", emissive: "#ff315f", emissiveIntensity: 1.05, opacity: 0.5 });
+  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#a91d46", emissive: "#ff92aa", emissiveIntensity: 1.6, opacity: 0.96 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
       .position(0, 0.16, 0)
@@ -569,8 +662,7 @@ function threatFeedbackNodes(): AuraSceneNode[] {
       .position(0, 0.19, 0)
       .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode(`${id} threat beam`, { tags: ["stealth-feedback", "vision-centerline", "real-los-state", "renderer-owned"] }))
-      .toJSON(),
-    primitives.torus({ name: id + " threat highlight", material: highlightMaterial }).position(0, 0.06, 0).scale([0.5, 0.5, 0.05]).runtime(game.runtimeNode(id + " threat highlight", { tags: ["stealth-feedback", "guard-highlight", "renderer-owned"] })).toJSON()
+      .toJSON()
   ]);
 }
 
@@ -581,7 +673,7 @@ function threatFeedbackNodes(): AuraSceneNode[] {
  */
 function liveHierarchyNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [
-    text3D("PLAYER", { name: "live-player-label", size: 0.46, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL })
+    text3D("PLAYER", { name: "live-player-label", size: 0.56, depth: 0.055, letterSpacing: 0.035, material: LIVE_PLAYER_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
@@ -589,20 +681,20 @@ function liveHierarchyNodes(): AuraSceneNode[] {
     primitives.torus({ name: "live-objective-ring", material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([1.22, 1.22, 0.1])
+      .scale([1.5, 1.5, 0.12])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
-    text3D("LIFT", { name: "live-lift-label", size: 0.54, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("LIFT", { name: "live-lift-label", size: 0.64, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("EXIT", { name: "live-exit-label", size: 0.54, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("EXIT", { name: "live-exit-label", size: 0.64, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 2.25 })
+    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 2.8 })
       .position(0, -20, 0)
       .runtime(game.runtimeNode("live-objective-practical", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON()
@@ -616,7 +708,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
         .scale([0.72, 0.72, 0.065])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
-      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.4, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL })
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.52, depth: 0.055, letterSpacing: 0.035, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
         .rotate(0, 0.62, 0)
         .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
@@ -677,10 +769,21 @@ function buildScene(): ReturnType<typeof scene> {
         // The stealth avatar is the review frame's focal subject.  Keep the
         // typed character large enough to read against the museum plan while
         // leaving the route and guard silhouettes visible around it.
-        targetMaxDimension: 3.9
+        targetMaxDimension: 5.05
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
+        .toJSON()
+    )
+    .add(
+      geometry.custom(THIEF_DETAIL_GEOMETRY, {
+        name: "infiltrator identity detail",
+        material: THIEF_DETAIL_MATERIAL
+      })
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .runtime(game.runtimeNode("infiltrator identity detail", {
+          tags: ["typed-set-dressing", "thief-identity", "renderer-owned", "authored-movement"]
+        }))
         .toJSON()
     )
     .add(
@@ -766,12 +869,16 @@ function buildScene(): ReturnType<typeof scene> {
       // geometric centre): it puts both live principals fully inside the
       // frame, with enough height and field of view to retain the exit portal
       // and the two north objective rooms as their route context.
-      position: visualReviewCapture ? [5.6, 22.5, 14.5] : [0, 13.4, 13.8],
+      // Keep the authored encounter close enough for actor/action legibility,
+      // while retaining a deliberate margin around the complete cutaway so
+      // route-primary subject isolation never reports an architectural edge
+      // clipped by the review viewport.
+      position: visualReviewCapture ? [5.4, 21.0, 13.3] : [0, 13.4, 13.8],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
-      target: visualReviewCapture ? [0, 0.78, 1.8] : [0, 0.72, -0.45],
-      fov: visualReviewCapture ? 46 : 40
+      target: visualReviewCapture ? [0, 0.9, 1.9] : [0, 0.72, -0.45],
+      fov: visualReviewCapture ? 47 : 40
     }));
 }
 
@@ -976,6 +1083,7 @@ function syncFloorVisuals(): void {
 function syncCharacterVisuals(): void {
   const snap = runtime.thief.snapshot();
   app.nodes.get("thief")?.setPosition(snap.x, 0, snap.z);
+  app.nodes.get("infiltrator identity detail")?.setPosition(snap.x, 0, snap.z);
   app.nodes.get("thief-focus")?.setPosition(snap.x, 0.07, snap.z);
   app.nodes.get("thief-practical")?.setPosition(snap.x, 1.25, snap.z);
   app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.55, 2.15, snap.z + 0.45);
@@ -984,6 +1092,9 @@ function syncCharacterVisuals(): void {
     if (!handle) continue;
     handle.setPosition(guard.x, 0, guard.z);
     handle.setRotation(0, guard.yaw + Math.PI, 0);
+    app.nodes.get(`${guard.id} sentry identity detail`)
+      ?.setPosition(guard.x, 0, guard.z)
+      .setRotation(0, guard.yaw + Math.PI, 0);
     const flashlight = app.nodes.get(`${guard.id} flashlight`);
     if (flashlight) {
       const sway = reducedMotion ? 0 : Math.sin(frameCount / 34 + (guard.id === "guard-1" ? 0 : 2)) * 0.18;
