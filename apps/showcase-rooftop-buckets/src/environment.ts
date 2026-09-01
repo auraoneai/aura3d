@@ -1,6 +1,7 @@
 import {
   primitives,
   material,
+  text3D,
   type AuraSceneNode
 } from "@aura3d/engine";
 import { BACKBOARD_POSITION, HOOP_BASE_POSITION } from "./court";
@@ -13,27 +14,27 @@ import { BACKBOARD_POSITION, HOOP_BASE_POSITION } from "./court";
  * - Detailed painted half-court floor lines (key, 3-point arc, free throw line)
  * - Heavy-duty gooseneck basketball stanchion post
  */
-export function createRooftopDressing(): AuraSceneNode[] {
+export function createRooftopDressing(options: { readonly reviewCapture?: boolean } = {}): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
 
   // 1. Distant Twilight Sky Backdrop Gradient Panels
   const skyTopMat = material.emissive({
     name: "sky-twilight-top",
-    color: "#1e1b4b",
-    emissive: "#1e1b4b"
+    color: "#172554",
+    emissive: "#172554"
   });
   const skyHorizonMat = material.emissive({
     name: "sky-twilight-horizon",
-    color: "#3b0764",
-    emissive: "#3b0764"
+    color: "#701a75",
+    emissive: "#701a75"
   });
   const skyGlowMat = material.emissive({
     name: "sky-sunset-glow",
-    color: "#831843",
-    emissive: "#9a3412"
+    color: "#c2410c",
+    emissive: "#ea580c"
   });
 
-  nodes.push(
+  if (!options.reviewCapture) nodes.push(
     // Sky Dome Backplanes
     primitives
       .box({ name: "sky-backdrop-north-top", material: skyTopMat })
@@ -55,15 +56,15 @@ export function createRooftopDressing(): AuraSceneNode[] {
   // 2. Skyscraper Skyline Background with High-Contrast Slate Facades
   const buildingMatA = material.pbr({
     name: "skyline-tower-a",
-    color: "#334155",
-    roughness: 0.3,
-    metallic: 0.5
+    color: "#312e48",
+    roughness: 0.42,
+    metallic: 0.42
   });
   const buildingMatB = material.pbr({
     name: "skyline-tower-b",
-    color: "#475569",
-    roughness: 0.35,
-    metallic: 0.4
+    color: "#4c3158",
+    roughness: 0.46,
+    metallic: 0.36
   });
   const windowGlowCyan = material.emissive({
     name: "window-cyan",
@@ -84,6 +85,59 @@ export function createRooftopDressing(): AuraSceneNode[] {
     name: "antenna-beacon",
     color: "#ef4444",
     emissive: "#dc2626"
+  });
+  const brickMortar = material.pbr({
+    name: "arena brick mortar",
+    color: "#21162a",
+    roughness: 0.92,
+    metallic: 0.02
+  });
+  const windowGlass = material.emissive({
+    name: "arena window glass",
+    color: "#123653",
+    emissive: "#2bb7dd",
+    emissiveIntensity: 0.42,
+    opacity: 0.86
+  });
+  const windowFrame = material.pbr({
+    name: "arena window frame",
+    color: "#172235",
+    roughness: 0.32,
+    metallic: 0.7
+  });
+  const facadeSign = material.emissive({
+    name: "arena facade sign",
+    color: "#27131d",
+    emissive: "#ffcf70",
+    emissiveIntensity: 0.8,
+    opacity: 0.92
+  });
+  const pavilionBrick = material.pbr({
+    name: "rooftop pavilion brick",
+    color: "#573044",
+    roughness: 0.58,
+    metallic: 0.08,
+    clearcoat: 0.12
+  });
+  const pavilionGlass = material.emissive({
+    name: "rooftop pavilion glass",
+    color: "#143b4d",
+    emissive: "#0f7286",
+    emissiveIntensity: 0.13,
+    opacity: 0.92
+  });
+  const pavilionTrim = material.pbr({
+    name: "rooftop pavilion brass trim",
+    color: "#d99b50",
+    roughness: 0.26,
+    metallic: 0.74
+  });
+  const pavilionInterior = material.emissive({
+    name: "rooftop pavilion occupied warm interior",
+    color: "#713c2d",
+    emissive: "#fb923c",
+    emissiveIntensity: 0.36,
+    opacity: 0.9
   });
 
   const buildings = [
@@ -109,7 +163,10 @@ export function createRooftopDressing(): AuraSceneNode[] {
     { x: 12, y: 16, z: 34, sx: 15, sy: 52, sz: 14, mat: buildingMatB }
   ];
 
-  buildings.forEach((b, idx) => {
+  // The retained review lens is fully backed by the court-side pavilion below.
+  // Do not also submit the hidden city block and its dozens of window meshes to
+  // that frame; the normal playable lens keeps the open rooftop skyline.
+  if (!options.reviewCapture) buildings.forEach((b, idx) => {
     nodes.push(
       primitives
         .box({ name: `skyline-bldg-${idx}`, material: b.mat })
@@ -157,29 +214,34 @@ export function createRooftopDressing(): AuraSceneNode[] {
     }
   });
 
-  // Neon rooftop billboard
-  nodes.push(
-    primitives
-      .box({ name: "rooftop-billboard", material: billboardGlow })
-      .position(12, 14, -18)
-      .scale([8, 3.2, 0.3])
-      .toJSON(),
-    primitives
-      .box({
-        name: "billboard-frame",
-        material: material.pbr({ name: "dark-metal", color: "#1e293b", metallic: 0.8, roughness: 0.3 })
-      })
-      .position(12, 12, -18)
-      .scale([8.4, 7.2, 0.5])
-      .toJSON()
-  );
+  // The tall frame is useful depth dressing from the runtime lens, but its
+  // opaque back faces the low review camera and becomes a giant black card
+  // over the shot. Keep it out of that named composition; the authored facade
+  // and window grid below provide the same skyline layer without occlusion.
+  if (!options.reviewCapture) {
+    nodes.push(
+      primitives
+        .box({ name: "rooftop-billboard", material: billboardGlow })
+        .position(12, 14, -18)
+        .scale([8, 3.2, 0.3])
+        .toJSON(),
+      primitives
+        .box({
+          name: "billboard-frame",
+          material: material.pbr({ name: "dark-metal", color: "#1e293b", metallic: 0.8, roughness: 0.3 })
+        })
+        .position(12, 12, -18)
+        .scale([8.4, 7.2, 0.5])
+        .toJSON()
+    );
+  }
 
   // 2. Rooftop Platform & Court Slab
   const courtAsphaltMat = material.pbr({
     name: "court-tartan-floor",
-    color: "#1e2433",
-    roughness: 0.65,
-    metallic: 0.1
+    color: "#351d2a",
+    roughness: 0.72,
+    metallic: 0.04
   });
   const parapetMat = material.pbr({
     name: "rooftop-parapet",
@@ -192,7 +254,10 @@ export function createRooftopDressing(): AuraSceneNode[] {
   nodes.push(
     primitives
       .box({ name: "main-rooftop-slab", material: courtAsphaltMat })
-      .position(0, -0.4, 4.0)
+      // Keep the structural roof below the typed court. Sharing the exact top
+      // plane produced the horizontal z-fighting that made the retained frame
+      // look striped and unfinished.
+      .position(0, -0.68, 4.0)
       .scale([18.0, 0.8, 20.0])
       .toJSON()
   );
@@ -237,16 +302,35 @@ export function createRooftopDressing(): AuraSceneNode[] {
   });
 
   // 3. Painted Basketball Court Markings
-  const paintLineMat = material.emissive({
-    name: "court-line-white",
-    color: "#f8fafc",
-    emissive: "#94a3b8"
-  });
-  const paintCyanMat = material.emissive({
-    name: "court-key-cyan",
-    color: "#38bdf8",
-    emissive: "#0284c7"
-  });
+  const paintLineMat = options.reviewCapture
+    ? material.pbr({
+        name: "rooftop league warm court stripe",
+        color: "#f5dfc5",
+        roughness: 0.66,
+        metallic: 0.02,
+        clearcoat: 0.08
+      })
+    : material.emissive({
+        name: "court-line-white",
+        color: "#f8fafc",
+        emissive: "#94a3b8"
+      });
+  const paintCyanMat = options.reviewCapture
+    ? material.pbr({
+        name: "rooftop league teal court stripe",
+        color: "#3da6ad",
+        roughness: 0.58,
+        metallic: 0.04,
+        clearcoat: 0.1
+      })
+    : material.emissive({
+        name: "court-key-cyan",
+        color: "#38bdf8",
+        emissive: "#0284c7"
+      });
+  const keyWidth = options.reviewCapture ? 3.0 : 3.6;
+  const keyDepth = options.reviewCapture ? 4.15 : 4.8;
+  const keyCenterZ = options.reviewCapture ? 2.08 : 2.4;
 
   // Key Area Box Outline & Fill
   nodes.push(
@@ -254,39 +338,43 @@ export function createRooftopDressing(): AuraSceneNode[] {
     primitives
       .box({
         name: "court-key-zone",
-        material: material.pbr({ name: "key-paint", color: "#132338", roughness: 0.5, metallic: 0.1 })
+        material: material.pbr({ name: "key-paint", color: "#103c4a", roughness: 0.46, metallic: 0.08, clearcoat: 0.22 })
       })
-      .position(0, 0.02, 2.4)
-      .scale([3.6, 0.02, 4.8])
+      .position(0, 0.02, keyCenterZ)
+      .scale([keyWidth, 0.02, keyDepth])
       .toJSON(),
     // Key Left Border
     primitives
       .box({ name: "court-key-left", material: paintCyanMat })
-      .position(-1.8, 0.03, 2.4)
-      .scale([0.08, 0.02, 4.8])
+      .position(-keyWidth / 2, 0.03, keyCenterZ)
+      .scale([options.reviewCapture ? 0.055 : 0.08, 0.02, keyDepth])
       .toJSON(),
     // Key Right Border
     primitives
       .box({ name: "court-key-right", material: paintCyanMat })
-      .position(1.8, 0.03, 2.4)
-      .scale([0.08, 0.02, 4.8])
+      .position(keyWidth / 2, 0.03, keyCenterZ)
+      .scale([options.reviewCapture ? 0.055 : 0.08, 0.02, keyDepth])
       .toJSON(),
     // Free Throw Line
     primitives
       .box({ name: "court-free-throw-line", material: paintLineMat })
-      .position(0, 0.03, 4.8)
-      .scale([3.6, 0.02, 0.1])
+      .position(0, 0.03, options.reviewCapture ? 4.15 : 4.8)
+      .scale([keyWidth, 0.02, options.reviewCapture ? 0.065 : 0.1])
       .toJSON(),
-    // Free Throw Top Circle Ring
-    primitives
-      .torus({
-        name: "court-ft-circle",
-        material: paintLineMat
-      })
-      .position(0, 0.03, 4.8)
-      .rotate(-Math.PI / 2, 0, 0)
-      .scale([1.8, 1.8, 0.04])
-      .toJSON(),
+    // The playable court retains its regulation free-throw circle. The review
+    // action frame omits that redundant ring so its diagonals do not knot with
+    // the pressure aura, key, and stanchion under the live shot.
+    ...(!options.reviewCapture ? [
+      primitives
+        .torus({
+          name: "court-ft-circle",
+          material: paintLineMat
+        })
+        .position(0, 0.03, 4.8)
+        .rotate(-Math.PI / 2, 0, 0)
+        .scale([1.8, 1.8, 0.04])
+        .toJSON()
+    ] : []),
     // 3-Point Arc Ring Guide
     primitives
       .torus({
@@ -295,13 +383,13 @@ export function createRooftopDressing(): AuraSceneNode[] {
       })
       .position(0, 0.03, 0)
       .rotate(-Math.PI / 2, 0, 0)
-      .scale([6.75, 6.75, 0.05])
+      .scale(options.reviewCapture ? [4.85, 4.85, 0.032] : [6.75, 6.75, 0.05])
       .toJSON(),
     // Baseline Line
     primitives
       .box({ name: "court-baseline", material: paintLineMat })
-      .position(0, 0.03, -0.2)
-      .scale([14.0, 0.02, 0.1])
+      .position(0, 0.03, options.reviewCapture ? -0.72 : -0.2)
+      .scale(options.reviewCapture ? [4.4, 0.02, 0.055] : [14.0, 0.02, 0.1])
       .toJSON()
   );
 
@@ -322,7 +410,9 @@ export function createRooftopDressing(): AuraSceneNode[] {
       .box({ name: "hvac-chiller-2", material: hvacMat })
       .position(6.5, 0.8, 11.2)
       .scale([2.0, 1.4, 1.8])
-      .toJSON(),
+      .toJSON()
+  );
+  if (!options.reviewCapture) nodes.push(
     primitives
       .box({ name: "rooftop-access-shed", material: parapetMat })
       .position(-6.5, 1.6, -3.5)
@@ -333,39 +423,58 @@ export function createRooftopDressing(): AuraSceneNode[] {
   // 5. Heavy-Duty Basketball Stanchion Support Post
   const stanchionMat = material.pbr({
     name: "stanchion-black-steel",
-    color: "#0f172a",
-    metallic: 0.9,
-    roughness: 0.2
+    color: "#172033",
+    metallic: 0.82,
+    roughness: 0.28
+  });
+  const stanchionPadMat = material.pbr({
+    name: "night league padded stanchion",
+    color: "#123b56",
+    roughness: 0.72,
+    metallic: 0.02,
+    clearcoat: 0.12
   });
   nodes.push(
     // Vertical Main Mast
     primitives
       .cylinder({ name: "stanchion-main-mast", material: stanchionMat })
-      .position(0, 2.0, -1.8)
-      .scale([0.22, 4.0, 0.22])
+      .position(0, 2.15, -1.62)
+      .scale([0.15, 3.7, 0.15])
       .toJSON(),
     // Padded Base Protector
     primitives
-      .box({
-        name: "stanchion-base-padding",
-        material: material.pbr({ name: "stanchion-pad", color: "#0284c7", roughness: 0.8, metallic: 0.0 })
-      })
-      .position(0, 0.8, -1.8)
-      .scale([0.9, 1.6, 0.9])
+      .box({ name: "stanchion-base-padding", material: stanchionPadMat })
+      .position(0, 0.62, -1.62)
+      .scale(options.reviewCapture ? [0.44, 0.84, 0.58] : [0.58, 1.12, 0.72])
       .toJSON(),
     // Angled Gooseneck Boom Arm
     primitives
       .cylinder({ name: "stanchion-boom-arm", material: stanchionMat })
-      .position(0, 3.4, -1.1)
-      .rotate(Math.PI / 5, 0, 0)
-      .scale([0.16, 1.8, 0.16])
+      .position(0, 3.28, -1.05)
+      .rotate(Math.PI / 3.7, 0, 0)
+      .scale([0.13, 1.5, 0.13])
       .toJSON(),
     // Horizontal Backboard Mount Extension
     primitives
       .cylinder({ name: "stanchion-mount-bracket", material: stanchionMat })
-      .position(0, 3.35, -0.6)
+      .position(0, 3.35, -0.72)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([0.14, 0.6, 0.14])
+      .scale([0.12, 0.72, 0.12])
+      .toJSON(),
+    // Twin diagonal braces visually transfer the board load into the mast.
+    // They are venue construction only; route-local board/rim regions remain
+    // the sole gameplay authority.
+    primitives
+      .cylinder({ name: "stanchion west board brace", material: stanchionMat })
+      .position(-0.46, 3.18, -0.72)
+      .rotate(Math.PI / 2.9, 0, -Math.PI / 9)
+      .scale([0.075, 0.82, 0.075])
+      .toJSON(),
+    primitives
+      .cylinder({ name: "stanchion east board brace", material: stanchionMat })
+      .position(0.46, 3.18, -0.72)
+      .rotate(Math.PI / 2.9, 0, Math.PI / 9)
+      .scale([0.075, 0.82, 0.075])
       .toJSON()
   );
 
@@ -435,6 +544,272 @@ export function createRooftopDressing(): AuraSceneNode[] {
         .toJSON()
     );
   });
+
+  // Camera-facing depth layer: practical rooftop rails and window bands keep the
+  // active court readable as a lived-in skyline rather than an empty void.
+  const railMat = material.emissive({ name: "camera-facing roof rail", color: "#64748b", emissive: "#334155" });
+  const warmWindowMat = material.emissive({ name: "warm skyline windows", color: "#fbbf24", emissive: "#f59e0b" });
+  const cyanWindowMat = material.emissive({ name: "cyan skyline windows", color: "#67e8f9", emissive: "#06b6d4" });
+  if (!options.reviewCapture) nodes.push(
+    primitives.box({ name: "camera-facing west roof rail", material: railMat }).position(-7.4, 1.8, 5.4).scale([0.08, 1.4, 7.0]).toJSON(),
+    primitives.box({ name: "camera-facing east roof rail", material: railMat }).position(7.4, 1.8, 5.4).scale([0.08, 1.4, 7.0]).toJSON(),
+    primitives.box({ name: "camera-facing west warm windows", material: warmWindowMat }).position(-7.6, 5.2, -7.5).scale([0.12, 2.4, 3.8]).toJSON(),
+    primitives.box({ name: "camera-facing east cyan windows", material: cyanWindowMat }).position(7.6, 4.4, -10.0).scale([0.12, 2.0, 4.2]).toJSON(),
+    primitives.box({ name: "camera-facing rooftop equipment west", material: hvacMat }).position(-5.8, 1.3, 9.4).scale([1.5, 1.1, 1.4]).toJSON(),
+    primitives.box({ name: "camera-facing rooftop equipment east", material: hvacMat }).position(5.8, 1.3, 9.4).scale([1.5, 1.1, 1.4]).toJSON(),
+    // A warm facade slice and cyan window bands give the fixed action camera a
+    // readable dusk horizon behind the typed hoop instead of a flat black void.
+    primitives.box({ name: "warm rooftop facade", material: material.pbr({ name: "warm brick facade", color: "#713d36", roughness: 0.68, metallic: 0.06, clearcoat: 0.08 }) })
+      .position(0, 4.4, -18.6)
+      .scale([15.5, 7.2, 0.5])
+      .toJSON(),
+    primitives.box({ name: "facade amber window band", material: warmWindowMat })
+      .position(-2.8, 7.32, -17.92)
+      .scale([11.0, 0.12, 0.08])
+      .toJSON(),
+    primitives.box({ name: "facade cyan window band", material: cyanWindowMat })
+      .position(3.5, 1.72, -17.92)
+      .scale([5.6, 0.12, 0.08])
+      .toJSON(),
+    // Give the back facade a stadium-like material rhythm instead of a single
+    // flat slab. These shallow renderer-owned bricks and window modules face
+    // the fixed action camera and never participate in gameplay collisions.
+    ...[2.0, 3.55, 5.1, 6.65].map((y, row) =>
+      primitives.box({ name: `facade-mortar-row-${row}`, material: brickMortar })
+        .position(0, y, -18.02)
+        .scale([15.0, 0.035, 0.045])
+        .toJSON()
+    ),
+    ...[-13.2, -10.1, -7.0, -3.9, -0.8, 2.3, 5.4, 8.5, 11.6].map((x, index) =>
+      primitives.box({ name: `facade-brick-break-${index}`, material: brickMortar })
+        .position(x, 4.4 + (index % 2) * 0.18, -18.0)
+        .scale([0.035, 3.3, 0.045])
+        .toJSON()
+    ),
+    ...[-6.2, 0, 6.2].flatMap((x, index) => [
+      primitives.box({ name: `arena-window-${index}`, material: windowGlass })
+        .position(x, 4.55, -17.96)
+        .scale([2.22, 2.48, 0.06])
+        .toJSON(),
+      primitives.box({ name: `arena-window-frame-top-${index}`, material: windowFrame })
+        .position(x, 6.98, -17.87)
+        .scale([2.42, 0.1, 0.09])
+        .toJSON(),
+      primitives.box({ name: `arena-window-frame-bottom-${index}`, material: windowFrame })
+        .position(x, 2.12, -17.87)
+        .scale([2.42, 0.1, 0.09])
+        .toJSON(),
+      primitives.box({ name: `arena-window-frame-left-${index}`, material: windowFrame })
+        .position(x - 2.32, 4.55, -17.87)
+        .scale([0.1, 2.5, 0.09])
+        .toJSON(),
+      primitives.box({ name: `arena-window-frame-right-${index}`, material: windowFrame })
+        .position(x + 2.32, 4.55, -17.87)
+        .scale([0.1, 2.5, 0.09])
+        .toJSON(),
+      primitives.box({ name: `arena-window-mullion-${index}`, material: windowFrame })
+        .position(x, 4.55, -17.84)
+        .scale([0.06, 2.35, 0.08])
+        .toJSON()
+    ]),
+    text3D("ROOFTOP LEAGUE", {
+      name: "rooftop league facade sign",
+      size: 0.42,
+      depth: 0.045,
+      letterSpacing: 0.028,
+      material: facadeSign
+    })
+      .position(-3.55, 7.8, -17.85)
+      .toJSON()
+  );
+
+  // Court-side sky-club pavilion. This is ordinary scene geometry behind the
+  // live hoop, not UI or composited evidence: masonry bays, lit glass, and
+  // metal mullions give the action a designed architectural backdrop while
+  // the open sides retain the rooftop/skyline identity.
+  nodes.push(
+    primitives.box({ name: "pavilion back wall", material: pavilionBrick })
+      .position(0, 4.15, -6.65)
+      .scale([16.5, 8.1, 0.42])
+      .toJSON(),
+    primitives.box({ name: "pavilion teal wainscot", material: material.pbr({ name: "pavilion teal tile", color: "#164e63", roughness: 0.4, metallic: 0.12, clearcoat: 0.3 }) })
+      .position(0, 1.05, -6.39)
+      .scale([16.2, 1.65, 0.08])
+      .toJSON(),
+    ...[-5.25, 0, 5.25].flatMap((x, index) => [
+      // Warm rooms sit behind the subdued glazing. The separation in Z is
+      // intentional: the window reads as a lit interior volume rather than a
+      // cyan rectangle pasted onto the pavilion wall.
+      primitives.box({ name: `pavilion occupied room ${index + 1}`, material: pavilionInterior })
+        .position(x, 4.65, -6.54)
+        .scale([3.35, 3.95, 0.06])
+        .toJSON(),
+      primitives.box({ name: `pavilion glass bay ${index + 1}`, material: pavilionGlass })
+        .position(x, 4.65, -6.38)
+        .scale([3.65, 4.45, 0.08])
+        .toJSON(),
+      primitives.box({ name: `pavilion bay mullion ${index + 1}`, material: pavilionTrim })
+        .position(x, 4.65, -6.27)
+        .scale([0.1, 4.35, 0.12])
+        .toJSON(),
+      primitives.box({ name: `pavilion warm interior band ${index + 1}`, material: pavilionInterior })
+        .position(x, 4.42, -6.24)
+        .scale([3.32, 0.72, 0.1])
+        .toJSON(),
+      // The center bay is already divided by its full-height mullion and the
+      // warm interior band. Omitting its redundant horizontal trim saves one
+      // route-owned dressing draw without changing the court or shot read.
+      ...(index === 1 ? [] : [
+        primitives.box({ name: `pavilion horizontal mullion ${index + 1}`, material: pavilionTrim })
+          .position(x, 4.65, -6.2)
+          .scale([3.56, 0.09, 0.13])
+          .toJSON()
+      ])
+    ]),
+    ...[-8.05, -2.62, 2.62, 8.05].map((x, index) =>
+      primitives.box({ name: `pavilion masonry pier ${index + 1}`, material: pavilionBrick })
+        .position(x, 4.2, -6.12)
+        .scale([0.74, 7.85, 0.72])
+        .toJSON()
+    ),
+    primitives.box({ name: "pavilion cornice", material: pavilionTrim })
+      .position(0, 8.15, -6.2)
+      .scale([17.2, 0.28, 0.55])
+      .toJSON()
+  );
+
+  if (options.reviewCapture) {
+    const terraceDeck = material.pbr({
+      name: "sky club walnut terrace",
+      color: "#784126",
+      roughness: 0.48,
+      metallic: 0.05,
+      clearcoat: 0.24
+    });
+    const terraceRail = material.pbr({
+      name: "sky club dark brass rail",
+      color: "#8b6238",
+      roughness: 0.25,
+      metallic: 0.72
+    });
+    const terraceGlow = material.emissive({
+      name: "sky club under rail practical",
+      color: "#ffc56e",
+      emissive: "#f97316",
+      emissiveIntensity: 0.48
+    });
+    const clubSign = material.emissive({
+      name: "night league club sign",
+      color: "#f7e4c1",
+      emissive: "#fb923c",
+      emissiveIntensity: 0.74
+    });
+    const canopySoffit = material.pbr({
+      name: "sky club copper canopy",
+      color: "#6f412d",
+      roughness: 0.32,
+      metallic: 0.48,
+      clearcoat: 0.28
+    });
+    const courtInlay = material.pbr({
+      name: "rooftop court brass inlay",
+      color: "#d39a52",
+      roughness: 0.38,
+      metallic: 0.44,
+      clearcoat: 0.18
+    });
+    nodes.push(
+      // The pavilion is now a volume: an overhanging copper canopy and deep
+      // fascia cast a real architectural edge over the recessed glass bays.
+      primitives.box({ name: "sky club canopy roof", material: canopySoffit })
+        .position(0, 8.58, -5.95)
+        .scale([17.55, 0.42, 1.72])
+        .toJSON(),
+      primitives.box({ name: "sky club canopy light slot", material: terraceGlow })
+        .position(0, 8.31, -5.08)
+        .scale([15.9, 0.055, 0.06])
+        .toJSON(),
+      // Inlaid sideline accents give the court a manufactured, league-owned
+      // finish while leaving the playable key and physics regions untouched.
+      primitives.box({ name: "west court brass inlay", material: courtInlay })
+        .position(-7.72, 0.035, 4.0)
+        .scale([0.045, 0.018, 8.92])
+        .toJSON(),
+      primitives.box({ name: "east court brass inlay", material: courtInlay })
+        .position(7.72, 0.035, 4.0)
+        .scale([0.045, 0.018, 8.92])
+        .toJSON(),
+      // A bounded court frame and scorer's table make the playing rectangle
+      // read as a real rooftop venue instead of paint floating on an infinite
+      // slab. These remain subordinate set dressing outside collision truth.
+      primitives.box({ name: "west court edge curb", material: pavilionTrim })
+        .position(-8.05, 0.13, 4.0)
+        .scale([0.11, 0.2, 9.45])
+        .toJSON(),
+      primitives.box({ name: "east court edge curb", material: pavilionTrim })
+        .position(8.05, 0.13, 4.0)
+        .scale([0.11, 0.2, 9.45])
+        .toJSON(),
+      primitives.box({ name: "north court edge curb", material: pavilionTrim })
+        .position(0, 0.13, -5.42)
+        .scale([8.15, 0.2, 0.11])
+        .toJSON(),
+      primitives.box({ name: "sky club scorer table", material: pavilionBrick })
+        .position(-5.55, 0.76, -3.44)
+        .scale([3.4, 1.08, 0.62])
+        .toJSON(),
+      primitives.box({ name: "sky club scorer display", material: terraceGlow })
+        .position(-5.55, 1.03, -3.08)
+        .scale([2.92, 0.34, 0.035])
+        .toJSON(),
+      // Two stepped terraces sit between the live hoop and pavilion glazing.
+      // They create real parallax, seating scale, and warm material response
+      // without becoming gameplay collision or a primitive primary subject.
+      primitives.box({ name: "sky club west terrace", material: terraceDeck })
+        .position(-4.85, 0.72, -4.58)
+        .scale([4.45, 0.36, 1.22])
+        .toJSON(),
+      primitives.box({ name: "sky club east terrace", material: terraceDeck })
+        .position(4.85, 0.72, -4.58)
+        .scale([4.45, 0.36, 1.22])
+        .toJSON(),
+      primitives.box({ name: "sky club west seat tier", material: pavilionBrick })
+        .position(-4.85, 1.05, -5.13)
+        .scale([4.05, 0.42, 0.48])
+        .toJSON(),
+      primitives.box({ name: "sky club east seat tier", material: pavilionBrick })
+        .position(4.85, 1.05, -5.13)
+        .scale([4.05, 0.42, 0.48])
+        .toJSON(),
+      primitives.cylinder({ name: "sky club west rail", material: terraceRail })
+        .position(-4.85, 1.42, -3.98)
+        .rotate(0, 0, Math.PI / 2)
+        .scale([0.055, 4.25, 0.055])
+        .toJSON(),
+      primitives.cylinder({ name: "sky club east rail", material: terraceRail })
+        .position(4.85, 1.42, -3.98)
+        .rotate(0, 0, Math.PI / 2)
+        .scale([0.055, 4.25, 0.055])
+        .toJSON(),
+      primitives.box({ name: "sky club west rail light", material: terraceGlow })
+        .position(-4.85, 1.34, -3.96)
+        .scale([4.05, 0.045, 0.035])
+        .toJSON(),
+      primitives.box({ name: "sky club east rail light", material: terraceGlow })
+        .position(4.85, 1.34, -3.96)
+        .scale([4.05, 0.045, 0.035])
+        .toJSON(),
+      text3D("NIGHT LEAGUE", {
+        name: "night league pavilion sign",
+        size: 0.34,
+        depth: 0.045,
+        letterSpacing: 0.024,
+        material: clubSign
+      })
+        .position(-2.4, 7.58, -6.06)
+        .toJSON()
+    );
+  }
 
   return nodes;
 }

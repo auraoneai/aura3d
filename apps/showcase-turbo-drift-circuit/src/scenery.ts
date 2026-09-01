@@ -30,28 +30,31 @@ export interface TurboSceneryItem {
   readonly sizeScene: readonly [number, number, number];
 }
 
-/** Formalised late-afternoon presentation constants. Values match the retained route look. */
+/** Formalised late-afternoon presentation constants for the rally-world capture. */
 export const TURBO_LATE_AFTERNOON_MOOD = {
   name: "circuit late afternoon",
-  background: "#6a8fa8",
+  // The former blue-gray grade flattened the scene into a near-night test frame.
+  // Keep a muted sunset sky so the typed cars and green verge separate from the
+  // warm rally-road reference without turning the route into a color filter.
+  background: "#df967d",
   environmentName: "circuit late afternoon reflections",
-  environmentColor: "#ffe8cc",
-  environmentIntensity: 1.12,
-  ambientColor: "#fff0dc",
-  ambientIntensity: 1.02,
-  keyColor: "#ffd8a8",
-  keyIntensity: 2.35,
+  environmentColor: "#ffd0a4",
+  environmentIntensity: 1.24,
+  ambientColor: "#ffe0c5",
+  ambientIntensity: 1.16,
+  keyColor: "#ffc18e",
+  keyIntensity: 2.7,
   /** Key-light position as fractions of SCENE_SIZE (x, y, z). */
-  keyPositionFractions: { x: -0.83, y: 1.2, z: 0.65 },
-  rimColor: "#c8dff5",
-  rimIntensity: 0.88,
+  keyPositionFractions: { x: -0.92, y: 0.38, z: 0.58 },
+  rimColor: "#c6d9e8",
+  rimIntensity: 0.96,
   rimPositionFractions: { x: 0.65, y: 0.59, z: -0.56 },
-  pitFillColor: "#ffcfa0",
-  fogColor: "#7a9eb8",
+  pitFillColor: "#f6a178",
+  fogColor: "#d48673",
   /** Fog density at the reference scene size; scaled by SCENE_SIZE at runtime. */
   fogReferenceDensity: 0.028,
   fogReferenceSceneSize: 5.4,
-  fogIntensity: 0.36
+  fogIntensity: 0.48
 } as const;
 
 export interface PlanTurboSceneryInput {
@@ -139,9 +142,14 @@ export function planTurboScenery(input: PlanTurboSceneryInput): TurboSceneryPlan
     const sample = input.sampleAt(bestProgress);
     const curvatureSign = Math.sign(input.curvatureAt(bestProgress)) || 1;
     const outsideSide = -curvatureSign;
-    const depthGame = 0.05 + rng() * 0.02;
-    const widthGame = 0.16 + rng() * 0.08;
-    const signedOffset = outsideSide * (baseOffset + depthGame / 2 + 0.02);
+    // Stands are compact spectator modules, not a bridge across the track. The
+    // earlier 0.16–0.24 game-unit width and edge-hugging offset projected as a
+    // beige slab through the active lane in the chase capture. Keep a modest
+    // footprint and reserve a second verge margin so the module reads as
+    // corner-side scenery while its full depth clears the certified asphalt.
+    const depthGame = 0.032 + rng() * 0.014;
+    const widthGame = 0.07 + rng() * 0.03;
+    const signedOffset = outsideSide * (baseOffset + depthGame / 2 + 0.16);
     crowdStands.push({
       id: "turbo-scenery-crowd-" + index,
       kind: "crowd-stand",
@@ -187,16 +195,21 @@ export function planTurboScenery(input: PlanTurboSceneryInput): TurboSceneryPlan
   const midZ = (input.trackBoundsGame.minZ + input.trackBoundsGame.maxZ) / 2;
   const spanX = Math.max(1e-3, input.trackBoundsGame.maxX - input.trackBoundsGame.minX);
   const spanZ = Math.max(1e-3, input.trackBoundsGame.maxZ - input.trackBoundsGame.minZ);
-  const ringScaleX = 1.18 + rng() * 0.14;
-  const ringScaleZ = 1.18 + rng() * 0.14;
+  // Keep the tree ring in the middle distance where it can read as a rally-world
+  // silhouette without becoming a foreground prop. The earlier 1.16–1.28
+  // envelope left the overview capture's outfield almost empty; a denser
+  // 1.08–1.18 ring stays outside the certified bounds while filling the horizon
+  // and preserving a clear active corner and car silhouettes.
+  const ringScaleX = 1.08 + rng() * 0.1;
+  const ringScaleZ = 1.08 + rng() * 0.1;
   for (let index = 0; index < counts.treeClusters; index += 1) {
     const angle = (index / counts.treeClusters) * Math.PI * 2 + rng() * 0.22;
     const radiusX = (spanX / 2) * ringScaleX;
     const radiusZ = (spanZ / 2) * ringScaleZ;
-    const radius = Math.max(radiusX, radiusZ) * (0.92 + rng() * 0.24);
+    const radius = Math.max(radiusX, radiusZ) * (0.94 + rng() * 0.16);
     const x = midX + Math.cos(angle) * radius;
     const z = midZ + Math.sin(angle) * radius;
-    const height = 0.5 + rng() * 0.42;
+    const height = 0.58 + rng() * 0.46;
     trees.push({
       id: "turbo-scenery-tree-" + index,
       kind: "tree-cluster",

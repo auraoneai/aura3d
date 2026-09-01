@@ -34,6 +34,7 @@ const WORKLOADS = [
 const root = resolve(".");
 const json = <T>(path: string): T => JSON.parse(readFileSync(resolve(root, path), "utf8")) as T;
 const sha256 = (path: string): string => createHash("sha256").update(readFileSync(resolve(root, path))).digest("hex");
+const packageVersion = json<{ readonly version: string }>("package.json").version;
 const contextPath = "benchmark/context/threejs-r185.1-20260808.json";
 const baselinePath = "tests/reports/current-threejs-baseline.json";
 const installedPath = "tests/reports/current-head-to-head-installed/report.json";
@@ -79,7 +80,7 @@ const checks = [
       && installed.workloadCount === 15
       && installed.packages.length === 29
       && new Set(installed.packages.map(({ name }) => name)).size === 29
-      && installed.packages.every(({ version }) => version === "2.0.0")
+      && installed.packages.every(({ version }) => version === packageVersion)
       && installed.tarballs.length === 29
       && installed.tarballs.every(({ sha256: digest }) => /^[a-f0-9]{64}$/.test(digest))
   }

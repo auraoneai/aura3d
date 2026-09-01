@@ -1,0 +1,46 @@
+{
+  "renderer": "createAuraApp root safe API",
+  "asset": {
+    "typed": "assets.galleryShiftMuseumWorldCandidate",
+    "url": "/galleryShiftMuseumWorldCandidate.glb",
+    "hash": "sha256-9773fa0df6fe19c1c3d2145548af78c91943a0f14d6879154c95dee4cdf124c2",
+    "license": "CC0-1.0"
+  },
+  "camera": {
+    "position": [
+      0,
+      31,
+      7.5
+    ],
+    "target": [
+      0,
+      0.15,
+      0.1
+    ],
+    "fov": 39
+  },
+  "diagnostics": {
+    "backend": "production-runtime",
+    "drawCalls": 28,
+    "renderSize": [
+      1280,
+      800
+    ]
+  },
+  "constraints": {
+    "routeIntegrated": false,
+    "manifestRegistered": false,
+    "cameraChanged": false,
+    "gameplayChanged": false,
+    "openRoof": true
+  },
+  "screenshot": {
+    "path": "museum-world-aura-preview.png",
+    "sha256": "f87e128e5ec7b6130a69c0c33be3064b31a9a98c93ab98382534d4a91efe8142",
+    "bytes": 113341,
+    "viewport": [
+      1280,
+      800
+    ]
+  }
+}

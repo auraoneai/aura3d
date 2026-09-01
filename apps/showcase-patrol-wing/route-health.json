@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-24T05:02:20.479Z",
+  "generatedAt": "2026-08-31T15:23:31.364Z",
   "appId": "showcase-patrol-wing",
   "route": "/apps/showcase-patrol-wing/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "a4d77a3dedebc88e949559d9366d834391bb3e61abd423c100c8c3593baa6746",
+  "routeSourceSha256": "4d01b2b897fd3203b51aabe0c10bb1c41334ae066fa95da7360872de747c5a0f",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -17,19 +17,19 @@
   "primaryAssets": [
     {
       "typedRef": "assets.patrolWingPlane",
-      "hash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+      "hash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
       "quality": "release",
       "role": "vehicle"
     },
     {
       "typedRef": "assets.patrolWingDroneA",
-      "hash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+      "hash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
       "quality": "release",
       "role": "vehicle"
     },
     {
       "typedRef": "assets.patrolWingDroneB",
-      "hash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+      "hash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
       "quality": "release",
       "role": "vehicle"
     },
@@ -120,7 +120,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 13,
+    "sourceOccurrences": 30,
     "primitiveBudget": 80,
     "role": "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets",
     "status": "no-primitive-primary-subjects"
@@ -158,7 +158,7 @@
   },
   "performance": {
     "schema": "aura3d.patrol-wing.performance/1.0",
-    "generatedAt": "2026-08-24T05:02:20.117Z",
+    "generatedAt": "2026-08-31T15:23:29.533Z",
     "producer": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
     "producerSourceSha256": "a2f7608ca273e6120ee35c902f8df89d78f294fa515ec254b1ea9a49afe72a18",
     "routeSourceFiles": [
@@ -172,7 +172,7 @@
       "apps/showcase-patrol-wing/src/weapons.ts",
       "apps/showcase-patrol-wing/src/wing-audio.ts"
     ],
-    "routeSourceSha256": "a4d77a3dedebc88e949559d9366d834391bb3e61abd423c100c8c3593baa6746",
+    "routeSourceSha256": "4d01b2b897fd3203b51aabe0c10bb1c41334ae066fa95da7360872de747c5a0f",
     "scope": "Route-local authored arcade-flight/ring CPU sampling plus route-primary root-renderer draw calls when available; no GPU frame-time, aerodynamic, reusable flight-kit, or renderer-parity claim.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -181,27 +181,27 @@
       "drawCalls": 240
     },
     "observed": {
-      "routeLogicCpuP95Ms": 0.004,
+      "routeLogicCpuP95Ms": 0.002,
       "deterministicStateHash": "54dcd06e",
-      "drawCalls": 133,
+      "drawCalls": 68,
       "renderSize": [
-        1098,
+        1412,
         900
       ],
-      "browserFrameCount": 30
+      "browserFrameCount": 36
     },
     "drawEvidencePending": false,
     "pass": true
   },
   "deploy": {
     "schema": "aura3d.patrol-wing.deploy/1.0",
-    "generatedAt": "2026-08-24T04:54:31.694Z",
+    "generatedAt": "2026-08-31T15:23:30.427Z",
     "producer": "apps/showcase-patrol-wing/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "92bdc8ea8eb70b2f17926422c325d015ae5016e7aaa5436638ca8d36733f36b6",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "d5505ead427eda571b38db2f8df8c88f9dad4f81adc70c9245831b2511102641",
-    "sourceTreeSha256": "207fba80d946022273717e705d62383569e730e0b0ddbcacbd2ceb07e471898e",
+    "distTreeSha256": "0c3f12d4cf30fc3e3a5b2a82ad295387b73d51f7dcd39001d2b6cd791be1a742",
+    "sourceTreeSha256": "e796d66cabca673fa44736be19bb8777f96c28f18e10dfbc6a65d8ee4b504660",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-patrol-wing/src --asset <4 typed models>",
@@ -210,13 +210,13 @@
         "assets": [
           {
             "id": "patrolWingDroneA",
-            "hash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+            "hash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
             "quality": "release",
             "role": "vehicle"
           },
           {
             "id": "patrolWingDroneB",
-            "hash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+            "hash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
             "quality": "release",
             "role": "vehicle"
           },
@@ -228,7 +228,7 @@
           },
           {
             "id": "patrolWingPlane",
-            "hash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+            "hash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
             "quality": "release",
             "role": "vehicle"
           }
@@ -280,43 +280,43 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/patrol-wing/playable/takeoff.png",
-        "sha256": "c0a0778ec429e3e94f8708872a202b86ecd7c8da84996ef4f15cbca7c6de6246"
+        "sha256": "5009279892a9ecc5dd31acf8c65def755221bc342d16a265d91d8c3009d3291c"
       },
       {
         "path": "tests/reports/patrol-wing/playable/ring-run.png",
-        "sha256": "0238d15b1ac75c6820af72e63fbeee77870df4ec9260d154f48e3a9557bd2261"
+        "sha256": "d850d50f94fab6ee2f1748639b4759c83fb838c14efe4b07af496c327803763e"
       },
       {
         "path": "tests/reports/patrol-wing/playable/drone-pass.png",
-        "sha256": "605e1132cf7ec2e0ba11914238ee69938d7cd3d7e427d3627b83ba8f8b5dbd0b"
+        "sha256": "38916b925806e978d27f0d7838cf64b88fafb11df4e749a04fa20fb4feb8e7cb"
       },
       {
         "path": "tests/reports/patrol-wing/playable/drone-hit.png",
-        "sha256": "fca23ecab420a87be9156aa2baeb9b676a22b7bcb692d222b55a632997d6b3e9"
+        "sha256": "3d9862df3ecd21b1d4c4fc47a37d721bf6cb113f489c611c96a2ad28a70da553"
       },
       {
         "path": "tests/reports/patrol-wing/playable/canyon.png",
-        "sha256": "da5cfb6ba28ff6297314d5feb28c8956ee5a9ffc2e823a0ff7a07d29bd38d4b5"
+        "sha256": "10ee3cb7838c7010e74b8e025c20346083a1dd1d151a6287670f73ffc6f88af8"
       },
       {
         "path": "tests/reports/patrol-wing/playable/low-hull.png",
-        "sha256": "2f8e6ae20a84534655895f29cf267a35a3972b1bea6402891cfb9bdc59fe4e58"
+        "sha256": "62ef68fd4ffaf8431e40bcd55321903b76d292a9cc269b697c31f010984cb7b1"
       },
       {
         "path": "tests/reports/patrol-wing/playable/final-approach.png",
-        "sha256": "874afc7e7681a46be31646d6124be99bf4cba05bf1bfaead0ef7318c7c760da3"
+        "sha256": "0d9629022a78fe05a083b51ed6eb2507ef79174390f1e4228b08159075d9e0f8"
       },
       {
         "path": "tests/reports/patrol-wing/playable/touchdown.png",
-        "sha256": "f57c495ad48673527732c6ea555cacc8b55246e947070af75a24250db61d46c0"
+        "sha256": "fda7cdd12154c7d6cf9317c9275b887a0b2cfd9b22f877858fe14d00ec61a9d8"
       },
       {
         "path": "tests/reports/patrol-wing/playable/mobile-touch.png",
-        "sha256": "4dbeaa2e9ef8c3f6e1eba1abb9e3eac6495b4a5ca17a08ffd8c80cde32cb79e1"
+        "sha256": "c83fda225a1e94ec34d0ed8aedc520b12b56e00b41fdf0c2bf70d5ee7eff0aa2"
       },
       {
         "path": "tests/reports/patrol-wing/playable/reduced-motion.png",
-        "sha256": "6a645521c86bdaaec5c906f85b8f619de9f30e1ea3eca66fa717bb9086673bbc"
+        "sha256": "6ac45402706acb59a56feca81b84dc744e449fdf8ad05f5bf814fb8abc64ae73"
       }
     ],
     "browserReceipt": "tests/reports/patrol-wing/playable/browser-evidence.json",
@@ -325,19 +325,19 @@
         "asset": "patrolWingPlane",
         "metadata": "tests/reports/showcase-release-asset-probes/patrolWingPlane.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/patrolWingPlane.png",
-        "assetHash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b"
+        "assetHash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade"
       },
       {
         "asset": "patrolWingDroneA",
         "metadata": "tests/reports/showcase-release-asset-probes/patrolWingDroneA.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/patrolWingDroneA.png",
-        "assetHash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a"
+        "assetHash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250"
       },
       {
         "asset": "patrolWingDroneB",
         "metadata": "tests/reports/showcase-release-asset-probes/patrolWingDroneB.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/patrolWingDroneB.png",
-        "assetHash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348"
+        "assetHash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2"
       },
       {
         "asset": "patrolWingPadBeacon",

@@ -20,6 +20,10 @@ type AuraGeneratedAssetDefinitions = {
   readonly "impA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "impB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "medkit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonContainmentPulseRifle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonContainmentWardenA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonContainmentWardenB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonCorridorContainmentWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pulseRifle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
@@ -85,13 +89,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "provenance": {
         "sourcePath": "public/aura-assets/ammoCrate.94562738.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/old-ammo-crate-320d935472354cc79590bc35ade9d855",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-101/320d935472354cc79590bc35ade9d855.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-101/320d935472354cc79590bc35ade9d855.glb",
         "license": "CC-BY-4.0",
-        "licenseName": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
         "author": "Geoffroy.Sainte.Catherine",
-        "sourceFamily": "objaverse",
+        "sourceFamily": "sketchfab-via-objaverse",
         "attribution": "Geoffroy.Sainte.Catherine",
         "sha256": "sha256-945627385565fcfb5182fad294b66e1beaf23dcf0a42d9503f64ab2c8f5c339a",
         "retrievedAt": "2026-08-17T02:25:39.670Z",
@@ -193,9 +199,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-945627385565fcfb5182fad294b66e1beaf23dcf0a42d9503f64ab2c8f5c339a",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-30T16:12:35.865Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=ammoCrate",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/ammoCrate.png",
+          "sha256": "sha256-bf493cb2c1c1f1c28d165ef748d7a84c2e6e6c4703ad0198a3e807531e1e556c",
+          "assetHash": "sha256-945627385565fcfb5182fad294b66e1beaf23dcf0a42d9503f64ab2c8f5c339a",
+          "checkedAt": "2026-08-30T16:12:35.865Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=ammoCrate"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The current hash-bound isolated root probe proves a readable static prop/environment presentation; no forward-axis or gameplay behavior is inferred."
         ]
       },
       "nodeNames": [
@@ -235,9 +253,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/ammoCrate.thumb.svg",
-      "quality": "candidate",
-      "role": "unknown",
-      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+      "quality": "release",
+      "role": "prop",
+      "suitabilityReason": "Textured CC-BY ammo crate used as a readable pickup and non-colliding corridor set-dressing prop; gameplay collection and collision remain route-local.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/ammoCrate.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=ammoCrate",
+        "sha256": "sha256-bf493cb2c1c1f1c28d165ef748d7a84c2e6e6c4703ad0198a3e807531e1e556c",
+        "assetHash": "sha256-945627385565fcfb5182fad294b66e1beaf23dcf0a42d9503f64ab2c8f5c339a",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 479991,
+        "colorBuckets": 33,
+        "checkedAt": "2026-08-30T16:12:35.865Z",
+        "foregroundBounds": {
+          "x": 123,
+          "y": 131,
+          "width": 601,
+          "height": 378
+        }
+      }
     },
   },
   "arena": {
@@ -309,13 +346,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "provenance": {
         "sourcePath": "public/aura-assets/arena.4fc319ea.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/sci-fi-spaceship-corridor-7733bbe1ddd146fd8657272f8247a6bf",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/7733bbe1ddd146fd8657272f8247a6bf.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-018/7733bbe1ddd146fd8657272f8247a6bf.glb",
         "license": "CC-BY-4.0",
-        "licenseName": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
         "author": "J4747",
-        "sourceFamily": "objaverse",
+        "sourceFamily": "sketchfab-via-objaverse",
         "attribution": "J4747",
         "sha256": "sha256-4fc319ea864a8b498b246faddd6e74534683a02d7e8da66ac187634dd4e7cc4b",
         "retrievedAt": "2026-08-17T02:25:01.724Z",
@@ -473,9 +512,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-4fc319ea864a8b498b246faddd6e74534683a02d7e8da66ac187634dd4e7cc4b",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-30T16:12:43.308Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=arena",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/arena.png",
+          "sha256": "sha256-9eb90f6ea093a673fa9640d6c49bd5168efe3faa43ffafe58a0f49afa3aea668",
+          "assetHash": "sha256-4fc319ea864a8b498b246faddd6e74534683a02d7e8da66ac187634dd4e7cc4b",
+          "checkedAt": "2026-08-30T16:12:43.308Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=arena"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The current hash-bound isolated root probe proves a readable static prop/environment presentation; no forward-axis or gameplay behavior is inferred."
         ]
       },
       "nodeNames": [
@@ -560,9 +611,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/arena.thumb.svg",
-      "quality": "candidate",
-      "role": "unknown",
-      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+      "quality": "release",
+      "role": "environment",
+      "suitabilityReason": "Textured CC-BY science-fiction corridor environment used as the distant authored deck backdrop; route-local primitives, physics, enemies, and exit state remain authoritative.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/arena.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=arena",
+        "sha256": "sha256-9eb90f6ea093a673fa9640d6c49bd5168efe3faa43ffafe58a0f49afa3aea668",
+        "assetHash": "sha256-4fc319ea864a8b498b246faddd6e74534683a02d7e8da66ac187634dd4e7cc4b",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 459893,
+        "colorBuckets": 22,
+        "checkedAt": "2026-08-30T16:12:43.308Z",
+        "foregroundBounds": {
+          "x": 110,
+          "y": 163,
+          "width": 490,
+          "height": 289
+        }
+      }
     },
   },
   "corridorAlarmSfx": {
@@ -1747,13 +1817,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "provenance": {
         "sourcePath": "public/aura-assets/impA.8283c44f.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/horror-creature-3cc51bb456034f5e9da1f8ba1d3534d1",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-088/3cc51bb456034f5e9da1f8ba1d3534d1.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-088/3cc51bb456034f5e9da1f8ba1d3534d1.glb",
-        "license": "CC-BY-4.0",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
         "licenseName": "CC-BY-4.0",
+        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
-        "author": "Emi De Vogelaere",
-        "sourceFamily": "objaverse",
+        "author": "Emi De Vogelaere (https://sketchfab.com/EmiDeVogelaere)",
+        "sourceFamily": "sketchfab-via-objaverse",
         "attribution": "Emi De Vogelaere",
         "sha256": "sha256-8283c44fa3bc599535357be8b5259fce36b51bcb7531febef1310afeb1f24723",
         "retrievedAt": "2026-08-17T02:25:30.837Z",
@@ -1820,8 +1892,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "sourcePath": "public/aura-assets/impA.8283c44f.glb",
       "outputPath": "public/aura-assets/impA.8283c44f.glb",
-      "license": "CC-BY-4.0",
-      "author": "Emi De Vogelaere",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Emi De Vogelaere (https://sketchfab.com/EmiDeVogelaere)",
       "boundsMetadata": {
         "min": [
           -19.851,
@@ -1891,9 +1963,23 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-route-facing-view",
+        "assetHash": "sha256-8283c44fa3bc599535357be8b5259fce36b51bcb7531febef1310afeb1f24723",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-30T16:12:50.148Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=impA",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/impA.png",
+          "sha256": "sha256-433536f7238ebbf2db6ffd8fb1c75eba00150a44114582df35e25221a743c2ca",
+          "assetHash": "sha256-8283c44fa3bc599535357be8b5259fce36b51bcb7531febef1310afeb1f24723",
+          "checkedAt": "2026-08-30T16:12:50.148Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=impA"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The current hash-bound isolated root probe was reviewed +Y-up with the authored route-facing direction along +Z. It proves only static presentation; movement, aiming, hits, and damage remain route-local."
         ]
       },
       "nodeNames": [
@@ -2015,9 +2101,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/impA.thumb.svg",
-      "quality": "candidate",
-      "role": "unknown",
-      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Textured CC-BY hostile character visual with hash-bound isolated proof and route-normalized camera-fit placement to 1.72 metres; movement, hitscan, health, reactions, and damage remain route-local.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/impA.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=impA",
+        "sha256": "sha256-433536f7238ebbf2db6ffd8fb1c75eba00150a44114582df35e25221a743c2ca",
+        "assetHash": "sha256-8283c44fa3bc599535357be8b5259fce36b51bcb7531febef1310afeb1f24723",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 480000,
+        "colorBuckets": 31,
+        "checkedAt": "2026-08-30T16:12:50.148Z",
+        "foregroundBounds": {
+          "x": 114,
+          "y": 226,
+          "width": 485,
+          "height": 238
+        }
+      }
     },
   },
   "impB": {
@@ -2321,13 +2426,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "provenance": {
         "sourcePath": "public/aura-assets/impB.cf055563.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/pig-demon-bba636efaee04b3ea988b2ae4487cfc1",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/bba636efaee04b3ea988b2ae4487cfc1.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/bba636efaee04b3ea988b2ae4487cfc1.glb",
-        "license": "CC-BY-4.0",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
         "licenseName": "CC-BY-4.0",
+        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
-        "author": "Lexington Dath",
-        "sourceFamily": "objaverse",
+        "author": "Lexington Dath (https://sketchfab.com/Lexinator117)",
+        "sourceFamily": "sketchfab-via-objaverse",
         "attribution": "Lexington Dath",
         "sha256": "sha256-cf05556377a7b8f686c52444adec62d24b73c392cccb51f9ca2ba916c1019a83",
         "retrievedAt": "2026-08-17T02:25:33.108Z",
@@ -2394,8 +2501,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "sourcePath": "public/aura-assets/impB.cf055563.glb",
       "outputPath": "public/aura-assets/impB.cf055563.glb",
-      "license": "CC-BY-4.0",
-      "author": "Lexington Dath",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Lexington Dath (https://sketchfab.com/Lexinator117)",
       "boundsMetadata": {
         "min": [
           -61.845,
@@ -2430,9 +2537,23 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-route-facing-view",
+        "assetHash": "sha256-cf05556377a7b8f686c52444adec62d24b73c392cccb51f9ca2ba916c1019a83",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-30T16:12:56.338Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=impB",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/impB.png",
+          "sha256": "sha256-a166f09e799450905d9cf5ae5f4ee7862d363a339a5d7bf1474e4bf59dc68024",
+          "assetHash": "sha256-cf05556377a7b8f686c52444adec62d24b73c392cccb51f9ca2ba916c1019a83",
+          "checkedAt": "2026-08-30T16:12:56.338Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=impB"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The current hash-bound isolated root probe was reviewed +Y-up with the authored route-facing direction along +Z. It proves only static presentation; movement, aiming, hits, and damage remain route-local."
         ]
       },
       "nodeNames": [
@@ -2558,9 +2679,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/impB.thumb.svg",
-      "quality": "candidate",
-      "role": "unknown",
-      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Textured CC-BY hostile character visual with hash-bound isolated proof and route-normalized camera-fit placement to 1.92 metres; movement, hitscan, health, reactions, and damage remain route-local.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/impB.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=impB",
+        "sha256": "sha256-a166f09e799450905d9cf5ae5f4ee7862d363a339a5d7bf1474e4bf59dc68024",
+        "assetHash": "sha256-cf05556377a7b8f686c52444adec62d24b73c392cccb51f9ca2ba916c1019a83",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 480000,
+        "colorBuckets": 54,
+        "checkedAt": "2026-08-30T16:12:56.338Z",
+        "foregroundBounds": {
+          "x": 241,
+          "y": 147,
+          "width": 295,
+          "height": 453
+        }
+      }
     },
   },
   "medkit": {
@@ -2627,13 +2767,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "provenance": {
         "sourcePath": "public/aura-assets/medkit.1f82742f.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/game-prop-mental-asylum-gurney-43736bb6a0b64fe8a824542bdbace6bc",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/43736bb6a0b64fe8a824542bdbace6bc.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/43736bb6a0b64fe8a824542bdbace6bc.glb",
         "license": "CC-BY-4.0",
-        "licenseName": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
         "author": "Ellie",
-        "sourceFamily": "objaverse",
+        "sourceFamily": "sketchfab-via-objaverse",
         "attribution": "Ellie",
         "sha256": "sha256-1f82742fb4bc79b46884a991d4fdeb6f1a0a9a39f7982c1a006da2f9f8da3076",
         "retrievedAt": "2026-08-17T02:25:42.017Z",
@@ -2757,9 +2899,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-1f82742fb4bc79b46884a991d4fdeb6f1a0a9a39f7982c1a006da2f9f8da3076",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-30T16:13:05.051Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=medkit",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/medkit.png",
+          "sha256": "sha256-ce5c383f42d76f8b0f96034a0babf1cec44eabeffd5530268f5aa6cedd5fe59a",
+          "assetHash": "sha256-1f82742fb4bc79b46884a991d4fdeb6f1a0a9a39f7982c1a006da2f9f8da3076",
+          "checkedAt": "2026-08-30T16:13:05.051Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=medkit"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The current hash-bound isolated root probe proves a readable static prop/environment presentation; no forward-axis or gameplay behavior is inferred."
         ]
       },
       "nodeNames": [
@@ -2785,9 +2939,858 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/medkit.thumb.svg",
-      "quality": "candidate",
-      "role": "unknown",
-      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+      "quality": "release",
+      "role": "prop",
+      "suitabilityReason": "Textured CC-BY gurney-shaped health pickup prop retained for its readable medical silhouette; collection, healing, and reset behavior remain route-local.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/medkit.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=medkit",
+        "sha256": "sha256-ce5c383f42d76f8b0f96034a0babf1cec44eabeffd5530268f5aa6cedd5fe59a",
+        "assetHash": "sha256-1f82742fb4bc79b46884a991d4fdeb6f1a0a9a39f7982c1a006da2f9f8da3076",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 477035,
+        "colorBuckets": 26,
+        "checkedAt": "2026-08-30T16:13:05.051Z",
+        "foregroundBounds": {
+          "x": 199,
+          "y": 184,
+          "width": 485,
+          "height": 340
+        }
+      }
+    },
+  },
+  "neonContainmentPulseRifle": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/neonContainmentPulseRifle.1d79b688.glb",
+    hash: "sha256-1d79b68867c1ac25f156af6556a5714175a019784a9c13a17cd74b67b736d5d8",
+    bounds: [
+      0.545,
+      0.782,
+      1.917
+    ],
+    sizeBytes: 117672,
+    metadata: {
+      "materials": [
+        "Rifle bronze",
+        "Rifle charcoal",
+        "Rifle charged bore",
+        "Rifle cobalt",
+        "Rifle steel"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 5,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Containment Pulse Rifle — Rifle bronze",
+          "Containment Pulse Rifle — Rifle charcoal",
+          "Containment Pulse Rifle — Rifle charged bore",
+          "Containment Pulse Rifle — Rifle cobalt",
+          "Containment Pulse Rifle — Rifle steel"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/models/neonContainmentPulseRifle.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/examples/neon-corridor-strike/scripts/build-model-family-blender.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/examples/neon-corridor-strike/assets/models/neonContainmentPulseRifle.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Neon Corridor containment model family",
+        "retrievedAt": "2026-08-31T03:00:00.000Z",
+        "evidence": [
+          "Authored through the committed Blender 5.2 hard-surface builder; applied bevel geometry, material-separated merged meshes, metre scale, and final hash are reproducible. The rigid assets intentionally contain no clips or skins.",
+          "Deterministically generated from committed model-family source; geometry, metre scale, +Y-up/+Z-forward orientation, materials, and hash are reproducible."
+        ],
+        "checkedAt": "2026-08-31T03:00:00.000Z"
+      },
+      "sourcePath": "assets/models/neonContainmentPulseRifle.glb",
+      "outputPath": "public/aura-assets/neonContainmentPulseRifle.1d79b688.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -0.272,
+          -0.552,
+          -0.957
+        ],
+        "max": [
+          0.272,
+          0.23,
+          0.96
+        ],
+        "size": [
+          0.545,
+          0.782,
+          1.917
+        ],
+        "center": [
+          0,
+          -0.161,
+          0.001
+        ],
+        "maxDimension": 1.917,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Rifle bronze",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Rifle charcoal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Rifle charged bore",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Rifle cobalt",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Rifle steel",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-route-facing-view",
+        "assetHash": "sha256-1d79b68867c1ac25f156af6556a5714175a019784a9c13a17cd74b67b736d5d8",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-31T23:37:28.626Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentPulseRifle",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonContainmentPulseRifle.png",
+          "sha256": "sha256-a3ab67352ffd8ced91b736cefedeeb8b7bb08436a55ca89cb4237bf587a2f4dd",
+          "assetHash": "sha256-1d79b68867c1ac25f156af6556a5714175a019784a9c13a17cd74b67b736d5d8",
+          "checkedAt": "2026-08-31T23:37:28.626Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentPulseRifle"
+        },
+        "messages": [
+          "The current hash-bound isolated root probe was reviewed +Y-up with the authored route-facing direction along +Z. It proves only static presentation; movement, aiming, hits, and damage remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "Containment Pulse Rifle — Rifle bronze",
+        "Containment Pulse Rifle — Rifle charcoal",
+        "Containment Pulse Rifle — Rifle charged bore",
+        "Containment Pulse Rifle — Rifle cobalt",
+        "Containment Pulse Rifle — Rifle steel"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/neonContainmentPulseRifle.thumb.svg",
+      "quality": "release",
+      "role": "weapon",
+      "suitabilityReason": "Original CC0 Blender-authored hard-surface containment pulse weapon with beveled charcoal receiver, machined rail, bronze heat ribs, cobalt capacitors, grip, stock, and charged bore. Its intentionally untextured stylized solid materials preserve a readable held silhouette and +Y-up/+Z-forward orientation; route-local hitscan and effects remain gameplay authority.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonContainmentPulseRifle.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentPulseRifle",
+        "sha256": "sha256-a3ab67352ffd8ced91b736cefedeeb8b7bb08436a55ca89cb4237bf587a2f4dd",
+        "assetHash": "sha256-1d79b68867c1ac25f156af6556a5714175a019784a9c13a17cd74b67b736d5d8",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 480000,
+        "colorBuckets": 63,
+        "checkedAt": "2026-08-31T23:37:28.626Z",
+        "foregroundBounds": {
+          "x": 92,
+          "y": 238,
+          "width": 559,
+          "height": 234
+        }
+      }
+    },
+  },
+  "neonContainmentWardenA": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/neonContainmentWardenA.4b73f726.glb",
+    hash: "sha256-4b73f726b1a1b72dc111c045b81955e29941cc2b14fdf1d8ee0cf3627acf12e0",
+    bounds: [
+      1.828,
+      2.335,
+      1.015
+    ],
+    sizeBytes: 203908,
+    metadata: {
+      "materials": [
+        "Warden A graphite",
+        "Warden A hazard ceramic",
+        "Warden A mechanics",
+        "Warden A optic",
+        "Warden A steel"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 5,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Containment Warden A — Warden A graphite",
+          "Containment Warden A — Warden A hazard ceramic",
+          "Containment Warden A — Warden A mechanics",
+          "Containment Warden A — Warden A optic",
+          "Containment Warden A — Warden A steel"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/models/neonContainmentWardenA.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/examples/neon-corridor-strike/scripts/build-model-family-blender.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/examples/neon-corridor-strike/assets/models/neonContainmentWardenA.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Neon Corridor containment model family",
+        "retrievedAt": "2026-08-31T03:00:00.000Z",
+        "evidence": [
+          "Authored through the committed Blender 5.2 hard-surface builder; applied bevel geometry, material-separated merged meshes, metre scale, and final hash are reproducible. The rigid assets intentionally contain no clips or skins.",
+          "Deterministically generated from committed model-family source; geometry, metre scale, +Y-up/+Z-forward orientation, materials, and hash are reproducible."
+        ],
+        "checkedAt": "2026-08-31T03:00:00.000Z"
+      },
+      "sourcePath": "assets/models/neonContainmentWardenA.glb",
+      "outputPath": "public/aura-assets/neonContainmentWardenA.4b73f726.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -0.914,
+          -0.055,
+          -0.46
+        ],
+        "max": [
+          0.914,
+          2.28,
+          0.555
+        ],
+        "size": [
+          1.828,
+          2.335,
+          1.015
+        ],
+        "center": [
+          0,
+          1.113,
+          0.047
+        ],
+        "maxDimension": 2.335,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Warden A graphite",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden A hazard ceramic",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden A mechanics",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden A optic",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden A steel",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-route-facing-view",
+        "assetHash": "sha256-4b73f726b1a1b72dc111c045b81955e29941cc2b14fdf1d8ee0cf3627acf12e0",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-31T23:37:05.269Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentWardenA",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonContainmentWardenA.png",
+          "sha256": "sha256-c441be39a77c574c0127a8d29670c7ed47a698047016752c0edcbe506b90098b",
+          "assetHash": "sha256-4b73f726b1a1b72dc111c045b81955e29941cc2b14fdf1d8ee0cf3627acf12e0",
+          "checkedAt": "2026-08-31T23:37:05.269Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentWardenA"
+        },
+        "messages": [
+          "The current hash-bound isolated root probe was reviewed +Y-up with the authored route-facing direction along +Z. It proves only static presentation; movement, aiming, hits, and damage remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "Containment Warden A — Warden A graphite",
+        "Containment Warden A — Warden A hazard ceramic",
+        "Containment Warden A — Warden A mechanics",
+        "Containment Warden A — Warden A optic",
+        "Containment Warden A — Warden A steel"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/neonContainmentWardenA.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Original CC0 Blender-authored rigid breacher character with readable +Y-up/+Z-forward orientation, beveled biped armor, helmet and slit visor, layered chest glacis, articulated-looking arm and leg assemblies, grounded feet, and exposed joints. Intentionally untextured stylized solid materials separate its armor and joints at route scale. This entry is rigid presentation geometry only; route-local enemy movement, damage, and reactions remain authoritative.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonContainmentWardenA.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentWardenA",
+        "sha256": "sha256-c441be39a77c574c0127a8d29670c7ed47a698047016752c0edcbe506b90098b",
+        "assetHash": "sha256-4b73f726b1a1b72dc111c045b81955e29941cc2b14fdf1d8ee0cf3627acf12e0",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 480000,
+        "colorBuckets": 74,
+        "checkedAt": "2026-08-31T23:37:05.269Z",
+        "foregroundBounds": {
+          "x": 207,
+          "y": 152,
+          "width": 387,
+          "height": 448
+        }
+      }
+    },
+  },
+  "neonContainmentWardenB": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/neonContainmentWardenB.033bb8d4.glb",
+    hash: "sha256-033bb8d46c958983428d361ee58d910e88f1fa94f80d6188ab14cc2905cdefb9",
+    bounds: [
+      3.992,
+      3.411,
+      1.776
+    ],
+    sizeBytes: 141184,
+    metadata: {
+      "materials": [
+        "Warden B steel edges",
+        "Warden B threat plates",
+        "Warden B tri-eye",
+        "Warden B turbine",
+        "Warden B wing armor"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 5,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Containment Warden B — Warden B steel edges",
+          "Containment Warden B — Warden B threat plates",
+          "Containment Warden B — Warden B tri-eye",
+          "Containment Warden B — Warden B turbine",
+          "Containment Warden B — Warden B wing armor"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/models/neonContainmentWardenB.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/examples/neon-corridor-strike/scripts/build-model-family-blender.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/examples/neon-corridor-strike/assets/models/neonContainmentWardenB.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Neon Corridor containment model family",
+        "retrievedAt": "2026-08-31T03:00:00.000Z",
+        "evidence": [
+          "Authored through the committed Blender 5.2 hard-surface builder; applied bevel geometry, material-separated merged meshes, metre scale, and final hash are reproducible. The rigid assets intentionally contain no clips or skins.",
+          "Deterministically generated from committed model-family source; geometry, metre scale, +Y-up/+Z-forward orientation, materials, and hash are reproducible."
+        ],
+        "checkedAt": "2026-08-31T03:00:00.000Z"
+      },
+      "sourcePath": "assets/models/neonContainmentWardenB.glb",
+      "outputPath": "public/aura-assets/neonContainmentWardenB.033bb8d4.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -2.02,
+          -0.765,
+          -0.792
+        ],
+        "max": [
+          1.972,
+          2.645,
+          0.984
+        ],
+        "size": [
+          3.992,
+          3.411,
+          1.776
+        ],
+        "center": [
+          -0.024,
+          0.94,
+          0.096
+        ],
+        "maxDimension": 3.992,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Warden B steel edges",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden B threat plates",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden B tri-eye",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden B turbine",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Warden B wing armor",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-route-facing-view",
+        "assetHash": "sha256-033bb8d46c958983428d361ee58d910e88f1fa94f80d6188ab14cc2905cdefb9",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-31T23:37:18.485Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentWardenB",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonContainmentWardenB.png",
+          "sha256": "sha256-2639b8a80b458b481d746784aee66fba13b2ef818cfec534548d2962da0c4ea5",
+          "assetHash": "sha256-033bb8d46c958983428d361ee58d910e88f1fa94f80d6188ab14cc2905cdefb9",
+          "checkedAt": "2026-08-31T23:37:18.485Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentWardenB"
+        },
+        "messages": [
+          "The current hash-bound isolated root probe was reviewed +Y-up with the authored route-facing direction along +Z. It proves only static presentation; movement, aiming, hits, and damage remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "Containment Warden B — Warden B steel edges",
+        "Containment Warden B — Warden B threat plates",
+        "Containment Warden B — Warden B tri-eye",
+        "Containment Warden B — Warden B turbine",
+        "Containment Warden B — Warden B wing armor"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/neonContainmentWardenB.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Original CC0 Blender-authored rigid elite manta character with readable +Y-up/+Z-forward orientation, broad swept wings, forked steel tips, central and wing turbines, dorsal command fin, three optics, talons, and grounded claws. Intentionally untextured stylized solid materials separate its armor, turbines, and threat plates at route scale. This entry is rigid presentation geometry only; route-local enemy movement, damage, and reactions remain authoritative.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonContainmentWardenB.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonContainmentWardenB",
+        "sha256": "sha256-2639b8a80b458b481d746784aee66fba13b2ef818cfec534548d2962da0c4ea5",
+        "assetHash": "sha256-033bb8d46c958983428d361ee58d910e88f1fa94f80d6188ab14cc2905cdefb9",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 480000,
+        "colorBuckets": 99,
+        "checkedAt": "2026-08-31T23:37:18.485Z",
+        "foregroundBounds": {
+          "x": 203,
+          "y": 271,
+          "width": 419,
+          "height": 286
+        }
+      }
+    },
+  },
+  "neonCorridorContainmentWorld": {
+    type: "model",
+    format: "glb",
+    url: "/examples/neon-corridor-strike/public/aura-assets/neonCorridorContainmentWorld.eb9e4da7.glb",
+    hash: "sha256-eb9e4da78bfc689d867995b3a676899ecf89a98fb42ff1d304e579885702cffd",
+    bounds: [
+      6.18,
+      2.87,
+      22.2
+    ],
+    sizeBytes: 1300360,
+    metadata: {
+      "materials": [
+        "NC aged bronze",
+        "NC amber hazard light",
+        "NC blue steel shell",
+        "NC cyan containment light",
+        "NC deck gunmetal",
+        "NC service machinery",
+        "NC teal panels"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 7,
+        "meshCount": 7,
+        "materialCount": 7,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Containment Corridor — NC aged bronze",
+          "Containment Corridor — NC amber hazard light",
+          "Containment Corridor — NC blue steel shell",
+          "Containment Corridor — NC cyan containment light",
+          "Containment Corridor — NC deck gunmetal",
+          "Containment Corridor — NC service machinery",
+          "Containment Corridor — NC teal panels"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 7 nodes across 7 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/models/neonCorridorContainmentWorld.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/examples/neon-corridor-strike/scripts/build-model-family-blender.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/examples/neon-corridor-strike/assets/models/neonCorridorContainmentWorld.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Neon Corridor containment model family",
+        "retrievedAt": "2026-08-31T03:00:00.000Z",
+        "evidence": [
+          "Authored through the committed Blender 5.2 hard-surface builder; applied bevel geometry, material-separated merged meshes, metre scale, and final hash are reproducible. The rigid assets intentionally contain no clips or skins.",
+          "Deterministically generated from committed model-family source; geometry, metre scale, +Y-up/+Z-forward orientation, materials, and hash are reproducible."
+        ],
+        "checkedAt": "2026-08-31T03:00:00.000Z"
+      },
+      "sourcePath": "assets/models/neonCorridorContainmentWorld.glb",
+      "outputPath": "public/aura-assets/neonCorridorContainmentWorld.eb9e4da7.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -3.09,
+          -0.21,
+          -12.1
+        ],
+        "max": [
+          3.09,
+          2.66,
+          10.1
+        ],
+        "size": [
+          6.18,
+          2.87,
+          22.2
+        ],
+        "center": [
+          0,
+          1.225,
+          -1
+        ],
+        "maxDimension": 22.2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "NC aged bronze",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "NC amber hazard light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "NC blue steel shell",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "NC cyan containment light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "NC deck gunmetal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "NC service machinery",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "NC teal panels",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-eb9e4da78bfc689d867995b3a676899ecf89a98fb42ff1d304e579885702cffd",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-31T23:36:57.873Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonCorridorContainmentWorld",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonCorridorContainmentWorld.png",
+          "sha256": "sha256-dd69ce3ffb8ec81b1674ea7ac839db3d17d754b3515088b78279efa1edb6fd61",
+          "assetHash": "sha256-eb9e4da78bfc689d867995b3a676899ecf89a98fb42ff1d304e579885702cffd",
+          "checkedAt": "2026-08-31T23:36:57.873Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonCorridorContainmentWorld"
+        },
+        "messages": [
+          "The current hash-bound isolated root probe proves a readable static prop/environment presentation; no forward-axis or gameplay behavior is inferred."
+        ]
+      },
+      "nodeNames": [
+        "Containment Corridor — NC aged bronze",
+        "Containment Corridor — NC amber hazard light",
+        "Containment Corridor — NC blue steel shell",
+        "Containment Corridor — NC cyan containment light",
+        "Containment Corridor — NC deck gunmetal",
+        "Containment Corridor — NC service machinery",
+        "Containment Corridor — NC teal panels"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/neonCorridorContainmentWorld.thumb.svg",
+      "quality": "release",
+      "role": "world",
+      "suitabilityReason": "Continuous 22 metre original CC0 Blender-authored containment world with beveled blue-steel shell, connected bronze structure and conduits, layered recessed bays, installed machinery and combat anchors, ceiling frames, and a modeled exit bulkhead. Its intentionally untextured stylized solid-material separation keeps the route-scale footprint readable; collision, triggers, hitscan, and movement stay route-local.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/neonCorridorContainmentWorld.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=neonCorridorContainmentWorld",
+        "sha256": "sha256-dd69ce3ffb8ec81b1674ea7ac839db3d17d754b3515088b78279efa1edb6fd61",
+        "assetHash": "sha256-eb9e4da78bfc689d867995b3a676899ecf89a98fb42ff1d304e579885702cffd",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 480000,
+        "colorBuckets": 54,
+        "checkedAt": "2026-08-31T23:36:57.873Z",
+        "foregroundBounds": {
+          "x": 101,
+          "y": 172,
+          "width": 500,
+          "height": 226
+        }
+      }
     },
   },
   "pulseRifle": {
@@ -2895,13 +3898,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "provenance": {
         "sourcePath": "public/aura-assets/pulseRifle.51157ad6.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/sci-fi-weapon-gameready-gun-rifle-eca46c628f49410081eb73391c62b4ca",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/eca46c628f49410081eb73391c62b4ca.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-131/eca46c628f49410081eb73391c62b4ca.glb",
         "license": "CC-BY-4.0",
-        "licenseName": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
         "author": "gbarzu",
-        "sourceFamily": "objaverse",
+        "sourceFamily": "sketchfab-via-objaverse",
         "attribution": "gbarzu",
         "sha256": "sha256-51157ad6e001d8a53c14c76b731634b6db58c2410492277aef2fb379bb74fe00",
         "retrievedAt": "2026-08-17T02:25:36.704Z",
@@ -3095,9 +4100,23 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-route-facing-view",
+        "assetHash": "sha256-51157ad6e001d8a53c14c76b731634b6db58c2410492277aef2fb379bb74fe00",
+        "generatedBy": "tests/browser/neon-corridor-release-asset-probes.spec.ts",
+        "checkedAt": "2026-08-30T16:13:11.073Z",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=pulseRifle",
+        "renderedProbe": {
+          "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/pulseRifle.png",
+          "sha256": "sha256-759e3d3e12eaf234348df5c6168271b51c514e7c37e65f1e4b9914cd82c27cce",
+          "assetHash": "sha256-51157ad6e001d8a53c14c76b731634b6db58c2410492277aef2fb379bb74fe00",
+          "checkedAt": "2026-08-30T16:13:11.073Z",
+          "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=pulseRifle"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "The current hash-bound isolated root probe was reviewed +Y-up with the authored route-facing direction along +Z. It proves only static presentation; movement, aiming, hits, and damage remain route-local."
         ]
       },
       "nodeNames": [
@@ -3175,9 +4194,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "dependencies": [],
       "thumbnailUrl": "/examples/neon-corridor-strike/public/aura-assets/pulseRifle.thumb.svg",
-      "quality": "candidate",
-      "role": "unknown",
-      "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
+      "quality": "release",
+      "role": "weapon",
+      "suitabilityReason": "Textured CC-BY science-fiction rifle used as the readable first-person viewmodel with a hash-bound isolated orientation probe; aim, recoil, firing, hitscan, reload, and ammo remain route-local.",
+      "renderedProbe": {
+        "url": "../../tests/reports/neon-corridor-strike/release-asset-probes/pulseRifle.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine production-runtime",
+        "route": "tests/browser/neon-corridor-release-asset-probe-harness?asset=pulseRifle",
+        "sha256": "sha256-759e3d3e12eaf234348df5c6168271b51c514e7c37e65f1e4b9914cd82c27cce",
+        "assetHash": "sha256-51157ad6e001d8a53c14c76b731634b6db58c2410492277aef2fb379bb74fe00",
+        "width": 800,
+        "height": 600,
+        "nonBlankPixels": 479979,
+        "colorBuckets": 56,
+        "checkedAt": "2026-08-30T16:13:11.073Z",
+        "foregroundBounds": {
+          "x": 75,
+          "y": 267,
+          "width": 584,
+          "height": 144
+        }
+      }
     },
   },
 } as const);

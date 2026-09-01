@@ -148,6 +148,17 @@ describe("Neon Swarm steering", () => {
     return rows.sort().join("|");
   }
 
+  it("assigns stable palette variation without changing seeded steering", () => {
+    const simA = createSwarmSimulation();
+    const simB = createSwarmSimulation();
+    for (const x of [-4, -2, 0, 2]) {
+      simA.spawn({ x, z: 8, archetype: "grunt", speedMultiplier: 1 });
+      simB.spawn({ x, z: 8, archetype: "grunt", speedMultiplier: 1 });
+    }
+    expect(new Set(simA.gruntColors.slice(0, 4)).size).toBeGreaterThan(1);
+    expect(simA.gruntColors.slice(0, 4)).toEqual(simB.gruntColors.slice(0, 4));
+  });
+
   it("steers identically for identical seeded spawns", () => {
     const simA = createSwarmSimulation();
     const simB = createSwarmSimulation();

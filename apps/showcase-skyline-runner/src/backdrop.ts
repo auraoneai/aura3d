@@ -114,16 +114,22 @@ function backdropBandMaterial(band: SkylineBackdropBand): AuraMaterialSpec {
       });
 }
 
-/** Six shallow roofline facets: visible close, sub-pixel at the LOD boundary. */
-const BACKDROP_CLOSE_ROOF_PROFILE = [0.5, 0.485, 0.472, 0.49, 0.47, 0.483, 0.5] as const;
+/**
+ * Six coplanar facade spans keep the close mesh's certified subdivision while
+ * sharing the distant box's exact silhouette. The former 3% roof notches were
+ * still several pixels tall after the chunk scale and produced a measurable
+ * pop at the mounted LOD boundary.
+ */
+const BACKDROP_CLOSE_ROOF_PROFILE = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5] as const;
 export const SKYLINE_BACKDROP_CLOSE_TRIANGLES = 52;
 export const SKYLINE_BACKDROP_DISTANT_TRIANGLES = 12;
-export const SKYLINE_BACKDROP_MAX_NORMALIZED_SILHOUETTE_DELTA = 0.03;
+export const SKYLINE_BACKDROP_MAX_NORMALIZED_SILHOUETTE_DELTA = 0;
 
 /**
  * Depth-bearing close silhouette with the same normalized bounds as the distant
- * box. Only the top 3% varies, so the extra roofline reads nearby but converges
- * to the same outline before the 31.5-unit switch. The mesh has 52 triangles;
+ * box. Its facade remains subdivided for the certified close-detail budget, but
+ * its outer contour exactly matches the 12-triangle distant box so the
+ * 31.5-unit switch cannot alter the skyline outline. The mesh has 52 triangles;
  * the distant box has 12.
  */
 export function createSkylineBackdropCloseGeometry(): AuraCustomGeometrySpec {

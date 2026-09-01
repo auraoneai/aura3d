@@ -7,6 +7,10 @@ const root = resolve(import.meta.dirname, "..", "..");
 const workspace = resolve(root, "tests/reports/current-head-to-head-installed");
 const tarballDirectory = resolve(root, "tests/reports/release-tarballs");
 const reportPath = resolve(workspace, "report.json");
+const rootPackage = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as {
+  readonly version: string;
+};
+const packageVersion = rootPackage.version;
 const specs = [
   "tests/browser/head-to-head-primitive-scene.spec.ts",
   "tests/browser/head-to-head-gltf-product-viewer.spec.ts",
@@ -51,10 +55,10 @@ run("pnpm", ["build:raw"], root);
 run("node", ["tools/release/publish-all.mjs", "--pack-only"], root);
 
 const tarballs = readdirSync(tarballDirectory)
-  .filter((name) => name.endsWith("-2.0.0.tgz"))
+  .filter((name) => name.endsWith(`-${packageVersion}.tgz`))
   .map((name) => resolve(tarballDirectory, name))
   .sort();
-if (tarballs.length !== 29) throw new Error(`Expected 29 Aura3D 2.0.0 tarballs, found ${tarballs.length}.`);
+if (tarballs.length !== 29) throw new Error(`Expected 29 Aura3D ${packageVersion} tarballs, found ${tarballs.length}.`);
 
 writeFileSync(resolve(workspace, "package.json"), `${JSON.stringify({
   name: "aura3d-current-head-to-head-installed-reproduction",
@@ -76,8 +80,8 @@ const createManifest = JSON.parse(readFileSync(resolve(workspace, "node_modules/
 };
 const installedPackages = [...installedManifests, { name: createManifest.name, version: createManifest.version }]
   .sort((left, right) => left.name.localeCompare(right.name));
-if (installedPackages.length !== 29 || installedPackages.some((entry) => entry.version !== "2.0.0")) {
-  throw new Error(`Installed package inventory is not the exact 29-package 2.0.0 set: ${JSON.stringify(installedPackages)}`);
+if (installedPackages.length !== 29 || installedPackages.some((entry) => entry.version !== packageVersion)) {
+  throw new Error(`Installed package inventory is not the exact 29-package ${packageVersion} set: ${JSON.stringify(installedPackages)}`);
 }
 
 const environment = { ...process.env, A3D_INSTALLED_PACKAGE_ROOT: workspace };

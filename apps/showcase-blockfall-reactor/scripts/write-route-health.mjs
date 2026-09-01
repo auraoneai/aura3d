@@ -5,19 +5,32 @@ import { fileURLToPath } from "node:url";
 
 const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
-const assetId = "showcaseBlockfallCabinet";
+const assetIds = [
+  "blockfallReactorArenaBackdrop",
+  "blockfallReactorMechanicHero",
+  "blockfallReactorPlasmaRival",
+  "showcaseBlockfallCabinet"
+];
 const manifest = JSON.parse(readFileSync(join(repoRoot, "aura.assets.json"), "utf8"));
-const asset = manifest.assets?.find((entry) => entry.id === assetId);
+const assets = Object.fromEntries(assetIds.map((assetId) => [
+  assetId,
+  manifest.assets?.find((entry) => entry.id === assetId)
+]));
 
-if (!asset) throw new Error(`Missing typed asset ${assetId} from aura.assets.json`);
-if (asset.quality !== "release") {
-  throw new Error(`Expected ${assetId} to remain release quality; received ${String(asset.quality)}`);
+for (const assetId of assetIds) {
+  const asset = assets[assetId];
+  if (!asset) throw new Error(`Missing typed asset ${assetId} from aura.assets.json`);
+  if (asset.quality !== "release") {
+    throw new Error(`Expected ${assetId} to remain release quality; received ${String(asset.quality)}`);
+  }
 }
 
 const sourceFiles = walk(join(appDir, "src")).filter((path) => path.endsWith(".ts"));
 const source = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
-if (!source.includes(`assets.${assetId}`)) {
-  throw new Error(`Live route does not reference assets.${assetId}`);
+for (const assetId of assetIds) {
+  if (!source.includes(`assets.${assetId}`)) {
+    throw new Error(`Live route does not reference assets.${assetId}`);
+  }
 }
 
 const primitiveOccurrences = Array.from(source.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
@@ -53,10 +66,16 @@ const routeHealth = {
   },
   primaryAssets: [
     {
-      typedRef: `assets.${assetId}`,
+      typedRef: "assets.blockfallReactorArenaBackdrop",
       role: "primaryWorld",
       status: "typed-primary-asset",
-      quality: asset.quality
+      quality: assets.blockfallReactorArenaBackdrop.quality
+    },
+    {
+      typedRef: "assets.showcaseBlockfallCabinet",
+      role: "primaryWorld",
+      status: "typed-primary-asset",
+      quality: assets.showcaseBlockfallCabinet.quality
     }
   ],
   primitiveStatus: {
@@ -151,10 +170,11 @@ const routeHealth = {
     gameplayProof: "tests/reports/showcase-gameplay/showcase-blockfall-reactor.json",
     gameplayBeforeScreenshot: "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before-input.png",
     gameplayAfterInputScreenshot: "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-    releaseAssetProbes: {
-      [assetId]: `tests/reports/showcase-release-asset-probes/${assetId}.json`
-    },
-    deployCommand: `pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset ${assetId}`
+    releaseAssetProbes: Object.fromEntries(assetIds.map((assetId) => [
+      assetId,
+      `tests/reports/showcase-release-asset-probes/${assetId}.json`
+    ])),
+    deployCommand: `pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src ${assetIds.map((assetId) => `--asset ${assetId}`).join(" ")}`
   },
   physics: {
     backend: "rapier",

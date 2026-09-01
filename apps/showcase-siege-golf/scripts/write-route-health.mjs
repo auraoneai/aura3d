@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
-const modelAssetIds = ["siegeGolfBall", "siegeWoodenCrate", "siegeWoodenBarrel", "siegePlankSet"];
+const modelAssetIds = ["siegeGolfCourseWorld", "siegeGolfBall", "siegeWoodenCrate", "siegeWoodenBarrel", "siegePlankSet"];
 const audioAssetIds = [
   "siegeDriveHitSfx",
   "siegeWoodCrackSfx",
@@ -75,6 +75,12 @@ const routeHealth = {
   },
   primaryAssets: [
     {
+      typedRef: "assets.siegeGolfCourseWorld",
+      role: "primaryWorld",
+      status: "typed-primary-asset",
+      quality: assetById.get("siegeGolfCourseWorld").quality ?? "candidate"
+    },
+    {
       typedRef: "assets.siegeGolfBall",
       role: "primaryCharacter",
       status: "typed-primary-asset",
@@ -108,7 +114,7 @@ const routeHealth = {
   primitiveStatus: {
     sourceOccurrences: primitiveOccurrences,
     primitiveBudget: 40,
-    role: "felt, rails, hinge anchors, cup rings, aim ticks, and trail puffs as set dressing around typed ball/crate/barrel/plank models",
+    role: "physics guides, cup rings, aim ticks, and trail puffs as set dressing around the typed continuous world plus ball/crate/barrel/plank models",
     status: "set-dressing-with-typed-primary-assets"
   },
   claimStatus: {
@@ -126,7 +132,7 @@ const routeHealth = {
       "compact mobile safe-area controls with direct aim and hold-to-charge input",
       "distinct opening, aim, flight, and settle cameras on the root-safe camera surface",
       "best completed solution retained as renderer-only dotted trajectory with no physics/scoring ownership",
-      "golden-hour siege-yard thesis with warm timber, blue hill depth, red target cloth, white ball/chalk, and dark iron",
+      "compact continuous causeway composition with tee, live obstacle bay, and fortified sensor court readable in one frame",
       "typed audio cues on sfx/ambient/ui buses with gesture unlock",
       "reduced-motion gating for trail particles and camera smoothing"
     ],
@@ -179,7 +185,7 @@ const routeHealth = {
     courseCompletionProof: "tests/reports/siege-golf/course-completion/",
     performanceProof: "apps/showcase-siege-golf/performance-report.json",
     notes: "Route is registered in route gates and internal remediation/index metadata, but publicShowcase remains false and no public card is promoted until independent review; label stays `prototype` pending approval.",
-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-siege-golf/dist --release --source apps/showcase-siege-golf/src --asset siegeGolfBall --asset siegePlankSet --asset siegeWoodenCrate --asset siegeWoodenBarrel"
+    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-siege-golf/dist --release --source apps/showcase-siege-golf/src --asset siegeGolfCourseWorld --asset siegeGolfBall --asset siegePlankSet --asset siegeWoodenCrate --asset siegeWoodenBarrel"
   },
   determinismContract: {
     fixedStep: "1/60 via physics.world fixedDelta; mounted low-FPS catch-up remains bounded to four fixed substeps",

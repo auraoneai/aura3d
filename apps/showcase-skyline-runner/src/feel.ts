@@ -193,7 +193,24 @@ export function createSkylineFeel(options: SkylineFeelOptions): SkylineFeelContr
     actCardRemaining = 1.8;
     const card = ensureActCard();
     if (!card) return;
-    card.textContent = title;
+    const eyebrow = document.createElement("span");
+    eyebrow.className = "act-title-eyebrow";
+    eyebrow.textContent = "MIRA // RELAY KEEPER";
+    const heading = document.createElement("strong");
+    heading.className = "act-title-heading";
+    heading.textContent = title;
+    const message = document.createElement("small");
+    message.className = "act-title-message";
+    message.textContent = title.includes("Home Grove")
+      ? "Home Grove is awake. Keep the line moving."
+      : title.includes("Broken Canopy")
+        ? "Canopy signal restored. The upper rail is yours."
+        : title.includes("Sentry Pass")
+          ? "Sentries are live ahead. Carry your ember through."
+          : title.includes("Relay Climb")
+            ? "Relay climb synchronized. One district remains."
+            : "Crown signal acquired. Bring the network home.";
+    card.replaceChildren(eyebrow, heading, message);
     card.dataset.visible = "true";
   };
 

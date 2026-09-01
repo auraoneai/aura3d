@@ -3,8 +3,8 @@
   color-scheme: dark;
   --gp-ink: #e2e8f0;
   --gp-dim: #94a3b8;
-  --gp-panel: rgba(7, 12, 24, 0.86);
-  --gp-edge: rgba(103, 232, 249, 0.22);
+  --gp-panel: rgba(7, 12, 24, 0.7);
+  --gp-edge: rgba(103, 232, 249, 0.3);
   --gp-accent: #67e8f9;
   --gp-gold: #facc15;
 }
@@ -23,9 +23,8 @@ body {
 }
 
 .gp-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 14px;
+  position: relative;
+  display: block;
   width: 100vw;
   height: 100vh;
   padding: 14px;
@@ -33,10 +32,12 @@ body {
 
 .gp-viewport {
   position: relative;
+  width: 100%;
+  height: 100%;
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--gp-edge);
-  background: radial-gradient(circle at 50% 42%, #0b1322 0%, #04060d 68%);
+  background: radial-gradient(circle at 50% 42%, #0b2238 0%, #04060d 72%);
 }
 
 .gp-stage {
@@ -53,7 +54,7 @@ body {
 .gp-hud {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 9px;
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -62,7 +63,7 @@ body {
   border: 1px solid var(--gp-edge);
   background: var(--gp-panel);
   border-radius: 16px;
-  padding: 14px 16px;
+  padding: 12px 14px;
 }
 
 .gp-eyebrow {
@@ -203,8 +204,110 @@ body {
 
 @media (max-width: 900px) {
   .gp-shell {
+    position: static;
+    display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: minmax(320px, 58vh) minmax(0, 1fr);
+  }
+
+  .gp-viewport {
+    width: auto;
+    height: auto;
+  }
+}
+
+@media (min-width: 901px) {
+  /* The board is the visual hero. Keep the full courier HUD available in a
+     translucent overlay so the orbital lanes, typed pod, stations, and
+     renderer-owned path beads are not permanently shrunk into a side column. */
+  .gp-hud {
+    position: absolute;
+    z-index: 4;
+    top: 14px;
+    right: 14px;
+    width: min(268px, calc(100vw - 28px));
+    max-height: calc(100vh - 28px);
+    pointer-events: auto;
+  }
+
+  /* The review artifact retains only compact, gameplay-owned courier context:
+     route, speed, fuel, hulls, and live coast status. Authoring controls and
+     long briefing copy stay available in the public route but out of frame. */
+  .gp-hud[data-capture="review"] {
+    opacity: 1;
+    pointer-events: none;
+    left: 22px;
+    right: auto;
+    top: 22px;
+    width: min(660px, calc(100vw - 44px));
+    max-height: none;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: minmax(250px, 0.92fr) minmax(330px, 1.08fr);
+    gap: 1px;
+  }
+
+  .gp-hud[data-capture="review"] .gp-panel {
+    border-radius: 0;
+    padding: 7px 11px;
+    background: linear-gradient(135deg, rgba(5, 20, 35, 0.9), rgba(8, 36, 52, 0.7));
+    box-shadow: 0 0 20px rgba(56, 214, 255, 0.1);
+  }
+
+  .gp-hud[data-capture="review"] .gp-briefing {
+    border-radius: 6px 0 0 6px;
+  }
+
+  .gp-hud[data-capture="review"] .gp-readouts {
+    border-radius: 0 6px 6px 0;
+  }
+
+  .gp-hud[data-capture="review"] .gp-brief,
+  .gp-hud[data-capture="review"] .gp-meta,
+  .gp-hud[data-capture="review"] .gp-actions,
+  .gp-hud[data-capture="review"] .gp-scorecard,
+  .gp-hud[data-capture="review"] .gp-flyby,
+  .gp-hud[data-capture="review"] .gp-readouts > .gp-row:nth-of-type(2),
+  .gp-hud[data-capture="review"] .gp-status {
+    display: none;
+  }
+
+  .gp-hud[data-capture="review"] .gp-briefing h1 {
+    margin: 2px 0 4px;
+    font-size: 14px;
+  }
+
+  .gp-hud[data-capture="review"] .gp-route {
+    justify-content: space-between;
+  }
+
+  .gp-hud[data-capture="review"] .gp-readouts {
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) auto;
+    align-items: center;
+    gap: 5px 12px;
+  }
+
+  .gp-hud[data-capture="review"] .gp-readouts > .gp-row:first-of-type {
+    flex-wrap: nowrap;
+  }
+
+  .gp-hud[data-capture="review"] .gp-status {
+    min-height: 0;
+    margin: 2px 0 0;
+    font-size: 11px;
+  }
+
+  .gp-hud[data-capture="review"] .gp-metric strong {
+    font-size: 13px;
+  }
+
+  /* World labels are useful on the interactive planning board, but their
+     screen-space chips compete with the courier silhouette in the blind visual
+     frame. Keep the label layer mounted for normal accessibility/evidence and
+     suppress it only for the explicit review query. */
+  body[data-capture="review"] [data-aura-world-labels] {
+    display: none !important;
   }
 }
 

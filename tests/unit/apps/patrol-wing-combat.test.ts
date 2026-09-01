@@ -3,6 +3,7 @@ import { createDroneSwarm, CANNON_DAMAGE, DRONE_HEALTH } from "../../../apps/sho
 import {
   dronesPerWave,
   droneSpeed,
+  interceptSpawns,
   RingTracker,
   waveSpawns,
   WAVE_TRIGGERS,
@@ -136,6 +137,11 @@ describe("patrol wing combat world wiring", () => {
     expect(dronesPerWave(3)).toBe(5);
     expect(droneSpeed(2)).toBeGreaterThan(droneSpeed(1));
     expect(waveSpawns(1, 0).every((spawn) => spawn.id.startsWith("drone-p1-w0-"))).toBe(true);
+    const intercept = interceptSpawns(1, 0, [3, 9, -4], [1, 0.1, 0]);
+    expect(intercept).toHaveLength(3);
+    expect(intercept[0]!.position[0]).toBeGreaterThan(8);
+    expect(Math.hypot(intercept[0]!.position[0] - 3, intercept[0]!.position[2] + 4)).toBeLessThan(7);
+    expect(intercept[1]!.position[2]).not.toBe(intercept[2]!.position[2]);
   });
 
   it("wave triggers advance with ring progress", () => {

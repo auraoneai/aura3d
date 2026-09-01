@@ -92,10 +92,46 @@ export interface DroneSpawn {
 }
 
 /**
- * Deterministic wave spawns. Wave drones materialise AHEAD on the course near
- * the upcoming gate so a pursuing player meets them head-on (the PRD's
- * deterministic intercept path): the first drone of each wave sits on the
- * approach line to the next ring, the others offset around it.
+ * A close, forward combat wedge derived from the aircraft's live authored
+ * transform. This is shared by deterministic evidence and the route's wave
+ * topology: targets enter the player's nose corridor at dogfight distance,
+ * rather than being teleported toward a capture camera.
+ */
+export function interceptSpawns(
+  patrol: number,
+  wave: number,
+  playerPosition: readonly [number, number, number],
+  playerForward: readonly [number, number, number]
+): readonly DroneSpawn[] {
+  const count = dronesPerWave(patrol);
+  const horizontalLength = Math.hypot(playerForward[0], playerForward[2]) || 1;
+  const forwardX = playerForward[0] / horizontalLength;
+  const forwardZ = playerForward[2] / horizontalLength;
+  const rightX = -forwardZ;
+  const rightZ = forwardX;
+  return Array.from({ length: count }, (_, index) => {
+    const pair = Math.floor((index + 1) / 2);
+    const side = index === 0 ? 0 : index % 2 === 1 ? -1 : 1;
+    const forwardDistance = 5.8 + pair * 0.85;
+    const lateralDistance = side * (1.75 + pair * 0.62);
+    return {
+      id: `drone-p${patrol}-w${wave}-${index}`,
+      variant: index % 2 === 0 ? "A" as const : "B" as const,
+      position: [
+        playerPosition[0] + forwardX * forwardDistance + rightX * lateralDistance,
+        playerPosition[1] - 0.35 + (index === 0 ? 0 : pair * 0.48),
+        playerPosition[2] + forwardZ * forwardDistance + rightZ * lateralDistance
+      ],
+      seed: 1013 * patrol + 611 * wave + 97 * index + 7
+    };
+  });
+}
+
+/**
+ * Deterministic course spawns. The drones occupy a compact wedge around the
+ * upcoming gate, so a player following the ordered route enters the same
+ * close-encounter topology used by interceptSpawns instead of discovering a
+ * loose, distant orbit scattered across the island.
  */
 export function waveSpawns(patrol: number, wave: number): readonly DroneSpawn[] {
   const count = dronesPerWave(patrol);
@@ -104,14 +140,16 @@ export function waveSpawns(patrol: number, wave: number): readonly DroneSpawn[] 
   const spawns: DroneSpawn[] = [];
   for (let index = 0; index < count; index += 1) {
     const offsetAngle = (index / count) * Math.PI * 2;
-    const spread = index === 0 ? 6 : 14;
+    const pair = Math.floor((index + 1) / 2);
+    const side = index === 0 ? 0 : index % 2 === 1 ? -1 : 1;
+    const spread = side * (2.4 + pair * 0.7);
     spawns.push({
       id: `drone-p${patrol}-w${wave}-${index}`,
       variant: index % 2 === 0 ? "A" : "B",
       position: [
         gate.position[0] + Math.cos(offsetAngle) * spread,
-        gate.position[1] + 2 + index,
-        gate.position[2] + Math.sin(offsetAngle) * spread + 10
+        gate.position[1] + 1.1 + pair * 0.5,
+        gate.position[2] + Math.sin(offsetAngle) * spread + 5.8 + pair * 0.75
       ],
       seed: 1013 * patrol + 611 * wave + 97 * index + 7
     });

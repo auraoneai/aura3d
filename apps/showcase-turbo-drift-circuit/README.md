@@ -82,7 +82,8 @@ the duck state are published as additive audio evidence fields (`busIds`,
 
 ## API gaps refused
 
-This route deliberately does not use three/GLTFLoader/bespoke renderer loops;
+This route deliberately avoids renderer-library imports, direct GLB loader internals,
+and bespoke renderer loops;
 DRM-free CC0 audio was synthesized and registered through the Aura3D CLI rather
 than claiming provenance it does not have. The gameplay uses the public
 `createAuraApp` surface (`game.racing`, `game.effects`) throughout; no physical

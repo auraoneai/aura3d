@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "generatedAt": "2026-08-23T13:44:43.889Z",
-  "startedAt": "2026-08-23T13:44:35.440Z",
+  "generatedAt": "2026-08-27T02:01:29.810Z",
+  "startedAt": "2026-08-27T02:00:43.268Z",
   "targetUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
   "finalUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
   "status": 200,
@@ -30,15 +30,15 @@
   "imageEvidence": {
     "kind": "aura-clash-screenshot-image-evidence",
     "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
-    "byteLength": 914396,
-    "sha256": "db7947f26231192c559058fe65a2b2e685d2cebb08aa97c035e289900d88052f",
-    "sampleStride": 223,
-    "sampledBytes": 4101,
+    "byteLength": 927453,
+    "sha256": "47f91396f46df66ebfadae146d8855638b167a735660e191870dfecb965d2189",
+    "sampleStride": 226,
+    "sampledBytes": 4104,
     "uniqueByteValues": 256,
     "minByte": 0,
     "maxByte": 255,
-    "meanByte": 126.637,
-    "standardDeviation": 74.658,
+    "meanByte": 126.308,
+    "standardDeviation": 73.489,
     "nonblank": true
   },
   "visualReviewContract": {
@@ -307,7 +307,7 @@
         "domBackedArea": false,
         "hasPageDeclaration": true,
         "hasVisibleDomSignal": false,
-        "hasTextSignal": false,
+        "hasTextSignal": true,
         "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "debug overlay visible or explicitly declared",
@@ -343,11 +343,13 @@
             "selectorMatchCount": 0,
             "visibleSelectorMatchCount": 0,
             "selectorMatches": [],
-            "textMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
             "evidenceSources": {
               "pageDeclaration": true,
               "visibleDomSignal": false,
-              "textSignal": false
+              "textSignal": true
             }
           },
           {
@@ -361,11 +363,13 @@
             "selectorMatchCount": 0,
             "visibleSelectorMatchCount": 0,
             "selectorMatches": [],
-            "textMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
             "evidenceSources": {
               "pageDeclaration": true,
               "visibleDomSignal": false,
-              "textSignal": false
+              "textSignal": true
             }
           }
         ]
@@ -550,6 +554,7 @@
               }
             ],
             "textMatches": [
+              "fighter",
               "player",
               "rival"
             ],
@@ -873,12 +878,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 97 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -905,12 +910,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "97 FIGHT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               },
               {
@@ -921,12 +926,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 97 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -953,12 +958,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "97 FIGHT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               }
             ],
@@ -990,12 +995,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 HIT Rival AI Rook Atlas Independent second GLB instance with its own clips,",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -1022,12 +1027,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "99 HIT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               },
               {
@@ -1038,12 +1043,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 HIT Rival AI Rook Atlas Independent second GLB instance with its own clips,",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -1070,12 +1075,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "99 HIT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               }
             ],
@@ -1195,10 +1200,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat. [ / ] replay l",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -1211,7 +1216,7 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Riv",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 97 FIGHT Riv",
                 "bounds": {
                   "x": 0,
                   "y": 0,
@@ -1227,10 +1232,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat. [ / ] replay l",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -1264,10 +1269,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Hit_Knockback Mara Volt lands heavy for 10 damage. [ / ] replay last exchange (0.5s buffered)",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -1280,7 +1285,7 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Riv",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 HIT Rival",
                 "bounds": {
                   "x": 0,
                   "y": 0,
@@ -1296,10 +1301,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Hit_Knockback Mara Volt lands heavy for 10 damage. [ / ] replay last exchange (0.5s buffered)",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -1492,8 +1497,8 @@
         "required": false,
         "nonblank": true,
         "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
-        "targetUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
-        "finalUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
+        "targetUrl": "http://127.0.0.1:5178/playable/?capture=match-start&auraTestDriver=1",
+        "finalUrl": "http://127.0.0.1:5178/playable/?capture=match-start&auraTestDriver=1",
         "reviewIntent": "Both typed fighter GLBs grounded on the combat lane with readable HUD and stage depth."
       },
       {
@@ -1504,8 +1509,8 @@
         "required": false,
         "nonblank": true,
         "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
-        "targetUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
-        "finalUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+        "targetUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact&auraTestDriver=1",
+        "finalUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact&auraTestDriver=1",
         "reviewIntent": "Combat-impact frame with VFX, HUD state, debug evidence, and readable silhouettes."
       }
     ],
@@ -1592,15 +1597,15 @@
       "imageEvidence": {
         "kind": "aura-clash-screenshot-image-evidence",
         "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
-        "byteLength": 914396,
-        "sha256": "db7947f26231192c559058fe65a2b2e685d2cebb08aa97c035e289900d88052f",
-        "sampleStride": 223,
-        "sampledBytes": 4101,
+        "byteLength": 927453,
+        "sha256": "47f91396f46df66ebfadae146d8855638b167a735660e191870dfecb965d2189",
+        "sampleStride": 226,
+        "sampledBytes": 4104,
         "uniqueByteValues": 256,
         "minByte": 0,
         "maxByte": 255,
-        "meanByte": 126.637,
-        "standardDeviation": 74.658,
+        "meanByte": 126.308,
+        "standardDeviation": 73.489,
         "nonblank": true
       },
       "canvasRegions": {
@@ -1611,43 +1616,43 @@
         "canvasScale": null,
         "whole": {
           "sampledPixels": 432000,
-          "meanLuminance": 36.39,
-          "luminanceStdDev": 39.2,
-          "colorBuckets": 347,
-          "saturatedRatio": 0.6269,
-          "brightRatio": 0.0334
+          "meanLuminance": 36.28,
+          "luminanceStdDev": 39.39,
+          "colorBuckets": 339,
+          "saturatedRatio": 0.6355,
+          "brightRatio": 0.0349
         },
         "upperThird": {
           "sampledPixels": 144000,
-          "meanLuminance": 31.25,
-          "luminanceStdDev": 42.36,
-          "colorBuckets": 196,
-          "saturatedRatio": 0.73,
+          "meanLuminance": 31.41,
+          "luminanceStdDev": 42.38,
+          "colorBuckets": 201,
+          "saturatedRatio": 0.7308,
           "brightRatio": 0.0437
         },
         "middleBand": {
           "sampledPixels": 144000,
-          "meanLuminance": 47.88,
-          "luminanceStdDev": 34.38,
-          "colorBuckets": 252,
-          "saturatedRatio": 0.4303,
-          "brightRatio": 0.0349
+          "meanLuminance": 46.03,
+          "luminanceStdDev": 31.82,
+          "colorBuckets": 241,
+          "saturatedRatio": 0.4128,
+          "brightRatio": 0.021
         },
         "lowerThird": {
           "sampledPixels": 144000,
-          "meanLuminance": 30.05,
-          "luminanceStdDev": 37.88,
+          "meanLuminance": 31.4,
+          "luminanceStdDev": 41.27,
           "colorBuckets": 131,
-          "saturatedRatio": 0.7203,
-          "brightRatio": 0.0216
+          "saturatedRatio": 0.763,
+          "brightRatio": 0.0401
         },
         "centerStage": {
           "sampledPixels": 155520,
-          "meanLuminance": 50.76,
-          "luminanceStdDev": 37.33,
-          "colorBuckets": 249,
-          "saturatedRatio": 0.3871,
-          "brightRatio": 0.0445
+          "meanLuminance": 50.8,
+          "luminanceStdDev": 38,
+          "colorBuckets": 243,
+          "saturatedRatio": 0.4029,
+          "brightRatio": 0.0482
         }
       },
       "rendererDiagnostics": {
@@ -2088,23 +2093,23 @@
       "label": "Fighter readability composition",
       "ok": true,
       "required": false,
-      "targetUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
-      "finalUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
+      "targetUrl": "http://127.0.0.1:5178/playable/?capture=match-start&auraTestDriver=1",
+      "finalUrl": "http://127.0.0.1:5178/playable/?capture=match-start&auraTestDriver=1",
       "status": 200,
       "statusText": "OK",
       "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
       "imageEvidence": {
         "kind": "aura-clash-screenshot-image-evidence",
         "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
-        "byteLength": 914910,
-        "sha256": "23d3c95f243f3fa8ba095ad0e4e86c33da1e06166dee33f6619440a556e291ce",
-        "sampleStride": 223,
-        "sampledBytes": 4103,
+        "byteLength": 923923,
+        "sha256": "5624818ad79e185f0253eae500cfb32dede42bd2d5c510813da65f96795c95a2",
+        "sampleStride": 225,
+        "sampledBytes": 4107,
         "uniqueByteValues": 256,
         "minByte": 0,
         "maxByte": 255,
-        "meanByte": 126.838,
-        "standardDeviation": 74.591,
+        "meanByte": 129.282,
+        "standardDeviation": 73.552,
         "nonblank": true
       },
       "canvasRegions": {
@@ -2115,43 +2120,43 @@
         "canvasScale": null,
         "whole": {
           "sampledPixels": 432000,
-          "meanLuminance": 36.39,
-          "luminanceStdDev": 39.2,
-          "colorBuckets": 350,
-          "saturatedRatio": 0.6268,
-          "brightRatio": 0.0334
+          "meanLuminance": 36.15,
+          "luminanceStdDev": 40.22,
+          "colorBuckets": 343,
+          "saturatedRatio": 0.6317,
+          "brightRatio": 0.0383
         },
         "upperThird": {
           "sampledPixels": 144000,
-          "meanLuminance": 31.25,
-          "luminanceStdDev": 42.36,
-          "colorBuckets": 196,
-          "saturatedRatio": 0.73,
-          "brightRatio": 0.0437
+          "meanLuminance": 31.27,
+          "luminanceStdDev": 44.23,
+          "colorBuckets": 193,
+          "saturatedRatio": 0.7566,
+          "brightRatio": 0.0497
         },
         "middleBand": {
           "sampledPixels": 144000,
-          "meanLuminance": 47.88,
-          "luminanceStdDev": 34.37,
-          "colorBuckets": 255,
-          "saturatedRatio": 0.43,
-          "brightRatio": 0.0349
+          "meanLuminance": 44.18,
+          "luminanceStdDev": 30.1,
+          "colorBuckets": 221,
+          "saturatedRatio": 0.3987,
+          "brightRatio": 0.0133
         },
         "lowerThird": {
           "sampledPixels": 144000,
-          "meanLuminance": 30.05,
-          "luminanceStdDev": 37.88,
-          "colorBuckets": 131,
-          "saturatedRatio": 0.7203,
-          "brightRatio": 0.0216
+          "meanLuminance": 33,
+          "luminanceStdDev": 43.5,
+          "colorBuckets": 178,
+          "saturatedRatio": 0.7396,
+          "brightRatio": 0.0519
         },
         "centerStage": {
           "sampledPixels": 155520,
-          "meanLuminance": 50.75,
-          "luminanceStdDev": 37.32,
-          "colorBuckets": 250,
-          "saturatedRatio": 0.3869,
-          "brightRatio": 0.0445
+          "meanLuminance": 50.27,
+          "luminanceStdDev": 38.38,
+          "colorBuckets": 254,
+          "saturatedRatio": 0.3737,
+          "brightRatio": 0.0504
         }
       },
       "rendererDiagnostics": {
@@ -2170,7 +2175,7 @@
             "name": "Mara Volt",
             "grounded": true,
             "health": 360,
-            "x": -1.25,
+            "x": -1.025,
             "y": 0,
             "activeClip": "Idle_Loop",
             "action": "idle"
@@ -2178,13 +2183,13 @@
           "rival": {
             "name": "Rook Atlas",
             "grounded": true,
-            "health": 360,
-            "x": -0.115,
+            "health": 300,
+            "x": -0.045,
             "y": 0,
             "activeClip": "Idle_FoldArms_Loop",
             "action": "idle"
           },
-          "separation": 1.135,
+          "separation": 0.98,
           "bothGrounded": true,
           "bothClipped": true,
           "separated": true,
@@ -2204,7 +2209,7 @@
           "width": 1440,
           "height": 1200
         },
-        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nMARA VOLT\n98\nFIGHT\nRIVAL AI\nROOK ATLAS\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nMARA VOLT\nIDLE - 360 HP\n97\nFIGHT\nRIVAL AI\nROOK ATLAS\nIDLE - 300 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\n[ / ] replay last exchange (2.6s buffered)\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
         "canvas": [
           {
             "index": 0,
@@ -2267,11 +2272,13 @@
             "selectorMatchCount": 0,
             "visibleSelectorMatchCount": 0,
             "selectorMatches": [],
-            "textMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
             "evidenceSources": {
               "pageDeclaration": true,
               "visibleDomSignal": false,
-              "textSignal": false
+              "textSignal": true
             }
           },
           {
@@ -2351,6 +2358,7 @@
               }
             ],
             "textMatches": [
+              "fighter",
               "player",
               "rival"
             ],
@@ -2397,12 +2405,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 97 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -2429,12 +2437,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "97 FIGHT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               },
               {
@@ -2445,12 +2453,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 97 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -2477,12 +2485,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "97 FIGHT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               }
             ],
@@ -2514,10 +2522,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat. [ / ] replay l",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -2530,7 +2538,7 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Riv",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 97 FIGHT Riv",
                 "bounds": {
                   "x": 0,
                   "y": 0,
@@ -2546,10 +2554,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat. [ / ] replay l",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -2592,23 +2600,23 @@
       "label": "Effects, HUD, and debug composition",
       "ok": true,
       "required": false,
-      "targetUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
-      "finalUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+      "targetUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact&auraTestDriver=1",
+      "finalUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact&auraTestDriver=1",
       "status": 200,
       "statusText": "OK",
       "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
       "imageEvidence": {
         "kind": "aura-clash-screenshot-image-evidence",
         "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
-        "byteLength": 915184,
-        "sha256": "27d730a5d8fec28523d0dc2f13f89a68061d7e3a000650893008d6722b5ff3e6",
-        "sampleStride": 223,
-        "sampledBytes": 4104,
+        "byteLength": 930525,
+        "sha256": "1c76c345390f367011fd4119eab32590b2b3d702659ab265df3bee1bc1768d90",
+        "sampleStride": 227,
+        "sampledBytes": 4100,
         "uniqueByteValues": 256,
         "minByte": 0,
         "maxByte": 255,
-        "meanByte": 128.602,
-        "standardDeviation": 73.499,
+        "meanByte": 128.027,
+        "standardDeviation": 73.977,
         "nonblank": true
       },
       "canvasRegions": {
@@ -2619,43 +2627,43 @@
         "canvasScale": null,
         "whole": {
           "sampledPixels": 432000,
-          "meanLuminance": 36.39,
-          "luminanceStdDev": 39.19,
-          "colorBuckets": 346,
-          "saturatedRatio": 0.6268,
-          "brightRatio": 0.0334
+          "meanLuminance": 36.32,
+          "luminanceStdDev": 39.96,
+          "colorBuckets": 343,
+          "saturatedRatio": 0.6336,
+          "brightRatio": 0.0374
         },
         "upperThird": {
           "sampledPixels": 144000,
-          "meanLuminance": 31.26,
-          "luminanceStdDev": 42.36,
+          "meanLuminance": 31.2,
+          "luminanceStdDev": 44.06,
           "colorBuckets": 196,
-          "saturatedRatio": 0.73,
-          "brightRatio": 0.0437
+          "saturatedRatio": 0.7562,
+          "brightRatio": 0.0493
         },
         "middleBand": {
           "sampledPixels": 144000,
-          "meanLuminance": 47.88,
-          "luminanceStdDev": 34.37,
-          "colorBuckets": 254,
-          "saturatedRatio": 0.4301,
-          "brightRatio": 0.0348
+          "meanLuminance": 43.81,
+          "luminanceStdDev": 30.01,
+          "colorBuckets": 221,
+          "saturatedRatio": 0.4015,
+          "brightRatio": 0.0138
         },
         "lowerThird": {
           "sampledPixels": 144000,
-          "meanLuminance": 30.05,
-          "luminanceStdDev": 37.88,
-          "colorBuckets": 131,
-          "saturatedRatio": 0.7203,
-          "brightRatio": 0.0216
+          "meanLuminance": 33.95,
+          "luminanceStdDev": 43.13,
+          "colorBuckets": 185,
+          "saturatedRatio": 0.7431,
+          "brightRatio": 0.0493
         },
         "centerStage": {
           "sampledPixels": 155520,
-          "meanLuminance": 50.75,
-          "luminanceStdDev": 37.32,
-          "colorBuckets": 249,
-          "saturatedRatio": 0.387,
-          "brightRatio": 0.0444
+          "meanLuminance": 50.81,
+          "luminanceStdDev": 37.97,
+          "colorBuckets": 259,
+          "saturatedRatio": 0.3794,
+          "brightRatio": 0.0494
         }
       },
       "rendererDiagnostics": {
@@ -2663,8 +2671,8 @@
         "backend": "webgl2",
         "rendererSurface": "aura3d-production-gltf-animation",
         "drawCalls": 141,
-        "frameTimeMs": 16.67,
-        "fps": 60,
+        "frameTimeMs": 23.1,
+        "fps": 43.3,
         "stageEvidenceSource": "observed-render-items",
         "stageObservedRenderLabelCount": 82,
         "stageEvidenceBacked": true,
@@ -2674,7 +2682,7 @@
             "name": "Mara Volt",
             "grounded": true,
             "health": 360,
-            "x": -1.25,
+            "x": -1.105,
             "y": 0,
             "activeClip": "Idle_Loop",
             "action": "idle"
@@ -2682,13 +2690,13 @@
           "rival": {
             "name": "Rook Atlas",
             "grounded": true,
-            "health": 360,
-            "x": -0.115,
+            "health": 290,
+            "x": 0.071,
             "y": 0,
-            "activeClip": "Idle_FoldArms_Loop",
-            "action": "idle"
+            "activeClip": "Hit_Knockback",
+            "action": "hurt"
           },
-          "separation": 1.135,
+          "separation": 1.176,
           "bothGrounded": true,
           "bothClipped": true,
           "separated": true,
@@ -2696,7 +2704,7 @@
           "skinningBound": true
         },
         "lightingReadable": true,
-        "postProcessGameplayVisible": true,
+        "postProcessGameplayVisible": false,
         "noPrimitiveFighters": true
       },
       "reviewIntent": "Combat-impact frame with VFX, HUD state, debug evidence, and readable silhouettes.",
@@ -2708,7 +2716,7 @@
           "width": 1440,
           "height": 1200
         },
-        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nMARA VOLT\n98\nFIGHT\nRIVAL AI\nROOK ATLAS\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nMARA VOLT\nIDLE - 360 HP\n99\nHIT\nRIVAL AI\nROOK ATLAS\nHURT - 290 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Hit_Knockback\nMara Volt lands heavy for 10 damage.\n[ / ] replay last exchange (0.5s buffered)\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
         "canvas": [
           {
             "index": 0,
@@ -2771,11 +2779,13 @@
             "selectorMatchCount": 0,
             "visibleSelectorMatchCount": 0,
             "selectorMatches": [],
-            "textMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
             "evidenceSources": {
               "pageDeclaration": true,
               "visibleDomSignal": false,
-              "textSignal": false
+              "textSignal": true
             }
           },
           {
@@ -2901,12 +2911,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 HIT Rival AI Rook Atlas Independent second GLB instance with its own clips,",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -2933,12 +2943,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "99 HIT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               },
               {
@@ -2949,12 +2959,12 @@
                 "ariaLabel": "Fight HUD",
                 "testId": null,
                 "visible": true,
-                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Rook Atlas Independent second GLB instance with its own clip",
+                "text": "Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 HIT Rival AI Rook Atlas Independent second GLB instance with its own clips,",
                 "bounds": {
                   "x": 40,
                   "y": 95,
                   "width": 1360,
-                  "height": 169
+                  "height": 191
                 }
               },
               {
@@ -2981,12 +2991,12 @@
                 "ariaLabel": "Round timer",
                 "testId": "round-timer",
                 "visible": true,
-                "text": "98 FIGHT",
+                "text": "99 HIT",
                 "bounds": {
                   "x": 672,
                   "y": 96,
                   "width": 96,
-                  "height": 167
+                  "height": 189
                 }
               }
             ],
@@ -3018,10 +3028,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Hit_Knockback Mara Volt lands heavy for 10 damage. [ / ] replay last exchange (0.5s buffered)",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -3034,7 +3044,7 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Riv",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Mara Volt Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 HIT Rival",
                 "bounds": {
                   "x": 0,
                   "y": 0,
@@ -3050,10 +3060,10 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Hit_Knockback Mara Volt lands heavy for 10 damage. [ / ] replay last exchange (0.5s buffered)",
                 "bounds": {
                   "x": 40,
-                  "y": 278,
+                  "y": 300,
                   "width": 1360,
                   "height": 660
                 }
@@ -3197,10 +3207,6 @@
     },
     {
       "type": "warning",
-      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
-    },
-    {
-      "type": "warning",
       "text": "<link rel=preload> uses an unsupported `as` value"
     },
     {
@@ -3242,10 +3248,6 @@
     {
       "type": "warning",
       "text": "<link rel=preload> uses an unsupported `as` value"
-    },
-    {
-      "type": "warning",
-      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
     },
     {
       "type": "warning",

@@ -1,7 +1,7 @@
 /* Mech Hangar chrome — UI only; every 3D claim is rendered scene pixels. */
 :root {
   --mech-bg: #0a0e14;
-  --mech-panel-bg: rgba(10, 15, 22, 0.86);
+  --mech-panel-bg: rgba(10, 15, 22, 0.62);
   --mech-edge: #1d2b3a;
   --mech-accent: #59d7ff;
   --mech-warm: #ffb454;
@@ -27,6 +27,16 @@ body {
   grid-template-columns: minmax(0, 1fr) clamp(240px, 26vw, 330px);
 }
 
+/* Arena HUD is mounted as a full-width body overlay; let its follow camera use
+   the entire review viewport instead of reserving the hangar's side panel. */
+.mech-shell.is-arena {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mech-shell.is-arena > #panel {
+  display: none;
+}
+
 .mech-viewport {
   position: relative;
   overflow: hidden;
@@ -48,6 +58,28 @@ body {
   backdrop-filter: blur(6px);
   font-size: 12px;
   line-height: 1.45;
+}
+
+/* Arena readout floats above the action rather than consuming the full
+   viewport height. The controls remain live DOM UI, while the pit and typed
+   fighters retain the canvas as their visual hero. */
+.mech-arena-panel {
+  position: fixed;
+  inset: 10px 12px auto;
+  max-height: 142px;
+  padding: 9px 14px 11px;
+  border: 1px solid rgba(89, 215, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(10, 15, 22, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+/* Review captures keep the arena HUD mounted for the evidence contract but
+ * remove its chrome from the visual comparison frame. */
+body[data-capture="review"] .mech-arena-panel,
+body[data-capture="review"] .mech-ko-card {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .mech-panel-title {
@@ -214,13 +246,13 @@ body {
 .mech-arena-bars {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .mech-aggression-card,
 .mech-bout-card {
-  margin-top: 10px;
-  padding: 6px 8px;
+  margin-top: 6px;
+  padding: 4px 7px;
   border: 1px solid var(--mech-edge);
   border-radius: 4px;
   letter-spacing: 0.12em;
@@ -232,7 +264,7 @@ body {
 }
 
 .mech-controls-hint {
-  margin-top: 12px;
+  margin-top: 7px;
   color: var(--mech-dim);
   font-size: 10px;
   letter-spacing: 0.06em;

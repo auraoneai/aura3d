@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
 const modelAssetIds = ["gravityPostMailPod", "gravityPostDockBeacon"];
+const supportingModelAssetIds = ["gravityPostFreightDistrict"];
 const audioAssetIds = [
   "gravityPostLaunchWhooshSfx", "gravityPostBurnLoopSfx", "gravityPostDockLockSfx",
   "gravityPostBounceOffSfx", "gravityPostPodLostSfx", "gravityPostContractClearSfx",
@@ -29,9 +30,22 @@ const source = sourceFiles.map((path) => readFileSync(path, "utf8")).join("\n");
 
 const manifest = readJson(join(repoRoot, "aura.assets.json"));
 const assetById = new Map((manifest.assets ?? []).map((entry) => [entry.id, entry]));
-for (const id of [...modelAssetIds, ...audioAssetIds]) {
+for (const id of [...modelAssetIds, ...supportingModelAssetIds, ...audioAssetIds]) {
   const asset = assetById.get(id);
   if (!asset?.hash || !asset?.url || !asset?.provenance?.license) throw new Error(`Missing current typed/provenanced asset ${id}`);
+}
+for (const id of supportingModelAssetIds) {
+  const asset = assetById.get(id);
+  if (!['candidate', 'release'].includes(asset.quality)) throw new Error(`${id} is not a current typed candidate or release asset`);
+  if (!source.includes(`assets.${id}`)) throw new Error(`Live route does not use assets.${id}`);
+  const probe = readJson(join(repoRoot, `tests/reports/showcase-release-asset-probes/${id}.json`));
+  const orientation = readJson(join(repoRoot, `tests/reports/showcase-release-asset-probes/${id}.orientation.json`));
+  if (probe.evidence?.pass !== true || probe.renderedProbe?.assetHash !== asset.hash || probe.renderedProbe?.sha256 !== `sha256-${sha256(join(repoRoot, probe.screenshotPath))}`) {
+    throw new Error(`${id} isolated root release probe is missing, failing, or stale`);
+  }
+  if (orientation.orientation?.assetHash !== asset.hash || orientation.orientation?.forwardAxis !== "+X" || orientation.orientation?.upAxis !== "+Y") {
+    throw new Error(`${id} orientation evidence is missing, stale, or inconsistent with the authored route axis`);
+  }
 }
 for (const id of modelAssetIds) {
   const asset = assetById.get(id);
@@ -105,6 +119,19 @@ const routeHealth = {
     license: assetById.get(id).provenance.license,
     author: assetById.get(id).provenance.author
   })),
+  supportingAssets: supportingModelAssetIds.map((id) => ({
+    typedRef: `assets.${id}`,
+    role: "non-colliding-freight-world",
+    status: assetById.get(id).quality === "release"
+      ? "release-validated-typed-supporting-world"
+      : "candidate-with-current-isolated-root-probe-pending-one-id-promotion",
+    quality: assetById.get(id).quality,
+    hash: assetById.get(id).hash,
+    license: assetById.get(id).provenance.license,
+    author: assetById.get(id).provenance.author,
+    renderedProbe: `tests/reports/showcase-release-asset-probes/${id}.json`,
+    orientation: `tests/reports/showcase-release-asset-probes/${id}.orientation.json`
+  })),
   audioAssets: audioAssetIds.map((id) => ({
     typedRef: `assets.${id}`,
     quality: assetById.get(id).quality,
@@ -115,7 +142,7 @@ const routeHealth = {
   primitiveStatus: {
     sourceOccurrences: primitiveOccurrences,
     primitiveBudget: routeGate.primitiveBudget,
-    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons",
+    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus one typed non-colliding freight world",
     status: "within-stated-role-and-budget"
   },
   physics: {
@@ -146,7 +173,7 @@ const routeHealth = {
       "four-delivery authored arcade-gravity courier prototype",
       "fixed-step live/prediction integration with published 0.02 positional tolerance",
       "real root-safe dock sensor entry with route-local capture-speed evaluation",
-      "typed registered pod, beacon, and ten deterministic synthesized audio cues"
+      "typed registered pod, beacon, original CC0 freight district, and ten deterministic synthesized audio cues"
     ],
     notAllowed: [
       "orbital mechanics, n-body, or physical simulation claims",
@@ -154,7 +181,10 @@ const routeHealth = {
       "public promotion before independent exact-artifact review"
     ]
   },
-  blockers: ["independent human visual review pending for exact final artifacts"],
+  blockers: [
+    "independent human visual review pending for exact final artifacts",
+    ...(assetById.get("gravityPostFreightDistrict").quality === "release" ? [] : ["one-ID freight-district manifest promotion pending after current isolated release probe"])
+  ],
   evidence: {
     global: "window.__AURA3D_SHOWCASE_GRAVITY_POST__",
     sourceReview: "apps/showcase-gravity-post/src/main.ts",
@@ -164,6 +194,8 @@ const routeHealth = {
     reducedMotion: "tests/reports/gravity-post/reduced-motion-evidence.json",
     collisionFailure: "tests/reports/gravity-post/failure-evidence.json",
     performance: "apps/showcase-gravity-post/performance-report.json",
+    freightDistrictProbe: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
+    freightDistrictOrientation: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json",
     unitSpecs: [
       "tests/unit/apps/gravity-post-wells.test.ts",
       "tests/unit/apps/gravity-post-scoring.test.ts",
@@ -173,7 +205,8 @@ const routeHealth = {
       "tests/browser/gravity-post-playable.spec.ts",
       "tests/browser/gravity-post-scene.spec.ts"
     ],
-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon"
+    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon --asset gravityPostFreightDistrict",
+    releaseDeployCommandAfterPromotion: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon --asset gravityPostFreightDistrict"
   }
 };
 

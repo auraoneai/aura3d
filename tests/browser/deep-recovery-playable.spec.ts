@@ -90,7 +90,7 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`${server.origin}/apps/showcase-deep-recovery/`, { waitUntil: "commit", timeout: 120_000 });
+    await page.goto(`${server.origin}/apps/showcase-deep-recovery/?capture=review`, { waitUntil: "commit", timeout: 120_000 });
     await waitReady(page);
 
     const boot = await evidence(page);
@@ -121,9 +121,24 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
     await capture(page, "sonar-reveal", artifacts);
     scenarios.push("world-space-sonar");
 
-    await teleport(page, -5.5, -12, -10.5);
+    // Keep the submarine on the camera-facing side of the typed wreck, with a
+    // lateral offset that lets the landmark and vehicle read together instead
+    // of letting the wreck occlude the entire follow-camera composition.
+    // Stage the live submarine west of the wreck so the overhead review lens
+    // reads as an approach: vehicle on the left, chapel/wreck island on the
+    // right. The previous -1.5 X position projected both typed subjects into
+    // one tangled central stack.
+    await teleport(page, -11.5, -12, -7.0);
     await pump(page, 8);
     await capture(page, "wreck-approach", artifacts);
+    // The canonical Sunless-Sea review path should show the authored submarine
+    // approaching the wreck, not the earlier sonar-only frame with sparse
+    // context. Both bytes and the source-bound receipt still come from this
+    // named producer state.
+    writeFileSync(
+      resolve("tests/reports/deep-recovery/playable/sonar-reveal.png"),
+      readFileSync(resolve(REPORT_DIR, "wreck-approach.png"))
+    );
     scenarios.push("wreck-approach");
 
     await teleportCrate(page, "crate-s1", 2.8, -7.5, -7.5);
@@ -201,7 +216,13 @@ test("Deep Recovery completes the full standard/breach/heavy/surface mission and
 
     await teleportCrate(page, "crate-h1", 0, -1, 0);
     await teleport(page, 0, -1, 0);
-    await pump(page, 4);
+    // Banking is owned by the mounted simulation's containment check. Give the
+    // route a bounded handful of fixed frames to observe that real event rather
+    // than assuming four frames is enough after a screenshot/teleport.
+    await expect.poll(async () => {
+      await pump(page, 1);
+      return (await evidence(page)).heavyBanked;
+    }, { timeout: 10_000, intervals: [16, 32, 64] }).toBe(true);
     const won = await evidence(page);
     expect(won.heavyBanked).toBe(true);
     expect(won.state).toBe("won");

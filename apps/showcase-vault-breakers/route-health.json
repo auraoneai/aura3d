@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-25T05:38:11.759Z",
+  "generatedAt": "2026-08-30T13:48:04.700Z",
   "appId": "showcase-vault-breakers",
   "route": "/apps/showcase-vault-breakers/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "bcc5511e802109f12cd6972ffdc6372facbe7af44730b4d32a9035e407a95c9c",
+  "routeSourceSha256": "fed564366091ac1815d08a1c29536b17aceb9f35c9fbb59109b15b504ecc6a15",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -159,7 +159,7 @@
   },
   "performance": {
     "schema": "aura3d.vault-breakers.performance/1.0",
-    "generatedAt": "2026-08-25T05:34:18.513Z",
+    "generatedAt": "2026-08-30T13:47:24.227Z",
     "producer": "apps/showcase-vault-breakers/scripts/write-performance-report.ts",
     "producerSourceSha256": "2ebff2cbf8eb0e388ce61a59795c8c3ca979f8e8bbf50264c1c36991f7dd6b5d",
     "routeSourceFiles": [
@@ -175,7 +175,7 @@
       "apps/showcase-vault-breakers/src/styles.css",
       "apps/showcase-vault-breakers/src/table.ts"
     ],
-    "routeSourceSha256": "bcc5511e802109f12cd6972ffdc6372facbe7af44730b4d32a9035e407a95c9c",
+    "routeSourceSha256": "fed564366091ac1815d08a1c29536b17aceb9f35c9fbb59109b15b504ecc6a15",
     "scope": "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
     "samples": 12000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -184,11 +184,11 @@
       "drawCalls": 150
     },
     "observed": {
-      "fixedStepCpuP95Ms": 0.7,
+      "fixedStepCpuP95Ms": 0.934,
       "deterministicPoseSamples": 100,
       "drawCalls": 147,
       "renderSize": [
-        1407,
+        1920,
         1200
       ],
       "physicsBodies": 33,
@@ -198,13 +198,13 @@
   },
   "deploy": {
     "schema": "aura3d.vault-breakers.deploy/1.0",
-    "generatedAt": "2026-08-25T05:35:45.131Z",
+    "generatedAt": "2026-08-30T13:47:50.220Z",
     "producer": "apps/showcase-vault-breakers/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "307f4b91341d87311113968ad656c56e1af1ab02a54223c55c68d48ce5ac7407",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "821c82966279ec54134ed5c3a578647ac9eeb81aee3bb758925d7e778c67e40d",
-    "sourceTreeSha256": "91c88f2084e3e56c6c5268aea79dea39d75b911bbebbeeacb6d2c2e23fe6606e",
+    "distTreeSha256": "b9dff480e867f9988ec563187bb673d1133968b035263617b1125ff52c56e9e6",
+    "sourceTreeSha256": "19fc689e77364c46f9b15e428d5b45eb999bfe755184e46dd7bd77575387b2af",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-vault-breakers/src --asset <5 typed models>",
@@ -288,55 +288,59 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/vault-breakers/first-load-desktop.png",
-        "sha256": "d82fb81c39eb584b8d9a53c55b9b31313d78015485b8fabaff1dc2bd2edb23ee"
+        "sha256": "39d50c9a0d389a53d5cb7a1a2cf14445afdbb0e01873bac351a522c9984dc6f5"
       },
       {
         "path": "tests/reports/vault-breakers/plunger-charge-desktop.png",
-        "sha256": "9f5108a9d3ade195d736ce98b2aa66730a3ec1ab24b8d9c0ea58c155da0e4fc1"
+        "sha256": "39d50c9a0d389a53d5cb7a1a2cf14445afdbb0e01873bac351a522c9984dc6f5"
       },
       {
         "path": "tests/reports/vault-breakers/serve-flipper-desktop.png",
-        "sha256": "51b5cbd43d8ee52ac1f408bea28f75042123efb5bea9997ffc912372b44253cf"
+        "sha256": "fc59ed21903898d2a212ff4428353a1f3e02232adaa9d1c0cc741d565e791381"
+      },
+      {
+        "path": "tests/reports/vault-breakers/mid-play-desktop.png",
+        "sha256": "befa02cf4424cd9d8211efeaa09b4000d1ffce76a38723fce0ed668c349e5a1e"
       },
       {
         "path": "tests/reports/vault-breakers/bank-near-complete-desktop.png",
-        "sha256": "16e52fbd2d3a0de7abcca07051c0674b09d286d67a732c3dbebc7d04c3e4c423"
+        "sha256": "51f1305f612b18c99697bcdef990138138a587173ecd42e9ab1ab8cf6b38fe1d"
       },
       {
         "path": "tests/reports/vault-breakers/vault-opening-desktop.png",
-        "sha256": "1885d0c4b7cb05a8f551f3cdf7a335c0ddb13e219b2f5c2a46f6f18aea844f4c"
+        "sha256": "8d4ce0daf0fe227327681bba7244684d8741e4685b5f87527dc11f3c7881d525"
       },
       {
         "path": "tests/reports/vault-breakers/multiball-desktop.png",
-        "sha256": "2df8c0c0db938e48e272439ec95a410be104cedd6c22adbddb74e96a773c4a3f"
+        "sha256": "2b989593597ce608ef991680c3c528fc4c73c0a2ab9d79e1619c0be8407b76c2"
       },
       {
         "path": "tests/reports/vault-breakers/tilt-desktop.png",
-        "sha256": "3ff343815c425faacb0c25a0624917729841409b6750be3e40f492aba89a9996"
+        "sha256": "94b77a3c9b1065d48789118a6e456b5fd1f69a32fbfb87cb7b9bc613d1687a1a"
       },
       {
         "path": "tests/reports/vault-breakers/game-over-desktop.png",
-        "sha256": "69ab262ea332474268734336760652d71c01b097778343d2fc7c7ce7cf8359a4"
+        "sha256": "eab05674c4767391e13247d6b1bd5e8e1b570b1d3f5699a6245949436543cc75"
       },
       {
         "path": "tests/reports/vault-breakers/reset-attract-desktop.png",
-        "sha256": "c02d68863f39099db6bf24f89379f11f993aac9b4bd3b1750cc804e5373ea4d6"
+        "sha256": "9bdf23beb08d3c663fbca158dc11b671a62cdbba12f450c322a8788407455f82"
       },
       {
         "path": "tests/reports/vault-breakers/first-load-mobile.png",
-        "sha256": "80a4aa62aa47d3b90ac4d240bfedbd4bc743b2ca15bff85308ab8dca0703052f"
+        "sha256": "99164645cd1d3a29972908646163dba44c0205b224378bac9db523c6230443f5"
       },
       {
         "path": "tests/reports/vault-breakers/touch-charge-mobile.png",
-        "sha256": "80a4aa62aa47d3b90ac4d240bfedbd4bc743b2ca15bff85308ab8dca0703052f"
+        "sha256": "99164645cd1d3a29972908646163dba44c0205b224378bac9db523c6230443f5"
       },
       {
         "path": "tests/reports/vault-breakers/multiball-reduced-motion.png",
-        "sha256": "5a963c542e7988868f97863b657a7764481d806f44968fe7182fbd068773bfeb"
+        "sha256": "836f934380235b82527f38d0db8f98c90ddbeb0296780b211a4c9ac0e82c191d"
       },
       {
         "path": "tests/reports/vault-breakers/visual.json",
-        "sha256": "61f1b37195c203f5d67503de1abfb60db3f39ffb71c78d189c59eb6445e16aae"
+        "sha256": "c1bc32c2c8050783ba0ad6629fbd48b5829a9f5bdcd6d6197f8c5b031b3942b4"
       }
     ],
     "browserReceipts": [

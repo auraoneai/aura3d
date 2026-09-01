@@ -359,7 +359,10 @@ test("pulse tunnel 90s run completes with section stem rises and reduced-motion 
     // Reduced-motion profile: the route must disable the fog/hit pulses in this mode.
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`${server.origin}${ROUTE}`, { waitUntil: "domcontentloaded" });
+    // Capture the finale from the renderer-first review route. The panel stays
+    // mounted in the app, but its chrome is hidden by the capture-only CSS so
+    // the screenshot is judged on the authored scene rather than the HUD.
+    await page.goto(`${server.origin}${ROUTE}?capture=review`, { waitUntil: "domcontentloaded" });
 
     const mounted = await waitFor(page, (evidence) => evidence.mounted === true && evidence.state === "ready", 90_000);
     expect(mounted.reducedMotion).toBe(true);
@@ -377,10 +380,21 @@ test("pulse tunnel 90s run completes with section stem rises and reduced-motion 
       const hook = (window as unknown as Record<string, unknown>).__PULSE_TUNNEL_TEST__ as
         | { seekAhead(seconds: number): void }
         | undefined;
-      hook?.seekAhead(89.5);
+      // Leave enough compositor headroom for the screenshot task to run while
+      // the finale is still active.  The former 89.5s seek left only half a
+      // second before the 90s endRun boundary; software-GL screenshot encoding
+      // could therefore capture the summary banner instead of the live boss
+      // silhouette and projectile field.
+      hook?.seekAhead(89.2);
     });
     // Prove the seek landed; a silent no-op would leave runSeconds near zero.
     await waitFor(page, (evidence) => evidence.runSeconds > 88, 10_000);
+    // Freeze the live finale before taking the comparison frame.  This keeps
+    // the boss silhouette and projectile field on screen while screenshot
+    // encoding runs, and prevents an idle player from spending its remaining
+    // shields on a gate during the capture task.
+    await page.keyboard.press("KeyP");
+    await waitFor(page, (evidence) => evidence.paused === true && evidence.section === "finale", 5_000);
     // Sample the finale BEFORE the summary: endRun() deliberately ducks every bus,
     // so post-summary volumes are zero by design.
     const finale = await readEvidence(page);
@@ -391,6 +405,7 @@ test("pulse tunnel 90s run completes with section stem rises and reduced-motion 
         expect(finale.audio.busVolumes[bus]).toBeGreaterThan(0);
       }
     }
+    await page.keyboard.press("KeyP");
     const summary = await waitFor(page, (evidence) => evidence.state === "summary", 30_000);
     expect(summary.finishedReason).toBe("finished");
     // The whole authored arrangement played: every section was visited and rose.

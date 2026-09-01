@@ -36,20 +36,30 @@ const ACT_PALETTES: readonly SkylineActPalette[] = [
     districtId: "steel-dawn",
     districtTitle: "Steel Dawn",
     title: "Home Grove",
-    skyRamp: ["#0284c7", "#070b12"],
-    skyEmissiveRamp: ["#38bdf8", "#0f172a"],
-    groundRamp: ["#0284c7", "#030712"],
-    groundEmissiveRamp: ["#38bdf8", "#070b12"],
-    sceneBackground: "#070b12",
-    fogColor: "#0b1329",
-    fogDensity: 0.025,
-    fogIntensity: 0.42,
-    ambientLightColor: "#93c5fd",
-    ambientLightIntensity: 0.78,
-    keyLightColor: "#38bdf8",
-    keyLightIntensity: 1.35,
-    checkpointLightColor: "#38bdf8",
-    checkpointLightIntensity: 0.75
+    // Steel Dawn is a nocturne: the first frame needs a deep value floor so the
+    // coral hero, cyan relays, and snow-capped typed world do not wash together.
+    // Steel Dawn is a restrained blue-hour district. The old cyan ramp turned
+    // the whole frame into a stack of luminous aqua stripes and erased the
+    // warm hero silhouette. Keep the horizon blue enough to separate the typed
+    // trees, then fall quickly into ink so the world, not the backdrop, owns the
+    // visual hierarchy.
+    skyRamp: ["#1d3c59", "#070b1b"],
+    skyEmissiveRamp: ["#254f61", "#090f25"],
+    // Match the ground's horizon colour to the sky's horizon colour without
+    // making the lower half a second bright panel. The nadir is nearly black,
+    // giving the platforms a deliberate stage instead of an empty cyan floor.
+    groundRamp: ["#1b3945", "#050a14"],
+    groundEmissiveRamp: ["#21534f", "#070e1b"],
+    sceneBackground: "#050916",
+    fogColor: "#0a1728",
+    fogDensity: 0.009,
+    fogIntensity: 0.12,
+    ambientLightColor: "#91a9bd",
+    ambientLightIntensity: 0.36,
+    keyLightColor: "#ffc39d",
+    keyLightIntensity: 1.08,
+    checkpointLightColor: "#70ddd1",
+    checkpointLightIntensity: 0.68
   },
   {
     actIndex: 1,
@@ -187,6 +197,8 @@ export function planSkylineActBackdrop(options: {
   readonly sceneSpan: readonly [number, number];
   readonly horizonY: number;
   readonly farBackgroundDepth: number;
+  /** Exact showcase-review framing needs a taller, finer backdrop than gameplay. */
+  readonly reviewCapture?: boolean;
 }): SkylineSkyBackdropPlan {
   const palette = getSkylineActPalette(options.actIndex);
   const plan = planSkyBackdrop({
@@ -194,9 +206,13 @@ export function planSkylineActBackdrop(options: {
     depth: options.farBackgroundDepth,
     horizonY: options.horizonY,
     height: 20,
-    bands: skyBandCountForRamp(...palette.skyRamp),
-    belowHorizonHeight: 14,
-    belowHorizonBands: skyBandCountForRamp(...palette.groundRamp)
+    // The exact review lens needs quieter steps and a taller lower field. Keep
+    // the mounted gameplay route on the reusable default density: multiplying
+    // every band across all five authored acts increased the production scene
+    // by hundreds of permanently-mounted quads even though four acts are hidden.
+    bands: skyBandCountForRamp(...palette.skyRamp, options.reviewCapture ? 2 : 8),
+    belowHorizonHeight: options.reviewCapture ? 28 : 14,
+    belowHorizonBands: skyBandCountForRamp(...palette.groundRamp, options.reviewCapture ? 2 : 8)
   });
   const bandColors = plan.bands.map((band) => {
     const colorRamp = band.side === "sky" ? palette.skyRamp : palette.groundRamp;

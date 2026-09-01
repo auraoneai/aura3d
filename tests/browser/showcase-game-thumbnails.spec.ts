@@ -28,12 +28,14 @@ const routes = [
 
 const reportDir = resolve("tests/reports/showcase-game-thumbnails");
 const previewDir = resolve("marketing/public/previews/showcase-index");
+const exactAuditDir = resolve("tests/reports/live-showcase-2.0.1");
 let server: ExampleDevServer;
 
 test.beforeAll(async () => {
   server = await startExampleDevServer();
   mkdirSync(reportDir, { recursive: true });
   mkdirSync(previewDir, { recursive: true });
+  mkdirSync(exactAuditDir, { recursive: true });
 });
 
 test.afterAll(async () => { await server?.close(); });
@@ -51,6 +53,12 @@ test("regenerates every PRD game thumbnail from current machine-bound game image
       // be mounted by the repository's source-file server. Its exact special
       // capture is produced by the app's own passing visual-regression gate.
       sourcePng = resolve("apps/aura-clash-showcase/launch-evidence/aura-clash-visual-special.png");
+      // Keep the exact blind-audit artifact source-bound to the same current visual-regression
+      // capture used for the public thumbnail. Previously this producer regenerated only the WebP,
+      // leaving `live-showcase-2.0.1/08-aura-clash-arena.png` frozen on stale bytes while still
+      // reporting green. Writing the canonical PNG here makes producer success and audit freshness
+      // the same operation.
+      writeFileSync(resolve(exactAuditDir, "08-aura-clash-arena.png"), readFileSync(sourcePng));
     } else {
       const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
       const response = await page.goto(`${server.origin}${route}`, { waitUntil: "domcontentloaded", timeout: 90_000 });

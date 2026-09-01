@@ -33,6 +33,7 @@ export interface TurboOpponentRacingState<TSnapshot extends TurboOpponentSnapsho
   snapshot(): TSnapshot;
   step(dt: number, input: TurboOpponentInput): TSnapshot;
   reset(progress?: number): TSnapshot;
+  placeAtProgress?(progress: number, offset?: number): TSnapshot;
   resolveContact?(position: { readonly x: number; readonly y: number }, options?: {
     readonly heading?: number;
     readonly speedMultiplier?: number;
@@ -127,6 +128,7 @@ export interface TurboOpponentAi<TSnapshot extends TurboOpponentSnapshot> {
   snapshot(): TSnapshot;
   step(dt: number, playerProgress: number, playerSignedOffset?: number): TSnapshot;
   reset(): TSnapshot;
+  placeAtProgress(progress: number, offset?: number): TSnapshot;
   resolveContact(position: { readonly x: number; readonly y: number }, speedMultiplier?: number, heading?: number): TSnapshot;
   evidence(playerProgress: number): TurboOpponentAiEvidence;
 }
@@ -290,6 +292,11 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       recentDecisions.length = 0;
       config.driver?.reset();
       snapshot = state.reset(config.startProgress);
+      return snapshot;
+    },
+    placeAtProgress(progress, offset = 0) {
+      if (!state.placeAtProgress) return snapshot;
+      snapshot = state.placeAtProgress(progress, offset);
       return snapshot;
     },
     evidence(playerProgress) {

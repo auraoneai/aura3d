@@ -43,8 +43,8 @@ button { font: inherit; }
 .shell::before {
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(3, 7, 15, 0.62), transparent 27%, transparent 72%, rgba(3, 7, 15, 0.22)),
-    linear-gradient(0deg, rgba(3, 6, 13, 0.72), transparent 29%, transparent 76%, rgba(3, 7, 14, 0.26));
+    linear-gradient(90deg, rgba(3, 7, 15, 0.38), transparent 27%, transparent 72%, rgba(3, 7, 15, 0.14)),
+    linear-gradient(0deg, rgba(3, 6, 13, 0.46), transparent 29%, transparent 76%, rgba(3, 7, 14, 0.16));
 }
 
 .shell::after {
@@ -67,11 +67,11 @@ button { font: inherit; }
   position: absolute;
   top: 28px;
   left: 30px;
-  width: min(370px, calc(100vw - 60px));
-  padding: 16px 18px 17px;
+  width: min(330px, calc(100vw - 60px));
+  padding: 14px 16px 15px;
   border: 1px solid rgba(164, 213, 255, 0.22);
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(5, 12, 24, 0.9), rgba(15, 26, 42, 0.68));
+  background: linear-gradient(135deg, rgba(5, 12, 24, 0.76), rgba(15, 26, 42, 0.54));
   box-shadow: 0 18px 50px rgba(1, 5, 12, 0.34);
   backdrop-filter: blur(18px) saturate(1.18);
 }
@@ -98,7 +98,7 @@ button { font: inherit; }
 
 .race-brand h1 {
   margin: 7px 0 0;
-  font-size: clamp(25px, 2.2vw, 34px);
+  font-size: clamp(24px, 2.1vw, 32px);
   font-weight: 850;
   line-height: 1;
   letter-spacing: -0.045em;
@@ -106,9 +106,9 @@ button { font: inherit; }
 
 .panel__lede {
   max-width: 34ch;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: #c3d1df;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -117,12 +117,12 @@ button { font: inherit; }
   top: 28px;
   right: 30px;
   display: grid;
-  grid-template-columns: 118px repeat(5, 78px);
+  grid-template-columns: 104px repeat(5, 66px);
   gap: 6px;
   padding: 6px;
   border: 1px solid rgba(164, 213, 255, 0.2);
   border-radius: 14px;
-  background: rgba(5, 12, 24, 0.75);
+  background: rgba(5, 12, 24, 0.64);
   box-shadow: 0 18px 50px rgba(1, 5, 12, 0.28);
   backdrop-filter: blur(16px) saturate(1.15);
 }
@@ -158,6 +158,12 @@ button { font: inherit; }
   transform: translate(-50%, -50%);
   pointer-events: none;
   backdrop-filter: blur(12px);
+}
+
+.start-lights--complete {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
+  pointer-events: none;
 }
 
 .start-lights__light {
@@ -264,7 +270,7 @@ button { font: inherit; }
 
 .metric {
   min-width: 0;
-  padding: 10px 11px;
+  padding: 9px 9px;
   border-radius: 9px;
   background: linear-gradient(180deg, rgba(212, 235, 255, 0.09), rgba(212, 235, 255, 0.025));
 }
@@ -283,13 +289,13 @@ button { font: inherit; }
   margin-top: 4px;
   overflow: hidden;
   color: #fff;
-  font-size: 19px;
+  font-size: 17px;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.metric--speed strong { color: #64f5dd; font-size: 31px; font-variant-numeric: tabular-nums; }
+.metric--speed strong { color: #64f5dd; font-size: 28px; font-variant-numeric: tabular-nums; }
 .metric--status strong { color: #ffd879; }
 
 .track-contract { display: none; }
@@ -299,7 +305,7 @@ button { font: inherit; }
   bottom: 26px;
   left: 30px;
   display: grid;
-  width: 430px;
+  width: 365px;
   gap: 8px;
 }
 
@@ -312,7 +318,7 @@ button { font: inherit; }
   padding: 7px;
   border: 1px solid rgba(164, 213, 255, 0.2);
   border-radius: 15px;
-  background: rgba(5, 12, 24, 0.76);
+  background: rgba(5, 12, 24, 0.64);
   box-shadow: 0 18px 50px rgba(1, 5, 12, 0.32);
   backdrop-filter: blur(16px);
 }
@@ -320,7 +326,7 @@ button { font: inherit; }
 .control-cluster button {
   display: grid;
   min-width: 0;
-  min-height: 54px;
+  min-height: 50px;
   place-content: center;
   gap: 2px;
   border: 1px solid rgba(180, 219, 250, 0.2);
@@ -331,8 +337,8 @@ button { font: inherit; }
   touch-action: none;
 }
 
-.control-cluster button b { font-size: 17px; }
-.control-cluster button span { color: #aec5d8; font-size: 8px; font-weight: 760; text-transform: uppercase; }
+.control-cluster button b { font-size: 16px; }
+.control-cluster button span { color: #aec5d8; font-size: 7px; font-weight: 760; text-transform: uppercase; }
 .control-cluster button:hover,
 .control-cluster button:focus-visible,
 .control-cluster button[aria-pressed="true"] {
@@ -353,6 +359,41 @@ button { font: inherit; }
 }
 
 .controls-list kbd { color: #eff8ff; font: inherit; font-weight: 800; }
+
+/* The overview is a named visual-evidence camera, not a second public UI. Keep
+ * the speed/lap/gate metric cluster visible for context, but let the authored
+ * circuit, typed cars, and sunset lighting own the comparison frame. Opacity
+ * preserves the DOM and keyboard/evidence contract while removing the large
+ * title/control cards from the raster hierarchy only for ?capture=overview. */
+.panel[data-capture="overview"] .race-brand,
+.panel[data-capture="overview"] .race-controls {
+  opacity: 0;
+}
+
+.panel[data-capture="overview"] .lap-times {
+  opacity: 0;
+}
+
+.panel[data-capture="overview"] .metrics-row {
+  top: 20px;
+  right: 20px;
+  grid-template-columns: 104px 58px 58px 82px 58px 78px;
+  padding: 5px;
+}
+
+.panel[data-capture="overview"] .metric {
+  padding-inline: 8px;
+}
+
+.panel[data-capture="overview"] .metric strong {
+  overflow: visible;
+  font-size: 15px;
+  text-overflow: clip;
+}
+
+.panel[data-capture="overview"] .metric--speed strong {
+  font-size: 25px;
+}
 
 .contract-status {
   display: flex;

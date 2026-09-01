@@ -81,11 +81,15 @@ typed `assets.pulse*` members—no raw URLs or invented IDs.
 
 ## Presentation boundaries
 
-The glider, gate frames, hue washes, and sparks are authored emissive primitives used
-as deliberate abstract visualization inside the public neon tunnel kit. This is an
-abstract-labeled prototype: no named character, vehicle, product, creature, weapon, or
-world subject is claimed, and no typed GLB primary asset is claimed. Fog pulses and hit
-flash render in-scene; DOM/CSS is HUD chrome only.
+The player is the release-validated typed `assets.pulseRunnerCraft`, facing the
+release-validated typed `assets.pulseTerminalSentry` inside the release-validated
+typed `assets.pulseReactorEncounterWorld`. All three are original CC0 Pulse Tunnel
+assets with retained root-rendered probe evidence. All
+lane, jump, slide, collision, and rhythm behavior remains route-local authored arcade
+motion and makes no physical-spacecraft claim. Gate frames, the continuous
+reactor-tunnel volume, terminal iris, projectiles, hue washes, and sparks are
+renderer-owned abstract geometry around the typed player. Fog pulses and hit flash
+render in-scene; DOM/CSS is HUD chrome only.
 
 ## Evidence
 
@@ -99,14 +103,16 @@ flash render in-scene; DOM/CSS is HUD chrome only.
 - Source-bound receipts: `tests/reports/pulse-tunnel/playable-evidence.json`,
   `mobile-evidence.json`, `completion-evidence.json`, and `sync-report.json` bind
   their producer and route hashes plus every acceptance capture.
-- Performance: `performance-report.json` passes at 0.0006 ms simulation p95 and
-  119/600 full-run draw calls for the documented route-local scope.
-- Route health: `route-health.json` machine-passes with 13 typed audio assets,
-  11/160 primitive source occurrences, current evidence hashes, bounded claims,
+- Performance: `performance-report.json` passes at 0.001 ms simulation p95 and
+  30 full-run draw calls for the documented route-local scope.
+- Route health: `route-health.json` machine-passes with three release-quality typed
+  visual assets plus 13 typed audio assets, 34 primitive source occurrences,
+  current evidence hashes, bounded claims,
   and the independent-review blocker retained.
-- Exact build deployment: the release check passes with `--no-assets`; this
-  abstract route claims no typed visual primary, while route health separately
-  validates every typed WAV hash, provenance record, quality grade, and live use.
+- Exact build deployment: the release check validates `pulseRunnerCraft`,
+  `pulseTerminalSentry`, and `pulseReactorEncounterWorld`, while route health
+  separately validates every typed WAV hash, provenance record, quality grade, and
+  live use.
 
 ## Review status
 

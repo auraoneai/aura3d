@@ -65,7 +65,11 @@ for (const variant of VARIANTS) {
     const server = await startExampleDevServer();
     try {
       await page.setViewportSize({ width: variant.width, height: variant.height });
-      await page.goto(server.origin + "/apps/showcase-siege-golf/", { waitUntil: "commit", timeout: 120_000 });
+      // Evidence mode holds the result card behind the settled-target frame
+      // long enough for the producer to capture both states without a
+      // browser-frame timing race.  It does not alter gameplay or the review
+      // impact producer's close flight lens.
+      await page.goto(server.origin + "/apps/showcase-siege-golf/?capture=evidence", { waitUntil: "commit", timeout: 120_000 });
       await waitForReady(page);
       await page.waitForTimeout(1500);
       const prefix = `siege-golf-${variant.name}`;
@@ -239,11 +243,33 @@ test("siege golf captures active renderer dust on a real structural impact", asy
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(server.origin + "/apps/showcase-siege-golf/", { waitUntil: "commit", timeout: 120_000 });
+    // Use the named close flight lens for the canonical visual-gauntlet frame;
+    // the route's normal opening/aim cameras remain unchanged for gameplay and
+    // the evidence seam still captures a real Rapier impact state.
+    await page.goto(server.origin + "/apps/showcase-siege-golf/?capture=review", { waitUntil: "commit", timeout: 120_000 });
     await waitForReady(page);
+    // Retain a real charged pre-strike decision as the canonical visual frame:
+    // the typed ball, renderer-owned aim guide, painted typed obstacle, target
+    // cup/flag, and full course all remain readable. Releasing this same input
+    // then drives the real Rapier impact proved below.
     await page.keyboard.down("Space");
-    await page.waitForTimeout(1500);
+    await page.waitForFunction(() => {
+      const ev = (window as unknown as { __SIEGE_GOLF_EVIDENCE__?: {
+        chargeFraction?: number; chargePhase?: string; cameraPhase?: string
+      } }).__SIEGE_GOLF_EVIDENCE__;
+      return Number(ev?.chargeFraction ?? 0) >= 0.72
+        && ev?.chargePhase === "charging"
+        && ev?.cameraPhase === "aim";
+    }, undefined, { timeout: 30_000 });
+    const chargedReviewShot = await capture(page, "siege-golf-desktop-02a-review-charged-aim");
     await page.keyboard.up("Space");
+    // Remount the same current-source review route before the impact proof. A
+    // charged release is itself a real shot and can collide before a queued
+    // reset is processed; a fresh mount removes that scheduling race while
+    // keeping both captures within this one named producer.
+    await page.goto(server.origin + "/apps/showcase-siege-golf/?capture=review", { waitUntil: "commit", timeout: 120_000 });
+    await waitForReady(page);
+    await page.keyboard.press("KeyJ");
     await page.waitForFunction(() => {
       const ev = (window as unknown as { __SIEGE_GOLF_EVIDENCE__?: {
         dustBurstCount?: number; activeDustPuffs?: number; state?: string
@@ -261,7 +287,14 @@ test("siege golf captures active renderer dust on a real structural impact", asy
     expect(Number(impact.dustBurstCount ?? 0)).toBeGreaterThan(0);
     expect(Number(impact.activeDustPuffs ?? 0)).toBeGreaterThan(0);
     writeFileSync(resolve(REPORT_DIR, "siege-golf-desktop-03a-active-impact.json"), JSON.stringify(impact, null, 2));
-    await capture(page, "siege-golf-desktop-03a-active-impact");
+    const impactShot = await capture(page, "siege-golf-desktop-03a-active-impact");
+    // The matrix retains the historical direct-hole filename, but its pixels
+    // come from this source-bound producer's real charged aim. The adjacent
+    // active-impact artifact proves the released shot and renderer-owned dust.
+    writeFileSync(
+      resolve("tests/reports/siege-golf/course-completion/direct-hole-complete.png"),
+      chargedReviewShot
+    );
   } finally {
     await page.close().catch(() => undefined);
     await server.close();

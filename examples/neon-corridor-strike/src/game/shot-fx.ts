@@ -14,8 +14,8 @@ export const MUZZLE_COUNT = 3;
  * evidence windows (screenshot stalls of several seconds were measured).
  */
 export const SHOT_HOLD = 12;
-export const FLASH_HOLD = 0.28;
-export const BOLT_TRAVEL_SECONDS = 1.1;
+export const FLASH_HOLD = 0.34;
+export const BOLT_TRAVEL_SECONDS = 0.72;
 /** Post-flight fade: everything dims toward a small ember, never to nothing. */
 const FADE_START = BOLT_TRAVEL_SECONDS + 0.4;
 const FADE_SPAN = 1.5;
@@ -24,6 +24,7 @@ export interface ShotPose {
   readonly barrel: readonly [number, number, number];
   readonly end: readonly [number, number, number];
   readonly yaw: number;
+  readonly pitch: number;
 }
 
 export function createShotClock(): { visible: number; pose: ShotPose | null; expiresAt?: number } {
@@ -67,11 +68,12 @@ export function showShot(
   barrel: readonly [number, number, number],
   end: readonly [number, number, number],
   yaw: number,
+  pitch: number,
   clock: { visible: number; pose: ShotPose | null; expiresAt?: number }
 ): void {
   void origin;
   void direction;
-  clock.pose = { barrel, end, yaw };
+  clock.pose = { barrel, end, yaw, pitch };
   // Hold is measured against WALL time: slow frames make the app's dt clamp
   // consume sim time faster than wall time, which let long screenshot stalls
   // hide the FX before the shot-visual spec could read them.
@@ -93,34 +95,39 @@ export function syncShotFx(
   const flash = handle(nodes, "muzzle-0");
   const punch = elapsed <= FLASH_HOLD ? 1 - elapsed / FLASH_HOLD : 0;
   flash?.setPosition(pose.barrel[0], pose.barrel[1], pose.barrel[2]);
-  flash?.setRotation(0, pose.yaw, 0);
-  flash?.setScale(Math.max(0.02, (0.07 + punch * 0.05) * fade));
+  flash?.setRotation(pose.pitch, pose.yaw, 0);
+  // Keep the flash attached to the typed rifle. Its small ice-white core is
+  // readable against the warm Warden mask without becoming an accessibility-
+  // hostile full-frame blink.
+  const flashRadius = Math.max(0.014, (0.03 + punch * 0.02) * fade);
+  flash?.setScale([flashRadius, flashRadius, flashRadius * 3.4]);
 
   const bolt = handle(nodes, "muzzle-1");
-  const boltAt = lerp(pose.barrel, pose.end, Math.min(1, 0.08 + travel * 0.92));
+  const boltAt = lerp(pose.barrel, pose.end, Math.min(0.88, 0.48 + travel * 0.4));
   bolt?.setPosition(boltAt[0], boltAt[1], boltAt[2]);
-  bolt?.setRotation(0, pose.yaw, 0);
-  bolt?.setScale(Math.max(0.02, 0.08 * fade));
+  bolt?.setRotation(pose.pitch, pose.yaw, 0);
+  // The blue-white bolt carries the player-action read through the center of
+  // the lane, while the visible target remains the warmer, larger Warden.
+  const boltRadius = Math.max(0.02, 0.046 * fade);
+  bolt?.setScale([boltRadius, boltRadius, boltRadius * 3.8]);
 
   const tracer = handle(nodes, "muzzle-2");
-  const forwardX = -Math.sin(pose.yaw);
-  const forwardZ = -Math.cos(pose.yaw);
-  tracer?.setPosition(
-    pose.barrel[0] + forwardX * 0.85,
-    pose.barrel[1],
-    pose.barrel[2] + forwardZ * 0.85
-  );
-  tracer?.setRotation(0, pose.yaw, 0);
+  const tracerAt = lerp(pose.barrel, pose.end, Math.min(0.5, 0.2 + travel * 0.3));
+  tracer?.setPosition(tracerAt[0], tracerAt[1], tracerAt[2]);
+  tracer?.setRotation(pose.pitch, pose.yaw, 0);
+  // This is a compact second pulse, not a stretched beam. Together with the
+  // muzzle core, lead bolt, and endpoint ring it makes one readable causal
+  // chain while keeping the target and corridor visible between the pulses.
+  tracer?.setScale([0.03 * fade, 0.03 * fade, 0.34 * fade]);
 
   const impact = handle(nodes, "shot-impact");
-  if (travel >= 1) {
-    impact?.setPosition(pose.end[0], pose.end[1], pose.end[2]);
-    impact?.setRotation(0, pose.yaw, 0);
-    impact?.setScale(Math.max(0.025, 0.07 * Math.max(fade, 0.4)));
-  } else {
-    impact?.setPosition(0, -8, 0);
-    impact?.setScale(0.01);
-  }
+  // Hitscan resolves immediately, so the endpoint fracture belongs on screen
+  // immediately too; the travelling bolt is presentation, not hit authority.
+  // Torus normal is +Y, hence the quarter-turn before yaw/pitch aligns its open
+  // face with the firing ray instead of showing the player an edge-on sliver.
+  impact?.setPosition(pose.end[0], pose.end[1], pose.end[2]);
+  impact?.setRotation(pose.pitch + Math.PI / 2, pose.yaw, 0);
+  impact?.setScale(Math.max(0.18, (0.2 + travel * 0.06) * Math.max(fade, 0.8)));
 }
 
 /** Diagnostic counters for the evidence payload (why did FX hide, when). */

@@ -5,9 +5,9 @@ import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
 /**
  * AC-A3 — instanced rooftop crowd.
  *
- * Crowd silhouettes around the stage rim as **one instanced pool**: a single render item carrying
- * `instanceTransforms`, drawn by one `InstancedUnlitMaterial` submission — no per-fan nodes, no
- * per-fan draw calls. Idle bob is a deterministic per-instance phase (shared
+ * Crowd silhouettes around the stage rim as **two instanced pools**: a torso pool and a head pool,
+ * each carrying `instanceTransforms`. That remains two fixed draw submissions regardless of crowd
+ * size, without per-fan nodes or draw calls. Idle bob is a deterministic per-instance phase (shared
  * `@aura3d/animation` crowd sampler), and big hits drive a synchronized cheer bounce.
  * Presentation only: the crowd never touches combat state and never enters the fighter lane.
  */
@@ -19,7 +19,7 @@ import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
  */
 export const CROWD_MIN_LANE_DISTANCE_X = 3.02;
 export const CROWD_BACK_ROW_Z = -0.78;
-export const CROWD_MAX_RADIUS = 0.15;
+export const CROWD_MAX_RADIUS = 0.1;
 
 interface CrowdFan {
   readonly id: string;
@@ -38,13 +38,13 @@ function buildFans(): CrowdFan[] {
     const t = index / (sideSlots - 1);
     const z = -0.52 + t * 1.04;
     const wobble = Math.sin(index * 2.39) * 0.12;
-    fans.push({ id: `crowd-left-${index}`, x: -(CROWD_MIN_LANE_DISTANCE_X + wobble + (index % 3) * 0.34), y: 0, z, scale: 0.85 + ((index * 37) % 31) / 100 });
-    fans.push({ id: `crowd-right-${index}`, x: CROWD_MIN_LANE_DISTANCE_X + wobble + ((index + 1) % 3) * 0.34, y: 0, z: -z, scale: 0.85 + ((index * 53) % 29) / 100 });
+    fans.push({ id: `crowd-left-${index}`, x: -(CROWD_MIN_LANE_DISTANCE_X + wobble + (index % 3) * 0.34), y: 0, z, scale: 0.48 + ((index * 37) % 17) / 100 });
+    fans.push({ id: `crowd-right-${index}`, x: CROWD_MIN_LANE_DISTANCE_X + wobble + ((index + 1) % 3) * 0.34, y: 0, z: -z, scale: 0.48 + ((index * 53) % 17) / 100 });
   }
   const backSlots = 10;
   for (let index = 0; index < backSlots; index += 1) {
     const t = index / (backSlots - 1);
-    fans.push({ id: `crowd-back-${index}`, x: -2.6 + t * 5.2, y: 0, z: CROWD_BACK_ROW_Z - (index % 2) * 0.16, scale: 0.82 + ((index * 41) % 33) / 100 });
+    fans.push({ id: `crowd-back-${index}`, x: -2.6 + t * 5.2, y: 0, z: CROWD_BACK_ROW_Z - (index % 2) * 0.16, scale: 0.46 + ((index * 41) % 19) / 100 });
   }
   return fans;
 }
@@ -68,13 +68,19 @@ export interface CrowdInstancesPool {
 }
 
 export function createCrowdInstances(): CrowdInstancesPool {
-  const geometry = Geometry.capsule({ radius: 0.13, height: 0.62, segments: 8, rings: 4 });
-  const material = new InstancedUnlitMaterial({
-    name: "aura-clash-crowd-silhouettes",
+  const torsoGeometry = Geometry.capsule({ radius: 0.12, height: 0.44, segments: 10, rings: 5 });
+  const headGeometry = Geometry.uvSphere(0.12, 10, 7);
+  const torsoMaterial = new InstancedUnlitMaterial({
+    name: "aura-clash-crowd-torsos",
     // Dark rooftop silhouettes against neon brick — set dressing, not subjects.
-    color: [0.055, 0.07, 0.105, 1]
+    color: [0.025, 0.055, 0.07, 1]
   });
-  const transforms = new Float32Array(FANS.length * 16);
+  const headMaterial = new InstancedUnlitMaterial({
+    name: "aura-clash-crowd-heads",
+    color: [0.07, 0.12, 0.13, 1]
+  });
+  const torsoTransforms = new Float32Array(FANS.length * 16);
+  const headTransforms = new Float32Array(FANS.length * 16);
   return {
     instanceCount: FANS.length,
     collect({ elapsedSeconds, cheer, reducedMotion }) {
@@ -89,20 +95,36 @@ export function createCrowdInstances(): CrowdInstancesPool {
         // Synchronized cheer bounce: one shared beat on top of each fan's idle phase.
         const cheerBounce = cheerStrength * 0.11 * Math.abs(Math.sin(sample.time * Math.PI * 2 * 1.5));
         const height = fan.scale * (1 + idleBob + cheerBounce);
-        const matrix = composeMat4(
-          [fan.x, fan.y + height * 0.42, fan.z],
+        const torsoHeight = height * 0.72;
+        const torsoMatrix = composeMat4(
+          [fan.x, fan.y + torsoHeight * 0.42, fan.z],
           quatFromEuler(0, fan.x < 0 ? 0.5 : -0.5, 0),
-          [fan.scale, height, fan.scale]
+          [fan.scale * 0.72, torsoHeight, fan.scale * 0.6]
         ) as Mat4;
-        transforms.set(matrix, index * 16);
+        const headMatrix = composeMat4(
+          [fan.x, fan.y + torsoHeight * 0.87, fan.z],
+          quatFromEuler(0, 0, 0),
+          [fan.scale * 0.68, fan.scale * 0.68, fan.scale * 0.68]
+        ) as Mat4;
+        torsoTransforms.set(torsoMatrix, index * 16);
+        headTransforms.set(headMatrix, index * 16);
       }
-      return [{
-        label: "aura-clash-rendered-stage:crowd-fan-pool",
-        geometry,
-        material,
-        instanceTransforms: transforms,
-        includeInAutoFrame: false
-      }];
+      return [
+        {
+          label: "aura-clash-rendered-stage:crowd-fan-torso-pool",
+          geometry: torsoGeometry,
+          material: torsoMaterial,
+          instanceTransforms: torsoTransforms,
+          includeInAutoFrame: false
+        },
+        {
+          label: "aura-clash-rendered-stage:crowd-fan-head-pool",
+          geometry: headGeometry,
+          material: headMaterial,
+          instanceTransforms: headTransforms,
+          includeInAutoFrame: false
+        }
+      ];
     }
   };
 }

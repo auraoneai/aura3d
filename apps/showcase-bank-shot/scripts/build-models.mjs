@@ -3,11 +3,12 @@
  *
  * Eighteen authored low-poly props for the billiards hall, flat-shaded and
  * indexed, written as minimal glTF 2.0 GLB containers with no dependencies:
- *   - bankShotTable.glb       : billiards table (felt slab top at y = 0, wooden
- *                               rails, four legs) centered on the origin
+ *   - bankShotTable.glb       : billiards table (felt slab top at y = 0,
+ *                               cushioned walnut rails, pocket collars, four
+ *                               legs) centered on the origin
  *   - bankShotCue.glb         : tapered cue stick, tip at origin, local +X = tip
  *                               direction, two-tone wood
- *   - bankShotBall00.glb      : unit-normalized white cue ball (radius 0.5, 16x12 UV sphere)
+ *   - bankShotBall00.glb      : unit-normalized white cue ball (radius 0.5, 24x18 UV sphere)
  *   - bankShotBall01..15.glb  : solids 1-7 (yellow/blue/red/purple/orange/green/
  *                               maroon), the black 8, stripes 9-15 (same hues
  *                               with a white equatorial band ~40% of the diameter
@@ -87,12 +88,69 @@ function ringX(n, r, x) {
   return pts;
 }
 
+/** Low-poly torus around the Y axis, used for the authored pocket collars. */
+function addTorusY(p, cx, cy, cz, majorRadius, tubeRadius, segments = 18, tubeSegments = 6) {
+  const rings = [];
+  for (let tube = 0; tube <= tubeSegments; tube += 1) {
+    const v = (tube / tubeSegments) * Math.PI * 2;
+    const ringPoints = [];
+    for (let segment = 0; segment < segments; segment += 1) {
+      const u = (segment / segments) * Math.PI * 2;
+      const ringRadius = majorRadius + tubeRadius * Math.cos(v);
+      ringPoints.push([
+        cx + ringRadius * Math.cos(u),
+        cy + tubeRadius * Math.sin(v),
+        cz + ringRadius * Math.sin(u)
+      ]);
+    }
+    rings.push(ringPoints);
+  }
+  for (let tube = 0; tube < rings.length - 1; tube += 1) addBand(p, rings[tube], rings[tube + 1]);
+}
+
 /** Tapered tube between two rings. */
 function addBand(p, lower, upper) {
   const n = Math.min(lower.length, upper.length);
   for (let i = 0; i < n; i += 1) {
     const j = (i + 1) % n;
     addQuad(p, lower[i], lower[j], upper[j], upper[i]);
+  }
+}
+
+/**
+ * Outward-wound Y-axis band used by the billiard spheres. `addBand` is kept
+ * for the existing cue/torus generator topology; applying it to latitude
+ * rings points the faces inward, so backface culling leaves only far-side
+ * crescents in the rendered rack.
+ */
+function addSphereBand(p, lower, upper) {
+  const n = Math.min(lower.length, upper.length);
+  for (let i = 0; i < n; i += 1) {
+    const j = (i + 1) % n;
+    addQuad(p, lower[i], upper[i], upper[j], lower[j]);
+  }
+}
+
+/** Outward-wound cap for a Y-axis sphere. */
+function addSphereCap(p, pts, y, up) {
+  const center = [0, y, 0];
+  for (let i = 0; i < pts.length; i += 1) {
+    const j = (i + 1) % pts.length;
+    if (up) addTriangle(p, center, pts[j], pts[i]);
+    else addTriangle(p, center, pts[i], pts[j]);
+  }
+}
+
+/** Replace flat triangle normals with radial normals for glossy ball shading. */
+function smoothSphereNormals(p) {
+  for (let index = 0; index < p.positions.length; index += 3) {
+    const x = p.positions[index];
+    const y = p.positions[index + 1];
+    const z = p.positions[index + 2];
+    const length = Math.hypot(x, y, z) || 1;
+    p.normals[index] = x / length;
+    p.normals[index + 1] = y / length;
+    p.normals[index + 2] = z / length;
   }
 }
 
@@ -132,6 +190,61 @@ function addBox(p, cx, cy, cz, hx, hy, hz) {
   addQuad(p, v[2], v[3], v[7], v[6]); // +X
 }
 
+/**
+ * Long-axis rail prism with a real chamfered cross-section. Unlike stacked
+ * rectangular trim, the four bevel faces carry distinct normals, so the typed
+ * walnut rail catches a continuous pendant-light rolloff at the review angle.
+ */
+function addChamferedPrismX(p, cx, cy, cz, hx, hy, hz, bevel) {
+  const section = (x) => [
+    [x, cy - hy + bevel, cz - hz],
+    [x, cy - hy, cz - hz + bevel],
+    [x, cy - hy, cz + hz - bevel],
+    [x, cy - hy + bevel, cz + hz],
+    [x, cy + hy - bevel, cz + hz],
+    [x, cy + hy, cz + hz - bevel],
+    [x, cy + hy, cz - hz + bevel],
+    [x, cy + hy - bevel, cz - hz]
+  ];
+  const left = section(cx - hx);
+  const right = section(cx + hx);
+  addBand(p, left, right);
+  addCapPolygon(p, left, false);
+  addCapPolygon(p, right, true);
+}
+
+/** Short-axis companion to addChamferedPrismX. */
+function addChamferedPrismZ(p, cx, cy, cz, hx, hy, hz, bevel) {
+  const section = (z) => [
+    [cx - hx, cy - hy + bevel, z],
+    [cx - hx + bevel, cy - hy, z],
+    [cx + hx - bevel, cy - hy, z],
+    [cx + hx, cy - hy + bevel, z],
+    [cx + hx, cy + hy - bevel, z],
+    [cx + hx - bevel, cy + hy, z],
+    [cx - hx + bevel, cy + hy, z],
+    [cx - hx, cy + hy - bevel, z]
+  ];
+  const near = section(cz - hz);
+  const far = section(cz + hz);
+  addBand(p, near, far);
+  addCapPolygon(p, near, false);
+  addCapPolygon(p, far, true);
+}
+
+/** Cap any convex section with a triangle fan. */
+function addCapPolygon(p, points, forward) {
+  const center = points.reduce(
+    (sum, point) => [sum[0] + point[0] / points.length, sum[1] + point[1] / points.length, sum[2] + point[2] / points.length],
+    [0, 0, 0]
+  );
+  for (let index = 0; index < points.length; index += 1) {
+    const next = (index + 1) % points.length;
+    if (forward) addTriangle(p, center, points[index], points[next]);
+    else addTriangle(p, center, points[next], points[index]);
+  }
+}
+
 /** Horizontal, upward-facing disc for a pocket mouth or ball identity patch. */
 function addDisc(p, cx, cy, cz, radius, segments = 20) {
   const center = [cx, cy, cz];
@@ -152,6 +265,59 @@ function addTopQuad(p, x0, z0, x1, z1, y) {
   addQuad(p, [x0, y, z0], [x0, y, z1], [x1, y, z1], [x1, y, z0]);
 }
 
+/** A horizontal elliptical ribbon used for cloth graphics authored in the table GLB. */
+function addEllipseRibbon(p, cx, cy, cz, radiusX, radiusZ, width, segments = 64) {
+  for (let index = 0; index < segments; index += 1) {
+    const next = (index + 1) % segments;
+    const a0 = (index / segments) * Math.PI * 2;
+    const a1 = (next / segments) * Math.PI * 2;
+    const outer0 = [cx + Math.cos(a0) * radiusX, cy, cz + Math.sin(a0) * radiusZ];
+    const outer1 = [cx + Math.cos(a1) * radiusX, cy, cz + Math.sin(a1) * radiusZ];
+    const inner0 = [cx + Math.cos(a0) * (radiusX - width), cy, cz + Math.sin(a0) * (radiusZ - width)];
+    const inner1 = [cx + Math.cos(a1) * (radiusX - width), cy, cz + Math.sin(a1) * (radiusZ - width)];
+    addQuad(p, inner0, inner1, outer1, outer0);
+  }
+}
+
+/** A small horizontal diamond for the table's integrated rail sights. */
+function addDiamond(p, cx, cy, cz, radiusX, radiusZ) {
+  addQuad(
+    p,
+    [cx - radiusX, cy, cz],
+    [cx, cy, cz + radiusZ],
+    [cx + radiusX, cy, cz],
+    [cx, cy, cz - radiusZ]
+  );
+}
+
+/**
+ * A shallow triangulated nap over the typed felt bed. The microscopic height
+ * variation gives the PBR lighting a continuous cloth response instead of one
+ * perfectly flat blue quad, while staying below the public physics plane.
+ */
+function addFeltWeave(parts, xMin, xMax, zMin, zMax, columns = 72, rows = 40) {
+  // Keep the cloth nap below silhouette scale. The earlier 3-material,
+  // 5-millimetre tessellation read as a checkerboard from the review camera,
+  // not as woven felt. One continuous material and sub-millimetre undulation
+  // let the pendant lights supply tactile variation without visible tiles.
+  const wave = (x, z) => 0.0011 + Math.sin(x * 13.0 + z * 7.0) * 0.00032 + Math.cos(z * 17.0 - x * 5.0) * 0.00018;
+  for (let row = 0; row < rows; row += 1) {
+    const z0 = zMin + (zMax - zMin) * (row / rows);
+    const z1 = zMin + (zMax - zMin) * ((row + 1) / rows);
+    for (let column = 0; column < columns; column += 1) {
+      const p = parts[(row + column * 2) % parts.length];
+      const x0 = xMin + (xMax - xMin) * (column / columns);
+      const x1 = xMin + (xMax - xMin) * ((column + 1) / columns);
+      addQuad(p,
+        [x0, wave(x0, z0), z0],
+        [x0, wave(x0, z1), z1],
+        [x1, wave(x1, z1), z1],
+        [x1, wave(x1, z0), z0]
+      );
+    }
+  }
+}
+
 // ---- billiards table --------------------------------------------------------
 /**
  * Origin is the felt center on the felt surface (y = 0), +X is the long axis
@@ -160,15 +326,77 @@ function addTopQuad(p, x0, z0, x1, z1, y) {
  */
 function buildTable() {
   const felt = part();
+  const feltWeave = [part()];
   // Felt slab: top face at y = 0.
   addBox(felt, 0, -0.06, 0, 1.45, 0.06, 0.85);
+  addFeltWeave(feltWeave, -1.31, 1.31, -0.70, 0.70);
 
   const rails = part();
-  // Wooden rails ~0.12 tall above the felt, bordering the 2.6 x 1.4 playfield.
-  addBox(rails, 0, 0.06, -0.85, 1.63, 0.06, 0.13); // far long rail
-  addBox(rails, 0, 0.06, 0.85, 1.63, 0.06, 0.13); // near long rail
-  addBox(rails, -1.45, 0.06, 0, 0.13, 0.06, 0.72); // left short rail
-  addBox(rails, 1.45, 0.06, 0, 0.13, 0.06, 0.72); // right short rail
+  // Chamfered walnut rails ~0.12 tall above the felt. The bevel faces are
+  // physical typed geometry with their own normals, not a route-side shine.
+  addChamferedPrismX(rails, 0, 0.06, -0.85, 1.63, 0.06, 0.13, 0.028); // far long rail
+  addChamferedPrismX(rails, 0, 0.06, 0.85, 1.63, 0.06, 0.13, 0.028); // near long rail
+  addChamferedPrismZ(rails, -1.45, 0.06, 0, 0.13, 0.06, 0.72, 0.028); // left short rail
+  addChamferedPrismZ(rails, 1.45, 0.06, 0, 0.13, 0.06, 0.72, 0.028); // right short rail
+
+  const cushions = part();
+  // Separate low-profile cushion faces make the playable edge read as an
+  // upholstered rail instead of a single flat brown slab. They are authored
+  // in the typed table asset and stay aligned with the public physics bounds.
+  addBox(cushions, 0, 0.095, -0.735, 1.30, 0.035, 0.042);
+  addBox(cushions, 0, 0.095, 0.735, 1.30, 0.035, 0.042);
+  addBox(cushions, -1.335, 0.095, 0, 0.042, 0.035, 0.62);
+  addBox(cushions, 1.335, 0.095, 0, 0.042, 0.035, 0.62);
+
+  const railTrim = part();
+  // Fine top caps catch the pendant key light and give the walnut rail a
+  // readable bevel-like break without introducing a renderer-side overlay.
+  addBox(railTrim, 0, 0.126, -0.85, 1.51, 0.012, 0.105);
+  addBox(railTrim, 0, 0.126, 0.85, 1.51, 0.012, 0.105);
+  addBox(railTrim, -1.45, 0.126, 0, 0.105, 0.012, 0.62);
+  addBox(railTrim, 1.45, 0.126, 0, 0.105, 0.012, 0.62);
+
+  const railVeneer = part();
+  // Paired inset grain ribbons break the broad rail tops into lacquered wood
+  // layers and give the oblique key light a second, warmer response.
+  for (const z of [-0.888, -0.812, 0.812, 0.888]) {
+    addBox(railVeneer, 0, 0.141, z, 1.43, 0.003, 0.008);
+  }
+  for (const x of [-1.488, -1.412, 1.412, 1.488]) {
+    addBox(railVeneer, x, 0.141, 0, 0.008, 0.003, 0.58);
+  }
+
+  const railSights = part();
+  for (const x of [-1.05, -0.70, -0.35, 0, 0.35, 0.70, 1.05]) {
+    addDiamond(railSights, x, 0.141, -0.85, 0.017, 0.011);
+    addDiamond(railSights, x, 0.141, 0.85, 0.017, 0.011);
+  }
+  for (const z of [-0.42, 0, 0.42]) {
+    addDiamond(railSights, -1.45, 0.141, z, 0.011, 0.017);
+    addDiamond(railSights, 1.45, 0.141, z, 0.011, 0.017);
+  }
+
+  const clothMarkings = part();
+  // A restrained asymmetrical league crest gives the table its own identity
+  // without replacing the continuous felt or reading as a route-side overlay.
+  addEllipseRibbon(clothMarkings, -0.78, 0.0045, 0.31, 0.26, 0.18, 0.018);
+  addEllipseRibbon(clothMarkings, -0.78, 0.0046, 0.31, 0.145, 0.095, 0.013);
+  addBox(clothMarkings, -0.78, 0.0045, 0.31, 0.018, 0.00035, 0.145);
+  // Regulation head string and spots remain subtle under the live rack/cue.
+  addBox(clothMarkings, -0.65, 0.0045, 0, 0.004, 0.00035, 0.54);
+  addDisc(clothMarkings, 0.55, 0.0046, 0, 0.014, 24);
+  addDisc(clothMarkings, -0.65, 0.0046, 0, 0.011, 24);
+
+  const apron = part();
+  // A darker inset apron under each rail catches the warm key as a reflected
+  // band and makes the typed table read as assembled furniture.
+  addBox(apron, 0, -0.10, -0.91, 1.58, 0.075, 0.055);
+  addBox(apron, 0, -0.10, 0.91, 1.58, 0.075, 0.055);
+  addBox(apron, -1.51, -0.10, 0, 0.055, 0.075, 0.70);
+  addBox(apron, 1.51, -0.10, 0, 0.055, 0.075, 0.70);
+  for (const [x, z] of [[-1.53, -0.91], [1.53, -0.91], [-1.53, 0.91], [1.53, 0.91]]) {
+    addBox(apron, x, -0.08, z, 0.09, 0.09, 0.09);
+  }
 
   const legs = part();
   // Four square legs dropping from the slab to the floor at y = -0.78.
@@ -181,17 +409,33 @@ function buildTable() {
   // remain clean circles at a grazing camera angle and cannot cast the detached
   // crescent shadows produced by route-side flattened volume primitives.
   const pockets = part();
+  const pocketRims = part();
   for (const [x, z, radius] of [
     [-1.3, -0.7, 0.115], [1.3, -0.7, 0.115],
     [-1.3, 0.7, 0.115], [1.3, 0.7, 0.115],
     [0, -0.7, 0.095], [0, 0.7, 0.095]
-  ]) addDisc(pockets, x, 0.004, z, radius, 24);
+  ]) {
+    addDisc(pockets, x, 0.004, z, radius, 24);
+    addTorusY(pocketRims, x, 0.022, z, radius + 0.004, 0.012, 18, 5);
+  }
 
   return [
-    { name: "felt", part: felt, color: [0.07, 0.34, 0.16, 1], roughness: 0.9 },
-    { name: "rails", part: rails, color: [0.21, 0.11, 0.05, 1], roughness: 0.45 },
-    { name: "legs", part: legs, color: [0.15, 0.08, 0.04, 1], roughness: 0.6 },
-    { name: "pocket-mouths", part: pockets, color: [0.008, 0.01, 0.014, 1], roughness: 0.96, metallic: 0 }
+    // Tournament-blue felt is part of the typed table asset itself. Keeping
+    // the bed continuous with the rail geometry avoids a route-side rectangle
+    // that reads as an overlay and gives the PBR path one grounded surface to
+    // shade, reflect, and receive ball contact shadows across.
+    { name: "felt", part: felt, color: [0.012, 0.052, 0.25, 1], roughness: 0.88, specular: 0.22 },
+    { name: "felt-weave", part: feltWeave[0], color: [0.022, 0.095, 0.38, 1], roughness: 0.94, specular: 0.28 },
+    { name: "cloth-markings", part: clothMarkings, color: [0.28, 0.54, 0.68, 1], roughness: 0.92, metallic: 0 },
+    { name: "rails", part: rails, color: [0.12, 0.026, 0.009, 1], roughness: 0.3, clearcoat: 0.72, clearcoatRoughness: 0.18, specular: 0.82 },
+    { name: "cushions", part: cushions, color: [0.008, 0.055, 0.21, 1], roughness: 0.62, metallic: 0.01 },
+    { name: "rail-trim", part: railTrim, color: [0.29, 0.075, 0.018, 1], roughness: 0.22, metallic: 0.12, clearcoat: 0.85, clearcoatRoughness: 0.12, specular: 0.92 },
+    { name: "rail-veneer", part: railVeneer, color: [0.52, 0.16, 0.035, 1], roughness: 0.2, metallic: 0.08, clearcoat: 0.9, clearcoatRoughness: 0.1, specular: 1 },
+    { name: "rail-sights", part: railSights, color: [0.74, 0.78, 0.72, 1], roughness: 0.2, metallic: 0.45 },
+    { name: "apron", part: apron, color: [0.055, 0.01, 0.006, 1], roughness: 0.38, metallic: 0.08 },
+    { name: "legs", part: legs, color: [0.11, 0.025, 0.009, 1], roughness: 0.54 },
+    { name: "pocket-mouths", part: pockets, color: [0.008, 0.01, 0.014, 1], roughness: 0.96, metallic: 0 },
+    { name: "pocket-rims", part: pocketRims, color: [0.045, 0.055, 0.09, 1], roughness: 0.22, metallic: 0.68 }
   ];
 }
 
@@ -233,8 +477,8 @@ function buildCue() {
 // ---- ball set ---------------------------------------------------------------
 const BALL_RADIUS = 0.5;
 const BALL_GEOMETRY_SCALE = BALL_RADIUS / 0.035;
-const LONGITUDE_SEGMENTS = 16;
-const LATITUDE_BANDS = 12;
+const LONGITUDE_SEGMENTS = 36;
+const LATITUDE_BANDS = 26;
 
 /** Classic 8-ball hues: balls 1-7 solids, 8 black, 9-15 stripes of the same hues. */
 const BALL_HUES = {
@@ -248,7 +492,13 @@ const BALL_HUES = {
 };
 const BALL_WHITE = [0.93, 0.93, 0.9, 1];
 const BALL_BLACK = [0.05, 0.05, 0.06, 1];
-const BALL_SHININESS = { roughness: 0.18, metallic: 0.05 };
+const BALL_SHININESS = {
+  roughness: 0.065,
+  metallic: 0,
+  clearcoat: 1,
+  clearcoatRoughness: 0.055,
+  specular: 1
+};
 
 /** Latitude rings (around Y) for a full sphere split into LATITUDE_BANDS bands. */
 function fullSphereRings() {
@@ -278,9 +528,9 @@ function capRings(fromRad, pole) {
 function buildSolidBall(color) {
   const sphere = part();
   const rings = fullSphereRings();
-  for (let i = 0; i < rings.length - 1; i += 1) addBand(sphere, rings[i], rings[i + 1]);
-  addCap(sphere, rings[0], -BALL_RADIUS, false);
-  addCap(sphere, rings[rings.length - 1], BALL_RADIUS, true);
+  for (let i = 0; i < rings.length - 1; i += 1) addSphereBand(sphere, rings[i], rings[i + 1]);
+  addSphereCap(sphere, rings[0], -BALL_RADIUS, false);
+  addSphereCap(sphere, rings[rings.length - 1], BALL_RADIUS, true);
   return [
     { name: "ball", part: sphere, color: [...color, 1], ...BALL_SHININESS }
   ];
@@ -294,18 +544,18 @@ function buildStripeBall(color) {
   const band = part();
   // Colored caps: -90deg..-band and +band..+90deg.
   const lowerCap = capRings(-Math.PI / 2, -BAND_LIMIT);
-  for (let i = 0; i < lowerCap.length - 1; i += 1) addBand(caps, lowerCap[i], lowerCap[i + 1]);
-  addCap(caps, lowerCap[0], -BALL_RADIUS, false);
+  for (let i = 0; i < lowerCap.length - 1; i += 1) addSphereBand(caps, lowerCap[i], lowerCap[i + 1]);
+  addSphereCap(caps, lowerCap[0], -BALL_RADIUS, false);
   const upperCap = capRings(BAND_LIMIT, Math.PI / 2);
-  for (let i = 0; i < upperCap.length - 1; i += 1) addBand(caps, upperCap[i], upperCap[i + 1]);
-  addCap(caps, upperCap[upperCap.length - 1], BALL_RADIUS, true);
+  for (let i = 0; i < upperCap.length - 1; i += 1) addSphereBand(caps, upperCap[i], upperCap[i + 1]);
+  addSphereCap(caps, upperCap[upperCap.length - 1], BALL_RADIUS, true);
   // White band: three rings at -band, 0, +band.
   const bandRings = [
     ring(LONGITUDE_SEGMENTS, Math.cos(-BAND_LIMIT) * BALL_RADIUS, Math.sin(-BAND_LIMIT) * BALL_RADIUS),
     ring(LONGITUDE_SEGMENTS, BALL_RADIUS, 0),
     ring(LONGITUDE_SEGMENTS, Math.cos(BAND_LIMIT) * BALL_RADIUS, Math.sin(BAND_LIMIT) * BALL_RADIUS)
   ];
-  for (let i = 0; i < bandRings.length - 1; i += 1) addBand(band, bandRings[i], bandRings[i + 1]);
+  for (let i = 0; i < bandRings.length - 1; i += 1) addSphereBand(band, bandRings[i], bandRings[i + 1]);
   return [
     { name: "caps", part: caps, color: [...color, 1], ...BALL_SHININESS },
     { name: "band", part: band, color: BALL_WHITE, ...BALL_SHININESS }
@@ -347,7 +597,13 @@ function addBallIdentity(parts, number) {
   if (number === 0) return parts;
   const patch = part();
   const mark = part();
-  addDisc(patch, 0, BALL_RADIUS + 0.00035 * BALL_GEOMETRY_SCALE, 0, 0.0155 * BALL_GEOMETRY_SCALE, 24);
+  // Keep the number medallion subordinate to the painted ball body. The first
+  // pass used a nearly half-radius white disc, which made the rack read as a
+  // cluster of white beads from the review camera instead of individual
+  // lacquered solids/stripes. A smaller 0.009-radius patch still carries the
+  // seven-segment mark while preserving the hue and specular highlight around
+  // it.
+  addDisc(patch, 0, BALL_RADIUS + 0.00035 * BALL_GEOMETRY_SCALE, 0, 0.009 * BALL_GEOMETRY_SCALE, 24);
   const digits = String(number).split("").map(Number);
   if (digits.length === 1) addDigit(mark, digits[0], 0, BALL_RADIUS + 0.0007 * BALL_GEOMETRY_SCALE, 1);
   else {
@@ -368,14 +624,30 @@ function writeGlb(path, parts, orientation = { forwardAxis: "+X", upAxis: "+Y" }
   const accessors = [];
   const meshes = [];
   const nodes = [];
-  const materials = parts.map((entry) => ({
-    name: entry.name + "-material",
-    pbrMetallicRoughness: {
-      baseColorFactor: entry.color,
-      metallicFactor: entry.metallic ?? 0.05,
-      roughnessFactor: entry.roughness
+  const materialExtensions = new Set();
+  const materials = parts.map((entry) => {
+    const extensions = {};
+    if (entry.clearcoat !== undefined) {
+      extensions.KHR_materials_clearcoat = {
+        clearcoatFactor: entry.clearcoat,
+        clearcoatRoughnessFactor: entry.clearcoatRoughness ?? 0.1
+      };
+      materialExtensions.add("KHR_materials_clearcoat");
     }
-  }));
+    if (entry.specular !== undefined) {
+      extensions.KHR_materials_specular = { specularFactor: entry.specular };
+      materialExtensions.add("KHR_materials_specular");
+    }
+    return {
+      name: entry.name + "-material",
+      pbrMetallicRoughness: {
+        baseColorFactor: entry.color,
+        metallicFactor: entry.metallic ?? 0.05,
+        roughnessFactor: entry.roughness
+      },
+      ...(Object.keys(extensions).length > 0 ? { extensions } : {})
+    };
+  });
 
   let offset = 0;
   const pushView = (typedArray, target) => {
@@ -433,6 +705,7 @@ function writeGlb(path, parts, orientation = { forwardAxis: "+X", upAxis: "+Y" }
     nodes,
     meshes,
     materials,
+    ...(materialExtensions.size > 0 ? { extensionsUsed: [...materialExtensions].sort() } : {}),
     accessors,
     bufferViews,
     buffers: [{ byteLength: body.length }]
@@ -477,6 +750,7 @@ for (let number = 0; number <= 15; number += 1) {
   else if (number === 8) parts = buildSolidBall(BALL_BLACK.slice(0, 3));
   else if (number <= 7) parts = buildSolidBall(BALL_HUES[number]);
   else parts = buildStripeBall(BALL_HUES[number - 8]);
+  for (const entry of parts) smoothSphereNormals(entry.part);
   parts = addBallIdentity(parts, number);
   const bytes = writeGlb(resolve(OUT_DIR, id + ".glb"), parts, { forwardAxis: "+Z", upAxis: "+Y" });
   console.log("wrote", resolve(OUT_DIR, id + ".glb"), "(" + bytes + " bytes)");

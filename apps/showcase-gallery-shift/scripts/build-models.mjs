@@ -126,9 +126,133 @@ function buildMuseumInterior() {
   // Service alcove throat (north-center, exit door gap between x -0.8..0.8).
   addBox(walls, -1.8, 1.8, -5.2, 1.0, 1.8, 0.2);
   addBox(walls, 1.8, 1.8, -5.2, 1.0, 1.8, 0.2);
-  // Floor-1 wing partitions at x = +/-5, z in [-4, 1.5].
-  addBox(walls, -5, 1.8, -1.25, 0.2, 1.8, 2.75);
-  addBox(walls, 5, 1.8, -1.25, 0.2, 1.8, 2.75);
+  // Floor-1 partitions mirror the real FloorLayout colliders.  The gaps are
+  // deliberately left open: every visible gallery/rotunda threshold is a
+  // route-authored passable opening, not a painted suggestion of a door.
+  addBox(walls, -5, 1.8, -3.45, 0.2, 1.8, 1.55);
+  addBox(walls, -5, 1.8, 1.25, 0.2, 1.8, 1.95);
+  addBox(walls, 5, 1.8, -2.45, 0.2, 1.8, 2.55);
+  addBox(walls, 5, 1.8, 2.35, 0.2, 1.8, 0.85);
+  addBox(walls, -9.05, 1.8, 1.4, 0.95, 1.8, 0.2);
+  addBox(walls, -5.95, 1.8, 1.4, 0.95, 1.8, 0.2);
+  addBox(walls, 5.95, 1.8, -1.3, 0.95, 1.8, 0.2);
+  addBox(walls, 9.05, 1.8, -1.3, 0.95, 1.8, 0.2);
+
+  // Architecture is grouped by material so that the asset reads as a museum
+  // rather than a grey collision blockout in the standalone asset probe.
+  // The rooms are not a single dark slab.  Separate floor materials establish
+  // a readable hierarchy even from the game camera: slate entry/rotunda,
+  // petrol archive, warm treasury, and a deliberately pale service vault.
+  // These are all shallow inlays on the same FloorLayout regions, never a
+  // second movement surface or a substitute collision map.
+  const foyerFloor = part();
+  const rotundaFloor = part();
+  const archiveFloor = part();
+  const treasuryFloor = part();
+  const vaultFloor = part();
+  addBox(foyerFloor, 0, 0.012, 4.65, 4.75, 0.022, 1.65);
+  addBox(rotundaFloor, 0, 0.018, 0.1, 4.7, 0.026, 2.95);
+  addBox(vaultFloor, 0, 0.014, -5.45, 3.0, 0.022, 1.15);
+  addBox(archiveFloor, -7.5, 0.014, -2.85, 2.3, 0.022, 1.95);
+  addBox(archiveFloor, -7.5, 0.014, 4.05, 2.3, 0.022, 2.45);
+  addBox(treasuryFloor, 7.5, 0.014, -4.15, 2.3, 0.022, 1.55);
+  addBox(treasuryFloor, 7.5, 0.014, 2.75, 2.3, 0.022, 3.85);
+
+  // Fine mosaic runners make the inter-room routes visible as circulation,
+  // rather than reading as black gaps between detached prop islands.  The
+  // runners sit exactly within the walkable rooms and frame, never cover, the
+  // actual FloorLayout thresholds.
+  const floorMosaics = part();
+  for (const [x, z, hx, hz] of [
+    [0, 3.18, 3.75, 0.045], [0, 1.95, 3.75, 0.045],
+    [0, -1.55, 3.75, 0.045], [0, -3.15, 3.75, 0.045],
+    [-7.5, -1.3, 1.65, 0.045], [-7.5, 1.4, 1.65, 0.045],
+    [7.5, -1.3, 1.65, 0.045], [7.5, 0.8, 1.65, 0.045]
+  ]) addBox(floorMosaics, x, 0.052, z, hx, 0.012, hz);
+  for (const [x, z, hx, hz] of [
+    [-5, -1.3, 0.045, 0.62], [-5, 1.4, 0.045, 0.55],
+    [5, 0.8, 0.045, 0.62], [7.5, -1.3, 0.55, 0.045]
+  ]) addBox(floorMosaics, x, 0.052, z, hx, 0.012, hz);
+
+  const brassTrim = part();
+  // Four real route thresholds get a full, recessed architectural portal.
+  for (const [x, z, horizontal] of [
+    [-5, -1.3, false], [-7.5, 1.4, true], [5, 0.8, false], [7.5, -1.3, true]
+  ]) {
+    if (horizontal) {
+      addBox(brassTrim, x - 0.72, 1.5, z, 0.08, 1.5, 0.14);
+      addBox(brassTrim, x + 0.72, 1.5, z, 0.08, 1.5, 0.14);
+      addBox(brassTrim, x, 2.92, z, 0.84, 0.08, 0.14);
+    } else {
+      addBox(brassTrim, x, 1.5, z - 0.72, 0.14, 1.5, 0.08);
+      addBox(brassTrim, x, 1.5, z + 0.72, 0.14, 1.5, 0.08);
+      addBox(brassTrim, x, 2.92, z, 0.14, 0.08, 0.84);
+    }
+  }
+  // Door to the north service vault—its opening remains exactly x -0.8..0.8.
+  addBox(brassTrim, -0.92, 1.48, -5.2, 0.1, 1.48, 0.13);
+  addBox(brassTrim, 0.92, 1.48, -5.2, 0.1, 1.48, 0.13);
+  addBox(brassTrim, 0, 2.88, -5.2, 1.02, 0.1, 0.13);
+
+  const galleryFurniture = part();
+  // Built-in benches, plinth bays, and wall-mounted picture frames supply a
+  // coherent exhibit language while remaining outside route collision/LOS.
+  for (const [x, z, hx, hz] of [
+    [-8.15, -5.65, 0.78, 0.28], [-8.15, 5.7, 0.78, 0.28],
+    [8.15, -5.65, 0.78, 0.28], [8.15, 5.7, 0.78, 0.28],
+    [-2.85, 4.55, 0.65, 0.25], [2.85, 4.55, 0.65, 0.25]
+  ]) {
+    addBox(galleryFurniture, x, 0.34, z, hx, 0.34, hz);
+    addBox(galleryFurniture, x - hx * 0.72, 0.12, z, 0.08, 0.12, hz * 0.8);
+    addBox(galleryFurniture, x + hx * 0.72, 0.12, z, 0.08, 0.12, hz * 0.8);
+  }
+  for (const [x, z, sx, sz] of [
+    [-9.94, -3.8, 0.04, 1.05], [-9.94, 3.8, 0.04, 1.05],
+    [9.94, -3.8, 0.04, 1.05], [9.94, 3.8, 0.04, 1.05],
+    [-2.9, -6.95, 1.0, 0.04], [2.9, -6.95, 1.0, 0.04]
+  ]) {
+    addBox(galleryFurniture, x, 1.72, z, sx, 0.74, sz);
+  }
+
+  // Built-in artifact coves and archive stacks give each room a clear purpose
+  // in the unoccluded view.  They intentionally hug the perimeter walls or
+  // room corners, leaving the floor.ts patrol routes, objective approaches,
+  // and every portal completely unobstructed.
+  const exhibitCoves = part();
+  for (const [x, z, hx, hz, tall] of [
+    [-8.55, -4.65, 0.55, 0.22, 1], [-6.35, -5.6, 0.72, 0.2, 0],
+    [-8.55, 5.65, 0.55, 0.22, 1], [-6.25, 5.8, 0.72, 0.2, 0],
+    [8.55, -5.65, 0.55, 0.22, 1], [6.35, -5.6, 0.72, 0.2, 0],
+    [8.55, 5.55, 0.55, 0.22, 1], [6.35, 5.8, 0.72, 0.2, 0],
+    [-3.55, 5.85, 0.4, 0.16, 0], [3.55, 5.85, 0.4, 0.16, 0]
+  ]) {
+    addBox(exhibitCoves, x, tall ? 0.85 : 0.46, z, hx, tall ? 0.85 : 0.46, hz);
+    addBox(exhibitCoves, x, tall ? 1.78 : 0.95, z, hx * 0.76, 0.06, hz * 1.18);
+  }
+
+  const archiveShelves = part();
+  for (const [x, z, vertical] of [
+    [-9.62, -1.9, true], [-9.62, 3.15, true], [9.62, -3.1, true],
+    [9.62, 1.8, true], [-1.75, -6.72, false], [1.75, -6.72, false]
+  ]) {
+    for (let row = 0; row < 4; row += 1) {
+      const y = 0.34 + row * 0.34;
+      addBox(archiveShelves, x, y, z, vertical ? 0.09 : 0.72, 0.035, vertical ? 0.75 : 0.09);
+    }
+  }
+
+  const accentFrames = part();
+  for (const [x, z, sx, sz] of [
+    [-9.88, -3.8, 0.055, 0.72], [-9.88, 3.8, 0.055, 0.72],
+    [9.88, -3.8, 0.055, 0.72], [9.88, 3.8, 0.055, 0.72],
+    [-2.9, -6.9, 0.72, 0.055], [2.9, -6.9, 0.72, 0.055]
+  ]) addBox(accentFrames, x, 1.72, z, sx, 0.52, sz);
+
+  const columns = part();
+  for (const [x, z] of [[-4.25, -4.9], [4.25, -4.9], [-4.25, 3.2], [4.25, 3.2]]) {
+    addBox(columns, x, 1.45, z, 0.18, 1.45, 0.18);
+    addBox(columns, x, 2.95, z, 0.34, 0.08, 0.34);
+  }
 
   const skylights = part();
   // Two raised skylight frames over the rotunda and the south approach.
@@ -143,9 +267,24 @@ function buildMuseumInterior() {
   }
 
   return [
-    { name: "floorSlab", part: floorSlab, color: [0.3, 0.32, 0.35, 1], roughness: 0.42, metallic: 0.06 },
-    { name: "walls", part: walls, color: [0.48, 0.48, 0.45, 1], roughness: 0.62, metallic: 0.03 },
-    { name: "skylights", part: skylights, color: [0.33, 0.37, 0.42, 1], roughness: 0.4, metallic: 0.3 }
+    // The live route intentionally has a nocturnal security grade.  These
+    // mid-tone floor values preserve room identity under that grade instead of
+    // collapsing every wing into the same near-black rectangle.
+    { name: "floorSlab", part: floorSlab, color: [0.12, 0.18, 0.25, 1], roughness: 0.3, metallic: 0.18 },
+    { name: "foyerFloor", part: foyerFloor, color: [0.30, 0.43, 0.51, 1], roughness: 0.34, metallic: 0.2 },
+    { name: "rotundaFloor", part: rotundaFloor, color: [0.20, 0.39, 0.48, 1], roughness: 0.31, metallic: 0.32 },
+    { name: "archiveFloor", part: archiveFloor, color: [0.12, 0.48, 0.47, 1], roughness: 0.38, metallic: 0.22 },
+    { name: "treasuryFloor", part: treasuryFloor, color: [0.50, 0.27, 0.20, 1], roughness: 0.37, metallic: 0.24 },
+    { name: "vaultFloor", part: vaultFloor, color: [0.42, 0.52, 0.52, 1], roughness: 0.34, metallic: 0.18 },
+    { name: "floorMosaics", part: floorMosaics, color: [0.67, 0.62, 0.35, 1], roughness: 0.22, metallic: 0.76 },
+    { name: "walls", part: walls, color: [0.39, 0.45, 0.50, 1], roughness: 0.48, metallic: 0.12 },
+    { name: "brassTrim", part: brassTrim, color: [0.82, 0.57, 0.20, 1], roughness: 0.25, metallic: 0.78 },
+    { name: "galleryFurniture", part: galleryFurniture, color: [0.18, 0.24, 0.30, 1], roughness: 0.42, metallic: 0.2 },
+    { name: "exhibitCoves", part: exhibitCoves, color: [0.50, 0.55, 0.57, 1], roughness: 0.36, metallic: 0.34 },
+    { name: "archiveShelves", part: archiveShelves, color: [0.13, 0.17, 0.20, 1], roughness: 0.44, metallic: 0.2 },
+    { name: "accentFrames", part: accentFrames, color: [0.66, 0.21, 0.24, 1], roughness: 0.34, metallic: 0.36 },
+    { name: "columns", part: columns, color: [0.55, 0.61, 0.66, 1], roughness: 0.36, metallic: 0.45 },
+    { name: "skylights", part: skylights, color: [0.23, 0.47, 0.55, 1], roughness: 0.26, metallic: 0.55 }
   ];
 }
 

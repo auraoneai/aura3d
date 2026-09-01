@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-23T21:42:43.868Z",
+  "generatedAt": "2026-09-01T00:06:24.218Z",
   "appId": "showcase-gravity-post",
   "route": "/apps/showcase-gravity-post/",
   "classification": "prototype-blocked",
@@ -19,9 +19,9 @@
       "role": "primary-vehicle",
       "status": "release-validated-typed-primary-asset",
       "quality": "release",
-      "hash": "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "author": "futaba@blender (https://sketchfab.com/futaba_blender)"
+      "hash": "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
+      "license": "CC-BY-4.0",
+      "author": "박용진"
     },
     {
       "typedRef": "assets.gravityPostDockBeacon",
@@ -29,8 +29,21 @@
       "status": "release-validated-typed-primary-asset",
       "quality": "release",
       "hash": "sha256-171e21cba4f1cca3abeaaa58ec54c3e672274d719bd1e5a7318e3ef681c72a14",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "author": "DjalalxJay (https://sketchfab.com/djalalxjay)"
+      "license": "CC-BY-4.0",
+      "author": "DjalalxJay"
+    }
+  ],
+  "supportingAssets": [
+    {
+      "typedRef": "assets.gravityPostFreightDistrict",
+      "role": "non-colliding-freight-world",
+      "status": "candidate-with-current-isolated-root-probe-pending-one-id-promotion",
+      "quality": "candidate",
+      "hash": "sha256-fafd38b804ab82b997df79c01f393f7920438b123e9a9c038d597ad1372d2bdc",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "renderedProbe": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
+      "orientation": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json"
     }
   ],
   "audioAssets": [
@@ -106,9 +119,9 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 14,
+    "sourceOccurrences": 34,
     "primitiveBudget": 40,
-    "role": "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons",
+    "role": "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus one typed non-colliding freight world",
     "status": "within-stated-role-and-budget"
   },
   "physics": {
@@ -131,7 +144,7 @@
   },
   "performance": {
     "schema": "aura3d-gravity-post-performance/1.0",
-    "generatedAt": "2026-08-23T20:11:53.782Z",
+    "generatedAt": "2026-09-01T00:04:31.768Z",
     "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
     "budgets": {
       "fixedStepP95Ms": 1,
@@ -140,9 +153,9 @@
       "campaignCompleteDrawCalls": 600
     },
     "observed": {
-      "maxFixedStepP95Ms": 0.0025,
-      "maxPredictionP95Ms": 0.1663,
-      "campaignCompleteDrawCalls": 538
+      "maxFixedStepP95Ms": 0.0031,
+      "maxPredictionP95Ms": 0.1191,
+      "campaignCompleteDrawCalls": 425
     },
     "routes": [
       {
@@ -155,13 +168,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 389,
-          "p95": 0.0025,
-          "max": 0.395
+          "p95": 0.0031,
+          "max": 0.1727
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.1663,
-          "max": 0.365
+          "p95": 0.1191,
+          "max": 0.2307
         }
       },
       {
@@ -179,12 +192,12 @@
         "fixedStepMs": {
           "samples": 872,
           "p95": 0.0008,
-          "max": 0.0491
+          "max": 0.0514
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.0853,
-          "max": 0.1033
+          "p95": 0.0852,
+          "max": 0.2017
         }
       },
       {
@@ -204,12 +217,12 @@
         "fixedStepMs": {
           "samples": 2088,
           "p95": 0.0008,
-          "max": 0.0453
+          "max": 0.0521
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.0657,
-          "max": 0.0852
+          "p95": 0.0912,
+          "max": 0.2106
         }
       },
       {
@@ -223,12 +236,12 @@
         "fixedStepMs": {
           "samples": 406,
           "p95": 0.0003,
-          "max": 0.0064
+          "max": 0.031
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.0636,
-          "max": 0.0689
+          "p95": 0.0642,
+          "max": 0.073
         }
       }
     ],
@@ -248,7 +261,7 @@
       "four-delivery authored arcade-gravity courier prototype",
       "fixed-step live/prediction integration with published 0.02 positional tolerance",
       "real root-safe dock sensor entry with route-local capture-speed evaluation",
-      "typed registered pod, beacon, and ten deterministic synthesized audio cues"
+      "typed registered pod, beacon, original CC0 freight district, and ten deterministic synthesized audio cues"
     ],
     "notAllowed": [
       "orbital mechanics, n-body, or physical simulation claims",
@@ -257,7 +270,8 @@
     ]
   },
   "blockers": [
-    "independent human visual review pending for exact final artifacts"
+    "independent human visual review pending for exact final artifacts",
+    "one-ID freight-district manifest promotion pending after current isolated release probe"
   ],
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_GRAVITY_POST__",
@@ -268,6 +282,8 @@
     "reducedMotion": "tests/reports/gravity-post/reduced-motion-evidence.json",
     "collisionFailure": "tests/reports/gravity-post/failure-evidence.json",
     "performance": "apps/showcase-gravity-post/performance-report.json",
+    "freightDistrictProbe": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
+    "freightDistrictOrientation": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json",
     "unitSpecs": [
       "tests/unit/apps/gravity-post-wells.test.ts",
       "tests/unit/apps/gravity-post-scoring.test.ts",
@@ -277,6 +293,7 @@
       "tests/browser/gravity-post-playable.spec.ts",
       "tests/browser/gravity-post-scene.spec.ts"
     ],
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon"
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon --asset gravityPostFreightDistrict",
+    "releaseDeployCommandAfterPromotion": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon --asset gravityPostFreightDistrict"
   }
 }

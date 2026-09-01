@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.deep-recovery.deploy/1.0",
-  "generatedAt": "2026-08-24T04:23:04.676Z",
+  "generatedAt": "2026-08-30T20:00:54.762Z",
   "producer": "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "07c95fda8e5d9c1f587425f4375a09a692a62fe5fa588c58d6df958fc01b5341",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "d3b36897078fc446bc139dc184439f24c56dee982810ae5ce3f6c15550cd3ed3",
-  "sourceTreeSha256": "c5bc109819c5da4bb5c06eeb644654de74452a1eb29102bdb9de104f0e8eb3c1",
+  "distTreeSha256": "12dc4931f0352bd8adfe7a3b1a49925c1e072ccd3652d9d32d51d99975123b51",
+  "sourceTreeSha256": "0fff065747f6129336bacf0fde241deb9e2bdb9a7c992db95695949803e02962",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-deep-recovery/src --asset <5 typed models>",
@@ -39,7 +39,7 @@
         },
         {
           "id": "deepRecoveryWreckHull",
-          "hash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+          "hash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
           "quality": "release",
           "role": "prop"
         }

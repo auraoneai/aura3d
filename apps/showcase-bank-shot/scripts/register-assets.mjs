@@ -18,7 +18,7 @@ const models = [
   {
     id: "bankShotTable",
     role: "prop",
-    suitability: "Original CC0 metre-scale readable gameplay prop with stylized flat-color green felt, walnut rails, six renderer-owned pocket mouths, and grounded legs for the fixed public Rapier play envelope."
+    suitability: "Original CC0 metre-scale readable gameplay prop with tournament-blue felt, cushioned walnut rails, six pocket mouths with authored collars, and grounded legs for the fixed public Rapier play envelope."
   },
   {
     id: "bankShotCue",

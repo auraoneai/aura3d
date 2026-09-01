@@ -19,7 +19,7 @@ export function createHud(): HTMLElement {
   ].join(";");
   root.innerHTML = `
     <div data-hud="vignette" style="position:absolute;inset:0;opacity:0;transition:opacity .18s ease;box-shadow:inset 0 0 120px 42px rgba(255,42,32,.55)"></div>
-    <div style="position:absolute;left:16px;top:14px;min-width:250px;max-width:320px;padding:10px 14px;border-radius:10px;background:rgba(4,8,14,.66);border:1px solid rgba(80,220,255,.22);backdrop-filter:blur(3px)">
+    <div style="position:absolute;left:16px;top:14px;min-width:224px;max-width:276px;padding:8px 11px;border-radius:9px;background:rgba(4,8,14,.62);border:1px solid rgba(80,220,255,.22);backdrop-filter:blur(3px)">
       <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
         <strong style="letter-spacing:.08em;font-size:12px;color:#7ef8ff">NEON CORRIDOR STRIKE</strong>
         <span data-hud="score" style="font-size:12px;color:#ffb020"></span>
@@ -28,7 +28,7 @@ export function createHud(): HTMLElement {
       <div data-hud="hostiles" style="display:flex;gap:6px;margin-top:8px"></div>
       <div data-hud="status" style="margin-top:6px;font-size:11px;opacity:.8"></div>
     </div>
-    <div style="position:absolute;left:16px;bottom:20px;padding:10px 14px;border-radius:10px;background:rgba(4,8,14,.66);border:1px solid rgba(80,220,255,.22);min-width:210px">
+    <div style="position:absolute;left:16px;bottom:20px;padding:8px 11px;border-radius:9px;background:rgba(4,8,14,.62);border:1px solid rgba(80,220,255,.22);min-width:174px">
       <div style="display:flex;align-items:baseline;gap:8px">
         <span style="font-size:11px;letter-spacing:.1em;opacity:.75">INTEGRITY</span>
         <span data-hud="hp" style="font-size:20px;font-weight:800"></span>
@@ -38,7 +38,7 @@ export function createHud(): HTMLElement {
       </div>
       <div data-hud="warn" style="margin-top:6px;font-size:11.5px;color:#ffb020;min-height:14px"></div>
     </div>
-    <div style="position:absolute;right:24px;bottom:86px;padding:10px 14px;border-radius:10px;background:rgba(4,8,14,.66);border:1px solid rgba(80,220,255,.22);text-align:right;min-width:190px">
+    <div style="position:absolute;right:18px;bottom:74px;padding:8px 11px;border-radius:9px;background:rgba(4,8,14,.62);border:1px solid rgba(80,220,255,.22);text-align:right;min-width:166px">
       <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:8px">
         <span data-hud="ammo" style="font-size:26px;font-weight:800;letter-spacing:.02em"></span>
         <span style="font-size:11px;opacity:.75">/ MAG</span>
@@ -52,7 +52,7 @@ export function createHud(): HTMLElement {
         <div data-hud="reload-fill" style="height:100%;width:0;background:#7ef8ff"></div>
       </div>
     </div>
-    <button data-hud="fire" type="button" style="position:absolute;right:24px;bottom:20px;pointer-events:auto;padding:14px 26px;border-radius:10px;border:1px solid rgba(80,220,255,.5);background:rgba(4,8,14,.92);color:#e8f4ff;font:700 15px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;letter-spacing:.06em">FIRE (J)</button>
+    <button data-hud="fire" type="button" style="position:absolute;right:18px;bottom:20px;pointer-events:auto;min-height:44px;padding:11px 20px;border-radius:9px;border:1px solid rgba(80,220,255,.5);background:rgba(4,8,14,.88);color:#e8f4ff;font:700 13px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;letter-spacing:.06em">FIRE (J)</button>
     <div data-hud="start" style="position:absolute;left:50%;bottom:24px;transform:translateX(-50%);padding:9px 16px;border-radius:8px;background:rgba(4,8,14,.85);border:1px solid rgba(80,220,255,.35);font-size:13px">J or F fires · WASD moves · R reloads · T resets</div>
     <div data-hud="crosshair" style="position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px">
       <div style="position:absolute;left:8px;top:0;width:2px;height:5px;background:rgba(233,247,255,.9)"></div>

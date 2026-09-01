@@ -46,6 +46,8 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_VAULT_BREAKERS__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-vault-breakers";
 
@@ -263,7 +265,18 @@ function buildScene(): ReturnType<typeof scene> {
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
     .addMany([effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45 })])
-    .camera(camera.perspective({ position: [0, 3.2, 9.2], target: [0, -0.5, 0.0], fov: 52 }));
+    .camera(camera.perspective({
+      // Give the typed mechanism assembly a small safety margin on every edge
+      // of the review viewport.  The previous close pinball angle clipped the
+      // mission GLB at the upper and left canvas bounds even though the table
+      // itself remained playable.
+      // The explicit review lens presents the playable surface as the hero
+      // while retaining enough cabinet silhouette to read as a physical table.
+      // Normal visitors keep the roomier cabinet-and-controls composition.
+      position: visualReviewCapture ? [0, 5.9, 5.15] : [0, 3.8, 10.8],
+      target: visualReviewCapture ? [0, 0.08, -0.45] : [0, -0.4, 0.0],
+      fov: visualReviewCapture ? 46 : 54
+    }));
 }
 
 // ---------------------------------------------------------------- mount ------
@@ -792,7 +805,17 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     },
     setSubjectSuppressed(suppressed: boolean) {
       const node = app.nodes.get("typed-vault-breakers-mechanisms") as AuraRuntimeNodeHandle | undefined;
-      node?.setVisible(!suppressed);
+      // Route-primary compares a visible and hidden render of this typed
+      // mechanism assembly. Pause and present one synchronous frame so the
+      // renderer cannot race the visibility mutation and leave the hidden
+      // capture identical to the visible one.
+      app.pause();
+      // Scaling to the route's established hidden-node sentinel is more
+      // reliable than a visibility flag for the production fallback renderer:
+      // it invalidates the submitted bounds immediately while preserving the
+      // same node and material for the restored frame.
+      node?.setScale(suppressed ? 0.0001 : 1).setVisible(true);
+      app.step(0);
     }
   }
 });

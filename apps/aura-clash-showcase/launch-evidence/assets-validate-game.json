@@ -9,7 +9,7 @@
     "command": "assets validate-game",
     "label": "AuraClash game asset validator"
   },
-  "checkedAt": "2026-08-11T09:59:20.885Z",
+  "checkedAt": "2026-08-27T02:02:07.787Z",
   "manifestPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/aura.assets.json",
   "artifacts": {
     "manifestPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/aura.assets.json",
@@ -20,8 +20,8 @@
       {
         "id": "auraClashPlayerRig",
         "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/source/fighters/aura-clash-player-rig.glb",
-        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.7cb14341.glb",
-        "publicUrl": "/aura-assets/auraClashPlayerRig.7cb14341.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.3318d671.glb",
+        "publicUrl": "/aura-assets/auraClashPlayerRig.3318d671.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashPlayerRig.thumb.svg",
         "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
@@ -29,8 +29,8 @@
       {
         "id": "auraClashRivalRig",
         "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/source/fighters/aura-clash-rival-rig.glb",
-        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.e078e71c.glb",
-        "publicUrl": "/aura-assets/auraClashRivalRig.e078e71c.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.c8d844dc.glb",
+        "publicUrl": "/aura-assets/auraClashRivalRig.c8d844dc.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashRivalRig.thumb.svg",
         "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"
@@ -85,37 +85,37 @@
       "type": "model",
       "format": "glb",
       "source": "assets/source/fighters/aura-clash-player-rig.glb",
-      "outputPath": "public/aura-assets/auraClashPlayerRig.7cb14341.glb",
-      "url": "/aura-assets/auraClashPlayerRig.7cb14341.glb",
-      "hash": "sha256-7cb1434173b7c3d10fd6ee787da6b0c8e0633bd14adb900f83b8b6d9af483d71",
-      "sizeBytes": 5310952,
+      "outputPath": "public/aura-assets/auraClashPlayerRig.3318d671.glb",
+      "url": "/aura-assets/auraClashPlayerRig.3318d671.glb",
+      "hash": "sha256-3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087",
+      "sizeBytes": 7822664,
       "bounds": [
-        1.664,
-        1.798,
-        0.377
+        1.669,
+        1.788,
+        0.349
       ],
       "boundsMetadata": {
         "min": [
-          -0.832,
-          -0.004,
-          -0.21
+          -0.834,
+          -0.008,
+          -0.182
         ],
         "max": [
-          0.832,
-          1.794,
+          0.834,
+          1.779,
           0.168
         ],
         "size": [
-          1.664,
-          1.798,
-          0.377
+          1.669,
+          1.788,
+          0.349
         ],
         "center": [
           0,
-          0.895,
-          -0.021
+          0.885,
+          -0.007
         ],
-        "maxDimension": 1.798,
+        "maxDimension": 1.788,
         "grounded": true
       },
       "animations": [
@@ -1247,13 +1247,16 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-08-11T09:42:05.560Z"
+        "checkedAt": "2026-08-11T22:02:19.831Z"
       },
       "placeholderFree": true,
       "licenseVerified": true,
       "materials": [
         "MI_Ranger",
-        "MI_Regular_Female"
+        "MI_Regular_Female",
+        "MI_Hair_2",
+        "MI_Eyes",
+        "MI_Superhero_Female"
       ],
       "materialMetadata": [
         {
@@ -1269,6 +1272,27 @@
           "readable": true,
           "opacity": 1,
           "reasons": []
+        },
+        {
+          "name": "MI_Hair_2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "MI_Eyes",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "MI_Superhero_Female",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
         }
       ],
       "textures": [
@@ -1277,7 +1301,9 @@
         "T_Ranger_ORM",
         "T_Regular_Female_Normal",
         "T_Regular_Female_Dark_BaseColor",
-        "T_Regular_Female_Roughness"
+        "T_Regular_Female_Roughness",
+        "T_Eye_Brown",
+        "T_Superhero_Female_Dark_BaseColor"
       ],
       "orientation": {
         "source": "unknown",
@@ -1360,13 +1386,17 @@
         "Female_Ranger_Feet",
         "Female_Ranger_Head_Hood",
         "Female_Ranger_Legs",
-        "Armature"
+        "Armature",
+        "auraClashPlayerRig_open-head_Eyebrows",
+        "auraClashPlayerRig_open-head_Eyes",
+        "auraClashPlayerRig_open-head_Superhero_Female",
+        "auraClashPlayerRig_hair_Hair_Buns"
       ],
       "artifactPaths": {
         "id": "auraClashPlayerRig",
         "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/source/fighters/aura-clash-player-rig.glb",
-        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.7cb14341.glb",
-        "publicUrl": "/aura-assets/auraClashPlayerRig.7cb14341.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.3318d671.glb",
+        "publicUrl": "/aura-assets/auraClashPlayerRig.3318d671.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashPlayerRig.thumb.svg",
         "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
@@ -1384,10 +1414,10 @@
       "type": "model",
       "format": "glb",
       "source": "assets/source/fighters/aura-clash-rival-rig.glb",
-      "outputPath": "public/aura-assets/auraClashRivalRig.e078e71c.glb",
-      "url": "/aura-assets/auraClashRivalRig.e078e71c.glb",
-      "hash": "sha256-e078e71c00c4a465891adfd267eec950507ba3b20bc67ef97f91e880a01d66dc",
-      "sizeBytes": 4732432,
+      "outputPath": "public/aura-assets/auraClashRivalRig.c8d844dc.glb",
+      "url": "/aura-assets/auraClashRivalRig.c8d844dc.glb",
+      "hash": "sha256-c8d844dc4a70bc5d548c1bdd5c20c7a2f336529088fd350098431adf87cdf13b",
+      "sizeBytes": 4732472,
       "bounds": [
         1.799,
         1.869,
@@ -2380,7 +2410,7 @@
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Quaternius",
         "sourceFamily": "Quaternius Modular Character Outfits - Fantasy + Universal Animation Library",
-        "checkedAt": "2026-08-11T09:42:05.764Z"
+        "checkedAt": "2026-08-11T22:02:20.051Z"
       },
       "placeholderFree": true,
       "licenseVerified": true,
@@ -2498,8 +2528,8 @@
       "artifactPaths": {
         "id": "auraClashRivalRig",
         "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/source/fighters/aura-clash-rival-rig.glb",
-        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.e078e71c.glb",
-        "publicUrl": "/aura-assets/auraClashRivalRig.e078e71c.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.c8d844dc.glb",
+        "publicUrl": "/aura-assets/auraClashRivalRig.c8d844dc.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashRivalRig.thumb.svg",
         "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"

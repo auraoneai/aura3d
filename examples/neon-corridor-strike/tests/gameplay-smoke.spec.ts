@@ -65,11 +65,20 @@ test("move, look, fire, pickup, and reset change FPS state", async ({ page }) =>
   await page.waitForTimeout(180);
   await page.keyboard.press("KeyJ");
   await page.waitForTimeout(200);
-  await page.keyboard.down("KeyD");
-  // Reach the authored x=1.9 ammo lane. Stopping at the first detectable
-  // lateral movement can leave the player behind the center-lane props.
-  await expect.poll(async () => Math.abs((await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.x ?? 0), { timeout: 25_000 }).toBeGreaterThan(1.75);
-  await page.keyboard.up("KeyD");
+  // Steer into the authored x=1.9 ammo lane with bounded real keyboard input.
+  // A single held key plus a coarse expect.poll can cross the whole overlap
+  // lane between samples when a cold software-rendered frame invokes the
+  // player's bounded motion catch-up. Short taps keep the package harness on
+  // the same physical path as touch without bypassing collision or collection.
+  let laneX = 0;
+  for (let tap = 0; tap < 12 && laneX < 1.55; tap += 1) {
+    await page.keyboard.down("KeyD");
+    await page.waitForTimeout(60);
+    await page.keyboard.up("KeyD");
+    laneX = Math.abs((await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.x ?? 0);
+  }
+  expect(laneX).toBeGreaterThanOrEqual(1.55);
+  expect(laneX).toBeLessThan(2.85);
   await page.keyboard.down("KeyW");
   await expect.poll(async () => (await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__))?.pickups ?? 0, { timeout: 30_000 }).toBeGreaterThan(0);
   await page.keyboard.up("KeyW");

@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
 const reportDir = resolve(repoRoot, "tests/reports/gallery-shift");
-const modelIds = ["galleryShiftMuseumInterior", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"];
-const supportingModelIds = ["showcaseKenneyOobiPlatformerHero", "showcaseExpressiveRobot"];
+const modelIds = ["galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"];
+const supportingModelIds = ["showcaseRunnerGirl", "showcaseExpressiveRobot"];
 const audioIds = ["galleryShiftSneakStepSfx", "galleryShiftWalkStepSfx", "galleryShiftGuardAlertSfx", "galleryShiftAlertRiseSfx", "galleryShiftExhibitLiftSfx", "galleryShiftLaserTripSfx", "galleryShiftCameraWhirSfx", "galleryShiftCaughtStingSfx", "galleryShiftFloorClearSfx", "galleryShiftAmbientHallSfx", "galleryShiftExitWinSfx"];
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -72,11 +72,11 @@ if ([...(deploy.checks.strictModels.warnings ?? []), ...(deploy.checks.strictMod
 const gates = readJson(join(repoRoot, "tools/showcase-library/route-gates.json"));
 const gate = gates.routes.find((route) => route.id === "showcase-gallery-shift");
 if (!gate || gate.releaseClass !== "prototype-blocked" || gate.published !== true || gate.requiresTypedPrimaryAssets !== true || gate.gameTemplateStatus?.publicTemplateReady !== false) throw new Error("Gallery Shift route gate is missing or over-promoted");
-if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds) || gate.routePrimaryHeroAsset !== "galleryShiftMuseumInterior") throw new Error("Gallery Shift route-primary asset gate is stale");
+if (JSON.stringify(gate.primaryAssets) !== JSON.stringify(modelIds) || gate.routePrimaryHeroAsset !== "galleryShiftCutawayMuseumWorld") throw new Error("Gallery Shift route-primary asset gate is stale");
 const primitiveOccurrences = Array.from(sourceText.matchAll(/\bprimitives\.[A-Za-z_$][\w$]*/g)).length;
 if (primitiveOccurrences > gate.primitiveBudget) throw new Error("Gallery Shift primitive source budget exceeded");
 const routePrimary = readJson(join(repoRoot, "tests/reports/showcase-route-primary-probes/showcase-gallery-shift.json"));
-if (routePrimary.routeId !== "showcase-gallery-shift" || routePrimary.pass !== true || (routePrimary.failures?.length ?? 0) > 0 || routePrimary.routePrimaryHeroAsset !== "galleryShiftMuseumInterior") throw new Error("Gallery Shift route-primary probe is missing or failing");
+if (routePrimary.routeId !== "showcase-gallery-shift" || routePrimary.pass !== true || (routePrimary.failures?.length ?? 0) > 0 || routePrimary.routePrimaryHeroAsset !== "galleryShiftCutawayMuseumWorld") throw new Error("Gallery Shift route-primary probe is missing or failing");
 
 const exactArtifacts = visualReceipt.artifacts.map((artifact) => ({ path: artifact.path, sha256: artifact.sha256 }));
 const routeHealth = {

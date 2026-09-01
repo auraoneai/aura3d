@@ -19,6 +19,7 @@ import {
   primitives,
   scene,
   game,
+  text3D,
   type RuntimeNodeHandleLike
 } from "@aura3d/engine";
 import { AGGRESSION_PRESETS, RIVAL_LOADOUTS, aggregateStats, presetForBout } from "./stats";
@@ -51,6 +52,9 @@ const AGGRESSION_PRESET_COUNT = AGGRESSION_PRESETS.length;
 
 const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const visualReviewCapture = typeof window !== "undefined"
+  && new URLSearchParams(window.location.search).get("capture") === "review";
+if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 // ---- world layout -----------------------------------------------------------
 /** Hangar set sits at the origin; the pit is offset in -z so mode changes glide. */
@@ -158,6 +162,9 @@ function fitForSlot(slot: MechSlot): { scaleMode: "fit"; targetHeight?: number; 
 
 function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
   const builders: ReturnType<typeof model>[] = [];
+  const teamFinish = side === "player"
+    ? material.pbr({ name: "player cobalt finish", color: "#1687c4", roughness: 0.3, metallic: 0.58, clearcoat: 0.28, clearcoatRoughness: 0.16 })
+    : material.pbr({ name: "rival vermilion finish", color: "#d4514f", roughness: 0.32, metallic: 0.54, clearcoat: 0.25, clearcoatRoughness: 0.18 });
   for (const slot of MECH_SLOTS) {
     for (const def of PART_OPTIONS[slot]) {
       const asset = resolvePartAsset(def.assetKey);
@@ -168,6 +175,7 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
           role: "primaryCharacter",
           castShadow: true,
           receiveShadow: true,
+          material: teamFinish,
           ...fitForSlot(slot)
         }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-" + side + "-" + def.assetKey, {
           tags: ["mech-part", side, slot, "typed-primary-asset"]
@@ -217,13 +225,72 @@ const hangarBackdropBuilder = primitives.box({
 
 const pitFloorBuilder = primitives.box({
   name: "arena armored floor",
-  material: material.pbr({ name: "pit floor steel", color: "#182431", roughness: 0.82, metallic: 0.28 })
-}).position(0, -0.065, ARENA_CENTER_Z).scale([10.8, 0.13, 10]);
+  material: material.pbr({ name: "pit floor steel", color: "#182f43", roughness: 0.36, metallic: 0.68, clearcoat: 0.22, clearcoatRoughness: 0.2 })
+// The review camera is a three-quarter follow view rather than an orthographic
+// top-down shot.  Keep the authored combat envelope centred under that view so
+// the active frame reads as an arena instead of ending at the canvas midpoint.
+}).position(0, -0.065, ARENA_CENTER_Z).scale([20, 0.13, 14]);
 
 const pitBackdropBuilder = primitives.box({
   name: "arena flood wall",
-  material: material.pbr({ name: "pit back wall", color: "#111a26", roughness: 0.92, metallic: 0.08 })
-}).position(0, 3.5, ARENA_CENTER_Z - 5.3).scale([11.2, 7.1, 0.28]);
+  material: material.emissive({ name: "pit back wall", color: "#1b4058", emissive: "#176b8f", emissiveIntensity: 0.46 })
+}).position(0, 3.5, ARENA_CENTER_Z - 5.3).scale([20.5, 7.1, 0.28]);
+
+const pitPillarMaterial = material.pbr({ name: "pit structural steel", color: "#172d42", roughness: 0.42, metallic: 0.66 });
+const pitPillarLight = material.emissive({ name: "pit structural light", color: "#1c5369", emissive: "#47cfff", emissiveIntensity: 0.8 });
+const pitStructureBuilders = [-7.2, 0, 7.2].flatMap((x, index) => [
+  primitives.box({ name: `pit pillar ${index}`, material: pitPillarMaterial })
+    .position(x, 3.1, ARENA_CENTER_Z - 4.85)
+    .scale([0.55, 3.1, 0.45]),
+  primitives.box({ name: `pit pillar light ${index}`, material: pitPillarLight })
+    .position(x, 4.15, ARENA_CENTER_Z - 4.52)
+    .scale([0.22, 0.08, 0.05])
+]);
+
+const pitDeckPanelMaterial = material.pbr({
+  name: "pit deck panel finish",
+  color: "#203b50",
+  roughness: 0.42,
+  metallic: 0.72,
+  clearcoat: 0.2,
+  clearcoatRoughness: 0.24
+});
+const pitDeckSeamMaterial = material.emissive({
+  name: "pit deck seam light",
+  color: "#164e63",
+  emissive: "#38d6ff",
+  emissiveIntensity: 0.7,
+  opacity: 0.82
+});
+const pitDeckBuilders = Array.from({ length: 10 }, (_, index) => {
+  const side = index % 2 === 0 ? -1 : 1;
+  const depth = Math.floor(index / 2);
+  const z = ARENA_CENTER_Z - 6.5 + depth * 1.45;
+  const x = side * (2.6 + (depth % 2) * 0.38);
+  return [
+    primitives.box({ name: `pit deck plate ${index}`, material: pitDeckPanelMaterial })
+      .position(x, 0.075, z)
+      .rotate(0, 0, side * 0.04)
+      .scale([1.22, 0.035, 0.58]),
+    primitives.box({ name: `pit deck seam ${index}`, material: pitDeckSeamMaterial })
+      .position(x, 0.12, z - 0.02)
+      .scale([0.95, 0.012, 0.018])
+  ];
+}).flat();
+
+const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#102538", roughness: 0.32, metallic: 0.78 });
+const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#174b63", emissive: "#5ee7ff", emissiveIntensity: 1.25 });
+const pitTrussBuilders = [
+  primitives.box({ name: "pit overhead truss beam", material: pitTrussMaterial })
+    .position(0, 6.15, ARENA_CENTER_Z - 3.9)
+    .scale([8.8, 0.24, 0.22]),
+  primitives.box({ name: "pit overhead light band", material: pitTrussLight })
+    .position(0, 5.76, ARENA_CENTER_Z - 3.55)
+    .scale([6.9, 0.06, 0.05]),
+  primitives.box({ name: "pit overhead magenta band", material: material.emissive({ name: "pit overhead magenta light", color: "#7e225f", emissive: "#f472b6", emissiveIntensity: 1.05 }) })
+    .position(0, 5.62, ARENA_CENTER_Z - 3.68)
+    .scale([4.8, 0.045, 0.04])
+];
 
 const pitMarkingMaterial = material.emissive({ name: "pit lane marks", color: "#23455c", emissive: "#4cc9e8", emissiveIntensity: 0.42 });
 const pitMarkingBuilders = [-3.6, -1.8, 0, 1.8, 3.6].map((x, index) =>
@@ -239,20 +306,137 @@ const rimBuilders = [-1, 1].map((side) =>
     .scale([0.7, 0.18, 9])
 );
 
+// A shallow combat ring and warning chevrons give the arena a purposeful
+// footprint beneath the assembled typed fighters. These are set dressing only;
+// bout spacing and hit tests remain owned by the route-local combat sim.
+const arenaRingMaterial = material.emissive({ name: "arena combat ring", color: "#15364a", emissive: "#65e6ff", emissiveIntensity: 0.72, opacity: 0.9 });
+const arenaRingBuilders = [
+  primitives.torus({ name: "arena outer combat ring", material: arenaRingMaterial })
+    .position(0, 0.025, ARENA_CENTER_Z)
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([4.35, 4.35, 0.035]),
+  primitives.torus({ name: "arena inner combat ring", material: arenaRingMaterial })
+    .position(0, 0.028, ARENA_CENTER_Z)
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([2.55, 2.55, 0.022])
+];
+const arenaWarningMaterial = material.emissive({ name: "arena warning stripes", color: "#4a2619", emissive: "#ff9055", emissiveIntensity: 0.5, opacity: 0.86 });
+const arenaWarningBuilders = [-3.9, 3.9].flatMap((x, side) =>
+  [-1.8, 0, 1.8].map((z, index) =>
+    primitives.box({ name: `arena warning ${side}-${index}`, material: arenaWarningMaterial })
+      .position(x, 0.035, ARENA_CENTER_Z + z)
+      .rotate(0, 0, side === 0 ? -0.35 : 0.35)
+      .scale([0.06, 0.03, 0.54])
+  )
+);
+
+// Break the otherwise empty pit into a readable combat set. These center
+// plates, back-wall ribs, and suspended light panels are renderer-owned
+// dressing only; fighter positions, hit windows, and arena bounds remain
+// owned by the route-local bout simulation.
+const pitFloorInlay = material.pbr({
+  name: "pit center inlay",
+  color: "#274761",
+  roughness: 0.28,
+  metallic: 0.78,
+  clearcoat: 0.3,
+  clearcoatRoughness: 0.16
+});
+const pitFloorGlow = material.emissive({
+  name: "pit center glow seam",
+  color: "#2d8ca8",
+  emissive: "#54e7ff",
+  emissiveIntensity: 0.64,
+  opacity: 0.86
+});
+const pitCenterPlateBuilders = Array.from({ length: 12 }, (_, index) => {
+  const row = Math.floor(index / 4);
+  const column = index % 4;
+  const x = -3.15 + column * 2.1;
+  const z = ARENA_CENTER_Z - 2.25 + row * 2.25;
+  return [
+    primitives.box({ name: `pit center armor plate ${index}`, material: pitFloorInlay })
+      .position(x, 0.035, z)
+      .scale([0.92, 0.025, 0.92]),
+    primitives.box({ name: `pit center armor seam ${index}`, material: pitFloorGlow })
+      .position(x, 0.074, z - 0.86)
+      .scale([0.58, 0.012, 0.018])
+  ];
+}).flat();
+
+const pitBackPanelBuilders = Array.from({ length: 7 }, (_, index) => {
+  const x = -8.4 + index * 2.8;
+  const tint = index % 3 === 0 ? "#ff5f86" : index % 2 === 0 ? "#58e5ff" : "#8f7dff";
+  return [
+    primitives.box({
+      name: `pit back wall panel ${index}`,
+      material: material.pbr({ name: `pit back wall panel material ${index}`, color: index % 2 === 0 ? "#1c2d45" : "#17253b", roughness: 0.54, metallic: 0.48 })
+    }).position(x, 3.0 + (index % 2) * 0.22, ARENA_CENTER_Z - 4.76).scale([1.1, 2.35, 0.08]),
+    primitives.box({
+      name: `pit back wall light ${index}`,
+      material: material.emissive({ name: `pit back wall light material ${index}`, color: tint, emissive: tint, emissiveIntensity: 0.88 })
+    }).position(x, 4.8 + (index % 2) * 0.18, ARENA_CENTER_Z - 4.62).scale([0.72, 0.08, 0.045])
+  ];
+}).flat();
+
+const pitSuspendedLightBuilders = [-5.6, 0, 5.6].flatMap((x, index) => [
+  primitives.box({ name: `pit suspended light rail ${index}`, material: pitTrussLight })
+    .position(x, 5.15, ARENA_CENTER_Z + 0.8)
+    .scale([1.55, 0.06, 0.08]),
+  primitives.box({ name: `pit suspended light drop ${index}`, material: material.emissive({ name: `pit suspended drop material ${index}`, color: index % 2 === 0 ? "#ff638c" : "#65e6ff", emissive: index % 2 === 0 ? "#ff638c" : "#65e6ff", emissiveIntensity: 0.96 }) })
+    .position(x, 4.56, ARENA_CENTER_Z + 0.8)
+    .scale([0.08, 0.54, 0.05])
+]);
+
+const pitSignMaterial = material.emissive({
+  name: "pit wayfinding sign",
+  color: "#102b42",
+  emissive: "#8aeaff",
+  emissiveIntensity: 0.92,
+  opacity: 0.9
+});
+const pitSignBuilders = [
+  text3D("MECH PIT", {
+    name: "pit sign mech pit",
+    size: 0.46,
+    depth: 0.05,
+    letterSpacing: 0.03,
+    material: pitSignMaterial
+  }).position(-3.05, 5.15, ARENA_CENTER_Z - 4.46),
+  text3D("ROUND 01", {
+    name: "pit sign round",
+    size: 0.22,
+    depth: 0.03,
+    letterSpacing: 0.025,
+    material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.72 })
+  }).position(2.7, 5.08, ARENA_CENTER_Z - 4.45)
+];
+const pitVerticalLightBuilders = [-9.4, 9.4].map((x, index) =>
+  primitives.box({
+    name: `pit vertical light ${index}`,
+    material: material.emissive({ name: `pit vertical light material ${index}`, color: index === 0 ? "#2d9cc2" : "#a34566", emissive: index === 0 ? "#53ddff" : "#ff638c", emissiveIntensity: 0.88 })
+  })
+    .position(x, 3.2, ARENA_CENTER_Z - 4.48)
+    .scale([0.09, 2.25, 0.055])
+);
+
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
   scene: scene()
-    .background("#0a0e14")
+    .background("#081522")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
-      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.45, color: "#bcd9ff" }),
-      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 2.1, color: "#ffb454" }),
-      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 1.6, color: "#ff9a3d" }),
-      lights.ambient({ name: "global fill", intensity: 0.32, color: "#33465c" }),
+      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.8, color: "#cfe5ff" }),
+      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 2.6, color: "#ffb454" }),
+      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 2.0, color: "#ff9a3d" }),
+      lights.ambient({ name: "global fill", intensity: 0.82, color: "#6b8ead" }),
       // Arena floodlights over the pit.
-      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: 1.7, color: "#eaf4ff" }),
-      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: 1.25, color: "#cfe2ff" }),
+      lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: visualReviewCapture ? 2.05 : 2.65, color: "#eaf4ff" }),
+      lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: visualReviewCapture ? 1.6 : 2.05, color: "#cfe2ff" }),
+      lights.point({ name: "arena front key", position: [0, 4.2, ARENA_CENTER_Z + 6.5], intensity: visualReviewCapture ? 3.35 : 5.1, color: "#d8ecff" }),
+      lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 3.35, color: "#47cfff" }),
+      lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 3.0, color: "#ff7a5c" }),
       turntableBuilder,
       hangarFloorBuilder,
       hangarBackdropBuilder,
@@ -260,19 +444,39 @@ const app = createAuraApp("#app", {
       pitBackdropBuilder,
       camAnchorBuilder
     ])
-    .addMany([...pitMarkingBuilders, ...rimBuilders, ...sparkBuilders, ...dustBuilders, ...partNodeBuilders("player"), ...partNodeBuilders("rival")])
+    .addMany([
+      ...pitMarkingBuilders,
+      ...rimBuilders,
+      ...pitStructureBuilders,
+      ...pitDeckBuilders,
+      ...pitTrussBuilders,
+      ...arenaRingBuilders,
+      ...arenaWarningBuilders,
+      ...pitCenterPlateBuilders,
+      ...pitBackPanelBuilders,
+      ...pitSuspendedLightBuilders,
+      ...pitSignBuilders,
+      ...pitVerticalLightBuilders,
+      ...sparkBuilders,
+      ...dustBuilders,
+      ...partNodeBuilders("player"),
+      ...partNodeBuilders("rival")
+    ])
     .camera(camera.follow({
       targetNode: "mech-cam-anchor",
-      distance: 8.2,
+      distance: visualReviewCapture ? 5.85 : 7.35,
       // target-yaw rotates the offset by the anchor's yaw, so spinning the anchor
       // orbits the camera around the framed point while still looking at it.
       offsetMode: "target-yaw",
       // Explicit offset owns follow-camera distance. Keep the full ±4.2m pit
       // and both 1.7m fighters inside the frame while retaining a readable
-      // three-quarter hangar preview.
-      offset: [0, 1.45, 5.8],
-      fov: reducedMotion ? 46 : 50,
-      smoothing: 0.16
+      // three-quarter arena view; the wider combat framing prevents a close
+      // strike from cropping one silhouette out of the review frame.
+      offset: visualReviewCapture ? [0, 1.9, 5.35] : [0, 1.72, 6.55],
+      fov: visualReviewCapture ? 52 : (reducedMotion ? 54 : 55),
+      // Exact review captures must frame the current exchange, not the camera
+      // anchor's prior location. Runtime play keeps the eased chase motion.
+      smoothing: visualReviewCapture ? 0 : 0.16
     }))
 });
 
@@ -293,7 +497,7 @@ const sparkNodes = sparkBuilders.map((_, index) => app.nodes.require("mech-spark
 const dustNodes = dustBuilders.map((_, index) => app.nodes.require("mech-dust-" + index) as RuntimeNodeHandleLike);
 
 const { createMechHangarFeel } = await import("./arena/feel");
-const feel = createMechHangarFeel({ reducedMotion, sparkNodes, dustNodes });
+const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes });
 
 // ---- mounting ---------------------------------------------------------------
 function mountSide(
@@ -346,6 +550,11 @@ function enterArena(): void {
   }
   mode = "arena";
   paused = false;
+  // The arena HUD is a full-width review surface.  Collapse the hangar's
+  // side-column layout while it is active so the follow camera has the whole
+  // viewport for the typed fighters and pit instead of rendering into a
+  // 3/4-width canvas beside an empty panel column.
+  panelHost.parentElement?.classList.add("is-arena");
   setHangarVisible(hangarHud, false);
   setArenaVisible(arenaHud, true);
   startBout();
@@ -368,6 +577,7 @@ function leaveToHangar(): void {
   mode = "hangar";
   paused = false;
   bout = null;
+  panelHost.parentElement?.classList.remove("is-arena");
   hangar.unlockForRematchEdit();
   setArenaVisible(arenaHud, false);
   setHangarVisible(hangarHud, true);
@@ -696,7 +906,10 @@ app.onFrame(({ dt }) => {
     return;
   }
 
-  if (input.buffered("pause")) {
+  // Pause is an edge-triggered toggle. `buffered()` intentionally remains true
+  // for a short input window, which would flip the state twice on consecutive
+  // frames; consume only the actual press edge so the simulation stays frozen.
+  if (input.pressed("pause")) {
     paused = !paused;
     publishEvidence(bout.snapshot());
     return;

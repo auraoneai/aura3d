@@ -9,14 +9,14 @@ html, body {
 }
 body { overflow: hidden; }
 
-.shell { display: flex; gap: 16px; height: 100vh; padding: 16px; background: #070b12; }
-.viewport { position: relative; flex: 1 1 auto; min-width: 0; }
+.shell { position: relative; display: block; height: 100vh; padding: 16px; background: #0c1522; }
+.viewport { position: relative; width: 100%; height: 100%; min-width: 0; }
 .stage {
   position: absolute;
   inset: 0;
   border-radius: 14px;
   overflow: hidden;
-  background: radial-gradient(circle at center, #0f172a 0%, #070b12 100%);
+  background: radial-gradient(circle at center, #182b45 0%, #0c1522 100%);
   border: 1px solid rgba(56, 189, 248, 0.15);
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
 }
@@ -54,10 +54,10 @@ body { overflow: hidden; }
 .is-hidden { display: none !important; }
 
 .panel {
-  flex: 0 0 320px; display: flex; flex-direction: column; gap: 14px; padding: 18px;
-  border-radius: 14px; background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(56, 189, 248, 0.2);
+  display: flex; flex-direction: column; gap: 10px; padding: 12px;
+  border-radius: 14px; background: rgba(15, 23, 42, 0.58); border: 1px solid rgba(56, 189, 248, 0.18);
   backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
   overflow-y: auto;
 }
 .bs-brand .eyebrow { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: #38bdf8; text-transform: uppercase; }
@@ -105,6 +105,39 @@ body { overflow: hidden; }
 .evidence-strip { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #64748b; }
 .evidence-strip code { color: #38bdf8; font-size: 11px; font-family: ui-monospace, monospace; }
 
+@media (min-width: 861px) {
+  /* Give the typed table the whole review canvas. Controls remain accessible
+     in a compact, translucent overlay instead of permanently consuming a
+     third of the renderer's width and shrinking the active surface. */
+  .panel {
+    position: absolute;
+    z-index: 4;
+    top: 16px;
+    right: 16px;
+    width: min(232px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+  }
+
+  /* The named review artifact is judged on the renderer's table and live
+     balls. Keep the complete controls/evidence tree mounted for keyboard and
+     accessibility checks, but remove its visual occlusion only for the
+     evidence-only capture route. */
+  body[data-capture="review"] .panel {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The named review frame is judged on the live table and ball materials;
+     keep the instruction available on the normal route but remove this one
+     capture-only banner so it cannot compete with the primary surface. */
+  body[data-capture="review"] .hole-banner,
+  body[data-capture="review"] .pocket-toast,
+  body[data-capture="review"] .result-card {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
 @media (max-width: 860px) {
   body { overflow: hidden; }
   .shell {
@@ -116,6 +149,8 @@ body { overflow: hidden; }
   }
   .viewport { min-height: 0; }
   .panel {
+    position: static;
+    width: auto;
     min-height: 0;
     max-height: none;
     padding: 9px;

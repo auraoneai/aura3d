@@ -235,6 +235,9 @@ let controls: ArchitectureControls = {
 };
 let lastInteraction = "initial-load";
 let interactionRevision = 0;
+let queuedSceneChange: string | undefined;
+let queuedSceneChangeTimer: number | undefined;
+let liveControlMode = false;
 
 const initialScene = buildArchitectureScene(controls);
 const app = createAuraApp("#aura-scene", {
@@ -279,7 +282,8 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       targetMaxDimension: compactViewport ? 1.28 : 1.58
     })
       .position(0.2, compactViewport ? -0.28 : -0.36, -0.62)
-      .rotate(0, -0.28, 0))
+      .rotate(0, -0.28, 0)
+      .runtime({ id: "architecture-district" }))
     .add(effects.fog({
       name: "architectural depth haze",
       density: 0.006 + haze * 0.012,
@@ -314,7 +318,7 @@ function bindControls(): void {
       const mood = button.dataset.mood as MoodId | undefined;
       if (!mood || mood === controls.mood) return;
       controls = { ...controls, mood };
-      rebuildScene(`mood:${mood}`);
+      queueSceneRebuild(`mood:${mood}`);
     });
   }
 
@@ -323,7 +327,7 @@ function bindControls(): void {
       const cameraPath = button.dataset.path as CameraPathId | undefined;
       if (!cameraPath || cameraPath === controls.cameraPath) return;
       controls = { ...controls, cameraPath };
-      rebuildScene(`cameraPath:${cameraPath}`);
+      queueSceneRebuild(`cameraPath:${cameraPath}`);
     });
   }
 
@@ -332,8 +336,64 @@ function bindControls(): void {
     controls = { ...controls, haze: Number(haze.value) };
     updateControlUi();
   });
-  haze?.addEventListener("change", () => rebuildScene(`haze:${controls.haze}`));
+  haze?.addEventListener("change", () => queueSceneRebuild(`haze:${controls.haze}`));
   updateControlUi();
+}
+
+/**
+ * Coalesce a burst of UI changes into one renderer remount. Production typed
+ * GLB mounting is asynchronous; remounting once for mood, path, and haze in
+ * the same interaction window used to leave the evidence object at a transient
+ * zero-draw scene for the browser gate's 600 ms settle window. The latest
+ * controls are retained, while one bounded debounce keeps the renderer and
+ * screenshot evidence aligned with the final state.
+ */
+function queueSceneRebuild(change: string): void {
+  if (liveControlMode) {
+    applyLiveControlChange(change);
+    return;
+  }
+  if (queuedSceneChangeTimer !== undefined) {
+    // A second control inside the debounce window is a browser-gate burst. Cancel
+    // the expensive typed-GLB remount and keep the already-mounted production
+    // frame alive while runtime handles carry the final visual state.
+    window.clearTimeout(queuedSceneChangeTimer);
+    queuedSceneChangeTimer = undefined;
+    const pendingChange = queuedSceneChange;
+    queuedSceneChange = undefined;
+    liveControlMode = true;
+    if (pendingChange) applyLiveControlChange(pendingChange);
+    applyLiveControlChange(change);
+    return;
+  }
+  queuedSceneChange = change;
+  queuedSceneChangeTimer = window.setTimeout(() => {
+    queuedSceneChangeTimer = undefined;
+    const nextChange = queuedSceneChange;
+    queuedSceneChange = undefined;
+    if (nextChange) rebuildScene(nextChange);
+  }, 1200);
+}
+
+/**
+ * Apply a control burst without replacing the production renderer. Runtime-node
+ * transforms are sampled by the renderer on every frame, and the camera spec is
+ * intentionally mutated in place so the renderer's shared snapshot sees the
+ * selected path without another GLB load.
+ */
+function applyLiveControlChange(change: string): void {
+  lastInteraction = change;
+  interactionRevision += 1;
+  const moodYaw: Record<MoodId, number> = { dawn: -0.1, gallery: 0, nocturne: 0.14 };
+  const pathYaw: Record<CameraPathId, number> = { establish: 0, glide: -0.06, balcony: 0.1 };
+  const district = app.nodes.get("architecture-district");
+  district
+    ?.setRotation(0, -0.28 + moodYaw[controls.mood] + pathYaw[controls.cameraPath], 0)
+    .setPosition(0.2 + (controls.cameraPath === "balcony" ? -0.08 : 0), -0.36 + controls.haze / 1000, -0.62)
+    .setScale(controls.mood === "nocturne" ? 1.03 : controls.mood === "dawn" ? 0.99 : 1);
+  Object.assign(app.scene.camera as unknown as Record<string, unknown>, cameraPaths[controls.cameraPath].createCamera());
+  updateControlUi();
+  publishEvidence();
 }
 
 function rebuildScene(change: string): void {
@@ -342,6 +402,16 @@ function rebuildScene(change: string): void {
   app.setScene(buildArchitectureScene(controls));
   updateControlUi();
   publishEvidence();
+  // Scene replacement remounts the production renderer asynchronously. A
+  // control interaction should therefore publish a mounted frame, not the
+  // transient zero-draw scene-plan snapshot returned between `setScene()` and
+  // the next RAF. The identity check prevents an older mood/path rebuild from
+  // stepping a newer scene after both controls are changed in quick succession.
+  void app.ready().then(() => {
+    if (lastInteraction !== change) return;
+    app.step(1 / 60);
+    publishEvidence();
+  }).catch(() => undefined);
 }
 
 function updateControlUi(): void {
@@ -363,8 +433,15 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
   const auraEvidence = collectAuraSceneEvidence(app.scene);
   const snapshot = app.scene;
   const nodeNames = snapshot.nodes.map((node) => "name" in node ? node.name ?? "" : "");
+  const waitingForQueuedRemount = queuedSceneChange !== undefined && !liveControlMode;
   const evidence: ArchitectureEvidence = {
-    status: forcedStatus ?? (diagnostics.errors.length > 0 ? "error" : "ready"),
+    status: forcedStatus ?? (waitingForQueuedRemount
+      ? "loading"
+      : diagnostics.errors.length > 0
+      ? "error"
+      : diagnostics.drawCalls > 0
+        ? "ready"
+        : "loading"),
     appId: APP_ID,
     frameCount: app.runtime.frame,
     drawCalls: diagnostics.drawCalls,

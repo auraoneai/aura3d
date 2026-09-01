@@ -1841,7 +1841,7 @@ export const primitives = {
   torus: (options?: AuraPrimitiveOptions) => primitive("torus", options)
 } as const;
 
-function instancedPrimitive(primitiveName: AuraBuiltinPrimitive, options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
+function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
   if (options.transforms.length === 0) throw new Error("Aura3D instancing requires at least one transform.");
   if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
   return primitive(primitiveName, { ...options, instances: options.transforms, instanceColors: options.colors });
@@ -1853,7 +1853,14 @@ export const instances = {
   plane: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("plane", options),
   cylinder: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("cylinder", options),
   capsule: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("capsule", options),
-  torus: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torus", options)
+  torus: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torus", options),
+  custom: (
+    spec: AuraCustomGeometrySpec,
+    options: Omit<AuraPrimitiveOptions, "geometry"> & {
+      readonly transforms: readonly AuraTransformSpec[];
+      readonly colors?: readonly AuraColor[];
+    }
+  ) => instancedPrimitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) })
 } as const;
 
 export const geometry = {
@@ -2709,6 +2716,8 @@ export const camera = {
     position: options.position,
     target: options.target ?? [0, 1, 0],
     offset: options.offset,
+    targetOffset: options.targetOffset,
+    offsetMode: options.offsetMode,
     fov: options.fov ?? 50,
     easing: options.easing,
     captureTime: options.captureTime,
@@ -11942,6 +11951,9 @@ function createProductionRuntimeRendererInput(
     frustumCulling: true,
     collectedLights,
     environmentLighting,
+    // The production runtime owns the pixel-backed HDR target and pass chain for
+    // routes that request effects. The diagnostics are device-observed, so a
+    // compositor failure is reported as fallback rather than claimed as a pass.
     postprocess: createProductionRuntimePostprocess(snapshot),
     shadow: createProductionRuntimeShadowOptions(snapshot, collectedLights),
     environmentFog: createProductionRuntimeEnvironmentFog(snapshot),
@@ -12668,7 +12680,12 @@ function findRuntimeCameraTarget(cameraSpec: AuraCameraSpec, runtimeNodes: AuraR
   if (cameraSpec.mode !== "follow" || !cameraSpec.targetNode || !runtimeNodes) return undefined;
   const targetNode = cameraSpec.targetNode;
   const directHandle = runtimeNodes.get(targetNode);
-  if (directHandle && directHandle.visible !== false) return { position: directHandle.position, rotation: directHandle.rotation };
+  // An explicitly named target remains a valid camera anchor while hidden.
+  // Composition probes temporarily suppress the hero node to isolate its
+  // pixels; dropping that target here would also drop target-yaw rotation and
+  // move the camera between the visible and suppressed captures. Visibility
+  // controls drawing, not whether the camera can follow the requested node.
+  if (directHandle) return { position: directHandle.position, rotation: directHandle.rotation };
   const namedHandle = runtimeNodes.all().find((handle) =>
     handle.visible !== false && (handle.name === targetNode || handle.tags.includes(targetNode))
   );

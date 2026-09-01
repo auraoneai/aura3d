@@ -61,7 +61,7 @@
       "playableSurfaceLayoutValidated": true,
       "playableSurfaceMap": {
         "assetId": "showcaseKenneyVerdantPlatformerWorld",
-        "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+        "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
         "source": "asset-mesh-extracted",
         "surfaces": [
           {
@@ -294,7 +294,7 @@
       "characterWorldScaleCompatible": true,
       "styleCompatible": true,
       "primitivePrimaryWorldRejected": true,
-      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
       "assetPairEvidence": {
         "category": "platformer",
         "assets": [
@@ -303,14 +303,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-        "screenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
+        "screenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
         "geometryEvidence": {
           "category": "platformer",
           "kind": "platformer-playable-surface-map",
           "source": "asset-mesh-extracted",
-          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
+          "routePrimaryScreenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
           "assets": [
             {
               "id": "showcaseKenneyOobiPlatformerHero",
@@ -318,7 +318,7 @@
             },
             {
               "id": "showcaseKenneyVerdantPlatformerWorld",
-              "hash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"
+              "hash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"
             }
           ]
         },
@@ -326,7 +326,7 @@
         "checks": [
           {
             "id": "binding-overlap",
-            "verdict": "pass"
+            "verdict": "fail"
           },
           {
             "id": "contact",
@@ -345,9 +345,11 @@
             "verdict": "pass"
           }
         ],
-        "verdict": "pass",
+        "verdict": "fail",
         "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
-        "blockers": []
+        "blockers": [
+          "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface"
+        ]
       }
     },
     "releaseAssetRequirements": {
@@ -366,6 +368,8 @@
   },
   "blockers": [
     "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
-    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch"
+    "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
+    "evidence:platformer-asset-pair:verdict-not-pass:fail",
+    "evidence:platformer-asset-pair:blocker:asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface"
   ]
 }

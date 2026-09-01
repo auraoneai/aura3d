@@ -1,5 +1,6 @@
 import {
   game,
+  geometry,
   instances,
   material,
   primitives,
@@ -14,37 +15,59 @@ import {
 } from "./rules";
 import { assets } from "../../../src/aura-assets";
 
-export const CELL = 0.208;
-export const BLOCK_SCALE = [0.138, 0.138, 0.12] as const;
+/** Horizontal pitch is intentionally broader than row pitch for a stage-readable 10x20 well. */
+export const CELL = 0.278;
+export const ROW_CELL = 0.208;
+export const BLOCK_SCALE = [0.235, 0.138, 0.12] as const;
 export const HIDDEN_BLOCK_SCALE = [0.001, 0.001, 0.001] as const;
-export const ACTIVE_BLOCK_SCALE = [0.158, 0.158, 0.13] as const;
-export const GHOST_BLOCK_SCALE = [0.112, 0.112, 0.035] as const;
-export const CLEAR_FLASH_SCALE = [1.03, 0.036, 0.016] as const;
+export const ACTIVE_BLOCK_SCALE = [0.255, 0.158, 0.13] as const;
+export const GHOST_BLOCK_SCALE = [0.195, 0.112, 0.035] as const;
+export const CLEAR_FLASH_SCALE = [1.34, 0.018, 0.016] as const;
 export const BOARD_CENTER_Y = 2.24;
 const BOARD_LEFT_X = -((BOARD_WIDTH - 1) * CELL) / 2;
-const BOARD_BOTTOM_Y = BOARD_CENTER_Y - ((VISIBLE_HEIGHT - 1) * CELL) / 2;
+const BOARD_BOTTOM_Y = BOARD_CENTER_Y - ((VISIBLE_HEIGHT - 1) * ROW_CELL) / 2;
 
 export const pieceMaterials: Record<PieceKind, AuraMaterialSpec> = {
-  I: material.neon({ name: "ion cyan tetromino", color: "#1fc7d4", emissive: "#39f6ff", emissiveIntensity: 0.9, roughness: 0.24 }),
-  J: material.neon({ name: "cobalt J tetromino", color: "#3558ff", emissive: "#5c7dff", emissiveIntensity: 0.62, roughness: 0.28 }),
-  L: material.neon({ name: "amber L tetromino", color: "#f49a2d", emissive: "#ffc04f", emissiveIntensity: 0.68, roughness: 0.32 }),
-  O: material.neon({ name: "solar O tetromino", color: "#f2d94e", emissive: "#ffe866", emissiveIntensity: 0.7, roughness: 0.3 }),
-  S: material.neon({ name: "reactor green S tetromino", color: "#42d96b", emissive: "#65ff88", emissiveIntensity: 0.72, roughness: 0.3 }),
-  T: material.neon({ name: "magenta T tetromino", color: "#c858e9", emissive: "#e279ff", emissiveIntensity: 0.72, roughness: 0.25 }),
-  Z: material.neon({ name: "warning red Z tetromino", color: "#ef4f5d", emissive: "#ff6c78", emissiveIntensity: 0.7, roughness: 0.3 })
+  I: material.pbr({ name: "faceted ion cyan tetromino", color: "#19d9ee", emissive: "#087e99", emissiveIntensity: 0.2, roughness: 0.2, metallic: 0.28 }),
+  J: material.pbr({ name: "faceted cobalt J tetromino", color: "#496bf6", emissive: "#233a9d", emissiveIntensity: 0.18, roughness: 0.22, metallic: 0.3 }),
+  L: material.pbr({ name: "faceted amber L tetromino", color: "#ff9e32", emissive: "#a64b12", emissiveIntensity: 0.18, roughness: 0.24, metallic: 0.24 }),
+  O: material.pbr({ name: "faceted solar O tetromino", color: "#ffd83d", emissive: "#9e7410", emissiveIntensity: 0.2, roughness: 0.22, metallic: 0.26 }),
+  S: material.pbr({ name: "faceted reactor green S tetromino", color: "#52e77a", emissive: "#19743b", emissiveIntensity: 0.18, roughness: 0.22, metallic: 0.25 }),
+  T: material.pbr({ name: "faceted magenta T tetromino", color: "#d85af0", emissive: "#76228b", emissiveIntensity: 0.2, roughness: 0.2, metallic: 0.3 }),
+  Z: material.pbr({ name: "faceted warning red Z tetromino", color: "#ff586d", emissive: "#972039", emissiveIntensity: 0.18, roughness: 0.22, metallic: 0.27 })
 };
 
-const panelMaterial = material.pbr({ name: "readable graphite board backplate", color: "#03100e", roughness: 0.66, metallic: 0.16 });
-const railMaterial = material.metal({ name: "brushed safety rail", color: "#a9b49d", roughness: 0.36, metallic: 0.62 });
-const gridMaterial = material.emissive({ name: "readable board grid", color: "#39685f", emissive: "#6fd8c2", emissiveIntensity: 0.3, roughness: 0.7 });
+// A shallow chamfered jewel tile gives every live cell an authored front bevel
+// and light-catching shoulder while preserving the exact one-instance-per-cell
+// projection. The back ring is broader than the front ring, creating eight
+// sloped side facets around a flat readable face.
+const BLOCK_TILE_GEOMETRY = geometry.define({
+  positions: [
+    [-0.34, -0.46, 0.5], [0.34, -0.46, 0.5], [0.46, -0.34, 0.5], [0.46, 0.34, 0.5],
+    [0.34, 0.46, 0.5], [-0.34, 0.46, 0.5], [-0.46, 0.34, 0.5], [-0.46, -0.34, 0.5],
+    [-0.4, -0.5, -0.5], [0.4, -0.5, -0.5], [0.5, -0.4, -0.5], [0.5, 0.4, -0.5],
+    [0.4, 0.5, -0.5], [-0.4, 0.5, -0.5], [-0.5, 0.4, -0.5], [-0.5, -0.4, -0.5]
+  ],
+  indices: [
+    0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6, 0, 6, 7,
+    8, 10, 9, 8, 11, 10, 8, 12, 11, 8, 13, 12, 8, 14, 13, 8, 15, 14,
+    0, 8, 9, 0, 9, 1, 1, 9, 10, 1, 10, 2, 2, 10, 11, 2, 11, 3,
+    3, 11, 12, 3, 12, 4, 4, 12, 13, 4, 13, 5, 5, 13, 14, 5, 14, 6,
+    6, 14, 15, 6, 15, 7, 7, 15, 8, 7, 8, 0
+  ]
+});
+
+const panelMaterial = material.pbr({ name: "deep reactor glass board backplate", color: "#061c29", roughness: 0.28, metallic: 0.38 });
+const railMaterial = material.metal({ name: "polished reactor cabinet rail", color: "#d9f7f2", roughness: 0.2, metallic: 0.78 });
+const gridMaterial = material.emissive({ name: "subtle board cell grid", color: "#277c87", emissive: "#5bd6d8", emissiveIntensity: 0.46, roughness: 0.48 });
 const ghostMaterial = material.glass({ name: "transparent ghost landing piece", color: "#dbe7d9", opacity: 0.26, transmission: 0.45, roughness: 0.12 });
 const flashMaterial = material.emissive({
   name: "line clear grid pulse",
-  color: "#39f6ff",
-  emissive: "#39f6ff",
-  emissiveIntensity: 1.15,
-  roughness: 0.22,
-  opacity: 0.58
+  color: "#ffc34d",
+  emissive: "#ff9b35",
+  emissiveIntensity: 0.78,
+  roughness: 0.28,
+  opacity: 0.42
 });
 const levelUpMaterial = material.neon({ name: "level up charge band", color: "#74ff91", emissive: "#9dffb4", emissiveIntensity: 1.5, roughness: 0.16, opacity: 0.72 });
 const gameOverMaterial = material.emissive({ name: "game over wash", color: "#5c0f19", emissive: "#ff4d5f", emissiveIntensity: 0.95, roughness: 0.5, opacity: 0.66 });
@@ -56,20 +79,28 @@ const marqueePanelMaterial = material.pbr({ name: "blockfall marquee backlit pan
 const marqueeGlyphMaterial = material.neon({ name: "blockfall marquee glyph block", color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 1.15, roughness: 0.2 });
 const reactorCapMaterial = material.neon({ name: "reactor critical cap", color: "#ffb35a", emissive: "#ffd05d", emissiveIntensity: 0.9, roughness: 0.2 });
 
-const roomFloorMaterial = material.pbr({ name: "arcade room floor", color: "#0a0410", roughness: 0.44, metallic: 0.26 });
-const roomWallMaterial = material.pbr({ name: "arcade room wall", color: "#21102c", roughness: 0.88, metallic: 0.02 });
-const roomTrimMaterial = material.neon({ name: "arcade room neon trim", color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 0.85, roughness: 0.2 });
-const roomTrimCoolMaterial = material.neon({ name: "arcade room cool neon trim", color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.8, roughness: 0.2 });
+const roomFloorMaterial = material.pbr({ name: "arcade arena floor", color: "#102f55", roughness: 0.3, metallic: 0.42 });
+const roomWallMaterial = material.pbr({ name: "arcade arena wall", color: "#33125e", roughness: 0.5, metallic: 0.18 });
+const roomTrimMaterial = material.neon({ name: "arcade room neon trim", color: "#ff5ed8", emissive: "#ff5ed8", emissiveIntensity: 1.05, roughness: 0.18 });
 // Arcade-room context. These were near-black (#0a0614 / #06040d), which measured as a
 // 70.3% below-luminance-45 left region and 68.3% right, i.e. the "surrounding void" the
 // acceptance criterion rejects: the props existed but read as void. Raised to a lit-room
 // value so they register as neighbouring cabinets while staying clearly subordinate to the
 // hero cabinet and its live well.
-const neighbourCabinetMaterial = material.pbr({ name: "neighbouring cabinet silhouette", color: "#3a2450", roughness: 0.76, metallic: 0.1 });
-const neighbourFarCabinetMaterial = material.pbr({ name: "far neighbouring cabinet silhouette", color: "#281838", roughness: 0.84, metallic: 0.06 });
-const neighbourCoolScreenMaterial = material.emissive({ name: "neighbouring cool screen glow", color: "#123a4d", emissive: "#3fc6de", emissiveIntensity: 0.82, roughness: 0.34, opacity: 0.9 });
-const neighbourWarmScreenMaterial = material.emissive({ name: "neighbouring warm screen glow", color: "#3d1b37", emissive: "#cc46a0", emissiveIntensity: 0.76, roughness: 0.34, opacity: 0.9 });
-
+const neighbourCabinetMaterial = material.pbr({ name: "neighbouring cabinet silhouette", color: "#253365", roughness: 0.54, metallic: 0.3 });
+const neighbourFarCabinetMaterial = material.pbr({ name: "far neighbouring cabinet silhouette", color: "#1b2450", roughness: 0.62, metallic: 0.24 });
+const neighbourCoolScreenMaterial = material.emissive({ name: "neighbouring cool screen glow", color: "#13758e", emissive: "#55e5ff", emissiveIntensity: 1.18, roughness: 0.24, opacity: 0.96 });
+const neighbourWarmScreenMaterial = material.emissive({ name: "neighbouring warm screen glow", color: "#8b2b68", emissive: "#ff72c9", emissiveIntensity: 1.12, roughness: 0.24, opacity: 0.96 });
+// Saturated, low-detail room accents make the arcade context read at the review
+// distance without competing with the typed cabinet or the live playfield. They
+// are deliberately separate from gameplay pieces: these are renderer-owned set
+// dressing, not a second board or a CSS illustration of one.
+const roomOrbMaterial = material.neon({ name: "arcade arena spectator lights", color: "#39f6ff", emissive: "#8ff7ff", emissiveIntensity: 0.72, roughness: 0.3 });
+const stadiumBandMaterial = material.emissive({ name: "arcade arena tier bands", color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6, roughness: 0.38, opacity: 0.9 });
+const roomTileMaterial = material.emissive({ name: "arcade room floor tiles", color: "#74ff91", emissive: "#74ff91", emissiveIntensity: 0.48, roughness: 0.42, opacity: 0.82 });
+const reactorHaloMaterial = material.neon({ name: "reactor arena halo frames", color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 1.1, roughness: 0.16 });
+const leftPlayerBayMaterial = material.pbr({ name: "cyan player bay inset", color: "#0b6788", roughness: 0.32, metallic: 0.32 });
+const rightPlayerBayMaterial = material.pbr({ name: "magenta player bay inset", color: "#7d236f", roughness: 0.32, metallic: 0.32 });
 /**
  * Authored arcade-room set dressing behind and around the typed cabinet: a floor,
  * back wall, neon practicals, and neighbouring-cabinet silhouettes so the hero
@@ -103,6 +134,20 @@ export const ARCADE_ROOM_SUBJECT_CONTRACT = {
   gameplayPieceSource: "game.fallingBlocks" as const
 } as const;
 export function createArcadeRoomNodes(): AuraNodeInput[] {
+  const spectatorTransforms = Array.from({ length: 48 }, (_, index) => {
+    const side = index < 24 ? -1 : 1;
+    const local = index % 24;
+    const row = Math.floor(local / 6);
+    const column = local % 6;
+    const size = 0.1 + ((row + column) % 3) * 0.012;
+    return {
+      position: [side * (2.34 + column * 0.48), 0.48 + row * 0.36, -3.16 - row * 0.07] as [number, number, number],
+      scale: [size, size, size] as [number, number, number]
+    };
+  });
+  const spectatorColors = Array.from({ length: spectatorTransforms.length }, (_, index) =>
+    ["#39f6ff", "#74ff91", "#ffe866", "#e279ff", "#ff6c78"][(index * 3 + Math.floor(index / 8)) % 5] ?? "#39f6ff"
+  );
   return [
     // Floor and back wall give the cabinet a room to stand in.
     primitives.box({ name: "arcade room floor slab", material: roomFloorMaterial, receiveShadow: true })
@@ -111,83 +156,154 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
     primitives.box({ name: "arcade room back wall", material: roomWallMaterial, receiveShadow: true })
       .position(0, 2.6, -3.6)
       .scale([13, 7.4, 0.12]),
+    primitives.box({ name: "cyan player bay inset panel", material: leftPlayerBayMaterial, receiveShadow: true })
+      .position(-3.48, 1.18, -3.18)
+      .scale([2.36, 3.42, 0.08]),
+    primitives.box({ name: "magenta player bay inset panel", material: rightPlayerBayMaterial, receiveShadow: true })
+      .position(3.48, 1.18, -3.18)
+      .scale([2.36, 3.42, 0.08]),
+    instances.torus({
+      name: "arcade reactor player bay halos",
+      material: reactorHaloMaterial,
+      transforms: [
+        { position: [-3.42, 1.22, -2.94], rotation: [Math.PI / 2, 0, 0], scale: [1.48, 1.48, 0.12] },
+        { position: [3.42, 1.22, -2.94], rotation: [Math.PI / 2, 0, 0], scale: [1.48, 1.48, 0.12] }
+      ]
+    }),
     // A row of angled neighbouring cabinets recedes to either side so the hero
-    // cabinet reads as one machine in an arcade rather than a lone prop.
-    primitives.box({ name: "left neighbouring cabinet silhouette", material: neighbourCabinetMaterial, castShadow: true })
-      .position(-2.48, 0.98, -1.5)
-      .rotate(0, 0.5, 0)
-      .scale([0.9, 3.35, 0.82]),
-    primitives.box({ name: "left far cabinet silhouette", material: neighbourFarCabinetMaterial, castShadow: true })
-      .position(-3.72, 0.86, -2.42)
-      .rotate(0, 0.38, 0)
-      .scale([0.84, 3.05, 0.78]),
-    primitives.box({ name: "right neighbouring cabinet silhouette", material: neighbourCabinetMaterial, castShadow: true })
-      .position(2.48, 0.98, -1.5)
-      .rotate(0, -0.5, 0)
-      .scale([0.9, 3.35, 0.82]),
-    primitives.box({ name: "right far cabinet silhouette", material: neighbourFarCabinetMaterial, castShadow: true })
-      .position(3.72, 0.86, -2.42)
-      .rotate(0, -0.38, 0)
-      .scale([0.84, 3.05, 0.78]),
+    // cabinet reads as one machine in an arcade rather than a lone prop. The
+    // near and far pairs share instanced geometry so set dressing stays cheap.
+    instances.box({
+      name: "near neighbouring cabinet silhouettes",
+      material: neighbourCabinetMaterial,
+      castShadow: true,
+      transforms: [
+        { position: [-3.35, 0.28, -2.66], rotation: [0, 0.34, 0], scale: [0.46, 1.65, 0.48] },
+        { position: [3.35, 0.28, -2.66], rotation: [0, -0.34, 0], scale: [0.46, 1.65, 0.48] }
+      ]
+    }),
+    instances.box({
+      name: "far neighbouring cabinet silhouettes",
+      material: neighbourFarCabinetMaterial,
+      castShadow: true,
+      transforms: [
+        { position: [-4.48, 0.12, -3.02], rotation: [0, 0.24, 0], scale: [0.38, 1.3, 0.4] },
+        { position: [4.48, 0.12, -3.02], rotation: [0, -0.24, 0], scale: [0.38, 1.3, 0.4] }
+      ]
+    }),
     // Dim neighbouring screens are the room's only competing light sources and
-    // stay well below the hero playfield in brightness.
-    primitives.box({ name: "left neighbouring cabinet screen glow", material: neighbourCoolScreenMaterial })
-      .position(-2.32, 1.86, -1.11)
-      .rotate(0, 0.5, 0)
-      .scale([0.56, 0.78, 0.03]),
-    primitives.box({ name: "right neighbouring cabinet screen glow", material: neighbourWarmScreenMaterial })
-      .position(2.32, 1.86, -1.11)
-      .rotate(0, -0.5, 0)
-      .scale([0.56, 0.78, 0.03]),
-    primitives.box({ name: "left far cabinet screen glow", material: neighbourWarmScreenMaterial })
-      .position(-3.58, 1.72, -2.03)
-      .rotate(0, 0.38, 0)
-      .scale([0.5, 0.7, 0.03]),
-    primitives.box({ name: "right far cabinet screen glow", material: neighbourCoolScreenMaterial })
-      .position(3.58, 1.72, -2.03)
-      .rotate(0, -0.38, 0)
-      .scale([0.5, 0.7, 0.03]),
+    // stay well below the hero playfield in brightness. Near/far pairs are
+    // instanced separately because their screen materials differ by side.
+    instances.box({
+      name: "cool neighbouring cabinet screen glows",
+      material: neighbourCoolScreenMaterial,
+      transforms: [
+        { position: [-3.28, 0.68, -2.4], rotation: [0, 0.34, 0], scale: [0.29, 0.38, 0.025] },
+        { position: [4.43, 0.44, -2.82], rotation: [0, -0.24, 0], scale: [0.24, 0.3, 0.025] }
+      ]
+    }),
+    instances.box({
+      name: "warm neighbouring cabinet screen glows",
+      material: neighbourWarmScreenMaterial,
+      transforms: [
+        { position: [3.28, 0.68, -2.4], rotation: [0, -0.34, 0], scale: [0.29, 0.38, 0.025] },
+        { position: [-4.43, 0.44, -2.82], rotation: [0, 0.24, 0], scale: [0.24, 0.3, 0.025] }
+      ]
+    }),
     // Wall neon sits behind the cabinet row so it never crosses the playfield.
-    primitives.box({ name: "arcade room left wall neon", material: roomTrimMaterial })
-      .position(-4.6, 2.9, -3.5)
-      .scale([2.1, 0.06, 0.06]),
-    primitives.box({ name: "arcade room right wall neon", material: roomTrimCoolMaterial })
-      .position(4.6, 2.9, -3.5)
-      .scale([2.1, 0.06, 0.06])
+    instances.box({
+      name: "arcade room wall neon",
+      material: roomTrimMaterial,
+      colors: ["#ff42c8", "#39f6ff"],
+      transforms: [
+        { position: [-4.6, 2.9, -3.5], scale: [2.1, 0.06, 0.06] },
+        { position: [4.6, 2.9, -3.5], scale: [2.1, 0.06, 0.06] }
+      ]
+    }),
+    // A tiered spectator-light field gives the machine an intentional arcade
+    // arena rather than scattered decorative props. It is renderer-owned set
+    // dressing behind the typed cabinet, never a substitute gameplay board.
+    instances.sphere({
+      name: "arcade arena spectator light field",
+      material: roomOrbMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      instanceColors: spectatorColors,
+      transforms: spectatorTransforms
+    }),
+    instances.box({
+      name: "arcade arena luminous tier bands",
+      material: stadiumBandMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      instanceColors: ["#39f6ff", "#ff42c8", "#74ff91", "#ffe866", "#39f6ff", "#ff42c8", "#74ff91", "#ffe866"],
+      transforms: [
+        { position: [-3.82, 0.54, -3.18], scale: [1.72, 0.025, 0.04] },
+        { position: [-3.82, 0.88, -3.24], scale: [1.72, 0.025, 0.04] },
+        { position: [-3.82, 1.22, -3.3], scale: [1.72, 0.025, 0.04] },
+        { position: [-3.82, 1.56, -3.36], scale: [1.72, 0.025, 0.04] },
+        { position: [3.82, 0.54, -3.18], scale: [1.72, 0.025, 0.04] },
+        { position: [3.82, 0.88, -3.24], scale: [1.72, 0.025, 0.04] },
+        { position: [3.82, 1.22, -3.3], scale: [1.72, 0.025, 0.04] },
+        { position: [3.82, 1.56, -3.36], scale: [1.72, 0.025, 0.04] }
+      ]
+    }),
+    instances.box({
+      name: "arcade room floor light tiles",
+      material: roomTileMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      instanceColors: ["#74ff91", "#39f6ff", "#ffe866", "#e279ff", "#74ff91", "#39f6ff"],
+      transforms: [
+        { position: [-4.3, -0.68, 1.15], rotation: [0, 0.12, 0], scale: [0.8, 0.018, 0.22] },
+        { position: [-2.95, -0.68, 1.4], rotation: [0, -0.12, 0], scale: [0.58, 0.018, 0.18] },
+        { position: [4.3, -0.68, 1.15], rotation: [0, -0.12, 0], scale: [0.8, 0.018, 0.22] },
+        { position: [2.95, -0.68, 1.4], rotation: [0, 0.12, 0], scale: [0.58, 0.018, 0.18] },
+        { position: [-4.0, -0.68, 2.05], rotation: [0, 0.12, 0], scale: [0.46, 0.018, 0.14] },
+        { position: [4.0, -0.68, 2.05], rotation: [0, -0.12, 0], scale: [0.46, 0.018, 0.14] }
+      ]
+    })
   ];
 }
 
-export function createBoardShell(): AuraNodeInput[] {
+export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
     // Depth order from back to front: recess shell, board backplate, grid,
     // locked blocks, ghost, then the active piece nearest the camera.
-    primitives.box({ name: "arcade reactor screen recess", material: material.pbr({ color: "#020806", roughness: 0.8, metallic: 0.08 }) }).position(0, BOARD_CENTER_Y, -0.06).scale([2.12, 4.48, 0.08]),
-    primitives.box({ name: "reactor board backplate", material: panelMaterial, receiveShadow: true }).position(0, BOARD_CENTER_Y, 0.005).scale([1.64, 4.42, 0.05]),
-    primitives.box({ name: "blockfall reactor marquee beam", material: material.neon({ color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 0.72 }) }).position(0, BOARD_CENTER_Y + 2.08, 0.11).scale([1.46, 0.045, 0.045]),
+    primitives.box({ name: "arcade reactor screen recess", material: material.pbr({ color: "#020806", roughness: 0.8, metallic: 0.08 }) }).position(0, BOARD_CENTER_Y, -0.06).scale([3.34, 4.48, 0.08]),
+    primitives.box({ name: "reactor board backplate", material: panelMaterial, receiveShadow: true }).position(0, BOARD_CENTER_Y, 0.005).scale([2.68, 4.42, 0.05]),
+    primitives.box({ name: "blockfall reactor marquee beam", material: material.neon({ color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 0.72 }) }).position(0, BOARD_CENTER_Y + 2.08, 0.11).scale([1.96, 0.045, 0.045]),
     // The cabinet GLB marquee texture reads "GAME OVER / RESTART?", which
     // contradicts a running game. The camera frames below it and the route
     // supplies a clean lit header shroud directly above the playfield.
     // The typed cabinet's fixed "GAME OVER / RESTART?" marquee sits higher than
     // the live board. A taller shroud covers it at both desktop and the wider
     // mobile FOV so a running session never announces the opposite state.
-    primitives.box({ name: "blockfall reactor header shroud", material: marqueePanelMaterial }).position(0, BOARD_CENTER_Y + 2.92, 0.14).scale([2.56, 1.18, 0.12]),
-    primitives.box({ name: "blockfall reactor header light bar", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 1.15 }) }).position(0, BOARD_CENTER_Y + 2.23, 0.21).scale([2.36, 0.048, 0.048]),
+    primitives.box({ name: "blockfall reactor header shroud", material: marqueePanelMaterial }).position(0, BOARD_CENTER_Y + 2.92, 0.14).scale([3.36, 1.18, 0.12]),
+    primitives.box({ name: "blockfall reactor header light bar", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 1.15 }) }).position(0, BOARD_CENTER_Y + 2.23, 0.21).scale([3.16, 0.048, 0.048]),
     primitives.box({ name: "blockfall reactor header accent bar", material: marqueeGlyphMaterial }).position(0, BOARD_CENTER_Y + 2.82, 0.21).scale([1.42, 0.09, 0.03]),
-    primitives.box({ name: "left load-bearing board rail", material: railMaterial, castShadow: true }).position(-1.24, BOARD_CENTER_Y, 0.08).scale([0.05, 4.22, 0.11]),
-    primitives.box({ name: "right load-bearing board rail", material: railMaterial, castShadow: true }).position(1.24, BOARD_CENTER_Y, 0.08).scale([0.05, 4.22, 0.11]),
-    primitives.box({ name: "top board rail", material: railMaterial, castShadow: true }).position(0, BOARD_CENTER_Y + 2.13, 0.08).scale([1.48, 0.052, 0.11]),
-    primitives.box({ name: "bottom board rail", material: railMaterial, castShadow: true }).position(0, BOARD_CENTER_Y - 2.13, 0.08).scale([1.48, 0.052, 0.11]),
-    primitives.box({ name: "reactor cabinet floor", material: material.metal({ color: "#111a18", roughness: 0.58, metallic: 0.28 }), receiveShadow: true }).position(0, -0.12, -0.48).scale([3.15, 0.055, 1.25]),
-    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.08, BOARD_CENTER_Y, 0.04).scale([0.018, 2.06, 0.022]),
-    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.08, BOARD_CENTER_Y, 0.04).scale([0.018, 2.06, 0.022])
+    instances.box({
+      name: "load-bearing board rail family",
+      material: railMaterial,
+      castShadow: true,
+      transforms: [
+        { position: [-1.95, BOARD_CENTER_Y, 0.08], scale: [0.05, 4.22, 0.11] },
+        { position: [1.95, BOARD_CENTER_Y, 0.08], scale: [0.05, 4.22, 0.11] },
+        { position: [0, BOARD_CENTER_Y + 2.13, 0.08], scale: [1.97, 0.052, 0.11] },
+        { position: [0, BOARD_CENTER_Y - 2.13, 0.08], scale: [1.97, 0.052, 0.11] }
+      ]
+    }),
+    primitives.box({ name: "reactor cabinet floor", material: material.metal({ color: "#111a18", roughness: 0.58, metallic: 0.28 }), receiveShadow: true }).position(0, -0.12, -0.48).scale([4.08, 0.055, 1.25]),
+    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
+    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022])
   ];
   for (let x = 0; x <= BOARD_WIDTH; x += 1) {
     const px = BOARD_LEFT_X - CELL / 2 + x * CELL;
-    nodes.push(primitives.box({ name: `board vertical grid ${x}`, material: gridMaterial }).position(px, BOARD_CENTER_Y, 0.055).scale([0.008, VISIBLE_HEIGHT * CELL, 0.016]));
+    nodes.push(primitives.box({ name: `board vertical grid ${x}`, material: gridMaterial }).position(px, BOARD_CENTER_Y, 0.055).scale([0.008, VISIBLE_HEIGHT * ROW_CELL, 0.016]));
   }
   for (let y = 0; y <= VISIBLE_HEIGHT; y += 1) {
-    const py = BOARD_BOTTOM_Y - CELL / 2 + y * CELL;
-    nodes.push(primitives.box({ name: `board horizontal grid ${y}`, material: gridMaterial }).position(0, py, 0.055).scale([1.08, 0.008, 0.016]));
+    const py = BOARD_BOTTOM_Y - ROW_CELL / 2 + y * ROW_CELL;
+    nodes.push(primitives.box({ name: `board horizontal grid ${y}`, material: gridMaterial }).position(0, py, 0.055).scale([CELL * BOARD_WIDTH, 0.008, 0.016]));
   }
   return nodes;
 }
@@ -295,7 +411,7 @@ export const BEAT_NODE_IDS = {
 } as const;
 
 export function cellPosition(x: number, visibleY: number, z: number): readonly [number, number, number] {
-  return [BOARD_LEFT_X + x * CELL, BOARD_BOTTOM_Y + (VISIBLE_HEIGHT - 1 - visibleY) * CELL, z];
+  return [BOARD_LEFT_X + x * CELL, BOARD_BOTTOM_Y + (VISIBLE_HEIGHT - 1 - visibleY) * ROW_CELL, z];
 }
 
 export function lockedNodeId(x: number, y: number): string {
@@ -337,7 +453,7 @@ export interface InstancedBoardPool {
   readonly capacity: number;
   /** Owned mutable specs; entries start hidden far below the room. */
   readonly transforms: MutableTransformSpec[];
-  readonly node: ReturnType<typeof instances.box>;
+  readonly node: ReturnType<typeof instances.custom>;
 }
 
 function createInstancedPool(id: string, capacity: number, materialSpec: AuraMaterialSpec): InstancedBoardPool {
@@ -346,7 +462,7 @@ function createInstancedPool(id: string, capacity: number, materialSpec: AuraMat
     // Unused instances park collapsed far below the room, out of every frame.
     scale: [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]] as [number, number, number]
   }));
-  const node = instances.box({
+  const node = instances.custom(BLOCK_TILE_GEOMETRY, {
     name: id,
     material: materialSpec,
     castShadow: true,

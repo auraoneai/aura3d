@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-23T17:02:29.869Z",
+  "generatedAt": "2026-08-31T14:03:42.176Z",
   "appId": "showcase-siege-golf",
   "route": "/apps/showcase-siege-golf/",
   "classification": "prototype-blocked",
@@ -13,6 +13,12 @@
     "productionRuntime": false
   },
   "primaryAssets": [
+    {
+      "typedRef": "assets.siegeGolfCourseWorld",
+      "role": "primaryWorld",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    },
     {
       "typedRef": "assets.siegeGolfBall",
       "role": "primaryCharacter",
@@ -95,9 +101,9 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 24,
+    "sourceOccurrences": 22,
     "primitiveBudget": 40,
-    "role": "felt, rails, hinge anchors, cup rings, aim ticks, and trail puffs as set dressing around typed ball/crate/barrel/plank models",
+    "role": "physics guides, cup rings, aim ticks, and trail puffs as set dressing around the typed continuous world plus ball/crate/barrel/plank models",
     "status": "set-dressing-with-typed-primary-assets"
   },
   "claimStatus": {
@@ -115,7 +121,7 @@
       "compact mobile safe-area controls with direct aim and hold-to-charge input",
       "distinct opening, aim, flight, and settle cameras on the root-safe camera surface",
       "best completed solution retained as renderer-only dotted trajectory with no physics/scoring ownership",
-      "golden-hour siege-yard thesis with warm timber, blue hill depth, red target cloth, white ball/chalk, and dark iron",
+      "compact continuous causeway composition with tee, live obstacle bay, and fortified sensor court readable in one frame",
       "typed audio cues on sfx/ambient/ui buses with gesture unlock",
       "reduced-motion gating for trail particles and camera smoothing"
     ],
@@ -141,7 +147,7 @@
     "observed": {
       "maxWorldBodies": 26,
       "maxConstraints": 3,
-      "maxPhysicsP95Ms": 0.5823
+      "maxPhysicsP95Ms": 0.7034
     },
     "holesCompleted": 9,
     "pass": true
@@ -176,7 +182,7 @@
     "courseCompletionProof": "tests/reports/siege-golf/course-completion/",
     "performanceProof": "apps/showcase-siege-golf/performance-report.json",
     "notes": "Route is registered in route gates and internal remediation/index metadata, but publicShowcase remains false and no public card is promoted until independent review; label stays `prototype` pending approval.",
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-siege-golf/dist --release --source apps/showcase-siege-golf/src --asset siegeGolfBall --asset siegePlankSet --asset siegeWoodenCrate --asset siegeWoodenBarrel"
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-siege-golf/dist --release --source apps/showcase-siege-golf/src --asset siegeGolfCourseWorld --asset siegeGolfBall --asset siegePlankSet --asset siegeWoodenCrate --asset siegeWoodenBarrel"
   },
   "determinismContract": {
     "fixedStep": "1/60 via physics.world fixedDelta; mounted low-FPS catch-up remains bounded to four fixed substeps",

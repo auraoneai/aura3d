@@ -29,7 +29,7 @@ html, body {
 }
 
 .shell {
-  display: flex;
+  position: relative;
   width: 100%;
   height: 100vh;
 }
@@ -57,13 +57,40 @@ html, body {
 }
 
 .panel {
-  width: 300px;
-  flex: 0 0 300px;
-  background: var(--panel-bg);
-  border-left: 1px solid var(--panel-edge);
-  padding: 14px 16px;
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  right: 16px;
+  bottom: auto;
+  width: min(196px, calc(100vw - 32px));
+  max-height: 46vh;
+  background: rgba(35, 31, 26, 0.38);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 10px 12px;
   overflow-y: auto;
   backdrop-filter: blur(4px);
+}
+
+.panel .sg-brand,
+.panel .controls-list,
+.panel .evidence-strip { display: none; }
+
+/* The active-impact producer retains the top-center state banner and all
+ * evidence JSON, but removes the side control panel from the comparison frame
+ * so the typed ball, collision response, and course set dressing read first.
+ * The panel remains mounted and fully available on the public route. */
+.panel[data-capture="review"] {
+  opacity: 0;
+}
+
+/* The named active-impact frame is a renderer-only comparison image. Keep the
+ * banner mounted for accessibility and state evidence, but let the course,
+ * ball, and collision response own the visual hierarchy in that one capture. */
+body[data-capture="review"] .hole-banner,
+body[data-capture="review"] .result-card {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sg-brand h1 {
@@ -91,9 +118,9 @@ html, body {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 8px;
 }
 
 .stat-grid article,
@@ -101,7 +128,7 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 5px 6px;
 }
 
 .stat-grid span,
@@ -156,6 +183,12 @@ html, body {
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.16);
   pointer-events: auto;
+}
+
+/* Result cards own the next action; the side panel must not sit above them. */
+.panel.result-open {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .precision-shot label {
@@ -249,19 +282,21 @@ html, body {
 }
 
 .result-card {
-  align-self: center;
-  margin-bottom: 12vh;
-  padding: 22px 34px;
-  border-radius: 16px;
-  background: var(--panel-bg);
+  align-self: flex-start;
+  margin: 0 0 11vh 24px;
+  width: min(250px, calc(100vw - 48px));
+  padding: 14px 18px;
+  border-radius: 13px;
+  background: rgba(35, 31, 26, 0.78);
   border: 1px solid var(--panel-edge);
   text-align: center;
   pointer-events: auto;
+  box-shadow: 0 14px 32px rgba(26, 18, 12, 0.24);
 }
 
 .result-card h2 {
   margin: 0 0 6px;
-  font-size: 1.6rem;
+  font-size: 1.25rem;
 }
 
 .result-card p {
@@ -270,7 +305,7 @@ html, body {
 }
 
 .result-card .stars {
-  font-size: 2rem;
+  font-size: 1.55rem;
   letter-spacing: 0.2em;
   color: var(--accent);
   margin-top: 8px;
@@ -290,15 +325,27 @@ html, body {
 @media (max-width: 720px) {
   .shell { flex-direction: column; }
   .panel {
-    display: none;
+    display: flex;
+    top: 10px; right: 10px; left: 10px; bottom: auto;
+    width: auto; max-height: 24vh;
+    padding: 8px 10px; gap: 6px;
+    overflow: hidden;
+    background: rgba(35, 31, 26, 0.52);
   }
+  .panel .sg-brand, .panel .control-legend, .panel .telemetry, .panel .claim-boundary { display: none; }
+  .panel .stat-grid { margin-top: 0; }
   .hole-banner {
     margin-top: max(10px, env(safe-area-inset-top));
     max-width: calc(100vw - 24px);
     padding: 7px 13px;
     font-size: 0.74rem;
   }
-  .result-card { margin-bottom: 18vh; padding: 16px 22px; }
+  .result-card {
+    align-self: center;
+    width: min(300px, calc(100vw - 34px));
+    margin: 0 auto 18vh;
+    padding: 14px 20px;
+  }
   .mobile-shot-controls {
     display: grid;
     align-self: center;

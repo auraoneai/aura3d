@@ -88,6 +88,12 @@ async function teleport(page: Page, x: number, z: number): Promise<void> {
   }, [x, z]);
 }
 
+async function captureReviewFrame(page: Page, path: string): Promise<void> {
+  await page.evaluate(() => { document.body.dataset.capture = "review"; });
+  await page.screenshot({ path });
+  await page.evaluate(() => { document.body.dataset.capture = "default"; });
+}
+
 /**
  * Teleport next to a pedestal and hold E until the route's real lift
  * interaction completes. Teleport clears stale perception accumulation but
@@ -155,6 +161,11 @@ test("gallery shift moves, sees, occludes, catches, restarts, lifts, and exits",
     const seen = await readEvidence(page);
     expect(seen.detection, "standing in a guard cone must fill the meter").toBeGreaterThan(0.4);
     expect(seen.losRayCount, "cone intercepts must spend LOS raycasts").toBeGreaterThan(0);
+    // Canonical visual-review moment: the live thief is inside a real guard
+    // cone, detection is rising, and the same renderer-owned room/LOS state
+    // proven above fills the frame. This replaces the idle route-primary probe
+    // as the premium-indie comparison artifact.
+    await captureReviewFrame(page, join(REPORT_DIR, "tactical-intercept.png"));
 
     // --- occlusion breaks it: behind the wing wall the meter drains ----------
     await teleport(page, -6.5, 0);
@@ -196,6 +207,11 @@ test("gallery shift moves, sees, occludes, catches, restarts, lifts, and exits",
       return ev?.state === "playing" && (ev.detection ?? 1) === 0 && (ev.exhibitsLifted ?? -1) === 0 && ev?.floor === 1;
     }, undefined, { timeout: 30_000 });
     const restarted = await readEvidence(page);
+    // Playwright can clear a test's output folder after the long browser setup
+    // even though it existed at the start of the test. Recreate this
+    // diagnostic-only parent immediately before writing; it does not affect
+    // the mission state, capture timing, or any assertion.
+    mkdirSync(logDir, { recursive: true });
     writeFileSync(join(logDir, "after-caught-restart.json"), JSON.stringify(restarted, null, 2));
     writeFileSync(join(REPORT_DIR, "playable.json"), JSON.stringify(restarted, null, 2));
 
@@ -238,6 +254,7 @@ test("gallery shift moves, sees, occludes, catches, restarts, lifts, and exits",
     expect(alarm.totalExhibitsLifted).toBe(3);
     expect(alarm.alarmActive, "the third exhibit must activate the alarm return run").toBe(true);
     expect((alarm.audioCues ?? []).join(",")).toContain("guard-alert");
+    await captureReviewFrame(page, join(REPORT_DIR, "alarm-return.png"));
     await teleport(page, 0, -6.3);
     await pump(page, 10);
     const won = await readEvidence(page);
@@ -294,7 +311,7 @@ test("gallery shift pause freezes the frame loop deterministically", async ({ pa
     mkdirSync(REPORT_DIR, { recursive: true });
     writeFileSync(join(REPORT_DIR, "pause.json"), `${JSON.stringify({ pausedFrame, stillPaused, resumed }, null, 2)}\n`);
     const binding = routeSourceBinding();
-    const files = ["playable.json", "mission-touch.json", "pause.json"];
+    const files = ["playable.json", "mission-touch.json", "pause.json", "tactical-intercept.png", "alarm-return.png"];
     const artifacts = files.map((file) => ({ path: `${REPORT_DIR}/${file}`, sha256: sha256(`${REPORT_DIR}/${file}`) }));
     writeFileSync(join(REPORT_DIR, "browser-evidence.json"), `${JSON.stringify({
       schema: "aura3d.gallery-shift.playable-evidence/1.0",

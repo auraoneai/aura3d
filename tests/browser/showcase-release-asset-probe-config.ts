@@ -6,9 +6,9 @@ export type ProbeAssetId =
   | "bankShotBall04" | "bankShotBall05" | "bankShotBall06" | "bankShotBall07"
   | "bankShotBall08" | "bankShotBall09" | "bankShotBall10" | "bankShotBall11"
   | "bankShotBall12" | "bankShotBall13" | "bankShotBall14" | "bankShotBall15"
-  | "rooftopCourt" | "rooftopBackboard" | "rooftopRim" | "rooftopBall" | "rooftopDefender"
+  | "rooftopCourt" | "rooftopBackboard" | "rooftopRim" | "rooftopBall" | "rooftopShooter" | "rooftopDefender" | "rooftopLayupScorer"
   | "vaultBreakersTable" | "vaultBreakersMechanisms" | "vaultBreakersBall" | "vaultBreakersFlipper" | "vaultBreakersVaultDoor"
-  | "galleryShiftMuseumInterior" | "galleryShiftPedestal" | "galleryShiftExhibitA" | "galleryShiftExhibitB" | "galleryShiftExhibitC" | "galleryShiftDisplayCase"
+  | "galleryShiftMuseumInterior" | "galleryShiftCutawayMuseumWorld" | "galleryShiftPedestal" | "galleryShiftExhibitA" | "galleryShiftExhibitB" | "galleryShiftExhibitC" | "galleryShiftDisplayCase"
   | "deepRecoverySub" | "deepRecoveryWreckHull" | "deepRecoveryCrateStandard" | "deepRecoveryCrateHeavy" | "deepRecoveryBuoyBeacon"
   | "patrolWingPlane" | "patrolWingDroneA" | "patrolWingDroneB" | "patrolWingPadBeacon"
   | "showcaseExpressiveRobot"
@@ -19,16 +19,26 @@ export type ProbeAssetId =
   | "neonCourierAvatar"
   | "neonBarricadeProp"
   | "neonStreetLampProp"
+  | "neonRainGardenArenaBackdrop"
+  | "neonRainCourierHero"
+  | "neonCrownMothElite"
   | "auroraLanderProbe"
   | "auroraPadBeacon"
+  | "auroraExtractionBayBackdrop"
+  | "auroraExtractionLanderHero"
   | "gravityPostMailPod"
   | "gravityPostDockBeacon"
+  | "gravityPostFreightDistrict"
+  | "pulseReactorEncounterWorld"
+  | "pulseTerminalSentry"
+  | "pulseRunnerCraft"
   | "courierVan"
   | "courierParcel"
   | "courierTrafficSedan"
   | "courierTrafficHatch"
   | "courierZoneAwning"
   | "courierZoneBollard"
+  | "siegeGolfCourseWorld"
   | "siegeGolfBall"
   | "siegeWoodenCrate"
   | "siegeWoodenBarrel"
@@ -57,6 +67,9 @@ export type ProbeAssetId =
   | "showcaseArcadeCabinet"
   | "showcaseArcadeController"
   | "showcaseBlockfallCabinet"
+  | "blockfallReactorArenaBackdrop"
+  | "blockfallReactorMechanicHero"
+  | "blockfallReactorPlasmaRival"
   | "showcaseCityVehicle"
   | "showcaseOrangeIndustrialRobot"
   | "showcaseParticleCore"
@@ -70,12 +83,18 @@ export type ProbeAssetId =
   | "showcaseSideScrollerPlatformLevel"
   | "showcaseTexturedSportsCar"
   | "showcaseTsukubaCircuit"
+  | "turboFormulaCircuit"
   | "showcaseVoxelBuilding"
   | "showcaseWalkAnimatedGirl"
   | "showcaseKenneyNeonRaceCircuit"
   | "showcaseKenneyRaceCarRed"
   | "showcaseCc0FormulaRaceCar"
   | "showcaseCcByFormulaOpponent"
+  | "skylineWinterParallaxBackdrop"
+  | "skylineArcticRunnerHero"
+  | "skylineIceLedgeLong"
+  | "skylineIceLedgeMedium"
+  | "skylineIceLedgeCompact"
   | "showcaseKenneyVerdantPlatformerWorld"
   | "showcaseKenneyOobiPlatformerHero";
 
@@ -104,9 +123,9 @@ export const PROBE_ASSETS = [
   "bankShotBall04", "bankShotBall05", "bankShotBall06", "bankShotBall07",
   "bankShotBall08", "bankShotBall09", "bankShotBall10", "bankShotBall11",
   "bankShotBall12", "bankShotBall13", "bankShotBall14", "bankShotBall15",
-  "rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopDefender",
+  "rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopShooter", "rooftopDefender", "rooftopLayupScorer",
   "vaultBreakersTable", "vaultBreakersMechanisms", "vaultBreakersBall", "vaultBreakersFlipper", "vaultBreakersVaultDoor",
-  "galleryShiftMuseumInterior", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase",
+  "galleryShiftMuseumInterior", "galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase",
   "deepRecoverySub", "deepRecoveryWreckHull", "deepRecoveryCrateStandard", "deepRecoveryCrateHeavy", "deepRecoveryBuoyBeacon",
   "patrolWingPlane", "patrolWingDroneA", "patrolWingDroneB", "patrolWingPadBeacon",
   "showcaseExpressiveRobot",
@@ -117,16 +136,26 @@ export const PROBE_ASSETS = [
   "neonCourierAvatar",
   "neonBarricadeProp",
   "neonStreetLampProp",
+  "neonRainGardenArenaBackdrop",
+  "neonRainCourierHero",
+  "neonCrownMothElite",
   "auroraLanderProbe",
   "auroraPadBeacon",
+  "auroraExtractionBayBackdrop",
+  "auroraExtractionLanderHero",
   "gravityPostMailPod",
   "gravityPostDockBeacon",
+  "gravityPostFreightDistrict",
+  "pulseReactorEncounterWorld",
+  "pulseTerminalSentry",
+  "pulseRunnerCraft",
   "courierVan",
   "courierParcel",
   "courierTrafficSedan",
   "courierTrafficHatch",
   "courierZoneAwning",
   "courierZoneBollard",
+  "siegeGolfCourseWorld",
   "siegeGolfBall",
   "siegeWoodenCrate",
   "siegeWoodenBarrel",
@@ -135,8 +164,12 @@ export const PROBE_ASSETS = [
   "showcaseArcadeCabinet",
   "showcaseArcadeController",
   "showcaseBlockfallCabinet",
+  "blockfallReactorArenaBackdrop",
+  "blockfallReactorMechanicHero",
+  "blockfallReactorPlasmaRival",
   "showcaseTexturedSportsCar",
   "showcaseTsukubaCircuit",
+  "turboFormulaCircuit",
   "showcaseWalkAnimatedGirl",
   "showcaseCityVehicle",
   "showcaseSideScrollerWorld",
@@ -152,6 +185,11 @@ export const PROBE_ASSETS = [
   "showcaseKenneyRaceCarRed",
   "showcaseCc0FormulaRaceCar",
   "showcaseCcByFormulaOpponent",
+  "skylineWinterParallaxBackdrop",
+  "skylineArcticRunnerHero",
+  "skylineIceLedgeLong",
+  "skylineIceLedgeMedium",
+  "skylineIceLedgeCompact",
   "showcaseKenneyVerdantPlatformerWorld",
   "showcaseKenneyOobiPlatformerHero",
   "turboRaceCar",
@@ -333,11 +371,39 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     fov: 32,
     azimuth: 0.16,
     elevation: 0.1,
-    minForegroundWidth: 110,
+    minForegroundWidth: 90,
     minForegroundHeight: 220,
     orientation: {
       forwardAxis: "+Z", upAxis: "+Y",
-      message: "The hash-bound original Rooftop Buckets defender standee is presented +Y-up and front-facing. The route's deterministic telegraph controls its pose; no animation or reusable defender system is inferred."
+      message: "The hash-bound original Rooftop Buckets contest sculpture is presented +Y-up and front-facing. Its planted split stance, raised hands, and contest silhouette are static; the route's deterministic telegraph translates it, with no skeleton, animation, or reusable defender system inferred."
+    }
+  },
+  rooftopShooter: {
+    targetHeight: 2.4,
+    cameraTargetHeight: 2.4,
+    padding: 1.42,
+    fov: 32,
+    azimuth: 0.16,
+    elevation: 0.1,
+    minForegroundWidth: 90,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound original Rooftop Buckets release sculpture is presented +Y-up and front-facing. Its planted bent-knee stance and high shooting-hand silhouette are static; the separately typed ball and deterministic route-local flight remain authoritative."
+    }
+  },
+  rooftopLayupScorer: {
+    targetHeight: 2.4,
+    cameraTargetHeight: 2.4,
+    padding: 1.42,
+    fov: 32,
+    azimuth: 0.16,
+    elevation: 0.1,
+    minForegroundWidth: 90,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The hash-bound Rooftop Buckets number-24 scorer is presented +Y-up and front-facing. Its one-hand layup silhouette is static; the separately typed ball and deterministic route-local flight remain authoritative, with no animation or reusable sports-character claim."
     }
   },
   vaultBreakersTable: {
@@ -422,6 +488,20 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     orientation: {
       forwardAxis: "+Z", upAxis: "+Y",
       message: "The original Gallery Shift museum interior is presented +Y-up at its authored metre scale. It proves the floor-one shell, partitions, and service throat only; route-local colliders and perception queries remain separate gameplay authority."
+    }
+  },
+  galleryShiftCutawayMuseumWorld: {
+    targetMaxDimension: 20.84,
+    cameraTargetMaxDimension: 20.84,
+    padding: 1.04,
+    fov: 39,
+    azimuth: 0,
+    elevation: 1.335,
+    minForegroundWidth: 480,
+    minForegroundHeight: 320,
+    orientation: {
+      forwardAxis: "+Z", upAxis: "+Y",
+      message: "The original CC0 cutaway museum is presented +Y-up and roofless at authored metre scale. It proves visual rooms, door gaps, plinths, layered floors, and the exit landmark only; FloorLayout remains collision, perception, patrol, network, and gameplay authority."
     }
   },
   galleryShiftPedestal: {
@@ -553,6 +633,49 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 80,
     minForegroundHeight: 170
   },
+  neonRainGardenArenaBackdrop: {
+    targetMaxDimension: 8,
+    cameraTargetMaxDimension: 8,
+    padding: 1.02,
+    fov: 36,
+    azimuth: 0,
+    elevation: 1.38,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 410,
+    minForegroundHeight: 240
+  },
+  neonRainCourierHero: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.06,
+    fov: 31,
+    azimuth: 0,
+    elevation: 1.35,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 230,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The project-original direct-overhead rain courier is packaged on an XZ presentation card with the authored pulse-tool direction toward +Z. The hash-bound probe proves static character readability only; movement, aiming, firing, health, and scoring remain route-local."
+    }
+  },
+  neonCrownMothElite: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.06,
+    fov: 31,
+    azimuth: 0,
+    elevation: 1.35,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 230,
+    minForegroundHeight: 190,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The project-original crown moth is packaged on an XZ presentation card with its authored attack direction toward +Z. The hash-bound probe proves static enemy-character readability only; live position, steering, contact, damage, and count remain route-local."
+    }
+  },
   auroraLanderProbe: {
     targetMaxDimension: 3.8,
     cameraTargetMaxDimension: 3.8,
@@ -580,6 +703,33 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 75,
     minForegroundHeight: 130
   },
+  auroraExtractionBayBackdrop: {
+    targetMaxDimension: 8,
+    cameraTargetMaxDimension: 8,
+    padding: 1.02,
+    fov: 36,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 420,
+    minForegroundHeight: 240
+  },
+  auroraExtractionLanderHero: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.08,
+    fov: 31,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 220,
+    minForegroundHeight: 240,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The project-original extraction lander is authored as a front-readable XY presentation card with its visible face toward +Z and antenna-up along +Y; the current hash-bound root probe verifies that static vehicle presentation only."
+    }
+  },
   gravityPostMailPod: {
     targetMaxDimension: 3.8,
     cameraTargetMaxDimension: 3.8,
@@ -606,6 +756,70 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     rotation: [0, 0.52, 0],
     minForegroundWidth: 150,
     minForegroundHeight: 100
+  },
+  gravityPostFreightDistrict: {
+    targetMaxDimension: 12.9,
+    cameraTargetMaxDimension: 12.9,
+    padding: 1.04,
+    fov: 38,
+    azimuth: 0.72,
+    elevation: 0.34,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 360,
+    minForegroundHeight: 230,
+    orientation: {
+      forwardAxis: "+X",
+      upAxis: "+Y",
+      message: "The original static Gravity Post freight district is authored +Y-up with its connected Rust-to-Gale deck extending along +X. The hash-bound probe proves its nine-material loading hangar, crane, cargo, tank-farm, rail, and terminal architecture only; route-local pod motion, gravity wells, sensors, collision, scoring, and camera remain authoritative."
+    }
+  },
+  pulseReactorEncounterWorld: {
+    targetMaxDimension: 11.8,
+    cameraTargetMaxDimension: 11.8,
+    padding: 1.04,
+    fov: 38,
+    azimuth: 0.54,
+    elevation: 0.3,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 380,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The original static Pulse reactor encounter world is authored +Y-up with its continuous deck extending along Z. The probe proves only its connected decorative enclosure, terminal bay, and named fire/impact presentation anchors; collision, lanes, gates, projectiles, and outcomes remain route-local."
+    }
+  },
+  pulseTerminalSentry: {
+    targetMaxDimension: 3.1,
+    cameraTargetMaxDimension: 3.1,
+    padding: 1.08,
+    fov: 31,
+    azimuth: 0.5,
+    elevation: 0.18,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 160,
+    minForegroundHeight: 170,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The original rigid Pulse terminal sentry is presented +Y-up and +Z-forward at its authored metre scale. This proves static armour, mechanics, reactor, optics, wing, and claw readability only; no rig, skin, animation, aiming, damage, or projectile behavior is inferred."
+    }
+  },
+  pulseRunnerCraft: {
+    targetMaxDimension: 3.1,
+    cameraTargetMaxDimension: 3.1,
+    padding: 1.08,
+    fov: 31,
+    azimuth: 0.64,
+    elevation: 0.2,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 180,
+    minForegroundHeight: 90,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The original rigid Pulse runner is presented +Y-up and +Z-forward at its authored metre scale. This proves static nose, foil, chassis, canopy, and drive-pod readability only; lane movement, jump, slide, shield, collision, and scoring remain route-local."
+    }
   },
   courierVan: {
     targetMaxDimension: 4.2,
@@ -697,6 +911,21 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
       message: "The hash-bound bollard is presented +Y-up with a +Z neutral prop view; it remains typed curb and zone dressing, not the gameplay sensor."
     }
   },
+  siegeGolfCourseWorld: {
+    targetMaxDimension: 24,
+    cameraTargetMaxDimension: 24,
+    padding: 1.08,
+    fov: 38,
+    azimuth: 0.62,
+    elevation: 0.42,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 250,
+    minForegroundHeight: 160,
+    orientation: {
+      forwardAxis: "-Z", upAxis: "+Y",
+      message: "The Siege Golf course world is authored in metre-scale +Y-up coordinates, with the tee at positive Z and the fortress target/horizon toward -Z. It is a visual world; documented route-local Rapier felt and rails own collision."
+    }
+  },
   siegeGolfBall: {
     targetMaxDimension: 2.8,
     cameraTargetMaxDimension: 2.8,
@@ -758,6 +987,49 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundHeight: 64
   },
   showcaseBlockfallCabinet: { ...propView, rotation: [0, 0.58, 0] },
+  blockfallReactorArenaBackdrop: {
+    targetMaxDimension: 8,
+    cameraTargetMaxDimension: 8,
+    padding: 1.02,
+    fov: 36,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 420,
+    minForegroundHeight: 240
+  },
+  blockfallReactorMechanicHero: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.08,
+    fov: 31,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 210,
+    minForegroundHeight: 240,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The project-original reactor mechanic is authored as a front-readable XY presentation card with its visible face toward +Z and head-up along +Y; the current hash-bound root probe verifies that static character presentation only."
+    }
+  },
+  blockfallReactorPlasmaRival: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.08,
+    fov: 31,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 240,
+    minForegroundHeight: 230,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The project-original plasma rival is authored as a front-readable XY presentation card with its visible face toward +Z and crown-up along +Y; the current hash-bound root probe verifies that static character presentation only."
+    }
+  },
   showcaseCityVehicle: {
     targetHeight: 2.9,
     padding: 1.18,
@@ -826,6 +1098,11 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     azimuth: 0.58,
     elevation: 0.18,
     rotation: [0, 0.72, 0],
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The current hash-bound Kenney character is mounted upright (+Y) and reviewed with +Z as its neutral route-facing axis; this proves only a readable static character view."
+    },
     minForegroundWidth: 96,
     minForegroundHeight: 160
   },
@@ -919,6 +1196,22 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 224,
     minForegroundHeight: 120
   },
+  turboFormulaCircuit: {
+    targetMaxDimension: 5.8,
+    cameraTargetMaxDimension: 5.8,
+    padding: 1.16,
+    fov: 34,
+    azimuth: 0.64,
+    elevation: 0.56,
+    rotation: [0, -0.32, 0],
+    minForegroundWidth: 224,
+    minForegroundHeight: 120,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The authored circuit declares +Y up and its isolated root probe validates the typed track presentation."
+    }
+  },
   showcaseVoxelBuilding: {
     targetMaxDimension: 3.6,
     cameraTargetMaxDimension: 3.6,
@@ -983,6 +1276,66 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 150,
     minForegroundHeight: 80
   },
+  skylineWinterParallaxBackdrop: {
+    targetMaxDimension: 8,
+    cameraTargetMaxDimension: 8,
+    padding: 1.02,
+    fov: 36,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 420,
+    minForegroundHeight: 220
+  },
+  skylineArcticRunnerHero: {
+    targetMaxDimension: 3.2,
+    cameraTargetMaxDimension: 3.2,
+    padding: 1.08,
+    fov: 32,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 170,
+    minForegroundHeight: 220,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The project-original runner is authored as a front-readable XY sprite plane with its visible face toward +Z and head-up along +Y; the current hash-bound root probe verifies that presentation."
+    }
+  },
+  skylineIceLedgeLong: {
+    targetMaxDimension: 5.2,
+    cameraTargetMaxDimension: 5.2,
+    padding: 1.04,
+    fov: 32,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 360,
+    minForegroundHeight: 90
+  },
+  skylineIceLedgeMedium: {
+    targetMaxDimension: 4.2,
+    cameraTargetMaxDimension: 4.2,
+    padding: 1.04,
+    fov: 32,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 300,
+    minForegroundHeight: 100
+  },
+  skylineIceLedgeCompact: {
+    targetMaxDimension: 3.4,
+    cameraTargetMaxDimension: 3.4,
+    padding: 1.04,
+    fov: 32,
+    azimuth: 0,
+    elevation: 0,
+    rotation: [0, 0, 0],
+    minForegroundWidth: 220,
+    minForegroundHeight: 110
+  },
   showcaseKenneyVerdantPlatformerWorld: {
     // Sized by height, not max dimension. This asset is a wide platformer strip whose
     // real scene-space extent is roughly 91.5 x 14.4 x 10.9, so fitting the largest
@@ -998,9 +1351,9 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     // instead of shrinking the complete 838-unit strip into a 17 px sliver.
     cameraTargetMaxDimension: 0.62,
     // Padding below 1 deliberately crops the extreme horizontal ends of this strip so
-    // the playable band is large enough to inspect. At 1.02 the subject measured
-    // 510x135 px against a 150 px minimum height; 0.86 brings the height above the
-    // minimum while the width stays inside the probe canvas.
+    // the playable band is large enough to inspect. The final compositor deliberately
+    // removed the repeated background mountains, leaving an honest 131-134 px terrain
+    // band at this whole-world probe scale.
     padding: 0.86,
     fov: 34,
     azimuth: 0,
@@ -1010,7 +1363,10 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     // primitive outside the camera frustum.
     rotation: [0, 0, 0],
     minForegroundWidth: 280,
-    minForegroundHeight: 150
+    // This is a wide world strip, not a hero/prop presentation. Require the
+    // retained playable terrain to clear 130 px; the removed decorative peaks
+    // must not be counted as evidence of platform readability.
+    minForegroundHeight: 130
   },
   showcaseKenneyOobiPlatformerHero: {
     targetHeight: 3.0,

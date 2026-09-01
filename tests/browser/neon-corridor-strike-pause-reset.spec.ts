@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
+import { LAMPS } from "../../examples/neon-corridor-strike/src/game/props";
 import { startExampleDevServer } from "./example-dev-server";
 
 test.setTimeout(120_000);
@@ -119,15 +120,18 @@ test("neon-corridor-strike pause freezes every gameplay domain and reset restore
     expect(reset?.enemyBodyPositions).toEqual(initial?.enemyBodyPositions);
     // Deck props re-enter their original resting poses; spring bulbs can be at
     // a different phase on the first solver frame but must return to the same
-    // authored x/z anchors and bounded hang band.
+    // authored x/z anchors and bounded hang band. The source-owned lamp law
+    // may relocate a practical to remain clear of a hostile lane; this gate
+    // deliberately checks the current authored anchors rather than fossilizing
+    // an obsolete placement literal in browser evidence.
     expect(maxPoseDelta(reset?.propBodyPositions.slice(0, 6), initial?.propBodyPositions.slice(0, 6))).toBeLessThan(0.02);
     const resetLamps = reset?.propBodyPositions.slice(6) ?? [];
     expect(resetLamps).toHaveLength(2);
-    expect(Math.abs((resetLamps[0]?.[0] ?? 99) - -2.55)).toBeLessThan(0.02);
-    expect(Math.abs((resetLamps[0]?.[2] ?? 99) - 3.2)).toBeLessThan(0.02);
-    expect(Math.abs((resetLamps[1]?.[0] ?? 99) - 2.55)).toBeLessThan(0.02);
-    expect(Math.abs((resetLamps[1]?.[2] ?? 99) - -4.4)).toBeLessThan(0.02);
-    for (const lamp of resetLamps) {
+    for (const [index, lamp] of resetLamps.entries()) {
+      const spec = LAMPS[index];
+      expect(spec, `missing authored lamp specification ${index}`).toBeDefined();
+      expect(Math.abs((lamp?.[0] ?? 99) - (spec?.anchor[0] ?? 0))).toBeLessThan(0.02);
+      expect(Math.abs((lamp?.[2] ?? 99) - (spec?.anchor[2] ?? 0))).toBeLessThan(0.02);
       expect(lamp[1]).toBeGreaterThan(2.1);
       expect(lamp[1]).toBeLessThan(2.58);
     }

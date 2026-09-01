@@ -4,10 +4,10 @@ export const gameGeometryContract = {
   "routeId": "showcase-skyline-runner",
   "category": "platformer",
   "geometrySource": "asset-mesh-extracted",
-  "sourceReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+  "sourceReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
   "surfaceMap": {
     "assetId": "showcaseKenneyVerdantPlatformerWorld",
-    "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+    "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
     "source": "asset-mesh-extracted",
     "surfaces": [
       {
@@ -1183,20 +1183,20 @@ export const gameGeometryContract = {
       "source": "asset-mesh-extracted",
       "modelBounds": {
         "min": [
-          -15.804,
-          -2,
-          -9
+          -11.692,
+          -3.016,
+          -1.4
         ],
         "max": [
-          822.706,
-          18.05,
-          1.854
+          820.12,
+          17.23,
+          1.4
         ]
       },
       "modelPoint": [
         404.31,
         -1.039,
-        -0.075
+        0
       ],
       "gamePoint": {
         "x": 74.7,
@@ -1246,13 +1246,13 @@ export const gameGeometryContract = {
     },
     "evidence": {
       "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
-      "notes": "Playable surfaces extracted from 511 flat geometric GLB primitive(s) and bound to the current asset hash."
+      "notes": "Playable surfaces extracted from 401 flat geometric GLB primitive(s) and bound to the current asset hash."
     }
   },
   "worldAssetBindings": [
     {
       "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
-      "worldAssetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+      "worldAssetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
       "surfaceSource": "asset-mesh-extracted",
       "confidence": 0.74,
       "surfaceIds": [
@@ -2243,12 +2243,12 @@ export const gameGeometryContract = {
       }
     ],
     "extractionReasons": [
-      "mesh-derived platformer surfaces from 511 geometric primitive(s)",
+      "mesh-derived platformer surfaces from 401 geometric primitive(s)",
       "selected depth-coherent family with 110 primitive(s) at model z 0..0",
-      "excluded 401 primitive(s) narrower than the 0.72 game-unit character footprint",
+      "excluded 291 primitive(s) narrower than the 0.72 game-unit character footprint",
       "selected traversable component with 110 mesh surface(s) spanning 149.4 game units",
       "semantic hints: 110 playable label(s), 0 decorative label(s); hints only affected family ranking",
-      "selected 511 primitive(s) by flat horizontal game-surface geometry; 300 playable and 0 decorative semantic hint(s) remained soft ranking signals",
+      "selected 401 primitive(s) by flat horizontal game-surface geometry; 300 playable and 0 decorative semantic hint(s) remained soft ranking signals",
       "surfaceCount:118",
       "meshPlayableSurfaceCount:110",
       "estimatedCompletionSeconds:170"
@@ -2263,9 +2263,9 @@ export const gameGeometryContract = {
     "maxY": 3.5140000000000002
   },
   "evidence": {
-    "geometryReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "geometryReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "routePrimaryScreenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70"
+    "routePrimaryScreenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d"
   },
   "design": {
     "minPlayableSeconds": 30,
@@ -2277,7 +2277,7 @@ export const gameGeometryContract = {
     "playableSurfaceLayoutValidated": true,
     "playableSurfaceMap": {
       "assetId": "showcaseKenneyVerdantPlatformerWorld",
-      "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+      "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
       "source": "asset-mesh-extracted",
       "surfaces": [
         {
@@ -2510,7 +2510,7 @@ export const gameGeometryContract = {
     "characterWorldScaleCompatible": true,
     "styleCompatible": true,
     "primitivePrimaryWorldRejected": true,
-    "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "assetPairEvidence": {
       "category": "platformer",
       "assets": [
@@ -2519,14 +2519,14 @@ export const gameGeometryContract = {
       ],
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
       "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-      "screenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
+      "screenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
       "geometryEvidence": {
         "category": "platformer",
         "kind": "platformer-playable-surface-map",
         "source": "asset-mesh-extracted",
-        "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-sGjCGS/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+        "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-        "routePrimaryScreenshotSha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
+        "routePrimaryScreenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
         "assets": [
           {
             "id": "showcaseKenneyOobiPlatformerHero",
@@ -2534,7 +2534,7 @@ export const gameGeometryContract = {
           },
           {
             "id": "showcaseKenneyVerdantPlatformerWorld",
-            "hash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"
+            "hash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"
           }
         ]
       },
@@ -2542,7 +2542,7 @@ export const gameGeometryContract = {
       "checks": [
         {
           "id": "binding-overlap",
-          "verdict": "pass"
+          "verdict": "fail"
         },
         {
           "id": "contact",
@@ -2561,9 +2561,11 @@ export const gameGeometryContract = {
           "verdict": "pass"
         }
       ],
-      "verdict": "pass",
+      "verdict": "fail",
       "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
-      "blockers": []
+      "blockers": [
+        "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface"
+      ]
     }
   }
 } as const;

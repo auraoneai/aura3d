@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-23T22:47:54.458Z",
+  "generatedAt": "2026-08-27T04:33:22.816Z",
   "appId": "showcase-mech-hangar",
   "route": "/apps/showcase-mech-hangar/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "0759a5df7b92f4986e66785b8b52d13d0268da6f0ce3f7946b6ea8b1bb2c5485",
+  "routeSourceSha256": "9c2552c30d418b6b4e2395ca0f69fd916949f50c535dcde0a910f660fb5c8932",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -123,7 +123,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 10,
+    "sourceOccurrences": 12,
     "primitiveBudget": 32,
     "role": "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only",
     "status": "no-primitive-primary-subjects"
@@ -163,7 +163,7 @@
   },
   "performance": {
     "schema": "aura3d-mech-hangar-performance/1.0",
-    "generatedAt": "2026-08-23T22:38:51.916Z",
+    "generatedAt": "2026-08-27T04:32:26.803Z",
     "producer": "apps/showcase-mech-hangar/scripts/write-performance-report.ts",
     "producerSourceSha256": "ea6f8122d0ee660f3082adb6f7d5688ddcd7e7dc365116610ec348bc9f9b7867",
     "routeSourceFiles": [
@@ -175,7 +175,7 @@
       "apps/showcase-mech-hangar/src/parts-generated.ts",
       "apps/showcase-mech-hangar/src/stats.ts"
     ],
-    "routeSourceSha256": "8891d9f894e39a3d8d8bc0746733ab5295b75bffd91bf2fbcd1c92715923659a",
+    "routeSourceSha256": "897097850b267b3195b3b8e3cd4a37eb5e2ac02ff6a62dd70352493da2e28926",
     "scope": "Headless fixed-step route-local combat timing plus browser-observed root createAuraApp hangar draw calls. GPU frame-time parity is not claimed.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -184,9 +184,9 @@
       "hangarDrawCalls": 300
     },
     "observed": {
-      "simulationP95Ms": 0.0014,
+      "simulationP95Ms": 0.0018,
       "matrixSelections": 16,
-      "hangarDrawCalls": 42,
+      "hangarDrawCalls": 41,
       "renderedWidth": 1665,
       "renderedHeight": 1350,
       "compatibilityAccepted": 16,
@@ -197,13 +197,13 @@
   },
   "deploy": {
     "schema": "aura3d.mech-hangar.deploy/1.0",
-    "generatedAt": "2026-08-23T22:47:53.713Z",
+    "generatedAt": "2026-08-27T04:32:28.179Z",
     "producer": "apps/showcase-mech-hangar/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "d4bb5978c7543cbbea158225544970968317e86dd39f56cf011c54cc767dda6d",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "2fb0030eba24a37d575e840111914a0d30934b8eeb77a1bc6481bb6abb19d12f",
-    "sourceTreeSha256": "d9f615d4645ce15e6853e62752e180eaaba43a104183f05a7c01e8bbd5d7cccf",
+    "distTreeSha256": "3ddc649d635796971d532598634aba817b9e3b22f3cb89004bc0a0727b3f46c7",
+    "sourceTreeSha256": "e2ed6565021c3057043253474016a930e839950758038de44308afcac1fb9005",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",
@@ -355,7 +355,7 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/mech-hangar/hangar-build.png",
-        "sha256": "a7d24594d2668f8a05fc299f4cdc6de700e002fcdfb33c7581b2caf599a3768a"
+        "sha256": "a5a5b332ba1aff1ac342c9bdef19af03c7dcc87bd39f2a9dd948f2ecb5455e91"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-stat-panel.png",
@@ -363,51 +363,51 @@
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-chassis.png",
-        "sha256": "dcfb7e1cf3cea144e53278c9227624ec6648ba7c03010a163318c7cd805a318c"
+        "sha256": "a17705133e197f91e20d49e76201c7ce693400c09ede50534a11f6a7a2fc4775"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-arms.png",
-        "sha256": "8aedb45c74b7a2b15ba1dcd7348cf9fb935138f2543a9a46306a2ca7d4c41a09"
+        "sha256": "50f485559c6043e442917f67439f6089d3e522accdcc786e205ec9555da1400c"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-legs.png",
-        "sha256": "0ddbb2a2e0c4de39d45008bb569126e9ef215167b1457093bea1acaf1c95d34b"
+        "sha256": "6c3d2fe83d8edddf0f0ad1ebfb552a3edf82e4e5d2d15a7c1e5ac0dea21fa0dc"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-weapon.png",
-        "sha256": "c1bf8dd8bb0ef13cb1c6a81dfab774856f1b14c7741ef8d89c840adffbc64024"
+        "sha256": "98556b93354cee21102a38bf4b478a3eb487c48158cb12b4bfcaf06c2b0a5737"
       },
       {
         "path": "tests/reports/mech-hangar/arena-opening.png",
-        "sha256": "9e0f43c6d9e0dc32a97e27a43a309ea2745ed4f9c518687c65df4ed573aa5f51"
+        "sha256": "05cbfc6e7c884ca77f55dd41e7b4379209392f3a6e6911b923f22d389c396300"
       },
       {
         "path": "tests/reports/mech-hangar/arena-hit.png",
-        "sha256": "a992e589812c401118cb4f76fab4248bb78d38e962aa0e9f659378307f6eff81"
+        "sha256": "7087a4a06ff0250cdb92d32cc3774fb9e49697da92166a839de24b9636c9b699"
       },
       {
         "path": "tests/reports/mech-hangar/arena-paused.png",
-        "sha256": "e334d6d8946ae1151794b9a8eff86a833e3b042ceff007d9aed19374361ffb82"
+        "sha256": "e4320dfab205dfb4181b35bfa7c1d1a496ff8195197811927341375014d6a882"
       },
       {
         "path": "tests/reports/mech-hangar/ko-card.png",
-        "sha256": "457ed4340623d4eccbdabe2ef8cb60731e8469971f38f4d21344e6175fc793a8"
+        "sha256": "7087a4a06ff0250cdb92d32cc3774fb9e49697da92166a839de24b9636c9b699"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-mobile.png",
-        "sha256": "c423bfa5808d52befb3c144e5cd6abfe295430ca7a07211722f7a4d1d8f95322"
+        "sha256": "03b981cbf5d5d04c878a2848454bbc6a9f85f7fd2e2f87b6b1b5ea4299d768fa"
       },
       {
         "path": "tests/reports/mech-hangar/arena-mobile.png",
-        "sha256": "271ec0ffbc0d0eb055f532df49af85c9d005ca17837e006cc0cbdc097ccb3b39"
+        "sha256": "e8dc84db8cbf98534d0aa4d21b3d517f775a4afb6c0a57c6394c49f7f1d592f5"
       },
       {
         "path": "tests/reports/mech-hangar/arena-reduced-motion.png",
-        "sha256": "cc5b9df0fc576009c8d7dea365853b8a04e5de0049cc2d6af33d55b81ed9d123"
+        "sha256": "25c2200c98a930bd662e18d31257d27b1a501953f70a62ce646540207f84928c"
       },
       {
         "path": "tests/reports/mech-hangar/part-matrix.json",
-        "sha256": "7886a424a8ffef362226abee0bf2d1eb992ca3248070ed4724d3fde38f7447bc"
+        "sha256": "9af5b3751052c559171f8c51b4dcf29bc6e6967fb08383b6cbf399acf6fb328a"
       }
     ],
     "browserReceipts": [

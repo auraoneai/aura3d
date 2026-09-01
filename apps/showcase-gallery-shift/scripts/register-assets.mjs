@@ -15,7 +15,7 @@ execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoR
 execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
 
 const models = [
-  ["galleryShiftMuseumInterior", "environment", "Original CC0 metre-scale stylized flat-color museum environment establishing the Marble Hall floor, walls, partitions, cover, and service-exit route; visible geometry is paired with matching route-local colliders."],
+  ["galleryShiftMuseumInterior", "environment", "Original CC0 metre-scale stylized flat-color museum environment establishing differentiated foyer, rotunda, archive, treasury, and service-vault rooms with readable portal circulation, exhibit coves, and illumination anchors. Its intentional untextured procedural materials are a stylized-material rationale; FloorLayout remains collision and LOS authority."],
   ["galleryShiftPedestal", "prop", "Original CC0 metre-scale readable prop used as a visible exhibit objective fixture and LOS occluder."],
   ["galleryShiftExhibitA", "prop", "Original CC0 readable gold-ring lunar-orb prop used as the first theft objective at a verified 0.44 metre extent."],
   ["galleryShiftExhibitB", "prop", "Original CC0 readable stacked-statue prop used as the second theft objective at a verified 0.48 metre height."],
@@ -42,7 +42,10 @@ for (const [id, role, suitability] of models) {
   ];
   if (hasProbe) args.push("--rendered-probe-json", probe);
   const orientation = resolve(probeDir, `${id}.orientation.json`);
-  if (existsSync(orientation)) args.push("--orientation-json", orientation);
+  // Orientation receipts are hash-bound.  A rebuilt source must first enter
+  // the typed map as a candidate so the probe producer can capture the new
+  // bytes; carrying an old receipt forward would be false provenance.
+  if (hasProbe && existsSync(orientation)) args.push("--orientation-json", orientation);
   execFileSync("node", [cli, ...args], { cwd: repoRoot, stdio: ["ignore", "ignore", "inherit"] });
   console.log(`registered ${id} (${hasProbe ? "release + retained probe" : "candidate; probe pending"})`);
 }

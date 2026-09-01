@@ -1,0 +1,25 @@
+{
+  "schema": "aura3d-gravity-post-freight-district-preview/1.0",
+  "generatedBy": "apps/showcase-gravity-post/scripts/capture-freight-district-preview.mjs",
+  "route": "/apps/showcase-gravity-post/scripts/freight-district-preview/index.html",
+  "screenshot": "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.preview.png",
+  "screenshotSha256": "sha256-ead8d3aeb2d0625977d5deb70457c61a8a85baf8afe51247aa77fe35df874663",
+  "viewport": [
+    1440,
+    900
+  ],
+  "evidence": {
+    "ready": true,
+    "renderer": "createAuraApp root safe API",
+    "typedAsset": "candidateAssets.gravityPostFreightDistrictCandidate",
+    "sharedRegistrationUsed": false,
+    "diagnostics": {
+      "drawCalls": 18,
+      "renderSize": [
+        1440,
+        900
+      ],
+      "backend": "production-runtime"
+    }
+  }
+}

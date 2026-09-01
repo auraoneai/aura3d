@@ -39,6 +39,7 @@ interface GSEvidence {
   readonly state?: string;
   readonly detection?: number;
   readonly guardStates?: readonly { id: string; state: string; x: number; z: number; yaw: number }[];
+  readonly guardVisionSamples?: readonly { id: string; x: number; z: number; yaw: number; seesThief: boolean }[];
   readonly exhibitsLifted?: number;
   readonly exhibitsTotal?: number;
   readonly totalExhibitsLifted?: number;
@@ -70,10 +71,10 @@ async function pump(page: Page, frames: number): Promise<void> {
   }, frames);
 }
 
-async function teleport(page: Page, x: number, z: number): Promise<void> {
-  await page.evaluate(([tx, tz]) => {
-    (window as unknown as { __GS_TELEPORT__?: (x: number, z: number) => unknown }).__GS_TELEPORT__?.(tx, tz);
-  }, [x, z]);
+async function teleport(page: Page, x: number, z: number, preserveDetection = false): Promise<void> {
+  await page.evaluate(([tx, tz, preserve]) => {
+    (window as unknown as { __GS_TELEPORT__?: (x: number, z: number, preserveDetection?: boolean) => unknown }).__GS_TELEPORT__?.(tx, tz, preserve === 1);
+  }, [x, z, preserveDetection ? 1 : 0]);
 }
 
 function dataUrlVariance(dataUrl: string): number {
@@ -111,7 +112,7 @@ test("gallery shift hall renders, patrols walk, cones overlay, and the review se
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(server.origin + "/apps/showcase-gallery-shift/", { waitUntil: "commit", timeout: 120_000 });
+    await page.goto(server.origin + "/apps/showcase-gallery-shift/?capture=review", { waitUntil: "commit", timeout: 120_000 });
     await waitForReady(page);
     const boot = await readEvidence(page);
     expect(boot.backend).toBe("rapier");
@@ -140,6 +141,9 @@ test("gallery shift hall renders, patrols walk, cones overlay, and the review se
     const sneaking = await readEvidence(page);
     expect(sneaking.thiefGait).toBe("sneak");
     await page.screenshot({ path: join(REPORT_DIR, "mid-sneak-desktop.png") });
+    // This is supporting evidence only. The canonical comparison matrix is
+    // written after the real line-of-sight intercept below so a failed partial
+    // run cannot replace it with a weaker traversal frame.
     const midSneak = await page.evaluate(() => (window as unknown as { __GS_SHOT__?: () => string }).__GS_SHOT__?.() ?? "");
     expect(dataUrlVariance(midSneak), "mid-sneak capture must not be blank").toBeGreaterThan(0.4);
 
@@ -152,27 +156,35 @@ test("gallery shift hall renders, patrols walk, cones overlay, and the review se
 
     // Test-control route: debug APIs are enabled, but release artifacts never
     // render the optional debug=visual perception overlays.
-    await page.goto(server.origin + "/apps/showcase-gallery-shift/?debug=1", { waitUntil: "commit", timeout: 120_000 });
+    await page.goto(server.origin + "/apps/showcase-gallery-shift/?debug=1&capture=review", { waitUntil: "commit", timeout: 120_000 });
     await waitForReady(page);
-    await pump(page, 30);
+    // Advance guard-1 from the north edge into the central west lane before
+    // staging the real LOS intercept. This keeps the proven gameplay moment
+    // inside the strongest part of the museum composition instead of clipping
+    // both actors against the far wall.
+    await pump(page, 300);
 
     // Near-detection: stand in guard-1's cone; release frames show geometry,
     // patrol pose, and detection state without debug cones.
-    const intercept = await page.evaluate(() => {
-      const ev = (window as unknown as { __GALLERY_SHIFT_EVIDENCE__?: GSEvidence }).__GALLERY_SHIFT_EVIDENCE__;
-      const guard = ev?.guardStates?.[0];
-      if (!guard) return { x: -8.5, z: 1.5 };
-      return { x: guard.x + Math.sin(guard.yaw) * 3, z: guard.z + Math.cos(guard.yaw) * 3 };
-    });
-    await teleport(page, intercept.x, intercept.z);
     let detection = 0;
-    for (let batch = 0; batch < 20 && detection < 0.4; batch += 1) {
-      await pump(page, 20);
+    for (let batch = 0; batch < 60 && detection < 0.4; batch += 1) {
+      // Track the moving patrol in short steps. A single teleport followed by
+      // a long pump lets the guard walk away from the staged intercept and can
+      // turn a nominal cone shot into a mechanically false capture.
+      const intercept = await page.evaluate(() => {
+        const ev = (window as unknown as { __GALLERY_SHIFT_EVIDENCE__?: GSEvidence }).__GALLERY_SHIFT_EVIDENCE__;
+        const guard = ev?.guardStates?.[0];
+        if (!guard) return { x: -8.5, z: 1.5 };
+        return { x: guard.x + Math.sin(guard.yaw) * 3, z: guard.z + Math.cos(guard.yaw) * 3 };
+      });
+      await teleport(page, intercept.x, intercept.z, true);
+      await pump(page, 5);
       detection = (await readEvidence(page)).detection ?? 0;
     }
     const nearDetection = await readEvidence(page);
     expect(nearDetection.detection).toBeGreaterThan(0.3);
     expect(nearDetection.losRayCount ?? 0).toBeGreaterThan(0);
+    expect(nearDetection.guardVisionSamples?.some((sample) => sample.id === "guard-1" && sample.seesThief)).toBe(true);
     await page.screenshot({ path: join(REPORT_DIR, "near-detection-desktop.png") });
 
     // Caught view: hold the sighting until the meter fills.

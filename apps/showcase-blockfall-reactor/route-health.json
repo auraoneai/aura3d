@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-24T06:09:22.863Z",
+  "generatedAt": "2026-08-30T02:18:00.678Z",
   "appId": "showcase-blockfall-reactor",
   "route": "/apps/showcase-blockfall-reactor/",
   "classification": "prototype-blocked",
@@ -14,6 +14,12 @@
   },
   "primaryAssets": [
     {
+      "typedRef": "assets.blockfallReactorArenaBackdrop",
+      "role": "primaryWorld",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    },
+    {
       "typedRef": "assets.showcaseBlockfallCabinet",
       "role": "primaryWorld",
       "status": "typed-primary-asset",
@@ -21,7 +27,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 47,
+    "sourceOccurrences": 37,
     "primitiveBudget": 40,
     "role": "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
     "status": "gameplay-geometry-with-typed-primary-cabinet"
@@ -105,7 +111,7 @@
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
     "sourceReview": "apps/showcase-blockfall-reactor/src/main.ts",
-    "sourceSha256": "195715c1dc926c84ddf698dbbbb5f25f5f5455a1db1993ff24f9426eb17ba1ef",
+    "sourceSha256": "5643de4c3e93c6c5106b0a6362afc95096423848bfd21d85864a8239884fe9a9",
     "exactAcceptanceStates": {
       "report": "tests/reports/blockfall-reactor-fx/acceptance-states.json",
       "source": "mounted public game.fallingBlocks transitions",
@@ -117,32 +123,32 @@
         "play": {
           "checksum": "756ca627",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-play.png",
-          "screenshotSha256": "fa69faf3986854cca3162220a582ae1379627a22bd0f40020c852db84834cb65"
+          "screenshotSha256": "c5db3106db0aac106d08f6e2d3c26ad8ff724b935e1516278f8ec529ddb88844"
         },
         "single-clear": {
           "checksum": "76ab5f2d",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-single-clear.png",
-          "screenshotSha256": "6c03aa6a4deb5f4927f74dff742a026549c1fa0f983ecbc04498c6af7d2c4794"
+          "screenshotSha256": "d5600115f4dd1cb4d0164a190941ac422f33cf0bfb948c066107685958c4df36"
         },
         "quad": {
-          "checksum": "81f35c5f",
+          "checksum": "b9fd6bed",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-quad.png",
-          "screenshotSha256": "9d97881bd853149883893bc9d746135900dbda478c1b1217821ab34221d5417b"
+          "screenshotSha256": "adb4e10a54ebd5e728cd84cefffed1a71b81c34c653e4f997b04c2d0e4469969"
         },
         "level-up": {
           "checksum": "391498a2",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-level-up.png",
-          "screenshotSha256": "add240f842032a1683206c20cf8821a6aeb2b0bb9e6e2e48d873224d3c45e6c6"
+          "screenshotSha256": "ea7e2570f12c0859aea3145a925c4d12a442126a731b65313b01c78338bd1999"
         },
         "danger": {
           "checksum": "d9b9746f",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-danger.png",
-          "screenshotSha256": "325cc52844ffaa34323d6e05ef25fe3b3eb969f842b79aef51192c8dc5e0c3fa"
+          "screenshotSha256": "b28523f03126aea7ef4f2c8c4e19be8e9560cddc963b11c34231e17de97948d2"
         },
         "game-over": {
           "checksum": "dd2a74fc",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-game-over.png",
-          "screenshotSha256": "2726580ecd0156203fe3391f03dbd088c79b3d737edde00a295af5f49ddf21df"
+          "screenshotSha256": "028a870e4f7d43f7686c0d5664113ddc706fd7bc4a3db29d750ca6eb398675d4"
         }
       }
     },
@@ -156,9 +162,12 @@
     "gameplayBeforeScreenshot": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before-input.png",
     "gameplayAfterInputScreenshot": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
     "releaseAssetProbes": {
+      "blockfallReactorArenaBackdrop": "tests/reports/showcase-release-asset-probes/blockfallReactorArenaBackdrop.json",
+      "blockfallReactorMechanicHero": "tests/reports/showcase-release-asset-probes/blockfallReactorMechanicHero.json",
+      "blockfallReactorPlasmaRival": "tests/reports/showcase-release-asset-probes/blockfallReactorPlasmaRival.json",
       "showcaseBlockfallCabinet": "tests/reports/showcase-release-asset-probes/showcaseBlockfallCabinet.json"
     },
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset showcaseBlockfallCabinet"
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset blockfallReactorArenaBackdrop --asset blockfallReactorMechanicHero --asset blockfallReactorPlasmaRival --asset showcaseBlockfallCabinet"
   },
   "physics": {
     "backend": "rapier",

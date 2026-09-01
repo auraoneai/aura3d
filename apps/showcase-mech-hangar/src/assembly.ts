@@ -21,10 +21,12 @@ import { resolvePartAsset, selectedParts, type BuildSelection, type PartDef } fr
  * silhouette differences and never normalizes unrelated catalog models.
  */
 const MOUNT_TARGETS = {
-  chassis: { targetHeight: 0.9 },
-  arms: { targetMaxDimension: 2.0 },
-  legs: { targetHeight: 0.72 },
-  weapon: { targetMaxDimension: 1.1 }
+  chassis: { targetHeight: 1.05 },
+  // Keep the largest arm variant inside the authored 2.2 m mech envelope;
+  // the visual arena does not need an oversized attachment to read the hit.
+  arms: { targetMaxDimension: 2.18 },
+  legs: { targetHeight: 0.84 },
+  weapon: { targetMaxDimension: 1.25 }
 } as const;
 
 export interface ScaledPartPlacement {

@@ -31,7 +31,8 @@ export function updatePlayer(
   input: GameInputController,
   physics: AuraPhysicsRuntime,
   playerBody: AuraBodyHandle,
-  dt: number
+  dt: number,
+  motionCatchup = 1
 ): void {
   const grounded = physics.queries.raycast(
     [playerBody.position()[0], playerBody.position()[1], playerBody.position()[2]],
@@ -46,7 +47,12 @@ export function updatePlayer(
   const wishX = right[0] * input.axis("moveX") + forward[0] * input.axis("moveZ");
   const wishZ = right[2] * input.axis("moveX") + forward[2] * input.axis("moveZ");
   const length = Math.hypot(wishX, wishZ);
-  const speed = state.sprinting ? SPRINT_SPEED : WALK_SPEED;
+  // The route keeps Rapier on a bounded 50 ms step for stability. Under a
+  // cold software-rendered frame, however, one render can represent more than
+  // one of those steps. Compensate player velocity for at most one missed step
+  // so keyboard travel remains tied to elapsed time without allowing a large
+  // tab-resume delta to tunnel through the corridor hull.
+  const speed = (state.sprinting ? SPRINT_SPEED : WALK_SPEED) * Math.max(1, Math.min(2, motionCatchup));
   const vx = length > 0.001 ? (wishX / length) * speed : 0;
   const vz = length > 0.001 ? (wishZ / length) * speed : 0;
   const at = playerBody.position();

@@ -6,7 +6,7 @@
   --neon-magenta: #ff4fd8;
   --neon-cyan: #35e6ff;
   --neon-amber: #ffc857;
-  --hud-panel: rgba(7, 10, 22, 0.78);
+  --hud-panel: rgba(7, 10, 22, 0.68);
   --hud-edge: rgba(53, 230, 255, 0.42);
 }
 
@@ -41,6 +41,33 @@ body {
   z-index: 10;
 }
 
+/* Review captures keep a restrained HUD in the frame, matching the named
+ * action reference while leaving the typed courier and live swarm dominant.
+ * The large transition banner, touch chrome, and authoring controls stay out
+ * of the blind frame; all remaining values are route-state readouts. */
+body[data-capture="review"] #hud { display: block; }
+body[data-capture="review"] .ns-banner,
+body[data-capture="review"] .ns-doors,
+body[data-capture="review"] .ns-help,
+body[data-capture="review"] .ns-burst-button,
+body[data-capture="review"] .ns-touch,
+body[data-capture="review"] .ns-vignette { display: none !important; }
+body[data-capture="review"] .ns-panel {
+  background: linear-gradient(135deg, rgba(3, 17, 28, 0.86), rgba(13, 33, 44, 0.58));
+  border-color: rgba(130, 245, 226, 0.48);
+  border-radius: 2px;
+  box-shadow: 0 0 28px rgba(26, 219, 199, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+body[data-capture="review"] .ns-panel--top-left { top: 18px; left: 20px; min-width: 178px; padding: 8px 10px; }
+body[data-capture="review"] .ns-panel--top-right { top: 18px; right: 20px; }
+body[data-capture="review"] .ns-eyebrow { color: #ff6d8f; }
+body[data-capture="review"] .ns-title { color: #f5fff8; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+body[data-capture="review"] .ns-stats { font-size: 10px; gap: 1px 10px; }
+body[data-capture="review"] .ns-hp { margin-top: 7px; }
+body[data-capture="review"] .ns-stats strong { color: #d9fff2; }
+body[data-capture="review"] .ns-hp b { background: #ff6d8f; border-color: #ff6d8f; box-shadow: 0 0 8px rgba(255, 109, 143, 0.62); }
+body[data-capture="review"] .ns-combo { background: rgba(255, 109, 143, 0.2); }
+
 .ns-panel {
   position: absolute;
   background: var(--hud-panel);
@@ -54,7 +81,8 @@ body {
 .ns-panel--top-left {
   top: 14px;
   left: 14px;
-  min-width: 210px;
+  min-width: 184px;
+  padding: 9px 12px;
 }
 
 .ns-panel--top-right {
@@ -73,8 +101,8 @@ body {
 }
 
 .ns-title {
-  margin: 0 0 8px;
-  font-size: 15px;
+  margin: 0 0 6px;
+  font-size: 13px;
   letter-spacing: 0.04em;
   color: #eef4ff;
 }
@@ -82,8 +110,8 @@ body {
 .ns-stats {
   display: grid;
   grid-template-columns: auto auto;
-  gap: 2px 14px;
-  font-size: 12px;
+  gap: 2px 12px;
+  font-size: 11px;
 }
 
 .ns-stats span {

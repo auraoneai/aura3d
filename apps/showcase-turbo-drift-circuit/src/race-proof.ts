@@ -21,6 +21,7 @@ export const RACE_PROOF_FRAMES = 3600;
 const STEP_SECONDS = 1 / 60;
 
 const routeGeometry = gameGeometryContract.route;
+const FORMULA_ASPHALT_WIDTH = 3.6;
 
 /**
  * Proportional gain for steering back to the racing line.
@@ -30,7 +31,7 @@ const routeGeometry = gameGeometryContract.route;
  * gain tuned for a wide kart circuit (2.2 at width 1.79) under-corrects by ~5x on a
  * narrow real circuit and pins the car against the track edge for the whole run.
  */
-const STEER_CORRECTION_GAIN = 2 / Math.max(0.05, routeGeometry.width / 2);
+const STEER_CORRECTION_GAIN = 2 / Math.max(0.05, FORMULA_ASPHALT_WIDTH / 2);
 
 /**
  * Must match the mounted route's derived steer rate. See the note in `main.ts`: the
@@ -62,15 +63,15 @@ const CERTIFIED_STEER_RATE = (() => {
 /** Rebuilds the exact racing configuration the mounted route uses. */
 function createProofRoute() {
   return game.assetBoundRacingRoute({
-    vehicleAsset: "showcaseTexturedSportsCar",
-    trackAsset: "showcaseTsukubaCircuit",
+    vehicleAsset: "showcaseCc0FormulaRaceCar",
+    trackAsset: "turboFormulaCircuit",
     authoredLapSeconds: gameGeometryContract.authoredSeconds,
     minLapSeconds: 30,
     minCheckpoints: 6,
     topology: gameGeometryContract.topology,
     route: {
       id: routeGeometry.id,
-      width: routeGeometry.width,
+      width: FORMULA_ASPHALT_WIDTH,
       points: routeGeometry.points,
       checkpoints: routeGeometry.checkpoints
     }

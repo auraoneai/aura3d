@@ -149,13 +149,17 @@
       "published": true,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
+        "blockfallReactorArenaBackdrop",
         "showcaseBlockfallCabinet"
       ],
       "primaryAssetRoles": {
+        "blockfallReactorArenaBackdrop": "championship-arena-world",
         "showcaseBlockfallCabinet": "arcade-cabinet-world"
       },
-      "routePrimaryHeroAsset": "showcaseBlockfallCabinet",
-      "secondaryPrimaryAssets": [],
+      "routePrimaryHeroAsset": "blockfallReactorArenaBackdrop",
+      "secondaryPrimaryAssets": [
+        "showcaseBlockfallCabinet"
+      ],
       "primitiveBudget": 40,
       "requiresTypedPrimaryAssets": true,
       "requiresRoutePrimaryProbe": true,
@@ -222,17 +226,17 @@
       "primaryAssets": [
         "showcaseCc0FormulaRaceCar",
         "showcaseCcByFormulaOpponent",
-        "showcaseTsukubaCircuit"
+        "turboFormulaCircuit"
       ],
       "primaryAssetRoles": {
         "showcaseCc0FormulaRaceCar": "vehicle",
         "showcaseCcByFormulaOpponent": "vehicle",
-        "showcaseTsukubaCircuit": "track"
+        "turboFormulaCircuit": "track"
       },
       "routePrimaryHeroAsset": "showcaseCc0FormulaRaceCar",
       "secondaryPrimaryAssets": [
         "showcaseCcByFormulaOpponent",
-        "showcaseTsukubaCircuit"
+        "turboFormulaCircuit"
       ],
       "primitiveBudget": 10,
       "requiresTypedPrimaryAssets": true,
@@ -560,16 +564,17 @@
       "globalName": "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopDefender"],
+      "primaryAssets": ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
       "primaryAssetRoles": {
         "rooftopCourt": "primary-play-surface",
         "rooftopBackboard": "primary-target-backboard",
         "rooftopRim": "primary-target-rim",
         "rooftopBall": "primary-player-ball",
+        "rooftopLayupScorer": "primary-review-release-character",
         "rooftopDefender": "primary-pressure-character"
       },
       "routePrimaryHeroAsset": "rooftopBackboard",
-      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall", "rooftopDefender"],
+      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall"],
       "primitiveBudget": 96,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -596,16 +601,16 @@
       "globalName": "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["galleryShiftMuseumInterior", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
+      "primaryAssets": ["galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
       "primaryAssetRoles": {
-        "galleryShiftMuseumInterior": "primary-museum-world",
+        "galleryShiftCutawayMuseumWorld": "primary-museum-world",
         "galleryShiftPedestal": "primary-objective-fixture",
         "galleryShiftExhibitA": "primary-objective-one",
         "galleryShiftExhibitB": "primary-objective-two",
         "galleryShiftExhibitC": "primary-objective-three",
         "galleryShiftDisplayCase": "primary-cover-fixture"
       },
-      "routePrimaryHeroAsset": "galleryShiftMuseumInterior",
+      "routePrimaryHeroAsset": "galleryShiftCutawayMuseumWorld",
       "secondaryPrimaryAssets": ["galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"],
       "primitiveBudget": 20,
       "requiresTypedPrimaryAssets": true,

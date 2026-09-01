@@ -82,7 +82,10 @@ export function createInitialState(): FpsRunState {
     collected: [],
     exitReached: false,
     lastHitName: "",
-    spawnGuard: 6,
+    // The opening lane is a real objective window, not an unavoidable ambush:
+    // eight seconds gives touch users time to collect and clear the exit before
+    // the staged swarm becomes the route's fail condition.
+    spawnGuard: 8,
     reloadClock: 0,
     reloadJustFinished: false,
     hitMarker: 0,

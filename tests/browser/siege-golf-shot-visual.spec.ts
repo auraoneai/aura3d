@@ -34,6 +34,7 @@ test("a full-power drive leaves the tee and visibly reacts the stack", async ({ 
     // Let the stacking transient settle so the before-frame is the authored pose.
     await page.waitForTimeout(1200);
     const before = await page.screenshot({ timeout: 120_000 });
+    mkdirSync(shotDir, { recursive: true });
     writeFileSync(join(shotDir, "before.png"), before);
     // Frame-rate-dependent charge means one hold may undercharge; drive until
     // the structure provably reacts (or the hole completes).
@@ -73,6 +74,10 @@ test("a full-power drive leaves the tee and visibly reacts the stack", async ({ 
       await page.waitForTimeout(900);
       mid = await page.screenshot({ timeout: 120_000 });
     }
+    // Playwright may prune a prior test's output tree while a long-running
+    // multi-spec suite is still producing this test's artifacts. Reassert the
+    // owned leaf before every write so evidence generation is order-stable.
+    mkdirSync(shotDir, { recursive: true });
     writeFileSync(join(shotDir, "mid.png"), mid);
     // Wait for the structure reaction to resolve.
     await page.waitForFunction(() => {
@@ -84,6 +89,7 @@ test("a full-power drive leaves the tee and visibly reacts the stack", async ({ 
       return Number(ev?.dustBurstCount ?? 0) > 0;
     }, undefined, { timeout: 15_000 });
     const after = await page.screenshot({ timeout: 120_000 });
+    mkdirSync(shotDir, { recursive: true });
     writeFileSync(join(shotDir, "after.png"), after);
     const beforeSha = shaOf(before);
     const midSha = shaOf(mid);
@@ -102,6 +108,7 @@ test("a full-power drive leaves the tee and visibly reacts the stack", async ({ 
         return { bursts: Number(e?.dustBurstCount ?? 0), active: Number(e?.activeDustPuffs ?? 0) };
       })
     };
+    mkdirSync(shotDir, { recursive: true });
     writeFileSync(join(shotDir, "pixel-delta.json"), JSON.stringify(evidence, null, 2));
     expect(evidence.midDiffersFromBefore, "mid-flight frame must differ from the pre-shot frame").toBe(true);
     expect(evidence.afterDiffersFromBefore, "post-topple frame must differ from the pre-shot frame").toBe(true);

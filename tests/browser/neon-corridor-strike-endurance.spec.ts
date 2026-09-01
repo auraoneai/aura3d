@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer } from "./example-dev-server";
@@ -41,6 +41,9 @@ test("neon-corridor-strike sustains a recorded 60-second player-driven session",
   let pauseProved = false;
   let lostResets = 0;
   let reloadInputs = 0;
+  let deathRouteStarted = false;
+  let waitingForLoss = false;
+  let directionHeld = true;
 
   await page.keyboard.down(direction);
   while (performance.now() - started < durationMs) {
@@ -58,10 +61,35 @@ test("neon-corridor-strike sustains a recorded 60-second player-driven session",
       pauseProved = true;
     }
 
-    if (evidence.status !== "playing") {
-      if (evidence.status === "lost") lostResets += 1;
+    // After proving live combat and reload input, enter the route's authored
+    // fail path with real controls: reset all four hostiles, walk into their
+    // approach lane, then stop firing so their telegraphed proximity attacks
+    // can resolve the player state. This is the same bounded physical approach
+    // used by the playable regression, not a state mutation or test hook.
+    if (!deathRouteStarted && elapsedMs >= 12_000 && evidence.shotsFired > 5 && evidence.hits > 0 && reloadInputs > 0) {
+      await page.keyboard.up(direction);
+      directionHeld = false;
       await page.keyboard.press("KeyT");
       await expect.poll(async () => (await read())?.status).toBe("playing");
+      await page.keyboard.down("KeyW");
+      await page.waitForTimeout(850);
+      await page.keyboard.up("KeyW");
+      deathRouteStarted = true;
+      waitingForLoss = true;
+    } else if (evidence.status !== "playing") {
+      if (evidence.status === "lost") {
+        lostResets += 1;
+        waitingForLoss = false;
+      }
+      await page.keyboard.press("KeyT");
+      await expect.poll(async () => (await read())?.status).toBe("playing");
+      if (!directionHeld) {
+        await page.keyboard.down(direction);
+        directionHeld = true;
+      }
+    } else if (waitingForLoss) {
+      // Deliberately no fire or movement: the real enemy chase, telegraph, and
+      // damage loop owns this outcome.
     } else if (evidence.ammo <= 1) {
       await page.keyboard.press("KeyR");
       reloadInputs += 1;
@@ -69,7 +97,7 @@ test("neon-corridor-strike sustains a recorded 60-second player-driven session",
       await page.keyboard.press("KeyJ");
     }
 
-    if (elapsedMs - directionChangedAt >= 1_500) {
+    if (directionHeld && elapsedMs - directionChangedAt >= 1_500) {
       await page.keyboard.up(direction);
       direction = direction === "KeyD" ? "KeyA" : "KeyD";
       await page.keyboard.down(direction);
@@ -77,7 +105,7 @@ test("neon-corridor-strike sustains a recorded 60-second player-driven session",
     }
     await page.waitForTimeout(350);
   }
-  await page.keyboard.up(direction);
+  if (directionHeld) await page.keyboard.up(direction);
 
   const final = await read();
   expect(final).toBeTruthy();
@@ -95,10 +123,13 @@ test("neon-corridor-strike sustains a recorded 60-second player-driven session",
   writeFileSync(resolve(reportDir, "endurance-after.png"), await page.screenshot({ fullPage: false }));
   const video = page.video();
   expect(video, "recorded interaction evidence must be enabled").toBeTruthy();
-  await page.context().close();
-  const temporaryVideo = await video!.path();
   const videoPath = resolve(reportDir, "ui-composition-before-after.webm");
-  copyFileSync(temporaryVideo, videoPath);
+  // Closing the whole fixture context can race Playwright's artifact cleanup
+  // on some runners, leaving video.path() with a deleted temp file after a
+  // valid 60 s run. Close only the recorded page, then let saveAs wait for the
+  // finalized artifact and copy it atomically into durable route evidence.
+  await page.close();
+  await video!.saveAs(videoPath);
   const videoSha256 = createHash("sha256").update(readFileSync(videoPath)).digest("hex");
 
   writeFileSync(resolve(reportDir, "endurance.json"), `${JSON.stringify({

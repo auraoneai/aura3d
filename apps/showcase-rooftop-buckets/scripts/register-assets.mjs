@@ -38,7 +38,12 @@ const models = [
   {
     id: "rooftopDefender",
     role: "character",
-    suitability: "Original CC0 metre-scale 1.8 metre red defender standee with a readable flat-color silhouette, posed only by the route's visible deterministic windup, contest, and recovery telegraph."
+    suitability: "Original CC0 metre-scale stylized basketball defender character with 16 named parented pose nodes and Plant, Telegraph, Jump, and Contest clips. The route binds those clips to its deterministic contest state; no skinning or reusable defender system is claimed."
+  },
+  {
+    id: "rooftopShooter",
+    role: "character",
+    suitability: "Original CC0 metre-scale stylized basketball shooter with 16 named parented pose nodes and Load, Release, and FollowThrough clips. The separately typed ball and route-local flight remain authoritative; no skinning or reusable player system is claimed."
   }
 ];
 

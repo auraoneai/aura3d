@@ -35,7 +35,7 @@ export const SKYLINE_DISTRICTS: readonly SkylineDistrictDefinition[] = [
     ambienceStem: "ambience-steel",
     silhouette: "cool roof steps, antenna masts, and a relay-crane horizon",
     landmark: "Dawn Relay Crane",
-    landmarkNodeIds: ["steel-dawn-crane-mast", "steel-dawn-crane-arm", "steel-dawn-crane-counterweight"],
+    landmarkNodeIds: ["steel-dawn-crane-landmark"],
     mechanicEmphasis: "long readable jumps and the first relay"
   },
   {
@@ -47,7 +47,7 @@ export const SKYLINE_DISTRICTS: readonly SkylineDistrictDefinition[] = [
     ambienceStem: "ambience-grove",
     silhouette: "suspended garden frames, denser foliage, and warm mist",
     landmark: "Suspended Grove",
-    landmarkNodeIds: ["hanging-grove-pier-left", "hanging-grove-pier-right", "hanging-grove-canopy"],
+    landmarkNodeIds: ["hanging-grove-pier-pair", "hanging-grove-canopy"],
     mechanicEmphasis: "tighter sentry timing and elevated traversal"
   },
   {

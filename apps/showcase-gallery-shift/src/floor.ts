@@ -73,6 +73,25 @@ export interface CaseSpec {
   readonly z: number;
 }
 
+/** A named walkable room in the same plan that owns collision and LOS. */
+export interface RoomSpec {
+  readonly id: string;
+  readonly x: number;
+  readonly z: number;
+  readonly halfX: number;
+  readonly halfZ: number;
+  readonly tone: "foyer" | "rotunda" | "archive" | "treasury" | "vault";
+}
+
+/** A deliberate opening between wall segments; never a decorative fake door. */
+export interface DoorSpec {
+  readonly id: string;
+  readonly x: number;
+  readonly z: number;
+  readonly halfX: number;
+  readonly halfZ: number;
+}
+
 export interface LaserSpec {
   readonly id: string;
   readonly x: number;
@@ -113,6 +132,8 @@ export interface FloorLayout {
   readonly id: 1 | 2;
   readonly name: string;
   readonly walls: readonly WallSpec[];
+  readonly rooms: readonly RoomSpec[];
+  readonly doors: readonly DoorSpec[];
   readonly pedestals: readonly PedestalSpec[];
   readonly cases: readonly CaseSpec[];
   readonly lasers: readonly LaserSpec[];
@@ -127,9 +148,10 @@ export interface FloorLayout {
 
 // ------------------------------------------------------------------ layouts --
 /**
- * Floor 1 "Marble Hall": two wing partitions and a north service alcove. The
- * partitions are the honest occluders: a thief behind one cannot be seen by a
- * guard on the other side even inside the cone (LOS raycast proof).
+ * Floor 1 "Marble Hall": an entry foyer and rotunda connect to offset archive
+ * and treasury suites. Every doorway below is a real gap between wall collider
+ * segments. The side-room cross walls and typed cases are therefore honest
+ * tactical occluders, not a floor-paint suggestion of rooms.
  */
 const FLOOR_1: FloorLayout = {
   id: 1,
@@ -143,15 +165,49 @@ const FLOOR_1: FloorLayout = {
     // Alcove throat beside the service exit (shared look with floor 2).
     { id: "wall-alcove-west", x: -1.8, z: -5.2, halfX: 1.0, halfZ: 0.2, height: 3.6, visible: true },
     { id: "wall-alcove-east", x: 1.8, z: -5.2, halfX: 1.0, halfZ: 0.2, height: 3.6, visible: true },
-    // Wing partitions: z in [-4, 1.5]; both guard routes clear their corners.
-    { id: "wall-wing-west", x: -5, z: -1.25, halfX: 0.2, halfZ: 2.75, height: 3.6, visible: true },
-    { id: "wall-wing-east", x: 5, z: -1.25, halfX: 0.2, halfZ: 2.75, height: 3.6, visible: true }
+    // Offset rotunda-to-wing doorways. Splitting the old uninterrupted walls
+    // creates two different entry decisions rather than one symmetrical hall.
+    { id: "wall-archive-entry-north", x: -5, z: -3.45, halfX: 0.2, halfZ: 1.55, height: 3.6, visible: true },
+    { id: "wall-archive-entry-south", x: -5, z: 1.25, halfX: 0.2, halfZ: 1.95, height: 3.6, visible: true },
+    { id: "wall-treasury-entry-north", x: 5, z: -2.45, halfX: 0.2, halfZ: 2.55, height: 3.6, visible: true },
+    { id: "wall-treasury-entry-south", x: 5, z: 2.35, halfX: 0.2, halfZ: 0.85, height: 3.6, visible: true },
+    // Each wing is itself two rooms, with its connecting doorway offset from
+    // the rotunda entrance so the player must choose a guarded turn or cover.
+    { id: "wall-archive-cross-west", x: -9.05, z: 1.4, halfX: 0.95, halfZ: 0.2, height: 3.6, visible: true },
+    { id: "wall-archive-cross-east", x: -5.95, z: 1.4, halfX: 0.95, halfZ: 0.2, height: 3.6, visible: true },
+    { id: "wall-treasury-cross-west", x: 5.95, z: -1.3, halfX: 0.95, halfZ: 0.2, height: 3.6, visible: true },
+    { id: "wall-treasury-cross-east", x: 9.05, z: -1.3, halfX: 0.95, halfZ: 0.2, height: 3.6, visible: true }
+  ],
+  rooms: [
+    { id: "south-foyer", x: 0, z: 4.65, halfX: 4.75, halfZ: 1.65, tone: "foyer" },
+    { id: "central-rotunda", x: 0, z: 0.1, halfX: 4.7, halfZ: 2.95, tone: "rotunda" },
+    { id: "north-vault", x: 0, z: -5.45, halfX: 3.0, halfZ: 1.15, tone: "vault" },
+    { id: "archive-gallery", x: -7.5, z: -2.85, halfX: 2.3, halfZ: 1.95, tone: "archive" },
+    { id: "archive-conservation", x: -7.5, z: 4.05, halfX: 2.3, halfZ: 2.45, tone: "archive" },
+    { id: "treasury-vault", x: 7.5, z: -4.15, halfX: 2.3, halfZ: 1.55, tone: "treasury" },
+    { id: "treasury-exhibition", x: 7.5, z: 2.75, halfX: 2.3, halfZ: 3.85, tone: "treasury" }
+  ],
+  doors: [
+    { id: "rotunda-archive", x: -5, z: -1.3, halfX: 0.12, halfZ: 0.6 },
+    { id: "archive-rooms", x: -7.5, z: 1.4, halfX: 0.6, halfZ: 0.12 },
+    { id: "rotunda-treasury", x: 5, z: 0.8, halfX: 0.12, halfZ: 0.6 },
+    { id: "treasury-rooms", x: 7.5, z: -1.3, halfX: 0.6, halfZ: 0.12 }
   ],
   pedestals: [
     { id: "p1", x: -6.5, z: -4.2, value: 400, exhibit: "exhibitA" },
     { id: "p2", x: 6.5, z: -4.2, value: 600, exhibit: "exhibitB" }
   ],
-  cases: [],
+  // Four typed display cases turn the two objective wings into real cover
+  // rooms. They are part of the same layout authority used by authored thief
+  // collision and physics LOS raycasts, so the visible cover is never merely
+  // decorative scenery. Their central/southern positions leave both north
+  // pedestal approaches and the guard perimeter routes open.
+  cases: [
+    { id: "archive-center", x: -7.2, z: 0.15 },
+    { id: "archive-south", x: -7.2, z: 3.65 },
+    { id: "treasury-center", x: 7.2, z: -2.55 },
+    { id: "treasury-south", x: 7.2, z: 2.85 }
+  ],
   lasers: [],
   cameras: [],
   exit: { x: 0, z: -6.3 },
@@ -168,25 +224,25 @@ const FLOOR_1: FloorLayout = {
   guards: [
     {
       id: "guard-1",
-      x: -8.5,
+      x: -7.5,
       z: -5.5,
       route: [
-        { x: -8.5, z: -5.5 },
-        { x: -2.5, z: -5.5 },
-        { x: -2.5, z: 4.5 },
-        { x: -8.5, z: 4.5 }
+        { x: -7.5, z: -5.5 },
+        { x: -7.5, z: 5.5 },
+        { x: -9.0, z: 5.5 },
+        { x: -9.0, z: -5.5 }
       ],
       baseSpeed: 1.5
     },
     {
       id: "guard-2",
-      x: 8.5,
+      x: 7.5,
       z: -5.5,
       route: [
-        { x: 8.5, z: -5.5 },
-        { x: 8.5, z: 5.5 },
-        { x: 2.5, z: 5.5 },
-        { x: 2.5, z: -5.5 }
+        { x: 7.5, z: -5.5 },
+        { x: 7.5, z: 5.5 },
+        { x: 9.0, z: 5.5 },
+        { x: 9.0, z: -5.5 }
       ],
       baseSpeed: 1.5
     }
@@ -213,6 +269,15 @@ const FLOOR_2: FloorLayout = {
     // Central case room: entered from the north and south gaps only.
     { id: "wall-room-west", x: -3.2, z: 0, halfX: 0.2, halfZ: 2.2, height: 3.6, visible: true },
     { id: "wall-room-east", x: 3.2, z: 0, halfX: 0.2, halfZ: 2.2, height: 3.6, visible: true }
+  ],
+  rooms: [
+    { id: "skyline-south", x: 0, z: 4.6, halfX: 9.6, halfZ: 2.2, tone: "foyer" },
+    { id: "skyline-secure-core", x: 0, z: 0, halfX: 3.0, halfZ: 2.0, tone: "vault" },
+    { id: "skyline-north", x: 0, z: -4.6, halfX: 9.6, halfZ: 2.2, tone: "treasury" }
+  ],
+  doors: [
+    { id: "skyline-core-north", x: 0, z: -2.2, halfX: 0.75, halfZ: 0.12 },
+    { id: "skyline-core-south", x: 0, z: 2.2, halfX: 0.75, halfZ: 0.12 }
   ],
   pedestals: [
     { id: "p3", x: -7, z: 4.8, value: 1100, exhibit: "exhibitC" }

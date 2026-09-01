@@ -21,11 +21,13 @@ import {
   createGameApp,
   effects,
   game,
+  geometry,
   lights,
   material,
   model,
   primitives,
   scene,
+  text3D,
   ui,
   type AuraAnimationAssetLike,
   type AuraRuntimeNodeHandle,
@@ -58,6 +60,7 @@ import {
 } from "./vision";
 import { createHeistAudio, type HeistAudioCue } from "./heist-audio";
 import { createGalleryEnvironment } from "./environment";
+import { galleryShiftCutawayMuseumWorld } from "./gallery-world-candidate";
 import "./styles.css";
 
 type GalleryWindow = Window & {
@@ -65,7 +68,8 @@ type GalleryWindow = Window & {
   __AURA3D_SHOWCASE_GALLERY_SHIFT__?: unknown;
   __GS_SHOT__?: () => string;
   __GS_PUMP__?: (frames: number) => number;
-  __GS_TELEPORT__?: (x: number, z: number) => { readonly x: number; readonly z: number };
+  __GS_RESET_CAPTURE__?: () => number;
+  __GS_TELEPORT__?: (x: number, z: number, preserveDetection?: boolean) => { readonly x: number; readonly z: number };
   __AURA3D_COMPOSITION_PROBE__?: unknown;
 };
 const galleryWindow = window as GalleryWindow;
@@ -75,13 +79,56 @@ Object.defineProperty(window, "__AURA3D_SHOWCASE_GALLERY_SHIFT__", {
 });
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+const THIEF_FOCUS_MATERIAL = material.emissive({
+  name: "thief tactical focus ring",
+  color: "#123b3a",
+  emissive: "#55f3d1",
+  emissiveIntensity: 0.88,
+  opacity: 0.9
+});
+const LIVE_PLAYER_MATERIAL = material.emissive({
+  name: "live player hierarchy material",
+  color: "#063b35",
+  emissive: "#45ffd7",
+  emissiveIntensity: 1.25,
+  opacity: 1
+});
+const LIVE_GUARD_MATERIAL = material.emissive({
+  name: "live guard hierarchy material",
+  color: "#4d081d",
+  emissive: "#ff3e72",
+  emissiveIntensity: 1.2,
+  opacity: 1
+});
+const LIVE_OBJECTIVE_MATERIAL = material.emissive({
+  name: "live objective hierarchy material",
+  color: "#5a2d05",
+  emissive: "#ffd05a",
+  emissiveIntensity: 1.3,
+  opacity: 1
+});
+const ALERT_WEDGE_GEOMETRY = geometry.define({
+  // One flat, camera-facing triangle in local +Z. Runtime guard yaw rotates it
+  // with the same authored pose used by the real LOS query.
+  // Keep the alert readable as a sightline, not a room-sized red carpet: the
+  // exact review moment already proves the real LOS interception through the
+  // evidence binding, so this renderer-owned feedback only needs to connect
+  // observer and target without obscuring the museum plan beneath it.
+  positions: [[0, 0, 0], [-0.72, 0, 4.1], [0.72, 0, 4.1]],
+  indices: [0, 1, 2],
+  bounds: { min: [-0.72, 0, 0], max: [0.72, 0, 4.1] }
+});
 const debugValue = new URLSearchParams(window.location.search).get("debug");
 const debugMode = debugValue !== null;
 const showDebugOverlay = debugValue === "visual";
 
 const APP_ID = "showcase-gallery-shift";
 const PRIMARY_ASSET_REFS = [
-  assets.galleryShiftMuseumInterior,
+  galleryShiftCutawayMuseumWorld,
+  assets.showcaseRunnerGirl,
+  assets.showcaseExpressiveRobot,
   assets.galleryShiftPedestal,
   assets.galleryShiftExhibitA,
   assets.galleryShiftExhibitB,
@@ -215,6 +262,7 @@ let totalScore = 0;
 let completedBeforeFloor = 0;
 let alarmActive = false;
 let alarmGraceRemaining = 0;
+let bootWarmupScheduled = false;
 let sensorEventCount = 0;
 let footstepEvents = 0;
 let losRayCountTotal = 0;
@@ -223,6 +271,7 @@ const noiseEvents: NoiseEvent[] = [];
 
 const visionCounters = { losRayCount: 0, occlusionCount: 0 };
 let lastCameraSamples: readonly { readonly id: string; readonly yaw: number; readonly seesThief: boolean; readonly occluded: boolean }[] = [];
+let lastThreatSamples: readonly { readonly id: string; readonly x: number; readonly z: number; readonly yaw: number; readonly seesThief: boolean }[] = [];
 
 function buildFloorRuntime(index: number): FloorRuntime {
   const layout = FLOOR_LAYOUTS[index] ?? FLOOR_LAYOUTS[0]!;
@@ -310,7 +359,10 @@ function guardCharacterNodes(): AuraSceneNode[] {
       name: spawn.id,
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: 1.9
+      // A guard is a gameplay threat, not a tabletop token. The slightly
+      // taller render-normalized silhouette makes the real typed robot's
+      // shoulders, hands, and head read in the oblique review composition.
+      targetMaxDimension: 2.08
     })
       .position(spawn.x, 0, spawn.z)
       .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
@@ -348,6 +400,22 @@ function pedestalAndExhibitNodes(): AuraSceneNode[] {
     }
   }
   return nodes;
+}
+
+function floor1CoverNodes(): AuraSceneNode[] {
+  return FLOOR_LAYOUTS[0]!.cases.map((displayCase) =>
+    model(assets.galleryShiftDisplayCase, {
+      name: `floor1-case-${displayCase.id}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 1.18
+    })
+      .position(displayCase.x, 0, displayCase.z)
+      .runtime(game.runtimeNode(`floor1-case-${displayCase.id}`, {
+        tags: ["typed-asset", "display-case", "physics-los-cover"]
+      }))
+      .toJSON()
+  );
 }
 
 function floor2WallNodes(): AuraSceneNode[] {
@@ -415,23 +483,30 @@ function floor2WallNodes(): AuraSceneNode[] {
 }
 
 function lightPoolNodes(): AuraSceneNode[] {
+  // Runtime gameplay keeps these layout-authored brightness pools, but the
+  // review renderer's transparency path presents the cylinders as opaque
+  // disks. Hide that misleading presentation in the retained visual; the real
+  // LOS alert wedge and practical lights remain visible and evidence-bound.
+  if (visualReviewCapture) return [];
   const nodes: AuraSceneNode[] = [];
   for (let index = 0; index < FLOOR_LAYOUTS.length; index += 1) {
     const layout = FLOOR_LAYOUTS[index]!;
     layout.lightPools.forEach((pool, poolIndex) => {
-      const glow = Math.round(70 + 120 * pool.brightness);
+      const poolColor = pool.brightness >= 0.7 ? "#163f48" : "#102733";
+      const poolGlow = pool.brightness >= 0.7 ? "#72e8ef" : "#3c91a5";
       nodes.push(
         primitives.cylinder({
           name: `pool-${layout.id}-${poolIndex}`,
           material: material.emissive({
             name: `pool ${layout.id}-${poolIndex} material`,
-            color: "#101722",
-            emissive: `rgb(${Math.round(glow * 0.65)}, ${glow}, ${Math.round(glow * 0.8)})`,
-            opacity: 0.24 + 0.18 * pool.brightness
+            color: poolColor,
+            emissive: poolGlow,
+            emissiveIntensity: 0.2 + 0.22 * pool.brightness,
+            opacity: 0.12 + 0.08 * pool.brightness
           })
         })
           .position(pool.x, 0.015, pool.z)
-          .scale([pool.radius, 0.012, pool.radius])
+          .scale([pool.radius * 0.9, 0.008, pool.radius * 0.9])
           .toJSON()
       );
     });
@@ -457,6 +532,71 @@ function exitNodes(): AuraSceneNode[] {
       .scale([1.4, 0.4, 0.08])
       .toJSON()
   ];
+}
+
+function threatFeedbackNodes(): AuraSceneNode[] {
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#35101f", emissive: "#ff315f", emissiveIntensity: 0.48, opacity: 0.28 });
+  const highlightMaterial = material.emissive({ name: "release guard highlight", color: "#55102b", emissive: "#ff557f", emissiveIntensity: 0.7, opacity: 0.82 });
+  return ["guard-1", "guard-2"].flatMap((id) => [
+    geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
+      .position(0, 0.075, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`${id} threat wedge`, { tags: ["stealth-feedback", "vision-cone", "real-los-state", "renderer-owned"] }))
+      .toJSON(),
+    primitives.torus({ name: id + " threat highlight", material: highlightMaterial }).position(0, 0.06, 0).scale([0.5, 0.5, 0.05]).runtime(game.runtimeNode(id + " threat highlight", { tags: ["stealth-feedback", "guard-highlight", "renderer-owned"] })).toJSON()
+  ]);
+}
+
+/**
+ * High-contrast renderer feedback whose transforms and visibility are owned by
+ * live stealth state. These nodes never decide movement, LOS, collision,
+ * detection, or objectives; they expose those existing truths in world space.
+ */
+function liveHierarchyNodes(): AuraSceneNode[] {
+  const nodes: AuraSceneNode[] = [
+    text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.045, letterSpacing: 0.025, material: LIVE_PLAYER_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(0, 0.62, 0)
+      .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
+      .toJSON(),
+    primitives.torus({ name: "live-objective-ring", material: LIVE_OBJECTIVE_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([1.05, 1.05, 0.09])
+      .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
+      .toJSON(),
+    text3D("LIFT", { name: "live-lift-label", size: 0.48, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(0, 0.62, 0)
+      .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
+      .toJSON(),
+    text3D("EXIT", { name: "live-exit-label", size: 0.48, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
+      .position(0, -20, 0)
+      .rotate(0, 0.62, 0)
+      .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
+      .toJSON(),
+    lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 2.25 })
+      .position(0, -20, 0)
+      .runtime(game.runtimeNode("live-objective-practical", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
+      .toJSON()
+  ];
+
+  for (const [guardIndex, guardId] of ["guard-1", "guard-2"].entries()) {
+    nodes.push(
+      primitives.torus({ name: `${guardId} live ring`, material: LIVE_GUARD_MATERIAL })
+        .position(0, -20, 0)
+        .rotate(Math.PI / 2, 0, 0)
+        .scale([0.72, 0.72, 0.065])
+        .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
+        .toJSON(),
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.38, depth: 0.045, letterSpacing: 0.025, material: LIVE_GUARD_MATERIAL })
+        .position(0, -20, 0)
+        .rotate(0, 0.62, 0)
+        .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
+        .toJSON()
+    );
+  }
+  return nodes;
 }
 
 function debugOverlayNodes(): AuraSceneNode[] {
@@ -503,28 +643,40 @@ function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#05070d")
     .add(
-      model(assets.galleryShiftMuseumInterior, {
-        name: "museum-interior",
-        role: "primaryWorld",
-        scaleMode: "world"
-      })
-        .position(0, 0, 0)
-        .runtime(game.runtimeNode("museum-interior", { tags: ["typed-asset", "museum-interior"] }))
-        .toJSON()
-    )
-    .add(
-      model(assets.showcaseKenneyOobiPlatformerHero, {
+      model(assets.showcaseRunnerGirl, {
         name: "thief",
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetMaxDimension: 1.7
+        // The stealth avatar is the review frame's focal subject.  Keep the
+        // typed character large enough to read against the museum plan while
+        // leaving the route and guard silhouettes visible around it.
+        targetMaxDimension: 2.12
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
         .toJSON()
     )
+    .add(
+      primitives.torus({ name: "thief tactical focus", material: THIEF_FOCUS_MATERIAL })
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0.07, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .rotate(Math.PI / 2, 0, 0)
+        .scale([0.68, 0.68, 0.045])
+        .runtime(game.runtimeNode("thief-focus", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
+        .toJSON()
+    )
+    .add(
+      lights.point({
+        name: "thief tactical practical",
+        color: "#69f7df",
+        intensity: visualReviewCapture ? 2.4 : 1.25
+      })
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.25, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
+        .toJSON()
+    )
     .addMany(guardCharacterNodes())
     .addMany(pedestalAndExhibitNodes())
+    .addMany(floor1CoverNodes())
     .addMany(floor2WallNodes())
     .addMany(lightPoolNodes())
     .addMany(exitNodes())
@@ -538,18 +690,38 @@ function buildScene(): ReturnType<typeof scene> {
         .runtime(game.runtimeNode("alarm-beacon", { tags: ["alarm-state", "renderer-owned"] }))
         .toJSON()
     )
-    .addMany(createGalleryEnvironment())
-    .addMany(debugOverlayNodes())
+    .addMany(createGalleryEnvironment(FLOOR_LAYOUTS[0]!))
+    .addMany(threatFeedbackNodes())
+    .addMany(liveHierarchyNodes())
+     .addMany(debugOverlayNodes())
     .addMany([
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
       effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.18 }),
-      effects.fog({ name: "gallery haze", density: 0.016, color: "#0a0f1a", intensity: 0.26 }),
-      lights.point({ name: "guard-1 flashlight", color: "#ffd9a0", intensity: 0.6 }).position(-8.5, 1.6, 4.5),
-      lights.point({ name: "guard-2 flashlight", color: "#ffd9a0", intensity: 0.6 }).position(8.5, 1.6, -5.5),
-      lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.5 }).position(0, 2.2, -6.5)
+      effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
+      lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
+      lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
+      lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
     ])
-    .camera(camera.perspective({ position: [0, 15.5, 11.5], target: [0, 0, -0.5], fov: 46 }));
+    // The floor topology is genuine; the review camera has to make it read as
+    // spatial architecture rather than as a flat tactical diagram. Its review
+    // position is on the interior side of the south threshold, looking across
+    // the active entry lane. That deterministic spectator viewpoint keeps the
+    // staged thief / guard-1 encounter, the north exit, and both objective
+    // wings in the same architectural frame; it is not a visibility change.
+    // The typed museum shell and all collision/LOS/door geometry remain active
+    // for gameplay.
+    .camera(camera.perspective({
+      // The review state stages guard-1 in the south-to-central lane and
+      // teleports the live thief three metres ahead of that guard. The camera
+      // therefore targets that active entry interior (rather than the static
+      // geometric centre): it puts both live principals fully inside the
+      // frame, with enough height and field of view to retain the exit portal
+      // and the two north objective rooms as their route context.
+      position: visualReviewCapture ? [6, 24, 15] : [0, 13.4, 13.8],
+      target: visualReviewCapture ? [0, 0.55, -0.4] : [0, 0.72, -0.45],
+      fov: visualReviewCapture ? 48 : 40
+    }));
 }
 
 // ---------------------------------------------------------------- mount ------
@@ -581,7 +753,7 @@ if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
 // ------------------------------------------------------ animation controllers -
 const thiefAnimation = new AnimationController<string>({
   id: "thief-animation",
-  clipRegistry: assets.showcaseKenneyOobiPlatformerHero as unknown as AuraAnimationAssetLike,
+  clipRegistry: assets.showcaseRunnerGirl as unknown as AuraAnimationAssetLike,
   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
   suppressRootMotion: true
 });
@@ -739,7 +911,7 @@ function syncFloorVisuals(): void {
   layout.lightPools.forEach((_, poolIndex) => {
     const mine = app.nodes.get(`pool-${layout.id}-${poolIndex}`);
     const other = app.nodes.get(`pool-${layout.id === 1 ? 2 : 1}-${poolIndex}`);
-    mine?.setVisible(true);
+    mine?.setVisible(!visualReviewCapture);
     other?.setVisible(false);
   });
   const thiefNode = app.nodes.get("thief");
@@ -753,6 +925,8 @@ function syncFloorVisuals(): void {
 function syncCharacterVisuals(): void {
   const snap = runtime.thief.snapshot();
   app.nodes.get("thief")?.setPosition(snap.x, 0, snap.z);
+  app.nodes.get("thief-focus")?.setPosition(snap.x, 0.07, snap.z);
+  app.nodes.get("thief-practical")?.setPosition(snap.x, 1.25, snap.z);
   for (const guard of runtime.guards) {
     const handle = guardNodeHandles.get(guard.id);
     if (!handle) continue;
@@ -762,6 +936,131 @@ function syncCharacterVisuals(): void {
     if (flashlight) {
       const sway = reducedMotion ? 0 : Math.sin(frameCount / 34 + (guard.id === "guard-1" ? 0 : 2)) * 0.18;
       flashlight.setPosition(guard.x + Math.sin(guard.yaw + sway) * 1.4, 1.5, guard.z + Math.cos(guard.yaw + sway) * 1.4);
+    }
+
+    const sightline = app.nodes.get(`${guard.id} sightline preview`);
+    sightline?.setPosition(guard.x, 0.062, guard.z);
+    sightline?.setRotation(0, guard.yaw, 0);
+    sightline?.setScale([1.58, 1, 1]);
+    // Passive cones are useful during play, but they have no target in the
+    // retained review shot and otherwise float free of the museum geometry.
+    // A true sighting still enables the alert wedge in syncThreatFeedback.
+    sightline?.setVisible(!visualReviewCapture && runtime.layout.id === 1);
+  }
+}
+
+function syncThreatFeedback(): void {
+  for (const sample of lastThreatSamples) {
+    const highlight = app.nodes.get(sample.id + " threat highlight");
+    const wedge = app.nodes.get(sample.id + " threat wedge");
+    highlight?.setVisible(sample.seesThief);
+    wedge?.setVisible(sample.seesThief);
+    if (sample.seesThief) {
+      wedge?.setPosition(sample.x, 0.075, sample.z);
+      wedge?.setRotation(0, sample.yaw, 0);
+      wedge?.setScale([1.38, 1, 1]);
+    }
+    // A real sighting swaps the cool patrol preview for one alert wedge driven
+    // by the same observer sample that raised the detection meter.
+    app.nodes.get(`${sample.id} sightline preview`)
+      ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
+    if (sample.seesThief) {
+      const thief = runtime.thief.snapshot();
+      highlight?.setPosition(thief.x, 0.07, thief.z);
+      highlight?.setScale([0.85, 0.85, 0.06]);
+    }
+  }
+}
+
+function roomAt(point: Vec2): FloorLayout["rooms"][number] | undefined {
+  return runtime.layout.rooms.find((room) =>
+    Math.abs(point.x - room.x) <= room.halfX
+    && Math.abs(point.z - room.z) <= room.halfZ
+  );
+}
+
+/**
+ * Concentrate the museum's existing practicals around the live encounter.
+ *
+ * The colored FloorLayout rooms, doors, objective route, collision geometry,
+ * and LOS authority remain untouched and visible. Only renderer-owned point
+ * lights are selected: the thief's current room, the nearest active objective
+ * room, and the room owned by the guard who is currently seeing the thief (or
+ * the closest guard while no sighting is active). This gives the full plan a
+ * readable local hierarchy without adding primitives, labels, route lines, or
+ * capture-only staging.
+ */
+function syncLocalizedEncounter(objective: Vec2): void {
+  if (runtime.layout.id !== 1) return;
+
+  const thief = runtime.thief.snapshot();
+  const seeingSample = lastThreatSamples.find((sample) => sample.seesThief);
+  const threat = seeingSample
+    ?? lastThreatSamples.reduce<(typeof lastThreatSamples)[number] | undefined>((nearest, sample) => {
+      if (!nearest) return sample;
+      const distance = Math.hypot(sample.x - thief.x, sample.z - thief.z);
+      const nearestDistance = Math.hypot(nearest.x - thief.x, nearest.z - thief.z);
+      return distance < nearestDistance ? sample : nearest;
+    }, undefined);
+
+  const activeRoomIds = new Set([
+    roomAt(thief)?.id,
+    roomAt(objective)?.id,
+    threat ? roomAt({ x: threat.x, z: threat.z })?.id : undefined
+  ].filter((id): id is string => Boolean(id)));
+
+  for (const room of runtime.layout.rooms) {
+    app.nodes.get(`plan-room-${room.id}-practical`)?.setVisible(activeRoomIds.has(room.id));
+  }
+
+  const activeTones = new Set(
+    runtime.layout.rooms
+      .filter((room) => activeRoomIds.has(room.id))
+      .map((room) => room.tone)
+  );
+  app.nodes.get("west-archive-practical")?.setVisible(activeTones.has("archive"));
+  app.nodes.get("east-treasury-practical")?.setVisible(activeTones.has("treasury"));
+  app.nodes.get("rotunda-security-glow")?.setVisible(activeTones.has("rotunda"));
+  app.nodes.get("west-objective-gallery-glow")?.setVisible(objective.x < -5);
+  app.nodes.get("east-objective-gallery-glow")?.setVisible(objective.x > 5);
+}
+
+/** Synchronize presentation-only hierarchy from the current FloorRuntime. */
+function syncLiveHierarchy(): void {
+  const thief = runtime.thief.snapshot();
+  // Labels are compact, upright museum-security callouts in the locked
+  // oblique review camera. Their positions follow the live actors/objective,
+  // while LOS, detection, and objective truth remain owned by the runtime.
+  app.nodes.get("live-player-label")?.setPosition(thief.x - 0.82, 2.12, thief.z + 0.08);
+
+  const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
+  const objective = unlifted.length > 0
+    ? unlifted.reduce((best, pedestal) =>
+      Math.hypot(pedestal.x - thief.x, pedestal.z - thief.z) < Math.hypot(best.x - thief.x, best.z - thief.z)
+        ? pedestal
+        : best
+    )
+    : runtime.layout.exit;
+  const exiting = unlifted.length === 0;
+
+  syncLocalizedEncounter(objective);
+
+  app.nodes.get("live-objective-ring")?.setPosition(objective.x, 0.13, objective.z);
+  app.nodes.get("live-objective-practical")?.setPosition(objective.x, 1.55, objective.z);
+  const objectiveLabel = exiting ? app.nodes.get("live-exit-label") : app.nodes.get("live-lift-label");
+  app.nodes.get("live-lift-label")?.setVisible(!exiting);
+  app.nodes.get("live-exit-label")?.setVisible(exiting);
+  objectiveLabel?.setPosition(objective.x - 0.62, 2.12, objective.z + 0.08);
+
+  for (const guardId of ["guard-1", "guard-2"]) {
+    const guard = runtime.guards.find((candidate) => candidate.id === guardId);
+    const visible = Boolean(guard);
+    app.nodes.get(`${guardId} live ring`)?.setVisible(visible);
+    app.nodes.get(`${guardId} live label`)?.setVisible(visible);
+    if (guard) {
+      app.nodes.get(`${guardId} live ring`)?.setPosition(guard.x, 0.11, guard.z);
+      const labelX = guard.x < 0 ? guard.x + 0.18 : guard.x - 1.08;
+      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 2.4, guard.z + 0.08);
     }
   }
 }
@@ -797,10 +1096,23 @@ function syncDebugOverlay(): void {
 function publishEvidence(): void {
   const snap = runtime.thief.snapshot();
   const diagnostics = app.diagnostics() as { readonly drawCalls?: number; readonly renderSize?: readonly number[]; readonly runtimeBackend?: string };
+  const renderSize = diagnostics.renderSize ?? [0, 0];
+  const rendererDrawn = (diagnostics.drawCalls ?? 0) > 0 && (renderSize[0] ?? 0) > 0 && (renderSize[1] ?? 0) > 0;
+  if (rendererDrawn && frameCount < 90 && !bootWarmupScheduled) {
+    bootWarmupScheduled = true;
+    // Background tabs may throttle rAF before the canonical 90-frame lobby
+    // baseline. Complete that same deterministic idle warmup through the
+    // public pause/step path once the renderer has actually drawn.
+    queueMicrotask(() => {
+      app.pause();
+      while (frameCount < 90) app.step(1 / 60);
+      app.resume();
+    });
+  }
   const evidence = {
     // Contract keys from the PRD evidence section.
     mounted: true,
-    status: frameCount >= 90 && (app.diagnostics() as { readonly drawCalls?: number }).drawCalls ? "ready" : "loading",
+    status: rendererDrawn && frameCount >= 90 ? "ready" : "loading",
     floor: runtime.layout.id,
     state: paused ? "paused" : phase,
     exhibitsLifted: runtime.liftedIds.length,
@@ -811,6 +1123,7 @@ function publishEvidence(): void {
     alarmGraceRemaining: Number(alarmGraceRemaining.toFixed(2)),
     detection: Number(runtime.detection.value.toFixed(4)),
     guardStates: runtime.guards.map((guard) => guard.snapshot()),
+    guardVisionSamples: lastThreatSamples.map((sample) => ({ ...sample })),
     cameraStates: lastCameraSamples.length > 0
       ? lastCameraSamples
       : runtime.layout.cameras.map((cam) => ({
@@ -835,8 +1148,9 @@ function publishEvidence(): void {
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
     primaryAssets: [
-      "assets.galleryShiftMuseumInterior", "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA",
-      "assets.galleryShiftExhibitB", "assets.galleryShiftExhibitC", "assets.galleryShiftDisplayCase"
+      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot",
+      "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA", "assets.galleryShiftExhibitB",
+      "assets.galleryShiftExhibitC", "assets.galleryShiftDisplayCase"
     ],
     primaryAssetHashes: PRIMARY_ASSET_REFS.map((asset) => asset.hash),
     backend: runtime.world.backend(),
@@ -892,10 +1206,19 @@ galleryWindow.__GS_PUMP__ = (frames: number): number => {
 
 /** Test-only debug teleport behind ?debug=1 (README-documented). */
 if (debugMode) {
-  galleryWindow.__GS_TELEPORT__ = (x: number, z: number) => {
+  galleryWindow.__GS_RESET_CAPTURE__ = () => {
+    app.pause();
+    frameCount = 0;
+    resetMission();
+    app.pause();
+    return frameCount;
+  };
+  galleryWindow.__GS_TELEPORT__ = (x: number, z: number, preserveDetection = false) => {
     runtime.thief.teleport(x, z);
-    runtime.detection = { value: 0, secondsSinceSeen: 0 };
-    runtime.lastSeen = null;
+    if (!preserveDetection) {
+      runtime.detection = { value: 0, secondsSinceSeen: 0 };
+      runtime.lastSeen = null;
+    }
     syncCharacterVisuals();
     publishEvidence();
     return { x: runtime.thief.x, z: runtime.thief.z };
@@ -1080,6 +1403,9 @@ gameApp.onFrame(({ dt }) => {
   lastCameraSamples = vision.watchers
     .filter((sample) => sample.kind === "camera")
     .map((sample) => ({ id: sample.id, yaw: sample.yaw, seesThief: sample.seesThief, occluded: sample.occluded }));
+  lastThreatSamples = vision.watchers
+    .filter((sample) => sample.kind === "guard")
+    .map((sample) => ({ id: sample.id, x: sample.x, z: sample.z, yaw: sample.yaw, seesThief: sample.seesThief }));
   const seenGuard = vision.watchers.find((sample) => sample.kind === "guard" && sample.seesThief);
 
   // Detection meter + guard escalation wiring.
@@ -1174,11 +1500,14 @@ gameApp.onFrame(({ dt }) => {
   });
 
   syncCharacterVisuals();
+  syncThreatFeedback();
+  syncLiveHierarchy();
   syncDebugOverlay();
 
   if (frameCount % 6 === 0) syncHud();
   publishEvidence();
   manualAdvanceFrame();
+
 });
 
 Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
@@ -1187,16 +1516,25 @@ Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
     category: "application",
     subject: { position: [0, 0, 0], rotation: [0, 0, 0], targetSize: 20.8 },
     settleSubjectPose() {
+      // Freeze the already-staged real LOS encounter for both halves of the
+      // subject-isolation diff. Without this, the patrol and its renderer
+      // feedback advance between the museum-present and museum-suppressed
+      // screenshots, so moving gameplay pixels are falsely attributed to the
+      // museum and can touch the crop edge. This changes no gameplay state;
+      // setSubjectSuppressed(false) resumes the route after measurement.
+      paused = true;
       syncFloorVisuals();
       publishEvidence();
     },
     setSubjectSuppressed(suppressed: boolean) {
       app.nodes.get("museum-interior")?.setVisible(!suppressed && runtime.layout.id === 1);
+      if (!suppressed) paused = false;
     }
   }
 });
 
 syncFloorVisuals();
 syncAlarmVisuals();
+syncLiveHierarchy();
 syncHud();
 publishEvidence();

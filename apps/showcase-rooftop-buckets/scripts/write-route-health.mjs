@@ -8,7 +8,7 @@ const repoRoot = resolve(appDir, "../..");
 const reportDir = join(repoRoot, "tests/reports/rooftop-buckets");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
-const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopDefender"];
+const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
 const audioIds = [
   "rooftopBucketsAmbientRooftopSfx", "rooftopBucketsBoardThudSfx", "rooftopBucketsBrickMissSfx",
   "rooftopBucketsBuzzerFailSfx", "rooftopBucketsChargeTickSfx", "rooftopBucketsFireIgniteSfx",
@@ -39,7 +39,11 @@ const assetById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
 for (const id of modelIds) {
   const asset = assetById.get(id);
   if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`);
-  if (asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable CC0 provenance is incomplete`);
+  const approvedProvenance = asset.provenance?.license === "CC0-1.0"
+    ? ["Aura3D synthesis", "Kenney"].includes(asset.provenance?.author)
+    : asset.provenance?.license?.startsWith("CC-BY-4.0")
+      && ["Daniel Darko", "Daffa Haekal", "3DDomino"].some((author) => asset.provenance?.author?.startsWith(author));
+  if (!approvedProvenance || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable model provenance is incomplete`);
   if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
   if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
 }

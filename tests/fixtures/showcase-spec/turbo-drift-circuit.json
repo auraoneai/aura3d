@@ -13,7 +13,7 @@
   },
   "racing": {
     "vehicleAsset": "showcaseCc0FormulaRaceCar",
-    "trackAsset": "showcaseTsukubaCircuit",
+    "trackAsset": "turboFormulaCircuit",
     "cameraIntent": "track-overview",
     "layoutConstraints": {
       "keepVehicleReadable": true,
@@ -37,8 +37,8 @@
       "carTrackScaleCompatible": true,
       "noDebugLocatorDisk": true,
       "trackTopology": {
-        "assetId": "showcaseTsukubaCircuit",
-        "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+        "assetId": "turboFormulaCircuit",
+        "assetHash": "sha256-10f59ae34d56f958b9079be1f6e560c02c3623bd275a8a679921e68736286194",
         "source": "asset-mesh-extracted",
         "roadCenterline": [
           {
@@ -302,7 +302,7 @@
           }
         },
         "evidence": {
-          "sourceAsset": "assets.showcaseTsukubaCircuit",
+            "sourceAsset": "assets.turboFormulaCircuit",
           "notes": "Road topology extracted from 8 GLB primitive(s) with road/track material names and bound to the current asset hash."
         }
       }
@@ -339,9 +339,9 @@
       "hasForegroundBounds": true
     },
     {
-      "id": "showcaseTsukubaCircuit",
+      "id": "turboFormulaCircuit",
       "role": "track",
-      "typedRef": "assets.showcaseTsukubaCircuit",
+      "typedRef": "assets.turboFormulaCircuit",
       "quality": "release",
       "hasDurableProvenance": true,
       "hasRenderedProbe": true,
@@ -353,7 +353,7 @@
     "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
     "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
     "gameplayProof": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json",
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseCc0FormulaRaceCar --asset showcaseCcByFormulaOpponent --asset showcaseTsukubaCircuit",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset turboRaceCar --asset showcaseCc0FormulaRaceCar --asset turboFormulaCircuit",
     "deployEvidence": "docs/project/showcase-launch-evidence.json",
     "deployPassed": true,
     "routePrimaryPassed": true,
@@ -361,7 +361,7 @@
     "releaseAssetProbes": {
       "showcaseCc0FormulaRaceCar": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseCc0FormulaRaceCar.json",
       "showcaseCcByFormulaOpponent": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseCcByFormulaOpponent.json",
-      "showcaseTsukubaCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.json"
+      "turboFormulaCircuit": "tests/reports/showcase-release-asset-probes/turboFormulaCircuit.json"
     },
     "assetPairCompositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
     "visualReviewPassed": true

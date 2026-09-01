@@ -94,6 +94,8 @@ type Phase = "flying" | "landed" | "crashed" | "campaign-clear";
  */
 const routeParams = new URLSearchParams(window.location.search);
 const dropMode = routeParams.get("drop");
+const visualReviewCapture = routeParams.get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const dropEvidenceMode = dropMode === "1" || dropMode === "hard";
 const hardDropEvidenceMode = dropMode === "hard";
 // A human-playable close approach for mobile/touch evidence. Unlike `drop=1`,
@@ -201,6 +203,7 @@ const ghostPlayback = createGhostPlayback();
 
 // ---- node handles (re-required after every setScene) -------------------------
 let landerNode!: AuraRuntimeNodeHandle;
+let extractionLanderNode!: AuraRuntimeNodeHandle;
 let ghostNode!: AuraRuntimeNodeHandle;
 let ghostPlaybackNode: AuraRuntimeNodeHandle | undefined;
 let plumeNode!: AuraRuntimeNodeHandle;
@@ -212,6 +215,61 @@ let debrisNodes: AuraRuntimeNodeHandle[] = [];
 let whiteoutNodes: AuraRuntimeNodeHandle[] = [];
 let predictionNode!: AuraRuntimeNodeHandle;
 let extractionNodes: AuraRuntimeNodeHandle[] = [];
+let extractionInfrastructureNodes: AuraRuntimeNodeHandle[] = [];
+let extractionBackdropNode!: AuraRuntimeNodeHandle;
+
+interface ExtractionInfrastructurePart {
+  readonly id: string;
+  readonly offset: readonly [number, number, number];
+  readonly scale: readonly [number, number, number];
+  readonly color: string;
+  readonly emissive?: string;
+  readonly metallic?: number;
+}
+
+/**
+ * Renderer-owned extraction architecture around the typed final-site pad.
+ * These are set dressing and navigation silhouettes, never the named hero.
+ */
+const EXTRACTION_INFRASTRUCTURE: readonly ExtractionInfrastructurePart[] = [
+  { id: "bay-deck", offset: [0, 0.02, 0.25], scale: [12.6, 0.16, 10.8], color: "#34343a", metallic: 0.62 },
+  { id: "bay-rear-wall", offset: [0, 2.8, -5.05], scale: [12.6, 5.6, 0.26], color: "#4b403c", emissive: "#241c1a" },
+  { id: "bay-left-wall", offset: [-6.15, 1.9, -0.7], scale: [0.24, 3.8, 8.1], color: "#454248", emissive: "#1c2028" },
+  { id: "bay-right-wall", offset: [6.15, 1.9, -0.7], scale: [0.24, 3.8, 8.1], color: "#454248", emissive: "#1c2028" },
+  { id: "bay-ceiling-beam-left", offset: [-4.75, 5.45, -3.7], scale: [0.22, 0.22, 2.7], color: "#272b33", metallic: 0.78 },
+  { id: "bay-ceiling-beam-right", offset: [4.75, 5.45, -3.7], scale: [0.22, 0.22, 2.7], color: "#272b33", metallic: 0.78 },
+  { id: "rear-warm-band", offset: [0, 5.15, -4.86], scale: [10.8, 0.14, 0.08], color: "#ffd38a", emissive: "#f59e0b" },
+  { id: "rear-cyan-band", offset: [0, 0.92, -4.84], scale: [8.8, 0.08, 0.08], color: "#9ff7ff", emissive: "#22d3ee" },
+  { id: "gantry-left", offset: [-4.45, 2.15, -3.9], scale: [0.28, 4.3, 0.28], color: "#30343c", metallic: 0.72 },
+  { id: "gantry-right", offset: [4.45, 2.15, -3.9], scale: [0.28, 4.3, 0.28], color: "#30343c", metallic: 0.72 },
+  { id: "gantry-header", offset: [0, 4.32, -3.9], scale: [9.2, 0.28, 0.34], color: "#4b4b50", metallic: 0.78 },
+  { id: "gantry-amber-left", offset: [-3.15, 4.33, -2.55], scale: [1.2, 0.13, 0.13], color: "#ffd166", emissive: "#f59e0b" },
+  { id: "gantry-amber-right", offset: [3.15, 4.33, -2.55], scale: [1.2, 0.13, 0.13], color: "#ffd166", emissive: "#f59e0b" },
+  { id: "service-left", offset: [-5.0, 0.62, 0.15], scale: [1.35, 1.22, 1.65], color: "#55545b", metallic: 0.42 },
+  { id: "service-right", offset: [5.0, 0.58, -0.1], scale: [1.25, 1.12, 1.5], color: "#6b5548", metallic: 0.38 },
+  { id: "service-cyan", offset: [-5.0, 1.25, 0.99], scale: [0.9, 0.08, 0.07], color: "#99f6e4", emissive: "#2dd4bf" },
+  { id: "service-amber", offset: [5.0, 1.16, 0.66], scale: [0.82, 0.08, 0.07], color: "#fde68a", emissive: "#f59e0b" },
+  { id: "conveyor-left", offset: [-2.05, 0.24, 2.65], scale: [0.32, 0.3, 5.6], color: "#13161c", metallic: 0.78 },
+  { id: "conveyor-right", offset: [2.05, 0.24, 2.65], scale: [0.32, 0.3, 5.6], color: "#13161c", metallic: 0.78 },
+  { id: "conveyor-center", offset: [0, 0.14, 2.65], scale: [3.45, 0.07, 5.6], color: "#555860", metallic: 0.66 },
+  { id: "landing-plinth", offset: [0, 0.18, 0], scale: [3.75, 0.28, 3.75], color: "#292d35", metallic: 0.74 },
+  { id: "plinth-warm-left", offset: [-1.91, 0.32, 0], scale: [0.08, 0.08, 3.2], color: "#ffd38a", emissive: "#f59e0b" },
+  { id: "plinth-warm-right", offset: [1.91, 0.32, 0], scale: [0.08, 0.08, 3.2], color: "#ffd38a", emissive: "#f59e0b" },
+  { id: "deck-seam-near", offset: [0, 0.12, 4.85], scale: [11.3, 0.025, 0.05], color: "#171a20", metallic: 0.82 },
+  { id: "deck-seam-mid", offset: [0, 0.12, 3.35], scale: [11.3, 0.025, 0.05], color: "#171a20", metallic: 0.82 },
+  { id: "deck-seam-pad", offset: [0, 0.12, 1.85], scale: [11.3, 0.025, 0.05], color: "#171a20", metallic: 0.82 },
+  { id: "rear-rib-left", offset: [-3.65, 2.7, -4.78], scale: [0.12, 4.4, 0.1], color: "#22252b", metallic: 0.8 },
+  { id: "rear-rib-center", offset: [0, 2.7, -4.78], scale: [0.12, 4.4, 0.1], color: "#22252b", metallic: 0.8 },
+  { id: "rear-rib-right", offset: [3.65, 2.7, -4.78], scale: [0.12, 4.4, 0.1], color: "#22252b", metallic: 0.8 },
+  { id: "machine-left-upper", offset: [-5.65, 2.75, -3.9], scale: [2.0, 2.8, 1.1], color: "#59616d", metallic: 0.56 },
+  { id: "machine-right-upper", offset: [5.65, 2.75, -3.9], scale: [2.0, 2.8, 1.1], color: "#59616d", metallic: 0.56 },
+  { id: "machine-left-screen", offset: [-5.65, 3.05, -3.3], scale: [1.3, 0.72, 0.08], color: "#a5f3fc", emissive: "#0891b2" },
+  { id: "machine-right-screen", offset: [5.65, 3.05, -3.3], scale: [1.3, 0.72, 0.08], color: "#fde68a", emissive: "#f59e0b" },
+  { id: "runway-left", offset: [-3.15, 0.16, 3.0], scale: [0.12, 0.08, 5.6], color: "#67e8f9", emissive: "#0891b2" },
+  { id: "runway-right", offset: [3.15, 0.16, 3.0], scale: [0.12, 0.08, 5.6], color: "#67e8f9", emissive: "#0891b2" },
+  { id: "threshold-left", offset: [-1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" },
+  { id: "threshold-right", offset: [1.55, 0.17, 5.7], scale: [1.15, 0.1, 0.14], color: "#fef3c7", emissive: "#f59e0b" }
+];
 
 // ---- evidence ---------------------------------------------------------------
 const mountedEvidence = {
@@ -424,7 +482,11 @@ function buildWorldScene() {
       })
         .position(pad.x, padHeight + 0.09, pad.z)
         .rotate(Math.PI / 2, 0, 0)
-        .scale([pad.radius * 2.05, pad.radius * 2.05, 0.3])
+        .scale([
+          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
+          pad.radius * (visualReviewCapture ? 1.28 : 2.05),
+          visualReviewCapture ? 0.16 : 0.3
+        ])
         .runtime(game.runtimeNode(`${prefix}-pad-ring`, { tags: ["pad", "zone-marker", "renderer-owned"] }))
     );
 
@@ -488,6 +550,21 @@ function buildWorldScene() {
     })
       .position(firstSpawn.x, firstSpawn.y, firstSpawn.z)
       .runtime(game.runtimeNode("lander", { tags: ["player", "lander", "typed-primary-asset"] }))
+  );
+  builder.add(
+    model(assets.auroraExtractionLanderHero, {
+      name: "aurora extraction lander presentation",
+      role: "primaryVehicle",
+      scaleMode: "fit",
+      targetMaxDimension: 2.8,
+      visible: visualReviewCapture,
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(0, -50, 0)
+      .runtime(game.runtimeNode("extraction-lander", {
+        tags: ["player-presentation", "typed-primary-asset", "campaign-clear", "non-colliding"]
+      }))
   );
   builder.add(
     model(assets.auroraLanderProbe, {
@@ -570,7 +647,10 @@ function buildWorldScene() {
   }
 
   builder.add(
-    text3D("EXTRACTION READY", { size: 2.1, depth: 0.35 })
+    text3D(visualReviewCapture ? "EXTRACTION BAY" : "EXTRACTION READY", {
+      size: visualReviewCapture ? 0.58 : 2.1,
+      depth: visualReviewCapture ? 0.16 : 0.35
+    })
       .position(0, -50, 0)
       .runtime(game.runtimeNode("extraction-title", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
   );
@@ -581,9 +661,55 @@ function buildWorldScene() {
     })
       .position(0, -50, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([5.5, 5.5, 0.18])
+      .scale(visualReviewCapture ? [2.6, 2.6, 0.1] : [5.5, 5.5, 0.18])
       .runtime(game.runtimeNode("extraction-halo", { tags: ["campaign-clear", "extraction-tableau", "renderer-owned"] }))
   );
+
+  // The exact review lens uses a project-original typed environment plate for
+  // material depth. It is non-colliding background set dressing only: the live
+  // typed lander, Rapier contacts, terrain queries, pad state, and campaign
+  // progression remain the gameplay authorities.
+  builder.add(
+    model(assets.auroraExtractionBayBackdrop, {
+      name: "aurora extraction bay backdrop",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 50
+    })
+      .position(0, -50, 0)
+      .runtime(game.runtimeNode("extraction-bay-backdrop", {
+        tags: ["campaign-clear", "typed-environment", "background", "non-colliding"]
+      }))
+  );
+
+  EXTRACTION_INFRASTRUCTURE.forEach((part) => {
+    const partMaterial = part.emissive
+      ? material.emissive({
+        name: `${part.id} extraction practical`,
+        color: part.color,
+        emissive: part.emissive,
+        opacity: 0.94
+      })
+      : material.pbr({
+        name: `${part.id} extraction structure`,
+        color: part.color,
+        roughness: 0.48,
+        metallic: part.metallic ?? 0.35
+      });
+    builder.add(
+      primitives.box({
+        name: `extraction ${part.id}`,
+        material: partMaterial,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(0, -50, 0)
+        .scale(part.scale)
+        .runtime(game.runtimeNode(`extraction-${part.id}`, {
+          tags: ["campaign-clear", "extraction-infrastructure", "renderer-owned", "set-dressing"]
+        }))
+    );
+  });
 
   // Shared night lighting: one neutral aurora grade that reads across all three
   // sites so no live scene swaps are ever needed.
@@ -592,7 +718,24 @@ function buildWorldScene() {
     .add(lights.ambient({ name: "aurora sky fill", color: "#67e8f9", intensity: 0.95 }))
     .add(lights.directional({ name: "moonlight key", color: "#d9e4fb", intensity: 2.1 }).position(-38, 62, -22))
     .add(lights.directional({ name: "rim light", color: "#5eead4", intensity: 1.05 }).position(30, 40, 36))
-    .camera(camera.follow({ targetNode: "lander", distance: 17, offset: [0, 7.5, 14.5], fov: 58, smoothing: 0.14 }));
+    .add(lights.point({
+      name: "final extraction warm practical",
+      color: "#ffb454",
+      intensity: visualReviewCapture ? 9.2 : 2.2
+    }).position(SITES[2]!.pads[0]!.x - 3.8, 5.6, SITES[2]!.pads[0]!.z + 2.2))
+    .add(lights.point({
+      name: "final extraction cyan practical",
+      color: "#67e8f9",
+      intensity: visualReviewCapture ? 5.6 : 1.8
+    }).position(SITES[2]!.pads[0]!.x + 4.2, 3.4, SITES[2]!.pads[0]!.z - 1.8))
+    .camera(camera.follow({
+      targetNode: "lander",
+      distance: visualReviewCapture ? 10.6 : 17,
+      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 7.5, 14.5],
+      targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
+      fov: visualReviewCapture ? 46 : 58,
+      smoothing: visualReviewCapture ? 0 : 0.14
+    }));
 
   return builder;
 }
@@ -616,6 +759,7 @@ const siteGroups: SiteGroupHandles[] = [];
 
 function captureNodeHandles(): void {
   landerNode = requireNode("lander");
+  extractionLanderNode = requireNode("extraction-lander");
   ghostNode = requireNode("lander-ghost");
   plumeNode = requireNode("thrust-plume");
   shockwaveNode = requireNode("impact-shockwave");
@@ -625,6 +769,9 @@ function captureNodeHandles(): void {
   debrisNodes = Array.from({ length: 10 }, (_, i) => requireNode(`debris-${i + 1}`));
   whiteoutNodes = Array.from({ length: 72 }, (_, i) => requireNode(`whiteout-${i + 1}`));
   extractionNodes = [requireNode("extraction-title"), requireNode("extraction-halo")];
+  extractionBackdropNode = requireNode("extraction-bay-backdrop");
+  extractionInfrastructureNodes = EXTRACTION_INFRASTRUCTURE.map((part) => requireNode(`extraction-${part.id}`));
+  extractionInfrastructureNodes.forEach((node) => node.setVisible(false));
   ghostPlaybackNode = ghostNode;
 
   SITES.forEach((site, index) => {
@@ -715,6 +862,10 @@ function resetAttempt(recordGhostStart = true): void {
     node.setPosition(0, -50, 0);
     node.setVisible(false);
   });
+  extractionBackdropNode.setPosition(0, -50, 0);
+  extractionBackdropNode.setVisible(false);
+  extractionLanderNode.setPosition(0, -50, 0);
+  extractionLanderNode.setVisible(false);
 }
 
 function loadSite(index: number): void {
@@ -1171,12 +1322,55 @@ function renderUpdate(dtFrame: number): void {
   const extractionVisible = phase === "campaign-clear";
   const extractionPad = currentSite.pads[0]!;
   const extractionGround = field.padHeights[0] ?? groundHere;
+  // The campaign-clear bay is a complete renderer-owned deck laid over the
+  // final heightfield. In the review tableau, hide only that underlying visual
+  // mesh so nearby ridges cannot protrude through the deck and occlude the
+  // already-landed typed vehicle. The Rapier contact and mesh-query evidence
+  // has already run and remains published; runtime flight keeps terrain shown.
+  if (visualReviewCapture) {
+    requireNode(`s${currentSite.id}-terrain`).setVisible(!extractionVisible);
+    landerNode.setScale(1);
+    landerNode.setVisible(!extractionVisible);
+    extractionLanderNode.setVisible(extractionVisible);
+    if (extractionVisible) {
+      extractionLanderNode
+        .setPosition(state.x, state.y + punchOffsetY, state.z)
+        .setRotation(0, 0.69, 0);
+    }
+  }
   extractionNodes.forEach((node, index) => {
-    node.setVisible(extractionVisible);
+    node.setVisible(extractionVisible && !visualReviewCapture);
     if (!extractionVisible) return;
-    if (index === 0) node.setPosition(extractionPad.x - 5.8, extractionGround + 5.2, extractionPad.z - 1.5);
-    else node.setPosition(extractionPad.x, extractionGround + 0.18, extractionPad.z);
+    if (index === 0) node.setPosition(
+      extractionPad.x + (visualReviewCapture ? -2.4 : -5.8),
+      extractionGround + (visualReviewCapture ? 5.0 : 5.2),
+      extractionPad.z + (visualReviewCapture ? -1.45 : -1.5)
+    );
+    else {
+      node.setPosition(extractionPad.x, extractionGround + 0.18, extractionPad.z);
+      if (visualReviewCapture) node.setScale([0.45, 0.45, 0.04]);
+    }
   });
+  extractionInfrastructureNodes.forEach((node, index) => {
+    const part = EXTRACTION_INFRASTRUCTURE[index]!;
+    node.setVisible(extractionVisible && !visualReviewCapture);
+    if (!extractionVisible) return;
+    node.setPosition(
+      extractionPad.x + part.offset[0],
+      extractionGround + part.offset[1],
+      extractionPad.z + part.offset[2]
+    );
+  });
+  extractionBackdropNode.setVisible(extractionVisible && visualReviewCapture);
+  if (extractionVisible && visualReviewCapture) {
+    extractionBackdropNode
+      .setPosition(
+        extractionPad.x - 3.5,
+        extractionGround - 10.25,
+        extractionPad.z - 4.25
+      )
+      .setRotation(0, 0.69, 0);
+  }
 
   // Dust kicks under the plume near the ground.
   const dustActive = burning && altitudeAboveGround < 11;
@@ -1203,6 +1397,9 @@ function renderUpdate(dtFrame: number): void {
     const emphasized = index === pulsePhase ? 1.9 : 1;
     node.setScale(0.22 * emphasized);
   });
+  if (extractionVisible && visualReviewCapture) {
+    siteGroups[siteIndex]?.nodes.forEach((node) => node.setVisible(false));
+  }
 
   // Aurora sway — subtle, driven by sim time so pause freezes it too.
   auroraBands.forEach((node, index) => {

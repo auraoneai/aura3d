@@ -367,29 +367,57 @@ mkdirSync(OUT_DIR, { recursive: true });
 {
   const rustPart = part();
   const metalPart = part();
+  const deckPart = part();
+  const glowPart = part();
 
-  // Keel beam
-  addBox(rustPart, 0, 0.3, 0, 0.4, 0.3, 3.2);
-
-  // Curved Structural Ribs
-  for (let z = -2.6; z <= 2.6; z += 0.85) {
-    // Left Rib
-    addBox(rustPart, -1.8, 1.4, z, 0.16, 1.4, 0.16);
-    addBox(rustPart, -1.1, 2.6, z, 0.9, 0.14, 0.16);
-    // Right Broken Rib
-    addBox(rustPart, 1.6, 1.2, z, 0.16, 1.2, 0.16);
+  // A broad, readable ironclad silhouette for the overhead salvage-map state.
+  // The previous asset was almost entirely tall black ribs; from above it read
+  // as unrelated bars and hid its own hull. Layered deck plates now establish
+  // a continuous ship form while leaving broken edges and machinery visible.
+  const deckSections = [
+    { z: -2.55, width: 0.9, length: 0.62 },
+    { z: -1.75, width: 1.38, length: 0.58 },
+    { z: -0.9, width: 1.62, length: 0.62 },
+    { z: 0.0, width: 1.75, length: 0.68 },
+    { z: 0.92, width: 1.55, length: 0.62 },
+    { z: 1.82, width: 1.28, length: 0.6 },
+    { z: 2.62, width: 0.78, length: 0.48 }
+  ];
+  for (const section of deckSections) {
+    addBox(rustPart, 0, 0.28, section.z, section.width, 0.28, section.length);
+    addBox(deckPart, 0, 0.59, section.z, section.width * 0.9, 0.055, section.length * 0.9);
   }
 
-  // Broken Boiler & Pipe Machinery
-  addCylinderZ(metalPart, 0.85, 0.85, -1.2, 1.0, -0.4, 1.1, 12);
-  addCylinderY(metalPart, 0.32, 0.32, 1.1, 2.8, -0.4, -0.2, 10);
+  // Keel, gunwales, and three low surviving ribs retain the wreck identity
+  // without creating a forest of near-black columns.
+  addBox(metalPart, 0, 0.15, 0, 0.22, 0.18, 3.18);
+  addBox(rustPart, -1.5, 0.72, 0, 0.12, 0.42, 2.35);
+  addBox(rustPart, 1.5, 0.72, -0.35, 0.12, 0.42, 1.95);
+  for (const z of [-1.55, 0.05, 1.55]) {
+    addBox(rustPart, -1.18, 1.02, z, 0.11, 0.46, 0.11);
+    addBox(rustPart, 1.18, 0.94, z, 0.11, 0.38, 0.11);
+    addBox(rustPart, 0, 1.42, z, 1.25, 0.09, 0.11);
+  }
 
-  // Sunken Cargo Hatches
-  addBox(rustPart, 0.8, 0.4, 1.6, 0.75, 0.3, 0.75);
+  // Boilers, bridge plinth, hatch covers, and broken cargo machinery create a
+  // readable top surface with several material responses.
+  addCylinderZ(metalPart, 0.48, 0.48, -1.15, 0.9, -0.42, 1.0, 20);
+  addCylinderZ(metalPart, 0.34, 0.34, -0.82, 0.72, 0.6, 0.92, 18);
+  addBox(metalPart, 0.18, 0.82, 1.55, 0.62, 0.22, 0.48);
+  addBox(deckPart, -0.65, 0.72, -1.55, 0.42, 0.08, 0.34);
+  addBox(deckPart, 0.72, 0.72, 1.72, 0.36, 0.08, 0.3);
+
+  // Warm surviving lamps give the wreck a focal rhythm and remain real GLB
+  // emissive geometry, not a DOM or capture-only overlay.
+  for (const [x, z] of [[-1.34, -1.5], [1.34, -0.65], [-1.34, 0.55], [1.34, 1.35]]) {
+    addSphere(glowPart, x, 0.78, z, 0.12, 8, 12);
+  }
 
   const wreckParts = [
-    { name: "rustHull", part: rustPart, color: [0.38, 0.22, 0.16, 1.0], roughness: 0.88, metallic: 0.35 },
-    { name: "darkMetal", part: metalPart, color: [0.18, 0.2, 0.24, 1.0], roughness: 0.65, metallic: 0.75 }
+    { name: "rustHull", part: rustPart, color: [0.34, 0.28, 0.2, 1.0], roughness: 0.82, metallic: 0.24 },
+    { name: "darkMetal", part: metalPart, color: [0.18, 0.33, 0.35, 1.0], roughness: 0.58, metallic: 0.5 },
+    { name: "wornDeck", part: deckPart, color: [0.46, 0.43, 0.32, 1.0], roughness: 0.76, metallic: 0.12 },
+    { name: "survivingLamps", part: glowPart, color: [1.0, 0.66, 0.2, 1.0], roughness: 0.18, metallic: 0.08, emissive: [1.0, 0.42, 0.06] }
   ];
   writeMultiPartGlb(resolve(OUT_DIR, "deepRecoveryWreckHull.glb"), wreckParts);
 }

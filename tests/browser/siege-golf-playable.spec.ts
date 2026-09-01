@@ -353,6 +353,10 @@ test("siege golf fails a hole past the stroke limit and resets it exactly", asyn
       return Number(ev?.strokes ?? 9) === 0 && ev?.state === "aiming";
     }, undefined, { timeout: 30_000 });
     const retry = await readEvidence(page);
+    // The shared example-server lifecycle can clear Playwright's transient
+    // output root after this test creates it. Re-establish this test-owned
+    // leaf immediately before persisting the reset receipt.
+    mkdirSync(logDir, { recursive: true });
     writeFileSync(join(logDir, "retry.json"), JSON.stringify(retry, null, 2));
   } finally {
     await page.close().catch(() => undefined);

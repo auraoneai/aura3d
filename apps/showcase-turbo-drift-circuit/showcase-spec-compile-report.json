@@ -14,20 +14,24 @@
     "src/main.ts"
   ],
   "blockers": [
+    "evidence:route-primary-probe:not-passing",
     "evidence:gameplay-proof:racing:visual-review-verdict-not-pass:needs-work",
-    "evidence:gameplay-proof:racing:visual-review-screenshot-mismatch"
+    "evidence:gameplay-proof:racing:visual-review-screenshot-mismatch",
+    "evidence:deploy-command:not-release-check-deploy",
+    "evidence:deploy-artifact:command-mismatch",
+    "evidence:racing-asset-pair:missing"
   ],
-  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-DIoiTq/showcase-evidence-checklist.json",
-  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-DIoiTq/route-gate.patch.json",
+  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-AIGJNn/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-AIGJNn/route-gate.patch.json",
   "rejectedAssets": [],
   "replacementCandidates": [],
   "assetPairComposition": {
     "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
-    "verdict": "pass",
+    "verdict": "fail",
     "checks": [
       {
         "id": "binding-overlap",
-        "verdict": "pass"
+        "verdict": "fail"
       },
       {
         "id": "contact",
@@ -49,8 +53,8 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-2cf962828d9a8207b8c3185a70b60438874730f2ce12e0ec25cc1c2cc625def9",
-    "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "sourceReportHash": "sha256-c30ac50923e222c4474c2f54ca3bf3e3f419b7464047a91756f6a6a694b3afe0"
+    "contentHash": "sha256-553d747ff2256c7c5b0aa34e10d6d0e46688c23d5f0aac82befb7d60242ec238",
+    "sourceReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-AIGJNn/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "sourceReportHash": "sha256-6e6a2fcc2005eda0c53632430d5d7a48af889329cd75cde1dc54b277b0f89fb3"
   }
 }

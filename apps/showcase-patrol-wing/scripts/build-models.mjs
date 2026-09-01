@@ -93,6 +93,39 @@ function addBox(p, cx, cy, cz, hx, hy, hz) {
   addQuad(p, v[2], v[3], v[7], v[6]); // +X
 }
 
+function ringX(n, radiusY, radiusZ, x, centerY = 0, centerZ = 0) {
+  const points = [];
+  for (let index = 0; index < n; index += 1) {
+    const angle = (index / n) * Math.PI * 2;
+    points.push([x, centerY + Math.cos(angle) * radiusY, centerZ + Math.sin(angle) * radiusZ]);
+  }
+  return points;
+}
+
+function addXCap(p, points, x, front) {
+  const centerY = points.reduce((sum, point) => sum + point[1], 0) / points.length;
+  const centerZ = points.reduce((sum, point) => sum + point[2], 0) / points.length;
+  const center = [x, centerY, centerZ];
+  for (let index = 0; index < points.length; index += 1) {
+    const next = (index + 1) % points.length;
+    if (front) addTriangle(p, center, points[next], points[index]);
+    else addTriangle(p, center, points[index], points[next]);
+  }
+}
+
+function addExtrudedPolygonXZ(p, points, bottomY, topY) {
+  const bottom = points.map(([x, z]) => [x, bottomY, z]);
+  const top = points.map(([x, z]) => [x, topY, z]);
+  for (let index = 1; index < points.length - 1; index += 1) {
+    addTriangle(p, top[0], top[index], top[index + 1]);
+    addTriangle(p, bottom[0], bottom[index + 1], bottom[index]);
+  }
+  for (let index = 0; index < points.length; index += 1) {
+    const next = (index + 1) % points.length;
+    addQuad(p, bottom[index], bottom[next], top[next], top[index]);
+  }
+}
+
 /**
  * A flat 8-sided rotor disc centered at (x, cy, cz), spinning in the YZ plane
  * (the drone's +X facing): a thin ring band plus hub, like a blurred prop.
@@ -172,36 +205,45 @@ function addArm(p, x, angle, r0, r1, thickness) {
  */
 function buildPlane() {
   const fuselage = part();
-  // Tapered fuselage: nose at x = +0.95, tail at x = -1.05.
-  addBox(fuselage, 0.78, 0, 0, 0.17, 0.13, 0.11);   // cowl
-  addBox(fuselage, 0.45, -0.01, 0, 0.2, 0.14, 0.13); // forward hull
-  addBox(fuselage, 0.05, -0.02, 0, 0.24, 0.15, 0.14); // cockpit hull
-  addBox(fuselage, -0.4, -0.03, 0, 0.22, 0.12, 0.11); // aft hull
-  addBox(fuselage, -0.92, -0.05, 0, 0.24, 0.09, 0.06); // tail boom
+  const bodyRings = [
+    ringX(8, 0.045, 0.045, 1.52, 0.01),
+    ringX(8, 0.2, 0.2, 1.12),
+    ringX(8, 0.31, 0.3, 0.35, 0.01),
+    ringX(8, 0.29, 0.27, -0.48),
+    ringX(8, 0.14, 0.13, -1.38, -0.01)
+  ];
+  for (let index = 0; index < bodyRings.length - 1; index += 1) addBand(fuselage, bodyRings[index], bodyRings[index + 1]);
+  addXCap(fuselage, bodyRings[0], 1.52, true);
+  addXCap(fuselage, bodyRings.at(-1), -1.38, false);
 
   const canopy = part();
-  addBox(canopy, 0.18, 0.15, 0, 0.14, 0.07, 0.09);
+  addExtrudedPolygonXZ(canopy, [[0.72, -0.2], [0.7, 0.2], [-0.18, 0.23], [-0.46, 0.16], [-0.46, -0.16], [-0.18, -0.23]], 0.18, 0.4);
 
   const wing = part();
-  addBox(wing, 0.1, 0.03, 0, 0.2, 0.03, 1.0);      // main wing, 2.0 m span
-  addBox(wing, 0.1, 0.09, 0.72, 0.18, 0.045, 0.24); // right wingtip strake
-  addBox(wing, 0.1, 0.09, -0.72, 0.18, 0.045, 0.24); // left wingtip strake
+  addExtrudedPolygonXZ(wing, [[0.52, -0.2], [0.15, -1.68], [-0.55, -1.78], [-0.28, -0.23]], -0.055, 0.025);
+  addExtrudedPolygonXZ(wing, [[0.52, 0.2], [-0.28, 0.23], [-0.55, 1.78], [0.15, 1.68]], -0.055, 0.025);
+
+  const trim = part();
+  addExtrudedPolygonXZ(trim, [[0.18, -1.28], [0.08, -1.68], [-0.53, -1.76], [-0.42, -1.34]], 0.026, 0.075);
+  addExtrudedPolygonXZ(trim, [[0.18, 1.28], [-0.42, 1.34], [-0.53, 1.76], [0.08, 1.68]], 0.026, 0.075);
 
   const tail = part();
-  addBox(tail, -1.02, 0.0, 0, 0.13, 0.02, 0.38);   // tailplane
-  addBox(tail, -1.06, 0.2, 0, 0.14, 0.18, 0.02);   // fin
+  addExtrudedPolygonXZ(tail, [[-0.84, -0.12], [-1.08, -0.78], [-1.42, -0.82], [-1.28, -0.1]], 0.0, 0.06);
+  addExtrudedPolygonXZ(tail, [[-0.84, 0.12], [-1.28, 0.1], [-1.42, 0.82], [-1.08, 0.78]], 0.0, 0.06);
+  addBox(tail, -1.16, 0.29, -0.14, 0.28, 0.29, 0.045);
+  addBox(tail, -1.16, 0.29, 0.14, 0.28, 0.29, 0.045);
 
-  const spinner = part();
-  addBox(spinner, 0.99, 0, 0, 0.05, 0.05, 0.05);   // prop hub
-  addBox(spinner, 1.02, 0, 0, 0.012, 0.34, 0.05);  // vertical prop blade
-  addBox(spinner, 1.02, 0, 0, 0.012, 0.05, 0.34);  // horizontal prop blade
+  const engines = part();
+  addBox(engines, -1.37, -0.03, -0.13, 0.035, 0.09, 0.075);
+  addBox(engines, -1.37, -0.03, 0.13, 0.035, 0.09, 0.075);
 
   return [
-    { name: "fuselage", part: fuselage, color: [0.93, 0.89, 0.78, 1], roughness: 0.55 },
-    { name: "canopy", part: canopy, color: [0.2, 0.32, 0.45, 1], roughness: 0.15, metallic: 0.4 },
-    { name: "wing", part: wing, color: [0.85, 0.22, 0.2, 1], roughness: 0.5 },
-    { name: "tail", part: tail, color: [0.85, 0.22, 0.2, 1], roughness: 0.5 },
-    { name: "spinner", part: spinner, color: [0.15, 0.15, 0.18, 1], roughness: 0.35, metallic: 0.6 }
+    { name: "fuselage", part: fuselage, color: [0.18, 0.29, 0.42, 1], roughness: 0.34, metallic: 0.58 },
+    { name: "canopy", part: canopy, color: [0.08, 0.58, 0.78, 1], roughness: 0.12, metallic: 0.45 },
+    { name: "wing", part: wing, color: [0.28, 0.46, 0.64, 1], roughness: 0.38, metallic: 0.5 },
+    { name: "trim", part: trim, color: [1.0, 0.25, 0.34, 1], roughness: 0.28, metallic: 0.35 },
+    { name: "tail", part: tail, color: [0.15, 0.25, 0.38, 1], roughness: 0.4, metallic: 0.5 },
+    { name: "engines", part: engines, color: [0.28, 0.95, 1.0, 1], roughness: 0.1, metallic: 0.15 }
   ];
 }
 
@@ -213,36 +255,38 @@ function buildPlane() {
 function buildDrone(variant) {
   const heavy = variant === "A";
   const frame = part();
-  addBox(frame, 0, 0, 0, heavy ? 0.3 : 0.26, 0.12, heavy ? 0.3 : 0.26);
-  addBox(frame, 0.3, -0.02, 0, 0.16, 0.07, 0.16);   // nose sensor pod
+  const bodyRings = [
+    ringX(6, 0.035, 0.035, 0.82),
+    ringX(6, heavy ? 0.2 : 0.16, heavy ? 0.2 : 0.16, 0.46),
+    ringX(6, heavy ? 0.24 : 0.2, heavy ? 0.23 : 0.19, -0.14),
+    ringX(6, 0.1, 0.09, -0.72)
+  ];
+  for (let index = 0; index < bodyRings.length - 1; index += 1) addBand(frame, bodyRings[index], bodyRings[index + 1]);
+  addXCap(frame, bodyRings[0], 0.82, true);
+  addXCap(frame, bodyRings.at(-1), -0.72, false);
 
   const arms = part();
-  const armR0 = 0.2;
-  const armR1 = heavy ? 0.62 : 0.54;
-  for (const angle of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
-    addArm(arms, 0.08, angle, armR0, armR1, 0.035);
-  }
+  const span = heavy ? 0.9 : 0.76;
+  addExtrudedPolygonXZ(arms, [[0.34, -0.14], [-0.05, -span], [-0.52, -span * 0.72], [-0.3, -0.12]], -0.035, 0.035);
+  addExtrudedPolygonXZ(arms, [[0.34, 0.14], [-0.3, 0.12], [-0.52, span * 0.72], [-0.05, span]], -0.035, 0.035);
 
   const rotors = part();
-  const rotorR = heavy ? 0.26 : 0.22;
-  for (const angle of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
-    const c = Math.cos(angle), s = Math.sin(angle);
-    addRotorAt(rotors, 0.16, c * armR1, s * armR1, rotorR);
-  }
+  addBox(rotors, -0.5, 0.2, -0.42, 0.2, 0.2, 0.035);
+  addBox(rotors, -0.5, 0.2, 0.42, 0.2, 0.2, 0.035);
 
   const eye = part();
-  addBox(eye, 0.46, -0.02, 0, 0.05, 0.05, 0.05);
+  addBox(eye, 0.78, -0.01, 0, 0.045, 0.065, 0.09);
 
   return [
     {
       name: "frame",
       part: frame,
-      color: heavy ? [0.16, 0.18, 0.22, 1] : [0.2, 0.16, 0.24, 1],
+      color: heavy ? [0.34, 0.08, 0.1, 1] : [0.16, 0.1, 0.35, 1],
       roughness: 0.45,
       metallic: 0.55
     },
-    { name: "arms", part: arms, color: [0.1, 0.11, 0.14, 1], roughness: 0.5, metallic: 0.5 },
-    { name: "rotors", part: rotors, color: [0.55, 0.58, 0.62, 1], roughness: 0.3, metallic: 0.7 },
+    { name: "arms", part: arms, color: heavy ? [0.82, 0.12, 0.16, 1] : [0.45, 0.2, 0.8, 1], roughness: 0.42, metallic: 0.5 },
+    { name: "rotors", part: rotors, color: [0.12, 0.14, 0.2, 1], roughness: 0.3, metallic: 0.7 },
     {
       name: "eye",
       part: eye,

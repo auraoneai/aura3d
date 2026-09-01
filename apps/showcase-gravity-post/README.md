@@ -38,7 +38,7 @@ The live route and `integratePath` consume the same `1/120` fixed integration qu
 
 ## Typed assets and audio
 
-- `assets.gravityPostMailPod` — release-validated typed primary vehicle, CC-BY-4.0, futaba@blender; retained root-safe probe `277×172` pixels.
+- `assets.gravityPostMailPod` — release-validated typed primary courier ship, CC-BY-4.0, 박용진; retained root-safe probe bound to the current eight-texture ship hash.
 - `assets.gravityPostDockBeacon` — release-validated typed dock landmark, CC-BY-4.0, DjalalxJay; retained root-safe probe `392×142` pixels.
 - Ten typed CC0 cues are deterministically synthesized by `scripts/build-sfx.mjs`, registered by `scripts/register-sfx.mjs`, and played through four mixer buses. Launch, correction, assist, dock, rejection, loss, completion, warp, UI, and ambient cues originate from actual route state.
 
@@ -51,7 +51,7 @@ The exact release deploy check passes for both models with current orientation a
 - Collision/three-hull failure: `tests/reports/gravity-post/failure-evidence.json`.
 - Mobile touch delivery: `tests/reports/gravity-post/mobile-evidence.json`.
 - Reduced-motion planning: `tests/reports/gravity-post/reduced-motion-evidence.json`.
-- Performance: `performance-report.json` — four captures pass; fixed-step p95 `0.0025 ms`, bounded-prediction p95 `0.1663 ms`, campaign-complete draw calls `538/600`.
+- Performance: `performance-report.json` — four captures pass; fixed-step p95 `0.0038 ms`, bounded-prediction p95 `0.1299 ms`, campaign-complete draw calls `411/600`.
 - Route health: `route-health.json` — `machinePass: true`, `classification: prototype-blocked`, `publicShowcase: false`.
 - Route-primary probe: `tests/reports/showcase-route-primary-probes/showcase-gravity-post.json` — pass, `147×94`, 2,808 foreground pixels, readability 50, unclipped.
 - Unit: 19 tests across wells/pod/prediction, scoring, and flyby modules.

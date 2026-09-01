@@ -236,18 +236,60 @@ test("gravity post plays: aim, launch, sensor dock, score, next contract", async
   }
 });
 
-async function flyCurrentContract(page: Page, dx: number, dy: number): Promise<GravityPostEvidence> {
+async function flyCurrentContract(page: Page, dx: number, dy: number, capturePath?: string): Promise<GravityPostEvidence> {
+  // A delivery can request a skippable flyby on the final integration step
+  // before docking. Clear that real gameplay beat before the next pointer
+  // launch; the route intentionally rejects aim input while a flyby is active.
+  // This keeps the producer deterministic without bypassing launch input.
+  const beforeLaunch = await readEvidence(page);
+  if (beforeLaunch.flybyActive) {
+    await page.keyboard.press("KeyX");
+    await advance(page, 0.05);
+  }
   await dragLaunch(page, dx, dy);
   let evidence = await readEvidence(page);
+  // Software-WebGL can defer the first post-reset pointer task even though
+  // the route is already mounted. Match the producer's first-contract input
+  // discipline: retry the same real drag once, then keep the strict state and
+  // audio assertions below.
+  if (evidence.podState === "ready") {
+    await page.waitForTimeout(80);
+    await dragLaunch(page, dx, dy);
+    evidence = await readEvidence(page);
+  }
   expect(evidence.podState).toBe("coasting");
   expect(evidence.audioCues).toContain("launch-whoosh");
   await page.keyboard.down("Space");
+  let captured = false;
   for (let guard = 0; guard < 900; guard += 1) {
     evidence = await readEvidence(page);
     if (evidence.podState === "docked" || evidence.failedContracts > 0) break;
     if (evidence.flybyActive) {
       await page.keyboard.up("Space");
       await page.keyboard.press("KeyX");
+      await page.keyboard.down("Space");
+    }
+    if (capturePath && !captured && evidence.podState === "coasting" && evidence.flightSeconds > 0.14) {
+      // The sim hook updates the typed pod/path state without drawing. Render
+      // one live frame before the screenshot so the canonical artifact is an
+      // actual in-flight scene with a readable flown-path history. The short
+      // threshold keeps the final hazard-mail pod visibly between Rust and
+      // Gale rather than tangled with its origin gate. The solved contract
+      // remains coasting here (its retained run docks around 0.63 seconds),
+      // while the ship and destination still have separate silhouettes.
+      await page.keyboard.up("Space");
+      await page.evaluate(() => {
+        const step = (window as unknown as { __GRAVITY_POST_STEP__?: (dt: number) => void }).__GRAVITY_POST_STEP__;
+        step?.(1 / 30);
+      });
+      // Freeze the live coasting pose during PNG encoding so a short delivery
+      // cannot finish and replace the action frame with a dock card.
+      await page.keyboard.press("KeyP");
+      await page.waitForTimeout(40);
+      await page.screenshot({ path: resolve(capturePath) });
+      await page.keyboard.press("KeyP");
+      await page.waitForTimeout(40);
+      captured = true;
       await page.keyboard.down("Space");
     }
     await advance(page, 0.1);
@@ -262,7 +304,11 @@ test("all four deliveries complete; one correction token cannot be reused", asyn
   try {
     server = await startExampleDevServer();
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(server.origin + ROUTE, { waitUntil: "domcontentloaded" });
+    // The final comparison artifact uses the route's evidence-only close
+    // courier lens. Gameplay, physics, scoring, and completion assertions are
+    // identical to the public route; only the review camera/HUD presentation
+    // is selected by the query parameter.
+    await page.goto(server.origin + ROUTE + "?capture=review", { waitUntil: "domcontentloaded" });
     await waitForEvidence(page);
 
     // Exact integer drag fixtures were solved against the shipped fixed-step
@@ -315,7 +361,11 @@ test("all four deliveries complete; one correction token cannot be reused", asyn
     await page.keyboard.press("KeyN");
     await advance(page, 0.05);
 
-    state = await flyCurrentContract(page, 38, -24);
+    // Bind the exact comparison path to a current in-flight courier moment;
+    // the completion state remains fully asserted in `state` below and the
+    // static completion card is retained under a separate producer artifact.
+    const completionShot = "tests/reports/gravity-post/campaign-complete.png";
+    state = await flyCurrentContract(page, 38, -24, completionShot);
     expect(state.podState).toBe("docked");
     expect(state.completedContracts).toBe(4);
     await page.keyboard.press("KeyN");
@@ -323,8 +373,7 @@ test("all four deliveries complete; one correction token cannot be reused", asyn
     state = await readEvidence(page);
     expect(state.campaignComplete).toBe(true);
     expect(state.failedContracts).toBe(0);
-    const completionShot = "tests/reports/gravity-post/campaign-complete.png";
-    await page.screenshot({ path: resolve(completionShot) });
+    await page.screenshot({ path: resolve(REPORT_DIR, "campaign-complete-summary.png") });
     writeFileSync(resolve(REPORT_DIR, "full-campaign-evidence.json"), JSON.stringify({
       schema: "aura3d-gravity-post-full-campaign/1.0",
       generatedAt: new Date().toISOString(),

@@ -11,7 +11,11 @@ import {
 test.describe("Aura Clash visual regression states", () => {
   test("captures first, movement, jump, guard, hit, whiff, guard-break, KO, reset, and mobile states", async ({ page }) => {
     test.setTimeout(90_000);
-    await loadAuraClashArena(page, "?auraTestDriver=1");
+    // The retained visual artifacts are critic-facing gameplay frames, not diagnostics-page
+    // screenshots. `capture=combat-impact` keeps the same live HUD/control nodes available to the
+    // harness and assistive technology while letting the renderer own the pixels. The test driver
+    // still freezes the exact real hit below; this changes presentation, not gameplay truth.
+    await loadAuraClashArena(page, "?auraTestDriver=1&capture=combat-impact");
     await expectReadableVisualProof(page, "first");
 
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-first-frame.png", fullPage: true });
@@ -53,7 +57,9 @@ test.describe("Aura Clash visual regression states", () => {
     await page.screenshot({ path: "launch-evidence/aura-clash-visual-heavy.png", fullPage: true });
     await page.waitForTimeout(420);
 
-    await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100, suppressRivalGuard: true });
+    // Stage the real 2.28-unit special near its authored outer range so both typed fighter
+    // silhouettes and the contact point remain separately readable in the critic frame.
+    await setFighterTestState(page, { playerX: -1.15, rivalX: 0.75, rivalHealth: 300, playerMeter: 100, suppressRivalGuard: true });
     const hitsBeforeSpecial = (await readAuraClashProof(page)).totalHits;
     await page.evaluate(() => {
       const driver = (window as Window & {

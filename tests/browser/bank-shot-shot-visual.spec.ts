@@ -82,8 +82,20 @@ test("bank shot renders, scatters visibly on the strike, and captures review sho
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(server.origin + "/apps/showcase-bank-shot/", { waitUntil: "commit", timeout: 120_000 });
+    // The desktop comparison frame uses an evidence-only full-table lens. The
+    // panel remains mounted for the same keyboard/rule assertions; its pixels
+    // are hidden only in this named review capture.
+    await page.goto(server.origin + "/apps/showcase-bank-shot/?capture=review", { waitUntil: "commit", timeout: 120_000 });
     await waitForReady(page);
+
+    // Evidence publication can precede completion of the independent typed-GLB
+    // uploads.  Bind the retained first-load artifact to the first presented
+    // frame where the complete table, rack, and cue are actually visible.
+    await page.waitForFunction(() => {
+      const ev = (window as unknown as { __BANK_SHOT_EVIDENCE__?: { liveBallCount?: number; resolvedNodeHandles?: number } }).__BANK_SHOT_EVIDENCE__;
+      return ev?.liveBallCount === 16 && (ev.resolvedNodeHandles ?? 0) >= 18;
+    }, undefined, { timeout: 120_000 });
+    await presented(page);
 
     // First load: renderer-owned capture must be nonblank.
     const firstLoad = await shot(page);
@@ -93,11 +105,11 @@ test("bank shot renders, scatters visibly on the strike, and captures review sho
 
     // Aim + charge view (meter mid-charge with the cue stick pulled back).
     // The charge grows per simulated frame, so the hold is pumped.
-    await page.keyboard.down("KeyD");
-    await pump(page, 20);
-    await page.keyboard.up("KeyD");
+    // Default aim is the real head-on break line. Preserve it for the review
+    // sequence so the retained action frame shows the rack exploding instead
+    // of a visually unhelpful glancing miss.
     await page.keyboard.down("Space");
-    await pump(page, 50);
+    await pump(page, 82);
     await page.screenshot({ path: join(REPORT_DIR, "aim-charge-desktop.png") });
     const chargeState = await page.evaluate(() => (window as unknown as { __BANK_SHOT_EVIDENCE__?: { charge?: number; charging?: boolean } }).__BANK_SHOT_EVIDENCE__);
     expect(chargeState?.charging).toBe(true);
@@ -112,9 +124,19 @@ test("bank shot renders, scatters visibly on the strike, and captures review sho
     }, undefined, { timeout: 30_000 });
     await page.screenshot({ path: join(REPORT_DIR, "cue-contact-desktop.png") });
     const beforeShot = await shot(page);
-    await pump(page, 240);
+    // Capture while the real Rapier break is still visibly expanding. Pumping
+    // through the entire shot previously retained an almost static rack.
+    await pump(page, 92);
     await presented(page);
-    await page.screenshot({ path: join(REPORT_DIR, "break-desktop.png") });
+    const breakShot = await page.screenshot({ path: join(REPORT_DIR, "break-desktop.png") });
+    // Bind the showcase matrix to the exact current live-break bytes produced
+    // above.  Keeping an independently captured opening-rack probe at this
+    // stable path made downstream visual review stale and non-comparable even
+    // while every named Bank Shot artifact had been regenerated.
+    writeFileSync(
+      resolve("tests/reports/showcase-route-primary-probes/showcase-bank-shot.png"),
+      breakShot
+    );
     const afterShot = await shot(page);
     expect(dataUrlVariance(afterShot), "mid-break capture must not be blank").toBeGreaterThan(0.4);
     expect(afterShot, "the break must visibly change the rendered frame").not.toBe(beforeShot);

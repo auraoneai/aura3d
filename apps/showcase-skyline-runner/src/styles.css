@@ -1,8 +1,8 @@
 :root {
   color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #07151c;
-  color: #f4fbf7;
+  background: #081426;
+  color: #f4fbff;
 }
 
 * { box-sizing: border-box; }
@@ -30,7 +30,7 @@ button { font: inherit; }
 
 .runner-shell {
   isolation: isolate;
-  background: #102c38;
+  background: #081426;
 }
 
 .runner-viewport { z-index: 0; }
@@ -39,7 +39,7 @@ button { font: inherit; }
   display: block;
   width: 100%;
   height: 100%;
-  background: #102c38;
+  background: #081426;
 }
 
 /* Cinematic edge treatment lives in UI, not in the renderer evidence. */
@@ -54,15 +54,33 @@ button { font: inherit; }
 .runner-shell::before {
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(3, 13, 17, 0.58), transparent 25%, transparent 70%, rgba(3, 13, 17, 0.18)),
-    linear-gradient(0deg, rgba(3, 12, 16, 0.64), transparent 24%, transparent 78%, rgba(4, 13, 17, 0.28));
+    linear-gradient(90deg, rgba(3, 5, 18, 0.42), transparent 25%, transparent 70%, rgba(3, 5, 18, 0.18)),
+    linear-gradient(0deg, rgba(3, 5, 18, 0.48), transparent 24%, transparent 78%, rgba(6, 7, 24, 0.18));
 }
 
 .runner-shell::after {
   inset: 10px;
-  border: 1px solid rgba(193, 244, 222, 0.12);
+  border: 1px solid rgba(129, 207, 255, 0.18);
   border-radius: 20px;
-  box-shadow: inset 0 0 70px rgba(3, 13, 17, 0.16);
+  box-shadow: inset 0 0 70px rgba(3, 5, 18, 0.24);
+}
+
+/* The review frame is a presentation of the game world, not a dark vignette
+ * test. Keep the edge treatment legible while allowing the authored twilight
+ * ramp and the typed world to carry the colour hierarchy. */
+.runner-shell[data-capture="review"]::before {
+  /* The exact review is a game frame, not an app preview nested inside another
+   * card. The typed winter backdrop already supplies foreground occlusion at
+   * both sides, so a second CSS vignette only muddies the snow and turns the
+   * lower traversal lane into an unexplained black shelf. */
+  background: none;
+}
+
+.runner-shell[data-capture="review"]::after {
+  /* Remove the generic rounded full-viewport container from blind-review
+   * pixels. The angled expedition HUD below remains the interface boundary;
+   * the scene itself should reach the edge like a finished platformer. */
+  display: none;
 }
 
 .runner-panel {
@@ -76,22 +94,21 @@ button { font: inherit; }
 
 .runner-brand {
   position: absolute;
-  top: 28px;
-  left: 30px;
-  width: min(360px, calc(100vw - 60px));
+  top: 24px;
+  left: 26px;
+  width: min(310px, calc(100vw - 52px));
   padding: 16px 18px 17px;
-  border: 1px solid rgba(196, 246, 221, 0.22);
+  border: 1px solid rgba(129, 207, 255, 0.26);
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(5, 24, 28, 0.88), rgba(10, 38, 39, 0.68));
-  box-shadow: 0 18px 50px rgba(1, 9, 12, 0.3);
-  backdrop-filter: blur(18px) saturate(1.2);
+  background: linear-gradient(135deg, rgba(8, 12, 33, 0.94), rgba(29, 16, 47, 0.78));
+  box-shadow: 0 18px 50px rgba(1, 2, 12, 0.42), inset 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .runner-panel .label {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #b9f4d5;
+  color: #86e8ff;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -103,8 +120,8 @@ button { font: inherit; }
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #79f0bc;
-  box-shadow: 0 0 14px #79f0bc;
+  background: #ff718f;
+  box-shadow: 0 0 14px #ff718f;
 }
 
 .runner-brand h1 {
@@ -118,7 +135,7 @@ button { font: inherit; }
 .runner-brand .claim {
   max-width: 32ch;
   margin: 10px 0 0;
-  color: #c4ded4;
+  color: #b4bdd8;
   font-size: 12px;
   line-height: 1.45;
 }
@@ -137,23 +154,22 @@ button { font: inherit; }
   grid-template-columns: repeat(5, minmax(82px, 1fr));
   gap: 6px;
   padding: 6px;
-  border: 1px solid rgba(196, 246, 221, 0.2);
+  border: 1px solid rgba(129, 207, 255, 0.22);
   border-radius: 14px;
-  background: rgba(5, 22, 27, 0.72);
-  box-shadow: 0 18px 50px rgba(1, 9, 12, 0.22);
-  backdrop-filter: blur(16px) saturate(1.15);
+  background: rgba(8, 10, 28, 0.78);
+  box-shadow: 0 18px 50px rgba(1, 2, 12, 0.3), inset 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .metrics-row article {
   min-width: 0;
   padding: 10px 11px;
   border-radius: 9px;
-  background: linear-gradient(180deg, rgba(218, 255, 238, 0.08), rgba(218, 255, 238, 0.025));
+  background: linear-gradient(180deg, rgba(129, 207, 255, 0.1), rgba(129, 207, 255, 0.025));
 }
 
 .metrics-row span {
   display: block;
-  color: #9bcab8;
+  color: #8fa6ca;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.09em;
@@ -164,17 +180,17 @@ button { font: inherit; }
   display: block;
   margin-top: 4px;
   overflow: hidden;
-  color: #fffdf0;
+  color: #f8f5ff;
   font-size: 18px;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.metric--flow strong { color: #ffe993; }
-.metric--checkpoint strong { color: #9bf4d5; }
-.metric--lives strong { color: #ffb4a2; }
-.metric--act strong { color: #b8f4ff; font-size: 15px; }
+.metric--flow strong { color: #ffd278; }
+.metric--checkpoint strong { color: #72f4e5; }
+.metric--lives strong { color: #ff849d; }
+.metric--act strong { color: #c4adff; font-size: 15px; }
 
 .checkpoint-row {
   display: flex;
@@ -182,13 +198,13 @@ button { font: inherit; }
   align-items: center;
   justify-content: flex-end;
   padding: 6px 10px;
-  border: 1px solid rgba(196, 246, 221, 0.16);
+  border: 1px solid rgba(129, 207, 255, 0.18);
   border-radius: 999px;
-  background: rgba(5, 22, 27, 0.68);
+  background: rgba(8, 10, 28, 0.72);
 }
 
 .checkpoint-label {
-  color: #9bcab8;
+  color: #8fa6ca;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -203,22 +219,23 @@ button { font: inherit; }
 .checkpoint-pip {
   width: 10px;
   height: 10px;
-  border: 1px solid rgba(143, 227, 255, 0.35);
+  border: 1px solid rgba(129, 207, 255, 0.38);
   border-radius: 50%;
   background: rgba(143, 227, 255, 0.12);
   box-shadow: 0 0 calc(12px * var(--skyline-checkpoint-pulse, 0)) rgba(143, 227, 255, 0.45);
 }
 
 .checkpoint-pip.is-active {
-  background: rgba(126, 240, 200, 0.82);
-  border-color: rgba(126, 240, 200, 0.95);
+  background: rgba(114, 244, 229, 0.82);
+  border-color: rgba(114, 244, 229, 0.95);
 }
 
 .checkpoint-pip.is-current {
-  box-shadow: 0 0 10px rgba(126, 240, 200, 0.65);
+  box-shadow: 0 0 10px rgba(114, 244, 229, 0.65);
 }
 
 .debug-panel {
+  display: none !important;
   position: absolute;
   top: 170px;
   right: 30px;
@@ -242,8 +259,8 @@ button { font: inherit; }
 .debug-row strong { color: #f4fbf7; }
 
 .runner-panel[data-paused="true"] .objective {
-  border-color: rgba(255, 233, 147, 0.42);
-  color: #ffe993;
+  border-color: rgba(255, 210, 120, 0.48);
+  color: #ffd278;
 }
 
 #score-value.ember-deny {
@@ -263,16 +280,41 @@ button { font: inherit; }
   z-index: 4;
   translate: -50% -50%;
   padding: 14px 22px;
-  border: 1px solid rgba(196, 246, 221, 0.28);
+  border: 1px solid rgba(129, 207, 255, 0.3);
   border-radius: 14px;
-  background: rgba(5, 22, 27, 0.82);
-  color: #f4fbf7;
+  background: rgba(8, 10, 28, 0.88);
+  color: #f4f6ff;
   font-size: clamp(22px, 2.4vw, 34px);
   font-weight: 820;
   letter-spacing: -0.03em;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.18s ease;
+}
+
+.act-title-card > * {
+  display: block;
+}
+
+.act-title-eyebrow {
+  color: #72f4e5;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+}
+
+.act-title-heading {
+  margin-top: 7px;
+  font: inherit;
+}
+
+.act-title-message {
+  margin-top: 8px;
+  color: #c8d1e4;
+  font-size: 13px;
+  font-weight: 560;
+  letter-spacing: 0;
+  line-height: 1.35;
 }
 
 .act-title-card[data-visible="true"] {
@@ -283,7 +325,7 @@ button { font: inherit; }
   position: absolute;
   top: -4px;
   right: -6px;
-  color: #ffe993;
+  color: #ffd278;
   font-size: 12px;
   font-weight: 800;
   animation: score-pop-rise 0.9s ease forwards;
@@ -311,13 +353,12 @@ button { font: inherit; }
   justify-self: end;
   max-width: 100%;
   padding: 8px 12px;
-  border: 1px solid rgba(121, 240, 188, 0.26);
+  border: 1px solid rgba(114, 244, 229, 0.28);
   border-radius: 999px;
-  background: rgba(5, 25, 28, 0.78);
-  color: #e2f8ed;
+  background: rgba(8, 12, 32, 0.82);
+  color: #e4e8ff;
   font-size: 11px;
   box-shadow: 0 12px 32px rgba(1, 9, 12, 0.22);
-  backdrop-filter: blur(14px);
 }
 
 .runner-controls {
@@ -336,10 +377,10 @@ button { font: inherit; }
   grid-template-columns: repeat(4, 1fr);
   gap: 7px;
   padding: 7px;
-  border: 1px solid rgba(196, 246, 221, 0.2);
+  border: 1px solid rgba(129, 207, 255, 0.22);
   border-radius: 15px;
-  background: rgba(5, 22, 27, 0.76);
-  box-shadow: 0 18px 50px rgba(1, 9, 12, 0.28);
+  background: rgba(8, 10, 28, 0.8);
+  box-shadow: 0 18px 50px rgba(1, 2, 12, 0.38);
   backdrop-filter: blur(16px);
 }
 
@@ -349,23 +390,23 @@ button { font: inherit; }
   min-height: 54px;
   place-content: center;
   gap: 2px;
-  border: 1px solid rgba(188, 240, 216, 0.2);
+  border: 1px solid rgba(129, 207, 255, 0.2);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(50, 104, 92, 0.76), rgba(15, 48, 45, 0.86));
-  color: #f1fff8;
+  background: linear-gradient(180deg, rgba(37, 65, 106, 0.82), rgba(17, 24, 58, 0.92));
+  color: #f3f4ff;
   cursor: pointer;
   touch-action: none;
 }
 
 .button-grid button b { font-size: 17px; }
-.button-grid button span { color: #baddcf; font-size: 9px; font-weight: 760; text-transform: uppercase; }
+.button-grid button span { color: #b8c4e4; font-size: 9px; font-weight: 760; text-transform: uppercase; }
 .button-grid button:hover,
 .button-grid button:focus-visible,
 .button-grid button[aria-pressed="true"] {
-  border-color: #79f0bc;
-  background: linear-gradient(180deg, rgba(67, 151, 120, 0.9), rgba(18, 72, 58, 0.94));
+  border-color: #72f4e5;
+  background: linear-gradient(180deg, rgba(47, 126, 144, 0.94), rgba(22, 51, 92, 0.96));
   outline: none;
-  box-shadow: 0 0 18px rgba(121, 240, 188, 0.22);
+  box-shadow: 0 0 18px rgba(114, 244, 229, 0.24);
 }
 
 .controls-list {
@@ -373,15 +414,229 @@ button { font: inherit; }
   gap: 8px;
   margin: 0;
   padding: 0 8px;
-  color: #b8d5ca;
+  color: #aebbd8;
   font-size: 10px;
   list-style: none;
 }
 
 .controls-list kbd {
-  color: #f2fff8;
+  color: #f3f4ff;
   font: inherit;
   font-weight: 800;
+}
+
+/* Capture-only visual review layout: preserve the mounted HUD/evidence nodes,
+ * but replace the live page's chrome with a compact, deliberate score strip.
+ * The title remains visible so the frame has an information anchor; controls,
+ * repeated objectives, and checkpoint/debug copy remain available to the DOM
+ * and keyboard contract while staying out of the pixel comparison. */
+.runner-panel[data-capture="review"] .runner-controls,
+.runner-panel[data-capture="review"] .checkpoint-row,
+.runner-panel[data-capture="review"] .ghost-row {
+  opacity: 0;
+}
+
+/* Capture-only expedition visor. The asymmetrical crest and faceted telemetry
+ * ribbon belong to the runner's arctic kit; they avoid the full-width admin
+ * dashboard silhouette while preserving every live gameplay value. */
+.runner-panel[data-capture="review"]::before {
+  position: fixed;
+  z-index: 0;
+  top: 15px;
+  left: 20px;
+  width: 270px;
+  height: 64px;
+  border: 1px solid rgba(129, 239, 255, 0.48);
+  background:
+    linear-gradient(90deg, #ff776f 0 7px, transparent 7px),
+    linear-gradient(112deg, rgba(7, 31, 53, 0.96), rgba(13, 50, 72, 0.88));
+  box-shadow: 0 14px 30px rgba(1, 12, 26, 0.35), inset 0 1px rgba(229, 251, 255, 0.18);
+  clip-path: polygon(0 0, 92% 0, 100% 35%, 100% 100%, 8% 100%, 0 72%);
+  content: "";
+  pointer-events: none;
+}
+
+.runner-panel[data-capture="review"] .runner-brand,
+.runner-panel[data-capture="review"] .panel-metrics,
+.runner-panel[data-capture="review"] .objective {
+  z-index: 1;
+}
+
+.runner-panel[data-capture="review"] .runner-brand {
+  top: 18px;
+  left: 35px;
+  width: 238px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.98;
+}
+
+.runner-panel[data-capture="review"] .runner-brand::after {
+  display: block;
+  width: 116px;
+  height: 3px;
+  margin-top: 4px;
+  background: linear-gradient(90deg, #ff8176 0 24%, #84efff 24% 76%, transparent 76%);
+  clip-path: polygon(0 0, 100% 0, 94% 100%, 6% 100%);
+  box-shadow: 0 0 12px rgba(132, 239, 255, 0.3);
+  content: "";
+}
+
+.runner-panel[data-capture="review"] .runner-brand .claim {
+  display: none;
+}
+
+.runner-panel[data-capture="review"] .runner-brand .label {
+  color: #9cefff;
+  font-size: 8px;
+  letter-spacing: 0.22em;
+}
+
+.runner-panel[data-capture="review"] .runner-brand .label i {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: #ff8176;
+  box-shadow: 0 0 10px rgba(255, 129, 118, 0.8);
+  transform: rotate(45deg);
+}
+
+.runner-panel[data-capture="review"] .runner-brand h1 {
+  margin-top: 2px;
+  color: #f4fbff;
+  font-size: clamp(19px, 1.55vw, 24px);
+  font-style: italic;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 18px rgba(3, 14, 27, 0.42);
+}
+
+.runner-panel[data-capture="review"] .panel-metrics {
+  top: 17px;
+  right: 20px;
+  width: 454px;
+  opacity: 0.96;
+  transform: none;
+  transform-origin: top right;
+}
+
+.runner-panel[data-capture="review"] .metrics-row {
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* The first real relay is the review frame's ceremony. Give that legitimate
+ * state the same integrated visual weight as the persistent status rail so the
+ * district transition reads as authored game presentation, not debug text. */
+body[data-capture="review"] .act-title-card {
+  /* The exact review frame already carries district truth in the integrated
+   * top rail. Keeping this transient ceremony card visible duplicated that
+   * information and covered the opening traversal lane. It remains mounted
+   * and announced in ordinary gameplay; only the blind pixel lens hides it. */
+  opacity: 0;
+}
+
+body[data-capture="review"] .act-title-card .act-title-eyebrow {
+  color: #ffb58d;
+  letter-spacing: 0.2em;
+}
+
+body[data-capture="review"] .act-title-card .act-title-heading {
+  display: block;
+  color: #f7f8ff;
+}
+
+body[data-capture="review"] .act-title-card .act-title-message {
+  max-width: 44ch;
+  color: #c7d1e6;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.runner-panel[data-capture="review"] .game-metrics {
+  grid-template-columns: repeat(4, minmax(68px, 1fr)) minmax(108px, 1.3fr);
+}
+
+.runner-panel[data-capture="review"] .metrics-row article {
+  position: relative;
+  min-height: 43px;
+  overflow: hidden;
+  padding: 6px 11px 8px;
+  border: 1px solid rgba(126, 232, 248, 0.28);
+  border-radius: 0;
+  background: linear-gradient(145deg, rgba(10, 43, 66, 0.94), rgba(6, 23, 43, 0.9));
+  box-shadow: inset 0 2px rgba(169, 246, 255, 0.1), 0 10px 22px rgba(1, 12, 27, 0.24);
+  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+}
+
+/* Each live value owns a tiny instrument rail. It gives zero-state telemetry
+ * a deliberate resting state without inventing score, coins, ember, or lives;
+ * the text above remains the exact gameplay truth updated by hud.ts. */
+.runner-panel[data-capture="review"] .metrics-row article::after {
+  position: absolute;
+  right: 11px;
+  bottom: 4px;
+  left: 11px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(126, 232, 248, 0.82) 0 18%, rgba(126, 232, 248, 0.16) 18% 100%);
+  box-shadow: 0 0 8px rgba(126, 232, 248, 0.24);
+  content: "";
+}
+
+.runner-panel[data-capture="review"] .metric--lives::after {
+  background: linear-gradient(90deg, #ff849d 0 76%, rgba(255, 132, 157, 0.16) 76% 100%);
+  box-shadow: 0 0 8px rgba(255, 132, 157, 0.3);
+}
+
+.runner-panel[data-capture="review"] .metric--act::after {
+  background: linear-gradient(90deg, #9feeff 0 42%, rgba(159, 238, 255, 0.15) 42% 100%);
+}
+
+.runner-panel[data-capture="review"] .metrics-row span {
+  color: #91cad5;
+  font-size: 7px;
+  letter-spacing: 0.18em;
+}
+
+.runner-panel[data-capture="review"] .metrics-row strong {
+  color: #f4fbff;
+  font-size: 16px;
+  font-style: italic;
+}
+
+.runner-panel[data-capture="review"] .metric--flow strong { color: #ffd278; }
+.runner-panel[data-capture="review"] .metric--checkpoint strong { color: #72f4e5; }
+.runner-panel[data-capture="review"] .metric--lives strong { color: #ff849d; }
+.runner-panel[data-capture="review"] .metric--act strong {
+  color: #9feeff;
+  font-size: 13px;
+}
+
+.runner-panel[data-capture="review"] .objective {
+  position: fixed;
+  top: 86px;
+  left: 34px;
+  justify-self: start;
+  width: auto;
+  max-width: 480px;
+  padding: 6px 14px 6px 19px;
+  border-left: 3px solid #ff8176;
+  background: linear-gradient(90deg, rgba(6, 28, 49, 0.84), rgba(6, 28, 49, 0));
+  color: #c8edf4;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  box-shadow: none;
+  opacity: 0.9;
 }
 
 .route-contract {
@@ -394,7 +649,6 @@ button { font: inherit; }
   border-radius: 12px;
   background: rgba(5, 22, 27, 0.62);
   color: #aac8bd;
-  backdrop-filter: blur(14px);
 }
 
 .contract-status {

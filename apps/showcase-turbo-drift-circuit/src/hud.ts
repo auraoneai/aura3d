@@ -198,6 +198,10 @@ function updateStartLightsDom(container: HTMLElement, session: RaceSessionState)
     light.classList.toggle("start-lights__light--active", lit);
     if (isGo && session.startLights.complete) light.textContent = "GO";
   });
+  // Keep the green-flag state in the live DOM/evidence for accessibility and
+  // tests, but retire the ceremony from the playfield once motion begins so a
+  // retained drift frame is not visually mistaken for a countdown screen.
+  container.classList.toggle("start-lights--complete", session.startLights.complete);
   container.setAttribute("aria-label", session.startLights.complete ? "Green flag" : `Start lights ${label}`);
 }
 

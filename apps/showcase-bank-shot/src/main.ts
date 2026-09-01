@@ -45,9 +45,15 @@ const bankWindow = window as BankShotWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-bank-shot";
-const BALL_VISUAL_SCALE = BALL_RADIUS * 2;
+// Keep the Rapier bodies at regulation radius while giving the typed ball
+// meshes enough pixel coverage to read as glossy, numbered subjects in the
+// wide review frame.  This is presentation scale only; all contact and pocket
+// math still uses `BALL_RADIUS` from table.ts.
+const BALL_VISUAL_SCALE = BALL_RADIUS * 2.6;
 const ROUTE_SYSTEMS = {
   physics: "public Rapier fixed-step spheres, cushions, pocket sensors, and settled-state lock",
   rules: "route-local deterministic open/combo/eight-ball rack and three-rack session state",
@@ -169,7 +175,28 @@ const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8"
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
 const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
 const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", opacity: 0.55 });
-
+const FELT_EDGE_MATERIAL = material.pbr({
+  name: "felt edge inlay",
+  color: "#e8d9c1",
+  roughness: 0.28,
+  metallic: 0.16,
+  clearcoat: 0.18,
+  clearcoatRoughness: 0.24
+});
+const FELT_GUIDE_MATERIAL = material.emissive({
+  name: "felt guide stitching",
+  color: "#477f91",
+  emissive: "#102d39",
+  emissiveIntensity: 0.02,
+  opacity: 0.1
+});
+const BALL_CONTACT_SHADOW_MATERIAL = material.pbr({
+  name: "ball contact occlusion",
+  color: "#02030a",
+  roughness: 1,
+  metallic: 0,
+  opacity: 0.42
+});
 function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
   return model(assets[typedAsset as keyof typeof assets] as typeof assets.bankShotBall00, {
     name,
@@ -203,6 +230,20 @@ function visualNodes(): AuraSceneNode[] {
   for (let number = 0; number <= 15; number += 1) {
     const id = `bankShotBall${String(number).padStart(2, "0")}`;
     nodes.push(ballModelNode(`ball-${String(number).padStart(2, "0")}`, id));
+    nodes.push(
+      primitives.cylinder({
+        name: `ball-shadow-${String(number).padStart(2, "0")}`,
+        material: BALL_CONTACT_SHADOW_MATERIAL,
+        castShadow: false,
+        receiveShadow: false
+      })
+        .position(0, -5, 0)
+        .scale([0.068, 0.002, 0.052])
+        .runtime(game.runtimeNode(`ball-shadow-${String(number).padStart(2, "0")}`, {
+          tags: ["set-dressing", "contact-shadow", "physics-synced"]
+        }))
+        .toJSON()
+    );
   }
   nodes.push(
     model(assets.bankShotCue, {
@@ -225,6 +266,29 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("cue-ghost", { tags: ["cue-ghost"] }))
       .toJSON()
   );
+  // A restrained center spot sits just above the typed blue felt. The former
+  // oversized ring, block-letter wordmark, and head string competed with the
+  // live balls and made the surface read like an editor/debug board.
+  nodes.push(
+    primitives.torus({ name: "center spot inlay", material: FELT_EDGE_MATERIAL })
+      .position(0, 0.015, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.045, 0.045, 0.004])
+      .runtime(game.runtimeNode("center-spot-inlay", { tags: ["set-dressing", "felt-mark"] }))
+      .toJSON()
+  );
+  // Fine renderer-owned felt guides add the woven-table rhythm that is visible
+  // in a close pool-room frame without pretending to be physics markings. The
+  // lines are deliberately sparse and low-opacity so the live balls and cue
+  // remain the hierarchy.
+  for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {
+    nodes.push(
+      primitives.box({ name: `felt-guide-${z}`, material: FELT_GUIDE_MATERIAL })
+        .position(0, 0.022, z)
+        .scale([1.08, 0.003, 0.006])
+        .toJSON()
+    );
+  }
   // In-scene aim geometry (PRD 6): line, first-contact marker, object direction,
   // and the bank preview line. Set dressing around the typed subjects.
   nodes.push(
@@ -251,26 +315,58 @@ function buildScene(): ReturnType<typeof scene> {
   const sceneCamera = portraitComposition
     // Put the table's long axis up the portrait viewport so all six pockets,
     // every ball, the cue, and the first line of action remain visible.
-    ? camera.perspective({ position: [-4.2, 8.5, 0], target: [-0.4, -0.2, 0], fov: 66 })
+    ? camera.perspective({ position: [-3.8, 7.2, 0], target: [-0.38, -0.05, 0], fov: 62 })
     // The table is the product of this route. Keep the review camera close
     // enough that the six pockets and live balls read immediately instead of
     // spending the lower half of the frame on an empty lounge floor.
-    : camera.perspective({ position: [0, 3.3, 2.45], target: [0, -0.12, 0], fov: 46 });
+    : camera.perspective({
+      // Keep the full typed table inside the review viewport, including the
+      // near rail and the panel-side pocket.  The previous close crop clipped
+      // the primary surface and let the HUD panel cover its right edge in the
+      // route-primary evidence frame.
+      // A lower, tighter spectator angle gives the table and rack the same
+      // visual priority as a real pool-room capture.  The full rail footprint
+      // remains inside the canvas while the empty ceiling/floor fall away.
+      // A close three-quarter spectator angle gives the rack and cue ball the
+      // visual weight of a real pool-room capture.  The previous high, wide
+      // lens left a quarter of the frame as empty ceiling/floor and reduced
+      // the typed balls to a thumbnail.  Keep the table's four corners inside
+      // the viewport while moving the focus slightly toward the live rack.
+      position: visualReviewCapture ? [-0.45, 1.62, 1.34] : [-0.18, 2.62, 2.82],
+      target: visualReviewCapture ? [0.20, -0.02, -0.08] : [0.1, -0.02, 0.02],
+      fov: visualReviewCapture ? 32 : 52
+    });
   return scene()
-    .background("#070b12")
+    .background("#10182a")
     .addMany(visualNodes())
     .addMany([
       // Midnight Slate / Aurora Noir billiards-hall mood:
-      effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.12 }),
-      effects.fog({ name: "hall haze", density: 0.012, color: "#070b12", intensity: 0.18 }),
-      lights.ambient({ name: "slate ambient", color: "#64748b", intensity: 0.9 }),
-      // Triple overhead conical lamp key lights
-      lights.point({ name: "pendant-light-mid", color: "#fffbeb", intensity: 2.8 }).position(0, 1.4, 0),
-      lights.point({ name: "pendant-light-head", color: "#fffbeb", intensity: 2.4 }).position(-0.75, 1.4, 0),
-      lights.point({ name: "pendant-light-foot", color: "#fffbeb", intensity: 2.4 }).position(0.75, 1.4, 0),
+      effects.neonBloom({ intensity: reducedMotion ? 0.07 : 0.2 }),
+      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.74 : 0.26 }),
+      effects.fog({
+        name: "hall haze",
+        density: visualReviewCapture ? 0.0035 : 0.011,
+        color: "#10182a",
+        intensity: visualReviewCapture ? 0.07 : 0.16
+      }),
+      // A restrained ambient floor preserves the lacquer highlights and the
+      // ball-to-felt contact gradient.  The previous broad blue fill flattened
+      // every PBR response into the same midtone.
+      lights.ambient({ name: "slate ambient", color: "#35435a", intensity: visualReviewCapture ? 0.1 : 0.24 }),
+      // An asymmetric three-lamp pool-room key. The offset sources create a
+      // visible luminance falloff across felt, walnut bevels, and ball lacquer
+      // instead of washing every surface with the same frontal value.
+      lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: visualReviewCapture ? 5.0 : 4.85 }).position(-1.2, 1.55, 0.92),
+      lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: visualReviewCapture ? 2.9 : 3.6 }).position(0.2, 1.8, -0.7),
+      lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: visualReviewCapture ? 1.9 : 3.6 }).position(1.25, 1.35, 0.35),
+      lights.rect({ name: "table overhead softbox", color: "#fff4dc", intensity: visualReviewCapture ? 1.45 : 1.8, width: 2.8, height: 1.25 })
+        .position(0, 2.25, 0.15),
       // Cool fill & rim lights
-      lights.directional({ name: "cool rim key", color: "#38bdf8", intensity: 1.2 }).position(3.2, 4.5, 2.2),
-      lights.directional({ name: "warm room fill", color: "#f59e0b", intensity: 0.8 }).position(-3.0, 3.5, -2.0)
+      lights.directional({ name: "cool rim key", color: "#83bdff", intensity: visualReviewCapture ? 1.35 : 1.35 }).position(3.2, 4.5, 2.2),
+      lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: visualReviewCapture ? 0.78 : 0.32 }).position(-3.0, 3.5, -2.0),
+      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.7 }).position(0, 0.75, 2.0),
+      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.28 : 0.72 }).position(1.65, 0.72, -0.58),
+      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.24 : 0.62 }).position(-1.45, 0.62, 0.62)
     ])
     .camera(sceneCamera);
 }
@@ -300,6 +396,7 @@ const input = gameApp.input!;
 if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
 
 const ballHandles = new Map<string, AuraRuntimeNodeHandle>();
+const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
 let tableHandle: AuraRuntimeNodeHandle | undefined;
 let cueStickHandle: AuraRuntimeNodeHandle | undefined;
 let cueGhostHandle: AuraRuntimeNodeHandle | undefined;
@@ -310,10 +407,14 @@ let aimMarkerHandle: AuraRuntimeNodeHandle | undefined;
 function resolveHandles(): void {
   tableHandle = app.nodes.get("table") as AuraRuntimeNodeHandle | undefined;
   ballHandles.clear();
+  ballShadowHandles.clear();
   for (let number = 0; number <= 15; number += 1) {
     const name = `ball-${String(number).padStart(2, "0")}`;
     const handle = app.nodes.get(name);
     if (handle) ballHandles.set(name, handle as AuraRuntimeNodeHandle);
+    const shadowName = `ball-shadow-${String(number).padStart(2, "0")}`;
+    const shadowHandle = app.nodes.get(shadowName);
+    if (shadowHandle) ballShadowHandles.set(name, shadowHandle as AuraRuntimeNodeHandle);
   }
   cueStickHandle = app.nodes.get("cue-stick") as AuraRuntimeNodeHandle | undefined;
   cueGhostHandle = app.nodes.get("cue-ghost") as AuraRuntimeNodeHandle | undefined;
@@ -612,13 +713,19 @@ function syncVisuals(): void {
   for (const pose of sim.poses()) {
     const handle = ballHandles.get(pose.name);
     if (!handle) continue;
+    const shadowHandle = ballShadowHandles.get(pose.name);
     const number = Number(pose.name.slice("ball-".length));
     if (evidenceScenarioActive && rules.potted.includes(number)) {
       parkNode(handle);
+      parkNode(shadowHandle);
       continue;
     }
     handle.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
     handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
+    if (shadowHandle) {
+      shadowHandle.setScale([0.047, 0.002, 0.038]);
+      shadowHandle.setPosition(pose.position[0] + 0.012, 0.012, pose.position[2] + 0.009);
+    }
   }
 
   const phase = rules.phase;
@@ -651,6 +758,17 @@ function syncVisuals(): void {
   const pullback = 0.04 + cueController.state().charge * 0.28;
   cueStickHandle?.setPosition(cueInfo.x - dirX * pullback, BALL_RADIUS + 0.008, cueInfo.z - dirZ * pullback);
   cueStickHandle?.setRotation(0, -angle, 0.06);
+
+  // The exact review frame is the uncluttered table presentation.  Preserve
+  // the live cue pose and every underlying sweep/evidence value, but keep the
+  // thick training overlays for the playable route where they are useful.
+  // This is renderer state, not CSS or screenshot compositing.
+  if (visualReviewCapture) {
+    parkNode(aimLineHandle);
+    parkNode(aimBankHandle);
+    parkNode(aimMarkerHandle);
+    return;
+  }
 
   // Physics sweep preview (sphereCast against live balls and cushions).
   const sweep = sim.sweepFromCue(angle);

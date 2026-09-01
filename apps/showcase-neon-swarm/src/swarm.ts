@@ -3,7 +3,7 @@
  *
  * The headline system: hundreds of simultaneous enemies simulated in plain
  * typed arrays (no per-drone scene nodes) and rendered through TWO root-safe
- * instances.* pools (grunt capsule pool + elite box pool), so the whole swarm
+ * instances.custom pools (thorn-moth grunt + crown-hunter elite), so the whole swarm
  * costs two native instanced draw submissions.
  *
  * Pure module: no DOM, no engine import. Transform objects are allocated once
@@ -47,6 +47,8 @@ interface DroneRecord {
   burstRemaining: number;
   /** Brief white flash after being hit (seconds remaining). */
   flashRemaining: number;
+  /** Deterministic base hue used when the drone is not flashing or telegraphing. */
+  baseColor: string;
 }
 
 export interface SwarmStepEvents {
@@ -170,9 +172,17 @@ function hashCell(cx: number, cz: number): number {
   return ((cx * 0x8da6b343) ^ (cz * 0xd8163841)) >>> 0;
 }
 
-const GRUNT_COLOR_BASE = "#e847ff";
-const GRUNT_COLOR_FLASH = "#e9ffff";
-const ELITE_COLOR_BASE = "#ff3864";
+// The finale uses 320 live instances. Keep their palette jewel-like but
+// slightly desaturated so the courier and hit feedback remain the focal point
+// instead of collapsing into one wall of hot pink emissive pixels. The cyan,
+// sea-glass, violet, and coral accents still preserve the route's neon identity
+// while giving individual threats enough value separation to read in a dense
+// top-down frame.
+const GRUNT_COLOR_BASE = "#3f7468";
+const GRUNT_COLOR_PALETTE = ["#3f7468", "#4f806f", "#5b8b78", "#35635f"] as const;
+const GRUNT_COLOR_FLASH = "#fff0dc";
+const ELITE_COLOR_BASE = "#f2d8c2";
+const ELITE_COLOR_PALETTE = ["#f2d8c2", "#e8c2ad", "#ffe6cc", "#d9b09f"] as const;
 const ELITE_COLOR_FLASH = "#ffe8fb";
 const ELITE_COLOR_TELEGRAPH = "#ffc857";
 const HIDDEN_SCALE = 0;
@@ -192,7 +202,8 @@ export function createSwarmSimulation(): SwarmSimulation {
   function blankDrone(): DroneRecord {
     return {
       active: false, x: 0, z: 0, vx: 0, vz: 0, hp: 0, maxHp: 0, speed: 0,
-      yaw: 0, wobblePhase: 0, burstCycle: 0, telegraphRemaining: 0, burstRemaining: 0, flashRemaining: 0
+      yaw: 0, wobblePhase: 0, burstCycle: 0, telegraphRemaining: 0, burstRemaining: 0, flashRemaining: 0,
+      baseColor: GRUNT_COLOR_BASE
     };
   }
 
@@ -232,6 +243,12 @@ export function createSwarmSimulation(): SwarmSimulation {
     drone.speed = (elite ? ELITE_BASE_SPEED : GRUNT_BASE_SPEED) * request.speedMultiplier;
     drone.yaw = 0;
     drone.wobblePhase = (request.x * 12.9898 + request.z * 78.233) % (Math.PI * 2);
+    // Palette assignment is deterministic by pool slot, so dense waves gain separation
+    // without changing simulation state, spawn order, or the outcome hash.
+    drone.baseColor = elite
+      ? ELITE_COLOR_PALETTE[slot % ELITE_COLOR_PALETTE.length]!
+      : GRUNT_COLOR_PALETTE[slot % GRUNT_COLOR_PALETTE.length]!;
+    (elite ? eliteColors : gruntColors)[slot] = drone.baseColor;
     drone.burstCycle = elite ? ELITE_BURST_CYCLE * 0.55 : 0;
     drone.telegraphRemaining = 0;
     drone.burstRemaining = 0;
@@ -394,16 +411,35 @@ export function createSwarmSimulation(): SwarmSimulation {
       if (!drone.active) continue;
       const bob = Math.sin(time * 3.1 + drone.wobblePhase) * 0.09;
       transform.position = [drone.x, 0.52 + bob, drone.z];
-      transform.rotation = [0, drone.yaw, 0];
-      let scale = isElite ? 1.55 : 1;
+      // Deterministic silhouette variation keeps a dense finale readable as
+      // individual threats instead of one repeated pink texture. The pool
+      // remains instanced and the simulation/hash are unchanged.
+      // Keep the 320-drone finale dense but legible: the instanced silhouettes
+      // should frame the courier, not form a solid wall over it.
+      // Smaller, varied silhouettes preserve the exact 320-instance fixture
+      // while opening negative space around the courier and making the arena
+      // dressing visible. Elites remain intentionally larger for threat
+      // hierarchy and telegraph readability.
+      let scale = isElite ? 0.3 : 0.16 + (i % 5) * 0.009;
       if (drone.flashRemaining > 0) scale *= 1.18;
       if (isElite && drone.burstRemaining > 0) scale *= 1.12;
-      transform.scale = [scale, scale, scale];
+      const profile = i % 6;
+      const width = 1.02 + (profile % 3) * 0.08;
+      const depth = 0.92 + ((profile + 1) % 3) * 0.06;
+      const tall = 0.9 + (profile % 2) * 0.08;
+      transform.scale = isElite
+        ? [scale * (1.04 + (profile % 3) * 0.08), scale * 0.82, scale * (0.98 + (profile % 2) * 0.1)]
+        : [scale * width, scale * tall, scale * depth];
+      transform.rotation = [
+        isElite ? (profile % 2 === 0 ? 0.08 : -0.08) : (profile - 2) * 0.025,
+        drone.yaw,
+        isElite ? (profile % 2 === 0 ? 0.08 : -0.08) : (profile % 3 === 0 ? 0.04 : -0.02)
+      ];
 
       let color: string;
       if (drone.flashRemaining > 0) color = isElite ? ELITE_COLOR_FLASH : GRUNT_COLOR_FLASH;
       else if (isElite && drone.telegraphRemaining > 0) color = ELITE_COLOR_TELEGRAPH;
-      else color = isElite ? ELITE_COLOR_BASE : GRUNT_COLOR_BASE;
+      else color = drone.baseColor;
       if (colors[i] !== color) colors[i] = color;
     }
   }

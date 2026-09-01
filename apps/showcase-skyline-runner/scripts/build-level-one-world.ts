@@ -19,16 +19,77 @@ interface GlbChunk {
 
 interface GltfNode {
   name?: string;
+  mesh?: number;
   translation?: [number, number, number];
+  rotation?: [number, number, number, number];
+  scale?: [number, number, number];
+  [key: string]: unknown;
+}
+
+interface GltfMaterial {
+  name?: string;
+  pbrMetallicRoughness?: {
+    baseColorFactor?: [number, number, number, number];
+    metallicFactor?: number;
+    roughnessFactor?: number;
+    [key: string]: unknown;
+  };
+  emissiveFactor?: [number, number, number];
   [key: string]: unknown;
 }
 
 interface GltfDocument {
   asset: { generator?: string; [key: string]: unknown };
   nodes: GltfNode[];
+  materials?: GltfMaterial[];
   scenes: { nodes?: number[]; [key: string]: unknown }[];
   scene?: number;
   [key: string]: unknown;
+}
+
+/**
+ * A deterministic nocturne palette for the authored Kenney material roles.
+ *
+ * The source GLB's bright stone/cloud values became near-white under the route's
+ * moonlit key, flattening mountains, platforms, and clouds into one repeated
+ * value bucket. Retune materials here, in the committed GLB producer, so the
+ * registered typed world—not a route-level tint or screenshot treatment—owns
+ * the cohesive Steel Dawn art direction. Geometry, mesh assignments, bounds,
+ * and every certified playable surface remain byte-for-byte structurally
+ * unchanged apart from the JSON material values.
+ */
+const NOCTURNE_MATERIALS: Readonly<Record<string, {
+  readonly color: readonly [number, number, number, number];
+  readonly metallic: number;
+  readonly roughness: number;
+  readonly emissive?: readonly [number, number, number];
+}>> = {
+  "platform stone": { color: [0.018, 0.065, 0.16, 1], metallic: 0.08, roughness: 0.82 },
+  "platform cliff": { color: [0.045, 0.13, 0.29, 1], metallic: 0.04, roughness: 0.9 },
+  "platform grass": { color: [0.42, 0.7, 0.84, 1], metallic: 0.02, roughness: 0.76 },
+  "platform moss": { color: [0.27, 0.58, 0.72, 1], metallic: 0.02, roughness: 0.72 },
+  "hazard lava": { color: [0.95, 0.16, 0.055, 1], metallic: 0.03, roughness: 0.34, emissive: [0.8, 0.07, 0.018] },
+  bark: { color: [0.09, 0.045, 0.035, 1], metallic: 0.01, roughness: 0.94 },
+  foliage: { color: [0.025, 0.2, 0.16, 1], metallic: 0.01, roughness: 0.88 },
+  "collectible gold": { color: [1, 0.56, 0.06, 1], metallic: 0.18, roughness: 0.28, emissive: [0.85, 0.24, 0.018] },
+  "accent purple": { color: [0.42, 0.16, 0.7, 1], metallic: 0.08, roughness: 0.34, emissive: [0.42, 0.04, 0.72] },
+  "finish portal": { color: [0.03, 0.58, 0.78, 1], metallic: 0.12, roughness: 0.26, emissive: [0.02, 0.54, 0.82] },
+  "background cloud": { color: [0.29, 0.38, 0.54, 1], metallic: 0.01, roughness: 0.95 }
+};
+
+function applyNocturneMaterials(json: GltfDocument): void {
+  for (const entry of json.materials ?? []) {
+    const palette = entry.name ? NOCTURNE_MATERIALS[entry.name] : undefined;
+    if (!palette) continue;
+    entry.pbrMetallicRoughness = {
+      ...entry.pbrMetallicRoughness,
+      baseColorFactor: [...palette.color],
+      metallicFactor: palette.metallic,
+      roughnessFactor: palette.roughness
+    };
+    if (palette.emissive) entry.emissiveFactor = [...palette.emissive];
+    else delete entry.emissiveFactor;
+  }
 }
 
 function readGlb(path: string): { json: GltfDocument; chunks: GlbChunk[] } {
@@ -83,7 +144,37 @@ function followsTerrain(name: string): boolean {
   return /^(?:platform-|cliff-rock-|hazard-|tree-|collectible-|checkpoint-|finish-)/u.test(name);
 }
 
+/**
+ * Keep one authored world, but do not stamp its entire decorative backdrop into
+ * every district. Gameplay surfaces and hazards are untouched. The live route
+ * already owns collectible/checkpoint presentation, so baked coins are omitted;
+ * the review/runtime route owns the distant environment layer, so baked
+ * mountains, clouds, and trees are omitted instead of being repeated once per
+ * district. Playable surfaces, hazards, relay architecture, and the finish
+ * remain authored by this typed world.
+ */
+function retainDecorativeNode(name: string): boolean {
+  if (/^collectible-coin-/u.test(name)) return false;
+  // The thick rectangular ground meshes made every landing read as a gray
+  // test block. The source asset already provides a separate snow-cap mesh and
+  // multiple faceted cliff-rock supports for each certified landing. Retain
+  // those authored silhouettes and omit only the redundant rectangular fill;
+  // route collision and the cap's top surface remain unchanged.
+  if (/^platform-ground-/u.test(name)) return false;
+  const mountain = /^background-mountain-(\d+)$/u.exec(name);
+  // The route supplies a layered silhouette backdrop and the source's repeated
+  // triangular mountains sit in front of its platforms at this side-on scale.
+  // Keeping even three per district produced conspicuous cone wallpaper in the
+  // exact frame, so the composed world relies on its trees/clouds plus that
+  // planned distant skyline instead.
+  if (mountain) return false;
+  if (/^background-cloud-/u.test(name)) return false;
+  if (/^tree-(?:trunk|canopy)-/u.test(name)) return false;
+  return true;
+}
+
 const { json, chunks } = readGlb(SOURCE);
+applyNocturneMaterials(json);
 const baseNodes = json.nodes;
 const longNodes: GltfNode[] = [];
 const sceneNodes: number[] = [];
@@ -93,6 +184,7 @@ for (let section = 0; section < SKYLINE_SECTION_LAYOUTS.length; section += 1) {
   const relayGroup = section % 5;
   for (const sourceNode of baseNodes) {
     const sourceName = sourceNode.name ?? "node";
+    if (!retainDecorativeNode(sourceName)) continue;
     const checkpoint = checkpointGroup(sourceName);
     if (checkpoint !== undefined && checkpoint !== relayGroup) continue;
     if (/^finish-/u.test(sourceName) && section !== SKYLINE_SECTION_LAYOUTS.length - 1) continue;
@@ -115,6 +207,25 @@ for (let section = 0; section < SKYLINE_SECTION_LAYOUTS.length; section += 1) {
         node.translation[2]
       ];
     }
+    const cliffRock = /^cliff-rock-(\d+)-(\d+)$/u.exec(sourceName);
+    if (cliffRock) {
+      const platformIndex = Number(cliffRock[1]);
+      const rockIndex = Number(cliffRock[2]);
+      const sourceScale = node.scale ?? [1, 1, 1];
+      // In the source world these faceted rocks were embedded inside the thick
+      // rectangular ground fill. Once that redundant fill is removed, their
+      // original one-unit scale reads as a row of tiny debug dots. Enlarge the
+      // existing authored meshes into overlapping, irregular cliff islands;
+      // their tops meet the unchanged snow caps while collision remains owned
+      // by the route's certified surface map.
+      const widthFactor = 2.2 + ((platformIndex * 3 + rockIndex * 5) % 4) * 0.18;
+      const heightFactor = 2.85 + ((platformIndex * 7 + rockIndex * 2) % 5) * 0.16;
+      node.scale = [
+        sourceScale[0] * widthFactor,
+        sourceScale[1] * heightFactor,
+        sourceScale[2] * 1.45
+      ];
+    }
     sceneNodes.push(longNodes.length);
     longNodes.push(node);
   }
@@ -131,6 +242,7 @@ json.asset = {
     sourceLicense: "CC0-1.0",
     districts: SKYLINE_SECTION_LAYOUTS.length,
     terrainProfiles: "apps/showcase-skyline-runner/src/level.ts",
+    materialDirection: "steel-dawn-nocturne-v1",
     platformerGeometry: {
       modelToGameScale: MODEL_TO_GAME,
       sectionModelSpan: MODEL_SECTION_STRIDE,

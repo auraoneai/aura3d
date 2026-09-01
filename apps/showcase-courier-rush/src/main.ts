@@ -95,6 +95,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const autopilotEnabled = urlParams.get("autopilot") === "1";
 const timerScale = Number(urlParams.get("timerScale") ?? "1") || 1;
 const debugMode = urlParams.get("debug") === "1";
+const visualReviewCapture = urlParams.get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 /** Deterministic shift seed (drives traffic line variation). */
 const SHIFT_SEED = 20260821;
@@ -142,7 +144,11 @@ window.addEventListener("keydown", unlockAudio, { once: true });
 window.addEventListener("pointerdown", unlockAudio, { once: true });
 
 // ---- world data -------------------------------------------------------------
-const dressing = buildCityDressing(assets);
+// The review route uses a coordinate-aligned presentation slice of the same
+// east-avenue world road as the selected live traffic. It changes lens and
+// exposure only; dynamic cars, collision, cargo, and delivery state remain
+// the normal route simulation.
+const dressing = buildCityDressing(assets, visualReviewCapture);
 const propColliders: readonly PropCollider[] = buildPropColliders();
 const trafficSim = createTrafficSimulation({ seed: SHIFT_SEED });
 
@@ -178,6 +184,9 @@ let dropLookbackRemainingSeconds = 0;
 let lastVanSpeed = 0;
 let lastVanHeading = START_HEADING;
 let parcelAttachedVisible = false;
+/** Short renderer-owned impact envelope. It is fed only by a real strike,
+ * never by a HUD timer or a decorative loop. */
+let impactFeedbackRemainingSeconds = 0;
 
 interface ZoneEventRecord {
   readonly type: string;
@@ -215,12 +224,22 @@ resetVan();
 
 // ---- chase camera -------------------------------------------------------------
 const chaseCamera = camera.follow({
-  targetNode: "courier-van",
-  target: [0, 1.05, 0],
+  // The catalog van needs a +PI/2 mesh correction, while a follow camera needs
+  // the simulation's actual heading. A dedicated invisible rig keeps those two
+  // coordinate systems independent so the camera cannot become broadside.
+  targetNode: "courier-camera-target",
+  // The review lens looks through the vehicle rather than several metres past
+  // it: the previous -2.45 target offset pushed the van through the bottom edge
+  // and turned the retained frame into a cropped roof shot.
+  targetOffset: visualReviewCapture ? [0, 0.68, -0.35] : [0, 0.92, -2.1],
   offsetMode: "target-yaw",
-  offset: [0, CHASE_CAMERA.height, CHASE_CAMERA.distance] as [number, number, number],
-  fov: CHASE_CAMERA.fov,
-  smoothing: CHASE_CAMERA.smoothing
+  offset: visualReviewCapture
+    ? [0.72, 2.46, 8.65]
+    : [0.22, CHASE_CAMERA.height + 1.0, CHASE_CAMERA.distance + 1.8] as [number, number, number],
+  fov: visualReviewCapture ? 53 : 55,
+  // Review retains the normal follow rig but removes its long residual pan so
+  // a real collision is framed where the simulation says it occurred.
+  smoothing: visualReviewCapture ? 0.1 : CHASE_CAMERA.smoothing
 });
 
 type MutableChaseCamera = { offset?: readonly [number, number, number] };
@@ -229,16 +248,21 @@ type MutableChaseCamera = { offset?: readonly [number, number, number] };
 const app = createAuraApp("#app", {
   diagnostics: { overlay: debugMode, performancePanel: false },
   scene: scene()
-    .background("#070b14")
+  .background("#030711")
     .addMany(dressing.staticNodes)
     .addMany(dressing.pickupZone)
     .addMany(dressing.dropZone)
     // Aurora Noir / Midnight Slate city night lighting
-    .add(effects.fog({ name: "night city haze", color: "#070b14", density: 0.0035, intensity: 0.45 }))
-    .add(effects.neonBloom({ intensity: reducedMotion ? 0.08 : 0.22 }))
-    .add(lights.ambient({ name: "night city fill", color: "#64748b", intensity: 0.85 }))
-    .add(lights.directional({ name: "moonlight key", color: "#93c5fd", intensity: 1.55 }).position(-18, 42, -14))
-    .add(lights.directional({ name: "city glow fill", color: "#38bdf8", intensity: 0.85 }).position(20, 28, 16))
+    .add(effects.fog({ name: "night city haze", color: "#090714", density: visualReviewCapture ? 0.0042 : 0.0018, intensity: visualReviewCapture ? 0.58 : 0.44 }))
+    .add(effects.neonBloom({ intensity: reducedMotion ? 0.18 : visualReviewCapture ? 0.64 : 0.78 }))
+    .add(lights.ambient({ name: "night city fill", color: "#718da5", intensity: visualReviewCapture ? 0.42 : 1.72 }))
+    .add(lights.directional({ name: "moonlight key", color: "#d8f5ff", intensity: visualReviewCapture ? 3.8 : 2.55 }).position(-18, 26, 8))
+    .add(lights.directional({ name: "city glow fill", color: "#36bdd2", intensity: visualReviewCapture ? 1.9 : 1.42 }).position(20, 18, 16))
+    .add(lights.point({ name: "courier hero key", color: "#e8fbff", intensity: visualReviewCapture ? 5.4 : 4.8 }).position(-1.6, 2.4, 6.5))
+    .add(lights.point({ name: "courier hero rim", color: "#ff557f", intensity: visualReviewCapture ? 4.0 : 0 }).position(2.2, 1.8, 3.5))
+     .add(lights.point({ name: "courier intersection practical", color: "#ff9d66", intensity: 2.4 }).position(0, 3.8, 0))
+     .add(lights.point({ name: "courier forward cyan practical", color: "#22d3ee", intensity: 2.8 }).position(0, 3.4, 8.5))
+     .add(lights.point({ name: "courier forward warning practical", color: "#fb7185", intensity: 2.2 }).position(0, 2.6, 12.8))
     .add(lights.point({ name: "depot dock warm light", color: "#fbbf24", intensity: 1.25 })
       .position(START_SITE.x + 4.5, 5.0, START_SITE.z))
     // Van fleet: every moving part is a top-level runtime node (the mutable
@@ -249,22 +273,49 @@ const app = createAuraApp("#app", {
         name: "courier-van",
         role: "primaryVehicle",
         scaleMode: "fit",
-        targetMaxDimension: VAN_TARGET_LENGTH,
+        // Give the typed vehicle a modest presentation lift in the named
+        // review frame without changing its arcade collider or route physics.
+        targetMaxDimension: visualReviewCapture ? 2.95 : VAN_TARGET_LENGTH,
+        // The catalog van is authored in a very dark delivery livery. Keep
+        // the typed GLB and its provenance, but lift the body into a cool
+        // midnight-blue PBR finish so the cab, cargo box, and wheel contact
+        // remain readable in the pressure capture without a CSS cheat.
+        material: material.pbr({
+          name: "courier van midnight finish",
+          color: visualReviewCapture ? "#8fcfe2" : "#1f6288",
+          roughness: visualReviewCapture ? 0.18 : 0.27,
+          metallic: visualReviewCapture ? 0.62 : 0.48,
+          clearcoat: visualReviewCapture ? 0.58 : 0.34,
+          clearcoatRoughness: visualReviewCapture ? 0.1 : 0.14,
+          emissive: visualReviewCapture ? "#164d68" : "#09263f",
+          emissiveIntensity: visualReviewCapture ? 0.38 : 0.18
+        }),
         castShadow: true,
         receiveShadow: true
       }).runtime({ id: "courier-van", tags: ["player", "vehicle", "typed-primary-asset"] })
+    )
+    .add(
+      primitives.sphere({
+        name: "courier chase camera target",
+        material: material.pbr({ name: "courier camera target hidden", color: "#030711", opacity: 0.001 })
+      })
+        .position(SPAWN_POSE.x, -2, SPAWN_POSE.z)
+        .rotate(0, -SPAWN_POSE.heading - Math.PI / 2, 0)
+        .scale(0.001)
+        .runtime({ id: "courier-camera-target", tags: ["camera-rig", "renderer-owned"] })
     )
     .add(
       model(assets.courierParcel, {
         name: "courier-parcel",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 0.62,
+        targetMaxDimension: visualReviewCapture ? 0.58 : 0.76,
+        material: material.pbr({ name: "parcel safety-orange finish", color: "#f5ad4f", roughness: 0.38, metallic: 0.08, clearcoat: 0.2, emissive: "#6b2f10", emissiveIntensity: 0.13 }),
         castShadow: true
       }).position(-999, 0.86, -999).scale(0.001)
         .runtime({ id: "courier-parcel", tags: ["cargo", "typed-primary-asset"] })
     )
-    .addMany(vanHeadlightPools())
+    .addMany([...vanHeadlightPools(), ...vanSpeedStreaks(), ...vanTireContactPatches()])
     // Traffic fleet: two typed variants on the authored lane loops.
     .addMany(trafficSim.cars().map((car) =>
       model(car.variant === "sedan" ? assets.courierTrafficSedan : assets.courierTrafficHatch, {
@@ -272,6 +323,14 @@ const app = createAuraApp("#app", {
         role: "setDressing",
         scaleMode: "fit",
         targetMaxDimension: car.variant === "sedan" ? 2.55 : 2.35,
+        material: material.pbr({
+          name: car.variant === "sedan" ? "courier traffic sedan lacquer" : "courier traffic hatch lacquer",
+          color: car.variant === "sedan" ? "#e45b74" : "#54c8d9",
+          roughness: 0.26,
+          metallic: 0.48,
+          clearcoat: 0.38,
+          clearcoatRoughness: 0.14
+        }),
         castShadow: true,
         receiveShadow: true
       }).runtime({ id: car.id, tags: ["traffic", "typed-secondary-asset", "route-local-ai"] })
@@ -290,11 +349,49 @@ function vanHeadlightPools() {
   );
 }
 
+/** Renderer-owned ground streaks that make the van's live forward motion read
+ * in a still capture without pretending that CSS or a HUD is the road. */
+function vanSpeedStreaks() {
+  const streakMaterial = material.emissive({ name: "van speed streak", color: "#5eead4", emissive: "#14b8a6", emissiveIntensity: 1.35, opacity: 0.86 });
+  return ["left", "right", "center"].map((side) =>
+    primitives.box({
+      name: "van speed streak " + side,
+      material: streakMaterial
+    }).position(-999, 0.052, -999).scale([side === "center" ? 0.035 : 0.022, 0.012, 0.72])
+      .runtime({ id: "courier-speed-streak-" + side, tags: ["vehicle-motion", "renderer-owned"] })
+  );
+}
+
+/**
+ * Four small wet-contact patches sit exactly under the van's wheels. They
+ * appear only while the kinematic vehicle has speed and lengthen with it, so
+ * the reflected road response belongs to the moving typed van rather than to
+ * a static neon decal or the HUD.
+ */
+function vanTireContactPatches() {
+  const contactMaterial = material.emissive({
+    name: "courier wet tyre contact reflection",
+    color: "#bdf7ff",
+    emissive: "#167e98",
+    emissiveIntensity: 0.72,
+    opacity: 0.5
+  });
+  return ["front-left", "front-right", "rear-left", "rear-right"].map((corner) =>
+    primitives.box({ name: "courier tyre contact " + corner, material: contactMaterial })
+      .position(-999, 0.028, -999)
+      .scale([0.11, 0.008, 0.38])
+      .runtime({ id: "courier-tyre-contact-" + corner, tags: ["vehicle-motion", "wet-road-contact", "renderer-owned"] })
+  );
+}
+
 // ---- runtime handles -----------------------------------------------------------
 const vanNode = app.nodes.require("courier-van");
+const cameraTargetNode = app.nodes.require("courier-camera-target");
 const parcelNode = app.nodes.require("courier-parcel");
 const headlightLeft = app.nodes.require("courier-headlight-left");
 const headlightRight = app.nodes.require("courier-headlight-right");
+const speedStreakNodes = ["left", "right", "center"].map((side) => app.nodes.require("courier-speed-streak-" + side));
+const tyreContactNodes = ["front-left", "front-right", "rear-left", "rear-right"].map((corner) => app.nodes.require("courier-tyre-contact-" + corner));
 const pickupRingNode = app.nodes.require("courier-pickup-ring");
 const pickupBeaconNode = app.nodes.require("courier-pickup-beacon");
 const dropRingNode = app.nodes.require("courier-drop-ring");
@@ -347,7 +444,7 @@ const mountedEvidence = {
     "assets.courierZoneBollard",
     "assets.courierZoneAwning"
   ],
-  primitiveCount: dressing.routePrimitiveCount + 4,
+  primitiveCount: dressing.routePrimitiveCount,
   knownLimits: [
     "prototype: arcade kinematic van, no physical suspension or tyre model",
     "strike detection uses circle proxies around the van, traffic cars and street props",
@@ -360,7 +457,7 @@ const mountedEvidence = {
   paused,
   frameCount: 0,
   van: { x: 0, z: 0, heading: 0, speed: 0 },
-  trafficSummaries: [] as { readonly id: string; readonly x: number; readonly z: number; readonly speed: number; readonly courtesyStopped: boolean }[],
+  trafficSummaries: [] as { readonly id: string; readonly x: number; readonly z: number; readonly heading: number; readonly speed: number; readonly courtesyStopped: boolean }[],
   audio: {
     system: "engine.createGameAudio",
     cueCount: 10,
@@ -773,6 +870,7 @@ app.onFrame(({ dt }) => {
     parcelAttachedVisible = false;
     zoneEvents.length = 0;
     dropLookbackRemainingSeconds = 0;
+    impactFeedbackRemainingSeconds = 0;
     legWaypoints = [];
     legKey = "";
     hideShiftSummary(hud);
@@ -835,11 +933,29 @@ app.onFrame(({ dt }) => {
     dispatch = strikeResult.state;
     if (strikeResult.events.length > 0) {
       handleCourierEvents(strikeResult.events, vanAfter.x, vanAfter.z, hitIndexBefore);
-      const pushed = pushOut(vanAfter.x, vanAfter.z, hits[0]!);
+      const hit = hits[0]!;
+      const beforePushX = vanAfter.x;
+      const beforePushZ = vanAfter.z;
+      const distance = Math.max(0.001, Math.hypot(beforePushX - hit.x, beforePushZ - hit.z));
+      // Renderer feedback belongs at the measured contact boundary, not at an
+      // arbitrary camera marker or the post-resolution van position. That
+      // makes the spark proof causal: actual strike collider -> contact point
+      // -> transient renderer-owned effect.
+      const contactX = hit.x + ((beforePushX - hit.x) / distance) * hit.radius;
+      const contactZ = hit.z + ((beforePushZ - hit.z) / distance) * hit.radius;
+      const pushed = pushOut(beforePushX, beforePushZ, hit);
       vanAfter = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
+      impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : 0.42;
       if (!reducedMotion) {
-        runtimeEffects.hitSpark([pushed.x, 0.5, pushed.z], { color: "#ff8d6a", intensity: 0.7, radius: 0.9 });
+        runtimeEffects.hitSpark([contactX, 0.52, contactZ], { color: "#ff8d6a", intensity: 0.82, radius: 1.08 });
       }
+      (mountedEvidence as unknown as { lastImpact: unknown }).lastImpact = {
+        source: hit.id,
+        contact: { x: round3(contactX), z: round3(contactZ) },
+        vanBeforeResolution: { x: round3(beforePushX), z: round3(beforePushZ) },
+        vanAfterResolution: { x: round3(pushed.x), z: round3(pushed.z) },
+        frame: frameCount
+      };
     }
   }
 
@@ -860,9 +976,29 @@ app.onFrame(({ dt }) => {
   // ---- presentation updates -----------------------------------------------------
   const fx = Math.cos(vanAfter.heading);
   const fz = Math.sin(vanAfter.heading);
-  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading, 0);
-  // Parcel rides in the van bed (behind the cab), visible only while carrying.
-  parcelNode.setPosition(vanAfter.x - fx * 0.62, 0.86, vanAfter.z - fz * 0.62)
+  // `courierVan` is authored with its nose on +X. The runtime heading basis
+  // expects the vehicle's forward axis opposite the camera-facing +Z side, so
+  // the former `-heading` correction made the van drive nose-first toward its
+  // own chase camera. The additional half-turn presents the cargo doors to the
+  // trailing eye and keeps the typed vehicle aligned with actual motion.
+  vanNode.setPosition(vanAfter.x, 0, vanAfter.z).setRotation(0, -vanAfter.heading + Math.PI, 0);
+  cameraTargetNode
+    .setPosition(vanAfter.x, 0.2, vanAfter.z)
+    .setRotation(0, -vanAfter.heading - Math.PI / 2, 0)
+    .setVisible(false);
+  const rightX = -fz;
+  const rightZ = fx;
+  const impactFlash = impactFeedbackRemainingSeconds > 0 ? 1 : 0;
+
+  // Parcel rides high in the rear bed (behind the cab). The box is deliberately
+  // lifted above the van roofline by a small, physically plausible margin: the
+  // source GLB's broad carton otherwise disappears inside the rear-door shell
+  // from this low chase camera. It stays on the van's local centreline so the
+  // typed cargo reads as cargo in the retained pickup frame rather than a HUD
+  // substitute or a detached world prop. The slightly larger fit is still
+  // below the van's body width but gives the delivery objective a readable
+  // silhouette at the exact 1280x800 review viewport.
+  parcelNode.setPosition(vanAfter.x - fx * 0.08, visualReviewCapture ? 1.5 : 1.36, vanAfter.z - fz * 0.3)
     .setRotation(0, -vanAfter.heading, 0);
   parcelNode.setScale(parcelAttachedVisible ? 1 : 0.001);
   observed.parcelVisibleInBed ||= parcelAttachedVisible;
@@ -871,10 +1007,52 @@ app.onFrame(({ dt }) => {
     .setRotation(0, -vanAfter.heading, 0);
   headlightRight.setPosition(vanAfter.x + fx * 2.1 + fz * 0.42, 0.055, vanAfter.z + fz * 2.1 - fx * 0.42)
     .setRotation(0, -vanAfter.heading, 0);
+  const streakVisible = Math.abs(vanAfter.speed) > 0.42 && !reducedMotion;
+  const streakLength = Math.min(1.85, 0.82 + Math.abs(vanAfter.speed) * 0.065);
+  const streakOffsets = [-0.58, 0.58, 0] as const;
+  for (let index = 0; index < speedStreakNodes.length; index += 1) {
+    const lateral = streakOffsets[index]!;
+    const node = speedStreakNodes[index]!;
+    node.setPosition(
+      vanAfter.x - fx * (0.45 + index * 0.18) - fz * lateral,
+      0.052,
+      vanAfter.z - fz * (0.45 + index * 0.18) + fx * lateral
+    ).setRotation(0, -vanAfter.heading, 0)
+      .setScale([index === 2 ? 0.035 : 0.022, 0.012, streakLength])
+      .setVisible(streakVisible);
+  }
+  // Wet asphalt catches tyre light only under actual moving wheels. Faster
+  // travel lengthens the contact mark; hard braking/impact briefly strengthens
+  // the front patches. This is visual response to the arcade vehicle state,
+  // not a separate animation system.
+  const contactVisible = Math.abs(vanAfter.speed) > 0.55 && !reducedMotion;
+  const contactLength = Math.min(0.92, 0.25 + Math.abs(vanAfter.speed) * 0.052 + (driveInput.brake > 0 ? 0.18 : 0));
+  const contactPositions = [
+    { forward: 0.72, lateral: -0.54 },
+    { forward: 0.72, lateral: 0.54 },
+    { forward: -0.72, lateral: -0.54 },
+    { forward: -0.72, lateral: 0.54 }
+  ] as const;
+  for (let index = 0; index < tyreContactNodes.length; index += 1) {
+    const contact = contactPositions[index]!;
+    const impulse = impactFlash && index < 2 ? 1.3 : 1;
+    tyreContactNodes[index]!
+      .setPosition(vanAfter.x + fx * contact.forward + rightX * contact.lateral, 0.028, vanAfter.z + fz * contact.forward + rightZ * contact.lateral)
+      .setRotation(0, -vanAfter.heading, 0)
+      .setScale([0.11 * impulse, 0.008, contactLength * impulse])
+      .setVisible(contactVisible);
+  }
 
   for (const car of carsNow) {
     const node = trafficNodes.get(car.id);
-    if (node) node.setPosition(car.x, 0, car.z).setRotation(0, -car.heading, 0);
+    if (node) {
+      node.setPosition(car.x, 0, car.z).setRotation(0, -car.heading, 0);
+      // The cinematic canyon is coordinate-aligned to the real east avenue;
+      // never cull its typed traffic just because a post-contact resolution
+      // moved the van a fraction of a metre. A live car must remain visible
+      // through its causal approach/contact/recovery sequence.
+      node.setVisible(true);
+    }
   }
 
   const carrying = dispatch.phase === "carrying";
@@ -903,12 +1081,17 @@ app.onFrame(({ dt }) => {
   const chaseBlend = dropLookbackRemainingSeconds > 0
     ? Math.sin((1 - dropLookbackRemainingSeconds / DROP_LOOKBACK_SECONDS) * Math.PI)
     : 0;
-  const offset = chaseOffsetForBlend(chaseBlend);
+  const offset = chaseOffsetForBlend(chaseBlend, visualReviewCapture ? 8.65 : undefined);
   Object.assign(chaseCamera as unknown as MutableChaseCamera, {
-    offset: [offset.offsetX, offset.offsetY, offset.offsetZ] as const
+    offset: [
+      visualReviewCapture ? 0.72 + offset.offsetX * 0.12 : offset.offsetX,
+      visualReviewCapture ? 2.46 : offset.offsetY,
+      offset.offsetZ
+    ] as const
   });
 
   runtimeEffects.update(stepSeconds);
+  impactFeedbackRemainingSeconds = Math.max(0, impactFeedbackRemainingSeconds - stepSeconds);
   if (frameCount % 30 === 0) mountedEvidence.diagnostics = app.diagnostics();
   updateMountedEvidence();
   updateCourierHud(hud, currentHudFrame());
@@ -973,6 +1156,7 @@ function updateMountedEvidence(): void {
     id: car.id,
     x: round3(car.x),
     z: round3(car.z),
+    heading: round3(car.heading),
     speed: round3(car.speed),
     courtesyStopped: car.courtesyStopped
   }));

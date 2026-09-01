@@ -130,6 +130,10 @@
     "./advanced-runtime": "./dist/engine/advanced-runtime/index.js"
   },
   "scripts": {
+    "premium-indie:reference:brawlhalla-gameplay": "node tools/premium-indie-reference/extract-brawlhalla-gameplay.mjs",
+    "premium-indie:reference:ballisticng-gameplay": "node tools/premium-indie-reference/extract-ballisticng-gameplay.mjs",
+    "premium-indie:reference:demetrios-pinball": "node tools/premium-indie-reference/extract-demetrios-pinball.mjs",
+    "premium-indie:reference:infinifactory-gameplay": "node tools/premium-indie-reference/fetch-infinifactory-gameplay.mjs",
     "evidence:command": "node tools/evidence/run-command-proof.mjs",
     "evidence:plan": "node tools/evidence/run-command-plan.mjs",
     "evidence:plan-check": "node tools/evidence/check-command-plan.mjs",

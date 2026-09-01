@@ -17,6 +17,8 @@ export const STEP = 1 / SIM_FPS;
 /** Half-width of the floodlit pit; fighters clamp to these walls. */
 export const PIT_HALF_WIDTH = 4.2;
 export const FLOOR_Y = 0;
+/** Keep rigid fighter assemblies readable when both combatants meet a wall. */
+const MIN_FIGHTER_GAP = 0.9;
 
 /** Route-local frame data (frames at 60fps). Windows are authored, not imported. */
 interface MoveWindow {
@@ -292,6 +294,32 @@ export function createMechBout(options: MechBoutOptions) {
     }
   }
 
+  /**
+   * The route mounts each fighter from several rigid typed parts.  Letting the
+   two roots occupy the same x coordinate makes those real assemblies collapse
+   into one unreadable silhouette (especially at a pit wall).  Resolve only the
+   authored horizontal arcade envelope; Rapier remains the owner of physical
+   simulation elsewhere in the repository.
+   */
+  function resolveFighterSpacing(): void {
+    if (player.ko || rival.ko) return;
+    const delta = rival.x - player.x;
+    const distance = Math.abs(delta);
+    if (distance >= MIN_FIGHTER_GAP) return;
+    const direction = delta >= 0 ? 1 : -1;
+    const needed = MIN_FIGHTER_GAP - distance;
+    const playerNext = clampX(player.x - direction * needed * 0.5);
+    const rivalNext = clampX(rival.x + direction * needed * 0.5);
+    player.x = playerNext;
+    rival.x = rivalNext;
+    // At a wall, the first symmetric correction can be clamped back into an
+    // overlap.  Give the inward-moving fighter the remaining separation.
+    if (Math.abs(rival.x - player.x) < MIN_FIGHTER_GAP) {
+      if (direction > 0) player.x = clampX(rival.x - MIN_FIGHTER_GAP);
+      else rival.x = clampX(player.x + MIN_FIGHTER_GAP);
+    }
+  }
+
   const resolvedThisFrame = new Set<string>();
 
   function stepFixed(): void {
@@ -351,6 +379,8 @@ export function createMechBout(options: MechBoutOptions) {
       const rivalApproachVector = Math.sign(player.x - rival.x || 1) * decision.approach;
       stepFighterMotion(rival, rivalStats, rivalApproachVector, decision.guard, decision);
     }
+
+    resolveFighterSpacing();
 
     // Advance move clocks after resolution bookkeeping.
     advanceMoveClock(player);

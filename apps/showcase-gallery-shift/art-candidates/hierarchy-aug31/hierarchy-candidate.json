@@ -1,0 +1,109 @@
+{
+  "schema": "aura3d.gallery-shift.hierarchy-candidate/1.0",
+  "candidateOnly": true,
+  "canonicalEvidence": false,
+  "pass": true,
+  "failures": [],
+  "route": "/apps/showcase-gallery-shift/?debug=1&capture=review",
+  "cameraContract": {
+    "position": [
+      6,
+      24,
+      15
+    ],
+    "target": [
+      0,
+      0.55,
+      -0.4
+    ],
+    "fov": 48,
+    "changed": true
+  },
+  "staging": "same moving guard-1 three-metre real-LOS intercept as tests/browser/gallery-shift-scene.spec.ts",
+  "truth": {
+    "floor": 1,
+    "state": "playing",
+    "physicsBackend": "rapier",
+    "detection": 0.614,
+    "thiefPosition": {
+      "x": -2.804,
+      "z": 4.574
+    },
+    "guardVisionSamples": [
+      {
+        "id": "guard-1",
+        "x": -4.89733740930857,
+        "z": 3.3595443026010465,
+        "yaw": 1.0452125332432896,
+        "seesThief": true
+      },
+      {
+        "id": "guard-2",
+        "x": 1.135960962567033,
+        "z": 2.9687322383683616,
+        "yaw": -1.1839606478363351,
+        "seesThief": true
+      }
+    ],
+    "guardRouteLengths": [
+      25,
+      25
+    ],
+    "navigationOwnership": "authored deterministic two-floor waypoint patrols; no Recast/navmesh claim",
+    "renderer": {
+      "drawCalls": 190,
+      "renderSize": [
+        1280,
+        800
+      ],
+      "backend": "unknown"
+    },
+    "primaryAssets": [
+      "assets.galleryShiftCutawayMuseumWorld",
+      "assets.showcaseRunnerGirl",
+      "assets.showcaseExpressiveRobot",
+      "assets.galleryShiftPedestal",
+      "assets.galleryShiftExhibitA",
+      "assets.galleryShiftExhibitB",
+      "assets.galleryShiftExhibitC",
+      "assets.galleryShiftDisplayCase"
+    ],
+    "primaryAssetHashes": [
+      "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
+      "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
+      "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+      "sha256-c9af6f418b688bff7dab3bbe9d905b9456d8d82e4c9af94e4a84b3aae8fb22fc",
+      "sha256-dc7c4d90c6a325bdf51987026dd053b845fa9c18ff72444a2ceb89089f224113",
+      "sha256-71b229c6afea8e58ce80a41c2f85dfac714eef20df0d782f1b969fc1e61f8147",
+      "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63",
+      "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f"
+    ]
+  },
+  "sourceBindings": {
+    "main": {
+      "path": "apps/showcase-gallery-shift/src/main.ts",
+      "sha256": "ba8afed2c88b4383552810bf3beda15f4b9c6453be01b8d12a9f0e5b402d6167"
+    },
+    "environment": {
+      "path": "apps/showcase-gallery-shift/src/environment.ts",
+      "sha256": "cc7bc1faad5e595de92718e26c2b16d219ea40dccc998febf99a624ebffabd65"
+    },
+    "floorTruth": {
+      "path": "apps/showcase-gallery-shift/src/floor.ts",
+      "sha256": "449dad2b3f16989bfff7a3c42576c99991321204ad694021b8a8ff5c31de21f1"
+    },
+    "worldBinding": {
+      "path": "apps/showcase-gallery-shift/src/gallery-world-candidate.ts",
+      "sha256": "a810bcc15e9f0162b4260bebe77dedce936159b654bb4b2fe42dcd5494737387"
+    }
+  },
+  "artifact": {
+    "path": "hierarchy-candidate-canvas.png",
+    "sha256": "f9c8c9dfe84433a4feda9a02d62d17f8b0c36ba81f3907d3eeb8caeca11253b9",
+    "bytes": 325021,
+    "viewport": [
+      1280,
+      800
+    ]
+  }
+}

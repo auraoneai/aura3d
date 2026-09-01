@@ -28,6 +28,7 @@ const viewport = {
 const timeoutMs = Number(process.env.AURA_CLASH_SCREENSHOT_TIMEOUT_MS ?? 30000);
 const defaultSettleMs = Number(process.env.AURA_CLASH_SCREENSHOT_SETTLE_MS ?? 1200);
 const compositionLimit = Number(process.env.AURA_CLASH_SCREENSHOT_COMPOSITION_LIMIT ?? 3);
+const fullPageCapture = process.env.AURA_CLASH_SCREENSHOT_FULL_PAGE !== "0";
 
 /** Areas whose evidence is legitimately DOM-based, where a visible element is real proof. */
 const DOM_BACKED_REVIEW_AREAS = new Set(["hud"]);
@@ -541,18 +542,44 @@ async function captureSnapshot(
   page,
   { id, label, targetUrl, outPng, settleMs, required, reviewIntent = null }
 ) {
-  const response = await page.goto(targetUrl, {
+  const captureTargetUrl = withCaptureDriver(targetUrl);
+  const response = await page.goto(captureTargetUrl, {
     waitUntil: "networkidle",
     timeout: timeoutMs
   });
 
-  await page.waitForTimeout(settleMs);
+  // The named gameplay compositions are real runtime states, not query-string
+  // decoration. When the capture URL opts into the route's test driver, stage
+  // the fighters and ask the mounted combat simulation to pause on its next
+  // confirmed hit. This keeps the screenshot on the authored hit-stop/spark
+  // frame instead of waiting through it and photographing an idle pose.
+  await prepareGameplayCapture(page, captureTargetUrl);
+
+  // The combat driver pauses on the first confirmed hit, but the renderer-owned
+  // spark lifetime is intentionally short. A normal 1.2s launch settle would
+  // therefore preserve the KO pose while silently dropping the only pixel
+  // evidence of impact. Keep the combat-impact capture inside that authored
+  // hit-stop window; match-start and ordinary first-frame captures retain the
+  // normal shader-settle delay.
+  const captureMode = (() => {
+    try {
+      return new URL(captureTargetUrl).searchParams.get("capture");
+    } catch {
+      return null;
+    }
+  })();
+  await page.waitForTimeout(captureMode === "combat-impact" ? Math.min(settleMs, 90) : settleMs);
 
   mkdirSync(dirname(outPng), { recursive: true });
   await page.screenshot({
     path: outPng,
-    fullPage: true,
-    animations: "disabled"
+    fullPage: fullPageCapture,
+    animations: "disabled",
+    // Skinned-fighter scenes can need more than Playwright's 30 s default on
+    // a cold browser/GPU shader cache. The capture timeout is already an
+    // explicit producer setting; use it for the final readback as well so a
+    // slow but valid frame is not reported as a fake visual failure.
+    timeout: timeoutMs
   });
 
   const pageEvidence = await collectPageEvidence(page, visualReviewContract);
@@ -567,7 +594,7 @@ async function captureSnapshot(
     label,
     required,
     ok: Boolean(response?.ok()),
-    targetUrl,
+    targetUrl: captureTargetUrl,
     finalUrl: page.url(),
     status: response?.status() ?? null,
     statusText: response?.statusText() ?? null,
@@ -578,6 +605,66 @@ async function captureSnapshot(
     reviewIntent,
     pageEvidence
   };
+}
+
+function withCaptureDriver(targetUrl) {
+  try {
+    const url = new URL(targetUrl);
+    const mode = url.searchParams.get("capture");
+    if ((mode === "match-start" || mode === "combat-impact") && !url.searchParams.has("auraTestDriver")) {
+      url.searchParams.set("auraTestDriver", "1");
+      return url.toString();
+    }
+  } catch {
+    // Keep the original URL and let the normal navigation error explain an
+    // invalid producer target.
+  }
+  return targetUrl;
+}
+
+async function prepareGameplayCapture(page, targetUrl) {
+  let mode = null;
+  try {
+    mode = new URL(targetUrl).searchParams.get("capture");
+  } catch {
+    return;
+  }
+  if (mode !== "match-start" && mode !== "combat-impact") return;
+
+  await page.waitForFunction(
+    () => Boolean(window.__AURA_CLASH_ARENA_TEST_DRIVER__),
+    undefined,
+    { timeout: timeoutMs }
+  );
+  await page.evaluate((captureMode) => {
+    const driver = window.__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash capture requested a missing test driver.");
+    // Keep the real special hit inside the authored 2.28-unit reach while
+    // retaining a readable gap between the typed rigs. The previous -0.86 /
+    // 0.44 setup guaranteed contact by stacking both fighters on top of the
+    // impact point, which hid the pose and spark in the review frame.
+    // Stage the real special at 2.25 units: just inside its authored 2.28-unit
+    // reach. The previous 2.07-unit spacing still let the wide attack pose and
+    // knockdown pose collapse into one central silhouette even though their
+    // roots were technically separate.
+    driver.setPositions(-1.49, 0.76);
+    driver.setPlayerHealth(360);
+    driver.setRivalHealth(300);
+    driver.setPlayerMeter(100);
+    driver.setRivalGuardSuppressed(true);
+    if (captureMode === "combat-impact") {
+      driver.pauseOnNextHit();
+      driver.queuePlayerAttack("special");
+    }
+  }, mode);
+
+  if (mode === "combat-impact") {
+    await page.waitForFunction(
+      () => Number(window.__AURA_CLASH_ARENA_PROOF__?.totalHits ?? 0) > 0,
+      undefined,
+      { timeout: timeoutMs }
+    );
+  }
 }
 
 /**
@@ -1084,16 +1171,19 @@ function parseCompositionEnv(raw) {
 }
 
 function mergeCompositionTargets(compositions) {
-  const seen = new Set([targetUrl]);
+  const seenIds = new Set();
   const merged = [];
 
   for (const composition of compositions) {
     const id = safeCompositionId(composition.id);
     const url = composition.url;
-    const key = `${id}:${url}`;
-    if (!url || seen.has(key) || seen.has(url)) continue;
-    seen.add(key);
-    seen.add(url);
+    // A requested target intentionally overrides the script fallback with the
+    // same semantic id (for example, an auraTestDriver-enabled combat URL).
+    // Deduplicate by semantic id only: distinct review roles may intentionally
+    // share one URL while requiring independent captures (for example, the
+    // fighter-readability and effects-hud-debug evidence frames).
+    if (!url || seenIds.has(id)) continue;
+    seenIds.add(id);
     merged.push({
       ...composition,
       id,

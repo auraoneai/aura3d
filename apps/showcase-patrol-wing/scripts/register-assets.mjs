@@ -15,9 +15,9 @@ execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoR
 execFileSync("node", [resolve(appDir, "scripts/build-sfx.mjs")], { cwd: repoRoot, stdio: "inherit" });
 
 const models = [
-  ["patrolWingPlane", "vehicle", "Original CC0 stylized flat-color readable 2.24 metre primary aircraft with a cream/red aircraft silhouette, +Y up, and +X nose; it is role-ready as the route's primary vehicle while route-local authored arcade motion owns gameplay and no aerodynamic claim is inferred."],
-  ["patrolWingDroneA", "vehicle", "Original CC0 stylized flat-color readable black/orange 1.4 metre drone silhouette; it is role-ready as a flying intercept vehicle while seeded pursuit and combat-world hit truth are separately route-tested."],
-  ["patrolWingDroneB", "vehicle", "Original CC0 stylized flat-color readable alternate black/orange 1.2 metre drone silhouette; it is role-ready as a flying intercept vehicle while seeded pursuit and combat-world hit truth are separately route-tested."],
+  ["patrolWingPlane", "vehicle", "Original CC0 stylized flat-color primary aircraft vehicle with a readable swept-wing silhouette, verified +X-forward and +Y-up orientation, and normalized route placement; route-local authored arcade motion owns gameplay and no aerodynamic claim is inferred."],
+  ["patrolWingDroneA", "vehicle", "Original CC0 stylized flat-color heavy pursuit-drone vehicle with a readable swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested."],
+  ["patrolWingDroneB", "vehicle", "Original CC0 stylized flat-color fast pursuit-drone vehicle with a readable alternate swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested."],
   ["patrolWingPadBeacon", "prop", "Original CC0 stylized flat-color readable metre-scale 4.4 metre frontier landing-pad and cyan/amber beacon prop; it is role-ready as the landing objective while route-local pad sensor and touchdown bounds are separately tested."]
 ];
 

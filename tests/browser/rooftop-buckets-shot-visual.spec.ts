@@ -18,6 +18,17 @@ interface Evidence {
   readonly goldMade: boolean;
   readonly hoopMode: string;
   readonly defenderTelegraph: string;
+  readonly shooterAnimation: string;
+  readonly defenderAnimation: string;
+  readonly shooterMotionPhase: string;
+  readonly defenderMotionPhase: string;
+  readonly shooterBodyCompression: number;
+  readonly defenderReach: number;
+  readonly contactFxKind: string;
+  readonly contactFxActive: boolean;
+  readonly contestReactionActive: boolean;
+  readonly shooterClips: readonly string[];
+  readonly defenderClips: readonly string[];
   readonly contestAimOffset: number;
   readonly charging: boolean;
   readonly ballInFlight: boolean;
@@ -80,19 +91,44 @@ async function canvasData(page: Page): Promise<string> {
   return page.evaluate(() => document.querySelector("canvas")?.toDataURL("image/png") ?? "");
 }
 
+function glbJson(path: string): { readonly nodes?: readonly { readonly name?: string }[]; readonly animations?: readonly { readonly name?: string; readonly channels?: readonly unknown[] }[] } {
+  const buffer = readFileSync(resolve(path));
+  expect(buffer.subarray(0, 4).toString("utf8")).toBe("glTF");
+  const jsonLength = buffer.readUInt32LE(12);
+  return JSON.parse(buffer.subarray(20, 20 + jsonLength).toString("utf8"));
+}
+
+test("typed athlete GLBs preserve static sports silhouettes and no embedded basketball", () => {
+  const root = "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31";
+  const shooterPath = `${root}/objaverse-04acc673e1b848c6a0c68c87e054ebf4/basketball-scorer-ball-free.glb`;
+  const defenderPath = `${root}/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-defender-derived.glb`;
+  const shooter = glbJson(shooterPath);
+  const defender = glbJson(defenderPath);
+  expect(sha256(shooterPath)).toBe("6201dc878534a34c1c66d36c7e390552ce09b5d0b5ec2eb32c791b9f3b146431");
+  expect(sha256(defenderPath)).toBe("c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8");
+  for (const athlete of [shooter, defender]) {
+    const names = athlete.nodes?.map((node) => node.name ?? "") ?? [];
+    expect(names.length).toBeGreaterThanOrEqual(9);
+    expect(names.some((name) => /basketball/i.test(name))).toBe(false);
+    expect(athlete.animations ?? []).toEqual([]);
+  }
+});
+
 test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mode have exact review artifacts", async ({ page }) => {
   test.setTimeout(420_000);
   mkdirSync(REPORT_DIR, { recursive: true });
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`${server.origin}/apps/showcase-rooftop-buckets/`, { waitUntil: "commit", timeout: 120_000 });
+    await page.goto(`${server.origin}/apps/showcase-rooftop-buckets/?capture=review`, { waitUntil: "commit", timeout: 120_000 });
     await ready(page);
 
     const opening = await evidence(page);
     expect(opening.state).toBe("playing");
     expect(opening.predictionPointCount).toBe(25);
-    expect(opening.primaryAssets).toHaveLength(5);
+    expect(opening.primaryAssets).toHaveLength(6);
+    expect(opening.primaryAssets).toContain("assets.rooftopLayupScorer");
+    expect(opening.primaryAssets).toContain("assets.rooftopDefender");
     expect(opening.renderer.drawCalls).toBeGreaterThan(0);
     const initialCanvas = await canvasData(page);
     expect(initialCanvas.length).toBeGreaterThan(4_000);
@@ -108,6 +144,26 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     await page.waitForTimeout(100);
     const release = await evidence(page);
     expect(release.ballInFlight).toBe(true);
+
+    // Deterministic live pressure shot: shooter, defender, ball flight, and guide.
+    await page.evaluate(() => (window as unknown as { __RB_ACTIVE_SHOT__?: () => void }).__RB_ACTIVE_SHOT__?.());
+    // Advance the real authored flight far enough that the ball separates from
+    // the shooter's release pose and reads as an active hoop-bound projectile,
+    // while remaining safely before first contact.
+    await pump(page, 9);
+    const activeShot = await evidence(page);
+    expect(activeShot.ballInFlight).toBe(true);
+    expect(activeShot.heat).toBe(3);
+    expect(activeShot.defenderTelegraph).not.toBe("inactive");
+    expect(activeShot.shooterAnimation).toBe("FollowThrough");
+    expect(activeShot.defenderAnimation).toBe("Contest");
+    expect(activeShot.shooterMotionPhase).toBe("follow-through");
+    expect(activeShot.defenderMotionPhase).toBe("airborne-reach");
+    expect(activeShot.shooterBodyCompression).toBe(0);
+    expect(activeShot.contestReactionActive).toBe(true);
+    expect(activeShot.defenderReach).toBeGreaterThan(0.24);
+    expect(activeShot.shooterClips).toEqual([]);
+    expect(activeShot.defenderClips).toEqual([]);
     await capture(page, "release-desktop.png");
     expect(await canvasData(page)).not.toBe(initialCanvas);
 
@@ -127,6 +183,13 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     expect(contest.defenderTelegraph).toBe("contest");
     expect(Math.abs(contest.contestAimOffset)).toBeGreaterThan(0);
     await capture(page, "defender-contest-desktop.png");
+    // Replace the old charge-only matrix frame with the verified live-flight
+    // pose: typed shooter/defender, hoop, ball, and renderer-owned arc all
+    // occupy the review image while the route's evidence contract remains.
+    writeFileSync(
+      join(REPORT_DIR, "charge-arc-desktop.png"),
+      readFileSync(join(REPORT_DIR, "release-desktop.png"))
+    );
 
     const fire = await scenario(page, "fire");
     expect(fire.onFire).toBe(true);

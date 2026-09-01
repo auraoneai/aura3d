@@ -11,13 +11,62 @@
  * gap bounded, pitch and roll actually occurring, wheels spinning, and the opponent
  * staying on the road under the reusable driver.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const REPORT_DIR = resolve("tests/reports/turbo-vehicle-grounding");
+// A caller may isolate an investigative producer without overwriting the canonical
+// proof. Canonical CI retains the documented path when this variable is absent.
+const REPORT_DIR = resolve(process.env.TURBO_GROUNDING_REPORT_DIR ?? "tests/reports/turbo-vehicle-grounding");
 const ROUTE = "/apps/showcase-turbo-drift-circuit/";
+
+interface SharpImage {
+  extract(options: { readonly left: number; readonly top: number; readonly width: number; readonly height: number }): SharpImage;
+  png(): SharpImage;
+  toBuffer(): Promise<Buffer>;
+}
+interface SharpModule {
+  (input: Buffer | Uint8Array): SharpImage;
+}
+
+/**
+ * The route's WebGL page can intermittently stall while Chromium encodes a second
+ * clipped surface capture.  Crops are still real pixels from the named producer's
+ * full browser frame, so decode/extract those bytes in Node instead of asking the
+ * browser compositor to render the same surface twice. Sharp is intentionally an
+ * optional workspace tool; resolve the pinned pnpm-store copy when it is not hoisted.
+ */
+function loadSharp(): SharpModule {
+  try {
+    return createRequire(import.meta.url)("sharp") as SharpModule;
+  } catch {
+    const packageJson = resolve("node_modules/.pnpm/sharp@0.33.5/node_modules/sharp/package.json");
+    if (existsSync(packageJson)) return createRequire(packageJson)("sharp") as SharpModule;
+    throw new Error("The Turbo grounding producer needs sharp to derive its pixel crops from the browser frame.");
+  }
+}
+
+const sharp = loadSharp();
+
+/**
+ * Chromium can stall on a second WebGL `page.screenshot()` while this route is
+ * holding a deterministic collision-review frame.  Canvas readback is the same
+ * renderer-owned RGBA buffer (the route uses `preserveDrawingBuffer`) and keeps
+ * the evidence at the exact 1280x800 viewport dimensions used by the crop gates.
+ */
+async function captureCanvasPng(page: Page, path: string): Promise<Buffer> {
+  const dataUrl = await page.evaluate(() => {
+    const canvas = document.querySelector("canvas") as HTMLCanvasElement | null;
+    return canvas?.toDataURL("image/png") ?? "";
+  });
+  const encoded = dataUrl.split(",", 2)[1] ?? "";
+  if (!encoded) throw new Error("The Turbo grounding producer could not read the mounted renderer canvas.");
+  const png = Buffer.from(encoded, "base64");
+  writeFileSync(path, png);
+  return png;
+}
 
 interface ChassisEvidence {
   readonly grounded: boolean;
@@ -242,18 +291,17 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
         && contact?.impactResponse.hitStopActive === true;
     }, GLOBAL_NAME, { timeout: 30_000, polling: "raf" });
     const firstContact = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
-    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-first-contact.png") });
-    await page.screenshot({
-      path: join(REPORT_DIR, "turbo-direct-impact-first-contact-close.png"),
-      clip: { x: 650, y: 300, width: 480, height: 260 }
-    });
+    const firstContactPng = await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-first-contact.png") });
+    writeFileSync(
+      join(REPORT_DIR, "turbo-direct-impact-first-contact-close.png"),
+      await sharp(firstContactPng).extract({ left: 650, top: 300, width: 480, height: 260 }).png().toBuffer()
+    );
     await page.evaluate((name) => {
       const value = (window as unknown as Record<string, {
         collisionCapture?: { releaseFirstContact?: () => void };
       } | undefined>)[name];
       value?.collisionCapture?.releaseFirstContact?.();
     }, GLOBAL_NAME);
-
     await page.waitForFunction((name) => {
       const value = (window as unknown as Record<string, { vehicleContact?: VehicleContactEvidence } | undefined>)[name];
       const contact = value?.vehicleContact;
@@ -263,11 +311,11 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
         && contact.centerSeparation >= contact.minimumDirectImpactSeparation + 0.25);
     }, GLOBAL_NAME, { timeout: 30_000, polling: "raf" });
     const reaction = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
-    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-reaction.png") });
-    await page.screenshot({
-      path: join(REPORT_DIR, "turbo-direct-impact-reaction-close.png"),
-      clip: { x: 350, y: 280, width: 800, height: 300 }
-    });
+    const reactionPng = await captureCanvasPng(page, join(REPORT_DIR, "turbo-direct-impact-reaction.png"));
+    writeFileSync(
+      join(REPORT_DIR, "turbo-direct-impact-reaction-close.png"),
+      await sharp(reactionPng).extract({ left: 350, top: 280, width: 800, height: 300 }).png().toBuffer()
+    );
     await page.evaluate((name) => {
       const value = (window as unknown as Record<string, {
         collisionCapture?: { releaseReaction?: () => void };
@@ -285,7 +333,7 @@ test("turbo cars complete a direct same-line Rapier impact and separate", async 
         && contact.centerSeparation >= contact.minimumDirectImpactSeparation + 0.27);
     }, GLOBAL_NAME, { timeout: 20_000, polling: "raf" });
     const separated = (await readEvidence(page)).vehicleContact as VehicleContactEvidence;
-    await page.screenshot({ path: join(REPORT_DIR, "turbo-direct-impact-separated.png") });
+    await captureCanvasPng(page, join(REPORT_DIR, "turbo-direct-impact-separated.png"));
 
     writeFileSync(join(REPORT_DIR, "turbo-direct-impact.json"), `${JSON.stringify({
       schema: "aura3d-turbo-direct-impact/1.0",
@@ -418,8 +466,12 @@ test("turbo player overtakes the rival on the normal gameplay camera", async ({ 
     mkdirSync(REPORT_DIR, { recursive: true });
     mkdirSync(scratchOvertake, { recursive: true });
     const shot = async (name: string) => {
-      await page.screenshot({ path: join(REPORT_DIR, `turbo-overtake-${name}.png`) });
-      await page.screenshot({ path: join(scratchOvertake, `${name}.png`) });
+      // Capture the renderer once, then copy the exact bytes to the report and
+      // scratch locations. Two sequential WebGL compositor captures can stall the
+      // route long enough for the live overtake state to move past its evidence
+      // window; byte-copying keeps both artifacts identical and source-generated.
+      const png = await page.screenshot({ path: join(REPORT_DIR, `turbo-overtake-${name}.png`) });
+      writeFileSync(join(scratchOvertake, `${name}.png`), png);
     };
 
     await page.keyboard.down("KeyW");

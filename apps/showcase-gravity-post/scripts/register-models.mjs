@@ -8,13 +8,13 @@ const cli = "packages/aura3d-cli/src/cli.ts";
 const definitions = [
   {
     id: "gravityPostMailPod",
-    file: "public/aura-assets/gravityPostMailPod.e24dfcca.glb",
+    file: "public/aura-assets/gravityPostMailPod.bddb3981.glb",
     role: "vehicle",
-    author: "futaba@blender",
-    retrievedAt: "2026-08-21T22:51:50.594Z",
-    sourcePage: "https://sketchfab.com/3d-models/b158f01dd4a9416fb689ca4401856e7a",
-    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-011/b158f01dd4a9416fb689ca4401856e7a.glb",
-    suitability: "Typed textured primary mail pod with a compact readable capsule silhouette, current manifest bounds, durable CC-BY provenance, and route-authored velocity-aligned yaw; no physical spacecraft claim."
+    author: "박용진",
+    retrievedAt: "2026-08-28T20:40:04.432Z",
+    sourcePage: "https://sketchfab.com/3d-models/781e531c00d94c9e89dcc8ad9b967d87",
+    downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-087/781e531c00d94c9e89dcc8ad9b967d87.glb",
+    suitability: "Typed textured primary courier vehicle with a readable ship nose-to-engine silhouette, eight retained textures, current manifest bounds, durable CC-BY provenance, and probe-bound +Z forward orientation used by route-authored velocity-aligned yaw; no physical spacecraft claim."
   },
   {
     id: "gravityPostDockBeacon",
@@ -25,24 +25,80 @@ const definitions = [
     sourcePage: "https://sketchfab.com/3d-models/f23b484cda664f1cb91b4f62ea5ef8bf",
     downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-054/f23b484cda664f1cb91b4f62ea5ef8bf",
     suitability: "Typed textured dock landmark with readable body and solar-panel silhouette, current manifest bounds, durable CC-BY provenance, and route-authored static presentation; no physical satellite behavior claim."
+  },
+  {
+    id: "gravityPostFreightDistrict",
+    file: "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+    role: "world",
+    author: "Aura3D synthesis",
+    retrievedAt: "2026-08-31T23:40:00.000Z",
+    sourcePage: "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-freight-district.py",
+    downloadUrl: "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+    license: "CC0-1.0",
+    licenseName: "CC0 1.0 Universal",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    sourceFamily: "aura3d-original",
+    attribution: "Aura3D synthesis — original CC0 Gravity Post freight district",
+    provenanceEvidence: "Generated in Blender 5.2.1 from the committed route-local Python source. Nine merged material groups retain the connected deck, rails, loading hangar, gantry crane, cargo, tank farm, and terminal architecture; the asset owns no collision or gameplay.",
+    quality: "release",
+    renderedProbeJson: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
+    orientationJson: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json",
+    suitability: "Original CC0 +Y-up, +X-forward non-colliding freight world authored at a gameplay-scale footprint and fitted to the real Rust Exchange to Gale Terminal vector. Its intentionally stylized flat-color procedural materials provide nine readable color-separated groups without texture dependencies: connected chamfered deck, service rails, dispatch building, gabled loading hangar, articulated crane, cargo modules, tank farm, and asymmetric terminal/dock destination. Route-local pod motion, wells, dock sensors, collision, scoring, and camera remain authoritative."
+  },
+  {
+    id: "gravityPostCourierSkiff",
+    file: "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+    role: "vehicle",
+    author: "Aura3D synthesis",
+    retrievedAt: "2026-09-01T03:02:00.000Z",
+    sourcePage: "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-courier-skiff.py",
+    downloadUrl: "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+    license: "CC0-1.0",
+    licenseName: "CC0 1.0 Universal",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    sourceFamily: "aura3d-original",
+    attribution: "Aura3D synthesis — original CC0 Gravity Post courier skiff",
+    provenanceEvidence: "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the low courier chassis, cyan canopy and running rails, four grounded contact-drive pods and skids, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge. Route-local authored motion remains the sole gameplay owner.",
+    quality: "candidate",
+    suitability: "Original CC0 +Y-up, +Z-forward primary courier skiff candidate with a compact working-vehicle silhouette, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. The GLB carries no collider, dynamics, or animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative."
   }
 ];
+const requestedIds = new Set((process.env.AURA3D_MODEL_IDS ?? "").split(",").map((value) => value.trim()).filter(Boolean));
+const forceQuality = process.env.AURA3D_FORCE_QUALITY;
+const skipProbeEvidence = process.env.AURA3D_SKIP_PROBE_EVIDENCE === "1";
+const selectedDefinitions = requestedIds.size === 0
+  ? definitions
+  : definitions.filter((definition) => requestedIds.has(definition.id));
+if (requestedIds.size > 0 && selectedDefinitions.length !== requestedIds.size) {
+  throw new Error(`Unknown Gravity Post model id(s): ${[...requestedIds].filter((id) => !definitions.some((definition) => definition.id === id)).join(", ")}`);
+}
 
-for (const definition of definitions) {
+for (const definition of selectedDefinitions) {
   const result = spawnSync("pnpm", [
     "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
     "assets", "add", definition.file,
     "--name", definition.id,
     "--type", "model",
-    "--license", "CC-BY-4.0",
-    "--license-url", "https://creativecommons.org/licenses/by/4.0/",
+    "--license", definition.license ?? "CC-BY-4.0",
+    ...(definition.licenseName ? ["--license-name", definition.licenseName] : []),
+    "--license-url", definition.licenseUrl ?? "https://creativecommons.org/licenses/by/4.0/",
     "--source-page", definition.sourcePage,
     "--download-url", definition.downloadUrl,
     "--author", definition.author,
+    ...(definition.sourceFamily ? ["--source-family", definition.sourceFamily] : []),
+    ...(definition.attribution ? ["--attribution", definition.attribution] : []),
+    ...(definition.provenanceEvidence ? ["--provenance-evidence", definition.provenanceEvidence] : []),
     "--retrieved-at", definition.retrievedAt,
-    "--quality", "release",
+    "--quality", forceQuality ?? definition.quality ?? "release",
     "--role", definition.role,
-    "--suitability", definition.suitability
+    "--suitability", definition.suitability,
+    ...(!skipProbeEvidence && definition.renderedProbeJson && definition.orientationJson ? [
+      "--rendered-probe-json", definition.renderedProbeJson,
+      "--orientation-json", definition.orientationJson
+    ] : definition.id === "gravityPostMailPod" ? [
+      "--rendered-probe-json", "tests/reports/showcase-release-asset-probes/gravityPostMailPod.json",
+      "--orientation-json", "tests/reports/showcase-release-asset-probes/gravityPostMailPod.orientation.json"
+    ] : [])
   ], { cwd: repoRoot, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
   let payload;
   try { payload = JSON.parse(result.stdout); } catch { payload = null; }

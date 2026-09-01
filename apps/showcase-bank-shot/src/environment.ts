@@ -20,35 +20,35 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
   // 1. Materials
   const floorWoodMat = material.pbr({
     name: "parquet-floor",
-    color: "#0b1018",
-    roughness: 0.62,
+    color: "#0b1424",
+    roughness: 0.52,
     metallic: 0.05
   });
 
   const rugMat = material.pbr({
     name: "billiards-rug-burgundy",
-    color: "#111827",
+    color: "#170f20",
     roughness: 0.9,
     metallic: 0.0
   });
 
   const rugBorderMat = material.pbr({
     name: "billiards-rug-gold-trim",
-    color: "#344356",
-    roughness: 0.68,
-    metallic: 0.16
+    color: "#3f2225",
+    roughness: 0.72,
+    metallic: 0.08
   });
 
   const wallWoodMat = material.pbr({
     name: "walnut-wainscot",
-    color: "#1e130c",
+    color: "#482916",
     roughness: 0.45,
     metallic: 0.1
   });
 
   const wallUpperMat = material.pbr({
     name: "hall-upper-wall",
-    color: "#0d1821",
+    color: "#27435b",
     roughness: 0.8,
     metallic: 0.05
   });
@@ -103,17 +103,17 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
     // North Wall (behind rack end)
     primitives
       .box({ name: "wall-north-lower", material: wallWoodMat })
-      .position(0, 0.2, -4.5)
+      .position(0, 0.2, -3.0)
       .scale([12.0, 2.2, 0.4])
       .toJSON(),
     primitives
       .box({ name: "wall-north-upper", material: wallUpperMat })
-      .position(0, 2.8, -4.5)
+      .position(0, 2.8, -3.0)
       .scale([12.0, 3.0, 0.4])
       .toJSON(),
     primitives
       .box({ name: "wall-north-chair-rail", material: wallWoodMat })
-      .position(0, 1.3, -4.3)
+      .position(0, 1.3, -2.8)
       .scale([12.0, 0.1, 0.1])
       .toJSON(),
 
@@ -176,12 +176,12 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
 
   nodes.push(
     // North Wall Frame 1
-    primitives.box({ name: "poster-frame-1", material: frameGoldMat }).position(-1.8, 2.4, -4.28).scale([1.4, 1.8, 0.06]).toJSON(),
-    primitives.box({ name: "poster-art-1", material: posterMat1 }).position(-1.8, 2.4, -4.24).scale([1.2, 1.6, 0.02]).toJSON(),
+    primitives.box({ name: "poster-frame-1", material: frameGoldMat }).position(-1.8, 2.4, -2.78).scale([1.4, 1.8, 0.06]).toJSON(),
+    primitives.box({ name: "poster-art-1", material: posterMat1 }).position(-1.8, 2.4, -2.74).scale([1.2, 1.6, 0.02]).toJSON(),
 
     // North Wall Frame 2
-    primitives.box({ name: "poster-frame-2", material: frameGoldMat }).position(1.8, 2.4, -4.28).scale([1.4, 1.8, 0.06]).toJSON(),
-    primitives.box({ name: "poster-art-2", material: posterMat2 }).position(1.8, 2.4, -4.24).scale([1.2, 1.6, 0.02]).toJSON()
+    primitives.box({ name: "poster-frame-2", material: frameGoldMat }).position(1.8, 2.4, -2.78).scale([1.4, 1.8, 0.06]).toJSON(),
+    primitives.box({ name: "poster-art-2", material: posterMat2 }).position(1.8, 2.4, -2.74).scale([1.2, 1.6, 0.02]).toJSON()
   );
 
   // 4. Overhead billiards pendant. The light sources remain active in portrait,

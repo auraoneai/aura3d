@@ -8,15 +8,15 @@
     "published": false,
     "primaryAssets": [
       "showcaseTexturedSportsCar",
-      "showcaseTsukubaCircuit"
+      "turboFormulaCircuit"
     ],
     "primaryAssetRoles": {
       "showcaseTexturedSportsCar": "vehicle",
-      "showcaseTsukubaCircuit": "track"
+      "turboFormulaCircuit": "track"
     },
     "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
     "secondaryPrimaryAssets": [
-      "showcaseTsukubaCircuit"
+      "turboFormulaCircuit"
     ],
     "primitiveBudget": 0,
     "requiresTypedPrimaryAssets": true

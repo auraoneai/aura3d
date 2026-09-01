@@ -85,10 +85,10 @@ export function vanPoseFromSnapshot(snapshot: GameArcadeVehicleState, groundY = 
  * each frame (the drop look-back blends toward it; reduced motion skips it).
  */
 export const CHASE_CAMERA = {
-  distance: 5.6,
-  height: 2.8,
+  distance: 5.25,
+  height: 3.0,
   lookAhead: 1.8,
-  fov: 52,
+  fov: 49,
   smoothing: 0.12
 } as const;
 
@@ -106,12 +106,14 @@ export interface ChaseOffset {
  * out beside the van and rises, holding the drop zone in frame briefly before
  * easing home.
  */
-export function chaseOffsetForBlend(blend: number): ChaseOffset {
+export function chaseOffsetForBlend(blend: number, distance: number = CHASE_CAMERA.distance): ChaseOffset {
   const eased = Math.max(0, Math.min(1, blend));
   const side = Math.sin(eased * Math.PI);
   return {
-    offsetX: CHASE_CAMERA.distance * 0.42 * side,
+    // The dedicated camera rig uses local -Z as simulation-forward, therefore
+    // local +Z is the true trailing eye position.
+    offsetX: 0.3 + distance * 0.42 * side,
     offsetY: CHASE_CAMERA.height + 1.5 * side,
-    offsetZ: CHASE_CAMERA.distance + 1.8 * side
+    offsetZ: distance + 1.8 * side
   };
 }

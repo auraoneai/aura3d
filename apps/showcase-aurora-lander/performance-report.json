@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-aurora-lander-performance/1.0",
-  "generatedAt": "2026-08-23T18:16:00.337Z",
+  "generatedAt": "2026-08-27T03:00:32.678Z",
   "scope": "Headless route-local authored fixed-step/prediction/terrain timing plus current browser draw-call evidence; GPU frame-time parity is not claimed.",
   "budgets": {
     "fixedStepP95Ms": 1,
@@ -9,9 +9,9 @@
     "strongestWhiteoutDrawCalls": 60
   },
   "observed": {
-    "maxFixedStepP95Ms": 0.0004,
-    "maxPredictionP95Ms": 0.0895,
-    "terrainBuildP95Ms": 2.3214,
+    "maxFixedStepP95Ms": 0.0005,
+    "maxPredictionP95Ms": 0.1049,
+    "terrainBuildP95Ms": 2.4623,
     "strongestWhiteoutDrawCalls": 53,
     "strongestWhiteoutVisibleNodes": 45
   },
@@ -24,13 +24,13 @@
       "fuelFraction": 0.7952,
       "fixedStepMs": {
         "samples": 851,
-        "p95": 0.0004,
-        "max": 0.074
+        "p95": 0.0005,
+        "max": 0.0986
       },
       "boundedPredictionMs": {
         "samples": 142,
-        "p95": 0.0895,
-        "max": 0.3389
+        "p95": 0.1049,
+        "max": 0.5235
       }
     },
     {
@@ -41,13 +41,13 @@
       "fuelFraction": 0.7685,
       "fixedStepMs": {
         "samples": 851,
-        "p95": 0.0004,
-        "max": 0.0178
+        "p95": 0.0005,
+        "max": 0.0187
       },
       "boundedPredictionMs": {
         "samples": 142,
-        "p95": 0.0678,
-        "max": 0.919
+        "p95": 0.0734,
+        "max": 0.39
       }
     },
     {
@@ -59,12 +59,12 @@
       "fixedStepMs": {
         "samples": 851,
         "p95": 0.0001,
-        "max": 0.0016
+        "max": 0.048
       },
       "boundedPredictionMs": {
         "samples": 142,
-        "p95": 0.0142,
-        "max": 0.3368
+        "p95": 0.0172,
+        "max": 0.2887
       }
     }
   ],

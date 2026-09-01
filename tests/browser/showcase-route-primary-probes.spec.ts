@@ -296,11 +296,26 @@ async function writeRoutePrimaryProbe(
 
   await page.setViewportSize(VIEWPORT);
   try {
-    const response = await page.goto(`${server.origin}${route.path}`, { waitUntil: "domcontentloaded" });
+    // Gallery Shift and Gravity Post expose explicit renderer-first review
+    // modes. Bind their retained visual probes to those modes so the artifact
+    // waits only for the presentation's route-primary assets instead of the
+    // default gameplay board's non-primary world payload. Gravity Post's
+    // normal board includes the optional 115 MB orbital dock, which kept the
+    // WebGL mount pending beyond this producer's evidence window and produced
+    // a blank canvas/HUD-only frame. Its gameplay producer still exercises the
+    // default board and canonical campaign evidence; this is only the named
+    // typed-pod foreground capture.
+    const routeUrl = route.id === "showcase-gallery-shift" || route.id === "showcase-gravity-post"
+      ? `${route.path}${route.path.includes("?") ? "&" : "?"}capture=review&debug=1`
+      : route.path;
+    const response = await page.goto(`${server.origin}${routeUrl}`, { waitUntil: "domcontentloaded" });
     if (!response?.ok()) failures.push(`route-response:${String(response?.status())}`);
     routeEvidence = await waitForMountedRouteEvidence(page, route.globalName);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(500);
+    if (route.id === "showcase-gallery-shift") {
+      await stageGalleryShiftPrimaryMoment(page);
+    }
     canvasCrop = await largestCanvasCrop(page);
     if (!canvasCrop) failures.push("missing-visible-canvas");
     analysisCrop = canvasCrop
@@ -474,6 +489,46 @@ async function writeRoutePrimaryProbe(
     evidencePath: relativeEvidencePath,
     screenshotPath: relativeScreenshotPath
   };
+}
+
+async function stageGalleryShiftPrimaryMoment(page: Page): Promise<void> {
+  const staged = await page.evaluate(() => {
+    type GalleryEvidence = {
+      readonly detection?: number;
+      readonly guardStates?: readonly { readonly id: string; readonly x: number; readonly z: number; readonly yaw: number }[];
+      readonly guardVisionSamples?: readonly { readonly id: string; readonly seesThief: boolean }[];
+    };
+    type GalleryWindow = Window & {
+      __GALLERY_SHIFT_EVIDENCE__?: GalleryEvidence;
+      __GS_PUMP__?: (frames: number) => number;
+      __GS_TELEPORT__?: (x: number, z: number, preserveDetection?: boolean) => unknown;
+    };
+    const gallery = window as GalleryWindow;
+    gallery.__GS_PUMP__?.(300);
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      const guard = gallery.__GALLERY_SHIFT_EVIDENCE__?.guardStates?.find((sample) => sample.id === "guard-1");
+      if (!guard) break;
+      gallery.__GS_TELEPORT__?.(
+        guard.x + Math.sin(guard.yaw) * 3,
+        guard.z + Math.cos(guard.yaw) * 3,
+        true
+      );
+      gallery.__GS_PUMP__?.(5);
+      const evidence = gallery.__GALLERY_SHIFT_EVIDENCE__;
+      if ((evidence?.detection ?? 0) > 0.3
+        && evidence?.guardVisionSamples?.some((sample) => sample.id === "guard-1" && sample.seesThief)) {
+        return { detection: evidence.detection ?? 0, seesThief: true };
+      }
+    }
+    const evidence = gallery.__GALLERY_SHIFT_EVIDENCE__;
+    return {
+      detection: evidence?.detection ?? 0,
+      seesThief: evidence?.guardVisionSamples?.some((sample) => sample.id === "guard-1" && sample.seesThief) ?? false
+    };
+  });
+  if (staged.detection <= 0.3 || !staged.seesThief) {
+    throw new Error(`gallery-shift-primary-moment-not-staged:detection=${staged.detection}:seesThief=${staged.seesThief}`);
+  }
 }
 
 

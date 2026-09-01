@@ -256,7 +256,9 @@ test.describe("Neon Swarm route", () => {
       (name) => ((window as unknown as Record<string, { audioCues?: string[] } | undefined>)[name]?.audioCues ?? []).includes("burst"),
       GLOBAL_NAME
     );
-    await page.waitForTimeout(300);
+    // Capture inside the real 0.55s event while the courier, live targets,
+    // spokes, and shockwave still read as one gameplay beat.
+    await page.waitForTimeout(40);
     const burstShot = join(SHOT_DIR, "10-burst-cascade.png");
     await page.screenshot({ path: burstShot });
 
@@ -417,7 +419,7 @@ test.describe("Neon Swarm route", () => {
     });
     page.on("pageerror", (error) => consoleErrors.push("pageerror: " + error.message));
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(server.origin + ROUTE, { waitUntil: "domcontentloaded" });
+    await page.goto(server.origin + ROUTE + "?capture=review", { waitUntil: "domcontentloaded" });
     await page.waitForFunction((name) => Boolean((window as unknown as Record<string, unknown>)[name]), GLOBAL_NAME, { timeout: 90_000 });
     await page.waitForFunction(
       (name) => ((window as unknown as Record<string, { drawCalls?: number } | undefined>)[name]?.drawCalls ?? 0) > 0,
@@ -435,6 +437,7 @@ test.describe("Neon Swarm route", () => {
             chooseDoor(kind: string): void;
             spawnTestSwarm(total: number): void;
             stepFixed(frames: number): void;
+            stageFinalePulse(): void;
           };
         }).__NEON_SWARM_DEBUG__;
         if (!hooks) throw new Error("Neon Swarm debug hooks unavailable");
@@ -447,6 +450,7 @@ test.describe("Neon Swarm route", () => {
         }
         hooks.spawnTestSwarm(320);
         hooks.stepFixed(2);
+        hooks.stageFinalePulse();
       });
     };
 
@@ -460,7 +464,17 @@ test.describe("Neon Swarm route", () => {
     expect(finale.arenaInset).toBeGreaterThan(5);
     expect(finale.waveChecksums).toHaveLength(5);
     mkdirSync(SHOT_DIR, { recursive: true });
-    await page.waitForTimeout(700);
+    // Keep the source-bound review frame on the deterministic staging pose:
+    // a wall-clock wait lets the 320 live seekers converge into an unreadable
+    // wall and can consume a shield charge before the terminal hash. The
+    // fixture already fired the route's real pulse above; pump renderer frames
+    // without advancing simulation so its ray and impact remain visible in the
+    // exact 320-live proof rather than capturing a static formation diagram.
+    await page.evaluate(() => {
+      const banner = document.querySelector<HTMLElement>("#ns-banner");
+      if (banner) banner.style.opacity = "0";
+    });
+    for (let frame = 0; frame < 3; frame += 1) await page.evaluate(() => new Promise(requestAnimationFrame));
     await page.screenshot({ path: join(SHOT_DIR, "06-finale-320.png") });
 
     await page.evaluate(() => {

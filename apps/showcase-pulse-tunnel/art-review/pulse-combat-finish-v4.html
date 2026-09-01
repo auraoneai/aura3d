@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulse Tunnel combat-finish V4 candidate review</title>
+    <style>
+      html, body, #stage { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #091321; }
+      canvas { display: block; width: 100%; height: 100%; }
+      .review-hud { position: fixed; z-index: 2; inset: 18px 28px auto; display: grid; grid-template-columns: 1.7fr repeat(4, auto); gap: 28px; align-items: center; box-sizing: border-box; max-width: 1120px; margin: auto; padding: 10px 16px; border: 1px solid rgba(103, 232, 249, .3); border-radius: 8px; background: rgba(3, 10, 22, .88); color: #e7f5ff; font: 700 12px/1.2 system-ui, sans-serif; letter-spacing: .1em; }
+      .review-hud strong { display: block; font-size: 14px; letter-spacing: .14em; }
+      .review-hud small { display: block; color: #fb7185; font-size: 9px; letter-spacing: .22em; }
+      .review-hud span { color: #8be7f6; font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <div id="stage" aria-label="Pulse Tunnel combat-finish V4 isolated candidate"></div>
+    <aside class="review-hud" aria-label="Candidate gameplay HUD">
+      <div><small>FINAL BEAT</small><strong>BREAK THE SENTINEL</strong></div>
+      <div><small>SHIELDS</small><span>● ● ●</span></div>
+      <div><small>STYLE</small><span>x2.4</span></div>
+      <div><small>CHAIN</small><span>16</span></div>
+      <div><small>SECTION</small><span>FINALE</span></div>
+    </aside>
+    <script type="module" src="./pulse-combat-finish-v4.ts"></script>
+  </body>
+</html>

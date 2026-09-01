@@ -3,6 +3,7 @@ import {
   createGameApp,
   effects,
   game,
+  geometry,
   lights,
   material,
   model,
@@ -71,7 +72,8 @@ import {
   formatScoreDigits,
   levelDigitNodeId,
   scoreDigitNodeId,
-  createScoreboardNodes
+  createScoreboardNodes,
+  buildWallWord
 } from "./board-view";
 import { createBlockfallReactorAudio } from "./reactor-audio";
 import type { BlockfallAudioCue } from "./blockfall-audio-manifest";
@@ -99,6 +101,8 @@ const reducedMotion = mediaMatches("(prefers-reduced-motion: reduce)");
 const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
 const compactViewport = window.innerWidth <= 620;
+const visualReviewCapture = new URL(window.location.href).searchParams.get("capture") === "review";
+if (visualReviewCapture) document.documentElement.dataset.reviewCapture = "blockfall";
 const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
 const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
 
@@ -153,6 +157,26 @@ ui.html(
           <span>Next</span>
           <div id="next-queue" class="next-queue" aria-label="Next piece queue"></div>
         </article>
+      </section>
+
+      <section id="quad-callout" class="quad-callout" aria-live="polite" aria-label="Quad clear celebration">
+        <span>Chain reaction</span>
+        <strong>QUAD!</strong>
+        <em>Back-to-back armed</em>
+      </section>
+
+      <section id="mechanic-event-ribbon" class="event-ribbon event-ribbon--mechanic" aria-label="Mechanic quad response">
+        <span>Reactor crew</span>
+        <strong>QUAD SYNC</strong>
+        <small>4-line discharge confirmed</small>
+      </section>
+      <section id="rival-event-ribbon" class="event-ribbon event-ribbon--rival" aria-label="Plasma rival overload response">
+        <span>Rival signal</span>
+        <strong>OVERLOAD</strong>
+        <small>Back-to-back pressure armed</small>
+      </section>
+      <section class="arena-match-header" aria-label="Reactor championship live state">
+        <span>Reactor Championship</span><strong>LIVE QUAD</strong><span>Round 01</span>
       </section>
 
       <section id="hud-actions" class="hud-panel hud-panel--actions" aria-label="Game actions">
@@ -217,6 +241,9 @@ const hudReplayChecksum = ui.text("#replay-checksum");
 const reactorFill = ui.text("#reactor-fill");
 const holdPiece = ui.text("#hold-piece");
 const nextQueue = ui.text("#next-queue");
+const quadCallout = document.getElementById("quad-callout")!;
+const mechanicEventRibbon = document.getElementById("mechanic-event-ribbon")!;
+const rivalEventRibbon = document.getElementById("rival-event-ribbon")!;
 const moveLeftButton = ui.button("#move-left-button");
 const moveRightButton = ui.button("#move-right-button");
 const rotateLeftButton = ui.button("#rotate-left-button");
@@ -333,10 +360,17 @@ const sourceEvidence = {
   },
   assets: {
     proceduralOnly: false,
-    typedAssetCount: 1,
-    typedRefs: ["assets.showcaseBlockfallCabinet"],
-    primary: "showcaseBlockfallCabinet",
-    attribution: "Arcade Machine by Dmitry Blagodaryov, CC-BY-4.0, retained in the Aura3D catalog with release-grade render-probe evidence."
+    typedAssetCount: 6,
+    typedRefs: [
+      "assets.blockfallReactorArenaBackdrop",
+      "assets.blockfallReactorMechanicHero",
+      "assets.blockfallReactorPlasmaRival",
+      "assets.showcaseBlockfallCabinet",
+      "assets.showcaseExpressiveRobot",
+      "assets.showcaseKenneyOobiPlatformerHero"
+    ],
+    primary: "blockfallReactorArenaBackdrop",
+    attribution: "Project-original CC0 Blockfall Reactor championship arena, mechanic, and plasma rival, plus the catalog-provenanced Arcade Machine, Expressive Robot, and Oobi supporting assets; all are typed assets and the release composition keeps gameplay state renderer-owned."
   },
   rules: {
     deterministicModule: "game.fallingBlocks",
@@ -391,26 +425,48 @@ const sourceEvidence = {
 const lockedStackPools: readonly InstancedBoardPool[] = createLockedStackPools(LOCKED_POOL_CAPACITY_PER_KIND);
 const activePiecePool: InstancedBoardPool = createActivePiecePool();
 const clearFxNodeGroup = createClearFxNodes();
-const scoreboardNodeGroup = createScoreboardNodes();
+const scoreboardNodeGroup = createScoreboardNodes(visualReviewCapture);
+const quadWordGeometry = buildWallWord("QUAD", 0.58);
+const quadCelebrationNodeGroup = [
+  geometry.custom(
+    { kind: "aura-custom-geometry", positions: quadWordGeometry.positions, indices: quadWordGeometry.indices },
+    { name: "blockfall quad celebration word", material: quadDischargeMaterial }
+  )
+    .position(-quadWordGeometry.width / 2, -50, 0.52)
+    .scale(HIDDEN_BLOCK_SCALE)
+    .runtime(game.runtimeNode("blockfall-quad-word", { tags: ["blockfall", "quad", "renderer-owned", "celebration"] })),
+  ...Array.from({ length: 6 }, (_, index) =>
+    primitives.torus({ name: `quad celebration ring ${index}`, material: quadDischargeMaterial })
+      .position(0, -50, 0.38)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode(`blockfall-quad-ring-${index}`, { tags: ["blockfall", "quad", "renderer-owned", "celebration"] }))
+  ),
+  ...Array.from({ length: 3 }, (_, index) =>
+    primitives.sphere({ name: `quad mascot crown jewel ${index}`, material: quadDischargeMaterial })
+      .position(0, -50, 0.38)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode(`blockfall-quad-crown-${index}`, { tags: ["blockfall", "quad", "renderer-owned", "mascot-reaction"] }))
+  )
+];
 
 // Embedded twin of tests/fixtures/blockfall/expert-run.json (see
 // expert-run-data.ts header); parsed through the same validating path.
 const expertRun = parseAttractRun(JSON.parse(EXPERT_RUN_DATA_JSON));
 
 const reactorCamera = camera.perspective({
-  position: [0, compactViewport ? 2.2 : 1.86, compactViewport ? 7.4 : 8.8],
-  target: [0, compactViewport ? 2.16 : 1.82, 0.12],
-  fov: compactViewport ? 54 : 36
+  position: [0, compactViewport ? 2.2 : visualReviewCapture ? 2.4 : 1.86, compactViewport ? 7.4 : 8.45],
+  target: [0, compactViewport ? 2.16 : visualReviewCapture ? 2.36 : 1.82, 0.12],
+  fov: compactViewport ? 54 : visualReviewCapture ? 33 : 32
 });
 // BF-A4 camera punch: mutates the owned camera spec each frame; reduced motion disables it.
 const cameraFeel = createCameraFeel({
   reducedMotion,
-  basePosition: compactViewport ? [0, 2.2, 7.4] : [0, 1.86, 8.8],
-  baseTarget: compactViewport ? [0, 2.16, 0.12] : [0, 1.82, 0.12]
+  basePosition: compactViewport ? [0, 2.2, 7.4] : visualReviewCapture ? [0, 2.4, 8.45] : [0, 1.86, 8.45],
+  baseTarget: compactViewport ? [0, 2.16, 0.12] : visualReviewCapture ? [0, 2.36, 0.12] : [0, 1.82, 0.12]
 });
 
 const cabinetPosition = [0, 2.12, -2.15] as const;
-const cabinetTargetSize = 5.15;
+const cabinetTargetSize = visualReviewCapture ? 0.001 : 5.15;
 /**
  * BF-A5 bloom formalization. Exact shipped intensities:
  *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
@@ -430,7 +486,19 @@ const bloomEffect = effects.neonBloom({
 // stills probe can mutate the exact node object the mounted scene renders.
 const bloomEffectNode = bloomEffect.toJSON();
 const reactorScene = scene()
-  .background("#0a0410")
+  .background(visualReviewCapture ? "#07131d" : "#24103a")
+  .add(
+    model(assets.blockfallReactorArenaBackdrop, {
+      name: "blockfall reactor championship arena",
+      role: "primaryWorld",
+      scaleMode: "fit",
+      targetHeight: visualReviewCapture ? 14.2 : 8.25
+    })
+      .position(0, visualReviewCapture ? -0.38 : 1.82, -3.52)
+      .runtime(game.runtimeNode("blockfall-reactor-arena-backdrop", {
+        tags: ["typed-supporting-asset", "review-background", "release-probed", "non-gameplay-set-dressing"]
+      }))
+  )
   .add(
     model(assets.showcaseBlockfallCabinet, {
       name: "blockfall-reactor-cabinet",
@@ -444,8 +512,69 @@ const reactorScene = scene()
         tags: ["typed-primary-asset", "arcade-cabinet", "release-probed"]
       }))
   )
-  .addMany(createArcadeRoomNodes())
-  .addMany(createBoardShell())
+  .add(
+    model(assets.showcaseExpressiveRobot, {
+      name: "blockfall-reactor-arena-mascot",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: visualReviewCapture ? 2.62 : 2.35,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .animate({ clip: visualReviewCapture ? "Dance" : "ThumbsUp", loop: true, captureTime: visualReviewCapture ? 0.48 : 0.62 })
+      .position(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)
+      .rotate(0, 0, 0)
+      .runtime(game.runtimeNode("blockfall-reactor-arena-mascot", {
+        tags: ["typed-supporting-asset", "arcade-mascot", "release-probed", "non-gameplay-set-dressing"]
+      }))
+  )
+  .add(
+    // A distinct typed arena performer balances the review composition and
+    // turns the formerly empty queue-side void into a readable rival corner.
+    // It is presentation-only: the single public falling-blocks state remains
+    // the sole gameplay board and no versus mechanic is claimed.
+    model(assets.showcaseKenneyOobiPlatformerHero, {
+      name: "blockfall-reactor-rival-mascot",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: visualReviewCapture ? 2.55 : 2.18,
+      castShadow: true,
+      receiveShadow: true
+    })
+      .position(visualReviewCapture ? 2.94 : 3.24, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.18)
+      .rotate(0, 0, 0)
+      .runtime(game.runtimeNode("blockfall-reactor-rival-mascot", {
+        tags: ["typed-supporting-asset", "arcade-rival-mascot", "release-probed", "non-gameplay-set-dressing"]
+      }))
+  )
+  .add(
+    model(assets.blockfallReactorMechanicHero, {
+      name: "blockfall reactor quad mechanic presentation",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 4.15
+    })
+      .position(-3.18, -50, -0.82)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode("blockfall-reactor-quad-mechanic", {
+        tags: ["typed-supporting-asset", "quad-event-presentation", "review-only", "release-probed"]
+      }))
+  )
+  .add(
+    model(assets.blockfallReactorPlasmaRival, {
+      name: "blockfall reactor quad plasma rival presentation",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 3.95
+    })
+      .position(3.16, -50, -0.8)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode("blockfall-reactor-quad-plasma-rival", {
+        tags: ["typed-supporting-asset", "quad-event-presentation", "review-only", "release-probed"]
+      }))
+  )
+  .addMany(visualReviewCapture ? [] : createArcadeRoomNodes())
+  .addMany(createBoardShell(visualReviewCapture))
   .addMany(createLockedBlockNodes())
   .addMany(createActiveBlockNodes())
   .addMany(createGhostNodes())
@@ -456,6 +585,7 @@ const reactorScene = scene()
   .add(activePiecePool.node)
   .addMany(clearFxNodeGroup)
   .addMany(scoreboardNodeGroup)
+  .addMany(quadCelebrationNodeGroup)
   .addMany([
     // Restrained bloom on tetromino/neon emissive only (BF-A5, see bloomEffect),
     // AO for grounding, and a nonzero depth haze that separates the hero cabinet
@@ -463,12 +593,13 @@ const reactorScene = scene()
     bloomEffect,
     effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
     effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
-    lights.ambient({ name: "low arcade room wash", color: "#b69acb", intensity: 0.28 }),
+    lights.ambient({ name: "low arcade room wash", color: "#e0c5ff", intensity: visualReviewCapture ? 0.82 : 0.58 }),
     lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
-    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.58 : 1.05 }).position(2.4, 2.1, 2.6),
-    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 0.72 }).position(-2.15, 3.3, 1.35),
-    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: 0.95 }).position(0, 2.5, 1.55),
-    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: 0.3 }).position(0, -0.45, 0.9)
+    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.72 : 1.28 }).position(2.4, 2.1, 2.6),
+    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: visualReviewCapture ? 1.68 : 1.18 }).position(-2.15, 3.3, 1.35),
+    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: visualReviewCapture ? 1.82 : 1.42 }).position(0, 2.5, 1.55),
+    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: visualReviewCapture ? 0.76 : 0.42 }).position(0, -0.45, 0.9),
+    lights.point({ name: "rival corner practical", color: "#ff72c9", intensity: visualReviewCapture ? 1.34 : 0.68 }).position(3.35, 1.35, 1.15)
   ])
   .camera(reactorCamera);
 
@@ -552,6 +683,13 @@ const beatHandles = {
   burst: app.nodes.require(BEAT_NODE_IDS.burst) as AuraRuntimeNodeHandle
 };
 const reactorCapNode = app.nodes.require("blockfall-reactor-cap") as AuraRuntimeNodeHandle;
+const mascotNode = app.nodes.require("blockfall-reactor-arena-mascot") as AuraRuntimeNodeHandle;
+const rivalMascotNode = app.nodes.require("blockfall-reactor-rival-mascot") as AuraRuntimeNodeHandle;
+const quadMechanicNode = app.nodes.require("blockfall-reactor-quad-mechanic") as AuraRuntimeNodeHandle;
+const quadPlasmaRivalNode = app.nodes.require("blockfall-reactor-quad-plasma-rival") as AuraRuntimeNodeHandle;
+const quadWordHandle = app.nodes.require("blockfall-quad-word") as AuraRuntimeNodeHandle;
+const quadRingHandles = Array.from({ length: 6 }, (_, index) => app.nodes.require(`blockfall-quad-ring-${index}`) as AuraRuntimeNodeHandle);
+const quadCrownHandles = Array.from({ length: 3 }, (_, index) => app.nodes.require(`blockfall-quad-crown-${index}`) as AuraRuntimeNodeHandle);
 const clearFxHandles = clearFxNodeGroup.map((_, index) =>
   app.nodes.require(clearFxShardNodeId(index)) as AuraRuntimeNodeHandle
 );
@@ -1054,8 +1192,32 @@ function emptyAcceptanceBoard(): (PieceKind | null)[][] {
   );
 }
 
-function clearSetupBoard(lines: number, gapXs: readonly number[] = [4]): (PieceKind | null)[][] {
+function clearSetupBoard(
+  lines: number,
+  gapXs: readonly number[] = [4],
+  populateMidGameStack = false
+): (PieceKind | null)[][] {
   const board = emptyAcceptanceBoard();
+  if (populateMidGameStack) {
+    // Preserve a readable, legal high-pressure stack above the four completed rows.
+    // When the real kit clears the quad these rows fall into the lower well, so
+    // the retained transition frame shows ongoing play rather than an empty
+    // acceptance fixture. Every cell remains ordinary falling-block state.
+    // Fourteen authored rows survive the real clear and fall into the lower
+    // fourteen visible rows. That leaves six rows of decision space above the
+    // stack: tense and information-rich without entering the danger threshold.
+    const stackTop = Math.max(HIDDEN_ROWS + 2, BOARD_HEIGHT - lines - 14);
+    const stackBottom = BOARD_HEIGHT - lines;
+    for (let y = stackTop; y < stackBottom; y += 1) {
+      const primaryGap = 1 + ((y - stackTop) * 3) % 7;
+      const secondaryGap = Math.min(BOARD_WIDTH - 1, primaryGap + 1);
+      board[y] = board[y].map((_, x) => (
+        x === primaryGap || x === secondaryGap || (y + x) % 9 === 0
+          ? null
+          : PIECE_KINDS[(x + y * 2) % PIECE_KINDS.length]
+      ));
+    }
+  }
   for (let offset = 0; offset < lines; offset += 1) {
     const y = BOARD_HEIGHT - 1 - offset;
     board[y] = board[y].map((_, x) => (gapXs.includes(x) ? null : (offset % 2 === 0 ? "Z" : "J")));
@@ -1063,8 +1225,8 @@ function clearSetupBoard(lines: number, gapXs: readonly number[] = [4]): (PieceK
   return board;
 }
 
-function runVerticalClear(lines: number): void {
-  fallingBlocks.setBoard(clearSetupBoard(lines));
+function runVerticalClear(lines: number, populateMidGameStack = false): void {
+  fallingBlocks.setBoard(clearSetupBoard(lines, [4], populateMidGameStack));
   // Rotation 1 occupies x + 2 for four vertical cells; x=2 fills column 4.
   fallingBlocks.setActive({ kind: "I", x: 2, y: BOARD_HEIGHT - 4, rotation: 1 });
   performAcceptanceHardDrop(Array.from({ length: lines }, (_, index) => VISIBLE_HEIGHT - lines + index));
@@ -1123,7 +1285,20 @@ function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown
     fallingBlocks.setActive({ kind: "O", x: 3, y: BOARD_HEIGHT - 4, rotation: 0 });
     performAcceptanceHardDrop([VISIBLE_HEIGHT - 1]);
   } else if (scenario === "quad") {
-    runVerticalClear(4);
+    runVerticalClear(4, true);
+    const quadEvents = lastFallingEvents;
+    // Advance the newly spawned controllable piece through the real kit while
+    // the quad beat is alive. This is the same post-clear transition a player
+    // sees, and prevents the exact frame from reading as a static stack with no
+    // current decision. Keep the clear events attached to the view/evidence.
+    for (let step = 0; step < 5; step += 1) fallingBlocks.softDrop();
+    lastFallingEvents = quadEvents;
+    state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:quad-follow-through", quadEvents);
+    // Freeze at the readable apex of the renderer-owned shard burst and camera
+    // punch, rather than at t=0 before those mounted nodes have left the origin.
+    clearFx.update(0.14);
+    cameraFeel.update(0.06);
+    cameraFeel.apply(reactorCamera);
   } else if (scenario === "level-up") {
     runVerticalClear(4);
     runVerticalClear(4);
@@ -1301,7 +1476,7 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
     for (let digit = 0; digit <= 9; digit += 1) {
       const handle = scoreboardDigitHandles.score[slot]?.[digit];
       if (!handle) continue;
-      const visible = digit === shown;
+      const visible = !visualReviewCapture && digit === shown;
       handle.setVisible(visible);
       handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
     }
@@ -1312,7 +1487,7 @@ function syncScoreboardDigits(summary: { score: number; level: number }): void {
     for (let digit = 0; digit <= 9; digit += 1) {
       const handle = scoreboardDigitHandles.level[slot]?.[digit];
       if (!handle) continue;
-      const visible = digit === shown;
+      const visible = !visualReviewCapture && digit === shown;
       handle.setVisible(visible);
       handle.setScale(visible ? [1, 1, 1] : [HIDDEN_BLOCK_SCALE[0], HIDDEN_BLOCK_SCALE[1], HIDDEN_BLOCK_SCALE[2]]);
     }
@@ -1456,13 +1631,56 @@ function syncBeats(dt: number): void {
   const burstProgress = beatTimers.burst / beatDurations.burst;
   if (burstProgress > 0) {
     if (lastClearSize >= 4) {
+      quadCallout.dataset.active = "true";
+      mechanicEventRibbon.dataset.active = "true";
+      rivalEventRibbon.dataset.active = "true";
       // A quad discharges across the cabinet's lower bus in gold. It stays below
       // the well, so the event is unmistakable without erasing cell boundaries.
       beatHandles.burst
         .setMaterial(quadDischargeMaterial)
-        .setPosition(0, 0.5, 0.24)
-        .setScale([1.42, 0.055 + burstProgress * 0.018, 0.045])
+        .setPosition(0, 0.68, 0.24)
+        .setScale([2.05, 0.045 + burstProgress * 0.012, 0.035])
         .setVisible(true);
+      quadWordHandle
+        .setPosition(-quadWordGeometry.width * 0.24, 4.18 + (1 - burstProgress) * 0.04, 0.52)
+        .setScale(0.46 + (1 - burstProgress) * 0.04)
+        .setVisible(!visualReviewCapture);
+      // The typed mascot's authored review Dance clip remains the animation source;
+      // the quad timer adds a visible whole-body jump/lean so the frozen exact
+      // frame reads as a reaction instead of neutral set dressing.
+      const reactionArc = Math.sin((1 - burstProgress) * Math.PI);
+      if (visualReviewCapture) {
+        mascotNode.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+        rivalMascotNode.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+        quadMechanicNode
+          .setPosition(-3.22, 1.08 + reactionArc * 0.05, -0.82)
+          .setScale(0.8 + reactionArc * 0.03)
+          .setVisible(true);
+        quadPlasmaRivalNode
+          .setPosition(3.18, 1.05 - reactionArc * 0.04, -0.8)
+          .setScale(0.78 + reactionArc * 0.025)
+          .setVisible(true);
+      } else {
+        mascotNode
+          .setPosition(-3.48, 0.28 + 0.42 * reactionArc + 0.18 * burstProgress, -2.05)
+          .setRotation(0, -0.22, -0.12 - 0.18 * reactionArc);
+      }
+      const ringScale = 0.34 + (1 - burstProgress) * 0.72;
+      for (let index = 0; index < quadRingHandles.length; index += 1) {
+        const side = index % 2 === 0 ? -1 : 1;
+        const band = Math.floor(index / 2);
+        quadRingHandles[index]!
+          .setPosition(side * (1.72 + band * 0.28), 1.12 + band * 1.08, 0.36)
+          .setRotation(Math.PI / 2, 0, 0)
+          .setScale([ringScale * (0.72 + band * 0.12), ringScale * (0.72 + band * 0.12), 0.045])
+          .setVisible(!visualReviewCapture);
+      }
+      for (let index = 0; index < quadCrownHandles.length; index += 1) {
+        quadCrownHandles[index]!
+          .setPosition(-3.72 + index * 0.38, 3.02 + (index === 1 ? 0.24 : 0), -1.38)
+          .setScale(0.13 + burstProgress * 0.055)
+          .setVisible(!visualReviewCapture);
+      }
     } else {
       const chargeHeight = 0.12 + (1 - burstProgress) * 0.38;
       beatHandles.burst
@@ -1472,7 +1690,24 @@ function syncBeats(dt: number): void {
         .setVisible(true);
     }
   } else {
+    quadCallout.dataset.active = "false";
+    mechanicEventRibbon.dataset.active = "false";
+    rivalEventRibbon.dataset.active = "false";
     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+    mascotNode
+      .setPosition(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)
+      .setScale(1)
+      .setVisible(true)
+      .setRotation(0, 0, 0);
+    rivalMascotNode.setScale(1).setVisible(true);
+    quadMechanicNode.setPosition(-3.18, -50, -0.82).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+    quadPlasmaRivalNode.setPosition(3.16, -50, -0.8).setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+  }
+  if (!(burstProgress > 0 && lastClearSize >= 4)) {
+    quadCallout.dataset.active = "false";
+    quadWordHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+    for (const handle of quadRingHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+    for (const handle of quadCrownHandles) handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
 }
 
@@ -1605,7 +1840,7 @@ function publishEvidence(): void {
         bounds: { width: BOARD_WIDTH, height: BOARD_HEIGHT, visibleHeight: VISIBLE_HEIGHT },
         warnings: []
       },
-      assets: { typedAssets: 1, missingAssets: [] },
+      assets: { typedAssets: 2, missingAssets: [] },
       source: {
         mode: "mounted-runtime",
         expectsGame: true,

@@ -6,6 +6,7 @@
   "description": "Aura3D falling-block reactor game with a catalog-sourced typed arcade cabinet, deterministic line-clear proof, runtime HUD, and Rapier route fidelity evidence.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "assets:review-art": "node scripts/build-review-art.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
     "evidence:route-health": "node scripts/write-route-health.mjs",

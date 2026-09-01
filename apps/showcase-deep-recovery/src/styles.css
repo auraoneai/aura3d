@@ -64,7 +64,7 @@ html, body {
 
 .hud-card {
   pointer-events: auto;
-  background: var(--bg-surface);
+  background: rgba(8, 17, 25, 0.68);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
@@ -220,6 +220,75 @@ html, body {
   text-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
 }
 
+/* The desktop salvage-map producer has a renderer-only review variant. Keep
+ * telemetry and sonar contacts mounted as real mission evidence, while moving
+ * interaction chrome and the decorative reticle out of the comparison pixels. */
+body[data-capture="review"] .hud-bottom,
+body[data-capture="review"] .reticle-container,
+body[data-capture="review"] .objective-callout,
+body[data-capture="review"] #dr-modal {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-capture="review"] .hud-top {
+  inset: 12px 16px auto;
+  gap: 12px;
+}
+
+body[data-capture="review"] .hud-panel {
+  transform: scale(0.72);
+  opacity: 0.88;
+}
+
+body[data-capture="review"] .hud-panel:first-child { transform-origin: top left; }
+body[data-capture="review"] .hud-panel:last-child { transform-origin: top right; }
+
+.location-reveal {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  width: min(480px, 64vw);
+  transform: translateX(-50%);
+  text-align: center;
+  color: #f3ead6;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+}
+
+body[data-capture="review"] .location-reveal {
+  display: grid;
+  gap: 3px;
+}
+
+.location-reveal::before {
+  content: "";
+  position: absolute;
+  inset: -24px -72px -20px;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(4, 15, 19, 0.86) 0%, rgba(4, 15, 19, 0.34) 52%, transparent 76%);
+}
+
+.location-reveal span,
+.location-reveal small {
+  color: #8be8eb;
+  font: 700 0.64rem/1.25 var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.location-reveal strong {
+  font: 500 clamp(1.4rem, 2.5vw, 2.05rem)/1.05 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.location-reveal small {
+  color: #d9b86f;
+  letter-spacing: 0.13em;
+}
+
 .contact-panel {
   left: 0;
   top: 50%;
@@ -228,6 +297,13 @@ html, body {
   border-radius: 8px;
   display: grid;
   gap: 4px;
+}
+
+body[data-capture="review"] .contact-panel {
+  width: min(220px, 23vw);
+  padding: 8px 10px;
+  font-size: 0.62rem;
+  opacity: 0.82;
 }
 
 .contact-panel strong { color: var(--accent-cyan); }

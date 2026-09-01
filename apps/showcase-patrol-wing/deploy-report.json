@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.patrol-wing.deploy/1.0",
-  "generatedAt": "2026-08-24T04:54:31.694Z",
+  "generatedAt": "2026-08-31T15:23:30.427Z",
   "producer": "apps/showcase-patrol-wing/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "92bdc8ea8eb70b2f17926422c325d015ae5016e7aaa5436638ca8d36733f36b6",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "d5505ead427eda571b38db2f8df8c88f9dad4f81adc70c9245831b2511102641",
-  "sourceTreeSha256": "207fba80d946022273717e705d62383569e730e0b0ddbcacbd2ceb07e471898e",
+  "distTreeSha256": "0c3f12d4cf30fc3e3a5b2a82ad295387b73d51f7dcd39001d2b6cd791be1a742",
+  "sourceTreeSha256": "e796d66cabca673fa44736be19bb8777f96c28f18e10dfbc6a65d8ee4b504660",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-patrol-wing/src --asset <4 typed models>",
@@ -15,13 +15,13 @@
       "assets": [
         {
           "id": "patrolWingDroneA",
-          "hash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+          "hash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
           "quality": "release",
           "role": "vehicle"
         },
         {
           "id": "patrolWingDroneB",
-          "hash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+          "hash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
           "quality": "release",
           "role": "vehicle"
         },
@@ -33,7 +33,7 @@
         },
         {
           "id": "patrolWingPlane",
-          "hash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+          "hash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
           "quality": "release",
           "role": "vehicle"
         }

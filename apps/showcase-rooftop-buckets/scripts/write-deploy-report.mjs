@@ -9,7 +9,7 @@ const repoRoot = resolve(appDir, "../..");
 const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
 const dist = resolve(appDir, "dist");
 const source = resolve(appDir, "src");
-const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopDefender"];
+const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
 
 function run(args) {
   try {

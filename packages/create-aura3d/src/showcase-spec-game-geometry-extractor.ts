@@ -136,7 +136,13 @@ interface AssetGeometry {
   readonly asset: ManifestAsset;
   readonly primitives: readonly PrimitiveGeometry[];
   readonly bounds: ShowcaseGeometryModelBounds;
+  readonly racingAuthoring?: RacingAuthoringMetadata;
   readonly platformerAuthoring?: PlatformerAuthoringMetadata;
+}
+
+interface RacingAuthoringMetadata {
+  readonly roadCenterline: ShowcaseRacingTrackTopology["roadCenterline"];
+  readonly minimumStartStraightLength: number;
 }
 
 interface PlatformerAuthoringMetadata {
@@ -229,6 +235,7 @@ const PLATFORMER_MAX_UPWARD_TRAVERSAL_STEP = 2.5;
 const PLATFORMER_MAX_RETAINED_MESH_SURFACES = 16;
 const PLATFORMER_MAX_DECLARED_RETAINED_MESH_SURFACES = 256;
 const PLATFORMER_AUTHORED_WORLD_GENERATOR = "Aura3D Skyline Level 1 deterministic GLB compositor";
+const RACING_AUTHORED_WORLD_GENERATOR = "Aura3D deterministic Formula Circuit builder";
 const PLATFORMER_DECORATIVE_PATTERN = /\b(column|pillar|tower|decor|background|backdrop)\b/i;
 
 /**
@@ -315,14 +322,38 @@ function computeRacingTrackTopology(
       [`Road primitives in ${assetId} have no readable indexed triangles, so road containment cannot be proven.`]
     );
   }
-  // Radial sweep first: it is cheap and exact for star-convex circuits. Fall back to
-  // a rasterized loop trace for circuits that double back on themselves.
+  // A deterministic authored circuit may carry its exact generator-owned centreline
+  // in the hash-bound GLB. It is accepted only after every point and connecting
+  // segment are proven to remain on the extracted asphalt triangles. This preserves
+  // an intentional start/finish seam; a radial loop has no semantic seam and can
+  // otherwise rotate a certified opening straight into a corner.
+  const authoredCenterline = geometry.value.racingAuthoring?.roadCenterline ?? [];
+  const authoredUsable = authoredCenterline.length >= 8
+    && authoredCenterline.every((point) => roadSurface.contains(point.x, point.z))
+    && authoredCenterline.every((point, index) => segmentStaysOnRoad(
+      point,
+      authoredCenterline[(index + 1) % authoredCenterline.length]!,
+      roadSurface
+    ))
+    && measureLeadingStraightLength(authoredCenterline) + 1e-3 >= (geometry.value.racingAuthoring?.minimumStartStraightLength ?? 0)
+    && isPlausibleRacingLoop(authoredCenterline);
+  // Radial sweep remains the default: it is cheap and exact for star-convex
+  // third-party circuits. Fall back to a rasterized loop trace for circuits that
+  // double back on themselves.
   const sweptCenterline = createRoadCenterline(roadPrimitives, roadBounds, roadSurface);
   const sweptUsable = sweptCenterline.length >= 8
     && measureOffRoadRatio(sweptCenterline, roadSurface) <= RACING_MAX_OFF_ROAD_RATIO
     && isPlausibleRacingLoop(sweptCenterline);
-  const centerline = sweptUsable ? sweptCenterline : traceRoadLoop(roadPrimitives, roadSurface);
-  const centerlineMethod = sweptUsable ? "radial-band-sweep" : "raster-loop-trace";
+  const centerline = authoredUsable
+    ? authoredCenterline
+    : sweptUsable
+      ? sweptCenterline
+      : traceRoadLoop(roadPrimitives, roadSurface);
+  const centerlineMethod = authoredUsable
+    ? "asset-authored-mesh-validated"
+    : sweptUsable
+      ? "radial-band-sweep"
+      : "raster-loop-trace";
   if (centerline.length < 8) {
     return failure(
       [`asset-extraction:racing-road-centerline-ambiguous:${assetId}`],
@@ -789,12 +820,66 @@ function loadAssetGeometry(assetId: string, projectDir: string): GeometryExtract
       asset,
       primitives,
       bounds: boundsForPrimitives(primitives),
+      ...(readRacingAuthoringMetadata(document.value) ? {
+        racingAuthoring: readRacingAuthoringMetadata(document.value)
+      } : {}),
       ...(readPlatformerAuthoringMetadata(document.value) ? {
         platformerAuthoring: readPlatformerAuthoringMetadata(document.value)
       } : {})
     },
     reasons: [`read ${primitives.length} GLB primitive(s) from ${assetPath}`]
   };
+}
+
+function readRacingAuthoringMetadata(document: GltfDocument): RacingAuthoringMetadata | undefined {
+  if (document.json.asset?.generator !== RACING_AUTHORED_WORLD_GENERATOR) return undefined;
+  const value = document.json.asset.extras?.racingGeometry;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const metadata = value as Readonly<Record<string, unknown>>;
+  const minimumStartStraightLength = metadata.minimumStartStraightLength;
+  const roadWidth = metadata.roadWidth;
+  const rawCenterline = metadata.roadCenterline;
+  if (
+    typeof minimumStartStraightLength !== "number" || !Number.isFinite(minimumStartStraightLength) ||
+    minimumStartStraightLength < 6.75 ||
+    typeof roadWidth !== "number" || !Number.isFinite(roadWidth) || roadWidth <= 0 ||
+    !Array.isArray(rawCenterline) || rawCenterline.length < 8
+  ) return undefined;
+  const roadCenterline: { x: number; z: number; width: number }[] = [];
+  for (const rawPoint of rawCenterline) {
+    if (!rawPoint || typeof rawPoint !== "object" || Array.isArray(rawPoint)) return undefined;
+    const point = rawPoint as Readonly<Record<string, unknown>>;
+    if (
+      typeof point.x !== "number" || !Number.isFinite(point.x) ||
+      typeof point.z !== "number" || !Number.isFinite(point.z) ||
+      typeof point.width !== "number" || !Number.isFinite(point.width) ||
+      Math.abs(point.width - roadWidth) > 1e-6
+    ) return undefined;
+    roadCenterline.push({ x: round3(point.x), z: round3(point.z), width: round3(point.width) });
+  }
+  if (measureLeadingStraightLength(roadCenterline) + 1e-3 < minimumStartStraightLength) return undefined;
+  return { roadCenterline, minimumStartStraightLength: round3(minimumStartStraightLength) };
+}
+
+function measureLeadingStraightLength(
+  points: ShowcaseRacingTrackTopology["roadCenterline"]
+): number {
+  if (points.length < 2) return 0;
+  const first = points[0]!;
+  const second = points[1]!;
+  const heading = Math.atan2(second.z - first.z, second.x - first.x);
+  let length = 0;
+  for (let index = 0; index < points.length; index += 1) {
+    const from = points[index]!;
+    const to = points[(index + 1) % points.length]!;
+    const segmentHeading = Math.atan2(to.z - from.z, to.x - from.x);
+    let delta = segmentHeading - heading;
+    while (delta > Math.PI) delta -= Math.PI * 2;
+    while (delta < -Math.PI) delta += Math.PI * 2;
+    if (Math.abs(delta) > 1e-4) break;
+    length += Math.hypot(to.x - from.x, to.z - from.z);
+  }
+  return round3(length);
 }
 
 function loadGltfDocument(absolutePath: string): GeometryExtractionResult<GltfDocument> {
@@ -2104,12 +2189,16 @@ function averageRoadWidth(size: Vec3): number {
 }
 
 function measureClosedRouteLength(points: readonly { readonly x: number; readonly y: number }[]): number {
+  if (points.length < 2) return 0;
   let total = 0;
   for (let index = 1; index < points.length; index += 1) {
     const previous = points[index - 1];
     const current = points[index];
     if (previous && current) total += Math.hypot(current.x - previous.x, current.y - previous.y);
   }
+  const first = points[0]!;
+  const last = points[points.length - 1]!;
+  total += Math.hypot(first.x - last.x, first.y - last.y);
   return total;
 }
 

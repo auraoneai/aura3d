@@ -30,6 +30,8 @@ interface SceneEvidence {
   readonly primaryAssets: readonly string[];
   readonly knownLimits: readonly string[];
   readonly trafficCount: number;
+  readonly trafficSummaries: readonly { id: string; x: number; z: number; heading: number; speed: number; courtesyStopped: boolean }[];
+  readonly strikes: number;
   readonly diagnostics?: { drawCalls?: number };
 }
 
@@ -52,7 +54,12 @@ test("courier rush scene proves sensors, cargo visibility, and live traffic", as
     if (message.type() === "error" && !/favicon/i.test(message.text())) consoleErrors.push(message.text());
   });
 
-  await page.goto(server.origin + ROUTE, { waitUntil: "domcontentloaded" });
+  // Match the route's desktop review contract instead of Playwright's tiny
+  // default 800x600 viewport. The named Thumper comparison is a cinematic
+  // desktop frame; capturing at the same working size keeps the typed van,
+  // portals, traffic, and forward street depth legible without changing play.
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(server.origin + ROUTE + "?capture=review", { waitUntil: "domcontentloaded" });
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 120_000 }).toBe("true");
   await expect.poll(async () => (await readEvidence(page)).frameCount, { timeout: 30_000 }).toBeGreaterThan(30);
 
@@ -68,7 +75,7 @@ test("courier rush scene proves sensors, cargo visibility, and live traffic", as
   // the sensor edge and let the containment check fire on entry.
   await page.evaluate(([px, pz]) => {
     (window as unknown as { __COURIER_RUSH_DEBUG__?: { placeVan(x: number, z: number, h?: number): void } })
-      .__COURIER_RUSH_DEBUG__?.placeVan(px - 2.2, pz, Math.PI / 2);
+      .__COURIER_RUSH_DEBUG__?.placeVan(px, pz + 2.2, -Math.PI / 2);
   }, [firstPlan.pickup.x, firstPlan.pickup.z] as const);
 
   let pickupShotTaken = false;
@@ -89,7 +96,40 @@ test("courier rush scene proves sensors, cargo visibility, and live traffic", as
   const carrying = await readEvidence(page);
   expect(carrying.carrying).toBe(true);
   expect(carrying.parcelAttached).toBe(true);
-  writeFileSync(resolve(REPORT_DIR, "scene-parcel-in-bed.png"), await page.screenshot({ fullPage: false }));
+  // Retain the action frame from an actual traffic contact. The pickup/cargo
+  // state above remains live, then the same van begins just behind one moving
+  // seeded traffic GLB on its real authored lane. Throttle is ordinary game
+  // input; the still is written only after strike detection records contact.
+  // There is no review-only car, obstacle, or camera-relative chicane.
+  await expect.poll(
+    async () => (await readEvidence(page)).trafficSummaries.some((car) =>
+      car.speed > 1.3 && !car.courtesyStopped && car.x > 13 && Math.abs(Math.cos(car.heading)) < 0.2
+    ),
+    { timeout: 30_000, intervals: [250] }
+  ).toBe(true);
+  const liveTraffic = (await readEvidence(page)).trafficSummaries
+    .filter((car) => car.speed > 1.3 && !car.courtesyStopped && car.x > 13 && Math.abs(Math.cos(car.heading)) < 0.2)
+    .sort((a, b) => b.speed - a.speed)[0]!;
+  await page.evaluate((car) => {
+    const followGap = 2.35;
+    (window as unknown as { __COURIER_RUSH_DEBUG__?: { placeVan(x: number, z: number, h?: number): void } })
+      .__COURIER_RUSH_DEBUG__?.placeVan(
+        car.x - Math.cos(car.heading) * followGap,
+        car.z - Math.sin(car.heading) * followGap,
+        car.heading
+      );
+  }, liveTraffic);
+  await page.waitForTimeout(80);
+  await page.keyboard.down("KeyW");
+  await expect.poll(async () => (await readEvidence(page)).strikes, {
+    timeout: 15_000,
+    intervals: [100]
+  }).toBeGreaterThan(0);
+  await page.keyboard.up("KeyW");
+  // The hit spark is owned by the measured traffic contact point in main.ts.
+  await page.waitForTimeout(50);
+  const parcelShot = await page.screenshot({ fullPage: false });
+  writeFileSync(resolve(REPORT_DIR, "scene-parcel-in-bed.png"), parcelShot);
 
   // Deliver: drive into the drop sensor for the drop trigger event.
   await page.evaluate(([px, pz]) => {
@@ -133,7 +173,7 @@ test("courier rush scene proves sensors, cargo visibility, and live traffic", as
   // lane-loop simulation around the two-way outer rectangle.
   await page.evaluate(() => {
     (window as unknown as { __COURIER_RUSH_DEBUG__?: { placeVan(x: number, z: number, h?: number): void } })
-      .__COURIER_RUSH_DEBUG__?.placeVan(13.8, -13.6, Math.PI * 0.75);
+      .__COURIER_RUSH_DEBUG__?.placeVan(0, 0, Math.PI * 0.25);
   });
   await page.waitForTimeout(650);
   writeFileSync(resolve(REPORT_DIR, "busy-intersection.png"), await page.screenshot({ fullPage: false }));

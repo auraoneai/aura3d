@@ -10,7 +10,7 @@ test("Neon Corridor Strike reaches ready state with prototype route-health", asy
   const evidence = await page.evaluate(() => window.__AURA3D_FPS_EVIDENCE__);
   const ready = await page.evaluate(() => window.__AURA3D_ROUTE_READY__);
   expect(evidence?.claimLabel).toBe("prototype");
-  expect(evidence?.typedAssets).toEqual(expect.arrayContaining(["arena", "impA", "impB", "pulseRifle", "ammoCrate", "medkit"]));
+  expect(evidence?.typedAssets).toEqual(expect.arrayContaining(["neonCorridorContainmentWorld", "neonContainmentWardenA", "neonContainmentWardenB", "neonContainmentPulseRifle", "ammoCrate", "medkit"]));
   expect(evidence?.primitiveCount).toBeGreaterThanOrEqual(0);
   expect(evidence?.knownLimits?.length).toBeGreaterThan(0);
   expect(ready?.ready).toBe(true);

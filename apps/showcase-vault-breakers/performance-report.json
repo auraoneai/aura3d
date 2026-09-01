@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.vault-breakers.performance/1.0",
-  "generatedAt": "2026-08-25T05:34:18.513Z",
+  "generatedAt": "2026-08-30T13:47:24.227Z",
   "producer": "apps/showcase-vault-breakers/scripts/write-performance-report.ts",
   "producerSourceSha256": "2ebff2cbf8eb0e388ce61a59795c8c3ca979f8e8bbf50264c1c36991f7dd6b5d",
   "routeSourceFiles": [
@@ -16,7 +16,7 @@
     "apps/showcase-vault-breakers/src/styles.css",
     "apps/showcase-vault-breakers/src/table.ts"
   ],
-  "routeSourceSha256": "bcc5511e802109f12cd6972ffdc6372facbe7af44730b4d32a9035e407a95c9c",
+  "routeSourceSha256": "fed564366091ac1815d08a1c29536b17aceb9f35c9fbb59109b15b504ecc6a15",
   "scope": "Route-local Rapier fixed-step CPU timing plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable pinball-kit, or renderer-parity claim.",
   "samples": 12000,
   "fixedStepSeconds": 0.016666666666666666,
@@ -25,11 +25,11 @@
     "drawCalls": 150
   },
   "observed": {
-    "fixedStepCpuP95Ms": 0.7,
+    "fixedStepCpuP95Ms": 0.934,
     "deterministicPoseSamples": 100,
     "drawCalls": 147,
     "renderSize": [
-      1407,
+      1920,
       1200
     ],
     "physicsBodies": 33,

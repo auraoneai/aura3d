@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-24T04:23:11.903Z",
+  "generatedAt": "2026-08-30T20:00:56.863Z",
   "appId": "showcase-deep-recovery",
   "route": "/apps/showcase-deep-recovery/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "394097f3b9202b1ab543547ecc40208a1626e160616e8a0c8e8a4bd89d75a43c",
+  "routeSourceSha256": "9968fd58b165f75bfb104109ebb0f4590fa0d9cd9af9f9f32080edab889b5f31",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -23,7 +23,7 @@
     },
     {
       "typedRef": "assets.deepRecoveryWreckHull",
-      "hash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+      "hash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
       "quality": "release",
       "role": "prop"
     },
@@ -126,7 +126,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 24,
+    "sourceOccurrences": 72,
     "primitiveBudget": 72,
     "role": "subordinate seabed/reef/wreck dressing, lamp volumes, sonar rings, grapple cable, warning beacon, bioluminescent silt, and UI around five typed primary assets",
     "status": "no-primitive-primary-subjects"
@@ -175,7 +175,7 @@
   },
   "performance": {
     "schema": "aura3d.deep-recovery.performance/1.0",
-    "generatedAt": "2026-08-24T04:23:05.724Z",
+    "generatedAt": "2026-08-30T20:00:52.913Z",
     "producer": "apps/showcase-deep-recovery/scripts/write-performance-report.ts",
     "producerSourceSha256": "e209be0cfd04b530e8b606b40e958f80ea38e1ef30c013184e847b8be8f37d44",
     "routeSourceFiles": [
@@ -189,7 +189,7 @@
       "apps/showcase-deep-recovery/src/styles.css",
       "apps/showcase-deep-recovery/src/sub.ts"
     ],
-    "routeSourceSha256": "394097f3b9202b1ab543547ecc40208a1626e160616e8a0c8e8a4bd89d75a43c",
+    "routeSourceSha256": "9968fd58b165f75bfb104109ebb0f4590fa0d9cd9af9f9f32080edab889b5f31",
     "scope": "Route-local authored submarine/tether/sonar CPU sampling plus browser-observed root createAuraApp draw calls; no GPU frame-time, fluid-simulation, reusable submarine-kit, physics-engine, or renderer-parity claim.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -198,9 +198,9 @@
       "drawCalls": 240
     },
     "observed": {
-      "routeLogicCpuP95Ms": 0.002,
+      "routeLogicCpuP95Ms": 0.005,
       "deterministicStateHash": "ebc8fe50",
-      "drawCalls": 81,
+      "drawCalls": 236,
       "renderSize": [
         1280,
         800
@@ -210,13 +210,13 @@
   },
   "deploy": {
     "schema": "aura3d.deep-recovery.deploy/1.0",
-    "generatedAt": "2026-08-24T04:23:04.676Z",
+    "generatedAt": "2026-08-30T20:00:54.762Z",
     "producer": "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "07c95fda8e5d9c1f587425f4375a09a692a62fe5fa588c58d6df958fc01b5341",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "d3b36897078fc446bc139dc184439f24c56dee982810ae5ce3f6c15550cd3ed3",
-    "sourceTreeSha256": "c5bc109819c5da4bb5c06eeb644654de74452a1eb29102bdb9de104f0e8eb3c1",
+    "distTreeSha256": "12dc4931f0352bd8adfe7a3b1a49925c1e072ccd3652d9d32d51d99975123b51",
+    "sourceTreeSha256": "0fff065747f6129336bacf0fde241deb9e2bdb9a7c992db95695949803e02962",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-deep-recovery/src --asset <5 typed models>",
@@ -249,7 +249,7 @@
           },
           {
             "id": "deepRecoveryWreckHull",
-            "hash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+            "hash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
             "quality": "release",
             "role": "prop"
           }
@@ -302,47 +302,47 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/deep-recovery/playable/descent.png",
-        "sha256": "ef389e25074e34373ae279c9412c7d78af747fd163a9e61d73c8bc62b2e33876"
+        "sha256": "8f32c40c56f2d1b7295f0d44f1faacb4835e3134916c378ba66c7cb625785a1b"
       },
       {
         "path": "tests/reports/deep-recovery/playable/sonar-reveal.png",
-        "sha256": "35281f26036e76a674a39cd0305b38b816446113f773e0b8e9ddea101505cf02"
+        "sha256": "4cefd1fc00d0d4a696b824383fdbaf4276cf4e83172c5ea07f13a9f280e07245"
       },
       {
         "path": "tests/reports/deep-recovery/playable/wreck-approach.png",
-        "sha256": "5e499371a92969ffc739b960c8848c1c1a5a5d5ca55b692d69d3606db9adc2e0"
+        "sha256": "4cefd1fc00d0d4a696b824383fdbaf4276cf4e83172c5ea07f13a9f280e07245"
       },
       {
         "path": "tests/reports/deep-recovery/playable/grapple-standard.png",
-        "sha256": "0b69ec8d9dbd6846abae12eb7ee81ae0b32df63974194e73ef7aed4a51211824"
+        "sha256": "39818f735c0977a4113e9f41f3077657fc714f2e56d24a51f86c46e7571aa096"
       },
       {
         "path": "tests/reports/deep-recovery/playable/breach.png",
-        "sha256": "a657642aab9942d0d32358e5a76989e30fe26c8b87d74b135306b80b6b84850a"
+        "sha256": "7b4633226fe94a9e8c2388b3f99c2819cc84ddafec931a410bedbf0c86068161"
       },
       {
         "path": "tests/reports/deep-recovery/playable/heavy-tow.png",
-        "sha256": "dff5f017db4f56a9eea08497468c1a48087ac4bfdf2138fd431476bceb2fc623"
+        "sha256": "285762bd6d948625f0ef243509b1224acae8a0c0082cbdcfdb60067abed08c24"
       },
       {
         "path": "tests/reports/deep-recovery/playable/low-oxygen.png",
-        "sha256": "ebf9eab548a56d8f52913e44c467c9f744f5688c872af2688025cde322b8e33a"
+        "sha256": "a073ab79aa6221b61a1057a2c3f55c09f1a0d0b8b1a5d129dd738e0a4495458e"
       },
       {
         "path": "tests/reports/deep-recovery/playable/surface-complete.png",
-        "sha256": "73d08082462b5f0f7d5295941921151886501bf5fe63b6eef9c0736354b0bc57"
+        "sha256": "192b9ef234be39da59e5adb1c317e0b3e0dee3f9bd7460c9d47a98c4f58b18a3"
       },
       {
         "path": "tests/reports/deep-recovery/playable/blackout.png",
-        "sha256": "208a51084fa7483f07364f7eb01e8e664cdf9d8c4f1f8da66b4dfa6b05189ca4"
+        "sha256": "594b0f0a0f50177f46d1486e19878d1411bfec8b050929db04bb539522094ae9"
       },
       {
         "path": "tests/reports/deep-recovery/playable/mobile-touch.png",
-        "sha256": "7fc51214675e6be8ea82f81a4db44339f8977f85fa3b0f5206da68e4679e03f2"
+        "sha256": "63b9bd3a72a00718e738f048c5a4daf84f434baff7ce46a0e1cb819b78817bee"
       },
       {
         "path": "tests/reports/deep-recovery/playable/reduced-motion.png",
-        "sha256": "c14daa2e1ff77466854027252c6202578e29549e306630d642ec56da8e302d5b"
+        "sha256": "6c3485c91f65512e28dcb5658064264b1a84045de2412f3458fd288dc7bee4b9"
       }
     ],
     "browserReceipt": "tests/reports/deep-recovery/playable/browser-evidence.json",
@@ -357,7 +357,7 @@
         "asset": "deepRecoveryWreckHull",
         "metadata": "tests/reports/showcase-release-asset-probes/deepRecoveryWreckHull.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/deepRecoveryWreckHull.png",
-        "assetHash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b"
+        "assetHash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b"
       },
       {
         "asset": "deepRecoveryCrateStandard",

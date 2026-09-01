@@ -9,17 +9,21 @@ interface MutableNode {
 
 export interface EnemySpec {
   readonly id: string;
-  readonly asset: "impA" | "impB";
+  /** Every hostile belongs to the route's authored containment asset family. */
+  readonly asset: "neonContainmentWardenA" | "neonContainmentWardenB";
   readonly x: number;
   readonly z: number;
   readonly patrol: readonly [number, number];
 }
 
 export const ENEMIES: readonly EnemySpec[] = [
-  { id: "e1", asset: "impA", x: 0, z: 0.6, patrol: [-1.2, 0.6] },
-  { id: "e2", asset: "impB", x: 2.1, z: -0.4, patrol: [1.2, -0.4] },
-  { id: "e3", asset: "impA", x: -2.1, z: -2.6, patrol: [-1.2, -2.6] },
-  { id: "e4", asset: "impB", x: 2.1, z: -6.4, patrol: [1.2, -6.4] }
+  // The opening read is one central combat target framed by the engagement
+  // bay.  Supporting hostiles stage deeper in the same lane rather than
+  // forming a huge, disconnected cluster against the right wall.
+  { id: "e1", asset: "neonContainmentWardenA", x: 0, z: 0.56, patrol: [-1.05, 0.56] },
+  { id: "e2", asset: "neonContainmentWardenB", x: 1.72, z: -4.9, patrol: [1.05, -4.9] },
+  { id: "e3", asset: "neonContainmentWardenA", x: -1.72, z: -6.15, patrol: [-1.05, -6.15] },
+  { id: "e4", asset: "neonContainmentWardenB", x: 2.1, z: -6.4, patrol: [1.2, -6.4] }
 ];
 
 /** Capsule height for hitscan + proximity. Never copy this onto the visual mesh. */

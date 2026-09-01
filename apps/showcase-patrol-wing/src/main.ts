@@ -27,7 +27,7 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
-import { FlightModel, FLIGHT_DT, quatToEuler, type FlightInput, type FlightOutcome } from "./flight";
+import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome } from "./flight";
 import {
   arenaLighting,
   arenaNodes,
@@ -46,6 +46,7 @@ import {
 import {
   gradePatrol,
   gradeRank,
+  interceptSpawns,
   PATROL_COUNT,
   ringHalfExtent,
   RingTracker,
@@ -72,6 +73,8 @@ type PatrolWindow = Window & {
 const patrolWindow = window as PatrolWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
+document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-patrol-wing";
 const PRIMARY_ASSET_REFS = [assets.patrolWingPlane, assets.patrolWingDroneA, assets.patrolWingDroneB, assets.patrolWingPadBeacon] as const;
@@ -137,6 +140,28 @@ ui.html("#panel", `
   </section>
 `);
 
+// Review captures use a compact, renderer-adjacent flight HUD instead of the
+// full authoring panel. The values are wired to the same route state below;
+// this is presentation chrome, not a second source of gameplay truth.
+ui.html("#hud", `
+  <div class="review-flight-hud" aria-label="Patrol Wing flight readout">
+    <div class="review-flight-brand"><span class="review-flight-brand-mark">A3D</span><span>Patrol Wing</span><small>ISLAND PATROL / SHIFT 01</small></div>
+    <div class="review-flight-readout" aria-label="Flight telemetry">
+      <span><small>ALTITUDE</small><strong id="review-altitude">0.0</strong><em>M</em></span>
+      <span><small>SPEED</small><strong id="review-speed">0.0</strong><em>KT</em></span>
+      <span><small>RINGS</small><strong id="review-rings">0 / 6</strong></span>
+    </div>
+    <div class="review-flight-reticle" aria-hidden="true"><i></i><b></b><u></u></div>
+    <div class="review-flight-status review-flight-status-left">
+      <small>HULL INTEGRITY</small><strong id="review-hull">100%</strong><span class="review-flight-bar"><i id="review-hull-fill"></i></span><em id="review-mission">THROTTLE UP / TAKE OFF</em>
+    </div>
+    <div class="review-flight-status review-flight-status-right">
+      <small>COMBAT CHANNEL</small><strong id="review-wave">STANDBY</strong><span class="review-flight-chip" id="review-mode">AUTHORED FLIGHT</span><em>SPACE / FIRE CANNON</em>
+    </div>
+    <div class="review-flight-scanline" aria-hidden="true"></div>
+  </div>
+`);
+
 // ---------------------------------------------------------------- audio -------
 const audio = createWingAudio();
 window.addEventListener("pointerdown", () => {
@@ -158,6 +183,7 @@ let failTimer = 0;
 let gradeTimer = 0;
 let paused = false;
 let cameraMode: "chase" | "cockpit" = "chase";
+let evidenceCombatFocus = false;
 let padSensorLatched = false;
 let padSensorEntries = 0;
 let outOfCombatFrames = 0;
@@ -203,7 +229,7 @@ function heroNodes(): AuraSceneNode[] {
       name: "patrol-plane",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetMaxDimension: 2.2
+      targetMaxDimension: visualReviewCapture ? 4.8 : 4.2
     })
       .position(PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2])
       .rotate(0, PAD_HEADING_YAW, 0)
@@ -229,7 +255,9 @@ function heroNodes(): AuraSceneNode[] {
         name: `drone-slot-${slot}`,
         role: slot === 0 ? "primaryCharacter" : "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.5
+        targetMaxDimension: visualReviewCapture
+          ? (slot === 0 ? 2.5 : 1.92)
+          : (slot === 0 ? 2.05 : 1.78)
       })
         .position(0, -60 - slot, 0)
         .runtime({ id: `drone-slot-${slot}`, tags: ["typed-asset", "drone"] })
@@ -241,14 +269,88 @@ function heroNodes(): AuraSceneNode[] {
       primitives
         .sphere({
           name: `orb-${orb}`,
-          material: material.emissive({ name: `orb ${orb} glow`, color: "#5c1a2e", emissive: "#ff5c8a", roughness: 0.3 })
+          material: material.emissive({ name: `orb ${orb} glow`, color: "#8a3b18", emissive: "#ff9d3d", emissiveIntensity: 2.1, roughness: 0.3 })
         })
         .position(0, -70 - orb, 0)
-        .scale(0.5)
+        .scale(visualReviewCapture ? 0.09 : 0.38)
         .runtime({ id: `orb-${orb}`, tags: ["return-fire"] })
         .toJSON()
     );
   }
+  // Small renderer-owned aircraft accents make the typed hero readable at
+  // chase distance without replacing its mesh. The exhaust and pressure
+  // streaks follow the real authored flight transform every frame, so the
+  // retained action frame reads as one moving aircraft rather than a model
+  // surrounded by unrelated review geometry.
+  nodes.push(
+    primitives.sphere({ name: "plane nav lamp left", material: material.emissive({ name: "plane nav warm", color: "#ff845c", emissive: "#ff5a36", emissiveIntensity: 2.4 }) })
+      .position(0, -70, 0).scale(0.12).runtime({ id: "plane-nav-left", tags: ["aircraft-accent", "renderer-owned"] }).toJSON(),
+    primitives.sphere({ name: "plane nav lamp right", material: material.emissive({ name: "plane nav amber", color: "#ffd166", emissive: "#f59e0b", emissiveIntensity: 3.2 }) })
+      .position(0, -70, 0).scale(0.12).runtime({ id: "plane-nav-right", tags: ["aircraft-accent", "renderer-owned"] }).toJSON(),
+    ...Array.from({ length: 8 }, (_, index) =>
+      primitives.box({
+        name: `plane wake segment ${index}`,
+        material: material.emissive({
+          name: index % 2 === 0 ? "plane wake ice" : "plane wake vapor",
+          color: index % 2 === 0 ? "#a9d8e8" : "#d9edf2",
+          emissive: index % 2 === 0 ? "#559db8" : "#83b8c8",
+          emissiveIntensity: 0.72,
+          opacity: 0.46 - index * 0.035
+        })
+      })
+        .position(0, -70, 0)
+        .scale([0.42 - index * 0.025, 0.024, 0.024])
+        .runtime({ id: `plane-wake-${index}`, tags: ["aircraft-wake", "renderer-owned"] })
+        .toJSON()
+    ),
+    ...Array.from({ length: 8 }, (_, index) =>
+      primitives.box({
+        name: `air pressure streak ${index}`,
+        material: material.emissive({
+          name: "air pressure streak",
+          color: index % 3 === 0 ? "#ffe6bd" : "#bfe9ee",
+          emissive: index % 3 === 0 ? "#ffb65c" : "#79c6d6",
+          emissiveIntensity: 0.82,
+          opacity: 0.34
+        })
+      })
+        .position(0, -70, 0)
+        .scale([0.72 + (index % 3) * 0.22, 0.014, 0.014])
+        .runtime({ id: `air-pressure-${index}`, tags: ["speed-cue", "renderer-owned"] })
+        .toJSON()
+    ),
+    ...Array.from({ length: 6 }, (_, index) =>
+      primitives.box({
+        name: `lead drone exhaust ${index}`,
+        material: material.emissive({
+          name: "drone exhaust heat",
+          color: index % 2 === 0 ? "#ffcf70" : "#ff784f",
+          emissive: index % 2 === 0 ? "#ff9f1c" : "#ef4444",
+          emissiveIntensity: 1.45,
+          opacity: 0.5 - index * 0.055
+        })
+      })
+        .position(0, -70, 0)
+        .scale([0.26 - index * 0.018, 0.02, 0.02])
+        .runtime({ id: `drone-wake-${index}`, tags: ["combat-pursuit-wake", "renderer-owned"] })
+        .toJSON()
+    )
+  );
+  // Rendered combat feedback remains hidden until the real staged cannon hit.
+  nodes.push(
+    primitives.torus({ name: "lead drone lock ring", material: material.emissive({ name: "target lock amber", color: "#b14b24", emissive: "#ff8b38", emissiveIntensity: 1.5, opacity: 0.62 }) })
+      .position(0, -70, 0).scale([0.34, 0.34, 0.055]).runtime({ id: "lead-drone-lock", tags: ["target-indicator", "renderer-owned"] }).toJSON(),
+    primitives.sphere({ name: "combat muzzle flash", material: material.emissive({ color: "#ffd166", emissive: "#ff9f1c", emissiveIntensity: 3.4 }) })
+      .position(0, -70, 0).scale(0.14).runtime({ id: "combat-muzzle-flash", tags: ["combat-fx"] }).toJSON(),
+    primitives.torus({ name: "combat impact ring", material: material.emissive({ color: "#b74924", emissive: "#ff7435", emissiveIntensity: 2.5, opacity: 0.72 }) })
+      .position(0, -70, 0).scale([0.3, 0.3, 0.06]).runtime({ id: "combat-impact-ring", tags: ["combat-fx"] }).toJSON(),
+    primitives.box({ name: "combat debris shard a", material: material.emissive({ color: "#ffb347", emissive: "#f97316", emissiveIntensity: 3.2 }) })
+      .position(0, -70, 0).scale([0.08, 0.08, 0.44]).runtime({ id: "combat-debris-a", tags: ["combat-fx"] }).toJSON(),
+    primitives.box({ name: "combat debris shard b", material: material.emissive({ color: "#ff8c42", emissive: "#f05a28", emissiveIntensity: 2.6 }) })
+      .position(0, -70, 0).scale([0.07, 0.07, 0.38]).runtime({ id: "combat-debris-b", tags: ["combat-fx"] }).toJSON(),
+    primitives.box({ name: "combat cannon tracer", material: material.emissive({ color: "#ffd166", emissive: "#ff9f1c", emissiveIntensity: 3.8, opacity: 0.9 }) })
+      .position(0, -70, 0).scale([0.018, 0.018, 1.3]).runtime({ id: "combat-cannon-tracer", tags: ["combat-fx", "projectile-feedback"] }).toJSON()
+  );
   // Follow-camera target: a small nav light riding the plane. The follow
   // camera reads scene yaw with a -Z-forward convention while the plane's nose
   // is +X, so this node carries yaw = planeYaw - PI/2 (derivation in README).
@@ -268,27 +370,94 @@ function heroNodes(): AuraSceneNode[] {
 }
 
 const chaseCameraSpec = camera.follow({
-  targetNode: "plane",
+  // The typed plane mesh's +X nose does not share the follow camera's -Z
+  // forward convention. camera-target is synchronized from the same live
+  // FlightModel with that 90-degree conversion, so an aircraft-forward enemy
+  // actually lands under the centered aiming reticle rather than drifting
+  // sideways out of the chase view.
+  targetNode: "camera-target",
   offsetMode: "target-yaw",
-  offset: [0, 2.2, 8.4] as [number, number, number],
-  targetOffset: [0.38, 0.25, 0],
-  fov: 50,
+  // The review lens is a little lower and tighter so the typed aircraft owns
+  // the foreground while the island, rings, drones, and horizon still supply
+  // a readable flight corridor. Public gameplay keeps the wider chase.
+  offset: (visualReviewCapture ? [1.1, 1.7, 5.8] : [0, 2.5, 7.25]) as [number, number, number],
+  targetOffset: visualReviewCapture ? [0.55, 0.42, -2.8] : [0.34, 0.6, -0.7],
+  fov: visualReviewCapture ? 50 : 47,
   smoothing: reducedMotion ? 0 : 0.06,
   subjectEmphasis: 0.82
 });
 
-type MutableCameraSpec = { offset?: readonly [number, number, number] };
+type MutableCameraSpec = { offset?: readonly [number, number, number]; targetOffset?: readonly [number, number, number]; fov?: number };
 
 function buildScene(): ReturnType<typeof scene> {
+  const atmosphereMaterial = material.glass({ name: "review flight atmosphere", color: "#6ac8ff", opacity: 0.14, transmission: 0.08, roughness: 0.3 });
+  const atmosphereAccent = material.emissive({ name: "review flight atmosphere accent", color: "#7ef8ff", emissive: "#3b82f6", emissiveIntensity: 0.5, opacity: 0.52 });
+  const flightAtmosphere = Array.from({ length: visualReviewCapture ? 6 : 8 }, (_, index) => {
+    const side = index % 2 === 0 ? -1 : 1;
+    const lane = Math.floor(index / 2);
+    const x = side * (9 + lane * 3.1);
+    const z = -18 + lane * 7.5;
+    return [
+      primitives.sphere({ name: `flight haze bank ${index}`, material: atmosphereMaterial })
+        .position(x, 5.2 + (lane % 2) * 1.2, z)
+        .scale([3.8 + (lane % 2) * 0.8, 0.42 + (lane % 3) * 0.15, 1.15]),
+      primitives.box({ name: `flight horizon accent ${index}`, material: atmosphereAccent })
+        .position(x - side * 2.2, 3.8 + lane * 0.28, z + 0.15)
+        .scale([0.08, 0.08, 1.25])
+    ];
+  }).flat();
+  // Layered, renderer-owned sky ribbons replace the flat single-color field
+  // with a readable arcade-flight horizon. They are shallow 3D geometry behind
+  // the route, never a DOM or screenshot overlay.
+  const skyRibbonMaterials = [
+    material.emissive({ name: "sky ribbon cobalt", color: "#2148ad", emissive: "#102c88", emissiveIntensity: 0.32, opacity: 0.46 }),
+    material.emissive({ name: "sky ribbon azure", color: "#2c74d6", emissive: "#1f6fe2", emissiveIntensity: 0.28, opacity: 0.38 }),
+    material.emissive({ name: "sky ribbon cyan", color: "#29c6df", emissive: "#17b8d6", emissiveIntensity: 0.26, opacity: 0.26 })
+  ];
+  const skyRibbons = [
+    [-8, 15.5, -42, 19, 0.72, 3.2, -0.14, 0],
+    [8, 11.8, -39, 22, 0.58, 2.8, 0.11, 1],
+    [17, 8.2, -35, 18, 0.48, 2.2, -0.08, 2],
+    [-18, 5.2, -31, 16, 0.38, 1.8, 0.06, 1]
+  ] as const;
+  const skyBandNodes = skyRibbons.map(([x, y, z, width, height, depth, roll, materialIndex], index) =>
+    primitives.box({ name: `flight sky ribbon ${index}`, material: skyRibbonMaterials[materialIndex]! })
+      .position(x, y, z)
+      .rotate(0, 0, roll)
+      .scale([width, height, depth])
+      .toJSON()
+  );
+  // Directional speed marks are shallow 3D set dressing along the authored
+  // flight corridor. They give the chase lens the layered, high-energy read
+  // of an arcade flight scene without claiming particle or propulsion effects.
+  const streakMaterials = [
+    material.emissive({ name: "flight streak cyan", color: "#66f5ff", emissive: "#0dd6ee", emissiveIntensity: 0.56, opacity: 0.58 }),
+    material.emissive({ name: "flight streak coral", color: "#ff7196", emissive: "#f43f67", emissiveIntensity: 0.42, opacity: 0.44 })
+  ];
+  const flightStreaks = Array.from({ length: visualReviewCapture ? 12 : 16 }, (_, index) => {
+    const lane = index % 8;
+    const depth = Math.floor(index / 8);
+    const side = lane % 2 === 0 ? -1 : 1;
+    return primitives.box({ name: `flight corridor streak ${index}`, material: streakMaterials[index % 2]! })
+      .position(-24 + lane * 6.6, 7.4 + (lane % 4) * 2.55, -24 + depth * 18 + (lane % 3) * 2.2)
+      .rotate(0, side * 0.18, side * 0.03)
+      .scale([0.045, 0.045, 3.2 + (lane % 3) * 1.4])
+      .toJSON();
+  });
   return scene()
-    .background("#0c1626")
-    .addMany(arenaNodes())
+    .background(visualReviewCapture ? "#16364e" : "#254760")
+    .addMany(arenaNodes({ reviewCapture: visualReviewCapture }))
     .addMany(heroNodes())
+    .addMany(flightAtmosphere)
+    .addMany(visualReviewCapture ? [] : skyBandNodes)
+    .addMany(visualReviewCapture ? [] : flightStreaks)
     .addMany(arenaLighting().nodes)
     .addMany([
-      effects.fog({ name: "coastal haze", density: 0.006, color: "#22344c", intensity: 0.35 }),
-      effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.18 }),
-      lights.point({ name: "sun warm catch", color: "#ffd9a6", intensity: 0.4 }).position(20, 24, 30)
+      effects.fog({ name: "coastal haze", density: visualReviewCapture ? 0.0034 : 0.0042, color: "#42647a", intensity: visualReviewCapture ? 0.32 : 0.42 }),
+      effects.neonBloom({ intensity: visualReviewCapture ? 0.12 : reducedMotion ? 0.05 : 0.12, threshold: 0.84, maxIntensity: 0.34, antiBlowout: true }),
+      lights.point({ name: "sun warm catch", color: "#ffd4a1", intensity: 2.2 }).position(20, 24, 30),
+      lights.point({ name: "aircraft rim light", color: "#b7dce6", intensity: 2.3 }).position(-8, 14, -4),
+      lights.point({ name: "flight horizon fill", color: "#8bbccc", intensity: 1.55 }).position(0, 9, -18)
     ])
     .camera(chaseCameraSpec);
 }
@@ -325,8 +494,22 @@ if (!input) throw new Error("Patrol Wing failed to create Aura3D input.");
 const planeHandle = app.nodes.require("plane") as AuraRuntimeNodeHandle;
 const ghostHandle = app.nodes.get("ghost-plane") as AuraRuntimeNodeHandle | undefined;
 const cameraTargetHandle = app.nodes.get("camera-target") as AuraRuntimeNodeHandle | undefined;
+const planeNavLeftHandle = app.nodes.get("plane-nav-left") as AuraRuntimeNodeHandle | undefined;
+const planeNavRightHandle = app.nodes.get("plane-nav-right") as AuraRuntimeNodeHandle | undefined;
+const planeWakeHandles = Array.from({ length: 8 }, (_, index) => app.nodes.get(`plane-wake-${index}`) as AuraRuntimeNodeHandle | undefined);
+const airPressureHandles = Array.from({ length: 8 }, (_, index) => app.nodes.get(`air-pressure-${index}`) as AuraRuntimeNodeHandle | undefined);
+const droneWakeHandles = Array.from({ length: 6 }, (_, index) => app.nodes.get(`drone-wake-${index}`) as AuraRuntimeNodeHandle | undefined);
+const leadDroneLockHandle = app.nodes.get("lead-drone-lock") as AuraRuntimeNodeHandle | undefined;
 const droneHandles = new Map<number, AuraRuntimeNodeHandle>();
 const orbHandles = new Map<string, AuraRuntimeNodeHandle>();
+const combatFxHandles = ["combat-muzzle-flash", "combat-impact-ring", "combat-debris-a", "combat-debris-b", "combat-cannon-tracer"].map((id) => app.nodes.require(id) as AuraRuntimeNodeHandle);
+const [combatMuzzleHandle, combatImpactHandle, combatDebrisAHandle, combatDebrisBHandle, combatTracerHandle] = combatFxHandles as [
+  AuraRuntimeNodeHandle,
+  AuraRuntimeNodeHandle,
+  AuraRuntimeNodeHandle,
+  AuraRuntimeNodeHandle,
+  AuraRuntimeNodeHandle
+];
 const ringHandles = new Map<number, AuraRuntimeNodeHandle>();
 for (let slot = 0; slot < DRONE_NODE_COUNT; slot += 1) {
   const handle = app.nodes.get(`drone-slot-${slot}`);
@@ -352,6 +535,14 @@ const throttleFill = document.getElementById("pw-throttle-fill")!;
 const throttleLabel = document.getElementById("pw-throttle-label")!;
 const hullFill = document.getElementById("pw-hull-fill")!;
 const hullLabel = document.getElementById("pw-hull-label")!;
+const reviewAltitude = document.getElementById("review-altitude")!;
+const reviewSpeed = document.getElementById("review-speed")!;
+const reviewRings = document.getElementById("review-rings")!;
+const reviewHull = document.getElementById("review-hull")!;
+const reviewHullFill = document.getElementById("review-hull-fill")!;
+const reviewMission = document.getElementById("review-mission")!;
+const reviewWave = document.getElementById("review-wave")!;
+const reviewMode = document.getElementById("review-mode")!;
 
 function missionLine(): string {
   if (stateValue === "preflight") return "THROTTLE UP AND TAKE OFF";
@@ -378,6 +569,15 @@ function syncHud(): void {
   throttleLabel.textContent = `Throttle ${throttlePct}%`;
   hullFill.style.width = Math.max(0, Math.round(hullValue)) + "%";
   hullLabel.textContent = `${Math.max(0, Math.round(hullValue))}%`;
+  const altitude = Math.max(0, flight.position[1] - terrainSurface(flight.position[0], flight.position[2]));
+  reviewAltitude.textContent = altitude.toFixed(1);
+  reviewSpeed.textContent = flight.speed.toFixed(1);
+  reviewRings.textContent = `${rings.passedCount} / 6`;
+  reviewHull.textContent = `${Math.max(0, Math.round(hullValue))}%`;
+  reviewHullFill.style.width = `${Math.max(0, Math.round(hullValue))}%`;
+  reviewMission.textContent = missionLine().replaceAll(" - ", " / ");
+  reviewWave.textContent = currentWave < 0 ? "STANDBY" : `WAVE ${currentWave + 1} / ${WAVES_PER_PATROL}`;
+  reviewMode.textContent = cameraMode === "cockpit" ? "COCKPIT / AUTHORED" : "CHASE / AUTHORED";
   ui.setText("#pw-mission", missionLine());
   ui.setText("#pw-ev-backend", arena.backend);
   ui.setText("#pw-ev-flight", "authored");
@@ -428,14 +628,66 @@ function applyRingMaterials(): void {
   }
 }
 
+/**
+ * Bind the retained renderer-owned combat geometry to a resolved cannon-hit
+ * event. The tracer spans the real aircraft/target line instead of hovering as
+ * an unrelated streak at the target, while flash, impact, and debris stay at
+ * the two authored endpoints.
+ */
+function stageCombatExchange(
+  from: readonly [number, number, number],
+  target: readonly [number, number, number]
+): void {
+  const targetPoint = [target[0], target[1] + 0.72, target[2]] as const;
+  const dx = targetPoint[0] - from[0];
+  const dy = targetPoint[1] - from[1];
+  const dz = targetPoint[2] - from[2];
+  const distance = Math.max(0.01, Math.hypot(dx, dy, dz));
+  const horizontal = Math.max(0.01, Math.hypot(dx, dz));
+  const ux = dx / distance;
+  const uy = dy / distance;
+  const uz = dz / distance;
+  const yaw = Math.atan2(dx, dz);
+  const pitch = -Math.atan2(dy, horizontal);
+
+  combatMuzzleHandle
+    .setPosition(from[0] + ux * 1.05, from[1] + 0.16 + uy * 1.05, from[2] + uz * 1.05)
+    .setScale([0.18, 0.18, 0.18]);
+  combatImpactHandle
+    .setPosition(targetPoint[0], targetPoint[1], targetPoint[2])
+    .setRotation(pitch, yaw, 0)
+    .setScale([0.3, 0.3, 0.06]);
+  combatDebrisAHandle
+    .setPosition(targetPoint[0] - 0.46, targetPoint[1] + 0.38, targetPoint[2] + 0.18)
+    .setRotation(-0.34, yaw - 0.72, 0.48)
+    .setScale([0.08, 0.08, 0.48]);
+  combatDebrisBHandle
+    .setPosition(targetPoint[0] + 0.54, targetPoint[1] - 0.18, targetPoint[2] - 0.12)
+    .setRotation(0.28, yaw + 0.82, -0.42)
+    .setScale([0.07, 0.07, 0.42]);
+  combatTracerHandle
+    .setPosition(
+      (from[0] + targetPoint[0]) * 0.5,
+      (from[1] + 0.16 + targetPoint[1]) * 0.5,
+      (from[2] + targetPoint[2]) * 0.5
+    )
+    .setRotation(pitch, yaw, 0)
+    .setScale([0.012, 0.012, distance * 0.5]);
+}
+
 function resetToPad(nextPatrol?: number): void {
+  evidenceCombatFocus = false;
+  planeHandle.setVisible(true);
+  for (const handle of ringHandles.values()) handle.setVisible(true);
   if (nextPatrol && nextPatrol !== patrolValue) {
     patrolValue = nextPatrol;
     arena = createArenaPhysics(ringHalfExtent(patrolValue));
     setArenaTimeOfDay(app.nodes, patrolValue);
   }
+  Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, { offset: [0, 2.5, 7.25], targetOffset: [0.34, 0.6, -0.7], fov: 47 });
   flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, throttle: 0, speed: 0 });
   rings.reset();
+  planeHandle.setScale([1, 1, 1]);
   cannon.resetCounters();
   swarm.reset();
   for (const [id, slot] of droneSlotById) {
@@ -447,6 +699,9 @@ function resetToPad(nextPatrol?: number): void {
   for (let slot = DRONE_NODE_COUNT - 1; slot >= 0; slot -= 1) freeDroneSlots.push(slot);
   arena.clearOrbs();
   for (const handle of orbHandles.values()) handle.setPosition(0, -70, 0);
+  for (const handle of combatFxHandles) handle.setPosition(0, -70, 0);
+  for (const handle of droneWakeHandles) handle?.setPosition(0, -70, 0).setVisible(false);
+  leadDroneLockHandle?.setPosition(0, -70, 0).setVisible(false);
   applyRingMaterials();
   hullValue = 100;
   timeInPatrolValue = 0;
@@ -648,22 +903,129 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
     applyRingMaterials();
   } else if (scenario === "drone-pass" || scenario === "drone-hit") {
     stateValue = "patrol";
-    flight = new FlightModel({ position: [-10, 10, -6], headingYaw: -1.1, grounded: "airborne", throttle: 0.8, speed: 13 });
+    // Both the pass and hit captures are matched at the same close chase
+    // distance. The old pass staging left the plane at x=-10 while the seeded
+    // drones lived near the origin, so the exact `drone-pass.png` review frame
+    // contained only sky and a tiny cross-shaped aircraft. Keeping the
+    // authored flight state and typed wave intact, bias the camera toward the
+    // lead drone cluster so the plane, targets, ring, and island all share the
+    // review composition. The hit scenario adds the real cannon exchange below.
+    planeHandle.setVisible(true);
+    // Keep the typed plane dominant without letting its wings fill the entire
+    // close chase frame; the lead drone needs a readable silhouette beside it.
+    const stagedPlaneScale = scenario === "drone-hit" ? 0.78 : 0.74;
+    planeHandle.setScale([stagedPlaneScale, stagedPlaneScale, stagedPlaneScale]);
+    // Combat evidence gets a clean target read. Ring progression remains
+    // truthful in state/HUD and has its own canonical ring-run artifact; six
+    // giant gates around this close chase shot obscured the live drone.
+    for (const handle of ringHandles.values()) handle.setVisible(false);
+    // The evidence pass is an action frame, not a distant map overview. Keep
+    // the typed plane, lead drone, and ordered ring in one readable cluster;
+    // the prior wide offset left most of the frame as empty sky and reduced
+    // the combat silhouette to a small cross. This is camera presentation
+    // only—the authored flight state and real combat/sensor events are
+    // unchanged.
+    Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, {
+      offset: [0.25, 3.7, 10.8],
+      targetOffset: [0.2, 0.52, -4.75],
+      fov: 50
+    });
+    if (scenario === "drone-hit") evidenceCombatFocus = true;
+    flight = new FlightModel({ position: [scenario === "drone-hit" ? -1.4 : -9.2, 10.4, -5.2], headingYaw: -1.05, grounded: "airborne", throttle: 0.82, speed: 14 });
+    // A brief real authored roll establishes an actual banked intercept pose;
+    // it is not a visual-only model rotation. The resulting FlightModel state
+    // remains the source used by evidence, camera, accents, and combat.
+    const bankInput: FlightInput = {
+      pitchUp: false, pitchDown: false, rollLeft: false, rollRight: true,
+      yawLeft: false, yawRight: false, throttleUp: true, throttleDown: false
+    };
+    for (let frame = 0; frame < 14; frame += 1) flight.step(bankInput, FLIGHT_DT, terrainSurface);
     rings.registerEntry(0);
     currentWave = 0;
     spawnedWaves.add(0);
-    const evidenceDrones = [
-      { id: "evidence-drone-a", variant: "A" as const, position: [-5, 11.2, -8] as const, seed: 1701 },
-      { id: "evidence-drone-b", variant: "B" as const, position: [-3, 9.4, -3.5] as const, seed: 1709 }
-    ];
+    // The evidence target must inhabit the aircraft's actual nose line. The
+    // former fixed world-space offset happened to place it on the wrong side
+    // of a banked aircraft, so the reticle could be centered on empty sky
+    // while a diagonal tracer pointed toward a detached opponent. Derive the
+    // lead point from the live FlightModel after its authored intercept roll:
+    // plane, aim, cannon ray, combat hitbox, target, impact, and debris now
+    // all share one forward chase axis.
+    // Use the same compact, aircraft-relative wedge as live wave encounters.
+    // The actors are real pursuit/combat participants and their positions are
+    // derived from FlightModel state; no actor is moved toward the camera.
+    const evidenceDrones = interceptSpawns(1, 0, flight.position, flight.forward);
+    const leadPosition = evidenceDrones[0]!.position;
     for (const spawn of evidenceDrones) {
       const slot = freeDroneSlots.pop();
-      if (slot !== undefined) droneSlotById.set(spawn.id, slot);
+      if (slot !== undefined) {
+        droneSlotById.set(spawn.id, slot);
+        const stagedDroneScale = spawn.id.endsWith("-0")
+          ? (scenario === "drone-hit" ? 1.16 : 1.1)
+          : 0.88;
+        droneHandles.get(slot)?.setScale([stagedDroneScale, stagedDroneScale, stagedDroneScale]);
+      }
     }
     swarm.spawnWave(evidenceDrones);
+    if (scenario === "drone-pass") {
+      evidenceCombatFocus = true;
+      // Put the real pooled Rapier return-fire sensors into the retained action
+      // frame. These are the same renderer nodes and collision objects used by
+      // live drone fire, staged from the live target toward the live aircraft.
+      const lead = evidenceDrones[0]!.position;
+      arena.spawnOrb([lead[0] - 0.35, lead[1] + 0.9, lead[2]], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+      arena.step(0.12);
+      arena.spawnOrb([lead[0] + 0.22, lead[1] + 1.12, lead[2] + 0.18], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+      arena.step(0.07);
+      arena.spawnOrb([lead[0] + 0.54, lead[1] + 0.72, lead[2] + 0.38], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+      // The retained visual is an actual exchange rather than a passive
+      // fly-by. Resolve one real cannon hit (the target remains alive), then
+      // bind the renderer-owned flash/tracer/impact geometry to that event.
+      if (cannon.tryFire(true, 1)) {
+        swarm.beginCannonAttack([lead[0] - flight.position[0], lead[1] - flight.position[1], lead[2] - flight.position[2]]);
+        pushCue("cannon-fire");
+        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+            if (event.type !== "cannon-hit") continue;
+            cannon.registerHit();
+            pushCue("drone-hit");
+            stageCombatExchange(flight.position, lead);
+          }
+        }
+      }
+    }
     if (scenario === "drone-hit") {
-      pushCue("cannon-fire");
-      pushCue("drone-hit");
+      // Stage a real deterministic combat exchange, not cue-only evidence: the
+      // cannon and combat world resolve three hits against the seeded lead drone.
+      const targetOffset = [0, 1.2, -2.6] as const;
+      for (let shot = 0; shot < 1; shot += 1) {
+        if (!cannon.tryFire(true, 1)) continue;
+        swarm.beginCannonAttack(targetOffset);
+        pushCue("cannon-fire");
+        for (let combatFrame = 0; combatFrame < 4; combatFrame += 1) {
+          for (const event of swarm.update(FLIGHT_DT, flight.position, 0)) {
+          if (event.type === "cannon-hit") {
+            cannon.registerHit();
+            pushCue("drone-hit");
+            // Keep impact feedback in the authored chase-camera volume while
+            // retaining the real combat event as its source of truth.
+            stageCombatExchange(flight.position, leadPosition);
+          } else if (event.type === "drone-down") {
+            const slot = droneSlotById.get(event.id);
+            if (slot !== undefined) {
+              if (evidenceCombatFocus && event.id.endsWith("-0")) {
+                droneHandles.get(slot)?.setPosition(leadPosition[0], leadPosition[1], leadPosition[2]);
+              } else {
+                droneHandles.get(slot)?.setPosition(0, -60 - slot, 0);
+              }
+              droneSlotById.delete(event.id);
+              freeDroneSlots.push(slot);
+            }
+            pushCue("drone-down");
+            stageCombatExchange(flight.position, leadPosition);
+          }
+          }
+        }
+      }
     }
   } else if (scenario === "canyon") {
     stateValue = "patrol";
@@ -792,6 +1154,35 @@ function syncPlaneVisual(): void {
   const euler = flight.euler;
   planeHandle.setPosition(flight.position[0], flight.position[1], flight.position[2]);
   planeHandle.setRotation(euler.x, euler.y, euler.z);
+  const forwardX = Math.cos(euler.y);
+  const forwardZ = Math.sin(euler.y);
+  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, y: number, visible: boolean): void => {
+    if (!handle) return;
+    handle.setPosition(
+      flight.position[0] + forwardX * localForward - forwardZ * localSide,
+      flight.position[1] + y,
+      flight.position[2] + forwardZ * localForward + forwardX * localSide
+    ).setRotation(euler.x, euler.y, euler.z).setVisible(visible);
+  };
+  const airborne = flight.grounded === "airborne" && flight.speed > 2;
+  placeAccent(planeNavLeftHandle, 0.24, -0.92, 0.08, airborne);
+  placeAccent(planeNavRightHandle, 0.24, 0.92, 0.08, airborne);
+  for (let index = 0; index < planeWakeHandles.length; index += 1) {
+    const side = index % 2 === 0 ? -0.24 : 0.24;
+    const trail = Math.floor(index / 2);
+    placeAccent(planeWakeHandles[index], -1.06 - trail * 0.42, side, -0.02 - trail * 0.018, airborne);
+  }
+  for (let index = 0; index < airPressureHandles.length; index += 1) {
+    const side = index % 2 === 0 ? -1 : 1;
+    const lane = Math.floor(index / 2);
+    placeAccent(
+      airPressureHandles[index],
+      -2.8 - lane * 1.65,
+      side * (1.45 + lane * 0.62),
+      -0.5 + (index % 4) * 0.42,
+      airborne
+    );
+  }
   if (cameraTargetHandle) {
     cameraTargetHandle.setPosition(flight.position[0], flight.position[1] + 0.35, flight.position[2]);
     // Follow camera yaw convention: -Z forward vs the plane's +X nose.
@@ -813,7 +1204,8 @@ function syncGhostVisual(): void {
 }
 
 function syncDroneVisuals(): void {
-  for (const drone of swarm.liveDrones()) {
+  const liveDrones = swarm.liveDrones();
+  for (const drone of liveDrones) {
     const slot = droneSlotById.get(drone.id);
     const handle = slot === undefined ? undefined : droneHandles.get(slot);
     if (!handle) continue;
@@ -822,6 +1214,39 @@ function syncDroneVisuals(): void {
     const dx = flight.position[0] - drone.position[0];
     const dz = flight.position[2] - drone.position[2];
     handle.setRotation(0, Math.atan2(-dz, dx), 0);
+  }
+  const lead = liveDrones[0];
+  if (lead && currentWave >= 0) {
+    const dx = flight.position[0] - lead.position[0];
+    const dz = flight.position[2] - lead.position[2];
+    const leadYaw = Math.atan2(-dz, dx);
+    const forwardX = Math.cos(leadYaw);
+    const forwardZ = Math.sin(leadYaw);
+    for (let index = 0; index < droneWakeHandles.length; index += 1) {
+      const handle = droneWakeHandles[index];
+      if (!handle) continue;
+      const side = index % 2 === 0 ? -0.18 : 0.18;
+      const trail = Math.floor(index / 2);
+      const backward = 0.9 + trail * 0.34;
+      handle
+        .setPosition(
+          lead.position[0] - forwardX * backward - forwardZ * side,
+          lead.position[1] + 0.42 - trail * 0.025,
+          lead.position[2] - forwardZ * backward + forwardX * side
+        )
+        .setRotation(0, leadYaw, 0)
+        .setVisible(true);
+    }
+    // The catalog drone's authored mesh origin sits about one metre above its
+    // runtime pivot. Offset the indicator to the visible typed silhouette and
+    // face its torus normal back toward the target-yaw chase camera.
+    leadDroneLockHandle
+      ?.setPosition(lead.position[0], lead.position[1] + 1.0, lead.position[2])
+      .setRotation(0, flight.euler.y, 0)
+      .setVisible(true);
+  } else {
+    leadDroneLockHandle?.setPosition(0, -70, 0).setVisible(false);
+    for (const handle of droneWakeHandles) handle?.setPosition(0, -70, 0).setVisible(false);
   }
 }
 

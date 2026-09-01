@@ -260,15 +260,18 @@ export function createHoleSimulation(hole: HoleDefinition): HoleSimulation {
   addStaticBox("felt", [hole.halfWidth + 1.2, 0.1, laneLength / 2 + 1.2], [midX, -0.1, midZ], {
     friction: 0.94,
     restitution: 0.08,
-    color: "#15803d"
+    // A darker blue-green felt gives the cream/coral shot furniture and lime
+    // rough patches enough value contrast to read as one authored course.
+    // Physics remains unchanged; this is renderer-facing material only.
+    color: "#006f68"
   });
   addStaticBox("wall-left", [wallThick, wallHeight, laneLength / 2], [-(hole.halfWidth + 0.5), wallHeight, midZ], {
     restitution: 0.42,
-    color: "#1e293b"
+    color: "#65bb88"
   });
   addStaticBox("wall-right", [wallThick, wallHeight, laneLength / 2], [hole.halfWidth + 0.5, wallHeight, midZ], {
     restitution: 0.42,
-    color: "#1e293b"
+    color: "#65bb88"
   });
   addStaticBox("wall-tee", [hole.halfWidth + 0.65, wallHeight, wallThick], [midX, wallHeight, backZ], {
     restitution: 0.42,
@@ -276,7 +279,7 @@ export function createHoleSimulation(hole: HoleDefinition): HoleSimulation {
   });
   addStaticBox("wall-far", [hole.halfWidth + 0.65, wallHeight, wallThick], [midX, wallHeight, farZ], {
     restitution: 0.42,
-    color: "#1e293b"
+    color: "#65bb88"
   });
   // Invisible tall shells above the visible rails: a bouncing ball must never
     // leave the playable volume, while the rendered course keeps its low-rail

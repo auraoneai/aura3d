@@ -1,7 +1,7 @@
 :root {
   --bg-dark: #070b12;
-  --panel-bg: rgba(15, 23, 42, 0.85);
-  --border-cyan: rgba(56, 189, 248, 0.35);
+  --panel-bg: rgba(15, 23, 42, 0.64);
+  --border-cyan: rgba(103, 232, 249, 0.32);
   --accent-cyan: #38bdf8;
   --accent-gold: #f59e0b;
   --accent-orange: #fb923c;
@@ -45,15 +45,134 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px;
+  padding: 16px 20px 12px;
+}
+
+/* The visual-review route keeps the complete gameplay HUD, but composes it as
+ * a compact broadcast package around the renderer-owned action rather than a
+ * stack of large translucent cards over the players. */
+body[data-capture="review"] #rb-modal {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-capture="review"] #hud-root {
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 12px 16px 14px;
+}
+
+body[data-capture="review"] .hud-top-bar {
+  width: 100%;
+  padding: 8px 14px 9px;
+  align-items: center;
+  background: linear-gradient(100deg, rgba(7, 29, 52, 0.94), rgba(21, 35, 78, 0.94) 50%, rgba(77, 24, 73, 0.93));
+  border: 1px solid rgba(251, 146, 60, 0.82);
+  border-left: 4px solid #38bdf8;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.48), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body[data-capture="review"] .game-title-group h1 {
+  font-size: 1.08rem;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+body[data-capture="review"] .game-title-group p {
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.68rem;
+  margin-top: 2px;
+}
+
+body[data-capture="review"] .heat-badge,
+body[data-capture="review"] .on-fire-badge {
+  font-size: 0.62rem;
+  padding: 2px 6px;
+}
+
+body[data-capture="review"] .shot-meter-container {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  width: 310px;
+  margin: 0;
+  padding: 8px 11px;
+  gap: 5px;
+  background: linear-gradient(120deg, rgba(7, 29, 52, 0.91), rgba(45, 22, 54, 0.9));
+  border-color: rgba(56, 189, 248, 0.65);
+  border-radius: 8px;
+}
+
+body[data-capture="review"] .shot-meter-container .meter-label {
+  color: rgba(241, 245, 249, 0.82);
+  font-size: 0.64rem;
+}
+
+body[data-capture="review"] .hud-bottom-bar {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  width: auto;
+  max-width: 700px;
+  padding: 7px 11px;
+  align-items: center;
+  background: linear-gradient(110deg, rgba(24, 20, 48, 0.9), rgba(7, 45, 62, 0.91));
+  border-color: rgba(251, 146, 60, 0.55);
+  border-radius: 8px;
+}
+
+body[data-capture="review"] .controls-hint {
+  font-size: 0.62rem;
+  line-height: 1.35;
+  color: rgba(226, 232, 240, 0.74);
+}
+
+body[data-capture="review"] .clock-timer {
+  font-size: 1.28rem;
+  min-width: 46px;
+}
+
+body[data-capture="review"] .score-stats {
+  gap: 18px;
+}
+
+body[data-capture="review"] .stat-value {
+  font-size: 1.02rem;
+  line-height: 1;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.75);
+}
+
+body[data-capture="review"] .stat-item {
+  align-items: flex-end;
+  min-width: 48px;
+}
+
+body[data-capture="review"] .stat-item:nth-child(-n + 2) .stat-value {
+  font-size: 1.34rem;
+  color: #f8fafc;
+}
+
+body[data-capture="review"] .stat-item:first-child .stat-value {
+  color: #67e8f9;
+}
+
+body[data-capture="review"] .stat-item:nth-child(2) .stat-value {
+  color: #f9a8d4;
+}
+
+body[data-capture="review"] .stat-label {
+  color: rgba(241, 245, 249, 0.78);
+  font-weight: 700;
+  font-size: 0.58rem;
 }
 
 .hud-panel {
   background: var(--panel-bg);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--border-cyan);
   border-radius: 8px;
-  padding: 14px 20px;
+  padding: 10px 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(56, 189, 248, 0.08);
   pointer-events: auto;
 }
@@ -149,14 +268,14 @@ html, body {
 /* Center HUD / Shot Meter */
 .shot-meter-container {
   align-self: center;
-  width: 280px;
+  width: 236px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   margin-top: auto;
-  margin-bottom: 24px;
-  opacity: 0.95;
+  margin-bottom: 14px;
+  opacity: 0.86;
   transition: opacity 0.2s ease;
 }
 
@@ -206,6 +325,8 @@ html, body {
   justify-content: space-between;
   align-items: flex-end;
   gap: 16px;
+  align-self: flex-start;
+  width: min(760px, calc(100vw - 40px));
 }
 
 .controls-hint {
@@ -322,7 +443,8 @@ html, body {
   .score-stats { gap: 9px; }
   .stat-label { font-size: 0.56rem; }
   .stat-value { font-size: 1rem; }
-  .shot-meter-container { width: min(280px, calc(100vw - 24px)); margin-bottom: 6px; }
+  .shot-meter-container { width: min(260px, calc(100vw - 24px)); margin-bottom: 6px; }
+  .hud-bottom-bar { width: 100%; }
   .hud-bottom-bar { align-items: center; }
   .controls-hint > p { display: none; }
   .touch-controls { display: flex; }

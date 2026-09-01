@@ -6,14 +6,14 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "sha256": "sha256-76a6986d23ea32012ba816a6072802a2a78a472094cf2cae48b6cdf6fd0b2b70",
+    "sha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
     "width": 1440,
     "height": 900
   },
   "geometry": {
     "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "assetId": "showcaseKenneyVerdantPlatformerWorld",
-    "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+    "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
     "source": "asset-mesh-extracted",
     "modelAnchorCount": 3
   },
@@ -25,8 +25,8 @@
     },
     {
       "id": "showcaseKenneyVerdantPlatformerWorld",
-      "manifestHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
-      "evidenceHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"
+      "manifestHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
+      "evidenceHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"
     }
   ],
   "thresholds": {
@@ -69,8 +69,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0,
-        "screenContactDistance": 7.464187832577612,
-        "screenContactDistanceRatio": 0.0553
+        "screenContactDistance": 7.305678955442842,
+        "screenContactDistanceRatio": 0.0511
       },
       "blockers": []
     },
@@ -85,7 +85,7 @@
         "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.3777,
+        "playSpaceAreaRatio": 0.3746,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
@@ -102,11 +102,11 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.15,
+        "subjectWorldRatio": 0.1589,
         "characterScaleRatio": 0.42,
-        "projectedTargetHeight": 148.359,
-        "renderedSubjectHeight": 135,
-        "scaleDelta": 0.09004509332093104
+        "projectedTargetHeight": 130.916,
+        "renderedSubjectHeight": 143,
+        "scaleDelta": 0.09230346176174038
       },
       "blockers": []
     },

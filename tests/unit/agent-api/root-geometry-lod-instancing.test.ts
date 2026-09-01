@@ -6,6 +6,16 @@ describe("root geometry, instancing, text, and LOD", () => {
     const spec = defineAuraCustomGeometry({ positions: [[0, 1, 0], [-1, -1, 0], [1, -1, 0]], indices: [0, 1, 2] });
     expect(spec.kind).toBe("aura-custom-geometry");
     expect(geometry.custom(spec).toJSON()).toMatchObject({ kind: "primitive", primitive: "custom", geometry: spec });
+    expect(instances.custom(spec, {
+      transforms: [{ position: [0, 0, 0] }, { position: [2, 0, 0] }],
+      colors: ["#ffffff", "#ff0000"]
+    }).toJSON()).toMatchObject({
+      kind: "primitive",
+      primitive: "custom",
+      geometry: spec,
+      instances: [{ position: [0, 0, 0] }, { position: [2, 0, 0] }],
+      instanceColors: ["#ffffff", "#ff0000"]
+    });
     expect(() => defineAuraCustomGeometry({ positions: [[0, 0, 0], [1, 0, 0], [0, 1, 0]], indices: [0, 1, 4] })).toThrow(/outside/);
   });
 

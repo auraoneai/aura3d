@@ -70,6 +70,32 @@ body { overflow: hidden; }
 .evidence-strip { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #66748c; }
 .evidence-strip code { color: #9feefc; font-size: 11px; }
 
+/* Exact blind-review framing: gameplay remains renderer-owned and the same
+   evidence/controls remain in the DOM, but the table gets the visual hierarchy
+   instead of surrendering a permanent 300px column to route diagnostics. */
+body[data-capture="review"] .shell { display: block; padding: 0; }
+body[data-capture="review"] .viewport { width: 100%; height: 100%; }
+body[data-capture="review"] .stage { border-radius: 0; }
+body[data-capture="review"] .panel {
+  position: absolute; z-index: 3; top: 18px; right: 18px;
+  width: 252px; padding: 12px; gap: 9px; overflow: visible;
+  background: rgba(5, 9, 18, 0.88); border-color: rgba(126, 248, 255, 0.26);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.36);
+}
+body[data-capture="review"] .vb-brand .eyebrow,
+body[data-capture="review"] .vb-brand .blurb,
+body[data-capture="review"] .power-meter,
+body[data-capture="review"] .power-meta,
+body[data-capture="review"] .controls-list,
+body[data-capture="review"] .action-row,
+body[data-capture="review"] .evidence-strip { display: none; }
+body[data-capture="review"] .vb-brand h1 { margin: 0; font-size: 18px; }
+body[data-capture="review"] .stat-grid { gap: 5px; }
+body[data-capture="review"] .stat-grid article { padding: 6px 7px; }
+body[data-capture="review"] .stat-grid strong { font-size: 14px; }
+body[data-capture="review"] .mission-line { font-size: 10px; padding: 7px 8px; }
+body[data-capture="review"] .hole-banner { top: 18px; }
+
 @media (max-width: 860px) {
   .shell { flex-direction: column; padding: 8px; }
   .panel { flex: 0 0 auto; max-height: 42vh; }

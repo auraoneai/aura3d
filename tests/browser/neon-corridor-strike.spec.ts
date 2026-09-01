@@ -35,6 +35,7 @@ interface FpsEvidence {
   readonly enemyVisualY?: number;
   readonly enemyBodyY?: number;
   readonly reloading?: boolean;
+  readonly weaponCooldown?: number;
   readonly dryFireActive?: boolean;
 }
 
@@ -53,7 +54,7 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
     const read = () => page.evaluate(() => (window as unknown as { __AURA3D_FPS_EVIDENCE__?: FpsEvidence }).__AURA3D_FPS_EVIDENCE__);
     const initial = await read();
     expect(initial?.claimLabel).toBe("prototype");
-    expect(initial?.typedAssets).toEqual(expect.arrayContaining(["arena", "impA", "impB", "pulseRifle", "ammoCrate", "medkit"]));
+    expect(initial?.typedAssets).toEqual(expect.arrayContaining(["neonCorridorContainmentWorld", "neonContainmentWardenA", "neonContainmentWardenB", "neonContainmentPulseRifle", "ammoCrate", "medkit"]));
     expect(initial?.knownLimits.length).toBeGreaterThan(0);
     expect(initial?.enemyBodyY).toBeCloseTo(0.72, 6);
     expect(initial?.enemyVisualY).toBeCloseTo(-0.45, 6);
@@ -169,8 +170,11 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
 
     // Empty the mag, then prove the deny click and the timed reload window.
     for (let i = 0; i < 12; i += 1) {
-      await page.keyboard.press("KeyJ");
-      await page.waitForTimeout(175);
+      const ammoBeforeShot = (await read())?.ammo ?? 0;
+      await page.keyboard.down("KeyJ");
+      await expect.poll(async () => (await read())?.ammo, { timeout: 2_000 }).toBe(ammoBeforeShot - 1);
+      await page.keyboard.up("KeyJ");
+      await expect.poll(async () => (await read())?.weaponCooldown ?? 1, { timeout: 2_000 }).toBe(0);
     }
     await expect.poll(async () => (await read())?.ammo, { timeout: 2_000 }).toBe(0);
     const cuesBeforeDry = (await read())?.audioCuesPlayed ?? 0;

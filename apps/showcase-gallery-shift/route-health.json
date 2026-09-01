@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-24T03:35:58.467Z",
+  "generatedAt": "2026-09-01T03:04:17.380Z",
   "appId": "showcase-gallery-shift",
   "route": "/apps/showcase-gallery-shift/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "7a84fa612d8ee90d6dd24dfafc41bc01a97d67f771c2af32fd085d8c01433763",
+  "routeSourceSha256": "ed1f8b9d072540f4574a7157c6dc30489d46f5de3b5e7cdc1c0099040ed435c5",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -16,8 +16,8 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.galleryShiftMuseumInterior",
-      "hash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+      "typedRef": "assets.galleryShiftCutawayMuseumWorld",
+      "hash": "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
       "quality": "release",
       "role": "environment"
     },
@@ -54,8 +54,8 @@
   ],
   "supportingCharacterAssets": [
     {
-      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
-      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "typedRef": "assets.showcaseRunnerGirl",
+      "hash": "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
       "quality": "release",
       "role": "character"
     },
@@ -146,7 +146,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 12,
+    "sourceOccurrences": 17,
     "primitiveBudget": 20,
     "role": "subordinate floor-two shell, light pools, laser beams, exit/alarm markers, frames, inlays, fixtures, debug-only diagnostics, and UI around typed primary assets",
     "status": "no-primitive-primary-subjects"
@@ -187,12 +187,13 @@
   },
   "performance": {
     "schema": "aura3d.gallery-shift.performance/1.0",
-    "generatedAt": "2026-08-24T03:35:58.092Z",
+    "generatedAt": "2026-09-01T03:02:43.705Z",
     "producer": "apps/showcase-gallery-shift/scripts/write-performance-report.ts",
     "producerSourceSha256": "da2066f24cb0dba4e2636863090e9c84c0d00132fc7fbbdd5b5a2e71b1d30047",
     "routeSourceFiles": [
       "apps/showcase-gallery-shift/src/environment.ts",
       "apps/showcase-gallery-shift/src/floor.ts",
+      "apps/showcase-gallery-shift/src/gallery-world-candidate.ts",
       "apps/showcase-gallery-shift/src/guard.ts",
       "apps/showcase-gallery-shift/src/heist-audio.ts",
       "apps/showcase-gallery-shift/src/main.ts",
@@ -200,7 +201,7 @@
       "apps/showcase-gallery-shift/src/thief.ts",
       "apps/showcase-gallery-shift/src/vision.ts"
     ],
-    "routeSourceSha256": "7a84fa612d8ee90d6dd24dfafc41bc01a97d67f771c2af32fd085d8c01433763",
+    "routeSourceSha256": "ed1f8b9d072540f4574a7157c6dc30489d46f5de3b5e7cdc1c0099040ed435c5",
     "scope": "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -210,10 +211,10 @@
     },
     "observed": {
       "routeLogicCpuP95Ms": 0.002,
-      "deterministicStateHash": "5301c77b",
-      "drawCalls": 174,
+      "deterministicStateHash": "4bf7d646",
+      "drawCalls": 170,
       "renderSize": [
-        938,
+        1280,
         800
       ]
     },
@@ -221,19 +222,25 @@
   },
   "deploy": {
     "schema": "aura3d.gallery-shift.deploy/1.0",
-    "generatedAt": "2026-08-24T03:35:55.588Z",
+    "generatedAt": "2026-09-01T03:02:43.072Z",
     "producer": "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs",
-    "producerSourceSha256": "3d6de45ed31af5b913558b62f542d00a9e66f3f6142e924200d410a7e4aa3fcf",
+    "producerSourceSha256": "d8a3141b2d8dcfa31d9482cc7adb7e7df0b86979eddc20f0f223fc6b25356d71",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "d1ec449181887bb18def163cbe9057855e22a6acd79affb9d3e1dafa9193f5bf",
-    "sourceTreeSha256": "2ad5274e3b61d22c80568820f621f82f87a9782bf2fa8f840f4ee3bd529566a1",
+    "distTreeSha256": "b00b61be2d4c5e004a1dce59241e5665558be8c3a8df3e2ed1017ac16a6577d0",
+    "sourceTreeSha256": "498b41e7c8050d6db404852a3c6239b671d383239fb89f34dd2a3a8801075469",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>",
         "ok": true,
         "assetCount": 6,
         "assets": [
+          {
+            "id": "galleryShiftCutawayMuseumWorld",
+            "hash": "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
+            "quality": "release",
+            "role": "environment"
+          },
           {
             "id": "galleryShiftDisplayCase",
             "hash": "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f",
@@ -257,12 +264,6 @@
             "hash": "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63",
             "quality": "release",
             "role": "prop"
-          },
-          {
-            "id": "galleryShiftMuseumInterior",
-            "hash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
-            "quality": "release",
-            "role": "environment"
           },
           {
             "id": "galleryShiftPedestal",
@@ -318,51 +319,51 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/gallery-shift/first-load-desktop.png",
-        "sha256": "6e6d9c26752d0f9c3406f832a17667f4f5cb365187eb1d461d341b4856904893"
+        "sha256": "02e7619e5dc9d79666ed0976b337ffdc8eb8b08fb4228c552bcf00d691893377"
       },
       {
         "path": "tests/reports/gallery-shift/mid-sneak-desktop.png",
-        "sha256": "8f5493e3baa937422b6ddd61eaa2b6f0c980d807ff13acc4d6c769b4fc0a5746"
+        "sha256": "0b5c7ae4220004f192775f68caa04ce68ea5ddc45b11dd81e6e8d4e94a180812"
       },
       {
         "path": "tests/reports/gallery-shift/near-detection-desktop.png",
-        "sha256": "9b00ba92aaf580b48dc2edec0c4289b5dd7933ded547979333de9e51f7c9b29f"
+        "sha256": "7e8b74a0514c65debdcada127e9d08af48d3aa50eddb9c3d325997a66062e294"
       },
       {
         "path": "tests/reports/gallery-shift/caught-desktop.png",
-        "sha256": "487c025563adb7cb9556f310e248c6d119a1ddc46f07e7ca121beb7f55821b80"
+        "sha256": "7e8b74a0514c65debdcada127e9d08af48d3aa50eddb9c3d325997a66062e294"
       },
       {
         "path": "tests/reports/gallery-shift/exhibit-lift-desktop.png",
-        "sha256": "7be8431d417cb86e22d758fdda039359077e2cfae2118efc26e3532bb1480ae0"
+        "sha256": "d7041dc55d24083d3bcb39ea2ea9ed48930bae2db9d2e6021074531b3d2a910e"
       },
       {
         "path": "tests/reports/gallery-shift/stair-crossing-desktop.png",
-        "sha256": "f1058660e2dd9d2d51e7053330483a6796b97c667c2e741063afada5193dabe5"
+        "sha256": "3e731ee8dd4ecd95cf6a1a18dc1f2d9d93c1b7e41092f042bd9b7b5ad4399cf9"
       },
       {
         "path": "tests/reports/gallery-shift/camera-sweep-desktop.png",
-        "sha256": "f148bb12121feec4b7dcfb4ca6d42737ecbf5c2fb3557c4a1d14e3c8c783c9a7"
+        "sha256": "4b6e79ac724a4a4fd7a9394560cb08cea9da6091f903c124bd59d75aa4569c6f"
       },
       {
         "path": "tests/reports/gallery-shift/alarm-return-desktop.png",
-        "sha256": "a431c9ee83d7f14b36aad2dfc9f9a7efb30cbcee88ab83af88af3fd400268b90"
+        "sha256": "61ba4bd04905c9b2019652bc21ef4557f2f4489bd9b0b751c84b8f18975be0ef"
       },
       {
         "path": "tests/reports/gallery-shift/exit-win-desktop.png",
-        "sha256": "2a382166d0a1507b845de5a53a4faff77b9baab8be5dc567ffda1f22a68b2f80"
+        "sha256": "fcc2294b8a6b60bf94466d637d05548d2a32d734142264bf9c5467004f0019cc"
       },
       {
         "path": "tests/reports/gallery-shift/first-load-mobile.png",
-        "sha256": "50344d9ffd0ecbd2b92f185830e66e10a206ee5ba967ca1c467e7a0bdcf68ac9"
+        "sha256": "888af21ebc2a52b92e2f868637a72dc2126c18f89dbe3a517abfb0a1052acf19"
       },
       {
         "path": "tests/reports/gallery-shift/reduced-motion-lobby.png",
-        "sha256": "402b45af725ac82754d378b8c5e36de04a7d809643e6ca22695a8d2cad0630fc"
+        "sha256": "63f6f218da677074ebf050da467d9e432abb18c6129d0c9369257ac96e77cfb0"
       },
       {
         "path": "tests/reports/gallery-shift/visual.json",
-        "sha256": "66c982cad1cb71fb01301c552a147acc954918e20086bee2025a8ffd67b1e648"
+        "sha256": "f807d964ee88299ac193f4d9c36db7221cdae7a890e61bb12f9b5081c3846a7f"
       }
     ],
     "browserReceipts": [
@@ -371,10 +372,10 @@
     ],
     "assetProbes": [
       {
-        "asset": "galleryShiftMuseumInterior",
-        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftMuseumInterior.json",
-        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftMuseumInterior.png",
-        "assetHash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200"
+        "asset": "galleryShiftCutawayMuseumWorld",
+        "metadata": "tests/reports/showcase-release-asset-probes/galleryShiftCutawayMuseumWorld.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/galleryShiftCutawayMuseumWorld.png",
+        "assetHash": "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b"
       },
       {
         "asset": "galleryShiftPedestal",
@@ -407,10 +408,10 @@
         "assetHash": "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f"
       },
       {
-        "asset": "showcaseKenneyOobiPlatformerHero",
-        "metadata": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.json",
-        "screenshot": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png",
-        "assetHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+        "asset": "showcaseRunnerGirl",
+        "metadata": "tests/reports/showcase-release-asset-probes/showcaseRunnerGirl.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/showcaseRunnerGirl.png",
+        "assetHash": "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675"
       },
       {
         "asset": "showcaseExpressiveRobot",

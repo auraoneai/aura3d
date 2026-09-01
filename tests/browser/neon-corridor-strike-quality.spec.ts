@@ -55,6 +55,15 @@ test("neon-corridor-strike canvas diversity, stable-frame budget, and HUD access
     expect(pixels.uniqueBuckets).toBeGreaterThan(120);
 
     const pacing = await page.evaluate(async () => {
+      // The color-diversity probe immediately above performs a synchronous
+      // full-frame WebGL readback. Let that diagnostic transfer drain before
+      // measuring the route's *stable* frame budget; otherwise this gate mixes
+      // evidence-capture latency into the gameplay pacing sample. The 120
+      // measured frames and the 80 ms p95 threshold remain unchanged.
+      const warmupFrames = 30;
+      for (let index = 0; index < warmupFrames; index += 1) {
+        await new Promise<number>((done) => requestAnimationFrame(done));
+      }
       const longTasks: number[] = [];
       const observer = typeof PerformanceObserver !== "undefined"
         ? new PerformanceObserver((list) => list.getEntries().forEach((entry) => longTasks.push(entry.duration)))
@@ -71,6 +80,7 @@ test("neon-corridor-strike canvas diversity, stable-frame budget, and HUD access
       const sorted = [...samples].sort((a, b) => a - b);
       const percentile = (fraction: number) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))] ?? 0;
       return {
+        warmupFrames,
         sampleCount: samples.length,
         medianMs: percentile(0.5),
         p95Ms: percentile(0.95),

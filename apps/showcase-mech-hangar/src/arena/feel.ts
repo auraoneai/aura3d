@@ -26,6 +26,8 @@ export interface FeelParticle {
 
 export interface FeelOptions {
   readonly reducedMotion: boolean;
+  /** World-space depth of the arena where pooled effects should be rendered. */
+  readonly arenaZ: number;
   readonly sparkNodes: readonly RuntimeNodeHandleLike[];
   readonly dustNodes: readonly RuntimeNodeHandleLike[];
 }
@@ -48,6 +50,7 @@ const DUST_GRAVITY = -1.4;
 
 export function createMechHangarFeel(options: FeelOptions) {
   const reducedMotion = options.reducedMotion;
+  const arenaZ = options.arenaZ;
   const sparks: FeelParticle[] = [];
   const dust: FeelParticle[] = [];
   let cameraPunchX = 0;
@@ -59,20 +62,20 @@ export function createMechHangarFeel(options: FeelOptions) {
   let lastHitStopFrames = 0;
 
   function spawnSparkBurst(x: number, y: number, heavy: boolean): void {
-    const count = reducedMotion ? 3 : heavy ? 8 : 5;
+    const count = reducedMotion ? 4 : heavy ? 12 : 8;
     for (let i = 0; i < count; i += 1) {
       const angle = (i / count) * Math.PI * 2 + Math.random() * 0.6;
       const speed = (heavy ? 2.6 : 1.8) * (0.6 + Math.random() * 0.6);
       sparks.push({
         x,
         y,
-        z: 0.35,
+        z: arenaZ + 0.35,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed * 0.7 + 1.1,
         vz: (Math.random() - 0.5) * 0.6,
         life: 0,
-        maxLife: heavy ? 0.34 : 0.26,
-        baseScale: heavy ? 0.07 : 0.05
+        maxLife: heavy ? 0.62 : 0.48,
+        baseScale: heavy ? 0.28 : 0.2
       });
     }
     while (sparks.length > options.sparkNodes.length * 2) sparks.shift();
@@ -84,13 +87,13 @@ export function createMechHangarFeel(options: FeelOptions) {
       dust.push({
         x: x + (Math.random() - 0.5) * 0.5,
         y: 0.06 + Math.random() * 0.08,
-        z: (Math.random() - 0.5) * 0.6,
+        z: arenaZ + (Math.random() - 0.5) * 0.6,
         vx: (Math.random() - 0.5) * 1.1,
         vy: 0.25 + Math.random() * 0.5 * strength,
         vz: (Math.random() - 0.5) * 0.5,
         life: 0,
-        maxLife: 0.55 + Math.random() * 0.3,
-        baseScale: 0.12 + Math.random() * 0.1 * strength
+        maxLife: 0.78 + Math.random() * 0.35,
+        baseScale: 0.22 + Math.random() * 0.18 * strength
       });
     }
     while (dust.length > options.dustNodes.length * 2) dust.shift();

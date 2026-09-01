@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-23T21:50:52.691Z",
+  "generatedAt": "2026-08-31T21:48:16.562Z",
   "appId": "showcase-pulse-tunnel",
   "route": "/apps/showcase-pulse-tunnel/",
   "classification": "prototype-blocked",
@@ -14,9 +14,92 @@
     "productionRuntimeClaimed": false
   },
   "visualSubject": {
-    "kind": "abstract rhythm visualization",
-    "typedVisualPrimaryClaimed": false,
-    "statement": "The glider, tunnel frames, gates, lane rails, washes, and feedback are deliberate abstract primitives; no named real-world or character subject is claimed."
+    "kind": "typed spacecraft in an abstract rhythm arena",
+    "typedVisualPrimaryClaimed": true,
+    "statement": "The original release-probed Pulse runner craft, rigid terminal sentry, and continuous reactor encounter world form one non-colliding finale kit; route-local lanes, gates, projectiles, scoring, failure, and reset remain authoritative.",
+    "primaryAsset": {
+      "typedRef": "assets.pulseRunnerCraft",
+      "hash": "sha256-285295683d65fb21536f85bfafea19da209c4d0a1199417dc84c5632c1e4977c",
+      "quality": "release",
+      "role": "vehicle",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/pulseRunnerCraft.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft",
+        "sha256": "sha256-2979ecd7dbec93c83aba29d35e0b230e0ed7b4754f3891b7933226c7b89af980",
+        "assetHash": "sha256-285295683d65fb21536f85bfafea19da209c4d0a1199417dc84c5632c1e4977c",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 45,
+        "checkedAt": "2026-08-31T20:48:22.630Z",
+        "foregroundBounds": {
+          "x": 163,
+          "y": 223,
+          "width": 406,
+          "height": 160
+        }
+      }
+    },
+    "terminalSentry": {
+      "typedRef": "assets.pulseTerminalSentry",
+      "hash": "sha256-7c6ca27464c9035c4ff9ba327d17d5d5f6e59d0a46953519c03143cd890a69a4",
+      "quality": "release",
+      "role": "character",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/pulseTerminalSentry.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry",
+        "sha256": "sha256-66c9de75b101c2edcd54df8a9e10b11419c955ecdcc0e71357dac5664c82770f",
+        "assetHash": "sha256-7c6ca27464c9035c4ff9ba327d17d5d5f6e59d0a46953519c03143cd890a69a4",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 63,
+        "checkedAt": "2026-08-31T20:48:09.893Z",
+        "foregroundBounds": {
+          "x": 160,
+          "y": 205,
+          "width": 414,
+          "height": 321
+        }
+      },
+      "gameplayAuthority": "none; non-colliding renderer-owned finale endpoint"
+    },
+    "encounterWorld": {
+      "typedRef": "assets.pulseReactorEncounterWorld",
+      "hash": "sha256-9e05c9db7148923a3745d6ad596389ae50f6c1375d0ab3066b17e9d670760688",
+      "quality": "release",
+      "role": "world",
+      "license": "CC0-1.0",
+      "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/pulseReactorEncounterWorld.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld",
+        "sha256": "sha256-6e0461089e262c1d9c0762a2a4b253402fa08d7e76881963bc0925572c5435c6",
+        "assetHash": "sha256-9e05c9db7148923a3745d6ad596389ae50f6c1375d0ab3066b17e9d670760688",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 76,
+        "checkedAt": "2026-08-31T20:47:59.284Z",
+        "foregroundBounds": {
+          "x": 104,
+          "y": 191,
+          "width": 471,
+          "height": 233
+        }
+      },
+      "gameplayAuthority": "none; finale-state-bound non-colliding architectural enclosure"
+    }
   },
   "audioAssets": [
     {
@@ -112,10 +195,10 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 11,
+    "sourceOccurrences": 34,
     "primitiveBudget": 160,
-    "role": "abstract tunnel structure, obstacles, player marker, telegraph, and state-driven feedback",
-    "status": "within-abstract-role-and-budget"
+    "role": "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft",
+    "status": "within-set-dressing-and-abstract-role-budget"
   },
   "clockContract": {
     "decision": "NO-GO-BROWSER-PROFILE",
@@ -124,7 +207,7 @@
     "fallbackFlip": {
       "proven": true,
       "reason": "drift-tolerance-exceeded",
-      "flippedAtTime": 2.8880000000000017,
+      "flippedAtTime": 2.8933333333333344,
       "gameplayContinued": true
     },
     "measuredDriftSamples": [
@@ -133,35 +216,35 @@
         "driftMs": 0
       },
       {
-        "t": 0.883,
-        "driftMs": 119.13
+        "t": 0.888,
+        "driftMs": 122
       },
       {
-        "t": 1.885,
-        "driftMs": 116.87
+        "t": 1.88,
+        "driftMs": 120.7
       },
       {
-        "t": 2.888,
-        "driftMs": 120.5
+        "t": 2.893,
+        "driftMs": 120.77
       },
       {
-        "t": 3.882,
+        "t": 3.894,
         "driftMs": 0
       },
       {
-        "t": 4.888,
+        "t": 4.881,
         "driftMs": 0
       },
       {
-        "t": 5.887,
+        "t": 5.892,
         "driftMs": 0
       },
       {
-        "t": 6.884,
+        "t": 6.896,
         "driftMs": 0
       },
       {
-        "t": 7.88,
+        "t": 7.882,
         "driftMs": 0
       }
     ],
@@ -198,10 +281,10 @@
   },
   "performance": {
     "schema": "aura3d-pulse-tunnel-performance/1.0",
-    "generatedAt": "2026-08-23T21:50:52.332Z",
+    "generatedAt": "2026-08-31T21:47:36.515Z",
     "producer": "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts",
     "producerSourceSha256": "b0bf7ffa5aaa9b2860eb31fc44b322f61f876c285b2aaf3331f1fc6dc93e89e2",
-    "routeSourceSha256": "33ccfb5f30d07a70cc4289b1d950d300d72d6b105d46acae32d097bcc52a4bf2",
+    "routeSourceSha256": "11af9a643067737360034dc6d14d18d9241142ace4b1e5719479adf76d94839b",
     "scope": "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
     "samples": 12000,
     "fixedStepSeconds": 0.008333333333333333,
@@ -210,9 +293,9 @@
       "fullRunDrawCalls": 600
     },
     "observed": {
-      "simulationP95Ms": 0.0006,
+      "simulationP95Ms": 0.0009,
       "chartEntries": 51,
-      "fullRunDrawCalls": 119
+      "fullRunDrawCalls": 30
     },
     "pass": true
   },
@@ -225,8 +308,9 @@
   },
   "claimStatus": {
     "status": "blocked-pending-human-review",
-    "label": "abstract root-safe prototype",
+    "label": "root-safe prototype",
     "allowed": [
+      "release-validated typed spacecraft player",
       "90-second authored obstacle chart",
       "four typed stems and nine typed state-driven cues",
       "measured clock tolerance with deterministic pattern fallback",
@@ -234,7 +318,7 @@
     ],
     "notAllowed": [
       "perfect or universal beat accuracy",
-      "typed visual primary asset",
+      "physical spacecraft simulation",
       "production renderer, HDR/IBL, native WebGPU, or postprocess parity",
       "public promotion before independent exact-artifact review"
     ]
@@ -253,43 +337,43 @@
     "acceptanceArtifacts": [
       {
         "path": "tests/reports/pulse-tunnel/playable-load.png",
-        "sha256": "5a4c89cbb99ea624ee1c251c56ce969cb86c2a1c706aa62adb35dec3ff9c0c45"
+        "sha256": "d6cee9fb3601a66652e18c4f419da94b4698e9bae84342243e7a50847713f830"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-lane-switch.png",
-        "sha256": "3a3568cdc6f68fc92b05d794cd778e44253a190f6f1d6930af9bf995cc2e4a4d"
+        "sha256": "06bb9631b0eb6298d413b9f5e04269c0bd4beec526c7b8c720830f1ac5e39b0b"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-jump.png",
-        "sha256": "d53042caf38a96c1b8c9efc73c4b7ac4fbd1d5e40073bc0a73ab282cec2b1cf4"
+        "sha256": "146a716d5b4be105edf1121fa10b5e2824f3786115cf5d37737718758bd9d7c5"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-graze.png",
-        "sha256": "4efe97e47625e8c8fdf565b07cebbc35e57c38dec0ce0382f39fb95630062786"
+        "sha256": "7b39b851fe4304176c5ec2ef059834fb1ace288fdce6a1366dfc2670c26e2b3a"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-drop-section.png",
-        "sha256": "93afaa950674ae5ffa03031d447ad31b759da4c9c617751141c8cdcf27e033f0"
+        "sha256": "067e046523137dce8fd792861c1e4ec03a6728e5081c770db4b2ff8ed6d3e85c"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-shield-break.png",
-        "sha256": "5671e4e947d45350f81b203230d6792f1dd3238455f98e3f6cb353e5b145dd47"
+        "sha256": "5911d0d516312692612bb9d3e46198f579808437ac07699f219612ab65ced229"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-finale.png",
-        "sha256": "a1811524a5a023d7b3f41f202cd99aea1f364736333c5424084b8f5cddcc7e06"
+        "sha256": "ee1583d9543fc21f77b7c9fdaaf6fe2fda8ba7d24651d63857b0b9959e5f3951"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-summary.png",
-        "sha256": "584242fa3f16424c15172b8f280df80f3e0309bbb1c45172726cfb14e179ea7a"
+        "sha256": "f95d25b083ed4b48e209b5aa0bb1cdcb79cd20417772c27d8124796412086875"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-finished.png",
-        "sha256": "50bdc99d1ce8e9b1f2d5410555dd67033b8d3f09705ac05f86388fb5841e2341"
+        "sha256": "190534d25ac70dc3fcb99a7545e1fe16671c65b97d21360b4967b2cad8329268"
       },
       {
         "path": "tests/reports/pulse-tunnel/mobile.png",
-        "sha256": "da60165e93f02eb368e38e1a5434e3ffaa6fe5109f2f78d3e2986173b9a11878"
+        "sha256": "cd53038bca8661d5eda1c3b5d5bf27a34aa8144019ffb96440e9169f205514ff"
       }
     ],
     "performance": "apps/showcase-pulse-tunnel/performance-report.json",
@@ -300,7 +384,7 @@
     "unitSpecs": [
       "tests/unit/apps/pulse-tunnel-clock.test.ts"
     ],
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-pulse-tunnel/dist --release --source apps/showcase-pulse-tunnel/src --no-assets",
-    "deployAssetBoundary": "The route has no typed visual primary subject. The deploy check uses --no-assets so the model-oriented release validator does not attempt 3D bounds extraction on WAV files; all 13 live typed audio references are independently hash/provenance/quality-validated by this generator."
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-pulse-tunnel/dist --release --source apps/showcase-pulse-tunnel/src --asset pulseRunnerCraft --asset pulseTerminalSentry --asset pulseReactorEncounterWorld",
+    "deployAssetBoundary": "The strict deploy check validates the three original release-quality Pulse model assets. All 13 live typed audio references remain independently hash/provenance/quality-validated by this generator because the model-oriented deploy validator is scoped to the visual encounter kit."
   }
 }

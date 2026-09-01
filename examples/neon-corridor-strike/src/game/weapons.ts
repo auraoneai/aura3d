@@ -64,7 +64,11 @@ export function updateWeapon(
   }
 
   const bus = fireBus();
-  const wantFire = bus.queued || bus.held || input.pressed("fire") || input.held("fire");
+  // Keyboard fire is semi-automatic: one physical key-down produces one shot.
+  // Keeping `input.held("fire")` here allowed a loaded software-rendered frame
+  // to consume several rounds before the key-up event was observed. The touch
+  // fire button retains its deliberate hold-to-fire behavior through bus.held.
+  const wantFire = bus.queued || bus.held || input.pressed("fire");
   bus.queued = false;
   if (wantFire && state.status === "playing" && state.reloadClock <= 0) {
     if (state.ammo <= 0) {

@@ -37,8 +37,8 @@ export function skylineCameraTuning(compactViewport: boolean): SkylineCameraTuni
     : {
         viewport: "desktop",
         distance: 3.75,
-        height: 0.62,
-        lookAhead: 1.05,
+        height: 0.52,
+        lookAhead: 0.42,
         targetHeight: 0.34,
         fov: 42
       };
@@ -74,4 +74,3 @@ export function skylineCameraFrame(
     targetOffset
   };
 }
-

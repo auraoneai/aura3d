@@ -88,10 +88,18 @@ for (const route of ROUTES.filter((entry) => selected.size === 0 || selected.has
     const geometryFile = `${route.routeId}-${route.geometrySuffix}.json`;
     const generatedGeometryReport = join(outputDir, "game-template", geometryFile);
     if (existsSync(generatedGeometryReport)) {
+      const geometryReportContents = readFileSync(generatedGeometryReport);
       writeFileSync(
         resolve(root, "tests", "reports", "showcase-spec-compiler", route.reportDir, "game-template", geometryFile),
-        readFileSync(generatedGeometryReport)
+        geometryReportContents
       );
+      // The app-local game-template copy is public scaffold/evidence input too. Keeping
+      // only the tests/reports copy current left the installed route advertising an old
+      // asset hash and seam even though its generated runtime contract was current.
+      const appTemplateDir = resolve(root, "apps", route.routeId, "game-template");
+      if (existsSync(appTemplateDir)) {
+        writeFileSync(resolve(appTemplateDir, geometryFile), geometryReportContents);
+      }
     }
   } finally {
     rmSync(outputDir, { recursive: true, force: true });
@@ -101,7 +109,7 @@ for (const route of ROUTES.filter((entry) => selected.size === 0 || selected.has
 console.log(`\n${changed} contract(s) updated.`);
 
 function promoteFixtureEvidencePaths(source: string): string {
-  return source
+  const promoted = source
     .replaceAll(
       "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/",
       "tests/reports/showcase-route-primary-probes/"
@@ -118,4 +126,27 @@ function promoteFixtureEvidencePaths(source: string): string {
       "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/",
       "tests/reports/showcase-spec-compiler/"
     );
+
+  // Fixture specs intentionally retain the asset hashes used by their hermetic
+  // evidence bundle. A promoted compile consumes the live manifest and live
+  // evidence, so hash-bound gameplay geometry must be promoted as well. Without
+  // this synchronization a legitimate asset regeneration produces a contract
+  // whose top-level geometry hash is current while levelDesign still advertises
+  // the fixture hash.
+  const spec = JSON.parse(promoted) as {
+    platformer?: { levelDesign?: { playableSurfaceMap?: { assetId?: string; assetHash?: string } } };
+  };
+  const manifest = JSON.parse(readFileSync(resolve(root, "aura.assets.json"), "utf8")) as {
+    assets?: readonly { id?: string; hash?: string }[];
+  };
+  const surfaceMap = spec.platformer?.levelDesign?.playableSurfaceMap;
+  if (surfaceMap?.assetId) {
+    const asset = manifest.assets?.find((entry) => entry.id === surfaceMap.assetId);
+    if (!asset?.hash?.startsWith("sha256-")) {
+      throw new Error(`${surfaceMap.assetId} is missing a current sha256 manifest hash`);
+    }
+    surfaceMap.assetHash = asset.hash;
+  }
+
+  return `${JSON.stringify(spec, null, 2)}\n`;
 }

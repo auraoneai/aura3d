@@ -4,6 +4,8 @@ import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 type AuraGeneratedAssetDefinitions = {
   readonly "auroraAmbientWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "auroraCrashSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "auroraExtractionBayBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "auroraExtractionLanderHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "auroraFuelLowSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "auroraGustWarnSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "auroraLanderProbe": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -54,7 +56,10 @@ type AuraGeneratedAssetDefinitions = {
   readonly "blockfallMusicStem3": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "blockfallMusicStem4": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "blockfallQuadFanfareSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "blockfallReactorArenaBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "blockfallReactorHumLoop": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "blockfallReactorMechanicHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "blockfallReactorPlasmaRival": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "blockfallRotateSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "courierAmbientCitySfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "courierDispatchBlipSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -92,6 +97,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "galleryShiftAmbientHallSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftCameraWhirSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftCaughtStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "galleryShiftCutawayMuseumWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryShiftDisplayCase": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryShiftExhibitA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryShiftExhibitB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -114,6 +120,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "gravityPostDockGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostDockLockSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostDockRing": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gravityPostFreightDistrict": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostLaunchWhooshSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostMailPod": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostPodLostSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -151,6 +158,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "neonBurstSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonComboBreakSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonCourierAvatar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonCrownMothElite": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonDashSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonDeathStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonDroneDieSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -159,6 +167,8 @@ type AuraGeneratedAssetDefinitions = {
   readonly "neonPickupSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonPlayerHurtSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonPulseFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "neonRainCourierHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "neonRainGardenArenaBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonStreetLampProp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "neonWaveClearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "neonWaveStartSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -189,11 +199,14 @@ type AuraGeneratedAssetDefinitions = {
   readonly "pulseJumpSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseLaneSwitchSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseLeadStem": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "pulseReactorEncounterWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "pulseRunnerCraft": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pulseRunOverSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseSectionRiseSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseShieldBreakSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseShieldHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "pulseSlideSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "pulseTerminalSentry": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pulseUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "robotcand": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopBackboard": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -210,7 +223,9 @@ type AuraGeneratedAssetDefinitions = {
   readonly "rooftopBucketsSwishSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "rooftopCourt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopDefender": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopLayupScorer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rooftopRim": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rooftopShooter": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseAdventurerRunner": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseAnimatedRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseArcadeCabinet": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -300,6 +315,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "siegeCupSinkSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "siegeDriveHitSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "siegeGolfBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "siegeGolfCourseWorld": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "siegeMetalClangSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "siegeParChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "siegePlankSet": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -311,28 +327,37 @@ type AuraGeneratedAssetDefinitions = {
   readonly "skylineAmbienceCrownSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineAmbienceGroveSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineAmbienceSteelSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineArcticRunnerHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "skylineCheckpointFanfareSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineCoinChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineDashWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineDeathStingSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineEmberDenySfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineEmberFireSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineIceLedgeCompact": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "skylineIceLedgeLong": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "skylineIceLedgeMedium": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "skylineJumpSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineLandDustSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineRespawnRecoverySfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineSentryDefeatSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineSentryTelegraphSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineSummitThemeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "skylineWinterParallaxBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "turboAlpineVenueBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboCheckpointChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboCountdownBlipSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboDriftScuffSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboEngineSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboFinishFanfareSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboFormulaCircuit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboGoSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboHairpinVenueKit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboHeroCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboMusicLoopSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboOffTrackRumbleSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboRaceCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "turboTsukubaVisualTrack": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboUiConfirmSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "vaultBallDrainSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -525,6 +550,325 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Fatal-contact crash cue driven by the graded contact event."
+    },
+  },
+  "auroraExtractionBayBackdrop": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/auroraExtractionBayBackdrop.23ba5959.glb",
+    hash: "sha256-23ba59592c969605e2647a5120da3c7582fd433af2c00e308c0f4a75bd772ff7",
+    bounds: [
+      16,
+      10.008,
+      0.2
+    ],
+    sizeBytes: 2351972,
+    metadata: {
+      "materials": [
+        "aurora-extraction-bay-unlit"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "aurora-extraction-bay-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-aurora-lander/generated/auroraExtractionBay.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/assets/aurora-extraction-bay.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-aurora-lander/assets/aurora-extraction-bay.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/assets/aurora-extraction-bay.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:45:00.000Z",
+        "checkedAt": "2026-08-29T23:45:00.000Z"
+      },
+      "sourcePath": "apps/showcase-aurora-lander/generated/auroraExtractionBay.glb",
+      "outputPath": "public/aura-assets/auroraExtractionBayBackdrop.23ba5959.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -8,
+          -5.004,
+          -0.1
+        ],
+        "max": [
+          8,
+          5.004,
+          0.1
+        ],
+        "size": [
+          16,
+          10.008,
+          0.2
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 16,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "aurora-extraction-bay-unlit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-23ba59592c969605e2647a5120da3c7582fd433af2c00e308c0f4a75bd772ff7",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T00:01:29.761Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraExtractionBayBackdrop",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/auroraExtractionBayBackdrop.png",
+          "sha256": "sha256-d9f024230871b07a69191af689b8ef353ebe6f309a0a44427197c5852016998a",
+          "assetHash": "sha256-23ba59592c969605e2647a5120da3c7582fd433af2c00e308c0f4a75bd772ff7",
+          "checkedAt": "2026-08-30T00:01:29.761Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraExtractionBayBackdrop"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "aurora-extraction-bay-card"
+      ],
+      "textures": [
+        "aurora-extraction-bay-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/auroraExtractionBayBackdrop.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Decorative non-primary extraction-bay background set dressing behind the live typed Aurora lander and certified landing state; it never supplies gameplay geometry.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/auroraExtractionBayBackdrop.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraExtractionBayBackdrop",
+        "sha256": "sha256-d9f024230871b07a69191af689b8ef353ebe6f309a0a44427197c5852016998a",
+        "assetHash": "sha256-23ba59592c969605e2647a5120da3c7582fd433af2c00e308c0f4a75bd772ff7",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 421563,
+        "colorBuckets": 96,
+        "checkedAt": "2026-08-30T00:01:29.761Z",
+        "foregroundBounds": {
+          "x": 125,
+          "y": 212,
+          "width": 502,
+          "height": 299
+        }
+      }
+    },
+  },
+  "auroraExtractionLanderHero": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/auroraExtractionLanderHero.4b12940e.glb",
+    hash: "sha256-4b12940e15ea6e51d0bc71b3382b0364526bb16bb29f60dd72e8f8fb1735a2e1",
+    bounds: [
+      1.072,
+      1,
+      0.05
+    ],
+    sizeBytes: 1034600,
+    metadata: {
+      "materials": [
+        "aurora-extraction-lander-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "aurora-extraction-lander-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-aurora-lander/generated/auroraExtractionLander.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/assets/aurora-extraction-lander.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-aurora-lander/assets/aurora-extraction-lander.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/assets/aurora-extraction-lander.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:55:00.000Z",
+        "checkedAt": "2026-08-29T23:55:00.000Z"
+      },
+      "sourcePath": "apps/showcase-aurora-lander/generated/auroraExtractionLander.glb",
+      "outputPath": "public/aura-assets/auroraExtractionLanderHero.4b12940e.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.536,
+          -0.5,
+          -0.025
+        ],
+        "max": [
+          0.536,
+          0.5,
+          0.025
+        ],
+        "size": [
+          1.072,
+          1,
+          0.05
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.072,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "aurora-extraction-lander-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-4b12940e15ea6e51d0bc71b3382b0364526bb16bb29f60dd72e8f8fb1735a2e1",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T00:01:32.546Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraExtractionLanderHero",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/auroraExtractionLanderHero.png",
+          "sha256": "sha256-712817bb3c1c4d530d8f6dd322d30f798123162fa70fe7c4df74187f999c7734",
+          "assetHash": "sha256-4b12940e15ea6e51d0bc71b3382b0364526bb16bb29f60dd72e8f8fb1735a2e1",
+          "checkedAt": "2026-08-30T00:01:32.546Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraExtractionLanderHero"
+        },
+        "messages": [
+          "The project-original extraction lander is authored as a front-readable XY presentation card with its visible face toward +Z and antenna-up along +Y; the current hash-bound root probe verifies that static vehicle presentation only."
+        ]
+      },
+      "nodeNames": [
+        "aurora-extraction-lander-card"
+      ],
+      "textures": [
+        "aurora-extraction-lander-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/auroraExtractionLanderHero.thumb.svg",
+      "quality": "release",
+      "role": "vehicle",
+      "suitabilityReason": "Project-original front-readable arctic extraction lander vehicle presentation with declared +Z forward orientation, driven by the live Aurora lander transform in the exact review lens; static visual card only, with no dynamics claim.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/auroraExtractionLanderHero.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=auroraExtractionLanderHero",
+        "sha256": "sha256-712817bb3c1c4d530d8f6dd322d30f798123162fa70fe7c4df74187f999c7734",
+        "assetHash": "sha256-4b12940e15ea6e51d0bc71b3382b0364526bb16bb29f60dd72e8f8fb1735a2e1",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 446921,
+        "colorBuckets": 107,
+        "checkedAt": "2026-08-30T00:01:32.546Z",
+        "foregroundBounds": {
+          "x": 171,
+          "y": 194,
+          "width": 410,
+          "height": 382
+        }
+      }
     },
   },
   "auroraFuelLowSfx": {
@@ -767,6 +1111,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-aurora-lander/assets/models/auroraLanderProbe.glb",
         "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D synthesis",
         "retrievedAt": "2026-08-23T18:00:57Z",
@@ -951,6 +1296,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-aurora-lander/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-aurora-lander/assets/models/auroraPadBeacon.glb",
         "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D synthesis",
         "retrievedAt": "2026-08-23T18:00:57Z",
@@ -1661,14 +2007,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall00": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall00.37c8c879.glb",
-    hash: "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4",
+    url: "/aura-assets/bankShotBall00.456a25d7.glb",
+    hash: "sha256-456a25d7482ae38658584f270eb9e8f21038e1a9ec5a5495c26fdbcda94d44e6",
     bounds: [
       1,
       1,
       1
     ],
-    sizeBytes: 30596,
+    sizeBytes: 152440,
     metadata: {
       "materials": [
         "ball-material"
@@ -1734,7 +2080,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall00.glb",
-      "outputPath": "public/aura-assets/bankShotBall00.37c8c879.glb",
+      "outputPath": "public/aura-assets/bankShotBall00.456a25d7.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -1792,18 +2138,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall00",
-        "sha256": "sha256-f19b586925f8826c79d6519762845eb7fec87005cd9c7498e44a21c94cc8b5f7",
-        "assetHash": "sha256-37c8c8793f04dec5700479fce78312a4bf21de9e4b78db1d27ee6c74959457d4",
+        "sha256": "sha256-4f5ceb0272f17927cfa24f352eded2dbaa16b69f4132669023d7a562d6ee80b9",
+        "assetHash": "sha256-456a25d7482ae38658584f270eb9e8f21038e1a9ec5a5495c26fdbcda94d44e6",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 17,
-        "checkedAt": "2026-08-23T23:33:51.173Z",
+        "colorBuckets": 18,
+        "checkedAt": "2026-08-30T14:18:39.945Z",
         "foregroundBounds": {
           "x": 208,
-          "y": 193,
-          "width": 333,
-          "height": 336
+          "y": 192,
+          "width": 336,
+          "height": 338
         }
       }
     },
@@ -1811,14 +2157,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall01": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall01.e0364deb.glb",
-    hash: "sha256-e0364deb31ba496456d342d72f0ca3b978c83d46715ebfc511e261c2aeb4c019",
+    url: "/aura-assets/bankShotBall01.6d093a5d.glb",
+    hash: "sha256-6d093a5df621307a867db3c60ee5591ae653ce3da4dce4e3975154d39f10f8cf",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 34480,
+    sizeBytes: 156472,
     metadata: {
       "materials": [
         "ball-material",
@@ -1888,7 +2234,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall01.glb",
-      "outputPath": "public/aura-assets/bankShotBall01.e0364deb.glb",
+      "outputPath": "public/aura-assets/bankShotBall01.6d093a5d.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -1962,18 +2308,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall01",
-        "sha256": "sha256-2a3beef3d2f28ef7c2701a32db1a22acd28b1bcd68ccdb87ab64d35daac1b9e2",
-        "assetHash": "sha256-e0364deb31ba496456d342d72f0ca3b978c83d46715ebfc511e261c2aeb4c019",
+        "sha256": "sha256-27bab275e2f5251c0601d3f4a633dd91228f4d759aa7b575ec08c391be537b3f",
+        "assetHash": "sha256-6d093a5df621307a867db3c60ee5591ae653ce3da4dce4e3975154d39f10f8cf",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-08-23T23:33:55.452Z",
+        "colorBuckets": 29,
+        "checkedAt": "2026-08-30T14:18:48.932Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -1981,14 +2327,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall02": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall02.282df9e0.glb",
-    hash: "sha256-282df9e0b5690e1a25eaa157bc9ed06f19b80c4c1ee108f0e2c719305b2e17e9",
+    url: "/aura-assets/bankShotBall02.ca726175.glb",
+    hash: "sha256-ca72617597c147f165169c7b4b67a03c0c4c37071866274e5e3398a864c9bb68",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 34988,
+    sizeBytes: 156980,
     metadata: {
       "materials": [
         "ball-material",
@@ -2058,7 +2404,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall02.glb",
-      "outputPath": "public/aura-assets/bankShotBall02.282df9e0.glb",
+      "outputPath": "public/aura-assets/bankShotBall02.ca726175.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2132,18 +2478,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall02",
-        "sha256": "sha256-48a59522f420fe7e50d0fcded1a7e841fe9570f7ee1244aeea28e6fd7ab17d7f",
-        "assetHash": "sha256-282df9e0b5690e1a25eaa157bc9ed06f19b80c4c1ee108f0e2c719305b2e17e9",
+        "sha256": "sha256-e6de71abe95f23f7141fdcffe5236cec66d625e3b7a0c4fdca18073e5413a003",
+        "assetHash": "sha256-ca72617597c147f165169c7b4b67a03c0c4c37071866274e5e3398a864c9bb68",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 27,
-        "checkedAt": "2026-08-23T23:33:59.509Z",
+        "colorBuckets": 24,
+        "checkedAt": "2026-08-30T14:19:09.500Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -2151,14 +2497,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall03": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall03.42b14dd4.glb",
-    hash: "sha256-42b14dd48487ebd6d7a06c521bdb3a6c96ac41d15e5327cf6e19bc18415ea103",
+    url: "/aura-assets/bankShotBall03.a4712882.glb",
+    hash: "sha256-a47128826d23f178e406236610c4dd8fea4e76fb0d2f4424a65d89a33970266a",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 34988,
+    sizeBytes: 156980,
     metadata: {
       "materials": [
         "ball-material",
@@ -2228,7 +2574,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall03.glb",
-      "outputPath": "public/aura-assets/bankShotBall03.42b14dd4.glb",
+      "outputPath": "public/aura-assets/bankShotBall03.a4712882.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2302,18 +2648,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall03",
-        "sha256": "sha256-a65df31e5c93dd62764763d4886aa0eb7ef1698cff82473dc8a3af468ff8e526",
-        "assetHash": "sha256-42b14dd48487ebd6d7a06c521bdb3a6c96ac41d15e5327cf6e19bc18415ea103",
+        "sha256": "sha256-412a501e555354ba2b0e31415ee14ead400a287c6b9a9effb0949da64ac9e74f",
+        "assetHash": "sha256-a47128826d23f178e406236610c4dd8fea4e76fb0d2f4424a65d89a33970266a",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-08-23T23:34:04.164Z",
+        "colorBuckets": 32,
+        "checkedAt": "2026-08-30T14:19:21.099Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -2321,14 +2667,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall04": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall04.d50d4099.glb",
-    hash: "sha256-d50d4099cac2ff32ac18306cc9f422728d64e405c1a60fd37454ce2b435b16e8",
+    url: "/aura-assets/bankShotBall04.90b6b1d3.glb",
+    hash: "sha256-90b6b1d3fccff7573ede556c67521d6a44c19fdba0dd34af091aee962381c208",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 34820,
+    sizeBytes: 156808,
     metadata: {
       "materials": [
         "ball-material",
@@ -2398,7 +2744,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall04.glb",
-      "outputPath": "public/aura-assets/bankShotBall04.d50d4099.glb",
+      "outputPath": "public/aura-assets/bankShotBall04.90b6b1d3.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2472,18 +2818,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall04",
-        "sha256": "sha256-6751fa81907d313bfa98997f5a6b5429b53797ffd0d5271745391b7194b9d672",
-        "assetHash": "sha256-d50d4099cac2ff32ac18306cc9f422728d64e405c1a60fd37454ce2b435b16e8",
+        "sha256": "sha256-15408aea017f776df2ffaa152695880b165bc8742a74f3146777940978c3e928",
+        "assetHash": "sha256-90b6b1d3fccff7573ede556c67521d6a44c19fdba0dd34af091aee962381c208",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-08-23T23:34:08.674Z",
+        "colorBuckets": 24,
+        "checkedAt": "2026-08-30T14:19:28.625Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -2491,14 +2837,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall05": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall05.7d458809.glb",
-    hash: "sha256-7d458809c6a76c37995696a698aadeab80806234d20c81426a9950fa1a789c9f",
+    url: "/aura-assets/bankShotBall05.c961eb95.glb",
+    hash: "sha256-c961eb95dbbf80f9d4a1310b69a7ffb931a237f7158eeb19f418bc5fed8f3686",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 34988,
+    sizeBytes: 156980,
     metadata: {
       "materials": [
         "ball-material",
@@ -2568,7 +2914,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall05.glb",
-      "outputPath": "public/aura-assets/bankShotBall05.7d458809.glb",
+      "outputPath": "public/aura-assets/bankShotBall05.c961eb95.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2642,18 +2988,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall05",
-        "sha256": "sha256-f510a23005c84a056e3e51e3b00829c77e36aead937eea775cb7c63254dcb76a",
-        "assetHash": "sha256-7d458809c6a76c37995696a698aadeab80806234d20c81426a9950fa1a789c9f",
+        "sha256": "sha256-538c2b3d7617b68c9b7ee7cd8cdca7dda2863725e0595df0135a097232b86035",
+        "assetHash": "sha256-c961eb95dbbf80f9d4a1310b69a7ffb931a237f7158eeb19f418bc5fed8f3686",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 30,
-        "checkedAt": "2026-08-23T23:34:13.879Z",
+        "colorBuckets": 29,
+        "checkedAt": "2026-08-30T14:19:36.186Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -2661,14 +3007,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall06": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall06.69110907.glb",
-    hash: "sha256-69110907c5309b40dab19daae85d001cadf165ac7f1657cc27b6512257401501",
+    url: "/aura-assets/bankShotBall06.97d6a9f6.glb",
+    hash: "sha256-97d6a9f6088abe426531b3d802055ecb58f42bbce3cb007201e0abf5831a3429",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 35156,
+    sizeBytes: 157148,
     metadata: {
       "materials": [
         "ball-material",
@@ -2738,7 +3084,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall06.glb",
-      "outputPath": "public/aura-assets/bankShotBall06.69110907.glb",
+      "outputPath": "public/aura-assets/bankShotBall06.97d6a9f6.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2812,18 +3158,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall06",
-        "sha256": "sha256-c4e8e40f7287b11a9d0a2e9f1e7689153df7394b24b828c2de5344356be9ef56",
-        "assetHash": "sha256-69110907c5309b40dab19daae85d001cadf165ac7f1657cc27b6512257401501",
+        "sha256": "sha256-1090654f0a937f187dd7f1b2b93725680f016b7dc379a2154469804cda4ec858",
+        "assetHash": "sha256-97d6a9f6088abe426531b3d802055ecb58f42bbce3cb007201e0abf5831a3429",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 29,
-        "checkedAt": "2026-08-23T23:34:17.803Z",
+        "colorBuckets": 26,
+        "checkedAt": "2026-08-30T14:19:44.161Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -2831,14 +3177,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall07": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall07.a451b508.glb",
-    hash: "sha256-a451b5088c7cffcd42d72d81754f8935a4eb6159abbd96998c6391cc5df917ef",
+    url: "/aura-assets/bankShotBall07.265f7105.glb",
+    hash: "sha256-265f7105d030fc2bca91fb6b1ddbb4208c3b438dda0d7ce65a89ae1f6bc54f1c",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 34652,
+    sizeBytes: 156640,
     metadata: {
       "materials": [
         "ball-material",
@@ -2908,7 +3254,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall07.glb",
-      "outputPath": "public/aura-assets/bankShotBall07.a451b508.glb",
+      "outputPath": "public/aura-assets/bankShotBall07.265f7105.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2982,18 +3328,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall07",
-        "sha256": "sha256-268fe287dd9e485c51e9a9ac5de0623aaeadc5e1c719a604b63d202091d8ce2b",
-        "assetHash": "sha256-a451b5088c7cffcd42d72d81754f8935a4eb6159abbd96998c6391cc5df917ef",
+        "sha256": "sha256-34b7cc1b30b4729382ae427ae328e1f448849ddb664e3180c0bcccf00d98fa86",
+        "assetHash": "sha256-265f7105d030fc2bca91fb6b1ddbb4208c3b438dda0d7ce65a89ae1f6bc54f1c",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-08-23T23:34:22.115Z",
+        "colorBuckets": 25,
+        "checkedAt": "2026-08-30T14:19:51.214Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -3001,14 +3347,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall08": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall08.d52a8f8c.glb",
-    hash: "sha256-d52a8f8cc30060172be18ebe9b715eddd06c07e2c9a9693061c0105c6c60305a",
+    url: "/aura-assets/bankShotBall08.2506f5ef.glb",
+    hash: "sha256-2506f5efcdc99242af9bed80c2ae0fbeaaf0ce889a2ec81b41bf648780962947",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 35324,
+    sizeBytes: 157316,
     metadata: {
       "materials": [
         "ball-material",
@@ -3078,7 +3424,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall08.glb",
-      "outputPath": "public/aura-assets/bankShotBall08.d52a8f8c.glb",
+      "outputPath": "public/aura-assets/bankShotBall08.2506f5ef.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3152,18 +3498,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall08",
-        "sha256": "sha256-0036917244f6ad05de365dbe6cb6ce93f231be011e2009430fbe9a32346ede8c",
-        "assetHash": "sha256-d52a8f8cc30060172be18ebe9b715eddd06c07e2c9a9693061c0105c6c60305a",
+        "sha256": "sha256-e5b4000a9688da7686f9a39c7d7eb6659bbff2e16ddd3bf22cea3c6efff51ac5",
+        "assetHash": "sha256-2506f5efcdc99242af9bed80c2ae0fbeaaf0ce889a2ec81b41bf648780962947",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 16,
-        "checkedAt": "2026-08-23T23:34:26.805Z",
+        "colorBuckets": 24,
+        "checkedAt": "2026-08-30T14:19:56.931Z",
         "foregroundBounds": {
-          "x": 209,
+          "x": 208,
           "y": 192,
-          "width": 331,
-          "height": 354
+          "width": 336,
+          "height": 341
         }
       }
     },
@@ -3171,14 +3517,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall09": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall09.d6aee254.glb",
-    hash: "sha256-d6aee2540e554956df6f06a92944c8dcf746f5ea473e0216737b9e46158cf8fa",
+    url: "/aura-assets/bankShotBall09.cbd77b2e.glb",
+    hash: "sha256-cbd77b2e07edaf8bb2decb065a7c72ad5052db9eb86af6ecc45c4e077d5822b2",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 41284,
+    sizeBytes: 85456,
     metadata: {
       "materials": [
         "caps-material",
@@ -3250,7 +3596,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall09.glb",
-      "outputPath": "public/aura-assets/bankShotBall09.d6aee254.glb",
+      "outputPath": "public/aura-assets/bankShotBall09.cbd77b2e.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3332,18 +3678,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall09",
-        "sha256": "sha256-9d1f16200ec476449666608c2e76884bda50405509dc961fe5e387508d50823e",
-        "assetHash": "sha256-d6aee2540e554956df6f06a92944c8dcf746f5ea473e0216737b9e46158cf8fa",
+        "sha256": "sha256-a6f611af38f194c62aadfb4adb62fadb41b10aec4d26d51d3fdc52543def5ca6",
+        "assetHash": "sha256-cbd77b2e07edaf8bb2decb065a7c72ad5052db9eb86af6ecc45c4e077d5822b2",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 35,
-        "checkedAt": "2026-08-23T23:34:30.755Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-08-30T14:20:01.645Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -3351,14 +3697,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall10": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall10.ebdeb8bc.glb",
-    hash: "sha256-ebdeb8bc907261007f55d8ae1f572f10cb62ef2bd664721717b6a0c90cd11af8",
+    url: "/aura-assets/bankShotBall10.6be79916.glb",
+    hash: "sha256-6be799163eb7dcd0e82430c79c993c5df8aea1f5594525fcb956b3b74d00f9d8",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 41608,
+    sizeBytes: 85780,
     metadata: {
       "materials": [
         "caps-material",
@@ -3430,7 +3776,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall10.glb",
-      "outputPath": "public/aura-assets/bankShotBall10.ebdeb8bc.glb",
+      "outputPath": "public/aura-assets/bankShotBall10.6be79916.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3512,18 +3858,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall10",
-        "sha256": "sha256-92335b70b26168e611562742db38377cde031195cb6377a663840442fa849bfd",
-        "assetHash": "sha256-ebdeb8bc907261007f55d8ae1f572f10cb62ef2bd664721717b6a0c90cd11af8",
+        "sha256": "sha256-689ce4fbf6192fa13c88f8890e8bb77411b03e63692a9398c119f441e755e106",
+        "assetHash": "sha256-6be799163eb7dcd0e82430c79c993c5df8aea1f5594525fcb956b3b74d00f9d8",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 31,
-        "checkedAt": "2026-08-23T23:34:34.603Z",
+        "colorBuckets": 26,
+        "checkedAt": "2026-08-30T14:20:04.874Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -3531,14 +3877,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall11": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall11.4db2efcc.glb",
-    hash: "sha256-4db2efcc9de3c32125e912eeea4af27553a3566c70bed593a9ea06739fcb302c",
+    url: "/aura-assets/bankShotBall11.6eccedab.glb",
+    hash: "sha256-6eccedab833882439c513e753ce5f2ee29e07133f7553b57fb6ee8bbd8c7b519",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 40936,
+    sizeBytes: 85108,
     metadata: {
       "materials": [
         "caps-material",
@@ -3610,7 +3956,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall11.glb",
-      "outputPath": "public/aura-assets/bankShotBall11.4db2efcc.glb",
+      "outputPath": "public/aura-assets/bankShotBall11.6eccedab.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3692,18 +4038,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall11",
-        "sha256": "sha256-579dacc0faa20b57d79802adbf1d3fcc8164ce6c9903be139d20efb16100116a",
-        "assetHash": "sha256-4db2efcc9de3c32125e912eeea4af27553a3566c70bed593a9ea06739fcb302c",
+        "sha256": "sha256-39fd694b2919205075ff3cb632f0a8ab693b924f9ac463778197d7bf7c54e2d5",
+        "assetHash": "sha256-6eccedab833882439c513e753ce5f2ee29e07133f7553b57fb6ee8bbd8c7b519",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 39,
-        "checkedAt": "2026-08-23T23:34:39.064Z",
+        "colorBuckets": 36,
+        "checkedAt": "2026-08-30T14:20:08.963Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -3711,14 +4057,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall12": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall12.da59c251.glb",
-    hash: "sha256-da59c251c48ff1eccfa19758951c9cf64be6f1d12e7b68ea3564141bee6223b8",
+    url: "/aura-assets/bankShotBall12.1daa296d.glb",
+    hash: "sha256-1daa296d5d5e8847402ea7457f37875b800605635198d074e4d5e8ba8958925f",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 41440,
+    sizeBytes: 85612,
     metadata: {
       "materials": [
         "caps-material",
@@ -3790,7 +4136,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall12.glb",
-      "outputPath": "public/aura-assets/bankShotBall12.da59c251.glb",
+      "outputPath": "public/aura-assets/bankShotBall12.1daa296d.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3872,18 +4218,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall12",
-        "sha256": "sha256-573c85a0c727257762cf28632022ec9b09e3d7ff171076bc583967fe1c379414",
-        "assetHash": "sha256-da59c251c48ff1eccfa19758951c9cf64be6f1d12e7b68ea3564141bee6223b8",
+        "sha256": "sha256-80d772d79330b4a49842772c2c7360d5351baed24872a401f98809dc9e0faa87",
+        "assetHash": "sha256-1daa296d5d5e8847402ea7457f37875b800605635198d074e4d5e8ba8958925f",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 29,
-        "checkedAt": "2026-08-23T23:34:43.230Z",
+        "colorBuckets": 27,
+        "checkedAt": "2026-08-30T14:20:15.424Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -3891,14 +4237,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall13": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall13.16b0f39e.glb",
-    hash: "sha256-16b0f39ef1d84dec924f949795d5488ffc6650e2a9f1df966b8fda6f4589a77e",
+    url: "/aura-assets/bankShotBall13.651f1dfa.glb",
+    hash: "sha256-651f1dfa4f109feb5ba3a96faa90cfc8c26d6a4c753f1a140b305cd328428759",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 41440,
+    sizeBytes: 85612,
     metadata: {
       "materials": [
         "caps-material",
@@ -3970,7 +4316,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall13.glb",
-      "outputPath": "public/aura-assets/bankShotBall13.16b0f39e.glb",
+      "outputPath": "public/aura-assets/bankShotBall13.651f1dfa.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4052,18 +4398,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall13",
-        "sha256": "sha256-711ac3b60375ab3296ed3f2c786f40ed7328c2a77b03b325d1c69657f2c5d235",
-        "assetHash": "sha256-16b0f39ef1d84dec924f949795d5488ffc6650e2a9f1df966b8fda6f4589a77e",
+        "sha256": "sha256-2153e48cb573791adffadacb23a9f4aa19d57dd5c08f43c75d4a021ae14368df",
+        "assetHash": "sha256-651f1dfa4f109feb5ba3a96faa90cfc8c26d6a4c753f1a140b305cd328428759",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 39,
-        "checkedAt": "2026-08-23T23:34:46.885Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-08-30T14:20:24.159Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -4071,14 +4417,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall14": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall14.920a6eb3.glb",
-    hash: "sha256-920a6eb321ee29cccec400e75e584959ec0e95b3d5ef49c7b18e41864ebbdcf4",
+    url: "/aura-assets/bankShotBall14.a1ef067c.glb",
+    hash: "sha256-a1ef067c6ba56e503a2e932bf574a441f6bbc08d574d98c3d2c33a23acfcbcb6",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 41272,
+    sizeBytes: 85444,
     metadata: {
       "materials": [
         "caps-material",
@@ -4150,7 +4496,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall14.glb",
-      "outputPath": "public/aura-assets/bankShotBall14.920a6eb3.glb",
+      "outputPath": "public/aura-assets/bankShotBall14.a1ef067c.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4232,18 +4578,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall14",
-        "sha256": "sha256-d5785dcf1dfb76023707763c3beb7aeeee183077e0e52621a56525cbbc60eff7",
-        "assetHash": "sha256-920a6eb321ee29cccec400e75e584959ec0e95b3d5ef49c7b18e41864ebbdcf4",
+        "sha256": "sha256-99e74821b8b0e39dde5a5bed8146f3327ab91e28add54f45bae6d32efb47c6a9",
+        "assetHash": "sha256-a1ef067c6ba56e503a2e932bf574a441f6bbc08d574d98c3d2c33a23acfcbcb6",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 33,
-        "checkedAt": "2026-08-23T23:34:51.313Z",
+        "colorBuckets": 29,
+        "checkedAt": "2026-08-30T14:20:29.407Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -4251,14 +4597,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall15": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall15.40fd0d17.glb",
-    hash: "sha256-40fd0d17fbe880ca3ad5d4d721c546575a4b7132acde5f59b8918a141caa16d0",
+    url: "/aura-assets/bankShotBall15.d13d8900.glb",
+    hash: "sha256-d13d890058b4afeeee547daf8c36bf79a57c3d407210ed76862f404582825f5e",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 41440,
+    sizeBytes: 85612,
     metadata: {
       "materials": [
         "caps-material",
@@ -4330,7 +4676,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall15.glb",
-      "outputPath": "public/aura-assets/bankShotBall15.40fd0d17.glb",
+      "outputPath": "public/aura-assets/bankShotBall15.d13d8900.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4412,18 +4758,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall15",
-        "sha256": "sha256-f949ccf63934384882514bf16509dcb036a1dbc44598ae6ed153dd49efa837a8",
-        "assetHash": "sha256-40fd0d17fbe880ca3ad5d4d721c546575a4b7132acde5f59b8918a141caa16d0",
+        "sha256": "sha256-04dfa94942940d0fab459f0df5ccd4534189edb4698c4992d99ad335bc1c44af",
+        "assetHash": "sha256-d13d890058b4afeeee547daf8c36bf79a57c3d407210ed76862f404582825f5e",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 31,
-        "checkedAt": "2026-08-23T23:34:56.337Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-08-30T14:20:33.314Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
-          "width": 331,
-          "height": 353
+          "width": 334,
+          "height": 340
         }
       }
     },
@@ -4770,7 +5116,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 17,
-        "checkedAt": "2026-08-23T23:33:45.766Z",
+        "checkedAt": "2026-08-30T14:18:32.367Z",
         "foregroundBounds": {
           "x": 163,
           "y": 127,
@@ -5420,20 +5766,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotTable": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotTable.5047e2d1.glb",
-    hash: "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2",
+    url: "/aura-assets/bankShotTable.760862a2.glb",
+    hash: "sha256-760862a24d8341beae8633dced02faf4f100f5b344f0164c3f7f019bf298097b",
     bounds: [
       3.26,
-      0.9,
-      1.96
+      0.924,
+      2
     ],
-    sizeBytes: 24292,
+    sizeBytes: 667316,
     metadata: {
       "materials": [
         "felt-material",
+        "felt-weave-material",
+        "cloth-markings-material",
         "rails-material",
+        "cushions-material",
+        "rail-trim-material",
+        "rail-veneer-material",
+        "rail-sights-material",
+        "apron-material",
         "legs-material",
-        "pocket-mouths-material"
+        "pocket-mouths-material",
+        "pocket-rims-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -5464,22 +5818,30 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 4,
-        "meshCount": 4,
-        "materialCount": 4,
+        "nodeCount": 12,
+        "meshCount": 12,
+        "materialCount": 12,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
           "felt",
+          "felt-weave",
+          "cloth-markings",
           "rails",
+          "cushions",
+          "rail-trim",
+          "rail-veneer",
+          "rail-sights",
+          "apron",
           "legs",
-          "pocket-mouths"
+          "pocket-mouths",
+          "pocket-rims"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 4 nodes across 4 roots."
+          "Detected 12 nodes across 12 roots."
         ]
       },
       "provenance": {
@@ -5499,28 +5861,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotTable.glb",
-      "outputPath": "public/aura-assets/bankShotTable.5047e2d1.glb",
+      "outputPath": "public/aura-assets/bankShotTable.760862a2.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
         "min": [
           -1.63,
           -0.78,
-          -0.98
+          -1
         ],
         "max": [
           1.63,
-          0.12,
-          0.98
+          0.144,
+          1
         ],
         "size": [
           3.26,
-          0.9,
-          1.96
+          0.924,
+          2
         ],
         "center": [
           0,
-          -0.33,
+          -0.318,
           0
         ],
         "maxDimension": 3.26,
@@ -5535,7 +5897,56 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
+          "name": "felt-weave-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "cloth-markings-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
           "name": "rails-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "cushions-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "rail-trim-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "rail-veneer-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "rail-sights-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "apron-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -5554,6 +5965,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "readable": true,
           "opacity": 1,
           "reasons": []
+        },
+        {
+          "name": "pocket-rims-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
         }
       ],
       "orientation": {
@@ -5566,33 +5984,41 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "nodeNames": [
         "felt",
+        "felt-weave",
+        "cloth-markings",
         "rails",
+        "cushions",
+        "rail-trim",
+        "rail-veneer",
+        "rail-sights",
+        "apron",
         "legs",
-        "pocket-mouths"
+        "pocket-mouths",
+        "pocket-rims"
       ],
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/bankShotTable.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 metre-scale readable gameplay prop with stylized flat-color green felt, walnut rails, six renderer-owned pocket mouths, and grounded legs for the fixed public Rapier play envelope.",
+      "suitabilityReason": "Original CC0 metre-scale readable gameplay prop with tournament-blue felt, cushioned walnut rails, six pocket mouths with authored collars, and grounded legs for the fixed public Rapier play envelope.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/bankShotTable.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotTable",
-        "sha256": "sha256-9878485b8b981baad6b80ab82bedbcac548fcbf4e8dff7af1b982069486214e7",
-        "assetHash": "sha256-5047e2d1aced42552182564da952d9f29d4e2f37036f412e63b141c49cdc44e2",
+        "sha256": "sha256-82bd56ff4074f749055ce90b78afde236c5a535bbd5446ea6e741ed4237b0ec2",
+        "assetHash": "sha256-760862a24d8341beae8633dced02faf4f100f5b344f0164c3f7f019bf298097b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 17,
-        "checkedAt": "2026-08-23T23:33:40.870Z",
+        "colorBuckets": 47,
+        "checkedAt": "2026-08-30T14:18:23.764Z",
         "foregroundBounds": {
-          "x": 85,
+          "x": 88,
           "y": 171,
-          "width": 559,
-          "height": 293
+          "width": 554,
+          "height": 290
         }
       }
     },
@@ -6569,6 +6995,164 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
+  "blockfallReactorArenaBackdrop": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/blockfallReactorArenaBackdrop.db37999e.glb",
+    hash: "sha256-db37999e59d40a6afb94cb8bf7bfe6252788e9aac0becedda9b7f0f5e1c05a6a",
+    bounds: [
+      16,
+      10.667,
+      0.16
+    ],
+    sizeBytes: 2439080,
+    metadata: {
+      "materials": [
+        "Blockfall Reactor Arena-unlit"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Blockfall Reactor Arena-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-blockfall-reactor/generated/blockfallReactorArena.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-arena.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-arena.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-arena.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-30T01:58:38.303Z",
+        "checkedAt": "2026-08-30T01:58:38.303Z"
+      },
+      "sourcePath": "apps/showcase-blockfall-reactor/generated/blockfallReactorArena.glb",
+      "outputPath": "public/aura-assets/blockfallReactorArenaBackdrop.db37999e.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -8,
+          -5.333,
+          -0.08
+        ],
+        "max": [
+          8,
+          5.333,
+          0.08
+        ],
+        "size": [
+          16,
+          10.667,
+          0.16
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 16,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Blockfall Reactor Arena-unlit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-db37999e59d40a6afb94cb8bf7bfe6252788e9aac0becedda9b7f0f5e1c05a6a",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T02:12:10.559Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorArenaBackdrop",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/blockfallReactorArenaBackdrop.png",
+          "sha256": "sha256-6d7d0c2e743d3e0385d6b5619866fa5fa486c59e877cec6ef441ba9e748d56b3",
+          "assetHash": "sha256-db37999e59d40a6afb94cb8bf7bfe6252788e9aac0becedda9b7f0f5e1c05a6a",
+          "checkedAt": "2026-08-30T02:12:10.559Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorArenaBackdrop"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "Blockfall Reactor Arena-card"
+      ],
+      "textures": [
+        "Blockfall Reactor Arena-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/blockfallReactorArenaBackdrop.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Decorative non-primary Blockfall Reactor championship arena background set dressing behind the live renderer-owned board; the card supplies no gameplay geometry, collision, scoring, or state.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/blockfallReactorArenaBackdrop.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorArenaBackdrop",
+        "sha256": "sha256-6d7d0c2e743d3e0385d6b5619866fa5fa486c59e877cec6ef441ba9e748d56b3",
+        "assetHash": "sha256-db37999e59d40a6afb94cb8bf7bfe6252788e9aac0becedda9b7f0f5e1c05a6a",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 413093,
+        "colorBuckets": 299,
+        "checkedAt": "2026-08-30T02:12:10.559Z",
+        "foregroundBounds": {
+          "x": 130,
+          "y": 208,
+          "width": 492,
+          "height": 328
+        }
+      }
+    },
+  },
   "blockfallReactorHumLoop": {
     type: "audio",
     format: "wav",
@@ -6648,6 +7232,328 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/blockfallReactorHumLoop.thumb.svg",
       "quality": "ungraded",
       "role": "unknown"
+    },
+  },
+  "blockfallReactorMechanicHero": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/blockfallReactorMechanicHero.e588d0f8.glb",
+    hash: "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+    bounds: [
+      0.667,
+      1,
+      0.04
+    ],
+    sizeBytes: 2047004,
+    metadata: {
+      "materials": [
+        "Blockfall Reactor Mechanic-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Blockfall Reactor Mechanic-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-blockfall-reactor/generated/blockfallReactorMechanic.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-mechanic.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-30T02:01:40.097Z",
+        "checkedAt": "2026-08-30T02:01:40.097Z"
+      },
+      "sourcePath": "apps/showcase-blockfall-reactor/generated/blockfallReactorMechanic.glb",
+      "outputPath": "public/aura-assets/blockfallReactorMechanicHero.e588d0f8.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.333,
+          -0.5,
+          -0.02
+        ],
+        "max": [
+          0.333,
+          0.5,
+          0.02
+        ],
+        "size": [
+          0.667,
+          1,
+          0.04
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Blockfall Reactor Mechanic-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "MASK",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T02:12:13.384Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorMechanicHero",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/blockfallReactorMechanicHero.png",
+          "sha256": "sha256-097a8eedcc0f759fe5e1884d71bacb8d4a53e0ab5c755ef6689c1fbc9f7f5160",
+          "assetHash": "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+          "checkedAt": "2026-08-30T02:12:13.384Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorMechanicHero"
+        },
+        "messages": [
+          "The project-original reactor mechanic is authored as a front-readable XY presentation card with its visible face toward +Z and head-up along +Y; the current hash-bound root probe verifies that static character presentation only."
+        ]
+      },
+      "nodeNames": [
+        "Blockfall Reactor Mechanic-card"
+      ],
+      "textures": [
+        "Blockfall Reactor Mechanic-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/blockfallReactorMechanicHero.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Project-original front-readable reactor mechanic used as decorative, non-primary character set dressing during a real quad event; gameplay remains entirely renderer-owned.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/blockfallReactorMechanicHero.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorMechanicHero",
+        "sha256": "sha256-097a8eedcc0f759fe5e1884d71bacb8d4a53e0ab5c755ef6689c1fbc9f7f5160",
+        "assetHash": "sha256-e588d0f862c7636cc35fc9a2a29e1a812410cba961455c34bb6e4d5b651d1f76",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 448863,
+        "colorBuckets": 186,
+        "checkedAt": "2026-08-30T02:12:13.384Z",
+        "foregroundBounds": {
+          "x": 239,
+          "y": 176,
+          "width": 288,
+          "height": 424
+        }
+      }
+    },
+  },
+  "blockfallReactorPlasmaRival": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/blockfallReactorPlasmaRival.d5855d54.glb",
+    hash: "sha256-d5855d542c967d7cbaebb6bf9ef0da0bb061bde9ace7751278b57ff5df2dd3a4",
+    bounds: [
+      0.937,
+      1,
+      0.04
+    ],
+    sizeBytes: 1692012,
+    metadata: {
+      "materials": [
+        "Blockfall Reactor Plasma Rival-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Blockfall Reactor Plasma Rival-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-blockfall-reactor/generated/blockfallReactorPlasmaRival.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-plasma-rival.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-plasma-rival.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-blockfall-reactor/assets/blockfall-reactor-plasma-rival.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-30T02:01:40.684Z",
+        "checkedAt": "2026-08-30T02:01:40.684Z"
+      },
+      "sourcePath": "apps/showcase-blockfall-reactor/generated/blockfallReactorPlasmaRival.glb",
+      "outputPath": "public/aura-assets/blockfallReactorPlasmaRival.d5855d54.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.469,
+          -0.5,
+          -0.02
+        ],
+        "max": [
+          0.469,
+          0.5,
+          0.02
+        ],
+        "size": [
+          0.937,
+          1,
+          0.04
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Blockfall Reactor Plasma Rival-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "MASK",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-d5855d542c967d7cbaebb6bf9ef0da0bb061bde9ace7751278b57ff5df2dd3a4",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T02:12:16.217Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorPlasmaRival",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/blockfallReactorPlasmaRival.png",
+          "sha256": "sha256-d01c1637a65c7cb0d4fb35e2539e84a33b6903f191873452dcce04d209786069",
+          "assetHash": "sha256-d5855d542c967d7cbaebb6bf9ef0da0bb061bde9ace7751278b57ff5df2dd3a4",
+          "checkedAt": "2026-08-30T02:12:16.217Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorPlasmaRival"
+        },
+        "messages": [
+          "The project-original plasma rival is authored as a front-readable XY presentation card with its visible face toward +Z and crown-up along +Y; the current hash-bound root probe verifies that static character presentation only."
+        ]
+      },
+      "nodeNames": [
+        "Blockfall Reactor Plasma Rival-card"
+      ],
+      "textures": [
+        "Blockfall Reactor Plasma Rival-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/blockfallReactorPlasmaRival.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Project-original front-readable plasma rival used as decorative, non-primary character set dressing during a real quad event; gameplay remains entirely renderer-owned.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/blockfallReactorPlasmaRival.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=blockfallReactorPlasmaRival",
+        "sha256": "sha256-d01c1637a65c7cb0d4fb35e2539e84a33b6903f191873452dcce04d209786069",
+        "assetHash": "sha256-d5855d542c967d7cbaebb6bf9ef0da0bb061bde9ace7751278b57ff5df2dd3a4",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451126,
+        "colorBuckets": 229,
+        "checkedAt": "2026-08-30T02:12:16.217Z",
+        "foregroundBounds": {
+          "x": 191,
+          "y": 189,
+          "width": 370,
+          "height": 401
+        }
+      }
     },
   },
   "blockfallRotateSfx": {
@@ -11126,18 +12032,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "deepRecoveryWreckHull": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/deepRecoveryWreckHull.c3091bcd.glb",
-    hash: "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+    url: "/aura-assets/deepRecoveryWreckHull.3942c3ce.glb",
+    hash: "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
     bounds: [
-      3.76,
-      2.8,
-      6.4
+      3.5,
+      1.54,
+      6.36
     ],
-    sizeBytes: 30228,
+    sizeBytes: 103304,
     metadata: {
       "materials": [
         "rustHull-mat",
-        "darkMetal-mat"
+        "darkMetal-mat",
+        "wornDeck-mat",
+        "survivingLamps-mat"
       ],
       "animations": [],
       "animationClips": [],
@@ -11168,24 +12076,26 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 2,
-        "meshCount": 2,
-        "materialCount": 2,
+        "nodeCount": 4,
+        "meshCount": 4,
+        "materialCount": 4,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
           "rustHull",
-          "darkMetal"
+          "darkMetal",
+          "wornDeck",
+          "survivingLamps"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 2 nodes across 2 roots."
+          "Detected 4 nodes across 4 roots."
         ]
       },
       "provenance": {
-        "sourcePath": "apps/showcase-deep-recovery/assets/models/deepRecoveryWreckHull.glb",
+        "sourcePath": "public/aura-assets/deepRecoveryWreckHull.3942c3ce.glb",
         "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-deep-recovery/scripts/build-models.mjs",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-deep-recovery/assets/models/deepRecoveryWreckHull.glb",
         "license": "CC0-1.0",
@@ -11200,32 +12110,32 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-08-24T04:00:00.000Z"
       },
-      "sourcePath": "apps/showcase-deep-recovery/assets/models/deepRecoveryWreckHull.glb",
-      "outputPath": "public/aura-assets/deepRecoveryWreckHull.c3091bcd.glb",
+      "sourcePath": "public/aura-assets/deepRecoveryWreckHull.3942c3ce.glb",
+      "outputPath": "public/aura-assets/deepRecoveryWreckHull.3942c3ce.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
         "min": [
-          -2,
-          0,
-          -3.2
+          -1.75,
+          -0.03,
+          -3.18
         ],
         "max": [
-          1.76,
-          2.8,
-          3.2
+          1.75,
+          1.51,
+          3.18
         ],
         "size": [
-          3.76,
-          2.8,
-          6.4
+          3.5,
+          1.54,
+          6.36
         ],
         "center": [
-          -0.12,
-          1.4,
+          0,
+          0.74,
           0
         ],
-        "maxDimension": 6.4,
+        "maxDimension": 6.36,
         "grounded": true
       },
       "materialMetadata": [
@@ -11242,6 +12152,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "readable": true,
           "opacity": 1,
           "reasons": []
+        },
+        {
+          "name": "wornDeck-mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "survivingLamps-mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
         }
       ],
       "orientation": {
@@ -11249,15 +12173,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+        "assetHash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-08-24T04:07:41.159Z",
+        "checkedAt": "2026-08-28T16:46:30.359Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=deepRecoveryWreckHull",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/deepRecoveryWreckHull.png",
-          "sha256": "sha256-151d9d393dce69e0e8b01be84985eb275c3f063e1267c0dcb2858b9053deecd4",
-          "assetHash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
-          "checkedAt": "2026-08-24T04:07:41.159Z",
+          "sha256": "sha256-3099398d72f3f057d80b458496f4c2c0d1c8994c3b8dc6396bc3324057588898",
+          "assetHash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
+          "checkedAt": "2026-08-28T16:46:30.359Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=deepRecoveryWreckHull"
         },
         "messages": [
@@ -11266,7 +12190,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "nodeNames": [
         "rustHull",
-        "darkMetal"
+        "darkMetal",
+        "wornDeck",
+        "survivingLamps"
       ],
       "textures": [],
       "dependencies": [],
@@ -11279,18 +12205,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=deepRecoveryWreckHull",
-        "sha256": "sha256-151d9d393dce69e0e8b01be84985eb275c3f063e1267c0dcb2858b9053deecd4",
-        "assetHash": "sha256-c3091bcd01a93a813e79b4462d43c995efc3407ce70c9f7b8698f2f62c950b6b",
+        "sha256": "sha256-3099398d72f3f057d80b458496f4c2c0d1c8994c3b8dc6396bc3324057588898",
+        "assetHash": "sha256-3942c3ce993f28394d6c79227ee48329e1e566a35fdba602bf1319e1048ceb3b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 19,
-        "checkedAt": "2026-08-24T04:07:41.159Z",
+        "colorBuckets": 32,
+        "checkedAt": "2026-08-28T16:46:30.359Z",
         "foregroundBounds": {
-          "x": 148,
-          "y": 152,
-          "width": 436,
-          "height": 324
+          "x": 169,
+          "y": 183,
+          "width": 394,
+          "height": 230
         }
       }
     },
@@ -11657,6 +12583,298 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Caught-state transition cue."
+    },
+  },
+  "galleryShiftCutawayMuseumWorld": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/galleryShiftCutawayMuseumWorld.d7b2bcd6.glb",
+    hash: "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
+    bounds: [
+      20.84,
+      2.03,
+      14.84
+    ],
+    sizeBytes: 1068488,
+    metadata: {
+      "materials": [
+        "Aged Brass Wayfinding",
+        "Archive Smoked Oak",
+        "Cobalt Artwork",
+        "Exit Jade Light",
+        "Foyer Terrazzo",
+        "Graphite Wall Caps",
+        "Limestone Walls",
+        "Museum Bronze",
+        "Rotunda Ivory Marble",
+        "Shadow Gap Floor",
+        "Travertine Plinths",
+        "Treasury Garnet Carpet",
+        "Vault Blue Slate",
+        "Walnut Furniture"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 14,
+        "meshCount": 14,
+        "materialCount": 14,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Museum_Aged_Brass_Wayfinding",
+          "Museum_Archive_Smoked_Oak",
+          "Museum_Cobalt_Artwork",
+          "Museum_Exit_Jade_Light",
+          "Museum_Foyer_Terrazzo",
+          "Museum_Graphite_Wall_Caps",
+          "Museum_Limestone_Walls",
+          "Museum_Museum_Bronze",
+          "Museum_Rotunda_Ivory_Marble",
+          "Museum_Shadow_Gap_Floor",
+          "Museum_Travertine_Plinths",
+          "Museum_Treasury_Garnet_Carpet",
+          "Museum_Vault_Blue_Slate",
+          "Museum_Walnut_Furniture"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 14 nodes across 14 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/galleryShiftMuseumWorldCandidate.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/generate_museum_world.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gallery-shift/art-candidates/museum-world-aug31/galleryShiftMuseumWorldCandidate.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D original synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D original synthesis — CC0 Gallery Shift cutaway museum world",
+        "retrievedAt": "2026-08-31T23:50:43.000Z",
+        "evidence": [
+          "Deterministically generated roofless +Y-up metre-scale museum matching the Gallery Shift Floor 1 footprint; FloorLayout remains gameplay authority."
+        ],
+        "checkedAt": "2026-08-31T23:50:43.000Z"
+      },
+      "sourcePath": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/galleryShiftMuseumWorldCandidate.glb",
+      "outputPath": "public/aura-assets/galleryShiftCutawayMuseumWorld.d7b2bcd6.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D original synthesis",
+      "boundsMetadata": {
+        "min": [
+          -10.42,
+          -0.22,
+          -7.42
+        ],
+        "max": [
+          10.42,
+          1.81,
+          7.42
+        ],
+        "size": [
+          20.84,
+          2.03,
+          14.84
+        ],
+        "center": [
+          0,
+          0.795,
+          0
+        ],
+        "maxDimension": 20.84,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Aged Brass Wayfinding",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Archive Smoked Oak",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Cobalt Artwork",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Exit Jade Light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Foyer Terrazzo",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Graphite Wall Caps",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Limestone Walls",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Museum Bronze",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Rotunda Ivory Marble",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Shadow Gap Floor",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Travertine Plinths",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Treasury Garnet Carpet",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Vault Blue Slate",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Walnut Furniture",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T02:44:32.896Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=galleryShiftCutawayMuseumWorld",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/galleryShiftCutawayMuseumWorld.png",
+          "sha256": "sha256-327ae03ca063eda9795dbee929403833e4729d6ace5eba1f141931717c74e448",
+          "assetHash": "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
+          "checkedAt": "2026-09-01T02:44:32.896Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=galleryShiftCutawayMuseumWorld"
+        },
+        "messages": [
+          "The original CC0 cutaway museum is presented +Y-up and roofless at authored metre scale. It proves visual rooms, door gaps, plinths, layered floors, and the exit landmark only; FloorLayout remains collision, perception, patrol, network, and gameplay authority."
+        ]
+      },
+      "nodeNames": [
+        "Museum_Aged_Brass_Wayfinding",
+        "Museum_Archive_Smoked_Oak",
+        "Museum_Cobalt_Artwork",
+        "Museum_Exit_Jade_Light",
+        "Museum_Foyer_Terrazzo",
+        "Museum_Graphite_Wall_Caps",
+        "Museum_Limestone_Walls",
+        "Museum_Museum_Bronze",
+        "Museum_Rotunda_Ivory_Marble",
+        "Museum_Shadow_Gap_Floor",
+        "Museum_Travertine_Plinths",
+        "Museum_Treasury_Garnet_Carpet",
+        "Museum_Vault_Blue_Slate",
+        "Museum_Walnut_Furniture"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/galleryShiftCutawayMuseumWorld.thumb.svg",
+      "quality": "release",
+      "role": "environment",
+      "suitabilityReason": "Original CC0 stylized-material roofless museum world: fourteen authored untextured PBR material groups deliberately use limestone, graphite, terrazzo, marble, smoked oak, garnet carpet, blue slate, brass, walnut, travertine, bronze, jade emissive, and cobalt artwork color/roughness/metallic contrast as an explicit stylized-material rationale; texture-free materials are intentional. FloorLayout remains collision, LOS, patrol, network, objective, and gameplay authority.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/galleryShiftCutawayMuseumWorld.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=galleryShiftCutawayMuseumWorld",
+        "sha256": "sha256-327ae03ca063eda9795dbee929403833e4729d6ace5eba1f141931717c74e448",
+        "assetHash": "sha256-d7b2bcd626bdaa419df19dd39216400ed01cc4bd1abb71cee27c2425a76c813b",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 72,
+        "checkedAt": "2026-09-01T02:44:32.896Z",
+        "foregroundBounds": {
+          "x": 125,
+          "y": 130,
+          "width": 502,
+          "height": 332
+        }
+      }
     },
   },
   "galleryShiftDisplayCase": {
@@ -12776,18 +13994,30 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "galleryShiftMuseumInterior": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/galleryShiftMuseumInterior.3085220a.glb",
-    hash: "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+    url: "/aura-assets/galleryShiftMuseumInterior.6d4cfa05.glb",
+    hash: "sha256-6d4cfa0543df3a9792022addc9abd0836671db1a4f467d48569ca5304566e64c",
     bounds: [
       20.8,
       4.1,
       14.8
     ],
-    sizeBytes: 19544,
+    sizeBytes: 151412,
     metadata: {
       "materials": [
         "floorSlab-material",
+        "foyerFloor-material",
+        "rotundaFloor-material",
+        "archiveFloor-material",
+        "treasuryFloor-material",
+        "vaultFloor-material",
+        "floorMosaics-material",
         "walls-material",
+        "brassTrim-material",
+        "galleryFurniture-material",
+        "exhibitCoves-material",
+        "archiveShelves-material",
+        "accentFrames-material",
+        "columns-material",
         "skylights-material"
       ],
       "animations": [],
@@ -12819,21 +14049,33 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 3,
-        "meshCount": 3,
-        "materialCount": 3,
+        "nodeCount": 15,
+        "meshCount": 15,
+        "materialCount": 15,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
           "floorSlab",
+          "foyerFloor",
+          "rotundaFloor",
+          "archiveFloor",
+          "treasuryFloor",
+          "vaultFloor",
+          "floorMosaics",
           "walls",
+          "brassTrim",
+          "galleryFurniture",
+          "exhibitCoves",
+          "archiveShelves",
+          "accentFrames",
+          "columns",
           "skylights"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 3 nodes across 3 roots."
+          "Detected 15 nodes across 15 roots."
         ]
       },
       "provenance": {
@@ -12853,7 +14095,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-24T02:00:00.000Z"
       },
       "sourcePath": "apps/showcase-gallery-shift/assets/models/galleryShiftMuseumInterior.glb",
-      "outputPath": "public/aura-assets/galleryShiftMuseumInterior.3085220a.glb",
+      "outputPath": "public/aura-assets/galleryShiftMuseumInterior.6d4cfa05.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -12889,7 +14131,91 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
+          "name": "foyerFloor-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "rotundaFloor-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "archiveFloor-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "treasuryFloor-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "vaultFloor-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "floorMosaics-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
           "name": "walls-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "brassTrim-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "galleryFurniture-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "exhibitCoves-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "archiveShelves-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "accentFrames-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "columns-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -12908,15 +14234,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+        "assetHash": "sha256-6d4cfa0543df3a9792022addc9abd0836671db1a4f467d48569ca5304566e64c",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-08-24T03:07:04.815Z",
+        "checkedAt": "2026-08-31T11:18:12.988Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=galleryShiftMuseumInterior",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/galleryShiftMuseumInterior.png",
-          "sha256": "sha256-7b658abce7de8561023065af90931d1541041465a10bdbeac60177088a57319f",
-          "assetHash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
-          "checkedAt": "2026-08-24T03:07:04.815Z",
+          "sha256": "sha256-953f1204e15d4aed06d2b6aed90fb3a5fc02d72b4c70c61331a7a55ab4b542a3",
+          "assetHash": "sha256-6d4cfa0543df3a9792022addc9abd0836671db1a4f467d48569ca5304566e64c",
+          "checkedAt": "2026-08-31T11:18:12.988Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=galleryShiftMuseumInterior"
         },
         "messages": [
@@ -12925,7 +14251,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "nodeNames": [
         "floorSlab",
+        "foyerFloor",
+        "rotundaFloor",
+        "archiveFloor",
+        "treasuryFloor",
+        "vaultFloor",
+        "floorMosaics",
         "walls",
+        "brassTrim",
+        "galleryFurniture",
+        "exhibitCoves",
+        "archiveShelves",
+        "accentFrames",
+        "columns",
         "skylights"
       ],
       "textures": [],
@@ -12933,19 +14271,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/galleryShiftMuseumInterior.thumb.svg",
       "quality": "release",
       "role": "environment",
-      "suitabilityReason": "Original CC0 metre-scale stylized flat-color museum environment establishing the Marble Hall floor, walls, partitions, cover, and service-exit route; visible geometry is paired with matching route-local colliders.",
+      "suitabilityReason": "Original CC0 metre-scale stylized flat-color museum environment establishing differentiated foyer, rotunda, archive, treasury, and service-vault rooms with readable portal circulation, exhibit coves, and illumination anchors. Its intentional untextured procedural materials are a stylized-material rationale; FloorLayout remains collision and LOS authority.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/galleryShiftMuseumInterior.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=galleryShiftMuseumInterior",
-        "sha256": "sha256-7b658abce7de8561023065af90931d1541041465a10bdbeac60177088a57319f",
-        "assetHash": "sha256-3085220a88eaca14a541575187e535460c1939afea4a70422fd686b81fb27200",
+        "sha256": "sha256-953f1204e15d4aed06d2b6aed90fb3a5fc02d72b4c70c61331a7a55ab4b542a3",
+        "assetHash": "sha256-6d4cfa0543df3a9792022addc9abd0836671db1a4f467d48569ca5304566e64c",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 13,
-        "checkedAt": "2026-08-24T03:07:04.815Z",
+        "colorBuckets": 35,
+        "checkedAt": "2026-08-31T11:18:12.988Z",
         "foregroundBounds": {
           "x": 92,
           "y": 113,
@@ -13790,13 +15128,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "provenance": {
         "sourcePath": "public/aura-assets/gravityPostDockBeacon.171e21cb.glb",
         "sourcePage": "https://sketchfab.com/3d-models/f23b484cda664f1cb91b4f62ea5ef8bf",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-054/f23b484cda664f1cb91b4f62ea5ef8bf.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-054/f23b484cda664f1cb91b4f62ea5ef8bf",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-054/f23b484cda664f1cb91b4f62ea5ef8bf.glb",
-        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "license": "CC-BY-4.0",
         "licenseName": "CC-BY-4.0",
-        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
-        "author": "DjalalxJay (https://sketchfab.com/djalalxjay)",
+        "author": "DjalalxJay",
         "sourceFamily": "objaverse",
         "attribution": "DjalalxJay",
         "sha256": "sha256-171e21cba4f1cca3abeaaa58ec54c3e672274d719bd1e5a7318e3ef681c72a14",
@@ -13863,8 +15201,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "sourcePath": "public/aura-assets/gravityPostDockBeacon.171e21cb.glb",
       "outputPath": "public/aura-assets/gravityPostDockBeacon.171e21cb.glb",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "author": "DjalalxJay (https://sketchfab.com/djalalxjay)",
+      "license": "CC-BY-4.0",
+      "author": "DjalalxJay",
       "boundsMetadata": {
         "min": [
           -5.193,
@@ -14013,7 +15351,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/gravityPostDockBeacon.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Release-validated typed textured dock landmark with readable body and solar panels, retained root-safe rendered probe, current bounds, and durable CC-BY provenance; no physical satellite behavior claim.",
+      "suitabilityReason": "Typed textured dock landmark with readable body and solar-panel silhouette, current manifest bounds, durable CC-BY provenance, and route-authored static presentation; no physical satellite behavior claim.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/gravityPostDockBeacon.png",
         "kind": "browser-screenshot",
@@ -15654,6 +16992,241 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Resolved catalog candidate; release validation and rendered-probe proof are still required."
     },
   },
+  "gravityPostFreightDistrict": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravityPostFreightDistrict.cb33a415.glb",
+    hash: "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+    bounds: [
+      15.985,
+      9.898,
+      16.056
+    ],
+    sizeBytes: 1339888,
+    metadata: {
+      "materials": [
+        "GPFD amber hazard",
+        "GPFD cargo blue",
+        "GPFD cargo cream",
+        "GPFD cyan guidance",
+        "GPFD deck graphite",
+        "GPFD machinery navy",
+        "GPFD operations glass",
+        "GPFD oxidized cargo cladding",
+        "GPFD structural alloy"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 10,
+        "meshCount": 9,
+        "materialCount": 9,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "GravityPostFreightDistrict_ROOT"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 10 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-freight-district.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Gravity Post freight district",
+        "retrievedAt": "2026-08-31T23:40:00.000Z",
+        "evidence": [
+          "Generated in Blender 5.2.1 from the committed route-local Python source. Nine merged material groups retain the connected deck, rails, loading hangar, gantry crane, cargo, tank farm, and terminal architecture; the asset owns no collision or gameplay."
+        ],
+        "checkedAt": "2026-08-31T23:40:00.000Z"
+      },
+      "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostFreightDistrict.candidate.glb",
+      "outputPath": "public/aura-assets/gravityPostFreightDistrict.cb33a415.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -4.825,
+          -2.05,
+          -7.806
+        ],
+        "max": [
+          11.16,
+          7.848,
+          8.25
+        ],
+        "size": [
+          15.985,
+          9.898,
+          16.056
+        ],
+        "center": [
+          3.167,
+          2.899,
+          0.222
+        ],
+        "maxDimension": 16.056,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "GPFD amber hazard",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD cargo blue",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD cargo cream",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD cyan guidance",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD deck graphite",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD machinery navy",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD operations glass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD oxidized cargo cladding",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPFD structural alloy",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+X",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T00:13:34.143Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostFreightDistrict",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.png",
+          "sha256": "sha256-a1d9bc4f4ee42af6fde4943e00cd3bd2be36ec145e1e66be712c5adab7e16f86",
+          "assetHash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+          "checkedAt": "2026-09-01T00:13:34.143Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostFreightDistrict"
+        },
+        "messages": [
+          "The original static Gravity Post freight district is authored +Y-up with its connected Rust-to-Gale deck extending along +X. The hash-bound probe proves its nine-material loading hangar, crane, cargo, tank-farm, rail, and terminal architecture only; route-local pod motion, gravity wells, sensors, collision, scoring, and camera remain authoritative."
+        ]
+      },
+      "nodeNames": [
+        "GPFD_amber_hazard",
+        "GPFD_cargo_blue",
+        "GPFD_cargo_cream",
+        "GPFD_cyan_guidance",
+        "GPFD_deck_graphite",
+        "GPFD_machinery_navy",
+        "GPFD_operations_glass",
+        "GPFD_oxidized_cargo_cladding",
+        "GPFD_structural_alloy",
+        "GravityPostFreightDistrict_ROOT"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravityPostFreightDistrict.thumb.svg",
+      "quality": "release",
+      "role": "world",
+      "suitabilityReason": "Original CC0 +Y-up, +X-forward non-colliding freight world authored at a gameplay-scale footprint and fitted to the real Rust Exchange to Gale Terminal vector. Its intentionally stylized flat-color procedural materials provide nine readable color-separated groups without texture dependencies: connected chamfered deck, service rails, dispatch building, gabled loading hangar, articulated crane, cargo modules, tank farm, and asymmetric terminal/dock destination. Route-local pod motion, wells, dock sensors, collision, scoring, and camera remain authoritative.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostFreightDistrict",
+        "sha256": "sha256-a1d9bc4f4ee42af6fde4943e00cd3bd2be36ec145e1e66be712c5adab7e16f86",
+        "assetHash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 60,
+        "checkedAt": "2026-09-01T00:13:34.143Z",
+        "foregroundBounds": {
+          "x": 182,
+          "y": 170,
+          "width": 394,
+          "height": 302
+        }
+      }
+    },
+  },
   "gravityPostLaunchWhooshSfx": {
     type: "audio",
     format: "wav",
@@ -15742,18 +17315,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "gravityPostMailPod": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/gravityPostMailPod.e24dfcca.glb",
-    hash: "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
+    url: "/aura-assets/gravityPostMailPod.bddb3981.glb",
+    hash: "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
     bounds: [
-      2.25,
-      2.014,
-      1.718
+      0.988,
+      0.993,
+      3.576
     ],
-    sizeBytes: 7073952,
+    sizeBytes: 8069452,
     metadata: {
       "materials": [
-        "material",
-        "material_1"
+        "parts",
+        "body"
       ],
       "animations": [],
       "animationClips": [],
@@ -15765,7 +17338,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "humanoid": false,
-      "humanoidStatus": "non-humanoid",
+      "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "skeleton": {
         "skinCount": 0,
@@ -15784,50 +17357,50 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 5,
-        "meshCount": 2,
+        "nodeCount": 273,
+        "meshCount": 116,
         "materialCount": 2,
-        "textureCount": 7,
+        "textureCount": 8,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
           "Sketchfab_model"
         ],
-        "maxDepth": 4,
+        "maxDepth": 9,
         "messages": [
-          "Detected 5 nodes across 1 root."
+          "Detected 273 nodes across 1 root."
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/gravityPostMailPod.e24dfcca.glb",
-        "sourcePage": "https://sketchfab.com/3d-models/b158f01dd4a9416fb689ca4401856e7a",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-011/b158f01dd4a9416fb689ca4401856e7a.glb",
-        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-011/b158f01dd4a9416fb689ca4401856e7a.glb",
-        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "sourcePath": "public/aura-assets/gravityPostMailPod.bddb3981.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/781e531c00d94c9e89dcc8ad9b967d87",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-087/781e531c00d94c9e89dcc8ad9b967d87.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-087/781e531c00d94c9e89dcc8ad9b967d87.glb",
+        "license": "CC-BY-4.0",
         "licenseName": "CC-BY-4.0",
-        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
         "licenseRaw": "CC-BY-4.0",
-        "author": "futaba@blender (https://sketchfab.com/futaba_blender)",
+        "author": "박용진",
         "sourceFamily": "objaverse",
-        "attribution": "futaba@blender",
-        "sha256": "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
-        "retrievedAt": "2026-08-21T22:51:50.594Z",
+        "attribution": "박용진",
+        "sha256": "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
+        "retrievedAt": "2026-08-28T20:40:04.432Z",
         "resolveCandidate": {
-          "catalogId": "objaverse:b158f01dd4a9416fb689ca4401856e7a",
-          "query": "small sci-fi cargo pod capsule",
+          "catalogId": "objaverse:781e531c00d94c9e89dcc8ad9b967d87",
+          "query": "stylized spaceship",
           "source": "objaverse",
           "sourceFamily": "objaverse",
-          "scoreTotal": 1.23,
+          "scoreTotal": 0,
           "scoreBreakdown": {
-            "semantic": 11.23,
+            "semantic": 9.72,
             "sourceQuality": 14,
             "license": 13,
             "inspection": 0,
             "roleFit": 0
           },
           "reasons": [
-            "semantic/source score 11.23",
+            "semantic/source score 9.72",
             "download URL preserved",
             "author/attribution preserved",
             "verified CC-BY-4.0 license"
@@ -15838,21 +17411,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "missing bounds/dimensions metadata",
             "missing material metadata for visual model role"
           ],
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-011/b158f01dd4a9416fb689ca4401856e7a.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-087/781e531c00d94c9e89dcc8ad9b967d87.glb",
           "license": "CC-BY-4.0",
           "licenseName": "CC-BY-4.0",
           "licenseRaw": "CC-BY-4.0",
-          "author": "futaba@blender",
-          "attribution": "futaba@blender",
-          "semanticScore": 0.7336619036946398,
+          "author": "박용진",
+          "attribution": "박용진",
+          "semanticScore": 0.8193685136671446,
           "postDownloadInspection": {
             "bounds": [
-              2.25,
-              2.014,
-              1.718
+              0.988,
+              0.993,
+              3.576
             ],
             "materialCount": 2,
-            "textureCount": 7,
+            "textureCount": 8,
             "animationClipCount": 0,
             "skinCount": 0,
             "morphTargetCount": 0,
@@ -15861,60 +17434,59 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             ]
           },
           "rawCatalogMetadata": {
-            "id": "objaverse:b158f01dd4a9416fb689ca4401856e7a",
-            "title": "Sci-Fi Personal Space Pod Ship(weekly challenge)",
+            "id": "objaverse:781e531c00d94c9e89dcc8ad9b967d87",
+            "title": "spaceship",
             "source": "objaverse",
-            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-011/b158f01dd4a9416fb689ca4401856e7a.glb",
+            "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-087/781e531c00d94c9e89dcc8ad9b967d87.glb",
             "license": "CC-BY-4.0",
-            "thumbnail": "https://media.sketchfab.com/models/b158f01dd4a9416fb689ca4401856e7a/thumbnails/57397de52f2843be8fd160bdd3b02a92/fe16cbf75d27450782a67ba6b21e642b.jpeg",
-            "attribution": "futaba@blender",
-            "score": 0.7336619036946398
+            "thumbnail": "https://media.sketchfab.com/models/781e531c00d94c9e89dcc8ad9b967d87/thumbnails/524dda522498456e871f19f03baaf682/6ae75fe6744243149510e74c1101c948.jpeg",
+            "attribution": "박용진",
+            "score": 0.8193685136671446
           }
         },
-        "checkedAt": "2026-08-21T22:51:50.594Z"
+        "checkedAt": "2026-08-28T20:40:04.432Z"
       },
-      "sourcePath": "public/aura-assets/gravityPostMailPod.e24dfcca.glb",
-      "outputPath": "public/aura-assets/gravityPostMailPod.e24dfcca.glb",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "author": "futaba@blender (https://sketchfab.com/futaba_blender)",
+      "sourcePath": "public/aura-assets/gravityPostMailPod.bddb3981.glb",
+      "outputPath": "public/aura-assets/gravityPostMailPod.bddb3981.glb",
+      "license": "CC-BY-4.0",
+      "author": "박용진",
       "boundsMetadata": {
         "min": [
-          -0.898,
-          -0.226,
-          -0.317
+          -0.494,
+          -0.215,
+          -2.652
         ],
         "max": [
-          1.353,
-          1.788,
-          1.401
+          0.494,
+          0.778,
+          0.924
         ],
         "size": [
-          2.25,
-          2.014,
-          1.718
+          0.988,
+          0.993,
+          3.576
         ],
         "center": [
-          0.228,
-          0.781,
-          0.542
+          0,
+          0.281,
+          -0.864
         ],
-        "maxDimension": 2.25,
+        "maxDimension": 3.576,
         "grounded": false
       },
       "materialMetadata": [
         {
-          "name": "material",
+          "name": "parts",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "material_1",
+          "name": "body",
           "visible": true,
           "readable": true,
           "opacity": 1,
-          "alphaMode": "BLEND",
           "reasons": []
         }
       ],
@@ -15923,15 +17495,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
+        "assetHash": "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-08-23T19:59:41.810Z",
+        "checkedAt": "2026-08-28T20:46:07.124Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostMailPod",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/gravityPostMailPod.png",
-          "sha256": "sha256-6052d1ea324fbcc6f2e59cb3577f732b4bb53688fb442982df6867675bdf3069",
-          "assetHash": "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
-          "checkedAt": "2026-08-23T19:59:41.810Z",
+          "sha256": "sha256-db67b5e9b7def2614c301865892fac8ae87f20693f928155aa20e6203bc96b70",
+          "assetHash": "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
+          "checkedAt": "2026-08-28T20:46:07.124Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostMailPod"
         },
         "messages": [
@@ -15940,10 +17512,278 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "nodeNames": [
         "Sketchfab_model",
-        "Collada visual scene group",
-        "Sphere.152_copy_low",
-        "defaultMaterial",
-        "defaultMaterial"
+        "playship2F.FBX",
+        "RootNode",
+        "Object239",
+        "Object239_parts_0",
+        "Object329",
+        "Object329_parts_0",
+        "Object232",
+        "Object_8",
+        "Object232_parts_0",
+        "Object234",
+        "Object_11",
+        "Object234_parts_0",
+        "gun barrel014",
+        "Object_14",
+        "gun barrel014_parts_0",
+        "laser_turret010",
+        "laser_turret010_parts_0",
+        "Object313",
+        "Object313_parts_0",
+        "laser011",
+        "laser011_parts_0",
+        "rail_turret008",
+        "rail_turret008_parts_0",
+        "rail031",
+        "rail031_parts_0",
+        "rail032",
+        "rail032_parts_0",
+        "rail065",
+        "rail065_parts_0",
+        "rail066",
+        "rail066_parts_0",
+        "Object312",
+        "Object312_body_0",
+        "missle002",
+        "missle002_parts_0",
+        "missle_door004",
+        "missle_door004_parts_0",
+        "Object331",
+        "Object_39",
+        "Object331_parts_0",
+        "missle_door005",
+        "missle_door005_parts_0",
+        "rail_turret016",
+        "rail_turret016_parts_0",
+        "rail067",
+        "rail067_parts_0",
+        "rail068",
+        "rail068_parts_0",
+        "rail069",
+        "rail069_parts_0",
+        "rail070",
+        "rail070_parts_0",
+        "rail_turret017",
+        "rail_turret017_parts_0",
+        "rail071",
+        "rail071_parts_0",
+        "rail072",
+        "rail072_parts_0",
+        "rail073",
+        "rail073_parts_0",
+        "rail074",
+        "rail074_parts_0",
+        "rail_turret018",
+        "rail_turret018_parts_0",
+        "rail075",
+        "rail075_parts_0",
+        "rail076",
+        "rail076_parts_0",
+        "rail077",
+        "rail077_parts_0",
+        "rail078",
+        "rail078_parts_0",
+        "rail_turret019",
+        "rail_turret019_parts_0",
+        "rail079",
+        "rail079_parts_0",
+        "rail080",
+        "rail080_parts_0",
+        "rail081",
+        "rail081_parts_0",
+        "rail082",
+        "rail082_parts_0",
+        "Object382",
+        "Object382_parts_0",
+        "Object380",
+        "Object_86",
+        "Object380_parts_0",
+        "Object381",
+        "Object_89",
+        "Object381_parts_0",
+        "gun barrel015",
+        "Object_92",
+        "gun barrel015_parts_0",
+        "Group001",
+        "Cylinder246",
+        "Cylinder246_parts_0",
+        "Object354",
+        "Object_98",
+        "Object354_parts_0",
+        "Cylinder253",
+        "Cylinder253_parts_0",
+        "Object383",
+        "Object_103",
+        "Object383_parts_0",
+        "Cylinder254",
+        "Cylinder254_parts_0",
+        "Object384",
+        "Object_108",
+        "Object384_parts_0",
+        "Cylinder255",
+        "Cylinder255_parts_0",
+        "Object385",
+        "Object_113",
+        "Object385_parts_0",
+        "Cylinder256",
+        "Cylinder256_parts_0",
+        "Object386",
+        "Object_118",
+        "Object386_parts_0",
+        "Cylinder257",
+        "Cylinder257_parts_0",
+        "Object387",
+        "Object_123",
+        "Object387_parts_0",
+        "Cylinder258",
+        "Cylinder258_parts_0",
+        "Object388",
+        "Object_128",
+        "Object388_parts_0",
+        "Cylinder259",
+        "Cylinder259_parts_0",
+        "Object389",
+        "Object_133",
+        "Object389_parts_0",
+        "Cylinder260",
+        "Cylinder260_parts_0",
+        "Object390",
+        "Object_138",
+        "Object390_parts_0",
+        "Cylinder261",
+        "Cylinder261_parts_0",
+        "Object391",
+        "Object_143",
+        "Object391_parts_0",
+        "Cylinder262",
+        "Cylinder262_parts_0",
+        "Object392",
+        "Object_148",
+        "Object392_parts_0",
+        "Cylinder263",
+        "Cylinder263_parts_0",
+        "Object393",
+        "Object_153",
+        "Object393_parts_0",
+        "laser_turret013",
+        "laser_turret013_parts_0",
+        "Object394",
+        "Object394_parts_0",
+        "laser014",
+        "laser014_parts_0",
+        "laser_turret014",
+        "laser_turret014_parts_0",
+        "Object395",
+        "Object395_parts_0",
+        "laser015",
+        "laser015_parts_0",
+        "laser_turret015",
+        "laser_turret015_parts_0",
+        "Object396",
+        "Object396_parts_0",
+        "laser016",
+        "laser016_parts_0",
+        "laser_turret016",
+        "laser_turret016_parts_0",
+        "Object397",
+        "Object397_parts_0",
+        "laser017",
+        "laser017_parts_0",
+        "laser_turret017",
+        "laser_turret017_parts_0",
+        "Object398",
+        "Object398_parts_0",
+        "laser018",
+        "laser018_parts_0",
+        "Object378",
+        "Object378_body_0",
+        "engine002",
+        "Object_188",
+        "engine002_parts_0",
+        "Rudder016",
+        "Object_191",
+        "Rudder016_parts_0",
+        "Rudder019",
+        "Object_194",
+        "Rudder019_parts_0",
+        "Rudder020",
+        "Object_197",
+        "Rudder020_parts_0",
+        "Rudder018",
+        "Object_200",
+        "Rudder018_parts_0",
+        "engine003",
+        "Object_203",
+        "engine003_parts_0",
+        "Rudder021",
+        "Object_206",
+        "Rudder021_parts_0",
+        "Rudder022",
+        "Object_209",
+        "Rudder022_parts_0",
+        "Rudder023",
+        "Object_212",
+        "Rudder023_parts_0",
+        "Rudder024",
+        "Object_215",
+        "Rudder024_parts_0",
+        "Object377",
+        "Object377_body_0",
+        "Object373",
+        "Object373_parts_0",
+        "Object375",
+        "Object375_body_0",
+        "Object369",
+        "Object369_parts_0",
+        "Object367",
+        "Object367_parts_0",
+        "engine004",
+        "engine004_parts_0",
+        "Rudder025",
+        "Object_230",
+        "Rudder025_parts_0",
+        "Rudder026",
+        "Object_233",
+        "Rudder026_parts_0",
+        "Rudder027",
+        "Object_236",
+        "Rudder027_parts_0",
+        "Rudder028",
+        "Object_239",
+        "Rudder028_parts_0",
+        "engine005",
+        "engine005_parts_0",
+        "Rudder029",
+        "Object_244",
+        "Rudder029_parts_0",
+        "Rudder030",
+        "Object_247",
+        "Rudder030_parts_0",
+        "Rudder031",
+        "Object_250",
+        "Rudder031_parts_0",
+        "Rudder032",
+        "Object_253",
+        "Rudder032_parts_0",
+        "Object374",
+        "Object374_parts_0",
+        "Object364",
+        "Object364_body_0",
+        "Shape004",
+        "Shape004_body_0",
+        "Shape002",
+        "Shape002_body_0",
+        "Object379",
+        "Object379_body_0",
+        "Object399",
+        "Object399_body_0",
+        "Object363",
+        "Object363_body_0",
+        "Object368",
+        "Object368_body_0",
+        "Object376",
+        "Object376_parts_0"
       ],
       "textures": [
         "image-0",
@@ -15952,30 +17792,31 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "image-3",
         "image-4",
         "image-5",
-        "image-6"
+        "image-6",
+        "image-7"
       ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/gravityPostMailPod.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Release-validated typed textured primary courier vehicle with a compact readable capsule silhouette, retained root-safe rendered probe, hash-bound +Z neutral authored yaw reference, current bounds, and durable CC-BY provenance; no physical spacecraft claim.",
+      "suitabilityReason": "Typed textured primary courier vehicle with a readable ship nose-to-engine silhouette, eight retained textures, current manifest bounds, durable CC-BY provenance, and probe-bound +Z forward orientation used by route-authored velocity-aligned yaw; no physical spacecraft claim.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/gravityPostMailPod.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostMailPod",
-        "sha256": "sha256-6052d1ea324fbcc6f2e59cb3577f732b4bb53688fb442982df6867675bdf3069",
-        "assetHash": "sha256-e24dfcca807f76cf4d6feec7c38448d054dbeb013276dc05a6b0617f79c323ab",
+        "sha256": "sha256-db67b5e9b7def2614c301865892fac8ae87f20693f928155aa20e6203bc96b70",
+        "assetHash": "sha256-bddb39816951259b3461269f10960a0b280160bdcafabef2c167ad6c936adf4f",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 450784,
-        "colorBuckets": 57,
-        "checkedAt": "2026-08-23T19:59:41.810Z",
+        "nonBlankPixels": 451197,
+        "colorBuckets": 80,
+        "checkedAt": "2026-08-28T20:46:07.124Z",
         "foregroundBounds": {
-          "x": 242,
-          "y": 300,
-          "width": 277,
-          "height": 172
+          "x": 292,
+          "y": 236,
+          "width": 161,
+          "height": 161
         }
       }
     },
@@ -28119,6 +29960,167 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "neonCrownMothElite": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/neonCrownMothElite.086db4c0.glb",
+    hash: "sha256-086db4c0966ee4365b7341b57e7dcec91692300c90dc8ed6e2a3b3887d4eda9a",
+    bounds: [
+      1.163,
+      0.04,
+      1
+    ],
+    sizeBytes: 948112,
+    metadata: {
+      "materials": [
+        "Neon Crown Moth-unlit"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Neon Crown Moth-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-neon-swarm/generated/neonCrownMoth.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-neon-swarm/assets/neon-crown-moth.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-neon-swarm/assets/neon-crown-moth.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/main/apps/showcase-neon-swarm/assets/neon-crown-moth.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:59:00.000Z",
+        "checkedAt": "2026-08-29T23:59:00.000Z"
+      },
+      "sourcePath": "apps/showcase-neon-swarm/generated/neonCrownMoth.glb",
+      "outputPath": "public/aura-assets/neonCrownMothElite.086db4c0.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.582,
+          -0.02,
+          -0.5
+        ],
+        "max": [
+          0.582,
+          0.02,
+          0.5
+        ],
+        "size": [
+          1.163,
+          0.04,
+          1
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.163,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Neon Crown Moth-unlit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-086db4c0966ee4365b7341b57e7dcec91692300c90dc8ed6e2a3b3887d4eda9a",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T00:55:24.462Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonCrownMothElite",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/neonCrownMothElite.png",
+          "sha256": "sha256-7a59af8d4d059381bb4c280d1774e968a10219fd73c071bd31fed2a4cbe5ed39",
+          "assetHash": "sha256-086db4c0966ee4365b7341b57e7dcec91692300c90dc8ed6e2a3b3887d4eda9a",
+          "checkedAt": "2026-08-30T00:55:24.462Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonCrownMothElite"
+        },
+        "messages": [
+          "The project-original crown moth is packaged on an XZ presentation card with its authored attack direction toward +Z. The hash-bound probe proves static enemy-character readability only; live position, steering, contact, damage, and count remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "Neon Crown Moth-card"
+      ],
+      "textures": [
+        "Neon Crown Moth-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/neonCrownMothElite.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Project-original pale armored crown moth enemy character presentation with declared +Z forward attack orientation, bound one-for-one to live elite enemy slots in the exact review lens.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/neonCrownMothElite.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonCrownMothElite",
+        "sha256": "sha256-7a59af8d4d059381bb4c280d1774e968a10219fd73c071bd31fed2a4cbe5ed39",
+        "assetHash": "sha256-086db4c0966ee4365b7341b57e7dcec91692300c90dc8ed6e2a3b3887d4eda9a",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 450405,
+        "colorBuckets": 154,
+        "checkedAt": "2026-08-30T00:55:24.462Z",
+        "foregroundBounds": {
+          "x": 162,
+          "y": 112,
+          "width": 439,
+          "height": 365
+        }
+      }
+    },
+  },
   "neonDashSfx": {
     type: "audio",
     format: "wav",
@@ -28797,6 +30799,325 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Directional pulse cue driven by a real accepted fire input."
+    },
+  },
+  "neonRainCourierHero": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/neonRainCourierHero.b9bc055f.glb",
+    hash: "sha256-b9bc055f396d8fcf7abdbda49fbc8d0a800a891a8899d5a6432a54ac6adfca60",
+    bounds: [
+      1.08,
+      0.04,
+      1
+    ],
+    sizeBytes: 1042368,
+    metadata: {
+      "materials": [
+        "Neon Rain Courier-unlit"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Neon Rain Courier-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-neon-swarm/generated/neonRainCourier.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-neon-swarm/assets/neon-rain-courier.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-neon-swarm/assets/neon-rain-courier.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/main/apps/showcase-neon-swarm/assets/neon-rain-courier.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:58:00.000Z",
+        "checkedAt": "2026-08-29T23:58:00.000Z"
+      },
+      "sourcePath": "apps/showcase-neon-swarm/generated/neonRainCourier.glb",
+      "outputPath": "public/aura-assets/neonRainCourierHero.b9bc055f.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.54,
+          -0.02,
+          -0.5
+        ],
+        "max": [
+          0.54,
+          0.02,
+          0.5
+        ],
+        "size": [
+          1.08,
+          0.04,
+          1
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.08,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Neon Rain Courier-unlit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-b9bc055f396d8fcf7abdbda49fbc8d0a800a891a8899d5a6432a54ac6adfca60",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T00:55:21.744Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonRainCourierHero",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/neonRainCourierHero.png",
+          "sha256": "sha256-ae4894d415b84cd88170770565130888b09c945ff2c060eb44b8a2663eedd575",
+          "assetHash": "sha256-b9bc055f396d8fcf7abdbda49fbc8d0a800a891a8899d5a6432a54ac6adfca60",
+          "checkedAt": "2026-08-30T00:55:21.744Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonRainCourierHero"
+        },
+        "messages": [
+          "The project-original direct-overhead rain courier is packaged on an XZ presentation card with the authored pulse-tool direction toward +Z. The hash-bound probe proves static character readability only; movement, aiming, firing, health, and scoring remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "Neon Rain Courier-card"
+      ],
+      "textures": [
+        "Neon Rain Courier-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/neonRainCourierHero.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Project-original direct-overhead rain courier character presentation with declared +Z forward firing orientation, driven by the live player transform in the exact review lens.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/neonRainCourierHero.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonRainCourierHero",
+        "sha256": "sha256-ae4894d415b84cd88170770565130888b09c945ff2c060eb44b8a2663eedd575",
+        "assetHash": "sha256-b9bc055f396d8fcf7abdbda49fbc8d0a800a891a8899d5a6432a54ac6adfca60",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 446480,
+        "colorBuckets": 149,
+        "checkedAt": "2026-08-30T00:55:21.744Z",
+        "foregroundBounds": {
+          "x": 237,
+          "y": 144,
+          "width": 327,
+          "height": 290
+        }
+      }
+    },
+  },
+  "neonRainGardenArenaBackdrop": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/neonRainGardenArenaBackdrop.af20cf83.glb",
+    hash: "sha256-af20cf83fb7e51ebf885bb458bcab22304ee0b37c11917b2b652a73fbe6bd49c",
+    bounds: [
+      32,
+      0.16,
+      20.015
+    ],
+    sizeBytes: 2877992,
+    metadata: {
+      "materials": [
+        "Neon Rain Garden Arena-unlit"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Neon Rain Garden Arena-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-neon-swarm/generated/neonRainGardenArena.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-neon-swarm/assets/neon-rain-garden-arena.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-neon-swarm/assets/neon-rain-garden-arena.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/main/apps/showcase-neon-swarm/assets/neon-rain-garden-arena.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:58:00.000Z",
+        "checkedAt": "2026-08-29T23:58:00.000Z"
+      },
+      "sourcePath": "apps/showcase-neon-swarm/generated/neonRainGardenArena.glb",
+      "outputPath": "public/aura-assets/neonRainGardenArenaBackdrop.af20cf83.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -16,
+          -0.08,
+          -10.008
+        ],
+        "max": [
+          16,
+          0.08,
+          10.008
+        ],
+        "size": [
+          32,
+          0.16,
+          20.015
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 32,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Neon Rain Garden Arena-unlit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-af20cf83fb7e51ebf885bb458bcab22304ee0b37c11917b2b652a73fbe6bd49c",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-30T01:00:03.660Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonRainGardenArenaBackdrop",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/neonRainGardenArenaBackdrop.png",
+          "sha256": "sha256-8c7f782cdc55ac2334b8da3a7fd32929b28fe7978e07f2f8df0670727a015684",
+          "assetHash": "sha256-af20cf83fb7e51ebf885bb458bcab22304ee0b37c11917b2b652a73fbe6bd49c",
+          "checkedAt": "2026-08-30T01:00:03.660Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonRainGardenArenaBackdrop"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "Neon Rain Garden Arena-card"
+      ],
+      "textures": [
+        "Neon Rain Garden Arena-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/neonRainGardenArenaBackdrop.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Project-original rain-garden arena background set dressing with release-readable shallow volume for the exact review lens; it never represents live enemies, combat, or progression.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/neonRainGardenArenaBackdrop.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=neonRainGardenArenaBackdrop",
+        "sha256": "sha256-8c7f782cdc55ac2334b8da3a7fd32929b28fe7978e07f2f8df0670727a015684",
+        "assetHash": "sha256-af20cf83fb7e51ebf885bb458bcab22304ee0b37c11917b2b652a73fbe6bd49c",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 435315,
+        "colorBuckets": 140,
+        "checkedAt": "2026-08-30T01:00:03.660Z",
+        "foregroundBounds": {
+          "x": 118,
+          "y": 141,
+          "width": 511,
+          "height": 308
+        }
+      }
     },
   },
   "neonStreetLampProp": {
@@ -29631,14 +31952,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "patrolWingDroneA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/patrolWingDroneA.15a4a401.glb",
-    hash: "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+    url: "/aura-assets/patrolWingDroneA.85a89a42.glb",
+    hash: "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
     bounds: [
-      0.81,
-      1.397,
-      1.397
+      1.545,
+      0.64,
+      1.8
     ],
-    sizeBytes: 15612,
+    sizeBytes: 12156,
     metadata: {
       "materials": [
         "frame-material",
@@ -29703,38 +32024,38 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "author": "Aura3D synthesis",
         "sourceFamily": "aura3d-original",
         "attribution": "Aura3D synthesis — original CC0 Patrol Wing model family",
-        "retrievedAt": "2026-08-24T04:45:00.000Z",
+        "retrievedAt": "2026-08-28T00:00:00.000Z",
         "evidence": [
           "Deterministically generated from committed Patrol Wing model source; geometry, materials, metre scale, and orientation are reproducible."
         ],
-        "checkedAt": "2026-08-24T04:45:00.000Z"
+        "checkedAt": "2026-08-28T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-patrol-wing/assets/models/patrolWingDroneA.glb",
-      "outputPath": "public/aura-assets/patrolWingDroneA.15a4a401.glb",
+      "outputPath": "public/aura-assets/patrolWingDroneA.85a89a42.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
         "min": [
-          -0.3,
-          -0.698,
-          -0.698
+          -0.72,
+          -0.24,
+          -0.9
         ],
         "max": [
-          0.51,
-          0.698,
-          0.698
+          0.825,
+          0.4,
+          0.9
         ],
         "size": [
-          0.81,
-          1.397,
-          1.397
+          1.545,
+          0.64,
+          1.8
         ],
         "center": [
-          0.105,
-          0,
+          0.053,
+          0.08,
           0
         ],
-        "maxDimension": 1.397,
+        "maxDimension": 1.8,
         "grounded": false
       },
       "materialMetadata": [
@@ -29772,15 +32093,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+X",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+        "assetHash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-08-24T04:37:32.390Z",
+        "checkedAt": "2026-08-28T18:41:53.813Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingDroneA",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/patrolWingDroneA.png",
-          "sha256": "sha256-72606315f107e7dd3f4c04254ff442984af631576d0218cf2fbb2af699268156",
-          "assetHash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
-          "checkedAt": "2026-08-24T04:37:32.390Z",
+          "sha256": "sha256-7e952eb436996bb9e355f8f1083c40227ed82e4ed6ba78521fb7f91af610ac24",
+          "assetHash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
+          "checkedAt": "2026-08-28T18:41:53.813Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingDroneA"
         },
         "messages": [
@@ -29798,24 +32119,24 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/patrolWingDroneA.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Original CC0 stylized flat-color readable black/orange 1.4 metre drone silhouette; it is role-ready as a flying intercept vehicle while seeded pursuit and combat-world hit truth are separately route-tested.",
+      "suitabilityReason": "Original CC0 stylized flat-color heavy pursuit-drone vehicle with a readable swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/patrolWingDroneA.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingDroneA",
-        "sha256": "sha256-72606315f107e7dd3f4c04254ff442984af631576d0218cf2fbb2af699268156",
-        "assetHash": "sha256-15a4a401a60512be7af2df57bada95249ab2de8b1754f7982d3f15678f42966a",
+        "sha256": "sha256-7e952eb436996bb9e355f8f1083c40227ed82e4ed6ba78521fb7f91af610ac24",
+        "assetHash": "sha256-85a89a42c35ab35aa6c39a8e187080b3868c5f90f8c2425f3d97ed3dfedd7250",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 25,
-        "checkedAt": "2026-08-24T04:37:32.390Z",
+        "colorBuckets": 41,
+        "checkedAt": "2026-08-28T18:41:53.813Z",
         "foregroundBounds": {
-          "x": 256,
-          "y": 234,
-          "width": 221,
-          "height": 264
+          "x": 186,
+          "y": 256,
+          "width": 356,
+          "height": 159
         }
       }
     },
@@ -29823,14 +32144,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "patrolWingDroneB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/patrolWingDroneB.ef182f81.glb",
-    hash: "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+    url: "/aura-assets/patrolWingDroneB.d3bc4133.glb",
+    hash: "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
     bounds: [
-      0.77,
-      1.204,
-      1.204
+      1.545,
+      0.6,
+      1.52
     ],
-    sizeBytes: 15612,
+    sizeBytes: 12152,
     metadata: {
       "materials": [
         "frame-material",
@@ -29895,38 +32216,38 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "author": "Aura3D synthesis",
         "sourceFamily": "aura3d-original",
         "attribution": "Aura3D synthesis — original CC0 Patrol Wing model family",
-        "retrievedAt": "2026-08-24T04:45:00.000Z",
+        "retrievedAt": "2026-08-28T00:00:00.000Z",
         "evidence": [
           "Deterministically generated from committed Patrol Wing model source; geometry, materials, metre scale, and orientation are reproducible."
         ],
-        "checkedAt": "2026-08-24T04:45:00.000Z"
+        "checkedAt": "2026-08-28T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-patrol-wing/assets/models/patrolWingDroneB.glb",
-      "outputPath": "public/aura-assets/patrolWingDroneB.ef182f81.glb",
+      "outputPath": "public/aura-assets/patrolWingDroneB.d3bc4133.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
         "min": [
-          -0.26,
-          -0.602,
-          -0.602
+          -0.72,
+          -0.2,
+          -0.76
         ],
         "max": [
-          0.51,
-          0.602,
-          0.602
+          0.825,
+          0.4,
+          0.76
         ],
         "size": [
-          0.77,
-          1.204,
-          1.204
+          1.545,
+          0.6,
+          1.52
         ],
         "center": [
-          0.125,
-          0,
+          0.053,
+          0.1,
           0
         ],
-        "maxDimension": 1.204,
+        "maxDimension": 1.545,
         "grounded": false
       },
       "materialMetadata": [
@@ -29964,15 +32285,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+X",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+        "assetHash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-08-24T04:37:34.566Z",
+        "checkedAt": "2026-08-28T18:41:56.691Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingDroneB",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/patrolWingDroneB.png",
-          "sha256": "sha256-ababc29c4d8b913fa70771770fded313d870417f4211c14b184da1853274c869",
-          "assetHash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
-          "checkedAt": "2026-08-24T04:37:34.566Z",
+          "sha256": "sha256-b80c1aa92bc9b0725a0a424b94f0c3a5921ba35a16476a93b6580828520c7744",
+          "assetHash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
+          "checkedAt": "2026-08-28T18:41:56.691Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingDroneB"
         },
         "messages": [
@@ -29990,24 +32311,24 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/patrolWingDroneB.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Original CC0 stylized flat-color readable alternate black/orange 1.2 metre drone silhouette; it is role-ready as a flying intercept vehicle while seeded pursuit and combat-world hit truth are separately route-tested.",
+      "suitabilityReason": "Original CC0 stylized flat-color fast pursuit-drone vehicle with a readable alternate swept-wing silhouette and verified +X-forward and +Y-up orientation; seeded pursuit and combat-world hit truth are separately route-tested.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/patrolWingDroneB.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingDroneB",
-        "sha256": "sha256-ababc29c4d8b913fa70771770fded313d870417f4211c14b184da1853274c869",
-        "assetHash": "sha256-ef182f811de8781168d7ad2e1cba5489f0fe28ae25940621f0fefc24a3ef7348",
+        "sha256": "sha256-b80c1aa92bc9b0725a0a424b94f0c3a5921ba35a16476a93b6580828520c7744",
+        "assetHash": "sha256-d3bc4133591fa9a6c6770217744b06ee9e3d9a3db626d7baecc141db10a4e6e2",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 23,
-        "checkedAt": "2026-08-24T04:37:34.566Z",
+        "colorBuckets": 38,
+        "checkedAt": "2026-08-28T18:41:56.691Z",
         "foregroundBounds": {
-          "x": 247,
-          "y": 233,
-          "width": 239,
-          "height": 265
+          "x": 168,
+          "y": 254,
+          "width": 390,
+          "height": 165
         }
       }
     },
@@ -30652,21 +32973,22 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "patrolWingPlane": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/patrolWingPlane.333fa9ed.glb",
-    hash: "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+    url: "/aura-assets/patrolWingPlane.59b5f485.glb",
+    hash: "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
     bounds: [
-      2.24,
-      0.72,
-      2
+      2.96,
+      0.88,
+      3.56
     ],
-    sizeBytes: 17944,
+    sizeBytes: 22952,
     metadata: {
       "materials": [
         "fuselage-material",
         "canopy-material",
         "wing-material",
+        "trim-material",
         "tail-material",
-        "spinner-material"
+        "engines-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -30697,9 +33019,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 5,
-        "meshCount": 5,
-        "materialCount": 5,
+        "nodeCount": 6,
+        "meshCount": 6,
+        "materialCount": 6,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -30708,12 +33030,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "fuselage",
           "canopy",
           "wing",
+          "trim",
           "tail",
-          "spinner"
+          "engines"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 5 nodes across 5 roots."
+          "Detected 6 nodes across 6 roots."
         ]
       },
       "provenance": {
@@ -30726,38 +33049,38 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "author": "Aura3D synthesis",
         "sourceFamily": "aura3d-original",
         "attribution": "Aura3D synthesis — original CC0 Patrol Wing model family",
-        "retrievedAt": "2026-08-24T04:45:00.000Z",
+        "retrievedAt": "2026-08-28T00:00:00.000Z",
         "evidence": [
           "Deterministically generated from committed Patrol Wing model source; geometry, materials, metre scale, and orientation are reproducible."
         ],
-        "checkedAt": "2026-08-24T04:45:00.000Z"
+        "checkedAt": "2026-08-28T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-patrol-wing/assets/models/patrolWingPlane.glb",
-      "outputPath": "public/aura-assets/patrolWingPlane.333fa9ed.glb",
+      "outputPath": "public/aura-assets/patrolWingPlane.59b5f485.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
         "min": [
-          -1.2,
-          -0.34,
-          -1
+          -1.44,
+          -0.3,
+          -1.78
         ],
         "max": [
-          1.04,
-          0.38,
-          1
+          1.52,
+          0.58,
+          1.78
         ],
         "size": [
-          2.24,
-          0.72,
-          2
+          2.96,
+          0.88,
+          3.56
         ],
         "center": [
-          -0.08,
-          0.02,
+          0.04,
+          0.14,
           0
         ],
-        "maxDimension": 2.24,
+        "maxDimension": 3.56,
         "grounded": false
       },
       "materialMetadata": [
@@ -30783,6 +33106,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
+          "name": "trim-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
           "name": "tail-material",
           "visible": true,
           "readable": true,
@@ -30790,7 +33120,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "spinner-material",
+          "name": "engines-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -30802,15 +33132,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+X",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+        "assetHash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-08-24T04:37:30.172Z",
+        "checkedAt": "2026-08-28T18:41:50.899Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingPlane",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/patrolWingPlane.png",
-          "sha256": "sha256-af4d7cb6fa5c7086d838cc59964a12d057d440e615f0929aafa336fdd7a56004",
-          "assetHash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
-          "checkedAt": "2026-08-24T04:37:30.172Z",
+          "sha256": "sha256-507dcb104ffa25b1698b589785c614908d992904ae7ef302b384e27a6c5ad077",
+          "assetHash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
+          "checkedAt": "2026-08-28T18:41:50.899Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingPlane"
         },
         "messages": [
@@ -30821,32 +33151,33 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "fuselage",
         "canopy",
         "wing",
+        "trim",
         "tail",
-        "spinner"
+        "engines"
       ],
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/patrolWingPlane.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Original CC0 stylized flat-color readable 2.24 metre primary aircraft with a cream/red aircraft silhouette, +Y up, and +X nose; it is role-ready as the route's primary vehicle while route-local authored arcade motion owns gameplay and no aerodynamic claim is inferred.",
+      "suitabilityReason": "Original CC0 stylized flat-color primary aircraft vehicle with a readable swept-wing silhouette, verified +X-forward and +Y-up orientation, and normalized route placement; route-local authored arcade motion owns gameplay and no aerodynamic claim is inferred.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/patrolWingPlane.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=patrolWingPlane",
-        "sha256": "sha256-af4d7cb6fa5c7086d838cc59964a12d057d440e615f0929aafa336fdd7a56004",
-        "assetHash": "sha256-333fa9edad218af92a15c96b15402e4c488ac15d87c893f581f4cd0a2b92828b",
+        "sha256": "sha256-507dcb104ffa25b1698b589785c614908d992904ae7ef302b384e27a6c5ad077",
+        "assetHash": "sha256-59b5f48521f44ec5c56ce95b3d58a4e8c9eb99d7b02e0a36a44429631df09ade",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-08-24T04:37:30.172Z",
+        "colorBuckets": 40,
+        "checkedAt": "2026-08-28T18:41:50.899Z",
         "foregroundBounds": {
-          "x": 189,
-          "y": 254,
-          "width": 375,
-          "height": 137
+          "x": 197,
+          "y": 250,
+          "width": 338,
+          "height": 127
         }
       }
     },
@@ -33071,6 +35402,402 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Four-section 120 BPM lead stem sharing one AudioContext anchor with the other authored stems."
     },
   },
+  "pulseReactorEncounterWorld": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pulseReactorEncounterWorld.9e05c9db.glb",
+    hash: "sha256-9e05c9db7148923a3745d6ad596389ae50f6c1375d0ab3066b17e9d670760688",
+    bounds: [
+      8.98,
+      5.462,
+      11.556
+    ],
+    sizeBytes: 365768,
+    metadata: {
+      "materials": [
+        "amber reactor warning",
+        "rose containment field",
+        "cyan conduit",
+        "aged copper rib",
+        "containment wall blue steel",
+        "reactor deck gunmetal"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 7,
+        "meshCount": 7,
+        "materialCount": 6,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "boss fire anchor",
+          "boss fire anchor core",
+          "player impact anchor",
+          "pulse aged copper rib",
+          "pulse containment wall blue steel",
+          "pulse cyan conduit",
+          "pulse reactor deck gunmetal"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 7 nodes across 7 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseReactorEncounterWorld.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-pulse-tunnel/assets/models/pulseReactorEncounterWorld.glb",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "retrievedAt": "2026-08-31T16:30:00Z",
+        "checkedAt": "2026-08-31T16:30:00Z"
+      },
+      "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseReactorEncounterWorld.glb",
+      "outputPath": "public/aura-assets/pulseReactorEncounterWorld.9e05c9db.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -4.49,
+          -0.752,
+          -9.73
+        ],
+        "max": [
+          4.49,
+          4.709,
+          1.826
+        ],
+        "size": [
+          8.98,
+          5.462,
+          11.556
+        ],
+        "center": [
+          0,
+          1.978,
+          -3.952
+        ],
+        "maxDimension": 11.556,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "amber reactor warning",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "rose containment field",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "cyan conduit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "aged copper rib",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "containment wall blue steel",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "reactor deck gunmetal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-9e05c9db7148923a3745d6ad596389ae50f6c1375d0ab3066b17e9d670760688",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T20:47:59.284Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/pulseReactorEncounterWorld.png",
+          "sha256": "sha256-6e0461089e262c1d9c0762a2a4b253402fa08d7e76881963bc0925572c5435c6",
+          "assetHash": "sha256-9e05c9db7148923a3745d6ad596389ae50f6c1375d0ab3066b17e9d670760688",
+          "checkedAt": "2026-08-31T20:47:59.284Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld"
+        },
+        "messages": [
+          "The original static Pulse reactor encounter world is authored +Y-up with its continuous deck extending along Z. The probe proves only its connected decorative enclosure, terminal bay, and named fire/impact presentation anchors; collision, lanes, gates, projectiles, and outcomes remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "boss fire anchor",
+        "boss fire anchor core",
+        "player impact anchor",
+        "pulse aged copper rib",
+        "pulse containment wall blue steel",
+        "pulse cyan conduit",
+        "pulse reactor deck gunmetal"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pulseReactorEncounterWorld.thumb.svg",
+      "quality": "release",
+      "role": "world",
+      "suitabilityReason": "Original continuous gameplay-scale reactor world with connected deck, containment walls, ribs, roof depth, terminal bay, and visible fire/impact anchors. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction, not missing texture evidence; the world is decorative and non-colliding while route-local lanes, gates, projectiles, and collisions remain authoritative.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/pulseReactorEncounterWorld.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld",
+        "sha256": "sha256-6e0461089e262c1d9c0762a2a4b253402fa08d7e76881963bc0925572c5435c6",
+        "assetHash": "sha256-9e05c9db7148923a3745d6ad596389ae50f6c1375d0ab3066b17e9d670760688",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 76,
+        "checkedAt": "2026-08-31T20:47:59.284Z",
+        "foregroundBounds": {
+          "x": 104,
+          "y": 191,
+          "width": 471,
+          "height": 233
+        }
+      }
+    },
+  },
+  "pulseRunnerCraft": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pulseRunnerCraft.28529568.glb",
+    hash: "sha256-285295683d65fb21536f85bfafea19da209c4d0a1199417dc84c5632c1e4977c",
+    bounds: [
+      2.408,
+      0.67,
+      2.33
+    ],
+    sizeBytes: 109716,
+    metadata: {
+      "materials": [
+        "runner copper trim",
+        "runner cyan drive",
+        "runner graphite chassis",
+        "runner pearl hull"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 5,
+        "materialCount": 4,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "pulse runner copper trim",
+          "pulse runner cyan drive",
+          "pulse runner graphite chassis",
+          "pulse runner pearl hull",
+          "runner canopy"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 5 nodes across 5 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseRunnerCraft.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-pulse-tunnel/assets/models/pulseRunnerCraft.glb",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "retrievedAt": "2026-08-31T16:30:00Z",
+        "checkedAt": "2026-08-31T16:30:00Z"
+      },
+      "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseRunnerCraft.glb",
+      "outputPath": "public/aura-assets/pulseRunnerCraft.28529568.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -1.204,
+          -0.015,
+          -1.14
+        ],
+        "max": [
+          1.204,
+          0.655,
+          1.19
+        ],
+        "size": [
+          2.408,
+          0.67,
+          2.33
+        ],
+        "center": [
+          0,
+          0.32,
+          0.025
+        ],
+        "maxDimension": 2.408,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "runner copper trim",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "runner cyan drive",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "runner graphite chassis",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "runner pearl hull",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-285295683d65fb21536f85bfafea19da209c4d0a1199417dc84c5632c1e4977c",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T20:48:22.630Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/pulseRunnerCraft.png",
+          "sha256": "sha256-2979ecd7dbec93c83aba29d35e0b230e0ed7b4754f3891b7933226c7b89af980",
+          "assetHash": "sha256-285295683d65fb21536f85bfafea19da209c4d0a1199417dc84c5632c1e4977c",
+          "checkedAt": "2026-08-31T20:48:22.630Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft"
+        },
+        "messages": [
+          "The original rigid Pulse runner is presented +Y-up and +Z-forward at its authored metre scale. This proves static nose, foil, chassis, canopy, and drive-pod readability only; lane movement, jump, slide, shield, collision, and scoring remain route-local."
+        ]
+      },
+      "nodeNames": [
+        "pulse runner copper trim",
+        "pulse runner cyan drive",
+        "pulse runner graphite chassis",
+        "pulse runner pearl hull",
+        "runner canopy"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pulseRunnerCraft.thumb.svg",
+      "quality": "release",
+      "role": "vehicle",
+      "suitabilityReason": "Original compact +Y-up, +Z-forward lane-runner vehicle with a readable 2.41-metre footprint, nose, swept foils, graphite chassis, canopy, and paired drive pods. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction; route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/pulseRunnerCraft.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft",
+        "sha256": "sha256-2979ecd7dbec93c83aba29d35e0b230e0ed7b4754f3891b7933226c7b89af980",
+        "assetHash": "sha256-285295683d65fb21536f85bfafea19da209c4d0a1199417dc84c5632c1e4977c",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 45,
+        "checkedAt": "2026-08-31T20:48:22.630Z",
+        "foregroundBounds": {
+          "x": 163,
+          "y": 223,
+          "width": 406,
+          "height": 160
+        }
+      }
+    },
+  },
   "pulseRunOverSfx": {
     type: "audio",
     format: "wav",
@@ -33494,6 +36221,204 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Slide cue driven by accepted grounded slide input."
+    },
+  },
+  "pulseTerminalSentry": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/pulseTerminalSentry.7c6ca274.glb",
+    hash: "sha256-7c6ca27464c9035c4ff9ba327d17d5d5f6e59d0a46953519c03143cd890a69a4",
+    bounds: [
+      2.737,
+      1.959,
+      1.127
+    ],
+    sizeBytes: 124560,
+    metadata: {
+      "materials": [
+        "sentry cyan optics",
+        "sentry ceramic threat plates",
+        "sentry copper mechanics",
+        "sentry navy armour",
+        "sentry rose reactor"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 6,
+        "meshCount": 6,
+        "materialCount": 5,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "optic core",
+          "pulse sentry ceramic threat plates",
+          "pulse sentry copper mechanics",
+          "pulse sentry cyan optics",
+          "pulse sentry navy armour",
+          "reactor iris"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 6 nodes across 6 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseTerminalSentry.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-pulse-tunnel/assets/models/pulseTerminalSentry.glb",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "retrievedAt": "2026-08-31T16:30:00Z",
+        "checkedAt": "2026-08-31T16:30:00Z"
+      },
+      "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseTerminalSentry.glb",
+      "outputPath": "public/aura-assets/pulseTerminalSentry.7c6ca274.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -1.368,
+          -0.029,
+          -0.87
+        ],
+        "max": [
+          1.368,
+          1.93,
+          0.257
+        ],
+        "size": [
+          2.737,
+          1.959,
+          1.127
+        ],
+        "center": [
+          0,
+          0.951,
+          -0.306
+        ],
+        "maxDimension": 2.737,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "sentry cyan optics",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sentry ceramic threat plates",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sentry copper mechanics",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sentry navy armour",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sentry rose reactor",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-7c6ca27464c9035c4ff9ba327d17d5d5f6e59d0a46953519c03143cd890a69a4",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T20:48:09.893Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/pulseTerminalSentry.png",
+          "sha256": "sha256-66c9de75b101c2edcd54df8a9e10b11419c955ecdcc0e71357dac5664c82770f",
+          "assetHash": "sha256-7c6ca27464c9035c4ff9ba327d17d5d5f6e59d0a46953519c03143cd890a69a4",
+          "checkedAt": "2026-08-31T20:48:09.893Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry"
+        },
+        "messages": [
+          "The original rigid Pulse terminal sentry is presented +Y-up and +Z-forward at its authored metre scale. This proves static armour, mechanics, reactor, optics, wing, and claw readability only; no rig, skin, animation, aiming, damage, or projectile behavior is inferred."
+        ]
+      },
+      "nodeNames": [
+        "optic core",
+        "pulse sentry ceramic threat plates",
+        "pulse sentry copper mechanics",
+        "pulse sentry cyan optics",
+        "pulse sentry navy armour",
+        "reactor iris"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/pulseTerminalSentry.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Original rigid +Y-up, +Z-forward terminal sentry character with a readable 1.96-metre silhouette, separated armour, mechanics, reactor iris, optics, wings, and grounded claws. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction; this is a static rigid sculpture, and route-local finale targeting, projectile timing, and hit truth remain authoritative.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/pulseTerminalSentry.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry",
+        "sha256": "sha256-66c9de75b101c2edcd54df8a9e10b11419c955ecdcc0e71357dac5664c82770f",
+        "assetHash": "sha256-7c6ca27464c9035c4ff9ba327d17d5d5f6e59d0a46953519c03143cd890a69a4",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 63,
+        "checkedAt": "2026-08-31T20:48:09.893Z",
+        "foregroundBounds": {
+          "x": 160,
+          "y": 205,
+          "width": 414,
+          "height": 321
+        }
+      }
     },
   },
   "pulseUiConfirmSfx": {
@@ -35119,17 +38044,25 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopDefender": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopDefender.86c26297.glb",
-    hash: "sha256-86c2629717f0f6bf077e889990e8ebdc171a08667df7a18b2560c6e12f437e4b",
+    url: "/aura-assets/rooftopDefender.c0947539.glb",
+    hash: "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
     bounds: [
-      0.82,
-      1.8,
-      0.292
+      0.998,
+      1.95,
+      0.606
     ],
-    sizeBytes: 11928,
+    sizeBytes: 1935316,
     metadata: {
       "materials": [
-        "material-0"
+        "Body_Mid_5",
+        "Body_Mid_2",
+        "Body_Mid_1",
+        "Eye_trans",
+        "Body_Mid_4",
+        "Body_Mid_3",
+        "Eye_trans_0",
+        "Body_Mid",
+        "Body_Mid_0"
       ],
       "animations": [],
       "animationClips": [],
@@ -35160,68 +38093,134 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 0,
+        "nodeCount": 9,
+        "meshCount": 9,
+        "materialCount": 9,
+        "textureCount": 1,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "node-0"
+          "H_DDS_MidRes__Body_Mid_0",
+          "m_L_eye__Body_Mid_0",
+          "m_L_gland__Body_Mid_0",
+          "m_L_trans__Eye_trans_0",
+          "m_R_eye__Body_Mid_0",
+          "m_R_gland__Body_Mid_0",
+          "m_R_trans__Eye_trans_0",
+          "m_TeethDown__Body_Mid_0",
+          "m_TeethUp__Body_Mid_0"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 1 node across 1 root."
+          "Detected 9 nodes across 9 roots."
         ]
       },
       "provenance": {
-        "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-rooftop-buckets/scripts/build-models.mjs",
-        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb",
-        "license": "CC0-1.0",
-        "licenseName": "CC0 1.0 Universal",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "author": "Aura3D synthesis",
-        "sourceFamily": "aura3d-original",
-        "attribution": "Aura3D synthesis — original CC0 Rooftop Buckets model family",
-        "retrievedAt": "2026-08-24T00:00:00.000Z",
+        "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-defender-derived.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/basketball-player-9a1be0ed25f94e9998adee1df3a2d218",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "3DDomino",
+        "sourceFamily": "objaverse-derived",
+        "attribution": "Basketball player by 3DDomino, CC BY 4.0; Aura3D defender adaptation removes the embedded ball, raises whole arm islands, recolors the uniform, and normalizes height.",
+        "retrievedAt": "2026-08-31T23:00:00.000Z",
         "evidence": [
+          "Exact official Objaverse source sha256 f67f19f62254c825103cf55472a273a470d6bf69164a0cddcbc4e369e92d7523; deterministic committed Blender script removes BASKETBALL2, rotates complete arm islands into a contest V, and preserves continuous textured anatomy.",
           "Deterministically generated from the committed Rooftop Buckets model source; geometry, metre/unit scale, materials, and orientation metadata are reproducible."
         ],
-        "checkedAt": "2026-08-24T00:00:00.000Z"
+        "checkedAt": "2026-08-31T23:00:00.000Z"
       },
-      "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb",
-      "outputPath": "public/aura-assets/rooftopDefender.86c26297.glb",
-      "license": "CC0-1.0",
-      "author": "Aura3D synthesis",
+      "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-defender-derived.glb",
+      "outputPath": "public/aura-assets/rooftopDefender.c0947539.glb",
+      "license": "CC-BY-4.0",
+      "author": "3DDomino",
       "boundsMetadata": {
         "min": [
-          -0.41,
+          -0.499,
           0,
-          -0.146
+          -0.303
         ],
         "max": [
-          0.41,
-          1.8,
-          0.146
+          0.499,
+          1.95,
+          0.303
         ],
         "size": [
-          0.82,
-          1.8,
-          0.292
+          0.998,
+          1.95,
+          0.606
         ],
         "center": [
           0,
-          0.9,
+          0.975,
           0
         ],
-        "maxDimension": 1.8,
+        "maxDimension": 1.95,
         "grounded": true
       },
       "materialMetadata": [
         {
-          "name": "material-0",
+          "name": "Body_Mid_5",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_1",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans",
+          "visible": true,
+          "readable": true,
+          "opacity": 0.14,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_4",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_3",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_0",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -35229,39 +38228,284 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "gltf-extras",
+        "source": "manifest-override",
         "forwardAxis": "+Z",
         "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T00:59:44.306Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefender",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopDefender.png",
+          "sha256": "sha256-8d5db41e67a6488fed1942facd0573e29e464908a0ba42f03668e0a1027bb5c8",
+          "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+          "checkedAt": "2026-09-01T00:59:44.306Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefender"
+        },
         "messages": [
-          "Orientation metadata detected with forwardAxis=+Z and upAxis=+Y."
+          "The hash-bound original Rooftop Buckets contest sculpture is presented +Y-up and front-facing. Its planted split stance, raised hands, and contest silhouette are static; the route's deterministic telegraph translates it, with no skeleton, animation, or reusable defender system inferred."
         ]
       },
       "nodeNames": [
-        "node-0"
+        "H_DDS_MidRes__Body_Mid_0",
+        "m_L_eye__Body_Mid_0",
+        "m_L_gland__Body_Mid_0",
+        "m_L_trans__Eye_trans_0",
+        "m_R_eye__Body_Mid_0",
+        "m_R_gland__Body_Mid_0",
+        "m_R_trans__Eye_trans_0",
+        "m_TeethDown__Body_Mid_0",
+        "m_TeethUp__Body_Mid_0"
       ],
-      "textures": [],
+      "textures": [
+        "defender-uniform-texture"
+      ],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/rooftopDefender.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Original CC0 metre-scale 1.8 metre red defender standee with a readable flat-color silhouette, posed only by the route's visible deterministic windup, contest, and recovery telegraph.",
+      "suitabilityReason": "Static textured 1.95 metre basketball defender character with continuous body, asymmetric high contest silhouette, blue-gold uniform, +Y up orientation, and no embedded ball. Route-local root transforms own telegraph and reach states; this is transparently a derivative player variant, not a distinct identity.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/rooftopDefender.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefender",
-        "sha256": "sha256-9acd15c8813551ba165013ba90449afaaa48c417bc9a019138483f654ecca5f6",
-        "assetHash": "sha256-86c2629717f0f6bf077e889990e8ebdc171a08667df7a18b2560c6e12f437e4b",
+        "sha256": "sha256-8d5db41e67a6488fed1942facd0573e29e464908a0ba42f03668e0a1027bb5c8",
+        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-08-24T00:30:02.454Z",
+        "nonBlankPixels": 451199,
+        "colorBuckets": 64,
+        "checkedAt": "2026-09-01T00:59:44.306Z",
         "foregroundBounds": {
-          "x": 287,
-          "y": 188,
-          "width": 179,
-          "height": 392
+          "x": 281,
+          "y": 200,
+          "width": 189,
+          "height": 371
+        }
+      }
+    },
+  },
+  "rooftopLayupScorer": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopLayupScorer.6201dc87.glb",
+    hash: "sha256-6201dc878534a34c1c66d36c7e390552ce09b5d0b5ec2eb32c791b9f3b146431",
+    bounds: [
+      1.366,
+      1.9,
+      1.43
+    ],
+    sizeBytes: 20149064,
+    metadata: {
+      "materials": [
+        "Merged_PolySphere2_80.001",
+        "Merged_PolySphere2_81.001",
+        "Merged_PolySphere2_82.001",
+        "Merged_PolySphere2_83.001",
+        "Merged_PolySphere2_84.001",
+        "Merged_PolySphere2_85.001"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 10,
+        "meshCount": 10,
+        "materialCount": 6,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Merged_PolySphere2_8_Merged_PolySphere2_80.001_0",
+          "Merged_PolySphere2_8_Merged_PolySphere2_80.001_0.001",
+          "Merged_PolySphere2_8_Merged_PolySphere2_81.001_0",
+          "Merged_PolySphere2_8_Merged_PolySphere2_81.001_0.001",
+          "Merged_PolySphere2_8_Merged_PolySphere2_82.001_0",
+          "Merged_PolySphere2_8_Merged_PolySphere2_83.001_0",
+          "Merged_PolySphere2_8_Merged_PolySphere2_83.001_0.001",
+          "Merged_PolySphere2_8_Merged_PolySphere2_83.001_0.002",
+          "Merged_PolySphere2_8_Merged_PolySphere2_84.001_0",
+          "Merged_PolySphere2_8_Merged_PolySphere2_85.001_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 10 nodes across 10 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-04acc673e1b848c6a0c68c87e054ebf4/basketball-scorer-ball-free.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/basketball-player-04acc673e1b848c6a0c68c87e054ebf4",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/04acc673e1b848c6a0c68c87e054ebf4.glb",
+        "sourceUrl": "https://api.sketchfab.com/v3/models/04acc673e1b848c6a0c68c87e054ebf4",
+        "license": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "licenseRaw": "{\"label\":\"CC Attribution\",\"fullName\":\"Creative Commons Attribution\",\"requirements\":\"Author must be credited. Commercial use is allowed.\",\"url\":\"http://creativecommons.org/licenses/by/4.0/\",\"slug\":\"by\"}",
+        "author": "Daffa Haekal (Sketchfab username D.H.2000)",
+        "sourceFamily": "objaverse-derived",
+        "attribution": "Basketball player by Daffa Haekal (D.H.2000), CC BY 4.0; Aura3D adaptation removes the sole separate spherical source ball and normalizes the athlete to 1.90 m while preserving the authored number-24 layup pose and materials.",
+        "retrievedAt": "2026-08-31T23:00:00.000Z",
+        "evidence": [
+          "Exact official Objaverse source sha256 bdbaafa19a91665aa53754699cf2aac7f5bfa516e38bd4c644f26f80eaed0b69; Sketchfab API snapshot confirms downloadable CC Attribution source, author Daffa Haekal, 0 animations, 3 textures, and 19 source materials.",
+          "Deterministic committed Blender script identifies the sole near-spherical source mesh geometrically (sphericity 0.999788), asserts its known source node, removes only that mesh, preserves ten athlete meshes and six retained materials, grounds and normalizes the figure to 1.90 metres, and embeds source/license/adaptation extras."
+        ],
+        "checkedAt": "2026-08-31T23:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-04acc673e1b848c6a0c68c87e054ebf4/basketball-scorer-ball-free.glb",
+      "outputPath": "public/aura-assets/rooftopLayupScorer.6201dc87.glb",
+      "license": "CC-BY-4.0",
+      "author": "Daffa Haekal (Sketchfab username D.H.2000)",
+      "boundsMetadata": {
+        "min": [
+          -0.683,
+          0,
+          -0.715
+        ],
+        "max": [
+          0.683,
+          1.9,
+          0.715
+        ],
+        "size": [
+          1.366,
+          1.9,
+          1.43
+        ],
+        "center": [
+          0,
+          0.95,
+          0
+        ],
+        "maxDimension": 1.9,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Merged_PolySphere2_80.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Merged_PolySphere2_81.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Merged_PolySphere2_82.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Merged_PolySphere2_83.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Merged_PolySphere2_84.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Merged_PolySphere2_85.001",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-6201dc878534a34c1c66d36c7e390552ce09b5d0b5ec2eb32c791b9f3b146431",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T02:43:43.788Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopLayupScorer",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopLayupScorer.png",
+          "sha256": "sha256-2f4cb549650d94f242ff3de8f7eea595ec02c7bee73c1f2c5fec4bba62142dfb",
+          "assetHash": "sha256-6201dc878534a34c1c66d36c7e390552ce09b5d0b5ec2eb32c791b9f3b146431",
+          "checkedAt": "2026-09-01T02:43:43.788Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopLayupScorer"
+        },
+        "messages": [
+          "The hash-bound Rooftop Buckets number-24 scorer is presented +Y-up and front-facing. Its one-hand layup silhouette is static; the separately typed ball and deterministic route-local flight remain authoritative, with no animation or reusable sports-character claim."
+        ]
+      },
+      "nodeNames": [
+        "Merged_PolySphere2_8_Merged_PolySphere2_80.001_0",
+        "Merged_PolySphere2_8_Merged_PolySphere2_80.001_0.001",
+        "Merged_PolySphere2_8_Merged_PolySphere2_81.001_0",
+        "Merged_PolySphere2_8_Merged_PolySphere2_81.001_0.001",
+        "Merged_PolySphere2_8_Merged_PolySphere2_82.001_0",
+        "Merged_PolySphere2_8_Merged_PolySphere2_83.001_0",
+        "Merged_PolySphere2_8_Merged_PolySphere2_83.001_0.001",
+        "Merged_PolySphere2_8_Merged_PolySphere2_83.001_0.002",
+        "Merged_PolySphere2_8_Merged_PolySphere2_84.001_0",
+        "Merged_PolySphere2_8_Merged_PolySphere2_85.001_0"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopLayupScorer.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Static textured 1.90 metre stylized number-24 basketball scorer with a readable one-hand layup/release silhouette, six retained flat-color materials, +Y-up/+Z-facing review orientation, and no embedded ball. The separate typed rooftopBall and route-local deterministic flight remain authoritative; route root transforms own presentation and no reusable sports-character system is claimed.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopLayupScorer.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopLayupScorer",
+        "sha256": "sha256-2f4cb549650d94f242ff3de8f7eea595ec02c7bee73c1f2c5fec4bba62142dfb",
+        "assetHash": "sha256-6201dc878534a34c1c66d36c7e390552ce09b5d0b5ec2eb32c791b9f3b146431",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451197,
+        "colorBuckets": 85,
+        "checkedAt": "2026-09-01T02:43:43.788Z",
+        "foregroundBounds": {
+          "x": 274,
+          "y": 227,
+          "width": 212,
+          "height": 285
         }
       }
     },
@@ -35412,6 +38656,252 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "y": 153,
           "width": 397,
           "height": 270
+        }
+      }
+    },
+  },
+  "rooftopShooter": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/rooftopShooter.49b62313.glb",
+    hash: "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+    bounds: [
+      0.486,
+      1.95,
+      0.592
+    ],
+    sizeBytes: 983868,
+    metadata: {
+      "materials": [
+        "Body_Mid_5",
+        "Body_Mid_2",
+        "Body_Mid_1",
+        "Eye_trans",
+        "Body_Mid_4",
+        "Body_Mid_3",
+        "Eye_trans_0",
+        "Body_Mid",
+        "Body_Mid_0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 9,
+        "meshCount": 9,
+        "materialCount": 9,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "H_DDS_MidRes__Body_Mid_0",
+          "m_L_eye__Body_Mid_0",
+          "m_L_gland__Body_Mid_0",
+          "m_L_trans__Eye_trans_0",
+          "m_R_eye__Body_Mid_0",
+          "m_R_gland__Body_Mid_0",
+          "m_R_trans__Eye_trans_0",
+          "m_TeethDown__Body_Mid_0",
+          "m_TeethUp__Body_Mid_0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 9 nodes across 9 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-shooter-ball-free.glb",
+        "sourcePage": "https://sketchfab.com/3d-models/basketball-player-9a1be0ed25f94e9998adee1df3a2d218",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-099/9a1be0ed25f94e9998adee1df3a2d218.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "Creative Commons Attribution 4.0 International",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "3DDomino",
+        "sourceFamily": "objaverse-derived",
+        "attribution": "Basketball player by 3DDomino, CC BY 4.0; Aura3D adaptation removes the embedded ball and normalizes height.",
+        "retrievedAt": "2026-08-31T23:00:00.000Z",
+        "evidence": [
+          "Exact official Objaverse source sha256 f67f19f62254c825103cf55472a273a470d6bf69164a0cddcbc4e369e92d7523; deterministic committed Blender script removes only BASKETBALL2 and preserves the static shooter body, textures, face, and pose.",
+          "Deterministically generated from the committed Rooftop Buckets model source; geometry, metre/unit scale, materials, and orientation metadata are reproducible."
+        ],
+        "checkedAt": "2026-08-31T23:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-shooter-ball-free.glb",
+      "outputPath": "public/aura-assets/rooftopShooter.49b62313.glb",
+      "license": "CC-BY-4.0",
+      "author": "3DDomino",
+      "boundsMetadata": {
+        "min": [
+          -0.243,
+          0,
+          -0.296
+        ],
+        "max": [
+          0.243,
+          1.95,
+          0.296
+        ],
+        "size": [
+          0.486,
+          1.95,
+          0.592
+        ],
+        "center": [
+          0,
+          0.975,
+          0
+        ],
+        "maxDimension": 1.95,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "Body_Mid_5",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_1",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans",
+          "visible": true,
+          "readable": true,
+          "opacity": 0.14,
+          "alphaMode": "BLEND",
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_4",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_3",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Eye_trans_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Body_Mid_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T00:59:41.179Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/rooftopShooter.png",
+          "sha256": "sha256-9079a88e723e4f7feeb66a51c1a8bbf53f19e29aa47714d2c4d1e7be1486a459",
+          "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "checkedAt": "2026-09-01T00:59:41.179Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter"
+        },
+        "messages": [
+          "The hash-bound original Rooftop Buckets release sculpture is presented +Y-up and front-facing. Its planted bent-knee stance and high shooting-hand silhouette are static; the separately typed ball and deterministic route-local flight remain authoritative."
+        ]
+      },
+      "nodeNames": [
+        "H_DDS_MidRes__Body_Mid_0",
+        "m_L_eye__Body_Mid_0",
+        "m_L_gland__Body_Mid_0",
+        "m_L_trans__Eye_trans_0",
+        "m_R_eye__Body_Mid_0",
+        "m_R_gland__Body_Mid_0",
+        "m_R_trans__Eye_trans_0",
+        "m_TeethDown__Body_Mid_0",
+        "m_TeethUp__Body_Mid_0"
+      ],
+      "textures": [
+        "Image_0"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/rooftopShooter.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Static textured 1.95 metre basketball shooter character with continuous body, raised release pose, readable uniform, +Y up orientation, and no embedded ball. Route-local root transforms present charge and follow-through states while the separate typed ball owns all ballistics.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/rooftopShooter.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter",
+        "sha256": "sha256-9079a88e723e4f7feeb66a51c1a8bbf53f19e29aa47714d2c4d1e7be1486a459",
+        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 58,
+        "checkedAt": "2026-09-01T00:59:41.179Z",
+        "foregroundBounds": {
+          "x": 332,
+          "y": 191,
+          "width": 97,
+          "height": 403
         }
       }
     },
@@ -50078,14 +53568,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "showcaseKenneyVerdantPlatformerWorld": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/showcaseKenneyVerdantPlatformerWorld.13267017.glb",
-    hash: "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+    url: "/aura-assets/showcaseKenneyVerdantPlatformerWorld.ac8f17eb.glb",
+    hash: "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
     bounds: [
-      838.511,
-      20.05,
-      10.854
+      831.812,
+      20.246,
+      2.8
     ],
-    sizeBytes: 1453324,
+    sizeBytes: 1323856,
     metadata: {
       "materials": [
         "platform stone",
@@ -50129,7 +53619,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 1503,
+        "nodeCount": 703,
         "meshCount": 165,
         "materialCount": 11,
         "textureCount": 0,
@@ -50137,60 +53627,41 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "district-1-grove-tutorial--background-mountain-0",
-          "district-1-grove-tutorial--background-mountain-1",
-          "district-1-grove-tutorial--background-mountain-2",
-          "district-1-grove-tutorial--background-mountain-3",
-          "district-1-grove-tutorial--background-mountain-4",
-          "district-1-grove-tutorial--background-mountain-5",
-          "district-1-grove-tutorial--background-mountain-6",
-          "district-1-grove-tutorial--background-mountain-7",
-          "district-1-grove-tutorial--platform-ground-0",
           "district-1-grove-tutorial--platform-grass-top-0",
           "district-1-grove-tutorial--cliff-rock-0-0",
           "district-1-grove-tutorial--cliff-rock-0-1",
           "district-1-grove-tutorial--cliff-rock-0-2",
           "district-1-grove-tutorial--cliff-rock-0-3",
-          "district-1-grove-tutorial--platform-ground-1",
           "district-1-grove-tutorial--platform-grass-top-1",
           "district-1-grove-tutorial--cliff-rock-1-0",
           "district-1-grove-tutorial--cliff-rock-1-1",
-          "district-1-grove-tutorial--platform-ground-2",
           "district-1-grove-tutorial--platform-grass-top-2",
           "district-1-grove-tutorial--cliff-rock-2-0",
           "district-1-grove-tutorial--cliff-rock-2-1",
-          "district-1-grove-tutorial--platform-ground-3",
           "district-1-grove-tutorial--platform-grass-top-3",
           "district-1-grove-tutorial--cliff-rock-3-0",
           "district-1-grove-tutorial--cliff-rock-3-1",
-          "district-1-grove-tutorial--platform-ground-4",
           "district-1-grove-tutorial--platform-grass-top-4",
           "district-1-grove-tutorial--cliff-rock-4-0",
           "district-1-grove-tutorial--cliff-rock-4-1",
-          "district-1-grove-tutorial--platform-ground-5",
           "district-1-grove-tutorial--platform-grass-top-5",
           "district-1-grove-tutorial--cliff-rock-5-0",
           "district-1-grove-tutorial--cliff-rock-5-1",
           "district-1-grove-tutorial--cliff-rock-5-2",
-          "district-1-grove-tutorial--platform-ground-6",
           "district-1-grove-tutorial--platform-grass-top-6",
           "district-1-grove-tutorial--cliff-rock-6-0",
           "district-1-grove-tutorial--cliff-rock-6-1",
           "district-1-grove-tutorial--cliff-rock-6-2",
-          "district-1-grove-tutorial--platform-ground-7",
           "district-1-grove-tutorial--platform-grass-top-7",
           "district-1-grove-tutorial--cliff-rock-7-0",
           "district-1-grove-tutorial--cliff-rock-7-1",
-          "district-1-grove-tutorial--platform-ground-8",
           "district-1-grove-tutorial--platform-grass-top-8",
           "district-1-grove-tutorial--cliff-rock-8-0",
           "district-1-grove-tutorial--cliff-rock-8-1",
           "district-1-grove-tutorial--cliff-rock-8-2",
-          "district-1-grove-tutorial--platform-ground-9",
           "district-1-grove-tutorial--platform-grass-top-9",
           "district-1-grove-tutorial--cliff-rock-9-0",
           "district-1-grove-tutorial--cliff-rock-9-1",
-          "district-1-grove-tutorial--platform-ground-10",
           "district-1-grove-tutorial--platform-grass-top-10",
           "district-1-grove-tutorial--cliff-rock-10-0",
           "district-1-grove-tutorial--cliff-rock-10-1",
@@ -50223,124 +53694,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-1-grove-tutorial--hazard-lava-7",
           "district-1-grove-tutorial--hazard-lava-8",
           "district-1-grove-tutorial--hazard-lava-9",
-          "district-1-grove-tutorial--tree-trunk-0",
-          "district-1-grove-tutorial--tree-canopy-0",
-          "district-1-grove-tutorial--tree-trunk-1",
-          "district-1-grove-tutorial--tree-canopy-1",
-          "district-1-grove-tutorial--tree-trunk-2",
-          "district-1-grove-tutorial--tree-canopy-2",
-          "district-1-grove-tutorial--tree-trunk-3",
-          "district-1-grove-tutorial--tree-canopy-3",
-          "district-1-grove-tutorial--tree-trunk-4",
-          "district-1-grove-tutorial--tree-canopy-4",
-          "district-1-grove-tutorial--tree-trunk-5",
-          "district-1-grove-tutorial--tree-canopy-5",
-          "district-1-grove-tutorial--tree-trunk-6",
-          "district-1-grove-tutorial--tree-canopy-6",
-          "district-1-grove-tutorial--tree-trunk-7",
-          "district-1-grove-tutorial--tree-canopy-7",
-          "district-1-grove-tutorial--tree-trunk-8",
-          "district-1-grove-tutorial--tree-canopy-8",
-          "district-1-grove-tutorial--tree-trunk-9",
-          "district-1-grove-tutorial--tree-canopy-9",
-          "district-1-grove-tutorial--tree-trunk-10",
-          "district-1-grove-tutorial--tree-canopy-10",
-          "district-1-grove-tutorial--collectible-coin-0",
-          "district-1-grove-tutorial--collectible-coin-1",
-          "district-1-grove-tutorial--collectible-coin-2",
-          "district-1-grove-tutorial--collectible-coin-3",
-          "district-1-grove-tutorial--collectible-coin-4",
-          "district-1-grove-tutorial--collectible-coin-5",
-          "district-1-grove-tutorial--collectible-coin-6",
-          "district-1-grove-tutorial--collectible-coin-7",
-          "district-1-grove-tutorial--collectible-coin-8",
-          "district-1-grove-tutorial--collectible-coin-9",
-          "district-1-grove-tutorial--collectible-coin-10",
-          "district-1-grove-tutorial--collectible-coin-11",
-          "district-1-grove-tutorial--collectible-coin-12",
-          "district-1-grove-tutorial--collectible-coin-13",
-          "district-1-grove-tutorial--collectible-coin-14",
-          "district-1-grove-tutorial--collectible-coin-15",
-          "district-1-grove-tutorial--collectible-coin-16",
-          "district-1-grove-tutorial--collectible-coin-17",
-          "district-1-grove-tutorial--collectible-coin-18",
-          "district-1-grove-tutorial--collectible-coin-19",
-          "district-1-grove-tutorial--collectible-coin-20",
           "relay-gate-1-checkpoint-column-0--0.8",
           "relay-gate-1-checkpoint-column-0-0.8",
           "relay-gate-1-checkpoint-header-0",
-          "district-1-grove-tutorial--background-cloud-0-0",
-          "district-1-grove-tutorial--background-cloud-0-1",
-          "district-1-grove-tutorial--background-cloud-0-2",
-          "district-1-grove-tutorial--background-cloud-1-0",
-          "district-1-grove-tutorial--background-cloud-1-1",
-          "district-1-grove-tutorial--background-cloud-1-2",
-          "district-1-grove-tutorial--background-cloud-2-0",
-          "district-1-grove-tutorial--background-cloud-2-1",
-          "district-1-grove-tutorial--background-cloud-2-2",
-          "district-1-grove-tutorial--background-cloud-3-0",
-          "district-1-grove-tutorial--background-cloud-3-1",
-          "district-1-grove-tutorial--background-cloud-3-2",
-          "district-1-grove-tutorial--background-cloud-4-0",
-          "district-1-grove-tutorial--background-cloud-4-1",
-          "district-1-grove-tutorial--background-cloud-4-2",
-          "district-1-grove-tutorial--background-cloud-5-0",
-          "district-1-grove-tutorial--background-cloud-5-1",
-          "district-1-grove-tutorial--background-cloud-5-2",
-          "district-2-relay-orchard--background-mountain-0",
-          "district-2-relay-orchard--background-mountain-1",
-          "district-2-relay-orchard--background-mountain-2",
-          "district-2-relay-orchard--background-mountain-3",
-          "district-2-relay-orchard--background-mountain-4",
-          "district-2-relay-orchard--background-mountain-5",
-          "district-2-relay-orchard--background-mountain-6",
-          "district-2-relay-orchard--background-mountain-7",
-          "district-2-relay-orchard--platform-ground-0",
           "district-2-relay-orchard--platform-grass-top-0",
           "district-2-relay-orchard--cliff-rock-0-0",
           "district-2-relay-orchard--cliff-rock-0-1",
           "district-2-relay-orchard--cliff-rock-0-2",
           "district-2-relay-orchard--cliff-rock-0-3",
-          "district-2-relay-orchard--platform-ground-1",
           "district-2-relay-orchard--platform-grass-top-1",
           "district-2-relay-orchard--cliff-rock-1-0",
           "district-2-relay-orchard--cliff-rock-1-1",
-          "district-2-relay-orchard--platform-ground-2",
           "district-2-relay-orchard--platform-grass-top-2",
           "district-2-relay-orchard--cliff-rock-2-0",
           "district-2-relay-orchard--cliff-rock-2-1",
-          "district-2-relay-orchard--platform-ground-3",
           "district-2-relay-orchard--platform-grass-top-3",
           "district-2-relay-orchard--cliff-rock-3-0",
           "district-2-relay-orchard--cliff-rock-3-1",
-          "district-2-relay-orchard--platform-ground-4",
           "district-2-relay-orchard--platform-grass-top-4",
           "district-2-relay-orchard--cliff-rock-4-0",
           "district-2-relay-orchard--cliff-rock-4-1",
-          "district-2-relay-orchard--platform-ground-5",
           "district-2-relay-orchard--platform-grass-top-5",
           "district-2-relay-orchard--cliff-rock-5-0",
           "district-2-relay-orchard--cliff-rock-5-1",
           "district-2-relay-orchard--cliff-rock-5-2",
-          "district-2-relay-orchard--platform-ground-6",
           "district-2-relay-orchard--platform-grass-top-6",
           "district-2-relay-orchard--cliff-rock-6-0",
           "district-2-relay-orchard--cliff-rock-6-1",
           "district-2-relay-orchard--cliff-rock-6-2",
-          "district-2-relay-orchard--platform-ground-7",
           "district-2-relay-orchard--platform-grass-top-7",
           "district-2-relay-orchard--cliff-rock-7-0",
           "district-2-relay-orchard--cliff-rock-7-1",
-          "district-2-relay-orchard--platform-ground-8",
           "district-2-relay-orchard--platform-grass-top-8",
           "district-2-relay-orchard--cliff-rock-8-0",
           "district-2-relay-orchard--cliff-rock-8-1",
           "district-2-relay-orchard--cliff-rock-8-2",
-          "district-2-relay-orchard--platform-ground-9",
           "district-2-relay-orchard--platform-grass-top-9",
           "district-2-relay-orchard--cliff-rock-9-0",
           "district-2-relay-orchard--cliff-rock-9-1",
-          "district-2-relay-orchard--platform-ground-10",
           "district-2-relay-orchard--platform-grass-top-10",
           "district-2-relay-orchard--cliff-rock-10-0",
           "district-2-relay-orchard--cliff-rock-10-1",
@@ -50373,124 +53764,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-2-relay-orchard--hazard-lava-7",
           "district-2-relay-orchard--hazard-lava-8",
           "district-2-relay-orchard--hazard-lava-9",
-          "district-2-relay-orchard--tree-trunk-0",
-          "district-2-relay-orchard--tree-canopy-0",
-          "district-2-relay-orchard--tree-trunk-1",
-          "district-2-relay-orchard--tree-canopy-1",
-          "district-2-relay-orchard--tree-trunk-2",
-          "district-2-relay-orchard--tree-canopy-2",
-          "district-2-relay-orchard--tree-trunk-3",
-          "district-2-relay-orchard--tree-canopy-3",
-          "district-2-relay-orchard--tree-trunk-4",
-          "district-2-relay-orchard--tree-canopy-4",
-          "district-2-relay-orchard--tree-trunk-5",
-          "district-2-relay-orchard--tree-canopy-5",
-          "district-2-relay-orchard--tree-trunk-6",
-          "district-2-relay-orchard--tree-canopy-6",
-          "district-2-relay-orchard--tree-trunk-7",
-          "district-2-relay-orchard--tree-canopy-7",
-          "district-2-relay-orchard--tree-trunk-8",
-          "district-2-relay-orchard--tree-canopy-8",
-          "district-2-relay-orchard--tree-trunk-9",
-          "district-2-relay-orchard--tree-canopy-9",
-          "district-2-relay-orchard--tree-trunk-10",
-          "district-2-relay-orchard--tree-canopy-10",
-          "district-2-relay-orchard--collectible-coin-0",
-          "district-2-relay-orchard--collectible-coin-1",
-          "district-2-relay-orchard--collectible-coin-2",
-          "district-2-relay-orchard--collectible-coin-3",
-          "district-2-relay-orchard--collectible-coin-4",
-          "district-2-relay-orchard--collectible-coin-5",
-          "district-2-relay-orchard--collectible-coin-6",
-          "district-2-relay-orchard--collectible-coin-7",
-          "district-2-relay-orchard--collectible-coin-8",
-          "district-2-relay-orchard--collectible-coin-9",
-          "district-2-relay-orchard--collectible-coin-10",
-          "district-2-relay-orchard--collectible-coin-11",
-          "district-2-relay-orchard--collectible-coin-12",
-          "district-2-relay-orchard--collectible-coin-13",
-          "district-2-relay-orchard--collectible-coin-14",
-          "district-2-relay-orchard--collectible-coin-15",
-          "district-2-relay-orchard--collectible-coin-16",
-          "district-2-relay-orchard--collectible-coin-17",
-          "district-2-relay-orchard--collectible-coin-18",
-          "district-2-relay-orchard--collectible-coin-19",
-          "district-2-relay-orchard--collectible-coin-20",
           "relay-gate-2-checkpoint-column-1--0.8",
           "relay-gate-2-checkpoint-column-1-0.8",
           "relay-gate-2-checkpoint-header-1",
-          "district-2-relay-orchard--background-cloud-0-0",
-          "district-2-relay-orchard--background-cloud-0-1",
-          "district-2-relay-orchard--background-cloud-0-2",
-          "district-2-relay-orchard--background-cloud-1-0",
-          "district-2-relay-orchard--background-cloud-1-1",
-          "district-2-relay-orchard--background-cloud-1-2",
-          "district-2-relay-orchard--background-cloud-2-0",
-          "district-2-relay-orchard--background-cloud-2-1",
-          "district-2-relay-orchard--background-cloud-2-2",
-          "district-2-relay-orchard--background-cloud-3-0",
-          "district-2-relay-orchard--background-cloud-3-1",
-          "district-2-relay-orchard--background-cloud-3-2",
-          "district-2-relay-orchard--background-cloud-4-0",
-          "district-2-relay-orchard--background-cloud-4-1",
-          "district-2-relay-orchard--background-cloud-4-2",
-          "district-2-relay-orchard--background-cloud-5-0",
-          "district-2-relay-orchard--background-cloud-5-1",
-          "district-2-relay-orchard--background-cloud-5-2",
-          "district-3-windfall-bridge--background-mountain-0",
-          "district-3-windfall-bridge--background-mountain-1",
-          "district-3-windfall-bridge--background-mountain-2",
-          "district-3-windfall-bridge--background-mountain-3",
-          "district-3-windfall-bridge--background-mountain-4",
-          "district-3-windfall-bridge--background-mountain-5",
-          "district-3-windfall-bridge--background-mountain-6",
-          "district-3-windfall-bridge--background-mountain-7",
-          "district-3-windfall-bridge--platform-ground-0",
           "district-3-windfall-bridge--platform-grass-top-0",
           "district-3-windfall-bridge--cliff-rock-0-0",
           "district-3-windfall-bridge--cliff-rock-0-1",
           "district-3-windfall-bridge--cliff-rock-0-2",
           "district-3-windfall-bridge--cliff-rock-0-3",
-          "district-3-windfall-bridge--platform-ground-1",
           "district-3-windfall-bridge--platform-grass-top-1",
           "district-3-windfall-bridge--cliff-rock-1-0",
           "district-3-windfall-bridge--cliff-rock-1-1",
-          "district-3-windfall-bridge--platform-ground-2",
           "district-3-windfall-bridge--platform-grass-top-2",
           "district-3-windfall-bridge--cliff-rock-2-0",
           "district-3-windfall-bridge--cliff-rock-2-1",
-          "district-3-windfall-bridge--platform-ground-3",
           "district-3-windfall-bridge--platform-grass-top-3",
           "district-3-windfall-bridge--cliff-rock-3-0",
           "district-3-windfall-bridge--cliff-rock-3-1",
-          "district-3-windfall-bridge--platform-ground-4",
           "district-3-windfall-bridge--platform-grass-top-4",
           "district-3-windfall-bridge--cliff-rock-4-0",
           "district-3-windfall-bridge--cliff-rock-4-1",
-          "district-3-windfall-bridge--platform-ground-5",
           "district-3-windfall-bridge--platform-grass-top-5",
           "district-3-windfall-bridge--cliff-rock-5-0",
           "district-3-windfall-bridge--cliff-rock-5-1",
           "district-3-windfall-bridge--cliff-rock-5-2",
-          "district-3-windfall-bridge--platform-ground-6",
           "district-3-windfall-bridge--platform-grass-top-6",
           "district-3-windfall-bridge--cliff-rock-6-0",
           "district-3-windfall-bridge--cliff-rock-6-1",
           "district-3-windfall-bridge--cliff-rock-6-2",
-          "district-3-windfall-bridge--platform-ground-7",
           "district-3-windfall-bridge--platform-grass-top-7",
           "district-3-windfall-bridge--cliff-rock-7-0",
           "district-3-windfall-bridge--cliff-rock-7-1",
-          "district-3-windfall-bridge--platform-ground-8",
           "district-3-windfall-bridge--platform-grass-top-8",
           "district-3-windfall-bridge--cliff-rock-8-0",
           "district-3-windfall-bridge--cliff-rock-8-1",
           "district-3-windfall-bridge--cliff-rock-8-2",
-          "district-3-windfall-bridge--platform-ground-9",
           "district-3-windfall-bridge--platform-grass-top-9",
           "district-3-windfall-bridge--cliff-rock-9-0",
           "district-3-windfall-bridge--cliff-rock-9-1",
-          "district-3-windfall-bridge--platform-ground-10",
           "district-3-windfall-bridge--platform-grass-top-10",
           "district-3-windfall-bridge--cliff-rock-10-0",
           "district-3-windfall-bridge--cliff-rock-10-1",
@@ -50523,124 +53834,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-3-windfall-bridge--hazard-lava-7",
           "district-3-windfall-bridge--hazard-lava-8",
           "district-3-windfall-bridge--hazard-lava-9",
-          "district-3-windfall-bridge--tree-trunk-0",
-          "district-3-windfall-bridge--tree-canopy-0",
-          "district-3-windfall-bridge--tree-trunk-1",
-          "district-3-windfall-bridge--tree-canopy-1",
-          "district-3-windfall-bridge--tree-trunk-2",
-          "district-3-windfall-bridge--tree-canopy-2",
-          "district-3-windfall-bridge--tree-trunk-3",
-          "district-3-windfall-bridge--tree-canopy-3",
-          "district-3-windfall-bridge--tree-trunk-4",
-          "district-3-windfall-bridge--tree-canopy-4",
-          "district-3-windfall-bridge--tree-trunk-5",
-          "district-3-windfall-bridge--tree-canopy-5",
-          "district-3-windfall-bridge--tree-trunk-6",
-          "district-3-windfall-bridge--tree-canopy-6",
-          "district-3-windfall-bridge--tree-trunk-7",
-          "district-3-windfall-bridge--tree-canopy-7",
-          "district-3-windfall-bridge--tree-trunk-8",
-          "district-3-windfall-bridge--tree-canopy-8",
-          "district-3-windfall-bridge--tree-trunk-9",
-          "district-3-windfall-bridge--tree-canopy-9",
-          "district-3-windfall-bridge--tree-trunk-10",
-          "district-3-windfall-bridge--tree-canopy-10",
-          "district-3-windfall-bridge--collectible-coin-0",
-          "district-3-windfall-bridge--collectible-coin-1",
-          "district-3-windfall-bridge--collectible-coin-2",
-          "district-3-windfall-bridge--collectible-coin-3",
-          "district-3-windfall-bridge--collectible-coin-4",
-          "district-3-windfall-bridge--collectible-coin-5",
-          "district-3-windfall-bridge--collectible-coin-6",
-          "district-3-windfall-bridge--collectible-coin-7",
-          "district-3-windfall-bridge--collectible-coin-8",
-          "district-3-windfall-bridge--collectible-coin-9",
-          "district-3-windfall-bridge--collectible-coin-10",
-          "district-3-windfall-bridge--collectible-coin-11",
-          "district-3-windfall-bridge--collectible-coin-12",
-          "district-3-windfall-bridge--collectible-coin-13",
-          "district-3-windfall-bridge--collectible-coin-14",
-          "district-3-windfall-bridge--collectible-coin-15",
-          "district-3-windfall-bridge--collectible-coin-16",
-          "district-3-windfall-bridge--collectible-coin-17",
-          "district-3-windfall-bridge--collectible-coin-18",
-          "district-3-windfall-bridge--collectible-coin-19",
-          "district-3-windfall-bridge--collectible-coin-20",
           "relay-gate-3-checkpoint-column-2--0.8",
           "relay-gate-3-checkpoint-column-2-0.8",
           "relay-gate-3-checkpoint-header-2",
-          "district-3-windfall-bridge--background-cloud-0-0",
-          "district-3-windfall-bridge--background-cloud-0-1",
-          "district-3-windfall-bridge--background-cloud-0-2",
-          "district-3-windfall-bridge--background-cloud-1-0",
-          "district-3-windfall-bridge--background-cloud-1-1",
-          "district-3-windfall-bridge--background-cloud-1-2",
-          "district-3-windfall-bridge--background-cloud-2-0",
-          "district-3-windfall-bridge--background-cloud-2-1",
-          "district-3-windfall-bridge--background-cloud-2-2",
-          "district-3-windfall-bridge--background-cloud-3-0",
-          "district-3-windfall-bridge--background-cloud-3-1",
-          "district-3-windfall-bridge--background-cloud-3-2",
-          "district-3-windfall-bridge--background-cloud-4-0",
-          "district-3-windfall-bridge--background-cloud-4-1",
-          "district-3-windfall-bridge--background-cloud-4-2",
-          "district-3-windfall-bridge--background-cloud-5-0",
-          "district-3-windfall-bridge--background-cloud-5-1",
-          "district-3-windfall-bridge--background-cloud-5-2",
-          "district-4-canopy-switchback--background-mountain-0",
-          "district-4-canopy-switchback--background-mountain-1",
-          "district-4-canopy-switchback--background-mountain-2",
-          "district-4-canopy-switchback--background-mountain-3",
-          "district-4-canopy-switchback--background-mountain-4",
-          "district-4-canopy-switchback--background-mountain-5",
-          "district-4-canopy-switchback--background-mountain-6",
-          "district-4-canopy-switchback--background-mountain-7",
-          "district-4-canopy-switchback--platform-ground-0",
           "district-4-canopy-switchback--platform-grass-top-0",
           "district-4-canopy-switchback--cliff-rock-0-0",
           "district-4-canopy-switchback--cliff-rock-0-1",
           "district-4-canopy-switchback--cliff-rock-0-2",
           "district-4-canopy-switchback--cliff-rock-0-3",
-          "district-4-canopy-switchback--platform-ground-1",
           "district-4-canopy-switchback--platform-grass-top-1",
           "district-4-canopy-switchback--cliff-rock-1-0",
           "district-4-canopy-switchback--cliff-rock-1-1",
-          "district-4-canopy-switchback--platform-ground-2",
           "district-4-canopy-switchback--platform-grass-top-2",
           "district-4-canopy-switchback--cliff-rock-2-0",
           "district-4-canopy-switchback--cliff-rock-2-1",
-          "district-4-canopy-switchback--platform-ground-3",
           "district-4-canopy-switchback--platform-grass-top-3",
           "district-4-canopy-switchback--cliff-rock-3-0",
           "district-4-canopy-switchback--cliff-rock-3-1",
-          "district-4-canopy-switchback--platform-ground-4",
           "district-4-canopy-switchback--platform-grass-top-4",
           "district-4-canopy-switchback--cliff-rock-4-0",
           "district-4-canopy-switchback--cliff-rock-4-1",
-          "district-4-canopy-switchback--platform-ground-5",
           "district-4-canopy-switchback--platform-grass-top-5",
           "district-4-canopy-switchback--cliff-rock-5-0",
           "district-4-canopy-switchback--cliff-rock-5-1",
           "district-4-canopy-switchback--cliff-rock-5-2",
-          "district-4-canopy-switchback--platform-ground-6",
           "district-4-canopy-switchback--platform-grass-top-6",
           "district-4-canopy-switchback--cliff-rock-6-0",
           "district-4-canopy-switchback--cliff-rock-6-1",
           "district-4-canopy-switchback--cliff-rock-6-2",
-          "district-4-canopy-switchback--platform-ground-7",
           "district-4-canopy-switchback--platform-grass-top-7",
           "district-4-canopy-switchback--cliff-rock-7-0",
           "district-4-canopy-switchback--cliff-rock-7-1",
-          "district-4-canopy-switchback--platform-ground-8",
           "district-4-canopy-switchback--platform-grass-top-8",
           "district-4-canopy-switchback--cliff-rock-8-0",
           "district-4-canopy-switchback--cliff-rock-8-1",
           "district-4-canopy-switchback--cliff-rock-8-2",
-          "district-4-canopy-switchback--platform-ground-9",
           "district-4-canopy-switchback--platform-grass-top-9",
           "district-4-canopy-switchback--cliff-rock-9-0",
           "district-4-canopy-switchback--cliff-rock-9-1",
-          "district-4-canopy-switchback--platform-ground-10",
           "district-4-canopy-switchback--platform-grass-top-10",
           "district-4-canopy-switchback--cliff-rock-10-0",
           "district-4-canopy-switchback--cliff-rock-10-1",
@@ -50673,124 +53904,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-4-canopy-switchback--hazard-lava-7",
           "district-4-canopy-switchback--hazard-lava-8",
           "district-4-canopy-switchback--hazard-lava-9",
-          "district-4-canopy-switchback--tree-trunk-0",
-          "district-4-canopy-switchback--tree-canopy-0",
-          "district-4-canopy-switchback--tree-trunk-1",
-          "district-4-canopy-switchback--tree-canopy-1",
-          "district-4-canopy-switchback--tree-trunk-2",
-          "district-4-canopy-switchback--tree-canopy-2",
-          "district-4-canopy-switchback--tree-trunk-3",
-          "district-4-canopy-switchback--tree-canopy-3",
-          "district-4-canopy-switchback--tree-trunk-4",
-          "district-4-canopy-switchback--tree-canopy-4",
-          "district-4-canopy-switchback--tree-trunk-5",
-          "district-4-canopy-switchback--tree-canopy-5",
-          "district-4-canopy-switchback--tree-trunk-6",
-          "district-4-canopy-switchback--tree-canopy-6",
-          "district-4-canopy-switchback--tree-trunk-7",
-          "district-4-canopy-switchback--tree-canopy-7",
-          "district-4-canopy-switchback--tree-trunk-8",
-          "district-4-canopy-switchback--tree-canopy-8",
-          "district-4-canopy-switchback--tree-trunk-9",
-          "district-4-canopy-switchback--tree-canopy-9",
-          "district-4-canopy-switchback--tree-trunk-10",
-          "district-4-canopy-switchback--tree-canopy-10",
-          "district-4-canopy-switchback--collectible-coin-0",
-          "district-4-canopy-switchback--collectible-coin-1",
-          "district-4-canopy-switchback--collectible-coin-2",
-          "district-4-canopy-switchback--collectible-coin-3",
-          "district-4-canopy-switchback--collectible-coin-4",
-          "district-4-canopy-switchback--collectible-coin-5",
-          "district-4-canopy-switchback--collectible-coin-6",
-          "district-4-canopy-switchback--collectible-coin-7",
-          "district-4-canopy-switchback--collectible-coin-8",
-          "district-4-canopy-switchback--collectible-coin-9",
-          "district-4-canopy-switchback--collectible-coin-10",
-          "district-4-canopy-switchback--collectible-coin-11",
-          "district-4-canopy-switchback--collectible-coin-12",
-          "district-4-canopy-switchback--collectible-coin-13",
-          "district-4-canopy-switchback--collectible-coin-14",
-          "district-4-canopy-switchback--collectible-coin-15",
-          "district-4-canopy-switchback--collectible-coin-16",
-          "district-4-canopy-switchback--collectible-coin-17",
-          "district-4-canopy-switchback--collectible-coin-18",
-          "district-4-canopy-switchback--collectible-coin-19",
-          "district-4-canopy-switchback--collectible-coin-20",
           "relay-gate-4-checkpoint-column-3--0.8",
           "relay-gate-4-checkpoint-column-3-0.8",
           "relay-gate-4-checkpoint-header-3",
-          "district-4-canopy-switchback--background-cloud-0-0",
-          "district-4-canopy-switchback--background-cloud-0-1",
-          "district-4-canopy-switchback--background-cloud-0-2",
-          "district-4-canopy-switchback--background-cloud-1-0",
-          "district-4-canopy-switchback--background-cloud-1-1",
-          "district-4-canopy-switchback--background-cloud-1-2",
-          "district-4-canopy-switchback--background-cloud-2-0",
-          "district-4-canopy-switchback--background-cloud-2-1",
-          "district-4-canopy-switchback--background-cloud-2-2",
-          "district-4-canopy-switchback--background-cloud-3-0",
-          "district-4-canopy-switchback--background-cloud-3-1",
-          "district-4-canopy-switchback--background-cloud-3-2",
-          "district-4-canopy-switchback--background-cloud-4-0",
-          "district-4-canopy-switchback--background-cloud-4-1",
-          "district-4-canopy-switchback--background-cloud-4-2",
-          "district-4-canopy-switchback--background-cloud-5-0",
-          "district-4-canopy-switchback--background-cloud-5-1",
-          "district-4-canopy-switchback--background-cloud-5-2",
-          "district-5-warden-approach--background-mountain-0",
-          "district-5-warden-approach--background-mountain-1",
-          "district-5-warden-approach--background-mountain-2",
-          "district-5-warden-approach--background-mountain-3",
-          "district-5-warden-approach--background-mountain-4",
-          "district-5-warden-approach--background-mountain-5",
-          "district-5-warden-approach--background-mountain-6",
-          "district-5-warden-approach--background-mountain-7",
-          "district-5-warden-approach--platform-ground-0",
           "district-5-warden-approach--platform-grass-top-0",
           "district-5-warden-approach--cliff-rock-0-0",
           "district-5-warden-approach--cliff-rock-0-1",
           "district-5-warden-approach--cliff-rock-0-2",
           "district-5-warden-approach--cliff-rock-0-3",
-          "district-5-warden-approach--platform-ground-1",
           "district-5-warden-approach--platform-grass-top-1",
           "district-5-warden-approach--cliff-rock-1-0",
           "district-5-warden-approach--cliff-rock-1-1",
-          "district-5-warden-approach--platform-ground-2",
           "district-5-warden-approach--platform-grass-top-2",
           "district-5-warden-approach--cliff-rock-2-0",
           "district-5-warden-approach--cliff-rock-2-1",
-          "district-5-warden-approach--platform-ground-3",
           "district-5-warden-approach--platform-grass-top-3",
           "district-5-warden-approach--cliff-rock-3-0",
           "district-5-warden-approach--cliff-rock-3-1",
-          "district-5-warden-approach--platform-ground-4",
           "district-5-warden-approach--platform-grass-top-4",
           "district-5-warden-approach--cliff-rock-4-0",
           "district-5-warden-approach--cliff-rock-4-1",
-          "district-5-warden-approach--platform-ground-5",
           "district-5-warden-approach--platform-grass-top-5",
           "district-5-warden-approach--cliff-rock-5-0",
           "district-5-warden-approach--cliff-rock-5-1",
           "district-5-warden-approach--cliff-rock-5-2",
-          "district-5-warden-approach--platform-ground-6",
           "district-5-warden-approach--platform-grass-top-6",
           "district-5-warden-approach--cliff-rock-6-0",
           "district-5-warden-approach--cliff-rock-6-1",
           "district-5-warden-approach--cliff-rock-6-2",
-          "district-5-warden-approach--platform-ground-7",
           "district-5-warden-approach--platform-grass-top-7",
           "district-5-warden-approach--cliff-rock-7-0",
           "district-5-warden-approach--cliff-rock-7-1",
-          "district-5-warden-approach--platform-ground-8",
           "district-5-warden-approach--platform-grass-top-8",
           "district-5-warden-approach--cliff-rock-8-0",
           "district-5-warden-approach--cliff-rock-8-1",
           "district-5-warden-approach--cliff-rock-8-2",
-          "district-5-warden-approach--platform-ground-9",
           "district-5-warden-approach--platform-grass-top-9",
           "district-5-warden-approach--cliff-rock-9-0",
           "district-5-warden-approach--cliff-rock-9-1",
-          "district-5-warden-approach--platform-ground-10",
           "district-5-warden-approach--platform-grass-top-10",
           "district-5-warden-approach--cliff-rock-10-0",
           "district-5-warden-approach--cliff-rock-10-1",
@@ -50823,124 +53974,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-5-warden-approach--hazard-lava-7",
           "district-5-warden-approach--hazard-lava-8",
           "district-5-warden-approach--hazard-lava-9",
-          "district-5-warden-approach--tree-trunk-0",
-          "district-5-warden-approach--tree-canopy-0",
-          "district-5-warden-approach--tree-trunk-1",
-          "district-5-warden-approach--tree-canopy-1",
-          "district-5-warden-approach--tree-trunk-2",
-          "district-5-warden-approach--tree-canopy-2",
-          "district-5-warden-approach--tree-trunk-3",
-          "district-5-warden-approach--tree-canopy-3",
-          "district-5-warden-approach--tree-trunk-4",
-          "district-5-warden-approach--tree-canopy-4",
-          "district-5-warden-approach--tree-trunk-5",
-          "district-5-warden-approach--tree-canopy-5",
-          "district-5-warden-approach--tree-trunk-6",
-          "district-5-warden-approach--tree-canopy-6",
-          "district-5-warden-approach--tree-trunk-7",
-          "district-5-warden-approach--tree-canopy-7",
-          "district-5-warden-approach--tree-trunk-8",
-          "district-5-warden-approach--tree-canopy-8",
-          "district-5-warden-approach--tree-trunk-9",
-          "district-5-warden-approach--tree-canopy-9",
-          "district-5-warden-approach--tree-trunk-10",
-          "district-5-warden-approach--tree-canopy-10",
-          "district-5-warden-approach--collectible-coin-0",
-          "district-5-warden-approach--collectible-coin-1",
-          "district-5-warden-approach--collectible-coin-2",
-          "district-5-warden-approach--collectible-coin-3",
-          "district-5-warden-approach--collectible-coin-4",
-          "district-5-warden-approach--collectible-coin-5",
-          "district-5-warden-approach--collectible-coin-6",
-          "district-5-warden-approach--collectible-coin-7",
-          "district-5-warden-approach--collectible-coin-8",
-          "district-5-warden-approach--collectible-coin-9",
-          "district-5-warden-approach--collectible-coin-10",
-          "district-5-warden-approach--collectible-coin-11",
-          "district-5-warden-approach--collectible-coin-12",
-          "district-5-warden-approach--collectible-coin-13",
-          "district-5-warden-approach--collectible-coin-14",
-          "district-5-warden-approach--collectible-coin-15",
-          "district-5-warden-approach--collectible-coin-16",
-          "district-5-warden-approach--collectible-coin-17",
-          "district-5-warden-approach--collectible-coin-18",
-          "district-5-warden-approach--collectible-coin-19",
-          "district-5-warden-approach--collectible-coin-20",
           "relay-gate-5-checkpoint-column-4--0.8",
           "relay-gate-5-checkpoint-column-4-0.8",
           "relay-gate-5-checkpoint-header-4",
-          "district-5-warden-approach--background-cloud-0-0",
-          "district-5-warden-approach--background-cloud-0-1",
-          "district-5-warden-approach--background-cloud-0-2",
-          "district-5-warden-approach--background-cloud-1-0",
-          "district-5-warden-approach--background-cloud-1-1",
-          "district-5-warden-approach--background-cloud-1-2",
-          "district-5-warden-approach--background-cloud-2-0",
-          "district-5-warden-approach--background-cloud-2-1",
-          "district-5-warden-approach--background-cloud-2-2",
-          "district-5-warden-approach--background-cloud-3-0",
-          "district-5-warden-approach--background-cloud-3-1",
-          "district-5-warden-approach--background-cloud-3-2",
-          "district-5-warden-approach--background-cloud-4-0",
-          "district-5-warden-approach--background-cloud-4-1",
-          "district-5-warden-approach--background-cloud-4-2",
-          "district-5-warden-approach--background-cloud-5-0",
-          "district-5-warden-approach--background-cloud-5-1",
-          "district-5-warden-approach--background-cloud-5-2",
-          "district-6-sentry-gauntlet--background-mountain-0",
-          "district-6-sentry-gauntlet--background-mountain-1",
-          "district-6-sentry-gauntlet--background-mountain-2",
-          "district-6-sentry-gauntlet--background-mountain-3",
-          "district-6-sentry-gauntlet--background-mountain-4",
-          "district-6-sentry-gauntlet--background-mountain-5",
-          "district-6-sentry-gauntlet--background-mountain-6",
-          "district-6-sentry-gauntlet--background-mountain-7",
-          "district-6-sentry-gauntlet--platform-ground-0",
           "district-6-sentry-gauntlet--platform-grass-top-0",
           "district-6-sentry-gauntlet--cliff-rock-0-0",
           "district-6-sentry-gauntlet--cliff-rock-0-1",
           "district-6-sentry-gauntlet--cliff-rock-0-2",
           "district-6-sentry-gauntlet--cliff-rock-0-3",
-          "district-6-sentry-gauntlet--platform-ground-1",
           "district-6-sentry-gauntlet--platform-grass-top-1",
           "district-6-sentry-gauntlet--cliff-rock-1-0",
           "district-6-sentry-gauntlet--cliff-rock-1-1",
-          "district-6-sentry-gauntlet--platform-ground-2",
           "district-6-sentry-gauntlet--platform-grass-top-2",
           "district-6-sentry-gauntlet--cliff-rock-2-0",
           "district-6-sentry-gauntlet--cliff-rock-2-1",
-          "district-6-sentry-gauntlet--platform-ground-3",
           "district-6-sentry-gauntlet--platform-grass-top-3",
           "district-6-sentry-gauntlet--cliff-rock-3-0",
           "district-6-sentry-gauntlet--cliff-rock-3-1",
-          "district-6-sentry-gauntlet--platform-ground-4",
           "district-6-sentry-gauntlet--platform-grass-top-4",
           "district-6-sentry-gauntlet--cliff-rock-4-0",
           "district-6-sentry-gauntlet--cliff-rock-4-1",
-          "district-6-sentry-gauntlet--platform-ground-5",
           "district-6-sentry-gauntlet--platform-grass-top-5",
           "district-6-sentry-gauntlet--cliff-rock-5-0",
           "district-6-sentry-gauntlet--cliff-rock-5-1",
           "district-6-sentry-gauntlet--cliff-rock-5-2",
-          "district-6-sentry-gauntlet--platform-ground-6",
           "district-6-sentry-gauntlet--platform-grass-top-6",
           "district-6-sentry-gauntlet--cliff-rock-6-0",
           "district-6-sentry-gauntlet--cliff-rock-6-1",
           "district-6-sentry-gauntlet--cliff-rock-6-2",
-          "district-6-sentry-gauntlet--platform-ground-7",
           "district-6-sentry-gauntlet--platform-grass-top-7",
           "district-6-sentry-gauntlet--cliff-rock-7-0",
           "district-6-sentry-gauntlet--cliff-rock-7-1",
-          "district-6-sentry-gauntlet--platform-ground-8",
           "district-6-sentry-gauntlet--platform-grass-top-8",
           "district-6-sentry-gauntlet--cliff-rock-8-0",
           "district-6-sentry-gauntlet--cliff-rock-8-1",
           "district-6-sentry-gauntlet--cliff-rock-8-2",
-          "district-6-sentry-gauntlet--platform-ground-9",
           "district-6-sentry-gauntlet--platform-grass-top-9",
           "district-6-sentry-gauntlet--cliff-rock-9-0",
           "district-6-sentry-gauntlet--cliff-rock-9-1",
-          "district-6-sentry-gauntlet--platform-ground-10",
           "district-6-sentry-gauntlet--platform-grass-top-10",
           "district-6-sentry-gauntlet--cliff-rock-10-0",
           "district-6-sentry-gauntlet--cliff-rock-10-1",
@@ -50973,124 +54044,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-6-sentry-gauntlet--hazard-lava-7",
           "district-6-sentry-gauntlet--hazard-lava-8",
           "district-6-sentry-gauntlet--hazard-lava-9",
-          "district-6-sentry-gauntlet--tree-trunk-0",
-          "district-6-sentry-gauntlet--tree-canopy-0",
-          "district-6-sentry-gauntlet--tree-trunk-1",
-          "district-6-sentry-gauntlet--tree-canopy-1",
-          "district-6-sentry-gauntlet--tree-trunk-2",
-          "district-6-sentry-gauntlet--tree-canopy-2",
-          "district-6-sentry-gauntlet--tree-trunk-3",
-          "district-6-sentry-gauntlet--tree-canopy-3",
-          "district-6-sentry-gauntlet--tree-trunk-4",
-          "district-6-sentry-gauntlet--tree-canopy-4",
-          "district-6-sentry-gauntlet--tree-trunk-5",
-          "district-6-sentry-gauntlet--tree-canopy-5",
-          "district-6-sentry-gauntlet--tree-trunk-6",
-          "district-6-sentry-gauntlet--tree-canopy-6",
-          "district-6-sentry-gauntlet--tree-trunk-7",
-          "district-6-sentry-gauntlet--tree-canopy-7",
-          "district-6-sentry-gauntlet--tree-trunk-8",
-          "district-6-sentry-gauntlet--tree-canopy-8",
-          "district-6-sentry-gauntlet--tree-trunk-9",
-          "district-6-sentry-gauntlet--tree-canopy-9",
-          "district-6-sentry-gauntlet--tree-trunk-10",
-          "district-6-sentry-gauntlet--tree-canopy-10",
-          "district-6-sentry-gauntlet--collectible-coin-0",
-          "district-6-sentry-gauntlet--collectible-coin-1",
-          "district-6-sentry-gauntlet--collectible-coin-2",
-          "district-6-sentry-gauntlet--collectible-coin-3",
-          "district-6-sentry-gauntlet--collectible-coin-4",
-          "district-6-sentry-gauntlet--collectible-coin-5",
-          "district-6-sentry-gauntlet--collectible-coin-6",
-          "district-6-sentry-gauntlet--collectible-coin-7",
-          "district-6-sentry-gauntlet--collectible-coin-8",
-          "district-6-sentry-gauntlet--collectible-coin-9",
-          "district-6-sentry-gauntlet--collectible-coin-10",
-          "district-6-sentry-gauntlet--collectible-coin-11",
-          "district-6-sentry-gauntlet--collectible-coin-12",
-          "district-6-sentry-gauntlet--collectible-coin-13",
-          "district-6-sentry-gauntlet--collectible-coin-14",
-          "district-6-sentry-gauntlet--collectible-coin-15",
-          "district-6-sentry-gauntlet--collectible-coin-16",
-          "district-6-sentry-gauntlet--collectible-coin-17",
-          "district-6-sentry-gauntlet--collectible-coin-18",
-          "district-6-sentry-gauntlet--collectible-coin-19",
-          "district-6-sentry-gauntlet--collectible-coin-20",
           "relay-gate-6-checkpoint-column-0--0.8",
           "relay-gate-6-checkpoint-column-0-0.8",
           "relay-gate-6-checkpoint-header-0",
-          "district-6-sentry-gauntlet--background-cloud-0-0",
-          "district-6-sentry-gauntlet--background-cloud-0-1",
-          "district-6-sentry-gauntlet--background-cloud-0-2",
-          "district-6-sentry-gauntlet--background-cloud-1-0",
-          "district-6-sentry-gauntlet--background-cloud-1-1",
-          "district-6-sentry-gauntlet--background-cloud-1-2",
-          "district-6-sentry-gauntlet--background-cloud-2-0",
-          "district-6-sentry-gauntlet--background-cloud-2-1",
-          "district-6-sentry-gauntlet--background-cloud-2-2",
-          "district-6-sentry-gauntlet--background-cloud-3-0",
-          "district-6-sentry-gauntlet--background-cloud-3-1",
-          "district-6-sentry-gauntlet--background-cloud-3-2",
-          "district-6-sentry-gauntlet--background-cloud-4-0",
-          "district-6-sentry-gauntlet--background-cloud-4-1",
-          "district-6-sentry-gauntlet--background-cloud-4-2",
-          "district-6-sentry-gauntlet--background-cloud-5-0",
-          "district-6-sentry-gauntlet--background-cloud-5-1",
-          "district-6-sentry-gauntlet--background-cloud-5-2",
-          "district-7-cloudstep-climb--background-mountain-0",
-          "district-7-cloudstep-climb--background-mountain-1",
-          "district-7-cloudstep-climb--background-mountain-2",
-          "district-7-cloudstep-climb--background-mountain-3",
-          "district-7-cloudstep-climb--background-mountain-4",
-          "district-7-cloudstep-climb--background-mountain-5",
-          "district-7-cloudstep-climb--background-mountain-6",
-          "district-7-cloudstep-climb--background-mountain-7",
-          "district-7-cloudstep-climb--platform-ground-0",
           "district-7-cloudstep-climb--platform-grass-top-0",
           "district-7-cloudstep-climb--cliff-rock-0-0",
           "district-7-cloudstep-climb--cliff-rock-0-1",
           "district-7-cloudstep-climb--cliff-rock-0-2",
           "district-7-cloudstep-climb--cliff-rock-0-3",
-          "district-7-cloudstep-climb--platform-ground-1",
           "district-7-cloudstep-climb--platform-grass-top-1",
           "district-7-cloudstep-climb--cliff-rock-1-0",
           "district-7-cloudstep-climb--cliff-rock-1-1",
-          "district-7-cloudstep-climb--platform-ground-2",
           "district-7-cloudstep-climb--platform-grass-top-2",
           "district-7-cloudstep-climb--cliff-rock-2-0",
           "district-7-cloudstep-climb--cliff-rock-2-1",
-          "district-7-cloudstep-climb--platform-ground-3",
           "district-7-cloudstep-climb--platform-grass-top-3",
           "district-7-cloudstep-climb--cliff-rock-3-0",
           "district-7-cloudstep-climb--cliff-rock-3-1",
-          "district-7-cloudstep-climb--platform-ground-4",
           "district-7-cloudstep-climb--platform-grass-top-4",
           "district-7-cloudstep-climb--cliff-rock-4-0",
           "district-7-cloudstep-climb--cliff-rock-4-1",
-          "district-7-cloudstep-climb--platform-ground-5",
           "district-7-cloudstep-climb--platform-grass-top-5",
           "district-7-cloudstep-climb--cliff-rock-5-0",
           "district-7-cloudstep-climb--cliff-rock-5-1",
           "district-7-cloudstep-climb--cliff-rock-5-2",
-          "district-7-cloudstep-climb--platform-ground-6",
           "district-7-cloudstep-climb--platform-grass-top-6",
           "district-7-cloudstep-climb--cliff-rock-6-0",
           "district-7-cloudstep-climb--cliff-rock-6-1",
           "district-7-cloudstep-climb--cliff-rock-6-2",
-          "district-7-cloudstep-climb--platform-ground-7",
           "district-7-cloudstep-climb--platform-grass-top-7",
           "district-7-cloudstep-climb--cliff-rock-7-0",
           "district-7-cloudstep-climb--cliff-rock-7-1",
-          "district-7-cloudstep-climb--platform-ground-8",
           "district-7-cloudstep-climb--platform-grass-top-8",
           "district-7-cloudstep-climb--cliff-rock-8-0",
           "district-7-cloudstep-climb--cliff-rock-8-1",
           "district-7-cloudstep-climb--cliff-rock-8-2",
-          "district-7-cloudstep-climb--platform-ground-9",
           "district-7-cloudstep-climb--platform-grass-top-9",
           "district-7-cloudstep-climb--cliff-rock-9-0",
           "district-7-cloudstep-climb--cliff-rock-9-1",
-          "district-7-cloudstep-climb--platform-ground-10",
           "district-7-cloudstep-climb--platform-grass-top-10",
           "district-7-cloudstep-climb--cliff-rock-10-0",
           "district-7-cloudstep-climb--cliff-rock-10-1",
@@ -51123,124 +54114,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-7-cloudstep-climb--hazard-lava-7",
           "district-7-cloudstep-climb--hazard-lava-8",
           "district-7-cloudstep-climb--hazard-lava-9",
-          "district-7-cloudstep-climb--tree-trunk-0",
-          "district-7-cloudstep-climb--tree-canopy-0",
-          "district-7-cloudstep-climb--tree-trunk-1",
-          "district-7-cloudstep-climb--tree-canopy-1",
-          "district-7-cloudstep-climb--tree-trunk-2",
-          "district-7-cloudstep-climb--tree-canopy-2",
-          "district-7-cloudstep-climb--tree-trunk-3",
-          "district-7-cloudstep-climb--tree-canopy-3",
-          "district-7-cloudstep-climb--tree-trunk-4",
-          "district-7-cloudstep-climb--tree-canopy-4",
-          "district-7-cloudstep-climb--tree-trunk-5",
-          "district-7-cloudstep-climb--tree-canopy-5",
-          "district-7-cloudstep-climb--tree-trunk-6",
-          "district-7-cloudstep-climb--tree-canopy-6",
-          "district-7-cloudstep-climb--tree-trunk-7",
-          "district-7-cloudstep-climb--tree-canopy-7",
-          "district-7-cloudstep-climb--tree-trunk-8",
-          "district-7-cloudstep-climb--tree-canopy-8",
-          "district-7-cloudstep-climb--tree-trunk-9",
-          "district-7-cloudstep-climb--tree-canopy-9",
-          "district-7-cloudstep-climb--tree-trunk-10",
-          "district-7-cloudstep-climb--tree-canopy-10",
-          "district-7-cloudstep-climb--collectible-coin-0",
-          "district-7-cloudstep-climb--collectible-coin-1",
-          "district-7-cloudstep-climb--collectible-coin-2",
-          "district-7-cloudstep-climb--collectible-coin-3",
-          "district-7-cloudstep-climb--collectible-coin-4",
-          "district-7-cloudstep-climb--collectible-coin-5",
-          "district-7-cloudstep-climb--collectible-coin-6",
-          "district-7-cloudstep-climb--collectible-coin-7",
-          "district-7-cloudstep-climb--collectible-coin-8",
-          "district-7-cloudstep-climb--collectible-coin-9",
-          "district-7-cloudstep-climb--collectible-coin-10",
-          "district-7-cloudstep-climb--collectible-coin-11",
-          "district-7-cloudstep-climb--collectible-coin-12",
-          "district-7-cloudstep-climb--collectible-coin-13",
-          "district-7-cloudstep-climb--collectible-coin-14",
-          "district-7-cloudstep-climb--collectible-coin-15",
-          "district-7-cloudstep-climb--collectible-coin-16",
-          "district-7-cloudstep-climb--collectible-coin-17",
-          "district-7-cloudstep-climb--collectible-coin-18",
-          "district-7-cloudstep-climb--collectible-coin-19",
-          "district-7-cloudstep-climb--collectible-coin-20",
           "relay-gate-7-checkpoint-column-1--0.8",
           "relay-gate-7-checkpoint-column-1-0.8",
           "relay-gate-7-checkpoint-header-1",
-          "district-7-cloudstep-climb--background-cloud-0-0",
-          "district-7-cloudstep-climb--background-cloud-0-1",
-          "district-7-cloudstep-climb--background-cloud-0-2",
-          "district-7-cloudstep-climb--background-cloud-1-0",
-          "district-7-cloudstep-climb--background-cloud-1-1",
-          "district-7-cloudstep-climb--background-cloud-1-2",
-          "district-7-cloudstep-climb--background-cloud-2-0",
-          "district-7-cloudstep-climb--background-cloud-2-1",
-          "district-7-cloudstep-climb--background-cloud-2-2",
-          "district-7-cloudstep-climb--background-cloud-3-0",
-          "district-7-cloudstep-climb--background-cloud-3-1",
-          "district-7-cloudstep-climb--background-cloud-3-2",
-          "district-7-cloudstep-climb--background-cloud-4-0",
-          "district-7-cloudstep-climb--background-cloud-4-1",
-          "district-7-cloudstep-climb--background-cloud-4-2",
-          "district-7-cloudstep-climb--background-cloud-5-0",
-          "district-7-cloudstep-climb--background-cloud-5-1",
-          "district-7-cloudstep-climb--background-cloud-5-2",
-          "district-8-shard-terraces--background-mountain-0",
-          "district-8-shard-terraces--background-mountain-1",
-          "district-8-shard-terraces--background-mountain-2",
-          "district-8-shard-terraces--background-mountain-3",
-          "district-8-shard-terraces--background-mountain-4",
-          "district-8-shard-terraces--background-mountain-5",
-          "district-8-shard-terraces--background-mountain-6",
-          "district-8-shard-terraces--background-mountain-7",
-          "district-8-shard-terraces--platform-ground-0",
           "district-8-shard-terraces--platform-grass-top-0",
           "district-8-shard-terraces--cliff-rock-0-0",
           "district-8-shard-terraces--cliff-rock-0-1",
           "district-8-shard-terraces--cliff-rock-0-2",
           "district-8-shard-terraces--cliff-rock-0-3",
-          "district-8-shard-terraces--platform-ground-1",
           "district-8-shard-terraces--platform-grass-top-1",
           "district-8-shard-terraces--cliff-rock-1-0",
           "district-8-shard-terraces--cliff-rock-1-1",
-          "district-8-shard-terraces--platform-ground-2",
           "district-8-shard-terraces--platform-grass-top-2",
           "district-8-shard-terraces--cliff-rock-2-0",
           "district-8-shard-terraces--cliff-rock-2-1",
-          "district-8-shard-terraces--platform-ground-3",
           "district-8-shard-terraces--platform-grass-top-3",
           "district-8-shard-terraces--cliff-rock-3-0",
           "district-8-shard-terraces--cliff-rock-3-1",
-          "district-8-shard-terraces--platform-ground-4",
           "district-8-shard-terraces--platform-grass-top-4",
           "district-8-shard-terraces--cliff-rock-4-0",
           "district-8-shard-terraces--cliff-rock-4-1",
-          "district-8-shard-terraces--platform-ground-5",
           "district-8-shard-terraces--platform-grass-top-5",
           "district-8-shard-terraces--cliff-rock-5-0",
           "district-8-shard-terraces--cliff-rock-5-1",
           "district-8-shard-terraces--cliff-rock-5-2",
-          "district-8-shard-terraces--platform-ground-6",
           "district-8-shard-terraces--platform-grass-top-6",
           "district-8-shard-terraces--cliff-rock-6-0",
           "district-8-shard-terraces--cliff-rock-6-1",
           "district-8-shard-terraces--cliff-rock-6-2",
-          "district-8-shard-terraces--platform-ground-7",
           "district-8-shard-terraces--platform-grass-top-7",
           "district-8-shard-terraces--cliff-rock-7-0",
           "district-8-shard-terraces--cliff-rock-7-1",
-          "district-8-shard-terraces--platform-ground-8",
           "district-8-shard-terraces--platform-grass-top-8",
           "district-8-shard-terraces--cliff-rock-8-0",
           "district-8-shard-terraces--cliff-rock-8-1",
           "district-8-shard-terraces--cliff-rock-8-2",
-          "district-8-shard-terraces--platform-ground-9",
           "district-8-shard-terraces--platform-grass-top-9",
           "district-8-shard-terraces--cliff-rock-9-0",
           "district-8-shard-terraces--cliff-rock-9-1",
-          "district-8-shard-terraces--platform-ground-10",
           "district-8-shard-terraces--platform-grass-top-10",
           "district-8-shard-terraces--cliff-rock-10-0",
           "district-8-shard-terraces--cliff-rock-10-1",
@@ -51273,124 +54184,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-8-shard-terraces--hazard-lava-7",
           "district-8-shard-terraces--hazard-lava-8",
           "district-8-shard-terraces--hazard-lava-9",
-          "district-8-shard-terraces--tree-trunk-0",
-          "district-8-shard-terraces--tree-canopy-0",
-          "district-8-shard-terraces--tree-trunk-1",
-          "district-8-shard-terraces--tree-canopy-1",
-          "district-8-shard-terraces--tree-trunk-2",
-          "district-8-shard-terraces--tree-canopy-2",
-          "district-8-shard-terraces--tree-trunk-3",
-          "district-8-shard-terraces--tree-canopy-3",
-          "district-8-shard-terraces--tree-trunk-4",
-          "district-8-shard-terraces--tree-canopy-4",
-          "district-8-shard-terraces--tree-trunk-5",
-          "district-8-shard-terraces--tree-canopy-5",
-          "district-8-shard-terraces--tree-trunk-6",
-          "district-8-shard-terraces--tree-canopy-6",
-          "district-8-shard-terraces--tree-trunk-7",
-          "district-8-shard-terraces--tree-canopy-7",
-          "district-8-shard-terraces--tree-trunk-8",
-          "district-8-shard-terraces--tree-canopy-8",
-          "district-8-shard-terraces--tree-trunk-9",
-          "district-8-shard-terraces--tree-canopy-9",
-          "district-8-shard-terraces--tree-trunk-10",
-          "district-8-shard-terraces--tree-canopy-10",
-          "district-8-shard-terraces--collectible-coin-0",
-          "district-8-shard-terraces--collectible-coin-1",
-          "district-8-shard-terraces--collectible-coin-2",
-          "district-8-shard-terraces--collectible-coin-3",
-          "district-8-shard-terraces--collectible-coin-4",
-          "district-8-shard-terraces--collectible-coin-5",
-          "district-8-shard-terraces--collectible-coin-6",
-          "district-8-shard-terraces--collectible-coin-7",
-          "district-8-shard-terraces--collectible-coin-8",
-          "district-8-shard-terraces--collectible-coin-9",
-          "district-8-shard-terraces--collectible-coin-10",
-          "district-8-shard-terraces--collectible-coin-11",
-          "district-8-shard-terraces--collectible-coin-12",
-          "district-8-shard-terraces--collectible-coin-13",
-          "district-8-shard-terraces--collectible-coin-14",
-          "district-8-shard-terraces--collectible-coin-15",
-          "district-8-shard-terraces--collectible-coin-16",
-          "district-8-shard-terraces--collectible-coin-17",
-          "district-8-shard-terraces--collectible-coin-18",
-          "district-8-shard-terraces--collectible-coin-19",
-          "district-8-shard-terraces--collectible-coin-20",
           "relay-gate-8-checkpoint-column-2--0.8",
           "relay-gate-8-checkpoint-column-2-0.8",
           "relay-gate-8-checkpoint-header-2",
-          "district-8-shard-terraces--background-cloud-0-0",
-          "district-8-shard-terraces--background-cloud-0-1",
-          "district-8-shard-terraces--background-cloud-0-2",
-          "district-8-shard-terraces--background-cloud-1-0",
-          "district-8-shard-terraces--background-cloud-1-1",
-          "district-8-shard-terraces--background-cloud-1-2",
-          "district-8-shard-terraces--background-cloud-2-0",
-          "district-8-shard-terraces--background-cloud-2-1",
-          "district-8-shard-terraces--background-cloud-2-2",
-          "district-8-shard-terraces--background-cloud-3-0",
-          "district-8-shard-terraces--background-cloud-3-1",
-          "district-8-shard-terraces--background-cloud-3-2",
-          "district-8-shard-terraces--background-cloud-4-0",
-          "district-8-shard-terraces--background-cloud-4-1",
-          "district-8-shard-terraces--background-cloud-4-2",
-          "district-8-shard-terraces--background-cloud-5-0",
-          "district-8-shard-terraces--background-cloud-5-1",
-          "district-8-shard-terraces--background-cloud-5-2",
-          "district-9-crown-ascent--background-mountain-0",
-          "district-9-crown-ascent--background-mountain-1",
-          "district-9-crown-ascent--background-mountain-2",
-          "district-9-crown-ascent--background-mountain-3",
-          "district-9-crown-ascent--background-mountain-4",
-          "district-9-crown-ascent--background-mountain-5",
-          "district-9-crown-ascent--background-mountain-6",
-          "district-9-crown-ascent--background-mountain-7",
-          "district-9-crown-ascent--platform-ground-0",
           "district-9-crown-ascent--platform-grass-top-0",
           "district-9-crown-ascent--cliff-rock-0-0",
           "district-9-crown-ascent--cliff-rock-0-1",
           "district-9-crown-ascent--cliff-rock-0-2",
           "district-9-crown-ascent--cliff-rock-0-3",
-          "district-9-crown-ascent--platform-ground-1",
           "district-9-crown-ascent--platform-grass-top-1",
           "district-9-crown-ascent--cliff-rock-1-0",
           "district-9-crown-ascent--cliff-rock-1-1",
-          "district-9-crown-ascent--platform-ground-2",
           "district-9-crown-ascent--platform-grass-top-2",
           "district-9-crown-ascent--cliff-rock-2-0",
           "district-9-crown-ascent--cliff-rock-2-1",
-          "district-9-crown-ascent--platform-ground-3",
           "district-9-crown-ascent--platform-grass-top-3",
           "district-9-crown-ascent--cliff-rock-3-0",
           "district-9-crown-ascent--cliff-rock-3-1",
-          "district-9-crown-ascent--platform-ground-4",
           "district-9-crown-ascent--platform-grass-top-4",
           "district-9-crown-ascent--cliff-rock-4-0",
           "district-9-crown-ascent--cliff-rock-4-1",
-          "district-9-crown-ascent--platform-ground-5",
           "district-9-crown-ascent--platform-grass-top-5",
           "district-9-crown-ascent--cliff-rock-5-0",
           "district-9-crown-ascent--cliff-rock-5-1",
           "district-9-crown-ascent--cliff-rock-5-2",
-          "district-9-crown-ascent--platform-ground-6",
           "district-9-crown-ascent--platform-grass-top-6",
           "district-9-crown-ascent--cliff-rock-6-0",
           "district-9-crown-ascent--cliff-rock-6-1",
           "district-9-crown-ascent--cliff-rock-6-2",
-          "district-9-crown-ascent--platform-ground-7",
           "district-9-crown-ascent--platform-grass-top-7",
           "district-9-crown-ascent--cliff-rock-7-0",
           "district-9-crown-ascent--cliff-rock-7-1",
-          "district-9-crown-ascent--platform-ground-8",
           "district-9-crown-ascent--platform-grass-top-8",
           "district-9-crown-ascent--cliff-rock-8-0",
           "district-9-crown-ascent--cliff-rock-8-1",
           "district-9-crown-ascent--cliff-rock-8-2",
-          "district-9-crown-ascent--platform-ground-9",
           "district-9-crown-ascent--platform-grass-top-9",
           "district-9-crown-ascent--cliff-rock-9-0",
           "district-9-crown-ascent--cliff-rock-9-1",
-          "district-9-crown-ascent--platform-ground-10",
           "district-9-crown-ascent--platform-grass-top-10",
           "district-9-crown-ascent--cliff-rock-10-0",
           "district-9-crown-ascent--cliff-rock-10-1",
@@ -51423,124 +54254,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-9-crown-ascent--hazard-lava-7",
           "district-9-crown-ascent--hazard-lava-8",
           "district-9-crown-ascent--hazard-lava-9",
-          "district-9-crown-ascent--tree-trunk-0",
-          "district-9-crown-ascent--tree-canopy-0",
-          "district-9-crown-ascent--tree-trunk-1",
-          "district-9-crown-ascent--tree-canopy-1",
-          "district-9-crown-ascent--tree-trunk-2",
-          "district-9-crown-ascent--tree-canopy-2",
-          "district-9-crown-ascent--tree-trunk-3",
-          "district-9-crown-ascent--tree-canopy-3",
-          "district-9-crown-ascent--tree-trunk-4",
-          "district-9-crown-ascent--tree-canopy-4",
-          "district-9-crown-ascent--tree-trunk-5",
-          "district-9-crown-ascent--tree-canopy-5",
-          "district-9-crown-ascent--tree-trunk-6",
-          "district-9-crown-ascent--tree-canopy-6",
-          "district-9-crown-ascent--tree-trunk-7",
-          "district-9-crown-ascent--tree-canopy-7",
-          "district-9-crown-ascent--tree-trunk-8",
-          "district-9-crown-ascent--tree-canopy-8",
-          "district-9-crown-ascent--tree-trunk-9",
-          "district-9-crown-ascent--tree-canopy-9",
-          "district-9-crown-ascent--tree-trunk-10",
-          "district-9-crown-ascent--tree-canopy-10",
-          "district-9-crown-ascent--collectible-coin-0",
-          "district-9-crown-ascent--collectible-coin-1",
-          "district-9-crown-ascent--collectible-coin-2",
-          "district-9-crown-ascent--collectible-coin-3",
-          "district-9-crown-ascent--collectible-coin-4",
-          "district-9-crown-ascent--collectible-coin-5",
-          "district-9-crown-ascent--collectible-coin-6",
-          "district-9-crown-ascent--collectible-coin-7",
-          "district-9-crown-ascent--collectible-coin-8",
-          "district-9-crown-ascent--collectible-coin-9",
-          "district-9-crown-ascent--collectible-coin-10",
-          "district-9-crown-ascent--collectible-coin-11",
-          "district-9-crown-ascent--collectible-coin-12",
-          "district-9-crown-ascent--collectible-coin-13",
-          "district-9-crown-ascent--collectible-coin-14",
-          "district-9-crown-ascent--collectible-coin-15",
-          "district-9-crown-ascent--collectible-coin-16",
-          "district-9-crown-ascent--collectible-coin-17",
-          "district-9-crown-ascent--collectible-coin-18",
-          "district-9-crown-ascent--collectible-coin-19",
-          "district-9-crown-ascent--collectible-coin-20",
           "relay-gate-9-checkpoint-column-3--0.8",
           "relay-gate-9-checkpoint-column-3-0.8",
           "relay-gate-9-checkpoint-header-3",
-          "district-9-crown-ascent--background-cloud-0-0",
-          "district-9-crown-ascent--background-cloud-0-1",
-          "district-9-crown-ascent--background-cloud-0-2",
-          "district-9-crown-ascent--background-cloud-1-0",
-          "district-9-crown-ascent--background-cloud-1-1",
-          "district-9-crown-ascent--background-cloud-1-2",
-          "district-9-crown-ascent--background-cloud-2-0",
-          "district-9-crown-ascent--background-cloud-2-1",
-          "district-9-crown-ascent--background-cloud-2-2",
-          "district-9-crown-ascent--background-cloud-3-0",
-          "district-9-crown-ascent--background-cloud-3-1",
-          "district-9-crown-ascent--background-cloud-3-2",
-          "district-9-crown-ascent--background-cloud-4-0",
-          "district-9-crown-ascent--background-cloud-4-1",
-          "district-9-crown-ascent--background-cloud-4-2",
-          "district-9-crown-ascent--background-cloud-5-0",
-          "district-9-crown-ascent--background-cloud-5-1",
-          "district-9-crown-ascent--background-cloud-5-2",
-          "district-10-summit-beacon--background-mountain-0",
-          "district-10-summit-beacon--background-mountain-1",
-          "district-10-summit-beacon--background-mountain-2",
-          "district-10-summit-beacon--background-mountain-3",
-          "district-10-summit-beacon--background-mountain-4",
-          "district-10-summit-beacon--background-mountain-5",
-          "district-10-summit-beacon--background-mountain-6",
-          "district-10-summit-beacon--background-mountain-7",
-          "district-10-summit-beacon--platform-ground-0",
           "district-10-summit-beacon--platform-grass-top-0",
           "district-10-summit-beacon--cliff-rock-0-0",
           "district-10-summit-beacon--cliff-rock-0-1",
           "district-10-summit-beacon--cliff-rock-0-2",
           "district-10-summit-beacon--cliff-rock-0-3",
-          "district-10-summit-beacon--platform-ground-1",
           "district-10-summit-beacon--platform-grass-top-1",
           "district-10-summit-beacon--cliff-rock-1-0",
           "district-10-summit-beacon--cliff-rock-1-1",
-          "district-10-summit-beacon--platform-ground-2",
           "district-10-summit-beacon--platform-grass-top-2",
           "district-10-summit-beacon--cliff-rock-2-0",
           "district-10-summit-beacon--cliff-rock-2-1",
-          "district-10-summit-beacon--platform-ground-3",
           "district-10-summit-beacon--platform-grass-top-3",
           "district-10-summit-beacon--cliff-rock-3-0",
           "district-10-summit-beacon--cliff-rock-3-1",
-          "district-10-summit-beacon--platform-ground-4",
           "district-10-summit-beacon--platform-grass-top-4",
           "district-10-summit-beacon--cliff-rock-4-0",
           "district-10-summit-beacon--cliff-rock-4-1",
-          "district-10-summit-beacon--platform-ground-5",
           "district-10-summit-beacon--platform-grass-top-5",
           "district-10-summit-beacon--cliff-rock-5-0",
           "district-10-summit-beacon--cliff-rock-5-1",
           "district-10-summit-beacon--cliff-rock-5-2",
-          "district-10-summit-beacon--platform-ground-6",
           "district-10-summit-beacon--platform-grass-top-6",
           "district-10-summit-beacon--cliff-rock-6-0",
           "district-10-summit-beacon--cliff-rock-6-1",
           "district-10-summit-beacon--cliff-rock-6-2",
-          "district-10-summit-beacon--platform-ground-7",
           "district-10-summit-beacon--platform-grass-top-7",
           "district-10-summit-beacon--cliff-rock-7-0",
           "district-10-summit-beacon--cliff-rock-7-1",
-          "district-10-summit-beacon--platform-ground-8",
           "district-10-summit-beacon--platform-grass-top-8",
           "district-10-summit-beacon--cliff-rock-8-0",
           "district-10-summit-beacon--cliff-rock-8-1",
           "district-10-summit-beacon--cliff-rock-8-2",
-          "district-10-summit-beacon--platform-ground-9",
           "district-10-summit-beacon--platform-grass-top-9",
           "district-10-summit-beacon--cliff-rock-9-0",
           "district-10-summit-beacon--cliff-rock-9-1",
-          "district-10-summit-beacon--platform-ground-10",
           "district-10-summit-beacon--platform-grass-top-10",
           "district-10-summit-beacon--cliff-rock-10-0",
           "district-10-summit-beacon--cliff-rock-10-1",
@@ -51573,89 +54324,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "district-10-summit-beacon--hazard-lava-7",
           "district-10-summit-beacon--hazard-lava-8",
           "district-10-summit-beacon--hazard-lava-9",
-          "district-10-summit-beacon--tree-trunk-0",
-          "district-10-summit-beacon--tree-canopy-0",
-          "district-10-summit-beacon--tree-trunk-1",
-          "district-10-summit-beacon--tree-canopy-1",
-          "district-10-summit-beacon--tree-trunk-2",
-          "district-10-summit-beacon--tree-canopy-2",
-          "district-10-summit-beacon--tree-trunk-3",
-          "district-10-summit-beacon--tree-canopy-3",
-          "district-10-summit-beacon--tree-trunk-4",
-          "district-10-summit-beacon--tree-canopy-4",
-          "district-10-summit-beacon--tree-trunk-5",
-          "district-10-summit-beacon--tree-canopy-5",
-          "district-10-summit-beacon--tree-trunk-6",
-          "district-10-summit-beacon--tree-canopy-6",
-          "district-10-summit-beacon--tree-trunk-7",
-          "district-10-summit-beacon--tree-canopy-7",
-          "district-10-summit-beacon--tree-trunk-8",
-          "district-10-summit-beacon--tree-canopy-8",
-          "district-10-summit-beacon--tree-trunk-9",
-          "district-10-summit-beacon--tree-canopy-9",
-          "district-10-summit-beacon--tree-trunk-10",
-          "district-10-summit-beacon--tree-canopy-10",
-          "district-10-summit-beacon--collectible-coin-0",
-          "district-10-summit-beacon--collectible-coin-1",
-          "district-10-summit-beacon--collectible-coin-2",
-          "district-10-summit-beacon--collectible-coin-3",
-          "district-10-summit-beacon--collectible-coin-4",
-          "district-10-summit-beacon--collectible-coin-5",
-          "district-10-summit-beacon--collectible-coin-6",
-          "district-10-summit-beacon--collectible-coin-7",
-          "district-10-summit-beacon--collectible-coin-8",
-          "district-10-summit-beacon--collectible-coin-9",
-          "district-10-summit-beacon--collectible-coin-10",
-          "district-10-summit-beacon--collectible-coin-11",
-          "district-10-summit-beacon--collectible-coin-12",
-          "district-10-summit-beacon--collectible-coin-13",
-          "district-10-summit-beacon--collectible-coin-14",
-          "district-10-summit-beacon--collectible-coin-15",
-          "district-10-summit-beacon--collectible-coin-16",
-          "district-10-summit-beacon--collectible-coin-17",
-          "district-10-summit-beacon--collectible-coin-18",
-          "district-10-summit-beacon--collectible-coin-19",
-          "district-10-summit-beacon--collectible-coin-20",
           "relay-gate-10-checkpoint-column-4--0.8",
           "relay-gate-10-checkpoint-column-4-0.8",
           "relay-gate-10-checkpoint-header-4",
           "summit-goal-finish-column--1",
           "summit-goal-finish-column-1",
-          "summit-goal-finish-header",
-          "district-10-summit-beacon--background-cloud-0-0",
-          "district-10-summit-beacon--background-cloud-0-1",
-          "district-10-summit-beacon--background-cloud-0-2",
-          "district-10-summit-beacon--background-cloud-1-0",
-          "district-10-summit-beacon--background-cloud-1-1",
-          "district-10-summit-beacon--background-cloud-1-2",
-          "district-10-summit-beacon--background-cloud-2-0",
-          "district-10-summit-beacon--background-cloud-2-1",
-          "district-10-summit-beacon--background-cloud-2-2",
-          "district-10-summit-beacon--background-cloud-3-0",
-          "district-10-summit-beacon--background-cloud-3-1",
-          "district-10-summit-beacon--background-cloud-3-2",
-          "district-10-summit-beacon--background-cloud-4-0",
-          "district-10-summit-beacon--background-cloud-4-1",
-          "district-10-summit-beacon--background-cloud-4-2",
-          "district-10-summit-beacon--background-cloud-5-0",
-          "district-10-summit-beacon--background-cloud-5-1",
-          "district-10-summit-beacon--background-cloud-5-2"
+          "summit-goal-finish-header"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 1503 nodes across 1503 roots."
+          "Detected 703 nodes across 703 roots."
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.13267017.glb",
-        "sourcePage": "https://kenney.nl/assets/platformer-kit",
-        "downloadUrl": "https://kenney.nl/media/pages/assets/platformer-kit/1585cf62b4-1775122253/kenney_platformer-kit.zip",
-        "sourceUrl": "https://kenney.nl/assets/platformer-kit",
+        "sourcePath": "apps/showcase-skyline-runner/generated/showcaseSkylineLevelOneWorld.glb",
+        "sourcePage": "https://kenney.nl/assets",
+        "downloadUrl": "https://kenney.nl/assets",
+        "sourceUrl": "https://kenney.nl/assets",
         "license": "CC0-1.0",
-        "licenseName": "Creative Commons CC0 1.0 Universal",
+        "licenseName": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Kenney",
-        "sourceFamily": "Kenney game kits",
+        "sourceFamily": "starter:kenney",
         "attribution": "Kenney",
         "retrievedAt": "2026-07-19T09:53:39.000Z",
         "evidence": [
@@ -51666,32 +54356,32 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-07-19T09:53:39.000Z"
       },
-      "sourcePath": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.13267017.glb",
-      "outputPath": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.13267017.glb",
+      "sourcePath": "apps/showcase-skyline-runner/generated/showcaseSkylineLevelOneWorld.glb",
+      "outputPath": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.ac8f17eb.glb",
       "license": "CC0-1.0",
       "author": "Kenney",
       "boundsMetadata": {
         "min": [
-          -15.804,
-          -2,
-          -9
+          -11.692,
+          -3.016,
+          -1.4
         ],
         "max": [
-          822.706,
-          18.05,
-          1.854
+          820.12,
+          17.23,
+          1.4
         ],
         "size": [
-          838.511,
-          20.05,
-          10.854
+          831.812,
+          20.246,
+          2.8
         ],
         "center": [
-          403.451,
-          8.025,
-          -3.573
+          404.214,
+          7.107,
+          0
         ],
-        "maxDimension": 838.511,
+        "maxDimension": 831.812,
         "grounded": false
       },
       "materialMetadata": [
@@ -51774,78 +54464,47 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "manifest-override",
-        "view": "side-scroller-world-view",
-        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts production-runtime side-on world probe",
+        "source": "unknown",
         "messages": [
-          "The authored side-scroller plane and +Y-up presentation are visually readable in the current hash-bound standalone production-runtime probe. This world-role view makes no character, vehicle, or weapon forward-axis claim and does not replace independent final route review."
-        ],
-        "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
-        "checkedAt": "2026-08-23T10:52:29.329Z",
-        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld",
-        "renderedProbe": {
-          "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.png",
-          "sha256": "sha256-c49cc52c51e51c6bd6c235668f3c2f139767c3bd81d832fc6ca8c0bdc66bdbe3",
-          "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
-          "checkedAt": "2026-08-23T10:52:29.329Z",
-          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld"
-        }
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
       },
       "nodeNames": [
-        "district-1-grove-tutorial--background-mountain-0",
-        "district-1-grove-tutorial--background-mountain-1",
-        "district-1-grove-tutorial--background-mountain-2",
-        "district-1-grove-tutorial--background-mountain-3",
-        "district-1-grove-tutorial--background-mountain-4",
-        "district-1-grove-tutorial--background-mountain-5",
-        "district-1-grove-tutorial--background-mountain-6",
-        "district-1-grove-tutorial--background-mountain-7",
-        "district-1-grove-tutorial--platform-ground-0",
         "district-1-grove-tutorial--platform-grass-top-0",
         "district-1-grove-tutorial--cliff-rock-0-0",
         "district-1-grove-tutorial--cliff-rock-0-1",
         "district-1-grove-tutorial--cliff-rock-0-2",
         "district-1-grove-tutorial--cliff-rock-0-3",
-        "district-1-grove-tutorial--platform-ground-1",
         "district-1-grove-tutorial--platform-grass-top-1",
         "district-1-grove-tutorial--cliff-rock-1-0",
         "district-1-grove-tutorial--cliff-rock-1-1",
-        "district-1-grove-tutorial--platform-ground-2",
         "district-1-grove-tutorial--platform-grass-top-2",
         "district-1-grove-tutorial--cliff-rock-2-0",
         "district-1-grove-tutorial--cliff-rock-2-1",
-        "district-1-grove-tutorial--platform-ground-3",
         "district-1-grove-tutorial--platform-grass-top-3",
         "district-1-grove-tutorial--cliff-rock-3-0",
         "district-1-grove-tutorial--cliff-rock-3-1",
-        "district-1-grove-tutorial--platform-ground-4",
         "district-1-grove-tutorial--platform-grass-top-4",
         "district-1-grove-tutorial--cliff-rock-4-0",
         "district-1-grove-tutorial--cliff-rock-4-1",
-        "district-1-grove-tutorial--platform-ground-5",
         "district-1-grove-tutorial--platform-grass-top-5",
         "district-1-grove-tutorial--cliff-rock-5-0",
         "district-1-grove-tutorial--cliff-rock-5-1",
         "district-1-grove-tutorial--cliff-rock-5-2",
-        "district-1-grove-tutorial--platform-ground-6",
         "district-1-grove-tutorial--platform-grass-top-6",
         "district-1-grove-tutorial--cliff-rock-6-0",
         "district-1-grove-tutorial--cliff-rock-6-1",
         "district-1-grove-tutorial--cliff-rock-6-2",
-        "district-1-grove-tutorial--platform-ground-7",
         "district-1-grove-tutorial--platform-grass-top-7",
         "district-1-grove-tutorial--cliff-rock-7-0",
         "district-1-grove-tutorial--cliff-rock-7-1",
-        "district-1-grove-tutorial--platform-ground-8",
         "district-1-grove-tutorial--platform-grass-top-8",
         "district-1-grove-tutorial--cliff-rock-8-0",
         "district-1-grove-tutorial--cliff-rock-8-1",
         "district-1-grove-tutorial--cliff-rock-8-2",
-        "district-1-grove-tutorial--platform-ground-9",
         "district-1-grove-tutorial--platform-grass-top-9",
         "district-1-grove-tutorial--cliff-rock-9-0",
         "district-1-grove-tutorial--cliff-rock-9-1",
-        "district-1-grove-tutorial--platform-ground-10",
         "district-1-grove-tutorial--platform-grass-top-10",
         "district-1-grove-tutorial--cliff-rock-10-0",
         "district-1-grove-tutorial--cliff-rock-10-1",
@@ -51878,124 +54537,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-1-grove-tutorial--hazard-lava-7",
         "district-1-grove-tutorial--hazard-lava-8",
         "district-1-grove-tutorial--hazard-lava-9",
-        "district-1-grove-tutorial--tree-trunk-0",
-        "district-1-grove-tutorial--tree-canopy-0",
-        "district-1-grove-tutorial--tree-trunk-1",
-        "district-1-grove-tutorial--tree-canopy-1",
-        "district-1-grove-tutorial--tree-trunk-2",
-        "district-1-grove-tutorial--tree-canopy-2",
-        "district-1-grove-tutorial--tree-trunk-3",
-        "district-1-grove-tutorial--tree-canopy-3",
-        "district-1-grove-tutorial--tree-trunk-4",
-        "district-1-grove-tutorial--tree-canopy-4",
-        "district-1-grove-tutorial--tree-trunk-5",
-        "district-1-grove-tutorial--tree-canopy-5",
-        "district-1-grove-tutorial--tree-trunk-6",
-        "district-1-grove-tutorial--tree-canopy-6",
-        "district-1-grove-tutorial--tree-trunk-7",
-        "district-1-grove-tutorial--tree-canopy-7",
-        "district-1-grove-tutorial--tree-trunk-8",
-        "district-1-grove-tutorial--tree-canopy-8",
-        "district-1-grove-tutorial--tree-trunk-9",
-        "district-1-grove-tutorial--tree-canopy-9",
-        "district-1-grove-tutorial--tree-trunk-10",
-        "district-1-grove-tutorial--tree-canopy-10",
-        "district-1-grove-tutorial--collectible-coin-0",
-        "district-1-grove-tutorial--collectible-coin-1",
-        "district-1-grove-tutorial--collectible-coin-2",
-        "district-1-grove-tutorial--collectible-coin-3",
-        "district-1-grove-tutorial--collectible-coin-4",
-        "district-1-grove-tutorial--collectible-coin-5",
-        "district-1-grove-tutorial--collectible-coin-6",
-        "district-1-grove-tutorial--collectible-coin-7",
-        "district-1-grove-tutorial--collectible-coin-8",
-        "district-1-grove-tutorial--collectible-coin-9",
-        "district-1-grove-tutorial--collectible-coin-10",
-        "district-1-grove-tutorial--collectible-coin-11",
-        "district-1-grove-tutorial--collectible-coin-12",
-        "district-1-grove-tutorial--collectible-coin-13",
-        "district-1-grove-tutorial--collectible-coin-14",
-        "district-1-grove-tutorial--collectible-coin-15",
-        "district-1-grove-tutorial--collectible-coin-16",
-        "district-1-grove-tutorial--collectible-coin-17",
-        "district-1-grove-tutorial--collectible-coin-18",
-        "district-1-grove-tutorial--collectible-coin-19",
-        "district-1-grove-tutorial--collectible-coin-20",
         "relay-gate-1-checkpoint-column-0--0.8",
         "relay-gate-1-checkpoint-column-0-0.8",
         "relay-gate-1-checkpoint-header-0",
-        "district-1-grove-tutorial--background-cloud-0-0",
-        "district-1-grove-tutorial--background-cloud-0-1",
-        "district-1-grove-tutorial--background-cloud-0-2",
-        "district-1-grove-tutorial--background-cloud-1-0",
-        "district-1-grove-tutorial--background-cloud-1-1",
-        "district-1-grove-tutorial--background-cloud-1-2",
-        "district-1-grove-tutorial--background-cloud-2-0",
-        "district-1-grove-tutorial--background-cloud-2-1",
-        "district-1-grove-tutorial--background-cloud-2-2",
-        "district-1-grove-tutorial--background-cloud-3-0",
-        "district-1-grove-tutorial--background-cloud-3-1",
-        "district-1-grove-tutorial--background-cloud-3-2",
-        "district-1-grove-tutorial--background-cloud-4-0",
-        "district-1-grove-tutorial--background-cloud-4-1",
-        "district-1-grove-tutorial--background-cloud-4-2",
-        "district-1-grove-tutorial--background-cloud-5-0",
-        "district-1-grove-tutorial--background-cloud-5-1",
-        "district-1-grove-tutorial--background-cloud-5-2",
-        "district-2-relay-orchard--background-mountain-0",
-        "district-2-relay-orchard--background-mountain-1",
-        "district-2-relay-orchard--background-mountain-2",
-        "district-2-relay-orchard--background-mountain-3",
-        "district-2-relay-orchard--background-mountain-4",
-        "district-2-relay-orchard--background-mountain-5",
-        "district-2-relay-orchard--background-mountain-6",
-        "district-2-relay-orchard--background-mountain-7",
-        "district-2-relay-orchard--platform-ground-0",
         "district-2-relay-orchard--platform-grass-top-0",
         "district-2-relay-orchard--cliff-rock-0-0",
         "district-2-relay-orchard--cliff-rock-0-1",
         "district-2-relay-orchard--cliff-rock-0-2",
         "district-2-relay-orchard--cliff-rock-0-3",
-        "district-2-relay-orchard--platform-ground-1",
         "district-2-relay-orchard--platform-grass-top-1",
         "district-2-relay-orchard--cliff-rock-1-0",
         "district-2-relay-orchard--cliff-rock-1-1",
-        "district-2-relay-orchard--platform-ground-2",
         "district-2-relay-orchard--platform-grass-top-2",
         "district-2-relay-orchard--cliff-rock-2-0",
         "district-2-relay-orchard--cliff-rock-2-1",
-        "district-2-relay-orchard--platform-ground-3",
         "district-2-relay-orchard--platform-grass-top-3",
         "district-2-relay-orchard--cliff-rock-3-0",
         "district-2-relay-orchard--cliff-rock-3-1",
-        "district-2-relay-orchard--platform-ground-4",
         "district-2-relay-orchard--platform-grass-top-4",
         "district-2-relay-orchard--cliff-rock-4-0",
         "district-2-relay-orchard--cliff-rock-4-1",
-        "district-2-relay-orchard--platform-ground-5",
         "district-2-relay-orchard--platform-grass-top-5",
         "district-2-relay-orchard--cliff-rock-5-0",
         "district-2-relay-orchard--cliff-rock-5-1",
         "district-2-relay-orchard--cliff-rock-5-2",
-        "district-2-relay-orchard--platform-ground-6",
         "district-2-relay-orchard--platform-grass-top-6",
         "district-2-relay-orchard--cliff-rock-6-0",
         "district-2-relay-orchard--cliff-rock-6-1",
         "district-2-relay-orchard--cliff-rock-6-2",
-        "district-2-relay-orchard--platform-ground-7",
         "district-2-relay-orchard--platform-grass-top-7",
         "district-2-relay-orchard--cliff-rock-7-0",
         "district-2-relay-orchard--cliff-rock-7-1",
-        "district-2-relay-orchard--platform-ground-8",
         "district-2-relay-orchard--platform-grass-top-8",
         "district-2-relay-orchard--cliff-rock-8-0",
         "district-2-relay-orchard--cliff-rock-8-1",
         "district-2-relay-orchard--cliff-rock-8-2",
-        "district-2-relay-orchard--platform-ground-9",
         "district-2-relay-orchard--platform-grass-top-9",
         "district-2-relay-orchard--cliff-rock-9-0",
         "district-2-relay-orchard--cliff-rock-9-1",
-        "district-2-relay-orchard--platform-ground-10",
         "district-2-relay-orchard--platform-grass-top-10",
         "district-2-relay-orchard--cliff-rock-10-0",
         "district-2-relay-orchard--cliff-rock-10-1",
@@ -52028,124 +54607,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-2-relay-orchard--hazard-lava-7",
         "district-2-relay-orchard--hazard-lava-8",
         "district-2-relay-orchard--hazard-lava-9",
-        "district-2-relay-orchard--tree-trunk-0",
-        "district-2-relay-orchard--tree-canopy-0",
-        "district-2-relay-orchard--tree-trunk-1",
-        "district-2-relay-orchard--tree-canopy-1",
-        "district-2-relay-orchard--tree-trunk-2",
-        "district-2-relay-orchard--tree-canopy-2",
-        "district-2-relay-orchard--tree-trunk-3",
-        "district-2-relay-orchard--tree-canopy-3",
-        "district-2-relay-orchard--tree-trunk-4",
-        "district-2-relay-orchard--tree-canopy-4",
-        "district-2-relay-orchard--tree-trunk-5",
-        "district-2-relay-orchard--tree-canopy-5",
-        "district-2-relay-orchard--tree-trunk-6",
-        "district-2-relay-orchard--tree-canopy-6",
-        "district-2-relay-orchard--tree-trunk-7",
-        "district-2-relay-orchard--tree-canopy-7",
-        "district-2-relay-orchard--tree-trunk-8",
-        "district-2-relay-orchard--tree-canopy-8",
-        "district-2-relay-orchard--tree-trunk-9",
-        "district-2-relay-orchard--tree-canopy-9",
-        "district-2-relay-orchard--tree-trunk-10",
-        "district-2-relay-orchard--tree-canopy-10",
-        "district-2-relay-orchard--collectible-coin-0",
-        "district-2-relay-orchard--collectible-coin-1",
-        "district-2-relay-orchard--collectible-coin-2",
-        "district-2-relay-orchard--collectible-coin-3",
-        "district-2-relay-orchard--collectible-coin-4",
-        "district-2-relay-orchard--collectible-coin-5",
-        "district-2-relay-orchard--collectible-coin-6",
-        "district-2-relay-orchard--collectible-coin-7",
-        "district-2-relay-orchard--collectible-coin-8",
-        "district-2-relay-orchard--collectible-coin-9",
-        "district-2-relay-orchard--collectible-coin-10",
-        "district-2-relay-orchard--collectible-coin-11",
-        "district-2-relay-orchard--collectible-coin-12",
-        "district-2-relay-orchard--collectible-coin-13",
-        "district-2-relay-orchard--collectible-coin-14",
-        "district-2-relay-orchard--collectible-coin-15",
-        "district-2-relay-orchard--collectible-coin-16",
-        "district-2-relay-orchard--collectible-coin-17",
-        "district-2-relay-orchard--collectible-coin-18",
-        "district-2-relay-orchard--collectible-coin-19",
-        "district-2-relay-orchard--collectible-coin-20",
         "relay-gate-2-checkpoint-column-1--0.8",
         "relay-gate-2-checkpoint-column-1-0.8",
         "relay-gate-2-checkpoint-header-1",
-        "district-2-relay-orchard--background-cloud-0-0",
-        "district-2-relay-orchard--background-cloud-0-1",
-        "district-2-relay-orchard--background-cloud-0-2",
-        "district-2-relay-orchard--background-cloud-1-0",
-        "district-2-relay-orchard--background-cloud-1-1",
-        "district-2-relay-orchard--background-cloud-1-2",
-        "district-2-relay-orchard--background-cloud-2-0",
-        "district-2-relay-orchard--background-cloud-2-1",
-        "district-2-relay-orchard--background-cloud-2-2",
-        "district-2-relay-orchard--background-cloud-3-0",
-        "district-2-relay-orchard--background-cloud-3-1",
-        "district-2-relay-orchard--background-cloud-3-2",
-        "district-2-relay-orchard--background-cloud-4-0",
-        "district-2-relay-orchard--background-cloud-4-1",
-        "district-2-relay-orchard--background-cloud-4-2",
-        "district-2-relay-orchard--background-cloud-5-0",
-        "district-2-relay-orchard--background-cloud-5-1",
-        "district-2-relay-orchard--background-cloud-5-2",
-        "district-3-windfall-bridge--background-mountain-0",
-        "district-3-windfall-bridge--background-mountain-1",
-        "district-3-windfall-bridge--background-mountain-2",
-        "district-3-windfall-bridge--background-mountain-3",
-        "district-3-windfall-bridge--background-mountain-4",
-        "district-3-windfall-bridge--background-mountain-5",
-        "district-3-windfall-bridge--background-mountain-6",
-        "district-3-windfall-bridge--background-mountain-7",
-        "district-3-windfall-bridge--platform-ground-0",
         "district-3-windfall-bridge--platform-grass-top-0",
         "district-3-windfall-bridge--cliff-rock-0-0",
         "district-3-windfall-bridge--cliff-rock-0-1",
         "district-3-windfall-bridge--cliff-rock-0-2",
         "district-3-windfall-bridge--cliff-rock-0-3",
-        "district-3-windfall-bridge--platform-ground-1",
         "district-3-windfall-bridge--platform-grass-top-1",
         "district-3-windfall-bridge--cliff-rock-1-0",
         "district-3-windfall-bridge--cliff-rock-1-1",
-        "district-3-windfall-bridge--platform-ground-2",
         "district-3-windfall-bridge--platform-grass-top-2",
         "district-3-windfall-bridge--cliff-rock-2-0",
         "district-3-windfall-bridge--cliff-rock-2-1",
-        "district-3-windfall-bridge--platform-ground-3",
         "district-3-windfall-bridge--platform-grass-top-3",
         "district-3-windfall-bridge--cliff-rock-3-0",
         "district-3-windfall-bridge--cliff-rock-3-1",
-        "district-3-windfall-bridge--platform-ground-4",
         "district-3-windfall-bridge--platform-grass-top-4",
         "district-3-windfall-bridge--cliff-rock-4-0",
         "district-3-windfall-bridge--cliff-rock-4-1",
-        "district-3-windfall-bridge--platform-ground-5",
         "district-3-windfall-bridge--platform-grass-top-5",
         "district-3-windfall-bridge--cliff-rock-5-0",
         "district-3-windfall-bridge--cliff-rock-5-1",
         "district-3-windfall-bridge--cliff-rock-5-2",
-        "district-3-windfall-bridge--platform-ground-6",
         "district-3-windfall-bridge--platform-grass-top-6",
         "district-3-windfall-bridge--cliff-rock-6-0",
         "district-3-windfall-bridge--cliff-rock-6-1",
         "district-3-windfall-bridge--cliff-rock-6-2",
-        "district-3-windfall-bridge--platform-ground-7",
         "district-3-windfall-bridge--platform-grass-top-7",
         "district-3-windfall-bridge--cliff-rock-7-0",
         "district-3-windfall-bridge--cliff-rock-7-1",
-        "district-3-windfall-bridge--platform-ground-8",
         "district-3-windfall-bridge--platform-grass-top-8",
         "district-3-windfall-bridge--cliff-rock-8-0",
         "district-3-windfall-bridge--cliff-rock-8-1",
         "district-3-windfall-bridge--cliff-rock-8-2",
-        "district-3-windfall-bridge--platform-ground-9",
         "district-3-windfall-bridge--platform-grass-top-9",
         "district-3-windfall-bridge--cliff-rock-9-0",
         "district-3-windfall-bridge--cliff-rock-9-1",
-        "district-3-windfall-bridge--platform-ground-10",
         "district-3-windfall-bridge--platform-grass-top-10",
         "district-3-windfall-bridge--cliff-rock-10-0",
         "district-3-windfall-bridge--cliff-rock-10-1",
@@ -52178,124 +54677,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-3-windfall-bridge--hazard-lava-7",
         "district-3-windfall-bridge--hazard-lava-8",
         "district-3-windfall-bridge--hazard-lava-9",
-        "district-3-windfall-bridge--tree-trunk-0",
-        "district-3-windfall-bridge--tree-canopy-0",
-        "district-3-windfall-bridge--tree-trunk-1",
-        "district-3-windfall-bridge--tree-canopy-1",
-        "district-3-windfall-bridge--tree-trunk-2",
-        "district-3-windfall-bridge--tree-canopy-2",
-        "district-3-windfall-bridge--tree-trunk-3",
-        "district-3-windfall-bridge--tree-canopy-3",
-        "district-3-windfall-bridge--tree-trunk-4",
-        "district-3-windfall-bridge--tree-canopy-4",
-        "district-3-windfall-bridge--tree-trunk-5",
-        "district-3-windfall-bridge--tree-canopy-5",
-        "district-3-windfall-bridge--tree-trunk-6",
-        "district-3-windfall-bridge--tree-canopy-6",
-        "district-3-windfall-bridge--tree-trunk-7",
-        "district-3-windfall-bridge--tree-canopy-7",
-        "district-3-windfall-bridge--tree-trunk-8",
-        "district-3-windfall-bridge--tree-canopy-8",
-        "district-3-windfall-bridge--tree-trunk-9",
-        "district-3-windfall-bridge--tree-canopy-9",
-        "district-3-windfall-bridge--tree-trunk-10",
-        "district-3-windfall-bridge--tree-canopy-10",
-        "district-3-windfall-bridge--collectible-coin-0",
-        "district-3-windfall-bridge--collectible-coin-1",
-        "district-3-windfall-bridge--collectible-coin-2",
-        "district-3-windfall-bridge--collectible-coin-3",
-        "district-3-windfall-bridge--collectible-coin-4",
-        "district-3-windfall-bridge--collectible-coin-5",
-        "district-3-windfall-bridge--collectible-coin-6",
-        "district-3-windfall-bridge--collectible-coin-7",
-        "district-3-windfall-bridge--collectible-coin-8",
-        "district-3-windfall-bridge--collectible-coin-9",
-        "district-3-windfall-bridge--collectible-coin-10",
-        "district-3-windfall-bridge--collectible-coin-11",
-        "district-3-windfall-bridge--collectible-coin-12",
-        "district-3-windfall-bridge--collectible-coin-13",
-        "district-3-windfall-bridge--collectible-coin-14",
-        "district-3-windfall-bridge--collectible-coin-15",
-        "district-3-windfall-bridge--collectible-coin-16",
-        "district-3-windfall-bridge--collectible-coin-17",
-        "district-3-windfall-bridge--collectible-coin-18",
-        "district-3-windfall-bridge--collectible-coin-19",
-        "district-3-windfall-bridge--collectible-coin-20",
         "relay-gate-3-checkpoint-column-2--0.8",
         "relay-gate-3-checkpoint-column-2-0.8",
         "relay-gate-3-checkpoint-header-2",
-        "district-3-windfall-bridge--background-cloud-0-0",
-        "district-3-windfall-bridge--background-cloud-0-1",
-        "district-3-windfall-bridge--background-cloud-0-2",
-        "district-3-windfall-bridge--background-cloud-1-0",
-        "district-3-windfall-bridge--background-cloud-1-1",
-        "district-3-windfall-bridge--background-cloud-1-2",
-        "district-3-windfall-bridge--background-cloud-2-0",
-        "district-3-windfall-bridge--background-cloud-2-1",
-        "district-3-windfall-bridge--background-cloud-2-2",
-        "district-3-windfall-bridge--background-cloud-3-0",
-        "district-3-windfall-bridge--background-cloud-3-1",
-        "district-3-windfall-bridge--background-cloud-3-2",
-        "district-3-windfall-bridge--background-cloud-4-0",
-        "district-3-windfall-bridge--background-cloud-4-1",
-        "district-3-windfall-bridge--background-cloud-4-2",
-        "district-3-windfall-bridge--background-cloud-5-0",
-        "district-3-windfall-bridge--background-cloud-5-1",
-        "district-3-windfall-bridge--background-cloud-5-2",
-        "district-4-canopy-switchback--background-mountain-0",
-        "district-4-canopy-switchback--background-mountain-1",
-        "district-4-canopy-switchback--background-mountain-2",
-        "district-4-canopy-switchback--background-mountain-3",
-        "district-4-canopy-switchback--background-mountain-4",
-        "district-4-canopy-switchback--background-mountain-5",
-        "district-4-canopy-switchback--background-mountain-6",
-        "district-4-canopy-switchback--background-mountain-7",
-        "district-4-canopy-switchback--platform-ground-0",
         "district-4-canopy-switchback--platform-grass-top-0",
         "district-4-canopy-switchback--cliff-rock-0-0",
         "district-4-canopy-switchback--cliff-rock-0-1",
         "district-4-canopy-switchback--cliff-rock-0-2",
         "district-4-canopy-switchback--cliff-rock-0-3",
-        "district-4-canopy-switchback--platform-ground-1",
         "district-4-canopy-switchback--platform-grass-top-1",
         "district-4-canopy-switchback--cliff-rock-1-0",
         "district-4-canopy-switchback--cliff-rock-1-1",
-        "district-4-canopy-switchback--platform-ground-2",
         "district-4-canopy-switchback--platform-grass-top-2",
         "district-4-canopy-switchback--cliff-rock-2-0",
         "district-4-canopy-switchback--cliff-rock-2-1",
-        "district-4-canopy-switchback--platform-ground-3",
         "district-4-canopy-switchback--platform-grass-top-3",
         "district-4-canopy-switchback--cliff-rock-3-0",
         "district-4-canopy-switchback--cliff-rock-3-1",
-        "district-4-canopy-switchback--platform-ground-4",
         "district-4-canopy-switchback--platform-grass-top-4",
         "district-4-canopy-switchback--cliff-rock-4-0",
         "district-4-canopy-switchback--cliff-rock-4-1",
-        "district-4-canopy-switchback--platform-ground-5",
         "district-4-canopy-switchback--platform-grass-top-5",
         "district-4-canopy-switchback--cliff-rock-5-0",
         "district-4-canopy-switchback--cliff-rock-5-1",
         "district-4-canopy-switchback--cliff-rock-5-2",
-        "district-4-canopy-switchback--platform-ground-6",
         "district-4-canopy-switchback--platform-grass-top-6",
         "district-4-canopy-switchback--cliff-rock-6-0",
         "district-4-canopy-switchback--cliff-rock-6-1",
         "district-4-canopy-switchback--cliff-rock-6-2",
-        "district-4-canopy-switchback--platform-ground-7",
         "district-4-canopy-switchback--platform-grass-top-7",
         "district-4-canopy-switchback--cliff-rock-7-0",
         "district-4-canopy-switchback--cliff-rock-7-1",
-        "district-4-canopy-switchback--platform-ground-8",
         "district-4-canopy-switchback--platform-grass-top-8",
         "district-4-canopy-switchback--cliff-rock-8-0",
         "district-4-canopy-switchback--cliff-rock-8-1",
         "district-4-canopy-switchback--cliff-rock-8-2",
-        "district-4-canopy-switchback--platform-ground-9",
         "district-4-canopy-switchback--platform-grass-top-9",
         "district-4-canopy-switchback--cliff-rock-9-0",
         "district-4-canopy-switchback--cliff-rock-9-1",
-        "district-4-canopy-switchback--platform-ground-10",
         "district-4-canopy-switchback--platform-grass-top-10",
         "district-4-canopy-switchback--cliff-rock-10-0",
         "district-4-canopy-switchback--cliff-rock-10-1",
@@ -52328,124 +54747,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-4-canopy-switchback--hazard-lava-7",
         "district-4-canopy-switchback--hazard-lava-8",
         "district-4-canopy-switchback--hazard-lava-9",
-        "district-4-canopy-switchback--tree-trunk-0",
-        "district-4-canopy-switchback--tree-canopy-0",
-        "district-4-canopy-switchback--tree-trunk-1",
-        "district-4-canopy-switchback--tree-canopy-1",
-        "district-4-canopy-switchback--tree-trunk-2",
-        "district-4-canopy-switchback--tree-canopy-2",
-        "district-4-canopy-switchback--tree-trunk-3",
-        "district-4-canopy-switchback--tree-canopy-3",
-        "district-4-canopy-switchback--tree-trunk-4",
-        "district-4-canopy-switchback--tree-canopy-4",
-        "district-4-canopy-switchback--tree-trunk-5",
-        "district-4-canopy-switchback--tree-canopy-5",
-        "district-4-canopy-switchback--tree-trunk-6",
-        "district-4-canopy-switchback--tree-canopy-6",
-        "district-4-canopy-switchback--tree-trunk-7",
-        "district-4-canopy-switchback--tree-canopy-7",
-        "district-4-canopy-switchback--tree-trunk-8",
-        "district-4-canopy-switchback--tree-canopy-8",
-        "district-4-canopy-switchback--tree-trunk-9",
-        "district-4-canopy-switchback--tree-canopy-9",
-        "district-4-canopy-switchback--tree-trunk-10",
-        "district-4-canopy-switchback--tree-canopy-10",
-        "district-4-canopy-switchback--collectible-coin-0",
-        "district-4-canopy-switchback--collectible-coin-1",
-        "district-4-canopy-switchback--collectible-coin-2",
-        "district-4-canopy-switchback--collectible-coin-3",
-        "district-4-canopy-switchback--collectible-coin-4",
-        "district-4-canopy-switchback--collectible-coin-5",
-        "district-4-canopy-switchback--collectible-coin-6",
-        "district-4-canopy-switchback--collectible-coin-7",
-        "district-4-canopy-switchback--collectible-coin-8",
-        "district-4-canopy-switchback--collectible-coin-9",
-        "district-4-canopy-switchback--collectible-coin-10",
-        "district-4-canopy-switchback--collectible-coin-11",
-        "district-4-canopy-switchback--collectible-coin-12",
-        "district-4-canopy-switchback--collectible-coin-13",
-        "district-4-canopy-switchback--collectible-coin-14",
-        "district-4-canopy-switchback--collectible-coin-15",
-        "district-4-canopy-switchback--collectible-coin-16",
-        "district-4-canopy-switchback--collectible-coin-17",
-        "district-4-canopy-switchback--collectible-coin-18",
-        "district-4-canopy-switchback--collectible-coin-19",
-        "district-4-canopy-switchback--collectible-coin-20",
         "relay-gate-4-checkpoint-column-3--0.8",
         "relay-gate-4-checkpoint-column-3-0.8",
         "relay-gate-4-checkpoint-header-3",
-        "district-4-canopy-switchback--background-cloud-0-0",
-        "district-4-canopy-switchback--background-cloud-0-1",
-        "district-4-canopy-switchback--background-cloud-0-2",
-        "district-4-canopy-switchback--background-cloud-1-0",
-        "district-4-canopy-switchback--background-cloud-1-1",
-        "district-4-canopy-switchback--background-cloud-1-2",
-        "district-4-canopy-switchback--background-cloud-2-0",
-        "district-4-canopy-switchback--background-cloud-2-1",
-        "district-4-canopy-switchback--background-cloud-2-2",
-        "district-4-canopy-switchback--background-cloud-3-0",
-        "district-4-canopy-switchback--background-cloud-3-1",
-        "district-4-canopy-switchback--background-cloud-3-2",
-        "district-4-canopy-switchback--background-cloud-4-0",
-        "district-4-canopy-switchback--background-cloud-4-1",
-        "district-4-canopy-switchback--background-cloud-4-2",
-        "district-4-canopy-switchback--background-cloud-5-0",
-        "district-4-canopy-switchback--background-cloud-5-1",
-        "district-4-canopy-switchback--background-cloud-5-2",
-        "district-5-warden-approach--background-mountain-0",
-        "district-5-warden-approach--background-mountain-1",
-        "district-5-warden-approach--background-mountain-2",
-        "district-5-warden-approach--background-mountain-3",
-        "district-5-warden-approach--background-mountain-4",
-        "district-5-warden-approach--background-mountain-5",
-        "district-5-warden-approach--background-mountain-6",
-        "district-5-warden-approach--background-mountain-7",
-        "district-5-warden-approach--platform-ground-0",
         "district-5-warden-approach--platform-grass-top-0",
         "district-5-warden-approach--cliff-rock-0-0",
         "district-5-warden-approach--cliff-rock-0-1",
         "district-5-warden-approach--cliff-rock-0-2",
         "district-5-warden-approach--cliff-rock-0-3",
-        "district-5-warden-approach--platform-ground-1",
         "district-5-warden-approach--platform-grass-top-1",
         "district-5-warden-approach--cliff-rock-1-0",
         "district-5-warden-approach--cliff-rock-1-1",
-        "district-5-warden-approach--platform-ground-2",
         "district-5-warden-approach--platform-grass-top-2",
         "district-5-warden-approach--cliff-rock-2-0",
         "district-5-warden-approach--cliff-rock-2-1",
-        "district-5-warden-approach--platform-ground-3",
         "district-5-warden-approach--platform-grass-top-3",
         "district-5-warden-approach--cliff-rock-3-0",
         "district-5-warden-approach--cliff-rock-3-1",
-        "district-5-warden-approach--platform-ground-4",
         "district-5-warden-approach--platform-grass-top-4",
         "district-5-warden-approach--cliff-rock-4-0",
         "district-5-warden-approach--cliff-rock-4-1",
-        "district-5-warden-approach--platform-ground-5",
         "district-5-warden-approach--platform-grass-top-5",
         "district-5-warden-approach--cliff-rock-5-0",
         "district-5-warden-approach--cliff-rock-5-1",
         "district-5-warden-approach--cliff-rock-5-2",
-        "district-5-warden-approach--platform-ground-6",
         "district-5-warden-approach--platform-grass-top-6",
         "district-5-warden-approach--cliff-rock-6-0",
         "district-5-warden-approach--cliff-rock-6-1",
         "district-5-warden-approach--cliff-rock-6-2",
-        "district-5-warden-approach--platform-ground-7",
         "district-5-warden-approach--platform-grass-top-7",
         "district-5-warden-approach--cliff-rock-7-0",
         "district-5-warden-approach--cliff-rock-7-1",
-        "district-5-warden-approach--platform-ground-8",
         "district-5-warden-approach--platform-grass-top-8",
         "district-5-warden-approach--cliff-rock-8-0",
         "district-5-warden-approach--cliff-rock-8-1",
         "district-5-warden-approach--cliff-rock-8-2",
-        "district-5-warden-approach--platform-ground-9",
         "district-5-warden-approach--platform-grass-top-9",
         "district-5-warden-approach--cliff-rock-9-0",
         "district-5-warden-approach--cliff-rock-9-1",
-        "district-5-warden-approach--platform-ground-10",
         "district-5-warden-approach--platform-grass-top-10",
         "district-5-warden-approach--cliff-rock-10-0",
         "district-5-warden-approach--cliff-rock-10-1",
@@ -52478,124 +54817,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-5-warden-approach--hazard-lava-7",
         "district-5-warden-approach--hazard-lava-8",
         "district-5-warden-approach--hazard-lava-9",
-        "district-5-warden-approach--tree-trunk-0",
-        "district-5-warden-approach--tree-canopy-0",
-        "district-5-warden-approach--tree-trunk-1",
-        "district-5-warden-approach--tree-canopy-1",
-        "district-5-warden-approach--tree-trunk-2",
-        "district-5-warden-approach--tree-canopy-2",
-        "district-5-warden-approach--tree-trunk-3",
-        "district-5-warden-approach--tree-canopy-3",
-        "district-5-warden-approach--tree-trunk-4",
-        "district-5-warden-approach--tree-canopy-4",
-        "district-5-warden-approach--tree-trunk-5",
-        "district-5-warden-approach--tree-canopy-5",
-        "district-5-warden-approach--tree-trunk-6",
-        "district-5-warden-approach--tree-canopy-6",
-        "district-5-warden-approach--tree-trunk-7",
-        "district-5-warden-approach--tree-canopy-7",
-        "district-5-warden-approach--tree-trunk-8",
-        "district-5-warden-approach--tree-canopy-8",
-        "district-5-warden-approach--tree-trunk-9",
-        "district-5-warden-approach--tree-canopy-9",
-        "district-5-warden-approach--tree-trunk-10",
-        "district-5-warden-approach--tree-canopy-10",
-        "district-5-warden-approach--collectible-coin-0",
-        "district-5-warden-approach--collectible-coin-1",
-        "district-5-warden-approach--collectible-coin-2",
-        "district-5-warden-approach--collectible-coin-3",
-        "district-5-warden-approach--collectible-coin-4",
-        "district-5-warden-approach--collectible-coin-5",
-        "district-5-warden-approach--collectible-coin-6",
-        "district-5-warden-approach--collectible-coin-7",
-        "district-5-warden-approach--collectible-coin-8",
-        "district-5-warden-approach--collectible-coin-9",
-        "district-5-warden-approach--collectible-coin-10",
-        "district-5-warden-approach--collectible-coin-11",
-        "district-5-warden-approach--collectible-coin-12",
-        "district-5-warden-approach--collectible-coin-13",
-        "district-5-warden-approach--collectible-coin-14",
-        "district-5-warden-approach--collectible-coin-15",
-        "district-5-warden-approach--collectible-coin-16",
-        "district-5-warden-approach--collectible-coin-17",
-        "district-5-warden-approach--collectible-coin-18",
-        "district-5-warden-approach--collectible-coin-19",
-        "district-5-warden-approach--collectible-coin-20",
         "relay-gate-5-checkpoint-column-4--0.8",
         "relay-gate-5-checkpoint-column-4-0.8",
         "relay-gate-5-checkpoint-header-4",
-        "district-5-warden-approach--background-cloud-0-0",
-        "district-5-warden-approach--background-cloud-0-1",
-        "district-5-warden-approach--background-cloud-0-2",
-        "district-5-warden-approach--background-cloud-1-0",
-        "district-5-warden-approach--background-cloud-1-1",
-        "district-5-warden-approach--background-cloud-1-2",
-        "district-5-warden-approach--background-cloud-2-0",
-        "district-5-warden-approach--background-cloud-2-1",
-        "district-5-warden-approach--background-cloud-2-2",
-        "district-5-warden-approach--background-cloud-3-0",
-        "district-5-warden-approach--background-cloud-3-1",
-        "district-5-warden-approach--background-cloud-3-2",
-        "district-5-warden-approach--background-cloud-4-0",
-        "district-5-warden-approach--background-cloud-4-1",
-        "district-5-warden-approach--background-cloud-4-2",
-        "district-5-warden-approach--background-cloud-5-0",
-        "district-5-warden-approach--background-cloud-5-1",
-        "district-5-warden-approach--background-cloud-5-2",
-        "district-6-sentry-gauntlet--background-mountain-0",
-        "district-6-sentry-gauntlet--background-mountain-1",
-        "district-6-sentry-gauntlet--background-mountain-2",
-        "district-6-sentry-gauntlet--background-mountain-3",
-        "district-6-sentry-gauntlet--background-mountain-4",
-        "district-6-sentry-gauntlet--background-mountain-5",
-        "district-6-sentry-gauntlet--background-mountain-6",
-        "district-6-sentry-gauntlet--background-mountain-7",
-        "district-6-sentry-gauntlet--platform-ground-0",
         "district-6-sentry-gauntlet--platform-grass-top-0",
         "district-6-sentry-gauntlet--cliff-rock-0-0",
         "district-6-sentry-gauntlet--cliff-rock-0-1",
         "district-6-sentry-gauntlet--cliff-rock-0-2",
         "district-6-sentry-gauntlet--cliff-rock-0-3",
-        "district-6-sentry-gauntlet--platform-ground-1",
         "district-6-sentry-gauntlet--platform-grass-top-1",
         "district-6-sentry-gauntlet--cliff-rock-1-0",
         "district-6-sentry-gauntlet--cliff-rock-1-1",
-        "district-6-sentry-gauntlet--platform-ground-2",
         "district-6-sentry-gauntlet--platform-grass-top-2",
         "district-6-sentry-gauntlet--cliff-rock-2-0",
         "district-6-sentry-gauntlet--cliff-rock-2-1",
-        "district-6-sentry-gauntlet--platform-ground-3",
         "district-6-sentry-gauntlet--platform-grass-top-3",
         "district-6-sentry-gauntlet--cliff-rock-3-0",
         "district-6-sentry-gauntlet--cliff-rock-3-1",
-        "district-6-sentry-gauntlet--platform-ground-4",
         "district-6-sentry-gauntlet--platform-grass-top-4",
         "district-6-sentry-gauntlet--cliff-rock-4-0",
         "district-6-sentry-gauntlet--cliff-rock-4-1",
-        "district-6-sentry-gauntlet--platform-ground-5",
         "district-6-sentry-gauntlet--platform-grass-top-5",
         "district-6-sentry-gauntlet--cliff-rock-5-0",
         "district-6-sentry-gauntlet--cliff-rock-5-1",
         "district-6-sentry-gauntlet--cliff-rock-5-2",
-        "district-6-sentry-gauntlet--platform-ground-6",
         "district-6-sentry-gauntlet--platform-grass-top-6",
         "district-6-sentry-gauntlet--cliff-rock-6-0",
         "district-6-sentry-gauntlet--cliff-rock-6-1",
         "district-6-sentry-gauntlet--cliff-rock-6-2",
-        "district-6-sentry-gauntlet--platform-ground-7",
         "district-6-sentry-gauntlet--platform-grass-top-7",
         "district-6-sentry-gauntlet--cliff-rock-7-0",
         "district-6-sentry-gauntlet--cliff-rock-7-1",
-        "district-6-sentry-gauntlet--platform-ground-8",
         "district-6-sentry-gauntlet--platform-grass-top-8",
         "district-6-sentry-gauntlet--cliff-rock-8-0",
         "district-6-sentry-gauntlet--cliff-rock-8-1",
         "district-6-sentry-gauntlet--cliff-rock-8-2",
-        "district-6-sentry-gauntlet--platform-ground-9",
         "district-6-sentry-gauntlet--platform-grass-top-9",
         "district-6-sentry-gauntlet--cliff-rock-9-0",
         "district-6-sentry-gauntlet--cliff-rock-9-1",
-        "district-6-sentry-gauntlet--platform-ground-10",
         "district-6-sentry-gauntlet--platform-grass-top-10",
         "district-6-sentry-gauntlet--cliff-rock-10-0",
         "district-6-sentry-gauntlet--cliff-rock-10-1",
@@ -52628,124 +54887,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-6-sentry-gauntlet--hazard-lava-7",
         "district-6-sentry-gauntlet--hazard-lava-8",
         "district-6-sentry-gauntlet--hazard-lava-9",
-        "district-6-sentry-gauntlet--tree-trunk-0",
-        "district-6-sentry-gauntlet--tree-canopy-0",
-        "district-6-sentry-gauntlet--tree-trunk-1",
-        "district-6-sentry-gauntlet--tree-canopy-1",
-        "district-6-sentry-gauntlet--tree-trunk-2",
-        "district-6-sentry-gauntlet--tree-canopy-2",
-        "district-6-sentry-gauntlet--tree-trunk-3",
-        "district-6-sentry-gauntlet--tree-canopy-3",
-        "district-6-sentry-gauntlet--tree-trunk-4",
-        "district-6-sentry-gauntlet--tree-canopy-4",
-        "district-6-sentry-gauntlet--tree-trunk-5",
-        "district-6-sentry-gauntlet--tree-canopy-5",
-        "district-6-sentry-gauntlet--tree-trunk-6",
-        "district-6-sentry-gauntlet--tree-canopy-6",
-        "district-6-sentry-gauntlet--tree-trunk-7",
-        "district-6-sentry-gauntlet--tree-canopy-7",
-        "district-6-sentry-gauntlet--tree-trunk-8",
-        "district-6-sentry-gauntlet--tree-canopy-8",
-        "district-6-sentry-gauntlet--tree-trunk-9",
-        "district-6-sentry-gauntlet--tree-canopy-9",
-        "district-6-sentry-gauntlet--tree-trunk-10",
-        "district-6-sentry-gauntlet--tree-canopy-10",
-        "district-6-sentry-gauntlet--collectible-coin-0",
-        "district-6-sentry-gauntlet--collectible-coin-1",
-        "district-6-sentry-gauntlet--collectible-coin-2",
-        "district-6-sentry-gauntlet--collectible-coin-3",
-        "district-6-sentry-gauntlet--collectible-coin-4",
-        "district-6-sentry-gauntlet--collectible-coin-5",
-        "district-6-sentry-gauntlet--collectible-coin-6",
-        "district-6-sentry-gauntlet--collectible-coin-7",
-        "district-6-sentry-gauntlet--collectible-coin-8",
-        "district-6-sentry-gauntlet--collectible-coin-9",
-        "district-6-sentry-gauntlet--collectible-coin-10",
-        "district-6-sentry-gauntlet--collectible-coin-11",
-        "district-6-sentry-gauntlet--collectible-coin-12",
-        "district-6-sentry-gauntlet--collectible-coin-13",
-        "district-6-sentry-gauntlet--collectible-coin-14",
-        "district-6-sentry-gauntlet--collectible-coin-15",
-        "district-6-sentry-gauntlet--collectible-coin-16",
-        "district-6-sentry-gauntlet--collectible-coin-17",
-        "district-6-sentry-gauntlet--collectible-coin-18",
-        "district-6-sentry-gauntlet--collectible-coin-19",
-        "district-6-sentry-gauntlet--collectible-coin-20",
         "relay-gate-6-checkpoint-column-0--0.8",
         "relay-gate-6-checkpoint-column-0-0.8",
         "relay-gate-6-checkpoint-header-0",
-        "district-6-sentry-gauntlet--background-cloud-0-0",
-        "district-6-sentry-gauntlet--background-cloud-0-1",
-        "district-6-sentry-gauntlet--background-cloud-0-2",
-        "district-6-sentry-gauntlet--background-cloud-1-0",
-        "district-6-sentry-gauntlet--background-cloud-1-1",
-        "district-6-sentry-gauntlet--background-cloud-1-2",
-        "district-6-sentry-gauntlet--background-cloud-2-0",
-        "district-6-sentry-gauntlet--background-cloud-2-1",
-        "district-6-sentry-gauntlet--background-cloud-2-2",
-        "district-6-sentry-gauntlet--background-cloud-3-0",
-        "district-6-sentry-gauntlet--background-cloud-3-1",
-        "district-6-sentry-gauntlet--background-cloud-3-2",
-        "district-6-sentry-gauntlet--background-cloud-4-0",
-        "district-6-sentry-gauntlet--background-cloud-4-1",
-        "district-6-sentry-gauntlet--background-cloud-4-2",
-        "district-6-sentry-gauntlet--background-cloud-5-0",
-        "district-6-sentry-gauntlet--background-cloud-5-1",
-        "district-6-sentry-gauntlet--background-cloud-5-2",
-        "district-7-cloudstep-climb--background-mountain-0",
-        "district-7-cloudstep-climb--background-mountain-1",
-        "district-7-cloudstep-climb--background-mountain-2",
-        "district-7-cloudstep-climb--background-mountain-3",
-        "district-7-cloudstep-climb--background-mountain-4",
-        "district-7-cloudstep-climb--background-mountain-5",
-        "district-7-cloudstep-climb--background-mountain-6",
-        "district-7-cloudstep-climb--background-mountain-7",
-        "district-7-cloudstep-climb--platform-ground-0",
         "district-7-cloudstep-climb--platform-grass-top-0",
         "district-7-cloudstep-climb--cliff-rock-0-0",
         "district-7-cloudstep-climb--cliff-rock-0-1",
         "district-7-cloudstep-climb--cliff-rock-0-2",
         "district-7-cloudstep-climb--cliff-rock-0-3",
-        "district-7-cloudstep-climb--platform-ground-1",
         "district-7-cloudstep-climb--platform-grass-top-1",
         "district-7-cloudstep-climb--cliff-rock-1-0",
         "district-7-cloudstep-climb--cliff-rock-1-1",
-        "district-7-cloudstep-climb--platform-ground-2",
         "district-7-cloudstep-climb--platform-grass-top-2",
         "district-7-cloudstep-climb--cliff-rock-2-0",
         "district-7-cloudstep-climb--cliff-rock-2-1",
-        "district-7-cloudstep-climb--platform-ground-3",
         "district-7-cloudstep-climb--platform-grass-top-3",
         "district-7-cloudstep-climb--cliff-rock-3-0",
         "district-7-cloudstep-climb--cliff-rock-3-1",
-        "district-7-cloudstep-climb--platform-ground-4",
         "district-7-cloudstep-climb--platform-grass-top-4",
         "district-7-cloudstep-climb--cliff-rock-4-0",
         "district-7-cloudstep-climb--cliff-rock-4-1",
-        "district-7-cloudstep-climb--platform-ground-5",
         "district-7-cloudstep-climb--platform-grass-top-5",
         "district-7-cloudstep-climb--cliff-rock-5-0",
         "district-7-cloudstep-climb--cliff-rock-5-1",
         "district-7-cloudstep-climb--cliff-rock-5-2",
-        "district-7-cloudstep-climb--platform-ground-6",
         "district-7-cloudstep-climb--platform-grass-top-6",
         "district-7-cloudstep-climb--cliff-rock-6-0",
         "district-7-cloudstep-climb--cliff-rock-6-1",
         "district-7-cloudstep-climb--cliff-rock-6-2",
-        "district-7-cloudstep-climb--platform-ground-7",
         "district-7-cloudstep-climb--platform-grass-top-7",
         "district-7-cloudstep-climb--cliff-rock-7-0",
         "district-7-cloudstep-climb--cliff-rock-7-1",
-        "district-7-cloudstep-climb--platform-ground-8",
         "district-7-cloudstep-climb--platform-grass-top-8",
         "district-7-cloudstep-climb--cliff-rock-8-0",
         "district-7-cloudstep-climb--cliff-rock-8-1",
         "district-7-cloudstep-climb--cliff-rock-8-2",
-        "district-7-cloudstep-climb--platform-ground-9",
         "district-7-cloudstep-climb--platform-grass-top-9",
         "district-7-cloudstep-climb--cliff-rock-9-0",
         "district-7-cloudstep-climb--cliff-rock-9-1",
-        "district-7-cloudstep-climb--platform-ground-10",
         "district-7-cloudstep-climb--platform-grass-top-10",
         "district-7-cloudstep-climb--cliff-rock-10-0",
         "district-7-cloudstep-climb--cliff-rock-10-1",
@@ -52778,124 +54957,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-7-cloudstep-climb--hazard-lava-7",
         "district-7-cloudstep-climb--hazard-lava-8",
         "district-7-cloudstep-climb--hazard-lava-9",
-        "district-7-cloudstep-climb--tree-trunk-0",
-        "district-7-cloudstep-climb--tree-canopy-0",
-        "district-7-cloudstep-climb--tree-trunk-1",
-        "district-7-cloudstep-climb--tree-canopy-1",
-        "district-7-cloudstep-climb--tree-trunk-2",
-        "district-7-cloudstep-climb--tree-canopy-2",
-        "district-7-cloudstep-climb--tree-trunk-3",
-        "district-7-cloudstep-climb--tree-canopy-3",
-        "district-7-cloudstep-climb--tree-trunk-4",
-        "district-7-cloudstep-climb--tree-canopy-4",
-        "district-7-cloudstep-climb--tree-trunk-5",
-        "district-7-cloudstep-climb--tree-canopy-5",
-        "district-7-cloudstep-climb--tree-trunk-6",
-        "district-7-cloudstep-climb--tree-canopy-6",
-        "district-7-cloudstep-climb--tree-trunk-7",
-        "district-7-cloudstep-climb--tree-canopy-7",
-        "district-7-cloudstep-climb--tree-trunk-8",
-        "district-7-cloudstep-climb--tree-canopy-8",
-        "district-7-cloudstep-climb--tree-trunk-9",
-        "district-7-cloudstep-climb--tree-canopy-9",
-        "district-7-cloudstep-climb--tree-trunk-10",
-        "district-7-cloudstep-climb--tree-canopy-10",
-        "district-7-cloudstep-climb--collectible-coin-0",
-        "district-7-cloudstep-climb--collectible-coin-1",
-        "district-7-cloudstep-climb--collectible-coin-2",
-        "district-7-cloudstep-climb--collectible-coin-3",
-        "district-7-cloudstep-climb--collectible-coin-4",
-        "district-7-cloudstep-climb--collectible-coin-5",
-        "district-7-cloudstep-climb--collectible-coin-6",
-        "district-7-cloudstep-climb--collectible-coin-7",
-        "district-7-cloudstep-climb--collectible-coin-8",
-        "district-7-cloudstep-climb--collectible-coin-9",
-        "district-7-cloudstep-climb--collectible-coin-10",
-        "district-7-cloudstep-climb--collectible-coin-11",
-        "district-7-cloudstep-climb--collectible-coin-12",
-        "district-7-cloudstep-climb--collectible-coin-13",
-        "district-7-cloudstep-climb--collectible-coin-14",
-        "district-7-cloudstep-climb--collectible-coin-15",
-        "district-7-cloudstep-climb--collectible-coin-16",
-        "district-7-cloudstep-climb--collectible-coin-17",
-        "district-7-cloudstep-climb--collectible-coin-18",
-        "district-7-cloudstep-climb--collectible-coin-19",
-        "district-7-cloudstep-climb--collectible-coin-20",
         "relay-gate-7-checkpoint-column-1--0.8",
         "relay-gate-7-checkpoint-column-1-0.8",
         "relay-gate-7-checkpoint-header-1",
-        "district-7-cloudstep-climb--background-cloud-0-0",
-        "district-7-cloudstep-climb--background-cloud-0-1",
-        "district-7-cloudstep-climb--background-cloud-0-2",
-        "district-7-cloudstep-climb--background-cloud-1-0",
-        "district-7-cloudstep-climb--background-cloud-1-1",
-        "district-7-cloudstep-climb--background-cloud-1-2",
-        "district-7-cloudstep-climb--background-cloud-2-0",
-        "district-7-cloudstep-climb--background-cloud-2-1",
-        "district-7-cloudstep-climb--background-cloud-2-2",
-        "district-7-cloudstep-climb--background-cloud-3-0",
-        "district-7-cloudstep-climb--background-cloud-3-1",
-        "district-7-cloudstep-climb--background-cloud-3-2",
-        "district-7-cloudstep-climb--background-cloud-4-0",
-        "district-7-cloudstep-climb--background-cloud-4-1",
-        "district-7-cloudstep-climb--background-cloud-4-2",
-        "district-7-cloudstep-climb--background-cloud-5-0",
-        "district-7-cloudstep-climb--background-cloud-5-1",
-        "district-7-cloudstep-climb--background-cloud-5-2",
-        "district-8-shard-terraces--background-mountain-0",
-        "district-8-shard-terraces--background-mountain-1",
-        "district-8-shard-terraces--background-mountain-2",
-        "district-8-shard-terraces--background-mountain-3",
-        "district-8-shard-terraces--background-mountain-4",
-        "district-8-shard-terraces--background-mountain-5",
-        "district-8-shard-terraces--background-mountain-6",
-        "district-8-shard-terraces--background-mountain-7",
-        "district-8-shard-terraces--platform-ground-0",
         "district-8-shard-terraces--platform-grass-top-0",
         "district-8-shard-terraces--cliff-rock-0-0",
         "district-8-shard-terraces--cliff-rock-0-1",
         "district-8-shard-terraces--cliff-rock-0-2",
         "district-8-shard-terraces--cliff-rock-0-3",
-        "district-8-shard-terraces--platform-ground-1",
         "district-8-shard-terraces--platform-grass-top-1",
         "district-8-shard-terraces--cliff-rock-1-0",
         "district-8-shard-terraces--cliff-rock-1-1",
-        "district-8-shard-terraces--platform-ground-2",
         "district-8-shard-terraces--platform-grass-top-2",
         "district-8-shard-terraces--cliff-rock-2-0",
         "district-8-shard-terraces--cliff-rock-2-1",
-        "district-8-shard-terraces--platform-ground-3",
         "district-8-shard-terraces--platform-grass-top-3",
         "district-8-shard-terraces--cliff-rock-3-0",
         "district-8-shard-terraces--cliff-rock-3-1",
-        "district-8-shard-terraces--platform-ground-4",
         "district-8-shard-terraces--platform-grass-top-4",
         "district-8-shard-terraces--cliff-rock-4-0",
         "district-8-shard-terraces--cliff-rock-4-1",
-        "district-8-shard-terraces--platform-ground-5",
         "district-8-shard-terraces--platform-grass-top-5",
         "district-8-shard-terraces--cliff-rock-5-0",
         "district-8-shard-terraces--cliff-rock-5-1",
         "district-8-shard-terraces--cliff-rock-5-2",
-        "district-8-shard-terraces--platform-ground-6",
         "district-8-shard-terraces--platform-grass-top-6",
         "district-8-shard-terraces--cliff-rock-6-0",
         "district-8-shard-terraces--cliff-rock-6-1",
         "district-8-shard-terraces--cliff-rock-6-2",
-        "district-8-shard-terraces--platform-ground-7",
         "district-8-shard-terraces--platform-grass-top-7",
         "district-8-shard-terraces--cliff-rock-7-0",
         "district-8-shard-terraces--cliff-rock-7-1",
-        "district-8-shard-terraces--platform-ground-8",
         "district-8-shard-terraces--platform-grass-top-8",
         "district-8-shard-terraces--cliff-rock-8-0",
         "district-8-shard-terraces--cliff-rock-8-1",
         "district-8-shard-terraces--cliff-rock-8-2",
-        "district-8-shard-terraces--platform-ground-9",
         "district-8-shard-terraces--platform-grass-top-9",
         "district-8-shard-terraces--cliff-rock-9-0",
         "district-8-shard-terraces--cliff-rock-9-1",
-        "district-8-shard-terraces--platform-ground-10",
         "district-8-shard-terraces--platform-grass-top-10",
         "district-8-shard-terraces--cliff-rock-10-0",
         "district-8-shard-terraces--cliff-rock-10-1",
@@ -52928,124 +55027,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-8-shard-terraces--hazard-lava-7",
         "district-8-shard-terraces--hazard-lava-8",
         "district-8-shard-terraces--hazard-lava-9",
-        "district-8-shard-terraces--tree-trunk-0",
-        "district-8-shard-terraces--tree-canopy-0",
-        "district-8-shard-terraces--tree-trunk-1",
-        "district-8-shard-terraces--tree-canopy-1",
-        "district-8-shard-terraces--tree-trunk-2",
-        "district-8-shard-terraces--tree-canopy-2",
-        "district-8-shard-terraces--tree-trunk-3",
-        "district-8-shard-terraces--tree-canopy-3",
-        "district-8-shard-terraces--tree-trunk-4",
-        "district-8-shard-terraces--tree-canopy-4",
-        "district-8-shard-terraces--tree-trunk-5",
-        "district-8-shard-terraces--tree-canopy-5",
-        "district-8-shard-terraces--tree-trunk-6",
-        "district-8-shard-terraces--tree-canopy-6",
-        "district-8-shard-terraces--tree-trunk-7",
-        "district-8-shard-terraces--tree-canopy-7",
-        "district-8-shard-terraces--tree-trunk-8",
-        "district-8-shard-terraces--tree-canopy-8",
-        "district-8-shard-terraces--tree-trunk-9",
-        "district-8-shard-terraces--tree-canopy-9",
-        "district-8-shard-terraces--tree-trunk-10",
-        "district-8-shard-terraces--tree-canopy-10",
-        "district-8-shard-terraces--collectible-coin-0",
-        "district-8-shard-terraces--collectible-coin-1",
-        "district-8-shard-terraces--collectible-coin-2",
-        "district-8-shard-terraces--collectible-coin-3",
-        "district-8-shard-terraces--collectible-coin-4",
-        "district-8-shard-terraces--collectible-coin-5",
-        "district-8-shard-terraces--collectible-coin-6",
-        "district-8-shard-terraces--collectible-coin-7",
-        "district-8-shard-terraces--collectible-coin-8",
-        "district-8-shard-terraces--collectible-coin-9",
-        "district-8-shard-terraces--collectible-coin-10",
-        "district-8-shard-terraces--collectible-coin-11",
-        "district-8-shard-terraces--collectible-coin-12",
-        "district-8-shard-terraces--collectible-coin-13",
-        "district-8-shard-terraces--collectible-coin-14",
-        "district-8-shard-terraces--collectible-coin-15",
-        "district-8-shard-terraces--collectible-coin-16",
-        "district-8-shard-terraces--collectible-coin-17",
-        "district-8-shard-terraces--collectible-coin-18",
-        "district-8-shard-terraces--collectible-coin-19",
-        "district-8-shard-terraces--collectible-coin-20",
         "relay-gate-8-checkpoint-column-2--0.8",
         "relay-gate-8-checkpoint-column-2-0.8",
         "relay-gate-8-checkpoint-header-2",
-        "district-8-shard-terraces--background-cloud-0-0",
-        "district-8-shard-terraces--background-cloud-0-1",
-        "district-8-shard-terraces--background-cloud-0-2",
-        "district-8-shard-terraces--background-cloud-1-0",
-        "district-8-shard-terraces--background-cloud-1-1",
-        "district-8-shard-terraces--background-cloud-1-2",
-        "district-8-shard-terraces--background-cloud-2-0",
-        "district-8-shard-terraces--background-cloud-2-1",
-        "district-8-shard-terraces--background-cloud-2-2",
-        "district-8-shard-terraces--background-cloud-3-0",
-        "district-8-shard-terraces--background-cloud-3-1",
-        "district-8-shard-terraces--background-cloud-3-2",
-        "district-8-shard-terraces--background-cloud-4-0",
-        "district-8-shard-terraces--background-cloud-4-1",
-        "district-8-shard-terraces--background-cloud-4-2",
-        "district-8-shard-terraces--background-cloud-5-0",
-        "district-8-shard-terraces--background-cloud-5-1",
-        "district-8-shard-terraces--background-cloud-5-2",
-        "district-9-crown-ascent--background-mountain-0",
-        "district-9-crown-ascent--background-mountain-1",
-        "district-9-crown-ascent--background-mountain-2",
-        "district-9-crown-ascent--background-mountain-3",
-        "district-9-crown-ascent--background-mountain-4",
-        "district-9-crown-ascent--background-mountain-5",
-        "district-9-crown-ascent--background-mountain-6",
-        "district-9-crown-ascent--background-mountain-7",
-        "district-9-crown-ascent--platform-ground-0",
         "district-9-crown-ascent--platform-grass-top-0",
         "district-9-crown-ascent--cliff-rock-0-0",
         "district-9-crown-ascent--cliff-rock-0-1",
         "district-9-crown-ascent--cliff-rock-0-2",
         "district-9-crown-ascent--cliff-rock-0-3",
-        "district-9-crown-ascent--platform-ground-1",
         "district-9-crown-ascent--platform-grass-top-1",
         "district-9-crown-ascent--cliff-rock-1-0",
         "district-9-crown-ascent--cliff-rock-1-1",
-        "district-9-crown-ascent--platform-ground-2",
         "district-9-crown-ascent--platform-grass-top-2",
         "district-9-crown-ascent--cliff-rock-2-0",
         "district-9-crown-ascent--cliff-rock-2-1",
-        "district-9-crown-ascent--platform-ground-3",
         "district-9-crown-ascent--platform-grass-top-3",
         "district-9-crown-ascent--cliff-rock-3-0",
         "district-9-crown-ascent--cliff-rock-3-1",
-        "district-9-crown-ascent--platform-ground-4",
         "district-9-crown-ascent--platform-grass-top-4",
         "district-9-crown-ascent--cliff-rock-4-0",
         "district-9-crown-ascent--cliff-rock-4-1",
-        "district-9-crown-ascent--platform-ground-5",
         "district-9-crown-ascent--platform-grass-top-5",
         "district-9-crown-ascent--cliff-rock-5-0",
         "district-9-crown-ascent--cliff-rock-5-1",
         "district-9-crown-ascent--cliff-rock-5-2",
-        "district-9-crown-ascent--platform-ground-6",
         "district-9-crown-ascent--platform-grass-top-6",
         "district-9-crown-ascent--cliff-rock-6-0",
         "district-9-crown-ascent--cliff-rock-6-1",
         "district-9-crown-ascent--cliff-rock-6-2",
-        "district-9-crown-ascent--platform-ground-7",
         "district-9-crown-ascent--platform-grass-top-7",
         "district-9-crown-ascent--cliff-rock-7-0",
         "district-9-crown-ascent--cliff-rock-7-1",
-        "district-9-crown-ascent--platform-ground-8",
         "district-9-crown-ascent--platform-grass-top-8",
         "district-9-crown-ascent--cliff-rock-8-0",
         "district-9-crown-ascent--cliff-rock-8-1",
         "district-9-crown-ascent--cliff-rock-8-2",
-        "district-9-crown-ascent--platform-ground-9",
         "district-9-crown-ascent--platform-grass-top-9",
         "district-9-crown-ascent--cliff-rock-9-0",
         "district-9-crown-ascent--cliff-rock-9-1",
-        "district-9-crown-ascent--platform-ground-10",
         "district-9-crown-ascent--platform-grass-top-10",
         "district-9-crown-ascent--cliff-rock-10-0",
         "district-9-crown-ascent--cliff-rock-10-1",
@@ -53078,124 +55097,44 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-9-crown-ascent--hazard-lava-7",
         "district-9-crown-ascent--hazard-lava-8",
         "district-9-crown-ascent--hazard-lava-9",
-        "district-9-crown-ascent--tree-trunk-0",
-        "district-9-crown-ascent--tree-canopy-0",
-        "district-9-crown-ascent--tree-trunk-1",
-        "district-9-crown-ascent--tree-canopy-1",
-        "district-9-crown-ascent--tree-trunk-2",
-        "district-9-crown-ascent--tree-canopy-2",
-        "district-9-crown-ascent--tree-trunk-3",
-        "district-9-crown-ascent--tree-canopy-3",
-        "district-9-crown-ascent--tree-trunk-4",
-        "district-9-crown-ascent--tree-canopy-4",
-        "district-9-crown-ascent--tree-trunk-5",
-        "district-9-crown-ascent--tree-canopy-5",
-        "district-9-crown-ascent--tree-trunk-6",
-        "district-9-crown-ascent--tree-canopy-6",
-        "district-9-crown-ascent--tree-trunk-7",
-        "district-9-crown-ascent--tree-canopy-7",
-        "district-9-crown-ascent--tree-trunk-8",
-        "district-9-crown-ascent--tree-canopy-8",
-        "district-9-crown-ascent--tree-trunk-9",
-        "district-9-crown-ascent--tree-canopy-9",
-        "district-9-crown-ascent--tree-trunk-10",
-        "district-9-crown-ascent--tree-canopy-10",
-        "district-9-crown-ascent--collectible-coin-0",
-        "district-9-crown-ascent--collectible-coin-1",
-        "district-9-crown-ascent--collectible-coin-2",
-        "district-9-crown-ascent--collectible-coin-3",
-        "district-9-crown-ascent--collectible-coin-4",
-        "district-9-crown-ascent--collectible-coin-5",
-        "district-9-crown-ascent--collectible-coin-6",
-        "district-9-crown-ascent--collectible-coin-7",
-        "district-9-crown-ascent--collectible-coin-8",
-        "district-9-crown-ascent--collectible-coin-9",
-        "district-9-crown-ascent--collectible-coin-10",
-        "district-9-crown-ascent--collectible-coin-11",
-        "district-9-crown-ascent--collectible-coin-12",
-        "district-9-crown-ascent--collectible-coin-13",
-        "district-9-crown-ascent--collectible-coin-14",
-        "district-9-crown-ascent--collectible-coin-15",
-        "district-9-crown-ascent--collectible-coin-16",
-        "district-9-crown-ascent--collectible-coin-17",
-        "district-9-crown-ascent--collectible-coin-18",
-        "district-9-crown-ascent--collectible-coin-19",
-        "district-9-crown-ascent--collectible-coin-20",
         "relay-gate-9-checkpoint-column-3--0.8",
         "relay-gate-9-checkpoint-column-3-0.8",
         "relay-gate-9-checkpoint-header-3",
-        "district-9-crown-ascent--background-cloud-0-0",
-        "district-9-crown-ascent--background-cloud-0-1",
-        "district-9-crown-ascent--background-cloud-0-2",
-        "district-9-crown-ascent--background-cloud-1-0",
-        "district-9-crown-ascent--background-cloud-1-1",
-        "district-9-crown-ascent--background-cloud-1-2",
-        "district-9-crown-ascent--background-cloud-2-0",
-        "district-9-crown-ascent--background-cloud-2-1",
-        "district-9-crown-ascent--background-cloud-2-2",
-        "district-9-crown-ascent--background-cloud-3-0",
-        "district-9-crown-ascent--background-cloud-3-1",
-        "district-9-crown-ascent--background-cloud-3-2",
-        "district-9-crown-ascent--background-cloud-4-0",
-        "district-9-crown-ascent--background-cloud-4-1",
-        "district-9-crown-ascent--background-cloud-4-2",
-        "district-9-crown-ascent--background-cloud-5-0",
-        "district-9-crown-ascent--background-cloud-5-1",
-        "district-9-crown-ascent--background-cloud-5-2",
-        "district-10-summit-beacon--background-mountain-0",
-        "district-10-summit-beacon--background-mountain-1",
-        "district-10-summit-beacon--background-mountain-2",
-        "district-10-summit-beacon--background-mountain-3",
-        "district-10-summit-beacon--background-mountain-4",
-        "district-10-summit-beacon--background-mountain-5",
-        "district-10-summit-beacon--background-mountain-6",
-        "district-10-summit-beacon--background-mountain-7",
-        "district-10-summit-beacon--platform-ground-0",
         "district-10-summit-beacon--platform-grass-top-0",
         "district-10-summit-beacon--cliff-rock-0-0",
         "district-10-summit-beacon--cliff-rock-0-1",
         "district-10-summit-beacon--cliff-rock-0-2",
         "district-10-summit-beacon--cliff-rock-0-3",
-        "district-10-summit-beacon--platform-ground-1",
         "district-10-summit-beacon--platform-grass-top-1",
         "district-10-summit-beacon--cliff-rock-1-0",
         "district-10-summit-beacon--cliff-rock-1-1",
-        "district-10-summit-beacon--platform-ground-2",
         "district-10-summit-beacon--platform-grass-top-2",
         "district-10-summit-beacon--cliff-rock-2-0",
         "district-10-summit-beacon--cliff-rock-2-1",
-        "district-10-summit-beacon--platform-ground-3",
         "district-10-summit-beacon--platform-grass-top-3",
         "district-10-summit-beacon--cliff-rock-3-0",
         "district-10-summit-beacon--cliff-rock-3-1",
-        "district-10-summit-beacon--platform-ground-4",
         "district-10-summit-beacon--platform-grass-top-4",
         "district-10-summit-beacon--cliff-rock-4-0",
         "district-10-summit-beacon--cliff-rock-4-1",
-        "district-10-summit-beacon--platform-ground-5",
         "district-10-summit-beacon--platform-grass-top-5",
         "district-10-summit-beacon--cliff-rock-5-0",
         "district-10-summit-beacon--cliff-rock-5-1",
         "district-10-summit-beacon--cliff-rock-5-2",
-        "district-10-summit-beacon--platform-ground-6",
         "district-10-summit-beacon--platform-grass-top-6",
         "district-10-summit-beacon--cliff-rock-6-0",
         "district-10-summit-beacon--cliff-rock-6-1",
         "district-10-summit-beacon--cliff-rock-6-2",
-        "district-10-summit-beacon--platform-ground-7",
         "district-10-summit-beacon--platform-grass-top-7",
         "district-10-summit-beacon--cliff-rock-7-0",
         "district-10-summit-beacon--cliff-rock-7-1",
-        "district-10-summit-beacon--platform-ground-8",
         "district-10-summit-beacon--platform-grass-top-8",
         "district-10-summit-beacon--cliff-rock-8-0",
         "district-10-summit-beacon--cliff-rock-8-1",
         "district-10-summit-beacon--cliff-rock-8-2",
-        "district-10-summit-beacon--platform-ground-9",
         "district-10-summit-beacon--platform-grass-top-9",
         "district-10-summit-beacon--cliff-rock-9-0",
         "district-10-summit-beacon--cliff-rock-9-1",
-        "district-10-summit-beacon--platform-ground-10",
         "district-10-summit-beacon--platform-grass-top-10",
         "district-10-summit-beacon--cliff-rock-10-0",
         "district-10-summit-beacon--cliff-rock-10-1",
@@ -53228,108 +55167,47 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "district-10-summit-beacon--hazard-lava-7",
         "district-10-summit-beacon--hazard-lava-8",
         "district-10-summit-beacon--hazard-lava-9",
-        "district-10-summit-beacon--tree-trunk-0",
-        "district-10-summit-beacon--tree-canopy-0",
-        "district-10-summit-beacon--tree-trunk-1",
-        "district-10-summit-beacon--tree-canopy-1",
-        "district-10-summit-beacon--tree-trunk-2",
-        "district-10-summit-beacon--tree-canopy-2",
-        "district-10-summit-beacon--tree-trunk-3",
-        "district-10-summit-beacon--tree-canopy-3",
-        "district-10-summit-beacon--tree-trunk-4",
-        "district-10-summit-beacon--tree-canopy-4",
-        "district-10-summit-beacon--tree-trunk-5",
-        "district-10-summit-beacon--tree-canopy-5",
-        "district-10-summit-beacon--tree-trunk-6",
-        "district-10-summit-beacon--tree-canopy-6",
-        "district-10-summit-beacon--tree-trunk-7",
-        "district-10-summit-beacon--tree-canopy-7",
-        "district-10-summit-beacon--tree-trunk-8",
-        "district-10-summit-beacon--tree-canopy-8",
-        "district-10-summit-beacon--tree-trunk-9",
-        "district-10-summit-beacon--tree-canopy-9",
-        "district-10-summit-beacon--tree-trunk-10",
-        "district-10-summit-beacon--tree-canopy-10",
-        "district-10-summit-beacon--collectible-coin-0",
-        "district-10-summit-beacon--collectible-coin-1",
-        "district-10-summit-beacon--collectible-coin-2",
-        "district-10-summit-beacon--collectible-coin-3",
-        "district-10-summit-beacon--collectible-coin-4",
-        "district-10-summit-beacon--collectible-coin-5",
-        "district-10-summit-beacon--collectible-coin-6",
-        "district-10-summit-beacon--collectible-coin-7",
-        "district-10-summit-beacon--collectible-coin-8",
-        "district-10-summit-beacon--collectible-coin-9",
-        "district-10-summit-beacon--collectible-coin-10",
-        "district-10-summit-beacon--collectible-coin-11",
-        "district-10-summit-beacon--collectible-coin-12",
-        "district-10-summit-beacon--collectible-coin-13",
-        "district-10-summit-beacon--collectible-coin-14",
-        "district-10-summit-beacon--collectible-coin-15",
-        "district-10-summit-beacon--collectible-coin-16",
-        "district-10-summit-beacon--collectible-coin-17",
-        "district-10-summit-beacon--collectible-coin-18",
-        "district-10-summit-beacon--collectible-coin-19",
-        "district-10-summit-beacon--collectible-coin-20",
         "relay-gate-10-checkpoint-column-4--0.8",
         "relay-gate-10-checkpoint-column-4-0.8",
         "relay-gate-10-checkpoint-header-4",
         "summit-goal-finish-column--1",
         "summit-goal-finish-column-1",
-        "summit-goal-finish-header",
-        "district-10-summit-beacon--background-cloud-0-0",
-        "district-10-summit-beacon--background-cloud-0-1",
-        "district-10-summit-beacon--background-cloud-0-2",
-        "district-10-summit-beacon--background-cloud-1-0",
-        "district-10-summit-beacon--background-cloud-1-1",
-        "district-10-summit-beacon--background-cloud-1-2",
-        "district-10-summit-beacon--background-cloud-2-0",
-        "district-10-summit-beacon--background-cloud-2-1",
-        "district-10-summit-beacon--background-cloud-2-2",
-        "district-10-summit-beacon--background-cloud-3-0",
-        "district-10-summit-beacon--background-cloud-3-1",
-        "district-10-summit-beacon--background-cloud-3-2",
-        "district-10-summit-beacon--background-cloud-4-0",
-        "district-10-summit-beacon--background-cloud-4-1",
-        "district-10-summit-beacon--background-cloud-4-2",
-        "district-10-summit-beacon--background-cloud-5-0",
-        "district-10-summit-beacon--background-cloud-5-1",
-        "district-10-summit-beacon--background-cloud-5-2"
+        "summit-goal-finish-header"
       ],
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.thumb.svg",
-      "quality": "release",
+      "quality": "candidate",
       "role": "world",
-      "suitabilityReason": "Release stylized flat-color platformer world with durable Kenney CC0 provenance, readable named material evidence, a current hash-bound production-runtime center-crop probe, normalized route placement against certified mesh-extracted playable surfaces, and an explicit side-scroller world view.",
+      "suitabilityReason": "Deterministically composed ten-district side-scrolling platformer world with certified route surfaces, generator-owned Steel Dawn nocturne materials, enlarged faceted cliff-island supports, and pruned non-gameplay backdrop repetition.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld",
-        "sha256": "sha256-c49cc52c51e51c6bd6c235668f3c2f139767c3bd81d832fc6ca8c0bdc66bdbe3",
-        "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+        "sha256": "sha256-34d0caf817fdf7f3cf7fdea977e7f4e3f1c21978294670c494856f9c2fb0966e",
+        "assetHash": "sha256-fc22fddee8d74c5e9c7f4edb6aadd0577d5557399efdf0eee80d49addfb40ef4",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 82,
-        "checkedAt": "2026-08-23T10:52:29.329Z",
+        "colorBuckets": 46,
+        "checkedAt": "2026-08-29T21:27:56.077Z",
         "foregroundBounds": {
           "x": 0,
-          "y": 326,
+          "y": 328,
           "width": 752,
-          "height": 155
+          "height": 131
         }
       },
       "gameGeometry": {
         "certification": "certified-platformer-world",
         "evidence": {
-          "manifestHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+          "manifestHash": "sha256-18c196895c6cfb79d2a4ce5fdcb33cd1b236a64c6080feef4a4959080d3e7e0f",
           "blockers": []
         },
         "playableSurfaceMap": {
           "assetId": "showcaseKenneyVerdantPlatformerWorld",
-          "assetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f",
+          "assetHash": "sha256-18c196895c6cfb79d2a4ce5fdcb33cd1b236a64c6080feef4a4959080d3e7e0f",
           "source": "asset-mesh-extracted",
           "surfaces": [
             {
@@ -59586,7 +61464,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "attribution": "Nekitron",
         "sha256": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8",
         "retrievedAt": "2026-06-17T19:24:34.777Z",
-        "checkedAt": "2026-07-31T08:54:24.847Z"
+        "checkedAt": "2026-06-17T19:24:34.777Z"
       },
       "sourcePath": "public/aura-assets/showcaseOrangeIndustrialRobot.d816ddb7.glb",
       "outputPath": "public/aura-assets/showcaseOrangeIndustrialRobot.d816ddb7.glb",
@@ -59635,21 +61513,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       ],
       "orientation": {
         "source": "manifest-override",
-        "view": "industrial-workcell-prop-view",
-        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "messages": [
-          "Hash-bound prop view orientation is approved for this asset hash by retained root release probe evidence. No character, vehicle, or weapon forwardAxis is claimed."
-        ],
+        "view": "hash-bound-readable-prop-view",
         "assetHash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8",
-        "checkedAt": "2026-06-22T22:40:50.418Z",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T10:49:24.168Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseOrangeIndustrialRobot",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.png",
-          "sha256": "sha256-67b02841a66b63a2998cc6b6e1824250962b60e9f5e7e6322edaa10ff7598f3e",
+          "sha256": "sha256-9d2c3fd00ec429c9957820c83a5b28ebc4df3bedddc5ccb8a4a1e64934b4d8a3",
           "assetHash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8",
-          "checkedAt": "2026-07-31T08:44:19.276Z",
+          "checkedAt": "2026-08-31T10:49:24.168Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseOrangeIndustrialRobot"
-        }
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
       },
       "nodeNames": [
         "Sketchfab_model",
@@ -59672,24 +61550,24 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/showcaseOrangeIndustrialRobot.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Industrial workcell prop replacement candidate with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, normalized camera-fit release probe foreground proof, and visual operations dashboard suitability as a typed industrial robot anchor.",
+      "suitabilityReason": "Industrial terminal sentry with durable Objaverse CC-BY-4.0 provenance, textured readable material metadata, and current root probe evidence; used only as a non-colliding finale renderer-owned terminal in Pulse Tunnel.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseOrangeIndustrialRobot",
-        "sha256": "sha256-67b02841a66b63a2998cc6b6e1824250962b60e9f5e7e6322edaa10ff7598f3e",
+        "sha256": "sha256-9d2c3fd00ec429c9957820c83a5b28ebc4df3bedddc5ccb8a4a1e64934b4d8a3",
         "assetHash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451198,
-        "colorBuckets": 51,
-        "checkedAt": "2026-07-31T08:44:19.276Z",
+        "nonBlankPixels": 451075,
+        "colorBuckets": 63,
+        "checkedAt": "2026-08-31T10:49:24.168Z",
         "foregroundBounds": {
-          "x": 235,
-          "y": 171,
-          "width": 254,
-          "height": 226
+          "x": 190,
+          "y": 185,
+          "width": 331,
+          "height": 281
         }
       }
     },
@@ -62927,7 +64805,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "intentional-duplicate: role-specific platformer character aliases share the reviewed Kenney source model"
         ],
-        "checkedAt": "2026-07-31T08:55:21.056Z"
+        "checkedAt": "2026-06-17T23:28:58.383Z"
       },
       "sourcePath": "public/aura-assets/showcasePlatformHero.8ee5dae1.glb",
       "outputPath": "public/aura-assets/showcasePlatformHero.8ee5dae1.glb",
@@ -62970,19 +64848,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "source": "manifest-override",
         "forwardAxis": "+Z",
         "upAxis": "+Y",
-        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts retained root createAuraApp probe",
+        "view": "hash-bound-readable-prop-view",
         "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
-        "checkedAt": "2026-07-18T17:05:20.390Z",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-29T21:07:05.570Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcasePlatformHero",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/showcasePlatformHero.png",
-          "sha256": "sha256-9fa91627c4d90743811cda1b06cfe43238d3e52c9fa405bf7aaf35dfb0aef953",
+          "sha256": "sha256-577788d6043e535a2ea779c9124c3419ee5c41dd3092b7579d084c7995e0c0dd",
           "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
-          "checkedAt": "2026-07-31T08:53:05.440Z",
+          "checkedAt": "2026-08-29T21:07:05.570Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcasePlatformHero"
         },
         "messages": [
-          "Character +Z forward and +Y up review is bound to the current asset hash, embedded locomotion clips, and retained front-readable root probe."
+          "The current hash-bound Kenney character is mounted upright (+Y) and reviewed with +Z as its neutral route-facing axis; this proves only a readable static character view."
         ]
       },
       "nodeNames": [
@@ -63004,24 +64883,24 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/showcasePlatformHero.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Release platformer player character with readable height, reviewed +Z orientation, embedded locomotion animation clips, textured material, normalized camera-fit placement, and retained browser proof.",
+      "suitabilityReason": "Release stylized character with readable height, reviewed +Z orientation, retained materials, and a current hash-bound root browser probe; used here as the route-local pressure defender without claiming a reusable sports character kit.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcasePlatformHero.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcasePlatformHero",
-        "sha256": "sha256-9fa91627c4d90743811cda1b06cfe43238d3e52c9fa405bf7aaf35dfb0aef953",
+        "sha256": "sha256-577788d6043e535a2ea779c9124c3419ee5c41dd3092b7579d084c7995e0c0dd",
         "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 56,
-        "checkedAt": "2026-07-31T08:53:05.440Z",
+        "colorBuckets": 43,
+        "checkedAt": "2026-08-29T21:07:05.570Z",
         "foregroundBounds": {
-          "x": 0,
-          "y": 156,
-          "width": 752,
-          "height": 444
+          "x": 105,
+          "y": 102,
+          "width": 564,
+          "height": 498
         }
       },
       "gameGeometry": {
@@ -67794,9 +69673,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
     url: "/aura-assets/showcaseRunnerGirl.9a126849.glb",
     hash: "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
     bounds: [
-      8,
-      9,
-      8
+      1.6,
+      2.7,
+      0.8
     ],
     sizeBytes: 113596,
     metadata: {
@@ -68325,20 +70204,39 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 8,
+        "meshCount": 6,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 27,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "character-e"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 8 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseRunnerGirl.9a126849.glb",
+        "sourcePage": "https://kenney.nl/assets",
+        "downloadUrl": "https://kenney.nl/assets",
         "sourceUrl": "https://kenney.nl/assets",
         "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Kenney",
         "sourceFamily": "starter:kenney",
         "attribution": "Kenney",
         "sha256": "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
         "retrievedAt": "2026-06-18T07:14:38.228Z",
-        "checkedAt": "2026-06-18T07:14:39.953Z",
-        "sourcePage": "https://kenney.nl/assets",
-        "downloadUrl": "https://kenney.nl/assets",
-        "licenseName": "CC0-1.0",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+        "evidence": [
+          "Repository-locked exact Kenney CC0 source bytes retained at sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675."
+        ],
+        "checkedAt": "2026-06-18T07:14:38.228Z"
       },
       "sourcePath": "public/aura-assets/showcaseRunnerGirl.9a126849.glb",
       "outputPath": "public/aura-assets/showcaseRunnerGirl.9a126849.glb",
@@ -68346,27 +70244,27 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "author": "Kenney",
       "boundsMetadata": {
         "min": [
-          -4,
-          -1,
-          -4
+          -0.8,
+          0,
+          -0.4
         ],
         "max": [
-          4,
-          8,
-          4
+          0.8,
+          2.7,
+          0.4
         ],
         "size": [
-          8,
-          9,
-          8
+          1.6,
+          2.7,
+          0.8
         ],
         "center": [
           0,
-          3.5,
+          1.35,
           0
         ],
-        "maxDimension": 9,
-        "grounded": false
+        "maxDimension": 2.7,
+        "grounded": true
       },
       "materialMetadata": [
         {
@@ -68378,9 +70276,23 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T21:31:49.003Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRunnerGirl",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseRunnerGirl.png",
+          "sha256": "sha256-5241a8eb3e67b5590a02d7e00bb1dc3f2c695f074724d037fcee090c42913470",
+          "assetHash": "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
+          "checkedAt": "2026-08-31T21:31:49.003Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRunnerGirl"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "Temporary isolated evaluation view for the existing Runner Girl asset. It is presented as a generic animated character only; no basketball action or orientation claim is made from this probe."
         ]
       },
       "nodeNames": [
@@ -68400,8 +70312,28 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Textures/texture-e.png"
       ],
       "thumbnailUrl": "/aura-assets/showcaseRunnerGirl.thumb.svg",
-      "quality": "ungraded",
-      "role": "unknown"
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "CC0 Kenney animated adult character used as Gallery Shift's readable player infiltrator; embedded idle, walk, sprint, pick-up, and holding-both clips are presentation only while authored movement, sneak noise, collision, LOS, and objectives remain route-owned.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseRunnerGirl.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRunnerGirl",
+        "sha256": "sha256-5241a8eb3e67b5590a02d7e00bb1dc3f2c695f074724d037fcee090c42913470",
+        "assetHash": "sha256-9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 57,
+        "checkedAt": "2026-08-31T21:31:49.003Z",
+        "foregroundBounds": {
+          "x": 279,
+          "y": 202,
+          "width": 202,
+          "height": 344
+        }
+      }
     },
   },
   "showcaseRunnerLevel": {
@@ -95399,6 +97331,245 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
+  "siegeGolfCourseWorld": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/siegeGolfCourseWorld.2951199f.glb",
+    hash: "sha256-2951199f39ade846dbb3417e5ae13bb7b790ecdde92d12531ed429e6337430bb",
+    bounds: [
+      10.32,
+      6.941,
+      18.004
+    ],
+    sizeBytes: 345840,
+    metadata: {
+      "materials": [
+        "continuous earth and banks material",
+        "mown fairway and rough material",
+        "sunlit fairway bands material",
+        "warm fortress stone material",
+        "sunlit coping material",
+        "garden foliage material",
+        "palisade timber material",
+        "target banners and torches material",
+        "fortress cloud banks material"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 9,
+        "meshCount": 9,
+        "materialCount": 9,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "continuous earth and banks",
+          "mown fairway and rough",
+          "sunlit fairway bands",
+          "warm fortress stone",
+          "sunlit coping",
+          "garden foliage",
+          "palisade timber",
+          "target banners and torches",
+          "fortress cloud banks"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 9 nodes across 9 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-siege-golf/assets/models/siegeGolfCourseWorld.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-siege-golf/scripts/build-course-world.mjs",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-siege-golf/assets/models/siegeGolfCourseWorld.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "Aura3D original procedural world",
+        "attribution": "Aura3D original CC0 synthesis",
+        "retrievedAt": "2026-08-31T17:00:00.000Z",
+        "checkedAt": "2026-08-31T17:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-siege-golf/assets/models/siegeGolfCourseWorld.glb",
+      "outputPath": "public/aura-assets/siegeGolfCourseWorld.2951199f.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -5.16,
+          -0.78,
+          -13.504
+        ],
+        "max": [
+          5.16,
+          6.161,
+          4.5
+        ],
+        "size": [
+          10.32,
+          6.941,
+          18.004
+        ],
+        "center": [
+          0,
+          2.691,
+          -4.502
+        ],
+        "maxDimension": 18.004,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "continuous earth and banks material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "mown fairway and rough material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sunlit fairway bands material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "warm fortress stone material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "sunlit coping material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "garden foliage material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "palisade timber material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "target banners and torches material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "fortress cloud banks material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "-Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-2951199f39ade846dbb3417e5ae13bb7b790ecdde92d12531ed429e6337430bb",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-31T14:03:02.964Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=siegeGolfCourseWorld",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/siegeGolfCourseWorld.png",
+          "sha256": "sha256-fcab528fc1fd9152e7d2420fad7fc639bc6792d1d34d4b3e52ce057379961527",
+          "assetHash": "sha256-2951199f39ade846dbb3417e5ae13bb7b790ecdde92d12531ed429e6337430bb",
+          "checkedAt": "2026-08-31T14:03:02.964Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=siegeGolfCourseWorld"
+        },
+        "messages": [
+          "The Siege Golf course world is authored in metre-scale +Y-up coordinates, with the tee at positive Z and the fortress target/horizon toward -Z. It is a visual world; documented route-local Rapier felt and rails own collision."
+        ]
+      },
+      "nodeNames": [
+        "continuous earth and banks",
+        "mown fairway and rough",
+        "sunlit fairway bands",
+        "warm fortress stone",
+        "sunlit coping",
+        "garden foliage",
+        "palisade timber",
+        "target banners and torches",
+        "fortress cloud banks"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/siegeGolfCourseWorld.thumb.svg",
+      "quality": "release",
+      "role": "world",
+      "suitabilityReason": "Original CC0 metre-scale continuous Siege Golf world with an explicit stylized procedural-material palette: one compact tee-to-obstacle-to-sensor ribbon with connected curving shot-line bands, full-length spectator fencing, grounded orchard forms, directional pennants, cloud banks, an attached obstacle bay, and an open fortified goal court. Route-local Rapier felt and rails remain the documented collision owner.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/siegeGolfCourseWorld.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=siegeGolfCourseWorld",
+        "sha256": "sha256-fcab528fc1fd9152e7d2420fad7fc639bc6792d1d34d4b3e52ce057379961527",
+        "assetHash": "sha256-2951199f39ade846dbb3417e5ae13bb7b790ecdde92d12531ed429e6337430bb",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 54,
+        "checkedAt": "2026-08-31T14:03:02.964Z",
+        "foregroundBounds": {
+          "x": 116,
+          "y": 101,
+          "width": 451,
+          "height": 367
+        }
+      }
+    },
+  },
   "siegeMetalClangSfx": {
     type: "audio",
     format: "wav",
@@ -96719,6 +98890,167 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
+  "skylineArcticRunnerHero": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineArcticRunnerHero.84024fc9.glb",
+    hash: "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7",
+    bounds: [
+      1.348,
+      1,
+      0.05
+    ],
+    sizeBytes: 1370444,
+    metadata: {
+      "materials": [
+        "skyline-arctic-runner-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "skyline-arctic-runner-plane"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/generated/skylineArcticRunner.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-arctic-runner.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-skyline-runner/assets/skyline-arctic-runner.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-arctic-runner.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:00:00.000Z",
+        "checkedAt": "2026-08-29T23:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/generated/skylineArcticRunner.glb",
+      "outputPath": "public/aura-assets/skylineArcticRunnerHero.84024fc9.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -0.674,
+          -0.5,
+          -0.025
+        ],
+        "max": [
+          0.674,
+          0.5,
+          0.025
+        ],
+        "size": [
+          1.348,
+          1,
+          0.05
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 1.348,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "skyline-arctic-runner-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-29T23:11:31.559Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineArcticRunnerHero",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.png",
+          "sha256": "sha256-b7036a0361ba1eefa5e609c76f023fe0971bbf16d978f0646b42a74203f37e46",
+          "assetHash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7",
+          "checkedAt": "2026-08-29T23:11:31.559Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineArcticRunnerHero"
+        },
+        "messages": [
+          "The project-original runner is authored as a front-readable XY sprite plane with its visible face toward +Z and head-up along +Y; the current hash-bound root probe verifies that presentation."
+        ]
+      },
+      "nodeNames": [
+        "skyline-arctic-runner-plane"
+      ],
+      "textures": [
+        "skyline-arctic-runner-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineArcticRunnerHero.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Original renderer-owned low-poly arctic relay runner character card with a readable airborne silhouette; mounted as the live review player visual and driven by platformer state, with no rigging claim.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineArcticRunnerHero",
+        "sha256": "sha256-b7036a0361ba1eefa5e609c76f023fe0971bbf16d978f0646b42a74203f37e46",
+        "assetHash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 450867,
+        "colorBuckets": 279,
+        "checkedAt": "2026-08-29T23:11:31.559Z",
+        "foregroundBounds": {
+          "x": 151,
+          "y": 206,
+          "width": 450,
+          "height": 334
+        }
+      }
+    },
+  },
   "skylineCheckpointFanfareSfx": {
     type: "audio",
     format: "wav",
@@ -97207,6 +99539,483 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
+  "skylineIceLedgeCompact": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineIceLedgeCompact.d3a66729.glb",
+    hash: "sha256-d3a6672964987d9b3eaa456cad720712d532a3d8765eaf1d8df065d743086737",
+    bounds: [
+      2.333,
+      1,
+      0.05
+    ],
+    sizeBytes: 225320,
+    metadata: {
+      "materials": [
+        "skyline-ice-ledge-compact-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "skyline-ice-ledge-compact-plane"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/generated/skylineIceLedgeCompact.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-ice-ledges.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-skyline-runner/assets/skyline-ice-ledge-compact.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-ice-ledge-compact.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:30:00.000Z",
+        "checkedAt": "2026-08-29T23:30:00.000Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/generated/skylineIceLedgeCompact.glb",
+      "outputPath": "public/aura-assets/skylineIceLedgeCompact.d3a66729.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -1.167,
+          -0.5,
+          -0.025
+        ],
+        "max": [
+          1.167,
+          0.5,
+          0.025
+        ],
+        "size": [
+          2.333,
+          1,
+          0.05
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2.333,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "skyline-ice-ledge-compact-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-d3a6672964987d9b3eaa456cad720712d532a3d8765eaf1d8df065d743086737",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-29T23:11:39.758Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeCompact",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeCompact.png",
+          "sha256": "sha256-1b525647ff1f31cc69847c4d21635a4694d630b81be4bbbffc7fff7edcef937d",
+          "assetHash": "sha256-d3a6672964987d9b3eaa456cad720712d532a3d8765eaf1d8df065d743086737",
+          "checkedAt": "2026-08-29T23:11:39.758Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeCompact"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "skyline-ice-ledge-compact-plane"
+      ],
+      "textures": [
+        "skyline-ice-ledge-compact-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineIceLedgeCompact.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Decorative non-primary compact ice-ledge set dressing aligned to certified Skyline Runner collision surfaces; it never supplies collision geometry.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeCompact.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeCompact",
+        "sha256": "sha256-1b525647ff1f31cc69847c4d21635a4694d630b81be4bbbffc7fff7edcef937d",
+        "assetHash": "sha256-d3a6672964987d9b3eaa456cad720712d532a3d8765eaf1d8df065d743086737",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 220,
+        "checkedAt": "2026-08-29T23:11:39.758Z",
+        "foregroundBounds": {
+          "x": 109,
+          "y": 236,
+          "width": 534,
+          "height": 229
+        }
+      }
+    },
+  },
+  "skylineIceLedgeLong": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineIceLedgeLong.7158cdef.glb",
+    hash: "sha256-7158cdefe0bd9986ae549c3fd71bd2410e303890499e2be6a5b8a85b0250a352",
+    bounds: [
+      5.821,
+      1,
+      0.05
+    ],
+    sizeBytes: 513612,
+    metadata: {
+      "materials": [
+        "skyline-ice-ledge-long-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "skyline-ice-ledge-long-plane"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/generated/skylineIceLedgeLong.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-ice-ledges.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-skyline-runner/assets/skyline-ice-ledge-long.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-ice-ledge-long.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:30:00.000Z",
+        "checkedAt": "2026-08-29T23:30:00.000Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/generated/skylineIceLedgeLong.glb",
+      "outputPath": "public/aura-assets/skylineIceLedgeLong.7158cdef.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -2.91,
+          -0.5,
+          -0.025
+        ],
+        "max": [
+          2.91,
+          0.5,
+          0.025
+        ],
+        "size": [
+          5.821,
+          1,
+          0.05
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 5.821,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "skyline-ice-ledge-long-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-7158cdefe0bd9986ae549c3fd71bd2410e303890499e2be6a5b8a85b0250a352",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-29T23:11:34.314Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeLong",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeLong.png",
+          "sha256": "sha256-f270735aec1184f103784fa7ca9a510abd1c13ec0d04805e87ac47fdf895f869",
+          "assetHash": "sha256-7158cdefe0bd9986ae549c3fd71bd2410e303890499e2be6a5b8a85b0250a352",
+          "checkedAt": "2026-08-29T23:11:34.314Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeLong"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "skyline-ice-ledge-long-plane"
+      ],
+      "textures": [
+        "skyline-ice-ledge-long-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineIceLedgeLong.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Decorative non-primary long ice-ledge set dressing aligned to certified Skyline Runner collision surfaces; it never supplies collision geometry.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeLong.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeLong",
+        "sha256": "sha256-f270735aec1184f103784fa7ca9a510abd1c13ec0d04805e87ac47fdf895f869",
+        "assetHash": "sha256-7158cdefe0bd9986ae549c3fd71bd2410e303890499e2be6a5b8a85b0250a352",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 194,
+        "checkedAt": "2026-08-29T23:11:34.314Z",
+        "foregroundBounds": {
+          "x": 91,
+          "y": 272,
+          "width": 570,
+          "height": 99
+        }
+      }
+    },
+  },
+  "skylineIceLedgeMedium": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineIceLedgeMedium.f7753b4a.glb",
+    hash: "sha256-f7753b4a99e8f312ae685f051611857136073815af8b3333291d8bb45cb0d2ed",
+    bounds: [
+      3.885,
+      1,
+      0.05
+    ],
+    sizeBytes: 372320,
+    metadata: {
+      "materials": [
+        "skyline-ice-ledge-medium-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "skyline-ice-ledge-medium-plane"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/generated/skylineIceLedgeMedium.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-ice-ledges.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-skyline-runner/assets/skyline-ice-ledge-medium.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-ice-ledge-medium.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-29T23:30:00.000Z",
+        "checkedAt": "2026-08-29T23:30:00.000Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/generated/skylineIceLedgeMedium.glb",
+      "outputPath": "public/aura-assets/skylineIceLedgeMedium.f7753b4a.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -1.943,
+          -0.5,
+          -0.025
+        ],
+        "max": [
+          1.943,
+          0.5,
+          0.025
+        ],
+        "size": [
+          3.885,
+          1,
+          0.05
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 3.885,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "skyline-ice-ledge-medium-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-f7753b4a99e8f312ae685f051611857136073815af8b3333291d8bb45cb0d2ed",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-29T23:11:37.033Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeMedium",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeMedium.png",
+          "sha256": "sha256-7dd78f64ffc19fb4b4aea03fe4a97d33d3b308e1c9ac4dc2c83fc4969cf9af41",
+          "assetHash": "sha256-f7753b4a99e8f312ae685f051611857136073815af8b3333291d8bb45cb0d2ed",
+          "checkedAt": "2026-08-29T23:11:37.033Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeMedium"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "skyline-ice-ledge-medium-plane"
+      ],
+      "textures": [
+        "skyline-ice-ledge-medium-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineIceLedgeMedium.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Decorative non-primary medium ice-ledge set dressing aligned to certified Skyline Runner collision surfaces; it never supplies collision geometry.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/skylineIceLedgeMedium.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineIceLedgeMedium",
+        "sha256": "sha256-7dd78f64ffc19fb4b4aea03fe4a97d33d3b308e1c9ac4dc2c83fc4969cf9af41",
+        "assetHash": "sha256-f7753b4a99e8f312ae685f051611857136073815af8b3333291d8bb45cb0d2ed",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 220,
+        "checkedAt": "2026-08-29T23:11:37.033Z",
+        "foregroundBounds": {
+          "x": 95,
+          "y": 259,
+          "width": 562,
+          "height": 145
+        }
+      }
+    },
+  },
   "skylineJumpSfx": {
     type: "audio",
     format: "wav",
@@ -97693,6 +100502,298 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
+  "skylineWinterParallaxBackdrop": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/skylineWinterParallaxBackdrop.b29b1b6b.glb",
+    hash: "sha256-b29b1b6b961a5a7d399caa74515e833680610cfceea27eae7004c9f225563048",
+    bounds: [
+      16,
+      9,
+      0.2
+    ],
+    sizeBytes: 1943660,
+    metadata: {
+      "materials": [
+        "skyline-winter-parallax-unlit"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "skyline-winter-parallax-plane"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-skyline-runner/generated/skylineWinterParallax.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-winter-parallax.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-skyline-runner/assets/skyline-winter-parallax.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-skyline-runner/assets/skyline-winter-parallax.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D project-original generated winter panorama",
+        "retrievedAt": "2026-08-29T22:00:00.000Z",
+        "evidence": [
+          "Built-in OpenAI image generation output with exact prompt sidecar and source PNG hash.",
+          "Deterministically packaged into a textured KHR_materials_unlit GLB by the committed build script."
+        ],
+        "checkedAt": "2026-08-29T22:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-skyline-runner/generated/skylineWinterParallax.glb",
+      "outputPath": "public/aura-assets/skylineWinterParallaxBackdrop.b29b1b6b.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -8,
+          -4.5,
+          -0.1
+        ],
+        "max": [
+          8,
+          4.5,
+          0.1
+        ],
+        "size": [
+          16,
+          9,
+          0.2
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 16,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "skyline-winter-parallax-unlit",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-b29b1b6b961a5a7d399caa74515e833680610cfceea27eae7004c9f225563048",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-08-29T23:13:25.844Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineWinterParallaxBackdrop",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/skylineWinterParallaxBackdrop.png",
+          "sha256": "sha256-85704df96949a337eb66281b153c33587945367ba7024e9304b1de0e2cdb21ce",
+          "assetHash": "sha256-b29b1b6b961a5a7d399caa74515e833680610cfceea27eae7004c9f225563048",
+          "checkedAt": "2026-08-29T23:13:25.844Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineWinterParallaxBackdrop"
+        },
+        "messages": [
+          "The current hash-bound root production-runtime probe proves a readable prop view. No character, vehicle, or weapon forward-axis claim is made, and final route review remains independent."
+        ]
+      },
+      "nodeNames": [
+        "skyline-winter-parallax-plane"
+      ],
+      "textures": [
+        "skyline-winter-parallax-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/skylineWinterParallaxBackdrop.thumb.svg",
+      "quality": "release",
+      "role": "set-dressing",
+      "suitabilityReason": "Decorative non-primary background set dressing only: a project-original faceted winter-night panorama behind certified Skyline Runner gameplay geometry.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/skylineWinterParallaxBackdrop.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=skylineWinterParallaxBackdrop",
+        "sha256": "sha256-85704df96949a337eb66281b153c33587945367ba7024e9304b1de0e2cdb21ce",
+        "assetHash": "sha256-b29b1b6b961a5a7d399caa74515e833680610cfceea27eae7004c9f225563048",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 447908,
+        "colorBuckets": 157,
+        "checkedAt": "2026-08-29T23:13:25.844Z",
+        "foregroundBounds": {
+          "x": 118,
+          "y": 219,
+          "width": 516,
+          "height": 290
+        }
+      }
+    },
+  },
+  "turboAlpineVenueBackdrop": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboAlpineVenueBackdrop.caf3d7b5.glb",
+    hash: "sha256-caf3d7b577ac7c716e01bfcbcfad629a34b5edf6e9b2f24f442651d90ced676f",
+    bounds: [
+      16,
+      10.667,
+      0.16
+    ],
+    sizeBytes: 2119428,
+    metadata: {
+      "materials": [
+        "Turbo Alpine Venue-unlit-alpha"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Turbo Alpine Venue-card"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboAlpineVenue.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-turbo-drift-circuit/assets/turbo-alpine-venue.prompt.md",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-turbo-drift-circuit/assets/turbo-alpine-venue.png",
+        "sourceUrl": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-turbo-drift-circuit/assets/turbo-alpine-venue.png",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D art pipeline (OpenAI image generation)",
+        "retrievedAt": "2026-08-30T06:00:00.000Z",
+        "checkedAt": "2026-08-30T06:00:00.000Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboAlpineVenue.glb",
+      "outputPath": "public/aura-assets/turboAlpineVenueBackdrop.caf3d7b5.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D art pipeline (OpenAI image generation)",
+      "boundsMetadata": {
+        "min": [
+          -8,
+          -5.333,
+          -0.08
+        ],
+        "max": [
+          8,
+          5.333,
+          0.08
+        ],
+        "size": [
+          16,
+          10.667,
+          0.16
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 16,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Turbo Alpine Venue-unlit-alpha",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "BLEND",
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Turbo Alpine Venue-card"
+      ],
+      "textures": [
+        "Turbo Alpine Venue-image"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboAlpineVenueBackdrop.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "suitabilityReason": "Transparent road-free alpine treeline, spectators and rally props used only as decorative set dressing behind the certified live Turbo circuit; it supplies no road, collision, timing, or race state."
+    },
+  },
   "turboCheckpointChimeSfx": {
     type: "audio",
     format: "wav",
@@ -98098,6 +101199,224 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
+  "turboFormulaCircuit": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboFormulaCircuit.533df3b3.glb",
+    hash: "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+    bounds: [
+      39,
+      2.5,
+      33
+    ],
+    sizeBytes: 354188,
+    metadata: {
+      "materials": [
+        "Formula Circuit Asphalt",
+        "Formula Edge Red",
+        "Formula Edge White",
+        "Formula Runoff Gravel",
+        "Venue Grass",
+        "Venue Barrier",
+        "Venue Tyres",
+        "Paddock Orange",
+        "Paddock Roof"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 9,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Turbo Formula Venue — continuous wide asphalt, kerbs and venue"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/turboFormulaCircuit.533df3b3.glb",
+        "sourcePage": "apps/showcase-turbo-drift-circuit/scripts/build-formula-circuit.mjs",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "author": "Aura3D deterministic authored circuit",
+        "checkedAt": "2026-09-01T00:08:53.027Z"
+      },
+      "sourcePath": "public/aura-assets/turboFormulaCircuit.533df3b3.glb",
+      "outputPath": "public/aura-assets/turboFormulaCircuit.533df3b3.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D deterministic authored circuit",
+      "boundsMetadata": {
+        "min": [
+          -20,
+          -0.27,
+          -17
+        ],
+        "max": [
+          19,
+          2.23,
+          16
+        ],
+        "size": [
+          39,
+          2.5,
+          33
+        ],
+        "center": [
+          -0.5,
+          0.98,
+          -0.5
+        ],
+        "maxDimension": 39,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "Formula Circuit Asphalt",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Formula Edge Red",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Formula Edge White",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Formula Runoff Gravel",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Venue Grass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Venue Barrier",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Venue Tyres",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Paddock Orange",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Paddock Roof",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T00:08:31.020Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/turboFormulaCircuit.png",
+          "sha256": "sha256-864078113ea1e5bba1f8573d7422aaa2e48178a4383967a5b1e3ea3cdb07a32f",
+          "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+          "checkedAt": "2026-09-01T00:08:31.020Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit"
+        },
+        "messages": [
+          "The authored circuit declares +Y up and its isolated root probe validates the typed track presentation."
+        ]
+      },
+      "nodeNames": [
+        "Turbo Formula Venue — continuous wide asphalt, kerbs and venue"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboFormulaCircuit.thumb.svg",
+      "quality": "release",
+      "role": "track",
+      "suitabilityReason": "Deterministic Formula-scale closed asphalt circuit with authored centreline, start straight, kerbs, runoff, barriers, and venue dressing for Turbo Drift Circuit",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/turboFormulaCircuit.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit",
+        "sha256": "sha256-864078113ea1e5bba1f8573d7422aaa2e48178a4383967a5b1e3ea3cdb07a32f",
+        "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 28,
+        "checkedAt": "2026-09-01T00:08:31.020Z",
+        "foregroundBounds": {
+          "x": 140,
+          "y": 117,
+          "width": 500,
+          "height": 292
+        }
+      }
+    },
+  },
   "turboGoSfx": {
     type: "audio",
     format: "wav",
@@ -98175,6 +101494,222 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "textures": [],
       "dependencies": [],
       "thumbnailUrl": "/aura-assets/turboGoSfx.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "turboHairpinVenueKit": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboHairpinVenueKit.79bf7705.glb",
+    hash: "sha256-79bf77051210bb8d059d6c9a67c5458f8622edd64df3b917f2ae261eff970b29",
+    bounds: [
+      13.141,
+      2.868,
+      4.715
+    ],
+    sizeBytes: 324612,
+    metadata: {
+      "materials": [
+        "pine-dark",
+        "pine-mid",
+        "pine-warm",
+        "timber",
+        "tent-canvas",
+        "tent-red",
+        "crowd-coral",
+        "crowd-teal",
+        "crowd-gold",
+        "rock",
+        "meadow-shadow",
+        "meadow-sun",
+        "log-cut"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 13,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Turbo Hairpin Festival Kit"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboHairpinVenueKit.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-turbo-drift-circuit/scripts/build-hairpin-venue-kit.mjs",
+        "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "author": "Aura3D synthesis",
+        "checkedAt": "2026-08-30T12:12:16.616Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboHairpinVenueKit.glb",
+      "outputPath": "public/aura-assets/turboHairpinVenueKit.79bf7705.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -6.495,
+          -0.018,
+          -0.74
+        ],
+        "max": [
+          6.646,
+          2.85,
+          3.975
+        ],
+        "size": [
+          13.141,
+          2.868,
+          4.715
+        ],
+        "center": [
+          0.076,
+          1.416,
+          1.617
+        ],
+        "maxDimension": 13.141,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "pine-dark",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "pine-mid",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "pine-warm",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "timber",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tent-canvas",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tent-red",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "crowd-coral",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "crowd-teal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "crowd-gold",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "rock",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "meadow-shadow",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "meadow-sun",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "log-cut",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Turbo Hairpin Festival Kit"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboHairpinVenueKit.thumb.svg",
       "quality": "ungraded",
       "role": "unknown"
     },
@@ -99803,6 +103338,480 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "blockers": []
         }
       }
+    },
+  },
+  "turboTsukubaVisualTrack": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboTsukubaVisualTrack.ab53a493.glb",
+    hash: "sha256-ab53a4932edb777e56506cffbb1237ea021e4feb7e43403d035c7b8d4fc6903c",
+    bounds: [
+      35.448,
+      3.386,
+      33.872
+    ],
+    sizeBytes: 4145396,
+    metadata: {
+      "materials": [
+        "TSUKUB1",
+        "Warehouse_etc",
+        "BarriersTSU",
+        "Material_677",
+        "Material__94",
+        "Material__32",
+        "ASPH2",
+        "Grass",
+        "BarriersCONC",
+        "Kerb",
+        "Asph",
+        "Aqua",
+        "fence",
+        "outerbarrier",
+        "Mountains",
+        "Asphalt",
+        "TSUKUB2",
+        "Forest",
+        "Foilage",
+        "Grass2",
+        "BrownedGrass"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 131,
+        "meshCount": 64,
+        "materialCount": 21,
+        "textureCount": 22,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 131 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboTsukubaVisualTrack.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+        "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+        "license": "CC-BY-4.0",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+        "author": "Linnaeus (clean visual derivative built by Aura3D)",
+        "sourceFamily": "objaverse",
+        "attribution": "Linnaeus — CC BY 4.0; Aura3D deterministic derivative mutes only failed non-drivable scenery-card materials",
+        "retrievedAt": "2026-06-18T07:12:45.970Z",
+        "evidence": [
+          "Derived byte-for-byte from showcaseTsukubaCircuit hash sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031 by apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs; hierarchy, bounds, road, kerb, grass and drivable meshes remain unchanged.",
+          "Derived byte-for-byte from showcaseTsukubaCircuit hash sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031 by apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs; road, kerb, grass and drivable meshes remain unchanged."
+        ],
+        "checkedAt": "2026-06-18T07:12:45.970Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboTsukubaVisualTrack.glb",
+      "outputPath": "public/aura-assets/turboTsukubaVisualTrack.ab53a493.glb",
+      "license": "CC-BY-4.0",
+      "author": "Linnaeus (clean visual derivative built by Aura3D)",
+      "boundsMetadata": {
+        "min": [
+          -9.676,
+          -0.332,
+          -22.391
+        ],
+        "max": [
+          25.773,
+          3.054,
+          11.481
+        ],
+        "size": [
+          35.448,
+          3.386,
+          33.872
+        ],
+        "center": [
+          8.048,
+          1.361,
+          -5.455
+        ],
+        "maxDimension": 35.448,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "TSUKUB1",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "Warehouse_etc",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "BarriersTSU",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material_677",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material__94",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Material__32",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "ASPH2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Grass",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "BarriersCONC",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Kerb",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Asph",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Aqua",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "fence",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "outerbarrier",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "Mountains",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "Asphalt",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TSUKUB2",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "Forest",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "Foilage",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "Grass2",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        },
+        {
+          "name": "BrownedGrass",
+          "visible": false,
+          "readable": false,
+          "opacity": 0,
+          "alphaMode": "BLEND",
+          "reasons": [
+            "baseColorFactor alpha is 0"
+          ]
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "Sketchfab_model",
+        "root",
+        "GLTF_SceneRootNode",
+        "Cube.025_0",
+        "Object_4",
+        "Cube.026_1",
+        "Object_6",
+        "Cube.027_2",
+        "Object_8",
+        "Cube.028_3",
+        "Object_10",
+        "Cube.032_4",
+        "Object_12",
+        "Cube.033_5",
+        "Object_14",
+        "Cube_7",
+        "Object_16",
+        "Cube.001_8",
+        "Object_18",
+        "Cube.002_9",
+        "Object_20",
+        "Cube.003_10",
+        "Object_22",
+        "Cube.004_11",
+        "Object_24",
+        "Cube.005_12",
+        "Object_26",
+        "Cube.006_13",
+        "Object_28",
+        "Cube.007_14",
+        "Object_30",
+        "Cube.008_15",
+        "Object_32",
+        "Cube.009_16",
+        "Object_34",
+        "Cube.010_17",
+        "Object_36",
+        "Cube.011_18",
+        "Object_38",
+        "Cube.012_19",
+        "Object_40",
+        "Cube.013_20",
+        "Object_42",
+        "Cube.014_21",
+        "Object_44",
+        "Cube.015_22",
+        "Object_46",
+        "Cube.016_23",
+        "Object_48",
+        "Cube.017_24",
+        "Object_50",
+        "Cube.018_25",
+        "Object_52",
+        "Cube.019_26",
+        "Object_54",
+        "Cube.020_27",
+        "Object_56",
+        "Cube.021_28",
+        "Object_58",
+        "Cube.022_29",
+        "Object_60",
+        "Cube.023_30",
+        "Object_62",
+        "Cube.024_31",
+        "Object_64",
+        "Cube.029_32",
+        "Object_66",
+        "Cube.030_33",
+        "Object_68",
+        "Cube.031_34",
+        "Object_70",
+        "ddm_gts_tsukuba.103_35",
+        "Object_72",
+        "ddm_gts_tsukuba.138_36",
+        "Object_74",
+        "ddm_gts_tsukuba.134_37",
+        "Object_76",
+        "r_38",
+        "Object_78",
+        "g_39",
+        "Object_80",
+        "bounds_40",
+        "Object_82",
+        "Kerbs_42",
+        "Object_84",
+        "dunlop chicane_43",
+        "Object_86",
+        "g.002_44",
+        "Object_88",
+        "Fences_45",
+        "Object_90",
+        "inner_46",
+        "Object_92",
+        "bounds.003_47",
+        "Object_94",
+        "g.004_48",
+        "Object_96",
+        "Mountain_49",
+        "Object_98",
+        "g.001_50",
+        "Object_100",
+        "g.003_51",
+        "Object_102",
+        "g.005_52",
+        "Object_104",
+        "Mountain.001_53",
+        "Object_106",
+        "g.006_54",
+        "Object_108",
+        "Mountain.002_55",
+        "Object_110",
+        "g.007_56",
+        "Object_112",
+        "Mountain.003_57",
+        "Object_114",
+        "g.008_58",
+        "Object_116",
+        "g.009_59",
+        "Object_118",
+        "g.010_60",
+        "Object_120",
+        "g.011_61",
+        "Object_122",
+        "g.012_62",
+        "Object_124",
+        "g.013_63",
+        "Object_126",
+        "g.014_64",
+        "Object_128",
+        "Plane.001_66",
+        "Object_130"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2",
+        "image-3",
+        "image-4",
+        "image-5",
+        "image-6",
+        "image-7",
+        "image-8",
+        "image-9",
+        "image-10",
+        "image-11",
+        "image-12",
+        "image-13",
+        "image-14",
+        "image-15",
+        "image-16",
+        "image-17",
+        "image-18",
+        "image-19",
+        "image-20",
+        "image-21"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboTsukubaVisualTrack.thumb.svg",
+      "quality": "candidate",
+      "role": "track",
+      "suitabilityReason": "Bounds-preserving visual derivative of the certified Tsukuba track with only failed non-drivable scenery-card materials muted; the original hash-bound geometry contract remains authoritative for drivable topology."
     },
   },
   "turboUiConfirmSfx": {

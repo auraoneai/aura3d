@@ -188,11 +188,12 @@ test("Skyline native density and LOD remain readable through a pinned transition
     expect(reverseSwitchX, "reverse traversal should release the held LOD across hysteresis").toBeDefined();
 
     // Refine the mounted bracket. Each candidate starts from the known `to` side,
-    // preserving the same travel direction and hysteresis history. Six bisections
-    // leave at most 0.015625 game units of camera translation in the visual pair.
+    // preserving the same travel direction and hysteresis history. Eight bisections
+    // leave at most 0.00390625 game units of camera translation in the visual pair,
+    // keeping sub-pixel camera motion below the resource-switch delta under test.
     let refinedHeldX = reverseHeldX;
     let refinedSwitchX = reverseSwitchX!;
-    for (let index = 0; index < 6; index += 1) {
+    for (let index = 0; index < 8; index += 1) {
       await setCameraGameX(page, transition!.toX);
       const candidateX = (refinedHeldX + refinedSwitchX) / 2;
       const candidate = await setCameraGameX(page, candidateX);

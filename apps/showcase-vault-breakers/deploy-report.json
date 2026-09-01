@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.vault-breakers.deploy/1.0",
-  "generatedAt": "2026-08-25T05:35:45.131Z",
+  "generatedAt": "2026-08-30T13:47:50.220Z",
   "producer": "apps/showcase-vault-breakers/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "307f4b91341d87311113968ad656c56e1af1ab02a54223c55c68d48ce5ac7407",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "821c82966279ec54134ed5c3a578647ac9eeb81aee3bb758925d7e778c67e40d",
-  "sourceTreeSha256": "91c88f2084e3e56c6c5268aea79dea39d75b911bbebbeeacb6d2c2e23fe6606e",
+  "distTreeSha256": "b9dff480e867f9988ec563187bb673d1133968b035263617b1125ff52c56e9e6",
+  "sourceTreeSha256": "19fc689e77364c46f9b15e428d5b45eb999bfe755184e46dd7bd77575387b2af",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-vault-breakers/src --asset <5 typed models>",

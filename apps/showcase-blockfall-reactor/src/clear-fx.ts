@@ -12,7 +12,7 @@ import { game, material, primitives, type AuraNodeInput } from "@aura3d/engine";
 import { BOARD_WIDTH, VISIBLE_HEIGHT } from "./rules";
 import { cellPosition } from "./reactor-scene";
 
-export const CLEAR_FX_SHARD_COUNT = 28;
+export const CLEAR_FX_SHARD_COUNT = 48;
 
 const SHARD_LIFETIME = 0.55;
 /** Horizontal+vertical launch speed range in units/second, scaled by burst power. */
@@ -46,11 +46,11 @@ export function clearFxShardNodeId(index: number): string {
 export function createClearFxNodes(count = CLEAR_FX_SHARD_COUNT): AuraNodeInput[] {
   const shardMaterial = material.neon({
     name: "line clear shard",
-    color: "#ffe866",
-    emissive: "#fff3b0",
-    emissiveIntensity: 1.35,
-    roughness: 0.2,
-    opacity: 0.85
+    color: "#ffb332",
+    emissive: "#ff7a38",
+    emissiveIntensity: 0.72,
+    roughness: 0.28,
+    opacity: 0.74
   });
   return Array.from({ length: count }, (_, index) =>
     primitives.box({ name: "clear fx shard " + index, material: shardMaterial })
@@ -122,7 +122,8 @@ export function createClearFx(options: {
     if (usableRows.length === 0) return;
 
     let shardIndex = 0;
-    for (const shard of shards) {
+    const launchCount = linesCleared >= 4 ? 14 : 10;
+    for (const shard of shards.slice(0, launchCount)) {
       const boardRow = usableRows[shardIndex % usableRows.length] ?? usableRows[0];
       shardIndex += 1;
       const visibleY = (boardRow ?? 0);
@@ -164,7 +165,7 @@ export function createClearFx(options: {
       ];
       shard.velocity[1] -= 3.4 * step; // light gravity so arcs fall back into the well
       const life = 1 - shard.age / SHARD_LIFETIME;
-      const size = 0.028 * (0.4 + life * 0.8);
+      const size = 0.026 * (0.42 + life * 0.86);
       handle.setVisible(true);
       handle.setPosition(shard.position[0], shard.position[1], shard.position[2]);
       handle.setRotation(shard.spin * shard.age, shard.spin * shard.age * 0.7, 0);

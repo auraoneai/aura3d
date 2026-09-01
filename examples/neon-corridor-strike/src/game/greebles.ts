@@ -65,10 +65,12 @@ export const GREEBLE_PIPE_INSTANCES = pipeTransforms().length;
 export const GREEBLE_BOX_INSTANCES = boxTransforms().length;
 
 export function buildGreebleNodes() {
-  const pipeNear = material.pbr({ color: "#2a3644", roughness: 0.42, metalness: 0.85 });
-  const pipeFar = material.pbr({ color: "#131a24", roughness: 0.8, metalness: 0.3 });
-  const boxNear = material.pbr({ color: "#3a3327", roughness: 0.6, metalness: 0.55 });
-  const boxFar = material.pbr({ color: "#161410", roughness: 0.85, metalness: 0.15 });
+  // Match the corridor's readable steel value ladder. Far LODs remain darker
+  // than near details for depth, but no longer collapse into the black shell.
+  const pipeNear = material.pbr({ color: "#536975", roughness: 0.5, metalness: 0.58 });
+  const pipeFar = material.pbr({ color: "#32434d", roughness: 0.7, metalness: 0.34 });
+  const boxNear = material.pbr({ color: "#4b626d", roughness: 0.58, metalness: 0.44 });
+  const boxFar = material.pbr({ color: "#2d3e47", roughness: 0.74, metalness: 0.28 });
   return [
     instances.cylinder({
       name: "greeble pipe pool",

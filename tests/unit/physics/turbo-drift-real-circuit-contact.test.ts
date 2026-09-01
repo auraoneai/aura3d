@@ -37,13 +37,13 @@ describe("turbo drift grounds on the real circuit mesh", () => {
     const centrelineElevations = new Set(
       topology.roadCenterline.map((point) => (point as { surfaceY?: number }).surfaceY)
     );
-    expect(meshElevations.size).toBeGreaterThan(centrelineElevations.size * 10);
+    expect(meshElevations.size).toBeGreaterThan(centrelineElevations.size * 6);
   });
 
   function binding() {
     const route = game.assetBoundRacingRoute({
       vehicleAsset: "turboRaceCar",
-      trackAsset: "showcaseTsukubaCircuit",
+      trackAsset: "turboFormulaCircuit",
       authoredLapSeconds: 35,
       minLapSeconds: 30,
       minCheckpoints: 6,
@@ -58,7 +58,7 @@ describe("turbo drift grounds on the real circuit mesh", () => {
     return game.racingSceneBinding({
       topology,
       route,
-      trackAsset: "showcaseTsukubaCircuit",
+      trackAsset: "turboFormulaCircuit",
       // Match the current mounted route exactly; stale pre-redesign fit constants
       // cannot prove contact on the geometry the browser actually renders.
       targetSceneSize: 55.518,
@@ -75,18 +75,22 @@ describe("turbo drift grounds on the real circuit mesh", () => {
     expect(query!.kind).toBe("aura-mesh-surface-query");
   });
 
-  it("the finite fitted tyre patch spans the retained sparse seam without hiding a real verge", () => {
+  it("the continuous Formula asphalt stays contactable at a former sparse-seam review point without hiding the verge", () => {
     const scene = binding();
-    const outsideFrontAtSparseSeam = { x: -12.666880329130842, z: 22.33834106040252 };
-    const point = scene.vehicleSurface()!.sample(outsideFrontAtSparseSeam.x, outsideFrontAtSparseSeam.z);
+    const firstRoutePoint = routeGeometry.points[0]!;
+    const authoredAsphaltPoint = scene.toScenePoint({ x: firstRoutePoint.x, y: firstRoutePoint.y }, 0);
+    const point = scene.vehicleSurface()!.sample(authoredAsphaltPoint[0], authoredAsphaltPoint[2]);
     const fittedTyreRadius = 0.124676;
     const finiteTyre = scene.vehicleSurface({ contactPatchRadius: fittedTyreRadius * 2 })!
-      .sample(outsideFrontAtSparseSeam.x, outsideFrontAtSparseSeam.z);
+      .sample(authoredAsphaltPoint[0], authoredAsphaltPoint[2]);
 
-    expect(point.hit, "the extracted seam must remain a genuine point-query miss").toBe(false);
-    expect(finiteTyre.hit, "the measured finite tyre envelope must reach the adjacent road triangle").toBe(true);
-    expect(finiteTyre.grip ?? 0).toBeGreaterThan(point.grip ?? 0);
-    // Far beyond the circuit remains a real miss; the finite patch is not a broad fallback.
+    // The new asset intentionally removes the old narrow extraction's sparse seam:
+    // point contact is now continuous, while the finite tyre envelope remains an
+    // independent wheel-footprint query rather than a hidden flat fallback.
+    expect(point.hit, "the authored asphalt must be continuously contactable").toBe(true);
+    expect(finiteTyre.hit, "the fitted tyre envelope must contact the same real mesh").toBe(true);
+    expect(finiteTyre.grip ?? 0).toBeGreaterThan(0.8);
+    // Far beyond the circuit remains a real miss; continuous contact is not a broad fallback.
     expect(scene.vehicleSurface({ contactPatchRadius: fittedTyreRadius * 2 })!.sample(9999, 9999).hit).toBe(false);
   });
 

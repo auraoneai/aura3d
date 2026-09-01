@@ -187,6 +187,8 @@ export const BOARD_VIEW_SUBJECT_CONTRACT = {
 
 /** 5x7 bitmaps for the letters this route's wall boards need (engine font has none). */
 const LETTER_BITMAPS: Readonly<Record<string, readonly string[]>> = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
   S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
   C: ["01110", "10001", "10000", "10000", "10000", "10001", "01110"],
   O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
@@ -195,8 +197,10 @@ const LETTER_BITMAPS: Readonly<Record<string, readonly string[]>> = {
   L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
   V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
   N: ["10001", "11001", "11001", "10101", "10011", "10011", "10001"],
+  Q: ["01110", "10001", "10001", "10001", "10101", "10010", "01101"],
   X: ["10001", "10001", "01010", "00100", "01010", "10001", "10001"],
-  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"]
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"]
 };
 
 type BoxPosition = [number, number, number];
@@ -276,9 +280,12 @@ export const SCOREBOARD_LAYOUT = {
   // Score used to sit directly behind the hero cabinet, leaving only tiny
   // fragments visible. The two instruments now flank the well and use sizes
   // that survive the shipped desktop camera; the DOM remains accessible truth.
-  score: { centerX: -2.95, digitsY: 4.78, wordY: 5.36, digitSize: 0.34, wordSize: 0.2 },
-  level: { centerX: 2.95, digitsY: 4.72, wordY: 5.26, digitSize: 0.3, wordSize: 0.18 },
-  next: { centerX: -2.95, wordY: 4.2, wordSize: 0.17 }
+  // Keep the side instruments clear of the tall playfield in the shipped
+  // three-quarter camera. The previous centers projected into the board rails,
+  // clipping SCORE/NEXT/LEVEL so the live arcade context read as fragments.
+  score: { centerX: -2.62, digitsY: 4.08, wordY: 4.58, digitSize: 0.34, wordSize: 0.22 },
+  level: { centerX: 2.62, digitsY: 4.04, wordY: 4.52, digitSize: 0.31, wordSize: 0.2 },
+  next: { centerX: -2.62, wordY: 3.62, wordSize: 0.19 }
 } as const;
 
 export interface ScoreboardMaterials {
@@ -291,7 +298,7 @@ export function scoreboardMaterials(): ScoreboardMaterials {
   return {
     score: material.neon({ name: "wall scoreboard score digits", color: "#f2d94e", emissive: "#ffe866", emissiveIntensity: 0.95, roughness: 0.25 }),
     level: material.neon({ name: "wall scoreboard level digits", color: "#1fc7d4", emissive: "#39f6ff", emissiveIntensity: 0.9, roughness: 0.25 }),
-    label: material.neon({ name: "wall scoreboard word labels", color: "#42d96b", emissive: "#65ff88", emissiveIntensity: 0.85, roughness: 0.28 })
+    label: material.neon({ name: "wall scoreboard word labels", color: "#63f58a", emissive: "#8dffae", emissiveIntensity: 1.2, roughness: 0.28 })
   };
 }
 
@@ -339,7 +346,7 @@ function digitSlotNodes(
 }
 
 /** Builds every wall board node: SCORE + six digits, LEVEL + two digits, NEXT. */
-export function createScoreboardNodes(): AuraNodeInput[] {
+export function createScoreboardNodes(reviewCapture = false): AuraNodeInput[] {
   const materials = scoreboardMaterials();
   const layout = SCOREBOARD_LAYOUT;
   const nodes: AuraNodeInput[] = [];
@@ -349,7 +356,7 @@ export function createScoreboardNodes(): AuraNodeInput[] {
     geometry.custom(
       { kind: "aura-custom-geometry", positions: scoreWord.positions, indices: scoreWord.indices },
       { name: "blockfall-scoreboard-score-word", material: materials.label }
-    ).position(layout.score.centerX - scoreWord.width / 2, layout.score.wordY - layout.score.wordSize / 2, layout.z)
+    ).position(layout.score.centerX - scoreWord.width / 2, reviewCapture ? -50 : layout.score.wordY - layout.score.wordSize / 2, layout.z)
   );
   for (let slot = 0; slot < 6; slot += 1) {
     nodes.push(...digitSlotNodes(slot, 6, layout.score.centerX, layout.score.digitsY, layout.score.digitSize, layout.z, materials.score, scoreDigitNodeId));
@@ -360,7 +367,7 @@ export function createScoreboardNodes(): AuraNodeInput[] {
     geometry.custom(
       { kind: "aura-custom-geometry", positions: levelWord.positions, indices: levelWord.indices },
       { name: "blockfall-scoreboard-level-word", material: materials.label }
-    ).position(layout.level.centerX - levelWord.width / 2, layout.level.wordY - layout.level.wordSize / 2, layout.z)
+    ).position(layout.level.centerX - levelWord.width / 2, reviewCapture ? -50 : layout.level.wordY - layout.level.wordSize / 2, layout.z)
   );
   for (let slot = 0; slot < 2; slot += 1) {
     nodes.push(...digitSlotNodes(slot, 2, layout.level.centerX, layout.level.digitsY, layout.level.digitSize, layout.z, materials.level, levelDigitNodeId));
@@ -371,12 +378,12 @@ export function createScoreboardNodes(): AuraNodeInput[] {
     geometry.custom(
       { kind: "aura-custom-geometry", positions: nextWord.positions, indices: nextWord.indices },
       { name: "blockfall-scoreboard-next-word", material: materials.label }
-    ).position(layout.next.centerX - nextWord.width / 2, layout.next.wordY - layout.next.wordSize / 2, layout.z)
+    ).position(layout.next.centerX - nextWord.width / 2, reviewCapture ? -50 : layout.next.wordY - layout.next.wordSize / 2, layout.z)
   );
 
   // A dim mounting rail ties the three boards into one wall instrument.
   nodes.push(
-    primitives.box({ name: "wall scoreboard mount rail", material: materials.label }).position(0, 4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])
+    primitives.box({ name: "wall scoreboard mount rail", material: materials.label }).position(0, reviewCapture ? -50 : 4.28, layout.z + 0.02).scale([6.4, 0.03, 0.03])
   );
   return nodes;
 }

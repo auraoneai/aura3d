@@ -27,7 +27,7 @@ function buildRacing() {
   const contract = gameGeometryContract;
   const route = game.assetBoundRacingRoute({
     vehicleAsset: "turboRaceCar",
-    trackAsset: "showcaseTsukubaCircuit",
+    trackAsset: "turboFormulaCircuit",
     authoredLapSeconds: 35,
     minLapSeconds: 30,
     minCheckpoints: 6,

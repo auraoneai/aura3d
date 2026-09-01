@@ -505,6 +505,19 @@ test("skyline incorporations publish ghost / foliage / backdrop / gate evidence"
       consoleErrors
     }, null, 2)}\n`);
     await page.setViewportSize({ width: 1280, height: 800 });
+    // The paired ghost artifacts above intentionally freeze live truth. The primary
+    // showcase frame should instead show the route's real traversal energy, so resume
+    // live simulation and capture after a deterministic movement beat.
+    await page.keyboard.press("KeyP");
+    // The primary showcase frame is a live traversal beat, not a ghost comparison;
+    // turn the visual-only replay off so the typed player owns the focal hierarchy.
+    await page.keyboard.press("KeyG");
+    await page.waitForTimeout(100);
+    await runRightFor(page, 6000);
+    // Match the route's proven ceremony beat: traversal advances progression before
+    // the ember interaction provides a visible gameplay-feedback moment.
+    await page.keyboard.press("KeyJ");
+    await page.waitForTimeout(180);
     await page.screenshot({ path: join(REPORT_DIR, "skyline-incorporations.png") });
 
     expect(consoleErrors, "runtime errors while proving incorporations").toEqual([]);

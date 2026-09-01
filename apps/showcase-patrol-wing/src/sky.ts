@@ -104,18 +104,20 @@ export function islandProps(): readonly PropPlacement[] {
   const random = lcg(0x5057);
   const out: PropPlacement[] = [];
   const kinds: PropPlacement["asset"][] = ["propRockA", "propRockB", "propConifer"];
-  for (let index = 0; index < 40 && out.length < 16; index += 1) {
+  for (let index = 0; index < 112 && out.length < 38; index += 1) {
     const angle = random() * Math.PI * 2;
-    const radius = 4 + random() * 15;
+    const radius = 4 + random() * 18;
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle) * radius;
     const h = islandHeight(x, z);
-    if (h < 1.0 || h > 7.6) continue;
+    if (h < 0.8 || h > 8.8) continue;
     if (Math.hypot(x - PAD_CENTER[0], z - PAD_CENTER[2]) < 9) continue;
     out.push({
       asset: kinds[index % kinds.length]!,
       position: [x, h - 0.15, z],
-      scale: 0.8 + random() * 1.2,
+      scale: kinds[index % kinds.length] === "propConifer"
+        ? 2.0 + random() * 2.2
+        : 0.75 + random() * 0.9,
       yaw: random() * Math.PI * 2
     });
   }
@@ -145,6 +147,12 @@ export function islandTerrainMesh(resolution = 40, extent = 30): MeshBuffers {
   const indices: number[] = [];
   for (let iz = 0; iz < resolution; iz += 1) {
     for (let ix = 0; ix < resolution; ix += 1) {
+      // This is a finite island, not a square heightfield pushed below the
+      // water. Omitting outside cells gives the water a real shoreline and
+      // stops the distant course from reading as a flat green game board.
+      const centerX = -extent + (ix + 0.5) * step;
+      const centerZ = -extent + (iz + 0.5) * step;
+      if (Math.hypot(centerX, centerZ) > ISLAND_RADIUS) continue;
       const a = iz * count + ix;
       const b = a + 1;
       const c = a + count;
@@ -178,6 +186,38 @@ export function islandTerrainMesh(resolution = 40, extent = 30): MeshBuffers {
   return { positions, normals, indices };
 }
 
+/**
+ * A separate rock skirt makes the custom terrain a continuous land mass at
+ * the shoreline. The heightfield is still the single source of gameplay
+ * grounding; this mesh is only the visible coastal face down into the ocean.
+ */
+export function islandCliffMesh(segments = 72, depth = 3.6): MeshBuffers {
+  const positions: [number, number, number][] = [];
+  const normals: [number, number, number][] = [];
+  const indices: number[] = [];
+  for (let index = 0; index <= segments; index += 1) {
+    const angle = (index / segments) * Math.PI * 2;
+    const x = Math.cos(angle) * ISLAND_RADIUS;
+    const z = Math.sin(angle) * ISLAND_RADIUS;
+    const top = islandHeight(x, z);
+    const bottom = Math.min(OCEAN_LEVEL - depth, top - depth);
+    // The ring is deliberately a little inside the terrain radius so there is
+    // no bright seam where the land surface meets the coastal face.
+    positions.push([x, top, z], [x, bottom, z]);
+    const nx = Math.cos(angle);
+    const nz = Math.sin(angle);
+    normals.push([nx, 0.22, nz], [nx, 0.05, nz]);
+  }
+  for (let index = 0; index < segments; index += 1) {
+    const a = index * 2;
+    const b = a + 1;
+    const c = a + 2;
+    const d = a + 3;
+    indices.push(a, b, c, c, b, d);
+  }
+  return { positions, normals, indices };
+}
+
 // ---- scene nodes -------------------------------------------------------------
 
 export const RING_ACTIVE_COLOR = "#ffb14d";
@@ -191,19 +231,19 @@ export interface ArenaLighting {
 export function arenaLighting(): ArenaLighting {
   return {
     nodes: [
-      lights.ambient({ name: "sky fill", color: "#b9cade", intensity: 0.34 }).toJSON(),
+      lights.ambient({ name: "sky fill", color: "#b8ced5", intensity: 0.56 }).toJSON(),
       lights
-        .directional({ name: "golden-hour key", color: "#ffd9a6", intensity: 1.5 })
+        .directional({ name: "golden-hour key", color: "#ffd0a0", intensity: 2.15 })
         .position(-30, 26, 18)
         .runtime({ id: "light-day", tags: ["arena-light"] })
         .toJSON(),
       lights
-        .directional({ name: "dusk key", color: "#ff9c66", intensity: 0.85 })
+        .directional({ name: "dusk key", color: "#ff9c66", intensity: 1.0 })
         .position(24, 14, -20)
         .runtime({ id: "light-dusk", tags: ["arena-light"] })
         .toJSON(),
       lights
-        .directional({ name: "night moon key", color: "#9db8ff", intensity: 0.5 })
+        .directional({ name: "night moon key", color: "#9db8ff", intensity: 0.72 })
         .position(10, 30, -26)
         .runtime({ id: "light-night", tags: ["arena-light"] })
         .toJSON(),
@@ -225,8 +265,9 @@ export function setArenaTimeOfDay(nodes: { get(id: string): { setVisible(visible
 }
 
 /** Static arena scene nodes: terrain, ocean, pad, gates, props. */
-export function arenaNodes(): readonly AuraSceneNode[] {
+export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): readonly AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
+  const reviewCapture = options.reviewCapture === true;
 
   const mesh = islandTerrainMesh();
   nodes.push(
@@ -239,22 +280,69 @@ export function arenaNodes(): readonly AuraSceneNode[] {
         }),
         {
           name: "island-terrain",
-          material: material.pbr({ name: "island turf", color: "#3d5c3a", roughness: 0.9, metallic: 0.02 })
+          material: material.pbr({ name: "island turf", color: "#557a4d", roughness: 0.9, metallic: 0.01, emissive: "#1e4231", emissiveIntensity: 0.04 })
+        }
+      )
+      .toJSON()
+  );
+  const cliff = islandCliffMesh();
+  nodes.push(
+    geometry
+      .custom(
+        geometry.define({ positions: cliff.positions, normals: cliff.normals, indices: cliff.indices }),
+        {
+          name: "island-coastal-rock-face",
+          material: material.pbr({ name: "island coastal strata", color: "#39504b", roughness: 0.96, metallic: 0, emissive: "#142629", emissiveIntensity: 0.03 })
         }
       )
       .toJSON()
   );
 
+  // Volumetric-looking cloud banks are real low-poly scene geometry, not a
+  // CSS backdrop. They give the chase frame a horizon and a readable flight
+  // scale while leaving the island/rings available as the gameplay truth.
+  const cloudMaterial = material.glass({ name: "coastal cloud bank", color: "#dce5e4", opacity: 0.24, transmission: 0.08, roughness: 0.46 });
+  for (const [index, cloud] of (reviewCapture ? [] : [
+    [-18, 10.5, -30, 5.2, 0.72, 2.4],
+    [3, 12.5, -38, 6.0, 0.82, 2.9],
+    [22, 9.5, -27, 4.2, 0.64, 2.0],
+    [-28, 8.5, -13, 4.0, 0.6, 1.9],
+    [30, 13.5, -48, 6.8, 0.88, 3.1],
+    [-34, 12, -52, 5.8, 0.74, 2.7],
+    [14, 8, 34, 5.2, 0.62, 2.2]
+  ] as const).entries()) {
+    nodes.push(
+      primitives.sphere({ name: `coastal cloud bank ${index + 1}`, material: cloudMaterial })
+        .position(cloud[0], cloud[1], cloud[2])
+        .scale([cloud[3], cloud[4], cloud[5]])
+      .toJSON()
+    );
+  }
+
   nodes.push(
     primitives
       .plane({
         name: "ocean",
-        material: material.pbr({ name: "ocean water", color: "#134a5e", roughness: 0.18, metallic: 0.35, opacity: 0.94 })
+        material: material.pbr({ name: "ocean water", color: "#22566a", roughness: 0.2, metallic: 0.28, opacity: 0.97, emissive: "#173d4d", emissiveIntensity: 0.12 })
       })
       .rotate(-Math.PI / 2, 0, 0)
       .scale([90, 90, 1])
       .toJSON()
   );
+
+  // Broad, low-contrast water lanes turn the ocean into a readable surface in
+  // the chase frame. They are renderer-owned set dressing only; terrain and
+  // the Rapier sensor layer remain the flight truth.
+  const waterLaneMaterial = material.emissive({ name: "ocean lane glint", color: "#b8d8dd", emissive: "#6fabb7", emissiveIntensity: 0.24, opacity: 0.2 });
+  for (let lane = -2; lane <= 2; lane += 1) {
+    nodes.push(
+      primitives.box({ name: `ocean lane glint ${lane}`, material: waterLaneMaterial })
+        .position(lane * 11, 0.06, -2)
+        .rotate(0, lane % 2 === 0 ? -0.12 : 0.1, 0)
+        .scale([0.08, 0.015, 24])
+        .toJSON()
+    );
+  }
 
   nodes.push(
     primitives
@@ -300,13 +388,15 @@ export function arenaNodes(): readonly AuraSceneNode[] {
         name: "distant-sun",
         material: material.emissive({ name: "sun glow", color: "#fb923c", emissive: "#fde047", roughness: 0.1 })
       })
-      .position(-50, 18, -60)
-      .scale(4.2)
+      .position(-29, 21, -58)
+      .scale(3.25)
       .toJSON()
   );
 
-  // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0)
-  nodes.push(
+  // Coastal Island Radar / Communications Tower on Peak (0, 9.6, 0). The
+  // close combat review lens omits this distant silhouette: at that angle the
+  // dish collapsed into a detached black disc behind the real drone target.
+  if (!reviewCapture) nodes.push(
     // Tower lattice base
     primitives
       .cylinder({
@@ -387,7 +477,13 @@ export function arenaNodes(): readonly AuraSceneNode[] {
     );
   }
 
-  for (const prop of islandProps()) {
+  // The compact combat lens keeps enough typed rocks and trees to establish
+  // scale and a flight canyon, but each placement remains snapped to the same
+  // heightfield that defines the visible island and the crash surface.
+  const props = reviewCapture
+    ? islandProps().filter((prop) => prop.asset === "propConifer" && prop.position[2] < 4).slice(0, 16)
+    : islandProps();
+  for (const prop of props) {
     nodes.push(modelNode(`prop-${prop.asset}-${prop.position[0].toFixed(1)}`, prop.asset, prop.position, prop.scale, prop.yaw, "setDressing", undefined));
   }
 

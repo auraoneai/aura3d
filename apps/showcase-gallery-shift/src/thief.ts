@@ -8,8 +8,8 @@
  * (sneak is silent). Lifting: hold-to-lift 1.2 s with a visible progress
  * value, a movement slow, and a standing noise spike for the whole hold.
  *
- * Real embedded clip names from the typed `showcaseKenneyOobiPlatformerHero`
- * asset drive the AnimationController in main.ts.
+ * Real embedded clip names from the typed `showcaseRunnerGirl` asset drive the
+ * AnimationController in main.ts.
  */
 import {
   GAIT_SPEED,
@@ -30,11 +30,13 @@ import {
 
 export type ThiefGait = "walk" | "sneak" | "sprint";
 
-/** Real embedded clip names in the typed Oobi platformer hero asset. */
+/** Real embedded clip names in the typed Kenney runner-girl asset. */
 export const THIEF_CLIPS = {
   idle: "idle",
   walk: "walk",
-  sneak: "crouch",
+  // The asset has no crouch clip; slowed walk remains an honest embedded
+  // locomotion presentation while sneak speed/noise truth stays route-owned.
+  sneak: "walk",
   sprint: "sprint",
   lift: "pick-up",
   carry: "holding-both"

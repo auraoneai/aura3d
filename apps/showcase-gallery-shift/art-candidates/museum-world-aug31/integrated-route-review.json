@@ -1,0 +1,119 @@
+{
+  "schema": "aura3d.gallery-shift.integrated-world-candidate/1.0",
+  "route": "/apps/showcase-gallery-shift/?capture=review",
+  "candidateOnly": true,
+  "canonicalEvidence": false,
+  "pass": true,
+  "failures": [],
+  "cameraContract": {
+    "position": [
+      0,
+      31,
+      7.5
+    ],
+    "target": [
+      0,
+      0.15,
+      0.1
+    ],
+    "fov": 39,
+    "changed": false
+  },
+  "world": {
+    "typedReference": "galleryWorldAssets.galleryShiftCutawayMuseumWorld",
+    "runtimeNodeId": "museum-interior",
+    "auraNodeCount": 1,
+    "scaleMode": "world",
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "assetPath": "apps/showcase-gallery-shift/art-candidates/museum-world-aug31/galleryShiftMuseumWorldCandidate.glb",
+    "assetSha256": "9773fa0df6fe19c1c3d2145548af78c91943a0f14d6879154c95dee4cdf124c2"
+  },
+  "sourceBindings": {
+    "environment": {
+      "path": "apps/showcase-gallery-shift/src/environment.ts",
+      "sha256": "dfdbac75e8f55d78cfa71e1f5ae781016ab9ea8ccb1fd47da1b37c4ff060bc58"
+    },
+    "main": {
+      "path": "apps/showcase-gallery-shift/src/main.ts",
+      "sha256": "b7453d81607199fa2c33dbdbf223556f0a6540dd4a7fd4b96c659c31730871a4"
+    },
+    "floorTruth": {
+      "path": "apps/showcase-gallery-shift/src/floor.ts",
+      "sha256": "449dad2b3f16989bfff7a3c42576c99991321204ad694021b8a8ff5c31de21f1"
+    },
+    "candidateBinding": {
+      "path": "apps/showcase-gallery-shift/src/gallery-world-candidate.ts",
+      "sha256": "55b8955f0e48b44ebfc6cc317635a89a80deb37c1c2922ae4806df0ecb26ea26"
+    }
+  },
+  "runtime": {
+    "floor": 1,
+    "state": "playing",
+    "physicsBackend": "rapier",
+    "renderer": {
+      "drawCalls": 190,
+      "renderSize": [
+        1280,
+        800
+      ],
+      "backend": "unknown"
+    },
+    "guardRouteLengths": [
+      25,
+      25
+    ],
+    "navigationOwnership": "authored deterministic two-floor waypoint patrols; no Recast/navmesh claim",
+    "systems": [
+      "public-physics-filtered-LOS",
+      "authored-hearing-radii",
+      "authored-waypoint-patrols",
+      "exact-entry-camera-laser-exhibit-exit-transitions",
+      "three-exhibit-two-floor-mission",
+      "third-lift-alarm-return",
+      "keyboard-touch-pause-reset"
+    ],
+    "thiefPosition": {
+      "x": 0,
+      "z": 6.2
+    },
+    "primaryAssets": [
+      "galleryWorldAssets.galleryShiftCutawayMuseumWorld",
+      "assets.galleryShiftPedestal",
+      "assets.galleryShiftExhibitA",
+      "assets.galleryShiftExhibitB",
+      "assets.galleryShiftExhibitC",
+      "assets.galleryShiftDisplayCase"
+    ],
+    "primaryAssetHashes": [
+      "sha256-9773fa0df6fe19c1c3d2145548af78c91943a0f14d6879154c95dee4cdf124c2",
+      "sha256-c9af6f418b688bff7dab3bbe9d905b9456d8d82e4c9af94e4a84b3aae8fb22fc",
+      "sha256-dc7c4d90c6a325bdf51987026dd053b845fa9c18ff72444a2ceb89089f224113",
+      "sha256-71b229c6afea8e58ce80a41c2f85dfac714eef20df0d782f1b969fc1e61f8147",
+      "sha256-286bd7f80f000b138dea7100820ff3e0b9e5778067e28caf3019a590c24e2a63",
+      "sha256-5c2bcd8156702c0e8b1df18fc6f3fb300bdd87101904c94ac7990ed321bb707f"
+    ]
+  },
+  "budgets": {
+    "drawCalls": 190,
+    "drawCallCeiling": 190,
+    "pass": true,
+    "duplicateRoomNodesRemoved": 7,
+    "duplicateLintelNodesRemoved": 4,
+    "duplicateThresholdNodesRemoved": 4
+  },
+  "artifacts": [
+    {
+      "path": "integrated-route-review-canvas.png",
+      "sha256": "d3315745e146826e85c8bf48a8ac389b0ed2883d75ad103449cd66d000170216",
+      "bytes": 311267,
+      "viewport": [
+        1280,
+        800
+      ]
+    }
+  ]
+}

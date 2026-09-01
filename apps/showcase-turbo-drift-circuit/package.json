@@ -6,6 +6,10 @@
   "description": "Aura3D showcase circuit race with a certified typed car/track pair, deterministic route-local opponent AI, runtime HUD, and checkpoint/lap gameplay.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "assets:review-art": "node scripts/build-review-alpine-venue.mjs",
+    "assets:hairpin-venue": "node scripts/build-hairpin-venue-kit.mjs",
+    "assets:clean-track": "node scripts/build-clean-tsukuba-visual.mjs",
+    "assets:formula-circuit": "node scripts/build-formula-circuit.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"

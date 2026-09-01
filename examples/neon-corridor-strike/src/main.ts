@@ -93,10 +93,19 @@ const mountId = `neon-corridor-strike-${performance.timeOrigin}`;
 let lastWarnAmmo = MAG_SIZE;
 let lastStatus: string = "playing";
 let pausedAtMs: number | undefined;
-const rifleScale = groundedRenderedAssetPlacement(assets.pulseRifle, { targetMaxDimension: 0.85, floorY: 0 }).scale;
+const rifleScale = groundedRenderedAssetPlacement(assets.neonContainmentPulseRifle, { targetMaxDimension: 0.85, floorY: 0 }).scale;
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false },
+  // Cap the backing buffer for the dense full-screen FPS view. CSS and HUD
+  // remain at the review viewport while the now full-frame authored corridor
+  // stays inside the route's unchanged stable-frame budget. This is a real
+  // route quality setting, not a test-only pacing override.
+  // The sixth-pass architectural lining adds real continuous surfaces and
+  // typed movable props. Keep the same review viewport but give its GPU budget
+  // enough headroom for gameplay pacing on the software-rendered evidence
+  // runner; CSS/HUD dimensions and all game state remain unchanged.
+  pixelRatio: 0.5,
   physics: { layers, gravity: [0, -24, 0] },
   scene: buildScene()
 });
@@ -160,7 +169,7 @@ function resetRun(): void {
   state.lmbHeld = false;
   state.fireHeld = false;
   state.fireQueued = false;
-  state.spawnGuard = 6;
+  state.spawnGuard = 8;
   state.status = "playing";
   state.objective = "Clear the corridor or reach the exit";
   state.killed = [];
@@ -220,11 +229,11 @@ function resetRun(): void {
 
 function muzzleBarrel(): readonly [number, number, number] {
   const eye = playerEye(playerBody);
-  const forward = lookDirection(state.yaw, 0);
+  const forward = lookDirection(state.yaw, state.pitch);
   const right = rightDirection(state.yaw);
   return [
     eye[0] + forward[0] * 0.8 + right[0] * 0.2,
-    eye[1] - 0.11,
+    eye[1] + forward[1] * 0.8 - 0.11,
     eye[2] + forward[2] * 0.8 + right[2] * 0.2
   ];
 }
@@ -236,17 +245,24 @@ function nowMs(): number {
 
 function presentShot(shot: ShotTrace): void {
   const barrel = muzzleBarrel();
-  const dir = lookDirection(shot.yaw, 0);
-  const reach = Math.max(2.4, Math.hypot(shot.end[0] - barrel[0], shot.end[2] - barrel[2]));
+  const dir = lookDirection(shot.yaw, shot.pitch);
+  const reach = Math.max(2.4, Math.hypot(
+    shot.end[0] - barrel[0],
+    shot.end[1] - barrel[1],
+    shot.end[2] - barrel[2]
+  ));
   const end: readonly [number, number, number] = [
     barrel[0] + dir[0] * reach,
-    barrel[1],
+    barrel[1] + dir[1] * reach,
     barrel[2] + dir[2] * reach
   ];
   try {
-    showShot(app.nodes, shot.origin, dir, barrel, end, shot.yaw, shotClock);
+    showShot(app.nodes, shot.origin, dir, barrel, end, shot.yaw, shot.pitch, shotClock);
     lastShotWallMs = nowMs();
-    effects.impactFlash(barrel, { color: "#ff7a18", intensity: 1.35, duration: 0.08, radius: 0.1, ownerId: "muzzle" });
+    // Reduced-flash clamps brightness, not feedback truth. Hold the subdued
+    // muzzle event for a few frames longer so a low-refresh evidence/browser
+    // frame cannot miss the entire safe feedback window.
+    effects.impactFlash(barrel, { color: "#ff9d3c", intensity: 0.9, duration: reducedFlash ? 0.18 : 0.06, radius: 0.035, ownerId: "muzzle" });
     // Enemy hits already spark via effects.hitSpark; wall hits get an end flash.
     if (!state.lastHitName.startsWith("enemy-")) {
       effects.impactFlash(end, { color: "#7ef8ff", intensity: 1.05, duration: 0.12, radius: 0.14, ownerId: "shot-end" });
@@ -313,21 +329,29 @@ window.__AURA3D_FPS_CAPTURE__ = {
 
 function syncWeaponViewmodel(): void {
   const eye = playerEye(playerBody);
-  const forward = lookDirection(state.yaw, 0);
+  const forward = lookDirection(state.yaw, state.pitch);
   const right = rightDirection(state.yaw);
   const recoil = weaponClock.recoil;
   const compact = window.innerWidth <= 600;
   const forwardOffset = compact ? 0.42 : 0.46;
   const rightOffset = compact ? 0.08 : 0.22;
-  const verticalOffset = 0.18;
-  const viewmodelScale = rifleScale * (compact ? 0.4 : 0.48);
+  // The containment rifle is a deliberately compact lower-right viewmodel.
+  // Its old catalog-era transform lifted the larger replacement into the
+  // center sight lane; keep the muzzle clear of the reticle on both desktop
+  // and touch layouts without touching the hitscan origin.
+  const verticalOffset = compact ? 0.16 : 0.20;
+  // Keep the typed weapon silhouette present in the desktop review frame. The
+  // previous scale read as a thin diagonal accent beside the combat lane;
+  // this remains a viewmodel-only presentation change and does not affect
+  // hitscan origin or gameplay reach.
+  const viewmodelScale = rifleScale * (compact ? 0.28 : 0.32);
   rifleNode
     .setPosition(
       eye[0] + forward[0] * (forwardOffset - 0.05 * recoil) + right[0] * rightOffset,
-      eye[1] - verticalOffset - 0.02 * recoil,
+      eye[1] + forward[1] * (forwardOffset - 0.05 * recoil) - verticalOffset - 0.02 * recoil,
       eye[2] + forward[2] * (forwardOffset - 0.05 * recoil) + right[2] * rightOffset
     )
-    .setRotation(0, state.yaw, 0)
+    .setRotation(state.pitch, state.yaw, 0)
     .setScale(viewmodelScale);
 }
 
@@ -427,7 +451,9 @@ function publishEvidence(): void {
 }
 
 app.onFrame(({ dt }) => {
-  const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
+  const elapsedStep = Math.min(0.1, Math.max(1 / 240, dt || 1 / 60));
+  const step = Math.min(0.05, elapsedStep);
+  const playerMotionCatchup = elapsedStep / step;
   input.update(step);
   if (input.pressed("pause") && state.status === "playing") {
     state.paused = !state.paused;
@@ -453,7 +479,7 @@ app.onFrame(({ dt }) => {
   state.spawnGuard = Math.max(0, state.spawnGuard - step);
 
   updateLook(state, input, reducedMotion);
-  updatePlayer(state, input, physics, playerBody, step);
+  updatePlayer(state, input, physics, playerBody, step, playerMotionCatchup);
   updateWeapon(state, input, physics, playerBody, effects, weaponClock, step, applyHit, presentShot, {
     onReloadStart: () => audio.play("reload-start"),
     onReloadComplete: () => audio.play("reload-done"),
@@ -485,7 +511,12 @@ app.onFrame(({ dt }) => {
   lookNode.setPosition(look[0], look[1], look[2]).setRotation(0, state.yaw, 0);
   syncWeaponViewmodel();
   if (shotClock.visible > 0 && shotClock.pose) {
-    shotClock.pose = { barrel: muzzleBarrel(), end: shotClock.pose.end, yaw: state.yaw };
+    shotClock.pose = {
+      barrel: muzzleBarrel(),
+      end: shotClock.pose.end,
+      yaw: state.yaw,
+      pitch: state.pitch
+    };
   }
   const at = playerBody.position();
   director.update(step, [{ id: "player", position: [at[0], WALK_Y, at[2]] }]);

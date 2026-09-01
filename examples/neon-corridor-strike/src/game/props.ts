@@ -69,7 +69,10 @@ export interface LampSpec {
 /** Two practicals near the walls: never over the aim line or walk path. */
 export const LAMPS: readonly LampSpec[] = [
   { id: "lamp-near", anchor: [-2.55, 2.58, 3.2], hang: 0.42 },
-  { id: "lamp-far", anchor: [2.55, 2.58, -4.4], hang: 0.42 }
+  // Keep this practical against the wall shell rather than inside e2's rush
+  // lane. It remains visible in the same far encounter bay, but cannot be
+  // mistaken for cover or interfere with the enemy's readable approach.
+  { id: "lamp-far", anchor: [3.12, 2.58, -4.4], hang: 0.42 }
 ];
 
 const PROP_LAYER = "debris";

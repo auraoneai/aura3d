@@ -209,7 +209,7 @@ describe("public showcase gameplay regressions", () => {
   it("runs Turbo Drift at an arcade pace above the certified evidence baseline", () => {
     const route = createGameAssetBoundRacingRoute({
       vehicleAsset: "showcaseTexturedSportsCar",
-      trackAsset: "showcaseTsukubaCircuit",
+      trackAsset: "turboFormulaCircuit",
       authoredLapSeconds: turboGeometry.authoredSeconds,
       minLapSeconds: 30,
       minCheckpoints: 6,

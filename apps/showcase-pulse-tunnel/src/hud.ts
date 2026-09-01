@@ -42,6 +42,10 @@ export function setupPulseHud(panel: HTMLElement | null): PulseHudElements | nul
   if (!panel) return null;
   panel.innerHTML = `
     <div class="pulse-hud" data-testid="pulse-hud">
+      <div class="pulse-mission" aria-hidden="true">
+        <span class="pulse-mission-kicker">FINAL BEAT</span>
+        <strong>BREAK THE SENTINEL</strong>
+      </div>
       <div class="pulse-row pulse-shields" id="pulse-shields" aria-label="Shields"></div>
       <div class="pulse-row">
         <span class="pulse-label">Style</span>

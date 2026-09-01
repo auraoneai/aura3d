@@ -5,8 +5,27 @@ body.is-alarm #gs-banner { border-color: rgba(255, 51, 77, 0.8); color: #ff9aaa;
 body.is-alarm #panel { border-color: rgba(255, 51, 77, 0.42); }
 body { overflow: hidden; }
 
-.shell { display: flex; gap: 14px; height: 100vh; padding: 14px; }
-.viewport { position: relative; flex: 1 1 auto; min-width: 0; }
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(188px, 214px);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 8px;
+  height: 100vh;
+  padding: 8px;
+}
+
+/* Renderer-first review frame: retain the HUD nodes for state/evidence and
+ * accessibility, but let the authored museum plan and typed actors fill the
+ * screenshot without a side-column or diagnostic chrome. */
+body[data-capture="review"] .shell {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 0;
+}
+body[data-capture="review"] .stage { border-radius: 0; }
+body[data-capture="review"] #panel,
+body[data-capture="review"] #hud { opacity: 0; pointer-events: none; }
+.viewport { position: relative; min-width: 0; min-height: 0; }
 .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #04060b; }
 #app canvas { display: block; width: 100%; height: 100%; }
 
@@ -58,27 +77,28 @@ body { overflow: hidden; }
 .is-hidden { display: none !important; }
 
 .panel {
-  flex: 0 0 300px; display: flex; flex-direction: column; gap: 14px; padding: 16px;
-  border-radius: 12px; background: rgba(10, 15, 28, 0.85); border: 1px solid rgba(126, 248, 255, 0.14);
-  overflow-y: auto;
+  position: relative; z-index: 3; min-width: 0; width: auto; max-height: calc(100vh - 20px);
+  display: flex; flex-direction: column; gap: 8px; padding: 10px;
+  border-radius: 12px; background: rgba(10, 15, 28, 0.54); border: 1px solid rgba(126, 248, 255, 0.22);
+  overflow-y: auto; backdrop-filter: blur(4px);
 }
 .gs-brand .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.22em; color: #7ef8ff; text-transform: uppercase; }
-.gs-brand h1 { margin: 4px 0 6px; font-size: 24px; letter-spacing: 0.04em; color: #ffd9a0; }
-.gs-brand .blurb { margin: 0; font-size: 12.5px; line-height: 1.5; color: #a9b6cc; }
+.gs-brand h1 { margin: 4px 0 5px; font-size: 22px; letter-spacing: 0.04em; color: #ffd9a0; }
+.gs-brand .blurb { margin: 0; font-size: 11.5px; line-height: 1.45; color: #a9b6cc; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat-grid article {
-  padding: 8px 10px; border-radius: 8px; background: rgba(13, 19, 34, 0.9);
+  padding: 7px 8px; border-radius: 8px; background: rgba(13, 19, 34, 0.82);
   border: 1px solid rgba(126, 248, 255, 0.1);
 }
 .stat-grid span { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8ba3; }
-.stat-grid strong { display: block; margin-top: 2px; font-size: 15px; color: #e8eef8; font-variant-numeric: tabular-nums; }
+.stat-grid strong { display: block; margin-top: 2px; font-size: 14px; color: #e8eef8; font-variant-numeric: tabular-nums; }
 
 .section-label { margin: 0 0 6px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #7d8ba3; }
 .guard-row {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; margin-bottom: 6px;
-  border-radius: 8px; background: rgba(13, 19, 34, 0.9); border: 1px solid rgba(126, 248, 255, 0.1);
-  font-size: 11px; color: #a9b6cc;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 5px 7px; margin-bottom: 5px;
+  border-radius: 8px; background: rgba(13, 19, 34, 0.78); border: 1px solid rgba(126, 248, 255, 0.1);
+  font-size: 10.5px; color: #a9b6cc;
 }
 .guard-row b { color: #e8eef8; }
 .guard-row .state { padding: 1px 8px; border-radius: 999px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -87,7 +107,7 @@ body { overflow: hidden; }
 .state-alert { background: rgba(255, 59, 78, 0.2); color: #ff6a7d; }
 .guard-row .route, .guard-row .speed { font-variant-numeric: tabular-nums; color: #7d8ba3; }
 
-.controls-list { margin: 0; padding: 0 0 0 16px; font-size: 12px; line-height: 1.8; color: #a9b6cc; }
+.controls-list { margin: 0; padding: 0 0 0 15px; font-size: 11px; line-height: 1.65; color: #a9b6cc; }
 .controls-list b { color: #ffd9a0; }
 
 .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -100,13 +120,14 @@ body { overflow: hidden; }
 
 .evidence-strip {
   display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border-radius: 8px;
-  background: rgba(13, 19, 34, 0.9); border: 1px solid rgba(126, 248, 255, 0.1);
-  font-size: 10.5px; letter-spacing: 0.06em; color: #7d8ba3;
+  background: rgba(13, 19, 34, 0.76); border: 1px solid rgba(126, 248, 255, 0.1);
+  font-size: 10px; letter-spacing: 0.06em; color: #7d8ba3;
 }
 .evidence-strip code { color: #9feefc; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 860px) {
-  .shell { flex-direction: column; padding: 8px; gap: 8px; }
-  .panel { flex: 0 0 auto; max-height: 42vh; }
+  .shell { display: flex; flex-direction: column; padding: 8px; gap: 8px; height: 100dvh; }
+  .viewport { flex: 1 1 auto; min-height: 0; }
+  .panel { flex: 0 0 auto; max-height: 42vh; width: auto; }
   .detection-wrap { width: 150px; }
 }

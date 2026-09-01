@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "build:course-world": "node scripts/build-course-world.mjs",
     "build:sfx": "node scripts/build-sfx.mjs",
     "write:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
     "write:route-health": "node scripts/write-route-health.mjs"

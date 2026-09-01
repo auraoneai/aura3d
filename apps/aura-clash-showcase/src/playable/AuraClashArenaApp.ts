@@ -244,6 +244,8 @@ interface Spark {
   life: number;
   facing: 1 | -1;
   kind: MoveId | "block" | "guard-break";
+  /** Fighter that authored this renderer-owned cue; absent for neutral dust/block cues. */
+  owner?: FighterId;
 }
 
 interface AudioRuntime {
@@ -407,7 +409,12 @@ function toEngineCombatMove(id: MoveId): GameCombatMove {
     hitStop: id === "special" ? 0.13 : id === "heavy" ? 0.075 : 0.052,
     hitStun: id === "special" ? 32 : id === "heavy" ? 18 : 12,
     blockStun: id === "special" ? 20 : id === "heavy" ? 12 : 8,
-    knockback: [move.knockback * 0.28, id === "special" ? 0.1 : 0, 0],
+    // Translate the solver-owned value into readable world-space displacement.
+    // The former uniform 0.28 multiplier let the special's visual lunge swallow
+    // nearly all of the launch, collapsing two legal-range roots into one
+    // silhouette. Reach, active frames, damage, hitstun and hit testing stay
+    // unchanged; this makes the existing special knockdown visibly directional.
+    knockback: [move.knockback * (id === "special" ? 0.72 : id === "heavy" ? 0.42 : 0.3), id === "special" ? 0.1 : 0, 0],
     hitbox: {
       id: `${id}-active-hitbox`,
       offset: [move.range * 0.5, 0.9, 0],
@@ -437,6 +444,8 @@ export function mountAuraClashArenaApp(): void {
   const root = document.querySelector<HTMLDivElement>("#app");
   if (!root) throw new Error("Missing #app");
   const hudMode = readPlayableHudMode(window.location);
+  const captureMode = new URLSearchParams(window.location.search).get("capture");
+  const reviewCapture = captureMode === "match-start" || captureMode === "combat-impact";
   const testDriverEnabled = hudMode.evidence && new URLSearchParams(window.location.search).has("auraTestDriver");
 
   gameWindow.__AURA_CLASH_VISUAL_REVIEW__ = {
@@ -477,7 +486,7 @@ export function mountAuraClashArenaApp(): void {
   };
 
   root.innerHTML = `
-    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
+    <main class="aca" data-evidence-mode="${hudMode.evidence ? "true" : "false"}" data-training="${hudMode.training ? "true" : "false"}" data-review-capture="${reviewCapture ? "true" : "false"}" tabindex="0" aria-label="Aura Clash Arena playable game">
       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
       <nav class="aca-nav" aria-label="Aura Clash navigation">
         <h1 class="aca-title"><a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a></h1>
@@ -833,9 +842,22 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   // 53 draw calls but 247 ms frame time when re-merged each frame).
   const arenaBackdropRenderItems = consolidateStaticMeshes(
     arenaBackdropTransforms.flatMap((modelMatrix) =>
-      arenaActor.collectRenderItems({ modelMatrix }).flatMap((item) => (item.material
-        ? [{ geometry: item.geometry, material: item.material, modelMatrix: item.modelMatrix ?? modelMatrix, label: item.label }]
-        : []))
+      arenaActor.collectRenderItems({ modelMatrix })
+        // Keep the typed downtown architecture, textured street, and authored main marquee, but
+        // remove the literal instruction signs and foreground utility props from the fight view.
+        // Those meshes read as placeholder overlay copy and repeated barriers in the side-on frame,
+        // competing with the fighter silhouettes without adding navigable gameplay information.
+        // Filtering named nodes before consolidation preserves the source-bound typed environment;
+        // it does not replace it with primitive scenery or alter the GLB on disk.
+        .filter((item) => ![
+          "AuraClash_Sign_NEON ROOFTOP",
+          "AuraClash_Sign_FIGHT READY",
+          "Prop_ACUnit_",
+          "Prop_Bollard_"
+        ].some((token) => item.label?.includes(token)))
+        .flatMap((item) => (item.material
+          ? [{ geometry: item.geometry, material: item.material, modelMatrix: item.modelMatrix ?? modelMatrix, label: item.label }]
+          : []))
     ),
     { labelPrefix: "aura-clash-arena-architecture" }
   ).renderItems.map((item) => ({
@@ -871,7 +893,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     debugVolumesEnabled: false,
     reducedMotion
   });
-  const arenaLighting = createLightingRig({ preset: "urban-neon", intensityScale: 1.08, shadows: true });
+  const arenaLighting = createLightingRig({ preset: "urban-neon", intensityScale: 1.24, shadows: true });
 
   /*
    * Per-fighter rim lights, tracking each fighter every frame.
@@ -901,6 +923,28 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     return { ...descriptor, light };
   });
 
+  /** Rendered fighter height, read from the typed manifest rather than restated. */
+  const fighterHeight = assets.auraClashPlayerRig.bounds?.[1] ?? 1.829;
+
+  /*
+   * A rim alone only outlines these dark textured rigs; it does not expose the
+   * face, weapon, or attacking limb to the side-view camera.  Give each fighter
+   * a bounded, camera-side key light as well.  The keys follow the real fighter
+   * transforms and illuminate the GLB materials directly, so they improve the
+   * live fight rather than painting a capture-only highlight over it.
+   */
+  const fighterKeyLights = [
+    { id: "aura-clash-player-key", color: [0.78, 0.96, 1] as const, intensity: 4.7, owner: "player" as const },
+    { id: "aura-clash-rival-key", color: [1, 0.84, 0.66] as const, intensity: 4.45, owner: "rival" as const }
+  ].map((descriptor) => {
+    const light = new PointLight(descriptor.id);
+    light.color = [...descriptor.color];
+    light.intensity = descriptor.intensity;
+    light.castsShadow = false;
+    light.range = fighterHeight * 2.05;
+    return { ...descriptor, light };
+  });
+
   /**
    * Rendered fighter height, read from the typed manifest rather than restated.
    *
@@ -909,8 +953,6 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * 0.667x, 0.186x, -0.394x and 0.820x of this rig's 1.829-unit height -- correct ratios frozen as absolute
    * numbers, and therefore silently wrong for any other rig.
    */
-  const fighterHeight = assets.auraClashPlayerRig.bounds?.[1] ?? 1.829;
-
   /** Re-anchor each rim light behind and above its fighter so the edge separation follows the action. */
   function updateFighterRimLights(): void {
     for (const rim of fighterRimLights) {
@@ -925,6 +967,15 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       });
       rim.light.range = placement.range;
       rim.light.transform.setPosition(...placement.position);
+    }
+    for (const key of fighterKeyLights) {
+      const fighter = key.owner === "player" ? playerRuntime.state : rivalRuntime.state;
+      key.light.range = fighterHeight * 2.05;
+      key.light.transform.setPosition(
+        fighter.x + fighter.facing * fighterHeight * 0.08,
+        fighter.y + fighterHeight * 0.58,
+        stage.z + fighterHeight * 0.72
+      );
     }
   }
   updateFighterRimLights();
@@ -946,6 +997,22 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     layerMask: 0xffffffff,
     source: rim.light
   }));
+  const fighterKeyCollectedLights: readonly CollectedLight[] = fighterKeyLights.map((key) => ({
+    kind: "point" as const,
+    color: key.color,
+    intensity: key.intensity,
+    get position(): readonly [number, number, number] {
+      const matrix = key.light.transform.worldMatrix;
+      return [matrix[12] ?? 0, matrix[13] ?? 0, matrix[14] ?? 0];
+    },
+    direction: [0, 0, -1] as const,
+    range: fighterHeight * 1.75,
+    spotAngle: 0,
+    penumbra: 0,
+    castsShadow: false,
+    layerMask: 0xffffffff,
+    source: key.light
+  }));
 
   // Narrow the live rig to what lighting evidence needs, so the reported intensities and shadow-caster
   // count come from the rig handed to `collectedLights` below rather than from a source constant.
@@ -960,7 +1027,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         intensity: light.intensity,
         castsShadow: light.castsShadow
       })),
-      ...fighterRimLights.map((rim) => ({ role: "rim", intensity: rim.intensity, castsShadow: rim.light.castsShadow }))
+      ...fighterRimLights.map((rim) => ({ role: "rim", intensity: rim.intensity, castsShadow: rim.light.castsShadow })),
+      ...fighterKeyLights.map((key) => ({ role: "key", intensity: key.intensity, castsShadow: key.light.castsShadow }))
     ]
   };
   const audio = createAudioRuntime();
@@ -996,7 +1064,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           age: 0,
           life: 0.18,
           facing: fighter.state.facing,
-          kind: event.moveId
+          kind: event.moveId,
+          owner: fighter.state.id
         });
       }
       recordClipEventFired("vfx");
@@ -1087,7 +1156,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
    * unaffected. The shake is derived from the *decaying* hit-stop timer rather than a separate
    * animation clock, so a shake cannot exist without a hit that actually landed.
    */
-  const CAMERA_BASE_BOUNDS = { min: [-2.65, -0.08, -0.82] as const, max: [2.65, 2.15, 0.82] as const };
+  // Poster framing keeps a full-body safety envelope through `restingCameraBounds`, but starts from
+  // a tighter fight-first volume. The previous +/-2.65 frame devoted most of the exact screenshot
+  // to storefront props while two fighters occupied only the middle third. This 13% tighter base
+  // lets the typed characters and real contact state establish the hierarchy; edge movement and
+  // jump states still expand from measured fighter bounds below.
+  const CAMERA_BASE_BOUNDS = { min: [-2.3, -0.08, -0.82] as const, max: [2.3, 1.98, 0.82] as const };
   const PLAYER_HALF_WIDTH = (assets.auraClashPlayerRig.bounds?.[0] ?? 1.669) * stage.fighterScale * 0.5;
   const RIVAL_HALF_WIDTH = (assets.auraClashRivalRig.bounds?.[0] ?? 1.799) * stage.fighterScale * 0.5;
   const PLAYER_HEIGHT = (assets.auraClashPlayerRig.bounds?.[1] ?? 1.788) * stage.fighterScale;
@@ -1302,7 +1376,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       return currentCameraFrameBounds();
     },
     cameraFrameOptions: renderPreset.cameraFrameOptions,
-    collectedLights: [...arenaLighting.collectedLights, ...fighterRimCollectedLights],
+    collectedLights: [...arenaLighting.collectedLights, ...fighterRimCollectedLights, ...fighterKeyCollectedLights],
     environmentLighting: renderPreset.environmentLighting,
     get environmentFog() {
       const densityControl = currentTweaks().fogDensity;
@@ -2394,14 +2468,19 @@ function resolveEngineCombat(
   for (const event of snapshot.events) {
     if ((event.type === "hit" || event.type === "blocked") && event.targetId) {
       const attacker = event.attackerId === player.id ? player : rival;
+      const defender = event.targetId === player.id ? player : rival;
       sparks.push({
-        x: event.position[0],
-        y: event.position[1],
+        // Combat reports the active hitbox position.  Present the burst at the
+        // actual attacker/defender contact plane so it does not read like an
+        // aura wrapped around the attacker in the frozen impact frame.
+        x: (attacker.x + defender.x) * 0.5,
+        y: Math.max(0.92, Math.min(1.28, event.position[1])),
         z: event.position[2],
         age: 0,
         life: event.type === "blocked" ? 0.28 : event.moveId === "special" ? 0.62 : event.moveId === "heavy" ? 0.38 : 0.28,
         facing: attacker.facing,
-        kind: event.type === "blocked" ? "block" : toMoveId(event.moveId)
+        kind: event.type === "blocked" ? "block" : toMoveId(event.moveId),
+        owner: attacker.id
       });
     }
   }
@@ -2912,31 +2991,50 @@ function collectFighterFlashMaterials(actor: TypedGLBActor, owner: FighterId): F
     const material = item.material;
     if (!(material instanceof Material) || seen.has(material)) continue;
     seen.add(material);
-    const isOutfit = material.name.toLowerCase().includes("ranger");
+    const materialName = material.name.toLowerCase();
+    const isOutfit = materialName.includes("ranger");
+    const isSkin = materialName.includes("regular") || materialName.includes("superhero");
+    const isHair = materialName.includes("hair");
     const baseColor: readonly number[] = isOutfit
-      ? (owner === "player" ? [0.72, 0.92, 1, 1] : [1, 0.66, 0.42, 1])
-      : [1, 1, 1, 1];
+      ? (owner === "player" ? [0.56, 0.78, 0.9, 1] : [0.86, 0.46, 0.25, 1])
+      : isSkin
+        ? (owner === "player" ? [1, 0.9, 0.82, 1] : [0.92, 0.76, 0.62, 1])
+        : isHair
+          ? [0.68, 0.78, 0.84, 1]
+          : [1, 1, 1, 1];
     if (isOutfit) {
       material.setParameter("u_baseColor", [...baseColor]);
-      material.setParameter("u_roughness", owner === "player" ? 0.27 : 0.34);
-      material.setParameter("u_metallic", owner === "player" ? 0.16 : 0.22);
-      material.setParameter("u_clearcoatFactor", owner === "player" ? 0.28 : 0.18);
-      material.setParameter("u_clearcoatRoughnessFactor", 0.24);
+      material.setParameter("u_roughness", owner === "player" ? 0.48 : 0.56);
+      material.setParameter("u_metallic", owner === "player" ? 0.08 : 0.12);
+      material.setParameter("u_clearcoatFactor", owner === "player" ? 0.08 : 0.04);
+      material.setParameter("u_clearcoatRoughnessFactor", 0.5);
     } else {
       material.setParameter("u_baseColor", [...baseColor]);
-      material.setParameter("u_roughness", 0.46);
+      material.setParameter("u_roughness", isSkin ? 0.62 : 0.5);
       material.setParameter("u_metallic", 0.02);
     }
-    material.setParameter("u_environmentIntensity", 1.35);
-    material.setParameter("u_specularFactor", 1);
+    material.setParameter("u_environmentIntensity", 1.16);
+    material.setParameter("u_specularFactor", isOutfit ? 0.72 : 0.58);
     const hasEmissive = material.getParameter("u_emissiveColor") !== undefined;
+    const baseEmissive: readonly number[] = hasEmissive && isOutfit
+      ? (owner === "player" ? [0.04, 0.34, 0.5] : [0.5, 0.12, 0.025])
+      : hasEmissive
+        ? [...((material.getParameter("u_emissiveColor") as readonly number[] | undefined) ?? [0, 0, 0])]
+        : [0, 0, 0];
+    const baseEmissiveStrength = hasEmissive
+      ? (isOutfit ? (owner === "player" ? 0.16 : 0.2) : Number(material.getParameter("u_emissiveStrength") ?? 0))
+      : 0;
+    if (hasEmissive) {
+      material.setParameter("u_emissiveColor", [...baseEmissive]);
+      material.setParameter("u_emissiveStrength", baseEmissiveStrength);
+    }
     flashes.push({
       material,
       baseColor,
-      baseEnvironmentIntensity: 1.35,
+      baseEnvironmentIntensity: 1.16,
       hasEmissive,
-      baseEmissive: [0, 0, 0],
-      baseEmissiveStrength: hasEmissive ? Number(material.getParameter("u_emissiveStrength") ?? 0) : 0
+      baseEmissive,
+      baseEmissiveStrength
     });
   }
   return flashes;
@@ -2959,6 +3057,7 @@ function applyFighterHitFlash(fighter: RuntimeFighter, reducedMotion: boolean): 
       flash.material.setParameter("u_baseColor", [...flash.baseColor]);
       flash.material.setParameter("u_environmentIntensity", flash.baseEnvironmentIntensity);
       if (flash.hasEmissive) {
+        flash.material.setParameter("u_emissiveColor", [...flash.baseEmissive]);
         flash.material.setParameter("u_emissiveStrength", flash.baseEmissiveStrength);
       }
       continue;
@@ -2978,6 +3077,10 @@ function applyFighterHitFlash(fighter: RuntimeFighter, reducedMotion: boolean): 
     flash.material.setParameter("u_baseColor", pulsed);
     flash.material.setParameter("u_environmentIntensity", flash.baseEnvironmentIntensity + flashAmount * 1.1);
     if (flash.hasEmissive) {
+      // Preserve each fighter's cyan/orange material identity through the hit
+      // flash; only intensity changes, so the defender remains distinguishable
+      // instead of turning into an unowned white silhouette.
+      flash.material.setParameter("u_emissiveColor", [...flash.baseEmissive]);
       flash.material.setParameter("u_emissiveStrength", flash.baseEmissiveStrength + flashAmount * 0.8);
     }
   }
@@ -2993,10 +3096,12 @@ const impactShardGeometry = Geometry.capsule({ radius: 0.12, height: 1, segments
 const playerAuraMaterial = new UnlitMaterial({ name: "mara-ground-aura", color: [0.1, 0.94, 1, 0.26] });
 const rivalAuraMaterial = new UnlitMaterial({ name: "rook-ground-aura", color: [1, 0.36, 0.08, 0.26] });
 const hitImpactMaterial = new UnlitMaterial({ name: "combat-hit-impact", color: [1, 0.86, 0.3, 0.92] });
-const specialImpactMaterial = new UnlitMaterial({ name: "combat-special-impact", color: [0.12, 1, 0.72, 0.94] });
+const specialImpactMaterial = new UnlitMaterial({ name: "combat-special-impact", color: [1, 0.82, 0.22, 0.98] });
 const blockImpactMaterial = new UnlitMaterial({ name: "combat-block-impact", color: [0.28, 0.9, 1, 0.84] });
 const guardBreakImpactMaterial = new UnlitMaterial({ name: "combat-guard-break-impact", color: [1, 0.3, 0.76, 0.96] });
 const specialSilhouetteMaterial = new UnlitMaterial({ name: "combat-special-silhouette", color: [0.1, 1, 0.78, 0.16] });
+const playerSpecialSweepMaterial = new UnlitMaterial({ name: "combat-special-sweep-player", color: [0.12, 0.92, 1, 0.88] });
+const rivalSpecialSweepMaterial = new UnlitMaterial({ name: "combat-special-sweep-rival", color: [1, 0.38, 0.1, 0.88] });
 
 /**
  * The special (L) showpiece silhouette: a renderer-owned halo that swells around the fighter's
@@ -3008,7 +3113,7 @@ function createSpecialSilhouetteItems(fighter: RuntimeFighter, reducedMotion: bo
   if (!attack || attack.id !== "special") return [];
   const phase = clamp(attack.elapsed / attack.duration, 0, 1);
   const swell = reducedMotion ? 0.85 : 1 + Math.sin(Math.PI * phase) * 0.5;
-  return [{
+  const halo: RenderItem = {
     label: `aura-clash-special-silhouette:${fighter.state.id}`,
     geometry: fighterAuraGeometry,
     material: specialSilhouetteMaterial,
@@ -3018,7 +3123,38 @@ function createSpecialSilhouetteItems(fighter: RuntimeFighter, reducedMotion: bo
       [0.9 * swell, 0.22 * swell, 0.03]
     ) as Mat4,
     includeInAutoFrame: false
-  }];
+  };
+
+  /*
+   * A special needs a move-shaped silhouette, not only a glowing disc under the attacker's feet.
+   * These renderer-owned capsules form one tapered forward crescent around the live attacking rig.
+   * Their placement is derived from the fighter's real position/facing and they exist only while
+   * the simulation owns an active `special`; no capture flag or DOM state can summon the sweep.
+   * The contact burst remains independently driven by a confirmed combat event.
+   */
+  const sweepSegments = Array.from({ length: 11 }, (_, index) => {
+    const t = index / 10;
+    const theta = -1.08 + t * 2.16;
+    const radius = 0.72 + Math.sin(Math.PI * t) * 0.12;
+    const taper = 1 - Math.abs(t - 0.5) * 0.72;
+    const facing = fighter.state.facing;
+    return {
+      label: `aura-clash-special-sweep:${fighter.state.id}:${index}`,
+      geometry: impactShardGeometry,
+      material: fighter.state.id === "player" ? playerSpecialSweepMaterial : rivalSpecialSweepMaterial,
+      modelMatrix: composeMat4(
+        [
+          fighter.state.x + facing * (0.24 + Math.cos(theta) * radius),
+          0.88 + Math.sin(theta) * radius,
+          stage.z + 0.11
+        ],
+        quatFromEuler(0, 0, facing * theta),
+        [0.075 * taper, 0.34 * taper, 0.075 * taper]
+      ) as Mat4,
+      includeInAutoFrame: false
+    } satisfies RenderItem;
+  });
+  return [halo, ...sweepSegments];
 }
 
 function createFighterEffectItems(fighter: RuntimeFighter, reducedMotion: boolean): RenderItem[] {
@@ -3044,7 +3180,7 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
   return sparks.flatMap((spark, sparkIndex) => {
     const progress = clamp(spark.age / Math.max(spark.life, 0.001), 0, 1);
     const fadeScale = Math.max(0.02, 1 - progress);
-    const burstScale = (spark.kind === "special" ? 0.34 : spark.kind === "guard-break" ? 0.27 : spark.kind === "heavy" ? 0.14 : 0.1) * fadeScale;
+    const burstScale = (spark.kind === "special" ? 0.54 : spark.kind === "guard-break" ? 0.44 : spark.kind === "heavy" ? 0.28 : 0.2) * fadeScale;
     const material = spark.kind === "guard-break"
       ? guardBreakImpactMaterial
       : spark.kind === "block"
@@ -3052,7 +3188,7 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
         : spark.kind === "special"
           ? specialImpactMaterial
           : hitImpactMaterial;
-    const rayCount = spark.kind === "guard-break" ? 8 : spark.kind === "special" ? 6 : 3;
+    const rayCount = spark.kind === "guard-break" ? 8 : spark.kind === "special" ? 10 : 6;
     const core: RenderItem = {
       label: `aura-clash-impact:${sparkIndex}:core`,
       geometry: impactCoreGeometry,
@@ -3060,13 +3196,21 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
       modelMatrix: composeMat4(
         [spark.x, spark.y, spark.z + 0.12],
         quatFromEuler(0, 0, 0),
-        [burstScale * 0.55, burstScale * 0.55, burstScale * 0.22]
+        [burstScale * 0.34, burstScale * 0.34, burstScale * 0.16]
       ) as Mat4,
       includeInAutoFrame: false
     };
     const shards = Array.from({ length: rayCount }, (_, ray) => {
-      const angle = (ray / rayCount) * Math.PI * 2 + progress * 0.72;
-      const travel = 0.09 + progress * (spark.kind === "special" || spark.kind === "guard-break" ? 0.54 : 0.28);
+      const radialAngle = (ray / rayCount) * Math.PI * 2 + progress * 0.72;
+      // A special is a horizontal launch, so its retained impact frame needs a
+      // readable force direction. Fan the renderer-owned shards toward the
+      // defender while ordinary hits and guard breaks keep their radial burst.
+      const angle = spark.kind === "special"
+        ? (spark.facing === 1 ? 0 : Math.PI) + (-0.72 + (ray / (rayCount - 1)) * 1.44)
+        : radialAngle;
+      const travel = spark.kind === "special"
+        ? 0.32 + progress * 0.76
+        : 0.2 + progress * (spark.kind === "guard-break" ? 0.66 : 0.38);
       return {
         label: `aura-clash-impact:${sparkIndex}:${ray}`,
         geometry: impactShardGeometry,
@@ -3078,12 +3222,41 @@ function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
             spark.z + 0.12
           ],
           quatFromEuler(0, 0, angle),
-          [burstScale * (spark.kind === "special" ? 0.12 : 0.18), burstScale * (spark.kind === "special" ? 1.35 : 1), burstScale * (spark.kind === "special" ? 0.12 : 0.18)]
+          [burstScale * (spark.kind === "special" ? 0.11 : 0.16), burstScale * (spark.kind === "special" ? 0.66 : 0.82), burstScale * (spark.kind === "special" ? 0.11 : 0.16)]
         ) as Mat4,
         includeInAutoFrame: false
       } satisfies RenderItem;
     });
-    return [core, ...shards];
+    /*
+     * The radial gold burst communicates impact but not ownership. Retain a
+     * short attacker-colored 3D trail into the contact plane so the special's
+     * force direction remains legible after knockback opens the silhouettes.
+     * This exists only for a real special Spark carrying its simulation owner;
+     * no capture flag or DOM layer can summon it.
+     */
+    const forceTrail = spark.kind === "special" && spark.owner
+      ? Array.from({ length: 6 }, (_, index) => {
+          const t = index / 5;
+          const distanceBehindImpact = 0.22 + t * 0.7;
+          const width = burstScale * (0.34 - t * 0.16);
+          return {
+            label: `aura-clash-special-force-trail:${spark.owner}:${sparkIndex}:${index}`,
+            geometry: impactShardGeometry,
+            material: spark.owner === "player" ? playerSpecialSweepMaterial : rivalSpecialSweepMaterial,
+            modelMatrix: composeMat4(
+              [
+                spark.x - spark.facing * distanceBehindImpact,
+                spark.y + (t - 0.5) * 0.08,
+                spark.z + 0.1
+              ],
+              quatFromEuler(0, 0, spark.facing * -Math.PI / 2),
+              [width * 0.22, width * 1.45, width * 0.22]
+            ) as Mat4,
+            includeInAutoFrame: false
+          } satisfies RenderItem;
+        })
+      : [];
+    return [...forceTrail, core, ...shards];
   });
 }
 

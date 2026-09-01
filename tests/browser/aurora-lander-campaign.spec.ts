@@ -93,7 +93,8 @@ test.describe("aurora lander three-site campaign", () => {
   test("completes all three physical contacts and reaches the extraction tableau", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.goto(`${server.origin}/apps/showcase-aurora-lander/?drop=1`, { waitUntil: "domcontentloaded" });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${server.origin}/apps/showcase-aurora-lander/?drop=1&capture=review`, { waitUntil: "domcontentloaded" });
     await waitMounted(page);
     // A real key gesture unlocks the AudioContext. Toggle the ghost back off so
     // campaign presentation remains unchanged while event-driven cues are proven.

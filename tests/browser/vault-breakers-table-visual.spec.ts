@@ -63,8 +63,12 @@ test("vault breakers table renders, responds to input, and captures review shots
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(server.origin + "/apps/showcase-vault-breakers/", { waitUntil: "commit", timeout: 120_000 });
+    await page.goto(server.origin + "/apps/showcase-vault-breakers/?capture=review", { waitUntil: "commit", timeout: 120_000 });
     await waitForReady(page);
+    // The review layout promotes the canvas from a flex child to the full
+    // viewport. Allow the renderer's resize observer to submit that full-size
+    // frame before validating its renderer-owned pixels.
+    await page.waitForTimeout(350);
 
     const shot = ((name: string) => {
       void name;
@@ -98,9 +102,25 @@ test("vault breakers table renders, responds to input, and captures review shots
     await page.keyboard.down("KeyA");
     await page.waitForTimeout(400);
     await page.screenshot({ path: join(REPORT_DIR, "serve-flipper-desktop.png") });
+    await page.keyboard.up("KeyA");
+
+    // The named gauntlet artifact must show the route's actual high-feedback
+    // mission state, not the zero-score instant immediately after serve.
+    const reviewMoment = await scenario("multiball");
+    expect(Number(reviewMoment.activeBalls)).toBeGreaterThanOrEqual(2);
+    expect(Number(reviewMoment.score)).toBeGreaterThan(0);
+    expect(reviewMoment.mechanismVisualState).toBe("multiball");
+    await page.keyboard.down("KeyA");
+    await page.keyboard.down("KeyD");
+    await page.waitForTimeout(180);
     const midPlay = await shot("mid-play");
     expect(dataUrlVariance(midPlay), "mid-play capture must not be blank").toBeGreaterThan(0.4);
+    // The visual gauntlet compares this exact active-table moment.  Persist the
+    // same rendered frame that the renderer probe just validated instead of
+    // leaving the matrix path to an older, unbound screenshot.
+    await page.screenshot({ path: join(REPORT_DIR, "mid-play-desktop.png") });
     await page.keyboard.up("KeyA");
+    await page.keyboard.up("KeyD");
 
     const nearComplete = await scenario("bank-near-complete");
     expect(nearComplete.banksDown).toBe(4);
@@ -145,6 +165,7 @@ test("vault breakers table renders, responds to input, and captures review shots
     const evidence = await page.evaluate(() => (window as unknown as { __VAULT_BREAKERS_EVIDENCE__?: Record<string, unknown> }).__VAULT_BREAKERS_EVIDENCE__ ?? {});
     const shots = [
       "first-load-desktop.png", "plunger-charge-desktop.png", "serve-flipper-desktop.png",
+      "mid-play-desktop.png",
       "bank-near-complete-desktop.png", "vault-opening-desktop.png", "multiball-desktop.png",
       "tilt-desktop.png", "game-over-desktop.png", "reset-attract-desktop.png",
       "first-load-mobile.png", "touch-charge-mobile.png", "multiball-reduced-motion.png"
