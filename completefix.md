@@ -90,6 +90,12 @@ Parallel lanes completed or refreshed in this pass:
   Mech: Robotcand is a whole-body shell, not the required coherent modular
   family, and the default, swap, and arena states still need the authoritative
   modular/material/assembly gate and fresh independent reviews.
+  The bounded follow-up in `90ddebcb` makes that boundary explicit in the
+  product surface: the hangar passport now labels Robotcand as a static visual
+  shell, states that MH-2M cards drive stats/weapon hardpoint only, and the
+  arena HUD identifies the selected player loadout separately from the fixed
+  rival loadout. `mech-hangar-build.spec.ts` remains green at `3/3`; this is a
+  claim/readability correction, not a visual-review promotion.
 - **Rooftop Buckets:** acquired typed static athletes and the corrected court
   orientation are in the route; the release/playable/probe producers are green.
   The second bounded pass adds warm court materials, arched window portals,
