@@ -58,6 +58,18 @@ export interface HangarHudHandles {
   readonly lockButton: HTMLButtonElement;
 }
 
+/**
+ * The connected Robotcand body is a presentation shell, not one of the
+ * swappable MH-2M parts. Keep that distinction visible in the UI so the
+ * passport cannot accidentally imply that the shell itself is modular.
+ */
+const VISUAL_SHELL_PASSPORT = {
+  name: "ROBOTCAND // STATIC VISUAL SHELL",
+  asset: "Typed asset: assets.robotcand",
+  provenance: "Robotcand by isramtz - CC-BY-4.0",
+  boundary: "Connected body presentation only; MH-2M slot cards below drive stats and the weapon hardpoint."
+} as const;
+
 export function setupHangarHud(host: HTMLElement, selection: BuildSelection): HangarHudHandles {
   host.textContent = "";
   const title = el("div", "mech-panel-title");
@@ -141,6 +153,23 @@ export function updateHangarHud(
 
   // Asset passport: provenance lines straight from the curation records.
   handles.passport.textContent = "";
+
+  // Keep the shell identity separate from the modular catalog. This is a
+  // provenance/claim boundary, not a second part entry: the shell supplies
+  // the readable body silhouette while the selected MH-2M weapon remains the
+  // live hardpoint and the four slot cards below remain the build contract.
+  const shellCard = el("div", "mech-passport-card");
+  shellCard.dataset.testid = "visual-shell-passport";
+  const shellHead = el("div", "mech-passport-head");
+  shellHead.textContent = VISUAL_SHELL_PASSPORT.name;
+  shellCard.appendChild(shellHead);
+  for (const text of [VISUAL_SHELL_PASSPORT.asset, VISUAL_SHELL_PASSPORT.provenance, VISUAL_SHELL_PASSPORT.boundary]) {
+    const line = el("div", "mech-passport-line");
+    line.textContent = text;
+    shellCard.appendChild(line);
+  }
+  handles.passport.appendChild(shellCard);
+
   if (!args.catalogReady) {
     const line = el("div", "mech-passport-line is-warn");
     line.textContent = "Part curation spike pending - mount disabled.";
@@ -177,6 +206,8 @@ export interface ArenaHudHandles {
   readonly boutCard: HTMLElement;
   readonly koCard: HTMLElement;
   readonly controlsHint: HTMLElement;
+  readonly playerIdentity: HTMLElement;
+  readonly rivalIdentity: HTMLElement;
 }
 
 const HINT_TEXT =
@@ -195,8 +226,18 @@ export function setupArenaHud(host: HTMLElement): ArenaHudHandles {
   const topRow = el("div", "mech-arena-bars");
   const leftCol = el("div", "mech-arena-col");
   const rightCol = el("div", "mech-arena-col is-right");
-  leftCol.append(hpPlayer.root, guardPlayer.root, powerPlayer.root);
-  rightCol.append(hpRival.root, guardRival.root, powerRival.root);
+  // The two fighters intentionally share the connected visual shell. These
+  // labels make the gameplay identity explicit without presenting that shell
+  // as a modular slot: the player is the selected build, while the opponent
+  // is the fixed Bulwark loadout used by the deterministic bout.
+  const playerIdentity = el("div", "mech-fighter-identity mech-section-title");
+  playerIdentity.dataset.testid = "fighter-player-identity";
+  playerIdentity.textContent = "YOU // SELECTED LOADOUT | ROBOTCAND SHELL";
+  const rivalIdentity = el("div", "mech-fighter-identity mech-section-title");
+  rivalIdentity.dataset.testid = "fighter-rival-identity";
+  rivalIdentity.textContent = "RIVAL // BULWARK FIXED LOADOUT | ROBOTCAND SHELL";
+  leftCol.append(playerIdentity, hpPlayer.root, guardPlayer.root, powerPlayer.root);
+  rightCol.append(rivalIdentity, hpRival.root, guardRival.root, powerRival.root);
   topRow.append(leftCol, rightCol);
 
   const aggressionCard = el("div", "mech-aggression-card");
@@ -211,7 +252,21 @@ export function setupArenaHud(host: HTMLElement): ArenaHudHandles {
   controlsHint.textContent = HINT_TEXT;
 
   host.append(topRow, aggressionCard, boutCard, koCard, controlsHint);
-  return { root: host, hpPlayer, hpRival, guardPlayer, guardRival, powerPlayer, powerRival, aggressionCard, boutCard, koCard, controlsHint };
+  return {
+    root: host,
+    hpPlayer,
+    hpRival,
+    guardPlayer,
+    guardRival,
+    powerPlayer,
+    powerRival,
+    aggressionCard,
+    boutCard,
+    koCard,
+    controlsHint,
+    playerIdentity,
+    rivalIdentity
+  };
 }
 
 export function updateArenaHud(
