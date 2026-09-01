@@ -182,18 +182,22 @@ its retained floating-black frame, while Smart City, Digital Twin, and
 Cinematic Architecture remain **reference** after fresh blind review. No
 generated report is hand-authored by this receipt.
 
-**Deployment status:** source commit `2d06f7de` and this receipt commit
-`2878cbe7` are pushed to `origin/main`, and the local Vercel production build
-completed successfully. Three bounded Vercel upload attempts (source archive,
-prebuilt, and prebuilt `--no-wait`) failed at the upload transport before
-creating a deployment record; the production alias therefore still points to
-the prior deployment and can still show the stale black/white Mech Hangar
-slabs. This is a deployment transport hold, not visual evidence, and it must
-be cleared before claiming the live site reflects `2878cbe7`.
+**Deployment status:** source commit `2d06f7de` plus the bounded HUD identity
+fix `90ddebcb` are pushed to `origin/main`, and the local Vercel production
+build completed successfully. The bounded Vercel upload paths (source archive,
+prebuilt archive, and prebuilt `--no-wait`) all failed at upload transport
+before creating a deployment record. A separate `vercel git connect
+https://github.com/auraoneai/aura3d` attempt also failed because the Vercel
+GitHub integration does not have access to this repository; project inspection
+still reports no Git link and no deploy hooks. The production alias therefore
+still points to the prior deployment and can still show the stale black/white
+Mech Hangar slabs. This is a deployment transport/integration hold, not visual
+evidence, and it must be cleared before claiming the live site reflects
+`90ddebcb`.
 
-The next required actions are: resolve the Vercel upload transport, verify the
-live Mech Hangar HTML/assets against source commit `2d06f7de` and receipt
-`2878cbe7`, continue only the
+The next required actions are: grant the Vercel GitHub integration access to
+`auraoneai/aura3d` (or provide an authorized deployment path), verify the live
+Mech Hangar HTML/assets against source commit `90ddebcb`, continue only the
 finite bounded visual lanes listed above, regenerate their named producers,
 run independent blind reviews on any new artifacts, and run focused/release
 gates. Do not turn a reference or insufficient-evidence result into `ours`.
