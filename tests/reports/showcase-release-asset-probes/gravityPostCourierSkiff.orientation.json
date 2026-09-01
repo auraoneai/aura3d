@@ -1,0 +1,22 @@
+{
+  "orientation": {
+    "source": "manifest-override",
+    "forwardAxis": "+Z",
+    "upAxis": "+Y",
+    "view": "hash-bound-readable-prop-view",
+    "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+    "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+    "checkedAt": "2026-09-01T03:52:57.234Z",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
+    "renderedProbe": {
+      "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
+      "sha256": "sha256-13d61e81490afff5298f2d2b3c79866a5f34be38b89720b2b4c629742ffcfdf9",
+      "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+      "checkedAt": "2026-09-01T03:52:57.234Z",
+      "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff"
+    },
+    "messages": [
+      "The original Gravity Post courier skiff is authored +Y-up and +Z-forward. The hash-bound probe proves its compact four-pod working-vehicle silhouette and guarded parcel module only; route-local motion, sensors, collision, scoring, and delivery state remain authoritative."
+    ]
+  }
+}

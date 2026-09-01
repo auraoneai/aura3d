@@ -8,5 +8,12 @@ public/aura-assets/*.wav filter=lfs diff=lfs merge=lfs -text
 public/aura-assets/*.ogg filter=lfs diff=lfs merge=lfs -text
 apps/showcase-*/assets/**/*.glb filter=lfs diff=lfs merge=lfs -text
 apps/showcase-*/assets/**/*.wav filter=lfs diff=lfs merge=lfs -text
+# Isolated art-review GLBs can be large even when they are rejected before the
+# shared typed catalog; keep their reproducible evidence out of the Git pack.
+apps/showcase-*/art-review/**/*.glb filter=lfs diff=lfs merge=lfs -text
+apps/showcase-*/art-review/external-source/**/*.png filter=lfs diff=lfs merge=lfs -text
+# Route-local glTF source buffers are binary even when they are retained only
+# for isolated art review and provenance reproduction.
+apps/showcase-*/art-review/**/*.bin binary
 assets/source/**/*.glb filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/**/*.glb filter=lfs diff=lfs merge=lfs -text

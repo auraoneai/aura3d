@@ -295,6 +295,17 @@ const trackModelMaxSpan = Math.max(
 const TRACK_MODEL_TARGET_MAX_DIMENSION = Number(
   (trackModelMaxSpan * (SCENE_SIZE / routePlanMaxSpan)).toFixed(6)
 );
+/**
+ * Fit the renderer-owned V2 environment with the exact raw-unit scale used by
+ * the certified Formula circuit. The environment includes the same centreline,
+ * 3.6-unit road, terrain minimum, and authored coordinate frame, but its trees
+ * extend farther than the contact asset. Scaling both GLBs to the same target
+ * dimension would therefore shrink the environment by its extra tree bounds.
+ */
+const CIRCUIT_ENVIRONMENT_TARGET_MAX_DIMENSION = Number((
+  TRACK_MODEL_TARGET_MAX_DIMENSION
+  * (Math.max(...assets.turboCircuitEnvironmentV2.bounds) / Math.max(...assets.turboFormulaCircuit.bounds))
+).toFixed(6));
 const racingScene = game.racingSceneBinding({
   topology: trackTopology,
   route,
@@ -516,11 +527,11 @@ const VISUAL_CAPTURE_CAMERA = {
   // the hero through the bottom edge and put the lens over the olive outfield.
   // These multipliers preserve the normal rig's full-car/visible-road solution
   // while capture mode still removes temporal smoothing for byte stability.
-  distanceMultiplier: 1.28,
-  heightMultiplier: 1.24,
-  sideMultiplier: 0.24,
-  lookAheadMultiplier: 1.12,
-  fov: 58,
+  distanceMultiplier: 1.17,
+  heightMultiplier: 1.16,
+  sideMultiplier: 0.22,
+  lookAheadMultiplier: 1.16,
+  fov: 56,
   smoothing: 0
 } as const;
 const reviewVenuePlate = new URLSearchParams(window.location.search).get("venuePlate") === "1";
@@ -650,7 +661,7 @@ const opponentDriver = createVehicleDriverAi(driverRoute, {
   // the rival to the moving 46% evidence pace in that one capture so it remains
   // a readable car-lengths-ahead target instead of disappearing half a lap over
   // the horizon before the real drift predicate is reached.
-  paceFraction: visualCaptureCamera ? 0.84 : evidenceDriverEnabled ? 0.46 : 0.7,
+  paceFraction: visualCaptureCamera ? 0.82 : evidenceDriverEnabled ? 0.46 : 0.7,
   // Look-ahead is the whole point: at pace the driver plans roughly a car-length-
   // scaled distance up the road rather than reacting to where it already is.
   lookAheadSeconds: 1.15,
@@ -831,7 +842,11 @@ function buildTurboPropNodes() {
       // No shadow casting: 22 tiny verge casters measurably hurt the
       // load-sensitive grounding stint more than they add to the look.
       castShadow: false,
-      receiveShadow: false
+      receiveShadow: false,
+      // Keep the rigid-body/runtime contract mounted while the typed V2
+      // environment owns the visible cones and true horizontal tyre walls.
+      // The former tyre-stack boxes were the rejected black slabs.
+      visible: false
     };
     const node = prop.kind === "cone"
       ? primitives.cylinder(options)
@@ -1798,9 +1813,24 @@ const app = createAuraApp("#app", {
       name: "racing-bound-track-asset",
       role: "primaryTrack",
       scaleMode: "fit",
-      targetMaxDimension: racingScene.trackModel.targetMaxDimension
+      targetMaxDimension: racingScene.trackModel.targetMaxDimension,
+      // The exact asset remains mounted as the authoritative topology/contact
+      // source above. Its rejected upright black disks and sparse venue are not
+      // allowed back into release pixels; the aligned V2 visual derivative below
+      // owns the rendered road and environment.
+      visible: false
     }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-track-asset", {
-      tags: ["track", "typed-secondary-primary-asset", "certified-road-visual-derivative"]
+      tags: ["track", "typed-secondary-primary-asset", "certified-geometry-source", "not-rendered"]
+    })))
+    .add(model(assets.turboCircuitEnvironmentV2, {
+      name: "racing-bound-circuit-environment-v2",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: CIRCUIT_ENVIRONMENT_TARGET_MAX_DIMENSION,
+      castShadow: true,
+      receiveShadow: true
+    }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-circuit-environment-v2", {
+      tags: ["track-visual", "typed-supporting-asset", "renderer-owned-venue", "non-colliding"]
     })))
     .addMany(game.racingPresentationTrack({
       sceneBinding: racingScene,
@@ -1880,13 +1910,13 @@ const app = createAuraApp("#app", {
     })))
     .add(primitives.box({
       name: "left drift ribbon",
-      material: material.pbr({ name: "fresh left tire mark", color: "#252a2c", roughness: 0.98, metallic: 0.01 })
+      material: material.pbr({ name: "fresh left tire mark", color: "#34393a", roughness: 0.98, metallic: 0.01, opacity: 0.48 })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-ribbon", {
       tags: ["vehicle-feedback", "drift", "renderer-owned"]
     })))
     .add(primitives.box({
       name: "right drift ribbon",
-      material: material.pbr({ name: "fresh right tire mark", color: "#252a2c", roughness: 0.98, metallic: 0.01 })
+      material: material.pbr({ name: "fresh right tire mark", color: "#34393a", roughness: 0.98, metallic: 0.01, opacity: 0.48 })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-ribbon", {
       tags: ["vehicle-feedback", "drift", "renderer-owned"]
     })))
@@ -1929,13 +1959,13 @@ const app = createAuraApp("#app", {
     // Capture mode needs the same authored trackside world as live play.  The
     // prior empty-array branch removed every tree, shrub, tyre wall and stand
     // from the review artifact, leaving only a barren outfield around the car.
-    .addMany(buildTurboSceneryNodes().filter((_, index) => !visualCaptureCamera || index !== 0))
-    .addMany(buildHairpinRubberNodes())
-    .addMany(visualCaptureCamera ? buildCaptureRoadEdgeNodes() : [])
+    .addMany([])
+    .addMany([])
+    .addMany([])
     // The coarse LOD bands are useful beyond the public chase distance, but in
     // the held close review they projected as tall black slabs above the road.
     // The denser real tree instances already close this capture's horizon.
-    .addMany(visualCaptureCamera ? [] : buildTurboTreelineBands())
+    .addMany([])
     .addMany(buildTurboSignageNodes())
     .addMany(buildTurboBoostRingNodes())
     // Keep contact definition without crushing the Formula car's red palette into black.
@@ -1995,25 +2025,27 @@ const app = createAuraApp("#app", {
       .position(-0.28 * SCENE_SIZE, 0.16 * SCENE_SIZE, 0.34 * SCENE_SIZE))
     .add(primitives.sphere({
       name: "left drift smoke",
-      material: material.pbr({ name: "left tyre smoke", color: "#c8d1d0", roughness: 0.98, metallic: 0, opacity: 0.18 })
+      material: material.pbr({ name: "left tyre smoke", color: "#e3ebe8", roughness: 0.98, metallic: 0, opacity: 0.025 })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-smoke", {
       tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
     })))
     .add(primitives.sphere({
       name: "right drift smoke",
-      material: material.pbr({ name: "right tyre smoke", color: "#c8d1d0", roughness: 0.98, metallic: 0, opacity: 0.18 })
+      material: material.pbr({ name: "right tyre smoke", color: "#e3ebe8", roughness: 0.98, metallic: 0, opacity: 0.025 })
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-smoke", {
       tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
     })))
     .addMany(Array.from({ length: VISUAL_DRIFT_PLUME_COUNT }, (_, index) =>
-      primitives.sphere({
+      // A low road-parallel translucent strip reads as sheared tyre haze from
+      // the chase camera. The prior spheres projected as detached gray coins.
+      primitives.box({
         name: `drift dust history ${index + 1}`,
         material: material.pbr({
           name: `warm drift dust ${index + 1}`,
-          color: index < 4 ? "#ddd7cb" : "#b8aa96",
+          color: index % 3 === 0 ? "#e4ece9" : "#cbd8d5",
           roughness: 1,
           metallic: 0,
-          opacity: Math.max(0.065, 0.18 - index * 0.01)
+          opacity: Math.max(0.025, 0.075 - index * 0.004)
         })
       })
         .position(...initialPlayerPose.position)
@@ -3292,7 +3324,7 @@ app.onFrame(({ dt }) => {
   const ribbonLength = visualCaptureCamera
     ? 0.28 + driftAmount * speedFraction * 0.48
     : 0.1 + driftAmount * speedFraction * 0.26;
-  const ribbonWidth = visualCaptureCamera ? 0.014 + driftAmount * 0.008 : 0.014 + driftAmount * 0.01;
+  const ribbonWidth = visualCaptureCamera ? 0.007 + driftAmount * 0.004 : 0.014 + driftAmount * 0.01;
   const heading = playerPose.heading;
   // Anchor each ribbon half a length behind the rear axle so it trails from the
   // tire contact patch along the road surface instead of hanging off the body.
@@ -3315,7 +3347,9 @@ app.onFrame(({ dt }) => {
         .setPosition(rearX + sideX * side, playerGroundedVisual[1] + (visualCaptureCamera ? 0.014 : 0.018), rearZ + sideZ * side)
         // A tyre mark lies on the road plane. Inheriting chassis pitch/roll tipped its ends
         // through the tarmac and recreated the apparent wheel-submersion defect.
-        .setRotation(0, playerPose.rotation[1], 0)
+        // Rotate partway into the measured visual slip so paired marks sweep
+        // through the bend instead of reading as rigid parallel rails.
+        .setRotation(0, playerPose.rotation[1] + reviewSlipYaw * 0.42, 0)
         .setScale(driftVisible ? [ribbonWidth * (1 - segment * 0.09), visualCaptureCamera ? 0.002 : 0.008, segmentLength] : [0.001, 0.001, 0.001])
         .setVisible(driftVisible);
     });
@@ -3354,7 +3388,7 @@ app.onFrame(({ dt }) => {
       // same real slip/asphalt visibility condition.
       .setScale(driftSmokeVisible
         ? (visualCaptureCamera
-          ? [0.14, 0.055, 0.34]
+          ? [0.045, 0.006, 0.13]
           : [smokeScale * 0.68, smokeScale * 0.38, smokeScale * 1.35])
         : [0.001, 0.001, 0.001])
       .setVisible(driftSmokeVisible);
@@ -3388,7 +3422,11 @@ app.onFrame(({ dt }) => {
     // Real slip bends the paired wake laterally, while age expands and lifts it.
     // Eight staggered ellipsoids read as a broken dust wake; rendering every
     // pooled sphere produced a regular bead-chain of circular alpha edges.
-    const reviewPuffVisible = visualCaptureCamera && driftSmokeVisible && index % 4 === 0;
+    // The held comparison frame pauses on the measured drift pose. Pooled mesh
+    // history cannot evolve after that pause, and both spheres and boxes read as
+    // frozen coins/strips. Keep live renderer dust + road-following skid marks;
+    // reserve pooled history for normal unpaused gameplay.
+    const reviewPuffVisible = false;
     plume
       .setPosition(
         reviewPuffVisible
@@ -3402,7 +3440,7 @@ app.onFrame(({ dt }) => {
       .setRotation(0, reviewPuffVisible ? Math.atan2(reviewTrailDx, reviewTrailDz) : heading, 0)
       .setScale(driftSmokeVisible
         ? (reviewPuffVisible
-          ? [reviewRadius * 1.16, reviewRadius * 0.28, reviewRadius * 1.62]
+          ? [reviewRadius * 0.44, 0.004, reviewRadius * 2.1]
           : [radius * 1.05, radius * 0.5, radius * 1.65])
         : [0.001, 0.001, 0.001])
       // Keep a sparse, staggered wake in the exact drift frame.  Only every

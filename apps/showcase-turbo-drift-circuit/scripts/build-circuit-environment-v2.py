@@ -89,6 +89,13 @@ def reset_scene() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
+# Reset before constructing module-level materials. Doing this inside export()
+# would invalidate those Blender RNA handles; omitting it would export Blender's
+# default cube and push the candidate's grounded origin a full unit below the
+# certified circuit.
+reset_scene()
+
+
 def material(
     name: str,
     color: tuple[float, float, float, float],
@@ -116,9 +123,11 @@ def material(
     return result
 
 
-ASPHALT_WEAR = material("TDCE asphalt aggregate variation", (0.115, 0.13, 0.14, 1), 0.015, 0.91)
-ASPHALT_PATCH = material("TDCE resurfaced asphalt patches", (0.055, 0.065, 0.075, 1), 0.02, 0.86)
-RUBBER = material("TDCE worked-in tyre rubber", (0.018, 0.022, 0.025, 1), 0.01, 0.96)
+ASPHALT_BASE = material("TDCE layered circuit asphalt", (0.13, 0.145, 0.155, 1), 0.025, 0.82)
+ASPHALT_WEAR = material("TDCE asphalt aggregate variation", (0.2, 0.21, 0.215, 1), 0.015, 0.9)
+ASPHALT_PATCH = material("TDCE resurfaced asphalt patches", (0.075, 0.085, 0.095, 1), 0.02, 0.84)
+RUBBER = material("TDCE worked-in tyre rubber", (0.07, 0.075, 0.078, 1), 0.01, 0.94)
+RUNOFF_GRAVEL = material("TDCE warm gravel runoff", (0.31, 0.255, 0.17, 1), 0.0, 0.98)
 KERB_RED = material("TDCE race red kerb faces", (0.72, 0.055, 0.035, 1), 0.03, 0.63)
 KERB_CREAM = material("TDCE warm white kerb faces", (0.91, 0.84, 0.67, 1), 0.01, 0.71)
 CONCRETE = material("TDCE barrier concrete", (0.43, 0.48, 0.48, 1), 0.12, 0.72)
@@ -291,7 +300,7 @@ def make_surface_language() -> None:
             link(strip_mesh(
                 f"worked-in rubber {start}-{stop} {lateral:+.2f}",
                 [road_sample(index % len(LINE), lateral, 0.031) for index in range(start, stop + 1)],
-                0.085,
+                0.045,
                 RUBBER,
             ))
     # Rectangular resurfacing patches have bevel and longitudinal alignment.
@@ -300,20 +309,46 @@ def make_surface_language() -> None:
         box(f"resurfacing patch {serial}", at(x, z, height), (1.28, 0.64, 0.018), ASPHALT_PATCH, rotation_z=-yaw, edge=0.025)
 
 
-def make_kerb_blocks_and_rails() -> None:
-    for index in range(0, len(LINE), 2):
-        _, _, yaw = tangent(index)
+def make_base_circuit() -> None:
+    """Supply the complete visual road so the rejected legacy venue can hide.
+
+    Collision and lap extraction still come from the separately mounted hidden
+    ``turboFormulaCircuit``. This road is a bounds-aligned visual derivative;
+    it preserves the same centreline, width, elevation, and ground minimum.
+    """
+    box("continuous sculpted circuit terrain", at(-0.5, -0.5, -0.21), (39.0, 33.0, 0.12), GRASS_DARK, edge=0.04)
+    closed_samples = [road_sample(index % len(LINE), 0.0, 0.002) for index in range(len(LINE) + 1)]
+    link(strip_mesh(
+        "continuous gravel runoff ribbon",
+        closed_samples,
+        ROAD_WIDTH + KERB_WIDTH * 2 + RUNOFF_WIDTH * 2,
+        RUNOFF_GRAVEL,
+    ))
+    link(strip_mesh(
+        "continuous 3.6-unit visual asphalt ribbon",
+        [road_sample(index % len(LINE), 0.0, 0.018) for index in range(len(LINE) + 1)],
+        ROAD_WIDTH,
+        ASPHALT_BASE,
+    ))
+    # Ground-conforming alternating ribbons replace the rejected floating box
+    # curbs. Every segment shares its endpoints with the next segment and sits
+    # only 0.026 units above the exact authored road surface.
+    for index in range(len(LINE)):
+        next_index = (index + 1) % len(LINE)
         for side in (-1, 1):
-            x, z = offset(index, side * (ROAD_WIDTH / 2 + KERB_WIDTH * 0.5))
-            mat = KERB_RED if (index // 2 + (1 if side > 0 else 0)) % 2 == 0 else KERB_CREAM
-            box(
-                f"bevelled kerb block {index} {side}",
-                at(x, z, road_height(index, side) + 0.035),
-                (0.84, KERB_WIDTH * 0.82, 0.07),
+            mat = KERB_RED if (index + (1 if side > 0 else 0)) % 2 == 0 else KERB_CREAM
+            link(strip_mesh(
+                f"grounded kerb ribbon {index} {side}",
+                [
+                    road_sample(index, side * (ROAD_WIDTH / 2 + KERB_WIDTH * 0.36), 0.026),
+                    road_sample(next_index, side * (ROAD_WIDTH / 2 + KERB_WIDTH * 0.36), 0.026),
+                ],
+                KERB_WIDTH * 0.58,
                 mat,
-                rotation_z=-yaw,
-                edge=0.028,
-            )
+            ))
+
+
+def make_kerb_blocks_and_rails() -> None:
     # Continuous low Armco at chosen exposed arcs. It is low enough to preserve
     # car visibility and uses horizontal rails instead of upright black slabs.
     for start, stop, side in ((2, 12, 1), (15, 25, -1), (30, 41, 1), (45, 54, -1)):
@@ -402,13 +437,17 @@ def make_trees_and_banks() -> None:
     rng = random.Random(20260831)
     # Irregular grass banks frame the circuit without making a flat olive plane.
     for serial, (x, z, width, depth, height) in enumerate((
-        (-17.2, -8.0, 4.2, 10.0, 1.1),
-        (15.6, -4.0, 5.0, 12.0, 1.5),
-        (11.8, 10.6, 12.0, 4.5, 1.25),
-        (-8.2, 11.0, 14.0, 4.1, 1.05),
-        (0.0, -14.2, 14.0, 4.0, 0.9),
+        (-20.2, -9.0, 3.8, 8.0, 0.42),
+        (18.8, -4.0, 4.0, 10.0, 0.48),
+        (11.8, 13.0, 11.0, 3.5, 0.4),
+        (-8.2, 13.5, 12.0, 3.2, 0.36),
+        (0.0, -16.2, 13.0, 3.4, 0.34),
     )):
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=at(x, z, -0.05 + height * 0.25))
+        # Match the certified Formula circuit's authored terrain minimum
+        # (-0.27 raw units). Safe-API fit models ground their own bounds, so
+        # sharing the same minimum keeps every +0.02 road overlay coincident
+        # with the visible typed road after normalization.
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=at(x, z, -0.27 + height / 2))
         obj = bpy.context.object
         obj.scale = (width / 2, depth / 2, height / 2)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
@@ -456,9 +495,14 @@ def export() -> None:
     # The script is executed in Blender background mode with a fresh process.
     # Materials are module-level authored constants, so resetting here would
     # invalidate their Blender RNA handles before geometry construction.
+    make_base_circuit()
     make_surface_language()
     make_kerb_blocks_and_rails()
     make_horizontal_tyre_walls()
+    # This stand sits beyond the exact retained drift bend, so the comparison
+    # frame shows recognizable race architecture instead of empty horizon.
+    make_grandstand("drift bend grandstand", 11, -1, rows=4)
+    make_grandstand("drift exit grandstand", 14, 1, rows=3)
     make_grandstand("south grandstand", 20, -1)
     make_grandstand("north grandstand", 43, 1, rows=4)
     make_pit_complex()

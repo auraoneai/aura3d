@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-01T03:04:17.380Z",
+  "generatedAt": "2026-09-01T04:30:55.880Z",
   "appId": "showcase-gallery-shift",
   "route": "/apps/showcase-gallery-shift/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "ed1f8b9d072540f4574a7157c6dc30489d46f5de3b5e7cdc1c0099040ed435c5",
+  "routeSourceSha256": "5f8cd0ead81ef518def13ea3488d24c4ff064156e9fdc26ddd17f4090fa9468a",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -187,7 +187,7 @@
   },
   "performance": {
     "schema": "aura3d.gallery-shift.performance/1.0",
-    "generatedAt": "2026-09-01T03:02:43.705Z",
+    "generatedAt": "2026-09-01T04:30:41.012Z",
     "producer": "apps/showcase-gallery-shift/scripts/write-performance-report.ts",
     "producerSourceSha256": "da2066f24cb0dba4e2636863090e9c84c0d00132fc7fbbdd5b5a2e71b1d30047",
     "routeSourceFiles": [
@@ -201,7 +201,7 @@
       "apps/showcase-gallery-shift/src/thief.ts",
       "apps/showcase-gallery-shift/src/vision.ts"
     ],
-    "routeSourceSha256": "ed1f8b9d072540f4574a7157c6dc30489d46f5de3b5e7cdc1c0099040ed435c5",
+    "routeSourceSha256": "5f8cd0ead81ef518def13ea3488d24c4ff064156e9fdc26ddd17f4090fa9468a",
     "scope": "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -222,13 +222,13 @@
   },
   "deploy": {
     "schema": "aura3d.gallery-shift.deploy/1.0",
-    "generatedAt": "2026-09-01T03:02:43.072Z",
+    "generatedAt": "2026-09-01T04:30:54.523Z",
     "producer": "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "d8a3141b2d8dcfa31d9482cc7adb7e7df0b86979eddc20f0f223fc6b25356d71",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "b00b61be2d4c5e004a1dce59241e5665558be8c3a8df3e2ed1017ac16a6577d0",
-    "sourceTreeSha256": "498b41e7c8050d6db404852a3c6239b671d383239fb89f34dd2a3a8801075469",
+    "distTreeSha256": "0049dcc88fc54db3fdba3b759ed51ffe4b3d15774428b8f03a2890df11cc0ca3",
+    "sourceTreeSha256": "81b8ac272ebafcc2379b164b27f64600cf68fdedc5651647794b1b3799901955",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>",
@@ -319,51 +319,51 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/gallery-shift/first-load-desktop.png",
-        "sha256": "02e7619e5dc9d79666ed0976b337ffdc8eb8b08fb4228c552bcf00d691893377"
+        "sha256": "389803ea100221a0527713da3dad3ffe0128e8839f071806ee959243a354ee1f"
       },
       {
         "path": "tests/reports/gallery-shift/mid-sneak-desktop.png",
-        "sha256": "0b5c7ae4220004f192775f68caa04ce68ea5ddc45b11dd81e6e8d4e94a180812"
+        "sha256": "d332ee97d4cda7c45b12a783642c3548fa226b43f309c145cfeb2a4e554f3e96"
       },
       {
         "path": "tests/reports/gallery-shift/near-detection-desktop.png",
-        "sha256": "7e8b74a0514c65debdcada127e9d08af48d3aa50eddb9c3d325997a66062e294"
+        "sha256": "5ebfde42291787465c986010137ee5d78555b96ae8d4e5ef22f771cf8bcfac91"
       },
       {
         "path": "tests/reports/gallery-shift/caught-desktop.png",
-        "sha256": "7e8b74a0514c65debdcada127e9d08af48d3aa50eddb9c3d325997a66062e294"
+        "sha256": "5ebfde42291787465c986010137ee5d78555b96ae8d4e5ef22f771cf8bcfac91"
       },
       {
         "path": "tests/reports/gallery-shift/exhibit-lift-desktop.png",
-        "sha256": "d7041dc55d24083d3bcb39ea2ea9ed48930bae2db9d2e6021074531b3d2a910e"
+        "sha256": "2879024139e5cc4d4549f71fc83384a9c51b8dbe86aa2dad6259f0bb41d15670"
       },
       {
         "path": "tests/reports/gallery-shift/stair-crossing-desktop.png",
-        "sha256": "3e731ee8dd4ecd95cf6a1a18dc1f2d9d93c1b7e41092f042bd9b7b5ad4399cf9"
+        "sha256": "76427928afb9ad861ffb424f9a065551ecdd3fb1e95c9bea98f4c30644a118b7"
       },
       {
         "path": "tests/reports/gallery-shift/camera-sweep-desktop.png",
-        "sha256": "4b6e79ac724a4a4fd7a9394560cb08cea9da6091f903c124bd59d75aa4569c6f"
+        "sha256": "b5277ad5a246d38c9e0ca774e24dfadfb1a3f50f24492c2b47c946c5237e5628"
       },
       {
         "path": "tests/reports/gallery-shift/alarm-return-desktop.png",
-        "sha256": "61ba4bd04905c9b2019652bc21ef4557f2f4489bd9b0b751c84b8f18975be0ef"
+        "sha256": "2c3a0441a461064ed0c11986a1ad456209aa82911e2ae066e2c2f1939fdc471a"
       },
       {
         "path": "tests/reports/gallery-shift/exit-win-desktop.png",
-        "sha256": "fcc2294b8a6b60bf94466d637d05548d2a32d734142264bf9c5467004f0019cc"
+        "sha256": "c1b192e7edac9bd9641301632958e169052e65f42e1fbfe5c7b96d53372e71cc"
       },
       {
         "path": "tests/reports/gallery-shift/first-load-mobile.png",
-        "sha256": "888af21ebc2a52b92e2f868637a72dc2126c18f89dbe3a517abfb0a1052acf19"
+        "sha256": "5535b75e0b03d4fa8c39d9f121f927602ebf8d4f67013b0cee0e7233d01520ab"
       },
       {
         "path": "tests/reports/gallery-shift/reduced-motion-lobby.png",
-        "sha256": "63f6f218da677074ebf050da467d9e432abb18c6129d0c9369257ac96e77cfb0"
+        "sha256": "eb2aa8f96abdcd40534af056bbc7b30f903e97ea492f56bec8726f400d9d0c31"
       },
       {
         "path": "tests/reports/gallery-shift/visual.json",
-        "sha256": "f807d964ee88299ac193f4d9c36db7221cdae7a890e61bb12f9b5081c3846a7f"
+        "sha256": "92f0d63663113536eb60f643c455d6eba640df976f517d0849511f25b29e0749"
       }
     ],
     "browserReceipts": [

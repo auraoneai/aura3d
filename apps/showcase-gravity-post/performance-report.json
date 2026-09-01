@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-gravity-post-performance/1.0",
-  "generatedAt": "2026-09-01T00:04:31.768Z",
+  "generatedAt": "2026-09-01T03:58:57.826Z",
   "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
   "budgets": {
     "fixedStepP95Ms": 1,
@@ -9,9 +9,9 @@
     "campaignCompleteDrawCalls": 600
   },
   "observed": {
-    "maxFixedStepP95Ms": 0.0031,
-    "maxPredictionP95Ms": 0.1191,
-    "campaignCompleteDrawCalls": 425
+    "maxFixedStepP95Ms": 0.0114,
+    "maxPredictionP95Ms": 0.426,
+    "campaignCompleteDrawCalls": 230
   },
   "routes": [
     {
@@ -24,13 +24,13 @@
       "assistPass": true,
       "fixedStepMs": {
         "samples": 389,
-        "p95": 0.0031,
-        "max": 0.1727
+        "p95": 0.0114,
+        "max": 0.44
       },
       "predictionMs": {
         "samples": 50,
-        "p95": 0.1191,
-        "max": 0.2307
+        "p95": 0.426,
+        "max": 0.5501
       }
     },
     {
@@ -47,13 +47,13 @@
       "assistPass": true,
       "fixedStepMs": {
         "samples": 872,
-        "p95": 0.0008,
-        "max": 0.0514
+        "p95": 0.0032,
+        "max": 0.037
       },
       "predictionMs": {
         "samples": 50,
-        "p95": 0.0852,
-        "max": 0.2017
+        "p95": 0.2399,
+        "max": 0.4551
       }
     },
     {
@@ -72,13 +72,13 @@
       "assistPass": true,
       "fixedStepMs": {
         "samples": 2088,
-        "p95": 0.0008,
-        "max": 0.0521
+        "p95": 0.0018,
+        "max": 0.1261
       },
       "predictionMs": {
         "samples": 50,
-        "p95": 0.0912,
-        "max": 0.2106
+        "p95": 0.1519,
+        "max": 0.2834
       }
     },
     {
@@ -91,13 +91,13 @@
       "assistPass": true,
       "fixedStepMs": {
         "samples": 406,
-        "p95": 0.0003,
-        "max": 0.031
+        "p95": 0.0008,
+        "max": 0.0155
       },
       "predictionMs": {
         "samples": 50,
-        "p95": 0.0642,
-        "max": 0.073
+        "p95": 0.1456,
+        "max": 0.2145
       }
     }
   ],

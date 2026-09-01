@@ -116,13 +116,13 @@ const app = createAuraApp("#stage", {
     .addMany([
       model(world, { name: "V6 braided reactor tunnel", role: "primaryWorld", targetMaxDimension: 15.58 }),
       model(runner, { name: "V6 original Pulse phase manta", role: "primarySubject", targetMaxDimension: 3.89 })
-        .position(-1.36, 0.22, 0.42).rotate(0, -0.035, -0.015).scale(1.06),
+        .position(-1.48, 0.32, 0.05).rotate(0, -0.035, -0.015).scale(0.92),
       model(sentry, { name: "V6 original Pulse cathedral sentinel", role: "primarySubject", targetMaxDimension: 5.142 })
-        .position(0.92, 0.14, -7.62).rotate(0, Math.PI, 0).scale(1.04),
+        .position(0.92, 1.48, -6.55).rotate(Math.PI / 2, Math.PI, 0).scale(0.98),
       primitives.torus({ name: "V6 runner shield fracture", material: white })
         .position(-1.00, 0.82, -1.05).rotate(0.08, -0.10, 0.04).scale([0.66, 0.66, 0.055]),
       primitives.torus({ name: "V6 terminal cadence lock", material: red })
-        .position(0.92, 1.70, -7.10).scale([0.76, 0.76, 0.055]),
+        .position(0.92, 1.70, -6.20).scale([0.76, 0.76, 0.055]),
       ...outgoing,
       ...incoming,
       effects.neonBloom({ intensity: 0.34, threshold: 0.79, maxIntensity: 0.82, antiBlowout: true }),

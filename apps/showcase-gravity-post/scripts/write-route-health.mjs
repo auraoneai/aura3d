@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
-const modelAssetIds = ["gravityPostMailPod", "gravityPostDockBeacon"];
+const modelAssetIds = ["gravityPostCourierSkiff", "gravityPostDockBeacon"];
 const supportingModelAssetIds = ["gravityPostFreightDistrict"];
 const audioAssetIds = [
   "gravityPostLaunchWhooshSfx", "gravityPostBurnLoopSfx", "gravityPostDockLockSfx",
@@ -112,7 +112,7 @@ const routeHealth = {
   },
   primaryAssets: modelAssetIds.map((id) => ({
     typedRef: `assets.${id}`,
-    role: id === "gravityPostMailPod" ? "primary-vehicle" : "dock-landmark-prop",
+    role: id === "gravityPostCourierSkiff" ? "primary-vehicle" : "dock-landmark-prop",
     status: "release-validated-typed-primary-asset",
     quality: assetById.get(id).quality,
     hash: assetById.get(id).hash,
@@ -205,8 +205,8 @@ const routeHealth = {
       "tests/browser/gravity-post-playable.spec.ts",
       "tests/browser/gravity-post-scene.spec.ts"
     ],
-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon --asset gravityPostFreightDistrict",
-    releaseDeployCommandAfterPromotion: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon --asset gravityPostFreightDistrict"
+    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict",
+    releaseDeployCommandAfterPromotion: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict"
   }
 };
 

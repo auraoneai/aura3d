@@ -103,7 +103,7 @@ try {
     pass: failures.length === 0,
     failures,
     route: "/apps/showcase-gallery-shift/?debug=1&capture=review",
-    cameraContract: { position: [6, 24, 15], target: [0, 0.55, -0.4], fov: 48, changed: true },
+    cameraContract: { position: [5.6, 22.5, 14.5], target: [0, 0.62, 0.8], fov: 46, changed: true },
     staging: "same moving guard-1 three-metre real-LOS intercept as tests/browser/gallery-shift-scene.spec.ts",
     truth: {
       floor: evidence?.floor,

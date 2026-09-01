@@ -362,7 +362,7 @@ function guardCharacterNodes(): AuraSceneNode[] {
       // A guard is a gameplay threat, not a tabletop token. The slightly
       // taller render-normalized silhouette makes the real typed robot's
       // shoulders, hands, and head read in the oblique review composition.
-      targetMaxDimension: 2.08
+      targetMaxDimension: 2.72
     })
       .position(spawn.x, 0, spawn.z)
       .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
@@ -554,7 +554,7 @@ function threatFeedbackNodes(): AuraSceneNode[] {
  */
 function liveHierarchyNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [
-    text3D("PLAYER", { name: "live-player-label", size: 0.42, depth: 0.045, letterSpacing: 0.025, material: LIVE_PLAYER_MATERIAL })
+    text3D("PLAYER", { name: "live-player-label", size: 0.52, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
@@ -562,15 +562,15 @@ function liveHierarchyNodes(): AuraSceneNode[] {
     primitives.torus({ name: "live-objective-ring", material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(Math.PI / 2, 0, 0)
-      .scale([1.05, 1.05, 0.09])
+      .scale([1.22, 1.22, 0.1])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
-    text3D("LIFT", { name: "live-lift-label", size: 0.48, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("LIFT", { name: "live-lift-label", size: 0.6, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("EXIT", { name: "live-exit-label", size: 0.48, depth: 0.05, letterSpacing: 0.04, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("EXIT", { name: "live-exit-label", size: 0.6, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
@@ -589,7 +589,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
         .scale([0.72, 0.72, 0.065])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
-      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.38, depth: 0.045, letterSpacing: 0.025, material: LIVE_GUARD_MATERIAL })
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.48, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
         .rotate(0, 0.62, 0)
         .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
@@ -650,7 +650,7 @@ function buildScene(): ReturnType<typeof scene> {
         // The stealth avatar is the review frame's focal subject.  Keep the
         // typed character large enough to read against the museum plan while
         // leaving the route and guard silhouettes visible around it.
-        targetMaxDimension: 2.12
+        targetMaxDimension: 2.78
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -718,9 +718,9 @@ function buildScene(): ReturnType<typeof scene> {
       // geometric centre): it puts both live principals fully inside the
       // frame, with enough height and field of view to retain the exit portal
       // and the two north objective rooms as their route context.
-      position: visualReviewCapture ? [6, 24, 15] : [0, 13.4, 13.8],
-      target: visualReviewCapture ? [0, 0.55, -0.4] : [0, 0.72, -0.45],
-      fov: visualReviewCapture ? 48 : 40
+      position: visualReviewCapture ? [5.6, 22.5, 14.5] : [0, 13.4, 13.8],
+      target: visualReviewCapture ? [0, 0.62, 0.8] : [0, 0.72, -0.45],
+      fov: visualReviewCapture ? 46 : 40
     }));
 }
 
@@ -950,22 +950,39 @@ function syncCharacterVisuals(): void {
 }
 
 function syncThreatFeedback(): void {
+  const thiefPosition = runtime.thief.snapshot();
+  const primarySeeingGuard = lastThreatSamples
+    .filter((sample) => sample.seesThief)
+    .reduce<(typeof lastThreatSamples)[number] | undefined>((nearest, sample) => {
+      if (!nearest) return sample;
+      const sampleDistance = Math.hypot(sample.x - thiefPosition.x, sample.z - thiefPosition.z);
+      const nearestDistance = Math.hypot(nearest.x - thiefPosition.x, nearest.z - thiefPosition.z);
+      return sampleDistance < nearestDistance ? sample : nearest;
+    }, undefined);
   for (const sample of lastThreatSamples) {
     const highlight = app.nodes.get(sample.id + " threat highlight");
     const wedge = app.nodes.get(sample.id + " threat wedge");
-    highlight?.setVisible(sample.seesThief);
-    wedge?.setVisible(sample.seesThief);
-    if (sample.seesThief) {
+    const thief = runtime.thief.snapshot();
+    const primarySighting = sample.seesThief && sample.id === primarySeeingGuard?.id;
+    highlight?.setVisible(primarySighting);
+    wedge?.setVisible(primarySighting);
+    if (primarySighting) {
+      const dx = thief.x - sample.x;
+      const dz = thief.z - sample.z;
+      const distance = Math.hypot(dx, dz);
       wedge?.setPosition(sample.x, 0.075, sample.z);
-      wedge?.setRotation(0, sample.yaw, 0);
-      wedge?.setScale([1.38, 1, 1]);
+      // Aim the renderer wedge at the same currently-seen target and end it
+      // just before the player's focus ring. This retains the true LOS state
+      // while preventing a fixed four-metre triangle from spilling through a
+      // wall or far beyond a close target in the review frame.
+      wedge?.setRotation(0, Math.atan2(dx, dz), 0);
+      wedge?.setScale([1.16, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.1))]);
     }
     // A real sighting swaps the cool patrol preview for one alert wedge driven
     // by the same observer sample that raised the detection meter.
     app.nodes.get(`${sample.id} sightline preview`)
       ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
-    if (sample.seesThief) {
-      const thief = runtime.thief.snapshot();
+    if (primarySighting) {
       highlight?.setPosition(thief.x, 0.07, thief.z);
       highlight?.setScale([0.85, 0.85, 0.06]);
     }
@@ -1031,7 +1048,7 @@ function syncLiveHierarchy(): void {
   // Labels are compact, upright museum-security callouts in the locked
   // oblique review camera. Their positions follow the live actors/objective,
   // while LOS, detection, and objective truth remain owned by the runtime.
-  app.nodes.get("live-player-label")?.setPosition(thief.x - 0.82, 2.12, thief.z + 0.08);
+  app.nodes.get("live-player-label")?.setPosition(thief.x + 0.12, 2.78, thief.z + 0.52);
 
   const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
   const objective = unlifted.length > 0
@@ -1059,8 +1076,11 @@ function syncLiveHierarchy(): void {
     app.nodes.get(`${guardId} live label`)?.setVisible(visible);
     if (guard) {
       app.nodes.get(`${guardId} live ring`)?.setPosition(guard.x, 0.11, guard.z);
-      const labelX = guard.x < 0 ? guard.x + 0.18 : guard.x - 1.08;
-      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 2.4, guard.z + 0.08);
+      // Push guard labels toward the outside edges of the plan. In the staged
+      // south-lane encounter this keeps both callouts off the thief silhouette
+      // instead of stacking three labels over the same central action pixels.
+      const labelX = guard.x < 0 ? guard.x - 1.32 : guard.x + 0.24;
+      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 2.96, guard.z + 0.08);
     }
   }
 }

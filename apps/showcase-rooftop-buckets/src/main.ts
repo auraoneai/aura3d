@@ -232,10 +232,10 @@ const releaseBurstMaterial = material.emissive({ name: "ball release burst", col
 const contestReactionMaterial = material.emissive({ name: "live contest reaction", color: "#e879f9", emissive: "#a21caf", emissiveIntensity: 1.9, opacity: 0.76 });
 const reviewCourtMaterial = material.pbr({
   name: "rooftop league sealed court",
-  color: "#7c2d3b",
-  roughness: 0.42,
-  metallic: 0.04,
-  clearcoat: 0.34
+  color: "#26324f",
+  roughness: 0.5,
+  metallic: 0.08,
+  clearcoat: 0.42
 });
 
 function buildScene() {
@@ -247,10 +247,11 @@ function buildScene() {
       effects.neonBloom({ intensity: 0.34 }),
       // A restrained arena rig leaves real surface gradients on the court and
       // typed characters instead of flattening every material into emissive UI.
-      lights.ambient({ color: "#7188b8", intensity: visualReviewCapture ? 0.48 : 1.32 }),
+      lights.ambient({ color: "#8098c8", intensity: visualReviewCapture ? 0.72 : 1.32 }),
       lights.directional({ color: "#fff3d6", intensity: visualReviewCapture ? 2.75 : 3.6 }).position(8, 20, 10),
-      lights.point({ name: "court hero practical", color: "#ff9f43", intensity: visualReviewCapture ? 2.9 : 4.4 }).position(-3.4, 4.8, 7.2),
-      lights.point({ name: "hoop cyan practical", color: "#4dddf8", intensity: visualReviewCapture ? 2.15 : 3.4 }).position(0.8, 4.6, 0.4),
+      lights.point({ name: "scorer warm key", color: "#ffd6a0", intensity: visualReviewCapture ? 4.15 : 4.4 }).position(-4.0, 4.6, 5.4),
+      lights.point({ name: "defender cool rim", color: "#79dcff", intensity: visualReviewCapture ? 3.45 : 3.4 }).position(1.5, 4.4, 3.3),
+      lights.point({ name: "hoop amber practical", color: "#ffad58", intensity: visualReviewCapture ? 2.55 : 3.4 }).position(0.8, 4.8, -0.1),
       lights.point({ name: "pavilion warm bay practical", color: "#ffd39a", intensity: visualReviewCapture ? 1.35 : 2.0 }).position(-4.4, 4.8, -4.8),
       lights.directional({ color: "#4aa8d8", intensity: visualReviewCapture ? 0.52 : 1.45 }).position(-12, 14, -8),
       lights.directional({ color: "#f59e0b", intensity: visualReviewCapture ? 1.05 : 1.2 }).position(0, 8, -20),
@@ -841,12 +842,14 @@ function syncTransforms(): void {
     const echo = app.nodes.get(`flight-echo-${index + 1}`) as AuraRuntimeNodeHandle | undefined;
     echo?.setVisible(ballState.inFlight);
     if (!ballState.inFlight) continue;
-    const lag = 0.12 + index * 0.1;
+    const lag = 0.22 + index * 0.22;
     echo?.setPosition(
       ballState.x - (ballState.vx / velocityMagnitude) * lag,
       ballState.y - (ballState.vy / velocityMagnitude) * lag,
       ballState.z - (ballState.vz / velocityMagnitude) * lag
     );
+    const echoScale = Math.max(0.075, 0.17 - index * 0.045);
+    echo?.setScale([echoScale, echoScale, 0.018]);
   }
 
   const rimNode = app.nodes.get("rim-assembly") as AuraRuntimeNodeHandle | undefined;
@@ -1067,7 +1070,14 @@ function syncTransforms(): void {
     segment
       .setPosition((start.x + end.x) / 2, (start.y + end.y) / 2, (start.z + end.z) / 2)
       .setRotation(-Math.asin(dy / length), Math.atan2(dx, dz), 0)
-      .setScale([visualReviewCapture ? 0.036 : 0.055, visualReviewCapture ? 0.036 : 0.055, length * 1.02]);
+      // The review route uses a separated broadcast-style tracer. Small gaps
+      // preserve the full truthful prediction while avoiding a thick tube that
+      // visually competes with the typed ball and athlete silhouettes.
+      .setScale([
+        visualReviewCapture ? 0.022 : 0.055,
+        visualReviewCapture ? 0.022 : 0.055,
+        length * (visualReviewCapture ? 0.78 : 1.02)
+      ]);
   }
 }
 

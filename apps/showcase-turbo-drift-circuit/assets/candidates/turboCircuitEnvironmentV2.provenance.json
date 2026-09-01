@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "aura3d-route-local-original-asset-v1",
+  "asset": "turboCircuitEnvironmentV2.candidate.glb",
+  "title": "Turbo Formula Circuit Environment V2",
+  "author": "Aura3D contributors",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-turbo-drift-circuit/scripts/build-circuit-environment-v2.py",
+  "generator": "apps/showcase-turbo-drift-circuit/scripts/build-circuit-environment-v2.py",
+  "role": "renderer-owned non-colliding circuit environment set dressing",
+  "topologyAlignment": {
+    "source": "apps/showcase-turbo-drift-circuit/scripts/build-formula-circuit.mjs",
+    "centrelinePoints": 56,
+    "roadWidth": 3.6,
+    "collisionAuthority": false,
+    "lapAuthority": false
+  },
+  "contents": [
+    "asphalt aggregate bands and resurfacing patches",
+    "worked-in road-following skid traces",
+    "ground-conforming alternating kerb ribbons",
+    "low Armco rails and concrete posts",
+    "four modeled horizontal tyre-wall zones",
+    "four tiered roofed grandstands",
+    "six-bay pit and timing complex",
+    "start gantry and marshal lamps",
+    "sculpted verge banks and layered conifer vegetation"
+  ]
+}

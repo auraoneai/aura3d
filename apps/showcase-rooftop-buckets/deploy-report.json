@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.rooftop-buckets.deploy/1.0",
-  "generatedAt": "2026-09-01T02:49:12.485Z",
+  "generatedAt": "2026-09-01T03:49:54.725Z",
   "producer": "apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "2fc37a256daad52efca5be577d7344cdb55f1ec2eb18a5ea5d9308746d5cf54a",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "5b20ff73a027e3f6c9b1b3e3da786889d91b321d5d89cd917f278b9762a2e52e",
-  "sourceTreeSha256": "a90b8f7e6dabf47264c71879f15a1956ab1d918504d01ab9a8c59e290ccef855",
+  "distTreeSha256": "c9c325286d030b9b052c806199701320407f0b8508502f6bc52baa792755c0db",
+  "sourceTreeSha256": "2941af365fa02819d6b2b80cc8bc4ec84e7d56d99de666944069c294ad1ad3f5",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, defender>",

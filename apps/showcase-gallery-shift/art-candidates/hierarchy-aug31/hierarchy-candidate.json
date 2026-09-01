@@ -7,16 +7,16 @@
   "route": "/apps/showcase-gallery-shift/?debug=1&capture=review",
   "cameraContract": {
     "position": [
-      6,
-      24,
-      15
+      5.6,
+      22.5,
+      14.5
     ],
     "target": [
       0,
-      0.55,
-      -0.4
+      0.62,
+      0.8
     ],
-    "fov": 48,
+    "fov": 46,
     "changed": true
   },
   "staging": "same moving guard-1 three-metre real-LOS intercept as tests/browser/gallery-shift-scene.spec.ts",
@@ -24,24 +24,24 @@
     "floor": 1,
     "state": "playing",
     "physicsBackend": "rapier",
-    "detection": 0.614,
+    "detection": 0.626,
     "thiefPosition": {
-      "x": -2.804,
-      "z": 4.574
+      "x": -2.741,
+      "z": 4.61
     },
     "guardVisionSamples": [
       {
         "id": "guard-1",
-        "x": -4.89733740930857,
-        "z": 3.3595443026010465,
-        "yaw": 1.0452125332432896,
+        "x": -4.83462264808709,
+        "z": 3.3959188641095053,
+        "yaw": 1.0452125332432898,
         "seesThief": true
       },
       {
         "id": "guard-2",
-        "x": 1.135960962567033,
-        "z": 2.9687322383683616,
-        "yaw": -1.1839606478363351,
+        "x": 1.0702100206767975,
+        "z": 2.9977115040612916,
+        "yaw": -1.1705944900726517,
         "seesThief": true
       }
     ],
@@ -51,7 +51,7 @@
     ],
     "navigationOwnership": "authored deterministic two-floor waypoint patrols; no Recast/navmesh claim",
     "renderer": {
-      "drawCalls": 190,
+      "drawCalls": 188,
       "renderSize": [
         1280,
         800
@@ -82,7 +82,7 @@
   "sourceBindings": {
     "main": {
       "path": "apps/showcase-gallery-shift/src/main.ts",
-      "sha256": "ba8afed2c88b4383552810bf3beda15f4b9c6453be01b8d12a9f0e5b402d6167"
+      "sha256": "4c17798ad638cb5e324bb09cea651017f9d8466635b57e74aa4a5ca8055db58d"
     },
     "environment": {
       "path": "apps/showcase-gallery-shift/src/environment.ts",
@@ -99,8 +99,8 @@
   },
   "artifact": {
     "path": "hierarchy-candidate-canvas.png",
-    "sha256": "f9c8c9dfe84433a4feda9a02d62d17f8b0c36ba81f3907d3eeb8caeca11253b9",
-    "bytes": 325021,
+    "sha256": "b69627d1df6a0c994766b0bdc73e74ba100579361f50cb1fa51ac1ab99861741",
+    "bytes": 370873,
     "viewport": [
       1280,
       800

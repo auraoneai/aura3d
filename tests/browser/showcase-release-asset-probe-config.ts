@@ -29,6 +29,7 @@ export type ProbeAssetId =
   | "gravityPostMailPod"
   | "gravityPostDockBeacon"
   | "gravityPostFreightDistrict"
+  | "gravityPostCourierSkiff"
   | "pulseReactorEncounterWorld"
   | "pulseTerminalSentry"
   | "pulseRunnerCraft"
@@ -146,6 +147,7 @@ export const PROBE_ASSETS = [
   "gravityPostMailPod",
   "gravityPostDockBeacon",
   "gravityPostFreightDistrict",
+  "gravityPostCourierSkiff",
   "pulseReactorEncounterWorld",
   "pulseTerminalSentry",
   "pulseRunnerCraft",
@@ -771,6 +773,22 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
       forwardAxis: "+X",
       upAxis: "+Y",
       message: "The original static Gravity Post freight district is authored +Y-up with its connected Rust-to-Gale deck extending along +X. The hash-bound probe proves its nine-material loading hangar, crane, cargo, tank-farm, rail, and terminal architecture only; route-local pod motion, gravity wells, sensors, collision, scoring, and camera remain authoritative."
+    }
+  },
+  gravityPostCourierSkiff: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.1,
+    fov: 31,
+    azimuth: 0.72,
+    elevation: 0.2,
+    rotation: [0, 0.52, 0],
+    minForegroundWidth: 150,
+    minForegroundHeight: 100,
+    orientation: {
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      message: "The original Gravity Post courier skiff is authored +Y-up and +Z-forward. The hash-bound probe proves its compact four-pod working-vehicle silhouette and guarded parcel module only; route-local motion, sensors, collision, scoring, and delivery state remain authoritative."
     }
   },
   pulseReactorEncounterWorld: {

@@ -114,16 +114,16 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   });
   const pavilionBrick = material.pbr({
     name: "rooftop pavilion brick",
-    color: "#573044",
-    roughness: 0.58,
-    metallic: 0.08,
-    clearcoat: 0.12
+    color: "#30283b",
+    roughness: 0.72,
+    metallic: 0.05,
+    clearcoat: 0.1
   });
   const pavilionGlass = material.emissive({
     name: "rooftop pavilion glass",
-    color: "#143b4d",
-    emissive: "#0f7286",
-    emissiveIntensity: 0.13,
+    color: "#102d42",
+    emissive: "#1b7892",
+    emissiveIntensity: 0.19,
     opacity: 0.92
   });
   const pavilionTrim = material.pbr({
@@ -134,8 +134,8 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   });
   const pavilionInterior = material.emissive({
     name: "rooftop pavilion occupied warm interior",
-    color: "#713c2d",
-    emissive: "#fb923c",
+    color: "#6f3928",
+    emissive: "#ff9b52",
     emissiveIntensity: 0.36,
     opacity: 0.9
   });
@@ -338,7 +338,7 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     primitives
       .box({
         name: "court-key-zone",
-        material: material.pbr({ name: "key-paint", color: "#103c4a", roughness: 0.46, metallic: 0.08, clearcoat: 0.22 })
+        material: material.pbr({ name: "key-paint", color: "#8f3f39", roughness: 0.48, metallic: 0.06, clearcoat: 0.3 })
       })
       .position(0, 0.02, keyCenterZ)
       .scale([keyWidth, 0.02, keyDepth])
@@ -654,7 +654,7 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         .toJSON(),
       primitives.box({ name: `pavilion warm interior band ${index + 1}`, material: pavilionInterior })
         .position(x, 4.42, -6.24)
-        .scale([3.32, 0.72, 0.1])
+        .scale([3.12, 0.28, 0.1])
         .toJSON(),
       // The center bay is already divided by its full-height mullion and the
       // warm interior band. Omitting its redundant horizontal trim saves one
@@ -718,6 +718,13 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       metallic: 0.44,
       clearcoat: 0.18
     });
+    const courtWear = material.pbr({
+      name: "sealed court wear bands",
+      color: "#354264",
+      roughness: 0.76,
+      metallic: 0.02,
+      opacity: 0.74
+    });
     nodes.push(
       // The pavilion is now a volume: an overhanging copper canopy and deep
       // fascia cast a real architectural edge over the recessed glass bays.
@@ -729,6 +736,16 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         .position(0, 8.31, -5.08)
         .scale([15.9, 0.055, 0.06])
         .toJSON(),
+      // Slightly irregular sealed lanes catch the key lights and break up the
+      // single-color court slab. They are surface finish only, below every
+      // route-owned ball, player, and collider region.
+      ...[-2.8, -0.25, 2.65, 5.55, 8.2].map((z, index) =>
+        primitives.box({ name: `sealed court wear band ${index + 1}`, material: courtWear })
+          .position(index % 2 === 0 ? -0.7 : 0.65, 0.014, z)
+          .rotate(0, index % 2 === 0 ? 0.018 : -0.014, 0)
+          .scale([7.65 - (index % 2) * 0.3, 0.008, 0.055 + (index % 3) * 0.018])
+          .toJSON()
+      ),
       // Inlaid sideline accents give the court a manufactured, league-owned
       // finish while leaving the playable key and physics regions untouched.
       primitives.box({ name: "west court brass inlay", material: courtInlay })

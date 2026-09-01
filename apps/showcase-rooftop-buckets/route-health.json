@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-01T02:49:13.335Z",
+  "generatedAt": "2026-09-01T03:52:31.542Z",
   "appId": "showcase-rooftop-buckets",
   "route": "/apps/showcase-rooftop-buckets/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "02f0365e8fbdea3be73e9259cecae92f815f996b7d20264c799a077e48448c17",
+  "routeSourceSha256": "4cb4d05ea4f8770ecff7ee3fac6e2f06cab14c89087a7a2aafa5304303d32da8",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -125,7 +125,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 63,
+    "sourceOccurrences": 64,
     "primitiveBudget": 96,
     "role": "subordinate skyline/court dressing, painted markings, stanchion/net, trajectory guides, and state feedback only",
     "status": "no-primitive-primary-subjects"
@@ -177,7 +177,7 @@
   },
   "performance": {
     "schema": "aura3d.rooftop-buckets.performance/1.0",
-    "generatedAt": "2026-09-01T02:46:15.718Z",
+    "generatedAt": "2026-09-01T03:49:53.670Z",
     "producer": "apps/showcase-rooftop-buckets/scripts/write-performance-report.ts",
     "producerSourceSha256": "58c29536b6ae2dfd37df5ab4a28b12b2a799174c4dc3096a7c51ac35acdbcaeb",
     "routeSourceFiles": [
@@ -190,7 +190,7 @@
       "apps/showcase-rooftop-buckets/src/shot.ts",
       "apps/showcase-rooftop-buckets/src/styles.css"
     ],
-    "routeSourceSha256": "02f0365e8fbdea3be73e9259cecae92f815f996b7d20264c799a077e48448c17",
+    "routeSourceSha256": "4cb4d05ea4f8770ecff7ee3fac6e2f06cab14c89087a7a2aafa5304303d32da8",
     "scope": "Route-local deterministic authored basketball step CPU timing plus browser-observed root createGameApp draw calls. This does not claim Rapier, rigid bodies, GPU frame-time parity, or a reusable sports simulation.",
     "samples": 12000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -202,7 +202,7 @@
     "observed": {
       "ballisticCpuP95Ms": 0.002,
       "deterministicPoseSamples": 100,
-      "drawCalls": 145,
+      "drawCalls": 149,
       "renderSize": [
         1280,
         800
@@ -215,13 +215,13 @@
   },
   "deploy": {
     "schema": "aura3d.rooftop-buckets.deploy/1.0",
-    "generatedAt": "2026-09-01T02:49:12.485Z",
+    "generatedAt": "2026-09-01T03:49:54.725Z",
     "producer": "apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "2fc37a256daad52efca5be577d7344cdb55f1ec2eb18a5ea5d9308746d5cf54a",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "5b20ff73a027e3f6c9b1b3e3da786889d91b321d5d89cd917f278b9762a2e52e",
-    "sourceTreeSha256": "a90b8f7e6dabf47264c71879f15a1956ab1d918504d01ab9a8c59e290ccef855",
+    "distTreeSha256": "c9c325286d030b9b052c806199701320407f0b8508502f6bc52baa792755c0db",
+    "sourceTreeSha256": "2941af365fa02819d6b2b80cc8bc4ec84e7d56d99de666944069c294ad1ad3f5",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, defender>",
@@ -314,55 +314,55 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/rooftop-buckets/opening-desktop.png",
-        "sha256": "7486b6207528320b5bfa4b4305d7b76d2bb994a688b8520516176c5ab00ed41c"
+        "sha256": "4096f63353790633c7ff3e6d75426679548ad0cf4f6a5e97d3c5c2af992934b8"
       },
       {
         "path": "tests/reports/rooftop-buckets/charge-arc-desktop.png",
-        "sha256": "ab860fe4e39a04ae10d6abd99173418f24c823d503f1b95e3e6269fcf0db21da"
+        "sha256": "4fc05cbcc9ae50aada0165b1e61efdd8a00d35802585f6f1ce9787d0eb5b29b4"
       },
       {
         "path": "tests/reports/rooftop-buckets/release-desktop.png",
-        "sha256": "ab860fe4e39a04ae10d6abd99173418f24c823d503f1b95e3e6269fcf0db21da"
+        "sha256": "4fc05cbcc9ae50aada0165b1e61efdd8a00d35802585f6f1ce9787d0eb5b29b4"
       },
       {
         "path": "tests/reports/rooftop-buckets/swish-desktop.png",
-        "sha256": "323f580f66b470da386f119719c725467fe20ef3aeb3ea3c3a742bab49a4ed10"
+        "sha256": "800497e368ada631d47b248f63e7a20e8a2276ea7fea221ce65332c056c04bb9"
       },
       {
         "path": "tests/reports/rooftop-buckets/rim-miss-desktop.png",
-        "sha256": "610672fdefbf534b0303a0a55b270a2d9b570a879b9568d068ede6716fda20ea"
+        "sha256": "4096f63353790633c7ff3e6d75426679548ad0cf4f6a5e97d3c5c2af992934b8"
       },
       {
         "path": "tests/reports/rooftop-buckets/defender-contest-desktop.png",
-        "sha256": "267e9ee1323f560e07e18db631be829675b7e78704a0e20ac6708b3e4939ed2b"
+        "sha256": "591fbe35045662f67ef2452657df033121958d3805894d7dc40ee62e011720c4"
       },
       {
         "path": "tests/reports/rooftop-buckets/fire-desktop.png",
-        "sha256": "97e35479cd72fbb33084ad3be953fc6cc49fc7f35401ce19cb5589e28ba901bd"
+        "sha256": "ff6803d1f9cae33567984388931abe01578f606b177352e600fe3ebe63fa21f0"
       },
       {
         "path": "tests/reports/rooftop-buckets/buzzer-desktop.png",
-        "sha256": "934d7d5e7cc2fc2cc2bdc3f852e00f93e7dfab562128adc97f7f19ef464e1537"
+        "sha256": "3a744c98910ea8e98a7156a70cb036b54b013e9b85d4c2bf013af32316ccdaae"
       },
       {
         "path": "tests/reports/rooftop-buckets/gold-win-desktop.png",
-        "sha256": "7770862a133a588404e715eeebbeef28d7405c3a9bd74736044346d2c9e4cb33"
+        "sha256": "9ebaff3fbf611c768859f12dec33728c771445341c675653d23cfb708a572509"
       },
       {
         "path": "tests/reports/rooftop-buckets/opening-mobile.png",
-        "sha256": "89d618a2437777188665f267a2f8bb6bc7a1408930b94749877640776bb015a5"
+        "sha256": "d1bca1512e2ac04c3a5cdee490b9f0823fe8d50927ac6267a9d6bf6181d516bd"
       },
       {
         "path": "tests/reports/rooftop-buckets/mobile-touch-active.png",
-        "sha256": "20bd4908163c6db1ced3bef5554bc6f57c425e00a4aa7e04aa7580a485f67127"
+        "sha256": "c71e6b9e82b71c364b6fef4f949406908ad37fc5f6e02eb4dae906d0217ddd9b"
       },
       {
         "path": "tests/reports/rooftop-buckets/reduced-motion-arc.png",
-        "sha256": "3f0a2ab7f47a33afcec1e8091d4484ea530a93108a4d92278bb893f565f312ec"
+        "sha256": "f69283594ba7238a53e0a4fbb11680ce55fbb17ee2d43bfbe1b7b58e31d758d3"
       },
       {
         "path": "tests/reports/rooftop-buckets/visual.json",
-        "sha256": "97d25919833b48b248c7126c9a08dba43f9905cd9d2d62670d60adfe5a79284a"
+        "sha256": "532b73a69436f253d7ec9edd5996e5aae685d5b2e354929b8628cbb334f32fd4"
       }
     ],
     "browserReceipts": [

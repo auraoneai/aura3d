@@ -116,6 +116,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "gravityPostBounceOffSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostBurnLoopSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "gravityPostContractClearSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "gravityPostCourierSkiff": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostDockBeacon": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostDockGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "gravityPostDockLockSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -346,6 +347,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "skylineWinterParallaxBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboAlpineVenueBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboCheckpointChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
+  readonly "turboCircuitEnvironmentV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboCountdownBlipSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboDriftScuffSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboEngineSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -15060,6 +15062,258 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "unknown",
       "suitabilityReason": "Delivery-clear fanfare driven by one accepted dock event."
+    },
+  },
+  "gravityPostCourierSkiff": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/gravityPostCourierSkiff.a32c76ed.glb",
+    hash: "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+    bounds: [
+      1.67,
+      0.978,
+      2.37
+    ],
+    sizeBytes: 408704,
+    metadata: {
+      "materials": [
+        "GPCS amber drive light",
+        "GPCS brushed alloy",
+        "GPCS cyan canopy",
+        "GPCS cyan running light",
+        "GPCS graphite armored hull",
+        "GPCS landing skid",
+        "GPCS parcel amber",
+        "GPCS parcel cream",
+        "GPCS postal identity",
+        "GPCS postal navy"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 10,
+        "meshCount": 10,
+        "materialCount": 10,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "GPCS amber drive light",
+          "GPCS brushed alloy",
+          "GPCS cyan canopy",
+          "GPCS cyan running light",
+          "GPCS graphite armored hull",
+          "GPCS landing skid",
+          "GPCS parcel amber",
+          "GPCS parcel cream",
+          "GPCS postal identity",
+          "GPCS postal navy"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 10 nodes across 10 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-gravity-post/scripts/build-courier-skiff.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D synthesis",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D synthesis — original CC0 Gravity Post courier skiff",
+        "retrievedAt": "2026-09-01T03:02:00.000Z",
+        "evidence": [
+          "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the low courier chassis, cyan canopy and running rails, four grounded contact-drive pods and skids, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge. Route-local authored motion remains the sole gameplay owner."
+        ],
+        "checkedAt": "2026-09-01T03:02:00.000Z"
+      },
+      "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
+      "outputPath": "public/aura-assets/gravityPostCourierSkiff.a32c76ed.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D synthesis",
+      "boundsMetadata": {
+        "min": [
+          -0.835,
+          0,
+          -1.22
+        ],
+        "max": [
+          0.835,
+          0.978,
+          1.15
+        ],
+        "size": [
+          1.67,
+          0.978,
+          2.37
+        ],
+        "center": [
+          0,
+          0.489,
+          -0.035
+        ],
+        "maxDimension": 2.37,
+        "grounded": true
+      },
+      "materialMetadata": [
+        {
+          "name": "GPCS amber drive light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS brushed alloy",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS cyan canopy",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS cyan running light",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS graphite armored hull",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS landing skid",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS parcel amber",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS parcel cream",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS postal identity",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "GPCS postal navy",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "view": "hash-bound-readable-prop-view",
+        "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+        "checkedAt": "2026-09-01T03:52:57.234Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
+          "sha256": "sha256-13d61e81490afff5298f2d2b3c79866a5f34be38b89720b2b4c629742ffcfdf9",
+          "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+          "checkedAt": "2026-09-01T03:52:57.234Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff"
+        },
+        "messages": [
+          "The original Gravity Post courier skiff is authored +Y-up and +Z-forward. The hash-bound probe proves its compact four-pod working-vehicle silhouette and guarded parcel module only; route-local motion, sensors, collision, scoring, and delivery state remain authoritative."
+        ]
+      },
+      "nodeNames": [
+        "GPCS amber drive light",
+        "GPCS brushed alloy",
+        "GPCS cyan canopy",
+        "GPCS cyan running light",
+        "GPCS graphite armored hull",
+        "GPCS landing skid",
+        "GPCS parcel amber",
+        "GPCS parcel cream",
+        "GPCS postal identity",
+        "GPCS postal navy"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/gravityPostCourierSkiff.thumb.svg",
+      "quality": "release",
+      "role": "vehicle",
+      "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. Its intentionally untextured stylized flat-color solid materials use ten readable color-separated PBR groups and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
+        "sha256": "sha256-13d61e81490afff5298f2d2b3c79866a5f34be38b89720b2b4c629742ffcfdf9",
+        "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 80,
+        "checkedAt": "2026-09-01T03:52:57.234Z",
+        "foregroundBounds": {
+          "x": 194,
+          "y": 217,
+          "width": 338,
+          "height": 220
+        }
+      }
     },
   },
   "gravityPostDockBeacon": {
@@ -100873,6 +101127,375 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/turboCheckpointChimeSfx.thumb.svg",
       "quality": "ungraded",
       "role": "unknown"
+    },
+  },
+  "turboCircuitEnvironmentV2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/turboCircuitEnvironmentV2.c9fdaf1e.glb",
+    hash: "sha256-c9fdaf1e8f7278050235f5e9d6c24a4526c0dfbe52f075ad34feb45cc71c7b08",
+    bounds: [
+      43.581,
+      3.835,
+      46.575
+    ],
+    sizeBytes: 4967136,
+    metadata: {
+      "materials": [
+        "TDCE amber marshal lamps",
+        "TDCE asphalt aggregate variation",
+        "TDCE autumn foliage",
+        "TDCE barrier concrete",
+        "TDCE cyan marshal lamps",
+        "TDCE deep verge",
+        "TDCE galvanized rail steel",
+        "TDCE grandstand blue",
+        "TDCE grandstand coral",
+        "TDCE grandstand graphite",
+        "TDCE horizontal tyre walls",
+        "TDCE layered circuit asphalt",
+        "TDCE pine shadow",
+        "TDCE pine sun",
+        "TDCE pit operations glass",
+        "TDCE pit warm concrete",
+        "TDCE race red kerb faces",
+        "TDCE race teal",
+        "TDCE resurfaced asphalt patches",
+        "TDCE safety red",
+        "TDCE sunlit verge",
+        "TDCE tree bark",
+        "TDCE warm gravel runoff",
+        "TDCE warm white kerb faces",
+        "TDCE worked-in tyre rubber"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 25,
+        "meshCount": 25,
+        "materialCount": 25,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "TDCE amber marshal lamps",
+          "TDCE asphalt aggregate variation",
+          "TDCE autumn foliage",
+          "TDCE barrier concrete",
+          "TDCE cyan marshal lamps",
+          "TDCE deep verge",
+          "TDCE galvanized rail steel",
+          "TDCE grandstand blue",
+          "TDCE grandstand coral",
+          "TDCE grandstand graphite",
+          "TDCE horizontal tyre walls",
+          "TDCE layered circuit asphalt",
+          "TDCE pine shadow",
+          "TDCE pine sun",
+          "TDCE pit operations glass",
+          "TDCE pit warm concrete",
+          "TDCE race red kerb faces",
+          "TDCE race teal",
+          "TDCE resurfaced asphalt patches",
+          "TDCE safety red",
+          "TDCE sunlit verge",
+          "TDCE tree bark",
+          "TDCE warm gravel runoff",
+          "TDCE warm white kerb faces",
+          "TDCE worked-in tyre rubber"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 25 nodes across 25 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "apps/showcase-turbo-drift-circuit/assets/candidates/turboCircuitEnvironmentV2.candidate.glb",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-turbo-drift-circuit/scripts/build-circuit-environment-v2.py",
+        "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-turbo-drift-circuit/assets/candidates/turboCircuitEnvironmentV2.candidate.glb",
+        "license": "CC0-1.0",
+        "licenseName": "CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Aura3D contributors",
+        "sourceFamily": "aura3d-original",
+        "attribution": "Aura3D contributors — original CC0 Turbo Formula Circuit Environment V2",
+        "retrievedAt": "2026-09-01T03:30:00.000Z",
+        "evidence": [
+          "Generated from the committed route-local Blender source and aligned exactly to the certified 56-point, 3.6-width Formula centreline. It is renderer-owned, non-colliding visual set dressing; turboFormulaCircuit remains collision, route, gate, and lap authority."
+        ],
+        "checkedAt": "2026-09-01T03:30:00.000Z"
+      },
+      "sourcePath": "apps/showcase-turbo-drift-circuit/assets/candidates/turboCircuitEnvironmentV2.candidate.glb",
+      "outputPath": "public/aura-assets/turboCircuitEnvironmentV2.c9fdaf1e.glb",
+      "license": "CC0-1.0",
+      "author": "Aura3D contributors",
+      "boundsMetadata": {
+        "min": [
+          -22.879,
+          -0.27,
+          -26.916
+        ],
+        "max": [
+          20.702,
+          3.565,
+          19.659
+        ],
+        "size": [
+          43.581,
+          3.835,
+          46.575
+        ],
+        "center": [
+          -1.088,
+          1.648,
+          -3.629
+        ],
+        "maxDimension": 46.575,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "TDCE amber marshal lamps",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE asphalt aggregate variation",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE autumn foliage",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE barrier concrete",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE cyan marshal lamps",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE deep verge",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE galvanized rail steel",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE grandstand blue",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE grandstand coral",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE grandstand graphite",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE horizontal tyre walls",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE layered circuit asphalt",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE pine shadow",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE pine sun",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE pit operations glass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE pit warm concrete",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE race red kerb faces",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE race teal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE resurfaced asphalt patches",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE safety red",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE sunlit verge",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE tree bark",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE warm gravel runoff",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE warm white kerb faces",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "TDCE worked-in tyre rubber",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "TDCE amber marshal lamps",
+        "TDCE asphalt aggregate variation",
+        "TDCE autumn foliage",
+        "TDCE barrier concrete",
+        "TDCE cyan marshal lamps",
+        "TDCE deep verge",
+        "TDCE galvanized rail steel",
+        "TDCE grandstand blue",
+        "TDCE grandstand coral",
+        "TDCE grandstand graphite",
+        "TDCE horizontal tyre walls",
+        "TDCE layered circuit asphalt",
+        "TDCE pine shadow",
+        "TDCE pine sun",
+        "TDCE pit operations glass",
+        "TDCE pit warm concrete",
+        "TDCE race red kerb faces",
+        "TDCE race teal",
+        "TDCE resurfaced asphalt patches",
+        "TDCE safety red",
+        "TDCE sunlit verge",
+        "TDCE tree bark",
+        "TDCE warm gravel runoff",
+        "TDCE warm white kerb faces",
+        "TDCE worked-in tyre rubber"
+      ],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/turboCircuitEnvironmentV2.thumb.svg",
+      "quality": "candidate",
+      "role": "set-dressing",
+      "suitabilityReason": "Original CC0 +Y-up circuit visual derivative with layered asphalt, ground-conforming curb ribbons, runoff, Armco, horizontal tyre walls, grandstands, pit/timing complex, gantry, road wear, sculpted banks, and layered trees. No forward-axis, animation, texture, collision, physics, checkpoint, or lap claim. The hidden typed turboFormulaCircuit remains the sole gameplay topology and contact authority."
     },
   },
   "turboCountdownBlipSfx": {

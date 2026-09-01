@@ -38,11 +38,11 @@ The live route and `integratePath` consume the same `1/120` fixed integration qu
 
 ## Typed assets and audio
 
-- `assets.gravityPostMailPod` — release-validated typed primary courier ship, CC-BY-4.0, 박용진; retained root-safe probe bound to the current eight-texture ship hash.
+- `assets.gravityPostCourierSkiff` — original CC0 typed primary courier-skiff candidate with four grounded contact-drive pods, directional cockpit/drive lights, and an integrated guarded amber parcel with raised envelope badge. It remains candidate-quality until the exact route audition and hash-bound root probe pass.
 - `assets.gravityPostDockBeacon` — release-validated typed dock landmark, CC-BY-4.0, DjalalxJay; retained root-safe probe `392×142` pixels.
 - Ten typed CC0 cues are deterministically synthesized by `scripts/build-sfx.mjs`, registered by `scripts/register-sfx.mjs`, and played through four mixer buses. Launch, correction, assist, dock, rejection, loss, completion, warp, UI, and ambient cues originate from actual route state.
 
-The exact release deploy check passes for both models with current orientation and rendered-probe evidence. The heavy 44–115 MB ring auditions remain rejected and unused.
+The legacy mail-pod capital-ship silhouette is no longer used by the route. The replacement courier skiff must not be promoted from candidate to release until its exact action frame and hash-bound root probe pass. The heavy 44–115 MB ring auditions remain rejected and unused.
 
 ## Current evidence
 
@@ -67,7 +67,7 @@ pnpm --dir apps/showcase-gravity-post evidence:performance
 pnpm --dir apps/showcase-gravity-post evidence:route-health
 A3D_ROUTE_PRIMARY_IDS=showcase-gravity-post pnpm exec playwright test tests/browser/showcase-route-primary-probes.spec.ts
 pnpm --dir apps/showcase-gravity-post build
-pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostMailPod --asset gravityPostDockBeacon
+pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict
 pnpm typecheck
 ```
 

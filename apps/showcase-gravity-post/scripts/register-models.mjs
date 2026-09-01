@@ -59,8 +59,10 @@ const definitions = [
     sourceFamily: "aura3d-original",
     attribution: "Aura3D synthesis — original CC0 Gravity Post courier skiff",
     provenanceEvidence: "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the low courier chassis, cyan canopy and running rails, four grounded contact-drive pods and skids, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge. Route-local authored motion remains the sole gameplay owner.",
-    quality: "candidate",
-    suitability: "Original CC0 +Y-up, +Z-forward primary courier skiff candidate with a compact working-vehicle silhouette, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. The GLB carries no collider, dynamics, or animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative."
+    quality: "release",
+    renderedProbeJson: "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.json",
+    orientationJson: "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.orientation.json",
+    suitability: "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. Its intentionally untextured stylized flat-color solid materials use ten readable color-separated PBR groups and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative."
   }
 ];
 const requestedIds = new Set((process.env.AURA3D_MODEL_IDS ?? "").split(",").map((value) => value.trim()).filter(Boolean));
