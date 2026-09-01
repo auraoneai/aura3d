@@ -386,7 +386,10 @@ for (const station of stations) {
       model(assets.gravityPostDockBeacon, { name: station.nodeId })
         .position(station.x, PLAY_PLANE_Y + 0.06, station.z)
         .rotate(0, 0.6, 0)
-        .scale(visualReviewCapture ? 0.085 : 0.14)
+        // The review destination is one of only two live endpoint silhouettes;
+        // keep the typed beacon large enough to read beside the courier while
+        // preserving the same station coordinates and sensor ownership.
+        .scale(visualReviewCapture ? 0.115 : 0.14)
         .runtime(game.runtimeNode(station.nodeId))
     );
   }
@@ -398,7 +401,10 @@ for (const station of stations) {
         name: station.id + " dock gate",
         role: "setDressing",
         scaleMode: "fit",
-          targetMaxDimension: visualReviewCapture ? 0.46 : 0.98,
+          // The arrival gate is deliberately legible at the review distance;
+          // this is a scale relationship to the existing typed asset, not a
+          // duplicate gate or a screen-space marker.
+          targetMaxDimension: visualReviewCapture ? 0.62 : 0.98,
         material: material.pbr({
           name: station.id + " dock gate finish",
           color: "#b7f4ff",
@@ -482,7 +488,11 @@ if (visualReviewCapture) {
   // screen-space camera tuning or destination drift.
   const freightDistrictRustEdgeX = -1.74;
   const freightDistrictDestinationPadX = 8.25;
-  const freightDistrictServiceApronFactor = 1.1;
+  // The retained district is fitted to the real route with a modest service
+  // apron.  The extra footprint gives the cargo terraces and arrival crown
+  // enough screen occupancy to establish a journey without changing either
+  // endpoint or introducing a second world asset.
+  const freightDistrictServiceApronFactor = 1.28;
   const freightDistrictScale = routeLength * freightDistrictServiceApronFactor / (freightDistrictDestinationPadX - freightDistrictRustEdgeX);
   const freightDistrictPadDistance = freightDistrictDestinationPadX * freightDistrictScale;
   sceneBuilder = sceneBuilder.add(

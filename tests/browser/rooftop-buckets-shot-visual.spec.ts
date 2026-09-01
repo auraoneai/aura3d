@@ -60,7 +60,15 @@ function routeSourceBinding(): { readonly files: readonly string[]; readonly sha
 
 async function ready(page: Page): Promise<void> {
   await page.waitForFunction(
-    () => Boolean((window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: Evidence }).__ROOFTOP_BUCKETS_EVIDENCE__?.mounted),
+    () => {
+      const evidence = (window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: Evidence }).__ROOFTOP_BUCKETS_EVIDENCE__;
+      return Boolean(
+        evidence?.mounted
+        && evidence.renderer.drawCalls > 0
+        && evidence.renderer.renderSize[0] > 0
+        && evidence.renderer.renderSize[1] > 0
+      );
+    },
     undefined,
     { timeout: 180_000 }
   );
@@ -91,26 +99,38 @@ async function canvasData(page: Page): Promise<string> {
   return page.evaluate(() => document.querySelector("canvas")?.toDataURL("image/png") ?? "");
 }
 
-function glbJson(path: string): { readonly nodes?: readonly { readonly name?: string }[]; readonly animations?: readonly { readonly name?: string; readonly channels?: readonly unknown[] }[] } {
+function glbJson(path: string): {
+  readonly nodes?: readonly { readonly name?: string }[];
+  readonly animations?: readonly { readonly name?: string; readonly channels?: readonly unknown[] }[];
+  readonly skins?: readonly { readonly joints?: readonly unknown[] }[];
+  readonly asset?: { readonly extras?: { readonly aura3d?: { readonly authoredClips?: readonly string[]; readonly role?: string } } };
+} {
   const buffer = readFileSync(resolve(path));
   expect(buffer.subarray(0, 4).toString("utf8")).toBe("glTF");
   const jsonLength = buffer.readUInt32LE(12);
   return JSON.parse(buffer.subarray(20, 20 + jsonLength).toString("utf8"));
 }
 
-test("typed athlete GLBs preserve static sports silhouettes and no embedded basketball", () => {
-  const root = "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31";
-  const shooterPath = `${root}/objaverse-04acc673e1b848c6a0c68c87e054ebf4/basketball-scorer-ball-free.glb`;
-  const defenderPath = `${root}/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-defender-derived.glb`;
+test("production athlete GLBs preserve textured humanoid skins, authored clips, and no embedded basketball", () => {
+  const shooterPath = "apps/showcase-rooftop-buckets/assets/models/rooftopLayupScorer.glb";
+  const defenderPath = "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb";
   const shooter = glbJson(shooterPath);
   const defender = glbJson(defenderPath);
-  expect(sha256(shooterPath)).toBe("6201dc878534a34c1c66d36c7e390552ce09b5d0b5ec2eb32c791b9f3b146431");
-  expect(sha256(defenderPath)).toBe("c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8");
+  expect(sha256(shooterPath)).toBe("03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a");
+  expect(sha256(defenderPath)).toBe("6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b");
+  expect(shooter.skins).toHaveLength(1);
+  expect(defender.skins).toHaveLength(1);
+  expect(shooter.skins?.[0]?.joints?.length ?? 0).toBeGreaterThanOrEqual(100);
+  expect(defender.skins?.[0]?.joints?.length ?? 0).toBeGreaterThanOrEqual(100);
+  expect(shooter.animations?.map((clip) => clip.name)).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
+  expect(defender.animations?.map((clip) => clip.name)).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
+  expect(shooter.asset?.extras?.aura3d).toMatchObject({ role: "shooter", authoredClips: ["Ready", "Load", "Release", "FollowThrough"] });
+  expect(defender.asset?.extras?.aura3d).toMatchObject({ role: "defender", authoredClips: ["Plant", "Telegraph", "Jump", "Contest"] });
   for (const athlete of [shooter, defender]) {
     const names = athlete.nodes?.map((node) => node.name ?? "") ?? [];
-    expect(names.length).toBeGreaterThanOrEqual(9);
+    expect(names.length).toBeGreaterThanOrEqual(200);
     expect(names.some((name) => /basketball/i.test(name))).toBe(false);
-    expect(athlete.animations ?? []).toEqual([]);
+    expect(athlete.animations?.every((clip) => (clip.channels?.length ?? 0) > 0)).toBe(true);
   }
 });
 
@@ -162,8 +182,8 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     expect(activeShot.shooterBodyCompression).toBe(0);
     expect(activeShot.contestReactionActive).toBe(true);
     expect(activeShot.defenderReach).toBeGreaterThan(0.24);
-    expect(activeShot.shooterClips).toEqual([]);
-    expect(activeShot.defenderClips).toEqual([]);
+    expect(activeShot.shooterClips).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
+    expect(activeShot.defenderClips).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
     await capture(page, "release-desktop.png");
     expect(await canvasData(page)).not.toBe(initialCanvas);
 

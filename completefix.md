@@ -11,11 +11,132 @@ browser test, or an old audit row. A route is complete only when the final
 source-bound artifact passes the route's machine gates and a fresh, independent,
 label-hidden, pixel-only critic explicitly returns `ours`.
 
+## Critical visual correction — 2026-09-01
+
+The previous Mech Hangar `ours` verdict is revoked. It reviewed only the arena
+KO artifact and did not review the route's default hangar/build state. Direct
+human inspection of the deployed default state shows an unacceptable result:
+the supposed mech reads as disconnected black/white slabs, its chassis, arms,
+legs, and weapon do not form a coherent silhouette, the turntable contact is
+unclear, and the nearly black hangar provides no useful depth or presentation.
+A route cannot pass by hiding a broken primary state behind one curated arena
+frame.
+
+Mech Hangar is therefore unresolved and joins the active production queue. The
+strict accepted count is **11**, and the strict unresolved count is **6**:
+
+- Turbo Drift Circuit;
+- Gravity Post;
+- Pulse Tunnel;
+- Gallery Shift;
+- Rooftop Buckets;
+- Mech Hangar.
+
+Mech Hangar's root causes are already source-visible:
+
+- `apps/showcase-mech-hangar/scripts/build-models.mjs` synthesizes the primary
+  named mech from boxes, tapered boxes, and eight-sided cylinders. Typed files
+  and CC0 provenance do not make this production-quality character art.
+- `apps/showcase-mech-hangar/src/main.ts` applies one route-wide metallic
+  material override to every selected part, erasing the authored armor/frame/
+  glow separation and producing harsh near-black and blown-out facets under the
+  current safe renderer and light rig.
+- `apps/showcase-mech-hangar/src/assembly.ts` validates socket metadata, but the
+  resulting rigid offsets do not visually prove a connected shoulder, hip,
+  foot, or hand assembly. Schema validity is not silhouette validity.
+- The default hangar camera, black backdrop, empty floor, and weak contact
+  treatment fail to frame the build as a readable customization product.
+- The existing browser tests prove mounting, swaps, stat changes, and gameplay;
+  they do not assert connected silhouette quality, material separation, subject
+  occupancy, grounding, or default-state visual acceptance.
+
+Required Mech Hangar correction lane:
+
+1. Add a default-hangar artifact to the mandatory visual gauntlet. The named
+   producer must capture the initial build and at least one materially different
+   valid swap, bind both artifacts to all route source and asset hashes, and
+   fail if either primary state is visually broken.
+2. Replace the synthesized box/cylinder MH-2M family as the primary subject with
+   a coherent, license-clean, typed, release-probed modular mech family whose
+   sockets, scale, forward axis, materials, and bounds are verified. Do not
+   repaint or further elaborate the current procedural family.
+3. Preserve distinct authored materials. Do not flatten every mesh into one
+   metallic override. Prove armor, frame, joints, emissive identity, and weapon
+   separation through root-only rendered pixels before integrating them into
+   the showcase.
+4. Add visual assembly checks for connected shoulders/arms, pelvis/legs,
+   planted feet, weapon-to-hand contact, coherent silhouette, non-cropped
+   subject occupancy, and turntable grounding. Metadata validation alone is
+   insufficient.
+5. Rebuild the hangar presentation around readable three-point lighting,
+   visible environment depth, controlled contrast, a clear contact shadow, and
+   a camera that makes the assembled mech the dominant subject. DOM remains UI
+   only.
+6. Re-run the route's build, arena, mobile, reduced-motion, performance,
+   deployment, route-health, and exact visual producers. Then obtain separate
+   fresh label-hidden reviews for the default hangar and arena action states.
+   Mech Hangar returns to `ours` only if both states win; an arena-only win does
+   not close the route.
+
+This correction is authoritative over every later historical paragraph or
+table row in this file that still calls Mech Hangar accepted or says only five
+games remain. Those statements are retained solely as execution history and
+must not be used as current status.
+
 Mandatory execution method: run different games through parallel agents at the
 same time whenever their files and producers do not overlap. The coordinating
 agent must keep multiple route lanes active, immediately reuse freed capacity,
 and must not collapse this goal into a serial loop on Turbo Drift or any other
 single game while independent unfinished routes remain.
+
+## Current execution receipt — 2026-09-01T13:51Z
+
+This is the current coordinator receipt for the active goal. It supersedes
+older receipt paragraphs below for status purposes; older rows remain history
+only. Parallel route work was used for the structural lanes and a separate
+label-hidden critic was run for the repaired Rooftop artifact.
+
+The Rooftop orientation defect is fixed in the named producer. The venue was
+authored directly in Blender as +Y-up/+Z-forward, but the previous
+`export_yup=True` conversion swapped its Y/Z axes and exported the court slab
+as a near-vertical wall. `scripts/build-production-art.py` now exports only
+the venue with `export_yup=False`; athlete exports retain their source
+conversion. The corrected typed world is
+`rooftopCourt.33262736.glb` (`sha256-332627363b17a85fdb6f34aa1f397c2451cd3844f14856186873bfeff34b7bf8`),
+with a hash-bound browser probe. The current exact producer now captures a
+populated court, hoop, ball arc, bleachers, and typed athletes:
+
+- `opening-desktop.png` — `sha256-695672e6f5c021de9816f1710a4608cef8d54b0586242b0a26f27f72a83f9ad9`;
+- `release-desktop.png` — `sha256-7bce6570bf0691bbab23de838df93aaf93a1f550bec7bae1c1bbce2c68829769`;
+- route-primary PNG — `sha256-cedce9ae3275b7ff047e39dccbeef06f76586bf6b3109cb7dd92b4914181e19a`.
+
+Rooftop’s current producer receipts are fresh and machine-green: exact visual
+`2/2`, playable `2/2`, asset probe `1/1`, performance (`149` observed draw
+calls, `0.002 ms` CPU p95), strict deploy (`6` models, zero warnings), route
+primary pass, and route health `machinePass: true`. Its fresh independent
+pixel-only critic still returned `reference`: the current court and athletes
+are readable but remain flatter, less detailed, and less strongly lit than
+Dunk Lords. The route is therefore not promoted.
+
+### Strict six-route disposition after this pass
+
+These are the only routes still unresolved under the authoritative correction
+at the top of this file. Machine-green evidence does not close a visual row:
+
+| Route | Current exact / critic status | Remaining blocker |
+| --- | --- | --- |
+| Turbo Drift Circuit | Typecheck/build/focused gameplay gates pass; exact route-primary remains visually invalid and no blind critic is counted | The active frame still reads as a flat grey asphalt field with a fragmented low/right hero, absent rival, sparse scenery, and weak corner/track depth. A real continuous world/vehicle action composition is required; do not continue blind camera tweaking. |
+| Gravity Post | Fresh exact `campaign-complete.png` (`sha256-dfba2770ecef63636a1247d4589d117562469ecbfbc9798f081a580b62863eaf`); blind critic `reference` | Courier and destination are legible, but the freight world is static, sparse, and materially simpler than Parcel Corps. The next input must be a purpose-built typed freight-world asset, not another primitive gate repetition. |
+| Pulse Tunnel | Fresh exact `playable-finale.png` (`sha256-6998b55c1a8afced310b851ae0faa164cccc08557dea1efd33647f30cdd06d98`); latest blind comparison is not a win (`insufficient evidence`) | The scene/comparator pairing does not establish a defensible premium combat match; the player/boss remain small and the arena/projectile exchange is under-resolved. Require a purpose-built encounter world and combatant/effect family. |
+| Gallery Shift | Fresh route-primary (`sha256-dd30e98012a4efed5e554ba5b92a1aa57ce31608bed6804d7206df66f0f0ac9a`); blind critic `reference` | Museum rooms, actor silhouettes, LOS/action staging, lighting, and material depth remain sparse and ambiguous beside Monaco. The remaining input is higher-fidelity world/character art, not another lighting or label pass. |
+| Rooftop Buckets | Fresh exact release (`sha256-7bce6570bf0691bbab23de838df93aaf93a1f550bec7bae1c1bbce2c68829769`); fresh blind critic `reference` | The orientation/capture failure is fixed, but the stylized venue and two athletes still trail Dunk Lords in authored detail, contrast, and integrated effects. Freeze camera/trajectory work; the remaining input is a higher-fidelity registered character/venue package. |
+| Mech Hangar | Correct default (`sha256-fbf198e67cc89f169ed1fb01163242761cac66660659cf470c26ddfc12296ac7`) and HUD-visible arena (`sha256-a39a1a1ebf494b8ed51554f1259f5d66db47d1ade068b767e6b7cf5f7ea9f1ec`) reviews are individually `ours`, and machine gates pass | The authoritative correction explicitly revoked the old arena-only promotion. The synthesized MH-2M box/cylinder family still has to be replaced by a coherent license-clean typed modular mech, with material separation and visual connected-assembly checks proving the default hangar and a valid swap. Until that lane is done, Mech remains unresolved. |
+
+The strict count is still **11 accepted / 6 unresolved**. No current receipt
+claims the 18-route visual gauntlet is complete. The next coordinator action
+after this receipt is release verification, followed by a scoped commit/push
+and Vercel deployment of the current source; deployment must preserve these
+six honest holds.
 
 This file is an execution prompt, not permission to rewrite repository history.
 Preserve the user's worktree and follow every constraint below.
@@ -2446,3 +2567,29 @@ family, richer authored museum treatment, explicit real patrol/objective
 visualization, and integrated HUD. Pulse V6 through V10 remain rejected and
 unregistered; the next valid work is deeper authored arena/material/light and
 combat-effect integration, not another procedural or camera loop.
+
+## 2026-09-01 current release-gate checkpoint
+
+The post-fix full unit run is green: `pnpm test:unit` completed with 494/494
+test files and 3,729/3,729 tests passing. The stale racing-spec expectation was
+updated after the Turbo circuit provenance repair made its strict deploy check
+pass; the test now retains only the two honest visual-review blockers.
+
+The subsequent `pnpm verify:release:quick` run used release run ID
+`release-2026-09-01T16-10-30-716Z-oibiy4` and passed typecheck, build, unit,
+integration, performance, engine-comparison, architecture, boundaries, exports,
+shaders, visual, imports, package-size, source-cleanliness, demo-validation,
+docs-consistency, docs-version, claims, and requirements-trace generation. It
+remains a partial release gate for explicit, non-fabricated reasons:
+
+- `clean-checkout` reports the intentionally dirty worktree;
+- `threejs-parity` and `superiority` still require accepted human visual
+  comparison evidence; and
+- the dependent `trace` row plus clean-checkout/final-requirements-trace
+  freshness statuses therefore remain non-green.
+
+The current exact evidence remains bound to the six unresolved routes listed at
+the top of this file. No machine-green route-health, browser, deploy, or
+performance result is being promoted to a visual `ours` verdict. The next
+receipt entry will record the scoped commit, remote push, and Vercel deployment
+result after those operations complete.

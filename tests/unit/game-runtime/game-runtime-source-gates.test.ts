@@ -1429,7 +1429,7 @@ describe("game runtime source gates", () => {
     expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
     expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
     expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');
-    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-13267017b53fa669f7b91121570f3f8965f363441387c29e1a83c5e3fbb5926f"');
+    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd"');
     expect(skylineMain).toContain("sceneBinding: platformerScene.evidence");
     expect(skylineMain).toContain("surfaceContact: platformerScene.contactPointForPlayer(state.player)");
     expect(skylineMain).toContain("surfaceContactAlignment: playerSurfaceAlignment()");
@@ -1469,10 +1469,10 @@ describe("game runtime source gates", () => {
     expect(turboMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
     expect(turboMain).not.toContain('"source": "asset-mesh-extracted"');
     // The certified track hash belongs in the generated contract, never inlined in route
-    // source. Turbo now binds showcaseTsukubaCircuit.
-    expect(turboMain).not.toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+    // source. Turbo now binds turboFormulaCircuit.
+    expect(turboMain).not.toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
     expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
-    expect(turboGeometry).toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+    expect(turboGeometry).toContain("sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a");
     expect(turboMain).toContain("sceneBinding: racingScene.evidence");
     expect(turboMain).toContain("checkpointScenePoints: racingScene.checkpointScenePoints");
     expect(turboMain).toContain("roadAlignment: roadAlignmentForSnapshot");

@@ -4,7 +4,7 @@ export const gameGeometryContract = {
   "routeId": "showcase-skyline-runner",
   "category": "platformer",
   "geometrySource": "asset-mesh-extracted",
-  "sourceReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+  "sourceReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
   "surfaceMap": {
     "assetId": "showcaseKenneyVerdantPlatformerWorld",
     "assetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
@@ -2263,9 +2263,9 @@ export const gameGeometryContract = {
     "maxY": 3.5140000000000002
   },
   "evidence": {
-    "geometryReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "geometryReport": "tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "routePrimaryScreenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d"
+    "routePrimaryScreenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef"
   },
   "design": {
     "minPlayableSeconds": 30,
@@ -2510,7 +2510,7 @@ export const gameGeometryContract = {
     "characterWorldScaleCompatible": true,
     "styleCompatible": true,
     "primitivePrimaryWorldRejected": true,
-    "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "assetPairEvidence": {
       "category": "platformer",
       "assets": [
@@ -2519,14 +2519,14 @@ export const gameGeometryContract = {
       ],
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
       "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-      "screenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
+      "screenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
       "geometryEvidence": {
         "category": "platformer",
         "kind": "platformer-playable-surface-map",
         "source": "asset-mesh-extracted",
-        "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+        "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-        "routePrimaryScreenshotSha256": "sha256-415334fe7cd1412c9884a4bc6b0f2b986805007043e68a36ca80e54240773f8d",
+        "routePrimaryScreenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
         "assets": [
           {
             "id": "showcaseKenneyOobiPlatformerHero",
@@ -2542,7 +2542,7 @@ export const gameGeometryContract = {
       "checks": [
         {
           "id": "binding-overlap",
-          "verdict": "fail"
+          "verdict": "pass"
         },
         {
           "id": "contact",
@@ -2561,11 +2561,9 @@ export const gameGeometryContract = {
           "verdict": "pass"
         }
       ],
-      "verdict": "fail",
+      "verdict": "pass",
       "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
-      "blockers": [
-        "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface"
-      ]
+      "blockers": []
     }
   }
 } as const;

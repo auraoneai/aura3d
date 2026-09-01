@@ -166,6 +166,11 @@ export const CONSTANT_CATEGORIES = Object.freeze({
     // The *input* depth of the world plane. Consumers read the resolved value back from the binding.
     "WORLD_PLANE_DEPTH", "GAMEPLAY_ACTOR_DEPTH", "opponentTargetMaxDimension", "CONTACT_CLEARANCE", "chaseSmoothing", "chaseFov",
     "raceLapsToWin", "SIGNAGE_TEXT_SIZE", "TRACK_PROP_MAX_SPEED_SCENE", "TELEGRAPH_SECONDS",
+    // Turbo's certified route and drift presentation choices are intentional
+    // design inputs, not stale asset dimensions. The track width is consumed by
+    // the route-bound racing kit; plume count and review backdrop distance tune
+    // the visible feedback family.
+    "FORMULA_ASPHALT_WIDTH", "VISUAL_DRIFT_PLUME_COUNT", "reviewBackdropDistance", "HEADING_CORRECTION_GAIN",
     "PUNCH_DURATION", "SHARD_LIFETIME", "SHARD_SPEED_MIN", "SHARD_SPEED_MAX", "ATTRACT_IDLE_SECONDS", "DEFAULT_WINDOW_SECONDS"
   ],
   /**

@@ -508,9 +508,19 @@ async function stageGalleryShiftPrimaryMoment(page: Page): Promise<void> {
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const guard = gallery.__GALLERY_SHIFT_EVIDENCE__?.guardStates?.find((sample) => sample.id === "guard-1");
       if (!guard) break;
+      // Keep the real LOS intercept inside the museum's central lane while
+      // leaving a full body-width between the typed guard and infiltrator.
+      // Three metres was mechanically valid but projected both actors into a
+      // single silhouette in the oblique review lens; 3.3m plus a small
+      // cone-axis offset preserves separation while the review camera centres
+      // the foyer encounter.
+      const forwardX = Math.sin(guard.yaw);
+      const forwardZ = Math.cos(guard.yaw);
+      const lateralX = Math.cos(guard.yaw);
+      const lateralZ = -Math.sin(guard.yaw);
       gallery.__GS_TELEPORT__?.(
-        guard.x + Math.sin(guard.yaw) * 3,
-        guard.z + Math.cos(guard.yaw) * 3,
+        guard.x + forwardX * 3.3 + lateralX * 0.78,
+        guard.z + forwardZ * 3.3 + lateralZ * 0.78,
         true
       );
       gallery.__GS_PUMP__?.(5);

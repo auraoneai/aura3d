@@ -11,7 +11,10 @@
  * so the center must remain an unobstructed, readable depth channel. The
  * district is an open terraced causeway rather than a wall-lined trench:
  * broad lit aprons and low cargo terraces keep the route continuous without
- * merging into near-black masses behind the courier.
+ * merging into near-black masses behind the courier.  The intermediate
+ * skyline bays below are deliberately structural: they give the route a
+ * readable sequence of loading gantries and depth cues while remaining part
+ * of the same seven merged meshes and never touching gameplay state.
  */
 import { geometry, material, type AuraSceneNode, type AuraRootVec3 } from "@aura3d/engine";
 
@@ -166,6 +169,24 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
     }
   }
 
+  // Four offset gantry bays establish a freight-city cadence along the real
+  // Rust -> Gale vector.  They sit outside the courier channel, alternate
+  // sides, and expose a rising/descending skyline in the oblique review lens.
+  // This is authored environment geometry (not a screen-space route overlay),
+  // merged into the existing structural/window meshes to preserve the low-draw
+  // asset contract.
+  for (const [progress, lateral, height, width] of [
+    [0.16, 1.68, 0.68, 0.48],
+    [0.36, -1.72, 0.82, 0.56],
+    [0.57, 1.76, 0.92, 0.62],
+    [0.78, -1.7, 0.74, 0.52]
+  ] as const) {
+    const side = lateral < 0 ? -1 : 1;
+    appendBox(structure, point(progress, lateral, input.playPlaneY + height / 2 - 0.02), [length * 0.06, height, width], tangent, cross);
+    appendBox(structure, point(progress, lateral + side * 0.24, input.playPlaneY + height - 0.06), [length * 0.17, 0.1, 0.1], tangent, cross);
+    appendBox(windows, point(progress, lateral - side * 0.05, input.playPlaneY + height * 0.62), [length * 0.035, 0.13, width * 0.56], tangent, cross);
+  }
+
   // Continuous shoulder ribbons make the terraced bays read as one district.
   // They sit below the courier rather than rising into opaque side walls.
   for (const side of [-1, 1] as const) {
@@ -183,13 +204,13 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
   // Gale is a joined arrival apron, not an isolated ring: the causeway widens
   // into two low wings and a bright crown. Three modest skyline pylons sit
   // behind it, retaining depth without enclosing the objective in black mass.
-  appendBox(structure, point(1.02, 0, input.playPlaneY + 0.13), [0.92, 0.26, 2.74], tangent, cross);
-  appendBox(cladding, point(1.04, 0, input.playPlaneY + 0.29), [0.72, 0.12, 2.5], tangent, cross);
-  appendArch(structure, point(1.02, 0, input.playPlaneY), tangent, cross, 2.18, input.playPlaneY + 0.12, 0.92, 0.2, 0.16);
-  appendBox(windows, point(1.03, -1.08, input.playPlaneY + 0.35), [0.48, 0.18, 0.026], tangent, cross);
-  appendBox(windows, point(1.03, 1.08, input.playPlaneY + 0.35), [0.48, 0.18, 0.026], tangent, cross);
-  appendBox(signals, point(1.0, 0, input.playPlaneY + 0.96), [0.32, 0.07, 1.82], tangent, cross);
-  for (const [progress, lateral, height, width] of [[1.25, -1.72, 0.92, 0.48], [1.34, 0, 1.18, 0.64], [1.25, 1.72, 0.84, 0.46]] as const) {
+  appendBox(structure, point(1.02, 0, input.playPlaneY + 0.13), [0.92, 0.26, 3.18], tangent, cross);
+  appendBox(cladding, point(1.04, 0, input.playPlaneY + 0.29), [0.72, 0.12, 2.92], tangent, cross);
+  appendArch(structure, point(1.02, 0, input.playPlaneY), tangent, cross, 2.78, input.playPlaneY + 0.12, 1.12, 0.2, 0.16);
+  appendBox(windows, point(1.03, -1.28, input.playPlaneY + 0.35), [0.48, 0.18, 0.026], tangent, cross);
+  appendBox(windows, point(1.03, 1.28, input.playPlaneY + 0.35), [0.48, 0.18, 0.026], tangent, cross);
+  appendBox(signals, point(1.0, 0, input.playPlaneY + 1.12), [0.32, 0.07, 2.24], tangent, cross);
+  for (const [progress, lateral, height, width] of [[1.25, -2.02, 1.02, 0.56], [1.34, 0, 1.38, 0.72], [1.25, 2.02, 0.94, 0.54]] as const) {
     appendBox(horizon, point(progress, lateral, input.playPlaneY + height / 2), [0.42, height, width], tangent, cross);
     appendBox(windows, point(progress - 0.04, lateral + (lateral === 0 ? 0.01 : Math.sign(lateral) * -0.2), input.playPlaneY + height * 0.7), [0.16, 0.1, 0.026], tangent, cross);
   }

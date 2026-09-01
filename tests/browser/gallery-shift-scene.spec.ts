@@ -175,7 +175,18 @@ test("gallery shift hall renders, patrols walk, cones overlay, and the review se
         const ev = (window as unknown as { __GALLERY_SHIFT_EVIDENCE__?: GSEvidence }).__GALLERY_SHIFT_EVIDENCE__;
         const guard = ev?.guardStates?.[0];
         if (!guard) return { x: -8.5, z: 1.5 };
-        return { x: guard.x + Math.sin(guard.yaw) * 3, z: guard.z + Math.cos(guard.yaw) * 3 };
+        // Offset the target one body-width across the cone axis as well as
+        // down its forward ray. This remains inside the real 90-degree cone,
+        // but avoids projecting the two typed actors into one screen-space
+        // silhouette when the patrol is aligned with the oblique camera.
+        const forwardX = Math.sin(guard.yaw);
+        const forwardZ = Math.cos(guard.yaw);
+        const lateralX = Math.cos(guard.yaw);
+        const lateralZ = -Math.sin(guard.yaw);
+        return {
+          x: guard.x + forwardX * 3.3 + lateralX * 0.78,
+          z: guard.z + forwardZ * 3.3 + lateralZ * 0.78
+        };
       });
       await teleport(page, intercept.x, intercept.z, true);
       await pump(page, 5);

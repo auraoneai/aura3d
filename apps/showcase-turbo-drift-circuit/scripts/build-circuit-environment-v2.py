@@ -148,6 +148,13 @@ PIT_WALL = material("TDCE pit warm concrete", (0.56, 0.52, 0.43, 1), 0.05, 0.78)
 PIT_GLASS = material("TDCE pit operations glass", (0.025, 0.14, 0.19, 1), 0.35, 0.29)
 LIGHT_CYAN = material("TDCE cyan marshal lamps", (0.04, 0.34, 0.38, 1), 0.15, 0.32, (0.05, 0.95, 1.0), 3.2)
 LIGHT_AMBER = material("TDCE amber marshal lamps", (0.55, 0.2, 0.025, 1), 0.1, 0.38, (1.0, 0.35, 0.04), 3.4)
+# The V2 pass had a flat outfield and only small sinusoidal road height.  These
+# materials belong to the authored elevation pass: broad terrain forms and
+# retaining faces sit outside the certified asphalt, giving the camera a real
+# valley/ridge silhouette without changing the collision/topology asset.
+RIDGE_SHADOW = material("TDCE ridge shadow", (0.045, 0.105, 0.085, 1), 0.0, 0.98)
+RIDGE_SUN = material("TDCE ridge sun", (0.14, 0.255, 0.15, 1), 0.0, 0.96)
+TERRACE_ROCK = material("TDCE terrace rock", (0.29, 0.30, 0.26, 1), 0.03, 0.9)
 
 
 def at(x: float, road_z: float, height: float) -> tuple[float, float, float]:
@@ -263,6 +270,21 @@ def strip_mesh(
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
     return track(bpy.data.objects.new(name, mesh), mat, name)
+
+
+def terrain_mesh(
+    name: str,
+    vertices: list[tuple[float, float, float]],
+    faces: list[tuple[int, ...]],
+    mat: bpy.types.Material,
+) -> bpy.types.Object:
+    """Create a closed, non-colliding terrain form in the Blender Z-up frame."""
+    mesh = bpy.data.meshes.new(name + " mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    return track(obj, mat, name)
 
 
 def link(obj: bpy.types.Object) -> bpy.types.Object:
@@ -464,6 +486,116 @@ def make_trees_and_banks() -> None:
         conifer(f"infield tree {serial}", x, z, 1.55 + (serial % 3) * 0.28, warm=serial == 3)
 
 
+def make_elevated_terraces() -> None:
+    """Raise the outside shoulders into authored, camera-readable terrain.
+
+    The certified road remains the exact 3.6-unit centreline ribbon.  Each
+    terrace starts outside the run-off envelope and rises away from the lane;
+    it therefore cannot cover a tyre or alter contact while still producing
+    genuine cross-section elevation in the renderer-owned environment.
+    """
+    # A short, alternating set of terraces keeps the circuit legible rather than
+    # turning the venue into a continuous wall. Heights vary by corner so the
+    # camera reads an actual valley/ridge profile.
+    zones = (
+        (2, 12, 1, 0.46),
+        (15, 25, -1, 0.34),
+        (30, 41, 1, 0.52),
+        (45, 54, -1, 0.38),
+    )
+    # Keep the first vertex beyond the authored run-off and the whole rise
+    # below the surrounding conifer canopy.  This gives the camera a readable
+    # shoulder profile without putting a wall across the road or the rival.
+    inner_lateral = ROAD_WIDTH / 2 + KERB_WIDTH + RUNOFF_WIDTH * 1.05
+    terrace_width = 1.85
+    ground_height = -0.27
+    for start, stop, side, height in zones:
+        samples = []
+        for index in range(start, stop + 1):
+            inner = road_sample(index % len(LINE), side * inner_lateral, 0.045)
+            outer = road_sample(index % len(LINE), side * (inner_lateral + terrace_width), height)
+            # Store Blender XYZ directly.  `at` handles the Aura Y/Z convention
+            # at the one boundary where raw route coordinates enter geometry.
+            samples.append((at(inner[0], inner[1], inner[2]), at(outer[0], outer[1], outer[2])))
+        vertices: list[tuple[float, float, float]] = []
+        for inner, outer in samples:
+            # ``inner``/``outer`` are already Blender-frame tuples returned by
+            # ``at``.  Keep their X/Y footprint for the skirt and only lower Z;
+            # applying ``at`` a second time would mirror Y across the circuit
+            # and create a wall spanning the entire venue.
+            vertices.extend([
+                inner,
+                outer,
+                (inner[0], inner[1], ground_height),
+                (outer[0], outer[1], ground_height),
+            ])
+        faces: list[tuple[int, ...]] = []
+        for index in range(len(samples) - 1):
+            base = index * 4
+            next_base = (index + 1) * 4
+            # top, outer slope, and both closed skirts
+            faces.extend([
+                (base, next_base, next_base + 1, base + 1),
+                (base + 1, next_base + 1, next_base + 3, base + 3),
+                (base + 2, next_base + 2, next_base, base),
+                (base + 2, base + 3, next_base + 3, next_base + 2),
+            ])
+        terrain_mesh(f"elevated outside terrace {start}-{stop}", vertices, faces, RIDGE_SUN if side > 0 else RIDGE_SHADOW)
+        # A low retaining face at the toe creates a physical-looking edge under
+        # the grass slope and keeps the terrain silhouette from reading as a
+        # floating patch in the review frame. It stays below 0.2 units so the
+        # road, curb and rival remain the visual authority in the chase lens.
+        for index in range(start, stop, 2):
+            x, z = offset(index, side * (inner_lateral + terrace_width + 0.06))
+            nx, nz, yaw = tangent(index)
+            box(
+                f"terrace retaining face {start}-{index}",
+                at(x, z, ground_height + height * 0.18),
+                (0.16, 0.5, max(0.25, height * 0.48)),
+                TERRACE_ROCK,
+                rotation_z=-yaw,
+                edge=0.035,
+            )
+
+
+def make_mountain_ridges() -> None:
+    """Build distant faceted ridges for genuine vertical venue depth.
+
+    These are broad, low-poly terrain silhouettes rather than a sky card. They
+    live beyond the circuit's 6.7-unit road/run-off envelope and are tagged as
+    renderer-owned set dressing, so they cannot enter gameplay queries.
+    """
+    ridges = (
+        # (centre x, centre road-z, width, depth, peak height, material)
+        (-1.0, 19.0, 22.0, 4.8, 1.55, RIDGE_SHADOW),
+        (20.5, 7.0, 7.0, 18.0, 1.28, RIDGE_SUN),
+        (-20.5, 1.0, 6.0, 16.0, 1.42, RIDGE_SHADOW),
+        (1.5, -19.0, 25.0, 4.4, 1.36, RIDGE_SUN),
+    )
+    for serial, (cx, cz, width, depth, peak, ridge_material) in enumerate(ridges):
+        half_w = width / 2
+        half_d = depth / 2
+        # A faceted ridge has two visible slopes and a grounded base.  Add a
+        # couple of off-centre peaks so the horizon does not read as one box.
+        peak_a = (cx - width * 0.17, cz, peak)
+        peak_b = (cx + width * 0.18, cz - depth * 0.08, peak * 0.76)
+        points = [
+            at(cx - half_w, cz - half_d, ground_height := -0.27),
+            at(cx + half_w, cz - half_d, ground_height),
+            at(cx + half_w, cz + half_d, ground_height),
+            at(cx - half_w, cz + half_d, ground_height),
+            at(*peak_a),
+            at(*peak_b),
+        ]
+        # Two shallow terraces behind the main silhouette make the ridge read
+        # as layered terrain when the camera swings through the bend.
+        faces = [
+            (0, 1, 5), (0, 5, 4), (1, 2, 5), (2, 3, 4, 5),
+            (3, 0, 4), (0, 3, 2, 1),
+        ]
+        terrain_mesh(f"distant alpine ridge {serial}", points, faces, ridge_material)
+
+
 def make_marshal_posts() -> None:
     for serial, (index, side) in enumerate(((10, -1), (23, 1), (34, -1), (48, 1))):
         x, z = offset(index, side * (ROAD_WIDTH / 2 + KERB_WIDTH + RUNOFF_WIDTH + 1.15))
@@ -507,6 +639,7 @@ def export() -> None:
     make_grandstand("north grandstand", 43, 1, rows=4)
     make_pit_complex()
     make_trees_and_banks()
+    make_elevated_terraces()
     make_marshal_posts()
     join_material_groups()
     OUT_DIR.mkdir(parents=True, exist_ok=True)

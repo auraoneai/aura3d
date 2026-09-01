@@ -37,6 +37,12 @@ function walkSourceFiles(root: string): string[] {
       // inputs. They may name raw upstream model URLs so the CLI can validate
       // and generate typed route assets; they are not shipped visual source.
       if (current !== absoluteRoot && current.endsWith(`${join("", "scripts")}`)) return;
+      // Candidate and art-review folders are also pipeline-only inputs. They
+      // contain acquisition previews and rejected art options, never shipped
+      // route source; scanning them as public examples turns an intentional
+      // review URL into a false boundary violation.
+      const directoryName = current.split(/[\\/]/).at(-1) ?? "";
+      if (current !== absoluteRoot && ["art-candidates", "art-review", ".candidate-assets"].includes(directoryName)) return;
       for (const entry of readdirSync(current)) visit(join(current, entry));
       return;
     }

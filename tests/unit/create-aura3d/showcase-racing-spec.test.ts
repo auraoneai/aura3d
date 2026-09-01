@@ -70,6 +70,7 @@ describe("showcase racing spec compiler", () => {
 
   it("generates a racing route from typed assets and public root imports only when the race design is coherent", () => {
     const baseSpec = readTurboCircuitSpec();
+    const racingIdentity = readRacingFixtureIdentity(baseSpec);
     const primaryAssets = baseSpec.primaryAssets.map((asset) => asset.id === baseSpec.racing.trackAsset
       ? omitAssetPolicy(asset)
       : asset);
@@ -87,12 +88,13 @@ describe("showcase racing spec compiler", () => {
     const geometryEvidence = createPassingRacingGeometryEvidence(
       trackTopologyEvidencePath,
       routePrimaryScreenshotPath,
-      screenshotSha256
+      screenshotSha256,
+      racingIdentity
     );
     writeFileSync(routePrimaryScreenshotPath, screenshotBytes);
     writeFileSync(
       trackTopologyEvidencePath,
-      `${JSON.stringify(createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath), null, 2)}\n`
+      `${JSON.stringify(createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath, racingIdentity), null, 2)}\n`
     );
     writeFileSync(gameplayProofPath, `${JSON.stringify(createPassingRacingGameplayProof(routePrimaryScreenshotPath), null, 2)}\n`);
     writeFileSync(routePrimaryProbePath, `${JSON.stringify(createPassingRoutePrimaryProbe("showcaseCc0FormulaRaceCar", routePrimaryScreenshotPath, screenshotSha256), null, 2)}\n`);
@@ -103,8 +105,8 @@ describe("showcase racing spec compiler", () => {
       screenshotSha256,
       geometryReport: trackTopologyEvidencePath,
       geometrySource: "asset-mesh-extracted",
-      geometryAssetId: "showcaseTsukubaCircuit",
-      geometryAssetHash: geometryEvidence.assets[1].hash,
+      geometryAssetId: racingIdentity.trackAsset,
+      geometryAssetHash: racingIdentity.trackHash,
       assets: geometryEvidence.assets
     }), null, 2)}\n`);
     writeFileSync(deployEvidencePath, `${JSON.stringify({
@@ -127,11 +129,7 @@ describe("showcase racing spec compiler", () => {
             ...baseSpec.racing.raceDesign,
             visibleTrackTopology: "mesh-road-topology",
             trackTopologyEvidence: trackTopologyEvidencePath,
-            assetPairEvidence: createPassingAssetPairEvidence("racing", [
-              "showcaseCc0FormulaRaceCar",
-              "showcaseCcByFormulaOpponent",
-              "showcaseTsukubaCircuit"
-            ], routePrimaryScreenshotPath, routePrimaryProbePath, screenshotSha256, geometryEvidence)
+            assetPairEvidence: createPassingAssetPairEvidence("racing", primaryAssets.map((asset) => asset.id), routePrimaryScreenshotPath, routePrimaryProbePath, screenshotSha256, geometryEvidence)
           }
         },
         evidence: {
@@ -151,7 +149,7 @@ describe("showcase racing spec compiler", () => {
       const source = readFileSync(join(outputDir, "src", "main.ts"), "utf8");
       expect(source).toContain("import { createAuraApp, game, lights, model, scene } from \"@aura3d/engine\";");
       expect(source).toContain("model(assets.showcaseCc0FormulaRaceCar");
-      expect(source).toContain("model(assets.showcaseTsukubaCircuit");
+      expect(source).toContain("model(assets.turboFormulaCircuit");
       expect(source).toContain("name: \"racing-bound-track-asset\"");
       expect(source).toContain("targetMaxDimension: racingScene.trackModel.targetMaxDimension");
       expect(source).toContain(".position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation)");
@@ -173,7 +171,7 @@ describe("showcase racing spec compiler", () => {
       expect(source).not.toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
       const geometryContract = readFileSync(join(outputDir, "src", "generated", "game-geometry.ts"), "utf8");
       expect(geometryContract).toContain('\"schema\": \"aura3d-game-geometry-contract/1.0\"');
-      expect(geometryContract).toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+      expect(geometryContract).toContain(racingIdentity.trackHash);
       expect(report.generatedFiles).toContain("src/generated/game-geometry.ts");
       expect(report.geometryContract).toMatchObject({
         module: "src/generated/game-geometry.ts",
@@ -192,7 +190,7 @@ describe("showcase racing spec compiler", () => {
       expect(source).toContain("routeAlignedToVisibleTrack: true");
       expect(source).toContain("noDebugLocatorDisk: true");
       expect(source).toContain("visibleGameGeometrySource: \"topology-bound-game-circuit\"");
-      expect(source).toContain("trackAssetUsedForTopologyEvidence: \"showcaseTsukubaCircuit\"");
+      expect(source).toContain("trackAssetUsedForTopologyEvidence: \"turboFormulaCircuit\"");
       expect(source).toContain("Object.defineProperty(window, \"__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__\"");
       expect(source).toContain("controls: {");
       expect(source).toContain("systems: {");
@@ -209,7 +207,7 @@ describe("showcase racing spec compiler", () => {
       const routeHealth = JSON.parse(readFileSync(join(outputDir, "route-health.json"), "utf8"));
       expect(routeHealth.racing).toMatchObject({
         vehicleAsset: "showcaseCc0FormulaRaceCar",
-        trackAsset: "showcaseTsukubaCircuit",
+        trackAsset: "turboFormulaCircuit",
         gameplayRequirements: ["throttle", "steering", "reset", "checkpoint", "lap", "multi-lap"],
         raceDesign: {
           minCheckpoints: 6,
@@ -253,6 +251,7 @@ describe("showcase racing spec compiler", () => {
 
   it("does not require authored anchor pairs for mesh-extracted racing topology evidence", () => {
     const baseSpec = readTurboCircuitSpec();
+    const racingIdentity = readRacingFixtureIdentity(baseSpec);
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-racing-spec-"));
     const proofDir = `tests/reports/showcase-racing-spec-unit-${process.pid}-${Date.now()}-single-anchor`;
     mkdirSync(proofDir, { recursive: true });
@@ -261,7 +260,7 @@ describe("showcase racing spec compiler", () => {
     writeFileSync(routePrimaryScreenshotPath, onePixelPng());
     writeFileSync(
       topologyEvidencePath,
-      `${JSON.stringify(withoutRacingAnchorPairs(createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath)), null, 2)}\n`
+      `${JSON.stringify(withoutRacingAnchorPairs(createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath, racingIdentity)), null, 2)}\n`
     );
 
     try {
@@ -290,7 +289,7 @@ describe("showcase racing spec compiler", () => {
         pass: true,
         topologySource: "mesh-road-topology",
         topology: {
-          assetId: "showcaseTsukubaCircuit",
+          assetId: racingIdentity.trackAsset,
           source: "asset-mesh-extracted"
         },
         meshExtraction: {
@@ -614,6 +613,35 @@ function createPassingCompositionReport(input: {
   } as const;
 }
 
+function defaultRacingFixtureIdentity(): RacingFixtureIdentity {
+  return {
+    vehicleAsset: "showcaseCc0FormulaRaceCar",
+    opponentAsset: "showcaseCcByFormulaOpponent",
+    trackAsset: "showcaseTsukubaCircuit",
+    trackHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+  };
+}
+
+function readRacingFixtureIdentity(
+  spec: ShowcaseSpec & { readonly racing: NonNullable<ShowcaseSpec["racing"]> }
+): RacingFixtureIdentity {
+  const opponentAsset = spec.primaryAssets.find((asset) => asset.role === "vehicle" && asset.id !== spec.racing.vehicleAsset)?.id;
+  if (!opponentAsset) throw new Error("Turbo fixture is missing its racing opponent asset");
+  const manifest = JSON.parse(readFileSync("aura.assets.json", "utf8")) as {
+    readonly assets?: readonly { readonly id?: unknown; readonly hash?: unknown }[];
+  };
+  const track = manifest.assets?.find((asset) => asset.id === spec.racing.trackAsset);
+  if (typeof track?.hash !== "string" || !track.hash.startsWith("sha256-")) {
+    throw new Error(`Turbo fixture manifest is missing a hash for ${spec.racing.trackAsset}`);
+  }
+  return {
+    vehicleAsset: spec.racing.vehicleAsset,
+    opponentAsset,
+    trackAsset: spec.racing.trackAsset,
+    trackHash: track.hash
+  };
+}
+
 function createPassingAssetPairEvidence(
   category: "racing",
   assets: readonly string[],
@@ -635,10 +663,18 @@ function createPassingAssetPairEvidence(
   } as const;
 }
 
+interface RacingFixtureIdentity {
+  readonly vehicleAsset: string;
+  readonly opponentAsset: string;
+  readonly trackAsset: string;
+  readonly trackHash: string;
+}
+
 function createPassingRacingGeometryEvidence(
   report: string,
   screenshotEvidence: string,
-  routePrimaryScreenshotSha256: string
+  routePrimaryScreenshotSha256: string,
+  identity: RacingFixtureIdentity = defaultRacingFixtureIdentity()
 ) {
   return {
     category: "racing",
@@ -649,34 +685,37 @@ function createPassingRacingGeometryEvidence(
     routePrimaryScreenshotSha256,
     assets: [
       {
-        id: "showcaseCc0FormulaRaceCar",
+        id: identity.vehicleAsset,
         hash: "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3"
       },
       {
-        id: "showcaseCcByFormulaOpponent",
+        id: identity.opponentAsset,
         hash: "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958"
       },
       {
-        id: "showcaseTsukubaCircuit",
-        hash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+        id: identity.trackAsset,
+        hash: identity.trackHash
       }
     ]
   } as const;
 }
 
-function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: string) {
+function createPassingRacingTrackTopologyEvidence(
+  routePrimaryScreenshotPath: string,
+  identity: RacingFixtureIdentity = defaultRacingFixtureIdentity()
+) {
   return {
     schema: "aura3d-racing-track-topology/1.0",
     routeId: "showcase-turbo-drift-circuit",
     generatedBy: "showcase-spec-compiler",
     topologySource: "mesh-road-topology",
     templateCapabilityStatus: "mesh-road-topology-proven",
-    vehicleAsset: "showcaseCc0FormulaRaceCar",
-    trackAsset: "showcaseTsukubaCircuit",
-    assetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    vehicleAsset: identity.vehicleAsset,
+    trackAsset: identity.trackAsset,
+    assetHash: identity.trackHash,
     topology: {
-      assetId: "showcaseTsukubaCircuit",
-      assetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+      assetId: identity.trackAsset,
+      assetHash: identity.trackHash,
       source: "asset-mesh-extracted",
       roadCenterline: [
         { x: -1.72, z: 0.76, width: 0.18 },
@@ -734,8 +773,8 @@ function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: st
         }
       },
       evidence: {
-        sourceAsset: "assets.showcaseTsukubaCircuit",
-        renderedProbe: "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+        sourceAsset: `assets.${identity.trackAsset}`,
+        renderedProbe: `tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/${identity.trackAsset}.png`,
         routeOverlay: routePrimaryScreenshotPath,
         notes: "Unit fixture for hash-bound topology validation."
       }
@@ -744,9 +783,9 @@ function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: st
       kind: "aura-game-asset-bound-racing-route",
       layoutContractVersion: "1.0",
       generatedFrom: "mesh-derived-track-topology",
-      vehicleAsset: "showcaseCc0FormulaRaceCar",
-      trackAsset: "showcaseTsukubaCircuit",
-      trackAssetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+      vehicleAsset: identity.vehicleAsset,
+      trackAsset: identity.trackAsset,
+      trackAssetHash: identity.trackHash,
       topologySource: "asset-mesh-extracted",
       confidence: 0.74,
       routeLength: 8.742,

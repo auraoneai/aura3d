@@ -466,7 +466,7 @@ describe("showcase route gate registry", () => {
       ["showcase-turbo-drift-circuit", {
         category: "racing",
         hero: "showcaseCc0FormulaRaceCar",
-        secondary: ["showcaseCcByFormulaOpponent", "showcaseTsukubaCircuit"]
+        secondary: ["showcaseCcByFormulaOpponent", "turboFormulaCircuit"]
       }],
       ["showcase-skyline-runner", {
         category: "platformer",
@@ -700,7 +700,7 @@ describe("showcase route gate registry", () => {
       "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
       "release-game-geometry-asset-hash-mismatch:showcaseCc0FormulaRaceCar",
       "release-game-geometry-asset-hash-mismatch:showcaseCcByFormulaOpponent",
-      "release-game-geometry-asset-hash-mismatch:showcaseTsukubaCircuit"
+      "release-game-geometry-asset-hash-mismatch:turboFormulaCircuit"
     ]));
 
     const manifestHashes = readManifestAssetHashes();
@@ -1081,7 +1081,7 @@ describe("showcase route gate registry", () => {
     });
 
     expect(context.routePrimaryHeroAsset).toBe("showcaseCc0FormulaRaceCar");
-    expect(context.secondaryPrimaryAssets).toEqual(["showcaseCcByFormulaOpponent", "showcaseTsukubaCircuit"]);
+    expect(context.secondaryPrimaryAssets).toEqual(["showcaseCcByFormulaOpponent", "turboFormulaCircuit"]);
     expect(result).toMatchObject({ ok: true, required: true, failures: [] });
 
     const missingHero = cloneRecord(evidence);
@@ -1090,7 +1090,7 @@ describe("showcase route gate registry", () => {
     missingSecondary.secondaryPrimaryAssets = [];
     const secondaryWithHeroMode = cloneRecord(evidence);
     const primaryAssets = secondaryWithHeroMode.primaryAssets as Array<Record<string, unknown>>;
-    const secondary = primaryAssets.find((asset) => asset.id === "showcaseTsukubaCircuit");
+    const secondary = primaryAssets.find((asset) => asset.id === "turboFormulaCircuit");
     if (secondary) secondary.evidenceMode = "route-primary-foreground";
 
     expect(module.validateRoutePrimaryProbeEvidenceRecord(route, missingHero, {
@@ -1104,7 +1104,7 @@ describe("showcase route gate registry", () => {
     expect(module.validateRoutePrimaryProbeEvidenceRecord(route, secondaryWithHeroMode, {
       root: process.cwd(),
       requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^secondary-primary-evidence-mode:showcaseTsukubaCircuit:/)]));
+    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^secondary-primary-evidence-mode:turboFormulaCircuit:/)]));
   });
 
   it("fails stale or missing route-primary probe evidence", async () => {

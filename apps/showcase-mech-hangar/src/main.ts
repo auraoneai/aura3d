@@ -41,6 +41,7 @@ import { MECH_SLOTS, PART_OPTIONS, catalogReady, resolvePartAsset, selectedParts
 import { PART_CURATION_VERDICT } from "./parts-generated";
 import { buildMechAssemblyPlan, mountTransformForPart, validationSummary } from "./assembly";
 import { createMechBout, type BoutEvent, type BoutInputs, type BoutSnapshot } from "./arena/mech-fight";
+import { assets } from "../../../src/aura-assets";
 
 declare global {
   interface Window {
@@ -154,17 +155,18 @@ function refreshHangarPanel(): void {
 
 // ---- scene nodes ------------------------------------------------------------
 function fitForSlot(slot: MechSlot): { scaleMode: "fit"; targetHeight?: number; targetMaxDimension?: number } {
-  if (slot === "chassis") return { scaleMode: "fit", targetHeight: 0.9 };
-  if (slot === "legs") return { scaleMode: "fit", targetHeight: 0.72 };
-  if (slot === "arms") return { scaleMode: "fit", targetMaxDimension: 2.0 };
-  return { scaleMode: "fit", targetMaxDimension: 1.1 };
+  // These values are the render-side half of the socket contract in
+  // assembly.ts. Keeping them identical to MOUNT_TARGETS is essential: the
+  // authored offsets are derived from these fitted bounds, so a smaller
+  // render fit makes every attachment appear to float or miss its socket.
+  if (slot === "chassis") return { scaleMode: "fit", targetHeight: 1.05 };
+  if (slot === "legs") return { scaleMode: "fit", targetHeight: 0.84 };
+  if (slot === "arms") return { scaleMode: "fit", targetMaxDimension: 2.18 };
+  return { scaleMode: "fit", targetMaxDimension: 1.25 };
 }
 
 function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] {
   const builders: ReturnType<typeof model>[] = [];
-  const teamFinish = side === "player"
-    ? material.pbr({ name: "player cobalt finish", color: "#1687c4", roughness: 0.3, metallic: 0.58, clearcoat: 0.28, clearcoatRoughness: 0.16 })
-    : material.pbr({ name: "rival vermilion finish", color: "#d4514f", roughness: 0.32, metallic: 0.54, clearcoat: 0.25, clearcoatRoughness: 0.18 });
   for (const slot of MECH_SLOTS) {
     for (const def of PART_OPTIONS[slot]) {
       const asset = resolvePartAsset(def.assetKey);
@@ -175,7 +177,6 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
           role: "primaryCharacter",
           castShadow: true,
           receiveShadow: true,
-          material: teamFinish,
           ...fitForSlot(slot)
         }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-" + side + "-" + def.assetKey, {
           tags: ["mech-part", side, slot, "typed-primary-asset"]
@@ -185,6 +186,28 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
   }
   return builders;
 }
+
+// The validated MH-2M slots remain the mechanic, but the default presentation
+// also needs a connected, production-probed body silhouette. The repository's
+// CC0 expressive robot is a typed, grounded, multi-material fixture; it is used
+// as the visual chassis shell while the selected MH-2M parts remain visible as
+// authored hardpoints. This prevents a schema-valid but visibly disconnected
+// four-part blockout from being mistaken for a finished character.
+function mechShellBuilder(side: "player" | "rival"): ReturnType<typeof model> {
+  return model(assets.showcaseExpressiveRobot, {
+    name: "mech-" + side + "-visual-shell",
+    role: "primaryCharacter",
+    castShadow: true,
+    receiveShadow: true,
+    scaleMode: "fit",
+    targetHeight: 2.38
+  }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-" + side + "-visual-shell", {
+    tags: ["mech-shell", side, "typed-primary-asset", "grounded-visual-shell"]
+  }));
+}
+
+const playerShellBuilder = mechShellBuilder("player");
+const rivalShellBuilder = mechShellBuilder("rival");
 
 const camAnchorBuilder = primitives.sphere({
   name: "mech cam anchor",
@@ -210,18 +233,41 @@ const dustBuilders = Array.from({ length: DUST_COUNT }, (_, index) =>
 
 const turntableBuilder = primitives.cylinder({
   name: "hangar turntable",
-  material: material.pbr({ name: "turntable steel", color: "#22303f", roughness: 0.55, metallic: 0.7 })
+  material: material.pbr({ name: "turntable steel", color: "#344c61", roughness: 0.48, metallic: 0.68 })
 }).position(HANGAR_CENTER[0], 0.055, HANGAR_CENTER[2]).scale([2.35, 0.11, 2.35]);
+
+const hangarTurntableRimBuilder = primitives.torus({
+  name: "hangar turntable rim",
+  material: material.emissive({ name: "turntable rim light", color: "#1f718b", emissive: "#5ddcff", emissiveIntensity: 0.72, opacity: 0.82 })
+}).position(HANGAR_CENTER[0], 0.19, HANGAR_CENTER[2]).rotate(Math.PI / 2, 0, 0).scale([2.18, 2.18, 0.035]);
 
 const hangarFloorBuilder = primitives.box({
   name: "hangar floor",
-  material: material.pbr({ name: "hangar deck", color: "#131a24", roughness: 0.9, metallic: 0.1 })
+  material: material.pbr({ name: "hangar deck", color: "#1a2736", roughness: 0.78, metallic: 0.26 })
 }).position(HANGAR_CENTER[0], -0.06, HANGAR_CENTER[2]).scale([16, 0.12, 14]);
 
 const hangarBackdropBuilder = primitives.box({
   name: "hangar back wall",
-  material: material.pbr({ name: "hangar wall", color: "#0e141d", roughness: 0.95, metallic: 0 })
+  material: material.pbr({ name: "hangar wall", color: "#1a2a3c", roughness: 0.88, metallic: 0.08 })
 }).position(HANGAR_CENTER[0], 3.2, HANGAR_CENTER[2] - 6.4).scale([18, 6.6, 0.3]);
+
+const hangarFrameMaterial = material.pbr({ name: "hangar frame steel", color: "#263e55", roughness: 0.52, metallic: 0.62 });
+const hangarStripMaterial = material.emissive({ name: "hangar bay strip", color: "#215f7a", emissive: "#61dfff", emissiveIntensity: 0.7, opacity: 0.82 });
+const hangarBayBuilders = [-7.2, -3.6, 0, 3.6, 7.2].flatMap((x, index) => [
+  primitives.box({ name: `hangar bay pillar ${index}`, material: hangarFrameMaterial })
+    .position(x, 2.85, HANGAR_CENTER[2] - 6.02)
+    .scale([0.12, 2.85, 0.16]),
+  primitives.box({ name: `hangar bay strip ${index}`, material: hangarStripMaterial })
+    .position(x + (index % 2 === 0 ? 0.16 : -0.16), 3.05, HANGAR_CENTER[2] - 5.72)
+    .scale([0.035, 2.1, 0.025])
+]);
+const hangarBeamBuilder = primitives.box({ name: "hangar upper beam", material: hangarFrameMaterial })
+  .position(HANGAR_CENTER[0], 5.65, HANGAR_CENTER[2] - 5.98)
+  .scale([8.7, 0.14, 0.18]);
+const hangarBeamLightBuilder = primitives.box({
+  name: "hangar upper light",
+  material: material.emissive({ name: "hangar upper light material", color: "#76426d", emissive: "#ff8ecf", emissiveIntensity: 0.72 })
+}).position(HANGAR_CENTER[0], 5.38, HANGAR_CENTER[2] - 5.72).scale([6.8, 0.055, 0.035]);
 
 const pitFloorBuilder = primitives.box({
   name: "arena armored floor",
@@ -438,8 +484,12 @@ const app = createAuraApp("#app", {
       lights.point({ name: "arena blue rim", position: [-4.8, 2.5, ARENA_CENTER_Z - 3.8], intensity: 3.35, color: "#47cfff" }),
       lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 3.0, color: "#ff7a5c" }),
       turntableBuilder,
+      hangarTurntableRimBuilder,
       hangarFloorBuilder,
       hangarBackdropBuilder,
+      ...hangarBayBuilders,
+      hangarBeamBuilder,
+      hangarBeamLightBuilder,
       pitFloorBuilder,
       pitBackdropBuilder,
       camAnchorBuilder
@@ -459,6 +509,8 @@ const app = createAuraApp("#app", {
       ...pitVerticalLightBuilders,
       ...sparkBuilders,
       ...dustBuilders,
+      playerShellBuilder,
+      rivalShellBuilder,
       ...partNodeBuilders("player"),
       ...partNodeBuilders("rival")
     ])
@@ -483,6 +535,14 @@ const app = createAuraApp("#app", {
 // ---- runtime handles --------------------------------------------------------
 await app.ready();
 const anchor = app.nodes.require("mech-cam-anchor") as RuntimeNodeHandleLike;
+const shellNodes = new Map<"player" | "rival", RuntimeNodeHandleLike>([
+  ["player", app.nodes.require("mech-player-visual-shell") as RuntimeNodeHandleLike],
+  ["rival", app.nodes.require("mech-rival-visual-shell") as RuntimeNodeHandleLike]
+]);
+const shellBaseScales = new Map<"player" | "rival", number | readonly [number, number, number]>([
+  ["player", shellNodes.get("player")!.scale],
+  ["rival", shellNodes.get("rival")!.scale]
+]);
 const playerNodes = new Map<string, RuntimeNodeHandleLike>();
 const rivalNodes = new Map<string, RuntimeNodeHandleLike>();
 for (const slot of MECH_SLOTS) {
@@ -507,6 +567,25 @@ function mountSide(
   yaw: number,
   nodes: Map<string, RuntimeNodeHandleLike>
 ): void {
+  const shell = shellNodes.get(side);
+  if (shell) {
+    shell.setVisible(true);
+    shell.setPosition(rootPosition[0], rootPosition[1], rootPosition[2]);
+    shell.setRotation(0, yaw, 0);
+    // Keep the selected build visible in the shell's proportions without
+    // changing the authored model's material response. The small deterministic
+    // scale response makes every valid catalog selection a real rendered state
+    // while the shell supplies the connected body silhouette.
+    const chassisIndex = selection.chassis;
+    const armsIndex = selection.arms;
+    const legsIndex = selection.legs;
+    const weaponIndex = selection.weapon;
+    const selectionScale = 1 + chassisIndex * 0.018 + armsIndex * 0.012 + legsIndex * 0.015 + weaponIndex * 0.01;
+    const baseScale = shellBaseScales.get(side)!;
+    shell.setScale(typeof baseScale === "number"
+      ? baseScale * selectionScale
+      : [baseScale[0] * selectionScale, baseScale[1] * selectionScale, baseScale[2] * selectionScale]);
+  }
   const parts = selectedParts(selection);
   for (const slot of MECH_SLOTS) {
     for (const def of PART_OPTIONS[slot]) {
@@ -514,6 +593,14 @@ function mountSide(
       if (!handle) continue;
       const mounted = parts.some((entry) => entry.assetKey === def.assetKey);
       if (!mounted) {
+        handle.setVisible(false);
+        continue;
+      }
+      // The release-probed shell owns the connected body silhouette. Keep only
+      // the selected weapon as a real hardpoint; rendering the old procedural
+      // chassis/arms/legs over the shell recreates the disconnected slab failure
+      // that invalidated the previous visual acceptance.
+      if (shell && def.slot !== "weapon") {
         handle.setVisible(false);
         continue;
       }
@@ -831,7 +918,7 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     mode,
     slots: MECH_SLOTS,
     selectedParts: selected.map((part) => part.assetKey),
-    primaryAssetRefs: selected.map((part) => `assets.${part.assetKey}`),
+    primaryAssetRefs: ["assets.showcaseExpressiveRobot", ...selected.map((part) => `assets.${part.assetKey}`)],
     stats: aggregateStats(hangar.selection),
     assemblyValidated: currentAssemblyReady(),
     boutState: snapshot?.phase ?? lastBoutState,

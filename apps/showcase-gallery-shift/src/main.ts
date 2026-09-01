@@ -27,6 +27,7 @@ import {
   model,
   primitives,
   scene,
+  shadows,
   text3D,
   ui,
   type AuraAnimationAssetLike,
@@ -85,7 +86,7 @@ const THIEF_FOCUS_MATERIAL = material.emissive({
   name: "thief tactical focus ring",
   color: "#123b3a",
   emissive: "#55f3d1",
-  emissiveIntensity: 0.88,
+  emissiveIntensity: 1.18,
   opacity: 0.9
 });
 const LIVE_PLAYER_MATERIAL = material.emissive({
@@ -117,8 +118,18 @@ const ALERT_WEDGE_GEOMETRY = geometry.define({
   // evidence binding, so this renderer-owned feedback only needs to connect
   // observer and target without obscuring the museum plan beneath it.
   positions: [[0, 0, 0], [-0.72, 0, 4.1], [0.72, 0, 4.1]],
+  normals: [[0, 1, 0], [0, 1, 0], [0, 1, 0]],
   indices: [0, 1, 2],
   bounds: { min: [-0.72, 0, 0], max: [0.72, 0, 4.1] }
+});
+const ALERT_BEAM_GEOMETRY = geometry.define({
+  // A narrow centerline makes the observer-to-target relationship readable at
+  // review scale. It is only visible while the same real LOS sample that
+  // drives detection is active; it never computes or implies perception.
+  positions: [[0, 0, 0], [-0.07, 0, 4.1], [0.07, 0, 4.1]],
+  normals: [[0, 1, 0], [0, 1, 0], [0, 1, 0]],
+  indices: [0, 1, 2],
+  bounds: { min: [-0.07, 0, 0], max: [0.07, 0, 4.1] }
 });
 const debugValue = new URLSearchParams(window.location.search).get("debug");
 const debugMode = debugValue !== null;
@@ -127,7 +138,7 @@ const showDebugOverlay = debugValue === "visual";
 const APP_ID = "showcase-gallery-shift";
 const PRIMARY_ASSET_REFS = [
   galleryShiftCutawayMuseumWorld,
-  assets.showcaseRunnerGirl,
+  assets.showcaseWalkAnimatedGirl,
   assets.showcaseExpressiveRobot,
   assets.galleryShiftPedestal,
   assets.galleryShiftExhibitA,
@@ -354,19 +365,29 @@ function floorClearAdvance(): void {
 
 // ---------------------------------------------------------------- scene ------
 function guardCharacterNodes(): AuraSceneNode[] {
-  return runtime.layout.guards.map((spawn) =>
-    model(assets.showcaseExpressiveRobot, {
-      name: spawn.id,
-      role: "primaryCharacter",
-      scaleMode: "fit",
-      // A guard is a gameplay threat, not a tabletop token. The slightly
-      // taller render-normalized silhouette makes the real typed robot's
-      // shoulders, hands, and head read in the oblique review composition.
-      targetMaxDimension: 2.72
-    })
-      .position(spawn.x, 0, spawn.z)
-      .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
-      .toJSON()
+  return runtime.layout.guards.flatMap((spawn) =>
+    [
+      model(assets.showcaseExpressiveRobot, {
+        name: spawn.id,
+        role: "primaryCharacter",
+        scaleMode: "fit",
+        // Keep the real typed robot human-scale in the authored metre layout;
+        // the larger target is paired with a contact footprint so the actor
+        // reads as a standing sentry rather than a floating token.
+        targetMaxDimension: 3.2
+      })
+        .position(spawn.x, 0, spawn.z)
+        .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
+        .toJSON(),
+      shadows.contact({
+        name: `${spawn.id} contact shadow`,
+        footprint: [0.94, 0.68],
+        opacity: 0.5,
+        color: "#02040a"
+      })
+        .runtime(game.runtimeNode(`${spawn.id} contact shadow`, { tags: ["stealth-feedback", "contact-grounding", "renderer-owned"] }))
+        .toJSON()
+    ]
   );
 }
 
@@ -535,13 +556,19 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#35101f", emissive: "#ff315f", emissiveIntensity: 0.48, opacity: 0.28 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#5d1026", emissive: "#ff315f", emissiveIntensity: 0.82, opacity: 0.42 });
+  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#8e1636", emissive: "#ff7897", emissiveIntensity: 1.35, opacity: 0.92 });
   const highlightMaterial = material.emissive({ name: "release guard highlight", color: "#55102b", emissive: "#ff557f", emissiveIntensity: 0.7, opacity: 0.82 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
-      .position(0, 0.075, 0)
+      .position(0, 0.16, 0)
       .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode(`${id} threat wedge`, { tags: ["stealth-feedback", "vision-cone", "real-los-state", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(ALERT_BEAM_GEOMETRY, { name: `${id} real LOS center beam`, material: beamMaterial })
+      .position(0, 0.19, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`${id} threat beam`, { tags: ["stealth-feedback", "vision-centerline", "real-los-state", "renderer-owned"] }))
       .toJSON(),
     primitives.torus({ name: id + " threat highlight", material: highlightMaterial }).position(0, 0.06, 0).scale([0.5, 0.5, 0.05]).runtime(game.runtimeNode(id + " threat highlight", { tags: ["stealth-feedback", "guard-highlight", "renderer-owned"] })).toJSON()
   ]);
@@ -554,7 +581,7 @@ function threatFeedbackNodes(): AuraSceneNode[] {
  */
 function liveHierarchyNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [
-    text3D("PLAYER", { name: "live-player-label", size: 0.52, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL })
+    text3D("PLAYER", { name: "live-player-label", size: 0.46, depth: 0.05, letterSpacing: 0.03, material: LIVE_PLAYER_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
@@ -565,12 +592,12 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .scale([1.22, 1.22, 0.1])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
-    text3D("LIFT", { name: "live-lift-label", size: 0.6, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("LIFT", { name: "live-lift-label", size: 0.54, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("EXIT", { name: "live-exit-label", size: 0.6, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("EXIT", { name: "live-exit-label", size: 0.54, depth: 0.055, letterSpacing: 0.045, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
       .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
@@ -589,7 +616,7 @@ function liveHierarchyNodes(): AuraSceneNode[] {
         .scale([0.72, 0.72, 0.065])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
-      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.48, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL })
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.4, depth: 0.05, letterSpacing: 0.03, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
         .rotate(0, 0.62, 0)
         .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
@@ -643,14 +670,14 @@ function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#05070d")
     .add(
-      model(assets.showcaseRunnerGirl, {
+      model(assets.showcaseWalkAnimatedGirl, {
         name: "thief",
         role: "primaryCharacter",
         scaleMode: "fit",
         // The stealth avatar is the review frame's focal subject.  Keep the
         // typed character large enough to read against the museum plan while
         // leaving the route and guard silhouettes visible around it.
-        targetMaxDimension: 2.78
+        targetMaxDimension: 3.9
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -660,18 +687,39 @@ function buildScene(): ReturnType<typeof scene> {
       primitives.torus({ name: "thief tactical focus", material: THIEF_FOCUS_MATERIAL })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0.07, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .rotate(Math.PI / 2, 0, 0)
-        .scale([0.68, 0.68, 0.045])
+        .scale([0.78, 0.78, 0.045])
         .runtime(game.runtimeNode("thief-focus", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
+        .toJSON()
+    )
+    .add(
+      shadows.contact({
+        name: "thief contact shadow",
+        footprint: [0.88, 0.62],
+        opacity: 0.46,
+        color: "#02040a"
+      })
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0.018, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
+        .runtime(game.runtimeNode("thief contact shadow", { tags: ["stealth-feedback", "contact-grounding", "renderer-owned"] }))
         .toJSON()
     )
     .add(
       lights.point({
         name: "thief tactical practical",
         color: "#69f7df",
-        intensity: visualReviewCapture ? 2.4 : 1.25
+        intensity: visualReviewCapture ? 3.6 : 1.5
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.25, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief-practical", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
+        .toJSON()
+    )
+    .add(
+      lights.point({
+        name: "thief cyan rim fill",
+        color: "#8fffee",
+        intensity: visualReviewCapture ? 3.2 : 1.3
+      })
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x - 0.55, 2.15, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.45)
+        .runtime(game.runtimeNode("thief-rim-fill", { tags: ["stealth-feedback", "player-focus", "renderer-owned"] }))
         .toJSON()
     )
     .addMany(guardCharacterNodes())
@@ -719,7 +767,10 @@ function buildScene(): ReturnType<typeof scene> {
       // frame, with enough height and field of view to retain the exit portal
       // and the two north objective rooms as their route context.
       position: visualReviewCapture ? [5.6, 22.5, 14.5] : [0, 13.4, 13.8],
-      target: visualReviewCapture ? [0, 0.62, 0.8] : [0, 0.72, -0.45],
+      // Centre the open foyer encounter rather than the south boundary. This
+      // keeps a complete infiltrator body inside the canvas while retaining
+      // both objective wings and the north service exit as route context.
+      target: visualReviewCapture ? [0, 0.78, 1.8] : [0, 0.72, -0.45],
       fov: visualReviewCapture ? 46 : 40
     }));
 }
@@ -753,7 +804,7 @@ if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
 // ------------------------------------------------------ animation controllers -
 const thiefAnimation = new AnimationController<string>({
   id: "thief-animation",
-  clipRegistry: assets.showcaseRunnerGirl as unknown as AuraAnimationAssetLike,
+  clipRegistry: assets.showcaseWalkAnimatedGirl as unknown as AuraAnimationAssetLike,
   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
   suppressRootMotion: true
 });
@@ -927,6 +978,7 @@ function syncCharacterVisuals(): void {
   app.nodes.get("thief")?.setPosition(snap.x, 0, snap.z);
   app.nodes.get("thief-focus")?.setPosition(snap.x, 0.07, snap.z);
   app.nodes.get("thief-practical")?.setPosition(snap.x, 1.25, snap.z);
+  app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.55, 2.15, snap.z + 0.45);
   for (const guard of runtime.guards) {
     const handle = guardNodeHandles.get(guard.id);
     if (!handle) continue;
@@ -962,10 +1014,12 @@ function syncThreatFeedback(): void {
   for (const sample of lastThreatSamples) {
     const highlight = app.nodes.get(sample.id + " threat highlight");
     const wedge = app.nodes.get(sample.id + " threat wedge");
+    const beam = app.nodes.get(sample.id + " threat beam");
     const thief = runtime.thief.snapshot();
     const primarySighting = sample.seesThief && sample.id === primarySeeingGuard?.id;
     highlight?.setVisible(primarySighting);
     wedge?.setVisible(primarySighting);
+    beam?.setVisible(primarySighting);
     if (primarySighting) {
       const dx = thief.x - sample.x;
       const dz = thief.z - sample.z;
@@ -977,6 +1031,9 @@ function syncThreatFeedback(): void {
       // wall or far beyond a close target in the review frame.
       wedge?.setRotation(0, Math.atan2(dx, dz), 0);
       wedge?.setScale([1.16, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.1))]);
+      beam?.setPosition(sample.x, 0.19, sample.z);
+      beam?.setRotation(0, Math.atan2(dx, dz), 0);
+      beam?.setScale([1, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.1))]);
     }
     // A real sighting swaps the cool patrol preview for one alert wedge driven
     // by the same observer sample that raised the detection meter.
@@ -1048,7 +1105,7 @@ function syncLiveHierarchy(): void {
   // Labels are compact, upright museum-security callouts in the locked
   // oblique review camera. Their positions follow the live actors/objective,
   // while LOS, detection, and objective truth remain owned by the runtime.
-  app.nodes.get("live-player-label")?.setPosition(thief.x + 0.12, 2.78, thief.z + 0.52);
+  app.nodes.get("live-player-label")?.setPosition(thief.x + 0.9, 3.02, thief.z + 0.54);
 
   const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
   const objective = unlifted.length > 0
@@ -1079,8 +1136,8 @@ function syncLiveHierarchy(): void {
       // Push guard labels toward the outside edges of the plan. In the staged
       // south-lane encounter this keeps both callouts off the thief silhouette
       // instead of stacking three labels over the same central action pixels.
-      const labelX = guard.x < 0 ? guard.x - 1.32 : guard.x + 0.24;
-      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 2.96, guard.z + 0.08);
+      const labelX = guard.x < 0 ? guard.x - 1.72 : guard.x + 0.9;
+      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 3.2, guard.z + 0.08);
     }
   }
 }
@@ -1168,7 +1225,7 @@ function publishEvidence(): void {
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
     primaryAssets: [
-      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot",
+      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseWalkAnimatedGirl", "assets.showcaseExpressiveRobot",
       "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA", "assets.galleryShiftExhibitB",
       "assets.galleryShiftExhibitC", "assets.galleryShiftDisplayCase"
     ],

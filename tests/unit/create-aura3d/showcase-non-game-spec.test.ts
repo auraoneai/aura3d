@@ -55,7 +55,7 @@ describe("showcase non-game spec compiler", () => {
       expect(report.blockers).not.toContain("replacement:showcaseAssemblyLine:no-suitable-candidate");
       expect(report.selectedReplacement).toMatchObject({
         replaces: "showcaseAssemblyLine",
-        id: "showcaseOrangeIndustrialRobot",
+        id: "showcaseRoboticWeldingWorkcell",
         role: "prop"
       });
       const routeHealth = readJson(outputDir, "route-health.json");

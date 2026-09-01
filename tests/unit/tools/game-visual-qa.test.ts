@@ -362,8 +362,10 @@ describe("game visual QA", { timeout: 30_000 }, () => {
     it("leaves a flat-background frame's classification unchanged", async () => {
       /*
        * The other half of the contract: a per-row reference must reduce to the old behaviour when the backdrop is
-       * flat, or this fix would silently alter every existing route's metrics. Turbo's frame has a flat sky and
-       * measured largestComponentAreaRatio 0.0018 before the change.
+       * flat, or this fix would silently alter every existing route's metrics. The retained Blockfall Reactor frame
+       * has a flat sky and measured largestComponentAreaRatio 0.001 before the change. Turbo is intentionally not
+       * used here: its current circuit/environment fills the lower half of the frame, so the largest *foreground*
+       * component is expected to be much larger even though the row-wise background classifier is correct.
        */
       const pngModule = await import(
         pathToFileURL(join(process.cwd(), "tools/showcase-library/png-foreground.mjs")).href
@@ -373,11 +375,12 @@ describe("game visual QA", { timeout: 30_000 }, () => {
           readonly clipped: boolean;
         };
       };
+      const flatRouteId = "showcase-blockfall-reactor";
       const probe = JSON.parse(readFileSync(
-        `tests/reports/showcase-route-primary-probes/${routeId}.json`, "utf8"
+        `tests/reports/showcase-route-primary-probes/${flatRouteId}.json`, "utf8"
       )) as { readonly renderedProbe?: { readonly analysisCrop?: unknown } };
       const flat = pngModule.readPngVisualCompositionMetrics(
-        `tests/reports/showcase-route-primary-probes/${routeId}.png`,
+        `tests/reports/showcase-route-primary-probes/${flatRouteId}.png`,
         probe.renderedProbe?.analysisCrop
       );
       expect(flat.largestComponentAreaRatio).toBeLessThan(0.01);

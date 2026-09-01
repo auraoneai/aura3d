@@ -1,5 +1,6 @@
 import {
   primitives,
+  instances,
   material,
   text3D,
   type AuraSceneNode
@@ -291,15 +292,19 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     { x: -8.7, z: 13.7 }, { x: -4.3, z: 13.7 }, { x: 0, z: 13.7 }, { x: 4.3, z: 13.7 }, { x: 8.7, z: 13.7 },
     { x: -8.7, z: 0 }, { x: -8.7, z: 7.0 }, { x: 8.7, z: 0 }, { x: 8.7, z: 7.0 }
   ];
-  fencePosts.forEach((fp, idx) => {
-    nodes.push(
-      primitives
-        .cylinder({ name: `fence-post-${idx}`, material: fenceMat })
-        .position(fp.x, 1.8, fp.z)
-        .scale([0.08, 2.0, 0.08])
-        .toJSON()
-    );
-  });
+
+  // The fence and floodlight masts are a single authored steel family.  Keep
+  // every post as an independently transformed instance so the venue retains
+  // its authored spacing while the production renderer submits one draw for
+  // the repeated cylinder instead of one draw per post.
+  nodes.push(
+    instances.cylinder({
+      name: "rooftop venue steel post family",
+      material: fenceMat,
+      castShadow: true,
+      transforms: fencePosts.map((fp) => ({ position: [fp.x, 1.8, fp.z], scale: [0.08, 2.0, 0.08] }))
+    }).toJSON()
+  );
 
   // 3. Painted Basketball Court Markings
   const paintLineMat = options.reviewCapture
@@ -484,28 +489,37 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     color: "#ef4444",
     emissive: "#dc2626"
   });
+  const netStrandMat = material.emissive({
+    name: "net-white",
+    color: "#ffffff",
+    emissive: "#94a3b8",
+    opacity: 0.85
+  });
   nodes.push(
     // Red Inner Target Box on Backboard
-    primitives.box({ name: "backboard-target-top", material: targetSquareMat })
-      .position(0, 3.55, -0.32).scale([0.62, 0.025, 0.012]).toJSON(),
-    primitives.box({ name: "backboard-target-bottom", material: targetSquareMat })
-      .position(0, 3.15, -0.32).scale([0.62, 0.025, 0.012]).toJSON(),
-    primitives.box({ name: "backboard-target-left", material: targetSquareMat })
-      .position(-0.3, 3.35, -0.32).scale([0.025, 0.42, 0.012]).toJSON(),
-    primitives.box({ name: "backboard-target-right", material: targetSquareMat })
-      .position(0.3, 3.35, -0.32).scale([0.025, 0.42, 0.012]).toJSON(),
+    instances.box({
+      name: "backboard target square family",
+      material: targetSquareMat,
+      transforms: [
+        { position: [0, 3.55, -0.32], scale: [0.62, 0.025, 0.012] },
+        { position: [0, 3.15, -0.32], scale: [0.62, 0.025, 0.012] },
+        { position: [-0.3, 3.35, -0.32], scale: [0.025, 0.42, 0.012] },
+        { position: [0.3, 3.35, -0.32], scale: [0.025, 0.42, 0.012] }
+      ]
+    }).toJSON(),
     // Eight slender renderer-owned strands keep the goal region open and
     // readable; this is visual net dressing, not collision truth.
-    ...Array.from({ length: 8 }, (_, index) => {
-      const angle = (index / 8) * Math.PI * 2;
-      return primitives.cylinder({
-        name: `hoop-net-strand-${index}`,
-        material: material.emissive({ name: `net-white-${index}`, color: "#ffffff", emissive: "#94a3b8", opacity: 0.85 })
+    instances.cylinder({
+      name: "hoop net strand family",
+      material: netStrandMat,
+      transforms: Array.from({ length: 8 }, (_, index) => {
+        const angle = (index / 8) * Math.PI * 2;
+        return {
+          position: [Math.cos(angle) * 0.18, HOOP_BASE_POSITION.y - 0.2, Math.sin(angle) * 0.18],
+          scale: [0.008, 0.38, 0.008]
+        };
       })
-        .position(Math.cos(angle) * 0.18, HOOP_BASE_POSITION.y - 0.2, Math.sin(angle) * 0.18)
-        .scale([0.008, 0.38, 0.008])
-        .toJSON();
-    })
+    }).toJSON()
   );
 
   // 7. Corner Stadium Floodlight Towers
@@ -521,29 +535,37 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     emissive: "#ffedd5"
   });
 
-  towerPositions.forEach((tp, idx) => {
-    nodes.push(
-      // Floodlight Steel Pole
-      primitives
-        .cylinder({ name: `floodlight-pole-${idx}`, material: fenceMat })
-        .position(tp.x, 3.8, tp.z)
-        .scale([0.14, 7.6, 0.14])
-        .toJSON(),
-      // Floodlight Fixture Head
-      primitives
-        .box({ name: `floodlight-head-${idx}`, material: stanchionMat })
-        .position(tp.x, 7.6, tp.z)
-        .rotate(tp.z < 0 ? Math.PI / 6 : -Math.PI / 6, tp.x < 0 ? -Math.PI / 6 : Math.PI / 6, 0)
-        .scale([1.2, 0.8, 0.4])
-        .toJSON(),
-      // Glowing Lamp Emissive Face
-      primitives
-        .box({ name: `floodlight-bulb-${idx}`, material: floodlightHeadGlow })
-        .position(tp.x + (tp.x < 0 ? 0.2 : -0.2), 7.6, tp.z + (tp.z < 0 ? 0.2 : -0.2))
-        .scale([1.0, 0.6, 0.05])
-        .toJSON()
-    );
-  });
+  nodes.push(
+    instances.cylinder({
+      name: "rooftop floodlight mast family",
+      material: fenceMat,
+      castShadow: true,
+      transforms: towerPositions.map((tp) => ({ position: [tp.x, 3.8, tp.z], scale: [0.14, 7.6, 0.14] }))
+    }).toJSON()
+  );
+
+  // Heads and lamps share the same venue materials and geometry.  Keep the
+  // per-tower orientation/offset in instance transforms while submitting one
+  // draw for each repeated family (four heads + four emissive faces).
+  nodes.push(
+    instances.box({
+      name: "rooftop floodlight head family",
+      material: stanchionMat,
+      transforms: towerPositions.map((tp) => ({
+        position: [tp.x, 7.6, tp.z],
+        rotation: [tp.z < 0 ? Math.PI / 6 : -Math.PI / 6, tp.x < 0 ? -Math.PI / 6 : Math.PI / 6, 0],
+        scale: [1.2, 0.8, 0.4]
+      }))
+    }).toJSON(),
+    instances.box({
+      name: "rooftop floodlight bulb family",
+      material: floodlightHeadGlow,
+      transforms: towerPositions.map((tp) => ({
+        position: [tp.x + (tp.x < 0 ? 0.2 : -0.2), 7.6, tp.z + (tp.z < 0 ? 0.2 : -0.2)],
+        scale: [1.0, 0.6, 0.05]
+      }))
+    }).toJSON()
+  );
 
   // Camera-facing depth layer: practical rooftop rails and window bands keep the
   // active court readable as a lived-in skyline rather than an empty void.
@@ -636,42 +658,43 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       .position(0, 1.05, -6.39)
       .scale([16.2, 1.65, 0.08])
       .toJSON(),
-    ...[-5.25, 0, 5.25].flatMap((x, index) => [
-      // Warm rooms sit behind the subdued glazing. The separation in Z is
-      // intentional: the window reads as a lit interior volume rather than a
-      // cyan rectangle pasted onto the pavilion wall.
-      primitives.box({ name: `pavilion occupied room ${index + 1}`, material: pavilionInterior })
-        .position(x, 4.65, -6.54)
-        .scale([3.35, 3.95, 0.06])
-        .toJSON(),
-      primitives.box({ name: `pavilion glass bay ${index + 1}`, material: pavilionGlass })
-        .position(x, 4.65, -6.38)
-        .scale([3.65, 4.45, 0.08])
-        .toJSON(),
-      primitives.box({ name: `pavilion bay mullion ${index + 1}`, material: pavilionTrim })
-        .position(x, 4.65, -6.27)
-        .scale([0.1, 4.35, 0.12])
-        .toJSON(),
-      primitives.box({ name: `pavilion warm interior band ${index + 1}`, material: pavilionInterior })
-        .position(x, 4.42, -6.24)
-        .scale([3.12, 0.28, 0.1])
-        .toJSON(),
-      // The center bay is already divided by its full-height mullion and the
-      // warm interior band. Omitting its redundant horizontal trim saves one
-      // route-owned dressing draw without changing the court or shot read.
-      ...(index === 1 ? [] : [
-        primitives.box({ name: `pavilion horizontal mullion ${index + 1}`, material: pavilionTrim })
-          .position(x, 4.65, -6.2)
-          .scale([3.56, 0.09, 0.13])
-          .toJSON()
-      ])
-    ]),
-    ...[-8.05, -2.62, 2.62, 8.05].map((x, index) =>
-      primitives.box({ name: `pavilion masonry pier ${index + 1}`, material: pavilionBrick })
-        .position(x, 4.2, -6.12)
-        .scale([0.74, 7.85, 0.72])
-        .toJSON()
-    ),
+    // Pavilion bays use shared geometry/material families.  Their individual
+    // offsets remain authored in the instance transforms, but the production
+    // renderer now submits one draw per family rather than one per window,
+    // mullion, and pier.
+    instances.box({
+      name: "pavilion occupied room family",
+      material: pavilionInterior,
+      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.54], scale: [3.35, 3.95, 0.06] }))
+    }).toJSON(),
+    instances.box({
+      name: "pavilion glass bay family",
+      material: pavilionGlass,
+      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.38], scale: [3.65, 4.45, 0.08] }))
+    }).toJSON(),
+    instances.box({
+      name: "pavilion bay mullion family",
+      material: pavilionTrim,
+      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.27], scale: [0.1, 4.35, 0.12] }))
+    }).toJSON(),
+    instances.box({
+      name: "pavilion warm interior band family",
+      material: pavilionInterior,
+      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.42, -6.24], scale: [3.12, 0.28, 0.1] }))
+    }).toJSON(),
+    // The center bay is already divided by its full-height mullion and the
+    // warm interior band. Omitting its redundant horizontal trim preserves
+    // the prior authored silhouette and saves one more route-owned draw.
+    instances.box({
+      name: "pavilion horizontal mullion family",
+      material: pavilionTrim,
+      transforms: [-5.25, 5.25].map((x) => ({ position: [x, 4.65, -6.2], scale: [3.56, 0.09, 0.13] }))
+    }).toJSON(),
+    instances.box({
+      name: "pavilion masonry pier family",
+      material: pavilionBrick,
+      transforms: [-8.05, -2.62, 2.62, 8.05].map((x) => ({ position: [x, 4.2, -6.12], scale: [0.74, 7.85, 0.72] }))
+    }).toJSON(),
     primitives.box({ name: "pavilion cornice", material: pavilionTrim })
       .position(0, 8.15, -6.2)
       .scale([17.2, 0.28, 0.55])
@@ -739,13 +762,15 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
       // Slightly irregular sealed lanes catch the key lights and break up the
       // single-color court slab. They are surface finish only, below every
       // route-owned ball, player, and collider region.
-      ...[-2.8, -0.25, 2.65, 5.55, 8.2].map((z, index) =>
-        primitives.box({ name: `sealed court wear band ${index + 1}`, material: courtWear })
-          .position(index % 2 === 0 ? -0.7 : 0.65, 0.014, z)
-          .rotate(0, index % 2 === 0 ? 0.018 : -0.014, 0)
-          .scale([7.65 - (index % 2) * 0.3, 0.008, 0.055 + (index % 3) * 0.018])
-          .toJSON()
-      ),
+      instances.box({
+        name: "sealed court wear band family",
+        material: courtWear,
+        transforms: [-2.8, -0.25, 2.65, 5.55, 8.2].map((z, index) => ({
+          position: [index % 2 === 0 ? -0.7 : 0.65, 0.014, z],
+          rotation: [0, index % 2 === 0 ? 0.018 : -0.014, 0],
+          scale: [7.65 - (index % 2) * 0.3, 0.008, 0.055 + (index % 3) * 0.018]
+        }))
+      }).toJSON(),
       // Inlaid sideline accents give the court a manufactured, league-owned
       // finish while leaving the playable key and physics regions untouched.
       primitives.box({ name: "west court brass inlay", material: courtInlay })

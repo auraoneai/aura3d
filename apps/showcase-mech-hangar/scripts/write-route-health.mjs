@@ -15,13 +15,14 @@ const assetIds = [
   "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"
 ];
 const initialPrimaryAssets = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
+const visualPrimaryAssetIds = ["showcaseExpressiveRobot"];
 const audioIds = [
   "mechServoCycleSfx", "mechLockInSfx", "mechWalkHeavySfx", "mechLightHitSfx", "mechHeavyHitSfx",
   "mechGuardBlockSfx", "mechGuardBreakSfx", "mechSpecialFireSfx", "mechKoStingSfx", "mechAmbientHangarSfx"
 ];
 const artifactFiles = [
-  "hangar-build.png", "hangar-stat-panel.png", "part-swap-chassis.png", "part-swap-arms.png",
-  "part-swap-legs.png", "part-swap-weapon.png", "arena-opening.png", "arena-hit.png", "arena-paused.png",
+  "hangar-default.png", "hangar-swap.png", "hangar-build.png", "hangar-stat-panel.png", "part-swap-chassis.png", "part-swap-arms.png",
+  "part-swap-legs.png", "part-swap-weapon.png", "hangar-arena-opening.png", "arena-opening.png", "arena-hit.png", "arena-paused.png",
   "ko-card.png", "hangar-mobile.png", "arena-mobile.png", "arena-reduced-motion.png", "part-matrix.json"
 ];
 const browserReceipts = ["build-core-evidence.json", "arena-evidence.json", "mobile-evidence.json", "reduced-motion-evidence.json"];
@@ -48,6 +49,11 @@ for (const id of assetIds) {
   if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
   if (!sourceText.includes(`assets.${id}`) && !sourceText.includes(`record.name`)) throw new Error(`${id} is not reachable through the live typed catalog`);
 }
+for (const id of visualPrimaryAssetIds) {
+  const asset = assetById.get(id);
+  if (!asset || asset.type !== "model" || asset.quality !== "release" || !asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} visual primary asset is missing, not release-probed, or stale`);
+  if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not reachable through the live typed catalog`);
+}
 for (const id of audioIds) {
   const asset = assetById.get(id);
   if (!asset || asset.type !== "audio" || asset.quality !== "candidate" || asset.provenance?.license !== "CC0-1.0" || asset.provenance?.author !== "Aura3D synthesis" || !asset.provenance?.downloadUrl) throw new Error(`${id} audio provenance/quality is incomplete`);
@@ -66,6 +72,18 @@ for (const file of browserReceipts) {
   if (receipt.producerSourceSha256 !== sha256(join(repoRoot, receipt.producer))) throw new Error(`${file} producer binding is stale`);
   if (receipt.routeSourceSha256 !== routeSourceSha256) throw new Error(`${file} route-source binding is stale`);
   for (const retained of receipt.artifacts ?? []) if (retained.sha256 !== sha256(join(repoRoot, retained.path))) throw new Error(`${file} artifact hash is stale: ${retained.path}`);
+}
+const buildReceipt = readJson(join(reportDir, "build-core-evidence.json"));
+const buildDetails = buildReceipt.details ?? {};
+const visualBindings = buildDetails.visualPrimaryAssetBindings ?? [];
+if (visualBindings.length !== visualPrimaryAssetIds.length || visualPrimaryAssetIds.some((id) => {
+  const binding = visualBindings.find((entry) => entry.id === id);
+  return !binding || binding.hash !== assetById.get(id).hash || binding.renderedProbe !== assetById.get(id).renderedProbe.url;
+})) throw new Error("default hangar receipt is not bound to the current visual primary asset hash/probe");
+const visualChecks = buildDetails.visualChecks ?? {};
+if (visualChecks.defaultAndSwapDiffer !== true || visualChecks.defaultArtifact !== "tests/reports/mech-hangar/hangar-default.png" || visualChecks.swapArtifact !== "tests/reports/mech-hangar/hangar-swap.png") throw new Error("default hangar receipt does not prove a distinct valid swap artifact");
+for (const [label, composition] of [["default", visualChecks.defaultComposition], ["swap", visualChecks.swapComposition]]) {
+  if (!composition || composition.clipped !== false || composition.foregroundCoverageRatio <= 0.22 || composition.distinctBuckets <= 70) throw new Error(`${label} hangar visual assembly checks are missing or below the authored subject/material bar`);
 }
 const matrix = readJson(join(reportDir, "part-matrix.json"));
 if (matrix.schema !== "aura3d.mech-hangar.part-matrix/1.0" || matrix.pass !== true || matrix.matrixSize !== 16 || matrix.entries?.length !== 16) throw new Error("16-selection browser matrix is missing or failing");
@@ -112,6 +130,7 @@ const routeHealth = {
   routeSourceSha256,
   renderer: { path: "createAuraApp root safe API", mode: "production with safe-basic fallback", nativeWebGPU: false, productionRuntimeClaimed: false },
   primaryAssets: initialPrimaryAssets.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role })),
+  visualPrimaryAssets: visualPrimaryAssetIds.map((id) => ({ typedRef: `assets.${id}`, hash: assetById.get(id).hash, quality: assetById.get(id).quality, role: assetById.get(id).role, renderedProbe: assetById.get(id).renderedProbe.url })),
   partFamily: {
     id: "MH-2M", required: 16, compatible: 16, releaseProven: 16, uniqueGeometryHashes: 16,
     source: "apps/showcase-mech-hangar/scripts/build-models.mjs", curation: "apps/showcase-mech-hangar/parts-curation-report.json",
@@ -137,7 +156,7 @@ const routeHealth = {
     partMatrix: "tests/reports/mech-hangar/part-matrix.json",
     exactArtifacts: artifactFiles.map((file) => ({ path: `tests/reports/mech-hangar/${file}`, sha256: sha256(join(reportDir, file)) })),
     browserReceipts: browserReceipts.map((file) => `tests/reports/mech-hangar/${file}`),
-    assetProbes: assetIds.map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })),
+    assetProbes: [...assetIds, ...visualPrimaryAssetIds].map((id) => ({ asset: id, metadata: `tests/reports/showcase-release-asset-probes/${id}.json`, screenshot: assetById.get(id).renderedProbe.url, assetHash: assetById.get(id).hash })),
     performance: "apps/showcase-mech-hangar/performance-report.json",
     deploy: "apps/showcase-mech-hangar/deploy-report.json",
     routePrimary: "tests/reports/showcase-route-primary-probes/showcase-mech-hangar.json",

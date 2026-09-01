@@ -29,6 +29,7 @@ const assetsPrelude = `const assets = {
   turboRaceCar: { id: "turboRaceCar" },
   showcaseTexturedSportsCar: { id: "showcaseTexturedSportsCar" },
   showcaseTsukubaCircuit: { id: "showcaseTsukubaCircuit" },
+  turboFormulaCircuit: { id: "turboFormulaCircuit" },
   showcaseVoxelBuilding: { id: "showcaseVoxelBuilding" },
   showcaseWalkAnimatedGirl: { id: "showcaseWalkAnimatedGirl" }
 };

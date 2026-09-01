@@ -20,8 +20,8 @@ All primary subjects are provenance-bound typed assets registered through the Au
 - `assets.rooftopBackboard`: metre-scale backboard aligned with the composed board region.
 - `assets.rooftopRim`: 0.48 metre readable hoop aligned with the composed rim/scoring regions.
 - `assets.rooftopBall`: unit-normalized basketball scaled by the route to a 0.24 metre diameter.
-- `assets.rooftopLayupScorer`: release-probed CC-BY number-24 scorer by Daffa Haekal, adapted only to remove its separate source ball and normalize height. Its authored one-hand layup silhouette is static; the route owns root presentation and the separately typed ball owns flight.
-- `assets.rooftopDefender`: release-probed CC-BY contest figure by 3DDomino, adapted to remove its separate source ball, raise the complete arm islands, recolor the uniform, and normalize height. It is driven by route-local windup, contest, and recovery state; no animation or reusable defender system is claimed.
+- `assets.rooftopLayupScorer`: CC-BY-4.0 textured humanoid derivative of the retained Sketchfab Man Player source. It carries one 191-joint skin and four route-authored clips (`Ready`, `Load`, `Release`, `FollowThrough`); root translation and the separately typed ball still belong to the route.
+- `assets.rooftopDefender`: CC-BY-4.0 textured humanoid derivative of the same retained source with a distinct crimson team material family. It carries one 191-joint skin and four route-authored clips (`Plant`, `Telegraph`, `Jump`, `Contest`); telegraph timing, root placement, and the composed block region remain route-local.
 - Ten `assets.rooftopBuckets*Sfx` members: deterministic seeded/oscillator CC0 ambience, charge, contact, make/miss, fire, heat, gold, and buzzer cues.
 
 The manifest retains durable source/download URLs, license, author, hash, role, suitability, orientation, and current hash-bound root-renderer probes for all six models. Audio is candidate-quality and is validated separately because model release-bounds checks do not apply to WAV files.
@@ -40,7 +40,10 @@ The manifest retains durable source/download URLs, license, author, hash, role, 
 From the repository root:
 
 ```bash
-pnpm --dir apps/showcase-rooftop-buckets register:assets
+# The production-art registration script is dry-run by default because it
+# updates the generated root manifest. Use --apply only after retained probes
+# are captured and the release coordinator has reviewed the exact hashes.
+pnpm --dir apps/showcase-rooftop-buckets exec node scripts/register-production-art.mjs
 pnpm --dir apps/showcase-rooftop-buckets typecheck
 pnpm --dir apps/showcase-rooftop-buckets build
 pnpm exec vitest run tests/unit/apps/rooftop-buckets-heats.test.ts tests/unit/apps/rooftop-buckets-scoring.test.ts

@@ -4,7 +4,7 @@ export const gameGeometryContract = {
   "routeId": "showcase-turbo-drift-circuit",
   "category": "racing",
   "geometrySource": "asset-mesh-extracted",
-  "sourceReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-AIGJNn/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+  "sourceReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-JLZIze/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
   "topology": {
     "assetId": "turboFormulaCircuit",
     "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
@@ -14019,7 +14019,7 @@ export const gameGeometryContract = {
   "cameraRig": {
     "selectedMode": "chase",
     "compositionReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
-    "cameraReadabilityVerdict": "fail"
+    "cameraReadabilityVerdict": "pass"
   },
   "cameraBounds": {
     "minX": -20.2,
@@ -14028,7 +14028,9 @@ export const gameGeometryContract = {
     "maxZ": 14.7
   },
   "evidence": {
-    "geometryReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-AIGJNn/game-template/showcase-turbo-drift-circuit-racing-track-topology.json"
+    "geometryReport": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-JLZIze/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "routePrimaryScreenshotSha256": "sha256-b25e9c1b60f53c76ddd3dd2b117f9501eb715f846c92ecc8896e9b0a7244f80d"
   },
   "design": {
     "minCheckpoints": 6,
@@ -27801,6 +27803,66 @@ export const gameGeometryContract = {
     },
     "carTrackScaleCompatible": true,
     "noDebugLocatorDisk": true,
-    "trackTopologyEvidence": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-AIGJNn/game-template/showcase-turbo-drift-circuit-racing-track-topology.json"
+    "trackTopologyEvidence": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-JLZIze/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "assetPairEvidence": {
+      "category": "racing",
+      "assets": [
+        "showcaseCc0FormulaRaceCar",
+        "showcaseCcByFormulaOpponent",
+        "turboFormulaCircuit"
+      ],
+      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+      "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+      "screenshotSha256": "sha256-b25e9c1b60f53c76ddd3dd2b117f9501eb715f846c92ecc8896e9b0a7244f80d",
+      "geometryEvidence": {
+        "category": "racing",
+        "kind": "racing-track-topology",
+        "source": "asset-mesh-extracted",
+        "report": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-JLZIze/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+        "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        "routePrimaryScreenshotSha256": "sha256-b25e9c1b60f53c76ddd3dd2b117f9501eb715f846c92ecc8896e9b0a7244f80d",
+        "assets": [
+          {
+            "id": "showcaseCc0FormulaRaceCar",
+            "hash": "sha256-acdf4965d7523dfbc729a25a66ef7c7ed92c57132c8cb6ecf930531914094af3"
+          },
+          {
+            "id": "showcaseCcByFormulaOpponent",
+            "hash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958"
+          },
+          {
+            "id": "turboFormulaCircuit",
+            "hash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a"
+          }
+        ]
+      },
+      "compositionReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+      "cameraMode": "chase",
+      "checks": [
+        {
+          "id": "binding-overlap",
+          "verdict": "pass"
+        },
+        {
+          "id": "contact",
+          "verdict": "pass"
+        },
+        {
+          "id": "camera-readability",
+          "verdict": "pass"
+        },
+        {
+          "id": "scale-contract",
+          "verdict": "pass"
+        },
+        {
+          "id": "debug-guide-absence",
+          "verdict": "pass"
+        }
+      ],
+      "verdict": "pass",
+      "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+      "blockers": []
+    }
   }
 } as const;

@@ -145,12 +145,21 @@ test("gallery shift moves, sees, occludes, catches, restarts, lifts, and exits",
     // --- deterministic vision-cone intercept raises detection ----------------
     await pump(page, 30);
     const settled = await readEvidence(page);
-    // Guard-1 patrols the west loop: stand 3 m ahead of its facing.
+    // Guard-1 patrols the west loop: stand 3.3 m ahead of its facing with a
+    // small cone-axis offset. This is still a real LOS intercept, but keeps
+    // the full typed silhouettes apart in the renderer-owned tactical capture.
     const intercept = await page.evaluate((fallback) => {
       const ev = (window as unknown as { __GALLERY_SHIFT_EVIDENCE__?: GSEvidence }).__GALLERY_SHIFT_EVIDENCE__;
       const guard = ev?.guardStates?.[0];
       if (!guard) return fallback;
-      return { x: guard.x + Math.sin(guard.yaw) * 3, z: guard.z + Math.cos(guard.yaw) * 3 };
+      const forwardX = Math.sin(guard.yaw);
+      const forwardZ = Math.cos(guard.yaw);
+      const lateralX = Math.cos(guard.yaw);
+      const lateralZ = -Math.sin(guard.yaw);
+      return {
+        x: guard.x + forwardX * 3.3 + lateralX * 0.78,
+        z: guard.z + forwardZ * 3.3 + lateralZ * 0.78
+      };
     }, { x: -8.5, z: 1.5 });
     await teleport(page, intercept.x, intercept.z);
     let detection = 0;
@@ -280,6 +289,11 @@ test("gallery shift moves, sees, occludes, catches, restarts, lifts, and exits",
     await page.locator("#gs-lift-button").dispatchEvent("pointerup", { pointerType: "touch", pointerId: 10, isPrimary: true });
     const touchLift = await readEvidence(page);
     expect(touchLift.exhibitsLifted).toBe(1);
+    // Playwright may prune a long-running test's output directory while the
+    // deterministic mission is being pumped. Recreate the diagnostic folder
+    // immediately before these final writes so evidence production itself
+    // cannot fail after all gameplay assertions have passed.
+    mkdirSync(logDir, { recursive: true });
     writeFileSync(join(REPORT_DIR, "mission-touch.json"), `${JSON.stringify({ alarm, won, touchMoved, touchLift }, null, 2)}\n`);
     writeFileSync(join(logDir, "floor-2.json"), JSON.stringify(floor2, null, 2));
   } finally {

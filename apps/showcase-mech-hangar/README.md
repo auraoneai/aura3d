@@ -5,8 +5,10 @@
 Aura3D's typed, provenance-tracked assets are the mechanic. Assemble a mech from the
 original in-repository MH-2M modular family (chassis / arms / legs / weapon, 4 options each), watch
 the stat holograms move, validate the build, lock in, and fight a rival mech driven by the
-engine's `createCombatAi`. Rematches cycle rival aggression: **0.35 keep-away → 0.55
-balanced → 0.8 rushdown**.
+engine's `createCombatAi`. The hangar and arena use the release-probed CC0 expressive-robot
+asset as the connected visual shell; the selected MH-2M parts remain the socketed build
+contract and the selected weapon is mounted as a visible hardpoint. Rematches cycle rival
+aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
 
 ## Claim boundary (read before quoting this route)
 
@@ -18,8 +20,9 @@ balanced → 0.8 rushdown**.
   in this app for this app. **This is not a reusable fighting/character/combat kit**, and
   no such claim is made anywhere in this route.
 - **Primitives are set dressing** (hangar floor/wall, turntable, pit rims) or
-  renderer-owned feedback particles (hit sparks, landing dust). The mechs themselves are
-  always typed GLB assemblies; a build is never a recolor or a skin swap.
+  renderer-owned feedback particles (hit sparks, landing dust). The connected mech silhouette
+  is a typed, release-probed GLB shell, while the build contract remains the typed MH-2M
+  assembly plan and its visible weapon hardpoint; a build is never a CSS recolor or a skin swap.
 - **Prototype.** Independent human visual review is pending; this route is not a public
   release candidate.
 
@@ -36,8 +39,8 @@ passport reads its source, author, and CC0 license records.
 
 ## Assembly pipeline (player-visible)
 
-1. Cycle slots (`1`-`4`, arrow keys): the preview mech on the turntable re-mounts the
-   typed GLB nodes for the new part — pixels really change (spec-proven).
+1. Cycle slots (`1`-`4`, arrow keys): the preview mech updates the typed MH-2M assembly
+   selection and its shell/hardpoint state — pixels really change (spec-proven).
 2. Stat holograms update from an authored part-to-stats table
    (chassis to armor, legs to speed, arms to guard, weapon to power/special cost).
 3. `Enter` builds a `characterAssembly` plan and validates it with
@@ -73,7 +76,8 @@ KO and walk cadence are wired to sim events.
 - `window.__MECH_HANGAR_EVIDENCE__` (alias of `window.__AURA3D_SHOWCASE_MECH_HANGAR__`):
   mounted, mode, slots, selectedParts, stats, assemblyValidated, boutState,
   rivalAggression, koEvents, audioCues, and route metadata (status/controls/systems/claimBoundary).
-- Browser specs: `tests/browser/mech-hangar-build.spec.ts` (curation gate, all sixteen
+- Browser specs: `tests/browser/mech-hangar-build.spec.ts` (curation gate, default-vs-swap
+  hangar artifacts with source/asset bindings, all sixteen
   selections with distinct assembly-pixel hashes and owning stat results, validation rejection,
   lock-in, and mobile) and `tests/browser/mech-hangar-arena.spec.ts`
   (movement/strike/pause/KO/rematch, aggression presets measurably differ, reduced-motion gates).
@@ -87,7 +91,9 @@ KO and walk cadence are wired to sim events.
 - `route-health.json`: machine pass, classification `prototype-blocked`; independent exact-
   artifact review remains pending.
 - Source- and producer-bound screenshots/receipts are retained under
-  `tests/reports/mech-hangar/`; the route-primary proof is retained under
+  `tests/reports/mech-hangar/`. `hangar-default.png` and `hangar-swap.png` are the mandatory
+  default-state visual pair; `build-core-evidence.json` binds both to the current route source
+  and `assets.showcaseExpressiveRobot` hash. The route-primary proof is retained under
   `tests/reports/showcase-route-primary-probes/`.
 
 ## Commands

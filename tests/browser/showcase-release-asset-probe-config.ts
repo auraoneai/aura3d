@@ -377,7 +377,7 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundHeight: 220,
     orientation: {
       forwardAxis: "+Z", upAxis: "+Y",
-      message: "The hash-bound original Rooftop Buckets contest sculpture is presented +Y-up and front-facing. Its planted split stance, raised hands, and contest silhouette are static; the route's deterministic telegraph translates it, with no skeleton, animation, or reusable defender system inferred."
+      message: "The hash-bound CC-BY-4.0 Rooftop Buckets defender derivative is presented +Y-up and front-facing. Its 191-joint skin and Plant, Telegraph, Jump, and Contest clips are retained as authored deformation evidence; root placement, telegraph timing, collision, and scoring remain route-local."
     }
   },
   rooftopShooter: {
@@ -405,7 +405,7 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundHeight: 220,
     orientation: {
       forwardAxis: "+Z", upAxis: "+Y",
-      message: "The hash-bound Rooftop Buckets number-24 scorer is presented +Y-up and front-facing. Its one-hand layup silhouette is static; the separately typed ball and deterministic route-local flight remain authoritative, with no animation or reusable sports-character claim."
+      message: "The hash-bound CC-BY-4.0 Rooftop Buckets scorer derivative is presented +Y-up and front-facing. Its 191-joint skin and Ready, Load, Release, and FollowThrough clips are retained as authored deformation evidence; root translation, the separately typed ball, and deterministic flight remain route-local."
     }
   },
   vaultBreakersTable: {

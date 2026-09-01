@@ -111,6 +111,36 @@ const ROUTE_SYSTEMS = {
   audio: "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
 } as const;
 const ROUTE_CONTROLS = ["A/D change spot", "W/S aim arc", "hold/release Space shoot", "P pause", "R reset", "touch aim/spot/shoot/pause/reset"] as const;
+const SHOOTER_CLIPS = ["Ready", "Load", "Release", "FollowThrough"] as const;
+const DEFENDER_CLIPS = ["Plant", "Telegraph", "Jump", "Contest"] as const;
+
+function animationCaptureTime(clip: string): number {
+  switch (clip) {
+    case "Load":
+    case "Telegraph":
+      return 0.28;
+    case "Release":
+    case "Jump":
+      return 0.34;
+    case "FollowThrough":
+    case "Contest":
+      return 0.48;
+    case "Plant":
+      return 0.16;
+    case "Ready":
+      return 0.38;
+    default:
+      return 0;
+  }
+}
+
+function playAthleteClip(node: AuraRuntimeNodeHandle, clip: string, loop: boolean): void {
+  node.play(clip, {
+    loop,
+    restart: true,
+    captureTime: animationCaptureTime(clip)
+  });
+}
 
 // ---------------- Game State ----------------
 const audio = new BucketsAudioController();
@@ -138,7 +168,11 @@ let elapsedPlayTime = 0;
 let chargeTickAccumulator = 0;
 let touchAimDirection = 0;
 let touchShootHeld = false;
-let shooterAnimationState = "bind";
+// Keep the initial state distinct from the clip name so the first runtime
+// frame explicitly binds the authored Ready clip after the typed GLB actor has
+// mounted.  Setting the clip on the model declaration races async actor
+// loading and can leave a skinned mesh with only a partially applied palette.
+let shooterAnimationState = "unbound";
 let defenderAnimationState = "hidden";
 let shooterMotionPhase = "ready";
 let defenderMotionPhase = "hidden";
@@ -295,9 +329,10 @@ function buildScene() {
         .rotate(-Math.PI / 2, 0, 0)
         .scale([0.19, 0.19, 0.024]),
 
-      // Ball-free verified CC-BY number-24 layup scorer. Gameplay still owns
-      // root motion and the separate typed route ball; this static authored
-      // pose contributes athlete identity, not animation or ball authority.
+      // Ball-free verified CC-BY number-24 layup scorer. This is a real
+      // textured skinned athlete with route-authored Ready/Load/Release/
+      // FollowThrough clips. Gameplay still owns root motion and the separate
+      // typed route ball; the GLB contributes character deformation only.
       model(assets.rooftopLayupScorer, {
         name: "shooter-player-mesh",
         role: "primaryCharacter",
@@ -308,9 +343,10 @@ function buildScene() {
         .scale(visualReviewCapture ? [1.08, 1.08, 1.08] : [0.96, 0.96, 0.96])
         .runtime(shooterHandle),
 
-      // Ball-free CC-BY adaptation of the same verified source. Its static high
-      // reach reads as a contest while route-local telegraph/collision/root
-      // transforms remain the only gameplay authority.
+      // Ball-free CC-BY adaptation of the same verified source. Its real
+      // Plant/Telegraph/Jump/Contest clips make the contest readable while
+      // route-local telegraph/collision/root transforms remain the only
+      // gameplay authority.
       model(assets.rooftopDefender, {
         name: "contest-defender-mesh",
         role: "primaryCharacter",
@@ -453,6 +489,11 @@ function buildScene() {
 // ---------------- Game App Mount ----------------
 const gameApp = createGameApp("#canvas-host", {
   diagnostics: { overlay: false, performancePanel: false },
+  // Keep the exact capture on the same production GLB path as the standalone
+  // asset probes.  The game runtime remains the gameplay owner, while the
+  // renderer setting makes the route's typed athletes/court use the audited
+  // production backend instead of an implicit profile.
+  renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
   input: {
     actions: {
       spotLeft: ["KeyA", "ArrowLeft"],
@@ -793,12 +834,14 @@ function syncTransforms(): void {
       ? "Load"
       : ballState.inFlight
         ? ballState.flightTimer < 0.28 ? "Release" : "FollowThrough"
-        : "bind";
+        : "Ready";
     if (nextShooterAnimation !== shooterAnimationState) {
       shooterAnimationState = nextShooterAnimation;
+      playAthleteClip(shooterNode!, nextShooterAnimation, nextShooterAnimation === "Load" || nextShooterAnimation === "Ready");
     }
-    // The reviewed shooter is static. Placement, squash, lean, and facing are
-    // route-authored root transforms keyed from the real ballistic state.
+    // Placement, squash, lean, and facing are route-authored root transforms
+    // keyed from the real ballistic state; limb deformation comes from the
+    // named skinned clip selected above.
     const followLean = ballState.inFlight ? Math.sin(Math.min(1, flightMotionPhase / 0.72) * Math.PI / 2) : 0;
     const landingSettle = flightMotionPhase > 0.78 ? (flightMotionPhase - 0.78) / 0.22 : 0;
     shooterNode
@@ -884,6 +927,7 @@ function syncTransforms(): void {
             : "Plant";
         if (nextDefenderAnimation !== defenderAnimationState) {
           defenderAnimationState = nextDefenderAnimation;
+          playAthleteClip(defenderNode, nextDefenderAnimation, nextDefenderAnimation === "Plant");
         }
         defenderMotionPhase = hoopState.defenderTelegraph === "windup"
           ? "compression"
@@ -1129,8 +1173,8 @@ function publishEvidence(): RooftopBucketsEvidence {
     contactFxKind,
     contactFxActive: contactFxTimer > 0 && contactFxKind !== "none",
     contestReactionActive,
-    shooterClips: [],
-    defenderClips: [],
+    shooterClips: SHOOTER_CLIPS,
+    defenderClips: DEFENDER_CLIPS,
     contestAimOffset: hoopState.contestAimOffset,
     sensorEventCount,
     physicsBodyCount: 0,

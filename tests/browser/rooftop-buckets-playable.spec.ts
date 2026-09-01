@@ -42,6 +42,7 @@ interface RooftopBucketsEvidence {
   readonly controls: readonly string[];
   readonly claimBoundary: string;
   readonly audioCues: readonly string[];
+  readonly renderer: { readonly drawCalls: number; readonly renderSize: readonly number[] };
   readonly aimPitch: number;
   readonly chargePower: number;
   readonly charging: boolean;
@@ -73,7 +74,15 @@ async function evidence(page: Page): Promise<RooftopBucketsEvidence> {
 
 async function ready(page: Page): Promise<void> {
   await page.waitForFunction(
-    () => Boolean((window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: RooftopBucketsEvidence }).__ROOFTOP_BUCKETS_EVIDENCE__?.mounted),
+    () => {
+      const evidence = (window as unknown as { __ROOFTOP_BUCKETS_EVIDENCE__?: RooftopBucketsEvidence }).__ROOFTOP_BUCKETS_EVIDENCE__;
+      return Boolean(
+        evidence?.mounted
+        && evidence.renderer.drawCalls > 0
+        && evidence.renderer.renderSize[0] > 0
+        && evidence.renderer.renderSize[1] > 0
+      );
+    },
     undefined,
     { timeout: 180_000 }
   );

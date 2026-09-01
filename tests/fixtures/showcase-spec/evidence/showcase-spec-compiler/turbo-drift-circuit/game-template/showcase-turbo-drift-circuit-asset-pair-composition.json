@@ -12,8 +12,8 @@
   },
   "geometry": {
     "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "assetId": "showcaseTsukubaCircuit",
-    "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    "assetId": "turboFormulaCircuit",
+    "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
     "source": "asset-mesh-extracted",
     "modelAnchorCount": 3
   },
@@ -29,9 +29,9 @@
       "evidenceHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958"
     },
     {
-      "id": "showcaseTsukubaCircuit",
-      "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
-      "evidenceHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+      "id": "turboFormulaCircuit",
+      "manifestHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+      "evidenceHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a"
     }
   ],
   "thresholds": {

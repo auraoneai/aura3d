@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { gameGeometryContract } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
 
 /**
  * Regression coverage for defects 43 and 45.
@@ -103,7 +104,25 @@ describe("Turbo car is seated on the visible road", () => {
       readonly modelPoint: readonly [number, number, number];
       readonly modelBounds: { readonly min: readonly number[]; readonly max: readonly number[] };
     };
-    const targetMaxDimension = Number(source.match(/trackModelTargetMaxDimension: ([\d.]+)/)?.[1]);
+    // The track fit is derived from the generated topology and centreline span;
+    // do not pin this regression to a copied numeric literal that becomes stale
+    // whenever the certified environment is regenerated. Recompute the same
+    // contract value from the generated bounds and the route's declared scene
+    // size, then assert the source uses that derived expression.
+    expect(source).toContain("const TRACK_MODEL_TARGET_MAX_DIMENSION = Number(");
+    const sceneSize = Number(source.match(/const SCENE_SIZE = ([\d.]+)/)?.[1]);
+    const centerline = gameGeometryContract.topology.roadCenterline;
+    const routePlanMaxSpan = Math.max(
+      Math.max(...centerline.map((point) => point.x)) - Math.min(...centerline.map((point) => point.x)),
+      Math.max(...centerline.map((point) => point.z)) - Math.min(...centerline.map((point) => point.z))
+    );
+    const modelBounds = gameGeometryContract.topology.modelAlignment.modelBounds;
+    const trackModelMaxSpan = Math.max(
+      modelBounds.max[0] - modelBounds.min[0],
+      modelBounds.max[1] - modelBounds.min[1],
+      modelBounds.max[2] - modelBounds.min[2]
+    );
+    const targetMaxDimension = Number((trackModelMaxSpan * (sceneSize / routePlanMaxSpan)).toFixed(6));
     const trackSurfaceY = Number(source.match(/const TRACK_REFERENCE_Y = (-?[\d.]+);/)?.[1]);
     expect(Number.isFinite(targetMaxDimension)).toBe(true);
     expect(Number.isFinite(trackSurfaceY)).toBe(true);

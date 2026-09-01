@@ -38,7 +38,7 @@
       "noDebugLocatorDisk": true,
       "trackTopology": {
         "assetId": "turboFormulaCircuit",
-        "assetHash": "sha256-10f59ae34d56f958b9079be1f6e560c02c3623bd275a8a679921e68736286194",
+        "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
         "source": "asset-mesh-extracted",
         "roadCenterline": [
           {
@@ -353,7 +353,7 @@
     "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
     "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
     "gameplayProof": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json",
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset turboRaceCar --asset showcaseCc0FormulaRaceCar --asset turboFormulaCircuit",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseCc0FormulaRaceCar --asset showcaseCcByFormulaOpponent --asset turboFormulaCircuit",
     "deployEvidence": "docs/project/showcase-launch-evidence.json",
     "deployPassed": true,
     "routePrimaryPassed": true,

@@ -247,7 +247,11 @@ const FLOOR_1: FloorLayout = {
       baseSpeed: 1.5
     }
   ],
-  thiefSpawn: { x: 0, z: 6.2 },
+  // Start in the open foyer lane rather than directly behind the south
+  // cutaway wall. The player remains inside the same walkable foyer and all
+  // collision/LOS bounds are unchanged, but the typed infiltrator is visible
+  // as a complete grounded subject in the default and review compositions.
+  thiefSpawn: { x: 0, z: 4.55 },
   bounds: { minX: -9.8, maxX: 9.8, minZ: -6.8, maxZ: 6.8 }
 };
 

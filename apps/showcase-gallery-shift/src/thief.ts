@@ -8,8 +8,10 @@
  * (sneak is silent). Lifting: hold-to-lift 1.2 s with a visible progress
  * value, a movement slow, and a standing noise spike for the whole hold.
  *
- * Real embedded clip names from the typed `showcaseRunnerGirl` asset drive the
- * AnimationController in main.ts.
+ * The typed `showcaseWalkAnimatedGirl` asset supplies the detailed humanoid
+ * infiltrator silhouette. It contains one authored walk clip; the route keeps
+ * gait, lift, carry, and footstep truth here rather than pretending that one
+ * presentation clip is a full reusable stealth animation kit.
  */
 import {
   GAIT_SPEED,
@@ -30,16 +32,17 @@ import {
 
 export type ThiefGait = "walk" | "sneak" | "sprint";
 
-/** Real embedded clip names in the typed Kenney runner-girl asset. */
+/** Real embedded clip name in the typed humanoid infiltrator asset. */
 export const THIEF_CLIPS = {
-  idle: "idle",
-  walk: "walk",
-  // The asset has no crouch clip; slowed walk remains an honest embedded
-  // locomotion presentation while sneak speed/noise truth stays route-owned.
-  sneak: "walk",
-  sprint: "sprint",
-  lift: "pick-up",
-  carry: "holding-both"
+  // The source asset has one embedded locomotion clip. Reusing that clip for
+  // each authored state keeps animation diagnostics truthful while movement,
+  // sneak/sprint speed, carry state, and noise remain route-owned.
+  idle: "Take 001",
+  walk: "Take 001",
+  sneak: "Take 001",
+  sprint: "Take 001",
+  lift: "Take 001",
+  carry: "Take 001"
 } as const;
 export type ThiefClipKind = keyof typeof THIEF_CLIPS;
 

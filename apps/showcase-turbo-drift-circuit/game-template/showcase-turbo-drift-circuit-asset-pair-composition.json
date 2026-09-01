@@ -6,14 +6,14 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "sha256": "sha256-8a25018f7855b382757bb3c5485e3672da81a5e035a3d839499acbede3f24173",
+    "sha256": "sha256-b25e9c1b60f53c76ddd3dd2b117f9501eb715f846c92ecc8896e9b0a7244f80d",
     "width": 1440,
     "height": 900
   },
   "geometry": {
     "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "assetId": "showcaseTsukubaCircuit",
-    "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    "assetId": "turboFormulaCircuit",
+    "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
     "source": "asset-mesh-extracted",
     "modelAnchorCount": 3
   },
@@ -29,9 +29,9 @@
       "evidenceHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958"
     },
     {
-      "id": "showcaseTsukubaCircuit",
-      "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
-      "evidenceHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+      "id": "turboFormulaCircuit",
+      "manifestHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+      "evidenceHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a"
     }
   ],
   "thresholds": {
@@ -55,7 +55,7 @@
         "requiresZeroPresentationOffset": true
       },
       "measured": {
-        "overlapRatio": 0.8426,
+        "overlapRatio": 0.28,
         "averageBindingError": 0,
         "modelAnchorCount": 3,
         "sceneAssetHashMatches": true,
@@ -73,9 +73,9 @@
       },
       "measured": {
         "contactProven": true,
-        "normalizedOffset": 0.314,
-        "screenContactDistance": 64.18396579364662,
-        "screenContactDistanceRatio": 0.1401
+        "normalizedOffset": 0.061,
+        "screenContactDistance": 59.87686108172331,
+        "screenContactDistanceRatio": 0.2747
       },
       "blockers": []
     },
@@ -90,7 +90,7 @@
         "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.45,
+        "playSpaceAreaRatio": 0.0908,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
@@ -108,10 +108,10 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.5089,
+        "subjectWorldRatio": 0.2422,
         "characterScaleRatio": "not-required",
         "projectedTargetHeight": "not-required",
-        "renderedSubjectHeight": 458,
+        "renderedSubjectHeight": 218,
         "scaleDelta": "missing"
       },
       "blockers": []

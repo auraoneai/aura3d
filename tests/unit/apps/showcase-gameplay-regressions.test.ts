@@ -242,7 +242,7 @@ describe("public showcase gameplay regressions", () => {
     const hudSource = readFileSync("apps/showcase-turbo-drift-circuit/src/hud.ts", "utf8");
     expect(hudSource).toContain("Speed · km/h");
     expect(source).toContain("renderTurboHudPanel");
-    expect(source).toContain("paceFraction: 0.82");
+    expect(source).toMatch(/paceFraction:\s*visualCaptureCamera\s*\?\s*0\.82/);
     expect(source).toContain("directRearImpact ? 0.5 : 0.86");
     expect(source).toContain("directRearImpact ? 0.2 : 0.1");
   });

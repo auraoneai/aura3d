@@ -41,10 +41,13 @@ for (const id of modelIds) {
   if (!asset || asset.type !== "model" || asset.quality !== "release") throw new Error(`${id} is not a release-grade model`);
   const approvedProvenance = asset.provenance?.license === "CC0-1.0"
     ? ["Aura3D synthesis", "Kenney"].includes(asset.provenance?.author)
-    : asset.provenance?.license?.startsWith("CC-BY-4.0")
-      && ["Daniel Darko", "Daffa Haekal", "3DDomino"].some((author) => asset.provenance?.author?.startsWith(author));
+      : asset.provenance?.license?.startsWith("CC-BY-4.0")
+      && ["Daniel Darko", "Daffa Haekal", "3DDomino", "RiverofCreative"].some((author) => asset.provenance?.author?.startsWith(author));
   if (!approvedProvenance || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable model provenance is incomplete`);
   if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
+  if ((id === "rooftopLayupScorer" || id === "rooftopDefender") && ((asset.animations?.length ?? 0) < 4 || (asset.skeleton?.jointCount ?? 0) < 100)) {
+    throw new Error(`${id} release asset must retain a skinned humanoid and four role-specific clips`);
+  }
   if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
 }
 for (const id of audioIds) {

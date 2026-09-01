@@ -16,11 +16,12 @@
   "blockers": [
     "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:needs-work",
     "evidence:gameplay-proof:platformer:visual-review-screenshot-mismatch",
-    "evidence:platformer-asset-pair:verdict-not-pass:fail",
-    "evidence:platformer-asset-pair:blocker:asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface"
+    "evidence:deploy-artifact:not-passing",
+    "evidence:deploy-artifact:has-warnings",
+    "evidence:deploy-artifact:has-failures"
   ],
-  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/showcase-evidence-checklist.json",
-  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-skyline-runner-myyeew/route-gate.patch.json",
+  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/route-gate.patch.json",
   "rejectedAssets": [],
   "replacementCandidates": [],
   "assetPairComposition": {
@@ -51,7 +52,7 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-f14190c84be3132bc10dc593bad695c669a5c3b366b3fcfa5a262040053d4c05",
+    "contentHash": "sha256-1c7c75602632ead4ff31a52bb807ca25d14d21b6cb049ac3885ab351202982c2",
     "sourceReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "sourceReportHash": "sha256-b0c8f16abb4eb4c715574c502af38e6b170aa37a95dbdeb588340d9ad1865085"
   }

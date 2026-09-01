@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+// @ts-expect-error -- .mjs evidence tooling has no type declarations; its own tests validate the implementation.
+import { readPngVisualCompositionMetrics } from "../../tools/showcase-library/png-foreground.mjs";
 
 /**
  * Mech Hangar BUILD spec — the anti-skin-swap proof.
@@ -32,6 +34,24 @@ const ROUTE_SOURCE_FILES = [
   "apps/showcase-mech-hangar/src/stats.ts",
   "apps/showcase-mech-hangar/src/styles.css"
 ] as const;
+
+const VISUAL_PRIMARY_ASSET_IDS = ["showcaseExpressiveRobot"] as const;
+
+function visualAssetBindings(): readonly { readonly id: string; readonly hash: string; readonly renderedProbe?: string }[] {
+  const manifest = JSON.parse(readFileSync("aura.assets.json", "utf8")) as { assets?: readonly Record<string, unknown>[] };
+  const byId = new Map((manifest.assets ?? []).map((asset) => [String(asset.id), asset]));
+  return VISUAL_PRIMARY_ASSET_IDS.map((id) => {
+    const asset = byId.get(id);
+    if (!asset || typeof asset.hash !== "string") throw new Error(`visual primary asset ${id} is missing from the typed manifest`);
+    return {
+      id,
+      hash: asset.hash,
+      renderedProbe: typeof asset.renderedProbe === "object" && asset.renderedProbe !== null
+        ? String((asset.renderedProbe as Record<string, unknown>).url ?? "")
+        : undefined
+    };
+  });
+}
 
 function routeSourceSha256(): string {
   const hash = createHash("sha256");
@@ -68,6 +88,7 @@ interface EvidenceShape {
   mode: string;
   slots: readonly string[];
   selectedParts: readonly string[];
+  primaryAssetRefs: readonly string[];
   assemblyValidated: boolean;
   catalogReady: boolean;
   curationVerdict: string;
@@ -84,6 +105,7 @@ async function readEvidence(page: import("@playwright/test").Page): Promise<Evid
       mode: String(evidence?.mode ?? ""),
       slots: (evidence?.slots ?? []) as readonly string[],
       selectedParts: (evidence?.selectedParts ?? []) as readonly string[],
+      primaryAssetRefs: (evidence?.primaryAssetRefs ?? []) as readonly string[],
       assemblyValidated: Boolean(evidence?.assemblyValidated),
       catalogReady: Boolean(evidence?.catalogReady),
       curationVerdict: String(evidence?.curationVerdict ?? ""),
@@ -130,6 +152,7 @@ test.describe("Mech Hangar build", () => {
     expect(evidence.curationVerdict).toBe("GO");
     expect(evidence.slots).toEqual(["chassis", "arms", "legs", "weapon"]);
     expect(evidence.selectedParts).toHaveLength(4);
+    expect(evidence.primaryAssetRefs).toContain("assets.showcaseExpressiveRobot");
     expect(evidence.assemblyValidated).toBe(true);
     expect(evidence.registeredAudioCues).toBe(10);
 
@@ -152,6 +175,7 @@ test.describe("Mech Hangar build", () => {
     const beforeAgain = await stageShot();
     // Stability control: reduced motion + no input renders identically.
     expect(before.equals(beforeAgain), "static scene should render identically").toBe(true);
+    await page.screenshot({ path: `${REPORT_DIR}/hangar-default.png` });
 
     await page.keyboard.press("Digit2"); // arms slot
     await page.waitForTimeout(150);
@@ -160,6 +184,20 @@ test.describe("Mech Hangar build", () => {
 
     const afterSwap = await stageShot();
     expect(before.equals(afterSwap), "part swap must change rendered pixels (anti-skin-swap proof)").toBe(false);
+    await page.screenshot({ path: `${REPORT_DIR}/hangar-swap.png` });
+
+    // The default visual gauntlet is intentionally source-bound and excludes the
+    // DOM passport on the right. These checks do not replace human review; they
+    // fail obvious regressions such as a blank/cropped body or a flat empty bay
+    // before a critic is asked to judge the exact bytes.
+    const defaultComposition = readPngVisualCompositionMetrics(`${REPORT_DIR}/hangar-default.png`, { x: 0, y: 0, width: 1080, height: 900 });
+    const swapComposition = readPngVisualCompositionMetrics(`${REPORT_DIR}/hangar-swap.png`, { x: 0, y: 0, width: 1080, height: 900 });
+    expect(defaultComposition.foregroundCoverageRatio, "default hangar must contain a visible rendered subject/world").toBeGreaterThan(0.22);
+    expect(swapComposition.foregroundCoverageRatio, "swapped hangar must retain a visible rendered subject/world").toBeGreaterThan(0.22);
+    expect(defaultComposition.distinctBuckets, "default hangar must retain authored material/light variation").toBeGreaterThan(70);
+    expect(swapComposition.distinctBuckets, "swapped hangar must retain authored material/light variation").toBeGreaterThan(70);
+    expect(defaultComposition.clipped, "default hangar subject/world must not clip the review crop").toBe(false);
+    expect(swapComposition.clipped, "swapped hangar subject/world must not clip the review crop").toBe(false);
 
     const swapped = await readEvidence(page);
     expect(swapped.selectedParts[1]).not.toBe(evidence.selectedParts[1]);
@@ -194,7 +232,10 @@ test.describe("Mech Hangar build", () => {
     expect(arenaEvidence.mode).toBe("arena");
 
     await page.waitForTimeout(3_000);
-    await page.screenshot({ path: REPORT_DIR + "/arena-opening.png" });
+    // Keep this build producer's arena frame separate from the combat producer's
+    // arena-opening.png so running the two specs in either order cannot silently
+    // invalidate an otherwise source-bound receipt.
+    await page.screenshot({ path: REPORT_DIR + "/hangar-arena-opening.png" });
 
     // Touch controls exist mirroring the keys (dual-zone buttons).
     const touchButtons = await page.locator("[data-touch]").count();
@@ -202,8 +243,21 @@ test.describe("Mech Hangar build", () => {
 
     expect(consoleErrors, "route must mount without console errors or failed requests").toEqual([]);
     writeReceipt("build-core-evidence.json", [
-      `${REPORT_DIR}/hangar-build.png`, `${REPORT_DIR}/hangar-stat-panel.png`, `${REPORT_DIR}/arena-opening.png`
-    ], { curationVerdict: evidence.curationVerdict, catalogReady: evidence.catalogReady, invalidPlanErrors: probe!.errors, touchButtons });
+      `${REPORT_DIR}/hangar-default.png`, `${REPORT_DIR}/hangar-swap.png`, `${REPORT_DIR}/hangar-build.png`, `${REPORT_DIR}/hangar-stat-panel.png`, `${REPORT_DIR}/hangar-arena-opening.png`
+    ], {
+      curationVerdict: evidence.curationVerdict,
+      catalogReady: evidence.catalogReady,
+      invalidPlanErrors: probe!.errors,
+      touchButtons,
+      visualPrimaryAssetBindings: visualAssetBindings(),
+      visualChecks: {
+        defaultComposition,
+        swapComposition,
+        defaultAndSwapDiffer: !before.equals(afterSwap),
+        defaultArtifact: `${REPORT_DIR}/hangar-default.png`,
+        swapArtifact: `${REPORT_DIR}/hangar-swap.png`
+      }
+    });
   });
 
   test("all sixteen selections change assembly pixels and their owning gameplay stat", async ({ page }) => {

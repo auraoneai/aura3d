@@ -266,21 +266,24 @@
       "globalName": "__AURA3D_SHOWCASE_SIEGE_GOLF__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": [
-        "siegeGolfBall",
+    "primaryAssets": [
+      "siegeGolfCourseWorld",
+      "siegeGolfBall",
         "siegeWoodenCrate",
         "siegeWoodenBarrel",
         "siegePlankSet"
       ],
-      "primaryAssetRoles": {
+    "primaryAssetRoles": {
+      "siegeGolfCourseWorld": "course-world",
         "siegeGolfBall": "weighted-gameplay-ball",
         "siegeWoodenCrate": "destructible-prop",
         "siegeWoodenBarrel": "destructible-prop",
         "siegePlankSet": "jointed-structure"
       },
       "routePrimaryHeroAsset": "siegeGolfBall",
-      "secondaryPrimaryAssets": [
-        "siegeWoodenCrate",
+    "secondaryPrimaryAssets": [
+      "siegeGolfCourseWorld",
+      "siegeWoodenCrate",
         "siegeWoodenBarrel",
         "siegePlankSet"
       ],
@@ -393,14 +396,14 @@
       "published": true,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "gravityPostMailPod",
+        "gravityPostCourierSkiff",
         "gravityPostDockBeacon"
       ],
       "primaryAssetRoles": {
-        "gravityPostMailPod": "primary-vehicle",
+        "gravityPostCourierSkiff": "primary-vehicle",
         "gravityPostDockBeacon": "dock-landmark-prop"
       },
-      "routePrimaryHeroAsset": "gravityPostMailPod",
+      "routePrimaryHeroAsset": "gravityPostCourierSkiff",
       "secondaryPrimaryAssets": [
         "gravityPostDockBeacon"
       ],
@@ -574,7 +577,7 @@
         "rooftopDefender": "primary-pressure-character"
       },
       "routePrimaryHeroAsset": "rooftopBackboard",
-      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall"],
+      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
       "primitiveBudget": 96,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,

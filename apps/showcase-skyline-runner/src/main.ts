@@ -2259,11 +2259,13 @@ function renderChallengeFeedback(): void {
   // a game-readable circular silhouette and lower emissive energy.
   if (!runCompleted && challengeEvidence.objectiveMet) {
     feedbackNodes.objective
-      .setPosition(px, py + heroHeight * 0.02, pz)
-      .setScale(visualReviewCapture
-        ? [heroHeight * 0.045, heroHeight * 0.045, heroHeight * 0.012]
-        : [heroHeight * 0.15, heroHeight * 0.15, heroHeight * 0.032])
-      .setVisible(true);
+      .setPosition(px, py + heroHeight * 0.02, pz);
+    if (visualReviewCapture) {
+      feedbackNodes.objective.setScale([heroHeight * 0.045, heroHeight * 0.045, heroHeight * 0.012]);
+    } else {
+      feedbackNodes.objective.setScale([heroHeight * 0.15, heroHeight * 0.15, heroHeight * 0.032]);
+    }
+    feedbackNodes.objective.setVisible(true);
     observedFeedbackProof.objectivePulse = true;
   } else {
     feedbackNodes.objective.setScale([...HIDDEN_FEEDBACK_SCALE]).setVisible(false);

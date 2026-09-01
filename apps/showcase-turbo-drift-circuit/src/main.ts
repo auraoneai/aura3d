@@ -105,7 +105,7 @@ const OPPONENT_VEHICLE_ASSET = "showcaseCcByFormulaOpponent";
 const route = game.assetBoundRacingRoute({
   vehicleAsset: HERO_VEHICLE_ASSET,
   trackAsset: "turboFormulaCircuit",
-  authoredLapSeconds: 35,
+  authoredLapSeconds: gameGeometryContract.authoredSeconds,
   minLapSeconds: 30,
   minCheckpoints: 6,
   topology: trackTopology,
@@ -132,7 +132,7 @@ const routeWidth = FORMULA_ASPHALT_WIDTH;
  * certified topology below rather than derived from it, because the design intent is the *requirement* and the
  * extracted geometry is what must satisfy it.
  */
-const authoredLapSeconds = 35;
+const authoredLapSeconds = gameGeometryContract.authoredSeconds;
 const certifiedMaxSpeed = route.assetBinding.speedModel.certifiedSpeed;
 const gameplayPaceMultiplier = 4;
 const gameplayMaxSpeed = Number((certifiedMaxSpeed * gameplayPaceMultiplier).toFixed(3));
@@ -496,7 +496,7 @@ const racingState = game.racing({
   route,
   startProgress: 0,
   checkpointRadius: 0.1,
-  lapsToWin: 4,
+  lapsToWin: 3,
   paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
@@ -565,7 +565,7 @@ const opponentState = game.racing({
   route,
   startProgress: opponentStartProgress,
   checkpointRadius: 0.1,
-  lapsToWin: 4,
+  lapsToWin: 3,
   paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
@@ -789,7 +789,7 @@ const sceneryPlan = planTurboScenery({
 });
 
 // --- TDC-A4: gantry signage plan ------------------------------------------
-const raceLapsToWin = 4;
+const raceLapsToWin = 3;
 const signageBoardLabels = turboSignageBoardLabels(raceLapsToWin);
 // Fails fast at mount time if any board text leaves the engine A-Z/0-9 glyph set.
 assertTurboSignageLabels(signageBoardLabels);

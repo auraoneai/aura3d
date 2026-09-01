@@ -32,6 +32,7 @@ const FORMULA_ASPHALT_WIDTH = 3.6;
  * narrow real circuit and pins the car against the track edge for the whole run.
  */
 const STEER_CORRECTION_GAIN = 2 / Math.max(0.05, FORMULA_ASPHALT_WIDTH / 2);
+const HEADING_CORRECTION_GAIN = 1.35;
 
 /**
  * Must match the mounted route's derived steer rate. See the note in `main.ts`: the
@@ -189,9 +190,11 @@ function simulate() {
     route,
     startProgress: 0,
     checkpointRadius: 0.1,
-    // Must match the mounted route. Tsukuba's authored lap is 35 s, so at pace 4 three
-    // laps would finish at ~26 s, under the 30 s category floor; the route races 4.
-    lapsToWin: 4,
+    // Match the mounted route's three-lap race. The generated Formula topology now
+    // carries a 60-second authored lap, while the gameplay pace multiplier makes a
+    // three-lap proof run long enough to satisfy the 30-second floor without needing
+    // an artificial fourth lap that could finish just beyond the 60-second window.
+    lapsToWin: 3,
     paceMultiplier: 4,
     acceleration: Number((route.assetBinding.speedModel.certifiedSpeed * 4 * 4.1).toFixed(3)),
     drag: 0.28,
@@ -232,14 +235,22 @@ function simulate() {
   let opponentPreviousCheckpoint = opponentAi.snapshot().checkpoint;
 
   for (let frame = 0; frame < RACE_PROOF_FRAMES; frame += 1) {
-    // Steer back toward the racing line using the kit's own `trackOffset`, and pulse the handbrake
+    // Steer toward both the sampled tangent and the signed racing-line offset. The route can curve
+    // while the car is still centred, so an offset-only controller waits until it has already
+    // crossed the verge before it turns. Heading error is measured from the public surface query,
+    // keeping this proof on the same certified topology as the mounted route.
     // when the car is fast and far off-line, which is when a real driver would slide it. Correcting
     // toward the centre is what keeps the car on the road, so `offTrack` reflects real driving
     // rather than a car that never steers.
     // Steer proportionally back toward the racing line using the *signed* offset. `trackOffset` is
     // an unsigned magnitude and cannot express which side of the line the car is on, so a
     // controller reading it has no way to correct and ends up pinned against the track edge.
-    const steer = Math.max(-1, Math.min(1, -snapshot.signedTrackOffset * STEER_CORRECTION_GAIN));
+    const surface = racingState.surfaceQuery.query(snapshot.position);
+    const headingError = normalizeRacingAngle(snapshot.heading - surface.tangentHeading);
+    const steer = Math.max(-1, Math.min(1,
+      -snapshot.signedTrackOffset * STEER_CORRECTION_GAIN
+      - headingError * HEADING_CORRECTION_GAIN
+    ));
     const drift = Math.abs(steer) > 0.6 && snapshot.speed > maxSpeed * 0.5;
 
     snapshot = racingState.step(STEP_SECONDS, { throttle: true, brake: false, drift, steer });
@@ -299,4 +310,11 @@ function simulate() {
     finalOpponentProgress: Number(opponentSnapshot.progress.toFixed(6)),
     resetSnapshot
   };
+}
+
+function normalizeRacingAngle(angle: number): number {
+  let normalized = angle;
+  while (normalized > Math.PI) normalized -= Math.PI * 2;
+  while (normalized < -Math.PI) normalized += Math.PI * 2;
+  return normalized;
 }
