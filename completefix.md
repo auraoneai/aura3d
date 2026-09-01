@@ -1,6 +1,6 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
-## Coordinator receipt — 2026-09-01T22:10Z
+## Coordinator receipt — 2026-09-01T23:45Z
 
 This receipt records the current execution state after the latest parallel
 passes. It is deliberately not a completion claim. The strict visual gate is
@@ -182,7 +182,7 @@ its retained floating-black frame, while Smart City, Digital Twin, and
 Cinematic Architecture remain **reference** after fresh blind review. No
 generated report is hand-authored by this receipt.
 
-**Deployment status:** commit `2d06f7de` is pushed to `origin/main`, and the
+**Deployment status:** commit `12482d03` is pushed to `origin/main`, and the
 local Vercel production build completed successfully. Three bounded Vercel
 upload attempts (source archive, prebuilt, and prebuilt `--no-wait`) failed at
 the upload transport before creating a deployment record; the production alias
@@ -192,7 +192,7 @@ evidence, and it must be cleared before claiming the live site reflects this
 commit.
 
 The next required actions are: resolve the Vercel upload transport, verify the
-live Mech Hangar HTML/assets against commit `2d06f7de`, continue only the
+live Mech Hangar HTML/assets against commit `12482d03`, continue only the
 finite bounded visual lanes listed above, regenerate their named producers,
 run independent blind reviews on any new artifacts, and run focused/release
 gates. Do not turn a reference or insufficient-evidence result into `ours`.
