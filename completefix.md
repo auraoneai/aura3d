@@ -77,9 +77,13 @@ Parallel lanes completed or refreshed in this pass:
   fighters and does not establish muzzle-to-contact-to-damage causality; the
   wall/beams and overexposed center remain flat. Mech stays unresolved.
   The route-primary gate now names `robotcand` as the hero and `mechWeaponA`
-  as the attached secondary; the fresh source-bound probe is still red on
-  generic foreground occupancy (`foreground width 61`, `1784` pixels), so
-  that evidence is not promoted. A fresh label-hidden critic returned
+  as the attached secondary; the fresh source-bound probe generated at
+  `2026-09-01T23:10:15.275Z` is still red on generic foreground occupancy
+  (`foreground width 48`, height `324`, `3,737` nonblank pixels, readability
+  `51`) with screenshot SHA
+  `fce0d989ebabf02c5cb48e0aebde70a103c1dff94f3b8cd6871e4d6744e030f8` and
+  failure `primary-foreground-width:48`, so that evidence is not promoted. A
+  fresh label-hidden critic returned
   **reference**: the shell is coherent, but the weapon reads detached, the
   player/rival are visually identical, the arena action/contact cause-effect
   is weak, and the modular identity is not visible. This does **not** close
@@ -159,8 +163,8 @@ Parallel lanes completed or refreshed in this pass:
 - **Cinematic Architecture:** the bounded pass deepens the blue architectural
   field, removes named cloud meshes that occluded the typed skyline, scales the
   city hero, and repairs the shell/panel typography. The fresh route-primary
-  producer is green; screenshot SHA
-  `da31b1bd12771c43fbfc4d0e05cae354688c4e6593a91b135110ed83ebed9473` with
+  producer is green; the latest source-bound screenshot SHA is
+  `ae151a4965271870f1b07afbbf140ffd6949f2e3a09d9620437f21d58152a35e` with
   main source SHA `eb78bbc2b83c4107726c6825c0e1ea1d93884be459c6eb5f544371710a410d2c`
   and CSS source SHA
   `b6beb9fe8833e5adba59894f4671c3d0ac6f61eba6499e51e7190e39ca4b3245`.
@@ -178,11 +182,20 @@ its retained floating-black frame, while Smart City, Digital Twin, and
 Cinematic Architecture remain **reference** after fresh blind review. No
 generated report is hand-authored by this receipt.
 
-The next required actions are: finish the active parallel source passes,
-regenerate their named producers, run independent blind reviews on any new
-artifacts, run focused and release gates, then update this receipt with the
-actual hashes and remaining holds before any commit/push/deploy. Do not turn a
-reference or insufficient-evidence result into `ours`.
+**Deployment status:** commit `2d06f7de` is pushed to `origin/main`, and the
+local Vercel production build completed successfully. Three bounded Vercel
+upload attempts (source archive, prebuilt, and prebuilt `--no-wait`) failed at
+the upload transport before creating a deployment record; the production alias
+therefore still points to the prior deployment and can still show the stale
+black/white Mech Hangar slabs. This is a deployment transport hold, not visual
+evidence, and it must be cleared before claiming the live site reflects this
+commit.
+
+The next required actions are: resolve the Vercel upload transport, verify the
+live Mech Hangar HTML/assets against commit `2d06f7de`, continue only the
+finite bounded visual lanes listed above, regenerate their named producers,
+run independent blind reviews on any new artifacts, and run focused/release
+gates. Do not turn a reference or insufficient-evidence result into `ours`.
 
 You are the senior Aura3D engineer, technical artist, gameplay engineer, and
 evidence reviewer responsible for finishing the repository's premium-indie
