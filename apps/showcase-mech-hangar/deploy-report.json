@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.mech-hangar.deploy/1.0",
-  "generatedAt": "2026-09-02T02:27:44.185Z",
+  "generatedAt": "2026-09-02T04:22:19.116Z",
   "producer": "apps/showcase-mech-hangar/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "d4bb5978c7543cbbea158225544970968317e86dd39f56cf011c54cc767dda6d",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "56af72352d46a20edbbcf89e51f3bc2c9bcf330584e9eebbe055f78d352aa58d",
-  "sourceTreeSha256": "5800a959eb44f969c5c18944eb99012217f8441087cdeff5ceb186b4ea571e4c",
+  "distTreeSha256": "e4f686edb058af63abbd6f54dbf93c76df57e2df4fc2f2eca672e0b58643bdd3",
+  "sourceTreeSha256": "e2262bf57ae5d3c4f3f5ddcda627f0c5b027ad1b538e5de5831eaabafe9a69ef",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",

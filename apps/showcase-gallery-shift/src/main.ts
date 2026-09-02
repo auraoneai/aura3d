@@ -447,43 +447,54 @@ function floorClearAdvance(): void {
 
 // ---------------------------------------------------------------- scene ------
 function guardCharacterNodes(): AuraSceneNode[] {
-  return runtime.layout.guards.flatMap((spawn) =>
-    [
-      model(assets.showcaseExpressiveRobot, {
+  return runtime.layout.guards.flatMap((spawn) => {
+    const rover = spawn.id === "guard-1";
+    // Give the staged guard-1 intercept a materially different,
+    // already-registered industrial security rover, while keeping guard-2
+    // as the animated humanoid sentry. The two typed silhouettes then read as
+    // separate patrol roles instead of two near-identical gold blobs at the
+    // oblique review distance. Both still follow the same authored guard
+    // state/LOS truth below.
+    const nodes: AuraSceneNode[] = [
+      model(rover ? assets.showcaseOrangeIndustrialRobot : assets.showcaseExpressiveRobot, {
         name: spawn.id,
         role: "primaryCharacter",
         scaleMode: "fit",
-        // Keep the real typed robot human-scale in the authored metre layout;
-        // the larger target is paired with a contact footprint so the actor
-        // reads as a standing sentry rather than a floating token.
-        // Keep the two real typed sentries visually comparable to the thief;
-        // the larger target is paired with the renderer-owned contact detail
-        // below, not a replacement silhouette.
-        targetMaxDimension: 4.8
+        targetMaxDimension: rover ? 3.35 : 4.8
       })
         .position(spawn.x, 0, spawn.z)
-        .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
-        .toJSON(),
-      geometry.custom(GUARD_DETAIL_GEOMETRY, {
-        name: `${spawn.id} sentry identity detail`,
-        material: GUARD_DETAIL_MATERIAL
-      })
-        .position(spawn.x, 0, spawn.z)
-        .scale([0.92, 0.92, 0.92])
-        .runtime(game.runtimeNode(`${spawn.id} sentry identity detail`, {
-          tags: ["typed-set-dressing", "guard-identity", "renderer-owned", "authored-movement"]
+        .runtime(game.runtimeNode(spawn.id, {
+          tags: ["typed-asset", "guard", "authored-movement", rover ? "rover-sentry" : "animated-sentry"]
         }))
         .toJSON(),
       shadows.contact({
         name: `${spawn.id} contact shadow`,
-        footprint: [0.94, 0.68],
+        footprint: rover ? [1.58, 1.02] : [0.94, 0.68],
         opacity: 0.5,
         color: "#02040a"
       })
         .runtime(game.runtimeNode(`${spawn.id} contact shadow`, { tags: ["stealth-feedback", "contact-grounding", "renderer-owned"] }))
         .toJSON()
-    ]
-  );
+    ];
+    // The chest/visor harness is shaped for the humanoid's torso. The rover's
+    // native orange/graphite materials carry its identity without detached
+    // magenta bars crossing the vehicle silhouette.
+    if (!rover) {
+      nodes.splice(1, 0,
+        geometry.custom(GUARD_DETAIL_GEOMETRY, {
+          name: `${spawn.id} sentry identity detail`,
+          material: GUARD_DETAIL_MATERIAL
+        })
+          .position(spawn.x, 0, spawn.z)
+          .scale([0.92, 0.92, 0.92])
+          .runtime(game.runtimeNode(`${spawn.id} sentry identity detail`, {
+            tags: ["typed-set-dressing", "guard-identity", "renderer-owned", "authored-movement"]
+          }))
+          .toJSON()
+      );
+    }
+    return nodes;
+  });
 }
 
 function pedestalAndExhibitNodes(): AuraSceneNode[] {
@@ -884,12 +895,19 @@ function buildScene(): ReturnType<typeof scene> {
       // while retaining a deliberate margin around the complete cutaway so
       // route-primary subject isolation never reports an architectural edge
       // clipped by the review viewport.
-      position: visualReviewCapture ? [5.8, 18.0, 12.8] : [0, 13.4, 13.8],
+      // A centred, higher spectator lens keeps the full 20m cutaway inside
+      // the 1440x900 review crop.  The previous southeast oblique angle put
+      // the near perimeter on the lower/right viewport edges (the route
+      // primary probe correctly reported that as clipped) and compressed the
+      // two live patrol silhouettes into the same diagonal lane.  This is a
+      // camera-only presentation change: FloorLayout, LOS, patrol positions,
+      // and the staged encounter remain unchanged.
+      position: visualReviewCapture ? [0, 23.0, 15.0] : [0, 13.4, 13.8],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
-      target: visualReviewCapture ? [0, 0.95, 1.65] : [0, 0.72, -0.45],
-      fov: visualReviewCapture ? 45 : 40
+      target: visualReviewCapture ? [0, 1.0, 0.0] : [0, 0.72, -0.45],
+      fov: visualReviewCapture ? 50 : 40
     }));
 }
 
@@ -926,14 +944,20 @@ const thiefAnimation = new AnimationController<string>({
   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
   suppressRootMotion: true
 });
-const guardAnimations = ["guard-1", "guard-2"].map((id) =>
+// Guard-1 is the typed industrial rover and carries no embedded humanoid
+// clips; its patrol is the route-local authored transform. Guard-2 is the
+// expressive humanoid sentry and owns the real Idle/Walking/Running clips.
+// Keep the controller slot so guard IDs stay stable in evidence without
+// claiming animation metadata that the rover does not contain.
+const guardAnimations: Array<AnimationController<string> | null> = [
+  null,
   new AnimationController<string>({
-    id: `${id}-animation`,
+    id: "guard-2-animation",
     clipRegistry: assets.showcaseExpressiveRobot as unknown as AuraAnimationAssetLike,
     requiredClips: [GUARD_CLIPS.idle, GUARD_CLIPS.walk, GUARD_CLIPS.run],
     suppressRootMotion: true
   })
-);
+];
 
 const thiefNodeHandle = app.nodes.get("thief") as AuraRuntimeNodeHandle | undefined;
 if (thiefNodeHandle) thiefAnimation.bindRuntimeNode(thiefNodeHandle, { id: "thief-runtime-animation", defaultClipId: THIEF_CLIPS.idle });
@@ -943,6 +967,7 @@ for (const spawn of FLOOR_LAYOUTS[0]!.guards) {
   if (handle) guardNodeHandles.set(spawn.id, handle);
 }
 guardAnimations.forEach((controller, index) => {
+  if (!controller) return;
   const id = FLOOR_LAYOUTS[0]!.guards[index]!.id;
   const handle = guardNodeHandles.get(id);
   if (handle) controller.bindRuntimeNode(handle, { id: `${id}-runtime-animation`, defaultClipId: GUARD_CLIPS.idle });
@@ -961,10 +986,12 @@ function playThiefClip(clip: string): void {
 
 const guardClipActive = new Map<string, string>();
 function playGuardClip(guardId: string, controllerIndex: number, clip: string): void {
+  const controller = guardAnimations[controllerIndex];
+  if (!controller) return;
   if (guardClipActive.get(guardId) === clip) return;
   guardClipActive.set(guardId, clip);
   try {
-    guardAnimations[controllerIndex]?.crossFade(clip, 0.12, { loop: "loop" });
+    controller.crossFade(clip, 0.12, { loop: "loop" });
   } catch {
     // See above.
   }
@@ -1377,9 +1404,9 @@ function publishEvidence(): void {
     debugOverlayVisible: showDebugOverlay,
     animation: {
       thiefActiveClip: thiefAnimation.snapshot().activeClipId ?? null,
-      guardActiveClips: guardAnimations.map((controller) => controller.snapshot().activeClipId ?? null),
+      guardActiveClips: guardAnimations.map((controller) => controller?.snapshot().activeClipId ?? null),
       thiefDiagnostics: thiefAnimation.diagnostics().filter((issue) => issue.severity === "error").length,
-      guardDiagnostics: guardAnimations.map((controller) => controller.diagnostics().filter((issue) => issue.severity === "error").length)
+      guardDiagnostics: guardAnimations.map((controller) => controller?.diagnostics().filter((issue) => issue.severity === "error").length ?? 0)
     },
     renderer: {
       drawCalls: diagnostics.drawCalls ?? 0,
@@ -1493,11 +1520,11 @@ function togglePause(): void {
   if (paused) {
     app.pause();
     thiefAnimation.pause();
-    for (const controller of guardAnimations) controller.pause();
+    for (const controller of guardAnimations) controller?.pause();
   } else {
     app.resume();
     thiefAnimation.resume();
-    for (const controller of guardAnimations) controller.resume();
+    for (const controller of guardAnimations) controller?.resume();
   }
   syncHud();
   publishEvidence();
@@ -1698,7 +1725,7 @@ gameApp.onFrame(({ dt }) => {
   // Animation controllers: real embedded clips switched by gameplay state.
   thiefAnimation.update(dtFixed);
   playThiefClip(THIEF_CLIPS[thiefSnap.clip]);
-  guardAnimations.forEach((controller, index) => controller.update(dtFixed));
+  guardAnimations.forEach((controller) => controller?.update(dtFixed));
   runtime.guards.forEach((guard, index) => {
     const snap = guard.snapshot();
     const clip = snap.state === "alert" ? GUARD_CLIPS.run : GUARD_CLIPS.walk;

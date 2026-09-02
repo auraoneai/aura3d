@@ -1051,6 +1051,163 @@ function buildTurboSceneryNodes() {
 }
 
 /**
+ * Small authored marshal modules that give the opening straight a human scale.
+ *
+ * The Formula GLB owns the certified road, barriers, and collision topology;
+ * these service-lane pods are renderer-only set dressing placed beyond the
+ * visual asphalt edge from the same centreline samples as the cars.  A few
+ * colored control panels, trim rails, and signal masts add a legible circuit
+ * identity in the chase frame without reintroducing the rejected black tyre
+ * stacks or competing with the primary vehicles.
+ */
+function buildTurboTracksideIdentityNodes() {
+  // Keep the modules in the first visible third of the straight.  Farther
+  // anchors disappeared behind the treeline at the retained chase distance,
+  // so these nearer service markers establish depth without crossing the lane.
+  const stationProgresses = [0.22, 0.26, 0.3, 0.34] as const;
+  const podTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const trimTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const mastTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const signalTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const podColors: string[] = [];
+  const signalColors: string[] = [];
+
+  for (let index = 0; index < stationProgresses.length; index += 1) {
+    const progress = stationProgresses[index]!;
+    const sample = sampleCentreline(progress);
+    const side = index % 2 === 0 ? 1 : -1;
+    const lateral = visualAsphaltHalfWidthGame + 0.48;
+    const leftX = Math.sin(sample.heading);
+    const leftZ = -Math.cos(sample.heading);
+    const point = {
+      x: sample.x + leftX * lateral * side,
+      y: sample.y + leftZ * lateral * side
+    };
+    const pose = racingScene.toScenePose({ position: point, heading: sample.heading });
+    const roadY = sampleTurboRoadHeight(pose.position[0], pose.position[2]);
+    const baseY = roadY + 0.18;
+    const trimY = roadY + 0.35;
+    const mastY = roadY + 0.64;
+    podTransforms.push({
+      position: [pose.position[0], baseY, pose.position[2]],
+      rotation: [0, pose.rotation[1], 0],
+      scale: [0.42, 0.32, 0.16]
+    });
+    trimTransforms.push({
+      position: [pose.position[0], trimY, pose.position[2]],
+      rotation: [0, pose.rotation[1], 0],
+      scale: [0.44, 0.045, 0.17]
+    });
+    mastTransforms.push({
+      position: [pose.position[0], mastY, pose.position[2]],
+      rotation: [0, pose.rotation[1], 0],
+      scale: [0.026, 0.3, 0.026]
+    });
+    signalTransforms.push({
+      position: [pose.position[0], mastY + 0.16, pose.position[2]],
+      rotation: [0, pose.rotation[1], 0],
+      scale: [0.11, 0.052, 0.034]
+    });
+    podColors.push(index % 2 === 0 ? "#d8664d" : "#367f93");
+    signalColors.push(index % 2 === 0 ? "#ffd27f" : "#72ecdf");
+  }
+
+  // One approach gantry sits over the first visible bend so the route reads as
+  // a designed race venue rather than an empty slab.  Its posts clear the same
+  // measured asphalt width as the service pods; the crossbar is set dressing
+  // only and never enters the racing/contact topology.
+  const gantrySample = sampleCentreline(0.28);
+  const gantryCenter = gamePointToScene(gantrySample);
+  const gantryPose = racingScene.toScenePose({
+    position: { x: gantrySample.x, y: gantrySample.y },
+    heading: gantrySample.heading
+  });
+  const gantryRoadY = sampleTurboRoadHeight(gantryCenter[0], gantryCenter[2]);
+  const gantryHalfSpan = gamePointToSceneLength(turboVisualAsphaltWidth(routeWidth)) / 2 + 0.24;
+  const gantryLeftX = Math.sin(gantrySample.heading) * gantryHalfSpan;
+  const gantryLeftZ = -Math.cos(gantrySample.heading) * gantryHalfSpan;
+  const gantryPostHeight = 1.28;
+  const gantryPostPositions: [number, number, number][] = [
+    [gantryCenter[0] + gantryLeftX, gantryRoadY + gantryPostHeight / 2, gantryCenter[2] + gantryLeftZ],
+    [gantryCenter[0] - gantryLeftX, gantryRoadY + gantryPostHeight / 2, gantryCenter[2] - gantryLeftZ]
+  ];
+  const gantryCrossbar = primitives.box({
+    name: "turbo approach gantry crossbar",
+    material: material.pbr({ name: "approach gantry steel", color: "#283b47", roughness: 0.5, metallic: 0.58 }),
+    castShadow: false,
+    receiveShadow: false
+  })
+    .position(gantryCenter[0], gantryRoadY + gantryPostHeight, gantryCenter[2])
+    .rotate(0, gantryPose.rotation[1], 0)
+    .scale([gantryHalfSpan * 2 + 0.08, 0.065, 0.08])
+    .runtime(game.runtimeNode("turbo-approach-gantry-crossbar", {
+      tags: ["track-detail", "service-lane-identity", "renderer-owned", "non-colliding"]
+    }));
+  const gantryBoard = primitives.box({
+    name: "turbo approach gantry identity board",
+    material: material.emissive({ name: "approach gantry identity", color: "#e56b4f", emissive: "#ffb38c", emissiveIntensity: 0.72, roughness: 0.42 }),
+    castShadow: false,
+    receiveShadow: false
+  })
+    .position(gantryCenter[0], gantryRoadY + gantryPostHeight - 0.16, gantryCenter[2])
+    .rotate(0, gantryPose.rotation[1], 0)
+    .scale([gantryHalfSpan * 1.42, 0.23, 0.045])
+    .runtime(game.runtimeNode("turbo-approach-gantry-identity-board", {
+      tags: ["signage", "track-detail", "renderer-owned", "non-colliding"]
+    }));
+  const gantryPosts = gantryPostPositions.map((position, index) =>
+    primitives.box({
+      name: `turbo approach gantry post ${index + 1}`,
+      material: material.pbr({ name: "approach gantry post", color: "#1d2b33", roughness: 0.56, metallic: 0.62 }),
+      castShadow: false,
+      receiveShadow: false
+    })
+      .position(...position)
+      .rotate(0, gantryPose.rotation[1], 0)
+      .scale([0.06, gantryPostHeight, 0.06])
+      .runtime(game.runtimeNode(`turbo-approach-gantry-post-${index + 1}`, {
+        tags: ["track-detail", "service-lane-identity", "renderer-owned", "non-colliding"]
+      }))
+  );
+
+  return [
+    instances.box({
+      name: "circuit marshal control pods (instanced)",
+      material: material.pbr({ name: "marshal pod panels", color: "#243844", roughness: 0.72, metallic: 0.14 }),
+      instanceColors: podColors,
+      castShadow: false,
+      receiveShadow: true,
+      transforms: podTransforms
+    }),
+    instances.box({
+      name: "circuit marshal pod trim (instanced)",
+      material: material.pbr({ name: "marshal pod trim", color: "#f0d4a6", roughness: 0.48, metallic: 0.2 }),
+      castShadow: false,
+      receiveShadow: false,
+      transforms: trimTransforms
+    }),
+    instances.cylinder({
+      name: "circuit marshal signal masts (instanced)",
+      material: material.pbr({ name: "marshal mast steel", color: "#1b2931", roughness: 0.58, metallic: 0.56 }),
+      castShadow: false,
+      receiveShadow: false,
+      transforms: mastTransforms
+    }),
+    instances.box({
+      name: "circuit marshal signal lamps (instanced)",
+      material: material.emissive({ name: "marshal signal lamps", color: "#ffd27f", emissive: "#ffb347", emissiveIntensity: 0.9, roughness: 0.32 }),
+      instanceColors: signalColors,
+      castShadow: false,
+      receiveShadow: false,
+      transforms: signalTransforms
+    }),
+    ...gantryPosts,
+    gantryCrossbar,
+    gantryBoard
+  ];
+}
+
+/**
  * Review-only paint that follows the certified centreline and sits above the
  * typed circuit's asphalt.  It does not replace the track asset or collision
  * surface: the narrow alternating curb blocks simply make the road boundary
@@ -1763,6 +1920,42 @@ const observedVehicleGrounding = {
 };
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
 const initialOpponentPose = racingScene.toScenePose(opponentAi.snapshot(), opponentRacingLineOffset);
+/**
+ * Renderer-owned dust volume for the drift seam.
+ *
+ * The hand-placed puffs below preserve deterministic contact evidence, but a
+ * stopped sphere chain still reads as two ellipsoidal decals at the review
+ * distance.  This single typed Aura particle layer supplies the missing
+ * volumetric breakup: the same live slip/asphalt predicate drives its runtime
+ * transform and visibility, while the scene effect owns the actual 3-D smoke
+ * motion.  It is intentionally bounded (one pooled draw, 300 requested
+ * particles) so it cannot turn the route into an unbounded emitter.
+ */
+const driftParticleCloud = effects.particles({
+  name: "typed drift dust cloud",
+  emitter: "fountain",
+  color: "#d8c7b5",
+  particleCount: 300,
+  emissionRate: 240,
+  radius: 0.22,
+  height: 0.34,
+  intensity: 0.76,
+  speed: 0.52,
+  gravity: 1.15,
+  groundCollision: true,
+  lifetimeColorRamp: ["#f4e0c4", "#cfbca9", "#9d8f86"],
+  materialMode: "smoke",
+  texturedBillboard: true,
+  sizeOverLife: [0.24, 1.08, 0.7],
+  alphaOverLife: [0.08, 0.58, 0],
+  velocityOverLife: [0.5, 0.88, 0.3],
+  turbulence: 0.3,
+  noise: 0.26,
+  splashes: false,
+  mist: true
+}).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-drift-particle-cloud", {
+  tags: ["vehicle-feedback", "drift-smoke", "renderer-owned", "typed-particle-effect"]
+}));
 /*
  * Resolve the first rendered pose through the same four-wheel chassis path used by
  * every later frame.  Starting the model at the route centre plane and waiting for
@@ -2184,6 +2377,10 @@ const app = createAuraApp("#app", {
     // and worked-in rubber establish a continuous corner, and the distant LOD
     // bands close the horizon without entering gameplay/contact state.
     .addMany(buildTurboSceneryNodes())
+    // A compact row of colored marshal pods and signal masts gives the opening
+    // straight a recognizable service-lane rhythm at review scale.  The pods
+    // are outside the visual asphalt edge and never participate in contact.
+    .addMany(buildTurboTracksideIdentityNodes())
     .addMany(buildTurboRoadDetailNodes())
     .addMany(visualCaptureCamera ? buildTurboTreelineBands() : [])
     .addMany(buildTurboSignageNodes())
@@ -2290,6 +2487,10 @@ const app = createAuraApp("#app", {
           tags: ["vehicle-feedback", "drift-smoke", "renderer-owned", "pooled-history"]
         }))
     ))
+    // A single renderer-owned particle layer adds soft volumetric breakup to
+    // the deterministic tyre-puff tableau. It is moved from the live rear axle
+    // below and remains hidden unless the car is genuinely slipping on asphalt.
+    .add(driftParticleCloud)
     .camera(racingCamera)
 });
 
@@ -2336,6 +2537,7 @@ const rightDriftSmoke = app.nodes.require("racing-right-drift-smoke");
 const visualDriftPlumes = Array.from({ length: VISUAL_DRIFT_PLUME_COUNT }, (_, index) =>
   app.nodes.require(`racing-drift-plume-${index}`)
 );
+const driftParticleCloudNode = app.nodes.require("racing-drift-particle-cloud");
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "racing",
@@ -3635,8 +3837,25 @@ app.onFrame(({ dt }) => {
           ? [smokeScale * 0.34, smokeScale * 0.24, smokeScale * 0.52]
           : [smokeScale * 0.68, smokeScale * 0.38, smokeScale * 1.35])
         : [0.001, 0.001, 0.001])
-      .setVisible(driftSmokeVisible);
+      // The particle cloud below replaces these low-frequency spheres in the
+      // held review frame; retain them for normal gameplay only so a camera
+      // close-up cannot turn two contact puffs into translucent bubbles.
+      .setVisible(driftSmokeVisible && !visualCaptureCamera);
   }
+  // Keep the volumetric layer on the same measured rear-axle contact as the
+  // hand-authored puffs. The emitter's local fountain rises and disperses in
+  // 3-D; moving its runtime node here preserves the live slip/asphalt cause
+  // instead of turning it into a free-floating ambient effect.
+  const particleRearTrail = rearAxleOffset + tireExitGap * 0.34;
+  const particleRearX = playerPose.position[0] - Math.cos(heading) * particleRearTrail;
+  const particleRearZ = playerPose.position[2] - Math.sin(heading) * particleRearTrail;
+  driftParticleCloudNode
+    .setPosition(particleRearX, playerPresentationRoadY + 0.016, particleRearZ)
+    .setRotation(0, playerPose.rotation[1] + reviewSlipYaw * 0.36, 0)
+    .setScale(driftSmokeVisible
+      ? (visualCaptureCamera ? [1.18, 0.58, 1.38] : [0.92, 0.48, 1.12])
+      : [0.001, 0.001, 0.001])
+    .setVisible(driftSmokeVisible);
   const reviewTrailForwardPoint = gamePointToScene({
     x: raceSnapshot.position.x + Math.cos(raceSnapshot.heading) * 0.1,
     y: raceSnapshot.position.y + Math.sin(raceSnapshot.heading) * 0.1
@@ -3690,7 +3909,9 @@ app.onFrame(({ dt }) => {
       // other pooled entry is used and each one is stretched along the solved
       // route heading, so the feedback reads as tyre smoke trailing the real
       // slide rather than detached circular decals.
-      .setVisible(driftSmokeVisible && (!visualCaptureCamera || (reviewPuffVisible && index % 2 === 0)));
+      // Keep the deterministic sphere-chain feedback for the public live route;
+      // review capture uses the volumetric particle layer above instead.
+      .setVisible(driftSmokeVisible && !visualCaptureCamera && (!reviewPuffVisible || index % 2 === 0));
   }
   if (driftSmokeVisible) {
     driftSmokeFrame += 1;

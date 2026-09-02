@@ -26,7 +26,7 @@ const entries = [
     file: "rooftopAthleteShooter.glb",
     role: "character",
     adaptation: "Ball hierarchy removed from the CC-BY source; the route-owned typed basketball remains the sole gameplay ball. Pose, meshes, and packed textures are preserved.",
-    suitability: "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; no animation or controller capability is claimed."
+    suitability: "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; this asset makes no controller-capability claim."
   },
   {
     id: "rooftopAthleteDefender",

@@ -539,11 +539,34 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
         tags: ["typed-asset", "freight-world", "renderer-owned", "non-colliding"]
       }));
   // The compact GLB remains available on the normal planning board as a
-  // typed supporting-world asset. The named close review intentionally omits
-  // it: its low-poly footprint competes with the courier at action distance,
-  // while the procedural freightway below supplies the review corridor's
-  // continuous deck, skyline, and destination architecture.
-  if (!visualReviewCapture) sceneBuilder = sceneBuilder.add(freightDistrictNode);
+  // typed supporting-world asset.  The close review keeps one compact,
+  // side-mounted copy as the textured loading-bay anchor: it gives the
+  // otherwise authored corridor a concrete freight-city material break at
+  // action distance without occluding the live courier lane or destination
+  // gate.  The procedural freightway remains the continuous deck, skyline,
+  // and destination architecture; this is one renderer-owned set-dressing
+  // node and never participates in gameplay, sensors, or scoring.
+  if (!visualReviewCapture) {
+    sceneBuilder = sceneBuilder.add(freightDistrictNode);
+  } else {
+    // Keep the sidecar on the far shoulder of the camera-facing corridor and
+    // deliberately subordinate to the courier: its job is a material/depth
+    // anchor in the skyline, not a second foreground hero.
+    const [sidecarX, sidecarZ] = corridorPoint(0.44, -1.86);
+    sceneBuilder = sceneBuilder.add(
+      model(assets.gravityPostFreightDistrict, {
+        name: "Gravity Post textured loading-bay sidecar",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 1.35
+      })
+        .position(sidecarX, PLAY_PLANE_Y + 0.1, sidecarZ)
+        .rotate(0, approachYaw, 0)
+        .runtime(game.runtimeNode("gravity-post-textured-loading-bay-sidecar", {
+          tags: ["typed-asset", "freight-world", "review-set-dressing", "non-colliding"]
+        }))
+    );
+  }
 }
 
 const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {

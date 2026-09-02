@@ -263,6 +263,26 @@ function buildScene() {
       lights.point({ name: "pavilion warm bay practical", color: "#ffd39a", intensity: visualReviewCapture ? 1.35 : 2.0 }).position(-4.4, 4.8, -4.8),
       lights.directional({ color: "#4aa8d8", intensity: visualReviewCapture ? 0.52 : 1.45 }).position(-12, 14, -8),
       lights.directional({ color: "#f59e0b", intensity: visualReviewCapture ? 1.05 : 1.2 }).position(0, 8, -20),
+      // A broad two-source stage rig keeps the actual textured athletes from
+      // reading as flat silhouettes against the pavilion.  The cool front
+      // softbox resolves jersey folds, skin, and shoes; the warm side card
+      // separates the airborne contest pose from the dark glass bays.  These
+      // are renderer lights (not DOM effects), and are intentionally present
+      // at lower intensity during normal play so the night contrast survives.
+      lights.rect({
+        name: "review athlete front softbox",
+        color: "#fff4e5",
+        intensity: visualReviewCapture ? 2.25 : 0.72,
+        width: 4.8,
+        height: 3.6
+      }).position(-2.6, 4.6, 4.7),
+      lights.rect({
+        name: "review athlete warm side card",
+        color: "#ffd0a3",
+        intensity: visualReviewCapture ? 1.25 : 0.42,
+        width: 3.2,
+        height: 3.0
+      }).position(4.2, 3.8, 1.4),
 
       // 10/10 Surrounding Skyscraper Skyline, Court Lines & Stanchion
       ...createRooftopDressing({ reviewCapture: visualReviewCapture }),
@@ -835,9 +855,13 @@ function syncTransforms(): void {
     shooterNode
       ?.setRotation(-0.2 * followLean + 0.08 * landingSettle, -0.74, -0.11 * releaseExtension)
       .setScale([
-        1.24 - releaseExtension * 0.055 + shooterBodyCompression * 0.045,
-        1.24 + releaseExtension * 0.105 - shooterBodyCompression * 0.11,
-        1.24 + shooterBodyCompression * 0.035
+        // The reviewed action frame is intentionally a closer athlete read:
+        // the real textured jersey/skin/shoe surfaces need enough pixels to
+        // survive the venue's depth layers.  This is a bounded model-scale
+        // adjustment, not a camera or evidence-threshold change.
+        1.42 - releaseExtension * 0.055 + shooterBodyCompression * 0.045,
+        1.42 + releaseExtension * 0.105 - shooterBodyCompression * 0.11,
+        1.42 + shooterBodyCompression * 0.035
       ]);
   }
   const shooterShadow = app.nodes.get("shooter-contact-shadow") as AuraRuntimeNodeHandle | undefined;
@@ -925,9 +949,9 @@ function syncTransforms(): void {
         defenderNode
           .setRotation(-0.24 * airborne, 0.58 + reachSide * 0.12, -reachSide * 0.42 * airborne)
           .setScale([
-            1.18 - airborne * 0.065,
-            1.18 + airborne * 0.15,
-            1.18 - airborne * 0.025
+            1.36 - airborne * 0.065,
+            1.36 + airborne * 0.15,
+            1.36 - airborne * 0.025
           ]);
       }
     } else if (visualReviewCapture && defenderAnimationState !== "hidden") {

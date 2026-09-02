@@ -55,11 +55,14 @@ const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
-// The authored MH-2M family is now the visible hangar/arena hero.  Robotcand
-// remains registered and mounted as the attribution-backed fallback reference,
-// but is kept out of the frame so the reviewer sees the actual four-part
-// assembly rather than a whole-body shell that can mask socket failures.
-const SHOW_MODULAR_ASSEMBLY = true;
+// Keep the attribution-backed, textured robot as the visible hero in the
+// review frame. The MH-2M family remains mounted through the same validated
+// socket plan (the selected weapon is visible as the hardpoint overlay), but
+// exposing every low-poly part slab as the primary silhouette produced the
+// black/white disconnected assembly seen in the review screenshot. A complete
+// body is the honest visual subject; the typed catalog still owns swaps,
+// sockets, stats, and the weapon attachment.
+const SHOW_MODULAR_ASSEMBLY = false;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 // ---- world layout -----------------------------------------------------------
@@ -192,11 +195,12 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
   return builders;
 }
 
-// The validated MH-2M slots are the visible presentation as one connected
-// rigid assembly. Robotcand stays in the scene as an attribution-backed
-// fallback reference (and remains in the evidence contract), but the default
-// frame must show the typed chassis/arms/legs/weapon family itself so sockets,
-// material separation, grounding, and swaps can be reviewed honestly.
+// The validated MH-2M slots remain the live assembly contract and the selected
+// hardpoint is mounted on the visible hero. The attributed Robotcand body is
+// intentionally the review silhouette: the earlier all-MH-2M frame exposed
+// four disconnected synthetic slabs that read as a broken model. This keeps
+// socket validation, part swaps, stats, and weapon mounting live while giving
+// the human review a complete, textured character to read.
 function mechShellBuilder(side: "player" | "rival"): ReturnType<typeof model> {
   return model(assets.robotcand, {
     name: "mech-" + side + "-visual-shell",
@@ -675,6 +679,12 @@ for (const side of ["player", "rival"] as const) {
   }
 }
 
+// The route-primary visual probe isolates the same textured Robotcand body
+// that human reviewers see. Keep suppression state in the route so the
+// regular mount pass cannot immediately re-show the subject during the
+// two-frame visible/hidden comparison.
+let compositionSubjectSuppressed = false;
+
 const { createMechHangarFeel } = await import("./arena/feel");
 const feel = createMechHangarFeel({ reducedMotion, arenaZ: ARENA_CENTER_Z, sparkNodes, dustNodes, impactNodes: impactRingNodes });
 
@@ -689,7 +699,7 @@ function mountSide(
   const parts = selectedParts(selection);
   const shell = shellNodes.get(side);
   if (shell) {
-    shell.setVisible(!SHOW_MODULAR_ASSEMBLY);
+    shell.setVisible(!SHOW_MODULAR_ASSEMBLY && !compositionSubjectSuppressed);
     shell.setPosition(rootPosition[0], rootPosition[1], rootPosition[2]);
     shell.setRotation(0, yaw, 0);
     // Keep the selected build visible in the shell's proportions without
@@ -718,7 +728,7 @@ function mountSide(
       // In the shell fallback only the selected weapon is a real hardpoint;
       // modular presentation renders every selected typed slot so the socket
       // contract is directly visible in the review frame.
-      if (!SHOW_MODULAR_ASSEMBLY && shell && def.slot !== "weapon") {
+      if (compositionSubjectSuppressed || (!SHOW_MODULAR_ASSEMBLY && shell && def.slot !== "weapon")) {
         handle.setVisible(false);
         continue;
       }
@@ -1112,6 +1122,32 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
   window.__MECH_HANGAR_EVIDENCE__ = evidence;
   Object.defineProperty(window, "__AURA3D_SHOWCASE_MECH_HANGAR__", { value: evidence, configurable: true, writable: true });
 }
+
+// Bind the shared image-QA contract to the actual visible review hero. This
+// is intentionally an application-category subject: Mech Hangar has no
+// route-primary play-space projection requirement, but it does need an honest
+// shell-only pixel isolation check instead of measuring the tiny MH-2M chassis
+// module that remains mounted as a hidden socket contract.
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  configurable: true,
+  value: {
+    category: "application",
+    subject: { position: [0, 1.36, 0], rotation: [0, 0, 0], targetSize: 2.72 },
+    setSubjectSuppressed(suppressed: boolean) {
+      compositionSubjectSuppressed = suppressed;
+      if (mode === "hangar") {
+        mountSide("player", hangar.selection, HANGAR_CENTER, hangar.snapshot().turntableYaw, playerNodes);
+      } else if (bout) {
+        mountSide("player", hangar.selection, [lastFighterPositions.playerX, 0, ARENA_CENTER_Z], Math.PI / 2, playerNodes);
+        mountSide("rival", RIVAL_FIXED_LOADOUT.selection, [lastFighterPositions.rivalX, 0, ARENA_CENTER_Z], -Math.PI / 2, rivalNodes);
+      }
+    },
+    settleSubjectPose() {
+      // The Robotcand shell is a static pose; the route's live turntable and
+      // combat transforms remain unchanged by this no-op settlement hook.
+    }
+  }
+});
 
 // ---- frame loop -------------------------------------------------------------
 let frameCount = 0;

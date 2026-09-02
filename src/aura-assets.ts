@@ -15072,14 +15072,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "gravityPostCourierSkiff": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/gravityPostCourierSkiff.15e45d11.glb",
-    hash: "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
+    url: "/aura-assets/gravityPostCourierSkiff.de425661.glb",
+    hash: "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
     bounds: [
-      1.67,
+      2.32,
       0.978,
       2.375
     ],
-    sizeBytes: 900260,
+    sizeBytes: 978772,
     metadata: {
       "materials": [
         "GPCS amber drive light",
@@ -15158,28 +15158,29 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "attribution": "Aura3D synthesis — original CC0 Gravity Post courier skiff",
         "retrievedAt": "2026-09-01T10:09:00.000Z",
         "evidence": [
+          "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. The merged material groups retain the layered courier hull, cyan canopy and running rails, swept hover wings with root braces and route lights, twin amber aft drives, dorsal dispatch fin, and a detachable guarded parcel module with a raised envelope badge; packed deterministic paint textures are embedded in the GLB. Route-local authored motion remains the sole gameplay owner.",
           "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the layered courier hull, cyan canopy and running rails, side armor/fairings, four grounded contact-drive pods with rim/hub detail, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge; nine packed deterministic paint textures are embedded in the GLB. Route-local authored motion remains the sole gameplay owner.",
           "Generated in Blender 5.2.1 from committed route-local Python source. Two independent builds produced byte-identical GLBs. Ten merged material groups retain the low courier chassis, cyan canopy and running rails, four grounded contact-drive pods and skids, twin amber aft drives, and a detachable guarded parcel module with a raised envelope badge. Route-local authored motion remains the sole gameplay owner."
         ],
         "checkedAt": "2026-09-01T10:09:00.000Z"
       },
       "sourcePath": "apps/showcase-gravity-post/assets/candidates/gravityPostCourierSkiff.candidate.glb",
-      "outputPath": "public/aura-assets/gravityPostCourierSkiff.15e45d11.glb",
+      "outputPath": "public/aura-assets/gravityPostCourierSkiff.de425661.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
         "min": [
-          -0.835,
+          -1.16,
           0,
           -1.22
         ],
         "max": [
-          0.835,
+          1.16,
           0.978,
           1.155
         ],
         "size": [
-          1.67,
+          2.32,
           0.978,
           2.375
         ],
@@ -15268,15 +15269,15 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
+        "assetHash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-09-01T17:47:39.082Z",
+        "checkedAt": "2026-09-02T03:25:32.261Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
-          "sha256": "sha256-3943c1947237a2b14fd6fd73678503027d1ad1a22cd8b4578d8552d779971d1f",
-          "assetHash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
-          "checkedAt": "2026-09-01T17:47:39.082Z",
+          "sha256": "sha256-4633a35c886dcf3c06ffc280601d6efde24544a946df94738d9f4cb5738838b6",
+          "assetHash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
+          "checkedAt": "2026-09-02T03:25:32.261Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff"
         },
         "messages": [
@@ -15310,24 +15311,24 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/gravityPostCourierSkiff.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, layered beveled armor, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, and a raised envelope badge. Its ten readable color-separated PBR groups use embedded deterministic micro-panel paint textures plus emissive running lights, and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or imported animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative.",
+      "suitabilityReason": "Original CC0 +Y-up, +Z-forward primary courier skiff with a compact working-vehicle silhouette, layered beveled armor, swept hover wings, grounded four-point contact language, readable cockpit-to-drive direction, and a large visually integrated detachable amber parcel carrying guards, an illuminated latch, a dorsal dispatch fin, and a raised envelope badge. Its readable color-separated PBR groups use embedded deterministic micro-panel paint textures plus emissive running lights, and are verified by the current hash-bound root probe and exact mounted route evidence. The GLB carries no collider, dynamics, or imported animation claim; immutable route-local pod state, Rust-to-Gale coordinates, Rapier sensors, scoring, and authored velocity-aligned yaw remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
-        "sha256": "sha256-3943c1947237a2b14fd6fd73678503027d1ad1a22cd8b4578d8552d779971d1f",
-        "assetHash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
+        "sha256": "sha256-4633a35c886dcf3c06ffc280601d6efde24544a946df94738d9f4cb5738838b6",
+        "assetHash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 450007,
-        "colorBuckets": 95,
-        "checkedAt": "2026-09-01T17:47:39.082Z",
+        "nonBlankPixels": 450275,
+        "colorBuckets": 88,
+        "checkedAt": "2026-09-02T03:25:32.261Z",
         "foregroundBounds": {
-          "x": 195,
-          "y": 218,
-          "width": 337,
-          "height": 219
+          "x": 170,
+          "y": 230,
+          "width": 394,
+          "height": 193
         }
       }
     },
@@ -38289,7 +38290,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/rooftopAthleteShooter.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; no animation or controller capability is claimed.",
+      "suitabilityReason": "Static, continuous textured basketball shooter in a readable raised-ball release pose. Route-local transforms stage charge, release, airborne contest, and follow-through; this asset makes no controller-capability claim.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteShooter.png",
         "kind": "browser-screenshot",

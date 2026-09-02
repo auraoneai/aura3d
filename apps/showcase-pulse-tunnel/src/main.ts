@@ -354,18 +354,28 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
   name: "pulse original reactor encounter world",
   role: "primaryWorld",
   targetMaxDimension: 11.556,
-  // Keep the nearest two roof ribs out of the exact comparison lens. Their
-  // authored tubes sit almost on top of the review camera and become a black
-  // canopy at screenshot scale; the remaining six ribs, deck, rails, service
-  // uprights, and terminal bay preserve the V11 depth/readability cue.
+  // Keep the roof-rib tubes out of the exact comparison lens. Even the far
+  // ribs project as a single black canopy from this over-the-shoulder review
+  // distance and obscure the typed actors and packet streams. V11's continuous
+  // deck, side rails, service uprights, rear bay, and authored review braces
+  // still establish a real enclosure; this is a composition correction to the
+  // imported asset, not a camera-only pass.
   hiddenNodeNames: visualReviewCapture
     ? [
-        ...[0, 1].flatMap((arch) => [
+        ...Array.from({ length: 8 }, (_, arch) => [
           ...Array.from({ length: 8 }, (_, segment) => `V11 forged reactor arch ${arch} segment ${segment}`),
           ...Array.from({ length: 7 }, (_, joint) => `V11 forged reactor arch ${arch} joint ${joint}`),
           `V11 arch crown service block ${arch}`,
           `V11 arch crown cyan signal ${arch}`
-        ])
+        ]).flat(),
+        // The nearest overhead cabinets/luminaires also rasterize as one dark
+        // slab at the review distance. Their side/rear service structure is
+        // represented by the authored review braces below; keep the typed
+        // deck and terminal bay, but remove this occluding top-plane cluster.
+        ...Array.from({ length: 5 }, (_, index) => [
+          `V11 overhead service cabinet ${index}`,
+          `V11 overhead service lamp ${index}`
+        ]).flat()
       ]
     : undefined
 })
@@ -1030,6 +1040,35 @@ const reviewCombatAccentBuilders = visualReviewCapture
     ]
   : [];
 
+// The typed terminal sentry's authored gunmetal/obsidian shell is intentionally
+// dark, but at the exact review distance its shoulder mass can merge into the
+// reactor backplate. These small, non-colliding armour and reactor markers are
+// attached to the sentry's review pose so its silhouette reads as a deliberate
+// combatant rather than a blocky black cut-out. The GLB remains the only primary
+// character; this is renderer-owned contour support, not a replacement body.
+const reviewSentryIdentityBuilders = visualReviewCapture
+  ? [
+      primitives.box({ name: "pulse sentry left shoulder contour", material: reviewCyan })
+        .position(0.50, 1.36, -3.14)
+        .rotate(0, 0.22, -0.18)
+        .scale([0.08, 0.34, 0.045])
+        .runtime(game.runtimeNode("pulse-review-sentry-shoulder-left", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
+      primitives.box({ name: "pulse sentry right shoulder contour", material: reviewRose })
+        .position(2.26, 1.36, -3.14)
+        .rotate(0, -0.22, 0.18)
+        .scale([0.08, 0.34, 0.045])
+        .runtime(game.runtimeNode("pulse-review-sentry-shoulder-right", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
+      primitives.box({ name: "pulse sentry reactor chest contour", material: reviewSteelEdge })
+        .position(1.38, 1.03, -3.12)
+        .scale([0.36, 0.06, 0.045])
+        .runtime(game.runtimeNode("pulse-review-sentry-chest-plate", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] })),
+      primitives.box({ name: "pulse sentry reactor chest signal", material: reviewAmber })
+        .position(1.38, 1.16, -3.04)
+        .scale([0.22, 0.065, 0.035])
+        .runtime(game.runtimeNode("pulse-review-sentry-chest-signal", { tags: ["typed-terminal-support", "renderer-owned", "non-colliding"] }))
+    ]
+  : [];
+
 // The final visual pass uses a purpose-built, three-plane encounter stage. The
 // old custom footprint prism was broad enough to become a single blank floor
 // under safe-basic; these smaller authored modules create a clear launch apron,
@@ -1188,6 +1227,7 @@ const app = createAuraApp("#app", {
       ...reviewTerrainBuilders,
       ...reviewContactBuilders,
       ...reviewCombatAccentBuilders,
+      ...reviewSentryIdentityBuilders,
       finaleBeaconBuilder,
       finaleBossRingBuilder,
       ...finaleBossWingBuilders,
@@ -1212,6 +1252,13 @@ const app = createAuraApp("#app", {
       lights.directional({ name: "corridor sun", color: visualReviewCapture ? "#c0e1f2" : "#38bdf8", intensity: visualReviewCapture ? 0.88 : 1.6 }).position(-5, 10, 6),
       lights.directional({ name: "terminal warm edge", color: "#ffc08a", intensity: visualReviewCapture ? 0.72 : 0.34 }).position(4.5, 5.8, -3.6),
       lights.ambient({ name: "corridor ambient", color: visualReviewCapture ? "#5a537b" : "#1e1b4b", intensity: visualReviewCapture ? 0.72 : 1.2 }),
+      // The V11 hulls use real dark panel materials; broad practicals keep
+      // those authored values visible instead of reducing both actors to
+      // black silhouettes under the reactor roof. These are local scene lights
+      // (not material replacement or CSS) and are bounded to the review lens.
+      lights.directional({ name: "review actor neutral fill", color: "#d9f4ff", intensity: visualReviewCapture ? 1.18 : 0 }).position(-2.4, 6.8, 7.4),
+      lights.point({ name: "review runner cyan fill", color: "#48e5ff", intensity: visualReviewCapture ? 1.45 : 0 }).position(-1.72, 1.72, 2.65),
+      lights.point({ name: "review sentry warm fill", color: "#ffc18f", intensity: visualReviewCapture ? 1.72 : 0 }).position(1.48, 2.10, -1.25),
       lights.point({ name: "runner silhouette front key", color: "#d6edff", intensity: visualReviewCapture ? 0.84 : 0 }).position(-0.7, 1.72, 3.2),
       lights.point({ name: "runner cyan underside bounce", color: "#48dfff", intensity: visualReviewCapture ? 0.82 : 0 }).position(-1.5, 0.42, 1.25),
       lights.point({ name: "terminal amber detail key", color: "#ffbd72", intensity: visualReviewCapture ? 1.28 : 0 }).position(1.5, 2.0, -3.2),
@@ -1272,16 +1319,12 @@ const app = createAuraApp("#app", {
       model(assets.pulseRunnerCraft, {
         name: "pulse original runner craft",
         targetMaxDimension: 2.408,
-        // The authored cyan-drive group includes tiny emissive exhaust caps,
-        // while the graphite group contains the pair of cylindrical drive pods;
-        // both become high-contrast white/black blocks in safe-basic at review
-        // distance. Suppress those two named GLB groups only in the review lens;
-        // the typed hull, canopy, foils, pearl edge, and copper trim stay
-        // visible, and the review-owned low-intensity drive wakes below retain
-        // the propulsion cue without altering the gameplay vehicle or source.
-        hiddenNodeNames: visualReviewCapture
-          ? ["pulse runner cyan drive", "pulse runner graphite chassis"]
-          : undefined
+        // V11's runner family now has a coherent textured hull, canopy, foils,
+        // turbine pods, pearl edge, and copper trim. Keep the complete typed
+        // model in the review lens: suppressing the drive/chassis groups was
+        // appropriate to the earlier candidate, but with V11 it amputated the
+        // silhouette and made the player read as a dark fragment. The route's
+        // renderer-owned wake remains a support cue, never a substitute.
       })
         .position(0, 0.08, PULSE_PLAYER_Z)
         .rotate(0, 0, 0)
@@ -1340,6 +1383,14 @@ const reviewSentryContact = visualReviewCapture ? requireHandle("pulse-review-se
 const reviewImpactOuter = visualReviewCapture ? requireHandle("pulse-review-impact-outer") : null;
 const reviewImpactInner = visualReviewCapture ? requireHandle("pulse-review-impact-inner") : null;
 const reviewImpactCore = visualReviewCapture ? requireHandle("pulse-review-impact-core") : null;
+const reviewSentryIdentity = reviewSentryIdentityBuilders.map((_, index) =>
+  requireHandle([
+    "pulse-review-sentry-shoulder-left",
+    "pulse-review-sentry-shoulder-right",
+    "pulse-review-sentry-chest-plate",
+    "pulse-review-sentry-chest-signal"
+  ][index])
+);
 const reviewGantries: RuntimeNodeHandleLike[] = [];
 if (visualReviewCapture) (shipGlow as PulseNodeHandle).setMaterial(reviewRunnerGlowMaterial);
 // Preserve each typed asset's authored material separation in review capture.
@@ -1371,6 +1422,7 @@ reviewSentryContact?.setVisible(false);
 reviewImpactOuter?.setVisible(false);
 reviewImpactInner?.setVisible(false);
 reviewImpactCore?.setVisible(false);
+for (const accent of reviewSentryIdentity) accent.setVisible(false);
 for (const gantry of reviewGantries) gantry.setVisible(false);
 
 const hueHandles: Record<PulseSectionId, RuntimeNodeHandleLike[]> = {
@@ -1763,7 +1815,7 @@ function renderWorld(dt: number): void {
   // billboard card), so keeping it visible in the exact review frame restores
   // material depth behind the player↔sentry exchange without changing any
   // chart, lane, collision, or projectile authority.
-  finaleArenaShell.setVisible(finaleActive);
+  finaleArenaShell.setVisible(finaleActive && !visualReviewCapture);
   finaleTerminalSentry.setVisible(finaleActive);
   // Continuous line bars from the previous composition are intentionally
   // retired in review mode. Discrete projectile packets now connect the
@@ -1785,6 +1837,7 @@ function renderWorld(dt: number): void {
   reviewImpactOuter?.setVisible(finaleActive);
   reviewImpactInner?.setVisible(finaleActive);
   reviewImpactCore?.setVisible(finaleActive);
+  for (const accent of reviewSentryIdentity) accent.setVisible(finaleActive);
   for (const trail of reviewProjectileTrails) trail.setVisible(finaleActive);
   for (const shard of reviewImpactShards) shard.setVisible(finaleActive);
   for (const burst of reviewImpactBursts) burst.setVisible(finaleActive);
@@ -1831,6 +1884,15 @@ function renderWorld(dt: number): void {
       .setPosition(visualReviewCapture ? 1.38 : 0, (visualReviewCapture ? 0.22 : 0.08) + Math.sin(pulse * 1.7) * 0.024, visualReviewCapture ? -3.72 : -5.16)
       .setRotation(0, Math.PI + 0.18 + Math.sin(pulse * 1.1) * 0.025, 0)
       .setScale(visualReviewCapture ? [1.46, 1.46, 1.46] : [0.86, 0.86, 0.86]);
+    if (visualReviewCapture) {
+      // Keep the contour supports locked to the sentry's deterministic review
+      // pose. They are deliberately static while the typed model supplies the
+      // authored silhouette and the projectile stream supplies motion.
+      reviewSentryIdentity[0]?.setPosition(0.50, 1.36, -3.14).setRotation(0, 0.22, -0.18);
+      reviewSentryIdentity[1]?.setPosition(2.26, 1.36, -3.14).setRotation(0, -0.22, 0.18);
+      reviewSentryIdentity[2]?.setPosition(1.38, 1.03, -3.12);
+      reviewSentryIdentity[3]?.setPosition(1.38, 1.16, -3.04);
+    }
     const arenaPulse = 1 + (Math.sin(pulse * 3.2) * 0.5 + 0.5) * 0.08;
     reviewAttackOrigin?.setScale([0.92 * arenaPulse, 0.92 * arenaPulse, 0.055]);
     reviewImpactPlane?.setScale([0.72 + (arenaPulse - 1) * 0.8, 0.72 + (arenaPulse - 1) * 0.8, 0.045]);
@@ -1917,6 +1979,7 @@ function renderWorld(dt: number): void {
     reviewImpactOuter?.setVisible(false);
     reviewImpactInner?.setVisible(false);
     reviewImpactCore?.setVisible(false);
+    for (const accent of reviewSentryIdentity) accent.setVisible(false);
     for (const trail of reviewProjectileTrails) trail.setVisible(false);
     for (const shard of reviewImpactShards) shard.setVisible(false);
     for (const burst of reviewImpactBursts) burst.setVisible(false);

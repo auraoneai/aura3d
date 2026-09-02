@@ -1,18 +1,30 @@
 {
   "schema": "aura3d.rooftop-buckets.deploy/1.0",
-  "generatedAt": "2026-09-01T13:50:14.943Z",
+  "generatedAt": "2026-09-02T04:02:56.174Z",
   "producer": "apps/showcase-rooftop-buckets/scripts/write-deploy-report.mjs",
-  "producerSourceSha256": "2fc37a256daad52efca5be577d7344cdb55f1ec2eb18a5ea5d9308746d5cf54a",
+  "producerSourceSha256": "7a9f4b8f9b3a963630080f369e6e8be09dfc38516fc94538291f3c8d99e865df",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "95bb3e536202383e029afe29540f18c9d8f55827e7c652ce94e2f94bdded3dea",
-  "sourceTreeSha256": "0b1ad7851efb74e848ba932be556c90467cd2f45189c1eb88b29e34da93cfdb3",
+  "distTreeSha256": "1cc9f1966c8e32bda45c72e34325fff78dc9cf66ba52ab0866f409bc17688f06",
+  "sourceTreeSha256": "400d96454e5fff6a33ce4237740cb4e3dfc1a58c8feb24428197020826443449",
   "checks": {
     "strictModels": {
-      "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, defender>",
+      "command": "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, shooter, defender>",
       "ok": true,
       "assetCount": 6,
       "assets": [
+        {
+          "id": "rooftopAthleteDefender",
+          "hash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+          "quality": "release",
+          "role": "character"
+        },
+        {
+          "id": "rooftopAthleteShooter",
+          "hash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "quality": "release",
+          "role": "character"
+        },
         {
           "id": "rooftopBackboard",
           "hash": "sha256-d2d48af6e4ea2e6274c968a19873565f1445bceeadbb35540d29bcd4a17c529e",
@@ -30,18 +42,6 @@
           "hash": "sha256-332627363b17a85fdb6f34aa1f397c2451cd3844f14856186873bfeff34b7bf8",
           "quality": "release",
           "role": "world"
-        },
-        {
-          "id": "rooftopDefender",
-          "hash": "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
-          "quality": "release",
-          "role": "character"
-        },
-        {
-          "id": "rooftopLayupScorer",
-          "hash": "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
-          "quality": "release",
-          "role": "character"
         },
         {
           "id": "rooftopRim",

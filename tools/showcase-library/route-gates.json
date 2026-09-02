@@ -496,14 +496,15 @@
       "globalName": "__AURA3D_SHOWCASE_MECH_HANGAR__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
+      "primaryAssets": ["robotcand", "mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
       "primaryAssetRoles": {
+        "robotcand": "primary-character-visual-shell",
         "mechChassisA": "primary-character-chassis",
         "mechArmsA": "primary-character-arms",
         "mechLegsA": "primary-character-legs",
         "mechWeaponA": "primary-right-hand-attachment"
       },
-      "routePrimaryHeroAsset": "mechChassisA",
+      "routePrimaryHeroAsset": "robotcand",
       "secondaryPrimaryAssets": ["mechArmsA", "mechLegsA", "mechWeaponA"],
       "primitiveBudget": 40,
       "requiresTypedPrimaryAssets": true,

@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.rooftop-buckets.performance/1.0",
-  "generatedAt": "2026-09-01T13:42:29.600Z",
+  "generatedAt": "2026-09-02T03:58:30.682Z",
   "producer": "apps/showcase-rooftop-buckets/scripts/write-performance-report.ts",
   "producerSourceSha256": "58c29536b6ae2dfd37df5ab4a28b12b2a799174c4dc3096a7c51ac35acdbcaeb",
   "routeSourceFiles": [
@@ -13,7 +13,7 @@
     "apps/showcase-rooftop-buckets/src/shot.ts",
     "apps/showcase-rooftop-buckets/src/styles.css"
   ],
-  "routeSourceSha256": "21622fdf29f57939c931cc559cf1fee457425adbc2fc72bdd149a4fe8826affc",
+  "routeSourceSha256": "8d83207c989c723953bc4a314402ba3923161e18c6cbe6d26f7be1f5052e393d",
   "scope": "Route-local deterministic authored basketball step CPU timing plus browser-observed root createGameApp draw calls. This does not claim Rapier, rigid bodies, GPU frame-time parity, or a reusable sports simulation.",
   "samples": 12000,
   "fixedStepSeconds": 0.016666666666666666,
@@ -25,7 +25,7 @@
   "observed": {
     "ballisticCpuP95Ms": 0.002,
     "deterministicPoseSamples": 100,
-    "drawCalls": 149,
+    "drawCalls": 144,
     "renderSize": [
       1920,
       1200

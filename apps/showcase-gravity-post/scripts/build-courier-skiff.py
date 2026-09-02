@@ -238,6 +238,50 @@ def build() -> None:
         box(f"canopy side frame {side}", (side * 0.31, 0.68, 0.47), (0.055, 0.08, 0.58), alloy, bevel=0.008)
     box("courier canopy visor", (0, 0.83, 0.64), (0.5, 0.045, 0.16), canopy, bevel=0.01)
 
+    # Swept side wings and luminous hover emitters establish a recognisable
+    # delivery-skiff silhouette at the route's small review scale.  The prior
+    # candidate read as a short slab with four wheel-like pods; these tapered
+    # outriggers widen the craft, expose a clear nose-to-tail axis, and keep the
+    # working-vehicle language grounded in the same CC0 material family. They
+    # are render-only geometry: route-local pod state still owns all motion and
+    # the Rapier body remains the sole gameplay collider.
+    for side in (-1, 1):
+        wedge(
+            f"courier swept hover wing {side}",
+            (side * 0.92, 0.3, 0.06),
+            (0.5, 0.16, 1.18),
+            navy,
+            forward=False,
+        )
+        box(
+            f"courier wing root brace {side}",
+            (side * 0.78, 0.26, -0.05),
+            (0.12, 0.18, 0.72),
+            alloy,
+            bevel=0.012,
+        )
+        box(
+            f"courier wing route light {side}",
+            (side * 1.12, 0.34, 0.28),
+            (0.035, 0.045, 0.58),
+            cyan,
+            bevel=0.006,
+        )
+        cylinder(
+            f"courier hover emitter {side}",
+            (side * 1.1, 0.18, -0.34),
+            0.13,
+            0.12,
+            cyan,
+            rotation=(0, math.pi / 2, 0),
+            vertices=20,
+        )
+
+    # A shallow dorsal dispatch fin turns the parcel module into part of the
+    # craft's load-bearing architecture instead of an isolated orange cube.
+    wedge("courier dorsal dispatch fin", (0, 0.66, -0.13), (0.52, 0.42, 0.38), parcel_light, forward=False)
+    box("courier dispatch fin spine", (0, 0.88, -0.1), (0.08, 0.06, 0.44), amber, bevel=0.008)
+
     # A large, unmistakable detachable parcel module occupies the rear third.
     # Its corner guards, straps and illuminated latch remain readable from the
     # route's high oblique camera.

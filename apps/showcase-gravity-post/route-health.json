@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-01T20:48:37.512Z",
+  "generatedAt": "2026-09-02T04:46:23.914Z",
   "appId": "showcase-gravity-post",
   "route": "/apps/showcase-gravity-post/",
   "classification": "prototype-blocked",
@@ -19,7 +19,7 @@
       "role": "primary-vehicle",
       "status": "release-validated-typed-primary-asset",
       "quality": "release",
-      "hash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
+      "hash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis"
     },
@@ -119,7 +119,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 33,
+    "sourceOccurrences": 34,
     "primitiveBudget": 40,
     "role": "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus one typed non-colliding freight world",
     "status": "within-stated-role-and-budget"
@@ -144,7 +144,7 @@
   },
   "performance": {
     "schema": "aura3d-gravity-post-performance/1.0",
-    "generatedAt": "2026-09-01T03:58:57.826Z",
+    "generatedAt": "2026-09-02T04:46:22.881Z",
     "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
     "budgets": {
       "fixedStepP95Ms": 1,
@@ -153,9 +153,9 @@
       "campaignCompleteDrawCalls": 600
     },
     "observed": {
-      "maxFixedStepP95Ms": 0.0114,
-      "maxPredictionP95Ms": 0.426,
-      "campaignCompleteDrawCalls": 230
+      "maxFixedStepP95Ms": 0.0058,
+      "maxPredictionP95Ms": 0.3575,
+      "campaignCompleteDrawCalls": 233
     },
     "routes": [
       {
@@ -168,13 +168,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 389,
-          "p95": 0.0114,
-          "max": 0.44
+          "p95": 0.0058,
+          "max": 0.2521
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.426,
-          "max": 0.5501
+          "p95": 0.3575,
+          "max": 1.4543
         }
       },
       {
@@ -191,13 +191,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 872,
-          "p95": 0.0032,
-          "max": 0.037
+          "p95": 0.0018,
+          "max": 0.2057
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.2399,
-          "max": 0.4551
+          "p95": 0.2375,
+          "max": 0.2779
         }
       },
       {
@@ -217,12 +217,12 @@
         "fixedStepMs": {
           "samples": 2088,
           "p95": 0.0018,
-          "max": 0.1261
+          "max": 0.1653
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.1519,
-          "max": 0.2834
+          "p95": 0.1533,
+          "max": 0.2767
         }
       },
       {
@@ -236,12 +236,12 @@
         "fixedStepMs": {
           "samples": 406,
           "p95": 0.0008,
-          "max": 0.0155
+          "max": 0.0095
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.1456,
-          "max": 0.2145
+          "p95": 0.2273,
+          "max": 0.2873
         }
       }
     ],
