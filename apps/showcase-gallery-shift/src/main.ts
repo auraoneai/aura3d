@@ -235,6 +235,7 @@ const MAX_CUE_LOG = 48;
 // ---------------------------------------------------------------- HUD markup --
 ui.html("#hud", `
   <div class="hall-banner" id="gs-banner" aria-live="polite">GALLERY SHIFT - SNEAK IN, LIFT THREE, WALK OUT</div>
+  <div class="review-brief" id="gs-brief" aria-live="polite">STEALTH LINK // SCANNING</div>
   <div class="detection-wrap" aria-label="Detection meter">
     <span class="meter-label">DETECTION</span>
     <div class="detection-meter"><span id="gs-detection-fill"></span></div>
@@ -455,7 +456,10 @@ function guardCharacterNodes(): AuraSceneNode[] {
         // Keep the real typed robot human-scale in the authored metre layout;
         // the larger target is paired with a contact footprint so the actor
         // reads as a standing sentry rather than a floating token.
-        targetMaxDimension: 4.25
+        // Keep the two real typed sentries visually comparable to the thief;
+        // the larger target is paired with the renderer-owned contact detail
+        // below, not a replacement silhouette.
+        targetMaxDimension: 4.8
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, { tags: ["typed-asset", "guard", "authored-movement"] }))
@@ -650,8 +654,8 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#68112d", emissive: "#ff315f", emissiveIntensity: 1.05, opacity: 0.5 });
-  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#a91d46", emissive: "#ff92aa", emissiveIntensity: 1.6, opacity: 0.96 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#721534", emissive: "#ff3b6f", emissiveIntensity: 1.25, opacity: 0.58 });
+  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#b52c58", emissive: "#ffd0dc", emissiveIntensity: 2.05, opacity: 0.98 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
       .position(0, 0.16, 0)
@@ -769,7 +773,11 @@ function buildScene(): ReturnType<typeof scene> {
         // The stealth avatar is the review frame's focal subject.  Keep the
         // typed character large enough to read against the museum plan while
         // leaving the route and guard silhouettes visible around it.
-        targetMaxDimension: 5.05
+        // The typed girl is the actor that has to carry the stealth read in
+        // the oblique review frame. A modest scale lift keeps her complete
+        // body visible while giving the real LOS intercept enough pixel area
+        // to read against the room plan.
+        targetMaxDimension: 5.45
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -850,6 +858,9 @@ function buildScene(): ReturnType<typeof scene> {
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
       effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.18 }),
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
+      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.52 : 0.38 }),
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 1.5 : 1.05 }),
+      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 0.92 : 0.58 }),
       lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
       lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
       lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
@@ -873,12 +884,12 @@ function buildScene(): ReturnType<typeof scene> {
       // while retaining a deliberate margin around the complete cutaway so
       // route-primary subject isolation never reports an architectural edge
       // clipped by the review viewport.
-      position: visualReviewCapture ? [5.4, 21.0, 13.3] : [0, 13.4, 13.8],
+      position: visualReviewCapture ? [5.8, 18.0, 12.8] : [0, 13.4, 13.8],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
-      target: visualReviewCapture ? [0, 0.9, 1.9] : [0, 0.72, -0.45],
-      fov: visualReviewCapture ? 47 : 40
+      target: visualReviewCapture ? [0, 0.95, 1.65] : [0, 0.72, -0.45],
+      fov: visualReviewCapture ? 45 : 40
     }));
 }
 
@@ -961,6 +972,7 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string): 
 
 // ---------------------------------------------------------------- HUD --------
 const banner = document.getElementById("gs-banner")!;
+const reviewBrief = document.getElementById("gs-brief")!;
 const detectionFill = document.getElementById("gs-detection-fill")!;
 const liftWrap = document.getElementById("gs-lift")!;
 const liftFill = document.getElementById("gs-lift-fill")!;
@@ -1013,6 +1025,12 @@ function syncHud(): void {
   ui.setText("#gs-ev-occluded", String(occlusionCountTotal));
   ui.setText("#gs-ev-sensors", String(sensorEventCount));
   ui.setText("#gs-ev-steps", String(footstepEvents));
+  const seeingGuard = lastThreatSamples.find((sample) => sample.seesThief);
+  const objective = runtime.layout.pedestals.find((pedestal) => !runtime.liftedIds.includes(pedestal.id));
+  const objectiveLabel = objective ? `OBJECTIVE ${runtime.liftedIds.length + completedBeforeFloor + 1}/3` : "SERVICE EXIT";
+  reviewBrief.textContent = seeingGuard
+    ? `LIVE CONTACT // ${seeingGuard.id.toUpperCase()} HAS LOS // ${objectiveLabel}`
+    : `STEALTH LINK // ${objectiveLabel} // ${runtime.ghostRun ? "CLEAN" : "SUSPICIOUS"}`;
   banner.textContent = paused
     ? "PAUSED - P TO RESUME"
     : phase === "caught"
@@ -1141,10 +1159,10 @@ function syncThreatFeedback(): void {
       // while preventing a fixed four-metre triangle from spilling through a
       // wall or far beyond a close target in the review frame.
       wedge?.setRotation(0, Math.atan2(dx, dz), 0);
-      wedge?.setScale([1.16, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.1))]);
+      wedge?.setScale([1.42, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.1))]);
       beam?.setPosition(sample.x, 0.19, sample.z);
       beam?.setRotation(0, Math.atan2(dx, dz), 0);
-      beam?.setScale([1, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.1))]);
+      beam?.setScale([1.45, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.1))]);
     }
     // A real sighting swaps the cool patrol preview for one alert wedge driven
     // by the same observer sample that raised the detection meter.

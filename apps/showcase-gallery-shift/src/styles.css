@@ -39,6 +39,9 @@ body[data-capture="review"] .detection-wrap {
   background: rgba(5, 11, 21, 0.84); border-color: rgba(255, 177, 77, 0.34);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
+body[data-capture="review"] .review-brief {
+  top: 58px; left: 24px;
+}
 body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
 .viewport { position: relative; min-width: 0; min-height: 0; }
 .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #04060b; }
@@ -50,6 +53,19 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
   padding: 6px 16px; border-radius: 999px; font-size: 13px; letter-spacing: 0.14em;
   background: rgba(7, 12, 24, 0.78); border: 1px solid rgba(126, 248, 255, 0.25); color: #9feefc;
   white-space: nowrap;
+}
+
+/* Compact mission context, sourced from the live route state. This is HUD
+ * only: LOS, objective, and detection truth remain in the Aura3D runtime. */
+.review-brief {
+  position: absolute; top: 58px; left: 24px; z-index: 2;
+  max-width: min(360px, calc(100vw - 48px));
+  padding: 7px 11px; border-radius: 6px;
+  background: rgba(5, 11, 21, 0.78);
+  border: 1px solid rgba(255, 177, 77, 0.3);
+  color: #ffd9a0; font-size: 10px; letter-spacing: 0.14em;
+  line-height: 1.35; white-space: nowrap;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2);
 }
 
 .detection-wrap {
