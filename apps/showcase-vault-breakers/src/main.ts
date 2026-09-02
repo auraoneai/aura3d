@@ -117,14 +117,43 @@ const downTargets = new Set<string>();
 const audioCueLog: string[] = [];
 const lastCueFrame = new Map<string, number>();
 let doorSwing = -1; // -1 closed, 0..1 animating, 1 open
+let impactRemaining = 0;
+let impactRadius = 0.28;
+let impactOrigin: readonly [number, number, number] = [0, 0.5, 0];
 const touchControlEvents: string[] = [];
-// Neon palette — vibrant emissive colors against deep dark backgrounds
-const liveBallMaterial = material.emissive({ name: "neon chrome ball", color: "#e0f0ff", emissive: "#00d4ff" });
-const liveTargetArmedMaterial = material.emissive({ name: "neon target armed", color: "#ffb830", emissive: "#ff6a00" });
-const liveTargetHitMaterial = material.emissive({ name: "neon target hit", color: "#00f0ff", emissive: "#00e5ff" });
-const liveDoorMaterial = material.emissive({ name: "neon vault door", color: "#c0c0c0", emissive: "#d4a017" });
-const bankLampOffMaterial = material.emissive({ name: "neon lamp off", color: "#1a0e00", emissive: "#3d2200" });
-const bankLampOnMaterial = material.emissive({ name: "neon lamp on", color: "#00ffcc", emissive: "#00ffaa" });
+// Neon palette — the typed GLBs keep their authored multi-material identity;
+// these route-owned materials are limited to state accents and gameplay cues.
+const liveBallMaterial = material.metal({
+  name: "neon chrome ball state accent",
+  color: "#dcecf5",
+  emissive: "#39dfff",
+  emissiveIntensity: 0.42,
+  roughness: 0.12,
+  metallic: 0.96,
+  clearcoat: 0.78,
+  envMapIntensity: 1.6
+});
+const liveTargetArmedMaterial = material.clearcoat({
+  name: "target armed amber state accent",
+  color: "#f2a83b",
+  emissive: "#ff7a22",
+  emissiveIntensity: 0.8,
+  roughness: 0.24,
+  clearcoat: 0.58
+});
+const liveTargetHitMaterial = material.neon({
+  name: "target hit cyan state accent",
+  color: "#0b5662",
+  emissive: "#36f1ff",
+  emissiveIntensity: 2.1,
+  roughness: 0.2,
+  metallic: 0.22
+});
+const bankLampOffMaterial = material.emissive({ name: "bank lamp off", color: "#1e1824", emissive: "#805030", emissiveIntensity: 0.22 });
+const bankLampOnMaterial = material.neon({ name: "bank lamp on", color: "#087d77", emissive: "#28f5cc", emissiveIntensity: 2.2, roughness: 0.18 });
+const impactAmberMaterial = material.neon({ name: "impact amber ring", color: "#653415", emissive: "#ff9f43", emissiveIntensity: 3.4, roughness: 0.13 });
+const impactCyanMaterial = material.neon({ name: "impact cyan ring", color: "#0e5661", emissive: "#55f4ff", emissiveIntensity: 3.4, roughness: 0.13 });
+const impactPinkMaterial = material.neon({ name: "impact vault ring", color: "#5a1647", emissive: "#ff4bd8", emissiveIntensity: 3.6, roughness: 0.12 });
 const mechanismStateMaterials = {
   guarded: material.emissive({ name: "neon guarded", color: "#d4a017", emissive: "#8b6914" }),
   progress: material.emissive({ name: "neon progress", color: "#00ff88", emissive: "#00cc66" }),
@@ -144,6 +173,34 @@ function cueReady(name: string, gapFrames: number): boolean {
   if (frameCount - last < gapFrames) return false;
   lastCueFrame.set(name, frameCount);
   return true;
+}
+
+function triggerImpact(
+  origin: readonly [number, number, number],
+  kind: "amber" | "cyan" | "vault" = "amber",
+  radius = 0.28
+): void {
+  impactOrigin = origin;
+  impactRemaining = reducedMotion ? 0.16 : 0.42;
+  impactRadius = radius;
+  const materialForImpact = kind === "cyan" ? impactCyanMaterial : kind === "vault" ? impactPinkMaterial : impactAmberMaterial;
+  impactHandle?.setMaterial(materialForImpact)
+    .setPosition(origin[0], origin[1], origin[2])
+    .setRotation(Math.PI / 2, 0, 0)
+    .setScale([radius, radius, 0.05])
+    .setVisible(true);
+}
+
+function syncImpact(dt: number): void {
+  if (!impactHandle || impactRemaining <= 0) return;
+  impactRemaining = Math.max(0, impactRemaining - dt);
+  const life = impactRemaining / (reducedMotion ? 0.16 : 0.42);
+  if (life <= 0) {
+    impactHandle.setVisible(false).setScale([0.001, 0.001, 0.001]);
+    return;
+  }
+  const radius = impactRadius * (1.08 + (1 - life) * 1.9);
+  impactHandle.setPosition(impactOrigin[0], impactOrigin[1], impactOrigin[2]).setScale([radius, radius, 0.05 + life * 0.04]);
 }
 
 // ---------------------------------------------------------------- scene ------
@@ -174,6 +231,24 @@ function primitiveNode(visual: PropVisual): AuraSceneNode {
     .rotate(visual.rotation.x, visual.rotation.y, visual.rotation.z)
     .scale([p.size[0], p.size[1], p.size[2]])
     .toJSON();
+}
+
+/** Static physics landmarks used as origins for the renderer-owned impact cue. */
+const BUMPER_IMPACT_POSITIONS = [[-0.9, -1.7], [0.9, -1.7], [0, -0.7]] as const;
+const TARGET_BANK_POSITIONS: Record<string, readonly (readonly [number, number])[]> = {
+  "bank-left-top": [[-2.32, -2.4], [-2.32, -2.8], [-2.32, -3.2]],
+  "bank-left-mid": [[-2.42, -0.6], [-2.42, -0.2], [-2.42, 0.2]],
+  "bank-center": [[-0.5, -2.5], [0, -2.62], [0.5, -2.5]],
+  "bank-right-mid": [[1.95, -0.6], [1.95, -0.2], [1.95, 0.2]],
+  "bank-right-top": [[1.95, -2.4], [1.95, -2.8], [1.95, -3.2]]
+};
+let bumperImpactIndex = 0;
+let slingImpactIndex = 0;
+
+function targetImpactPosition(id: string): readonly [number, number] {
+  const [bank] = id.split(":");
+  const slot = Number(id.match(/:t(\d+)$/)?.[1] ?? 1);
+  return TARGET_BANK_POSITIONS[bank ?? ""]?.[Math.max(0, Math.min(2, slot))] ?? [0, -2.5] as const;
 }
 
 function visualNodes(): AuraSceneNode[] {
@@ -234,6 +309,14 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("typed-vault-breakers-mechanisms", { tags: ["typed-asset", "mission-state"] }))
       .toJSON()
   );
+  nodes.push(
+    primitives.torus({ name: "vault live impact ring", material: impactAmberMaterial })
+      .position(0, -5, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode("vault-live-impact-ring", { tags: ["renderer-owned", "impact-feedback", "event-linked"] }))
+      .toJSON()
+  );
   for (const [state, stateMaterial] of Object.entries(mechanismStateMaterials)) {
     nodes.push(
       primitives.box({ name: `mission-state-beacon-${state}`, material: stateMaterial })
@@ -264,7 +347,11 @@ function buildScene(): ReturnType<typeof scene> {
     // Submit the playable mechanisms after the bounded cabinet shell so the
     // root safe renderer's stable draw order keeps them legible above it.
     .addMany(visualNodes())
-    .addMany([effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45 })])
+    .addMany([
+      effects.neonBloom({ intensity: reducedMotion ? 0.15 : 0.45, threshold: 0.62, radius: 0.5, maxIntensity: 0.88 }),
+      effects.ambientOcclusion({ name: "vault contact grounding", intensity: 0.3, radius: 0.62, density: 0.5, color: "#02020a" }),
+      effects.fog({ name: "vault room depth haze", density: 0.018, color: "#190e2b", intensity: 0.24 })
+    ])
     .camera(camera.perspective({
       // Give the typed mechanism assembly a small safety margin on every edge
       // of the review viewport.  The previous close pinball angle clipped the
@@ -309,6 +396,7 @@ const bankLampHandles = new Map<number, AuraRuntimeNodeHandle>();
 let targetHandles = new Map<string, AuraRuntimeNodeHandle>();
 let doorHandle: AuraRuntimeNodeHandle | undefined;
 let mechanismHandle: AuraRuntimeNodeHandle | undefined;
+let impactHandle: AuraRuntimeNodeHandle | undefined;
 const missionBeaconHandles = new Map<string, AuraRuntimeNodeHandle>();
 
 function resolveHandles(): void {
@@ -354,8 +442,11 @@ function resolveHandles(): void {
     }
   }
   doorHandle = app.nodes.get("vault-door-visual") as AuraRuntimeNodeHandle | undefined;
-  doorHandle?.setMaterial(liveDoorMaterial);
+  // Keep the vault-door GLB's authored steel, spokes, and status accents. A
+  // route-wide material replacement made the door read as a flat disc.
   mechanismHandle = app.nodes.get("typed-vault-breakers-mechanisms") as AuraRuntimeNodeHandle | undefined;
+  impactHandle = app.nodes.get("vault-live-impact-ring") as AuraRuntimeNodeHandle | undefined;
+  impactHandle?.setVisible(false).setScale([0.001, 0.001, 0.001]);
   missionBeaconHandles.clear();
   for (const state of Object.keys(mechanismStateMaterials)) {
     const handle = app.nodes.get(`mission-state-beacon-${state}`) as AuraRuntimeNodeHandle | undefined;
@@ -426,6 +517,8 @@ function resetGame(): void {
   plunger.cancelCharge();
   downTargets.clear();
   doorSwing = -1;
+  impactRemaining = 0;
+  impactHandle?.setVisible(false).setScale([0.001, 0.001, 0.001]);
   const door = app.nodes.get("vault-door-visual");
   if (door) {
     door.setPosition(0, 0.52, -3.3);
@@ -449,9 +542,18 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
         break;
       case "bumper":
         if (cueReady("bumper-hit", 8)) pushCue("bumper-hit");
+        {
+          const [x, z] = BUMPER_IMPACT_POSITIONS[bumperImpactIndex % 3]!;
+          bumperImpactIndex += 1;
+          triggerImpact([x, 0.54, z], "amber", 0.3);
+        }
         break;
       case "sling":
         if (cueReady("sling-pop", 10)) pushCue("sling-pop");
+        {
+          const [x, z] = slingImpactIndex++ % 2 === 0 ? [-1.2, 2.1] : [1.2, 2.1];
+          triggerImpact([x, 0.55, z], "amber", 0.24);
+        }
         break;
       case "target-down": {
         if (!downTargets.has(event.id)) {
@@ -462,15 +564,19 @@ function consumeEvents(events: readonly VaultGameEvent[]): void {
         if (handle) {
           handle.setMaterial(liveTargetHitMaterial);
         }
+        const [x, z] = targetImpactPosition(event.id);
+        triggerImpact([x, 0.55, z], "cyan", 0.22);
         break;
       }
       case "bank-clear":
         pushCue("bank-clear");
+        triggerImpact([0, 0.58, -2.55], "vault", 0.42);
         break;
       case "all-banks-clear":
       case "vault-open":
         pushCue("vault-open");
         doorSwing = 0;
+        triggerImpact([0, 0.65, -3.3], "vault", 0.58);
         break;
       case "multiball-start":
         pushCue("multiball");
@@ -529,7 +635,10 @@ function syncVisuals(): void {
           : snap.banksDown > 0 ? "progress"
             : "guarded";
   const mechanismMaterial = mechanismStateMaterials[mechanismState];
-  mechanismHandle?.setMaterial(mechanismMaterial);
+  // Do not flatten the typed mechanisms GLB to a single state material. The
+  // beacon below carries state color while the authored caps, skirts, and
+  // target paddles remain visible in every mission phase.
+  void mechanismMaterial;
   for (const [state, handle] of missionBeaconHandles) handle.setVisible(state === mechanismState);
 }
 
@@ -788,6 +897,7 @@ gameApp.onFrame(({ dt }) => {
   syncVisuals();
   syncScoreboard();
   syncDoor(dt);
+  syncImpact(dt);
 
   if (frameCount % 6 === 0 || events.length > 0) syncHud();
   publishEvidence();

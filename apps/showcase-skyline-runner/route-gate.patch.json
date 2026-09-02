@@ -7,14 +7,14 @@
     "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
     "published": true,
     "primaryAssets": [
-      "showcaseKenneyOobiPlatformerHero",
+      "skylineArcticRunnerHero",
       "showcaseKenneyVerdantPlatformerWorld"
     ],
     "primaryAssetRoles": {
-      "showcaseKenneyOobiPlatformerHero": "character",
+      "skylineArcticRunnerHero": "character",
       "showcaseKenneyVerdantPlatformerWorld": "world"
     },
-    "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
+    "routePrimaryHeroAsset": "skylineArcticRunnerHero",
     "secondaryPrimaryAssets": [
       "showcaseKenneyVerdantPlatformerWorld"
     ],

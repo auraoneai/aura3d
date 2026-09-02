@@ -10,6 +10,7 @@ import {
   doctor,
   initAgentFiles,
   inspectAsset,
+  importMeshyAsset,
   listAssets,
   scanAssets,
   validateAnimationAssets,
@@ -82,6 +83,22 @@ async function main(): Promise<void> {
         suitabilityReason: readOption("--suitability"),
         renderedProbe: readRenderedProbe(),
         orientation: readOrientation()
+      }));
+    } else if (action === "import-meshy") {
+      const input = args[2];
+      const name = readOption("--name");
+      const rightsEvidence = readOption("--rights-evidence");
+      if (!input || !name || !rightsEvidence) {
+        throw new Error("Usage: aura3d assets import-meshy <output-dir> --name <typedKey> --rights-evidence <rights.json> [--file model.glb] [--allowed-root artifacts/meshy] [--quality candidate] [--role prop]");
+      }
+      print(importMeshyAsset({
+        input,
+        name,
+        rightsEvidence,
+        file: readOption("--file"),
+        allowedRoot: readOption("--allowed-root"),
+        quality: readAssetQuality(),
+        role: readAssetRole()
       }));
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));

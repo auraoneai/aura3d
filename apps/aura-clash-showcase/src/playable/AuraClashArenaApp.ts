@@ -272,6 +272,14 @@ const stage = {
   z: 0
 };
 
+// Give the opening tableau a readable fighting-game neutral: the typed rigs are almost two units
+// wide once their authored arm/weapon envelopes are included, so the old +/-1.25 spawn put the
+// silhouettes into each other before either player pressed a button.  These values remain inside
+// the same solver clamp and are used by both the live spawn and reset path; collision, hit windows,
+// replay, and test-driver positioning are otherwise unchanged.
+const DEFAULT_PLAYER_X = -1.48;
+const DEFAULT_RIVAL_X = 1.48;
+
 /**
  * The route's frame budget, read from the shared render preset rather than re-typed as literals.
  *
@@ -508,6 +516,7 @@ export function mountAuraClashArenaApp(): void {
           <div class="aca-rounds" id="player-rounds" aria-label="Player rounds"></div>
           <div class="aca-bar aca-health" data-testid="player-health" aria-label="Player health"><i id="player-health"></i></div>
           <div class="aca-bar aca-meter" aria-label="Player meter"><i id="player-meter"></i></div>
+          <span id="player-burst" class="aca-burst" data-ready="false" aria-live="polite">BURST CHARGING</span>
           <b id="player-state" class="aca-training">LOADING - 100 HP</b>
         </article>
         <article class="aca-clock" data-testid="round-timer" aria-label="Round timer">
@@ -522,6 +531,7 @@ export function mountAuraClashArenaApp(): void {
           <div class="aca-rounds" id="rival-rounds" aria-label="Rival rounds"></div>
           <div class="aca-bar aca-health"><i id="rival-health"></i></div>
           <div class="aca-bar aca-meter" aria-label="Rival meter"><i id="rival-meter"></i></div>
+          <span id="rival-burst" class="aca-burst" data-ready="false" aria-live="polite">BURST CHARGING</span>
           <b id="rival-state" class="aca-training">LOADING - 100 HP</b>
         </article>
       </section>
@@ -689,8 +699,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   const arenaCanvas = canvas;
   const testDriverEnabled = new URLSearchParams(window.location.search).has("auraTestDriver");
 
-  const playerState = createFighter("player", "Mara Volt", "Player one", -1.25, 1, playerClips);
-  const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", 1.25, -1, rivalClips);
+  const playerState = createFighter("player", "Mara Volt", "Player one", DEFAULT_PLAYER_X, 1, playerClips);
+  const rivalState = createFighter("rival", "Rook Atlas", "Rival AI", DEFAULT_RIVAL_X, -1, rivalClips);
   const controls = createControls(root);
   const gameApp = createGameApp(null, {
     autoStart: false,
@@ -1414,8 +1424,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     const resetRound = () => {
       resetCount += 1;
       lastInput = "reset";
-      resetFighter(playerState, -1.25, 1);
-      resetFighter(rivalState, 1.25, -1);
+      resetFighter(playerState, DEFAULT_PLAYER_X, 1);
+      resetFighter(rivalState, DEFAULT_RIVAL_X, -1);
       resetFighterSecondaryMotion(playerRuntime.secondary, playerState.x);
       resetFighterSecondaryMotion(rivalRuntime.secondary, rivalState.x);
       resetCombatWorld(combatWorld, playerState, rivalState);
@@ -2810,14 +2820,27 @@ function syncFighterRoot(fighter: RuntimeFighter): void {
   const downPose = fighter.state.action === "down";
   const guardSink = downPose ? -0.12 : 0;
   const specialLift = attack?.id === "special" ? Math.sin(Math.PI * phase) * 0.1 : 0;
-  const roll = attack?.id === "heavy" ? -fighter.state.facing * Math.sin(Math.PI * phase) * 0.12 : 0;
+  // A restrained ready-stance lean keeps the two typed rigs from reading as static mannequins in
+  // the neutral frame. It is a rigid presentation cue layered over the authored clips (not a fake
+  // pose or a gameplay transform), and it is disabled for attack/hurt/KO states where their clips
+  // already provide the readable action silhouette.
+  const stancePhase = fighter.state.locomotionTime * 2.1 + (fighter.state.id === "rival" ? Math.PI : 0);
+  const idleSway = !attack && fighter.state.action === "idle" && fighter.state.grounded
+    ? Math.sin(stancePhase) * 0.026
+    : 0;
+  const guardLean = fighter.state.guard ? -fighter.state.facing * 0.075 : 0;
+  const roll = (attack?.id === "heavy" ? -fighter.state.facing * Math.sin(Math.PI * phase) * 0.12 : 0)
+    + idleSway
+    + guardLean;
   const pitch = attack?.id === "light"
     ? -Math.sin(Math.PI * phase) * 0.1
     : attack?.id === "special"
       ? -Math.sin(Math.PI * phase) * 0.18
       : downPose
         ? 0.16
-        : 0;
+        : fighter.state.action === "hurt"
+          ? 0.08 * fighter.state.facing
+          : 0;
   const squash = attack?.id === "heavy" ? 1 + Math.sin(Math.PI * phase) * 0.08 : 1;
   const root = fighter.actor.pipeline.resources.scene.root;
   const rotation = quatFromEuler(pitch, yaw, roll);
@@ -3099,7 +3122,7 @@ const hitImpactMaterial = new UnlitMaterial({ name: "combat-hit-impact", color: 
 const specialImpactMaterial = new UnlitMaterial({ name: "combat-special-impact", color: [1, 0.82, 0.22, 0.98] });
 const blockImpactMaterial = new UnlitMaterial({ name: "combat-block-impact", color: [0.28, 0.9, 1, 0.84] });
 const guardBreakImpactMaterial = new UnlitMaterial({ name: "combat-guard-break-impact", color: [1, 0.3, 0.76, 0.96] });
-const specialSilhouetteMaterial = new UnlitMaterial({ name: "combat-special-silhouette", color: [0.1, 1, 0.78, 0.16] });
+const specialSilhouetteMaterial = new UnlitMaterial({ name: "combat-special-silhouette", color: [0.1, 1, 0.78, 0.22] });
 const playerSpecialSweepMaterial = new UnlitMaterial({ name: "combat-special-sweep-player", color: [0.12, 0.92, 1, 0.88] });
 const rivalSpecialSweepMaterial = new UnlitMaterial({ name: "combat-special-sweep-rival", color: [1, 0.38, 0.1, 0.88] });
 
@@ -3132,8 +3155,8 @@ function createSpecialSilhouetteItems(fighter: RuntimeFighter, reducedMotion: bo
    * the simulation owns an active `special`; no capture flag or DOM state can summon the sweep.
    * The contact burst remains independently driven by a confirmed combat event.
    */
-  const sweepSegments = Array.from({ length: 11 }, (_, index) => {
-    const t = index / 10;
+  const sweepSegments = Array.from({ length: 15 }, (_, index) => {
+    const t = index / 14;
     const theta = -1.08 + t * 2.16;
     const radius = 0.72 + Math.sin(Math.PI * t) * 0.12;
     const taper = 1 - Math.abs(t - 0.5) * 0.72;
@@ -3149,12 +3172,35 @@ function createSpecialSilhouetteItems(fighter: RuntimeFighter, reducedMotion: bo
           stage.z + 0.11
         ],
         quatFromEuler(0, 0, facing * theta),
-        [0.075 * taper, 0.34 * taper, 0.075 * taper]
+        [0.09 * taper, 0.4 * taper, 0.08 * taper]
       ) as Mat4,
       includeInAutoFrame: false
     } satisfies RenderItem;
   });
-  return [halo, ...sweepSegments];
+  // A short directional lance ties the active silhouette to the contact side.  It is deliberately
+  // separate from the confirmed-hit spark below: during startup/recovery the player sees the move
+  // shape, while only a real engine hit can add the gold contact burst and recoil trail.
+  const lance = Array.from({ length: 4 }, (_, index) => {
+    const t = index / 3;
+    const distance = 0.22 + t * 0.5;
+    const taper = 1 - t * 0.42;
+    return {
+      label: `aura-clash-special-lance:${fighter.state.id}:${index}`,
+      geometry: impactShardGeometry,
+      material: fighter.state.id === "player" ? playerSpecialSweepMaterial : rivalSpecialSweepMaterial,
+      modelMatrix: composeMat4(
+        [
+          fighter.state.x + fighter.state.facing * distance,
+          0.93 + Math.sin(Math.PI * t) * 0.08,
+          stage.z + 0.14
+        ],
+        quatFromEuler(0, 0, fighter.state.facing * -Math.PI / 2),
+        [0.09 * taper, 0.28 * taper, 0.07 * taper]
+      ) as Mat4,
+      includeInAutoFrame: false
+    } satisfies RenderItem;
+  });
+  return [halo, ...sweepSegments, ...lance];
 }
 
 function createFighterEffectItems(fighter: RuntimeFighter, reducedMotion: boolean): RenderItem[] {
@@ -3397,6 +3443,8 @@ function updateHud(
   setBar(root, "#rival-health", rival.health / START_HEALTH);
   setBar(root, "#player-meter", player.meter / 100);
   setBar(root, "#rival-meter", rival.meter / 100);
+  updateBurstIndicator(root, "#player-burst", player);
+  updateBurstIndicator(root, "#rival-burst", rival);
   // Static HUD emphasis only. Renderer-owned crowd/sign items above carry the actual presentation
   // simplification; CSS does not stand in for stage lighting or gameplay effects.
   const hudShell = root.matches(".aca") ? root : root.querySelector<HTMLElement>(".aca");
@@ -3419,6 +3467,15 @@ function updateHud(
       scrubHost.dataset.scrubbing = replayControls.scrubLabel ? "true" : "false";
     }
   }
+}
+
+/** Keep the special affordance in the broadcast HUD tied to the simulation-owned meter/cooldown. */
+function updateBurstIndicator(root: HTMLElement, selector: string, fighter: FighterState): void {
+  const indicator = root.querySelector<HTMLElement>(selector);
+  if (!indicator) return;
+  const ready = fighter.meter >= SPECIAL_METER_COST && fighter.specialCooldown <= 0 && fighter.health > 0;
+  indicator.dataset.ready = String(ready);
+  indicator.textContent = ready ? "BURST READY" : `BURST ${Math.round(fighter.meter)}%`;
 }
 
 function writeProof(input: {

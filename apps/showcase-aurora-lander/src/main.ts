@@ -82,6 +82,13 @@ const FOOT_DROP = 0.72;
 /** Fixed simulation step — the determinism contract for replay hashes. */
 const FIXED_DT = 1 / 60;
 const MAX_SUBSTEPS = 5;
+/**
+ * The opening approach is intentionally framed as a launch/deorbit hand-off:
+ * a renderer-owned gantry sits under the typed lander while it is high above
+ * the terrain.  It is visual set dressing only; the static heightfield and
+ * pad sensors remain the gameplay authorities below.
+ */
+const APPROACH_SCAFFOLD_MIN_AGL = 28;
 /** Replay bindings that constitute the recorded control stream. */
 const RECORDED_BINDINGS = new Set(["KeyW", "ArrowUp", "KeyA", "ArrowLeft", "KeyD", "ArrowRight", "thrust"]);
 
@@ -1322,6 +1329,9 @@ function renderUpdate(dtFrame: number): void {
   const extractionVisible = phase === "campaign-clear";
   const extractionPad = currentSite.pads[0]!;
   const extractionGround = field.padHeights[0] ?? groundHere;
+  const approachScaffoldVisible = !visualReviewCapture
+    && phase === "flying"
+    && altitudeAboveGround > APPROACH_SCAFFOLD_MIN_AGL;
   // The campaign-clear bay is a complete renderer-owned deck laid over the
   // final heightfield. In the review tableau, hide only that underlying visual
   // mesh so nearby ridges cannot protrude through the deck and occlude the
@@ -1353,13 +1363,24 @@ function renderUpdate(dtFrame: number): void {
   });
   extractionInfrastructureNodes.forEach((node, index) => {
     const part = EXTRACTION_INFRASTRUCTURE[index]!;
-    node.setVisible(extractionVisible && !visualReviewCapture);
-    if (!extractionVisible) return;
-    node.setPosition(
-      extractionPad.x + part.offset[0],
-      extractionGround + part.offset[1],
-      extractionPad.z + part.offset[2]
-    );
+    node.setVisible((extractionVisible && !visualReviewCapture) || approachScaffoldVisible);
+    if (extractionVisible && !visualReviewCapture) {
+      node.setPosition(
+        extractionPad.x + part.offset[0],
+        extractionGround + part.offset[1],
+        extractionPad.z + part.offset[2]
+      );
+    } else if (approachScaffoldVisible) {
+      // Keep the scaffold fixed at the launch hand-off altitude.  It recedes
+      // naturally as the authored lander descends; it never moves the physics
+      // proxy or changes the destination pad below.
+      const scaffoldY = currentSite.spawn.y - FOOT_DROP - 0.25;
+      node.setPosition(
+        currentSite.spawn.x + part.offset[0],
+        scaffoldY + part.offset[1],
+        currentSite.spawn.z + part.offset[2]
+      );
+    }
   });
   extractionBackdropNode.setVisible(extractionVisible && visualReviewCapture);
   if (extractionVisible && visualReviewCapture) {

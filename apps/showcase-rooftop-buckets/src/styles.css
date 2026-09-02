@@ -45,7 +45,7 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px 20px 12px;
+  padding: 12px 16px 10px;
 }
 
 /* The visual-review route keeps the complete gameplay HUD, but composes it as
@@ -168,12 +168,12 @@ body[data-capture="review"] .stat-label {
 }
 
 .hud-panel {
-  background: var(--panel-bg);
+  background: linear-gradient(112deg, rgba(8, 22, 43, 0.88), rgba(29, 24, 56, 0.82));
   backdrop-filter: blur(8px);
   border: 1px solid var(--border-cyan);
   border-radius: 8px;
-  padding: 10px 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(56, 189, 248, 0.08);
+  padding: 8px 13px;
+  box-shadow: 0 7px 24px rgba(0, 0, 0, 0.44), inset 0 0 12px rgba(56, 189, 248, 0.08);
   pointer-events: auto;
 }
 
@@ -182,11 +182,12 @@ body[data-capture="review"] .stat-label {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
+  border-color: rgba(103, 232, 249, 0.42);
 }
 
 .game-title-group h1 {
-  font-size: 1.25rem;
+  font-size: 1.12rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--text-primary);
@@ -226,14 +227,14 @@ body[data-capture="review"] .stat-label {
 }
 
 .game-title-group p {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   margin-top: 4px;
 }
 
 .score-stats {
   display: flex;
-  gap: 24px;
+  gap: 18px;
 }
 
 .stat-item {
@@ -251,7 +252,7 @@ body[data-capture="review"] .stat-label {
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.32rem;
   font-weight: 700;
   font-family: var(--font-mono);
   color: var(--accent-cyan);
@@ -268,14 +269,14 @@ body[data-capture="review"] .stat-label {
 /* Center HUD / Shot Meter */
 .shot-meter-container {
   align-self: center;
-  width: 236px;
+  width: 214px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   margin-top: auto;
-  margin-bottom: 14px;
-  opacity: 0.86;
+  margin-bottom: 10px;
+  opacity: 0.79;
   transition: opacity 0.2s ease;
 }
 
@@ -324,9 +325,9 @@ body[data-capture="review"] .stat-label {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 16px;
+  gap: 12px;
   align-self: flex-start;
-  width: min(760px, calc(100vw - 40px));
+  width: min(680px, calc(100vw - 32px));
 }
 
 .controls-hint {

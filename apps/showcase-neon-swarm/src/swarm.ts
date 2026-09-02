@@ -179,10 +179,10 @@ function hashCell(cx: number, cz: number): number {
 // while giving individual threats enough value separation to read in a dense
 // top-down frame.
 const GRUNT_COLOR_BASE = "#3f7468";
-const GRUNT_COLOR_PALETTE = ["#3f7468", "#4f806f", "#5b8b78", "#35635f"] as const;
+const GRUNT_COLOR_PALETTE = ["#38c7b1", "#59e2c5", "#2e9d91", "#86f4d8"] as const;
 const GRUNT_COLOR_FLASH = "#fff0dc";
 const ELITE_COLOR_BASE = "#f2d8c2";
-const ELITE_COLOR_PALETTE = ["#f2d8c2", "#e8c2ad", "#ffe6cc", "#d9b09f"] as const;
+const ELITE_COLOR_PALETTE = ["#ff759a", "#ffd1ad", "#ed4f78", "#ffb56d"] as const;
 const ELITE_COLOR_FLASH = "#ffe8fb";
 const ELITE_COLOR_TELEGRAPH = "#ffc857";
 const HIDDEN_SCALE = 0;
@@ -410,7 +410,7 @@ export function createSwarmSimulation(): SwarmSimulation {
       const transform = transforms[i]!;
       if (!drone.active) continue;
       const bob = Math.sin(time * 3.1 + drone.wobblePhase) * 0.09;
-      transform.position = [drone.x, 0.52 + bob, drone.z];
+      transform.position = [drone.x, 0.58 + bob, drone.z];
       // Deterministic silhouette variation keeps a dense finale readable as
       // individual threats instead of one repeated pink texture. The pool
       // remains instanced and the simulation/hash are unchanged.
@@ -420,7 +420,11 @@ export function createSwarmSimulation(): SwarmSimulation {
       // while opening negative space around the courier and making the arena
       // dressing visible. Elites remain intentionally larger for threat
       // hierarchy and telegraph readability.
-      let scale = isElite ? 0.3 : 0.16 + (i % 5) * 0.009;
+      // The original 0.16 grunt scale read as a field of detached bars in the
+      // desktop probe. These silhouettes are still comfortably below the
+      // courier's 2.95u body, but now have enough screen area to read as
+      // distinct swarm roles instead of placeholder pixels.
+      let scale = isElite ? 0.52 : 0.32 + (i % 5) * 0.016;
       if (drone.flashRemaining > 0) scale *= 1.18;
       if (isElite && drone.burstRemaining > 0) scale *= 1.12;
       const profile = i % 6;

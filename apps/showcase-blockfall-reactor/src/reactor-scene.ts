@@ -57,7 +57,16 @@ const BLOCK_TILE_GEOMETRY = geometry.define({
   ]
 });
 
-const panelMaterial = material.pbr({ name: "deep reactor glass board backplate", color: "#061c29", roughness: 0.28, metallic: 0.38 });
+const panelMaterial = material.pbr({ name: "deep reactor glass board backplate", color: "#09283a", emissive: "#041722", emissiveIntensity: 0.22, roughness: 0.28, metallic: 0.38 });
+// The backplate is deliberately blue-green rather than pure black: a faint
+// emissive underlay gives the well a glass depth cue behind the cyan grid and
+// keeps the locked stack readable when the review camera is pulled wide enough
+// to include the two typed arena performers.
+const boardInnerMaterial = material.pbr({ name: "reactor well inner glass", color: "#0b3044", emissive: "#072a3d", emissiveIntensity: 0.34, roughness: 0.34, metallic: 0.44 });
+const boardLaneMaterial = material.emissive({ name: "reactor well lane shading", color: "#0d536b", emissive: "#1d9cad", emissiveIntensity: 0.2, roughness: 0.46, opacity: 0.42 });
+const boardEdgeMarkerMaterial = material.neon({ name: "reactor well edge markers", color: "#69eff4", emissive: "#69eff4", emissiveIntensity: 0.78, roughness: 0.18, opacity: 0.74 });
+const activeFocusMaterial = material.neon({ name: "active reactor drop reticle", color: "#e8fff4", emissive: "#62f8e7", emissiveIntensity: 1.18, roughness: 0.16, opacity: 0.72 });
+const clearWaveMaterial = material.neon({ name: "line clear reactor wave", color: "#ffd967", emissive: "#ff9d45", emissiveIntensity: 1.32, roughness: 0.16, opacity: 0.66 });
 const railMaterial = material.metal({ name: "polished reactor cabinet rail", color: "#d9f7f2", roughness: 0.2, metallic: 0.78 });
 const gridMaterial = material.emissive({ name: "subtle board cell grid", color: "#277c87", emissive: "#5bd6d8", emissiveIntensity: 0.46, roughness: 0.48 });
 const ghostMaterial = material.glass({ name: "transparent ghost landing piece", color: "#dbe7d9", opacity: 0.26, transmission: 0.45, roughness: 0.12 });
@@ -101,6 +110,22 @@ const roomTileMaterial = material.emissive({ name: "arcade room floor tiles", co
 const reactorHaloMaterial = material.neon({ name: "reactor arena halo frames", color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 1.1, roughness: 0.16 });
 const leftPlayerBayMaterial = material.pbr({ name: "cyan player bay inset", color: "#0b6788", roughness: 0.32, metallic: 0.32 });
 const rightPlayerBayMaterial = material.pbr({ name: "magenta player bay inset", color: "#7d236f", roughness: 0.32, metallic: 0.32 });
+// The room already has a typed arena backdrop; these authored hardware accents
+// give the machine a nearer layer of depth so the central well reads as a
+// championship station instead of a floating board over a flat image. They are
+// set dressing only and stay outside the gameplay cell projection.
+const arenaGoldMetalMaterial = material.metal({ name: "championship brass truss", color: "#c98d36", roughness: 0.24, metallic: 0.82 });
+const arenaCyanRailMaterial = material.neon({ name: "championship cyan conduit", color: "#2ddcf2", emissive: "#73f7ff", emissiveIntensity: 0.86, roughness: 0.18 });
+const arenaCoralRailMaterial = material.neon({ name: "championship coral conduit", color: "#e45884", emissive: "#ff89ad", emissiveIntensity: 0.82, roughness: 0.2 });
+const arenaDeepPanelMaterial = material.pbr({ name: "championship depth panel", color: "#081526", roughness: 0.38, metallic: 0.52 });
+const dropGuideMaterial = material.emissive({ name: "live drop trajectory guide", color: "#7ef7ff", emissive: "#7ef7ff", emissiveIntensity: 0.92, roughness: 0.24, opacity: 0.58 });
+
+/** Runtime id for the state-bound ghost-to-active trajectory guide. */
+export const DROP_GUIDE_NODE_ID = "blockfall-drop-trajectory-guide";
+/** Runtime id for the state-bound active-piece focus reticle. */
+export const ACTIVE_FOCUS_NODE_ID = "blockfall-active-focus-reticle";
+/** Runtime id for the renderer-owned line-clear wave driven by a real clear event. */
+export const CLEAR_WAVE_NODE_ID = "blockfall-clear-wave";
 /**
  * Authored arcade-room set dressing behind and around the typed cabinet: a floor,
  * back wall, neon practicals, and neighbouring-cabinet silhouettes so the hero
@@ -150,9 +175,12 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
   );
   return [
     // Floor and back wall give the cabinet a room to stand in.
-    primitives.box({ name: "arcade room floor slab", material: roomFloorMaterial, receiveShadow: true })
-      .position(0, -0.78, 0.9)
-      .scale([14, 0.08, 9.4]),
+    instances.box({
+      name: "arcade room floor slab",
+      material: roomFloorMaterial,
+      receiveShadow: true,
+      transforms: [{ position: [0, -0.78, 0.9], scale: [14, 0.08, 9.4] }]
+    }),
     primitives.box({ name: "arcade room back wall", material: roomWallMaterial, receiveShadow: true })
       .position(0, 2.6, -3.6)
       .scale([13, 7.4, 0.12]),
@@ -262,6 +290,74 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
         { position: [-4.0, -0.68, 2.05], rotation: [0, 0.12, 0], scale: [0.46, 0.018, 0.14] },
         { position: [4.0, -0.68, 2.05], rotation: [0, -0.12, 0], scale: [0.46, 0.018, 0.14] }
       ]
+    }),
+    // Near-field championship hardware: a stepped podium lip, inset side
+    // consoles and alternating cyan/coral conduits make the lower third read as
+    // an authored arcade arena. The geometry is instanced, so this adds visual
+    // rhythm without creating one node per accent.
+    instances.box({
+      name: "championship podium depth lips",
+      material: arenaDeepPanelMaterial,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: [
+        { position: [-2.72, -0.44, -1.74], rotation: [0, 0.06, 0], scale: [1.38, 0.22, 0.3] },
+        { position: [2.72, -0.44, -1.74], rotation: [0, -0.06, 0], scale: [1.38, 0.22, 0.3] },
+        { position: [-3.74, -0.26, -2.42], rotation: [0, 0.1, 0], scale: [0.72, 0.16, 0.22] },
+        { position: [3.74, -0.26, -2.42], rotation: [0, -0.1, 0], scale: [0.72, 0.16, 0.22] }
+      ]
+    }),
+    instances.box({
+      name: "championship brass podium trim",
+      material: arenaGoldMetalMaterial,
+      castShadow: true,
+      transforms: [
+        { position: [-3.36, -0.29, -1.56], rotation: [0, 0.08, 0], scale: [1.72, 0.035, 0.055] },
+        { position: [3.36, -0.29, -1.56], rotation: [0, -0.08, 0], scale: [1.72, 0.035, 0.055] },
+        { position: [-3.78, -0.13, -2.3], rotation: [0, 0.1, 0], scale: [0.86, 0.028, 0.045] },
+        { position: [3.78, -0.13, -2.3], rotation: [0, -0.1, 0], scale: [0.86, 0.028, 0.045] }
+      ]
+    }),
+    instances.box({
+      name: "championship cyan coral side conduits",
+      material: arenaCyanRailMaterial,
+      instanceColors: ["#2ddcf2", "#ff6c9b", "#73f7ff", "#ff89ad", "#2ddcf2", "#ff6c9b"],
+      transforms: [
+        { position: [-4.56, 0.38, -2.18], rotation: [0, 0.05, 0], scale: [0.05, 1.72, 0.04] },
+        { position: [-4.18, 0.2, -2.12], rotation: [0, 0.05, 0], scale: [0.035, 1.4, 0.03] },
+        { position: [4.56, 0.38, -2.18], rotation: [0, -0.05, 0], scale: [0.05, 1.72, 0.04] },
+        { position: [4.18, 0.2, -2.12], rotation: [0, -0.05, 0], scale: [0.035, 1.4, 0.03] },
+        { position: [-4.78, 2.24, -2.54], rotation: [0, 0.18, 0], scale: [0.035, 0.82, 0.03] },
+        { position: [4.78, 2.24, -2.54], rotation: [0, -0.18, 0], scale: [0.035, 0.82, 0.03] }
+      ]
+    }),
+    instances.box({
+      name: "championship overhead brass braces",
+      material: arenaGoldMetalMaterial,
+      castShadow: true,
+      transforms: [
+        { position: [-3.12, 4.34, -2.74], rotation: [0, 0, 0.12], scale: [2.16, 0.045, 0.075] },
+        { position: [3.12, 4.34, -2.74], rotation: [0, 0, -0.12], scale: [2.16, 0.045, 0.075] },
+        { position: [-4.02, 3.88, -2.78], rotation: [0, 0, -0.2], scale: [0.9, 0.035, 0.055] },
+        { position: [4.02, 3.88, -2.78], rotation: [0, 0, 0.2], scale: [0.9, 0.035, 0.055] }
+      ]
+    }),
+    instances.sphere({
+      name: "championship score beacon jewels",
+      material: arenaCyanRailMaterial,
+      castShadow: false,
+      receiveShadow: false,
+      instanceColors: ["#73f7ff", "#ff89ad", "#ffe866", "#73f7ff", "#ff89ad", "#ffe866", "#73f7ff", "#ff89ad"],
+      transforms: [
+        { position: [-4.58, 3.94, -2.58], scale: [0.09, 0.09, 0.09] },
+        { position: [-4.08, 3.75, -2.56], scale: [0.065, 0.065, 0.065] },
+        { position: [-3.58, 3.58, -2.54], scale: [0.05, 0.05, 0.05] },
+        { position: [4.58, 3.94, -2.58], scale: [0.09, 0.09, 0.09] },
+        { position: [4.08, 3.75, -2.56], scale: [0.065, 0.065, 0.065] },
+        { position: [3.58, 3.58, -2.54], scale: [0.05, 0.05, 0.05] },
+        { position: [-4.72, -0.48, -2.35], scale: [0.08, 0.08, 0.08] },
+        { position: [4.72, -0.48, -2.35], scale: [0.08, 0.08, 0.08] }
+      ]
     })
   ];
 }
@@ -272,6 +368,32 @@ export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
     // locked blocks, ghost, then the active piece nearest the camera.
     primitives.box({ name: "arcade reactor screen recess", material: material.pbr({ color: "#020806", roughness: 0.8, metallic: 0.08 }) }).position(0, BOARD_CENTER_Y, -0.06).scale([3.34, 4.48, 0.08]),
     primitives.box({ name: "reactor board backplate", material: panelMaterial, receiveShadow: true }).position(0, BOARD_CENTER_Y, 0.005).scale([2.68, 4.42, 0.05]),
+    primitives.box({ name: "reactor well inner glass", material: boardInnerMaterial, receiveShadow: true }).position(0, BOARD_CENTER_Y, 0.034).scale([2.62, 4.30, 0.018]),
+    // Alternating row bands are intentionally shallow and sit behind the grid.
+    // They make the 20-row well read as a layered instrument instead of a flat
+    // black rectangle while preserving exact cell coordinates and visibility.
+    instances.box({
+      name: "reactor well lane shading",
+      material: boardLaneMaterial,
+      instanceColors: ["#0d536b", "#103c57", "#0d536b", "#103c57"],
+      transforms: Array.from({ length: VISIBLE_HEIGHT }, (_, row) => ({
+        position: [0, BOARD_BOTTOM_Y + (VISIBLE_HEIGHT - 1 - row) * ROW_CELL, 0.045] as [number, number, number],
+        scale: [CELL * BOARD_WIDTH * 0.97, 0.074, 0.008] as [number, number, number]
+      }))
+    }),
+    instances.box({
+      name: "reactor well side depth markers",
+      material: boardEdgeMarkerMaterial,
+      instanceColors: ["#69eff4", "#e279ff", "#ffe866", "#69eff4"],
+      transforms: Array.from({ length: 10 }, (_, index) => {
+        const row = index * 2;
+        const y = BOARD_BOTTOM_Y + (VISIBLE_HEIGHT - 1 - row) * ROW_CELL;
+        return [
+          { position: [-1.52, y, 0.064] as [number, number, number], scale: [0.024, 0.034, 0.014] as [number, number, number] },
+          { position: [1.52, y, 0.064] as [number, number, number], scale: [0.024, 0.034, 0.014] as [number, number, number] }
+        ];
+      }).flat()
+    }),
     primitives.box({ name: "blockfall reactor marquee beam", material: material.neon({ color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 0.72 }) }).position(0, BOARD_CENTER_Y + 2.08, 0.11).scale([1.96, 0.045, 0.045]),
     // The cabinet GLB marquee texture reads "GAME OVER / RESTART?", which
     // contradicts a running game. The camera frames below it and the route
@@ -295,7 +417,27 @@ export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
     }),
     primitives.box({ name: "reactor cabinet floor", material: material.metal({ color: "#111a18", roughness: 0.58, metallic: 0.28 }), receiveShadow: true }).position(0, -0.12, -0.48).scale([4.08, 0.055, 1.25]),
     primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) }).position(-1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
-    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022])
+    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) }).position(1.46, BOARD_CENTER_Y, 0.04).scale(reviewCapture ? HIDDEN_BLOCK_SCALE : [0.018, 2.06, 0.022]),
+    // State-bound effects are mounted up front and parked offstage. Their
+    // transforms are updated by main.ts from the live falling-block snapshot;
+    // no review-only geometry is used to stand in for the game.
+    primitives.torus({ name: "active reactor drop reticle", material: activeFocusMaterial })
+      .position(0, -50, 0.112)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode(ACTIVE_FOCUS_NODE_ID, { tags: ["blockfall", "active", "reticle", "renderer-owned"] })),
+    primitives.torus({ name: "line clear reactor wave", material: clearWaveMaterial })
+      .position(0, -50, 0.23)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode(CLEAR_WAVE_NODE_ID, { tags: ["blockfall", "line-clear", "renderer-owned", "event-bound"] })),
+    // The guide is hidden at boot and positioned by `syncGhostPiece` from the
+    // live public falling-block state. It makes the active/ghost relationship
+    // legible in one glance without altering the board projection or rules.
+    primitives.box({ name: "live drop trajectory guide", material: dropGuideMaterial })
+      .position(0, -50, 0.075)
+      .scale(HIDDEN_BLOCK_SCALE)
+      .runtime(game.runtimeNode(DROP_GUIDE_NODE_ID, { tags: ["blockfall", "ghost", "trajectory", "renderer-owned"] }))
   ];
   for (let x = 0; x <= BOARD_WIDTH; x += 1) {
     const px = BOARD_LEFT_X - CELL / 2 + x * CELL;

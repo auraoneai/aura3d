@@ -112,30 +112,27 @@ function glbJson(path: string): {
   return JSON.parse(buffer.subarray(20, 20 + jsonLength).toString("utf8"));
 }
 
-test("production athlete GLBs preserve continuous textured poses, attribution, and no embedded basketball", () => {
-  const shooterPath = "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteShooter.glb";
-  const defenderPath = "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteDefender.glb";
+test("release athlete GLBs preserve skinned action clips, attribution, and no embedded basketball", () => {
+  const shooterPath = "apps/showcase-rooftop-buckets/assets/models/rooftopLayupScorer.glb";
+  const defenderPath = "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb";
   const shooter = glbJson(shooterPath);
   const defender = glbJson(defenderPath);
-  expect(sha256(shooterPath)).toBe("49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3");
-  expect(sha256(defenderPath)).toBe("c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8");
-  expect(shooter.skins ?? []).toHaveLength(0);
-  expect(defender.skins ?? []).toHaveLength(0);
-  expect(shooter.animations ?? []).toHaveLength(0);
-  expect(defender.animations ?? []).toHaveLength(0);
-  expect(shooter.asset?.extras?.aura3d).toBeUndefined();
-  expect(defender.asset?.extras?.aura3d).toBeUndefined();
-  expect(shooter.meshes?.length ?? 0).toBeGreaterThanOrEqual(8);
-  expect(defender.meshes?.length ?? 0).toBeGreaterThanOrEqual(8);
+  expect(sha256(shooterPath)).toBe("03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a");
+  expect(sha256(defenderPath)).toBe("6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b");
+  expect(shooter.skins ?? []).toHaveLength(1);
+  expect(defender.skins ?? []).toHaveLength(1);
+  expect(shooter.skins?.[0]?.joints?.length ?? 0).toBeGreaterThanOrEqual(191);
+  expect(defender.skins?.[0]?.joints?.length ?? 0).toBeGreaterThanOrEqual(191);
+  expect(shooter.animations?.map((animation) => animation.name)).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
+  expect(defender.animations?.map((animation) => animation.name)).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
+  expect(shooter.asset?.extras?.aura3d?.authoredClips).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
+  expect(defender.asset?.extras?.aura3d?.authoredClips).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
+  expect(shooter.meshes?.length ?? 0).toBeGreaterThanOrEqual(16);
+  expect(defender.meshes?.length ?? 0).toBeGreaterThanOrEqual(16);
   for (const athlete of [shooter, defender]) {
     const names = athlete.nodes?.map((node) => node.name ?? "") ?? [];
-    // The acquired derivatives preserve the source mesh/material family but
-    // intentionally collapse the source node hierarchy to nine renderable
-    // meshes. The old 191-joint hierarchy assertion belonged to the rejected
-    // skinned route-local derivatives and must not be carried forward.
-    expect(names.length).toBeGreaterThanOrEqual(9);
+    expect(names.length).toBeGreaterThanOrEqual(200);
     expect(names.some((name) => /basketball/i.test(name))).toBe(false);
-    expect(athlete.animations ?? []).toHaveLength(0);
   }
 });
 
@@ -151,9 +148,10 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     const opening = await evidence(page);
     expect(opening.state).toBe("playing");
     expect(opening.predictionPointCount).toBe(25);
-    expect(opening.primaryAssets).toHaveLength(6);
-    expect(opening.primaryAssets).toContain("assets.rooftopAthleteShooter");
-    expect(opening.primaryAssets).toContain("assets.rooftopAthleteDefender");
+    expect(opening.primaryAssets).toHaveLength(7);
+    expect(opening.primaryAssets).toContain("assets.rooftopVenueV2");
+    expect(opening.primaryAssets).toContain("assets.rooftopLayupScorer");
+    expect(opening.primaryAssets).toContain("assets.rooftopDefender");
     expect(opening.renderer.drawCalls).toBeGreaterThan(0);
     const initialCanvas = await canvasData(page);
     expect(initialCanvas.length).toBeGreaterThan(4_000);
@@ -187,8 +185,8 @@ test("opening, trajectory, contact outcomes, heat states, mobile, and reduced mo
     expect(activeShot.shooterBodyCompression).toBe(0);
     expect(activeShot.contestReactionActive).toBe(true);
     expect(activeShot.defenderReach).toBeGreaterThan(0.24);
-    expect(activeShot.shooterClips).toEqual(["StaticReleasePose"]);
-    expect(activeShot.defenderClips).toEqual(["StaticContestPose"]);
+    expect(activeShot.shooterClips).toEqual(["Ready", "Load", "Release", "FollowThrough"]);
+    expect(activeShot.defenderClips).toEqual(["Plant", "Telegraph", "Jump", "Contest"]);
     await capture(page, "release-desktop.png");
     expect(await canvasData(page)).not.toBe(initialCanvas);
 

@@ -35,7 +35,10 @@ const ROUTE_SOURCE_FILES = [
   "apps/showcase-mech-hangar/src/styles.css"
 ] as const;
 
-const VISUAL_PRIMARY_ASSET_IDS = ["robotcand"] as const;
+// The review subject is the four selected MH-2M slots. Keeping these bindings
+// explicit makes the receipt prove that the rendered default/swap frames are
+// backed by the same typed family used by the live assembly plan.
+const VISUAL_PRIMARY_ASSET_IDS = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"] as const;
 
 function visualAssetBindings(): readonly { readonly id: string; readonly hash: string; readonly renderedProbe?: string }[] {
   const manifest = JSON.parse(readFileSync("aura.assets.json", "utf8")) as { assets?: readonly Record<string, unknown>[] };
@@ -152,7 +155,7 @@ test.describe("Mech Hangar build", () => {
     expect(evidence.curationVerdict).toBe("GO");
     expect(evidence.slots).toEqual(["chassis", "arms", "legs", "weapon"]);
     expect(evidence.selectedParts).toHaveLength(4);
-    expect(evidence.primaryAssetRefs).toContain("assets.robotcand");
+    for (const id of VISUAL_PRIMARY_ASSET_IDS) expect(evidence.primaryAssetRefs).toContain("assets." + id);
     expect(evidence.assemblyValidated).toBe(true);
     expect(evidence.registeredAudioCues).toBe(10);
 
@@ -169,7 +172,16 @@ test.describe("Mech Hangar build", () => {
     if (!existsSync(REPORT_DIR)) mkdirSync(REPORT_DIR, { recursive: true });
 
     // ---- pixels change on a part swap ------------------------------------
-    const stageShot = () => page.locator("#app").screenshot();
+    // The route's canvas is mounted in an absolutely positioned wrapper whose
+    // layout can remain transient while the HUD scrollbar/font metrics settle
+    // even under reduced motion. `locator("#app").screenshot()` therefore
+    // waits forever on Playwright's wrapper-stability heuristic in some
+    // software-WebGL contexts. Capture the same viewport used by the named
+    // artifacts instead; the assertions below still compare the rendered
+    // pixels and the subsequent composition metrics still exclude no scene
+    // content. This avoids changing the visual contract or masking a blank
+    // canvas while removing only the flaky wrapper wait.
+    const stageShot = () => page.screenshot({ animations: "disabled", fullPage: false });
     const before = await stageShot();
     await page.waitForTimeout(1_500);
     const beforeAgain = await stageShot();

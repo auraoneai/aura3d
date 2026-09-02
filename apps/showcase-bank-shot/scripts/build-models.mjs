@@ -279,6 +279,18 @@ function addEllipseRibbon(p, cx, cy, cz, radiusX, radiusZ, width, segments = 64)
   }
 }
 
+/**
+ * Recessed leather drop-pocket cup.  The table physics still uses the same
+ * six sensor regions; this is only the authored typed geometry that gives the
+ * mouth a visible wall and a real dark lower catch instead of a floating decal.
+ */
+function addPocketWell(p, cx, cz, radius, segments = 24) {
+  const upper = ring(segments, radius * 0.76, 0.006).map(([x, y, z]) => [x + cx, y, z + cz]);
+  const lower = ring(segments, radius * 0.48, -0.052).map(([x, y, z]) => [x + cx, y, z + cz]);
+  addBand(p, lower, upper);
+  addCap(p, lower, -0.052, false, cx, cz);
+}
+
 /** A small horizontal diamond for the table's integrated rail sights. */
 function addDiamond(p, cx, cy, cz, radiusX, radiusZ) {
   addQuad(
@@ -379,9 +391,18 @@ function buildTable() {
   const clothMarkings = part();
   // A restrained asymmetrical league crest gives the table its own identity
   // without replacing the continuous felt or reading as a route-side overlay.
-  addEllipseRibbon(clothMarkings, -0.78, 0.0045, 0.31, 0.26, 0.18, 0.018);
-  addEllipseRibbon(clothMarkings, -0.78, 0.0046, 0.31, 0.145, 0.095, 0.013);
-  addBox(clothMarkings, -0.78, 0.0045, 0.31, 0.018, 0.00035, 0.145);
+  // Keep the identity mark at a cue-sports scale.  The earlier half-metre
+  // crest dominated the close camera and read as a debug target; this compact
+  // double-line oval is still visible in the asset probe without competing
+  // with the live rack or cue ball.
+  addEllipseRibbon(clothMarkings, -0.78, 0.0045, 0.31, 0.12, 0.08, 0.007, 48);
+  addEllipseRibbon(clothMarkings, -0.78, 0.0046, 0.31, 0.065, 0.043, 0.005, 48);
+  addBox(clothMarkings, -0.78, 0.0045, 0.31, 0.008, 0.00035, 0.068);
+  // A compact break-zone ring anchors the rack in the cloth and echoes the
+  // asymmetric identity treatment of a premium pool table without becoming a
+  // giant debug target.  It is part of the table GLB, not route-side UI.
+  addEllipseRibbon(clothMarkings, 0.55, 0.0048, 0, 0.24, 0.17, 0.008, 64);
+  addEllipseRibbon(clothMarkings, 0.55, 0.0049, 0, 0.17, 0.115, 0.005, 64);
   // Regulation head string and spots remain subtle under the live rack/cue.
   addBox(clothMarkings, -0.65, 0.0045, 0, 0.004, 0.00035, 0.54);
   addDisc(clothMarkings, 0.55, 0.0046, 0, 0.014, 24);
@@ -409,13 +430,20 @@ function buildTable() {
   // remain clean circles at a grazing camera angle and cannot cast the detached
   // crescent shadows produced by route-side flattened volume primitives.
   const pockets = part();
+  const pocketInteriors = part();
+  const pocketWells = part();
   const pocketRims = part();
   for (const [x, z, radius] of [
     [-1.3, -0.7, 0.115], [1.3, -0.7, 0.115],
     [-1.3, 0.7, 0.115], [1.3, 0.7, 0.115],
     [0, -0.7, 0.095], [0, 0.7, 0.095]
   ]) {
-    addDisc(pockets, x, 0.004, z, radius, 24);
+    // The mouth is intentionally smaller than the outer collar.  This leaves
+    // a visible felt/rail lip instead of a flat black decal and gives the
+    // layered pocket materials a readable scale in the close break frame.
+    addDisc(pockets, x, 0.006, z, radius * 0.78, 28);
+    addTorusY(pocketInteriors, x, 0.014, z, radius * 0.64, 0.017, 22, 6);
+    addPocketWell(pocketWells, x, z, radius, 24);
     addTorusY(pocketRims, x, 0.022, z, radius + 0.004, 0.012, 18, 5);
   }
 
@@ -424,18 +452,20 @@ function buildTable() {
     // the bed continuous with the rail geometry avoids a route-side rectangle
     // that reads as an overlay and gives the PBR path one grounded surface to
     // shade, reflect, and receive ball contact shadows across.
-    { name: "felt", part: felt, color: [0.012, 0.052, 0.25, 1], roughness: 0.88, specular: 0.22 },
-    { name: "felt-weave", part: feltWeave[0], color: [0.022, 0.095, 0.38, 1], roughness: 0.94, specular: 0.28 },
-    { name: "cloth-markings", part: clothMarkings, color: [0.28, 0.54, 0.68, 1], roughness: 0.92, metallic: 0 },
-    { name: "rails", part: rails, color: [0.12, 0.026, 0.009, 1], roughness: 0.3, clearcoat: 0.72, clearcoatRoughness: 0.18, specular: 0.82 },
-    { name: "cushions", part: cushions, color: [0.008, 0.055, 0.21, 1], roughness: 0.62, metallic: 0.01 },
-    { name: "rail-trim", part: railTrim, color: [0.29, 0.075, 0.018, 1], roughness: 0.22, metallic: 0.12, clearcoat: 0.85, clearcoatRoughness: 0.12, specular: 0.92 },
-    { name: "rail-veneer", part: railVeneer, color: [0.52, 0.16, 0.035, 1], roughness: 0.2, metallic: 0.08, clearcoat: 0.9, clearcoatRoughness: 0.1, specular: 1 },
+    { name: "felt", part: felt, color: [0.012, 0.055, 0.245, 1], roughness: 0.86, specular: 0.34, clearcoat: 0.05, clearcoatRoughness: 0.28 },
+    { name: "felt-weave", part: feltWeave[0], color: [0.021, 0.082, 0.31, 1], roughness: 0.9, specular: 0.3, clearcoat: 0.02, clearcoatRoughness: 0.36 },
+    { name: "cloth-markings", part: clothMarkings, color: [0.41, 0.65, 0.75, 1], roughness: 0.7, metallic: 0, specular: 0.4 },
+    { name: "rails", part: rails, color: [0.055, 0.009, 0.003, 1], roughness: 0.3, clearcoat: 0.76, clearcoatRoughness: 0.18, specular: 0.84 },
+    { name: "cushions", part: cushions, color: [0.005, 0.032, 0.13, 1], roughness: 0.56, metallic: 0.01, clearcoat: 0.22, clearcoatRoughness: 0.22, specular: 0.7 },
+    { name: "rail-trim", part: railTrim, color: [0.17, 0.032, 0.008, 1], roughness: 0.27, metallic: 0.08, clearcoat: 0.76, clearcoatRoughness: 0.14, specular: 0.88 },
+    { name: "rail-veneer", part: railVeneer, color: [0.28, 0.06, 0.014, 1], roughness: 0.23, metallic: 0.05, clearcoat: 0.82, clearcoatRoughness: 0.11, specular: 0.92 },
     { name: "rail-sights", part: railSights, color: [0.74, 0.78, 0.72, 1], roughness: 0.2, metallic: 0.45 },
-    { name: "apron", part: apron, color: [0.055, 0.01, 0.006, 1], roughness: 0.38, metallic: 0.08 },
-    { name: "legs", part: legs, color: [0.11, 0.025, 0.009, 1], roughness: 0.54 },
-    { name: "pocket-mouths", part: pockets, color: [0.008, 0.01, 0.014, 1], roughness: 0.96, metallic: 0 },
-    { name: "pocket-rims", part: pocketRims, color: [0.045, 0.055, 0.09, 1], roughness: 0.22, metallic: 0.68 }
+    { name: "apron", part: apron, color: [0.038, 0.007, 0.004, 1], roughness: 0.44, metallic: 0.05 },
+    { name: "legs", part: legs, color: [0.075, 0.016, 0.006, 1], roughness: 0.6 },
+    { name: "pocket-mouths", part: pockets, color: [0.003, 0.006, 0.012, 1], roughness: 0.74, metallic: 0, specular: 0.42 },
+    { name: "pocket-interiors", part: pocketInteriors, color: [0.012, 0.02, 0.04, 1], roughness: 0.45, metallic: 0.15, clearcoat: 0.35, clearcoatRoughness: 0.18, specular: 0.8 },
+    { name: "pocket-wells", part: pocketWells, color: [0.004, 0.006, 0.012, 1], roughness: 0.62, metallic: 0.04, clearcoat: 0.18, clearcoatRoughness: 0.3, specular: 0.55 },
+    { name: "pocket-rims", part: pocketRims, color: [0.07, 0.095, 0.14, 1], roughness: 0.18, metallic: 0.55, clearcoat: 0.65, clearcoatRoughness: 0.12, specular: 0.92 }
   ];
 }
 
@@ -493,11 +523,11 @@ const BALL_HUES = {
 const BALL_WHITE = [0.93, 0.93, 0.9, 1];
 const BALL_BLACK = [0.05, 0.05, 0.06, 1];
 const BALL_SHININESS = {
-  roughness: 0.065,
+  roughness: 0.055,
   metallic: 0,
-  clearcoat: 1,
-  clearcoatRoughness: 0.055,
-  specular: 1
+  clearcoat: 0.94,
+  clearcoatRoughness: 0.042,
+  specular: 0.96
 };
 
 /** Latitude rings (around Y) for a full sphere split into LATITUDE_BANDS bands. */
@@ -603,7 +633,7 @@ function addBallIdentity(parts, number) {
   // lacquered solids/stripes. A smaller 0.009-radius patch still carries the
   // seven-segment mark while preserving the hue and specular highlight around
   // it.
-  addDisc(patch, 0, BALL_RADIUS + 0.00035 * BALL_GEOMETRY_SCALE, 0, 0.009 * BALL_GEOMETRY_SCALE, 24);
+  addDisc(patch, 0, BALL_RADIUS + 0.00035 * BALL_GEOMETRY_SCALE, 0, 0.0105 * BALL_GEOMETRY_SCALE, 24);
   const digits = String(number).split("").map(Number);
   if (digits.length === 1) addDigit(mark, digits[0], 0, BALL_RADIUS + 0.0007 * BALL_GEOMETRY_SCALE, 1);
   else {

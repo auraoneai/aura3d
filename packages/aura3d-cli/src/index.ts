@@ -30,6 +30,7 @@ import type {
   AuraCliAssetEntry,
   AuraCliAssetManifest,
   AuraCliAssetProvenance,
+  AuraCliGeneratedAssetProvenance,
   AuraCliAssetRole,
   AuraCliAssetType,
   AuraCliRenderedProbe,
@@ -166,6 +167,7 @@ export type {
   AuraCliAssetEntry,
   AuraCliAssetManifest,
   AuraCliAssetProvenance,
+  AuraCliGeneratedAssetProvenance,
   AuraCliAssetRole,
   AuraCliAssetType,
   AuraCliRenderedProbe,
@@ -179,6 +181,8 @@ export type {
   GameGeometryCertificationResult,
   ReadRenderedProbeMetadataOptions
 } from "./asset-core-types.js";
+export { importMeshyAsset } from "./meshy/import.js";
+export type { ImportMeshyOptions, ImportMeshyResult } from "./meshy/import.js";
 export type {
   AssetInspectionReport,
   AuraCliAnimationClipInspection,
@@ -2651,7 +2655,7 @@ function createAssetWarnings(path: string, inspection: AssetInspection): readonl
 function createAssetProvenance(
   projectDir: string,
   sourcePath: string,
-  options: Pick<AddAssetOptions, "sourcePage" | "downloadUrl" | "sourceUrl" | "license" | "licenseName" | "licenseUrl" | "licenseRaw" | "author" | "sourceFamily" | "attribution" | "sha256" | "provenanceEvidence" | "retrievedAt" | "resolveCandidate">,
+  options: Pick<AddAssetOptions, "sourcePage" | "downloadUrl" | "sourceUrl" | "license" | "licenseName" | "licenseUrl" | "licenseRaw" | "author" | "sourceFamily" | "attribution" | "sha256" | "provenanceEvidence" | "retrievedAt" | "resolveCandidate" | "generation">,
   detected?: Partial<AuraCliAssetProvenance>,
   /**
    * Durable in-project path the asset was staged to.
@@ -2684,6 +2688,7 @@ function createAssetProvenance(
     ...(options.sha256 ?? detected?.sha256 ? { sha256: options.sha256 ?? detected?.sha256 } : {}),
     ...(options.retrievedAt ?? detected?.retrievedAt ? { retrievedAt: options.retrievedAt ?? detected?.retrievedAt } : {}),
     ...(options.resolveCandidate ?? detected?.resolveCandidate ? { resolveCandidate: options.resolveCandidate ?? detected?.resolveCandidate } : {}),
+    ...(options.generation ?? detected?.generation ? { generation: options.generation ?? detected?.generation } : {}),
     ...(evidence.length > 0 ? { evidence } : {}),
     /*
      * Honour the injectable `retrievedAt` so a deterministic resolve produces deterministic output.
@@ -2755,6 +2760,7 @@ function mergeDetectedProvenance(
     sha256: detected?.sha256 ?? existing.sha256,
     retrievedAt: detected?.retrievedAt ?? existing.retrievedAt,
     resolveCandidate: detected?.resolveCandidate ?? existing.resolveCandidate,
+    generation: detected?.generation ?? existing.generation,
     ...(evidence.length > 0 ? { evidence: [...new Set(evidence)] } : {})
   };
 }

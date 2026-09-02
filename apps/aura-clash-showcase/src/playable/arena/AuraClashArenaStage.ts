@@ -74,6 +74,8 @@ export const auraClashArenaStageElements: readonly AuraClashArenaStageElement[] 
   element("typed-arena-environment", "typed Neon Downtown arena environment", "aura-clash-arena-architecture", "typed-asset", "backdrop"),
   element("atmospheric-motes", "rendered atmospheric motes", "atmospheric-mote-", "atmosphere", "particles"),
   element("floor-sheen", "rendered floor sheen", "floor-sheen", "platform", "reflections"),
+  element("foreground-barrier", "grounded two-level foreground safety barrier", "front-barrier-", "platform", null),
+  element("barrier-edge-lights", "palette edge lights on the foreground barrier", "barrier-edge-", "lighting", "reflections"),
   // AC-A3/AC-A5 additions. Both always submit geometry (reduced motion freezes motion, it never
   // removes the items), so declared elements stay evidence-backed on observed frames.
   element("rooftop-crowd", "instanced rooftop crowd silhouettes (one instanced pool)", "crowd-fan-pool", "backdrop", null),

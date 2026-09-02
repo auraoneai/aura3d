@@ -38,24 +38,55 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
     lights.ambient({
       name: "deep recovery game ocean ambient",
       color: "#0b2d35",
-      intensity: options.review ? 0.46 : 0.66
+      intensity: options.review ? 0.52 : 1.18
     }),
     lights.directional({
       name: "surface-sunbeams",
       color: "#78afb1",
-      intensity: options.review ? 1.65 : 1.15
+      intensity: options.review ? 1.8 : 1.92
     }).position(20, 35, 10),
     lights.directional({
       name: "depth-fill-light",
       color: "#0f5362",
-      intensity: 0.92
+      intensity: options.review ? 1.1 : 1.65
     }).position(-15, -20, -15),
     lights.point({
       name: "sub-headlight-halo",
       color: "#b9efff",
-      intensity: 5.4
+      intensity: options.review ? 6.2 : 7.2
     }).position(0, -6, 5)
   );
+
+  // A distant, rounded water-column volume supplies a soft blue-green depth
+  // gradient behind the authored wreck without becoming a hard-edged
+  // screen-filling plane. Its low-opacity PBR shell catches the sunbeam and
+  // lets the near props read as silhouettes against a real underwater volume.
+  if (!options.review) {
+    nodes.push(
+      primitives.sphere({
+        name: "deep water distance volume",
+        material: material.pbr({
+          name: "deep water distance gradient",
+          color: "#155668",
+          emissive: "#0c3d50",
+          emissiveIntensity: 0.32,
+          roughness: 1,
+          metallic: 0,
+          opacity: 0.2
+        })
+      }).position(0, -7.8, 28).scale([28, 17, 4.5]),
+      primitives.sphere({
+        name: "deep water lower blue volume",
+        material: material.emissive({
+          name: "deep water lower blue haze",
+          color: "#0b4a62",
+          emissive: "#1c8296",
+          emissiveIntensity: 0.18,
+          opacity: 0.11
+        })
+      }).position(-2, -13.5, 16).scale([21, 6.5, 5])
+    );
+  }
 
   // Seabed Floor (Basalt, Sediment & Ocean Trench)
   nodes.push(
@@ -65,16 +96,23 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
     // gameplay obstacles and navigation.
     primitives.sphere({
       name: "deep recovery broad trench floor",
-      material: material.pbr({ name: "deep trench slate floor", color: "#173e43", roughness: 0.94, metallic: 0.03 })
-    }).position(-2, -18.2, options.review ? 100 : -10).scale([12.4, 0.62, 9.6]).rotate(0.03, -0.08, 0.015),
+      material: material.pbr({
+        name: "deep trench slate floor",
+        color: options.review ? "#173e43" : "#2b6973",
+        emissive: options.review ? "#12383a" : "#124b59",
+        emissiveIntensity: options.review ? 0.42 : 0.26,
+        roughness: 0.94,
+        metallic: 0.03
+      })
+    }).position(-2, options.review ? -18.2 : -16.65, options.review ? 100 : -10).scale(options.review ? [12.4, 0.62, 9.6] : [20, 0.88, 15]).rotate(0.03, -0.08, 0.015),
     primitives.box({
       name: "deep recovery trench floor cyan seam",
       material: material.emissive({ name: "deep trench cyan seam", color: "#0b5967", emissive: "#19b7c9", emissiveIntensity: 0.32, opacity: 0.78 })
-    }).position(1.2, -17.52, options.review ? 100 : -10.2).scale([10.5, 0.025, 0.08]).rotate(0.01, -0.16, 0.01),
+    }).position(1.2, options.review ? -17.52 : -15.72, options.review ? 100 : -10.2).scale(options.review ? [10.5, 0.025, 0.08] : [15.5, 0.035, 0.11]).rotate(0.01, -0.16, 0.01),
     primitives.box({
       name: "deep recovery trench floor amber seam",
       material: material.emissive({ name: "deep trench amber seam", color: "#7c4214", emissive: "#f59e0b", emissiveIntensity: 0.28, opacity: 0.64 })
-    }).position(-4.5, -17.5, options.review ? 100 : -7.5).scale([0.08, 0.025, 5.2]).rotate(0.01, 0.2, 0.01),
+    }).position(-4.5, options.review ? -17.5 : -15.7, options.review ? 100 : -7.5).scale(options.review ? [0.08, 0.025, 5.2] : [0.11, 0.035, 8.2]).rotate(0.01, 0.2, 0.01),
     lights.point({
       name: "abyss amber beacon fill",
       color: "#f59e0b",
@@ -83,23 +121,33 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
     lights.point({
       name: "trench floor cyan fill",
       color: "#4dd7e5",
-      intensity: 4.6
+      intensity: options.review ? 4.6 : 7.8
     }).position(0, -14, -8),
     lights.point({
       name: "wreck sonar cyan fill",
       color: "#45e0ff",
-      intensity: 9.4
+      intensity: options.review ? 9.4 : 12.5
     }).position(-7, -12, -13),
     lights.point({
       name: "wreck oxidized amber fill",
       color: "#f59e0b",
-      intensity: 9.2
+      intensity: options.review ? 9.2 : 11.5
     }).position(-9.5, -10.5, -14.5),
     lights.point({
       name: "wreck chapel warm overhead",
       color: "#ffd58a",
-      intensity: 12.4
+      intensity: options.review ? 12.4 : 15.5
     }).position(-7, -5.8, -12.5),
+    lights.point({
+      name: "wreck cool rim practical",
+      color: "#5de8ff",
+      intensity: options.review ? 8.8 : 6.4
+    }).position(-2.8, -10.8, -10.2),
+    lights.point({
+      name: "wreck sediment amber practical",
+      color: "#ffb45e",
+      intensity: options.review ? 7.4 : 5.2
+    }).position(-10.2, -14.3, -13.8),
     primitives.torus({
       name: "wreck salvage beacon ring",
       material: material.emissive({
@@ -119,16 +167,58 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
         emissiveIntensity: 1.8
       })
     }).position(-5.2, -10.7, -13.2).scale(0.48),
+    // Default gameplay and route-primary views need a continuous water-floor
+    // read as well as the close review basin. These broad renderer-owned
+    // silt plates sit under the existing chapel dressing and make its edges,
+    // contact shadows, and cyan/amber navigation seams readable from the
+    // launch camera without becoming a screen-space backdrop.
+    ...(!options.review ? [
+      primitives.sphere({
+        name: "default salvage basin west shelf",
+        material: material.pbr({ name: "default basin west silt", color: "#2b666b", emissive: "#15484b", emissiveIntensity: 0.34, roughness: 0.98, metallic: 0.02 })
+      }).position(-6.4, -15.55, -11.8).scale([8.8, 0.16, 6.4]).rotate(0.02, -0.18, 0.01),
+      primitives.sphere({
+        name: "default salvage basin east shelf",
+        material: material.pbr({ name: "default basin east silt", color: "#356d69", emissive: "#1b4b46", emissiveIntensity: 0.3, roughness: 0.98, metallic: 0.02 })
+      }).position(4.2, -15.62, -8.4).scale([7.4, 0.14, 5.2]).rotate(0.02, 0.16, -0.01),
+      primitives.torus({
+        name: "default salvage basin route ring",
+        material: material.emissive({ name: "default basin route ring", color: "#0f7180", emissive: "#51e4e3", emissiveIntensity: 0.82, opacity: 0.78 })
+      }).position(-4.8, -15.15, -10.8).scale([4.8, 4.8, 0.08]).rotate(Math.PI / 2, 0, 0)
+    ] : []),
+    // A short chain of physical sonar waypoints ties the approach vehicle to
+    // the wreck basin. Each marker is a tiny world-space beacon with a halo,
+    // so the route remains legible even when the transient pulse has faded.
+    ...(!options.review ? [
+      { x: -0.8, y: -8.2, z: -2.8, color: "#55e6ee" },
+      { x: -2.2, y: -9.1, z: -5.4, color: "#55e6ee" },
+      { x: -3.9, y: -10.1, z: -8.0, color: "#f8c56c" },
+      { x: -5.2, y: -10.9, z: -10.0, color: "#f8c56c" }
+    ].flatMap((waypoint, index) => {
+      const markerMaterial = material.emissive({
+        name: `default salvage route beacon material ${index + 1}`,
+        color: waypoint.color === "#f8c56c" ? "#8a561d" : "#147887",
+        emissive: waypoint.color,
+        emissiveIntensity: 1.45,
+        opacity: 0.92
+      });
+      return [
+        primitives.sphere({ name: `default salvage route beacon ${index + 1}`, material: markerMaterial })
+          .position(waypoint.x, waypoint.y, waypoint.z).scale(0.16 + index * 0.018),
+        primitives.torus({ name: `default salvage route halo ${index + 1}`, material: markerMaterial })
+          .position(waypoint.x, waypoint.y - 0.04, waypoint.z).scale([0.32 + index * 0.03, 0.32 + index * 0.03, 0.035]).rotate(Math.PI / 2, 0, 0)
+      ];
+    }) : []),
     // Mid-water landmarks sit on the 16m-depth capture path so the follow camera
     // sees a populated sea rather than only the distant seabed dressing.
     primitives.cylinder({
       name: "midwater reef pillar west",
-      material: material.pbr({ name: "midwater reef stone west", color: "#2f8297", roughness: 0.68, metallic: 0.12 })
-    }).position(-4, -16, options.review ? 80 : 4).scale([1.05, 3.1, 1.05]),
+      material: material.pbr({ name: "midwater reef stone west", color: "#3d96aa", emissive: "#164f60", emissiveIntensity: 0.28, roughness: 0.68, metallic: 0.12 })
+    }).position(options.review ? -4 : -10.5, -16, options.review ? 80 : 7).scale([1.05, 3.1, 1.05]),
     primitives.cylinder({
       name: "midwater reef pillar east",
-      material: material.pbr({ name: "midwater reef stone east", color: "#2d8c73", roughness: 0.68, metallic: 0.12 })
-    }).position(4, -16, options.review ? 82 : 7).scale([0.9, 2.8, 0.9]),
+      material: material.pbr({ name: "midwater reef stone east", color: "#36a687", emissive: "#135348", emissiveIntensity: 0.26, roughness: 0.68, metallic: 0.12 })
+    }).position(options.review ? 4 : 10.5, -16, options.review ? 82 : 11).scale([0.9, 2.8, 0.9]),
     primitives.torus({
       name: "midwater amber salvage arch",
       material: material.emissive({ name: "midwater amber arch glow", color: "#78350f", emissive: "#f59e0b", emissiveIntensity: 0.65, opacity: 0.9 })
@@ -147,23 +237,23 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
     primitives.box({
       name: "near trench shelf west",
       material: material.pbr({ name: "near trench shelf west stone", color: "#2c6479", roughness: 0.82, metallic: 0.08 })
-    }).position(-9.5, -20.5, options.review ? 88 : 12).scale([5.5, 1.2, 3.2]).rotate(0, 0.08, -0.12),
+    }).position(-9.5, -20.5, options.review ? 88 : 24).scale([5.5, 1.2, 3.2]).rotate(0, 0.08, -0.12),
     primitives.box({
       name: "near trench shelf east",
       material: material.pbr({ name: "near trench shelf east stone", color: "#386f82", roughness: 0.82, metallic: 0.08 })
-    }).position(9.8, -22, options.review ? 92 : 16).scale([4.8, 1.4, 3.8]).rotate(0, -0.12, 0.1),
+    }).position(9.8, -22, options.review ? 92 : 28).scale([4.8, 1.4, 3.8]).rotate(0, -0.12, 0.1),
     primitives.cylinder({
       name: "near trench shelf coral west",
       material: material.pbr({ name: "near trench shelf coral west material", color: "#267c7c", roughness: 0.76, metallic: 0.04 })
-    }).position(-8.2, -18.2, options.review ? 90 : 15.6).scale([1.3, 2.8, 1.3]),
+    }).position(-8.2, -18.2, options.review ? 90 : 25.6).scale([1.3, 2.8, 1.3]),
     primitives.cylinder({
       name: "near trench shelf coral east",
       material: material.pbr({ name: "near trench shelf coral east material", color: "#3b6a66", roughness: 0.76, metallic: 0.04 })
-    }).position(8.5, -19.4, options.review ? 94 : 19.2).scale([1.1, 2.2, 1.1]),
+    }).position(8.5, -19.4, options.review ? 94 : 30.2).scale([1.1, 2.2, 1.1]),
     primitives.torus({
       name: "near trench navigation ring",
       material: material.emissive({ name: "near trench navigation ring glow", color: "#075985", emissive: "#22d3ee", emissiveIntensity: 1.15, opacity: 0.72 })
-    }).position(0, -17.8, options.review ? 96 : 18).scale([3.8, 3.8, 0.12]).rotate(Math.PI / 2, 0, 0),
+    }).position(0, -17.8, options.review ? 96 : 22).scale([3.8, 3.8, 0.12]).rotate(Math.PI / 2, 0, 0),
     // A string of small warm windows gives the wreck a designed focal rhythm
     // rather than a single unlit brown silhouette.
     ...[-2.1, -0.7, 0.7, 2.1].map((x, index) => primitives.box({
@@ -322,11 +412,55 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
       }).position(spawn.x, spawn.y + spawn.scale[1] * 0.46, options.review ? spawn.z + 120 : spawn.z).scale(0.42)
     );
   });
-  const waterRibbon = material.emissive({ name: "underwater light ribbon", color: "#2b8499", emissive: "#67e8f9", emissiveIntensity: 0.24, opacity: 0.18 });
+  const waterRibbon = material.emissive({ name: "underwater light ribbon", color: "#2b8499", emissive: "#67e8f9", emissiveIntensity: options.review ? 0.24 : 0.16, opacity: options.review ? 0.18 : 0.1 });
   nodes.push(
-    primitives.box({ name: "underwater light ribbon west", material: waterRibbon }).position(-7.6, -6.8, options.review ? 136.5 : 16.5).scale([0.12, 5.8, 2.8]).rotate(0, -0.14, -0.12),
-    primitives.box({ name: "underwater light ribbon east", material: waterRibbon }).position(7.2, -7.6, options.review ? 138.8 : 18.8).scale([0.12, 5.4, 2.4]).rotate(0, 0.2, 0.14)
+    primitives.box({ name: "underwater light ribbon west", material: waterRibbon }).position(-7.6, -6.8, options.review ? 136.5 : 16.5).scale(options.review ? [0.12, 5.8, 2.8] : [0.06, 3.5, 0.62]).rotate(0, -0.14, -0.12),
+    primitives.box({ name: "underwater light ribbon east", material: waterRibbon }).position(7.2, -7.6, options.review ? 138.8 : 18.8).scale(options.review ? [0.12, 5.4, 2.4] : [0.06, 3.2, 0.56]).rotate(0, 0.2, 0.14)
   );
+
+  // The normal launch lens benefits from a visible water-column rhythm too.
+  // These slashes are shallow, low-opacity scene geometry (not a backdrop or
+  // DOM overlay) that catches the directional key light and breaks up the
+  // otherwise monochrome teal field around the route's real subjects.
+  if (!options.review) {
+    const defaultCaustic = material.emissive({
+      name: "default water caustic slashes",
+      color: "#217b8a",
+      emissive: "#72e7ed",
+      emissiveIntensity: 0.48,
+      opacity: 0.1
+    });
+    const defaultCausticWarm = material.emissive({
+      name: "default water amber caustic slashes",
+      color: "#815228",
+      emissive: "#ffc56b",
+      emissiveIntensity: 0.32,
+      opacity: 0.08
+    });
+    nodes.push(
+      ...[
+        { x: -15.2, y: -8.4, z: -4.2, sx: 0.055, sy: 3.1, sz: 0.34, rot: -0.22 },
+        { x: -11.0, y: -7.5, z: -10.8, sx: 0.045, sy: 2.8, sz: 0.38, rot: 0.26 },
+        { x: 10.6, y: -8.3, z: -5.2, sx: 0.05, sy: 3.0, sz: 0.36, rot: 0.3 },
+        { x: 13.8, y: -8.7, z: -13.5, sx: 0.045, sy: 2.8, sz: 0.32, rot: -0.18 },
+        { x: 3.2, y: -7.2, z: -18.0, sx: 0.04, sy: 2.4, sz: 0.28, rot: 0.1 }
+      ].map((slash, index) => primitives.box({
+        name: `default suspended caustic slash ${index + 1}`,
+        material: index === 3 ? defaultCausticWarm : defaultCaustic
+      }).position(slash.x, slash.y, slash.z).scale([slash.sx, slash.sy, slash.sz]).rotate(0, slash.rot, 0)),
+      ...Array.from({ length: 22 }, (_, index) => {
+        const angle = index * 2.399963229728653;
+        const radius = 5.8 + (index % 5) * 1.2;
+        const x = -4.0 + Math.cos(angle) * radius;
+        const y = -11.4 + Math.sin(angle * 1.7) * 4.8 + (index % 3) * 0.55;
+        const z = -9.8 + Math.sin(angle) * radius * 0.78;
+        return primitives.sphere({
+          name: `default suspended salvage particulate ${index + 1}`,
+          material: index % 5 === 0 ? defaultCausticWarm : defaultCaustic
+        }).position(x, y, z).scale(0.055 + (index % 4) * 0.022);
+      })
+    );
+  }
 
   // Mid-Trench Shipwreck Beams & Hull Ribs (Depth -20m to -38m)
   const wreckRibs = [
@@ -429,32 +563,32 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
   // dark water grade without using DOM/CSS as a world effect.
   const ruinStone = material.pbr({
     name: "sunless salvage-island stone",
-    color: options.review ? "#193936" : "#6f6049",
-    emissive: options.review ? "#102c2b" : "#342719",
-    emissiveIntensity: options.review ? 0.38 : 0.28,
-    roughness: 0.94,
-    metallic: 0.06
+    color: options.review ? "#193936" : "#2d6267",
+    emissive: options.review ? "#102c2b" : "#123c45",
+    emissiveIntensity: options.review ? 0.38 : 0.46,
+    roughness: 0.9,
+    metallic: 0.08
   });
   const ruinEdge = material.pbr({
     name: "sunless salvage-island edge",
-    color: options.review ? "#3e6d61" : "#9a7950",
-    emissive: options.review ? "#1f4d45" : "#4a2f18",
-    emissiveIntensity: options.review ? 0.42 : 0.24,
-    roughness: 0.86,
-    metallic: 0.09
+    color: options.review ? "#3e6d61" : "#508e89",
+    emissive: options.review ? "#1f4d45" : "#1f5d5c",
+    emissiveIntensity: options.review ? 0.42 : 0.38,
+    roughness: 0.8,
+    metallic: 0.12
   });
-  const ruinWindow = material.emissive({ name: "sunless salvage-island warm windows", color: "#a55a19", emissive: "#ffe08a", emissiveIntensity: options.review ? 2.4 : 0.82, opacity: 0.98 });
-  const ruinMapLine = material.emissive({ name: "sunless salvage-island map line", color: "#0e7490", emissive: "#67e8f9", emissiveIntensity: 0.72, opacity: 0.62 });
-  const ruinMapAmber = material.emissive({ name: "sunless salvage-island amber map line", color: "#92400e", emissive: "#fbbf24", emissiveIntensity: 0.96, opacity: 0.82 });
-  const ruinDeck = material.metal({ name: "sunless wreck settlement deck", color: options.review ? "#a47b43" : "#5f5137", roughness: 0.64, metallic: 0.42 });
+  const ruinWindow = material.emissive({ name: "sunless salvage-island warm windows", color: "#a55a19", emissive: "#ffe08a", emissiveIntensity: options.review ? 2.4 : 1.24, opacity: 0.98 });
+  const ruinMapLine = material.emissive({ name: "sunless salvage-island map line", color: "#0e7490", emissive: "#67e8f9", emissiveIntensity: options.review ? 0.72 : 0.98, opacity: options.review ? 0.62 : 0.74 });
+  const ruinMapAmber = material.emissive({ name: "sunless salvage-island amber map line", color: "#92400e", emissive: "#fbbf24", emissiveIntensity: options.review ? 0.96 : 1.22, opacity: options.review ? 0.82 : 0.88 });
+  const ruinDeck = material.metal({ name: "sunless wreck settlement deck", color: options.review ? "#a47b43" : "#80633e", roughness: 0.58, metallic: 0.46 });
   const ruinDeckDark = material.pbr({ name: "sunless wreck settlement dark deck", color: options.review ? "#3c554e" : "#243433", emissive: options.review ? "#203e39" : "#101817", emissiveIntensity: options.review ? 0.5 : 0.1, roughness: 0.72, metallic: 0.16 });
   const ruinRoof = material.pbr({
     name: "drowned chapel oxidized roof",
-    color: options.review ? "#71806d" : "#5e5949",
-    emissive: options.review ? "#365d53" : "#2d2b25",
-    emissiveIntensity: options.review ? 0.62 : 0.18,
-    roughness: 0.58,
-    metallic: 0.24
+    color: options.review ? "#71806d" : "#587678",
+    emissive: options.review ? "#365d53" : "#1c4d55",
+    emissiveIntensity: options.review ? 0.62 : 0.38,
+    roughness: 0.54,
+    metallic: 0.28
   });
   const sedimentMottles = [
     material.pbr({ name: "drowned sediment dark", color: "#1f403d", emissive: "#163331", emissiveIntensity: 0.3, roughness: 0.98, opacity: 0.34 }),
@@ -745,8 +879,62 @@ export function createDeepOceanEnvironment(options: { readonly review?: boolean 
     ...[-9.95, -8.5, -7.05, -5.6, -4.15].map((x, index) => primitives.sphere({
       name: `salvage-island-chart-light-${index}`,
       material: ruinMapAmber
-    }).position(x, -14.7 + (index % 2) * 0.12, -8.95).scale(0.12 + (index % 2) * 0.04))
+      }).position(x, -14.7 + (index % 2) * 0.12, -8.95).scale(0.12 + (index % 2) * 0.04))
   );
+
+  // The review lens needs a designed water-column frame, not only a dark
+  // basin viewed from above. These low-opacity caustic slashes, beacon pylons,
+  // and suspended marker rings establish near/mid/far depth around the typed
+  // sub and wreck while remaining ordinary renderer-owned scene geometry.
+  if (options.review) {
+    const reviewCaustic = material.emissive({
+      name: "review water caustic ribbons",
+      color: "#2d9eab",
+      emissive: "#75f2ec",
+      emissiveIntensity: 0.42,
+      opacity: 0.2
+    });
+    const reviewViolet = material.emissive({
+      name: "review violet depth beacons",
+      color: "#5f4b9d",
+      emissive: "#c4b5fd",
+      emissiveIntensity: 0.6,
+      opacity: 0.72
+    });
+    nodes.push(
+      ...[
+        { x: -14.5, y: -8.2, z: -6.0, sx: 0.06, sy: 3.6, sz: 0.48, r: -0.28 },
+        { x: -10.8, y: -7.4, z: -19.5, sx: 0.05, sy: 3.1, sz: 0.44, r: 0.18 },
+        { x: 8.8, y: -7.9, z: -7.2, sx: 0.055, sy: 3.4, sz: 0.52, r: 0.32 },
+        { x: 12.6, y: -8.0, z: -18.2, sx: 0.05, sy: 3.0, sz: 0.42, r: -0.2 },
+        { x: -1.7, y: -7.2, z: -23.0, sx: 0.045, sy: 2.5, sz: 0.38, r: 0.08 }
+      ].map((ribbon, index) => primitives.box({
+        name: `review suspended caustic ribbon ${index + 1}`,
+        material: reviewCaustic
+      }).position(ribbon.x, ribbon.y, ribbon.z).scale([ribbon.sx, ribbon.sy, ribbon.sz]).rotate(0, ribbon.r, 0)),
+      ...[
+        { x: -13.0, y: -13.2, z: -5.0, h: 3.6, s: 0.72 },
+        { x: 9.8, y: -13.5, z: -5.8, h: 4.2, s: 0.86 },
+        { x: 11.8, y: -13.9, z: -17.0, h: 3.1, s: 0.64 },
+        { x: -12.0, y: -13.8, z: -20.2, h: 3.0, s: 0.58 }
+      ].flatMap((beacon, index) => [
+        primitives.cylinder({
+          name: `review depth beacon pylon ${index + 1}`,
+          material: ruinDeckDark
+        }).position(beacon.x, beacon.y, beacon.z).scale([0.22, beacon.h, 0.22]),
+        primitives.sphere({
+          name: `review depth beacon lamp ${index + 1}`,
+          material: index % 2 === 0 ? ruinMapLine : reviewViolet
+        }).position(beacon.x, beacon.y + beacon.h * 0.9, beacon.z).scale(beacon.s),
+        primitives.torus({
+          name: `review depth beacon halo ${index + 1}`,
+          material: index % 2 === 0 ? ruinMapLine : reviewViolet
+        }).position(beacon.x, beacon.y + beacon.h * 0.56, beacon.z).scale([beacon.s * 1.35, beacon.s * 1.35, 0.06]).rotate(Math.PI / 2, 0, 0)
+      ]),
+      lights.point({ name: "review water column cyan key", color: "#69f5ef", intensity: 10.5 }).position(-2.5, -6.5, -2.5),
+      lights.point({ name: "review water column violet rim", color: "#9d8cff", intensity: 7.2 }).position(10.5, -9.5, -15.0)
+    );
+  }
 
   return nodes;
 }

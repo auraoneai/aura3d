@@ -236,6 +236,24 @@ body[data-capture="review"] .mech-ko-card {
   cursor: pointer;
 }
 
+/* Keep the primary hangar action reachable in the fixed review viewport. The
+ * passport is intentionally detailed and may scroll, but the lock action is
+ * a route control (not passport content), so it stays pinned to the panel's
+ * lower safe area instead of falling below the 900 px evidence frame. This is
+ * a real layout affordance: it remains keyboard/focus accessible and does not
+ * alter the assembly or combat contracts. */
+@media (min-width: 721px) {
+  .mech-panel > .mech-lock-button {
+    position: fixed;
+    right: 16px;
+    bottom: 14px;
+    z-index: 6;
+    width: clamp(212px, calc(26vw - 36px), 294px);
+    margin-top: 0;
+    box-shadow: 0 8px 24px rgba(2, 8, 14, 0.38), 0 0 0 1px rgba(89, 215, 255, 0.18);
+  }
+}
+
 .mech-lock-button:disabled {
   background: #27394a;
   color: var(--mech-dim);

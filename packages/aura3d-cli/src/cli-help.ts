@@ -33,6 +33,8 @@ export function mainHelp(profileUsage: string): string {
 
 Commands:
   aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio|navigation] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--retrieved-at ISO-8601] [--quality ungraded|blocked|prototype|candidate|release] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png] [--orientation-json tests/reports/asset.orientation.json]
+  aura3d assets import-meshy artifacts/meshy/run --name assetKey --rights-evidence artifacts/meshy/run/rights.json [--file model.glb] [--allowed-root artifacts/meshy] [--quality candidate] [--role ${assetRoleUsage}]
+      Local-only ingestion: confines paths, validates GLB/metadata, rejects credentials, strips signed URLs, and never deletes source files.
   aura3d assets scan ./assets
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json]

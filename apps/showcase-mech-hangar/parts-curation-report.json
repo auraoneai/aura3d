@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.mech-hangar.part-curation/2.0",
-  "generatedAt": "2026-09-02T02:25:55.663Z",
+  "generatedAt": "2026-09-02T19:26:00.467Z",
   "sourceGenerator": "apps/showcase-mech-hangar/scripts/build-models.mjs",
   "gate": {
     "required": 16,
@@ -33,19 +33,29 @@
       "socket": "root",
       "letter": "A",
       "displayName": "Aegis Core",
-      "identity": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+      "identity": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
       "candidateId": "aura3d-original:MH-2M:chassis:A",
       "title": "Aegis Core — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 23440,
-      "hash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+      "sizeBytes": 23604,
+      "hash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
       "bounds": [
         1.24,
         0.85,
         0.595
+      ],
+      "boundsMin": [
+        -0.62,
+        -0.41000000000000003,
+        -0.28
+      ],
+      "boundsMax": [
+        0.62,
+        0.44,
+        0.3145
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -70,19 +80,29 @@
       "socket": "root",
       "letter": "B",
       "displayName": "Vanguard Hull",
-      "identity": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+      "identity": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
       "candidateId": "aura3d-original:MH-2M:chassis:B",
       "title": "Vanguard Hull — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 23444,
-      "hash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+      "sizeBytes": 23608,
+      "hash": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
       "bounds": [
         1.318,
         0.85,
         0.595
+      ],
+      "boundsMin": [
+        -0.6592,
+        -0.41000000000000003,
+        -0.28
+      ],
+      "boundsMax": [
+        0.6592,
+        0.44,
+        0.3145
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -107,19 +127,29 @@
       "socket": "root",
       "letter": "C",
       "displayName": "Sentinel Shell",
-      "identity": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+      "identity": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
       "candidateId": "aura3d-original:MH-2M:chassis:C",
       "title": "Sentinel Shell — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 23456,
-      "hash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+      "sizeBytes": 23616,
+      "hash": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
       "bounds": [
         1.24,
         0.85,
         0.595
+      ],
+      "boundsMin": [
+        -0.62,
+        -0.41000000000000003,
+        -0.28
+      ],
+      "boundsMax": [
+        0.62,
+        0.44,
+        0.3145
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -144,19 +174,29 @@
       "socket": "root",
       "letter": "D",
       "displayName": "Raptor Frame",
-      "identity": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+      "identity": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
       "candidateId": "aura3d-original:MH-2M:chassis:D",
       "title": "Raptor Frame — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 23444,
-      "hash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+      "sizeBytes": 23608,
+      "hash": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
       "bounds": [
         1.171,
         0.85,
         0.595
+      ],
+      "boundsMin": [
+        -0.5857,
+        -0.41000000000000003,
+        -0.28
+      ],
+      "boundsMax": [
+        0.5857,
+        0.44,
+        0.3145
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -181,19 +221,29 @@
       "socket": "chest",
       "letter": "A",
       "displayName": "Aegis Manipulators",
-      "identity": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+      "identity": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
       "candidateId": "aura3d-original:MH-2M:arms:A",
       "title": "Aegis Manipulators — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 33132,
-      "hash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+      "sizeBytes": 33284,
+      "hash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
       "bounds": [
         2.12,
         0.681,
         0.435
+      ],
+      "boundsMin": [
+        -1.06,
+        -0.3956,
+        -0.2
+      ],
+      "boundsMax": [
+        1.06,
+        0.2852,
+        0.235
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -218,19 +268,29 @@
       "socket": "chest",
       "letter": "B",
       "displayName": "Vanguard Gauntlets",
-      "identity": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+      "identity": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
       "candidateId": "aura3d-original:MH-2M:arms:B",
       "title": "Vanguard Gauntlets — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 33124,
-      "hash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+      "sizeBytes": 33276,
+      "hash": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
       "bounds": [
         2.12,
         0.681,
         0.435
+      ],
+      "boundsMin": [
+        -1.06,
+        -0.3956,
+        -0.2
+      ],
+      "boundsMax": [
+        1.06,
+        0.2852,
+        0.235
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -255,19 +315,29 @@
       "socket": "chest",
       "letter": "C",
       "displayName": "Sentinel Barricade Arms",
-      "identity": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+      "identity": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
       "candidateId": "aura3d-original:MH-2M:arms:C",
       "title": "Sentinel Barricade Arms — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 33136,
-      "hash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+      "sizeBytes": 33288,
+      "hash": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
       "bounds": [
         2.147,
         0.681,
         0.435
+      ],
+      "boundsMin": [
+        -1.0734488000000002,
+        -0.3956,
+        -0.2
+      ],
+      "boundsMax": [
+        1.0734488000000002,
+        0.2852,
+        0.235
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -292,19 +362,29 @@
       "socket": "chest",
       "letter": "D",
       "displayName": "Raptor Talons",
-      "identity": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+      "identity": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
       "candidateId": "aura3d-original:MH-2M:arms:D",
       "title": "Raptor Talons — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 33152,
-      "hash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+      "sizeBytes": 33308,
+      "hash": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
       "bounds": [
         2.134,
         0.681,
         0.435
+      ],
+      "boundsMin": [
+        -1.0670000000000002,
+        -0.3956,
+        -0.2
+      ],
+      "boundsMax": [
+        1.0670000000000002,
+        0.2852,
+        0.235
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -329,19 +409,29 @@
       "socket": "hips",
       "letter": "A",
       "displayName": "Aegis Struts",
-      "identity": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+      "identity": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
       "candidateId": "aura3d-original:MH-2M:legs:A",
       "title": "Aegis Struts — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 31596,
-      "hash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+      "sizeBytes": 31748,
+      "hash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
       "bounds": [
         0.85,
         0.689,
         0.518
+      ],
+      "boundsMin": [
+        -0.42500000000000004,
+        -0.47250000000000003,
+        -0.31496
+      ],
+      "boundsMax": [
+        0.42500000000000004,
+        0.21600000000000003,
+        0.20336
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -366,19 +456,29 @@
       "socket": "hips",
       "letter": "B",
       "displayName": "Vanguard Treads",
-      "identity": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+      "identity": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
       "candidateId": "aura3d-original:MH-2M:legs:B",
       "title": "Vanguard Treads — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 31592,
-      "hash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+      "sizeBytes": 31744,
+      "hash": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
       "bounds": [
         0.85,
         0.689,
         0.518
+      ],
+      "boundsMin": [
+        -0.42500000000000004,
+        -0.47250000000000003,
+        -0.31496
+      ],
+      "boundsMax": [
+        0.42500000000000004,
+        0.21600000000000003,
+        0.20336
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -403,19 +503,29 @@
       "socket": "hips",
       "letter": "C",
       "displayName": "Sentinel Pillars",
-      "identity": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+      "identity": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
       "candidateId": "aura3d-original:MH-2M:legs:C",
       "title": "Sentinel Pillars — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 31608,
-      "hash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+      "sizeBytes": 31760,
+      "hash": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
       "bounds": [
         0.85,
         0.689,
         0.52
+      ],
+      "boundsMin": [
+        -0.42500000000000004,
+        -0.47250000000000003,
+        -0.31496
+      ],
+      "boundsMax": [
+        0.42500000000000004,
+        0.21600000000000003,
+        0.205468
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -440,19 +550,29 @@
       "socket": "hips",
       "letter": "D",
       "displayName": "Raptor Springs",
-      "identity": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+      "identity": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
       "candidateId": "aura3d-original:MH-2M:legs:D",
       "title": "Raptor Springs — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 31604,
-      "hash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+      "sizeBytes": 31756,
+      "hash": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
       "bounds": [
         0.85,
         0.689,
         0.518
+      ],
+      "boundsMin": [
+        -0.42500000000000004,
+        -0.47250000000000003,
+        -0.31496
+      ],
+      "boundsMax": [
+        0.42500000000000004,
+        0.21600000000000003,
+        0.20336
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -477,19 +597,29 @@
       "socket": "right-hand",
       "letter": "A",
       "displayName": "Bolt Repeater",
-      "identity": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+      "identity": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
       "candidateId": "aura3d-original:MH-2M:weapon:A",
       "title": "Bolt Repeater — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 10084,
-      "hash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+      "sizeBytes": 10280,
+      "hash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
       "bounds": [
         0.3,
         0.495,
         0.913
+      ],
+      "boundsMin": [
+        -0.15,
+        -0.30000000000000004,
+        -0.19999999999999998
+      ],
+      "boundsMax": [
+        0.15,
+        0.195,
+        0.7125
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -514,19 +644,29 @@
       "socket": "right-hand",
       "letter": "B",
       "displayName": "Arc Cannon",
-      "identity": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+      "identity": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
       "candidateId": "aura3d-original:MH-2M:weapon:B",
       "title": "Arc Cannon — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 7664,
-      "hash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+      "sizeBytes": 7864,
+      "hash": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
       "bounds": [
         0.34,
         0.45,
         0.85
+      ],
+      "boundsMin": [
+        -0.17,
+        -0.28,
+        -0.17
+      ],
+      "boundsMax": [
+        0.17,
+        0.17,
+        0.68
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -551,19 +691,29 @@
       "socket": "right-hand",
       "letter": "C",
       "displayName": "Plasma Lance",
-      "identity": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+      "identity": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
       "candidateId": "aura3d-original:MH-2M:weapon:C",
       "title": "Plasma Lance — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 9216,
-      "hash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+      "sizeBytes": 9412,
+      "hash": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
       "bounds": [
         0.44,
         0.515,
         1.125
+      ],
+      "boundsMin": [
+        -0.22,
+        -0.31,
+        -0.32
+      ],
+      "boundsMax": [
+        0.22,
+        0.20500000000000002,
+        0.805
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {
@@ -588,19 +738,29 @@
       "socket": "right-hand",
       "letter": "D",
       "displayName": "Siege Maul",
-      "identity": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+      "identity": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
       "candidateId": "aura3d-original:MH-2M:weapon:D",
       "title": "Siege Maul — MH-2M original modular part",
       "source": "aura3d-original",
       "author": "Aura3D synthesis",
       "attribution": "Aura3D synthesis — original CC0 MH-2M modular mech family",
       "license": "CC0-1.0",
-      "sizeBytes": 10784,
-      "hash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+      "sizeBytes": 10980,
+      "hash": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
       "bounds": [
         0.44,
         0.52,
         0.925
+      ],
+      "boundsMin": [
+        -0.22,
+        -0.31,
+        -0.115
+      ],
+      "boundsMax": [
+        0.22,
+        0.21,
+        0.8099999999999999
       ],
       "retrievedAt": "2026-08-23T22:00:00.000Z",
       "compatibility": {

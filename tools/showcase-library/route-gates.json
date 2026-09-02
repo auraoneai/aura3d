@@ -173,14 +173,14 @@
       "published": true,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "showcaseKenneyOobiPlatformerHero",
+        "skylineArcticRunnerHero",
         "showcaseKenneyVerdantPlatformerWorld"
       ],
       "primaryAssetRoles": {
-        "showcaseKenneyOobiPlatformerHero": "character",
+        "skylineArcticRunnerHero": "character",
         "showcaseKenneyVerdantPlatformerWorld": "world"
       },
-      "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
+      "routePrimaryHeroAsset": "skylineArcticRunnerHero",
       "secondaryPrimaryAssets": [
         "showcaseKenneyVerdantPlatformerWorld"
       ],
@@ -496,17 +496,16 @@
       "globalName": "__AURA3D_SHOWCASE_MECH_HANGAR__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["robotcand", "mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
+      "primaryAssets": ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"],
       "primaryAssetRoles": {
-        "robotcand": "primary-character-visual-shell",
         "mechChassisA": "primary-character-chassis",
         "mechArmsA": "primary-character-arms",
         "mechLegsA": "primary-character-legs",
         "mechWeaponA": "primary-right-hand-attachment"
       },
-      "routePrimaryHeroAsset": "robotcand",
+      "routePrimaryHeroAsset": "mechChassisA",
       "secondaryPrimaryAssets": ["mechArmsA", "mechLegsA", "mechWeaponA"],
-      "primitiveBudget": 40,
+      "primitiveBudget": 46,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
       "gameTemplateStatus": {
@@ -568,17 +567,18 @@
       "globalName": "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"],
+      "primaryAssets": ["rooftopCourt", "rooftopVenueV2", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
       "primaryAssetRoles": {
         "rooftopCourt": "primary-play-surface",
+        "rooftopVenueV2": "primary-venue-depth",
         "rooftopBackboard": "primary-target-backboard",
         "rooftopRim": "primary-target-rim",
         "rooftopBall": "primary-player-ball",
-        "rooftopAthleteShooter": "primary-review-release-character",
-        "rooftopAthleteDefender": "primary-pressure-character"
+        "rooftopLayupScorer": "primary-review-release-character",
+        "rooftopDefender": "primary-pressure-character"
       },
       "routePrimaryHeroAsset": "rooftopBackboard",
-      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"],
+      "secondaryPrimaryAssets": ["rooftopCourt", "rooftopVenueV2", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"],
       "primitiveBudget": 96,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,

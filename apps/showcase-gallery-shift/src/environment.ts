@@ -67,10 +67,16 @@ function authoredMuseumDetails(): {
   readonly architecture: ReturnType<typeof geometry.define>;
   readonly artwork: ReturnType<typeof geometry.define>;
   readonly luminous: ReturnType<typeof geometry.define>;
+  readonly floorGrid: ReturnType<typeof geometry.define>;
+  readonly furniture: ReturnType<typeof geometry.define>;
+  readonly cover: ReturnType<typeof geometry.define>;
 } {
   const architecture = detailMesh();
   const artwork = detailMesh();
   const luminous = detailMesh();
+  const floorGrid = detailMesh();
+  const furniture = detailMesh();
+  const cover = detailMesh();
 
   // Tall framed panels make the west/east wings read as galleries rather than
   // colored rectangles.  They sit just inside the existing typed perimeter.
@@ -122,10 +128,196 @@ function authoredMuseumDetails(): {
     addDetailBox(luminous, [x, 3.0, z], [0.34, 0.035, 0.34]);
   }
 
+  // Door portals and rotunda columns give the typed cutaway a readable
+  // architectural rhythm at the gameplay camera.  These are deliberately
+  // inset at the same openings/room edges declared by FloorLayout: they add
+  // jambs, caps, and structural depth, but no new wall, collider, route, or
+  // line-of-sight occluder.  The GLB remains the world authority beneath this
+  // one combined detail mesh.
+  const portalSpecs: readonly {
+    readonly x: number;
+    readonly z: number;
+    readonly axis: "x" | "z";
+    readonly span: number;
+  }[] = [
+    { x: -5, z: -1.3, axis: "z", span: 1.32 },
+    { x: 5, z: 0.8, axis: "z", span: 1.32 },
+    { x: -7.5, z: 1.4, axis: "x", span: 1.32 },
+    { x: 7.5, z: -1.3, axis: "x", span: 1.32 }
+  ];
+  for (const portal of portalSpecs) {
+    if (portal.axis === "z") {
+      for (const z of [portal.z - portal.span, portal.z + portal.span]) {
+        addDetailBox(architecture, [portal.x, 1.42, z], [0.28, 2.72, 0.2]);
+        addDetailBox(luminous, [portal.x + (portal.x < 0 ? 0.16 : -0.16), 1.76, z], [0.035, 1.7, 0.035]);
+      }
+      addDetailBox(architecture, [portal.x, 2.78, portal.z], [0.28, 0.24, portal.span * 2 + 0.36]);
+      addDetailBox(artwork, [portal.x + (portal.x < 0 ? 0.16 : -0.16), 2.78, portal.z], [0.035, 0.1, portal.span * 2 - 0.08]);
+    } else {
+      for (const x of [portal.x - portal.span, portal.x + portal.span]) {
+        addDetailBox(architecture, [x, 1.42, portal.z], [0.2, 2.72, 0.28]);
+        addDetailBox(luminous, [x, 1.76, portal.z + (portal.z < 0 ? 0.16 : -0.16)], [0.035, 1.7, 0.035]);
+      }
+      addDetailBox(architecture, [portal.x, 2.78, portal.z], [portal.span * 2 + 0.36, 0.24, 0.28]);
+      addDetailBox(artwork, [portal.x, 2.78, portal.z + (portal.z < 0 ? 0.16 : -0.16)], [portal.span * 2 - 0.08, 0.1, 0.035]);
+    }
+  }
+
+  // Four rotunda columns frame the security desks and establish a scale cue
+  // around the live intercept.  Their bases/caps are visual-only and remain
+  // outside the central patrol lane, so runtime movement and LOS math still
+  // use only FloorLayout's authored geometry.
+  for (const [x, z] of [[-4.35, -2.28], [4.35, -2.28], [-4.35, 2.28], [4.35, 2.28]] as const) {
+    addDetailBox(architecture, [x, 1.46, z], [0.34, 2.75, 0.34]);
+    addDetailBox(architecture, [x, 0.14, z], [0.62, 0.2, 0.62]);
+    addDetailBox(architecture, [x, 2.86, z], [0.62, 0.18, 0.62]);
+    addDetailBox(luminous, [x, 2.56, z], [0.08, 0.22, 0.08]);
+  }
+
+  // Recessed display bays turn the side rooms into authored exhibit suites:
+  // each bay is paired with the typed display-case/asset nodes in main.ts,
+  // while this shared mesh supplies only a backboard, shelf and trim.  The
+  // bays hug the perimeter and do not overlap the real cover/collision cases.
+  for (const [x, z, side] of [
+    [-8.8, -5.72, -1], [-8.8, 5.52, -1],
+    [8.8, -5.72, 1], [8.8, 5.52, 1]
+  ] as const) {
+    addDetailBox(architecture, [x, 1.28, z], [0.18, 2.08, 1.08]);
+    addDetailBox(architecture, [x + side * 0.11, 0.34, z], [0.28, 0.18, 1.36]);
+    addDetailBox(artwork, [x + side * 0.12, 1.42, z], [0.035, 1.18, 0.76]);
+    addDetailBox(luminous, [x + side * 0.14, 0.82, z - 0.46], [0.04, 0.05, 0.66]);
+    addDetailBox(luminous, [x + side * 0.14, 0.82, z + 0.46], [0.04, 0.05, 0.66]);
+  }
+
+  // A single, restrained floor-grid mesh makes the cutaway read as a designed
+  // museum plan instead of seven untextured colour fields.  These seams sit
+  // just above the typed GLB floor and are intentionally inset from every
+  // wall/case so they cannot mask the real LOS cover or collision footprint.
+  // They are renderer-owned material details, not route or objective guides.
+  const floorRooms: readonly { readonly x: number; readonly z: number; readonly halfX: number; readonly halfZ: number; readonly spacing: number }[] = [
+    { x: 0, z: 4.65, halfX: 4.45, halfZ: 1.42, spacing: 1.12 },
+    { x: 0, z: 0.1, halfX: 4.4, halfZ: 2.72, spacing: 1.2 },
+    { x: 0, z: -5.45, halfX: 2.78, halfZ: 1.0, spacing: 1.14 },
+    { x: -7.5, z: -2.85, halfX: 2.08, halfZ: 1.72, spacing: 1.08 },
+    { x: -7.5, z: 4.05, halfX: 2.08, halfZ: 2.18, spacing: 1.08 },
+    { x: 7.5, z: -4.15, halfX: 2.08, halfZ: 1.32, spacing: 1.08 },
+    { x: 7.5, z: 2.75, halfX: 2.08, halfZ: 3.62, spacing: 1.08 }
+  ];
+  for (const room of floorRooms) {
+    const left = room.x - room.halfX;
+    const right = room.x + room.halfX;
+    const north = room.z - room.halfZ;
+    const south = room.z + room.halfZ;
+    const width = right - left;
+    const depth = south - north;
+    const inset = 0.08;
+    // Perimeter keyline: two narrow rails on each axis establish the room
+    // boundary without redrawing a second wall or floor slab.
+    addDetailBox(floorGrid, [room.x, 0.094, north + inset], [Math.max(0.4, width - 0.16), 0.026, 0.035]);
+    addDetailBox(floorGrid, [room.x, 0.094, south - inset], [Math.max(0.4, width - 0.16), 0.026, 0.035]);
+    addDetailBox(floorGrid, [left + inset, 0.094, room.z], [0.035, 0.026, Math.max(0.4, depth - 0.16)]);
+    addDetailBox(floorGrid, [right - inset, 0.094, room.z], [0.035, 0.026, Math.max(0.4, depth - 0.16)]);
+    // Repeated seams are deliberately sparse in the rotunda, where the
+    // existing medallion owns the focal point, and denser in the side wings
+    // where they supply the architectural scale Monaco's plan communicates.
+    for (let x = left + room.spacing; x < right - 0.24; x += room.spacing) {
+      addDetailBox(floorGrid, [x, 0.093, room.z], [0.018, 0.024, Math.max(0.35, depth - 0.28)]);
+    }
+    if (room.halfZ > 1.3) {
+      for (let z = north + room.spacing; z < south - 0.24; z += room.spacing) {
+        addDetailBox(floorGrid, [room.x, 0.093, z], [Math.max(0.35, width - 0.28), 0.024, 0.018]);
+      }
+    }
+  }
+
+  // Brass threshold inserts bridge the exact FloorLayout door openings. They
+  // are floor material details (not a second route graph), but the repeated
+  // cross-room seams make the authored west/east wings and north service
+  // destination read as one walkable museum plan from the review lens.
+  for (const [x, z, sx, sz] of [
+    [-5.0, -1.3, 0.18, 1.18],
+    [5.0, 0.8, 0.18, 1.18],
+    [-7.5, 1.4, 1.18, 0.18],
+    [7.5, -1.3, 1.18, 0.18]
+  ] as const) {
+    addDetailBox(floorGrid, [x, 0.101, z], [sx, 0.034, sz]);
+  }
+
+  // Wall-hugging furniture and security consoles provide scale cues in the
+  // otherwise open side rooms.  Their silhouettes stay outside the authored
+  // patrol lanes and all visual information remains in this one shared mesh.
+  for (const [x, z, sx, sz] of [
+    [-8.36, -1.22, 1.28, 0.42], [-8.36, 2.35, 1.28, 0.42],
+    [8.36, -1.82, 1.28, 0.42], [8.36, 3.74, 1.28, 0.42],
+    [-2.84, 5.62, 1.18, 0.38], [2.84, 5.62, 1.18, 0.38]
+  ] as const) {
+    addDetailBox(furniture, [x, 0.34, z], [sx, 0.18, sz]);
+    addDetailBox(furniture, [x - sx * 0.32, 0.17, z], [0.09, 0.28, sz * 0.74]);
+    addDetailBox(furniture, [x + sx * 0.32, 0.17, z], [0.09, 0.28, sz * 0.74]);
+  }
+  // Two low console banks face the rotunda. Their stepped tops read as
+  // security desks at review scale without introducing another actor or
+  // pretending to be a gameplay sensor.
+  for (const x of [-3.35, 3.35]) {
+    addDetailBox(furniture, [x, 0.36, 2.92], [1.36, 0.38, 0.42]);
+    addDetailBox(furniture, [x, 0.62, 2.92], [0.88, 0.16, 0.30]);
+    addDetailBox(luminous, [x, 0.72, 2.73], [0.52, 0.035, 0.05]);
+  }
+  addDetailBox(furniture, [0, 0.34, -5.74], [1.95, 0.38, 0.36]);
+  addDetailBox(furniture, [0, 0.60, -5.74], [1.25, 0.16, 0.28]);
+  addDetailBox(luminous, [0, 0.70, -5.58], [0.78, 0.035, 0.05]);
+
+  // The four FloorLayout display cases are the real LOS/collision cover. Their
+  // source GLB is intentionally glass-forward, so a low opaque plinth and
+  // edge rails make the cover footprint read at gameplay scale without
+  // inventing a second collider or changing the raycast authority. These
+  // coordinates exactly mirror FLOOR_1.cases (±7.2 side wings), keeping the
+  // architectural prop, route choice, and visible occlusion in one place.
+  for (const [x, z] of [
+    [-7.2, 0.15], [-7.2, 3.65],
+    [7.2, -2.55], [7.2, 2.85]
+  ] as const) {
+    addDetailBox(cover, [x, 0.17, z], [1.48, 0.3, 1.48]);
+    addDetailBox(cover, [x, 0.35, z], [1.22, 0.06, 1.22]);
+    // Two narrow inset rails give the cover a front edge and a cool metal
+    // material cue that survives the safe renderer's opaque path.
+    addDetailBox(cover, [x - 0.67, 0.38, z], [0.035, 0.06, 1.22]);
+    addDetailBox(cover, [x + 0.67, 0.38, z], [0.035, 0.06, 1.22]);
+    addDetailBox(cover, [x, 0.38, z - 0.67], [1.22, 0.06, 0.035]);
+    addDetailBox(cover, [x, 0.38, z + 0.67], [1.22, 0.06, 0.035]);
+    // Raise a narrow rear gallery rail above the plinth.  It follows the same
+    // four FloorLayout case footprints that own the real LOS/collision cover,
+    // so the rendered obstruction and the raycast authority continue to tell
+    // the same story.  The glass case asset remains visible in front of it;
+    // this is only a dark architectural backboard and a lit edge, not a new
+    // gameplay wall.
+    addDetailBox(cover, [x, 0.68, z - 0.57], [1.14, 0.58, 0.08]);
+    addDetailBox(luminous, [x, 0.94, z - 0.62], [0.76, 0.035, 0.035]);
+  }
+
+  // Final structural pass: connect the north service vault to the rotunda
+  // with a visible, roofless vestibule.  The FloorLayout already declares
+  // these two alcove walls and the service-exit destination; this jamb/lintel
+  // treatment simply makes that connection read from the oblique review lens
+  // instead of terminating as a flat dark wall.  It adds no collider, route,
+  // sensor, or LOS occluder beyond the existing layout authority.
+  for (const x of [-1.8, 1.8] as const) {
+    addDetailBox(architecture, [x, 1.42, -5.2], [0.24, 2.72, 0.24]);
+    addDetailBox(luminous, [x + (x < 0 ? 0.14 : -0.14), 1.78, -5.06], [0.035, 1.7, 0.035]);
+  }
+  addDetailBox(architecture, [0, 2.78, -5.2], [3.86, 0.24, 0.24]);
+  addDetailBox(artwork, [0, 2.78, -5.04], [2.92, 0.09, 0.035]);
+  for (const x of [-1.15, -0.38, 0.38, 1.15] as const) {
+    addDetailBox(luminous, [x, 2.67, -5.02], [0.16, 0.045, 0.04]);
+  }
+
   return {
     architecture: geometry.define({ positions: architecture.positions, normals: architecture.normals, indices: architecture.indices }),
     artwork: geometry.define({ positions: artwork.positions, normals: artwork.normals, indices: artwork.indices }),
-    luminous: geometry.define({ positions: luminous.positions, normals: luminous.normals, indices: luminous.indices })
+    luminous: geometry.define({ positions: luminous.positions, normals: luminous.normals, indices: luminous.indices }),
+    floorGrid: geometry.define({ positions: floorGrid.positions, normals: floorGrid.normals, indices: floorGrid.indices }),
+    furniture: geometry.define({ positions: furniture.positions, normals: furniture.normals, indices: furniture.indices }),
+    cover: geometry.define({ positions: cover.positions, normals: cover.normals, indices: cover.indices })
   };
 }
 
@@ -194,6 +386,24 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
     roughness: 0.24,
     metallic: 0.3
   });
+  const detailFloor = material.metal({
+    name: "museum floor inlay grid",
+    color: "#376276",
+    roughness: 0.46,
+    metallic: 0.28
+  });
+  const detailFurniture = material.metal({
+    name: "museum furniture graphite",
+    color: "#1b2d3b",
+    roughness: 0.36,
+    metallic: 0.5
+  });
+  const detailCover = material.metal({
+    name: "museum LOS cover plinths",
+    color: "#243949",
+    roughness: 0.3,
+    metallic: 0.64
+  });
   const detailGlow = material.emissive({
     name: "museum detail practical glow",
     color: "#77e6e5",
@@ -207,6 +417,15 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
       .toJSON(),
     geometry.custom(MUSEUM_DETAILS.artwork, { name: "museum authored artwork insets", material: detailArtwork })
       .runtime(game.runtimeNode("museum authored artwork insets", { tags: ["typed-set-dressing", "museum-artwork", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(MUSEUM_DETAILS.floorGrid, { name: "museum authored floor inlay grid", material: detailFloor })
+      .runtime(game.runtimeNode("museum authored floor inlay grid", { tags: ["typed-set-dressing", "museum-floor-detail", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(MUSEUM_DETAILS.furniture, { name: "museum authored furniture and consoles", material: detailFurniture })
+      .runtime(game.runtimeNode("museum authored furniture and consoles", { tags: ["typed-set-dressing", "museum-furniture", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(MUSEUM_DETAILS.cover, { name: "museum authored LOS cover plinths", material: detailCover })
+      .runtime(game.runtimeNode("museum authored LOS cover plinths", { tags: ["typed-set-dressing", "museum-cover", "physics-los-cover", "renderer-owned"] }))
       .toJSON(),
     geometry.custom(MUSEUM_DETAILS.luminous, { name: "museum authored practical fixtures", material: detailGlow })
       .runtime(game.runtimeNode("museum authored practical fixtures", { tags: ["museum-lighting", "renderer-owned"] }))
@@ -223,19 +442,20 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
     emissiveIntensity: 0.82
   });
   nodes.push(
-    text3D("ARCHIVE", { name: "archive room label", size: 0.62, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
-      .position(-8.35, 2.78, -6.83)
-      .rotate(0, 0.62, 0)
+    text3D("ARCHIVE", { name: "archive room label", size: 0.74, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
+      .position(-8.28, 2.78, -6.83)
       .runtime(game.runtimeNode("archive room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("TREASURY", { name: "treasury room label", size: 0.62, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
-      .position(6.0, 2.78, -6.83)
-      .rotate(0, 0.62, 0)
+    text3D("TREASURY", { name: "treasury room label", size: 0.74, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
+      .position(5.78, 2.78, -6.83)
       .runtime(game.runtimeNode("treasury room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("SERVICE EXIT", { name: "service exit room label", size: 0.5, depth: 0.055, letterSpacing: 0.04, material: roomLabelMaterial })
-      .position(-1.35, 2.78, -6.83)
-      .rotate(0, 0.62, 0)
+    text3D("ROTUNDA", { name: "rotunda room label", size: 0.68, depth: 0.055, letterSpacing: 0.05, material: roomLabelMaterial })
+      .position(-1.1, 2.78, -6.83)
+      .runtime(game.runtimeNode("rotunda room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
+      .toJSON(),
+    text3D("SERVICE EXIT", { name: "service exit room label", size: 0.52, depth: 0.055, letterSpacing: 0.04, material: roomLabelMaterial })
+      .position(-1.42, 2.17, -6.83)
       .runtime(game.runtimeNode("service exit room label", { tags: ["museum-wayfinding", "world-label", "renderer-owned"] }))
       .toJSON()
   );
@@ -332,8 +552,13 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
     lights.point({
       name: "east-treasury-practical",
       color: "#ffc56e",
-      intensity: 1.4
+      intensity: 1.55
     }).position(7.25, 2.35, 0.4).toJSON(),
+    lights.point({
+      name: "service-vault-vestibule-practical",
+      color: "#8ef5e3",
+      intensity: 1.18
+    }).position(0, 2.55, -5.15).toJSON(),
     // Broad overhead softboxes give the exhibits and floor inlays a second
     // readable layer of light, rather than relying on a single point source.
     lights.rect({ name: "museum central north softbox", color: "#d9f7ff", intensity: 0.88, width: 4.8, height: 1.1 })

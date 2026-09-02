@@ -85,7 +85,21 @@ document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 // visible around it.  The review lens is intentionally larger than the public
 // planning-board pod; this is a presentation scale only and never changes the
 // authored sensor radius or flight integrator.
-const POD_VISUAL_SCALE = visualReviewCapture ? 0.68 : 2.28;
+// The courier is the action subject in the named review lens. Keep it
+// materially larger than the shoulder architecture so its canopy, four
+// contact drives, and guarded parcel read before the destination scenery.
+// The review scale is intentionally just under 1x: it gives the skiff a clear
+// silhouette while leaving the typed terminal shuttle, route lane, and Gale
+// gate in the same honest frame. This is presentation scale only; authored
+// flight/sensor coordinates are unchanged.
+const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 2.28;
+
+// The parcel prop is a real typed GLB, but its release probe is nearly as tall
+// as it is wide. Keep the review carton compact and seat it on the courier's
+// rear cradle so the package reads as cargo instead of a floating foreground
+// block. The public planning board keeps the larger teaching-scale carton.
+const courierParcelLift = visualReviewCapture ? 0.34 : 0.61;
+const courierParcelMaxDimensionBase = visualReviewCapture ? 0.25 : 0.42;
 
 const BODY_COLORS: Readonly<Record<string, string>> = {
   sol: "#ffd166",
@@ -245,6 +259,13 @@ function solarKitBackdrop(): readonly AuraSceneNode[] {
 }
 
 const stations = buildStations();
+const reviewRustStation = stations.find((station) => station.id === "rust-exchange")!;
+const reviewGaleStation = stations.find((station) => station.id === "gale-terminal")!;
+const reviewRouteDx = reviewGaleStation.x - reviewRustStation.x;
+const reviewRouteDz = reviewGaleStation.z - reviewRustStation.z;
+const reviewRouteLength = Math.hypot(reviewRouteDx, reviewRouteDz);
+const reviewRoutePerpX = -reviewRouteDz / reviewRouteLength;
+const reviewRoutePerpZ = reviewRouteDx / reviewRouteLength;
 
 let sceneBuilder = scene()
   // The review corridor uses a lifted blue-hour sky so the courier's navy
@@ -398,7 +419,15 @@ for (const station of stations) {
   if (!visualReviewCapture || reviewStationRelevant) {
     sceneBuilder = sceneBuilder.add(
       model(assets.gravityPostDockBeacon, { name: station.nodeId })
-        .position(station.x, PLAY_PLANE_Y + 0.06, station.z)
+        // Offset the release-probed satellite beside Gale's capture center so
+        // its solar-panel silhouette reads as destination hardware instead of
+        // stacking over the courier lane. Sensor coordinates remain owned by
+        // stations.ts and are not moved.
+        .position(
+          station.x + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpX * 0.7 : 0),
+          PLAY_PLANE_Y + 0.06,
+          station.z + (visualReviewCapture && reviewStationRelevant ? reviewRoutePerpZ * 0.7 : 0)
+        )
         .rotate(0, 0.6, 0)
         // The review destination is one of only two live endpoint silhouettes;
         // keep the typed beacon large enough to read beside the courier while
@@ -408,7 +437,7 @@ for (const station of stations) {
         // foreground of the close freight lens. Keep the typed beacon present
         // as a destination identity cue, but compact enough to sit beside the
         // Gale gate instead of reading as a second vehicle.
-        .scale(visualReviewCapture ? 0.055 : 0.14)
+        .scale(visualReviewCapture ? 0.075 : 0.14)
         .runtime(game.runtimeNode(station.nodeId))
     );
   }
@@ -423,7 +452,7 @@ for (const station of stations) {
           // The arrival gate is deliberately legible at the review distance;
           // this is a scale relationship to the existing typed asset, not a
           // duplicate gate or a screen-space marker.
-          targetMaxDimension: visualReviewCapture ? 0.62 : 0.98,
+          targetMaxDimension: visualReviewCapture ? 0.82 : 0.98,
         material: material.pbr({
           name: station.id + " dock gate finish",
           color: "#b7f4ff",
@@ -491,6 +520,61 @@ const courierContactShadow = material.pbr({
   metallic: 0.02,
   opacity: 0.74
 });
+// Small renderer-owned courier fittings reinforce the typed skiff's postal
+// identity at action distance. They are attached to the GLB in
+// `syncPodVisual`; the GLB remains the primary vehicle and owns the actual
+// chassis/cargo silhouette. These fittings only provide readable livery,
+// running lights, and deck contact feedback in the review frame.
+const courierIdentityCyan = material.emissive({
+  name: "Courier postal cyan livery",
+  color: "#0b4355",
+  emissive: "#67e8f9",
+  emissiveIntensity: 1.1,
+  opacity: 0.9
+});
+const courierIdentityAmber = material.emissive({
+  name: "Courier postal amber livery",
+  color: "#51200c",
+  emissive: "#fb923c",
+  emissiveIntensity: 1.18,
+  opacity: 0.92
+});
+const courierContactCyan = material.emissive({
+  name: "Courier drive contact cyan",
+  color: "#063544",
+  emissive: "#22d3ee",
+  emissiveIntensity: 1.55,
+  opacity: 0.94
+});
+const courierContactAmber = material.emissive({
+  name: "Courier drive contact amber",
+  color: "#5c2209",
+  emissive: "#f97316",
+  emissiveIntensity: 1.42,
+  opacity: 0.92
+});
+const courierDeliveryPulse = material.emissive({
+  name: "Courier delivery handoff pulse",
+  color: "#4a2608",
+  emissive: "#fbbf24",
+  emissiveIntensity: 1.28,
+  opacity: 0.78
+});
+const courierPostalCream = material.pbr({
+  name: "Courier postal cream inset",
+  color: "#f4ead2",
+  roughness: 0.48,
+  metallic: 0.12,
+  emissive: "#8a6a32",
+  emissiveIntensity: 0.12
+});
+const courierSignalRed = material.emissive({
+  name: "Courier rear signal red",
+  color: "#5b1425",
+  emissive: "#fb496d",
+  emissiveIntensity: 1.24,
+  opacity: 0.9
+});
 const routeDx = galeTerminal.x - rustExchange.x;
 const routeDz = galeTerminal.z - rustExchange.z;
 const routeLength = Math.hypot(routeDx, routeDz);
@@ -498,6 +582,18 @@ const routeUnitX = routeDx / routeLength;
 const routeUnitZ = routeDz / routeLength;
 const routePerpX = -routeUnitZ;
 const routePerpZ = routeUnitX;
+// The catalog's release-validated MailPod is a detailed CC-BY transit craft,
+// distinct from the route-owned skiff.  In the review lens it serves as one
+// stationary terminal shuttle on the same Rust -> Gale vector: a grounded
+// scale reference and a second silhouette that makes Gale read as an active
+// freight destination.  It is set dressing only; the live pod, sensors, and
+// score remain bound to `gravityPostCourierSkiff` and route-local state.
+// Keep the supporting transit shuttle at the Gale-side apron, behind and
+// outside the live lane. It remains a typed destination cue, but no longer
+// competes with the parcel-bearing courier for foreground silhouette.
+const reviewMailPodProgress = 0.95;
+const reviewMailPodLateral = 1.52;
+const reviewMailPodYaw = Math.atan2(routeUnitX, routeUnitZ);
 // Boxes use local X as their long axis, so this yaw aligns them to the live
 // origin/destination vector instead of a screen-authored arbitrary angle.
 const approachYaw = -Math.atan2(routeDz, routeDx);
@@ -549,24 +645,77 @@ const corridorPoint = (progress: number, lateral = 0): readonly [number, number]
   if (!visualReviewCapture) {
     sceneBuilder = sceneBuilder.add(freightDistrictNode);
   } else {
-    // Keep the sidecar on the far shoulder of the camera-facing corridor and
-    // deliberately subordinate to the courier: its job is a material/depth
-    // anchor in the skyline, not a second foreground hero.
-    const [sidecarX, sidecarZ] = corridorPoint(0.44, -1.86);
+    // The review lens previously put the freight district at the far-left
+    // shoulder, where its dark hull read as a disconnected asset-filled void.
+    // Stage one smaller, grounded copy at the Gale-side loading apron instead:
+    // it now shares depth with the destination gate and shoulder cargo while
+    // leaving the courier's approach lane open. The asset's recorded lower
+    // bound (minY=-2.05) is seated on PLAY_PLANE_Y; this is world geometry,
+    // never a billboard or camera-only fill.
+    const [sidecarX, sidecarZ] = corridorPoint(0.82, -1.48);
     sceneBuilder = sceneBuilder.add(
       model(assets.gravityPostFreightDistrict, {
-        name: "Gravity Post textured loading-bay sidecar",
+        name: "Gravity Post grounded Gale loading district",
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: 1.35
+        targetMaxDimension: 1.72
       })
-        .position(sidecarX, PLAY_PLANE_Y + 0.1, sidecarZ)
+        .position(sidecarX, PLAY_PLANE_Y + 0.12, sidecarZ)
         .rotate(0, approachYaw, 0)
         .runtime(game.runtimeNode("gravity-post-textured-loading-bay-sidecar", {
           tags: ["typed-asset", "freight-world", "review-set-dressing", "non-colliding"]
         }))
     );
   }
+}
+
+// An existing release-validated catalog craft supplies one non-primitive
+// destination-scale cue that the synthesized skiff cannot provide alone. The
+// MailPod is mounted only in the named review composition beside Gale's apron;
+// its +Z-forward orientation is aligned to the real Rust -> Gale vector and
+// its grounded placement is derived from the same corridor points. During the
+// frozen review pose it stays on the outer Gale apron with one typed carton on
+// its aft rack, providing logistics depth without competing with the live
+// courier. No second physics body, route state, collision region, or camera
+// adjustment is added.
+if (visualReviewCapture) {
+  const [mailPodX, mailPodZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
+  sceneBuilder = sceneBuilder.add(
+    model(assets.gravityPostMailPod, {
+      name: "Gale Terminal inbound typed MailPod shuttle",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.76
+    })
+      // The release probe records minY=-0.215 at the neutral origin. Seat that
+      // bound on the shared play plane while keeping the hull above the
+      // approach apron; this is a world-space placement, not a HUD prop.
+      .position(mailPodX, PLAY_PLANE_Y + 0.095, mailPodZ)
+      .rotate(0, reviewMailPodYaw, 0)
+      .runtime(game.runtimeNode("gale-terminal-inbound-mailpod", {
+        tags: ["typed-asset", "freight-transit", "renderer-owned", "non-colliding"]
+      }))
+  );
+  // One small, hash-bound carton rides the support shuttle's aft rack. This
+  // makes the relationship between the two typed transit assets legible at a
+  // glance while keeping the primary courier's larger parcel unoccluded.
+  sceneBuilder = sceneBuilder.add(
+    model(assets.courierParcel, {
+      name: "Gale Terminal shuttle parcel",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.18
+    })
+      .position(
+        mailPodX - routeUnitX * 0.22,
+        PLAY_PLANE_Y + 0.34,
+        mailPodZ - routeUnitZ * 0.22
+      )
+      .rotate(0, reviewMailPodYaw, 0)
+      .runtime(game.runtimeNode("gale-terminal-shuttle-parcel", {
+        tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
+      }))
+  );
 }
 
 const terminalRunwayPanels = Array.from({ length: 7 }, (_, index) => {
@@ -656,6 +805,56 @@ if (!visualReviewCapture) sceneBuilder = sceneBuilder.addMany([
   })
 ]);
 
+// The courier's orange delivery module is authored into the vehicle shell,
+// but a delivery scene also needs a package that reads as a package at a
+// glance. Use the existing hash-bound textured parcel prop as a typed,
+// renderer-owned attachment rather than drawing another primitive box. The
+// node follows the same authored courier pose in syncPodVisual below; it never
+// participates in physics, sensors, scoring, or the route integrator.
+const courierParcelScaleRatio = POD_VISUAL_SCALE / 0.68;
+// Keep the real parcel subordinate to the skiff's own guarded payload module:
+// at the review scale this is a visible handoff carton, not a box that hides
+// the canopy and drive silhouette.
+const courierParcelMaxDimension = courierParcelMaxDimensionBase * courierParcelScaleRatio;
+sceneBuilder = sceneBuilder.add(
+  model(assets.courierParcel, {
+    name: "mail-pod textured delivery parcel",
+    role: "setDressing",
+    scaleMode: "fit",
+    targetMaxDimension: courierParcelMaxDimension
+  })
+    .position(stations[0]!.x, PLAY_PLANE_Y + courierParcelLift * courierParcelScaleRatio, stations[0]!.z - 0.43 * courierParcelScaleRatio)
+    .runtime(game.runtimeNode("mail-pod-textured-delivery-parcel", {
+      tags: ["typed-asset", "courier-cargo", "renderer-owned", "non-colliding", "live-velocity-feedback"]
+    }))
+);
+
+// Two smaller typed cartons give the shoulder bays a scale cue and make the
+// Rust -> Gale lane read as an active logistics district, not only a colored
+// architectural backdrop. Their placement is derived from the same live route
+// vector as the freightway, and they remain renderer-only set dressing.
+if (visualReviewCapture) {
+  for (const [progress, lateral, yawOffset] of [
+    [0.34, -1.18, -0.12],
+    [0.64, 1.2, 0.1]
+  ] as const) {
+    const [cargoX, cargoZ] = corridorPoint(progress, lateral);
+    sceneBuilder = sceneBuilder.add(
+      model(assets.courierParcel, {
+        name: `Gravity Post shoulder cargo parcel ${progress}`,
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: 0.29
+      })
+        .position(cargoX, PLAY_PLANE_Y + 0.19, cargoZ)
+        .rotate(0, approachYaw + yawOffset, 0)
+        .runtime(game.runtimeNode(`gravity-post-shoulder-cargo-${progress}`, {
+          tags: ["typed-asset", "freight-cargo", "renderer-owned", "non-colliding"]
+        }))
+    );
+  }
+}
+
 // Primary courier: original CC0 parcel skiff with a low working chassis, four
 // contact-drive pods, directional cockpit/drive lights, and a guarded amber
 // envelope-marked cargo module. Route-local authored state remains the sole
@@ -711,6 +910,145 @@ sceneBuilder = sceneBuilder
       .scale(0.07)
       .runtime(game.runtimeNode("mail-pod-cargo-beacon", { tags: ["pod-readability", "renderer-owned", "non-colliding"] }))
   );
+
+// A pair of slim route-side livery plates and a roof beacon turn the skiff
+// into a recognizable courier service vehicle rather than an unmarked dark
+// chassis in the freight district. These are deliberately subordinate
+// fittings around the typed GLB, not a replacement for its modeled hull.
+for (const side of [-1, 1] as const) {
+  sceneBuilder = sceneBuilder.add(
+    primitives.box({
+      name: `mail-pod postal livery plate ${side}`,
+      size: [0.064, 0.13, 0.38],
+      material: side < 0 ? courierIdentityCyan : courierIdentityAmber
+    }).position(0, -4, 0).runtime(game.runtimeNode(`mail-pod-livery-${side}`, {
+      tags: ["pod-identity", "renderer-owned", "non-colliding"]
+    }))
+  );
+}
+sceneBuilder = sceneBuilder
+  // A cream inset and small red aft marker make the delivery skiff readable
+  // as a service vehicle at action distance. These remain renderer-owned
+  // fittings around the typed GLB; the GLB is still the sole primary subject.
+  .add(
+    primitives.box({
+      name: "mail-pod postal cream side inset",
+      size: [0.025, 0.064, 0.2],
+      material: courierPostalCream
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-postal-cream-inset", {
+      tags: ["pod-identity", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.box({
+      name: "mail-pod rear route signal",
+      size: [0.08, 0.045, 0.16],
+      material: courierSignalRed
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-rear-route-signal", {
+      tags: ["pod-identity", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.box({
+      name: "mail-pod roof postal light bar",
+      size: [0.3, 0.045, 0.07],
+      material: courierIdentityCyan
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-roof-postal-light-bar", {
+      tags: ["pod-identity", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.box({
+      name: "mail-pod cargo cage forward rail",
+      size: [0.32, 0.04, 0.045],
+      material: courierIdentityAmber
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-cargo-cage-forward", {
+      tags: ["courier-cargo", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.box({
+      name: "mail-pod cargo cage aft rail",
+      size: [0.32, 0.04, 0.045],
+      material: courierIdentityAmber
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-cargo-cage-aft", {
+      tags: ["courier-cargo", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.torus({
+      name: "mail-pod postal roof beacon ring",
+      material: courierDeliveryPulse
+    }).position(0, -4, 0)
+      .rotate(1.5708, 0, 0)
+      .scale([0.11, 0.11, 0.016])
+      .runtime(game.runtimeNode("mail-pod-postal-beacon-ring", {
+        tags: ["pod-identity", "delivery-state", "renderer-owned", "non-colliding"]
+      }))
+  )
+  .add(
+    primitives.box({
+      name: "mail-pod parcel restraint cyan",
+      size: [0.032, 0.15, 0.06],
+      material: courierIdentityCyan
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-parcel-restraint-cyan", {
+      tags: ["courier-cargo", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.box({
+      name: "mail-pod parcel restraint amber",
+      size: [0.032, 0.15, 0.06],
+      material: courierIdentityAmber
+    }).position(0, -4, 0).runtime(game.runtimeNode("mail-pod-parcel-restraint-amber", {
+      tags: ["courier-cargo", "renderer-owned", "non-colliding"]
+    }))
+  )
+  .add(
+    primitives.torus({
+      name: "mail-pod delivery scan ring",
+      material: courierDeliveryPulse
+    }).position(0, -4, 0)
+      .rotate(1.5708, 0, 0)
+      .scale([0.34, 0.34, 0.012])
+      .runtime(game.runtimeNode("mail-pod-delivery-scan-ring", {
+        tags: ["courier-cargo", "delivery-state", "renderer-owned", "non-colliding"]
+      }))
+  );
+
+// Four compact drive markers sit under the skiff's modeled contact pods. Their
+// live transforms and visibility are driven by the same authored velocity as
+// the trail/wake below, making acceleration and deck contact legible in one
+// deterministic frame without asserting wheel physics or imported animation.
+const courierDriveOffsets = [
+  [-1, -0.38],
+  [1, -0.38],
+  [-1, 0.38],
+  [1, 0.38]
+] as const;
+for (let index = 0; index < courierDriveOffsets.length; index += 1) {
+  sceneBuilder = sceneBuilder.add(
+    primitives.sphere({
+      name: `mail-pod drive contact marker ${index + 1}`,
+      material: index % 2 === 0 ? courierContactCyan : courierContactAmber
+    }).position(0, -4, 0)
+      .scale([0.09, 0.035, 0.12])
+      .runtime(game.runtimeNode(`mail-pod-drive-contact-${index + 1}`, {
+        tags: ["pod-contact", "live-velocity-feedback", "renderer-owned", "non-colliding"]
+      }))
+  );
+  sceneBuilder = sceneBuilder.add(
+    primitives.torus({
+      name: `mail-pod drive contact ring ${index + 1}`,
+      material: index % 2 === 0 ? courierContactCyan : courierContactAmber
+    }).position(0, -4, 0)
+      .rotate(1.5708, 0, 0)
+      .scale([0.14, 0.14, 0.014])
+      .runtime(game.runtimeNode(`mail-pod-drive-contact-ring-${index + 1}`, {
+        tags: ["pod-contact", "live-velocity-feedback", "renderer-owned", "non-colliding"]
+      }))
+  );
+}
 
 // Velocity-aligned renderer-owned engine streaks form one tapered motion trail
 // behind the typed pod. Their live positions and yaw come from the authored
@@ -1284,10 +1622,22 @@ function syncPodVisual(): void {
   // fire; zero-gravity world + matching velocity keep the mirror exact.
   podBody.setVelocity([pod.kinematic.velocity[0], 0, pod.kinematic.velocity[1]]);
   const podNode = app.nodes.get("mail-pod");
+  const parcelNode = app.nodes.get("mail-pod-textured-delivery-parcel");
+  const shuttleNode = app.nodes.get("gale-terminal-inbound-mailpod");
+  const shuttleParcelNode = app.nodes.get("gale-terminal-shuttle-parcel");
   const stripeNode = app.nodes.get("mail-stripe");
   const haloNode = app.nodes.get("mail-pod-flight-halo");
   const beaconNode = app.nodes.get("mail-pod-cargo-beacon");
   const shadowNode = app.nodes.get("mail-pod-contact-shadow");
+  const postalBeaconRingNode = app.nodes.get("mail-pod-postal-beacon-ring");
+  const deliveryScanRingNode = app.nodes.get("mail-pod-delivery-scan-ring");
+  const restraintCyanNode = app.nodes.get("mail-pod-parcel-restraint-cyan");
+  const restraintAmberNode = app.nodes.get("mail-pod-parcel-restraint-amber");
+  const postalCreamInsetNode = app.nodes.get("mail-pod-postal-cream-inset");
+  const rearRouteSignalNode = app.nodes.get("mail-pod-rear-route-signal");
+  const roofPostalLightBarNode = app.nodes.get("mail-pod-roof-postal-light-bar");
+  const cargoCageForwardNode = app.nodes.get("mail-pod-cargo-cage-forward");
+  const cargoCageAftNode = app.nodes.get("mail-pod-cargo-cage-aft");
   // The named review producer pauses immediately before encoding its live
   // contract-four action frame. Browser scheduling can cross that pause one
   // fixed step earlier or later, moving only the fast courier by a few pixels.
@@ -1313,16 +1663,32 @@ function syncPodVisual(): void {
   const dirZ = reviewPose ? routeUnitZ : (speed > 1e-4 ? pod.kinematic.velocity[1] / speed : 0);
   const podYaw = Math.atan2(dirX, dirZ);
   podNode?.setPosition(x, PLAY_PLANE_Y, z);
+  // Keep the real textured parcel seated on the skiff's rear cargo cradle.
+  // The offset is expressed in the same route-authored forward axis as the
+  // vehicle, so it remains attached through launch, corrections, and the
+  // deterministic review pose without touching gameplay coordinates.
+  const parcelBackOffset = 0.43 * courierParcelScaleRatio;
+  parcelNode
+    ?.setPosition(
+      x - dirX * parcelBackOffset,
+      PLAY_PLANE_Y + courierParcelLift * courierParcelScaleRatio,
+      z - dirZ * parcelBackOffset
+    )
+    .setRotation(0, podYaw, 0)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
   stripeNode?.setPosition(x, PLAY_PLANE_Y + 0.06, z);
   haloNode?.setPosition(x, PLAY_PLANE_Y + 0.025, z);
   beaconNode?.setPosition(x, PLAY_PLANE_Y + 0.11, z);
   shadowNode
-    ?.setPosition(x, PLAY_PLANE_Y - 0.055, z)
+    // Keep the shallow contact mark on top of the freight lane. A buried
+    // shadow reads as black wheel holes; the lifted mark reads as a grounded
+    // skiff with visible deck contact while remaining renderer-only geometry.
+    ?.setPosition(x, PLAY_PLANE_Y + 0.02, z)
     .setRotation(0, podYaw, 0)
     .setScale([
       visualReviewCapture ? 0.82 + Math.min(0.12, speed * 0.04) : 0.6,
-      0.018,
-      visualReviewCapture ? 0.42 : 0.32
+      visualReviewCapture ? 0.012 : 0.014,
+      visualReviewCapture ? 0.4 : 0.32
     ])
     .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
   if (speed > 1e-4) {
@@ -1338,6 +1704,88 @@ function syncPodVisual(): void {
     ((pod.state === "coasting" && speed > 0.08) || compositionReviewPose);
   const perpX = -dirZ;
   const perpZ = dirX;
+  // Keep the courier fittings on the same authored local axes as the typed
+  // skiff. The cyan/amber side plates provide a stable postal livery read;
+  // the roof ring and cargo straps give the parcel module a deliberate
+  // handoff identity rather than a loose crate floating over the hull.
+  for (const side of [-1, 1] as const) {
+    app.nodes.get(`mail-pod-livery-${side}`)
+      ?.setPosition(
+        x + perpX * side * 0.49,
+        PLAY_PLANE_Y + 0.38,
+        z + perpZ * side * 0.49
+      )
+      .setRotation(0, podYaw, 0)
+      .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  }
+  postalCreamInsetNode
+    ?.setPosition(x + dirX * 0.08, PLAY_PLANE_Y + 0.74, z + dirZ * 0.08)
+    .setRotation(0, podYaw, 0)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  rearRouteSignalNode
+    ?.setPosition(x - dirX * 0.62, PLAY_PLANE_Y + 0.3, z - dirZ * 0.62)
+    .setRotation(0, podYaw, 0)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  roofPostalLightBarNode
+    ?.setPosition(x + dirX * 0.05, PLAY_PLANE_Y + 0.82, z + dirZ * 0.05)
+    .setRotation(0, podYaw, 0)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  cargoCageForwardNode
+    ?.setPosition(x + dirX * 0.24, PLAY_PLANE_Y + 0.68, z + dirZ * 0.24)
+    .setRotation(0, podYaw, 0)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  cargoCageAftNode
+    ?.setPosition(x - dirX * 0.24, PLAY_PLANE_Y + 0.68, z - dirZ * 0.24)
+    .setRotation(0, podYaw, 0)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  postalBeaconRingNode
+    ?.setPosition(x + dirX * 0.04, PLAY_PLANE_Y + 0.78, z + dirZ * 0.04)
+    .setRotation(1.5708, 0, 0)
+    .setScale([0.14, 0.14, 0.018])
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  const restraintVisible = !compositionSubjectSuppressed && pod.state !== "lost";
+  restraintCyanNode
+    ?.setPosition(x + perpX * -0.24, PLAY_PLANE_Y + 0.64, z + perpZ * -0.24)
+    .setRotation(0, podYaw, 0)
+    .setVisible(restraintVisible);
+  restraintAmberNode
+    ?.setPosition(x + perpX * 0.24, PLAY_PLANE_Y + 0.64, z + perpZ * 0.24)
+    .setRotation(0, podYaw, 0)
+    .setVisible(restraintVisible);
+  const scanVisible = !compositionSubjectSuppressed && pod.state !== "lost" &&
+    (visualReviewCapture || pod.state === "ready" || pod.state === "docked");
+  const scanBreathe = 1 + Math.sin(frame * 0.22) * 0.08;
+  deliveryScanRingNode
+    ?.setPosition(x, PLAY_PLANE_Y + 0.72, z)
+    .setScale([0.34 * scanBreathe, 0.34 * scanBreathe, 0.012])
+    .setVisible(scanVisible);
+  // Four emissive drive markers sit just above the lane at the same offsets
+  // as the skiff's modeled contact pods. They pulse subtly while coasting (or
+  // in the frozen review pose) and disappear when the courier is hidden/lost.
+  for (let index = 0; index < courierDriveOffsets.length; index += 1) {
+    const node = app.nodes.get(`mail-pod-drive-contact-${index + 1}`);
+    const [side, longitudinal] = courierDriveOffsets[index]!;
+    if (!node) continue;
+    const contactPulse = 1 + Math.sin(frame * 0.36 + index * 0.9) * 0.12;
+    node
+      .setPosition(
+        x + perpX * side * 0.44 + dirX * longitudinal,
+        PLAY_PLANE_Y + 0.155,
+        z + perpZ * side * 0.44 + dirZ * longitudinal
+      )
+      .setRotation(0, podYaw, 0)
+      .setScale([0.12 * contactPulse, 0.045, 0.16 * contactPulse])
+      .setVisible(visibleMotes || (visualReviewCapture && !compositionSubjectSuppressed));
+    app.nodes.get(`mail-pod-drive-contact-ring-${index + 1}`)
+      ?.setPosition(
+        x + perpX * side * 0.44 + dirX * longitudinal,
+        PLAY_PLANE_Y + 0.12,
+        z + perpZ * side * 0.44 + dirZ * longitudinal
+      )
+      .setRotation(1.5708, 0, 0)
+      .setScale([0.16 * contactPulse, 0.16 * contactPulse, 0.014])
+      .setVisible(visibleMotes || (visualReviewCapture && !compositionSubjectSuppressed));
+  }
   for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) {
     const mote = app.nodes.get("mail-pod-trail-" + index);
     if (!mote) continue;
@@ -1403,6 +1851,27 @@ function syncPodVisual(): void {
   podBody.setPosition(compositionReviewPose && pod.state === "ready"
     ? [pod.kinematic.position[0], PLAY_PLANE_Y, pod.kinematic.position[1]]
     : [x, PLAY_PLANE_Y, z]);
+
+  // In the review lens the typed MailPod is a small inbound shuttle on the
+  // outer Gale loading apron. Keep it out of the active courier lane so the
+  // primary silhouette stays unambiguous. This is a renderer-only depth cue:
+  // the shuttle and its typed carton never enter the pod sensor, integrator,
+  // or scoring state.
+  if (visualReviewCapture) {
+    const [shuttleX, shuttleZ] = corridorPoint(reviewMailPodProgress, reviewMailPodLateral);
+    shuttleNode
+      ?.setPosition(shuttleX, PLAY_PLANE_Y + 0.095, shuttleZ)
+      .setRotation(0, reviewMailPodYaw, 0)
+      .setVisible(!compositionSubjectSuppressed);
+    shuttleParcelNode
+      ?.setPosition(
+        shuttleX - routeUnitX * 0.22,
+        PLAY_PLANE_Y + 0.34,
+        shuttleZ - routeUnitZ * 0.22
+      )
+      .setRotation(0, reviewMailPodYaw, 0)
+      .setVisible(!compositionSubjectSuppressed);
+  }
 }
 
 function syncStationPulses(): void {
@@ -1648,7 +2117,10 @@ function publishEvidence(): void {
     primaryAssets: ["gravityPostCourierSkiff", "gravityPostDockBeacon"],
     typedAssets: [
       { id: "gravityPostCourierSkiff", typedRef: "assets.gravityPostCourierSkiff", role: "primaryVehicle" },
-      { id: "gravityPostDockBeacon", typedRef: "assets.gravityPostDockBeacon", role: "primaryWorld" }
+      { id: "gravityPostDockBeacon", typedRef: "assets.gravityPostDockBeacon", role: "primaryWorld" },
+      { id: "courierParcel", typedRef: "assets.courierParcel", role: "supportingCargo" },
+      { id: "gravityPostMailPod", typedRef: "assets.gravityPostMailPod", role: "supportingTransitVehicle" },
+      { id: "gravityPostFreightDistrict", typedRef: "assets.gravityPostFreightDistrict", role: "supportingFreightWorld" }
     ],
     systems: [
       "route-local authored gravity integrator",
@@ -1797,9 +2269,24 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     setSubjectSuppressed(suppressed: boolean) {
       compositionSubjectSuppressed = suppressed;
       app.nodes.get("mail-pod")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-textured-delivery-parcel")?.setVisible(!suppressed);
       app.nodes.get("mail-stripe")?.setVisible(!suppressed);
       app.nodes.get("mail-pod-cargo-beacon")?.setVisible(!suppressed);
       app.nodes.get("mail-pod-contact-shadow")?.setVisible(!suppressed && pod.state !== "lost");
+      app.nodes.get("mail-pod-postal-beacon-ring")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-delivery-scan-ring")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-parcel-restraint-cyan")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-parcel-restraint-amber")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-postal-cream-inset")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-rear-route-signal")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-roof-postal-light-bar")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-cargo-cage-forward")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-cargo-cage-aft")?.setVisible(!suppressed);
+      for (const side of [-1, 1] as const) app.nodes.get(`mail-pod-livery-${side}`)?.setVisible(!suppressed);
+      for (let index = 0; index < courierDriveOffsets.length; index += 1) {
+        app.nodes.get(`mail-pod-drive-contact-${index + 1}`)?.setVisible(!suppressed);
+        app.nodes.get(`mail-pod-drive-contact-ring-${index + 1}`)?.setVisible(!suppressed);
+      }
       for (let index = 0; index < TRAIL_STREAK_COUNT; index += 1) app.nodes.get("mail-pod-trail-" + index)?.setVisible(false);
     },
     settleSubjectPose() {

@@ -31,11 +31,25 @@ function inspectGlb(path) {
   if (bytes.subarray(0, 4).toString("ascii") !== "glTF" || bytes.readUInt32LE(4) !== 2) throw new Error("not a glTF 2.0 GLB");
   const jsonLength = bytes.readUInt32LE(12);
   const json = JSON.parse(bytes.subarray(20, 20 + jsonLength).toString("utf8").trim());
+  const boundsMin = [Infinity, Infinity, Infinity];
+  const boundsMax = [-Infinity, -Infinity, -Infinity];
+  for (const mesh of json.meshes ?? []) for (const primitive of mesh.primitives ?? []) {
+    const accessor = primitive.attributes?.POSITION === undefined
+      ? undefined
+      : json.accessors?.[primitive.attributes.POSITION];
+    if (!Array.isArray(accessor?.min) || !Array.isArray(accessor?.max)) continue;
+    for (let axis = 0; axis < 3; axis += 1) {
+      boundsMin[axis] = Math.min(boundsMin[axis], Number(accessor.min[axis]));
+      boundsMax[axis] = Math.max(boundsMax[axis], Number(accessor.max[axis]));
+    }
+  }
   return {
     sha256: `sha256-${createHash("sha256").update(bytes).digest("hex")}`,
     sizeBytes: bytes.length,
     meshCount: json.meshes?.length ?? 0,
     materialCount: json.materials?.length ?? 0,
+    boundsMin: boundsMin.every(Number.isFinite) ? boundsMin : undefined,
+    boundsMax: boundsMax.every(Number.isFinite) ? boundsMax : undefined,
     metadata: json.extras?.aura3dMechPart,
     orientation: json.asset?.extras?.aura3d?.orientation
   };
@@ -110,6 +124,8 @@ for (const expected of MATRIX) {
     sizeBytes: inspection?.sizeBytes,
     hash: entry?.hash,
     bounds: entry?.bounds,
+    boundsMin: inspection?.boundsMin,
+    boundsMax: inspection?.boundsMax,
     retrievedAt: entry?.provenance?.retrievedAt ?? null,
     compatibility: { family: "MH-2M", unitMeters: 1, origin: "part-center", socket: expected.socket, forwardAxis: "+Z", upAxis: "+Y", meshCount: inspection?.meshCount, materialCount: inspection?.materialCount },
     failures,
@@ -137,6 +153,7 @@ const lines = [
   "  readonly slot: \"chassis\" | \"arms\" | \"legs\" | \"weapon\"; readonly assemblyRole?: string; readonly socket?: string; readonly letter?: string; readonly displayName?: string;",
   "  readonly identity?: string; readonly candidateId?: string; readonly title?: string; readonly source?: string; readonly author?: string | null; readonly attribution?: string | null; readonly license?: string;",
   "  readonly sizeBytes?: number; readonly hash?: string; readonly bounds?: readonly number[]; readonly retrievedAt?: string | null; readonly compatibility?: Readonly<Record<string, unknown>>;",
+  "  readonly boundsMin?: readonly number[]; readonly boundsMax?: readonly number[];",
   "  readonly failures?: readonly string[]; readonly releaseFailures?: readonly string[];",
   "}", "", "export const CURATED_PART_RECORDS: readonly CuratedPartRecord[] = ["
 ];

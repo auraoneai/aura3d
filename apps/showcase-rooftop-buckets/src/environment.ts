@@ -881,7 +881,84 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         letterSpacing: 0.024,
         material: clubSign
       })
-        .position(-2.4, 7.58, -6.06)
+        // Keep the venue mark below the capture HUD so the authored identity
+        // remains legible in the action frame instead of being clipped by the
+        // top chrome.
+        .position(-2.4, 6.92, -6.06)
+        .toJSON()
+    );
+
+    // A compact structural rhythm gives the night-league bay a believable
+    // arena envelope: dark steel uprights, warm lintel strips, and alternating
+    // cyan/amber practicals sit on the authored pavilion wall. These are
+    // renderer-owned facade/set-dressing instances only; the typed backboard,
+    // court, athletes, and route-local collision geometry remain authoritative.
+    const arenaSteel = material.pbr({
+      name: "night league arena steel",
+      color: "#17263a",
+      roughness: 0.28,
+      metallic: 0.78,
+      clearcoat: 0.2
+    });
+    const arenaLintel = material.emissive({
+      name: "night league arena lintel",
+      color: "#ffd18a",
+      emissive: "#f97316",
+      emissiveIntensity: 0.68
+    });
+    const arenaCyanPractical = material.emissive({
+      name: "night league cyan practical",
+      color: "#8be8f5",
+      emissive: "#0891b2",
+      emissiveIntensity: 0.86
+    });
+    const arenaRosePractical = material.emissive({
+      name: "night league rose practical",
+      color: "#fda4af",
+      emissive: "#e11d48",
+      emissiveIntensity: 0.72
+    });
+    nodes.push(
+      instances.box({
+        name: "night league arena upright family",
+        material: arenaSteel,
+        transforms: [-7.85, -5.25, -2.65, 0, 2.65, 5.25, 7.85].map((x) => ({
+          position: [x, 4.35, -5.86],
+          scale: [0.14, 3.65, 0.13]
+        }))
+      }).toJSON(),
+      instances.box({
+        name: "night league arena lintel family",
+        material: arenaLintel,
+        transforms: [-6.5, -3.25, 0, 3.25, 6.5].map((x) => ({
+          position: [x, 7.18, -5.73],
+          scale: [1.24, 0.055, 0.045]
+        }))
+      }).toJSON(),
+      instances.box({
+        name: "night league arena cyan practical family",
+        material: arenaCyanPractical,
+        transforms: [-6.5, -3.25, 3.25, 6.5].map((x) => ({
+          position: [x, 2.08, -5.72],
+          scale: [0.72, 0.045, 0.04]
+        }))
+      }).toJSON(),
+      instances.box({
+        name: "night league arena rose practical family",
+        material: arenaRosePractical,
+        transforms: [-4.85, 1.62, 4.85].map((x) => ({
+          position: [x, 6.48, -5.72],
+          scale: [0.42, 0.045, 0.04]
+        }))
+      }).toJSON(),
+      text3D("DUSK LEAGUE", {
+        name: "dusk league court identity",
+        size: 0.24,
+        depth: 0.035,
+        letterSpacing: 0.02,
+        material: arenaLintel
+      })
+        .position(5.3, 6.72, -5.7)
         .toJSON()
     );
 

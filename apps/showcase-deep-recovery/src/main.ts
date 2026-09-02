@@ -120,6 +120,11 @@ let compositionProbeActive = false;
 const reducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 document.body.dataset.capture = visualReviewCapture ? "review" : "default";
+// The review lens is a deliberately staged mission moment, not the launch
+// pose.  Keeping the submarine on the west approach and the Drowned Chapel in
+// the same camera-facing basin makes the typed vehicle/world relationship
+// legible in one frame while leaving the normal gameplay spawn untouched.
+const REVIEW_POSE = { x: -11.5, y: -12, z: -7, yaw: 0.18 } as const;
 const PRIMARY_ASSET_REFS = [
   assets.deepRecoverySub,
   assets.deepRecoveryWreckHull,
@@ -225,12 +230,12 @@ const sceneDef = scene()
   // windows and cyan sonar returns establish the focal hierarchy. The typed
   // submarine remains readable against this darker field while distant reefs
   // recede instead of flattening the whole frame into one teal wash.
-  .background(visualReviewCapture ? "#0a2429" : "#06161c")
+  .background(visualReviewCapture ? "#10424a" : "#082f3a")
   .add(effects.fog({
     name: "deep recovery suspended-particle haze",
-    color: visualReviewCapture ? "#163b3e" : "#071e26",
-    density: visualReviewCapture ? 0.034 : 0.018,
-    intensity: visualReviewCapture ? 0.62 : 0.38
+    color: visualReviewCapture ? "#28666a" : "#155968",
+    density: visualReviewCapture ? 0.024 : 0.026,
+    intensity: visualReviewCapture ? 0.48 : 0.5
   }))
   .add(effects.neonBloom({
     name: "deep recovery sonar bloom",
@@ -248,13 +253,18 @@ const sceneDef = scene()
       // The comparison state is a salvage chart, so its dedicated camera is
       // genuinely overhead: the submarine, chapel island, rings, and wreck
       // form one readable map instead of a forest of near-camera columns.
-      offset: visualReviewCapture ? [3.8, 25.8, 6.8] : [6.4, 9.2, -15.4],
-      targetOffset: visualReviewCapture ? [5.7, -3.3, -5.3] : [0, -0.55, -1.1],
+      offset: visualReviewCapture ? [4.6, 21.8, 5.2] : [6.8, 15.6, -22.0],
+      // The default route keeps the submarine in the west foreground while
+      // aiming through the illuminated wreck basin. The old neutral target
+      // looked down an empty corridor and left the typed world landmark at
+      // the frame edge; this target makes the approach and destination share
+      // one readable water column without changing movement authority.
+      targetOffset: visualReviewCapture ? [4.5, -3.1, -5.2] : [-3.4, -1.6, -7.5],
       // Keep camera and authored submarine pose coherent during sonar/replay teleports.
       // The route's evidence harness captures within a bounded frame window; interpolation
       // otherwise leaves depth-aligned landmarks outside the capture frustum.
       smoothing: 0,
-      fov: visualReviewCapture ? 50 : 62
+      fov: visualReviewCapture ? 47 : 57
     })
   )
   .addMany([
@@ -277,7 +287,7 @@ const sceneDef = scene()
       name: "buoy-station",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 0.001 : 6.0
+      targetMaxDimension: visualReviewCapture ? 0.001 : 4.25
     }).position(BUOY_STATION.x, BUOY_STATION.y, BUOY_STATION.z).runtime({ id: "buoy-station", tags: ["bank-zone", "repair-zone"] }),
 
     // Wreck Obstacles
@@ -295,7 +305,7 @@ const sceneDef = scene()
       name: "sub-root",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 2.45 : 5.0,
+      targetMaxDimension: visualReviewCapture ? 3.55 : 8.4,
       // The typed source is a deep-navy vehicle that disappears against the
       // trench walls in the sonar frame. Keep its geometry and provenance,
       // but give the hero a cool teal PBR finish so the hull, nose lamps, and
@@ -303,6 +313,8 @@ const sceneDef = scene()
       material: material.pbr({
         name: "deep recovery sub teal hull",
         color: "#1a9bb0",
+        emissive: "#0b5261",
+        emissiveIntensity: visualReviewCapture ? 0.72 : 0.74,
         roughness: 0.3,
         metallic: 0.46,
         clearcoat: 0.2,
@@ -317,7 +329,7 @@ const sceneDef = scene()
       name: "sonar reveal wreck landmark",
       role: "primaryWorld",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 4.4 : 5.4,
+      targetMaxDimension: visualReviewCapture ? 5.45 : 7.2,
       material: visualReviewCapture ? material.pbr({
         name: "deep recovery oxidized chapel wreck",
         color: "#64796b",
@@ -328,7 +340,7 @@ const sceneDef = scene()
         clearcoat: 0.12,
         clearcoatRoughness: 0.42
       }) : undefined
-    }).position(-7, -12, -13).runtime({ id: "sonar-reveal-wreck-landmark", tags: ["typed-asset", "environment-landmark"] }),
+    }).position(-6.4, -11.7, -11.6).runtime({ id: "sonar-reveal-wreck-landmark", tags: ["typed-asset", "environment-landmark"] }),
 
     // The review lens is a real mission state, not an empty beauty render.
     // Typed cargo is embedded in the revealed debris field so the world-space
@@ -410,7 +422,7 @@ const sceneDef = scene()
         name: `crate-node-${c.id}`,
         role: "setDressing",
         scaleMode: "fit",
-        targetMaxDimension: c.kind === "crate-heavy" ? 1.4 : 1.0
+        targetMaxDimension: c.kind === "crate-heavy" ? 1.8 : 1.35
       }).position(c.x, c.y, c.z).runtime({ id: `crate-node-${c.id}`, tags: ["salvage", c.kind] })
     ),
 
@@ -962,10 +974,18 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {
     category: "application",
-    subject: { position: [0, -6, 0], rotation: [0, 0, 0], targetSize: 4.2 },
+    subject: { position: visualReviewCapture ? [-11.5, -12, -7] : [-1.7, -6, -2], rotation: [0, 0, 0], targetSize: 4.2 },
     settleSubjectPose() {
       compositionProbeActive = true;
-      subState = { ...initialSubmarineState(), y: -6, yaw: 0 };
+      subState = visualReviewCapture
+        ? { ...initialSubmarineState(), ...REVIEW_POSE }
+        : { ...initialSubmarineState(), x: -1.7, y: -6, z: -2, yaw: 0 };
+      // Seed the same sonar contact that the playable producer uses for its
+      // named wreck-approach artifact.  This keeps both the normal route
+      // primary probe and the dedicated review lens grounded in an actual
+      // mission state instead of showing a beauty frame with no returns.
+      sonarState = initialSonarState();
+      handlePing();
       syncVisualNodes();
       syncHud();
       updateEvidence();

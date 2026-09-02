@@ -14,8 +14,11 @@ const assetIds = [
   "mechLegsA", "mechLegsB", "mechLegsC", "mechLegsD",
   "mechWeaponA", "mechWeaponB", "mechWeaponC", "mechWeaponD"
 ];
-const initialPrimaryAssets = ["robotcand", "mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
-const visualPrimaryAssetIds = ["robotcand"];
+// The route's visible subject is the authored four-part MH-2M assembly. Keep
+// the route-health contract aligned with route-gates.json: a whole-body
+// Robotcand shell is not a fallback or a primary visual asset.
+const initialPrimaryAssets = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
+const visualPrimaryAssetIds = ["mechChassisA", "mechArmsA", "mechLegsA", "mechWeaponA"];
 const audioIds = [
   "mechServoCycleSfx", "mechLockInSfx", "mechWalkHeavySfx", "mechLightHitSfx", "mechHeavyHitSfx",
   "mechGuardBlockSfx", "mechGuardBreakSfx", "mechSpecialFireSfx", "mechKoStingSfx", "mechAmbientHangarSfx"

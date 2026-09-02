@@ -13,7 +13,7 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
+      "typedRef": "assets.skylineArcticRunnerHero",
       "role": "character",
       "status": "typed-primary-asset",
       "quality": "release"
@@ -60,14 +60,14 @@
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
     "desktopScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
     "mobileScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset showcaseKenneyOobiPlatformerHero --asset showcaseKenneyVerdantPlatformerWorld",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset skylineArcticRunnerHero --asset showcaseKenneyVerdantPlatformerWorld",
     "deployPassed": true,
     "routePrimaryPassed": true,
     "gameplayProof": "tests/reports/showcase-gameplay/showcase-skyline-runner.json",
     "gameplayPassed": true,
     "visualReviewPassed": true,
     "releaseAssetProbes": {
-      "showcaseKenneyOobiPlatformerHero": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.json",
+      "skylineArcticRunnerHero": "tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.json",
       "showcaseKenneyVerdantPlatformerWorld": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.json",
       "showcaseSideScrollerWorld": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
     }
@@ -75,23 +75,23 @@
   "gameAssetPairEvidence": {
     "category": "platformer",
     "assets": [
-      "showcaseKenneyOobiPlatformerHero",
+      "skylineArcticRunnerHero",
       "showcaseKenneyVerdantPlatformerWorld"
     ],
     "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
     "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-    "screenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
+    "screenshotSha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
     "geometryEvidence": {
       "category": "platformer",
       "kind": "platformer-playable-surface-map",
       "source": "asset-mesh-extracted",
       "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-      "routePrimaryScreenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
+      "routePrimaryScreenshotSha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
       "assets": [
         {
-          "id": "showcaseKenneyOobiPlatformerHero",
-          "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+          "id": "skylineArcticRunnerHero",
+          "hash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7"
         },
         {
           "id": "showcaseKenneyVerdantPlatformerWorld",
@@ -127,7 +127,7 @@
     ]
   },
   "platformer": {
-    "characterAsset": "showcaseKenneyOobiPlatformerHero",
+    "characterAsset": "skylineArcticRunnerHero",
     "worldAssets": [
       "showcaseKenneyVerdantPlatformerWorld"
     ],
@@ -385,27 +385,27 @@
       "characterWorldScaleCompatible": true,
       "styleCompatible": true,
       "primitivePrimaryWorldRejected": true,
-      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+      "playableSurfaceEvidence": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
       "assetPairEvidence": {
         "category": "platformer",
         "assets": [
-          "showcaseKenneyOobiPlatformerHero",
+          "skylineArcticRunnerHero",
           "showcaseKenneyVerdantPlatformerWorld"
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-        "screenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
+        "screenshotSha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
         "geometryEvidence": {
           "category": "platformer",
           "kind": "platformer-playable-surface-map",
           "source": "asset-mesh-extracted",
-          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-rfizzY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "report": "tests/reports/.aura3d-geometry-showcase-skyline-runner-6j0oAY/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
+          "routePrimaryScreenshotSha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
           "assets": [
             {
-              "id": "showcaseKenneyOobiPlatformerHero",
-              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+              "id": "skylineArcticRunnerHero",
+              "hash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7"
             },
             {
               "id": "showcaseKenneyVerdantPlatformerWorld",

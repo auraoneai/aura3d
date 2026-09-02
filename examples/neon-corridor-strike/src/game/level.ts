@@ -66,15 +66,92 @@ export function buildScene() {
   // unrelated UI tunnel.  A neutral steel deck plus small bronze structure lets
   // the typed subjects belong to the same material family without pretending
   // that their imported materials have been replaced.
-  const deckBase = material.pbr({ color: "#223437", roughness: 0.91, metalness: 0.14 });
-  const deckDetail = material.pbr({ color: "#506368", roughness: 0.82, metalness: 0.22 });
-  const deckInset = material.pbr({ color: "#17282d", roughness: 0.94, metalness: 0.08 });
-  const structuralDetail = material.pbr({ color: "#405257", roughness: 0.7, metalness: 0.3 });
-  const warmStructure = material.pbr({ color: "#705138", roughness: 0.7, metalness: 0.38 });
-  const wallField = material.pbr({ color: "#263a3e", roughness: 0.88, metalness: 0.12 });
-  const wallDetail = material.pbr({ color: "#53676b", roughness: 0.77, metalness: 0.23 });
-  const ceilingField = material.pbr({ color: "#1e3035", roughness: 0.9, metalness: 0.1 });
-  const railHousing = material.pbr({ color: "#17292e", roughness: 0.84, metalness: 0.17 });
+  // The route used to declare every lining as an uncoated matte swatch. That
+  // gave the imported typed world and the installed architecture identical
+  // values, so the corridor collapsed into flat cyan/grey strips at gameplay
+  // scale. Keep the same geometry and palette, but give each manufactured
+  // surface its own measured response: soft steel sheen on walking surfaces,
+  // clear-coated bronze on the bay hardware, and a restrained edge highlight
+  // on wall panels. These are renderer-owned material inputs, not a second
+  // fake world painted over the typed asset.
+  const deckBase = material.pbr({
+    color: "#223437",
+    roughness: 0.78,
+    metalness: 0.24,
+    clearcoat: 0.26,
+    clearcoatRoughness: 0.22,
+    sheen: 0.12,
+    sheenColor: "#7aa6a7",
+    envMapIntensity: 0.92
+  });
+  const deckDetail = material.pbr({
+    color: "#506368",
+    roughness: 0.62,
+    metalness: 0.34,
+    clearcoat: 0.34,
+    clearcoatRoughness: 0.18,
+    envMapIntensity: 1.05
+  });
+  const deckInset = material.pbr({
+    color: "#17282d",
+    roughness: 0.86,
+    metalness: 0.14,
+    clearcoat: 0.18,
+    clearcoatRoughness: 0.28,
+    envMapIntensity: 0.82
+  });
+  const structuralDetail = material.metal({
+    name: "machined containment steel",
+    color: "#405257",
+    roughness: 0.42,
+    metalness: 0.58,
+    clearcoat: 0.44,
+    clearcoatRoughness: 0.16,
+    envMapIntensity: 1.18
+  });
+  const warmStructure = material.metal({
+    name: "clear-coated oxidised bronze",
+    color: "#705138",
+    roughness: 0.34,
+    metalness: 0.64,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.11,
+    envMapIntensity: 1.24
+  });
+  const wallField = material.pbr({
+    color: "#263a3e",
+    roughness: 0.8,
+    metalness: 0.16,
+    sheen: 0.14,
+    sheenRoughness: 0.42,
+    sheenColor: "#5b8c8e",
+    envMapIntensity: 0.78
+  });
+  const wallDetail = material.pbr({
+    color: "#53676b",
+    roughness: 0.56,
+    metalness: 0.34,
+    clearcoat: 0.3,
+    clearcoatRoughness: 0.19,
+    envMapIntensity: 1.02
+  });
+  const ceilingField = material.pbr({
+    color: "#1e3035",
+    roughness: 0.82,
+    metalness: 0.14,
+    clearcoat: 0.2,
+    clearcoatRoughness: 0.26,
+    envMapIntensity: 0.8
+  });
+  const railHousing = material.metal({
+    name: "recessed rail housing",
+    color: "#17292e",
+    roughness: 0.48,
+    metalness: 0.52,
+    clearcoat: 0.38,
+    clearcoatRoughness: 0.15,
+    envMapIntensity: 1.08
+  });
 
   return scene()
     .background("#102733")
@@ -454,7 +531,13 @@ export function buildScene() {
     // veiling the deck. The broad neutral fill establishes exposure; restrained
     // cool/warm keys shape the shell, while local practicals still explain the
     // cyan spawn, amber combat, and green exit pools seen in the architecture.
+    // Contact occlusion anchors the typed wardens, crates, and shell seams to
+    // the same deck instead of leaving them as floating low-poly cut-outs.
+    // A restrained bloom pass lets the installed power cells and shot cues
+    // share a controlled highlight language without washing out the corridor.
+    .add(effects.ambientOcclusion({ name: "containment bay grounding", intensity: 0.32, radius: 0.68, density: 0.54, color: "#02090d" }))
     .add(effects.fog({ density: 0.022, color: "#10252c" }))
+    .add(effects.bloom({ name: "containment power bloom", intensity: 0.16, color: "#79e4ec", threshold: 0.82, radius: 0.2, maxIntensity: 0.26 }))
     .add(lights.ambient({ name: "corridor exposure fill", intensity: 0.5, color: "#bdcfcc" }))
     .add(lights.directional({ name: "steel architectural key", position: [-4, 7, 6], intensity: 1.02, color: "#dcefeb" }))
     .add(lights.directional({ name: "warm asset rim", position: [5, 5, -9], intensity: 1.32, color: "#f2b878" }))

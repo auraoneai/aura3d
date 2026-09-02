@@ -37,6 +37,9 @@ import {
   createLockedBlockNodes,
   createLockedStackPools,
   createReactorNodes,
+  ACTIVE_FOCUS_NODE_ID,
+  CLEAR_WAVE_NODE_ID,
+  DROP_GUIDE_NODE_ID,
   ghostNodeId,
   lockedNodeId,
   lockedNodeKey,
@@ -107,6 +110,10 @@ const clearChargeMaterial = material.neon({ name: "single clear reactor charge",
 const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
 
 const REPLAY_FRAME_COUNT = Math.max(240, ...DEMO_REPLAY.map((event) => event.frame + 20));
+// Keep the boot frame visually in-flight: the opening T sits a few rows into
+// the well, with a long state-bound ghost guide down to the stack. Gameplay
+// remains deterministic; this is only the starting presentation pose.
+const PRESENTATION_ACTIVE_Y = HIDDEN_ROWS + 6;
 
 ui.html(
   "#hud",
@@ -360,14 +367,12 @@ const sourceEvidence = {
   },
   assets: {
     proceduralOnly: false,
-    typedAssetCount: 6,
+    typedAssetCount: 4,
     typedRefs: [
       "assets.blockfallReactorArenaBackdrop",
       "assets.blockfallReactorMechanicHero",
       "assets.blockfallReactorPlasmaRival",
-      "assets.showcaseBlockfallCabinet",
-      "assets.showcaseExpressiveRobot",
-      "assets.showcaseKenneyOobiPlatformerHero"
+      "assets.showcaseBlockfallCabinet"
     ],
     primary: "blockfallReactorArenaBackdrop",
     attribution: "Project-original CC0 Blockfall Reactor championship arena, mechanic, and plasma rival, plus the catalog-provenanced Arcade Machine, Expressive Robot, and Oobi supporting assets; all are typed assets and the release composition keeps gameplay state renderer-owned."
@@ -465,8 +470,15 @@ const cameraFeel = createCameraFeel({
   baseTarget: compactViewport ? [0, 2.16, 0.12] : visualReviewCapture ? [0, 2.36, 0.12] : [0, 1.82, 0.12]
 });
 
-const cabinetPosition = [0, 2.12, -2.15] as const;
-const cabinetTargetSize = visualReviewCapture ? 0.001 : 5.15;
+const cabinetPosition = [-2.8, 0.42, -2.15] as const;
+// Keep the catalog cabinet present in review captures.  The route gate names
+// the typed arena backdrop as the hero, but the cabinet is its certified
+// primary companion and the composition probe isolates this node.  A zero-ish
+// review scale made the probe measure a few anti-aliased pixels behind the HUD
+// rather than the actual typed subject.  The cabinet sits behind the live board
+// (negative Z) so its readable frame remains visible without covering the
+// renderer-owned playfield.
+const cabinetTargetSize = visualReviewCapture ? 3.85 : 4.2;
 /**
  * BF-A5 bloom formalization. Exact shipped intensities:
  *   - full motion: intensity 0.26, threshold 0.55, maxIntensity 1.6, antiBlowout on
@@ -513,38 +525,37 @@ const reactorScene = scene()
       }))
   )
   .add(
-    model(assets.showcaseExpressiveRobot, {
+    // The route's authored mechanic and plasma-rival cutouts carry the actual
+    // championship identity. They replace the generic catalog mascots that
+    // read as tiny low-poly placeholders at the review distance. Both remain
+    // presentation-only; the public falling-block state is still the sole game.
+    model(assets.blockfallReactorMechanicHero, {
       name: "blockfall-reactor-arena-mascot",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 2.62 : 2.35,
+      targetMaxDimension: visualReviewCapture ? 2.62 : 2.46,
       castShadow: true,
       receiveShadow: true
     })
-      .animate({ clip: visualReviewCapture ? "Dance" : "ThumbsUp", loop: true, captureTime: visualReviewCapture ? 0.48 : 0.62 })
-      .position(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)
+      .position(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -1.72 : -1.96)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("blockfall-reactor-arena-mascot", {
-        tags: ["typed-supporting-asset", "arcade-mascot", "release-probed", "non-gameplay-set-dressing"]
+        tags: ["typed-supporting-asset", "arcade-mechanic-mascot", "release-probed", "non-gameplay-set-dressing"]
       }))
   )
   .add(
-    // A distinct typed arena performer balances the review composition and
-    // turns the formerly empty queue-side void into a readable rival corner.
-    // It is presentation-only: the single public falling-blocks state remains
-    // the sole gameplay board and no versus mechanic is claimed.
-    model(assets.showcaseKenneyOobiPlatformerHero, {
+    model(assets.blockfallReactorPlasmaRival, {
       name: "blockfall-reactor-rival-mascot",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: visualReviewCapture ? 2.55 : 2.18,
+      targetMaxDimension: visualReviewCapture ? 2.48 : 2.2,
       castShadow: true,
       receiveShadow: true
     })
-      .position(visualReviewCapture ? 2.94 : 3.24, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.18)
+      .position(visualReviewCapture ? 2.94 : 3.02, visualReviewCapture ? 0.18 : 0.2, visualReviewCapture ? -1.72 : -1.98)
       .rotate(0, 0, 0)
       .runtime(game.runtimeNode("blockfall-reactor-rival-mascot", {
-        tags: ["typed-supporting-asset", "arcade-rival-mascot", "release-probed", "non-gameplay-set-dressing"]
+        tags: ["typed-supporting-asset", "arcade-plasma-rival", "release-probed", "non-gameplay-set-dressing"]
       }))
   )
   .add(
@@ -675,6 +686,9 @@ const lockedHandles = new Map<string, AuraRuntimeNodeHandle>();
 const activeHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(activeNodeId(index)) as AuraRuntimeNodeHandle);
 const ghostHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(ghostNodeId(index)) as AuraRuntimeNodeHandle);
 const clearFlashHandles = Array.from({ length: VISIBLE_HEIGHT }, (_, row) => app.nodes.require(clearFlashNodeId(row)) as AuraRuntimeNodeHandle);
+const dropGuideHandle = app.nodes.require(DROP_GUIDE_NODE_ID) as AuraRuntimeNodeHandle;
+const activeFocusHandle = app.nodes.require(ACTIVE_FOCUS_NODE_ID) as AuraRuntimeNodeHandle;
+const clearWaveHandle = app.nodes.require(CLEAR_WAVE_NODE_ID) as AuraRuntimeNodeHandle;
 const reactorFillNode = app.nodes.require("blockfall-reactor-fill") as AuraRuntimeNodeHandle;
 const beatHandles = {
   levelUp: app.nodes.require(BEAT_NODE_IDS.levelUp) as AuraRuntimeNodeHandle,
@@ -789,7 +803,7 @@ const fallingBlocks = game.fallingBlocks({
   hiddenRows: HIDDEN_ROWS,
   board: createOpeningBoard()
 });
-fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
 let paused = false;
 let placedPieces = 0;
 let lockCount = 0;
@@ -992,7 +1006,7 @@ gameApp.onFrame(({ dt }) => {
       lockCount = 0;
       const freshSnapshot = fallingBlocks.reset(DEFAULT_SEED);
       lastFallingEvents = freshSnapshot.events;
-      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
       state = createBlockfallView(fallingBlocks.snapshot(), "attract-exit-reset", lastFallingEvents);
       lastObservedLevel = 1;
       lastVisualChecksum = "";
@@ -1033,7 +1047,7 @@ gameApp.onFrame(({ dt }) => {
       attractState.playback.restart();
       fallingBlocks.reset(DEFAULT_SEED);
       fallingBlocks.setBoard(createOpeningBoard());
-      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+      fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
     }
   } else {
     const actions = [...queuedActions, ...collectInputActions(dt)];
@@ -1163,6 +1177,10 @@ function countFallingBlockEvents(
     const quad = lineClearEvents.some((event) => (event.lines ?? 0) >= 4);
     const linesCleared = lineClearEvents.reduce((total, event) => total + (event.lines ?? 0), 0);
     lastClearSize = Math.max(...lineClearEvents.map((event) => event.lines ?? 0));
+    if (clearedVisibleRows.length > 0) {
+      const averageClearedRow = clearedVisibleRows.reduce((sum, row) => sum + row, 0) / clearedVisibleRows.length;
+      burstRowY = cellPosition(0, averageClearedRow, 0)[1];
+    }
     void reactorAudio.cue(quad ? "quad" : "line-clear");
     clearFx.burst(clearedVisibleRows, linesCleared);
     if (quad) cameraFeel.punch(1.6, "quad");
@@ -1278,7 +1296,7 @@ function applyAcceptanceScenario(scenario: BlockfallAcceptanceScenario): unknown
 
   if (scenario === "play") {
     fallingBlocks.setBoard(createOpeningBoard());
-    fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
+    fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: PRESENTATION_ACTIVE_Y, rotation: 0 });
     state = createBlockfallView(fallingBlocks.snapshot(), "acceptance:play", fallingBlocks.snapshot().events);
   } else if (scenario === "single-clear") {
     fallingBlocks.setBoard(clearSetupBoard(1, [4, 5]));
@@ -1534,10 +1552,13 @@ function syncBoardVisuals(): void {
 
 function syncActivePiece(piece: ActivePiece | null): void {
   activeHandles.forEach((handle) => handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false));
+  activeFocusHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   if (!piece) return;
   const cells = pieceCells(piece);
-  cells.forEach((cell, index) => {
-    const visibleY = cell.y - HIDDEN_ROWS;
+  const visibleCells = cells
+    .map((cell, index) => ({ cell, index, visibleY: cell.y - HIDDEN_ROWS }))
+    .filter(({ visibleY }) => visibleY > 0 && visibleY < VISIBLE_HEIGHT);
+  visibleCells.forEach(({ cell, index, visibleY }) => {
     const handle = activeHandles[index];
     // Keep the first presentation row as an entry buffer. At the cabinet's tilted
     // camera angle, a nearest-layer active block centered on row zero projects above
@@ -1555,10 +1576,26 @@ function syncActivePiece(piece: ActivePiece | null): void {
       .setScale(ACTIVE_BLOCK_SCALE)
       .setVisible(true);
   });
+
+  // State-bound focus reticle: the ring follows the active piece's projected
+  // centre and gives the eye an authored drop target even on a busy board.
+  // It is renderer-owned presentation only; the game kit remains authoritative
+  // for every cell, collision, and landing decision.
+  if (visibleCells.length > 0) {
+    const averageX = visibleCells.reduce((sum, item) => sum + item.cell.x, 0) / visibleCells.length;
+    const averageY = visibleCells.reduce((sum, item) => sum + item.visibleY, 0) / visibleCells.length;
+    const focusPosition = cellPosition(averageX, averageY, 0.112);
+    const pulse = 0.92 + Math.sin(state.frame * 0.16) * 0.08;
+    activeFocusHandle
+      .setPosition(focusPosition[0], focusPosition[1], focusPosition[2])
+      .setScale([0.34 * pulse, 0.16 * pulse, 0.045])
+      .setVisible(true);
+  }
 }
 
 function syncGhostPiece(piece: ActivePiece | null): void {
   ghostHandles.forEach((handle) => handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false));
+  dropGuideHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   if (!piece || state.gameOver) return;
   const activeCells = state.active ? pieceCells(state.active).map((cell) => `${cell.x}:${cell.y}`).join("|") : "";
   const ghostCells = pieceCells(piece);
@@ -1572,6 +1609,34 @@ function syncGhostPiece(piece: ActivePiece | null): void {
       .setScale(GHOST_BLOCK_SCALE)
       .setVisible(true);
   });
+
+  // One slim, translucent beam connects the active piece's centre to its
+  // projected landing centre. It is derived exclusively from the same ghost
+  // state that drives the four ghost cells, making the intended drop path
+  // readable in a still as well as during live input.
+  const activeVisibleCells = state.active
+    ? pieceCells(state.active).map((cell) => ({ x: cell.x, visibleY: cell.y - HIDDEN_ROWS }))
+      .filter((cell) => cell.visibleY >= 0 && cell.visibleY < VISIBLE_HEIGHT)
+    : [];
+  const ghostVisibleCells = ghostCells
+    .map((cell) => ({ x: cell.x, visibleY: cell.y - HIDDEN_ROWS }))
+    .filter((cell) => cell.visibleY >= 0 && cell.visibleY < VISIBLE_HEIGHT);
+  if (activeVisibleCells.length === 0 || ghostVisibleCells.length === 0) return;
+  const averageX = (cells: readonly { x: number }[]) => cells.reduce((sum, cell) => sum + cell.x, 0) / cells.length;
+  const beamX = cellPosition(averageX(ghostVisibleCells), 0, 0)[0];
+  // Board rows increase downward. Use the active piece's lowest cell and the
+  // ghost's highest cell so the beam spans only the empty flight path between
+  // the two silhouettes (rather than extending through either piece).
+  const activeY = Math.max(...activeVisibleCells.map((cell) => cell.visibleY));
+  const ghostY = Math.min(...ghostVisibleCells.map((cell) => cell.visibleY));
+  if (ghostY <= activeY) return;
+  const activePositionY = cellPosition(0, activeY, 0)[1];
+  const ghostPositionY = cellPosition(0, ghostY, 0)[1];
+  const span = Math.max(0.08, activePositionY - ghostPositionY);
+  dropGuideHandle
+    .setPosition(beamX, ghostPositionY + span * 0.5, 0.075)
+    .setScale([0.014, span * 0.5, 0.018])
+    .setVisible(true);
 }
 
 function syncClearFlash(): void {
@@ -1630,6 +1695,16 @@ function syncBeats(dt: number): void {
 
   const burstProgress = beatTimers.burst / beatDurations.burst;
   if (burstProgress > 0) {
+    // The wave expands from the exact rows supplied by the clear event. It is
+    // intentionally a single slim torus so line-clear causality reads at a
+    // glance without covering the newly settled stack.
+    const waveProgress = 1 - burstProgress;
+    const waveWidth = lastClearSize >= 4 ? 1.22 : 0.72;
+    clearWaveHandle
+      .setMaterial(lastClearSize >= 4 ? quadDischargeMaterial : clearChargeMaterial)
+      .setPosition(0, burstRowY, 0.232)
+      .setScale([waveWidth + waveProgress * 1.52, 0.22 + waveProgress * 0.08, 0.038])
+      .setVisible(true);
     if (lastClearSize >= 4) {
       quadCallout.dataset.active = "true";
       mechanicEventRibbon.dataset.active = "true";
@@ -1694,6 +1769,7 @@ function syncBeats(dt: number): void {
     mechanicEventRibbon.dataset.active = "false";
     rivalEventRibbon.dataset.active = "false";
     beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+    clearWaveHandle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
     mascotNode
       .setPosition(visualReviewCapture ? -3.34 : -3.48, visualReviewCapture ? 0.18 : 0.28, visualReviewCapture ? -1.72 : -2.15)
       .setScale(1)

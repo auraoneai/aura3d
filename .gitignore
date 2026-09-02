@@ -344,6 +344,11 @@ tests/fixtures/showcase-spec/**/.DS_Store
 !.pnpmfile.cjs
 .vercel
 
+# Local Meshy candidates and operational task state (admitted public assets are not ignored)
+artifacts/meshy/**
+!artifacts/meshy/README.md
+.meshy-task-state/
+
 # Local source asset archives and bulky generated candidates
 apps/aura-clash-showcase/assets/candidates/
 apps/aura-clash-showcase/assets/quaternius-source/

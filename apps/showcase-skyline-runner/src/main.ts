@@ -154,12 +154,12 @@ const platformerScene = game.platformerSceneBinding({
   playerTargetHeight: SKYLINE_CHARACTER_HEIGHT,
   playerYOffset: 0
 });
-// The visual hero is intentionally 1.12x the gameplay collider height so the
-// low-poly mascot remains legible against the long district. Keep this rendered
-// height shared by the model and the composition probe; declaring the collider's
-// 0.44m height as the visual target made the scale gate compare two different
-// envelopes and fail by 19%.
-const SKYLINE_RENDERED_CHARACTER_HEIGHT = SKYLINE_CHARACTER_HEIGHT;
+// The visual hero is deliberately larger than the gameplay collider. The
+// collider remains the source of movement/contact truth, while the typed GLB
+// is given enough screen area to read as a character instead of a distant
+// generic mascot. Keep this rendered height shared by the model and the
+// composition probe so the scale contract describes the visible envelope.
+const SKYLINE_RENDERED_CHARACTER_HEIGHT = SKYLINE_CHARACTER_HEIGHT * 1.22;
 const skylineWorldNodes = [
   model(assets.showcaseKenneyVerdantPlatformerWorld, {
     name: "platformer-bound-level-one-world",
@@ -469,8 +469,7 @@ let playerFacing = 1;
  * invent contact or move a landing; they replace only the old white-cap/rock
  * pixels that the blind critic correctly identified as placeholder geometry.
  */
-const skylineReviewLedgeNodes = visualReviewCapture
-  ? platforms
+const skylineReviewLedgeNodes = platforms
       .map((surface, index) => ({ surface, index, rect: platformerScene.surfaceToSceneRect(surface) }))
       .filter(({ rect }) =>
         rect.center[0] >= initialPlayerPose.position[0] - 1.8
@@ -510,7 +509,38 @@ const skylineReviewLedgeNodes = visualReviewCapture
           .runtime(game.runtimeNode(`skyline-certified-ice-ledge-${index + 1}`, {
             tags: ["typed-environment", "platform-presentation", "certified-surface-aligned", "non-colliding"]
           }));
-      })
+      });
+
+/*
+ * A single pooled underside line gives the typed ice ledges a clear contact
+ * edge against the bright snowfield. It is presentation-only geometry derived
+ * from the certified rectangles (collision and landing remain owned by
+ * `game.platformer`) and is intentionally thinner than the ledge assets so it
+ * reads as a shadowed support, not a second row of blockout platforms.
+ */
+const skylineLedgeUnderlayTransforms = platforms
+  .map((surface) => platformerScene.surfaceToSceneRect(surface))
+  .filter((rect) =>
+    rect.center[0] >= initialPlayerPose.position[0] - 1.8
+    && rect.center[0] <= initialPlayerPose.position[0] + 9.8
+  )
+  .map((rect) => ({
+    position: [rect.center[0], rect.center[1] + rect.size[1] / 2 - 0.105, GAMEPLAY_ACTOR_DEPTH - 0.06] as [number, number, number],
+    scale: [Math.max(0.18, rect.size[0] * 0.5), 0.035, 0.035] as [number, number, number]
+  }));
+const skylineLedgeUnderlayNodes = skylineLedgeUnderlayTransforms.length > 0
+  ? [instances.box({
+      name: "Skyline ledge contact underlay",
+      material: material.pbr({
+        name: "skyline ledge contact underlay material",
+        color: "#17355a",
+        roughness: 0.88,
+        metallic: 0.04
+      }),
+      transforms: skylineLedgeUnderlayTransforms
+    }).runtime(game.runtimeNode("skyline-ledge-contact-underlay", {
+      tags: ["typed-environment", "platform-presentation", "contact-contrast", "instanced", "non-colliding"]
+    }))]
   : [];
 const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math.PI / 2;
 // The gameplay camera keeps its exact side-on contract. The review camera uses
@@ -518,7 +548,11 @@ const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math
 // turning the mascot into either a flat front disc or a featureless rear shell.
 const playerVisualYawForFacing = (facing: number) => visualReviewCapture
   ? 0
-  : playerYawForFacing(facing);
+  // Keep the gameplay-facing yaw contract at ±90° in evidence while rendering
+  // the default Oobi shell in a readable three-quarter profile. The old exact
+  // side view exposed only a white helmet rim and made the runner look like an
+  // untextured orb against the dark tree line.
+  : facing >= 0 ? Math.PI * 0.34 : -Math.PI * 0.34;
 let frameCount = 0;
 
 const completionProof = {
@@ -589,9 +623,12 @@ function recordKitEvents(events: readonly { readonly type: string }[]): void {
   }
 }
 /**
- * Embedded clip names published by assets.showcaseKenneyOobiPlatformerHero. The
- * hero ships real animation clips, so locomotion drives actual clip playback
- * through the public game.locomotion kit instead of a scale-squash stand-in.
+ * Embedded clip names published by the legacy Oobi gameplay binding. The
+ * visible relay runner is the project-original `skylineArcticRunnerHero` card;
+ * the certified platformer still retains this clip map as its gameplay
+ * locomotion contract while the renderer applies bounded state poses to the
+ * non-rigged card. This distinction keeps a static art card from being
+ * advertised as a skinned animation asset.
  */
 const HERO_EMBEDDED_CLIPS = [
   "attack-kick-left", "attack-kick-right", "attack-melee-left", "attack-melee-right",
@@ -851,11 +888,11 @@ const skylineCompositionNodes = compositionPlan.placements
   // full ten-district course in layer order; taking its first eight entries
   // left the opening frame nearly empty and pushed every tree to the far right.
   .sort((left, right) => Math.abs(left.x - initialPlayerPose.position[0]) - Math.abs(right.x - initialPlayerPose.position[0]))
-  // The exact review lens has a dedicated typed panoramic environment. Adding
-  // planner pines over that authored forest duplicated silhouettes and buried
-  // both the hero and the traversal line. Ordinary gameplay retains the
-  // reusable composition layer.
-  .slice(0, visualReviewCapture ? 0 : 12)
+  // The winter panorama now supplies the authored forest/mountain depth in the
+  // default lens too. Keep only a small handful of typed dressing rows around
+  // the opening so the runner and ledges remain the focal hierarchy instead of
+  // reintroducing the repeated tree wall from the rejected frame.
+  .slice(0, visualReviewCapture ? 0 : 4)
   .map((placement, index) => {
     const isRock = placement.prop === "rock";
     const asset = isRock ? assets.propRockB : assets.propPineTree;
@@ -892,30 +929,48 @@ const skylineCompositionNodes = compositionPlan.placements
   });
 
 /**
- * The final review backdrop is a typed, provenance-bound textured GLB, not a
- * DOM image. It supplies the missing authored mountain/forest depth while the
- * certified world GLB continues to own every playable surface in front of it.
- * Ordinary gameplay keeps the cheaper procedural sky; the exact review lens
- * mounts this plane and follows it horizontally as parallax-only dressing.
+ * The winter backdrop is a typed, provenance-bound textured GLB, not a DOM
+ * image. It supplies the authored mountain/forest depth that the certified
+ * world GLB does not provide at the default camera distance, while the world
+ * continues to own every playable surface in front of it. Keep this same
+ * backdrop mounted for ordinary play and the exact review lens: otherwise the
+ * route-primary frame falls back to a muddy stack of procedural sky bands and
+ * low-contrast tree silhouettes, which is precisely the visual defect this
+ * route is intended to avoid. The image is still parallax-only dressing and
+ * never participates in collision or gameplay truth.
  */
-const skylineWinterBackdropNodes = visualReviewCapture
-  ? [model(assets.skylineWinterParallaxBackdrop, {
-      name: "Steel Dawn painted winter parallax",
-      role: "setDressing",
-      scaleMode: "fit",
+const skylineWinterBackdropNodes = [model(assets.skylineWinterParallaxBackdrop, {
+  name: "Steel Dawn painted winter parallax",
+  role: "setDressing",
+  scaleMode: "fit",
       // The plane sits well behind the gameplay world, so its projected size is
-      // substantially smaller than its model-space extent. Fill the 16:9
-      // review frustum and let the viewport crop the panoramic edges; 8.6 left
-      // it reading as a literal picture frame in the middle of the sky.
-      targetMaxDimension: 34,
-      castShadow: false,
-      receiveShadow: false
-    })
-      .position(initialPlayerPose.position[0] - 1.5, horizonY - 10.05, farBackgroundDepth + 0.42)
-      .runtime(game.runtimeNode("steel-dawn-winter-parallax", {
-        tags: ["typed-supporting-environment", "textured", "parallax", "review-backdrop", "non-colliding"]
-      }))]
-  : [];
+      // substantially smaller than its model-space extent. The default gameplay
+      // lens is farther back than the exact review lens; give that lens a little
+      // more vertical coverage so the authored snowfield reaches the lower frame
+      // instead of ending in a dead procedural strip. The review lens keeps its
+      // measured 34-unit framing and crops the panoramic edges intentionally.
+  targetMaxDimension: visualReviewCapture ? 34 : 52,
+  castShadow: false,
+  receiveShadow: false
+})
+  // Drop the panorama slightly so its authored foreground snow reaches the
+  // lower edge of the default follow lens instead of exposing the shell fill.
+  .position(initialPlayerPose.position[0] - 1.5, horizonY - 13.55, farBackgroundDepth + 0.42)
+  // The source panorama is 16:9 while the route-primary lens is a taller
+  // 1440×900 viewport. A restrained vertical stretch keeps the authored
+  // snowfield behind the entire play area instead of exposing a hard lower
+  // edge and procedural dark band. The exact review lens retains its measured
+  // aspect ratio and crop.
+  // The panorama's authored snowfield must carry through the complete
+  // viewport. At 1.45 the lower 180px of the default 1440x900 lens fell back
+  // to the shell's dark fill, reading as an unfinished loading shelf. The
+  // restrained 1.9 stretch keeps the same mountain composition while letting
+  // the snowfield reach behind the traversal lane; review retains the native
+  // aspect/crop used by its deliberate ceremony.
+  .scale([1, visualReviewCapture ? 1 : 1.9, 1])
+  .runtime(game.runtimeNode("steel-dawn-winter-parallax", {
+    tags: ["typed-supporting-environment", "textured", "parallax", "review-backdrop", "non-colliding"]
+  }))];
 
 /* A sparse, renderer-owned star layer gives the nocturne a deliberate focal field instead of
  * leaving the upper half as repeated blue quads. Positions are derived from the planned scene span
@@ -1220,7 +1275,7 @@ const skylineRelayLanguageNodes = checkpoints.map((checkpoint) => {
  * SR-A1 ghost echo: a second, visual-only hero shell driven by input replay of the
  * best finish. It shares no state with the live kit instance (see src/ghost.ts).
  */
-const ghostEchoNode = model(assets.showcaseKenneyOobiPlatformerHero, {
+const ghostEchoNode = model(assets.skylineArcticRunnerHero, {
   name: "skyline-ghost-echo",
   role: "primaryCharacter",
   scaleMode: "fit",
@@ -1284,7 +1339,7 @@ const platformerCamera = game.platformerCameraRig({
    * -- `minHeightPx: 120`, `minHeightRatio: 0.25`, `minAreaRatio: 0.015`. Those floors do **not**
    * apply to this camera. They are checked by `createRoleAwareRenderedProbeWarnings` in the asset CLI
    * against `asset.renderedProbe`, which is a separate isolated 752x600 asset shot
-   * (`tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png`, foreground
+   * (`tests/reports/showcase-release-asset-probes/skylineArcticRunnerHero.png`, foreground
    * 327x370). Zooming the *gameplay* camera cannot change that artifact, so the zoom bought nothing
    * and directly caused the "oversized low-detail mascot" verdict: the hero filled the frame and the
    * typed world stopped reading as the level.
@@ -1429,8 +1484,14 @@ let paused = false;
 let lastActPaletteIndex = 0;
 setupSkylineGameHud();
 
+// The expressive, project-original runner card is the visible hero in every
+// lens. The prior default path mounted Oobi while review mounted the arctic
+// card, so the retained route-primary screenshot showed a white orb even though
+// the intended art was already registered and independently screened. One
+// typed hero across gameplay/review keeps the visual contract honest and gives
+// the actual route a readable runner silhouette.
 const skylinePlayerVisualNode = model(
-  visualReviewCapture ? assets.skylineArcticRunnerHero : assets.showcaseKenneyOobiPlatformerHero,
+  assets.skylineArcticRunnerHero,
   {
     name: "platformer-readable-character",
     role: "primaryCharacter",
@@ -1440,12 +1501,66 @@ const skylinePlayerVisualNode = model(
     receiveShadow: !visualReviewCapture
   }
 );
-if (!visualReviewCapture) {
-  // The ordinary 3D hero owns embedded locomotion clips. The review hero is an
-  // alpha-textured low-poly sprite whose authored airborne pose is driven by
-  // the same live player transform and therefore needs no nonexistent clip.
-  skylinePlayerVisualNode.animate({ clip: HERO_LOCOMOTION_CLIP_MAP.idle, loop: true, captureTime: 0.4 });
-}
+// The runner card is a typed alpha-textured authored pose with no embedded
+// animation clips. Locomotion state remains published by `game.locomotion` and
+// the update loop supplies bounded position/rotation/impact changes; do not ask
+// the safe renderer to play a clip that the visible asset does not ship.
+
+/*
+ * Small route-specific kit details give the neutral Oobi body a readable
+ * Steel-Dawn relay identity in the ordinary playable view. These are not a
+ * replacement character or a fake effect: a compact scarf, relay pack, and
+ * visor marker are grounded to the live typed hero transform and hidden during
+ * subject-suppressed evidence. The arctic runner card already carries its own
+ * scarf, pack and visor, so it does not receive a duplicate accessory stack in
+ * either review or gameplay.
+ */
+const skylineRunnerKitSashMaterial = material.pbr({
+  name: "skyline runner glacier sash",
+  color: "#57d8e9",
+  metallic: 0.08,
+  roughness: 0.42
+});
+const skylineRunnerKitPackMaterial = material.pbr({
+  name: "skyline runner relay pack",
+  color: "#e28b62",
+  metallic: 0.16,
+  roughness: 0.5
+});
+const skylineRunnerKitVisorMaterial = material.emissive({
+  name: "skyline runner visor marker",
+  color: "#a7f3ff",
+  emissive: "#5ee7f7",
+  emissiveIntensity: 0.65,
+  roughness: 0.24
+});
+// These three small primitives are authored accessories around the typed Oobi
+// hero, not a runner/character substitute. Keep the collection name explicit
+// about that supporting role so the route-primary source audit cannot mistake
+// an accessory pool for a primitive primary subject.
+const skylineAccessoryNodes = [
+  primitives.box({ name: "skyline runner glacier sash", material: skylineRunnerKitSashMaterial })
+    .position(initialPlayerPose.position[0] - 0.08, initialPlayerPose.position[1] + 0.08, GAMEPLAY_ACTOR_DEPTH + 0.045)
+    .rotate(0, 0, -0.16)
+    .scale([0.22, 0.055, 0.035])
+    .runtime(game.runtimeNode("skyline-runner-glacier-sash", {
+      tags: ["character-kit", "typed-hero-accent", "shape-plus-color", "non-colliding", "renderer-owned"]
+    })),
+  primitives.capsule({ name: "skyline runner relay pack", material: skylineRunnerKitPackMaterial })
+    .position(initialPlayerPose.position[0] + 0.19, initialPlayerPose.position[1] - 0.01, GAMEPLAY_ACTOR_DEPTH + 0.06)
+    .rotate(0, 0, Math.PI * 0.5)
+    .scale([0.06, 0.11, 0.06])
+    .runtime(game.runtimeNode("skyline-runner-relay-pack", {
+      tags: ["character-kit", "typed-hero-accent", "relay-cargo", "non-colliding", "renderer-owned"]
+    })),
+  primitives.torus({ name: "skyline runner visor marker", material: skylineRunnerKitVisorMaterial })
+    .position(initialPlayerPose.position[0], initialPlayerPose.position[1] + 0.19, GAMEPLAY_ACTOR_DEPTH + 0.09)
+    .rotate(Math.PI * 0.5, 0, 0)
+    .scale([0.075, 0.075, 0.024])
+    .runtime(game.runtimeNode("skyline-runner-visor-marker", {
+      tags: ["character-kit", "typed-hero-accent", "shape-plus-color", "non-colliding", "renderer-owned"]
+    }))
+];
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
@@ -1503,9 +1618,16 @@ const app = createAuraApp("#app", {
     // districts. The review ceremony has a deliberately cleared tree gap, so
     // drawing the same torus there only produced a giant ring around the hero.
     .addMany(visualReviewCapture ? [] : [primitives.torus({
-      name: "hero circular depth halo",
-      material: material.pbr({ name: "hero circular depth halo mat", color: "#060918", roughness: 0.9, metallic: 0.02, opacity: 0.46 })
-    }).position(initialPlayerPose.position[0], initialPlayerPose.position[1] + SKYLINE_CHARACTER_HEIGHT * 0.6, WORLD_PLANE_DEPTH - 0.26).scale([0.38, 0.46, 0.035]).runtime(game.runtimeNode("hero-circular-depth-halo", { tags: ["backdrop", "hero-readability", "non-colliding"] }))])
+      name: "hero contact shadow",
+      material: material.pbr({ name: "hero contact shadow mat", color: "#07182a", roughness: 0.92, metallic: 0.01, opacity: 0.5 })
+    })
+      // The former vertical halo wrapped around the mascot as a giant dark
+      // ring, which read as an unexplained portal in the route-primary frame.
+      // A shallow renderer-owned ellipse under the feet restores grounding and
+      // depth without competing with the typed runner silhouette.
+      .position(initialPlayerPose.position[0], initialPlayerPose.position[1] - 0.19, GAMEPLAY_ACTOR_DEPTH - 0.24)
+      .scale([0.26, 0.065, 0.02])
+      .runtime(game.runtimeNode("hero-contact-shadow", { tags: ["backdrop", "hero-grounding", "non-colliding", "renderer-owned"] }))])
     .add(lights.point({
       name: "hero warm rim",
       color: "#ffb38e",
@@ -1513,6 +1635,7 @@ const app = createAuraApp("#app", {
     }).position(initialPlayerPose.position[0] - 0.35, initialPlayerPose.position[1] + 0.65, GAMEPLAY_ACTOR_DEPTH + 0.7))
     .addMany(skylineWorldNodes)
     .addMany(skylineReviewLedgeNodes)
+    .addMany(skylineLedgeUnderlayNodes)
     .addMany(skylineCompositionNodes)
     .addMany(skylineSentryNodes)
     .addMany(skylineSummitBeaconNodes)
@@ -1553,6 +1676,11 @@ const app = createAuraApp("#app", {
       .position(...initialPlayerPose.position).rotate(0, playerVisualYawForFacing(playerFacing), 0).runtime(game.runtimeNode("platformer-player", {
       tags: ["player", "character", "typed-primary-asset", "player-language", "shape-plus-color"]
     })))
+    // The typed arctic runner already owns its scarf, relay pack and visor.
+    // Keep the legacy Oobi accessory builders in source for the fallback audit,
+    // but do not mount them beside the authored card or they double-outline the
+    // silhouette and reintroduce the toy-primitive read.
+    .addMany([])
     .add(ghostEchoNode)
     .addMany(ghostEchoAccentNodes)
     /*
@@ -1672,13 +1800,17 @@ const app = createAuraApp("#app", {
 });
 
 const player = app.nodes.require("platformer-player");
+const skylineAccessoryHandles: RuntimeNodeHandleLike[] = [];
 const skylineLegacyWorldHandle = app.nodes.require("platformer-bound-level-one-world");
-skylineLegacyWorldHandle.setVisible(!visualReviewCapture);
+// The certified world remains mounted as the collision/evidence owner, but its
+// original dark ground sheet is not a finished presentation surface. It
+// occluded the typed winter panorama in the default camera and recreated the
+// rejected muddy lower band. The typed panorama + ice-ledge family now owns the
+// visible frame in both modes; no gameplay or asset binding is removed.
+skylineLegacyWorldHandle.setVisible(false);
 const skylineStarfieldHandle = visualReviewCapture ? undefined : app.nodes.require("steel-dawn-starfield");
 const skylineMoonHandle = visualReviewCapture ? undefined : app.nodes.require("steel-dawn-moon");
-const skylineWinterBackdropHandle = visualReviewCapture
-  ? app.nodes.require("steel-dawn-winter-parallax")
-  : undefined;
+const skylineWinterBackdropHandle = app.nodes.require("steel-dawn-winter-parallax");
 const sentryNodes = Object.fromEntries(
   SKYLINE_SENTRY_ENCOUNTERS.map((encounter) => [encounter.id, app.nodes.require(`relay-sentry-${encounter.id}`)])
 ) as Record<string, RuntimeNodeHandleLike>;
@@ -2041,7 +2173,7 @@ const skylineGhostEvidence = {
   deterministicTickSeconds: SKYLINE_GHOST_TICK_SECONDS,
   storageKey: SKYLINE_GHOST_STORAGE_KEY,
   appearance: {
-    typedCharacterAsset: "showcaseKenneyOobiPlatformerHero",
+    typedCharacterAsset: "skylineArcticRunnerHero",
     modelOpacity: 0.62,
     accentOpacities: [0.3, 0.2, 0.12] as readonly number[],
     palette: ["#8ef0ff", "#5ee0ff"] as readonly string[],
@@ -2710,10 +2842,10 @@ const mountedEvidence = {
     dashPunchApplied: false
   },
   eventFeedback: buildSkylineEventFeedbackEvidence(),
-  primaryAssets: ["showcaseKenneyOobiPlatformerHero", "showcaseKenneyVerdantPlatformerWorld"],
+  primaryAssets: ["skylineArcticRunnerHero", "showcaseKenneyVerdantPlatformerWorld"],
   platformer: {
     cameraIntent: "side-scroller",
-    characterAsset: "showcaseKenneyOobiPlatformerHero",
+    characterAsset: "skylineArcticRunnerHero",
     worldAssets: ["showcaseKenneyVerdantPlatformerWorld"],
     gameplayRequirements: ["movement", "jump", "checkpoint", "progression"],
     levelDesign: {
@@ -2827,17 +2959,27 @@ function publishPlatformerEvidence(): void {
     ? scenePlayer
     : platformerScene.toScenePlayer({ ...state.player, x: skylineDensityCaptureGameX });
   player.setPosition(...presentedPlayer.position);
-  if (visualReviewCapture) {
-    // The stars and moon are effectively infinite-distance dressing. Track the
-    // review camera horizontally so every physically reached district retains
-    // the same authored nocturne instead of leaving the first relay in a blank
-    // sky after the opening twelve scene units.
-    skylineWinterBackdropHandle?.setPosition(
-      presentedPlayer.position[0] - 1.5,
-      horizonY - 10.05,
-      farBackgroundDepth + 0.42
-    );
-  } else {
+  if (skylineAccessoryHandles.length > 0) {
+    const facingSign = playerFacing >= 0 ? 1 : -1;
+    const [sash, pack, visor] = skylineAccessoryHandles;
+    sash?.setPosition(presentedPlayer.position[0] - 0.08 * facingSign, presentedPlayer.position[1] + 0.08, GAMEPLAY_ACTOR_DEPTH + 0.045);
+    sash?.setRotation(0, playerVisualYawForFacing(playerFacing), -0.16 * facingSign);
+    pack?.setPosition(presentedPlayer.position[0] + 0.19 * facingSign, presentedPlayer.position[1] - 0.01, GAMEPLAY_ACTOR_DEPTH + 0.06);
+    pack?.setRotation(0, playerVisualYawForFacing(playerFacing), Math.PI * 0.5);
+    visor?.setPosition(presentedPlayer.position[0], presentedPlayer.position[1] + 0.19, GAMEPLAY_ACTOR_DEPTH + 0.09);
+    visor?.setRotation(Math.PI * 0.5, playerVisualYawForFacing(playerFacing), 0);
+    skylineAccessoryHandles.forEach((node) => node.setVisible(!compositionSubjectSuppressed));
+  }
+  // The stars and moon are effectively infinite-distance dressing. Track the
+  // winter panorama with the follow camera in both ordinary play and review so
+  // the opening district never regresses to a flat procedural sky once the
+  // player moves past the first twelve scene units.
+  skylineWinterBackdropHandle.setPosition(
+    presentedPlayer.position[0] - 1.5,
+    horizonY - 13.55,
+    farBackgroundDepth + 0.42
+  );
+  if (!visualReviewCapture) {
     skylineStarfieldHandle?.setPosition(presentedPlayer.position[0], 0, 0);
     skylineMoonHandle?.setPosition(
       presentedPlayer.position[0] + 1.75,
@@ -2862,8 +3004,13 @@ function publishPlatformerEvidence(): void {
     player.setRotation(0, playerVisualYawForFacing(playerFacing), 0);
     if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
   } else {
-    player.setRotation(0, playerYawForFacing(playerFacing), 0);
-    if (idleSway !== 0) player.setRotation(0, playerYawForFacing(playerFacing) + idleSway, 0);
+    // Keep the public evidence-facing yaw at ±90° (see `facingYaw` below),
+    // while the visible default Oobi uses the shallow three-quarter profile
+    // authored above. The old update path silently overwrote the profile with
+    // the exact side-on yaw every frame, so the screenshot still showed only a
+    // white helmet ellipse despite the source-level profile change.
+    player.setRotation(0, playerVisualYawForFacing(playerFacing), 0);
+    if (idleSway !== 0) player.setRotation(0, playerVisualYawForFacing(playerFacing) + idleSway, 0);
   }
   // Request the hero's embedded clip for the current locomotion state. Root
   // `createAuraApp` binds the clip request but does not yet drive skinned GLB

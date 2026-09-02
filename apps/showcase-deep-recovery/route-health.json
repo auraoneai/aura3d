@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-30T20:00:56.863Z",
+  "generatedAt": "2026-09-02T08:07:59.951Z",
   "appId": "showcase-deep-recovery",
   "route": "/apps/showcase-deep-recovery/",
   "classification": "prototype-blocked",
@@ -175,7 +175,7 @@
   },
   "performance": {
     "schema": "aura3d.deep-recovery.performance/1.0",
-    "generatedAt": "2026-08-30T20:00:52.913Z",
+    "generatedAt": "2026-09-02T08:07:40.631Z",
     "producer": "apps/showcase-deep-recovery/scripts/write-performance-report.ts",
     "producerSourceSha256": "e209be0cfd04b530e8b606b40e958f80ea38e1ef30c013184e847b8be8f37d44",
     "routeSourceFiles": [
@@ -198,7 +198,7 @@
       "drawCalls": 240
     },
     "observed": {
-      "routeLogicCpuP95Ms": 0.005,
+      "routeLogicCpuP95Ms": 0.003,
       "deterministicStateHash": "ebc8fe50",
       "drawCalls": 236,
       "renderSize": [
@@ -210,12 +210,12 @@
   },
   "deploy": {
     "schema": "aura3d.deep-recovery.deploy/1.0",
-    "generatedAt": "2026-08-30T20:00:54.762Z",
+    "generatedAt": "2026-09-02T08:07:48.989Z",
     "producer": "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "07c95fda8e5d9c1f587425f4375a09a692a62fe5fa588c58d6df958fc01b5341",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "12dc4931f0352bd8adfe7a3b1a49925c1e072ccd3652d9d32d51d99975123b51",
+    "distTreeSha256": "2fa2d309e8f9169b80390ba14c3671ba712baedb6391efe2b87ff80ced7cbd9e",
     "sourceTreeSha256": "0fff065747f6129336bacf0fde241deb9e2bdb9a7c992db95695949803e02962",
     "checks": {
       "strictModels": {
@@ -302,47 +302,47 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/deep-recovery/playable/descent.png",
-        "sha256": "8f32c40c56f2d1b7295f0d44f1faacb4835e3134916c378ba66c7cb625785a1b"
+        "sha256": "fcdb3dcb7733c001354bdabad56bdd24cc2b83adde2476388e54139f26645876"
       },
       {
         "path": "tests/reports/deep-recovery/playable/sonar-reveal.png",
-        "sha256": "4cefd1fc00d0d4a696b824383fdbaf4276cf4e83172c5ea07f13a9f280e07245"
+        "sha256": "373ff96d26ba666c85aecdb05c862745881711e830000655c181e28020353b5d"
       },
       {
         "path": "tests/reports/deep-recovery/playable/wreck-approach.png",
-        "sha256": "4cefd1fc00d0d4a696b824383fdbaf4276cf4e83172c5ea07f13a9f280e07245"
+        "sha256": "373ff96d26ba666c85aecdb05c862745881711e830000655c181e28020353b5d"
       },
       {
         "path": "tests/reports/deep-recovery/playable/grapple-standard.png",
-        "sha256": "39818f735c0977a4113e9f41f3077657fc714f2e56d24a51f86c46e7571aa096"
+        "sha256": "cb5d3f42c9d366a98ab5026ad4feba441d886532fdc13bf0d6749d34600ab432"
       },
       {
         "path": "tests/reports/deep-recovery/playable/breach.png",
-        "sha256": "7b4633226fe94a9e8c2388b3f99c2819cc84ddafec931a410bedbf0c86068161"
+        "sha256": "f6ad8ef10a79b51a81f648ee5ee93f649d605bd0edd16c2e3402844752607df5"
       },
       {
         "path": "tests/reports/deep-recovery/playable/heavy-tow.png",
-        "sha256": "285762bd6d948625f0ef243509b1224acae8a0c0082cbdcfdb60067abed08c24"
+        "sha256": "bd647540fdf21093292546c64edb6dc6c3841faebc13bcb6f8011ed5b3bffe2a"
       },
       {
         "path": "tests/reports/deep-recovery/playable/low-oxygen.png",
-        "sha256": "a073ab79aa6221b61a1057a2c3f55c09f1a0d0b8b1a5d129dd738e0a4495458e"
+        "sha256": "9223cc6a5d4b32c9c1af84c98b608c553d3a7313b951646af4ec36cfa14447a4"
       },
       {
         "path": "tests/reports/deep-recovery/playable/surface-complete.png",
-        "sha256": "192b9ef234be39da59e5adb1c317e0b3e0dee3f9bd7460c9d47a98c4f58b18a3"
+        "sha256": "eac85c01444dde1a91a4e93d9ff05e2e225f459d1fc44d183daf489e2bac03ff"
       },
       {
         "path": "tests/reports/deep-recovery/playable/blackout.png",
-        "sha256": "594b0f0a0f50177f46d1486e19878d1411bfec8b050929db04bb539522094ae9"
+        "sha256": "6b582075052ab5c2b05509eee2d40dd3247c4846dffc423df077d80c18ec86d4"
       },
       {
         "path": "tests/reports/deep-recovery/playable/mobile-touch.png",
-        "sha256": "63b9bd3a72a00718e738f048c5a4daf84f434baff7ce46a0e1cb819b78817bee"
+        "sha256": "f58fe7897998c57ae0975d626528fb592a4faf50d4b666ef615661e6181d104d"
       },
       {
         "path": "tests/reports/deep-recovery/playable/reduced-motion.png",
-        "sha256": "6c3485c91f65512e28dcb5658064264b1a84045de2412f3458fd288dc7bee4b9"
+        "sha256": "2ef732f0fe4c708637f3ab22f11a5df6c7c6d6a8f6da33401c13e3e8e43729e8"
       }
     ],
     "browserReceipt": "tests/reports/deep-recovery/playable/browser-evidence.json",

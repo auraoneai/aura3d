@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-02T04:22:21.615Z",
+  "generatedAt": "2026-09-02T19:29:32.883Z",
   "appId": "showcase-mech-hangar",
   "route": "/apps/showcase-mech-hangar/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "0b4385e8f135fe5c791d9c927c5265b3b1efcb889a49308dbb56e0e4a83af8e7",
+  "routeSourceSha256": "71f1f51cb13df741a58ca391b406a64ef799707c01335f8beb91ca57698cb4d2",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -16,43 +16,58 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.robotcand",
-      "hash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
-      "quality": "release",
-      "role": "character"
-    },
-    {
       "typedRef": "assets.mechChassisA",
-      "hash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+      "hash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
       "quality": "release",
       "role": "character"
     },
     {
       "typedRef": "assets.mechArmsA",
-      "hash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+      "hash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
       "quality": "release",
       "role": "prop"
     },
     {
       "typedRef": "assets.mechLegsA",
-      "hash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+      "hash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
       "quality": "release",
       "role": "prop"
     },
     {
       "typedRef": "assets.mechWeaponA",
-      "hash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+      "hash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
       "quality": "release",
       "role": "weapon"
     }
   ],
   "visualPrimaryAssets": [
     {
-      "typedRef": "assets.robotcand",
-      "hash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
+      "typedRef": "assets.mechChassisA",
+      "hash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
       "quality": "release",
       "role": "character",
-      "renderedProbe": "tests/reports/showcase-release-asset-probes/robotcand.png"
+      "renderedProbe": "tests/reports/showcase-release-asset-probes/mechChassisA.png"
+    },
+    {
+      "typedRef": "assets.mechArmsA",
+      "hash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
+      "quality": "release",
+      "role": "prop",
+      "renderedProbe": "tests/reports/showcase-release-asset-probes/mechArmsA.png"
+    },
+    {
+      "typedRef": "assets.mechLegsA",
+      "hash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
+      "quality": "release",
+      "role": "prop",
+      "renderedProbe": "tests/reports/showcase-release-asset-probes/mechLegsA.png"
+    },
+    {
+      "typedRef": "assets.mechWeaponA",
+      "hash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
+      "quality": "release",
+      "role": "weapon",
+      "renderedProbe": "tests/reports/showcase-release-asset-probes/mechWeaponA.png"
     }
   ],
   "partFamily": {
@@ -138,8 +153,8 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 40,
-    "primitiveBudget": 40,
+    "sourceOccurrences": 46,
+    "primitiveBudget": 46,
     "role": "hangar/pit set dressing, invisible camera anchor, and renderer-owned hit/dust feedback only",
     "status": "no-primitive-primary-subjects"
   },
@@ -178,7 +193,7 @@
   },
   "performance": {
     "schema": "aura3d-mech-hangar-performance/1.0",
-    "generatedAt": "2026-09-02T04:22:16.320Z",
+    "generatedAt": "2026-09-02T19:29:28.204Z",
     "producer": "apps/showcase-mech-hangar/scripts/write-performance-report.ts",
     "producerSourceSha256": "ea6f8122d0ee660f3082adb6f7d5688ddcd7e7dc365116610ec348bc9f9b7867",
     "routeSourceFiles": [
@@ -190,7 +205,7 @@
       "apps/showcase-mech-hangar/src/parts-generated.ts",
       "apps/showcase-mech-hangar/src/stats.ts"
     ],
-    "routeSourceSha256": "d203e8a2113a4085c9e13ef4056623fe9e25744884e610db69037f2ad051ed6d",
+    "routeSourceSha256": "0d190ebeb5a9a60a21c7dada3318f553dda4a43041b9afabf0ded9ab24c04b78",
     "scope": "Headless fixed-step route-local combat timing plus browser-observed root createAuraApp hangar draw calls. GPU frame-time parity is not claimed.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -199,9 +214,9 @@
       "hangarDrawCalls": 300
     },
     "observed": {
-      "simulationP95Ms": 0.0028,
+      "simulationP95Ms": 0.0034,
       "matrixSelections": 16,
-      "hangarDrawCalls": 114,
+      "hangarDrawCalls": 139,
       "renderedWidth": 1665,
       "renderedHeight": 1350,
       "compatibilityAccepted": 16,
@@ -212,13 +227,13 @@
   },
   "deploy": {
     "schema": "aura3d.mech-hangar.deploy/1.0",
-    "generatedAt": "2026-09-02T04:22:19.116Z",
+    "generatedAt": "2026-09-02T19:29:30.727Z",
     "producer": "apps/showcase-mech-hangar/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "d4bb5978c7543cbbea158225544970968317e86dd39f56cf011c54cc767dda6d",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "e4f686edb058af63abbd6f54dbf93c76df57e2df4fc2f2eca672e0b58643bdd3",
-    "sourceTreeSha256": "e2262bf57ae5d3c4f3f5ddcda627f0c5b027ad1b538e5de5831eaabafe9a69ef",
+    "distTreeSha256": "50964f81057fccd2ae8308f1340309c886803eb70f745cb6f1faa0c731d35c5f",
+    "sourceTreeSha256": "9d0dcf21dba9aa6780bd0893bf9ca5713f97bbac187f0d41f630179ea6b7eaea",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",
@@ -227,97 +242,97 @@
         "assets": [
           {
             "id": "mechArmsA",
-            "hash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+            "hash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechArmsB",
-            "hash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+            "hash": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechArmsC",
-            "hash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+            "hash": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechArmsD",
-            "hash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+            "hash": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechChassisA",
-            "hash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+            "hash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
             "quality": "release",
             "role": "character"
           },
           {
             "id": "mechChassisB",
-            "hash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+            "hash": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
             "quality": "release",
             "role": "character"
           },
           {
             "id": "mechChassisC",
-            "hash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+            "hash": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
             "quality": "release",
             "role": "character"
           },
           {
             "id": "mechChassisD",
-            "hash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+            "hash": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
             "quality": "release",
             "role": "character"
           },
           {
             "id": "mechLegsA",
-            "hash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+            "hash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechLegsB",
-            "hash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+            "hash": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechLegsC",
-            "hash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+            "hash": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechLegsD",
-            "hash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+            "hash": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
             "quality": "release",
             "role": "prop"
           },
           {
             "id": "mechWeaponA",
-            "hash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+            "hash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
             "quality": "release",
             "role": "weapon"
           },
           {
             "id": "mechWeaponB",
-            "hash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+            "hash": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
             "quality": "release",
             "role": "weapon"
           },
           {
             "id": "mechWeaponC",
-            "hash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+            "hash": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
             "quality": "release",
             "role": "weapon"
           },
           {
             "id": "mechWeaponD",
-            "hash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+            "hash": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
             "quality": "release",
             "role": "weapon"
           }
@@ -370,71 +385,71 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/mech-hangar/hangar-default.png",
-        "sha256": "05586814bb3b702f684ddabf0a9fa7dd36fdeb63867f6bf67b11090acfb294f4"
+        "sha256": "54f57b142269fa2856310ce7fc7b2ce228cc2ee9cc9c2f352e6614359a53e738"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-swap.png",
-        "sha256": "e3f5d4bc1932e24f7145117b3155f0a3fe2046909c1d399884feaf7ee2fc7e20"
+        "sha256": "0b834b080706722a8dead219b1a23d50a6fcc0bd30741a2a83e11750d592371d"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-build.png",
-        "sha256": "e3f5d4bc1932e24f7145117b3155f0a3fe2046909c1d399884feaf7ee2fc7e20"
+        "sha256": "0b834b080706722a8dead219b1a23d50a6fcc0bd30741a2a83e11750d592371d"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-stat-panel.png",
-        "sha256": "21b065b387f2a5f0d32f83aee8e333dbd8cce46758431212e4307cca091e0bf4"
+        "sha256": "8c4b143701cc6e1b4a6b51057c71366f8340f30978d52da33b2f643f42dd4c0c"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-chassis.png",
-        "sha256": "3702b9a073d1dbe6f923d0f7e558b1e8005ca34b96afb80348a883b8051596ab"
+        "sha256": "2bf85374695b52dbf0b084e1827c686ea9f1d7cab5f89577ec6eeb78cb5cc78e"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-arms.png",
-        "sha256": "d32106325b449fdba737b41429f4072e8fc641fbce516f47fa3101d6bf1e1728"
+        "sha256": "2455edd7d824104790b1293a5ec4976e3b971ae019fbde26386a1041c3fc6d98"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-legs.png",
-        "sha256": "86b4f9b2d24dc28c694fe17349ca4ae6eabd20dcd095a8be8952bf4085696ef3"
+        "sha256": "17a0dbfe0c7eacbdeb42735d51c7e518a4a6569a58162d5223acba6a4324a3fd"
       },
       {
         "path": "tests/reports/mech-hangar/part-swap-weapon.png",
-        "sha256": "ed30c44dec9eb0e3bdf3d2397097f60803304936d52c9dd53ae588f6d5190687"
+        "sha256": "a993b2c48710378eb21d08924f2803cc2a221e35798fe6e6d804aa007ee68c92"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-arena-opening.png",
-        "sha256": "c4799d2f61d609957d450a4f495f4bfd544a75eb8ed57e89792bd22ee58e5772"
+        "sha256": "9490777deb677d435b7815bbd02b155308606296d91337eb3b3e160d2cf4b55d"
       },
       {
         "path": "tests/reports/mech-hangar/arena-opening.png",
-        "sha256": "acef2bbbfc30b681b8cccb00a92281404450bf8f58d7584f9599816925a3cb2b"
+        "sha256": "f2d3f77b8b2b4015b111ba3c1021481a8531876f5bbb151853f5cd38bf7a409e"
       },
       {
         "path": "tests/reports/mech-hangar/arena-hit.png",
-        "sha256": "648266c3a3c6ae3ad0c537c4523b212477008010e3ddbcd90e1b8eec36ae6103"
+        "sha256": "3984cbef9a43da996e7dfe5b20d2f6ba258bab3ea96e37a2169c63abf245c404"
       },
       {
         "path": "tests/reports/mech-hangar/arena-paused.png",
-        "sha256": "648266c3a3c6ae3ad0c537c4523b212477008010e3ddbcd90e1b8eec36ae6103"
+        "sha256": "3984cbef9a43da996e7dfe5b20d2f6ba258bab3ea96e37a2169c63abf245c404"
       },
       {
         "path": "tests/reports/mech-hangar/ko-card.png",
-        "sha256": "acef2bbbfc30b681b8cccb00a92281404450bf8f58d7584f9599816925a3cb2b"
+        "sha256": "f2d3f77b8b2b4015b111ba3c1021481a8531876f5bbb151853f5cd38bf7a409e"
       },
       {
         "path": "tests/reports/mech-hangar/hangar-mobile.png",
-        "sha256": "79b87f1d8daa9622f73b208d5ec71ef70987a405e8385d913d55fb5003f193bb"
+        "sha256": "fa03badbb3dd921c81745c93e69b9fdf725afb95e808a86c26f06a376980465e"
       },
       {
         "path": "tests/reports/mech-hangar/arena-mobile.png",
-        "sha256": "949792819c1cf38558afe52a7fcecc0708f86dc4ba6a087a9211933f510efbea"
+        "sha256": "d93497e5d9772319fd76a41bccb47ba01773f4bd7d23454ecc0dd14b0725c266"
       },
       {
         "path": "tests/reports/mech-hangar/arena-reduced-motion.png",
-        "sha256": "cb8daa6b7943688bd29e4c69ead3a01cbb0ad75934fb36d675e776b9eb9a8d66"
+        "sha256": "75060de215c676d9642234d2e7166f5ccfcc2fd50916484c6033f60872ee3b80"
       },
       {
         "path": "tests/reports/mech-hangar/part-matrix.json",
-        "sha256": "b0fc4a348870642a6f5b744c85a35ea536c6e908d0a54877354869bce1a32cbd"
+        "sha256": "07513c6df39f4819a24ef57bf8ab7717e9bb36d0d1391bb7b6240c2de8691ac4"
       }
     ],
     "browserReceipts": [
@@ -448,103 +463,121 @@
         "asset": "mechChassisA",
         "metadata": "tests/reports/showcase-release-asset-probes/mechChassisA.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechChassisA.png",
-        "assetHash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0"
+        "assetHash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82"
       },
       {
         "asset": "mechChassisB",
         "metadata": "tests/reports/showcase-release-asset-probes/mechChassisB.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechChassisB.png",
-        "assetHash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094"
+        "assetHash": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd"
       },
       {
         "asset": "mechChassisC",
         "metadata": "tests/reports/showcase-release-asset-probes/mechChassisC.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechChassisC.png",
-        "assetHash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911"
+        "assetHash": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b"
       },
       {
         "asset": "mechChassisD",
         "metadata": "tests/reports/showcase-release-asset-probes/mechChassisD.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechChassisD.png",
-        "assetHash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267"
+        "assetHash": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da"
       },
       {
         "asset": "mechArmsA",
         "metadata": "tests/reports/showcase-release-asset-probes/mechArmsA.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechArmsA.png",
-        "assetHash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08"
+        "assetHash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac"
       },
       {
         "asset": "mechArmsB",
         "metadata": "tests/reports/showcase-release-asset-probes/mechArmsB.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechArmsB.png",
-        "assetHash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644"
+        "assetHash": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63"
       },
       {
         "asset": "mechArmsC",
         "metadata": "tests/reports/showcase-release-asset-probes/mechArmsC.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechArmsC.png",
-        "assetHash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186"
+        "assetHash": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25"
       },
       {
         "asset": "mechArmsD",
         "metadata": "tests/reports/showcase-release-asset-probes/mechArmsD.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechArmsD.png",
-        "assetHash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe"
+        "assetHash": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7"
       },
       {
         "asset": "mechLegsA",
         "metadata": "tests/reports/showcase-release-asset-probes/mechLegsA.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechLegsA.png",
-        "assetHash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe"
+        "assetHash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3"
       },
       {
         "asset": "mechLegsB",
         "metadata": "tests/reports/showcase-release-asset-probes/mechLegsB.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechLegsB.png",
-        "assetHash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56"
+        "assetHash": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4"
       },
       {
         "asset": "mechLegsC",
         "metadata": "tests/reports/showcase-release-asset-probes/mechLegsC.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechLegsC.png",
-        "assetHash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb"
+        "assetHash": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f"
       },
       {
         "asset": "mechLegsD",
         "metadata": "tests/reports/showcase-release-asset-probes/mechLegsD.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechLegsD.png",
-        "assetHash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160"
+        "assetHash": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943"
       },
       {
         "asset": "mechWeaponA",
         "metadata": "tests/reports/showcase-release-asset-probes/mechWeaponA.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechWeaponA.png",
-        "assetHash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57"
+        "assetHash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5"
       },
       {
         "asset": "mechWeaponB",
         "metadata": "tests/reports/showcase-release-asset-probes/mechWeaponB.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechWeaponB.png",
-        "assetHash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9"
+        "assetHash": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f"
       },
       {
         "asset": "mechWeaponC",
         "metadata": "tests/reports/showcase-release-asset-probes/mechWeaponC.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechWeaponC.png",
-        "assetHash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436"
+        "assetHash": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc"
       },
       {
         "asset": "mechWeaponD",
         "metadata": "tests/reports/showcase-release-asset-probes/mechWeaponD.json",
         "screenshot": "tests/reports/showcase-release-asset-probes/mechWeaponD.png",
-        "assetHash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9"
+        "assetHash": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9"
       },
       {
-        "asset": "robotcand",
-        "metadata": "tests/reports/showcase-release-asset-probes/robotcand.json",
-        "screenshot": "tests/reports/showcase-release-asset-probes/robotcand.png",
-        "assetHash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516"
+        "asset": "mechChassisA",
+        "metadata": "tests/reports/showcase-release-asset-probes/mechChassisA.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/mechChassisA.png",
+        "assetHash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82"
+      },
+      {
+        "asset": "mechArmsA",
+        "metadata": "tests/reports/showcase-release-asset-probes/mechArmsA.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/mechArmsA.png",
+        "assetHash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac"
+      },
+      {
+        "asset": "mechLegsA",
+        "metadata": "tests/reports/showcase-release-asset-probes/mechLegsA.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/mechLegsA.png",
+        "assetHash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3"
+      },
+      {
+        "asset": "mechWeaponA",
+        "metadata": "tests/reports/showcase-release-asset-probes/mechWeaponA.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/mechWeaponA.png",
+        "assetHash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5"
       }
     ],
     "performance": "apps/showcase-mech-hangar/performance-report.json",

@@ -340,11 +340,12 @@ function syncWeaponViewmodel(): void {
   // center sight lane; keep the muzzle clear of the reticle on both desktop
   // and touch layouts without touching the hitscan origin.
   const verticalOffset = compact ? 0.16 : 0.20;
-  // Keep the typed weapon silhouette present in the desktop review frame. The
+  // Keep the typed weapon silhouette legible in the review frame.  The
   // previous scale read as a thin diagonal accent beside the combat lane;
-  // this remains a viewmodel-only presentation change and does not affect
-  // hitscan origin or gameplay reach.
-  const viewmodelScale = rifleScale * (compact ? 0.28 : 0.32);
+  // this modest lift gives the authored rifle a clear barrel/receiver read
+  // while remaining below/right of the reticle.  It is a viewmodel-only
+  // presentation change and does not affect hitscan origin or gameplay reach.
+  const viewmodelScale = rifleScale * (compact ? 0.30 : 0.34);
   rifleNode
     .setPosition(
       eye[0] + forward[0] * (forwardOffset - 0.05 * recoil) + right[0] * rightOffset,

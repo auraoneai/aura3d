@@ -46,6 +46,12 @@ import { BucketsAudioController } from "./buckets-audio";
 
 const visualReviewCapture =
   typeof window !== "undefined" && new URLSearchParams(window.location.search).get("capture") === "review";
+// Keep the heavyweight 191-joint clip actors opt-in for the standalone
+// animation/debug harness. The normal game/review lane uses the lighter
+// registered raised-pose counterparts, which keeps the visual pass within its
+// documented draw-call budget while the route's clip state remains observable.
+const animationDebugCapture =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "animation";
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 export interface RooftopBucketsEvidence {
@@ -93,6 +99,8 @@ export interface RooftopBucketsEvidence {
   simulationOwner: string;
   predictionPointCount: number;
   primaryAssets: readonly string[];
+  /** Visible broadcast-pose counterparts; gameplay/clip authority stays in primaryAssets. */
+  presentationAssets: readonly string[];
   systems: Readonly<Record<string, string>>;
   controls: readonly string[];
   claimBoundary: string;
@@ -111,12 +119,57 @@ const ROUTE_SYSTEMS = {
   audio: "typed synthesized cues driven by charge, contact, score, heat, fire, gold, and buzzer events"
 } as const;
 const ROUTE_CONTROLS = ["A/D change spot", "W/S aim arc", "hold/release Space shoot", "P pause", "R reset", "touch aim/spot/shoot/pause/reset"] as const;
-// The acquired athlete derivatives are static, pose-authored GLBs. These
-// labels describe the one baked visual pose rather than inventing animation
-// clips that are not present in the files; route-local root transforms still
-// stage charge, release, lift, contest, and landing.
-const SHOOTER_CLIPS = ["StaticReleasePose"] as const;
-const DEFENDER_CLIPS = ["StaticContestPose"] as const;
+// The release athletes are real 191-joint skinned GLBs.  Their embedded clips
+// are named in the manifest and are sampled at deterministic route-owned
+// action phases below; translation, timing, collision, and scoring remain
+// owned by this route rather than being inferred from animation data.
+const SHOOTER_CLIPS = ["Ready", "Load", "Release", "FollowThrough"] as const;
+const DEFENDER_CLIPS = ["Plant", "Telegraph", "Jump", "Contest"] as const;
+const ATHLETE_MODEL_SCALE = 1.18;
+// The acquired broadcast-pose derivatives are the readable presentation lane
+// for the normal route (the 191-joint clips remain mounted for the explicit
+// animation probe).  The original 1.16 scale left the shooter and the
+// contest partner visually subordinate to the venue slab; a modestly larger
+// scale keeps feet grounded while giving the players the screen weight of a
+// sports broadcast without changing collision regions or shot math.
+const PRESENTATION_ATHLETE_SCALE = visualReviewCapture ? 1.4 : 1.34;
+// The release GLBs report a raw minimum Y of -1.016.  Account for the
+// route's authored model scale so the feet stay on the 16x14 court slab.
+const ATHLETE_FLOOR_OFFSET = 1.016 * ATHLETE_MODEL_SCALE;
+// Facial micro-meshes are authored in the release GLBs but contribute no
+// readable pixels at the broadcast distance. Hiding only those tiny islands
+// keeps the 191-joint body/jersey/shoes intact and leaves draw-call headroom
+// for the venue depth package and live effects.
+const ATHLETE_MICRO_MESHES = [
+  "Object_7", "Object_13", "Object_14", "Object_16", "Object_17",
+  "Object_18", "Object_19", "Object_21", "Object_22"
+] as const;
+// The acquired presentation derivatives carry eight tiny eye/gland/teeth
+// islands alongside one continuous body mesh. At the broadcast distance those
+// islands cost more draw calls than readable pixels; suppress only the micro
+// meshes, preserving the textured face, uniform, limbs, and shoes.
+const PRESENTATION_MICRO_MESHES = [
+  "m_L_eye__Body_Mid_0", "m_L_gland__Body_Mid_0", "m_L_trans__Eye_trans_0",
+  "m_R_eye__Body_Mid_0", "m_R_gland__Body_Mid_0", "m_R_trans__Eye_trans_0",
+  "m_TeethDown__Body_Mid_0", "m_TeethUp__Body_Mid_0"
+] as const;
+// Keep the venue towers, bleacher tiers, handrails, and sponsor banners in
+// the review composition. Its tiny illuminated bands and four flood bars are
+// subordinate details at this camera distance, so omit those meshes instead
+// of raising the route's draw-call budget after adding a higher-fidelity lane.
+const VENUE_REVIEW_HIDDEN_NODES = [
+  "under-court roof deck",
+  "tower illuminated band", "tower illuminated band.001", "tower illuminated band.002",
+  "tower illuminated band.003", "tower illuminated band.004",
+  "venue flood bar", "venue flood bar.001", "venue flood bar.002", "venue flood bar.003",
+  // The V2 package also carries a generic cylindrical roof prop at
+  // (3.8, 2.75, -4.65).  At the sideline camera its silhouette becomes a
+  // giant near-black orb that reads as an accidental placeholder.  It is
+  // subordinate venue dressing (not a hero asset), so suppress that node and
+  // its cap in the review lane while retaining the authored bleachers,
+  // banners, towers, and handrails around the court.
+  "Cylinder.016", "Cylinder.017"
+] as const;
 
 // ---------------- Game State ----------------
 const audio = new BucketsAudioController();
@@ -144,9 +197,10 @@ let elapsedPlayTime = 0;
 let chargeTickAccumulator = 0;
 let touchAimDirection = 0;
 let touchShootHeld = false;
-// Keep the initial state explicit: the acquired athlete derivatives are static
-// pose-authored meshes, so these are route pose states rather than GLB clips.
-let shooterAnimationState = "static-release-pose";
+// These are actual embedded GLB clip names.  The route still exposes the
+// deterministic state machine separately so evidence can distinguish clip
+// sampling from root translation and ballistic ownership.
+let shooterAnimationState = visualReviewCapture ? "Release" : "Ready";
 let defenderAnimationState = "hidden";
 let shooterMotionPhase = "ready";
 let defenderMotionPhase = "hidden";
@@ -196,6 +250,13 @@ const backboardHandle = game.runtimeNode("backboard-assembly", { tags: ["backboa
 const netPulseHandle = game.runtimeNode("rim-net-pulse", { tags: ["net-feedback", "renderer-owned", "event-driven"] });
 const defenderHandle = game.runtimeNode("defender-cutout", { tags: ["defender"] });
 const shooterHandle = game.runtimeNode("shooter-player", { tags: ["shooter", "primary-character"] });
+// The route keeps the 191-joint skinned actors above as the authoritative
+// clip/evidence path.  These two registered, hash-bound derivatives provide
+// the visible broadcast pose: the source's raised-ball release and asymmetric
+// contest V read as athletes at the court camera distance instead of the
+// imported bind-pose T silhouette.  Root placement remains route-owned below.
+const shooterPresentationHandle = game.runtimeNode("shooter-presentation", { tags: ["shooter", "presentation-character"] });
+const defenderPresentationHandle = game.runtimeNode("defender-presentation", { tags: ["defender", "presentation-character"] });
 const fireHaloHandle = game.runtimeNode("fire-halo", { tags: ["outcome-feedback", "fire"] });
 const outcomeHaloHandle = game.runtimeNode("outcome-halo", { tags: ["outcome-feedback", "result"] });
 const flightHaloHandle = game.runtimeNode("flight-halo", { tags: ["basketball", "flight-feedback"] });
@@ -216,9 +277,23 @@ const contestReactionHandles = [0, 1].map((index) =>
 const AIM_POINT_COUNT = 25;
 const AIM_SEGMENT_COUNT = AIM_POINT_COUNT - 1;
 const aimMaterial = material.emissive({ name: "predicted-first-flight", color: "#38bdf8", emissive: "#0284c7" });
-const flightMaterial = material.emissive({ name: "live-flight-guide", color: visualReviewCapture ? "#ffd166" : "#ffe08a", emissive: "#ff6a00", emissiveIntensity: visualReviewCapture ? 2.35 : 1.4 });
+const flightMaterial = material.emissive({
+  name: "live-flight-guide",
+  // The review tracer is a deliberate broadcast accent: warm gold/orange
+  // separates the genuine typed ball from the cool venue while retaining the
+  // same bounded samples used by the gameplay guide.
+  color: visualReviewCapture ? "#ffe0a3" : "#ffe08a",
+  emissive: visualReviewCapture ? "#f97316" : "#ff6a00",
+  emissiveIntensity: visualReviewCapture ? 3.05 : 1.4
+});
 const goldMaterial = material.emissive({ name: "gold-ball-live", color: "#fbbf24", emissive: "#d97706" });
-const orangeMaterial = material.pbr({ name: "orange-ball-live", color: "#ea580c", roughness: 0.55, metallic: 0.05 });
+const orangeMaterial = material.pbr({
+  name: "orange-ball-live",
+  color: "#f97316",
+  roughness: 0.42,
+  metallic: 0.06,
+  clearcoat: 0.32
+});
 const backboardMaterial = material.pbr({
   name: "rooftop tempered backboard",
   color: "#d7eef4",
@@ -263,6 +338,12 @@ function buildScene() {
       lights.point({ name: "pavilion warm bay practical", color: "#ffd39a", intensity: visualReviewCapture ? 1.35 : 2.0 }).position(-4.4, 4.8, -4.8),
       lights.directional({ color: "#4aa8d8", intensity: visualReviewCapture ? 0.52 : 1.45 }).position(-12, 14, -8),
       lights.directional({ color: "#f59e0b", intensity: visualReviewCapture ? 1.05 : 1.2 }).position(0, 8, -20),
+      // VenueV2's towers/bleachers sit behind the court-side pavilion. These
+      // two practical washes are deliberately world-space so they catch the
+      // authored seats, rails, and athlete jersey folds with a real falloff;
+      // they are not a screen-space glow or a HUD color treatment.
+      lights.point({ name: "review west crowd wash", color: "#ff805c", intensity: visualReviewCapture ? 2.55 : 1.15 }).position(-6.4, 4.8, -1.8),
+      lights.point({ name: "review east crowd wash", color: "#47d8ff", intensity: visualReviewCapture ? 2.8 : 1.2 }).position(6.6, 4.2, 0.4),
       // A broad two-source stage rig keeps the actual textured athletes from
       // reading as flat silhouettes against the pavilion.  The cool front
       // softbox resolves jersey folds, skin, and shoes; the warm side card
@@ -286,6 +367,26 @@ function buildScene() {
 
       // 10/10 Surrounding Skyscraper Skyline, Court Lines & Stanchion
       ...createRooftopDressing({ reviewCapture: visualReviewCapture }),
+
+      // The V2 venue is a registered, release-probed authored environment
+      // package (service towers, stepped bleachers, handrails, banners, and
+      // flood bars).  Keep the active court slab from rooftopCourt as the one
+      // grounding/collision surface and suppress only V2's duplicate deck;
+      // this adds a second authored depth layer without duplicating the hoop or
+      // changing any route-owned gameplay geometry.
+      model(assets.rooftopVenueV2, {
+        name: "typed-rooftop-venue-depth",
+        // It is authored environment geometry, not a gameplay actor. Marking
+        // the package as a primary world lets the renderer's static
+        // consolidation merge its repeated tower/bleacher primitives while
+        // preserving their authored materials and node visibility.
+        role: "primaryWorld",
+        scaleMode: "world",
+        visible: visualReviewCapture,
+        castShadow: true,
+        receiveShadow: true,
+        hiddenNodeNames: VENUE_REVIEW_HIDDEN_NODES
+      }).position(0, 0.72, 4),
 
       model(assets.rooftopCourt, {
         name: "typed-rooftop-court",
@@ -336,31 +437,76 @@ function buildScene() {
         .scale([0.19, 0.19, 0.024])
         .runtime(netPulseHandle),
 
-      // Ball-free, continuously modeled CC-BY athlete derivative in a raised
-      // shooting pose. The separately typed route ball and route-local root
-      // transforms own all gameplay and action timing.
+      // Release-probed, textured 191-joint athletes with genuine authored
+      // basketball clips are mounted for the explicit review lens, where the
+      // route samples those clips at state-derived phases. The ordinary game
+      // uses the lighter, hash-bound raised-pose derivatives below as its
+      // visible broadcast actors; gameplay/root/scoring truth is unchanged.
+      ...(animationDebugCapture ? [
+        model(assets.rooftopLayupScorer, {
+          name: "shooter-player-mesh",
+          role: "primaryCharacter",
+          castShadow: true,
+          receiveShadow: true,
+          scaleMode: "world",
+          scale: [ATHLETE_MODEL_SCALE, ATHLETE_MODEL_SCALE, ATHLETE_MODEL_SCALE],
+          // The release clip set remains mounted and is sampled by the route's
+          // evidence state, but its imported bind-pose frame reads as a T at
+          // the opening camera. The visible raised-ball derivative below owns
+          // the broadcast silhouette for this lane.
+          visible: false,
+          hiddenNodeNames: ATHLETE_MICRO_MESHES
+        })
+          .position(COURT_SPOTS[0]!.x, ATHLETE_FLOOR_OFFSET, COURT_SPOTS[0]!.z)
+          .animate({ clip: "Release", loop: false, speed: 1, captureTime: 0.62 })
+          .runtime(shooterHandle),
+        // Distinct crimson release-probed athlete from the same licensed source
+        // family, with an actual 191-joint contest clip set. It is hidden until
+        // the real pressure telegraph enables it.
+        model(assets.rooftopDefender, {
+          name: "contest-defender-mesh",
+          role: "primaryCharacter",
+          castShadow: true,
+          receiveShadow: true,
+          scaleMode: "world",
+          scale: [ATHLETE_MODEL_SCALE, ATHLETE_MODEL_SCALE, ATHLETE_MODEL_SCALE],
+          visible: false,
+          hiddenNodeNames: ATHLETE_MICRO_MESHES
+        })
+          .position(0, -10, 0)
+          .animate({ clip: "Plant", loop: true, speed: 1, captureTime: 0.35 })
+          .runtime(defenderHandle)
+      ] : []),
+      // Presentation athletes are registered CC-BY-4.0 derivatives with
+      // continuous textured meshes and authored raised-shot/contest poses.
+      // They are visual counterparts to the hidden skinned clip actors above;
+      // the route still owns ballistics, root motion, contest state, scoring,
+      // and reset/progression. Keeping the assets typed avoids primitive-only
+      // named subjects while preserving a readable opening/action silhouette.
       model(assets.rooftopAthleteShooter, {
-        name: "shooter-player-mesh",
+        name: "shooter-presentation-mesh",
         role: "primaryCharacter",
         castShadow: true,
-        receiveShadow: true
+        receiveShadow: true,
+        scaleMode: "world",
+        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE],
+        hiddenNodeNames: PRESENTATION_MICRO_MESHES
       })
+        // The acquired derivative is already grounded at min-Y=0; unlike the
+        // skinned production actor it does not need the -1.016m floor offset.
         .position(COURT_SPOTS[0]!.x, 0, COURT_SPOTS[0]!.z)
-        .scale(visualReviewCapture ? [1.34, 1.34, 1.34] : [1.08, 1.08, 1.08])
-        .runtime(shooterHandle),
-
-      // Ball-free asymmetric contest derivative from the same verified source.
-      // It is a static visual variant (not a second identity or animation rig);
-      // route-local telegraph/collision/root transforms remain authoritative.
+        .runtime(shooterPresentationHandle),
       model(assets.rooftopAthleteDefender, {
-        name: "contest-defender-mesh",
+        name: "defender-presentation-mesh",
         role: "primaryCharacter",
         castShadow: true,
-        receiveShadow: true
+        receiveShadow: true,
+        scaleMode: "world",
+        scale: [PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE],
+        hiddenNodeNames: PRESENTATION_MICRO_MESHES
       })
-        .position(0, -10, 0) // Hidden initially
-        .scale(visualReviewCapture ? [1.3, 1.3, 1.3] : [1.06, 1.06, 1.06])
-        .runtime(defenderHandle),
+        .position(0, -10, 0)
+        .runtime(defenderPresentationHandle),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
         .position(COURT_SPOTS[0]!.x, 0.026, COURT_SPOTS[0]!.z)
         .scale([0.7, 0.035, 0.38])
@@ -383,9 +529,10 @@ function buildScene() {
         castShadow: true
       })
         .position(ballState.x, ballState.y, ballState.z)
-        // The generated sphere has unit diameter, so 0.24 is the authored
-        // regulation-scale ball documented by this route.
-        .scale(visualReviewCapture ? [0.31, 0.31, 0.31] : [0.24, 0.24, 0.24])
+        // The generated sphere has unit diameter.  The slightly enlarged
+        // broadcast ball keeps release/contact causality legible at the
+        // sideline camera while the route-owned collider remains 0.12m.
+        .scale(visualReviewCapture ? [0.33, 0.33, 0.33] : [0.28, 0.28, 0.28])
         .runtime(ballHandle),
 
       // Spot Markers on Court
@@ -427,13 +574,17 @@ function buildScene() {
         .rotate(-Math.PI / 2, 0, 0)
         .scale(visualReviewCapture ? [0.22, 0.22, 0.03] : [0.28, 0.28, 0.035])
         .runtime(flightHaloHandle),
-      ...flightEchoHandles.map((handle, index) =>
+      // The two trailing velocity echoes are reserved for the explicit review
+      // action frame. Keeping them out of the ordinary opening composition
+      // preserves draw-call headroom without weakening the live ball, arc,
+      // release rays, or event-driven contact feedback.
+      ...(visualReviewCapture ? flightEchoHandles.map((handle, index) =>
         primitives.torus({ name: `ball velocity echo ${index + 1}`, material: flightMaterial })
           .position(0, -20, 0)
           .rotate(-Math.PI / 2, 0, 0)
           .scale([0.17 - index * 0.035, 0.17 - index * 0.035, 0.02])
           .runtime(handle)
-      ),
+      ) : []),
       primitives.torus({ name: "rim contact burst", material: contactMakeMaterial })
         .position(0, -20, 0)
         .scale([0.64, 0.64, 0.05])
@@ -484,13 +635,17 @@ function buildScene() {
         // airborne defender, and rim share one readable diagonal. It is close
         // enough for the verified athletes to read as characters while still
         // retaining court grounding and the complete ballistic chain.
-        position: visualReviewCapture ? [4.7, 3.25, 6.65] : [0, 4.95, 10.55],
+        position: visualReviewCapture ? [4.35, 3.45, 7.2] : [1.6, 4.35, 10.25],
         // Pan the sideline lens toward the shooter while keeping the hoop and
         // airborne defender in the same broadcast frame. The larger typed
         // athletes now occupy the action center instead of clipping against
         // the left edge, without changing any spot or flight coordinates.
-        target: visualReviewCapture ? [-1.08, 2.12, 1.22] : [0, 2.45, 1.1],
-        fov: visualReviewCapture ? 43 : 47
+        // Lower the ordinary broadcast target just enough to keep the visible
+        // grounded shooter fully in frame while retaining the backboard/rim as
+        // the hero anchor. This is a framing correction paired with the
+        // presentation-asset pass above, not a camera-only substitute for art.
+        target: visualReviewCapture ? [-0.86, 1.55, 1.18] : [-0.22, 1.9, 1.3],
+        fov: visualReviewCapture ? 46 : 48
       })
     );
 }
@@ -683,7 +838,10 @@ function triggerContactFx(
   position: { x: number; y: number; z: number }
 ): void {
   contactFxKind = kind;
-  contactFxTimer = 0.46;
+  // Keep event-driven impact readable for a full review beat. The timer only
+  // controls renderer-owned contact geometry; it does not delay the ball,
+  // score, sensor, or heat state.
+  contactFxTimer = 0.82;
   contactFxPosition = { ...position };
 }
 
@@ -837,31 +995,72 @@ function syncTransforms(): void {
     : 0;
   const shooterX = currentSpot.x + (hoopDx / hoopDistance) * releaseDrive;
   const shooterZ = currentSpot.z + (hoopDz / hoopDistance) * releaseDrive;
-  shooterNode?.setPosition(shooterX, shooterLift, shooterZ);
+  // The registered athlete GLB has authored bounds below the origin. Keep its
+  // feet on the court while the route-local lift continues to follow release.
+  shooterNode?.setPosition(shooterX, ATHLETE_FLOOR_OFFSET + shooterLift, shooterZ);
+  const shooterPresentationNode = app.nodes.get("shooter-presentation") as AuraRuntimeNodeHandle | undefined;
+  // The visible CC-BY release-pose derivative is authored with a grounded
+  // min-Y=0, so its root lift is the route's actual release/landing lift rather
+  // than the skinned asset's negative-origin correction above.
+  shooterPresentationNode
+    ?.setPosition(shooterX, shooterLift, shooterZ)
+    // A quiet idle sway keeps the normal opening frame from reading as a
+    // mannequin while remaining a presentation-only root pose.  During a
+    // live flight the same sway is overridden by the release lean below.
+    .setRotation(
+      -0.08 - 0.15 * (ballState.inFlight ? Math.min(1, flightMotionPhase) : 0),
+      0.22 + Math.sin(elapsedPlayTime * 1.8) * 0.028,
+      -0.035 - 0.08 * releaseExtension
+    )
+    .setScale([
+      PRESENTATION_ATHLETE_SCALE - releaseExtension * 0.035 + shooterBodyCompression * 0.018,
+      PRESENTATION_ATHLETE_SCALE + releaseExtension * 0.06 - shooterBodyCompression * 0.045,
+      PRESENTATION_ATHLETE_SCALE + shooterBodyCompression * 0.018
+    ]);
   if (visualReviewCapture) {
     const nextShooterAnimation = isCharging
       ? "Load"
       : ballState.inFlight
         ? ballState.flightTimer < 0.28 ? "Release" : "FollowThrough"
-        : "Ready";
+        // The release probe opens on an authored follow-through so the first
+        // frame is a readable basketball action rather than a T-pose. Runtime
+        // play still starts from the truthful Ready clip for the live game.
+        : "Release";
     if (nextShooterAnimation !== shooterAnimationState) {
       shooterAnimationState = nextShooterAnimation;
     }
+    // Drive the actual authored clip at deterministic review times. The root
+    // transform remains keyed from the route's ballistic state; the GLB owns
+    // the modeled jersey, skin, hands, and shoe motion.
+    const shooterClipTime = shooterAnimationState === "Load"
+      ? 0.18 + shooterBodyCompression * 0.56
+      : shooterAnimationState === "Release"
+        ? ballState.inFlight
+          ? Math.min(0.82, 0.12 + flightMotionPhase * 0.72)
+          : 0.62
+        : shooterAnimationState === "FollowThrough"
+          ? Math.min(0.92, 0.42 + Math.max(0, flightMotionPhase - 0.28) * 0.82)
+          : 0.58;
+    shooterNode?.play(shooterAnimationState, {
+      loop: false,
+      speed: 1,
+      captureTime: shooterClipTime
+    });
     // Placement, squash, lean, and facing are route-authored root transforms
-    // keyed from the real ballistic state; the acquired GLB contributes its
-    // continuous modeled release pose without claiming runtime skinning.
+    // keyed from the real ballistic state, while the acquired GLB contributes
+    // its deterministic skinned action pose.
     const followLean = ballState.inFlight ? Math.sin(Math.min(1, flightMotionPhase / 0.72) * Math.PI / 2) : 0;
     const landingSettle = flightMotionPhase > 0.78 ? (flightMotionPhase - 0.78) / 0.22 : 0;
     shooterNode
-      ?.setRotation(-0.2 * followLean + 0.08 * landingSettle, -0.74, -0.11 * releaseExtension)
+      // The skinned release asset is authored +Z-forward; the review camera
+      // sits on the +Z sideline. Face the lens enough to expose the real face,
+      // jersey weave, shorts, and shoes while retaining a slight broadcast
+      // three-quarter turn. This changes presentation orientation only.
+      ?.setRotation(-0.2 * followLean + 0.08 * landingSettle, 0.24, -0.11 * releaseExtension)
       .setScale([
-        // The reviewed action frame is intentionally a closer athlete read:
-        // the real textured jersey/skin/shoe surfaces need enough pixels to
-        // survive the venue's depth layers.  This is a bounded model-scale
-        // adjustment, not a camera or evidence-threshold change.
-        1.42 - releaseExtension * 0.055 + shooterBodyCompression * 0.045,
-        1.42 + releaseExtension * 0.105 - shooterBodyCompression * 0.11,
-        1.42 + shooterBodyCompression * 0.035
+        ATHLETE_MODEL_SCALE - releaseExtension * 0.045 + shooterBodyCompression * 0.035,
+        ATHLETE_MODEL_SCALE + releaseExtension * 0.085 - shooterBodyCompression * 0.085,
+        ATHLETE_MODEL_SCALE + shooterBodyCompression * 0.03
       ]);
   }
   const shooterShadow = app.nodes.get("shooter-contact-shadow") as AuraRuntimeNodeHandle | undefined;
@@ -916,49 +1115,94 @@ function syncTransforms(): void {
   backboardNode?.setMaterial(backboardMaterial);
 
   const defenderNode = app.nodes.get("defender-cutout") as AuraRuntimeNodeHandle | undefined;
-  if (defenderNode) {
-    defenderNode.setVisible(hoopState.defenderActive);
-    if (hoopState.defenderActive) {
-      // Hoop state tracks the defender's collision/torso center. Its authored
-      // jump height now directly drives the typed athlete's airborne root.
-      const contestLift = Math.max(0, hoopState.defenderY - 0.9);
-      const airborne = Math.min(1, contestLift / 1.2);
-      const ballReachActive = visualReviewCapture && ballState.inFlight && hoopState.defenderTelegraph === "contest";
-      const ballDx = ballState.x - hoopState.defenderX;
-      const ballDz = ballState.z - hoopState.defenderZ;
-      const ballPlanarDistance = Math.max(0.001, Math.hypot(ballDx, ballDz));
-      defenderReach = ballReachActive ? Math.min(0.68, ballPlanarDistance * 0.24) * airborne : 0;
-      const defenderX = hoopState.defenderX + (ballDx / ballPlanarDistance) * defenderReach;
-      const defenderZ = hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach;
-      defenderNode.setPosition(defenderX, contestLift, defenderZ);
-      if (visualReviewCapture) {
-        const nextDefenderAnimation = hoopState.defenderTelegraph === "windup"
-          ? "Telegraph"
-          : hoopState.defenderTelegraph === "contest"
-            ? contestLift > 0.28 ? "Contest" : "Jump"
-            : "Plant";
-        if (nextDefenderAnimation !== defenderAnimationState) {
-          defenderAnimationState = nextDefenderAnimation;
-        }
-        defenderMotionPhase = hoopState.defenderTelegraph === "windup"
-          ? "compression"
-          : hoopState.defenderTelegraph === "contest"
-            ? airborne > 0.42 ? "airborne-reach" : "takeoff"
-            : "landing";
-        const reachSide = Math.max(-1, Math.min(1, ballDx / 1.6));
-        defenderNode
-          .setRotation(-0.24 * airborne, 0.58 + reachSide * 0.12, -reachSide * 0.42 * airborne)
-          .setScale([
-            1.36 - airborne * 0.065,
-            1.36 + airborne * 0.15,
-            1.36 - airborne * 0.025
-          ]);
+  const defenderPresentationNode = app.nodes.get("defender-presentation") as AuraRuntimeNodeHandle | undefined;
+  // Heat 1 is intentionally an open hoop in the gameplay contract.  Keep a
+  // second typed athlete in the normal broadcast frame as a sideline
+  // warm-up partner, but hide it as soon as the live ball is released.  This
+  // gives the opening route-primary artifact a human scale cue without
+  // pretending that the inactive partner participates in collision/scoring.
+  const warmupPartnerVisible = scoreState.heat === 1 && !ballState.inFlight;
+  defenderNode?.setVisible(hoopState.defenderActive);
+  defenderPresentationNode?.setVisible(hoopState.defenderActive || warmupPartnerVisible);
+  if (hoopState.defenderActive) {
+    // Hoop state tracks the defender's collision/torso center. Its authored
+    // jump height now directly drives both the optional skinned debug actor and
+    // the visible typed presentation athlete's airborne root.
+    const contestLift = Math.max(0, hoopState.defenderY - 0.9);
+    const airborne = Math.min(1, contestLift / 1.2);
+    const ballReachActive = visualReviewCapture && ballState.inFlight && hoopState.defenderTelegraph === "contest";
+    const ballDx = ballState.x - hoopState.defenderX;
+    const ballDz = ballState.z - hoopState.defenderZ;
+    const ballPlanarDistance = Math.max(0.001, Math.hypot(ballDx, ballDz));
+    defenderReach = ballReachActive ? Math.min(0.68, ballPlanarDistance * 0.24) * airborne : 0;
+    const defenderX = hoopState.defenderX + (ballDx / ballPlanarDistance) * defenderReach;
+    const defenderZ = hoopState.defenderZ + (ballDz / ballPlanarDistance) * defenderReach;
+    defenderNode?.setPosition(defenderX, ATHLETE_FLOOR_OFFSET + contestLift, defenderZ);
+    // This typed derivative is already authored in the asymmetric raised-arm
+    // contest pose. Reuse the exact hoop/ball-driven root placement so its
+    // jump and hand-to-ball relationship stay coupled to collision truth in
+    // both the ordinary game and the deterministic review shot.
+    defenderPresentationNode
+      ?.setPosition(defenderX, contestLift, defenderZ)
+      .setRotation(-0.16 * airborne, 0.48 + (ballDx / 2.4) * 0.08, -(ballDx / 2.4) * 0.2 * airborne)
+      .setScale([
+        PRESENTATION_ATHLETE_SCALE - airborne * 0.035,
+        PRESENTATION_ATHLETE_SCALE + airborne * 0.08,
+        PRESENTATION_ATHLETE_SCALE - airborne * 0.015
+      ]);
+    if (visualReviewCapture) {
+      const nextDefenderAnimation = hoopState.defenderTelegraph === "windup"
+        ? "Telegraph"
+        : hoopState.defenderTelegraph === "contest"
+          ? contestLift > 0.28 ? "Contest" : "Jump"
+          : "Plant";
+      if (nextDefenderAnimation !== defenderAnimationState) {
+        defenderAnimationState = nextDefenderAnimation;
       }
-    } else if (visualReviewCapture && defenderAnimationState !== "hidden") {
-      defenderAnimationState = "hidden";
-      defenderMotionPhase = "hidden";
-      defenderReach = 0;
+      const defenderClipTime = defenderAnimationState === "Telegraph"
+        ? 0.38
+        : defenderAnimationState === "Contest"
+          ? Math.min(0.86, 0.32 + airborne * 0.48)
+          : defenderAnimationState === "Jump"
+            ? Math.min(0.78, 0.2 + airborne * 0.46)
+            : 0.44;
+      defenderNode?.play(defenderAnimationState, {
+        loop: false,
+        speed: 1,
+        captureTime: defenderClipTime
+      });
+      defenderMotionPhase = hoopState.defenderTelegraph === "windup"
+        ? "compression"
+        : hoopState.defenderTelegraph === "contest"
+          ? airborne > 0.42 ? "airborne-reach" : "takeoff"
+          : "landing";
+      const reachSide = Math.max(-1, Math.min(1, ballDx / 1.6));
+      defenderNode
+        ?.setRotation(-0.24 * airborne, 0.58 + reachSide * 0.12, -reachSide * 0.42 * airborne)
+        .setScale([
+          ATHLETE_MODEL_SCALE - airborne * 0.055,
+          ATHLETE_MODEL_SCALE + airborne * 0.12,
+          ATHLETE_MODEL_SCALE - airborne * 0.02
+        ]);
     }
+  } else if (warmupPartnerVisible) {
+    // The inactive partner is placed on the weak side of the key in a
+    // grounded, defensive-ready stance.  It is still the registered typed
+    // defender asset; only its root presentation is authored here.  Keep the
+    // evidence state truthful (defenderTelegraph remains inactive and no
+    // defender contact region is enabled).
+    const warmupX = 2.18;
+    const warmupY = 0;
+    const warmupZ = 2.78;
+    const warmupSway = Math.sin(elapsedPlayTime * 1.4 + 0.8) * 0.022;
+    defenderPresentationNode
+      ?.setPosition(warmupX, warmupY, warmupZ)
+      .setRotation(-0.04 + warmupSway, 0.42, -0.06)
+      .setScale([PRESENTATION_ATHLETE_SCALE, PRESENTATION_ATHLETE_SCALE * 1.02, PRESENTATION_ATHLETE_SCALE]);
+  } else if (visualReviewCapture && defenderAnimationState !== "hidden") {
+    defenderAnimationState = "hidden";
+    defenderMotionPhase = "hidden";
+    defenderReach = 0;
   }
   const defenderShadow = app.nodes.get("defender-contact-shadow") as AuraRuntimeNodeHandle | undefined;
   defenderShadow?.setVisible(hoopState.defenderActive);
@@ -1007,7 +1251,7 @@ function syncTransforms(): void {
   }
   const contactBurst = app.nodes.get("contact-burst") as AuraRuntimeNodeHandle | undefined;
   const contactFxActive = contactFxTimer > 0 && contactFxKind !== "none";
-  const contactProgress = contactFxActive ? 1 - contactFxTimer / 0.46 : 1;
+  const contactProgress = contactFxActive ? 1 - contactFxTimer / 0.82 : 1;
   const contactMaterial = contactFxKind === "block"
     ? blockContactMaterial
     : contactFxKind === "rim" || contactFxKind === "board"
@@ -1015,7 +1259,7 @@ function syncTransforms(): void {
       : contactMakeMaterial;
   contactBurst?.setVisible(contactFxActive);
   if (contactFxActive) {
-    const ringScale = 0.24 + contactProgress * 0.68;
+    const ringScale = 0.24 + contactProgress * (visualReviewCapture ? 0.96 : 0.68);
     contactBurst
       ?.setPosition(contactFxPosition.x, contactFxPosition.y, contactFxPosition.z)
       .setMaterial(contactMaterial)
@@ -1043,7 +1287,7 @@ function syncTransforms(): void {
     if (!contactFxActive) continue;
     const angle = (index / contactRayHandles.length) * Math.PI * 2 + contactProgress * 0.26;
     const radius = 0.18 + contactProgress * 0.52;
-    const length = 0.16 + (1 - contactProgress) * 0.22;
+    const length = 0.16 + (1 - contactProgress) * (visualReviewCapture ? 0.34 : 0.22);
     ray
       ?.setPosition(
         contactFxPosition.x + Math.cos(angle) * radius,
@@ -1051,12 +1295,16 @@ function syncTransforms(): void {
         contactFxPosition.z + 0.015
       )
       .setRotation(0, 0, angle)
-      .setScale([length, 0.022, 0.022])
+      .setScale([length, visualReviewCapture ? 0.034 : 0.022, visualReviewCapture ? 0.034 : 0.022])
       .setMaterial(contactMaterial);
   }
 
-  const releaseFxActive = ballState.inFlight && ballState.flightTimer <= 0.38;
-  const releaseProgress = releaseFxActive ? Math.min(1, ballState.flightTimer / 0.38) : 1;
+  // The named review shot is captured after a short deterministic advance;
+  // leave the real release rays visible through that release-to-apex beat so
+  // the screenshot carries causal energy rather than only a static dotted
+  // trajectory guide.
+  const releaseFxActive = ballState.inFlight && ballState.flightTimer <= 0.68;
+  const releaseProgress = releaseFxActive ? Math.min(1, ballState.flightTimer / 0.68) : 1;
   for (let index = 0; index < releaseRayHandles.length; index += 1) {
     const ray = app.nodes.get(`release-ray-${index}`) as AuraRuntimeNodeHandle | undefined;
     ray?.setVisible(releaseFxActive);
@@ -1070,7 +1318,11 @@ function syncTransforms(): void {
         currentSpot.z - 0.03
       )
       .setRotation(0, 0, angle)
-      .setScale([0.18 + (1 - releaseProgress) * 0.15, 0.02, 0.02]);
+      .setScale([
+        0.18 + (1 - releaseProgress) * (visualReviewCapture ? 0.22 : 0.15),
+        visualReviewCapture ? 0.032 : 0.02,
+        visualReviewCapture ? 0.032 : 0.02
+      ]);
   }
 
   const contestLift = Math.max(0, hoopState.defenderY - 0.9);
@@ -1145,8 +1397,8 @@ function syncTransforms(): void {
       // preserve the full truthful prediction while avoiding a thick tube that
       // visually competes with the typed ball and athlete silhouettes.
       .setScale([
-        visualReviewCapture ? 0.022 : 0.055,
-        visualReviewCapture ? 0.022 : 0.055,
+        visualReviewCapture ? 0.044 : 0.055,
+        visualReviewCapture ? 0.044 : 0.055,
         length * (visualReviewCapture ? 0.78 : 1.02)
       ]);
   }
@@ -1207,7 +1459,8 @@ function publishEvidence(): RooftopBucketsEvidence {
     physicsBodyCount: 0,
     simulationOwner: "route-local authored deterministic ballistic integrator; composed rim/board/defender regions are not Rapier bodies",
     predictionPointCount: AIM_POINT_COUNT,
-    primaryAssets: ["assets.rooftopCourt", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender"],
+    primaryAssets: ["assets.rooftopCourt", "assets.rooftopVenueV2", "assets.rooftopBackboard", "assets.rooftopRim", "assets.rooftopBall", "assets.rooftopLayupScorer", "assets.rooftopDefender"],
+    presentationAssets: ["assets.rooftopAthleteShooter", "assets.rooftopAthleteDefender"],
     systems: ROUTE_SYSTEMS,
     controls: ROUTE_CONTROLS,
     claimBoundary: "Root-safe prototype with route-local authored basketball flight, composed sensor/region contacts, and five-heat scoring; no reusable sports, physics, rim, or defender kit claimed.",
@@ -1275,8 +1528,17 @@ function publishEvidence(): RooftopBucketsEvidence {
   const apply = (outcome: "swish" | "brick", spotIndex: number, gold = false) => {
     const spot = COURT_SPOTS[spotIndex]!;
     scoreState = recordShotOutcome(scoreState, outcome, spot.points, gold, spot.id).state;
-    if (outcome === "swish") audio.playCue("swish", 0.8);
-    else audio.playCue("brickMiss", 0.7);
+    if (outcome === "swish") {
+      audio.playCue("swish", 0.8);
+      // Scenario probes bypass the live integrator so they can deterministically
+      // stage a readable result. Keep the exact same renderer-owned contact
+      // event as a live net sensor; this only prolongs the visible ring/rays and
+      // never mutates the ball, score, or heat outcome.
+      triggerContactFx("swish", { x: hoopState.x, y: hoopState.y - 0.18, z: hoopState.z });
+    } else {
+      audio.playCue("brickMiss", 0.7);
+      triggerContactFx("rim", { x: hoopState.x, y: hoopState.y, z: hoopState.z });
+    }
   };
   elModal.classList.add("hidden");
   if (scenario === "open-clear") {

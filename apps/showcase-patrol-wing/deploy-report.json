@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.patrol-wing.deploy/1.0",
-  "generatedAt": "2026-08-31T15:23:30.427Z",
+  "generatedAt": "2026-09-02T08:57:16.580Z",
   "producer": "apps/showcase-patrol-wing/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "92bdc8ea8eb70b2f17926422c325d015ae5016e7aaa5436638ca8d36733f36b6",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "0c3f12d4cf30fc3e3a5b2a82ad295387b73d51f7dcd39001d2b6cd791be1a742",
-  "sourceTreeSha256": "e796d66cabca673fa44736be19bb8777f96c28f18e10dfbc6a65d8ee4b504660",
+  "distTreeSha256": "b23f674892b3f5e932b115c10df9f0309088519e01cb129c06a747645c150108",
+  "sourceTreeSha256": "78b3316459e6a47efae5a067486be7c11a7268674cbd370ab9394933947e2658",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-patrol-wing/src --asset <4 typed models>",

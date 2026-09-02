@@ -15,6 +15,9 @@
     "sfx": "node scripts/build-sfx.mjs",
     "register:sfx": "node scripts/register-sfx.mjs",
     "curate:parts": "node scripts/curate-parts.mjs",
+    "verify:modular-family": "node scripts/check-modular-family.mjs",
+    "verify:default-swap": "node scripts/verify-default-swap.mjs",
+    "test:modular-family": "node --test scripts/check-modular-family.test.mjs",
     "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
     "evidence:deploy": "node scripts/write-deploy-report.mjs",
     "evidence:route-health": "node scripts/write-route-health.mjs"

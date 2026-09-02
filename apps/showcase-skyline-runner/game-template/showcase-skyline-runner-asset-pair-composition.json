@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "sha256": "sha256-332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef",
+    "sha256": "sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76",
     "width": 1440,
     "height": 900
   },
@@ -19,9 +19,9 @@
   },
   "assets": [
     {
-      "id": "showcaseKenneyOobiPlatformerHero",
-      "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
-      "evidenceHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+      "id": "skylineArcticRunnerHero",
+      "manifestHash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7",
+      "evidenceHash": "sha256-84024fc905fd9596b7a15ef31eb6a5b6099142e175b376b7f3def735e815bff7"
     },
     {
       "id": "showcaseKenneyVerdantPlatformerWorld",
@@ -69,8 +69,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0,
-        "screenContactDistance": 7.305678955442842,
-        "screenContactDistanceRatio": 0.0511
+        "screenContactDistance": 14.361543962958823,
+        "screenContactDistanceRatio": 0.0933
       },
       "blockers": []
     },
@@ -102,11 +102,11 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.1589,
+        "subjectWorldRatio": 0.1711,
         "characterScaleRatio": 0.42,
-        "projectedTargetHeight": 130.916,
-        "renderedSubjectHeight": 143,
-        "scaleDelta": 0.09230346176174038
+        "projectedTargetHeight": 159.722,
+        "renderedSubjectHeight": 154,
+        "scaleDelta": 0.035824745495298134
       },
       "blockers": []
     },

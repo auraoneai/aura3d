@@ -6,7 +6,15 @@ import { fileURLToPath } from "node:url";
 const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
 const modelAssetIds = ["gravityPostCourierSkiff", "gravityPostDockBeacon"];
-const supportingModelAssetIds = ["gravityPostFreightDistrict"];
+// Supporting world/traffic assets are still source-bound and probe-validated,
+// but they are not route-primary gameplay subjects. Keep their orientation
+// requirements explicit because the freight district is +X-forward while the
+// catalog MailPod is +Z-forward.
+const supportingModelAssetIds = ["gravityPostFreightDistrict", "gravityPostMailPod"];
+const supportingOrientationAxes = {
+  gravityPostFreightDistrict: "+X",
+  gravityPostMailPod: "+Z"
+};
 const audioAssetIds = [
   "gravityPostLaunchWhooshSfx", "gravityPostBurnLoopSfx", "gravityPostDockLockSfx",
   "gravityPostBounceOffSfx", "gravityPostPodLostSfx", "gravityPostContractClearSfx",
@@ -43,7 +51,7 @@ for (const id of supportingModelAssetIds) {
   if (probe.evidence?.pass !== true || probe.renderedProbe?.assetHash !== asset.hash || probe.renderedProbe?.sha256 !== `sha256-${sha256(join(repoRoot, probe.screenshotPath))}`) {
     throw new Error(`${id} isolated root release probe is missing, failing, or stale`);
   }
-  if (orientation.orientation?.assetHash !== asset.hash || orientation.orientation?.forwardAxis !== "+X" || orientation.orientation?.upAxis !== "+Y") {
+  if (orientation.orientation?.assetHash !== asset.hash || orientation.orientation?.forwardAxis !== supportingOrientationAxes[id] || orientation.orientation?.upAxis !== "+Y") {
     throw new Error(`${id} orientation evidence is missing, stale, or inconsistent with the authored route axis`);
   }
 }
@@ -121,7 +129,7 @@ const routeHealth = {
   })),
   supportingAssets: supportingModelAssetIds.map((id) => ({
     typedRef: `assets.${id}`,
-    role: "non-colliding-freight-world",
+    role: id === "gravityPostMailPod" ? "non-colliding-terminal-transit" : "non-colliding-freight-world",
     status: assetById.get(id).quality === "release"
       ? "release-validated-typed-supporting-world"
       : "candidate-with-current-isolated-root-probe-pending-one-id-promotion",
@@ -142,7 +150,7 @@ const routeHealth = {
   primitiveStatus: {
     sourceOccurrences: primitiveOccurrences,
     primitiveBudget: routeGate.primitiveBudget,
-    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus one typed non-colliding freight world",
+    role: "authored planets, well/capture guides, prediction beads, dock sparks, and flyby presentation around typed pod/beacons plus typed non-colliding freight world/transit",
     status: "within-stated-role-and-budget"
   },
   physics: {
@@ -173,7 +181,7 @@ const routeHealth = {
       "four-delivery authored arcade-gravity courier prototype",
       "fixed-step live/prediction integration with published 0.02 positional tolerance",
       "real root-safe dock sensor entry with route-local capture-speed evaluation",
-      "typed registered pod, beacon, original CC0 freight district, and ten deterministic synthesized audio cues"
+      "typed registered pod, beacon, original CC0 freight district, release CC-BY transit MailPod, and ten deterministic synthesized audio cues"
     ],
     notAllowed: [
       "orbital mechanics, n-body, or physical simulation claims",
@@ -196,6 +204,8 @@ const routeHealth = {
     performance: "apps/showcase-gravity-post/performance-report.json",
     freightDistrictProbe: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",
     freightDistrictOrientation: "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.orientation.json",
+    mailPodProbe: "tests/reports/showcase-release-asset-probes/gravityPostMailPod.json",
+    mailPodOrientation: "tests/reports/showcase-release-asset-probes/gravityPostMailPod.orientation.json",
     unitSpecs: [
       "tests/unit/apps/gravity-post-wells.test.ts",
       "tests/unit/apps/gravity-post-scoring.test.ts",
@@ -205,8 +215,8 @@ const routeHealth = {
       "tests/browser/gravity-post-playable.spec.ts",
       "tests/browser/gravity-post-scene.spec.ts"
     ],
-    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict",
-    releaseDeployCommandAfterPromotion: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict"
+    deployCommand: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict --asset gravityPostMailPod",
+    releaseDeployCommandAfterPromotion: "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-gravity-post/dist --release --source apps/showcase-gravity-post/src --asset gravityPostCourierSkiff --asset gravityPostDockBeacon --asset gravityPostFreightDistrict --asset gravityPostMailPod"
   }
 };
 

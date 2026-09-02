@@ -344,6 +344,29 @@ input {
   box-shadow: 0 0 14px color-mix(in oklab, var(--aca-p1) 55%, transparent);
 }
 
+/* Compact special-state readout: the label is driven by the live meter/cooldown state, so it
+ * explains why the L action is or is not available without competing with the fighter silhouettes. */
+.aca-burst {
+  display: block;
+  margin-block-start: 7px;
+  color: var(--aca-faint);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.aca-burst[data-ready="true"] {
+  color: var(--aca-teal);
+  text-shadow: 0 0 12px color-mix(in oklab, var(--aca-teal) 64%, transparent);
+}
+
+.aca-rival-card .aca-burst {
+  text-align: end;
+}
+
 .aca-card b {
   display: block;
   margin-block-start: 8px;
@@ -582,6 +605,11 @@ input {
 .aca[data-review-capture="true"] .aca-bar + .aca-bar {
   block-size: 5px;
   margin-block-start: 7px;
+}
+
+.aca[data-review-capture="true"] .aca-burst {
+  margin-block-start: 6px;
+  font-size: 0.52rem;
 }
 
 .aca[data-review-capture="true"] .aca-training {

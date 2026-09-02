@@ -354,6 +354,40 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
       .scale([5.4, 0.3, 5.4])
       .toJSON()
   );
+  // The pad is a real raised airfield, not an isolated floating slab. A
+  // westbound runway deck follows the plane's authored take-off heading and
+  // gives the combat lens a layered approach line back into the island.
+  const runwayDeckMaterial = material.pbr({ name: "runway basalt deck", color: "#293a49", roughness: 0.72, metallic: 0.28, emissive: "#0e1e2c", emissiveIntensity: 0.12 });
+  const runwayEdgeMaterial = material.emissive({ name: "runway edge guidance", color: "#6ee7f5", emissive: "#25d2e7", emissiveIntensity: 0.72, opacity: 0.82 });
+  nodes.push(
+    primitives.box({ name: "airfield runway deck", material: runwayDeckMaterial })
+      .position(PAD_CENTER[0] - 7.4, PAD_Y - 0.02, PAD_CENTER[2])
+      .scale([7.4, 0.14, 2.25])
+      .toJSON(),
+    primitives.box({ name: "airfield runway understructure", material: material.pbr({ name: "runway understructure", color: "#172938", roughness: 0.86, metallic: 0.18 }) })
+      .position(PAD_CENTER[0] - 7.4, PAD_Y - 1.15, PAD_CENTER[2])
+      .scale([7.55, 1.0, 2.52])
+      .toJSON(),
+    primitives.box({ name: "runway edge left", material: runwayEdgeMaterial })
+      .position(PAD_CENTER[0] - 7.4, PAD_Y + 0.16, PAD_CENTER[2] - 1.95)
+      .scale([7.2, 0.035, 0.07])
+      .toJSON(),
+    primitives.box({ name: "runway edge right", material: runwayEdgeMaterial })
+      .position(PAD_CENTER[0] - 7.4, PAD_Y + 0.16, PAD_CENTER[2] + 1.95)
+      .scale([7.2, 0.035, 0.07])
+      .toJSON()
+  );
+  // Short centreline bars create depth cues along the deck without pretending
+  // the visual runway is a second collision surface.
+  const runwayStripeMaterial = material.emissive({ name: "runway centreline", color: "#ffd38a", emissive: "#ff9f43", emissiveIntensity: 0.58, opacity: 0.84 });
+  for (const [index, x] of [-2.5, -5.2, -7.9, -10.6].entries()) {
+    nodes.push(
+      primitives.box({ name: `runway centreline ${index}`, material: runwayStripeMaterial })
+        .position(x, PAD_Y + 0.17, PAD_CENTER[2])
+        .scale([0.72, 0.035, 0.11])
+        .toJSON()
+    );
+  }
   nodes.push(
     // Deep piling down the cliff so the pad reads as built, not floating.
     primitives
@@ -365,6 +399,30 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
       .scale([4.2, 6, 4.2])
       .toJSON()
   );
+  // Basalt terrace lips expose the authored island's elevation changes in a
+  // close chase view. Their positions sit inside the same heightfield and are
+  // set dressing only; terrainSurface remains the flight contact authority.
+  const terraceMaterial = material.pbr({ name: "basalt terrace lips", color: "#344b50", roughness: 0.9, metallic: 0.12, emissive: "#102a30", emissiveIntensity: 0.08 });
+  const terraceAccent = material.emissive({ name: "terrace edge glint", color: "#79d8d4", emissive: "#2da6ab", emissiveIntensity: 0.42, opacity: 0.52 });
+  const terraces = [
+    [-8.5, 2.15, 9.5, 4.2, 0.24, 1.5, -0.14],
+    [5.8, 4.25, 5.1, 3.7, 0.2, 1.35, 0.22],
+    [-1.5, 6.55, -1.6, 3.4, 0.18, 1.1, -0.08]
+  ] as const;
+  for (const [index, [x, y, z, width, height, depth, yaw]] of terraces.entries()) {
+    nodes.push(
+      primitives.box({ name: `island basalt terrace ${index}`, material: terraceMaterial })
+        .position(x, y, z)
+        .rotate(0, yaw, 0)
+        .scale([width, height, depth])
+        .toJSON(),
+      primitives.box({ name: `island terrace edge ${index}`, material: terraceAccent })
+        .position(x, y + height + 0.035, z - depth * 0.72)
+        .rotate(0, yaw, 0)
+        .scale([width * 0.86, 0.025, 0.045])
+        .toJSON()
+    );
+  }
   nodes.push(
     primitives
       .torus({
@@ -481,10 +539,36 @@ export function arenaNodes(options: { readonly reviewCapture?: boolean } = {}): 
   // scale and a flight canyon, but each placement remains snapped to the same
   // heightfield that defines the visible island and the crash surface.
   const props = reviewCapture
-    ? islandProps().filter((prop) => prop.asset === "propConifer" && prop.position[2] < 4).slice(0, 16)
+    // Preserve a layered typed island in the close combat lens. The previous
+    // conifer-only/z<4 filter left the dogfight suspended over a single flat
+    // green wedge; retaining rocks plus conifers at three depth bands gives
+    // the typed terrain a readable coastline, valley, and scale reference.
+    ? islandProps()
+      .filter((prop) => prop.position[2] < 12 && Math.abs(prop.position[0]) < 23)
+      .slice(0, 28)
     : islandProps();
   for (const prop of props) {
     nodes.push(modelNode(`prop-${prop.asset}-${prop.position[0].toFixed(1)}`, prop.asset, prop.position, prop.scale, prop.yaw, "setDressing", undefined));
+  }
+
+  if (reviewCapture) {
+    // Four renderer-owned coast beacons frame the real typed island without
+    // pretending to be additional gameplay sensors. Their stepped silhouettes
+    // create near/mid/far depth behind the typed plane and interceptor, while
+    // the emissive caps make the attack corridor legible at review distance.
+    const beaconBody = material.pbr({ name: "coast beacon body", color: "#193447", roughness: 0.58, metallic: 0.68 });
+    const beaconCap = material.emissive({ name: "coast beacon cap", color: "#ff6b62", emissive: "#ff3d5e", emissiveIntensity: 2.1 });
+    const beaconPositions = [
+      [-19, 5.6, -2], [18, 6.3, -4], [-13, 7.1, 8], [12, 5.4, 10]
+    ] as const;
+    for (const [index, [x, y, z]] of beaconPositions.entries()) {
+      nodes.push(
+        primitives.cylinder({ name: `review coast beacon ${index}`, material: beaconBody })
+          .position(x, y, z).scale([0.18, 1.2 + index * 0.14, 0.18]).toJSON(),
+        primitives.sphere({ name: `review coast beacon cap ${index}`, material: beaconCap })
+          .position(x, y + 1.45 + index * 0.14, z).scale(0.22).toJSON()
+      );
+    }
   }
 
   return nodes;

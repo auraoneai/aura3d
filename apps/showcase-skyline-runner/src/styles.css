@@ -1,7 +1,9 @@
 :root {
   color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #081426;
+  /* The typed winter panorama owns the colour field; keep the shell in the same
+   * blue-hour family so a loading frame never flashes a muddy charcoal wash. */
+  background: #0b2340;
   color: #f4fbff;
 }
 
@@ -30,7 +32,7 @@ button { font: inherit; }
 
 .runner-shell {
   isolation: isolate;
-  background: #081426;
+  background: #0b2340;
 }
 
 .runner-viewport { z-index: 0; }
@@ -39,7 +41,7 @@ button { font: inherit; }
   display: block;
   width: 100%;
   height: 100%;
-  background: #081426;
+  background: #0b2340;
 }
 
 /* Cinematic edge treatment lives in UI, not in the renderer evidence. */
@@ -55,7 +57,7 @@ button { font: inherit; }
   inset: 0;
   background:
     linear-gradient(90deg, rgba(3, 5, 18, 0.42), transparent 25%, transparent 70%, rgba(3, 5, 18, 0.18)),
-    linear-gradient(0deg, rgba(3, 5, 18, 0.48), transparent 24%, transparent 78%, rgba(6, 7, 24, 0.18));
+    linear-gradient(0deg, rgba(3, 5, 18, 0.26), transparent 24%, transparent 78%, rgba(6, 7, 24, 0.14));
 }
 
 .runner-shell::after {
@@ -94,21 +96,23 @@ button { font: inherit; }
 
 .runner-brand {
   position: absolute;
-  top: 24px;
-  left: 26px;
-  width: min(310px, calc(100vw - 52px));
-  padding: 16px 18px 17px;
-  border: 1px solid rgba(129, 207, 255, 0.26);
+  top: 20px;
+  left: 22px;
+  width: min(258px, calc(100vw - 44px));
+  padding: 11px 14px 12px;
+  border: 1px solid rgba(132, 233, 255, 0.42);
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(8, 12, 33, 0.94), rgba(29, 16, 47, 0.78));
-  box-shadow: 0 18px 50px rgba(1, 2, 12, 0.42), inset 0 1px rgba(255, 255, 255, 0.05);
+  background:
+    linear-gradient(112deg, rgba(8, 38, 67, 0.94), rgba(13, 76, 94, 0.82)),
+    linear-gradient(90deg, rgba(255, 127, 111, 0.18), transparent 34%);
+  box-shadow: 0 16px 38px rgba(1, 14, 29, 0.34), inset 0 1px rgba(229, 251, 255, 0.12);
 }
 
 .runner-panel .label {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #86e8ff;
+  color: #9cefff;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -125,26 +129,27 @@ button { font: inherit; }
 }
 
 .runner-brand h1 {
-  margin: 7px 0 0;
-  font-size: clamp(25px, 2.2vw, 34px);
+  margin: 5px 0 0;
+  font-size: clamp(23px, 2.1vw, 31px);
   font-weight: 840;
   line-height: 1;
   letter-spacing: -0.045em;
 }
 
 .runner-brand .claim {
-  max-width: 32ch;
-  margin: 10px 0 0;
-  color: #b4bdd8;
-  font-size: 12px;
-  line-height: 1.45;
+  display: none;
+  max-width: 30ch;
+  margin: 8px 0 0;
+  color: #c2e0ea;
+  font-size: 11px;
+  line-height: 1.38;
 }
 
 .panel-metrics {
   position: absolute;
-  top: 28px;
-  right: 30px;
-  width: min(560px, calc(100vw - 440px));
+  top: 22px;
+  right: 22px;
+  width: min(472px, calc(100vw - 330px));
   display: grid;
   gap: 8px;
 }
@@ -154,22 +159,22 @@ button { font: inherit; }
   grid-template-columns: repeat(5, minmax(82px, 1fr));
   gap: 6px;
   padding: 6px;
-  border: 1px solid rgba(129, 207, 255, 0.22);
+  border: 1px solid rgba(132, 233, 255, 0.34);
   border-radius: 14px;
-  background: rgba(8, 10, 28, 0.78);
-  box-shadow: 0 18px 50px rgba(1, 2, 12, 0.3), inset 0 1px rgba(255, 255, 255, 0.04);
+  background: rgba(5, 28, 48, 0.84);
+  box-shadow: 0 16px 38px rgba(1, 14, 29, 0.28), inset 0 1px rgba(229, 251, 255, 0.08);
 }
 
 .metrics-row article {
   min-width: 0;
-  padding: 10px 11px;
+  padding: 8px 10px;
   border-radius: 9px;
-  background: linear-gradient(180deg, rgba(129, 207, 255, 0.1), rgba(129, 207, 255, 0.025));
+  background: linear-gradient(180deg, rgba(93, 212, 239, 0.18), rgba(22, 67, 93, 0.18));
 }
 
 .metrics-row span {
   display: block;
-  color: #8fa6ca;
+  color: #a6d4df;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.09em;
@@ -180,7 +185,7 @@ button { font: inherit; }
   display: block;
   margin-top: 4px;
   overflow: hidden;
-  color: #f8f5ff;
+  color: #f5fdff;
   font-size: 18px;
   line-height: 1;
   text-overflow: ellipsis;
@@ -198,9 +203,9 @@ button { font: inherit; }
   align-items: center;
   justify-content: flex-end;
   padding: 6px 10px;
-  border: 1px solid rgba(129, 207, 255, 0.18);
+  border: 1px solid rgba(132, 233, 255, 0.28);
   border-radius: 999px;
-  background: rgba(8, 10, 28, 0.72);
+  background: rgba(5, 28, 48, 0.76);
 }
 
 .checkpoint-label {
@@ -353,20 +358,20 @@ button { font: inherit; }
   justify-self: end;
   max-width: 100%;
   padding: 8px 12px;
-  border: 1px solid rgba(114, 244, 229, 0.28);
+  border: 1px solid rgba(132, 233, 255, 0.34);
   border-radius: 999px;
-  background: rgba(8, 12, 32, 0.82);
-  color: #e4e8ff;
+  background: linear-gradient(90deg, rgba(6, 37, 58, 0.9), rgba(8, 22, 44, 0.78));
+  color: #e4f8ff;
   font-size: 11px;
   box-shadow: 0 12px 32px rgba(1, 9, 12, 0.22);
 }
 
 .runner-controls {
   position: absolute;
-  bottom: 26px;
-  left: 30px;
+  bottom: 16px;
+  left: 18px;
   display: grid;
-  width: 330px;
+  width: 286px;
   gap: 8px;
 }
 
@@ -377,29 +382,29 @@ button { font: inherit; }
   grid-template-columns: repeat(4, 1fr);
   gap: 7px;
   padding: 7px;
-  border: 1px solid rgba(129, 207, 255, 0.22);
+  border: 1px solid rgba(132, 233, 255, 0.3);
   border-radius: 15px;
-  background: rgba(8, 10, 28, 0.8);
-  box-shadow: 0 18px 50px rgba(1, 2, 12, 0.38);
+  background: rgba(5, 28, 48, 0.84);
+  box-shadow: 0 16px 38px rgba(1, 14, 29, 0.34);
   backdrop-filter: blur(16px);
 }
 
 .button-grid button {
   display: grid;
   min-width: 0;
-  min-height: 54px;
+  min-height: 46px;
   place-content: center;
   gap: 2px;
-  border: 1px solid rgba(129, 207, 255, 0.2);
+  border: 1px solid rgba(132, 233, 255, 0.24);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(37, 65, 106, 0.82), rgba(17, 24, 58, 0.92));
+  background: linear-gradient(180deg, rgba(31, 90, 120, 0.86), rgba(10, 38, 68, 0.94));
   color: #f3f4ff;
   cursor: pointer;
   touch-action: none;
 }
 
 .button-grid button b { font-size: 17px; }
-.button-grid button span { color: #b8c4e4; font-size: 9px; font-weight: 760; text-transform: uppercase; }
+.button-grid button span { color: #c0e7ef; font-size: 9px; font-weight: 760; text-transform: uppercase; }
 .button-grid button:hover,
 .button-grid button:focus-visible,
 .button-grid button[aria-pressed="true"] {

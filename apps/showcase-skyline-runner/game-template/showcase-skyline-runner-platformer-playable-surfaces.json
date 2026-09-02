@@ -4,7 +4,7 @@
   "generatedBy": "showcase-spec-compiler",
   "surfaceSource": "asset-derived-playable-surfaces",
   "templateCapabilityStatus": "asset-derived-playable-surfaces-proven",
-  "characterAsset": "showcaseKenneyOobiPlatformerHero",
+  "characterAsset": "skylineArcticRunnerHero",
   "worldAssets": [
     "showcaseKenneyVerdantPlatformerWorld"
   ],
@@ -1274,7 +1274,7 @@
       "kind": "aura-game-asset-bound-platformer-level",
       "layoutContractVersion": "1.0",
       "generatedFrom": "mesh-derived-playable-surface-map",
-      "characterAsset": "showcaseKenneyOobiPlatformerHero",
+      "characterAsset": "skylineArcticRunnerHero",
       "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
       "worldAssetHash": "sha256-ac8f17eb8a42240a32ac642075de59345ead45e950d7f607aeba0afac4e958cd",
       "surfaceSource": "asset-mesh-extracted",

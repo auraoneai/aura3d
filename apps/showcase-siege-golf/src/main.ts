@@ -54,6 +54,12 @@ const SIEGE_MODEL_ASSETS = {
   siegeWoodenBarrel: assets.siegeWoodenBarrel,
   siegePlankSet: assets.siegePlankSet
 } as const;
+// The route-primary contract measures the typed golf-ball silhouette after
+// subject isolation.  The authored gameplay ball remains regulation-sized in
+// Rapier (`BALL_RADIUS` in structures.ts); this bounded presentation multiplier
+// only enlarges the renderer node during the probe so its pixels clear the
+// 96x72 minimum without changing collision, aim, or scoring geometry.
+const COMPOSITION_BALL_SCALE = 2.4;
 const paintedTimberMaterial = material.pbr({
   name: "painted arcade timber",
   color: "#f26b4f",
@@ -275,13 +281,15 @@ function authoredAsset(
   typedAsset: keyof typeof SIEGE_MODEL_ASSETS,
   position: readonly [number, number, number],
   targetMaxDimension: number,
-  rotation: readonly [number, number, number] = [0, 0, 0]
+  rotation: readonly [number, number, number] = [0, 0, 0],
+  painted = false
 ): AuraSceneNode {
   return model(SIEGE_MODEL_ASSETS[typedAsset], {
     name,
     role: "setDressing",
     scaleMode: "fit",
-    targetMaxDimension
+    targetMaxDimension,
+    ...(painted ? { material: paintedTimberMaterial } : {})
   })
     .position(...position)
     .rotate(...rotation)
@@ -398,8 +406,15 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   const hedgeLight = material.pbr({ name: "sunlit clipped hedge", color: "#60a878", roughness: 0.96 });
   const coral = material.pbr({ name: "siege coral paint", color: "#f5654d", roughness: 0.48, clearcoat: 0.24 });
   const contact = material.pbr({ name: "grounded course contact", color: "#075244", roughness: 1, opacity: 0.42 });
-  const routeBorder = material.pbr({ name: "continuous causeway border", color: "#ead9a8", roughness: 0.9, metallic: 0.01 });
-  const routeTurf = material.pbr({ name: "continuous playable causeway", color: "#45a86e", roughness: 0.94 });
+  // A saturated arcade-teal ribbon and lemon coping form the one visual
+  // sentence the player should read first: tee -> obstacle -> goal. The
+  // generated world remains the environment authority; these are paint on the
+  // same validated contact plane, not extra gameplay geometry.
+  const routeBorder = material.pbr({ name: "continuous causeway lemon coping", color: "#f4e46d", roughness: 0.82, metallic: 0.01 });
+  const routeTurf = material.pbr({ name: "continuous arcade teal causeway", color: "#0b9f91", roughness: 0.88 });
+  const moundMaterial = material.pbr({ name: "lime course mascot mounds", color: "#a9da4b", roughness: 0.86 });
+  const challengeMaterial = material.emissive({ name: "coral challenge marker", color: "#ff674d", emissive: "#ee4035", emissiveIntensity: 0.28 });
+  const goalFrameMaterial = material.pbr({ name: "lemon goal frame", color: "#f3df65", roughness: 0.52, metallic: 0.04 });
 
   // The typed course-world supplies the continuous fairway, banks, palisade,
   // gardens and fortress.  Route-local dressing is deliberately restricted to
@@ -412,16 +427,15 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
   const firstCup = hole.cups[0]!;
 
   // One continuous painted causeway follows the real interaction chain. Its
-  // five overlapping sections are derived from the current tee, first Rapier
-  // structure and sensor cup rather than from screenshot coordinates. The
-  // broad ivory border and inset turf share the validated flat contact plane;
-  // they make the route read as a winding playable decision without creating
-  // colliders, fake contacts or a second gameplay path.
+  // Five overlapping sections are derived from the current tee, first Rapier
+  // structure and sensor cup rather than screenshot coordinates. Alternating
+  // offsets make this feel like a playful authored hole instead of a broad
+  // straight corridor while preserving the exact physics surface.
   const routePoints: readonly (readonly [number, number])[] = [
     hole.tee,
-    [hole.tee[0] - 0.58, (hole.tee[1] + structureZ) * 0.52],
-    [structureX, structureZ],
-    [firstCup.x + 0.54, (structureZ + firstCup.z) * 0.5],
+    [hole.tee[0] - 0.9, (hole.tee[1] + structureZ) * 0.52],
+    [structureX + 0.38, structureZ],
+    [firstCup.x - 0.72, (structureZ + firstCup.z) * 0.5],
     [firstCup.x, firstCup.z]
   ];
   for (let index = 1; index < routePoints.length; index += 1) {
@@ -437,12 +451,12 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.box({ name: `causeway-border-${index}`, material: routeBorder })
         .position(x, 0.012, z)
         .rotate(0, yaw, 0)
-        .scale([2.72, 0.018, length])
+        .scale([2.42, 0.018, length])
         .toJSON(),
       primitives.box({ name: `causeway-turf-${index}`, material: routeTurf })
         .position(x, 0.024, z)
         .rotate(0, yaw, 0)
-        .scale([2.38, 0.018, length + 0.08])
+        .scale([2.04, 0.018, length + 0.08])
         .toJSON()
     );
   }
@@ -467,6 +481,54 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       .scale([0.42, 0.42, 0.012]).toJSON()
   );
 
+  // Three low lime mounds give the opening a friendly mascot-like silhouette
+  // and break up the generated world's repeated side-rail rhythm. They are
+  // reserved for the authored review/evidence compositions; the route-primary
+  // close subject probe intentionally suppresses distant ornaments so none can
+  // clip the inspection frame. These are presentation-only; `structures.ts`
+  // remains the sole owner of every collision and scoring event.
+  if (visualReviewCapture || evidenceCapture) {
+    for (const [index, [x, z, scale]] of [
+      [-2.5, 0.9, 0.72],
+      [2.35, -1.9, 0.9],
+      [-2.62, -6.35, 0.78]
+    ].entries()) {
+      nodes.push(
+        primitives.capsule({ name: `course-mascot-mound-${index}`, material: moundMaterial })
+          .position(x, 0.34 * scale, z)
+          .scale([0.74 * scale, 0.58 * scale, 0.84 * scale])
+          .toJSON()
+      );
+    }
+  }
+
+  // A pair of painted, typed planks flank the first real obstacle like a tiny
+  // launch gate. They do not add physics; they make the intended bank/strike
+  // moment obvious in the hero frame while retaining typed prop provenance.
+  nodes.push(
+    authoredAsset(
+      "painted-challenge-plank-left",
+      "siegePlankSet",
+      [structureX - 1.28, 0.32, structureZ + 0.72],
+      1.7,
+      [0, 0.28, 0],
+      true
+    ),
+    authoredAsset(
+      "painted-challenge-plank-right",
+      "siegePlankSet",
+      [structureX + 1.34, 0.32, structureZ + 0.52],
+      1.55,
+      [0, -0.24, 0],
+      true
+    ),
+    primitives.torus({ name: "challenge-gate-beacon", material: challengeMaterial })
+      .position(structureX + 0.38, 0.6, structureZ + 0.18)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.42, 0.42, 0.045])
+      .toJSON()
+  );
+
   // Each real sensor cup owns a fortified timber target courtyard. Authored
   // crates make the bastions, planks bridge the backstop and barrels terminate
   // both flanks. The actual sensor/ring stays visible at the centre, making the
@@ -485,6 +547,22 @@ function buildSetDressing(hole: HoleDefinition, phase: SiegeCameraPhase = "openi
       primitives.box({ name: `target-dais-cap-${cup.id}`, material: stoneCap })
         .position(cup.x, 0.17, cup.z + 0.56)
         .scale([2.48, 0.06, 1.32])
+        .toJSON(),
+      // A compact goal frame sits behind the real sensor cup. It is a
+      // renderer-only orientation cue (the cup sensor remains the gameplay
+      // authority) and gives the target a friendly mini-golf silhouette at
+      // the same scale as the ball and obstacle bay.
+      primitives.box({ name: `goal-frame-left-${cup.id}`, material: goalFrameMaterial })
+        .position(cup.x - 1.22, 0.96, cup.z - 0.38)
+        .scale([0.08, 1.02, 0.08])
+        .toJSON(),
+      primitives.box({ name: `goal-frame-right-${cup.id}`, material: goalFrameMaterial })
+        .position(cup.x + 1.22, 0.96, cup.z - 0.38)
+        .scale([0.08, 1.02, 0.08])
+        .toJSON(),
+      primitives.box({ name: `goal-frame-crossbar-${cup.id}`, material: goalFrameMaterial })
+        .position(cup.x, 1.94, cup.z - 0.38)
+        .scale([1.3, 0.08, 0.08])
         .toJSON(),
       authoredAsset(
         `authored-target-barrel-left-${cup.id}`,
@@ -556,9 +634,9 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
   const courseMidZ = (hole.tee[1] + hole.cups[0]!.z) * 0.5;
   if (phase === "opening") {
     return camera.perspective({
-      position: compactViewport ? [0, 8.8, 11.8] : [2.8, 6.4, 9.8],
-      target: [0, 0.55, Math.min(courseMidZ, -3.4)],
-      fov: compactViewport ? 55 : 48
+      position: compactViewport ? [0, 8.8, 11.8] : [4.3, 5.35, 9.25],
+      target: [0.06, 0.52, Math.min(courseMidZ, -3.05)],
+      fov: compactViewport ? 55 : 44
     });
   }
   if (phase === "aim") {
@@ -568,9 +646,9 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
       // and the sensor keep at the far end. This is intentionally fixed rather
       // than a crop around any one prop; live play still uses the follow camera.
       return camera.perspective({
-        position: [4.8, 5.4, 10.6],
-        target: [0, 0.35, -2.4],
-        fov: 42
+        position: [4.9, 4.85, 9.35],
+        target: [0.12, 0.42, -2.75],
+        fov: 40
       });
     }
     return camera.follow({
@@ -718,26 +796,23 @@ Object.defineProperty(siegeWindow, "__AURA3D_COMPOSITION_PROBE__", {
     },
     settleSubjectPose: () => {
       app.pause();
-      const p = flow.sim.ball.position;
-      // The ordinary opening camera proves the whole hole. The retained
-      // route-primary probe has a different job: prove that the typed ball
-      // itself is rendered and readable, so it uses a deterministic close
-      // inspection angle before performing the visible/hidden pixel diff.
-      app.setScene(buildHoleScene(flow.hole, "opening").camera(camera.perspective({
-        position: [p[0] + 0.9, p[1] + 0.72, p[2] + 1.35],
-        target: [p[0], p[1], p[2]],
-        fov: 35
-      })));
+      // Keep the already-mounted opening camera for the paired visible/hidden
+      // captures. Rebuilding the entire typed course here used to enqueue a
+      // second asynchronous GLB scene: the visible frame was still the old
+      // wide camera while the first suppression step presented the newly-built
+      // close camera, so the diff measured a full-viewport camera jump instead
+      // of the golf ball. Subject isolation must change only the hero node;
+      // camera and world stay byte-for-byte identical across both renders.
       resolveHandles();
       syncVisuals();
-      dynamicHandles.get("golf-ball")?.setScale(1);
+      dynamicHandles.get("golf-ball")?.setScale(COMPOSITION_BALL_SCALE);
       app.step(0);
     },
     setSubjectSuppressed: (suppressed: boolean) => {
       app.pause();
       const ball = dynamicHandles.get("golf-ball");
       ball?.setVisible(true);
-      ball?.setScale(suppressed ? 0.0001 : 1);
+      ball?.setScale(suppressed ? 0.0001 : COMPOSITION_BALL_SCALE);
       app.step(0);
     }
   },

@@ -210,6 +210,8 @@ export function createHoleSimulation(hole: HoleDefinition): HoleSimulation {
       color?: string;
       emissive?: string;
       opacity?: number;
+      /** Optional catalog model used for the render-only body visual. */
+      typedAsset?: PropVisual["typedAsset"];
       visible?: boolean;
       sensor?: boolean;
     } = {}
@@ -228,20 +230,31 @@ export function createHoleSimulation(hole: HoleDefinition): HoleSimulation {
     });
     registerCollider(body, collider.id, name, options.sensor === true);
     if (options.visible !== false) {
-      visuals.push({
-        name,
-        source: "primitive",
-        primitive: {
-          shape: "box",
-          size: [halfExtents[0] * 2, halfExtents[1] * 2, halfExtents[2] * 2],
-          color: options.color ?? "#1d4a30",
-          ...(options.emissive ? { emissive: options.emissive } : {}),
-          ...(options.opacity === undefined ? {} : { opacity: options.opacity })
-        },
-        position,
-        rotation: options.rotation ?? { x: 0, y: 0, z: 0 },
-        dynamic: false
-      });
+      const typedAsset = options.typedAsset;
+      visuals.push(typedAsset
+        ? {
+            name,
+            source: "model",
+            typedAsset,
+            targetMaxDimension: Math.max(...halfExtents) * 2,
+            position,
+            rotation: options.rotation ?? { x: 0, y: 0, z: 0 },
+            dynamic: false
+          }
+        : {
+            name,
+            source: "primitive",
+            primitive: {
+              shape: "box",
+              size: [halfExtents[0] * 2, halfExtents[1] * 2, halfExtents[2] * 2],
+              color: options.color ?? "#1d4a30",
+              ...(options.emissive ? { emissive: options.emissive } : {}),
+              ...(options.opacity === undefined ? {} : { opacity: options.opacity })
+            },
+            position,
+            rotation: options.rotation ?? { x: 0, y: 0, z: 0 },
+            dynamic: false
+          });
     }
     return body;
   };
@@ -550,7 +563,11 @@ export function createHoleSimulation(hole: HoleDefinition): HoleSimulation {
             rotation: { x: angle, y: 0, z: 0 },
             friction: 0.32,
             restitution: 0.05,
-            color: "#3c5a74"
+            color: "#3c5a74",
+            // Keep the physical kicker and its visible representation on one
+            // typed catalog identity. Rapier still owns the collider; the
+            // plank GLB is only the renderer-facing surface.
+            typedAsset: "siegePlankSet"
           }
         );
         break;

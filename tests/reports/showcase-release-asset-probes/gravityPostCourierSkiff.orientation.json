@@ -4,15 +4,15 @@
     "forwardAxis": "+Z",
     "upAxis": "+Y",
     "view": "hash-bound-readable-prop-view",
-    "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+    "assetHash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
     "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-    "checkedAt": "2026-09-01T03:52:57.234Z",
+    "checkedAt": "2026-09-02T03:25:32.261Z",
     "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff",
     "renderedProbe": {
       "url": "tests/reports/showcase-release-asset-probes/gravityPostCourierSkiff.png",
-      "sha256": "sha256-13d61e81490afff5298f2d2b3c79866a5f34be38b89720b2b4c629742ffcfdf9",
-      "assetHash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
-      "checkedAt": "2026-09-01T03:52:57.234Z",
+      "sha256": "sha256-4633a35c886dcf3c06ffc280601d6efde24544a946df94738d9f4cb5738838b6",
+      "assetHash": "sha256-de425661aec1efca380432c908e44ec01d837e5c1e12cbfb00aca2085e6a6c7e",
+      "checkedAt": "2026-09-02T03:25:32.261Z",
       "route": "tests/browser/showcase-release-asset-probe-harness?asset=gravityPostCourierSkiff"
     },
     "messages": [

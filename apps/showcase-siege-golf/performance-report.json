@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-siege-golf-performance/1.0",
-  "generatedAt": "2026-08-31T14:03:41.904Z",
+  "generatedAt": "2026-09-02T06:27:43.672Z",
   "scope": "headless route-local Rapier fixed-step simulation; rendering performance is not claimed",
   "budgets": {
     "maxWorldBodies": 32,
@@ -10,7 +10,7 @@
   "observed": {
     "maxWorldBodies": 26,
     "maxConstraints": 3,
-    "maxPhysicsP95Ms": 0.7034
+    "maxPhysicsP95Ms": 1.3231
   },
   "holes": [
     {
@@ -26,9 +26,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 341,
-        "mean": 0.1461,
-        "p95": 0.3629,
-        "max": 1.0342
+        "mean": 0.3023,
+        "p95": 0.7647,
+        "max": 2.0953
       }
     },
     {
@@ -44,9 +44,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.1231,
-        "p95": 0.1825,
-        "max": 0.6132
+        "mean": 0.3519,
+        "p95": 0.7951,
+        "max": 4.0342
       }
     },
     {
@@ -62,9 +62,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.2007,
-        "p95": 0.4063,
-        "max": 0.6029
+        "mean": 0.4817,
+        "p95": 1.0548,
+        "max": 2.233
       }
     },
     {
@@ -80,9 +80,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.1186,
-        "p95": 0.2275,
-        "max": 0.3661
+        "mean": 0.2523,
+        "p95": 0.6178,
+        "max": 1.347
       }
     },
     {
@@ -98,9 +98,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.1566,
-        "p95": 0.2801,
-        "max": 0.7758
+        "mean": 0.3291,
+        "p95": 0.5979,
+        "max": 2.0144
       }
     },
     {
@@ -116,9 +116,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.1968,
-        "p95": 0.3619,
-        "max": 0.5973
+        "mean": 0.4109,
+        "p95": 0.8346,
+        "max": 3.5324
       }
     },
     {
@@ -134,9 +134,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.2895,
-        "p95": 0.7034,
-        "max": 0.7859
+        "mean": 0.6395,
+        "p95": 1.3231,
+        "max": 8.0098
       }
     },
     {
@@ -152,9 +152,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 360,
-        "mean": 0.2424,
-        "p95": 0.5765,
-        "max": 0.7496
+        "mean": 0.5036,
+        "p95": 1.2293,
+        "max": 2.0586
       }
     },
     {
@@ -171,9 +171,9 @@
       "completed": true,
       "physicsStepMs": {
         "samples": 720,
-        "mean": 0.3121,
-        "p95": 0.6235,
-        "max": 0.8197
+        "mean": 0.6639,
+        "p95": 1.2991,
+        "max": 3.3231
       }
     }
   ],

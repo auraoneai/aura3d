@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
+import { corridorRouteSourceSnapshot, corridorScreenshotReceipt } from "./route-evidence";
 
 test.setTimeout(180_000);
 
@@ -56,12 +57,30 @@ test("captures first load, combat, and reset screenshots", async ({ page }) => {
   expect(reset.byteLength).toBeGreaterThan(1000);
   expect(win.byteLength).toBeGreaterThan(1000);
   expect(afterWinReset.byteLength).toBeGreaterThan(1000);
+  const screenshots = [
+    ["firstLoad", first],
+    ["midCombat", combat],
+    ["afterShot", afterShot],
+    ["reset", reset],
+    ["win", win],
+    ["afterWinReset", afterWinReset]
+  ] as const;
+  const receipts = Object.fromEntries(screenshots.map(([id, bytes]) => [
+    id,
+    corridorScreenshotReceipt(resolve("tests/reports", `${id === "firstLoad" ? "first-load" : id === "midCombat" ? "mid-combat" : id === "afterShot" ? "after-kill" : id === "afterWinReset" ? "reset-after-win" : id}.png`), bytes)
+  ]));
   writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({
+    schema: "aura3d-neon-corridor-screenshots/2.0",
+    status: "passed",
+    pass: true,
+    route: "/examples/neon-corridor-strike/",
+    source: corridorRouteSourceSnapshot(),
     firstLoad: first.byteLength,
     midCombat: combat.byteLength,
     afterShot: afterShot.byteLength,
     reset: reset.byteLength,
     win: win.byteLength,
-    afterWinReset: afterWinReset.byteLength
+    afterWinReset: afterWinReset.byteLength,
+    screenshots: receipts
   }, null, 2)}\n`);
 });

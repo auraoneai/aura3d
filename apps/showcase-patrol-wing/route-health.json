@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-31T15:23:31.364Z",
+  "generatedAt": "2026-09-02T08:57:19.071Z",
   "appId": "showcase-patrol-wing",
   "route": "/apps/showcase-patrol-wing/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "4d01b2b897fd3203b51aabe0c10bb1c41334ae066fa95da7360872de747c5a0f",
+  "routeSourceSha256": "fe2839eb4854bb8e91676170d12b349a899c3a4fa434df89a009d9bda0810749",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -120,7 +120,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 30,
+    "sourceOccurrences": 47,
     "primitiveBudget": 80,
     "role": "authored terrain/ocean, route rings, pad structure, beacons, return-fire orbs, lighting, and subordinate frontier dressing around four typed primary assets",
     "status": "no-primitive-primary-subjects"
@@ -158,7 +158,7 @@
   },
   "performance": {
     "schema": "aura3d.patrol-wing.performance/1.0",
-    "generatedAt": "2026-08-31T15:23:29.533Z",
+    "generatedAt": "2026-09-02T08:57:14.325Z",
     "producer": "apps/showcase-patrol-wing/scripts/write-performance-report.ts",
     "producerSourceSha256": "a2f7608ca273e6120ee35c902f8df89d78f294fa515ec254b1ea9a49afe72a18",
     "routeSourceFiles": [
@@ -172,7 +172,7 @@
       "apps/showcase-patrol-wing/src/weapons.ts",
       "apps/showcase-patrol-wing/src/wing-audio.ts"
     ],
-    "routeSourceSha256": "4d01b2b897fd3203b51aabe0c10bb1c41334ae066fa95da7360872de747c5a0f",
+    "routeSourceSha256": "fe2839eb4854bb8e91676170d12b349a899c3a4fa434df89a009d9bda0810749",
     "scope": "Route-local authored arcade-flight/ring CPU sampling plus route-primary root-renderer draw calls when available; no GPU frame-time, aerodynamic, reusable flight-kit, or renderer-parity claim.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -181,27 +181,27 @@
       "drawCalls": 240
     },
     "observed": {
-      "routeLogicCpuP95Ms": 0.002,
+      "routeLogicCpuP95Ms": 0.004,
       "deterministicStateHash": "54dcd06e",
-      "drawCalls": 68,
+      "drawCalls": 88,
       "renderSize": [
         1412,
         900
       ],
-      "browserFrameCount": 36
+      "browserFrameCount": 34
     },
     "drawEvidencePending": false,
     "pass": true
   },
   "deploy": {
     "schema": "aura3d.patrol-wing.deploy/1.0",
-    "generatedAt": "2026-08-31T15:23:30.427Z",
+    "generatedAt": "2026-09-02T08:57:16.580Z",
     "producer": "apps/showcase-patrol-wing/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "92bdc8ea8eb70b2f17926422c325d015ae5016e7aaa5436638ca8d36733f36b6",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "0c3f12d4cf30fc3e3a5b2a82ad295387b73d51f7dcd39001d2b6cd791be1a742",
-    "sourceTreeSha256": "e796d66cabca673fa44736be19bb8777f96c28f18e10dfbc6a65d8ee4b504660",
+    "distTreeSha256": "b23f674892b3f5e932b115c10df9f0309088519e01cb129c06a747645c150108",
+    "sourceTreeSha256": "78b3316459e6a47efae5a067486be7c11a7268674cbd370ab9394933947e2658",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-patrol-wing/src --asset <4 typed models>",
@@ -280,43 +280,43 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/patrol-wing/playable/takeoff.png",
-        "sha256": "5009279892a9ecc5dd31acf8c65def755221bc342d16a265d91d8c3009d3291c"
+        "sha256": "a1c6ed0aed8496ead4b5e0ceee80d9661f97a17218dec14c38bea0e702a1e103"
       },
       {
         "path": "tests/reports/patrol-wing/playable/ring-run.png",
-        "sha256": "d850d50f94fab6ee2f1748639b4759c83fb838c14efe4b07af496c327803763e"
+        "sha256": "c91a0323c4664fd573f7a3e87cb2b96c5f6ca79fef3dec7d6d7915eb6327a208"
       },
       {
         "path": "tests/reports/patrol-wing/playable/drone-pass.png",
-        "sha256": "38916b925806e978d27f0d7838cf64b88fafb11df4e749a04fa20fb4feb8e7cb"
+        "sha256": "55a91a4e2ba1437dd4b68d355f08369a8836b129d90b3e6aada710a40c549d70"
       },
       {
         "path": "tests/reports/patrol-wing/playable/drone-hit.png",
-        "sha256": "3d9862df3ecd21b1d4c4fc47a37d721bf6cb113f489c611c96a2ad28a70da553"
+        "sha256": "eeadde76755fde91079811a562edaf6035881588040a223447623d5be64fc654"
       },
       {
         "path": "tests/reports/patrol-wing/playable/canyon.png",
-        "sha256": "10ee3cb7838c7010e74b8e025c20346083a1dd1d151a6287670f73ffc6f88af8"
+        "sha256": "a07f5c1140fd28168a6a369b84584d728b40b8c35a43b53aeee466b768d4f61a"
       },
       {
         "path": "tests/reports/patrol-wing/playable/low-hull.png",
-        "sha256": "62ef68fd4ffaf8431e40bcd55321903b76d292a9cc269b697c31f010984cb7b1"
+        "sha256": "38d9e6c879a7e5fd6517bf0fcdb89cf5e09b13c93be0c018dd4ce07f24f3ee05"
       },
       {
         "path": "tests/reports/patrol-wing/playable/final-approach.png",
-        "sha256": "0d9629022a78fe05a083b51ed6eb2507ef79174390f1e4228b08159075d9e0f8"
+        "sha256": "eda36e270b7674084f9bc8b0aae4f5aa5019bcde6c7cb3357accd76b50aa99a2"
       },
       {
         "path": "tests/reports/patrol-wing/playable/touchdown.png",
-        "sha256": "fda7cdd12154c7d6cf9317c9275b887a0b2cfd9b22f877858fe14d00ec61a9d8"
+        "sha256": "898491033e588702cd7687c8030de455e3d3fb62198bdbc89eb208601f7a2462"
       },
       {
         "path": "tests/reports/patrol-wing/playable/mobile-touch.png",
-        "sha256": "c83fda225a1e94ec34d0ed8aedc520b12b56e00b41fdf0c2bf70d5ee7eff0aa2"
+        "sha256": "743fd9b3f47b7c8d9141bfa6bc3597977b4d8479fc521eef42aa67aa19938746"
       },
       {
         "path": "tests/reports/patrol-wing/playable/reduced-motion.png",
-        "sha256": "6ac45402706acb59a56feca81b84dc744e449fdf8ad05f5bf814fb8abc64ae73"
+        "sha256": "63ba0bf8869fd17d4b3ea22f93a55ef6582745fef571290ccd4fd63f97b55653"
       }
     ],
     "browserReceipt": "tests/reports/patrol-wing/playable/browser-evidence.json",

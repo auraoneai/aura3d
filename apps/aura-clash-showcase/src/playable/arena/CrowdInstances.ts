@@ -72,12 +72,13 @@ export function createCrowdInstances(): CrowdInstancesPool {
   const headGeometry = Geometry.uvSphere(0.12, 10, 7);
   const torsoMaterial = new InstancedUnlitMaterial({
     name: "aura-clash-crowd-torsos",
-    // Dark rooftop silhouettes against neon brick — set dressing, not subjects.
-    color: [0.025, 0.055, 0.07, 1]
+    // Lift the near-row value just enough to separate the crowd from the brick and floor.  These
+    // remain low-contrast set-dressing silhouettes, not a competing primary subject.
+    color: [0.034, 0.105, 0.125, 1]
   });
   const headMaterial = new InstancedUnlitMaterial({
     name: "aura-clash-crowd-heads",
-    color: [0.07, 0.12, 0.13, 1]
+    color: [0.075, 0.19, 0.205, 1]
   });
   const torsoTransforms = new Float32Array(FANS.length * 16);
   const headTransforms = new Float32Array(FANS.length * 16);

@@ -174,6 +174,14 @@ const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
+// The retained desktop probe is a 1440x900 frame. Keep its camera language
+// closer to the actual horde-survival reference (player hierarchy first,
+// threats readable around a broad play pocket) without changing the gameplay
+// capture mode or any deterministic state. Narrower playtest viewports retain
+// the chase-biased camera used by the normal route.
+const desktopComposition = typeof window !== "undefined"
+  && window.innerWidth >= 1400
+  && window.innerHeight >= 880;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const controls = [
@@ -826,10 +834,10 @@ appScene.camera(
     // problem the player is solving: courier in a readable center pocket,
     // threats pressing from every edge, and the live pulse aimed through it.
     // Runtime play keeps the lower chase-biased camera below.
-    distance: visualReviewCapture ? 10.6 : 9.2,
-    offset: (visualReviewCapture ? [0, 7.8, 3.1] : [0, 6.6, 5.2]) as [number, number, number],
-    fov: visualReviewCapture ? 45 : 49,
-    smoothing: visualReviewCapture ? 0 : 0.14
+    distance: visualReviewCapture ? 10.6 : desktopComposition ? 13.8 : 9.2,
+    offset: (visualReviewCapture ? [0, 7.8, 3.1] : desktopComposition ? [0, 9.1, 4.8] : [0, 6.6, 5.2]) as [number, number, number],
+    fov: visualReviewCapture ? 45 : desktopComposition ? 53 : 49,
+    smoothing: visualReviewCapture || desktopComposition ? 0 : 0.14
   })
 );
 
@@ -1375,7 +1383,7 @@ function update(dt: number): void {
   const playerNode = app.nodes.get("neon-player");
   if (playerNode) {
     const bob = Math.sin(elapsedSeconds * 9) * 0.04;
-    const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
+      const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
     const playerYaw = Math.atan2(resolveAim().x, resolveAim().z);
     playerNode
       .setPosition(player.x, 0.06 + bob, player.z)
@@ -1827,7 +1835,14 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       player.x = 0;
       player.z = 3;
       const node = app.nodes.get("neon-player");
-      node?.setPosition(player.x, 0.06, player.z).setRotation(0, 0, 0).setScale([1.34, 1.34, 1.34]);
+      // The old 1.34 neutral scale made the low-poly courier occupy most of
+      // the retained 1440x900 frame and hid the live threat field. Keep the
+      // typed primary asset fully present while restoring a clear player-over-
+      // horde hierarchy in the composition probe.
+      const neutralScale = desktopComposition || visualReviewCapture
+        ? [0.72, 0.8, 0.72] as [number, number, number]
+        : [0.94, 0.98, 0.94] as [number, number, number];
+      node?.setPosition(player.x, 0.06, player.z).setRotation(0, 0, 0).setScale(neutralScale);
       node?.setVisible(!compositionSubjectSuppressed);
     }
   },

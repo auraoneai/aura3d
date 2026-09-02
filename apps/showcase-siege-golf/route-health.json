@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-31T14:03:42.176Z",
+  "generatedAt": "2026-09-02T11:53:34.444Z",
   "appId": "showcase-siege-golf",
   "route": "/apps/showcase-siege-golf/",
   "classification": "prototype-blocked",
@@ -101,7 +101,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 22,
+    "sourceOccurrences": 29,
     "primitiveBudget": 40,
     "role": "physics guides, cup rings, aim ticks, and trail puffs as set dressing around the typed continuous world plus ball/crate/barrel/plank models",
     "status": "set-dressing-with-typed-primary-assets"
@@ -147,7 +147,7 @@
     "observed": {
       "maxWorldBodies": 26,
       "maxConstraints": 3,
-      "maxPhysicsP95Ms": 0.7034
+      "maxPhysicsP95Ms": 1.3231
     },
     "holesCompleted": 9,
     "pass": true

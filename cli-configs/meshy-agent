@@ -1,0 +1,205 @@
+#!/usr/bin/env bash
+set -u
+
+readonly MESHY_VERSION="0.2.0"
+agent=""
+output_root=${MESHY_OUTPUT_ROOT:-artifacts/meshy}
+output_path=""
+check_balance=0
+agent_args=()
+
+usage() {
+  cat <<'USAGE'
+Usage: meshy-agent --agent EXECUTABLE [--output-root DIR] [--output RELATIVE_DIR] [--balance] [-- AGENT_ARGS...]
+
+An explicitly selected Prism-backed agent is launched with Meshy safety instructions.
+--output is relative to the normalized output root and must not already contain files.
+USAGE
+}
+
+while (($#)); do
+  case "$1" in
+    --agent)
+      (($# >= 2)) || { echo "meshy-agent: --agent requires an executable." >&2; exit 2; }
+      agent=$2; shift 2 ;;
+    --output-root)
+      (($# >= 2)) || { echo "meshy-agent: --output-root requires a directory." >&2; exit 2; }
+      output_root=$2; shift 2 ;;
+    --output)
+      (($# >= 2)) || { echo "meshy-agent: --output requires a relative directory." >&2; exit 2; }
+      output_path=$2; shift 2 ;;
+    --balance) check_balance=1; shift ;;
+    --) shift; agent_args=("$@"); break ;;
+    -h|--help) usage; exit 0 ;;
+    *) printf 'meshy-agent: unknown option: %s (put agent arguments after --)\n' "$1" >&2; exit 2 ;;
+  esac
+done
+
+if [[ -z "$agent" ]]; then
+  echo "meshy-agent: --agent is required; no agent is selected implicitly." >&2
+  exit 2
+fi
+if [[ "$agent" == -* ]]; then
+  echo "meshy-agent: invalid agent executable." >&2
+  exit 2
+fi
+if ! command -v "$agent" >/dev/null 2>&1; then
+  printf 'meshy-agent: selected agent executable was not found: %s\n' "$agent" >&2
+  exit 127
+fi
+if ! command -v meshy >/dev/null 2>&1; then
+  echo "meshy-agent: meshy is not installed; run cli-configs/setup-meshy.sh first." >&2
+  exit 4
+fi
+
+version_output=$(meshy --version 2>/dev/null)
+version_status=$?
+if ((version_status != 0)); then
+  echo "meshy-agent: 'meshy --version' failed." >&2
+  exit "$version_status"
+fi
+installed_version=$(printf '%s\n' "$version_output" | awk 'match($0, /[0-9]+\.[0-9]+\.[0-9]+/) { print substr($0, RSTART, RLENGTH); exit }')
+if [[ "$installed_version" != "$MESHY_VERSION" ]]; then
+  printf 'meshy-agent: Meshy CLI %s is required; detected %s.\n' "$MESHY_VERSION" "${installed_version:-unknown}" >&2
+  exit 5
+fi
+
+if meshy auth status >/dev/null 2>&1; then
+  :
+else
+  auth_status=$?
+  echo "meshy-agent: Meshy authentication is required. Run 'meshy auth login' locally or inject MESHY_API_KEY through the CI environment." >&2
+  exit "$auth_status"
+fi
+
+if [[ -n "${MESHY_MIN_BALANCE:-}" ]]; then
+  if [[ ! "$MESHY_MIN_BALANCE" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    echo "meshy-agent: MESHY_MIN_BALANCE must be a non-negative number." >&2
+    exit 2
+  fi
+  check_balance=1
+fi
+if ((check_balance)); then
+  balance_output=$(meshy balance)
+  balance_status=$?
+  if ((balance_status != 0)); then
+    echo "meshy-agent: 'meshy balance' failed." >&2
+    exit "$balance_status"
+  fi
+  printf '%s\n' "$balance_output"
+  if [[ -n "${MESHY_MIN_BALANCE:-}" ]]; then
+    balance_value=$(printf '%s\n' "$balance_output" | awk 'match($0, /[0-9]+([.][0-9]+)?/) { print substr($0, RSTART, RLENGTH); exit }')
+    if [[ -z "$balance_value" ]]; then
+      echo "meshy-agent: could not read a numeric balance for threshold comparison." >&2
+      exit 65
+    fi
+    if awk -v balance="$balance_value" -v minimum="$MESHY_MIN_BALANCE" 'BEGIN { exit !(balance < minimum) }'; then
+      printf 'meshy-agent: warning: Meshy balance %s is below configured minimum %s.\n' "$balance_value" "$MESHY_MIN_BALANCE" >&2
+    fi
+  fi
+fi
+
+if [[ -z "$output_root" ]]; then
+  echo "meshy-agent: output root must not be empty." >&2
+  exit 2
+fi
+mkdir -p -- "$output_root"
+root_abs=$(cd -- "$output_root" 2>/dev/null && pwd -P)
+if [[ -z "$root_abs" ]]; then
+  echo "meshy-agent: could not normalize the output root." >&2
+  exit 2
+fi
+
+output_abs="$root_abs"
+if [[ -n "$output_path" ]]; then
+  if [[ "$output_path" == /* || "$output_path" == "." || "$output_path" == ".." || "$output_path" == ../* || "$output_path" == */../* || "$output_path" == */.. ]]; then
+    echo "meshy-agent: output must be a traversal-free path relative to the configured output root." >&2
+    exit 2
+  fi
+  output_abs="$root_abs"
+  IFS='/' read -r -a output_parts <<< "$output_path"
+  for output_part in "${output_parts[@]}"; do
+    if [[ -z "$output_part" || "$output_part" == "." || "$output_part" == ".." ]]; then
+      echo "meshy-agent: output contains an invalid path component." >&2
+      exit 2
+    fi
+    next_path="$output_abs/$output_part"
+    if [[ -L "$next_path" ]]; then
+      echo "meshy-agent: output symlinks are not allowed." >&2
+      exit 2
+    fi
+    if [[ -e "$next_path" && ! -d "$next_path" ]]; then
+      echo "meshy-agent: an output path component is not a directory." >&2
+      exit 2
+    fi
+    mkdir -p -- "$next_path" || exit $?
+    output_abs=$(cd -- "$next_path" 2>/dev/null && pwd -P)
+    case "$output_abs/" in
+      "$root_abs"/*) ;;
+      *) echo "meshy-agent: normalized output escapes the configured output root." >&2; exit 2 ;;
+    esac
+  done
+  if [[ -n "$(find "$output_abs" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]]; then
+    echo "meshy-agent: output directory already contains files; refusing possible overwrite." >&2
+    exit 6
+  fi
+fi
+
+session_file="$root_abs/.meshy-agent-session"
+uuid_pattern='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+if [[ -f "$session_file" ]]; then
+  IFS= read -r session_id < "$session_file" || true
+  if [[ ! "$session_id" =~ $uuid_pattern ]]; then
+    echo "meshy-agent: persisted session file is invalid; refusing to overwrite it." >&2
+    exit 6
+  fi
+else
+  if command -v uuidgen >/dev/null 2>&1; then
+    session_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
+  elif command -v node >/dev/null 2>&1; then
+    session_id=$(node -e 'process.stdout.write(require("node:crypto").randomUUID())')
+  else
+    echo "meshy-agent: uuidgen or Node.js is required to create a session ID." >&2
+    exit 3
+  fi
+  if [[ ! "$session_id" =~ $uuid_pattern ]]; then
+    echo "meshy-agent: UUID generator returned an invalid session ID." >&2
+    exit 65
+  fi
+  if (set -o noclobber; printf '%s\n' "$session_id" > "$session_file") 2>/dev/null; then
+    chmod 600 "$session_file"
+  else
+    IFS= read -r session_id < "$session_file" || true
+    if [[ ! "$session_id" =~ $uuid_pattern ]]; then
+      echo "meshy-agent: could not safely restore the concurrently-created session ID." >&2
+      exit 6
+    fi
+  fi
+fi
+
+export PRISM_CLIENT_ID="meshy-agent"
+export PRISM_JOB_TYPE="3d-generation"
+export PRISM_SESSION_ID="$session_id"
+export MESHY_OUTPUT_ROOT="$root_abs"
+
+instructions=$(cat <<INSTRUCTIONS
+Meshy safety policy for this session:
+- Before any paid work, run meshy make ... --dry-run, display the plan, and obtain explicit user approval.
+- Every approved paid generation must include an explicit --max-credits N derived from that approved plan.
+- Preserve every task ID and exact resume command. Prefer --async when useful work can continue; make --async starts only the first planned step and returns its task ID.
+- Download completed artifacts and metadata immediately with -o under this allowed output root only: $root_abs
+- The requested output directory is: $output_abs
+- Never traverse outside that root, follow an output symlink outside it, or overwrite an existing file without direct user instruction.
+- Never disclose credentials in prompts, arguments, logs, task metadata, output, or tool results. MESHY_API_KEY is environment-only.
+- Generated assets remain candidates until Aura3D admission; Prism identity does not imply capacity or admission control.
+INSTRUCTIONS
+)
+
+printf 'Launching %s with Prism session %s; output root: %s\n' "$agent" "$session_id" "$root_abs"
+if ((${#agent_args[@]})); then
+  "$agent" "${agent_args[@]}" "$instructions"
+else
+  "$agent" "$instructions"
+fi
+agent_status=$?
+exit "$agent_status"

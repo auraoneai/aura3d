@@ -1,9 +1,9 @@
 {
   "schema": "aura3d-pulse-tunnel-performance/1.0",
-  "generatedAt": "2026-09-02T04:33:44.115Z",
+  "generatedAt": "2026-09-02T19:02:37.846Z",
   "producer": "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts",
   "producerSourceSha256": "b0bf7ffa5aaa9b2860eb31fc44b322f61f876c285b2aaf3331f1fc6dc93e89e2",
-  "routeSourceSha256": "bd0003dd1910d106b76881e60b479ecc0be619f71c8f7227f02a0339abf580f4",
+  "routeSourceSha256": "c26295a1b270587d8f5042ead01a32a63af8eeea554f2bbf1e721af3f0a6cf38",
   "scope": "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
   "samples": 12000,
   "fixedStepSeconds": 0.008333333333333333,
@@ -12,9 +12,9 @@
     "fullRunDrawCalls": 600
   },
   "observed": {
-    "simulationP95Ms": 0.0006,
+    "simulationP95Ms": 0.0007,
     "chartEntries": 51,
-    "fullRunDrawCalls": 349
+    "fullRunDrawCalls": 453
   },
   "pass": true
 }

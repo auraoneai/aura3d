@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer } from "./example-dev-server";
+import { writeCorridorRouteHealthReceipt } from "../../examples/neon-corridor-strike/tests/route-evidence";
 
 test.setTimeout(180_000);
 
@@ -60,7 +61,8 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
     expect(initial?.enemyVisualY).toBeCloseTo(-0.45, 6);
     expect(initial?.enemyBodyY).not.toBe(initial?.enemyVisualY);
 
-    writeFileSync(resolve(reports, "first-load.png"), await page.screenshot({ fullPage: false }));
+    const firstLoad = await page.screenshot({ fullPage: false });
+    writeFileSync(resolve(reports, "first-load.png"), firstLoad);
 
     await page.locator("canvas").click();
     await page.keyboard.press("KeyJ");
@@ -190,15 +192,20 @@ test("neon-corridor-strike is a playable prototype FPS", async ({ page }) => {
     expect(reloaded?.reserve).toBe(12);
     expect(reloaded?.reloading).toBe(false);
 
-    writeFileSync(resolve(reports, "route-health.json"), `${JSON.stringify({
-      ready: true,
-      claimLabel: afterDeathReset?.claimLabel,
-      rendererMode: afterDeathReset?.rendererMode,
-      rendererFallback: afterDeathReset?.rendererFallback,
-      typedAssets: afterDeathReset?.typedAssets,
+    const receipt = writeCorridorRouteHealthReceipt({
+      reportPath: resolve(reports, "route-health.json"),
+      screenshotPath: resolve(reports, "first-load.png"),
+      screenshotBytes: firstLoad,
+      evidence: afterDeathReset,
+      routeReady: true,
       primitiveCount: afterDeathReset?.primitiveCount,
-      knownLimits: afterDeathReset?.knownLimits
-    }, null, 2)}\n`);
+      gameplayStatus: "passed"
+    });
+    expect(receipt.status).toBe("ready");
+    expect(receipt.pass).toBe(true);
+    expect(receipt.evidence.status).toBe("captured");
+    expect(receipt.evidence.screenshot.sha256).toMatch(/^sha256-[a-f0-9]{64}$/);
+    expect(receipt.source.hash).toMatch(/^sha256-[a-f0-9]{64}$/);
   } finally {
     await server.close();
   }

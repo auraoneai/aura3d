@@ -92,10 +92,16 @@ function roadGuidanceNodes(): AuraNodeInput[] {
 
 /** Clean northbound review corridor on the same authored main-street axis. */
 function reviewCorridorNodes(): AuraNodeInput[] {
-  const road = material.pbr({ name: "courier review wet asphalt", color: "#182633", roughness: 0.32, metallic: 0.34, clearcoat: 0.32 });
-  const sidewalk = material.pbr({ name: "courier review sidewalk", color: "#3b4d58", roughness: 0.74, metallic: 0.08 });
-  const facade = material.pbr({ name: "courier review facade", color: "#263a4a", roughness: 0.52, metallic: 0.28, emissive: "#0d2030", emissiveIntensity: 0.16 });
-  const rib = material.pbr({ name: "courier review structural ribs", color: "#466173", roughness: 0.34, metallic: 0.62, clearcoat: 0.24 });
+  // Keep this presentation slice on the real east avenue, but give the road
+  // and surrounding architecture separate authored responses. The prior
+  // single dark asphalt slab made the van and traffic read as silhouettes;
+  // wet road, raised curbs, and layered facade ribs now carry scale/contact
+  // without changing the gameplay street graph or camera.
+  const road = material.pbr({ name: "courier review wet asphalt", color: "#263c49", roughness: 0.24, metallic: 0.48, clearcoat: 0.56, clearcoatRoughness: 0.16, envMapIntensity: 0.82 });
+  const sidewalk = material.pbr({ name: "courier review sidewalk", color: "#425d6b", roughness: 0.68, metallic: 0.16, clearcoat: 0.18, envMapIntensity: 0.7 });
+  const curb = material.metal({ name: "courier review curb steel", color: "#6d8490", roughness: 0.36, metallic: 0.64, clearcoat: 0.42, clearcoatRoughness: 0.12, envMapIntensity: 1.12 });
+  const facade = material.pbr({ name: "courier review facade", color: "#304b5c", roughness: 0.46, metallic: 0.36, clearcoat: 0.3, clearcoatRoughness: 0.18, emissive: "#102b3a", emissiveIntensity: 0.2, envMapIntensity: 0.72 });
+  const rib = material.metal({ name: "courier review structural ribs", color: "#63808f", roughness: 0.3, metallic: 0.7, clearcoat: 0.5, clearcoatRoughness: 0.11, envMapIntensity: 1.16 });
   const facadeTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
   const practicalTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
   const practicalColors: string[] = [];
@@ -124,6 +130,9 @@ function reviewCorridorNodes(): AuraNodeInput[] {
   const ribTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
   const ribGlowTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
   const ribGlowColors: string[] = [];
+  const laneTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+  const laneColors: string[] = [];
+  const curbTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
   for (let portal = 0; portal < 6; portal += 1) {
     const z = 13 - portal * 7.5;
     ribTransforms.push(
@@ -146,6 +155,21 @@ function reviewCorridorNodes(): AuraNodeInput[] {
     practicalTransforms.push({ position: [0, 0.035, z], scale: [0.08, 0.018, 1.25] });
     practicalColors.push("#dffcff");
   }
+  // The avenue has two lanes in the actual route graph. Use short, offset
+  // reflective dashes rather than one uninterrupted stripe so the eye reads
+  // forward motion and lane ownership around the live traffic car.
+  for (let dash = 0; dash < 13; dash += 1) {
+    const z = 16.4 - dash * 2.75;
+    laneTransforms.push(
+      { position: [-1.18, 0.026, z], scale: [0.075, 0.024, 0.82] },
+      { position: [1.18, 0.027, z + 0.35], scale: [0.075, 0.024, 0.82] }
+    );
+    laneColors.push(dash % 3 === 0 ? "#ffd166" : "#a5f3fc", dash % 3 === 1 ? "#ff9aaa" : "#8af7ff");
+    curbTransforms.push(
+      { position: [-2.18, 0.08, z], scale: [0.14, 0.09, 1.1] },
+      { position: [2.18, 0.08, z + 0.35], scale: [0.14, 0.09, 1.1] }
+    );
+  }
   return [
     instances.box({
       name: "courier review main road",
@@ -161,6 +185,12 @@ function reviewCorridorNodes(): AuraNodeInput[] {
         { position: [6.1, 0.08, -2], scale: [1.45, 0.16, 34] }
       ],
       material: sidewalk
+    }),
+    instances.box({
+      name: "courier review raised lane curbs",
+      size: [1, 1, 1],
+      transforms: curbTransforms,
+      material: curb
     }),
     instances.box({
       name: "courier review facades",
@@ -187,6 +217,13 @@ function reviewCorridorNodes(): AuraNodeInput[] {
       transforms: practicalTransforms,
       colors: practicalColors,
       material: material.emissive({ name: "courier review practical", color: "#8af7ff", emissive: "#22d3ee", emissiveIntensity: 1.05 })
+    }),
+    instances.box({
+      name: "courier review lane dashes",
+      size: [1, 1, 1],
+      transforms: laneTransforms,
+      colors: laneColors,
+      material: material.emissive({ name: "courier review lane paint", color: "#a5f3fc", emissive: "#22d3ee", emissiveIntensity: 1.08, opacity: 0.9 })
     }),
     instances.box({
       name: "courier review converging rails",
@@ -372,6 +409,106 @@ function skylineDressingNodes(): AuraNodeInput[] {
   return nodes;
 }
 
+/**
+ * Route-local street furniture for the opening delivery frame.  The city kit
+ * supplies the broad block, while this pass gives the courier lane a visual
+ * grammar of its own: a real crosswalk, loading-bay plinths, curb reflectors,
+ * and one readable dispatch gantry.  These are renderer-owned set dressing;
+ * the street graph and strike colliders remain the gameplay authority.
+ */
+function courierStreetSignatureNodes(): AuraNodeInput[] {
+  const crosswalkMaterial = material.metal({
+    name: "courier crosswalk reflective paint",
+    color: "#9cb9c4",
+    roughness: 0.3,
+    metallic: 0.62,
+    clearcoat: 0.42,
+    clearcoatRoughness: 0.12,
+    envMapIntensity: 0.94
+  });
+  const curbMaterial = material.metal({
+    name: "courier curb marker metal",
+    color: "#526d7a",
+    roughness: 0.35,
+    metallic: 0.66,
+    clearcoat: 0.36,
+    clearcoatRoughness: 0.14,
+    envMapIntensity: 0.86
+  });
+  const bayMaterial = material.pbr({
+    name: "courier loading bay concrete",
+    color: "#314e5b",
+    roughness: 0.6,
+    metallic: 0.22,
+    clearcoat: 0.24,
+    clearcoatRoughness: 0.18,
+    emissive: "#092d3d",
+    emissiveIntensity: 0.28,
+    envMapIntensity: 0.72
+  });
+  const cyan = material.emissive({
+    name: "courier wayfinding cyan",
+    color: "#c7f9ff",
+    emissive: "#22d3ee",
+    emissiveIntensity: 1.62,
+    opacity: 0.92
+  });
+  const coral = material.emissive({
+    name: "courier wayfinding coral",
+    color: "#ffd1d8",
+    emissive: "#fb7185",
+    emissiveIntensity: 1.42,
+    opacity: 0.88
+  });
+  const crosswalkTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+  const crosswalkColors: string[] = [];
+  for (let stripe = 0; stripe < 7; stripe += 1) {
+    crosswalkTransforms.push({ position: [-2.35 + stripe * 0.78, 0.11, 16.0], scale: [0.3, 0.035, 0.5] });
+    crosswalkColors.push(stripe % 2 === 0 ? "#d9fbff" : "#9db8c2");
+  }
+  const curbTransforms: Array<{ position: [number, number, number]; scale: [number, number, number] }> = [];
+  const curbColors: string[] = [];
+  for (let marker = 0; marker < 8; marker += 1) {
+    const z = 18.2 - marker * 4.55;
+    curbTransforms.push(
+      { position: [-2.2, 0.12, z], scale: [0.11, 0.09, 0.52] },
+      { position: [2.2, 0.12, z + 0.26], scale: [0.11, 0.09, 0.52] }
+    );
+    curbColors.push(marker % 2 === 0 ? "#7ce8ff" : "#ff9aaa", marker % 2 === 0 ? "#ff9aaa" : "#7ce8ff");
+  }
+  const bayTransforms = [
+    { position: [-3.7, 0.16, 14.0], scale: [1.05, 0.16, 2.25] },
+    { position: [3.7, 0.16, 14.0], scale: [1.05, 0.16, 2.25] },
+    { position: [-3.7, 0.34, 14.0], scale: [0.8, 0.12, 1.52] },
+    { position: [3.7, 0.34, 14.0], scale: [0.8, 0.12, 1.52] }
+  ] as const;
+  return [
+    instances.box({
+      name: "courier opening crosswalk",
+      size: [1, 1, 1],
+      transforms: crosswalkTransforms,
+      colors: crosswalkColors,
+      material: crosswalkMaterial
+    }),
+    instances.box({
+      name: "courier reflective curb markers",
+      size: [1, 1, 1],
+      transforms: curbTransforms,
+      colors: curbColors,
+      material: curbMaterial
+    }),
+    instances.box({ name: "courier loading bay plinths", size: [1, 1, 1], transforms: bayTransforms, material: bayMaterial }),
+    primitives.box({ name: "courier dispatch gantry left", material: bayMaterial }).position(-2.75, 2.15, 11.9).scale([0.18, 2.15, 0.18]),
+    primitives.box({ name: "courier dispatch gantry right", material: bayMaterial }).position(2.75, 2.15, 11.9).scale([0.18, 2.15, 0.18]),
+    primitives.box({ name: "courier dispatch gantry lintel", material: bayMaterial }).position(0, 4.18, 11.9).scale([2.95, 0.18, 0.18]),
+    primitives.box({ name: "courier dispatch gantry cyan sign", material: cyan }).position(-1.18, 3.75, 11.68).scale([0.78, 0.3, 0.05]),
+    primitives.box({ name: "courier dispatch gantry coral sign", material: coral }).position(1.18, 3.75, 11.68).scale([0.78, 0.3, 0.05]),
+    lights.point({ name: "courier crosswalk practical", color: "#ffe3b0", intensity: 2.3 }).position(0, 2.4, 16.0),
+    lights.point({ name: "courier gantry cyan practical", color: "#22d3ee", intensity: 2.2 }).position(-2.2, 3.4, 11.8),
+    lights.point({ name: "courier gantry coral practical", color: "#fb7185", intensity: 2.0 }).position(2.2, 3.4, 11.8)
+  ];
+}
+
 
 export interface ZoneSite {
   readonly id: string;
@@ -461,6 +598,95 @@ function stripKitParkedCars(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
 export interface CityAssetRefs {
   readonly courierZoneBollard: AuraAssetRef<"model">;
   readonly courierZoneAwning: AuraAssetRef<"model">;
+  /** A typed traffic body staged in the capture corridor as a pressure cue. */
+  readonly courierTrafficSedan: AuraAssetRef<"model">;
+}
+
+/**
+ * The opening frame needs an authored pressure beat, not an empty road. These
+ * rails are renderer-owned scene geometry around a typed traffic blocker; they
+ * do not replace the live lane-loop simulation or add an unreported collider.
+ * The actual collision/strike path remains the runtime traffic and lamp-pole
+ * proxy system in main.ts.
+ */
+function pressureMomentNodes(
+  assets: CityAssetRefs,
+  originX: number,
+  originZ: number
+): readonly AuraNodeInput[] {
+  const gateBody = material.metal({
+    name: "courier pressure gate body",
+    color: "#354a5a",
+    roughness: 0.3,
+    metallic: 0.7,
+    clearcoat: 0.34,
+    clearcoatRoughness: 0.12,
+    envMapIntensity: 1.05
+  });
+  const warningGlow = material.emissive({
+    name: "courier pressure warning laser",
+    color: "#ffd3a3",
+    emissive: "#fb7185",
+    emissiveIntensity: 1.72,
+    opacity: 0.86
+  });
+  const cyanGlow = material.emissive({
+    name: "courier pressure cyan laser",
+    color: "#b9f7ff",
+    emissive: "#22d3ee",
+    emissiveIntensity: 1.45,
+    opacity: 0.8
+  });
+  return [
+    instances.box({
+      name: "courier pressure gate frame",
+      size: [1, 1, 1],
+      transforms: [
+        { position: [originX - 2.2, 1.65, originZ], scale: [0.22, 1.65, 0.22] },
+        { position: [originX + 2.2, 1.65, originZ], scale: [0.22, 1.65, 0.22] },
+        { position: [originX, 3.22, originZ], scale: [4.6, 0.22, 0.22] }
+      ],
+      material: gateBody
+    }),
+    instances.box({
+      name: "courier pressure gate warning lasers",
+      size: [1, 1, 1],
+      transforms: [
+        { position: [originX, 0.72, originZ - 0.12], scale: [2.02, 0.045, 0.065] },
+        { position: [originX - 1.28, 1.64, originZ - 0.18], scale: [0.05, 1.08, 0.05] },
+        { position: [originX + 1.28, 1.64, originZ - 0.18], scale: [0.05, 1.08, 0.05] }
+      ],
+      colors: ["#ffd3a3", "#ff9aaa", "#ff9aaa"],
+      material: warningGlow
+    }),
+    instances.box({
+      name: "courier pressure gate cyan lane laser",
+      size: [1, 1, 1],
+      transforms: [
+        { position: [originX - 1.75, 0.11, originZ + 0.28], scale: [0.06, 0.035, 0.9] },
+        { position: [originX + 1.75, 0.11, originZ + 0.28], scale: [0.06, 0.035, 0.9] }
+      ],
+      material: cyanGlow
+    }),
+    model(assets.courierTrafficSedan, {
+      name: "courier pressure blocker typed traffic",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 2.6,
+      material: material.pbr({
+        name: "courier pressure blocker lacquer",
+        color: "#e85d75",
+        roughness: 0.2,
+        metallic: 0.52,
+        clearcoat: 0.5,
+        clearcoatRoughness: 0.12,
+        emissive: "#4a1024",
+        emissiveIntensity: 0.28
+      }),
+      castShadow: true,
+      receiveShadow: true
+    }).position(originX - 0.82, 0, originZ - 1.15).rotate(0, -Math.PI / 2, 0)
+  ];
 }
 
 
@@ -510,8 +736,14 @@ export function buildCityDressing(assets: CityAssetRefs, reviewCapture = false):
     : [
         group("courier city block night kit", kitNodes, {}).scale([CITY_SCALE, CITY_SCALE, CITY_SCALE]),
         ...guidanceNodes,
-        ...skylineDressingNodes()
+        ...skylineDressingNodes(),
+        ...courierStreetSignatureNodes()
       ];
+
+  // A typed traffic body and warning gate give the opening chase frame a
+  // readable pressure target. The frame is visual set dressing only; live
+  // traffic and the documented strike proxies remain the gameplay authority.
+  staticNodes.push(...pressureMomentNodes(assets, reviewCapture ? 15.3 : 0, 10.6));
 
   let primitiveCount = 0;
   for (const site of reviewCapture ? [] : ZONE_SITES) {

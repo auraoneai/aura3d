@@ -27,7 +27,7 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
-import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome } from "./flight";
+import { FlightModel, FLIGHT_DT, type FlightInput, type FlightOutcome, type Vec3 } from "./flight";
 import {
   arenaLighting,
   arenaNodes,
@@ -184,6 +184,8 @@ let gradeTimer = 0;
 let paused = false;
 let cameraMode: "chase" | "cockpit" = "chase";
 let evidenceCombatFocus = false;
+/** Live target point used only by the deterministic combat review composition. */
+let combatFocusPoint: Vec3 | null = null;
 let padSensorLatched = false;
 let padSensorEntries = 0;
 let outOfCombatFrames = 0;
@@ -236,6 +238,60 @@ function heroNodes(): AuraSceneNode[] {
       .runtime({ id: "plane", tags: ["typed-asset", "hero"] })
       .toJSON()
   );
+  // Route-owned hardpoints reinforce the typed aircraft silhouette at chase
+  // distance. They are attached to the live flight axes below, so the canopy,
+  // engines, and wingtip livery bank with the model instead of reading as
+  // unrelated HUD geometry.
+  nodes.push(
+    primitives.sphere({
+      name: "aircraft canopy",
+      material: material.pbr({ name: "aircraft canopy glass", color: "#102b46", roughness: 0.2, metallic: 0.45, emissive: "#153e5b", emissiveIntensity: 0.12 })
+    })
+      .position(0, -70, 0)
+      .scale([0.42, 0.22, 0.32])
+      .runtime({ id: "plane-canopy", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
+    primitives.box({
+      name: "aircraft dorsal spine",
+      material: material.pbr({ name: "aircraft dorsal spine", color: "#17324a", roughness: 0.4, metallic: 0.72 })
+    })
+      .position(0, -70, 0)
+      .scale([0.52, 0.08, 0.1])
+      .runtime({ id: "plane-dorsal-spine", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
+    primitives.box({
+      name: "aircraft engine nacelle left",
+      material: material.pbr({ name: "aircraft engine nacelle", color: "#273a4b", roughness: 0.52, metallic: 0.78 })
+    })
+      .position(0, -70, 0)
+      .scale([0.36, 0.11, 0.12])
+      .runtime({ id: "plane-engine-left", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
+    primitives.box({
+      name: "aircraft engine nacelle right",
+      material: material.pbr({ name: "aircraft engine nacelle", color: "#273a4b", roughness: 0.52, metallic: 0.78 })
+    })
+      .position(0, -70, 0)
+      .scale([0.36, 0.11, 0.12])
+      .runtime({ id: "plane-engine-right", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
+    primitives.box({
+      name: "aircraft left wingtip livery",
+      material: material.emissive({ name: "aircraft coral livery", color: "#ff718b", emissive: "#ff3d70", emissiveIntensity: 1.35 })
+    })
+      .position(0, -70, 0)
+      .scale([0.34, 0.045, 0.16])
+      .runtime({ id: "plane-wingtip-left", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON(),
+    primitives.box({
+      name: "aircraft right wingtip livery",
+      material: material.emissive({ name: "aircraft cyan livery", color: "#78efff", emissive: "#16c9e6", emissiveIntensity: 1.45 })
+    })
+      .position(0, -70, 0)
+      .scale([0.34, 0.045, 0.16])
+      .runtime({ id: "plane-wingtip-right", tags: ["aircraft-identity", "renderer-owned"] })
+      .toJSON()
+  );
   nodes.push(
     model(assets.patrolWingPlane, {
       name: "ghost-plane",
@@ -263,6 +319,23 @@ function heroNodes(): AuraSceneNode[] {
         .runtime({ id: `drone-slot-${slot}`, tags: ["typed-asset", "drone"] })
         .toJSON()
     );
+    // A variant-coloured nose lamp gives each typed interceptor a readable
+    // threat identity without repainting or replacing the release-probed GLB.
+    nodes.push(
+      primitives.sphere({
+        name: `drone-slot-${slot} threat lamp`,
+        material: material.emissive({
+          name: slot % 2 === 0 ? "drone A threat lamp" : "drone B threat lamp",
+          color: slot % 2 === 0 ? "#ff8b5c" : "#d7a5ff",
+          emissive: slot % 2 === 0 ? "#ff3d1f" : "#9b5cff",
+          emissiveIntensity: 2.2
+        })
+      })
+        .position(0, -70, 0)
+        .scale(0.13)
+        .runtime({ id: `drone-lamp-${slot}`, tags: ["drone-identity", "renderer-owned"] })
+        .toJSON()
+    );
   }
   for (let orb = 0; orb < 8; orb += 1) {
     nodes.push(
@@ -272,8 +345,24 @@ function heroNodes(): AuraSceneNode[] {
           material: material.emissive({ name: `orb ${orb} glow`, color: "#8a3b18", emissive: "#ff9d3d", emissiveIntensity: 2.1, roughness: 0.3 })
         })
         .position(0, -70 - orb, 0)
-        .scale(visualReviewCapture ? 0.09 : 0.38)
+        .scale(visualReviewCapture ? 0.24 : 0.38)
         .runtime({ id: `orb-${orb}`, tags: ["return-fire"] })
+        .toJSON()
+    );
+    nodes.push(
+      primitives.box({
+        name: `return-fire orb trail ${orb}`,
+        material: material.emissive({
+          name: "return-fire trail",
+          color: "#ffb347",
+          emissive: "#ff6b2c",
+          emissiveIntensity: 1.9,
+          opacity: 0.74
+        })
+      })
+        .position(0, -70, 0)
+        .scale([0.045, 0.045, visualReviewCapture ? 0.72 : 0.7])
+        .runtime({ id: `orb-trail-${orb}`, tags: ["return-fire", "projectile-feedback", "renderer-owned"] })
         .toJSON()
     );
   }
@@ -342,8 +431,12 @@ function heroNodes(): AuraSceneNode[] {
       .position(0, -70, 0).scale([0.34, 0.34, 0.055]).runtime({ id: "lead-drone-lock", tags: ["target-indicator", "renderer-owned"] }).toJSON(),
     primitives.sphere({ name: "combat muzzle flash", material: material.emissive({ color: "#ffd166", emissive: "#ff9f1c", emissiveIntensity: 3.4 }) })
       .position(0, -70, 0).scale(0.14).runtime({ id: "combat-muzzle-flash", tags: ["combat-fx"] }).toJSON(),
+    primitives.sphere({ name: "combat impact core", material: material.emissive({ color: "#fff2b2", emissive: "#ff6b2c", emissiveIntensity: 3.8 }) })
+      .position(0, -70, 0).scale(0.24).runtime({ id: "combat-impact-core", tags: ["combat-fx", "hit-feedback"] }).toJSON(),
     primitives.torus({ name: "combat impact ring", material: material.emissive({ color: "#b74924", emissive: "#ff7435", emissiveIntensity: 2.5, opacity: 0.72 }) })
       .position(0, -70, 0).scale([0.3, 0.3, 0.06]).runtime({ id: "combat-impact-ring", tags: ["combat-fx"] }).toJSON(),
+    primitives.torus({ name: "combat impact shockwave", material: material.emissive({ color: "#ffcb69", emissive: "#ff9f1c", emissiveIntensity: 2.1, opacity: 0.58 }) })
+      .position(0, -70, 0).scale([0.54, 0.54, 0.075]).runtime({ id: "combat-impact-shockwave", tags: ["combat-fx", "hit-feedback"] }).toJSON(),
     primitives.box({ name: "combat debris shard a", material: material.emissive({ color: "#ffb347", emissive: "#f97316", emissiveIntensity: 3.2 }) })
       .position(0, -70, 0).scale([0.08, 0.08, 0.44]).runtime({ id: "combat-debris-a", tags: ["combat-fx"] }).toJSON(),
     primitives.box({ name: "combat debris shard b", material: material.emissive({ color: "#ff8c42", emissive: "#f05a28", emissiveIntensity: 2.6 }) })
@@ -494,22 +587,34 @@ if (!input) throw new Error("Patrol Wing failed to create Aura3D input.");
 const planeHandle = app.nodes.require("plane") as AuraRuntimeNodeHandle;
 const ghostHandle = app.nodes.get("ghost-plane") as AuraRuntimeNodeHandle | undefined;
 const cameraTargetHandle = app.nodes.get("camera-target") as AuraRuntimeNodeHandle | undefined;
+const planeCanopyHandle = app.nodes.get("plane-canopy") as AuraRuntimeNodeHandle | undefined;
+const planeDorsalSpineHandle = app.nodes.get("plane-dorsal-spine") as AuraRuntimeNodeHandle | undefined;
+const planeEngineHandles = [
+  app.nodes.get("plane-engine-left") as AuraRuntimeNodeHandle | undefined,
+  app.nodes.get("plane-engine-right") as AuraRuntimeNodeHandle | undefined
+];
+const planeWingtipHandles = [
+  app.nodes.get("plane-wingtip-left") as AuraRuntimeNodeHandle | undefined,
+  app.nodes.get("plane-wingtip-right") as AuraRuntimeNodeHandle | undefined
+];
 const planeNavLeftHandle = app.nodes.get("plane-nav-left") as AuraRuntimeNodeHandle | undefined;
 const planeNavRightHandle = app.nodes.get("plane-nav-right") as AuraRuntimeNodeHandle | undefined;
 const planeWakeHandles = Array.from({ length: 8 }, (_, index) => app.nodes.get(`plane-wake-${index}`) as AuraRuntimeNodeHandle | undefined);
 const airPressureHandles = Array.from({ length: 8 }, (_, index) => app.nodes.get(`air-pressure-${index}`) as AuraRuntimeNodeHandle | undefined);
 const droneWakeHandles = Array.from({ length: 6 }, (_, index) => app.nodes.get(`drone-wake-${index}`) as AuraRuntimeNodeHandle | undefined);
+const droneLampHandles = Array.from({ length: DRONE_NODE_COUNT }, (_, index) => app.nodes.get(`drone-lamp-${index}`) as AuraRuntimeNodeHandle | undefined);
+const orbTrailHandles = Array.from({ length: 8 }, (_, index) => app.nodes.get(`orb-trail-${index}`) as AuraRuntimeNodeHandle | undefined);
 const leadDroneLockHandle = app.nodes.get("lead-drone-lock") as AuraRuntimeNodeHandle | undefined;
 const droneHandles = new Map<number, AuraRuntimeNodeHandle>();
 const orbHandles = new Map<string, AuraRuntimeNodeHandle>();
-const combatFxHandles = ["combat-muzzle-flash", "combat-impact-ring", "combat-debris-a", "combat-debris-b", "combat-cannon-tracer"].map((id) => app.nodes.require(id) as AuraRuntimeNodeHandle);
-const [combatMuzzleHandle, combatImpactHandle, combatDebrisAHandle, combatDebrisBHandle, combatTracerHandle] = combatFxHandles as [
-  AuraRuntimeNodeHandle,
-  AuraRuntimeNodeHandle,
-  AuraRuntimeNodeHandle,
-  AuraRuntimeNodeHandle,
-  AuraRuntimeNodeHandle
-];
+const combatFxHandles = ["combat-muzzle-flash", "combat-impact-core", "combat-impact-ring", "combat-impact-shockwave", "combat-debris-a", "combat-debris-b", "combat-cannon-tracer"].map((id) => app.nodes.require(id) as AuraRuntimeNodeHandle);
+const combatMuzzleHandle = app.nodes.require("combat-muzzle-flash") as AuraRuntimeNodeHandle;
+const combatImpactCoreHandle = app.nodes.require("combat-impact-core") as AuraRuntimeNodeHandle;
+const combatImpactHandle = app.nodes.require("combat-impact-ring") as AuraRuntimeNodeHandle;
+const combatImpactShockwaveHandle = app.nodes.require("combat-impact-shockwave") as AuraRuntimeNodeHandle;
+const combatDebrisAHandle = app.nodes.require("combat-debris-a") as AuraRuntimeNodeHandle;
+const combatDebrisBHandle = app.nodes.require("combat-debris-b") as AuraRuntimeNodeHandle;
+const combatTracerHandle = app.nodes.require("combat-cannon-tracer") as AuraRuntimeNodeHandle;
 const ringHandles = new Map<number, AuraRuntimeNodeHandle>();
 for (let slot = 0; slot < DRONE_NODE_COUNT; slot += 1) {
   const handle = app.nodes.get(`drone-slot-${slot}`);
@@ -652,19 +757,26 @@ function stageCombatExchange(
 
   combatMuzzleHandle
     .setPosition(from[0] + ux * 1.05, from[1] + 0.16 + uy * 1.05, from[2] + uz * 1.05)
-    .setScale([0.18, 0.18, 0.18]);
+    .setScale([0.28, 0.28, 0.28]);
+  combatImpactCoreHandle
+    .setPosition(targetPoint[0], targetPoint[1], targetPoint[2])
+    .setScale([0.34, 0.34, 0.34]);
   combatImpactHandle
     .setPosition(targetPoint[0], targetPoint[1], targetPoint[2])
     .setRotation(pitch, yaw, 0)
-    .setScale([0.3, 0.3, 0.06]);
+    .setScale([0.58, 0.58, 0.1]);
+  combatImpactShockwaveHandle
+    .setPosition(targetPoint[0], targetPoint[1], targetPoint[2])
+    .setRotation(pitch, yaw, 0)
+    .setScale([0.86, 0.86, 0.12]);
   combatDebrisAHandle
     .setPosition(targetPoint[0] - 0.46, targetPoint[1] + 0.38, targetPoint[2] + 0.18)
     .setRotation(-0.34, yaw - 0.72, 0.48)
-    .setScale([0.08, 0.08, 0.48]);
+    .setScale([0.12, 0.12, 0.62]);
   combatDebrisBHandle
     .setPosition(targetPoint[0] + 0.54, targetPoint[1] - 0.18, targetPoint[2] - 0.12)
     .setRotation(0.28, yaw + 0.82, -0.42)
-    .setScale([0.07, 0.07, 0.42]);
+    .setScale([0.1, 0.1, 0.56]);
   combatTracerHandle
     .setPosition(
       (from[0] + targetPoint[0]) * 0.5,
@@ -677,6 +789,7 @@ function stageCombatExchange(
 
 function resetToPad(nextPatrol?: number): void {
   evidenceCombatFocus = false;
+  combatFocusPoint = null;
   planeHandle.setVisible(true);
   for (const handle of ringHandles.values()) handle.setVisible(true);
   if (nextPatrol && nextPatrol !== patrolValue) {
@@ -699,6 +812,7 @@ function resetToPad(nextPatrol?: number): void {
   for (let slot = DRONE_NODE_COUNT - 1; slot >= 0; slot -= 1) freeDroneSlots.push(slot);
   arena.clearOrbs();
   for (const handle of orbHandles.values()) handle.setPosition(0, -70, 0);
+  for (const handle of orbTrailHandles) handle?.setPosition(0, -70, 0).setVisible(false);
   for (const handle of combatFxHandles) handle.setPosition(0, -70, 0);
   for (const handle of droneWakeHandles) handle?.setPosition(0, -70, 0).setVisible(false);
   leadDroneLockHandle?.setPosition(0, -70, 0).setVisible(false);
@@ -913,7 +1027,7 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
     planeHandle.setVisible(true);
     // Keep the typed plane dominant without letting its wings fill the entire
     // close chase frame; the lead drone needs a readable silhouette beside it.
-    const stagedPlaneScale = scenario === "drone-hit" ? 0.78 : 0.74;
+    const stagedPlaneScale = scenario === "drone-hit" ? 0.98 : 0.94;
     planeHandle.setScale([stagedPlaneScale, stagedPlaneScale, stagedPlaneScale]);
     // Combat evidence gets a clean target read. Ring progression remains
     // truthful in state/HUD and has its own canonical ring-run artifact; six
@@ -926,11 +1040,14 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
     // only—the authored flight state and real combat/sensor events are
     // unchanged.
     Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, {
-      offset: [0.25, 3.7, 10.8],
-      targetOffset: [0.2, 0.52, -4.75],
-      fov: 50
+      // Chase from behind the aircraft and look through the live target
+      // corridor. The previous front-biased offset left the plane filling the
+      // lower half while the ridge hid the lead drone during hit captures.
+      offset: [0.32, 2.9, -11.4],
+      targetOffset: [-0.35, 0.38, 3.4],
+      fov: 54
     });
-    if (scenario === "drone-hit") evidenceCombatFocus = true;
+    evidenceCombatFocus = true;
     flight = new FlightModel({ position: [scenario === "drone-hit" ? -1.4 : -9.2, 10.4, -5.2], headingYaw: -1.05, grounded: "airborne", throttle: 0.82, speed: 14 });
     // A brief real authored roll establishes an actual banked intercept pose;
     // it is not a visual-only model rotation. The resulting FlightModel state
@@ -955,22 +1072,28 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
     // derived from FlightModel state; no actor is moved toward the camera.
     const evidenceDrones = interceptSpawns(1, 0, flight.position, flight.forward);
     const leadPosition = evidenceDrones[0]!.position;
+    combatFocusPoint = [...leadPosition] as Vec3;
     for (const spawn of evidenceDrones) {
       const slot = freeDroneSlots.pop();
       if (slot !== undefined) {
         droneSlotById.set(spawn.id, slot);
+        // Keep the lead typed interceptor at an unmistakable dogfight scale.
+        // The previous 1.16 target still collapsed against the island ridge in
+        // the exact 1280x800 capture, making the tracer read as a detached HUD
+        // mark. This is a presentation scale on the resolved GLB, not a proxy
+        // replacement; all hitboxes and positions remain combat-world truth.
         const stagedDroneScale = spawn.id.endsWith("-0")
-          ? (scenario === "drone-hit" ? 1.16 : 1.1)
-          : 0.88;
+          ? (scenario === "drone-hit" ? 1.46 : 1.34)
+          : 0.98;
         droneHandles.get(slot)?.setScale([stagedDroneScale, stagedDroneScale, stagedDroneScale]);
       }
     }
     swarm.spawnWave(evidenceDrones);
     if (scenario === "drone-pass") {
-      evidenceCombatFocus = true;
       // Put the real pooled Rapier return-fire sensors into the retained action
       // frame. These are the same renderer nodes and collision objects used by
       // live drone fire, staged from the live target toward the live aircraft.
+      arena.setPlayerPosition(flight.position);
       const lead = evidenceDrones[0]!.position;
       arena.spawnOrb([lead[0] - 0.35, lead[1] + 0.9, lead[2]], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
       arena.step(0.12);
@@ -997,6 +1120,12 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
       // Stage a real deterministic combat exchange, not cue-only evidence: the
       // cannon and combat world resolve three hits against the seeded lead drone.
       const targetOffset = [0, 1.2, -2.6] as const;
+      arena.setPlayerPosition(flight.position);
+      // Keep a pair of real return-fire projectiles in the hit composition so
+      // the exchange reads as a dogfight, not a target-only damage flash.
+      arena.spawnOrb([leadPosition[0] - 0.3, leadPosition[1] + 0.9, leadPosition[2] + 0.12], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
+      arena.step(0.06);
+      arena.spawnOrb([leadPosition[0] + 0.36, leadPosition[1] + 0.72, leadPosition[2] - 0.2], [flight.position[0], flight.position[1] + 0.25, flight.position[2]]);
       for (let shot = 0; shot < 1; shot += 1) {
         if (!cannon.tryFire(true, 1)) continue;
         swarm.beginCannonAttack(targetOffset);
@@ -1152,19 +1281,31 @@ againButton.addEventListener("click", () => resetToPad());
 // --------------------------------------------------------- per-frame sync -----
 function syncPlaneVisual(): void {
   const euler = flight.euler;
-  planeHandle.setPosition(flight.position[0], flight.position[1], flight.position[2]);
+  const flightPosition = flight.position;
+  planeHandle.setPosition(flightPosition[0], flightPosition[1], flightPosition[2]);
   planeHandle.setRotation(euler.x, euler.y, euler.z);
-  const forwardX = Math.cos(euler.y);
-  const forwardZ = Math.sin(euler.y);
-  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, y: number, visible: boolean): void => {
+  // Use the authored body axes, including pitch and bank, for every attached
+  // detail. A yaw-only placement made the aircraft livery and wakes float
+  // beside the mesh as soon as the player rolled into an intercept.
+  const forward = flight.forward;
+  const right = flight.right;
+  const up = flight.up;
+  const placeAccent = (handle: AuraRuntimeNodeHandle | undefined, localForward: number, localSide: number, localUp: number, visible: boolean): void => {
     if (!handle) return;
     handle.setPosition(
-      flight.position[0] + forwardX * localForward - forwardZ * localSide,
-      flight.position[1] + y,
-      flight.position[2] + forwardZ * localForward + forwardX * localSide
+      flightPosition[0] + forward[0] * localForward + right[0] * localSide + up[0] * localUp,
+      flightPosition[1] + forward[1] * localForward + right[1] * localSide + up[1] * localUp,
+      flightPosition[2] + forward[2] * localForward + right[2] * localSide + up[2] * localUp
     ).setRotation(euler.x, euler.y, euler.z).setVisible(visible);
   };
   const airborne = flight.grounded === "airborne" && flight.speed > 2;
+  const aircraftVisible = airborne || flight.grounded === "preflight";
+  placeAccent(planeCanopyHandle, 0.42, 0, 0.33, aircraftVisible);
+  placeAccent(planeDorsalSpineHandle, -0.7, 0, 0.3, aircraftVisible);
+  placeAccent(planeEngineHandles[0], -0.42, -0.72, -0.2, aircraftVisible);
+  placeAccent(planeEngineHandles[1], -0.42, 0.72, -0.2, aircraftVisible);
+  placeAccent(planeWingtipHandles[0], 0.05, -1.68, 0.02, aircraftVisible);
+  placeAccent(planeWingtipHandles[1], 0.05, 1.68, 0.02, aircraftVisible);
   placeAccent(planeNavLeftHandle, 0.24, -0.92, 0.08, airborne);
   placeAccent(planeNavRightHandle, 0.24, 0.92, 0.08, airborne);
   for (let index = 0; index < planeWakeHandles.length; index += 1) {
@@ -1184,7 +1325,14 @@ function syncPlaneVisual(): void {
     );
   }
   if (cameraTargetHandle) {
-    cameraTargetHandle.setPosition(flight.position[0], flight.position[1] + 0.35, flight.position[2]);
+    const target = combatFocusPoint && evidenceCombatFocus
+      ? [
+        flightPosition[0] * 0.36 + combatFocusPoint[0] * 0.64,
+        flightPosition[1] * 0.36 + combatFocusPoint[1] * 0.64 + 0.18,
+        flightPosition[2] * 0.36 + combatFocusPoint[2] * 0.64
+      ] as const
+      : [flightPosition[0], flightPosition[1] + 0.35, flightPosition[2]] as const;
+    cameraTargetHandle.setPosition(target[0], target[1], target[2]);
     // Follow camera yaw convention: -Z forward vs the plane's +X nose.
     cameraTargetHandle.setRotation(0, euler.y - Math.PI / 2, 0);
   }
@@ -1205,6 +1353,7 @@ function syncGhostVisual(): void {
 
 function syncDroneVisuals(): void {
   const liveDrones = swarm.liveDrones();
+  for (const handle of droneLampHandles) handle?.setPosition(0, -70, 0).setVisible(false);
   for (const drone of liveDrones) {
     const slot = droneSlotById.get(drone.id);
     const handle = slot === undefined ? undefined : droneHandles.get(slot);
@@ -1213,12 +1362,28 @@ function syncDroneVisuals(): void {
     // Face the pursuit direction (drone model nose is +X).
     const dx = flight.position[0] - drone.position[0];
     const dz = flight.position[2] - drone.position[2];
-    handle.setRotation(0, Math.atan2(-dz, dx), 0);
+    const droneYaw = Math.atan2(-dz, dx);
+    handle.setRotation(0, droneYaw, 0);
+    if (slot !== undefined) {
+      const lamp = droneLampHandles[slot];
+      lamp
+        ?.setPosition(
+          drone.position[0] + Math.cos(droneYaw) * 0.78,
+          drone.position[1] + 0.46,
+          drone.position[2] + Math.sin(droneYaw) * 0.78
+        )
+        .setRotation(0, droneYaw, 0)
+        .setVisible(true);
+    }
   }
-  const lead = liveDrones[0];
-  if (lead && currentWave >= 0) {
-    const dx = flight.position[0] - lead.position[0];
-    const dz = flight.position[2] - lead.position[2];
+  // Keep the lead silhouette and its target brackets in the retained hit
+  // frame after the combat world emits `drone-down`. The aircraft/target point
+  // remains the exact position that produced the hit, rather than vanishing
+  // before the screenshot can show the exchange.
+  const leadPosition = liveDrones[0]?.position ?? (evidenceCombatFocus ? combatFocusPoint : undefined);
+  if (leadPosition && currentWave >= 0) {
+    const dx = flight.position[0] - leadPosition[0];
+    const dz = flight.position[2] - leadPosition[2];
     const leadYaw = Math.atan2(-dz, dx);
     const forwardX = Math.cos(leadYaw);
     const forwardZ = Math.sin(leadYaw);
@@ -1230,18 +1395,22 @@ function syncDroneVisuals(): void {
       const backward = 0.9 + trail * 0.34;
       handle
         .setPosition(
-          lead.position[0] - forwardX * backward - forwardZ * side,
-          lead.position[1] + 0.42 - trail * 0.025,
-          lead.position[2] - forwardZ * backward + forwardX * side
+          leadPosition[0] - forwardX * backward - forwardZ * side,
+          leadPosition[1] + 0.42 - trail * 0.025,
+          leadPosition[2] - forwardZ * backward + forwardX * side
         )
         .setRotation(0, leadYaw, 0)
         .setVisible(true);
     }
+    droneLampHandles[0]
+      ?.setPosition(leadPosition[0] + forwardX * 0.78, leadPosition[1] + 0.46, leadPosition[2] + forwardZ * 0.78)
+      .setRotation(0, leadYaw, 0)
+      .setVisible(true);
     // The catalog drone's authored mesh origin sits about one metre above its
     // runtime pivot. Offset the indicator to the visible typed silhouette and
     // face its torus normal back toward the target-yaw chase camera.
     leadDroneLockHandle
-      ?.setPosition(lead.position[0], lead.position[1] + 1.0, lead.position[2])
+      ?.setPosition(leadPosition[0], leadPosition[1] + 1.0, leadPosition[2])
       .setRotation(0, flight.euler.y, 0)
       .setVisible(true);
   } else {
@@ -1251,11 +1420,28 @@ function syncDroneVisuals(): void {
 }
 
 function syncOrbVisuals(): void {
-  for (const state of arena.orbStates()) {
+  for (const [index, state] of arena.orbStates().entries()) {
     const handle = orbHandles.get(state.id);
+    const trail = orbTrailHandles[index];
     if (!handle) continue;
-    if (state.active) handle.setPosition(state.position[0], state.position[1], state.position[2]);
-    else handle.setPosition(0, -70, 0);
+    if (state.active) {
+      handle.setPosition(state.position[0], state.position[1], state.position[2]);
+      const [dx, dy, dz] = state.direction;
+      const horizontal = Math.max(0.01, Math.hypot(dx, dz));
+      const yaw = Math.atan2(dx, dz);
+      const pitch = -Math.atan2(dy, horizontal);
+      trail
+        ?.setPosition(
+          state.position[0] - dx * 0.42,
+          state.position[1] - dy * 0.42,
+          state.position[2] - dz * 0.42
+        )
+        .setRotation(pitch, yaw, 0)
+        .setVisible(true);
+    } else {
+      handle.setPosition(0, -70, 0);
+      trail?.setPosition(0, -70, 0).setVisible(false);
+    }
   }
 }
 
@@ -1430,11 +1616,14 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     category: "application",
     subject: { position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], rotation: [0, PAD_HEADING_YAW, 0], targetSize: 4.4 },
     settleSubjectPose() {
-      evidenceStaged = true;
-      flight = new FlightModel({ position: [PAD_CENTER[0], PAD_Y + 0.42, PAD_CENTER[2]], headingYaw: PAD_HEADING_YAW, grounded: "preflight", throttle: 0, speed: 0 });
-      syncPlaneVisual();
-      syncHud();
-      publishEvidence();
+      // The retained route-primary artifact must show the named flight game,
+      // not a parked aircraft on an empty pad. Stage the real deterministic
+      // drone-hit exchange used by the playable evidence producer: the
+      // FlightModel is airborne and banked, the typed interceptor is live, and
+      // cannon/impact geometry is bound to actual combat events. This hook is
+      // called only by the evidence producer; normal visitors still boot at
+      // the preflight pad and must take off with Shift.
+      patrolWindow.__PW_SCENARIO__?.("drone-pass");
     },
     setSubjectSuppressed(suppressed: boolean) {
       planeHandle.setVisible(!suppressed);

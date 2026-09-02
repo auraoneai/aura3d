@@ -174,6 +174,22 @@ export interface AuraCliResolveCandidateProvenance {
   readonly rawCatalogMetadata?: Readonly<Record<string, unknown>>;
 }
 
+export interface AuraCliGeneratedAssetProvenance {
+  readonly provider: "meshy" | string;
+  readonly providerCli?: string;
+  readonly taskId?: string;
+  readonly parentTaskIds?: readonly string[];
+  readonly operation?: string;
+  readonly promptHash?: string;
+  readonly model?: string;
+  readonly settings?: Readonly<Record<string, unknown>>;
+  readonly createdAt?: string;
+  readonly finishedAt?: string;
+  readonly consumedCredits?: number;
+  readonly localMetadata: string;
+  readonly rightsEvidence: string;
+}
+
 export interface AuraCliAssetProvenance {
   readonly sourcePath: string;
   readonly sourcePage?: string;
@@ -189,6 +205,7 @@ export interface AuraCliAssetProvenance {
   readonly sha256?: string;
   readonly retrievedAt?: string;
   readonly resolveCandidate?: AuraCliResolveCandidateProvenance;
+  readonly generation?: AuraCliGeneratedAssetProvenance;
   readonly evidence?: readonly string[];
   readonly checkedAt: string;
 }
@@ -256,6 +273,7 @@ export interface AddAssetOptions {
   readonly sha256?: string;
   readonly provenanceEvidence?: readonly string[];
   readonly resolveCandidate?: AuraCliResolveCandidateProvenance;
+  readonly generation?: AuraCliGeneratedAssetProvenance;
   readonly quality?: AuraAssetQuality;
   readonly role?: AuraCliAssetRole;
   readonly suitabilityReason?: string;

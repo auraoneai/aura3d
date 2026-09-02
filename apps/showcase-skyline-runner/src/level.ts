@@ -339,7 +339,11 @@ export const SKYLINE_DISTRICT_ANCHORS: readonly SkylineDistrictAnchor[] =
 /** The route's asset-bound level, with motion derived rather than authored. */
 export function createSkylineLevel() {
   return game.assetBoundPlatformerLevel({
-    characterAsset: "showcaseKenneyOobiPlatformerHero",
+    // The project-original arctic relay runner is the visible hero in both
+    // gameplay and review. Keeping the binding on the same typed asset avoids
+    // an evidence split where the route claims Oobi while the mounted scene
+    // presents a different character.
+    characterAsset: "skylineArcticRunnerHero",
     worldAssetBindings: skylineWorldAssetBindings,
     playableSurfaceMap: skylinePlayableSurfaceMap,
     authoredPlayableSeconds: SKYLINE_AUTHORED_PLAYABLE_SECONDS,

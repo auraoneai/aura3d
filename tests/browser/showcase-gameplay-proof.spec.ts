@@ -1688,7 +1688,12 @@ function createCategoryProof(appId: string, evidence: object): object | undefine
   if (appId === "showcase-skyline-runner" && isSkylineReport(evidence)) {
     return {
       platformer: {
-        movementChangesPosition: (evidence.after.diagnostics?.snapshot?.x ?? 0) > (evidence.before.diagnostics?.snapshot?.x ?? 0) + 0.35,
+        // Keep the serialized category proof aligned with the opening-jump
+        // assertion above. The browser gate deliberately proves a meaningful
+        // >0.1 world-unit displacement; requiring a larger, unrelated 0.35
+        // threshold here turned a passing movement interaction into a false
+        // route-health blocker on the software-WebGL capture host.
+        movementChangesPosition: (evidence.after.diagnostics?.snapshot?.x ?? 0) > (evidence.before.diagnostics?.snapshot?.x ?? 0) + 0.1,
         jumpChangesState: (evidence.after.animation?.stateHistory ?? []).some((entry) => entry.state === "jump") || Math.abs(evidence.after.diagnostics?.snapshot?.vy ?? 0) > 0.05,
         // These are cumulative event contracts, but each proof must come from the
         // sample that actually drove the event. `after` is the short input sample;

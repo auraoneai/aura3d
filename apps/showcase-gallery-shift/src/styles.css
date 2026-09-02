@@ -31,16 +31,23 @@ body[data-capture="review"] #panel { opacity: 0; pointer-events: none; }
 body[data-capture="review"] #hud { opacity: 1; pointer-events: none; }
 body[data-capture="review"] .hall-banner {
   top: 18px; left: 24px; transform: none; padding: 8px 13px;
-  background: rgba(5, 11, 21, 0.82); border-color: rgba(126, 248, 255, 0.38);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24); font-size: 11px;
+  background: linear-gradient(105deg, rgba(5, 20, 31, 0.9), rgba(9, 13, 24, 0.82));
+  border-color: rgba(126, 248, 255, 0.52);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 0 18px rgba(75, 224, 223, 0.08); font-size: 11px;
 }
 body[data-capture="review"] .detection-wrap {
   top: 18px; right: 24px; width: 224px; padding: 9px 11px;
-  background: rgba(5, 11, 21, 0.84); border-color: rgba(255, 177, 77, 0.34);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+  background: linear-gradient(105deg, rgba(9, 13, 24, 0.84), rgba(31, 18, 16, 0.86));
+  border-color: rgba(255, 177, 77, 0.48);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), 0 0 18px rgba(255, 177, 77, 0.08);
 }
 body[data-capture="review"] .review-brief {
-  top: 58px; left: 24px;
+  top: 60px; left: 24px;
+  padding: 8px 12px;
+  background: linear-gradient(105deg, rgba(5, 20, 31, 0.86), rgba(19, 14, 25, 0.84));
+  border-color: rgba(255, 217, 160, 0.42);
+  color: #ffe2b4;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2), 0 0 16px rgba(255, 177, 77, 0.07);
 }
 body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
 .viewport { position: relative; min-width: 0; min-height: 0; }

@@ -8,7 +8,7 @@ const repoRoot = resolve(appDir, "../..");
 const reportDir = join(repoRoot, "tests/reports/rooftop-buckets");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
-const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"];
+const modelIds = ["rooftopCourt", "rooftopVenueV2", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
 const audioIds = [
   "rooftopBucketsAmbientRooftopSfx", "rooftopBucketsBoardThudSfx", "rooftopBucketsBrickMissSfx",
   "rooftopBucketsBuzzerFailSfx", "rooftopBucketsChargeTickSfx", "rooftopBucketsFireIgniteSfx",
@@ -45,8 +45,11 @@ for (const id of modelIds) {
       && ["Daniel Darko", "Daffa Haekal", "3DDomino", "RiverofCreative"].some((author) => asset.provenance?.author?.startsWith(author));
   if (!approvedProvenance || !asset.provenance?.sourcePage || !asset.provenance?.downloadUrl) throw new Error(`${id} durable model provenance is incomplete`);
   if (!asset.renderedProbe?.url || asset.renderedProbe.assetHash !== asset.hash || !existsSync(join(repoRoot, asset.renderedProbe.url))) throw new Error(`${id} rendered probe is missing or stale`);
-  if ((id === "rooftopAthleteShooter" || id === "rooftopAthleteDefender") && (asset.skeleton?.skinCount ?? 0) > 0) {
-    throw new Error(`${id} is a static pose derivative; unexpected skin metadata would overstate its runtime capability`);
+  if ((id === "rooftopLayupScorer" || id === "rooftopDefender") && (asset.skeleton?.skinCount ?? 0) !== 1) {
+    throw new Error(`${id} must expose exactly one release-probed skinned actor`);
+  }
+  if ((id === "rooftopLayupScorer" || id === "rooftopDefender") && (asset.skeleton?.jointCount ?? 0) < 191) {
+    throw new Error(`${id} release athlete skeleton is below the 191-joint fidelity floor`);
   }
   if (!sourceText.includes(`assets.${id}`)) throw new Error(`${id} is not referenced by the live route`);
 }
@@ -155,7 +158,7 @@ const routeHealth = {
     routePrimary: "tests/reports/showcase-route-primary-probes/showcase-rooftop-buckets.json",
     browserSpecs: ["tests/browser/rooftop-buckets-playable.spec.ts", "tests/browser/rooftop-buckets-shot-visual.spec.ts"],
     unitSpecs: ["tests/unit/apps/rooftop-buckets-heats.test.ts", "tests/unit/apps/rooftop-buckets-scoring.test.ts"],
-    deployCommands: ["check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <5 model assets>", "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets"]
+    deployCommands: ["check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <7 model assets>", "check-deploy --release --source apps/showcase-rooftop-buckets/src --no-assets"]
   }
 };
 writeFileSync(join(appDir, "route-health.json"), `${JSON.stringify(routeHealth, null, 2)}\n`);

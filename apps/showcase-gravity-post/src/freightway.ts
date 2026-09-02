@@ -132,6 +132,8 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
   const lane = mesh();
   const laneMarkers = mesh();
   const horizon = mesh();
+  const serviceLights = mesh();
+  const serviceLightsCool = mesh();
   const deckY = input.playPlaneY - 0.12;
 
   // One uninterrupted deck joins exchange and terminal. Two shallow lower
@@ -237,17 +239,35 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
       appendBox(windows, point(progress - 0.056, lateral - Math.sign(lateral) * width * 0.52, bandY), [length * 0.036, 0.095, width * 0.62], tangent, cross);
     }
     appendBox(signals, point(progress + 0.05, lateral - Math.sign(lateral) * width * 0.54, input.playPlaneY + height * 0.82), [length * 0.022, 0.05, width * 0.18], tangent, cross);
+    // Alternating service lamps sit in the same facade plane as the windows,
+    // giving each tower a readable warm/cool bay rhythm instead of one flat
+    // material slab. They are embedded world geometry, not screen-space UI.
+    for (let lamp = 0; lamp < 3; lamp += 1) {
+      appendBox(
+        lamp % 2 === 0 ? serviceLights : serviceLightsCool,
+        point(
+          progress - 0.062,
+          lateral - Math.sign(lateral) * width * 0.56,
+          input.playPlaneY + 0.28 + lamp * Math.max(0.25, height * 0.2)
+        ),
+        [length * 0.014, 0.045, width * 0.22],
+        tangent,
+        cross
+      );
+    }
   }
 
-  const structuralMaterial = material.pbr({ name: "Gale freightway weathered blue alloy", color: "#31596a", roughness: 0.62, metallic: 0.36, emissive: "#153746", emissiveIntensity: 0.18 });
-  const claddingMaterial = material.pbr({ name: "Rust Gale oxidized cargo cladding", color: "#8b523f", roughness: 0.68, metallic: 0.2, emissive: "#48261f", emissiveIntensity: 0.14 });
+  const structuralMaterial = material.pbr({ name: "Gale freightway weathered blue alloy", color: "#244d62", roughness: 0.62, metallic: 0.36, emissive: "#153746", emissiveIntensity: 0.18 });
+  const claddingMaterial = material.pbr({ name: "Rust Gale oxidized cargo cladding", color: "#9c5942", roughness: 0.68, metallic: 0.2, emissive: "#48261f", emissiveIntensity: 0.14 });
   const windowMaterial = material.emissive({ name: "Gale terminal cargo windows", color: "#245d68", emissive: "#55bdc9", emissiveIntensity: 0.52, opacity: 0.86 });
   // Signals must read as embedded industrial guidance, not a bright graphic
   // comb that flattens the terminal roof in the chase lens.
   const signalMaterial = material.emissive({ name: "Gale freightway integrated signals", color: "#1b4b58", emissive: "#3ea4b3", emissiveIntensity: 0.4, opacity: 0.82 });
-  const laneMaterial = material.pbr({ name: "Rust Gale graphite flight lane", color: "#254454", roughness: 0.72, metallic: 0.28, emissive: "#102b37", emissiveIntensity: 0.1 });
+  const laneMaterial = material.pbr({ name: "Rust Gale graphite flight lane", color: "#172f3d", roughness: 0.72, metallic: 0.28, emissive: "#102b37", emissiveIntensity: 0.1 });
   const laneMarkerMaterial = material.emissive({ name: "Rust Gale inset amber lane markers", color: "#713416", emissive: "#e97324", emissiveIntensity: 0.62, opacity: 0.88 });
-  const horizonMaterial = material.pbr({ name: "Gale terminal horizon pylons", color: "#40576b", roughness: 0.64, metallic: 0.28, emissive: "#223747", emissiveIntensity: 0.16 });
+  const horizonMaterial = material.pbr({ name: "Gale terminal horizon pylons", color: "#35556d", roughness: 0.64, metallic: 0.28, emissive: "#223747", emissiveIntensity: 0.16 });
+  const serviceLightMaterial = material.emissive({ name: "Rust Gale alternating service lamps", color: "#4c2a15", emissive: "#f59e0b", emissiveIntensity: 0.78, opacity: 0.9 });
+  const serviceLightCoolMaterial = material.emissive({ name: "Rust Gale cyan service lamps", color: "#164452", emissive: "#67e8f9", emissiveIntensity: 0.68, opacity: 0.88 });
 
   return [
     geometry.custom(geometry.define(structure), { name: "Rust Gale continuous freightway and terminal bulkheads", material: structuralMaterial }).toJSON(),
@@ -256,6 +276,8 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
     geometry.custom(geometry.define(signals), { name: "Rust Gale integrated freight signals", material: signalMaterial }).toJSON(),
     geometry.custom(geometry.define(lane), { name: "Rust Gale recessed courier flight lane", material: laneMaterial }).toJSON(),
     geometry.custom(geometry.define(laneMarkers), { name: "Rust Gale inset courier lane markers", material: laneMarkerMaterial }).toJSON(),
-    geometry.custom(geometry.define(horizon), { name: "Gale Terminal horizon service towers", material: horizonMaterial }).toJSON()
+    geometry.custom(geometry.define(horizon), { name: "Gale Terminal horizon service towers", material: horizonMaterial }).toJSON(),
+    geometry.custom(geometry.define(serviceLights), { name: "Rust Gale amber freight service lamps", material: serviceLightMaterial }).toJSON(),
+    geometry.custom(geometry.define(serviceLightsCool), { name: "Rust Gale cyan freight service lamps", material: serviceLightCoolMaterial }).toJSON()
   ];
 }

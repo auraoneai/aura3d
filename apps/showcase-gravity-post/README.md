@@ -38,11 +38,13 @@ The live route and `integratePath` consume the same `1/120` fixed integration qu
 
 ## Typed assets and audio
 
-- `assets.gravityPostCourierSkiff` — original CC0 typed primary courier-skiff candidate with four grounded contact-drive pods, directional cockpit/drive lights, and an integrated guarded amber parcel with raised envelope badge. It remains candidate-quality until the exact route audition and hash-bound root probe pass.
+- `assets.gravityPostCourierSkiff` — original CC0 typed primary courier skiff with four grounded contact-drive pods, directional cockpit/drive lights, and an integrated guarded amber parcel with raised envelope badge. Its exact route-primary and hash-bound root probe pass; public showcase promotion remains blocked pending independent visual review.
 - `assets.gravityPostDockBeacon` — release-validated typed dock landmark, CC-BY-4.0, DjalalxJay; retained root-safe probe `392×142` pixels.
+- `assets.gravityPostFreightDistrict` — original CC0 typed non-colliding freight world with a connected Rust → Gale deck, loading hangar, gantry, cargo terraces, tank farm, and terminal architecture; retained isolated root probe and +X orientation evidence.
+- `assets.gravityPostMailPod` — release-validated CC-BY-4.0 textured transit shuttle (박용진) used as a single Gale-side set-dressing vehicle in the named review composition; its +Z orientation and isolated root probe are hash-bound, while route-local motion and delivery state remain owned by the skiff.
 - Ten typed CC0 cues are deterministically synthesized by `scripts/build-sfx.mjs`, registered by `scripts/register-sfx.mjs`, and played through four mixer buses. Launch, correction, assist, dock, rejection, loss, completion, warp, UI, and ambient cues originate from actual route state.
 
-The legacy mail-pod capital-ship silhouette is no longer used by the route. The replacement courier skiff must not be promoted from candidate to release until its exact action frame and hash-bound root probe pass. The heavy 44–115 MB ring auditions remain rejected and unused.
+The legacy mail-pod capital-ship remains a single non-colliding Gale-terminal transit cue in the review lens; it is not the gameplay courier or a second physics body. The replacement courier skiff remains the sole route-primary vehicle and must not be promoted from candidate to public showcase until its exact action frame and hash-bound root probe pass. The heavy 44–115 MB ring auditions remain rejected and unused.
 
 ## Current evidence
 
@@ -51,9 +53,9 @@ The legacy mail-pod capital-ship silhouette is no longer used by the route. The 
 - Collision/three-hull failure: `tests/reports/gravity-post/failure-evidence.json`.
 - Mobile touch delivery: `tests/reports/gravity-post/mobile-evidence.json`.
 - Reduced-motion planning: `tests/reports/gravity-post/reduced-motion-evidence.json`.
-- Performance: `performance-report.json` — four captures pass; fixed-step p95 `0.0038 ms`, bounded-prediction p95 `0.1299 ms`, campaign-complete draw calls `411/600`.
+- Performance: `performance-report.json` — four captures pass; fixed-step p95 `0.003 ms`, bounded-prediction p95 `0.1546 ms`, campaign-complete draw calls `471/600`.
 - Route health: `route-health.json` — `machinePass: true`, `classification: prototype-blocked`, `publicShowcase: false`.
-- Route-primary probe: `tests/reports/showcase-route-primary-probes/showcase-gravity-post.json` — pass, `147×94`, 2,808 foreground pixels, readability 50, unclipped.
+- Route-primary probe: `tests/reports/showcase-route-primary-probes/showcase-gravity-post.json` — pass, `603×414`, 58,346 foreground pixels, readability 98, unclipped; the frame includes the typed skiff, destination beacon, freight district, and terminal MailPod shuttle.
 - Unit: 19 tests across wells/pod/prediction, scoring, and flyby modules.
 - Browser: 8 checks across full gameplay, correction, failure/reset, pause/warp, flyby, mobile, reduced motion, prediction pixels, labels, and real sensor capture.
 

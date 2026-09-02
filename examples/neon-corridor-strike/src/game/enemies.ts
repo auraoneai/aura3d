@@ -45,7 +45,10 @@ const ATTACK_COOLDOWN = 0.4;
 /** Authored tell before the damage frame: a read, not a surprise overlap. */
 const TELEGRAPH = 0.42;
 /** Flinch window after a non-fatal hit (visual node only, never the capsule). */
-const FLINCH = 0.2;
+// A non-fatal hit needs a visible reaction at the review camera. Keep the
+// capsule and all solver truth unchanged; this is only a short visual recoil
+// window on the rigid typed combatant.
+const FLINCH = 0.28;
 /** Crumple window before the corpse hides. Instant hide is the floor, not the target. */
 const DEATH_CRUMPLE = 0.55;
 
@@ -261,11 +264,11 @@ export function updateEnemies(
 
     // Flinch recoils the visual node; it never moves the capsule.
     const flinchK = flinch > 0 ? flinch / FLINCH : 0;
-    const backX = Math.sin(yaw) * 0.14 * flinchK;
-    const backZ = Math.cos(yaw) * 0.14 * flinchK;
+    const backX = Math.sin(yaw) * 0.19 * flinchK;
+    const backZ = Math.cos(yaw) * 0.19 * flinchK;
     // Telegraph lean: wind up toward the player so the swipe is readable.
     const telegraphLean = telegraph > 0 ? Math.sin((1 - telegraph / TELEGRAPH) * Math.PI) : 0;
-    node?.setRotation(0.22 * telegraphLean - 0.18 * (flinch > 0 ? 1 : 0), yaw, 0);
+    node?.setRotation(0.22 * telegraphLean - 0.26 * (flinch > 0 ? 1 : 0), yaw, 0.08 * (flinch > 0 ? 1 : 0));
     node?.setPosition(
       x + backX - Math.sin(yaw) * 0.12 * telegraphLean,
       ENEMY_VISUAL_Y,

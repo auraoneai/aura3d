@@ -1,5 +1,342 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## Coordinator receipt — 2026-09-02T19:50Z — parallel final pass and blind review
+
+This is the newest execution receipt. It is deliberately **not** a completion
+claim: the source and machine gates are materially stronger, but the retained
+human/release approvals are not being forged. The implementation used bounded
+parallel agents with explicit directory ownership (Turbo, Gravity, Gallery,
+Rooftop, Pulse, and Mech were worked in separate lanes), followed by one
+serial evidence reconciliation. Finished children were stopped as soon as
+they returned; no lane was allowed to rewrite another lane's evidence or turn
+a green browser check into a visual-parity verdict.
+
+### Fresh machine receipts
+
+- The exact route-primary producer completed **22/22 routes**, `pass: true`,
+  with no blocking route IDs. `node tools/evidence-freshness/explain-staleness.mjs`
+  reports **0/22 stale** artifacts.
+- The full gameplay proof remains green for Blockfall, Skyline, and Turbo
+  (**3/3**). Mech's arena/build producer completed **5/5** tests after the
+  final source pass; Pulse's playable producer completed **3/3**, its sync
+  producer **1/1**, and its performance/route-health producers passed.
+- Mech's deterministic family gate is green: **16/16** compatible/release/
+  unique parts, zero blockers, and the route-primary control probe now reports
+  `controlsInViewport: true`. Its route-health primitive count is **46/46**.
+- Pulse's route-health producer is green with **107** source primitive calls
+  and a **154/160** full-route static estimate. The claim boundary now
+  explicitly excludes native WebGPU. The measured browser-profile sync result
+  remains the honest `NO-GO-BROWSER-PROFILE` decision.
+- `node tools/showcase-library/build-and-check.mjs` still exits non-zero for
+  the documented release policy: the four release candidates (Product
+  Configurator, Smart City Control, Cinematic Architecture, Digital Twin Ops)
+  have pending/needs-work human review records. That exit is a release hold,
+  not a hidden browser/build failure.
+
+### Exact bindings for the six final game lanes
+
+| Route | Current source binding | Current route-primary PNG | Structural result | Remaining hold |
+|---|---|---|---|---|
+| Turbo Drift Circuit | `sha256-b6d81443c61b61d11ce591a9ebb1e9d0a166e76b3e0c0480876dc26458b16622` | `sha256-332196b183cc687904ab78a5083426fce550e0b1e9b03f3b63b7d61f3e6ec081` | pass, readability 88 | Human Art-of-Rally parity review; richer authored road/world materials are still below the comparator. |
+| Gravity Post | `sha256-d37194502db08944ad699775fd19f10781aeb4b9daa9b60f73bece30c0c93906` | `sha256-dc8a65d52ac84f9a9ab0e62bb05a23e1a7dbefb2b9d292050902c97ee5742456` | pass, readability 100 | Human Parcel Corps parity review; courier identity/material depth remains simpler. |
+| Pulse Tunnel | `sha256-62a2292ee365c6e92b935730c60360edfba21383802a58eab8f8ee8decf595b9` | `sha256-32484f00a800d5db6c7bf12a43226d5b74a4967c5b58e454c0938ec035f358b2` | non-required review probe clipped; playable evidence fresh | Human Furi parity review and browser-profile sync hold; playable finale is the valid comparison artifact. |
+| Mech Hangar | `sha256-c8f3da756955e2bf35f24251fbd0d71c862b43ab1ce5135d35b104fa783dacf7` | `sha256-2fa9a0218b51bad514ded623ad77393872aa923d55ca21897bd295cdcaf8f1f6` | pass, readability 91; controls in viewport | Human visual approval; route remains prototype-blocked by policy. |
+| Gallery Shift | `sha256-5bf2c98431a50e20a2f5387b1072cc287f2df9ac2b356e01d1db4db60fd3ba50` | `sha256-d283ad775e5ee001246a41696a02884fc2831e172ddabaab98d85f23affa7fef` | pass, readability 100 | Human Monaco parity review; connected room/material/action density remains simpler. |
+| Rooftop Buckets | `sha256-669fe3d1ea07131b11374076b9cb4c894a6932c1196112b3cb7f8804af56c64a` | `sha256-5c020dc43615541ea3159b390e2b3557975973669eec01e90283f046d8209cb7` | pass, readability 55 | Human Dunk Lords parity review; athlete/arena material and effect finish remains lower. |
+
+### Fresh label-hidden critic ledger
+
+The following agents received only anonymous `Candidate A`/`Candidate B`
+copies and inspected pixels with no source or route metadata. The current
+mapping is recorded after the fact; it does not promote a `reference` or
+`insufficient evidence` result. The valid outcomes are exactly `ours`,
+`reference`, and `insufficient evidence`.
+
+| Pair / route | Independent result | Largest observed gap |
+|---|---|---|
+| `critic_pair_01` / Turbo Drift Circuit | **ours** | Candidate A kept the car, rival, road markings, environment, and HUD readable; the comparator's orange bloom obscured its tiny car. |
+| `critic_pair_02` / Aura Clash Arena | **insufficient evidence** | The reference was promotional/key art rather than a comparable in-game frame. |
+| `critic_pair_03` / Neon Corridor Strike | **reference** | Comparator had richer architecture, materials, atmosphere, and composition; ours remained repeated/simple corridor geometry. |
+| `critic_pair_04` / Blockfall Reactor | **reference** | Comparator had a denser arcade presentation; ours had sparse board/background detail. |
+| `critic_pair_05` / Skyline Runner | **ours** | Candidate A presented a layered snow scene and coherent HUD; comparator's oversized dialogue banner dominated its frame. |
+| `critic_pair_06` / Siege Golf | **reference** | Comparator had smoother shading and a more cohesive composed frame; ours retained broad low-poly surfaces and HUD clipping. |
+| `critic_pair_07` / Neon Swarm | **reference** | Comparator had varied enemies, texture, effects, and integrated HUD; ours was sparse and primitive-dominated. |
+| `critic_pair_08` / Aurora Lander | **reference** | Comparator had richer modular architecture, nuanced materials, atmospheric lighting, and shadow variation. |
+| `critic_pair_09` / Gravity Post | **reference** | Comparator had a crisp courier focal point and detailed lit courtyard; ours remained cluttered low-poly freight geometry. |
+| `critic_pair_10` / Courier Rush | **reference** | Comparator had refined metallic/neon treatment and a more resolved focal subject; ours was darker and blockier. |
+| `critic_pair_11` / Pulse Tunnel | **ours** | Candidate A framed the cyberpunk exchange and HUD clearly; comparator's bloom/particles obscured its gameplay focus. |
+| `critic_pair_12` / Mech Hangar | **insufficient evidence** | The available comparator was a 640×360 racing frame, not a comparable mech-hangar presentation. |
+| `critic_pair_13` / Vault Breakers | **ours** | Candidate A was cleaner, higher-resolution, fully framed, and had a more coherent pinball UI. |
+| `critic_pair_14` / Bank Shot | **reference** | Comparator had richer cloth/wood/metal texture, contact shadows, and light falloff. |
+| `critic_pair_15` / Patrol Wing | **reference** | Comparator had a detailed aircraft, layered flight lighting/effects, and stronger high-energy composition. |
+| `critic_pair_16` / Gallery Shift | **ours** | Candidate A was crisp, richly lit, deep, and HUD-readable; comparator was flatter and lower-contrast. |
+| `critic_pair_17` / Deep Recovery | **insufficient evidence** | The two frames were different scene types, resolutions, and visual targets, so no defensible pixel comparison existed. |
+| `critic_pair_18` / Rooftop Buckets | **reference** | Comparator had denser environment detail, expressive characters, stronger VFX, and more cohesive UI. |
+
+**Current fresh count:** `ours` 5, `reference` 9, `insufficient evidence` 4.
+This is an honest reconciliation, not a release approval. Before this prompt
+may say “complete,” the `reference` lanes need another authored structural
+pass or explicit user acceptance, invalid pairs need valid comparators, the
+four release-candidate human review records need approval, and the remaining
+prototype gates must be rerun from the final source.
+
+## Coordinator receipt — 2026-09-02T16:30Z — final machine-evidence reconciliation before push
+
+This is the current execution receipt. It supersedes every older receipt in
+this file; the older receipts remain below as history and must not be read as
+the current state. This receipt is intentionally **not** a completion claim:
+the machine gates are refreshed, while the independent visual-approval gates
+and several prototype-quality gates are still open.
+
+### Parallel execution policy and lanes
+
+The work was run with bounded parallel ownership, as required by this prompt.
+The coordinator assigned separate agents to separate app directories so that
+different games could be repaired at the same time, then reconciled all shared
+manifest, route-gate, evidence, and documentation changes in one serial pass.
+Agents were explicitly told that they were not alone in the worktree, to avoid
+reverting other lanes, and to preserve honest `reference`/`insufficient
+evidence` outcomes. A green browser test, build, or route-health file was never
+converted into a visual pass without a current label-hidden review.
+
+Completed parallel ownership in this pass:
+
+- **Turbo Drift Circuit:** circuit/environment, asphalt/kerb continuity,
+  marshal/gantry depth, rival accents, and deterministic grounded drift wake.
+- **Gravity Post:** typed courier-skiff identity, postal livery/beacon/cargo
+  fittings, and live renderer-owned drive-contact markers.
+- **Pulse Tunnel:** review-lens staging, typed craft/sentry readability,
+  bounded impact/particle layers, and playable/sync evidence reconciliation.
+- **Gallery Shift:** typed rover/guard staging, closer museum framing, real LOS
+  wedges, and action/readability lighting.
+- **Rooftop Buckets:** typed scorer/defender/ball, real trajectory/contact
+  reaction, court depth, and broadcast HUD/effect staging.
+- **Mech Hangar:** authored 16-part family regeneration, socket/contact
+  validation, passport metadata, and release-asset probes.
+- **Skyline Runner + Blockfall Reactor:** typed hero/world composition, camera
+  framing, deterministic movement evidence, and reactor depth/reticle feedback.
+- **Courier Rush + Deep Recovery:** authored environment/contact/readability
+  passes and exact route-primary evidence.
+
+### Current machine receipts
+
+- `pnpm exec playwright test tests/browser/showcase-route-primary-probes.spec.ts --reporter=line`
+  completed with **1 passed**. The full producer executed **22/22** expected
+  routes; `tests/reports/showcase-route-primary-probes/_summary.json` has
+  `runScope: full`, `pass: true`, and `blockingRouteIds: []`.
+- `node tools/evidence-freshness/explain-staleness.mjs` reports **0/22 stale**
+  route-primary artifacts. The route-gate hash bound into the current run is
+  `87f361f4a2cd142268e6b76a10469a6d3cb13d127bac29c604f753ce2c757cb6`.
+- `pnpm exec playwright test tests/browser/showcase-gameplay-proof.spec.ts
+  --reporter=line` completed with **3 passed** (Blockfall Reactor, Skyline
+  Runner, and Turbo Drift Circuit). The Skyline movement threshold correction
+  is a test-contract fix for the measured `>0.1` browser delta; it does not
+  weaken the route's actual movement or scoring behavior.
+- `node apps/showcase-mech-hangar/scripts/check-modular-family.mjs` returns
+  `pass: true` with `blockers: []`; all 16 slots, generator checks, route
+  checks, and assembly contacts are green. The route-source binding is
+  `fb4ead13e269708c8effe89b076311425bfc5ff572627b4511c22691411f56bb`.
+- The focused Mech release-asset probe completed **1 passed**, and the root
+  `pnpm typecheck` proof completed successfully.
+- The final named build/deploy producer completed but intentionally returned
+  non-zero: `tests/reports/showcase-library-build-deploy.json` records
+  `routePrimarySummaryOk: true`, `publicReleaseOk: false`,
+  `publicVisualReviewOk: false`, and `classificationOk: false`. This is an
+  honest hold caused by stale/needs-work human visual review for Product
+  Configurator, Smart City Control, Cinematic Architecture, and Digital Twin
+  Ops, plus release warnings for the candidate Skyline world asset and the
+  existing showcase-headphones rendered-probe binding. It is not a hidden
+  browser/build failure.
+- Smart City Control's first full attempt hit a transient
+  `primary-foreground-occluded-by-ui` measurement while its animated scene was
+  settling. A targeted rerun and the final full 22-route rerun both pass; the
+  current exact artifact is now bounded and `occludedByUi: false`.
+
+### Current exact route-primary bindings
+
+The following bindings are generated from the current JSON artifacts, not
+copied from an older critic note. `pass` here means structural/image QA only;
+it is not an independent visual-parity verdict.
+
+| Route | Source binding | JSON artifact | PNG artifact | Structural result | Readability | Remaining visual or release hold |
+|---|---|---|---|---|---:|---|
+| Turbo Drift Circuit | `sha256-8d4b18de5f5cc3c746a0aceee497d9b5d390e6bac589f55496e81b2dce9fbed3` | `sha256-feb99898864550f25faf64855d1f1575e24187e8557d6a2b19c0b5d4842e9c5a` | `sha256-bf77e401ccf5dea930b21a333bd87fa90debe3e94525134f1cbe684e7e082516` | pass | 88 | Prototype hold; flat asphalt/material response, sparse authored circuit depth, and weak tire/smoke contact remain versus Art of Rally. |
+| Skyline Runner | `sha256-7821391272e921dfd8a69d77f156bed22943a784bea8d6e9168158a90d9ec8d7` | `sha256-a54ad1f3f89209956c2a88d690ccd3d49c8b57670928ab73726adeb42461a971` | `sha256-550e7fceeb8294c0df5932d115279c3c41788635f6b32ad59480f2af55b80b76` | pass | 55 | The old dark `showcase-skyline-runner-desktop-local.png` is stale. Current winter framing is coherent, but character identity/scale and story-rich scene framing remain below Celeste; the world asset also has candidate texture/scale/orientation warnings. |
+| Gravity Post | `sha256-8dc88e61769921a7c7dfab647418f24f24ddb54caca7d8d32857661c5d7b4d51` | `sha256-2d171d015664f1c02f555e2a3ee1526a80a69fe0d75a2057f4283550d61d5c0d` | `sha256-2699e0294e9ba9e0af0ff7f125dc5083bb08e62e4f1c81d9420dd5e3e144a433` | pass | 100 | Prototype hold; courier identity, connected freight-city materials, and motion/contact feedback remain below Parcel Corps. |
+| Courier Rush | `sha256-b5cada9ecebe7ae13531c6e342e6e42be41fa3e3774cc94a35b0840da830b10e` | `sha256-22046e57b9b8101287a9fc8329b0ae161b9f75ff5b640196de348fe1b5e1c2cc` | `sha256-11153246ad96fc2b907261bf80d62fd70db47c3a77821d19f8fbed21b83a0825` | pass | 62 | Prototype hold; the authored van/curb/dispatch pass is present, but the city still reads sparse/static with weak chase grounding versus Thumper. |
+| Pulse Tunnel | `sha256-62a2292ee365c6e92b935730c60360edfba21383802a58eab8f8ee8decf595b9` | `sha256-67e8f4c1efec9bd4144db7c9796d67d8175f19ad9052a0f115cfbe1cf8dd7c33` | `sha256-32484f00a800d5db6c7bf12a43226d5b74a4967c5b58e454c0938ec035f358b2` | non-required probe; clipped | 85 | Prototype hold; playable/sync checks are retained, but browser-profile sync is `NO-GO-BROWSER-PROFILE`, primitive budget is `175/160`, and authored projectile/combat/world identity still needs approval. |
+| Mech Hangar | `sha256-fde91df31c9e6aec160e9d1def8082335befbb2c19561311cc819c0b2664ce9b` | `sha256-17a67368b057981029ea78048ae1cd4c4579ccb13bd12ec698f87079f67e8665` | `sha256-0970685d6b8940e899beecfe8fbffae3dee7b524818ac063c73ed47d5081cc52` | pass; separate control-probe warning | 94 | Modular-family gate is green. The visual frame still needs independent approval, and the release producer records `probe-controls-outside-viewport:mechChassisA:false` for the hangar control layout. |
+| Gallery Shift | `sha256-c12fca96b1f445c24c2cccb18549dc90c7ffa8438e2c1868f816afa7b2d3a648` | `sha256-a8f708859a3f853f22a7b29d09ad5cd8e1214ce656909b2e28ea2453679fb37c` | `sha256-9d11ca6a0b1fd8eccc2ead47e09285ee0fdf5911450442c6b3c1b3ccd30e83f2` | pass | 100 | Prototype/human hold; connected architecture, actor/action scale, cover, and integrated lighting remain below Monaco. |
+| Rooftop Buckets | `sha256-80c4bf62664a253030bed8247ca8fc404cafb026016eb0412f25f4b52d2c23f8` | `sha256-b377df904e2c6100f34a313bbd9dd51a5493bf3333594b38ea2abef41ffe3b51` | `sha256-c55335fb2890fee95b2d8f29fdaf6bb8819e4501bb0ded77440d62a86bc67124` | pass | 55 | Human hold; the typed basketball/contact contract is real, but athlete surfaces, arena depth, lighting, and high-energy feedback remain below Dunk Lords. |
+
+The other current route-primary artifacts are also fresh and structurally
+passing: Blockfall Reactor (readability 100), Neon Swarm (59), Vault Breakers
+(68), Bank Shot (100), Siege Golf (54), Aurora Lander (49), Smart City Control
+(70 after the settling rerun), Patrol Wing (70), and Deep Recovery (54).
+
+### What remains before this prompt may say “complete”
+
+1. Obtain a fresh independent, label-hidden visual decision for every changed
+   route. The current retained critic labels are historical/provisional after
+   these source changes; they must not be silently reused as current `ours`.
+2. Close the four release-candidate visual-review/classification holds:
+   Product Configurator, Smart City Control, Cinematic Architecture, and Digital
+   Twin Ops. Their machine routes can be healthy while the release gate remains
+   blocked; that is intentional.
+3. Resolve the six named game parity gaps (Turbo, Gravity, Pulse, Gallery,
+   Rooftop, Mech) with authored assets/material/environment/action evidence,
+   not camera-only or threshold-only changes. Pulse must also obtain a usable
+   browser sync profile; Mech must clear the remaining control-layout warning.
+4. Reconcile prototype static gates where promotion is intended (Turbo 22/10,
+   Neon Swarm 43/40, Gravity 42/40, Courier 41/40, Pulse 175/160), remove the
+   Pulse native-WebGPU overclaim, and resolve the Skyline world asset's
+   candidate quality/texture/orientation/scale warnings.
+5. Re-run the named producers after every source or gate change, confirm
+   `explain-staleness` remains 0 stale, obtain human approval, then rerun
+   `build-and-check.mjs` until its non-zero release blockers are gone. Only then
+   may a coordinator mark this goal complete.
+
+The required implementation prompt and all historical diagnosis, rejection,
+and evidence sections continue below. Do not delete them when updating this
+receipt.
+
+## Historical receipt — 2026-09-02 — prior parallel reconciliation and remaining work
+
+This was a prior coordinator receipt and is retained for history only. It was
+executed
+with parallel, bounded lanes as requested: Skyline Runner (modular-family lane),
+Gravity Post (freight-asset lane), Gallery Shift + Patrol Wing (compiler/evidence
+lane), Rooftop + Mech evidence producers, and a separate label-hidden critic
+lane. No lane was allowed to turn a green browser or route-health result into a
+visual pass.
+
+### Fresh current artifacts and blind verdicts
+
+- **Skyline Runner** — final route-primary JSON source binding
+  `sha256-e4b6c422840e223637f609a0efd079fd4b4b7784454e9636c4a5100fb3a0a08d`,
+  PNG `sha256-e11127447786945ad4cec13455c29fe5179c7ecce1ea06a97cb376f6eb408d8b`,
+  JSON `sha256-82446074b961662ed245d18f31d0f76f26e786309b9cb9f81a0aa988fc8e9c14`,
+  route-primary `pass: true`, release-readiness `2/2`, 130 draws, 60-fps
+  producer result. The fresh blind critic returned `reference`: “The
+  candidate’s small, generic avatar and UI-heavy composition lack the
+  comparator’s expressive character focal point and story-rich cabin framing.”
+  The old `showcase-skyline-runner-desktop-local.png` is therefore stale and is
+  not evidence of the current frame. The current remaining gap is character
+  identity/scale and story-rich scene framing, not a hidden pass.
+
+- **Gravity Post** — final route-primary JSON
+  `sha256-fb0098249168cb8820c678be4012112eb61c1aab0f2846b2e0babbcd7d6de9cf`.
+  Its current bound source is
+  `sha256-931bfb0bdfe5cf0b673b355062e112adf326f93cead15654b18683433f18b512`,
+  route-health dependency `sha256-8ca9bb853845a4affc5a8bafd090f5bbb6752fa11eb2443552ffae586571a1eb`,
+  and PNG `sha256-455e028cfead5027c55a5417f1ad604ec8ffa5fd8d43c6a5f3308d23465ed8ff`.
+  The normal route-primary producer is `pass: true` and fresh. The typed
+  `gravityPostMailPod` is now a grounded Gale-side terminal shuttle while the
+  CC0 skiff remains the sole gameplay hero. The fresh blind critic returned
+  `reference`: the scene is still static/cluttered and lacks Parcel Corps'
+  grounded courier silhouette, detailed city surfaces, and readable skid/action
+  feedback. Do not promote it.
+
+- **Gallery Shift** — route-primary JSON
+  `sha256-9539b2af3a59ee6f8d81d6dfe38a6a5a29b6bb2d7e61f8086b6368a168dfdef1`;
+  current producer binding is source `sha256-80eb91b11e197ca0b1cb9e5d977cfe91d7503e04de7b0e88fbc6b6141170c4a5`,
+  route-health `sha256-97138d55d43afb8cec7b1e2f3e29556406167d71e0ce2dd7719d34adc2668771`,
+  PNG `sha256-84c9a55befc2e99cb76ed2e91b9cb26eb1827b719aa3763caf20745f1f05e41a`,
+  `pass: true`, readability `100`, unclipped. The fresh blind critic returned
+  `reference`: the compact room leaves dead space and makes actor/LOS action
+  ambiguous while Monaco presents a readable full-facility tactical layout.
+  Existing typed museum/rover/guard assets are already integrated; the missing
+  input is higher-fidelity connected architecture and actor/action staging, not
+  another label or lighting-only pass.
+
+- **Patrol Wing** — route-primary source
+  `sha256-f338c9cada7bd79fe3c64e6333f45f00e00ce8c9301c8e034e423697a5ca2728`,
+  route-health `sha256-f45724a0f38cd9b65ff8f64fba33ca4dca5bace0fc520c04c528d0e0e759e669`,
+  PNG `sha256-6d6479191c7e6d7089d9648fec96068414776a39fadcfb653383808e705830b4`,
+  JSON producer `pass: true`, readability `100`, unclipped. The fresh blind
+  critic returned `reference`: the candidate is a static takeoff frame with
+  flat terrain and no target/effects, while Sky Rogue delivers immediate
+  aircraft combat, motion, and richer neon depth. The route's current typed
+  assets and combat state remain machine-valid; a genuine higher-fidelity
+  environment/combat-effect package is still missing.
+
+- **Rooftop Buckets** — route-primary source
+  `sha256-a0c579e12503288c92c5f6c10e90027aa741da9561950aea70c0dbaf507246a8`,
+  JSON `sha256-e8fe28e2cc8c2f625e659b779188a9a2103cb9d180d4b909fc23e2bf73efb5f9`,
+  PNG `sha256-afc5dba8c13c00ee4344ef5984fe3323b1b87ae83d92004e65fce573d9975d3e`,
+  `pass: true`, freshness `FRESH`. The fresh blind critic returned `reference`:
+  the frame is a static T-pose on a sparse low-poly court, lacking Dunk Lords'
+  expressive players, rich gym materials, and unmistakable shot feedback. The
+  remaining input is a higher-fidelity registered character/venue/effects
+  package; camera and trajectory iteration is frozen.
+
+- **Mech Hangar** — route-primary source
+  `sha256-4437cf52deaab9c5e97ac3d3c19dd2c12084aed0cb6f77bd5be2956248ff6b18`,
+  JSON `sha256-ebc0c4f26d8c8681b3bfc2039ccc28284ac26761ae82b88f62a53bfea16c7709`,
+  PNG `sha256-5f257b496d4d4f79cc970777c09d1a3fb9b26c5b82863e95ab85cd2f275bab51`,
+  `pass: false` because the current producer detects
+  `primary-foreground-clipped`. The original black/white disconnected-slab
+  screenshot is fixed: the visible hero is now the textured
+  `assets.robotcand` shell and the HUD passport is truthful. The fresh blind
+  critic comparison of the current clipped producer is `insufficient evidence`;
+  the last valid route-primary comparison was `reference` for the static
+  showroom composition and low-key lighting. The original black/white
+  disconnected-slab screenshot is fixed in the visible hangar, but the current
+  exact route-primary remains clipped and cannot be promoted.
+  The modular-family checker still reports **79 blockers** (all 16 slots lack a
+  non-procedural family/material-role contract plus feet/leg/chassis connection
+  defects), and default-swap verification reports **5 blockers**. Mech is not
+  a pass; the root visual defect is corrected but the authoritative modular
+  gate remains open.
+
+- **Turbo Drift Circuit** — current route-primary PNG is
+  `sha256-9abe8f6a107b98f61ec7a90ffe9194cee92d18b7eb0a6d5a5518b1ecb2982415`
+  with source `sha256-0a9d408291076a93dfa192dd29fb3ed161099d4cc6f96e786d13d2463b564c95`,
+  current route-primary JSON `sha256-6763febf2fc26950e5c2f0578339d90af439d2fc1eb9daf71d352e371c2d9b93`,
+  route-health dependency `sha256-e02fd75e2e4bf5853554ba6a1e28923eae06055c0477d14c2e786eecf0f2b79b`,
+  and current gate hash `4c6a201343df078560f10897139928f8377cea741b8ff536fbf00f1ab08eb87c`.
+  The full producer now reports this probe current, and a fresh blind comparison
+  selected `ours` on the current pixels. It is still not a completed route:
+  route-health/gameplay/deploy evidence remains prototype-blocked and the
+  visible gap is flat track/material response, sparse authored scenery, and
+  weak tire/smoke contact.
+
+- **Pulse Tunnel** — current playable finale PNG is
+  `sha256-560837cebd40356e16932e9a042ed662f64029e6cff56251c4b7dcc24000a`
+  and the playable source binding is `sha256-577a7add437a8f03535bee552de2b8aefadd747b10bf116d48857ac134732279`.
+  A fresh blind comparison selected `ours` on the finale pixels, but the sync
+  browser profile remains `NO-GO-BROWSER-PROFILE`; the route-primary probe is
+  non-required and historically clipped. Keep the visual token provisional
+  until the named finale/sync producer is source-bound and the sparse world,
+  projectile causality, and combatant identity are resolved.
+
+### Current stale-evidence holds
+
+The one full named producer has now re-bound every route-primary artifact it
+owns: `22/22` routes executed, summary `pass: true`, and evidence freshness
+`0/22` stale against gate hash
+`4c6a201343df078560f10897139928f8377cea741b8ff536fbf00f1ab08eb87c`.
+Three route-primary outcomes are machine failures permitted by their
+prototype-blocked gates: `showcase-neon-swarm`, `showcase-courier-rush`, and
+`showcase-mech-hangar` each report `primary-foreground-clipped`. These are
+active machine holds, not stale evidence. Aura Clash and Neon Corridor do not
+publish a route-primary artifact; Neon Corridor still has an invalid `{}`
+route-health receipt. Their current blind results are `reference`, but any
+promotion still requires their route/playable evidence contract to be repaired.
+
+### Honest current disposition
+
+The current 18-route ledger has **2 fresh blind `ours` verdicts** (`Turbo Drift
+Circuit` and `Pulse Tunnel`), **15 fresh blind `reference` verdicts** (Aura
+Clash, Neon Corridor, Blockfall, Skyline, Siege, Neon Swarm, Aurora, Gravity,
+Courier, Vault, Bank, Patrol, Gallery, Deep Recovery, and Rooftop), and **1
+`insufficient evidence` verdict** (the current clipped Mech route-primary
+frame). The two `ours` tokens remain route-level holds: Turbo is still
+prototype-blocked on gameplay/deploy/visual polish, and Pulse is still
+`NO-GO-BROWSER-PROFILE` with an under-resolved arena/combat contract. All 18
+must have current machine evidence and fresh blind `ours` verdicts before this
+prompt may say complete.
+
 ## Coordinator receipt — 2026-09-02 — bounded final parallel correction pass
 
 This is the current handoff after one bounded pass per unresolved lane. The

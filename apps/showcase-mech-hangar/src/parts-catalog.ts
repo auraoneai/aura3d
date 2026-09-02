@@ -45,6 +45,9 @@ export interface PartDef {
   readonly provenance: PartProvenance;
   readonly stats: PartStats;
   readonly bounds: readonly [number, number, number];
+  /** Exact authored local extrema retained by the curation pass for socket fitting. */
+  readonly boundsMin: readonly [number, number, number];
+  readonly boundsMax: readonly [number, number, number];
 }
 
 /**
@@ -87,6 +90,8 @@ function toPartDef(record: (typeof CURATED_PART_RECORDS)[number]): PartDef | und
   const stats = VARIANT_STATS[slot]?.[letter];
   if (!stats) return undefined;
   const bounds = record.bounds && record.bounds.length === 3 ? record.bounds : [1, 1, 1];
+  const boundsMin = record.boundsMin && record.boundsMin.length === 3 ? record.boundsMin : [-0.5, -0.5, -0.5];
+  const boundsMax = record.boundsMax && record.boundsMax.length === 3 ? record.boundsMax : [0.5, 0.5, 0.5];
   return {
     assetKey: record.name,
     slot,
@@ -102,7 +107,9 @@ function toPartDef(record: (typeof CURATED_PART_RECORDS)[number]): PartDef | und
       license: record.license ?? "unverified"
     },
     stats,
-    bounds: [bounds[0] ?? 1, bounds[1] ?? 1, bounds[2] ?? 1]
+    bounds: [bounds[0] ?? 1, bounds[1] ?? 1, bounds[2] ?? 1],
+    boundsMin: [boundsMin[0] ?? -0.5, boundsMin[1] ?? -0.5, boundsMin[2] ?? -0.5],
+    boundsMax: [boundsMax[0] ?? 0.5, boundsMax[1] ?? 0.5, boundsMax[2] ?? 0.5]
   };
 }
 

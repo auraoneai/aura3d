@@ -69,7 +69,8 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
         skeleton: asset.skeleton,
         morphTargets: asset.morphTargets,
         hierarchy: asset.hierarchy,
-        provenance: asset.provenance,
+        // Keep provider task IDs and settings in the durable manifest, not public game source.
+        provenance: asset.provenance ? { ...asset.provenance, generation: undefined } : undefined,
         sourcePath: asset.source,
         outputPath: asset.outputPath,
         license: asset.provenance?.license,

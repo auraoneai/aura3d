@@ -8,11 +8,11 @@
   "claimLabel": "createAuraApp",
   "publicStatus": "release-ready candidate",
   "layout": {
-    "heroAsset": "showcaseKenneyOobiPlatformerHero",
+    "heroAsset": "skylineArcticRunnerHero",
     "uiPlacement": "right-panel"
   },
   "platformer": {
-    "characterAsset": "showcaseKenneyOobiPlatformerHero",
+    "characterAsset": "skylineArcticRunnerHero",
     "worldAssets": [
       "showcaseKenneyVerdantPlatformerWorld"
     ],
@@ -309,9 +309,9 @@
   },
   "primaryAssets": [
     {
-      "id": "showcaseKenneyOobiPlatformerHero",
+      "id": "skylineArcticRunnerHero",
       "role": "character",
-      "typedRef": "assets.showcaseKenneyOobiPlatformerHero",
+      "typedRef": "assets.skylineArcticRunnerHero",
       "quality": "release",
       "hasDurableProvenance": true,
       "hasRenderedProbe": true,
@@ -333,13 +333,13 @@
     "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
     "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
     "gameplayProof": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-skyline-runner.json",
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset showcaseKenneyOobiPlatformerHero --asset showcaseKenneyVerdantPlatformerWorld",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset skylineArcticRunnerHero --asset showcaseKenneyVerdantPlatformerWorld",
     "deployEvidence": "docs/project/showcase-launch-evidence.json",
     "deployPassed": true,
     "routePrimaryPassed": true,
     "gameplayPassed": true,
     "releaseAssetProbes": {
-      "showcaseKenneyOobiPlatformerHero": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.json",
+      "skylineArcticRunnerHero": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/skylineArcticRunnerHero.json",
       "showcaseKenneyVerdantPlatformerWorld": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.json",
       "showcaseSideScrollerWorld": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
     },

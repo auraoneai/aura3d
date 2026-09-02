@@ -3,13 +3,12 @@
 **Label:** `prototype` · **Route:** `/apps/showcase-mech-hangar/` · **PRD:** `NextGames-PRD/07-Mech-Hangar.md`
 
 Aura3D's typed, provenance-tracked assets are the mechanic. Assemble a mech from the
-original in-repository MH-2M modular family (chassis / arms / legs / weapon, 4 options each), watch
-the stat holograms move, validate the build, lock in, and fight a rival mech driven by the
-engine's `createCombatAi`. The validated MH-2M plan still owns the socketed part state and
-selected hardpoint, while the hangar/arena review silhouette uses the separately registered,
-textured CC-BY Robotcand body. This corrects the prior review failure where four synthetic
-part slabs read as a broken character; it does not claim that Robotcand is part of the MH-2M
-family. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
+MH-2M slot contract (chassis / arms / legs / weapon, 4 options each), watch the stat
+holograms move, validate the build, lock in, and fight a rival mech driven by the engine's
+`createCombatAi`. The current in-repository options are a deterministic procedural curation
+spike, not the required production modular family. The separate textured CC-BY Robotcand
+body remains a temporary visual fallback only; it is not part of MH-2M and cannot satisfy the
+family gate. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
 
 ## Claim boundary (read before quoting this route)
 
@@ -21,34 +20,38 @@ family. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balanced →
   in this app for this app. **This is not a reusable fighting/character/combat kit**, and
   no such claim is made anywhere in this route.
 - **Primitives are set dressing** (hangar floor/wall, turntable, pit rims) or
-  renderer-owned feedback particles (hit sparks, landing dust). The visible mech silhouette
-  is the typed, release-probed Robotcand body, with the selected MH-2M hardpoint and validated
-  socket plan mounted as route-local state. The four typed MH-2M slots remain the assembly
-  contract and every selection changes pixels/stats; this is not a CSS recolor or a skin swap.
-  Robotcand is a separate whole-body visual asset, not a reusable modular or animation kit.
+  renderer-owned feedback particles (hit sparks, landing dust). The visible review silhouette
+  currently uses the typed, release-probed Robotcand fallback, with the selected MH-2M
+  hardpoint and validated socket plan mounted as route-local state. The four typed MH-2M slots
+  remain the assembly contract and every selection changes pixels/stats; this is not a CSS
+  recolor or a skin swap. Robotcand is a separate whole-body visual asset, not a modular or
+  animation kit, and it is not evidence that the MH-2M parts form a coherent family.
 - **Prototype.** Independent human visual review is pending; this route is not a public
   release candidate.
 
 ## The asset passport
 
-Every part option is an original CLI-registered CC0 typed asset generated deterministically
-by `scripts/build-models.mjs`. The GLBs declare one-metre units, centered part origins,
-`+Z` forward / `+Y` up, the `MH-2M` family, and the exact `root`, `chest`, `hips`, or
-`right-hand` socket they satisfy. `scripts/curate-parts.mjs` rejects hash duplicates,
-out-of-envelope bounds, missing silhouette/material layers, stale manifest metadata, and
-missing root-rendered probes. The current gate is **16/16 compatible, 16/16 release-proven,
-16/16 unique geometry hashes: GO**. The report is `parts-curation-report.json`; the hangar
-passport reads its source, author, and CC0 license records.
+Every part option is a typed CLI-registered asset. The legacy curation report proves
+one-metre units, centered part origins, `+Z` forward / `+Y` up, the `MH-2M` family, and the
+exact `root`, `chest`, `hips`, or `right-hand` socket metadata. That report is only a
+compatibility gate: the current **16/16 compatible** procedural spike is not a visual-family
+approval. `scripts/check-modular-family.mjs` is the required stricter gate. It rejects the
+box/cylinder generator, requires a license-clean non-procedural family declaration and
+authored armor/frame/joint/emissive material roles, and computes feet, torso/limb, and
+weapon/hand contact from exact GLB bounds. It currently returns **NO-GO** until a real
+modular family is supplied; the report is machine-readable stdout and never rewrites assets.
 
 The review presentation body is the separately registered CC-BY-4.0 `assets.robotcand`
 source by isramtz/Objaverse, with explicit attribution and a hash-bound root-renderer
 probe. It contributes no gameplay simulation or modular-kit claim. The selected MH-2M
 weapon remains independently typed and socket-mounted over this body.
 
-The shared route-primary gate names `assets.robotcand` as the visual hero and keeps the
-four MH-2M slot assets as secondary typed assembly evidence. This matches the body that
-is actually visible in the review frame; it does not relabel the MH-2M parts as a whole-
-body character or claim that Robotcand belongs to that modular family.
+The shared route-primary gate names `assets.robotcand` as the current visual hero and keeps
+the four MH-2M slot assets as secondary typed assembly evidence. This matches the body that
+is actually visible in the review frame; it does not relabel the MH-2M parts as a whole-body
+character or claim that Robotcand belongs to that modular family. `scripts/verify-default-swap.mjs`
+validates the browser-produced default/swap receipt and deliberately fails while its visible
+primary binding is the fallback instead of all four modular parts.
 
 ## Assembly pipeline (player-visible)
 
@@ -121,6 +124,8 @@ pnpm register:shell      # register the attributed Robotcand visual shell after 
 pnpm sfx                 # regenerate the ten WAV cues
 pnpm register:sfx        # idempotent CLI registration into the root manifest
 pnpm curate:parts        # deterministic local 16-part compatibility/release gate
+pnpm verify:modular-family # strict visual-family/provenance/socket/grounding gate (currently NO-GO)
+pnpm verify:default-swap # verify source-bound default/swap browser receipt (currently NO-GO)
 pnpm evidence:performance
 pnpm evidence:deploy
 pnpm evidence:route-health

@@ -1,4 +1,5 @@
 import {
+  consolidateStaticMeshes,
   Geometry,
   PBRMaterial,
   UnlitMaterial,
@@ -58,6 +59,12 @@ export function createRenderedArenaStage(): RenderedArenaStage {
   const post = Geometry.cylinder({ radius: 0.5, height: 1, segments: 16 });
   const lampHousing = Geometry.cylinder({ radius: 0.5, height: 1, segments: 14 });
   const glowSphere = Geometry.uvSphere(0.5, 14, 10);
+  // The typed downtown GLB supplies the buildings and street, but a fighting stage also needs a
+  // foreground safety rail that gives the combat plane a believable edge.  These are deliberately
+  // low, grounded stage fixtures (not architecture or stand-in characters) and sit in front of the
+  // lane at z=0.74, where they read as an arena apron without crossing either fighter clamp.
+  const barrierPost = Geometry.cylinder({ radius: 0.5, height: 1, segments: 14 });
+  const barrierBeam = Geometry.cylinder({ radius: 0.5, height: 1, segments: 14 });
 
   const floor = new PBRMaterial({
     name: "aura-clash-rendered-combat-floor",
@@ -83,6 +90,14 @@ export function createRenderedArenaStage(): RenderedArenaStage {
     metallic: 0.68,
     roughness: 0.41
   });
+  const barrierMetal = new PBRMaterial({
+    name: "aura-clash-foreground-barrier-metal",
+    baseColor: [0.028, 0.068, 0.082, 1],
+    metallic: 0.72,
+    roughness: 0.32,
+    emissiveColor: [0.015, 0.12, 0.14],
+    emissiveStrength: 0.12
+  });
 
   const paletteMaterials = {
     holo: {
@@ -106,6 +121,40 @@ export function createRenderedArenaStage(): RenderedArenaStage {
       haze: new UnlitMaterial({ name: "void-motes", color: [0.64, 0.44, 1, 0.44] })
     }
   } as const;
+
+  // Barrier meshes never change shape during play.  Merge the metal beam/posts once per palette so
+  // the richer apron costs one submitted draw instead of one draw per fixture on every frame.  Edge
+  // strips stay palette-specific (teal on the player side, amber on the rival side) and remain two
+  // tiny draws, keeping the impact VFX comfortably inside the 160-draw route budget.
+  const barrierItemsByPalette = Object.fromEntries(
+    Object.entries(paletteMaterials).map(([paletteId, palette]) => {
+      const sourceItems = [
+        item("front-barrier-lower", barrierBeam, barrierMetal, [0, 0.22, 0.74], [0.045, 2.9, 0.045], [0, 0, Math.PI / 2]),
+        item("front-barrier-upper", barrierBeam, barrierMetal, [0, 0.43, 0.74], [0.032, 2.9, 0.032], [0, 0, Math.PI / 2]),
+        item("front-barrier-post-left", barrierPost, barrierMetal, [-2.72, 0.28, 0.74], [0.075, 0.56, 0.075]),
+        item("front-barrier-post-right", barrierPost, barrierMetal, [2.72, 0.28, 0.74], [0.075, 0.56, 0.075]),
+        item("barrier-edge-left", cube, palette.rim, [-1.42, 0.43, 0.77], [1.22, 0.022, 0.018]),
+        item("barrier-edge-right", cube, palette.accent, [1.42, 0.43, 0.77], [1.22, 0.022, 0.018])
+      ];
+      const merged = consolidateStaticMeshes(
+        sourceItems.flatMap((entry) => entry.material
+          ? [{
+              geometry: entry.geometry,
+              material: entry.material,
+              modelMatrix: entry.modelMatrix ?? composeMat4([0, 0, 0], quatFromEuler(0, 0, 0), [1, 1, 1]) as Mat4
+            }]
+          : []),
+        { labelPrefix: `aura-clash-rendered-stage:barrier-${paletteId}` }
+      ).renderItems;
+      return [paletteId, merged.map((entry, index) => ({
+        ...entry,
+        label: index === 0
+          ? "aura-clash-rendered-stage:front-barrier-merged"
+          : `aura-clash-rendered-stage:barrier-edge-${paletteId}-${index}`,
+        includeInAutoFrame: false
+      }))] as const;
+    })
+  ) as Record<keyof typeof paletteMaterials, RenderItem[]>;
 
   // Motes are kept low and near the fight plane so they read as stage haze catching the practicals
   // rather than as snow drifting across the buildings.
@@ -132,6 +181,7 @@ export function createRenderedArenaStage(): RenderedArenaStage {
         item("lane-marker-left", cube, palette.accent, [-2.85, 0.042, 0], [0.022, 0.022, 1.1]),
         item("lane-marker-right", cube, palette.accent, [2.85, 0.042, 0], [0.022, 0.022, 1.1])
       ];
+      items.push(...barrierItemsByPalette[tweaks.palette]);
 
       if (tweaks.reflections) {
         items.push(item("floor-sheen", cube, palette.rim, [0, -0.004, 0.18], [2.8, 0.008, 0.38]));

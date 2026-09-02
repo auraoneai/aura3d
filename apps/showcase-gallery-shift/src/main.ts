@@ -112,19 +112,29 @@ const LIVE_OBJECTIVE_MATERIAL = material.emissive({
 });
 const THIEF_DETAIL_MATERIAL = material.metal({
   name: "infiltrator identity harness",
-  color: "#0f756e",
-  emissive: "#46f4d7",
-  emissiveIntensity: 0.42,
+  // A brighter cyan/teal harness gives the typed infiltrator a crisp read
+  // against the pale rotunda tile without replacing the authored character
+  // materials.  This is renderer-owned identity dressing only.
+  color: "#146f6e",
+  emissive: "#52f6dc",
+  emissiveIntensity: 0.62,
   roughness: 0.28,
   metallic: 0.62
 });
 const GUARD_DETAIL_MATERIAL = material.metal({
   name: "sentry identity harness",
-  color: "#7d2143",
-  emissive: "#ff4b7b",
-  emissiveIntensity: 0.42,
+  color: "#852346",
+  emissive: "#ff5b87",
+  emissiveIntensity: 0.58,
   roughness: 0.3,
   metallic: 0.62
+});
+const THIEF_VISOR_MATERIAL = material.emissive({
+  name: "infiltrator visor signal",
+  color: "#0b4b4d",
+  emissive: "#73fff0",
+  emissiveIntensity: 1.65,
+  opacity: 0.95
 });
 const ALERT_WEDGE_GEOMETRY = geometry.define({
   // One flat, camera-facing triangle in local +Z. Runtime guard yaw rotates it
@@ -133,19 +143,45 @@ const ALERT_WEDGE_GEOMETRY = geometry.define({
   // exact review moment already proves the real LOS interception through the
   // evidence binding, so this renderer-owned feedback only needs to connect
   // observer and target without obscuring the museum plan beneath it.
-  positions: [[0, 0, 0], [-0.72, 0, 4.1], [0.72, 0, 4.1]],
+  positions: [[0, 0, 0], [-0.96, 0, 4.6], [0.96, 0, 4.6]],
   normals: [[0, 1, 0], [0, 1, 0], [0, 1, 0]],
   indices: [0, 1, 2],
-  bounds: { min: [-0.72, 0, 0], max: [0.72, 0, 4.1] }
+  bounds: { min: [-0.96, 0, 0], max: [0.96, 0, 4.6] }
 });
 const ALERT_BEAM_GEOMETRY = geometry.define({
-  // A narrow centerline makes the observer-to-target relationship readable at
-  // review scale. It is only visible while the same real LOS sample that
-  // drives detection is active; it never computes or implies perception.
-  positions: [[0, 0, 0], [-0.07, 0, 4.1], [0.07, 0, 4.1]],
-  normals: [[0, 1, 0], [0, 1, 0], [0, 1, 0]],
-  indices: [0, 1, 2],
-  bounds: { min: [-0.07, 0, 0], max: [0.07, 0, 4.1] }
+  // The alert centerline is a narrow vertical scanner rail rather than a
+  // single floor triangle.  It is only visible while the same real LOS sample
+  // that drives detection is active; it never computes or implies perception.
+  // Giving the rail physical height makes observer -> target action staging
+  // legible from the oblique gameplay camera without adding another draw call
+  // or altering the underlying FloorLayout raycast.
+  positions: [
+    [-0.11, 0.05, 0], [0.11, 0.05, 0], [0.11, 1.45, 0], [-0.11, 1.45, 0],
+    [-0.11, 0.05, 4.6], [0.11, 0.05, 4.6], [0.11, 1.45, 4.6], [-0.11, 1.45, 4.6]
+  ],
+  normals: [
+    [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1],
+    [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]
+  ],
+  indices: [
+    1, 0, 3, 1, 3, 2,
+    4, 5, 6, 4, 6, 7,
+    0, 4, 7, 0, 7, 3,
+    5, 1, 2, 5, 2, 6,
+    3, 7, 6, 3, 6, 2,
+    0, 1, 5, 0, 5, 4
+  ],
+  bounds: { min: [-0.11, 0.05, 0], max: [0.11, 1.45, 4.6] }
+});
+const ALERT_LINE_GEOMETRY = geometry.define({
+  // A shallow ground rail keeps the live LOS action readable from the
+  // spectator camera.  Its visibility and length are still written only from
+  // the real raycast sample in syncThreatFeedback; this quad never performs
+  // perception or collision work.
+  positions: [[-0.11, 0.065, 0], [0.11, 0.065, 0], [0.11, 0.065, 4.6], [-0.11, 0.065, 4.6]],
+  normals: [[0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0]],
+  indices: [0, 1, 2, 0, 2, 3],
+  bounds: { min: [-0.11, 0.065, 0], max: [0.11, 0.065, 4.6] }
 });
 
 /**
@@ -460,7 +496,18 @@ function guardCharacterNodes(): AuraSceneNode[] {
         name: spawn.id,
         role: "primaryCharacter",
         scaleMode: "fit",
-        targetMaxDimension: rover ? 3.35 : 4.8
+        // The humanoid sentry's source bounds are taller than the rover's,
+        // so the previous 4.8 m target made guard-2 dominate the museum plan
+        // and read as a giant gold prop beside the infiltrator.  Keep both
+        // typed patrol roles prominent but within one believable security
+        // scale band in the same top-down frame.
+        // The previous security scale read as two small props once the full
+        // museum plan was in frame.  Lift both typed patrol silhouettes by a
+        // restrained amount so the real observer/target relationship survives
+        // the wider architectural composition without turning either actor
+        // into a giant room prop.  The rover gets the larger lift because its
+        // low profile otherwise disappears beside the humanoid sentry.
+        targetMaxDimension: rover ? 4.75 : 5.1
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, {
@@ -546,6 +593,61 @@ function floor1CoverNodes(): AuraSceneNode[] {
       }))
       .toJSON()
   );
+}
+
+/**
+ * Typed archival displays that flesh out the four side-room suites. These
+ * nodes are visual set dressing only: FloorLayout's four real display cases
+ * above remain the sole collision/LOS cover and mission fixtures. Keeping the
+ * extra cases wall-hugging and floor-scoped gives the museum a denser prop
+ * rhythm without creating duplicate objectives or changing gameplay truth.
+ */
+const GALLERY_SUITE_DISPLAY_SPECS: readonly {
+  readonly id: string;
+  readonly x: number;
+  readonly z: number;
+  readonly exhibit: "A" | "B" | "C";
+}[] = [
+  { id: "archive-gallery", x: -8.88, z: -5.72, exhibit: "A" },
+  { id: "archive-conservation", x: -8.88, z: 5.52, exhibit: "B" },
+  { id: "treasury-vault", x: 8.88, z: -5.72, exhibit: "C" },
+  { id: "treasury-exhibition", x: 8.88, z: 5.52, exhibit: "A" },
+  // A non-gameplay destination display in the north vault makes the service
+  // route read as a connected room rather than an empty termination. The
+  // mission's actual p1/p2 fixtures remain FloorLayout-owned; this typed pair
+  // is wall-hugging set dressing only.
+  { id: "vault-archive", x: -2.25, z: -5.35, exhibit: "C" }
+] as const;
+const GALLERY_SUITE_DISPLAY_NODE_NAMES = GALLERY_SUITE_DISPLAY_SPECS.flatMap(({ id }) => [
+  `suite-case-${id}`,
+  `suite-exhibit-${id}`
+]);
+
+function museumDisplaySuiteNodes(): AuraSceneNode[] {
+  return GALLERY_SUITE_DISPLAY_SPECS.flatMap((display) => [
+    model(assets.galleryShiftDisplayCase, {
+      name: `suite-case-${display.id}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.92
+    })
+      .position(display.x, 0, display.z)
+      .runtime(game.runtimeNode(`suite-case-${display.id}`, {
+        tags: ["typed-asset", "museum-display", "set-dressing", "non-gameplay"]
+      }))
+      .toJSON(),
+    model(assets[`galleryShiftExhibit${display.exhibit}`], {
+      name: `suite-exhibit-${display.id}`,
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: 0.46
+    })
+      .position(display.x, 0.78, display.z)
+      .runtime(game.runtimeNode(`suite-exhibit-${display.id}`, {
+        tags: ["typed-asset", "museum-exhibit", "set-dressing", "non-gameplay"]
+      }))
+      .toJSON()
+  ]);
 }
 
 function floor2WallNodes(): AuraSceneNode[] {
@@ -665,8 +767,10 @@ function exitNodes(): AuraSceneNode[] {
 }
 
 function threatFeedbackNodes(): AuraSceneNode[] {
-  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#721534", emissive: "#ff3b6f", emissiveIntensity: 1.25, opacity: 0.58 });
-  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#b52c58", emissive: "#ffd0dc", emissiveIntensity: 2.05, opacity: 0.98 });
+  const wedgeMaterial = material.emissive({ name: "release real LOS alert wedge", color: "#7d173c", emissive: "#ff477b", emissiveIntensity: 1.48, opacity: 0.68 });
+  const beamMaterial = material.emissive({ name: "release real LOS center beam", color: "#c43765", emissive: "#ffd0dc", emissiveIntensity: 2.35, opacity: 0.99 });
+  const lineMaterial = material.emissive({ name: "release real LOS floor rail", color: "#8d234a", emissive: "#ff5e8e", emissiveIntensity: 2.1, opacity: 0.94 });
+  const targetMaterial = material.emissive({ name: "release real LOS target reticle", color: "#54132f", emissive: "#ff78a4", emissiveIntensity: 2.05, opacity: 0.94 });
   return ["guard-1", "guard-2"].flatMap((id) => [
     geometry.custom(ALERT_WEDGE_GEOMETRY, { name: `${id} real LOS alert wedge`, material: wedgeMaterial })
       .position(0, 0.16, 0)
@@ -677,6 +781,30 @@ function threatFeedbackNodes(): AuraSceneNode[] {
       .position(0, 0.19, 0)
       .scale([0.001, 0.001, 0.001])
       .runtime(game.runtimeNode(`${id} threat beam`, { tags: ["stealth-feedback", "vision-centerline", "real-los-state", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(ALERT_LINE_GEOMETRY, { name: `${id} real LOS floor rail`, material: lineMaterial })
+      .position(0, 0.08, 0)
+      .scale([0.001, 0.001, 0.001])
+      .runtime(game.runtimeNode(`${id} threat line`, { tags: ["stealth-feedback", "vision-floor-rail", "real-los-state", "renderer-owned"] }))
+      .toJSON(),
+    // A target reticle closes the observer -> target relationship in the
+    // review frame. Its position/visibility is written only by
+    // syncThreatFeedback from the same real LOS sample that drives detection;
+    // it never computes perception or collision itself.
+    primitives.torus({ name: `${id} threat highlight`, material: targetMaterial })
+      .position(0, 0.08, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.001, 0.001, 0.06])
+      .runtime(game.runtimeNode(`${id} threat highlight`, { tags: ["stealth-feedback", "vision-target", "real-los-state", "renderer-owned"] }))
+      .toJSON(),
+    // A source halo keeps the active sentry anchored to the 3D scan rail. It
+    // is switched on only for the nearest real LOS sample, so the visual
+    // action staging cannot be mistaken for a decorative second detector.
+    primitives.torus({ name: `${id} threat source`, material: targetMaterial })
+      .position(0, 0.12, 0)
+      .rotate(Math.PI / 2, 0, 0)
+      .scale([0.001, 0.001, 0.08])
+      .runtime(game.runtimeNode(`${id} threat source`, { tags: ["stealth-feedback", "vision-source", "real-los-state", "renderer-owned"] }))
       .toJSON()
   ]);
 }
@@ -688,9 +816,8 @@ function threatFeedbackNodes(): AuraSceneNode[] {
  */
 function liveHierarchyNodes(): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [
-    text3D("PLAYER", { name: "live-player-label", size: 0.56, depth: 0.055, letterSpacing: 0.035, material: LIVE_PLAYER_MATERIAL })
+    text3D("PLAYER", { name: "live-player-label", size: 0.68, depth: 0.055, letterSpacing: 0.035, material: LIVE_PLAYER_MATERIAL })
       .position(0, -20, 0)
-      .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-player-label", { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
       .toJSON(),
     primitives.torus({ name: "live-objective-ring", material: LIVE_OBJECTIVE_MATERIAL })
@@ -699,14 +826,12 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       .scale([1.5, 1.5, 0.12])
       .runtime(game.runtimeNode("live-objective-ring", { tags: ["live-stealth-state", "active-objective", "renderer-owned"] }))
       .toJSON(),
-    text3D("LIFT", { name: "live-lift-label", size: 0.64, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("LIFT", { name: "live-lift-label", size: 0.76, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
-      .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-lift-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
-    text3D("EXIT", { name: "live-exit-label", size: 0.64, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
+    text3D("EXIT", { name: "live-exit-label", size: 0.76, depth: 0.06, letterSpacing: 0.05, material: LIVE_OBJECTIVE_MATERIAL })
       .position(0, -20, 0)
-      .rotate(0, 0.62, 0)
       .runtime(game.runtimeNode("live-exit-label", { tags: ["live-stealth-state", "active-objective", "world-label", "renderer-owned"] }))
       .toJSON(),
     lights.point({ name: "live-objective-practical", color: "#ffd05a", intensity: 2.8 })
@@ -720,12 +845,15 @@ function liveHierarchyNodes(): AuraSceneNode[] {
       primitives.torus({ name: `${guardId} live ring`, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
         .rotate(Math.PI / 2, 0, 0)
-        .scale([0.72, 0.72, 0.065])
+        // A slightly broader state ring gives each typed patrol a grounded
+        // footprint at the review distance.  It follows the real guard node
+        // and remains feedback only; it does not alter the LOS/collision
+        // footprint used by FloorLayout.
+        .scale([0.82, 0.82, 0.065])
         .runtime(game.runtimeNode(`${guardId} live ring`, { tags: ["live-stealth-state", "guard-silhouette", "renderer-owned"] }))
         .toJSON(),
-      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.52, depth: 0.055, letterSpacing: 0.035, material: LIVE_GUARD_MATERIAL })
+      text3D(`GUARD ${guardIndex + 1}`, { name: `${guardId} live label`, size: 0.66, depth: 0.055, letterSpacing: 0.035, material: LIVE_GUARD_MATERIAL })
         .position(0, -20, 0)
-        .rotate(0, 0.62, 0)
         .runtime(game.runtimeNode(`${guardId} live label`, { tags: ["live-stealth-state", "world-label", "renderer-owned"] }))
         .toJSON()
     );
@@ -788,7 +916,10 @@ function buildScene(): ReturnType<typeof scene> {
         // the oblique review frame. A modest scale lift keeps her complete
         // body visible while giving the real LOS intercept enough pixel area
         // to read against the room plan.
-        targetMaxDimension: 5.45
+        // The typed infiltrator remains the gameplay subject; this modest
+        // scale lift gives the complete body enough pixel area for the
+        // review's real-LOS moment while preserving the surrounding suites.
+        targetMaxDimension: 6.8
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -801,6 +932,18 @@ function buildScene(): ReturnType<typeof scene> {
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("infiltrator identity detail", {
+          tags: ["typed-set-dressing", "thief-identity", "renderer-owned", "authored-movement"]
+        }))
+        .toJSON()
+    )
+    .add(
+      // Renderer-owned visor signal: a tiny state-colour accent tied to the
+      // typed infiltrator's transform. It reinforces identity at the oblique
+      // review distance without replacing the real character face/materials.
+      primitives.box({ name: "infiltrator visor signal", material: THIEF_VISOR_MATERIAL })
+        .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 1.99, FLOOR_LAYOUTS[0]!.thiefSpawn.z + 0.19)
+        .scale([0.48, 0.07, 0.055])
+        .runtime(game.runtimeNode("infiltrator visor signal", {
           tags: ["typed-set-dressing", "thief-identity", "renderer-owned", "authored-movement"]
         }))
         .toJSON()
@@ -847,6 +990,7 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany(guardCharacterNodes())
     .addMany(pedestalAndExhibitNodes())
     .addMany(floor1CoverNodes())
+    .addMany(museumDisplaySuiteNodes())
     .addMany(floor2WallNodes())
     .addMany(lightPoolNodes())
     .addMany(exitNodes())
@@ -867,11 +1011,11 @@ function buildScene(): ReturnType<typeof scene> {
     .addMany([
       // Low-lit marble hall: moonlight key, warm guard flashlights (sway gated
       // by reduced-motion below), cool exit glow, shallow fog, restrained bloom.
-      effects.neonBloom({ intensity: reducedMotion ? 0.05 : 0.18 }),
+      effects.neonBloom({ intensity: reducedMotion ? 0.06 : 0.22 }),
       effects.fog({ name: "gallery haze", density: 0.009, color: "#243b59", intensity: 0.18 }),
-      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.52 : 0.38 }),
-      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 1.5 : 1.05 }),
-      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 0.92 : 0.58 }),
+      lights.ambient({ name: "museum ambient fill", color: "#c4e7ee", intensity: visualReviewCapture ? 0.6 : 0.38 }),
+      lights.directional({ name: "museum moon key", position: [4.8, 8.6, 5.2], color: "#fff2dc", intensity: visualReviewCapture ? 1.7 : 1.05 }),
+      lights.directional({ name: "museum cyan rim", position: [-5.5, 5.2, -4.6], color: "#76dff1", intensity: visualReviewCapture ? 1.04 : 0.58 }),
       lights.point({ name: "guard-1 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(-8.5, 1.8, 4.5),
       lights.point({ name: "guard-2 flashlight", color: "#ffd58a", intensity: visualReviewCapture ? 2.35 : 1.55 }).position(8.5, 1.8, -5.5),
       lights.point({ name: "exit sign glow", color: "#7ef8ff", intensity: 0.8 }).position(0, 2.2, -6.5)
@@ -902,12 +1046,12 @@ function buildScene(): ReturnType<typeof scene> {
       // two live patrol silhouettes into the same diagonal lane.  This is a
       // camera-only presentation change: FloorLayout, LOS, patrol positions,
       // and the staged encounter remain unchanged.
-      position: visualReviewCapture ? [0, 23.0, 15.0] : [0, 13.4, 13.8],
+      position: visualReviewCapture ? [0, 18.2, 10.9] : [0, 13.4, 13.8],
       // Centre the open foyer encounter rather than the south boundary. This
       // keeps a complete infiltrator body inside the canvas while retaining
       // both objective wings and the north service exit as route context.
-      target: visualReviewCapture ? [0, 1.0, 0.0] : [0, 0.72, -0.45],
-      fov: visualReviewCapture ? 50 : 40
+      target: visualReviewCapture ? [0, 0.92, 0.35] : [0, 0.72, -0.45],
+      fov: visualReviewCapture ? 47 : 40
     }));
 }
 
@@ -1101,6 +1245,7 @@ function syncFloorVisuals(): void {
   const layout = runtime.layout;
   app.nodes.get("museum-interior")?.setVisible(layout.id === 1);
   setVisibleByNames(floorScopedNodeNames.get(2) ?? [], layout.id === 2);
+  setVisibleByNames(GALLERY_SUITE_DISPLAY_NODE_NAMES, layout.id === 1);
   layout.pedestals.forEach((pedestal, slot) => {
     app.nodes.get(`pedestal-${slot}`)?.setPosition(pedestal.x, 0, pedestal.z);
     for (const variant of ["A", "B", "C"]) {
@@ -1129,6 +1274,7 @@ function syncCharacterVisuals(): void {
   const snap = runtime.thief.snapshot();
   app.nodes.get("thief")?.setPosition(snap.x, 0, snap.z);
   app.nodes.get("infiltrator identity detail")?.setPosition(snap.x, 0, snap.z);
+  app.nodes.get("infiltrator visor signal")?.setPosition(snap.x, 1.99, snap.z + 0.19);
   app.nodes.get("thief-focus")?.setPosition(snap.x, 0.07, snap.z);
   app.nodes.get("thief-practical")?.setPosition(snap.x, 1.25, snap.z);
   app.nodes.get("thief-rim-fill")?.setPosition(snap.x - 0.55, 2.15, snap.z + 0.45);
@@ -1171,11 +1317,15 @@ function syncThreatFeedback(): void {
     const highlight = app.nodes.get(sample.id + " threat highlight");
     const wedge = app.nodes.get(sample.id + " threat wedge");
     const beam = app.nodes.get(sample.id + " threat beam");
+    const line = app.nodes.get(sample.id + " threat line");
+    const source = app.nodes.get(sample.id + " threat source");
     const thief = runtime.thief.snapshot();
     const primarySighting = sample.seesThief && sample.id === primarySeeingGuard?.id;
     highlight?.setVisible(primarySighting);
     wedge?.setVisible(primarySighting);
     beam?.setVisible(primarySighting);
+    line?.setVisible(primarySighting);
+    source?.setVisible(primarySighting);
     if (primarySighting) {
       const dx = thief.x - sample.x;
       const dz = thief.z - sample.z;
@@ -1186,10 +1336,15 @@ function syncThreatFeedback(): void {
       // while preventing a fixed four-metre triangle from spilling through a
       // wall or far beyond a close target in the review frame.
       wedge?.setRotation(0, Math.atan2(dx, dz), 0);
-      wedge?.setScale([1.42, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.1))]);
+      wedge?.setScale([1.5, 1, Math.min(1, Math.max(0.18, (distance - 0.42) / 4.6))]);
       beam?.setPosition(sample.x, 0.19, sample.z);
       beam?.setRotation(0, Math.atan2(dx, dz), 0);
-      beam?.setScale([1.45, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.1))]);
+      beam?.setScale([1.58, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.6))]);
+      line?.setPosition(sample.x, 0.08, sample.z);
+      line?.setRotation(0, Math.atan2(dx, dz), 0);
+      line?.setScale([1.38, 1, Math.min(1, Math.max(0.18, (distance - 0.46) / 4.6))]);
+      source?.setPosition(sample.x, 0.17, sample.z);
+      source?.setScale([0.78, 0.78, 0.09]);
     }
     // A real sighting swaps the cool patrol preview for one alert wedge driven
     // by the same observer sample that raised the detection meter.
@@ -1197,7 +1352,11 @@ function syncThreatFeedback(): void {
       ?.setVisible(!visualReviewCapture && !sample.seesThief && runtime.layout.id === 1);
     if (primarySighting) {
       highlight?.setPosition(thief.x, 0.07, thief.z);
-      highlight?.setScale([0.85, 0.85, 0.06]);
+      // Keep the target marker one clear body-width beyond the infiltrator so
+      // the real observer→target relationship survives the larger review
+      // camera.  It remains a renderer-owned reticle driven by the sampled
+      // LOS result, not an additional gameplay sensor.
+      highlight?.setScale([1.18, 1.18, 0.09]);
     }
   }
 }
@@ -1261,7 +1420,7 @@ function syncLiveHierarchy(): void {
   // Labels are compact, upright museum-security callouts in the locked
   // oblique review camera. Their positions follow the live actors/objective,
   // while LOS, detection, and objective truth remain owned by the runtime.
-  app.nodes.get("live-player-label")?.setPosition(thief.x + 0.9, 3.02, thief.z + 0.54);
+  app.nodes.get("live-player-label")?.setPosition(thief.x + 1.02, 3.34, thief.z + 0.54);
 
   const unlifted = runtime.layout.pedestals.filter((pedestal) => !runtime.liftedIds.includes(pedestal.id));
   const objective = unlifted.length > 0
@@ -1280,7 +1439,7 @@ function syncLiveHierarchy(): void {
   const objectiveLabel = exiting ? app.nodes.get("live-exit-label") : app.nodes.get("live-lift-label");
   app.nodes.get("live-lift-label")?.setVisible(!exiting);
   app.nodes.get("live-exit-label")?.setVisible(exiting);
-  objectiveLabel?.setPosition(objective.x - 0.62, 2.12, objective.z + 0.08);
+  objectiveLabel?.setPosition(objective.x - 0.74, 2.3, objective.z + 0.08);
 
   for (const guardId of ["guard-1", "guard-2"]) {
     const guard = runtime.guards.find((candidate) => candidate.id === guardId);
@@ -1292,8 +1451,8 @@ function syncLiveHierarchy(): void {
       // Push guard labels toward the outside edges of the plan. In the staged
       // south-lane encounter this keeps both callouts off the thief silhouette
       // instead of stacking three labels over the same central action pixels.
-      const labelX = guard.x < 0 ? guard.x - 1.72 : guard.x + 0.9;
-      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 3.2, guard.z + 0.08);
+      const labelX = guard.x < 0 ? guard.x - 1.92 : guard.x + 1.05;
+      app.nodes.get(`${guardId} live label`)?.setPosition(labelX, 3.48, guard.z + 0.08);
     }
   }
 }

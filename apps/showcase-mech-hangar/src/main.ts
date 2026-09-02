@@ -41,7 +41,6 @@ import { MECH_SLOTS, PART_OPTIONS, catalogReady, resolvePartAsset, selectedParts
 import { PART_CURATION_VERDICT } from "./parts-generated";
 import { buildMechAssemblyPlan, mountTransformForPart, validationSummary } from "./assembly";
 import { createMechBout, type BoutEvent, type BoutInputs, type BoutSnapshot } from "./arena/mech-fight";
-import { assets } from "../../../src/aura-assets";
 
 declare global {
   interface Window {
@@ -55,14 +54,6 @@ const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
-// Keep the attribution-backed, textured robot as the visible hero in the
-// review frame. The MH-2M family remains mounted through the same validated
-// socket plan (the selected weapon is visible as the hardpoint overlay), but
-// exposing every low-poly part slab as the primary silhouette produced the
-// black/white disconnected assembly seen in the review screenshot. A complete
-// body is the honest visual subject; the typed catalog still owns swaps,
-// sockets, stats, and the weapon attachment.
-const SHOW_MODULAR_ASSEMBLY = false;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 // ---- world layout -----------------------------------------------------------
@@ -195,33 +186,11 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
   return builders;
 }
 
-// The validated MH-2M slots remain the live assembly contract and the selected
-// hardpoint is mounted on the visible hero. The attributed Robotcand body is
-// intentionally the review silhouette: the earlier all-MH-2M frame exposed
-// four disconnected synthetic slabs that read as a broken model. This keeps
-// socket validation, part swaps, stats, and weapon mounting live while giving
-// the human review a complete, textured character to read.
-function mechShellBuilder(side: "player" | "rival"): ReturnType<typeof model> {
-  return model(assets.robotcand, {
-    name: "mech-" + side + "-visual-shell",
-    role: "primaryCharacter",
-    castShadow: true,
-    receiveShadow: true,
-    scaleMode: "fit",
-    targetHeight: 2.72
-  }).position(HANGAR_CENTER[0], -60, HANGAR_CENTER[2]).runtime(game.runtimeNode("mech-" + side + "-visual-shell", {
-    tags: ["mech-shell", side, "typed-primary-asset", "grounded-visual-shell"]
-  }));
-}
-
 const camAnchorBuilder = primitives.sphere({
   name: "mech cam anchor",
   material: material.emissive({ name: "cam anchor mat", color: "#101418", emissive: "#000000", emissiveIntensity: 0 })
 }).position(HANGAR_CENTER[0], 1.05, HANGAR_CENTER[2]).scale([0.001, 0.001, 0.001])
   .runtime(game.runtimeNode("mech-cam-anchor", { tags: ["camera-anchor"] }));
-
-const playerShellBuilder = mechShellBuilder("player");
-const rivalShellBuilder = mechShellBuilder("rival");
 
 const sparkMaterial = material.emissive({ name: "hit spark mat", color: "#ffd27a", emissive: "#ffb454", emissiveIntensity: 2.2 });
 const dustMaterial = material.pbr({ name: "pit dust mat", color: "#8b93a1", roughness: 1, metallic: 0 });
@@ -254,9 +223,9 @@ const impactRingBuilders = Array.from({ length: 8 }, (_, index) =>
 );
 
 // Team markers are deliberately small and embedded in the authored scene: a
-// cyan player base, a coral rival base, and a matching chest chevron.  They
-// keep the two otherwise identical Robotcand shells separable during the
-// arena exchange without replacing either typed character asset.
+// cyan player base, a coral rival base, and a matching chest chevron. They keep
+// the two same-family modular assemblies separable during the arena exchange
+// without replacing either typed character asset.
 const teamMarkerMaterials = {
   player: material.emissive({ name: "player identity marker", color: "#7de9ff", emissive: "#22c9ff", emissiveIntensity: 1.3, opacity: 0.88 }),
   rival: material.emissive({ name: "rival identity marker", color: "#ff91b6", emissive: "#ff3f79", emissiveIntensity: 1.2, opacity: 0.88 })
@@ -271,6 +240,46 @@ const teamMarkerBuilders = (["player", "rival"] as const).flatMap((side) => [
     .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
     .scale([0.001, 0.001, 0.001])
     .runtime(game.runtimeNode("mech-" + side + "-identity-chevron", { tags: ["team-marker", side, "renderer-owned"] }))
+]);
+
+// A compact, authored chest plate makes the MH-2M family identity readable at
+// the review camera's distance without replacing any typed GLB geometry. The
+// plate is a presentation cue only: the four selected GLBs remain the named
+// primary subject and the cue is hidden by the same suppression hook used for
+// subject-isolation evidence.
+const mechIdentityMaterials = {
+  plate: material.pbr({
+    name: "mh-2m chest identity plate",
+    color: "#18394b",
+    roughness: 0.3,
+    metallic: 0.82,
+    clearcoat: 0.4,
+    clearcoatRoughness: 0.2
+  }),
+  player: material.emissive({
+    name: "mh-2m player chest visor",
+    color: "#8beaff",
+    emissive: "#28d7ff",
+    emissiveIntensity: 1.7,
+    opacity: 0.96
+  }),
+  rival: material.emissive({
+    name: "mh-2m rival chest visor",
+    color: "#ff9fbe",
+    emissive: "#ff467f",
+    emissiveIntensity: 1.55,
+    opacity: 0.96
+  })
+} as const;
+const mechIdentityBuilders = (["player", "rival"] as const).flatMap((side) => [
+  primitives.box({ name: "mech-" + side + "-mh2m-chest-plate", material: mechIdentityMaterials.plate })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .scale([0.28, 0.18, 0.04])
+    .runtime(game.runtimeNode("mech-" + side + "-mh2m-chest-plate", { tags: ["mech-identity", "mh-2m", side, "renderer-owned"] })),
+  primitives.box({ name: "mech-" + side + "-mh2m-chest-visor", material: mechIdentityMaterials[side] })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .scale([0.17, 0.052, 0.022])
+    .runtime(game.runtimeNode("mech-" + side + "-mh2m-chest-visor", { tags: ["mech-identity", "mh-2m", side, "renderer-owned"] }))
 ]);
 
 // One ring per typed weapon option gives each hardpoint a compact, readable
@@ -291,6 +300,84 @@ const weaponAccentBuilders = (["player", "rival"] as const).flatMap((side) =>
   )
 );
 
+// The catalog weapon is a rigid typed hardpoint, so the hand-to-tool contact
+// needs a rendered receiver rather than a floating marker.  These collars are
+// authored scene geometry (metal sleeve + emissive lock stripe) and are driven
+// from the exact `mountTransformForPart` position below.  They are deliberately
+// kept separate from the GLB so the family gate can distinguish a real typed
+// part from presentation-only contact dressing.
+const hardpointCollarMaterials = {
+  metal: material.pbr({
+    name: "typed hardpoint collar metal",
+    color: "#30495d",
+    roughness: 0.34,
+    metallic: 0.88,
+    clearcoat: 0.28,
+    clearcoatRoughness: 0.18
+  }),
+  player: material.emissive({
+    name: "typed hardpoint player lock",
+    color: "#7de9ff",
+    emissive: "#22c9ff",
+    emissiveIntensity: 1.5,
+    opacity: 0.94
+  }),
+  rival: material.emissive({
+    name: "typed hardpoint rival lock",
+    color: "#ff91b6",
+    emissive: "#ff3f79",
+    emissiveIntensity: 1.35,
+    opacity: 0.94
+  })
+} as const;
+const hardpointCollarBuilders = (["player", "rival"] as const).flatMap((side) => [
+  primitives.torus({ name: "mech-" + side + "-typed-hardpoint-collar", material: hardpointCollarMaterials.metal })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-" + side + "-typed-hardpoint-collar", { tags: ["typed-assembly-contact", "hardpoint", side, "renderer-owned"] })),
+  primitives.torus({ name: "mech-" + side + "-typed-hardpoint-lock", material: hardpointCollarMaterials[side] })
+    .position(HANGAR_CENTER[0], -70, HANGAR_CENTER[2])
+    .scale([0.001, 0.001, 0.001])
+    .runtime(game.runtimeNode("mech-" + side + "-typed-hardpoint-lock", { tags: ["typed-assembly-contact", "hardpoint-lock", side, "renderer-owned"] }))
+]);
+
+// Two shallow receiver pads make the feet's actual ground contact inspectable
+// in both the hangar and arena.  Their y value is fixed to the authored deck
+// plane while the x/z positions follow each fighter root, so airborne movement
+// cannot leave a stale pad floating with the model.
+const footContactMaterial = material.pbr({
+  name: "mech foot contact receiver",
+  color: "#111f2d",
+  roughness: 0.86,
+  metallic: 0.5,
+  clearcoat: 0.2,
+  clearcoatRoughness: 0.32
+});
+const footContactSealMaterials = {
+  player: material.emissive({ name: "player foot contact seal", color: "#7de9ff", emissive: "#22c9ff", emissiveIntensity: 0.95, opacity: 0.86 }),
+  rival: material.emissive({ name: "rival foot contact seal", color: "#ff91b6", emissive: "#ff3f79", emissiveIntensity: 0.9, opacity: 0.86 })
+} as const;
+const footContactBuilders = (["player", "rival"] as const).flatMap((side) => [
+  primitives.cylinder({ name: "mech-" + side + "-left-foot-receiver", material: footContactMaterial })
+    .position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2])
+    .scale([0.24, 0.035, 0.17])
+    .runtime(game.runtimeNode("mech-" + side + "-left-foot-receiver", { tags: ["typed-assembly-contact", "ground-receiver", side, "renderer-owned"] })),
+  primitives.cylinder({ name: "mech-" + side + "-right-foot-receiver", material: footContactMaterial })
+    .position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2])
+    .scale([0.24, 0.035, 0.17])
+    .runtime(game.runtimeNode("mech-" + side + "-right-foot-receiver", { tags: ["typed-assembly-contact", "ground-receiver", side, "renderer-owned"] })),
+  primitives.torus({ name: "mech-" + side + "-left-foot-seal", material: footContactSealMaterials[side] })
+    .position(HANGAR_CENTER[0], 0.205, HANGAR_CENTER[2])
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([0.19, 0.13, 0.018])
+    .runtime(game.runtimeNode("mech-" + side + "-left-foot-seal", { tags: ["typed-assembly-contact", "ground-seal", side, "renderer-owned"] })),
+  primitives.torus({ name: "mech-" + side + "-right-foot-seal", material: footContactSealMaterials[side] })
+    .position(HANGAR_CENTER[0], 0.205, HANGAR_CENTER[2])
+    .rotate(Math.PI / 2, 0, 0)
+    .scale([0.19, 0.13, 0.018])
+    .runtime(game.runtimeNode("mech-" + side + "-right-foot-seal", { tags: ["typed-assembly-contact", "ground-seal", side, "renderer-owned"] }))
+]);
+
 const turntableBuilder = primitives.cylinder({
   name: "hangar turntable",
   material: material.pbr({ name: "turntable steel", color: "#344c61", roughness: 0.48, metallic: 0.68 })
@@ -298,16 +385,11 @@ const turntableBuilder = primitives.cylinder({
 
 // A separate matte insert gives the feet a readable receiver surface. It is
 // authored scene dressing (not a fake DOM shadow) and keeps the black turntable
-// from swallowing the contact point under the typed shell.
+// from swallowing the contact point under the typed family.
 const turntableContactBuilder = primitives.cylinder({
   name: "hangar turntable contact insert",
   material: material.pbr({ name: "turntable contact insert", color: "#0c1724", roughness: 0.92, metallic: 0.12 })
 }).position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2]).scale([1.82, 0.018, 1.82]);
-
-const hangarTurntableRimBuilder = primitives.torus({
-  name: "hangar turntable rim",
-  material: material.emissive({ name: "turntable rim light", color: "#1f718b", emissive: "#5ddcff", emissiveIntensity: 0.72, opacity: 0.82 })
-}).position(HANGAR_CENTER[0], 0.19, HANGAR_CENTER[2]).rotate(Math.PI / 2, 0, 0).scale([2.18, 2.18, 0.035]);
 
 const hangarFloorBuilder = primitives.box({
   name: "hangar floor",
@@ -351,14 +433,17 @@ const hangarBaySignBuilders = [
     depth: 0.05,
     letterSpacing: 0.045,
     material: hangarBaySignMaterial
-  }).position(-2.65, 4.78, HANGAR_CENTER[2] - 5.69),
+  // Keep the sign inside the review camera's vertical safe area. The earlier
+  // 4.78 m placement put the top of "BAY 07" on the capture edge, which the
+  // composition probe correctly classified as foreground clipping.
+  }).position(-2.65, 3.92, HANGAR_CENTER[2] - 5.69),
   text3D("AEGIS // ASSEMBLY DECK", {
     name: "hangar assembly deck sign",
     size: 0.18,
     depth: 0.03,
     letterSpacing: 0.024,
     material: material.emissive({ name: "hangar deck sign material", color: "#5c315f", emissive: "#ff99c8", emissiveIntensity: 0.78 })
-  }).position(-0.6, 4.73, HANGAR_CENTER[2] - 5.68)
+  }).position(-0.6, 3.88, HANGAR_CENTER[2] - 5.68)
 ];
 const hangarFloorInsetBuilder = primitives.box({
   name: "hangar floor presentation inset",
@@ -557,17 +642,15 @@ const pitSignBuilders = [
     depth: 0.03,
     letterSpacing: 0.025,
     material: material.emissive({ name: "pit round sign", color: "#401b2b", emissive: "#ff8aa8", emissiveIntensity: 0.72 })
-  }).position(2.7, 5.08, ARENA_CENTER_Z - 4.45)
+  }).position(2.7, 5.08, ARENA_CENTER_Z - 4.45),
+  text3D("MH-2M // LIVE TEST", {
+    name: "pit sign mh2m live test",
+    size: 0.18,
+    depth: 0.03,
+    letterSpacing: 0.022,
+    material: material.emissive({ name: "pit mh2m sign", color: "#163c54", emissive: "#61dcff", emissiveIntensity: 0.82 })
+  }).position(-0.78, 4.58, ARENA_CENTER_Z - 4.45)
 ];
-const pitVerticalLightBuilders = [-9.4, 9.4].map((x, index) =>
-  primitives.box({
-    name: `pit vertical light ${index}`,
-    material: material.emissive({ name: `pit vertical light material ${index}`, color: index === 0 ? "#2d9cc2" : "#a34566", emissive: index === 0 ? "#53ddff" : "#ff638c", emissiveIntensity: 0.88 })
-  })
-    .position(x, 3.2, ARENA_CENTER_Z - 4.48)
-    .scale([0.09, 2.25, 0.055])
-);
-
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
@@ -588,7 +671,6 @@ const app = createAuraApp("#app", {
       lights.point({ name: "arena warm rim", position: [4.8, 2.2, ARENA_CENTER_Z - 1.8], intensity: 3.0, color: "#ff7a5c" }),
       turntableBuilder,
       turntableContactBuilder,
-      hangarTurntableRimBuilder,
       hangarFloorBuilder,
       hangarFloorInsetBuilder,
       ...hangarFloorEdgeBuilders,
@@ -613,14 +695,14 @@ const app = createAuraApp("#app", {
       ...pitBackPanelBuilders,
       ...pitSuspendedLightBuilders,
       ...pitSignBuilders,
-      ...pitVerticalLightBuilders,
       ...sparkBuilders,
       ...dustBuilders,
       ...impactRingBuilders,
       ...teamMarkerBuilders,
       ...weaponAccentBuilders,
-      playerShellBuilder,
-      rivalShellBuilder,
+      ...mechIdentityBuilders,
+      ...hardpointCollarBuilders,
+      ...footContactBuilders,
       ...partNodeBuilders("player"),
       ...partNodeBuilders("rival")
     ])
@@ -645,14 +727,6 @@ const app = createAuraApp("#app", {
 // ---- runtime handles --------------------------------------------------------
 await app.ready();
 const anchor = app.nodes.require("mech-cam-anchor") as RuntimeNodeHandleLike;
-const shellNodes = new Map<"player" | "rival", RuntimeNodeHandleLike>([
-  ["player", app.nodes.require("mech-player-visual-shell") as RuntimeNodeHandleLike],
-  ["rival", app.nodes.require("mech-rival-visual-shell") as RuntimeNodeHandleLike]
-]);
-const shellBaseScales = new Map<"player" | "rival", number | readonly [number, number, number]>([
-  ["player", shellNodes.get("player")!.scale],
-  ["rival", shellNodes.get("rival")!.scale]
-]);
 const playerNodes = new Map<string, RuntimeNodeHandleLike>();
 const rivalNodes = new Map<string, RuntimeNodeHandleLike>();
 for (const slot of MECH_SLOTS) {
@@ -672,17 +746,41 @@ const teamMarkerNodes = new Map<"player" | "rival", { ring: RuntimeNodeHandleLik
     chevron: app.nodes.require("mech-" + side + "-identity-chevron") as RuntimeNodeHandleLike
   }])
 );
+const mechIdentityNodes = new Map<"player" | "rival", { plate: RuntimeNodeHandleLike; visor: RuntimeNodeHandleLike }>(
+  (["player", "rival"] as const).map((side) => [side, {
+    plate: app.nodes.require("mech-" + side + "-mh2m-chest-plate") as RuntimeNodeHandleLike,
+    visor: app.nodes.require("mech-" + side + "-mh2m-chest-visor") as RuntimeNodeHandleLike
+  }])
+);
 const weaponAccentNodes = new Map<string, RuntimeNodeHandleLike>();
 for (const side of ["player", "rival"] as const) {
   for (const def of PART_OPTIONS.weapon) {
     weaponAccentNodes.set(side + ":" + def.assetKey, app.nodes.require("mech-" + side + "-weapon-accent-" + def.assetKey) as RuntimeNodeHandleLike);
   }
 }
+const hardpointCollarNodes = new Map<"player" | "rival", { metal: RuntimeNodeHandleLike; lock: RuntimeNodeHandleLike }>(
+  (["player", "rival"] as const).map((side) => [side, {
+    metal: app.nodes.require("mech-" + side + "-typed-hardpoint-collar") as RuntimeNodeHandleLike,
+    lock: app.nodes.require("mech-" + side + "-typed-hardpoint-lock") as RuntimeNodeHandleLike
+  }])
+);
+const footContactNodes = new Map<"player" | "rival", {
+  leftReceiver: RuntimeNodeHandleLike;
+  rightReceiver: RuntimeNodeHandleLike;
+  leftSeal: RuntimeNodeHandleLike;
+  rightSeal: RuntimeNodeHandleLike;
+}>(
+  (["player", "rival"] as const).map((side) => [side, {
+    leftReceiver: app.nodes.require("mech-" + side + "-left-foot-receiver") as RuntimeNodeHandleLike,
+    rightReceiver: app.nodes.require("mech-" + side + "-right-foot-receiver") as RuntimeNodeHandleLike,
+    leftSeal: app.nodes.require("mech-" + side + "-left-foot-seal") as RuntimeNodeHandleLike,
+    rightSeal: app.nodes.require("mech-" + side + "-right-foot-seal") as RuntimeNodeHandleLike
+  }])
+);
 
-// The route-primary visual probe isolates the same textured Robotcand body
-// that human reviewers see. Keep suppression state in the route so the
-// regular mount pass cannot immediately re-show the subject during the
-// two-frame visible/hidden comparison.
+// The route-primary visual probe isolates the same typed modular assembly that
+// human reviewers see. Keep suppression state in the route so the regular mount
+// pass cannot immediately re-show the subject during the two-frame comparison.
 let compositionSubjectSuppressed = false;
 
 const { createMechHangarFeel } = await import("./arena/feel");
@@ -697,25 +795,6 @@ function mountSide(
   nodes: Map<string, RuntimeNodeHandleLike>
 ): void {
   const parts = selectedParts(selection);
-  const shell = shellNodes.get(side);
-  if (shell) {
-    shell.setVisible(!SHOW_MODULAR_ASSEMBLY && !compositionSubjectSuppressed);
-    shell.setPosition(rootPosition[0], rootPosition[1], rootPosition[2]);
-    shell.setRotation(0, yaw, 0);
-    // Keep the selected build visible in the shell's proportions without
-    // changing the authored model's material response. The small deterministic
-    // scale response makes every valid catalog selection a real rendered state
-    // while the shell supplies the connected body silhouette.
-    const chassisIndex = selection.chassis;
-    const armsIndex = selection.arms;
-    const legsIndex = selection.legs;
-    const weaponIndex = selection.weapon;
-    const selectionScale = 1 + chassisIndex * 0.018 + armsIndex * 0.012 + legsIndex * 0.015 + weaponIndex * 0.01;
-    const baseScale = shellBaseScales.get(side)!;
-    shell.setScale(typeof baseScale === "number"
-      ? baseScale * selectionScale
-      : [baseScale[0] * selectionScale, baseScale[1] * selectionScale, baseScale[2] * selectionScale]);
-  }
   for (const slot of MECH_SLOTS) {
     for (const def of PART_OPTIONS[slot]) {
       const handle = nodes.get(def.assetKey);
@@ -725,10 +804,11 @@ function mountSide(
         handle.setVisible(false);
         continue;
       }
-      // In the shell fallback only the selected weapon is a real hardpoint;
-      // modular presentation renders every selected typed slot so the socket
-      // contract is directly visible in the review frame.
-      if (compositionSubjectSuppressed || (!SHOW_MODULAR_ASSEMBLY && shell && def.slot !== "weapon")) {
+      // Every selected slot is a visible typed GLB. The same transform drives
+      // the hangar preview, arena fighters, and swap captures, so the default
+      // and every valid option prove a connected modular assembly rather than a
+      // whole-body fallback with cosmetic overlays.
+      if (compositionSubjectSuppressed) {
         handle.setVisible(false);
         continue;
       }
@@ -740,28 +820,60 @@ function mountSide(
   }
 
   // Presentation-only identity accents are kept in the same mount pass as the
-  // typed shell and hardpoint.  They follow the fighter root, so movement,
+  // typed family and hardpoint. They follow the fighter root, so movement,
   // jumps, and the hangar turntable cannot leave a stale marker behind.
   const marker = teamMarkerNodes.get(side);
   if (marker) {
     const markerRadius = side === "player" ? 0.84 : 0.78;
-    marker.ring.setVisible(true);
+    // Subject-isolation captures must hide every presentation cue alongside
+    // the family; otherwise a tiny marker becomes the measured "hero".
+    marker.ring.setVisible(!compositionSubjectSuppressed);
     marker.ring.setPosition(rootPosition[0], 0.21, rootPosition[2]);
     marker.ring.setRotation(Math.PI / 2, 0, 0);
     marker.ring.setScale([markerRadius, markerRadius, 0.032]);
-    marker.chevron.setVisible(true);
+    marker.chevron.setVisible(!compositionSubjectSuppressed);
     // Keep the badge on the chest plane rather than floating above the head;
     // the silhouette stays dominant while the color key remains visible.
-    marker.chevron.setPosition(rootPosition[0], rootPosition[1] + 1.56, rootPosition[2] + 0.58);
-    marker.chevron.setRotation(0, 0, Math.PI / 4);
+    const chevronFront = 0.58;
+    marker.chevron.setPosition(
+      rootPosition[0] + Math.sin(yaw) * chevronFront,
+      rootPosition[1] + 1.56,
+      rootPosition[2] + Math.cos(yaw) * chevronFront
+    );
+    marker.chevron.setRotation(0, yaw, Math.PI / 4);
     marker.chevron.setScale([0.115, 0.115, 0.032]);
+  }
+
+  const identity = mechIdentityNodes.get(side);
+  if (identity) {
+    const visible = !compositionSubjectSuppressed;
+    identity.plate.setVisible(visible);
+    identity.visor.setVisible(visible);
+    // Front-of-chest offsets are expressed in the same +Z local space as the
+    // authored MH-2M socket contract, then rotated with the fighter root. This
+    // keeps the plate attached in the hangar turntable and arena exchange.
+    const localY = 1.43;
+    const localZ = 0.36;
+    const frontX = rootPosition[0] + Math.sin(yaw) * localZ;
+    const frontZ = rootPosition[2] + Math.cos(yaw) * localZ;
+    identity.plate.setPosition(frontX, rootPosition[1] + localY, frontZ);
+    identity.plate.setRotation(0, yaw, 0);
+    identity.plate.setScale([0.28, 0.18, 0.04]);
+    const visorZ = localZ + 0.044;
+    identity.visor.setPosition(
+      rootPosition[0] + Math.sin(yaw) * visorZ,
+      rootPosition[1] + localY,
+      rootPosition[2] + Math.cos(yaw) * visorZ
+    );
+    identity.visor.setRotation(0, yaw, 0);
+    identity.visor.setScale([0.17, 0.052, 0.022]);
   }
 
   const selectedWeapon = parts.find((part) => part.slot === "weapon");
   for (const weaponDef of PART_OPTIONS.weapon) {
     const accent = weaponAccentNodes.get(side + ":" + weaponDef.assetKey);
     if (!accent) continue;
-    const active = selectedWeapon?.assetKey === weaponDef.assetKey;
+    const active = !compositionSubjectSuppressed && selectedWeapon?.assetKey === weaponDef.assetKey;
     accent.setVisible(active);
     if (!active) {
       accent.setScale([0.001, 0.001, 0.001]);
@@ -782,6 +894,70 @@ function mountSide(
     // a readable circular cue for both opposing yaw directions.
     accent.setRotation(0, 0, 0);
     accent.setScale([0.105, 0.105, 0.028]);
+  }
+
+  // Mount-surface evidence follows the same typed transform as the selected
+  // weapon.  The metal collar sits at the rear/grip side of the part while the
+  // coloured lock ring sits just ahead of it; together they read as a hand,
+  // receiver, and muzzle chain instead of a disconnected pink line.
+  const hardpoint = hardpointCollarNodes.get(side);
+  if (hardpoint) {
+    const selectedWeaponTransform = selectedWeapon
+      ? mountTransformForPart(selectedWeapon, parts, rootPosition, yaw)
+      : undefined;
+    const visible = Boolean(selectedWeaponTransform) && !compositionSubjectSuppressed;
+    hardpoint.metal.setVisible(visible);
+    hardpoint.lock.setVisible(visible);
+    if (selectedWeaponTransform) {
+      const forwardX = Math.sin(selectedWeaponTransform.yaw);
+      const forwardZ = Math.cos(selectedWeaponTransform.yaw);
+      const collarOffset = -0.18;
+      hardpoint.metal.setPosition(
+        selectedWeaponTransform.position[0] + forwardX * collarOffset,
+        selectedWeaponTransform.position[1],
+        selectedWeaponTransform.position[2] + forwardZ * collarOffset
+      );
+      hardpoint.metal.setRotation(0, selectedWeaponTransform.yaw, 0);
+      hardpoint.metal.setScale([0.14, 0.14, 0.055]);
+      hardpoint.lock.setPosition(
+        selectedWeaponTransform.position[0] + forwardX * 0.19,
+        selectedWeaponTransform.position[1] + 0.01,
+        selectedWeaponTransform.position[2] + forwardZ * 0.19
+      );
+      hardpoint.lock.setRotation(0, selectedWeaponTransform.yaw, 0);
+      hardpoint.lock.setScale([0.10, 0.10, 0.024]);
+    } else {
+      hardpoint.metal.setScale([0.001, 0.001, 0.001]);
+      hardpoint.lock.setScale([0.001, 0.001, 0.001]);
+    }
+  }
+
+  // Keep the receiver pads on the physical deck while tracking each fighter's
+  // x/z root.  A fixed deck y is intentional: airborne combat does not make a
+  // floating shadow/pad claim, and the pad remains an inspectable ground contact
+  // witness for the grounded state.
+  const contacts = footContactNodes.get(side);
+  if (contacts) {
+    const footOffsets = [-0.43, 0.43] as const;
+    const footHandles = [
+      [contacts.leftReceiver, contacts.leftSeal],
+      [contacts.rightReceiver, contacts.rightSeal]
+    ] as const;
+    for (const [index, offset] of footOffsets.entries()) {
+      const localZ = 0.02;
+      const x = rootPosition[0] + offset * Math.cos(yaw) + localZ * Math.sin(yaw);
+      const z = rootPosition[2] - offset * Math.sin(yaw) + localZ * Math.cos(yaw);
+      const [receiver, seal] = footHandles[index]!;
+      const visible = !compositionSubjectSuppressed;
+      receiver.setVisible(visible);
+      seal.setVisible(visible);
+      receiver.setPosition(x, 0.16, z);
+      seal.setPosition(x, 0.205, z);
+      receiver.setRotation(0, yaw, 0);
+      seal.setRotation(Math.PI / 2, yaw, 0);
+      receiver.setScale([0.24, 0.035, 0.17]);
+      seal.setScale([0.19, 0.13, 0.018]);
+    }
   }
 }
 
@@ -1095,7 +1271,7 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
     mode,
     slots: MECH_SLOTS,
     selectedParts: selected.map((part) => part.assetKey),
-    primaryAssetRefs: ["assets.robotcand", ...selected.map((part) => `assets.${part.assetKey}`)],
+    primaryAssetRefs: selected.map((part) => `assets.${part.assetKey}`),
     stats: aggregateStats(hangar.selection),
     assemblyValidated: currentAssemblyReady(),
     boutState: snapshot?.phase ?? lastBoutState,
@@ -1123,11 +1299,11 @@ function publishEvidence(snapshot?: BoutSnapshot): void {
   Object.defineProperty(window, "__AURA3D_SHOWCASE_MECH_HANGAR__", { value: evidence, configurable: true, writable: true });
 }
 
-// Bind the shared image-QA contract to the actual visible review hero. This
-// is intentionally an application-category subject: Mech Hangar has no
-// route-primary play-space projection requirement, but it does need an honest
-// shell-only pixel isolation check instead of measuring the tiny MH-2M chassis
-// module that remains mounted as a hidden socket contract.
+// Bind the shared image-QA contract to the actual visible review hero. This is
+// intentionally an application-category subject: Mech Hangar has no
+// route-primary play-space projection requirement, but it still needs an honest
+// full modular assembly isolation check. Suppression hides every selected typed
+// slot and presentation cue, never a hidden whole-body proxy.
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {
@@ -1143,8 +1319,8 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       }
     },
     settleSubjectPose() {
-      // The Robotcand shell is a static pose; the route's live turntable and
-      // combat transforms remain unchanged by this no-op settlement hook.
+      // The typed family is authored in a static pose; the route's live
+      // turntable and combat transforms remain unchanged by this no-op hook.
     }
   }
 });

@@ -151,7 +151,17 @@ export function fireHitscan(
   if (name.startsWith("enemy-")) {
     state.hits += 1;
     state.hitMarker = 0.16;
-    effects.hitSpark(point, { ownerId: name, intensity: 1.1 });
+    // The endpoint is an authored hit, not just a raycast counter. Give the
+    // renderer-owned spark a warm, compact envelope that matches the Warden
+    // warning plates while the static shot-impact ring carries the longer
+    // causal read through the review frame.
+    effects.hitSpark(point, {
+      ownerId: name,
+      color: "#ffd166",
+      intensity: 1.55,
+      duration: 0.28,
+      radius: 0.34
+    });
     onHit(name, point);
   } else {
     effects.impactDecal(point, { ownerId: "wall", intensity: 0.55 });

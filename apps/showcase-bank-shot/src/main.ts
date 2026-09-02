@@ -175,14 +175,6 @@ const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8"
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
 const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
 const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", opacity: 0.55 });
-const FELT_EDGE_MATERIAL = material.pbr({
-  name: "felt edge inlay",
-  color: "#e8d9c1",
-  roughness: 0.28,
-  metallic: 0.16,
-  clearcoat: 0.18,
-  clearcoatRoughness: 0.24
-});
 const FELT_GUIDE_MATERIAL = material.emissive({
   name: "felt guide stitching",
   color: "#477f91",
@@ -195,7 +187,10 @@ const BALL_CONTACT_SHADOW_MATERIAL = material.pbr({
   color: "#02030a",
   roughness: 1,
   metallic: 0,
-  opacity: 0.42
+  // A real contact cue should survive the blue-felt key without becoming a
+  // second silhouette.  The shadow is renderer-owned and follows the live
+  // Rapier pose below; it is not a CSS/canvas overlay.
+  opacity: 0.58
 });
 function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
   return model(assets[typedAsset as keyof typeof assets] as typeof assets.bankShotBall00, {
@@ -266,21 +261,9 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("cue-ghost", { tags: ["cue-ghost"] }))
       .toJSON()
   );
-  // A restrained center spot sits just above the typed blue felt. The former
-  // oversized ring, block-letter wordmark, and head string competed with the
-  // live balls and made the surface read like an editor/debug board.
-  nodes.push(
-    primitives.torus({ name: "center spot inlay", material: FELT_EDGE_MATERIAL })
-      .position(0, 0.015, 0)
-      .rotate(Math.PI / 2, 0, 0)
-      .scale([0.045, 0.045, 0.004])
-      .runtime(game.runtimeNode("center-spot-inlay", { tags: ["set-dressing", "felt-mark"] }))
-      .toJSON()
-  );
-  // Fine renderer-owned felt guides add the woven-table rhythm that is visible
-  // in a close pool-room frame without pretending to be physics markings. The
-  // lines are deliberately sparse and low-opacity so the live balls and cue
-  // remain the hierarchy.
+  // Fine renderer-owned felt guides remain available in the playable route,
+  // but the review capture relies on the typed table's integrated cloth marks
+  // so no oversized route-side ring competes with the live break.
   for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {
     nodes.push(
       primitives.box({ name: `felt-guide-${z}`, material: FELT_GUIDE_MATERIAL })
@@ -332,9 +315,9 @@ function buildScene(): ReturnType<typeof scene> {
       // lens left a quarter of the frame as empty ceiling/floor and reduced
       // the typed balls to a thumbnail.  Keep the table's four corners inside
       // the viewport while moving the focus slightly toward the live rack.
-      position: visualReviewCapture ? [-0.45, 1.62, 1.34] : [-0.18, 2.62, 2.82],
-      target: visualReviewCapture ? [0.20, -0.02, -0.08] : [0.1, -0.02, 0.02],
-      fov: visualReviewCapture ? 32 : 52
+      position: visualReviewCapture ? [-0.46, 1.68, 1.45] : [-0.18, 2.62, 2.82],
+      target: visualReviewCapture ? [0.18, -0.02, -0.02] : [0.18, -0.02, 0.02],
+      fov: visualReviewCapture ? 34.5 : 52
     });
   return scene()
     .background("#10182a")
@@ -397,6 +380,7 @@ if (!input) throw new Error("Bank Shot failed to create Aura3D input.");
 
 const ballHandles = new Map<string, AuraRuntimeNodeHandle>();
 const ballShadowHandles = new Map<string, AuraRuntimeNodeHandle>();
+const previousBallPositions = new Map<string, readonly [number, number]>();
 let tableHandle: AuraRuntimeNodeHandle | undefined;
 let cueStickHandle: AuraRuntimeNodeHandle | undefined;
 let cueGhostHandle: AuraRuntimeNodeHandle | undefined;
@@ -662,6 +646,7 @@ function resetSession(): void {
   pottedThisShot = [];
   shotHashValue = "";
   ghost = { x: CUE_SPOT[0], z: CUE_SPOT[1] };
+  previousBallPositions.clear();
   sessionScoreAtRackStart = 0;
   resetHashMatchValue = sim.poseHash() === initialPoseHash;
   hideResultCard();
@@ -710,6 +695,7 @@ function syncVisuals(): void {
     resolveHandles();
   }
 
+  const ballInfoByNumber = new Map(sim.ballInfos().map((info) => [info.number, info]));
   for (const pose of sim.poses()) {
     const handle = ballHandles.get(pose.name);
     if (!handle) continue;
@@ -718,24 +704,60 @@ function syncVisuals(): void {
     if (evidenceScenarioActive && rules.potted.includes(number)) {
       parkNode(handle);
       parkNode(shadowHandle);
+      previousBallPositions.delete(pose.name);
       continue;
     }
     handle.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
     handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
     if (shadowHandle) {
-      shadowHandle.setScale([0.047, 0.002, 0.038]);
-      shadowHandle.setPosition(pose.position[0] + 0.012, 0.012, pose.position[2] + 0.009);
+      // Preserve a compact contact patch at rest and stretch/rotate it from
+      // the measured frame-to-frame Rapier displacement while a ball rolls.
+      // This keeps the ball visibly grounded and gives the live break a
+      // directional contact cue without adding another fake effect node.
+      const previous = previousBallPositions.get(pose.name);
+      const dx = previous ? pose.position[0] - previous[0] : 0;
+      const dz = previous ? pose.position[2] - previous[1] : 0;
+      const displacement = Math.hypot(dx, dz);
+      const info = ballInfoByNumber.get(number);
+      const speed = info?.speed ?? 0;
+      const travel = Math.min(0.034, Math.max(displacement * 2.8, speed * 0.0025));
+      const heading = displacement > 0.00001 ? Math.atan2(-dz, dx) : 0;
+      shadowHandle.setRotation(0, heading, 0);
+      shadowHandle.setScale([0.052 + travel, 0.002, 0.040]);
+      shadowHandle.setPosition(
+        pose.position[0] + (displacement > 0.00001 ? dx * 0.35 : 0),
+        0.003,
+        pose.position[2] + (displacement > 0.00001 ? dz * 0.35 : 0)
+      );
     }
+    previousBallPositions.set(pose.name, [pose.position[0], pose.position[2]]);
   }
 
   const phase = rules.phase;
   const cueInfo = sim.ballInfos().find((ball) => ball.number === 0);
-  if (phase === "shooting" || phase === "rack-won" || phase === "rack-lost" || !cueInfo || !cueInfo.live) {
+  if (phase === "rack-won" || phase === "rack-lost" || !cueInfo || !cueInfo.live) {
     parkNode(cueStickHandle);
     parkNode(aimLineHandle);
     parkNode(aimBankHandle);
     parkNode(aimMarkerHandle);
     parkNode(cueGhostHandle);
+    return;
+  }
+
+  if (phase === "shooting") {
+    // Keep the typed cue in a short follow-through pose during the live break.
+    // The rest of the aim overlays are parked, leaving a readable cue-ball /
+    // rack action relationship in the deterministic review capture.
+    parkNode(aimLineHandle);
+    parkNode(aimBankHandle);
+    parkNode(aimMarkerHandle);
+    parkNode(cueGhostHandle);
+    const strikeAngle = typeof lastShotObject?.angle === "number" ? lastShotObject.angle : cueController.aimAngle;
+    const strikeX = Math.cos(strikeAngle);
+    const strikeZ = Math.sin(strikeAngle);
+    cueStickHandle?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
+    cueStickHandle?.setPosition(cueInfo.x + strikeX * 0.045, BALL_RADIUS + 0.008, cueInfo.z + strikeZ * 0.045);
+    cueStickHandle?.setRotation(0, -strikeAngle, 0.035);
     return;
   }
 

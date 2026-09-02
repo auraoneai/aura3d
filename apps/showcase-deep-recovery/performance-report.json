@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.deep-recovery.performance/1.0",
-  "generatedAt": "2026-08-30T20:00:52.913Z",
+  "generatedAt": "2026-09-02T08:07:40.631Z",
   "producer": "apps/showcase-deep-recovery/scripts/write-performance-report.ts",
   "producerSourceSha256": "e209be0cfd04b530e8b606b40e958f80ea38e1ef30c013184e847b8be8f37d44",
   "routeSourceFiles": [
@@ -23,7 +23,7 @@
     "drawCalls": 240
   },
   "observed": {
-    "routeLogicCpuP95Ms": 0.005,
+    "routeLogicCpuP95Ms": 0.003,
     "deterministicStateHash": "ebc8fe50",
     "drawCalls": 236,
     "renderSize": [

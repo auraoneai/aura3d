@@ -58,6 +58,14 @@ body[data-capture="review"] .ns-panel {
   border-radius: 2px;
   box-shadow: 0 0 28px rgba(26, 219, 199, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+
+/* The retained desktop composition is an action still, not a title card. The
+ * banner remains available during normal play and in the intermission/death
+ * states, but never sits over the primary courier and live threat field in a
+ * wide first-load frame. */
+@media (min-width: 1400px) and (min-height: 880px) {
+  .ns-banner { display: none !important; }
+}
 body[data-capture="review"] .ns-panel--top-left { top: 18px; left: 20px; min-width: 178px; padding: 8px 10px; }
 body[data-capture="review"] .ns-panel--top-right { top: 18px; right: 20px; }
 body[data-capture="review"] .ns-eyebrow { color: #ff6d8f; }

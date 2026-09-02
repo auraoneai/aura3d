@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.bank-shot.performance/1.0",
-  "generatedAt": "2026-08-30T14:22:18.835Z",
+  "generatedAt": "2026-09-02T12:13:18.009Z",
   "producer": "apps/showcase-bank-shot/scripts/write-performance-report.ts",
   "producerSourceSha256": "5d560bf31a624d32d27998c91b71061c567ead40c896365d1fa5e29fb5327349",
   "routeSourceFiles": [
@@ -13,7 +13,7 @@
     "apps/showcase-bank-shot/src/styles.css",
     "apps/showcase-bank-shot/src/table.ts"
   ],
-  "routeSourceSha256": "b95f78ce7bd1b9427f19b744ef84fb28db58bf7ad6bc88d7d497cd80dd4e410d",
+  "routeSourceSha256": "a89027c4ecc52cf27f8b2f15043d04e4b2930f1e416453ea588428f3745d574f",
   "scope": "Route-local fixed-step public Rapier billiards CPU timing plus browser-observed root createGameApp draw calls. Host scheduling wait and GPU frame-time parity are not claimed.",
   "samples": 12000,
   "fixedStepSeconds": 0.016666666666666666,
@@ -23,9 +23,9 @@
     "physicsBodies": 40
   },
   "observed": {
-    "simulationCpuP95Ms": 5.03,
+    "simulationCpuP95Ms": 2.232,
     "deterministicPoseSamples": 20,
-    "drawCalls": 131,
+    "drawCalls": 149,
     "renderSize": [
       1248,
       800

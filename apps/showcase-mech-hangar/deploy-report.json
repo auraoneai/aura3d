@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.mech-hangar.deploy/1.0",
-  "generatedAt": "2026-09-02T04:22:19.116Z",
+  "generatedAt": "2026-09-02T19:29:30.727Z",
   "producer": "apps/showcase-mech-hangar/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "d4bb5978c7543cbbea158225544970968317e86dd39f56cf011c54cc767dda6d",
   "cli": "packages/aura3d-cli/dist/cli.js",
   "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "e4f686edb058af63abbd6f54dbf93c76df57e2df4fc2f2eca672e0b58643bdd3",
-  "sourceTreeSha256": "e2262bf57ae5d3c4f3f5ddcda627f0c5b027ad1b538e5de5831eaabafe9a69ef",
+  "distTreeSha256": "50964f81057fccd2ae8308f1340309c886803eb70f745cb6f1faa0c731d35c5f",
+  "sourceTreeSha256": "9d0dcf21dba9aa6780bd0893bf9ca5713f97bbac187f0d41f630179ea6b7eaea",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-mech-hangar/src --asset <each of 16 MH-2M models>",
@@ -15,97 +15,97 @@
       "assets": [
         {
           "id": "mechArmsA",
-          "hash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+          "hash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechArmsB",
-          "hash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+          "hash": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechArmsC",
-          "hash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+          "hash": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechArmsD",
-          "hash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+          "hash": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechChassisA",
-          "hash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+          "hash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
           "quality": "release",
           "role": "character"
         },
         {
           "id": "mechChassisB",
-          "hash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+          "hash": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
           "quality": "release",
           "role": "character"
         },
         {
           "id": "mechChassisC",
-          "hash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+          "hash": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
           "quality": "release",
           "role": "character"
         },
         {
           "id": "mechChassisD",
-          "hash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+          "hash": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
           "quality": "release",
           "role": "character"
         },
         {
           "id": "mechLegsA",
-          "hash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+          "hash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechLegsB",
-          "hash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+          "hash": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechLegsC",
-          "hash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+          "hash": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechLegsD",
-          "hash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+          "hash": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
           "quality": "release",
           "role": "prop"
         },
         {
           "id": "mechWeaponA",
-          "hash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+          "hash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
           "quality": "release",
           "role": "weapon"
         },
         {
           "id": "mechWeaponB",
-          "hash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+          "hash": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
           "quality": "release",
           "role": "weapon"
         },
         {
           "id": "mechWeaponC",
-          "hash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+          "hash": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
           "quality": "release",
           "role": "weapon"
         },
         {
           "id": "mechWeaponD",
-          "hash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+          "hash": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
           "quality": "release",
           "role": "weapon"
         }

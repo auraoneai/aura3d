@@ -9,7 +9,7 @@ const repoRoot = resolve(appDir, "../..");
 const cli = resolve(repoRoot, "packages/aura3d-cli/dist/cli.js");
 const dist = resolve(appDir, "dist");
 const source = resolve(appDir, "src");
-const modelIds = ["rooftopCourt", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopAthleteShooter", "rooftopAthleteDefender"];
+const modelIds = ["rooftopCourt", "rooftopVenueV2", "rooftopBackboard", "rooftopRim", "rooftopBall", "rooftopLayupScorer", "rooftopDefender"];
 
 function run(args) {
   try {
@@ -47,7 +47,7 @@ const report = {
   sourceTreeSha256: treeHash(source),
   checks: {
     strictModels: {
-      command: "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, backboard, rim, ball, shooter, defender>",
+      command: "check-deploy --release --source apps/showcase-rooftop-buckets/src --asset <court, venue, backboard, rim, ball, scorer, defender>",
       ok: modelResult.ok === true,
       assetCount: modelResult.manifest?.assets?.length ?? 0,
       assets: (modelResult.manifest?.assets ?? []).map((asset) => ({ id: asset.id, hash: asset.hash, quality: asset.quality, role: asset.role })),

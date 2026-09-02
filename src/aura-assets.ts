@@ -2014,14 +2014,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall00": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall00.456a25d7.glb",
-    hash: "sha256-456a25d7482ae38658584f270eb9e8f21038e1a9ec5a5495c26fdbcda94d44e6",
+    url: "/aura-assets/bankShotBall00.9a46906b.glb",
+    hash: "sha256-9a46906bb31221e9c96fb38d4fb18ea2358301a5e5e8f316c36c5c01a855ac1d",
     bounds: [
       1,
       1,
       1
     ],
-    sizeBytes: 152440,
+    sizeBytes: 152448,
     metadata: {
       "materials": [
         "ball-material"
@@ -2087,7 +2087,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall00.glb",
-      "outputPath": "public/aura-assets/bankShotBall00.456a25d7.glb",
+      "outputPath": "public/aura-assets/bankShotBall00.9a46906b.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2145,13 +2145,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall00",
-        "sha256": "sha256-4f5ceb0272f17927cfa24f352eded2dbaa16b69f4132669023d7a562d6ee80b9",
-        "assetHash": "sha256-456a25d7482ae38658584f270eb9e8f21038e1a9ec5a5495c26fdbcda94d44e6",
+        "sha256": "sha256-f25a2252b0e50c140d6ca02e945562079f89cf33bd37846b577807dc851430a5",
+        "assetHash": "sha256-9a46906bb31221e9c96fb38d4fb18ea2358301a5e5e8f316c36c5c01a855ac1d",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 18,
-        "checkedAt": "2026-08-30T14:18:39.945Z",
+        "colorBuckets": 17,
+        "checkedAt": "2026-09-02T12:09:21.622Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
@@ -2164,14 +2164,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall01": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall01.6d093a5d.glb",
-    hash: "sha256-6d093a5df621307a867db3c60ee5591ae653ce3da4dce4e3975154d39f10f8cf",
+    url: "/aura-assets/bankShotBall01.21f59751.glb",
+    hash: "sha256-21f59751f1e7643d3b1540ab2695097b1ac62fdabbc52208839102a83ee1a99e",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 156472,
+    sizeBytes: 156424,
     metadata: {
       "materials": [
         "ball-material",
@@ -2241,7 +2241,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall01.glb",
-      "outputPath": "public/aura-assets/bankShotBall01.6d093a5d.glb",
+      "outputPath": "public/aura-assets/bankShotBall01.21f59751.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2315,18 +2315,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall01",
-        "sha256": "sha256-27bab275e2f5251c0601d3f4a633dd91228f4d759aa7b575ec08c391be537b3f",
-        "assetHash": "sha256-6d093a5df621307a867db3c60ee5591ae653ce3da4dce4e3975154d39f10f8cf",
+        "sha256": "sha256-9e596bc9c64d575667c39553fd11186dd84ba3574fea0380ea13c28f1b5bcc4d",
+        "assetHash": "sha256-21f59751f1e7643d3b1540ab2695097b1ac62fdabbc52208839102a83ee1a99e",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 29,
-        "checkedAt": "2026-08-30T14:18:48.932Z",
+        "checkedAt": "2026-09-02T12:09:25.752Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -2334,14 +2334,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall02": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall02.ca726175.glb",
-    hash: "sha256-ca72617597c147f165169c7b4b67a03c0c4c37071866274e5e3398a864c9bb68",
+    url: "/aura-assets/bankShotBall02.471d64b7.glb",
+    hash: "sha256-471d64b777369ec4f1a4d47752db822a23d80ac6e457cb2fc6ba42a324282223",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 156980,
+    sizeBytes: 156932,
     metadata: {
       "materials": [
         "ball-material",
@@ -2411,7 +2411,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall02.glb",
-      "outputPath": "public/aura-assets/bankShotBall02.ca726175.glb",
+      "outputPath": "public/aura-assets/bankShotBall02.471d64b7.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2485,18 +2485,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall02",
-        "sha256": "sha256-e6de71abe95f23f7141fdcffe5236cec66d625e3b7a0c4fdca18073e5413a003",
-        "assetHash": "sha256-ca72617597c147f165169c7b4b67a03c0c4c37071866274e5e3398a864c9bb68",
+        "sha256": "sha256-8f21aca9530d2cc23dfac4b7f9cd1735134fd727e4d05e898e2de30b7f093931",
+        "assetHash": "sha256-471d64b777369ec4f1a4d47752db822a23d80ac6e457cb2fc6ba42a324282223",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 24,
-        "checkedAt": "2026-08-30T14:19:09.500Z",
+        "colorBuckets": 23,
+        "checkedAt": "2026-09-02T12:09:30.688Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -2504,14 +2504,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall03": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall03.a4712882.glb",
-    hash: "sha256-a47128826d23f178e406236610c4dd8fea4e76fb0d2f4424a65d89a33970266a",
+    url: "/aura-assets/bankShotBall03.9deb5421.glb",
+    hash: "sha256-9deb5421595a277f087f7c3b41c1ef178aa69fd717f2600b4b205648086a4912",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 156980,
+    sizeBytes: 156932,
     metadata: {
       "materials": [
         "ball-material",
@@ -2581,7 +2581,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall03.glb",
-      "outputPath": "public/aura-assets/bankShotBall03.a4712882.glb",
+      "outputPath": "public/aura-assets/bankShotBall03.9deb5421.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2655,18 +2655,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall03",
-        "sha256": "sha256-412a501e555354ba2b0e31415ee14ead400a287c6b9a9effb0949da64ac9e74f",
-        "assetHash": "sha256-a47128826d23f178e406236610c4dd8fea4e76fb0d2f4424a65d89a33970266a",
+        "sha256": "sha256-dbd3fa1107435436bf0534e422499f4f702bfbf5ddcca377c8dc16586c14558a",
+        "assetHash": "sha256-9deb5421595a277f087f7c3b41c1ef178aa69fd717f2600b4b205648086a4912",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 32,
-        "checkedAt": "2026-08-30T14:19:21.099Z",
+        "checkedAt": "2026-09-02T12:09:35.498Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -2674,14 +2674,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall04": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall04.90b6b1d3.glb",
-    hash: "sha256-90b6b1d3fccff7573ede556c67521d6a44c19fdba0dd34af091aee962381c208",
+    url: "/aura-assets/bankShotBall04.be3bd19b.glb",
+    hash: "sha256-be3bd19b43874e4d9c96339854947ae6c48af3ab3d573680dd1b744a5ba3d3ac",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 156808,
+    sizeBytes: 156760,
     metadata: {
       "materials": [
         "ball-material",
@@ -2751,7 +2751,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall04.glb",
-      "outputPath": "public/aura-assets/bankShotBall04.90b6b1d3.glb",
+      "outputPath": "public/aura-assets/bankShotBall04.be3bd19b.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2825,18 +2825,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall04",
-        "sha256": "sha256-15408aea017f776df2ffaa152695880b165bc8742a74f3146777940978c3e928",
-        "assetHash": "sha256-90b6b1d3fccff7573ede556c67521d6a44c19fdba0dd34af091aee962381c208",
+        "sha256": "sha256-6d5eb000abf80c2f7a22cc992ee57ae3fab1e8aa7cb229978d4523b780964717",
+        "assetHash": "sha256-be3bd19b43874e4d9c96339854947ae6c48af3ab3d573680dd1b744a5ba3d3ac",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 24,
-        "checkedAt": "2026-08-30T14:19:28.625Z",
+        "colorBuckets": 23,
+        "checkedAt": "2026-09-02T12:09:39.463Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -2844,14 +2844,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall05": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall05.c961eb95.glb",
-    hash: "sha256-c961eb95dbbf80f9d4a1310b69a7ffb931a237f7158eeb19f418bc5fed8f3686",
+    url: "/aura-assets/bankShotBall05.335cad4e.glb",
+    hash: "sha256-335cad4e4b1a4ee73d83fa887bf38dabec8d1c578ce27d2e95372bbc75211720",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 156980,
+    sizeBytes: 156932,
     metadata: {
       "materials": [
         "ball-material",
@@ -2921,7 +2921,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall05.glb",
-      "outputPath": "public/aura-assets/bankShotBall05.c961eb95.glb",
+      "outputPath": "public/aura-assets/bankShotBall05.335cad4e.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -2995,18 +2995,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall05",
-        "sha256": "sha256-538c2b3d7617b68c9b7ee7cd8cdca7dda2863725e0595df0135a097232b86035",
-        "assetHash": "sha256-c961eb95dbbf80f9d4a1310b69a7ffb931a237f7158eeb19f418bc5fed8f3686",
+        "sha256": "sha256-920865b8c69ad52eb53970eee8e2ef38159b3c80d47eea37ac9e66c6723939e5",
+        "assetHash": "sha256-335cad4e4b1a4ee73d83fa887bf38dabec8d1c578ce27d2e95372bbc75211720",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 29,
-        "checkedAt": "2026-08-30T14:19:36.186Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T12:09:43.699Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -3014,14 +3014,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall06": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall06.97d6a9f6.glb",
-    hash: "sha256-97d6a9f6088abe426531b3d802055ecb58f42bbce3cb007201e0abf5831a3429",
+    url: "/aura-assets/bankShotBall06.e83cd33e.glb",
+    hash: "sha256-e83cd33ef6ae35a198caffd1dd07f9b33d52c4719585f375df6136fe99af8d6b",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 157148,
+    sizeBytes: 157100,
     metadata: {
       "materials": [
         "ball-material",
@@ -3091,7 +3091,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall06.glb",
-      "outputPath": "public/aura-assets/bankShotBall06.97d6a9f6.glb",
+      "outputPath": "public/aura-assets/bankShotBall06.e83cd33e.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3165,18 +3165,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall06",
-        "sha256": "sha256-1090654f0a937f187dd7f1b2b93725680f016b7dc379a2154469804cda4ec858",
-        "assetHash": "sha256-97d6a9f6088abe426531b3d802055ecb58f42bbce3cb007201e0abf5831a3429",
+        "sha256": "sha256-124b2723ee32fb7225fe7f4792393ee818d369c733cde95c9d920496c07af869",
+        "assetHash": "sha256-e83cd33ef6ae35a198caffd1dd07f9b33d52c4719585f375df6136fe99af8d6b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-08-30T14:19:44.161Z",
+        "colorBuckets": 27,
+        "checkedAt": "2026-09-02T12:09:47.873Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -3184,14 +3184,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall07": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall07.265f7105.glb",
-    hash: "sha256-265f7105d030fc2bca91fb6b1ddbb4208c3b438dda0d7ce65a89ae1f6bc54f1c",
+    url: "/aura-assets/bankShotBall07.8a69b542.glb",
+    hash: "sha256-8a69b5425dd5c60148589795f3e78f998bd7f0c59dea2e9d7da126c5416f02c4",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 156640,
+    sizeBytes: 156592,
     metadata: {
       "materials": [
         "ball-material",
@@ -3261,7 +3261,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall07.glb",
-      "outputPath": "public/aura-assets/bankShotBall07.265f7105.glb",
+      "outputPath": "public/aura-assets/bankShotBall07.8a69b542.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3335,18 +3335,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall07",
-        "sha256": "sha256-34b7cc1b30b4729382ae427ae328e1f448849ddb664e3180c0bcccf00d98fa86",
-        "assetHash": "sha256-265f7105d030fc2bca91fb6b1ddbb4208c3b438dda0d7ce65a89ae1f6bc54f1c",
+        "sha256": "sha256-a7507fdd0f381e79bf7b5b75c16e9008cdbd8c55fba1248bac0cafe20ea1e54d",
+        "assetHash": "sha256-8a69b5425dd5c60148589795f3e78f998bd7f0c59dea2e9d7da126c5416f02c4",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 25,
-        "checkedAt": "2026-08-30T14:19:51.214Z",
+        "colorBuckets": 26,
+        "checkedAt": "2026-09-02T12:09:51.712Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -3354,14 +3354,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall08": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall08.2506f5ef.glb",
-    hash: "sha256-2506f5efcdc99242af9bed80c2ae0fbeaaf0ce889a2ec81b41bf648780962947",
+    url: "/aura-assets/bankShotBall08.81dd55de.glb",
+    hash: "sha256-81dd55def7965490a9f6e057a81c854523691ae5527a995ab5acee1919bfd00e",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 157316,
+    sizeBytes: 157268,
     metadata: {
       "materials": [
         "ball-material",
@@ -3431,7 +3431,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall08.glb",
-      "outputPath": "public/aura-assets/bankShotBall08.2506f5ef.glb",
+      "outputPath": "public/aura-assets/bankShotBall08.81dd55de.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3505,18 +3505,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall08",
-        "sha256": "sha256-e5b4000a9688da7686f9a39c7d7eb6659bbff2e16ddd3bf22cea3c6efff51ac5",
-        "assetHash": "sha256-2506f5efcdc99242af9bed80c2ae0fbeaaf0ce889a2ec81b41bf648780962947",
+        "sha256": "sha256-d13f5e184e8f816f412801b6dfe70d3b3aa815fbf32718ac23ddb4f6af1bf2e4",
+        "assetHash": "sha256-81dd55def7965490a9f6e057a81c854523691ae5527a995ab5acee1919bfd00e",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 24,
-        "checkedAt": "2026-08-30T14:19:56.931Z",
+        "colorBuckets": 23,
+        "checkedAt": "2026-09-02T12:09:55.157Z",
         "foregroundBounds": {
           "x": 208,
           "y": 192,
           "width": 336,
-          "height": 341
+          "height": 344
         }
       }
     },
@@ -3524,14 +3524,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall09": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall09.cbd77b2e.glb",
-    hash: "sha256-cbd77b2e07edaf8bb2decb065a7c72ad5052db9eb86af6ecc45c4e077d5822b2",
+    url: "/aura-assets/bankShotBall09.89d29f33.glb",
+    hash: "sha256-89d29f3399d0203bdbd09423db3813688874946d6be70ebeba132a602ce4f225",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85456,
+    sizeBytes: 85412,
     metadata: {
       "materials": [
         "caps-material",
@@ -3603,7 +3603,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall09.glb",
-      "outputPath": "public/aura-assets/bankShotBall09.cbd77b2e.glb",
+      "outputPath": "public/aura-assets/bankShotBall09.89d29f33.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3685,18 +3685,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall09",
-        "sha256": "sha256-a6f611af38f194c62aadfb4adb62fadb41b10aec4d26d51d3fdc52543def5ca6",
-        "assetHash": "sha256-cbd77b2e07edaf8bb2decb065a7c72ad5052db9eb86af6ecc45c4e077d5822b2",
+        "sha256": "sha256-7455da14f77858fee261a8dfd8951d2b6526208dd145812d6a024b3de050651e",
+        "assetHash": "sha256-89d29f3399d0203bdbd09423db3813688874946d6be70ebeba132a602ce4f225",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 31,
-        "checkedAt": "2026-08-30T14:20:01.645Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T12:09:58.867Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -3704,14 +3704,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall10": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall10.6be79916.glb",
-    hash: "sha256-6be799163eb7dcd0e82430c79c993c5df8aea1f5594525fcb956b3b74d00f9d8",
+    url: "/aura-assets/bankShotBall10.9df3fdcc.glb",
+    hash: "sha256-9df3fdccd92f53085f389c3905abbfd49fb0893d35bd543f49839d1cc8172f3e",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85780,
+    sizeBytes: 85736,
     metadata: {
       "materials": [
         "caps-material",
@@ -3783,7 +3783,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall10.glb",
-      "outputPath": "public/aura-assets/bankShotBall10.6be79916.glb",
+      "outputPath": "public/aura-assets/bankShotBall10.9df3fdcc.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -3865,18 +3865,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall10",
-        "sha256": "sha256-689ce4fbf6192fa13c88f8890e8bb77411b03e63692a9398c119f441e755e106",
-        "assetHash": "sha256-6be799163eb7dcd0e82430c79c993c5df8aea1f5594525fcb956b3b74d00f9d8",
+        "sha256": "sha256-2ceed1bf7ad96275b74c4ecaec7e42e3f6942f6045cb3c6f426910333641f23b",
+        "assetHash": "sha256-9df3fdccd92f53085f389c3905abbfd49fb0893d35bd543f49839d1cc8172f3e",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 26,
-        "checkedAt": "2026-08-30T14:20:04.874Z",
+        "checkedAt": "2026-09-02T12:10:02.547Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -3884,14 +3884,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall11": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall11.6eccedab.glb",
-    hash: "sha256-6eccedab833882439c513e753ce5f2ee29e07133f7553b57fb6ee8bbd8c7b519",
+    url: "/aura-assets/bankShotBall11.40e8d323.glb",
+    hash: "sha256-40e8d323d78afbeab4ea970aa0489b879028ada2f0c82aa007f7e4b10189a558",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85108,
+    sizeBytes: 85064,
     metadata: {
       "materials": [
         "caps-material",
@@ -3963,7 +3963,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall11.glb",
-      "outputPath": "public/aura-assets/bankShotBall11.6eccedab.glb",
+      "outputPath": "public/aura-assets/bankShotBall11.40e8d323.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4045,18 +4045,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall11",
-        "sha256": "sha256-39fd694b2919205075ff3cb632f0a8ab693b924f9ac463778197d7bf7c54e2d5",
-        "assetHash": "sha256-6eccedab833882439c513e753ce5f2ee29e07133f7553b57fb6ee8bbd8c7b519",
+        "sha256": "sha256-e42ba1fd1fd3d02866b0365e770239b199941340afcb77747e669b37614d871f",
+        "assetHash": "sha256-40e8d323d78afbeab4ea970aa0489b879028ada2f0c82aa007f7e4b10189a558",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 36,
-        "checkedAt": "2026-08-30T14:20:08.963Z",
+        "checkedAt": "2026-09-02T12:10:06.494Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -4064,14 +4064,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall12": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall12.1daa296d.glb",
-    hash: "sha256-1daa296d5d5e8847402ea7457f37875b800605635198d074e4d5e8ba8958925f",
+    url: "/aura-assets/bankShotBall12.52670acc.glb",
+    hash: "sha256-52670acc74bcd11082309e35ada0aed89a4e260576001295fa94bd5d43563286",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85612,
+    sizeBytes: 85568,
     metadata: {
       "materials": [
         "caps-material",
@@ -4143,7 +4143,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall12.glb",
-      "outputPath": "public/aura-assets/bankShotBall12.1daa296d.glb",
+      "outputPath": "public/aura-assets/bankShotBall12.52670acc.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4225,18 +4225,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall12",
-        "sha256": "sha256-80d772d79330b4a49842772c2c7360d5351baed24872a401f98809dc9e0faa87",
-        "assetHash": "sha256-1daa296d5d5e8847402ea7457f37875b800605635198d074e4d5e8ba8958925f",
+        "sha256": "sha256-527036ffc91851308aa857798789f919924bb1ab28fe1feb845f2b9c7ae65fe3",
+        "assetHash": "sha256-52670acc74bcd11082309e35ada0aed89a4e260576001295fa94bd5d43563286",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 27,
-        "checkedAt": "2026-08-30T14:20:15.424Z",
+        "colorBuckets": 26,
+        "checkedAt": "2026-09-02T12:10:11.216Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -4244,14 +4244,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall13": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall13.651f1dfa.glb",
-    hash: "sha256-651f1dfa4f109feb5ba3a96faa90cfc8c26d6a4c753f1a140b305cd328428759",
+    url: "/aura-assets/bankShotBall13.584ef9ef.glb",
+    hash: "sha256-584ef9efa8f49f3903098bbb1ad6aceba153c723740fab897d9f92231895f1f3",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85612,
+    sizeBytes: 85568,
     metadata: {
       "materials": [
         "caps-material",
@@ -4323,7 +4323,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall13.glb",
-      "outputPath": "public/aura-assets/bankShotBall13.651f1dfa.glb",
+      "outputPath": "public/aura-assets/bankShotBall13.584ef9ef.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4405,18 +4405,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall13",
-        "sha256": "sha256-2153e48cb573791adffadacb23a9f4aa19d57dd5c08f43c75d4a021ae14368df",
-        "assetHash": "sha256-651f1dfa4f109feb5ba3a96faa90cfc8c26d6a4c753f1a140b305cd328428759",
+        "sha256": "sha256-78626dadafd7323ab6aa32ac04c19f3fb582d074a9a57e8afc94f8971b045e3e",
+        "assetHash": "sha256-584ef9efa8f49f3903098bbb1ad6aceba153c723740fab897d9f92231895f1f3",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 31,
-        "checkedAt": "2026-08-30T14:20:24.159Z",
+        "checkedAt": "2026-09-02T12:10:16.068Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -4424,14 +4424,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall14": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall14.a1ef067c.glb",
-    hash: "sha256-a1ef067c6ba56e503a2e932bf574a441f6bbc08d574d98c3d2c33a23acfcbcb6",
+    url: "/aura-assets/bankShotBall14.39a73a9f.glb",
+    hash: "sha256-39a73a9f22cbf0d05d20d66a378f98133ddffde2ce2efff4b5599314f7cea304",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85444,
+    sizeBytes: 85404,
     metadata: {
       "materials": [
         "caps-material",
@@ -4503,7 +4503,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall14.glb",
-      "outputPath": "public/aura-assets/bankShotBall14.a1ef067c.glb",
+      "outputPath": "public/aura-assets/bankShotBall14.39a73a9f.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4585,18 +4585,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall14",
-        "sha256": "sha256-99e74821b8b0e39dde5a5bed8146f3327ab91e28add54f45bae6d32efb47c6a9",
-        "assetHash": "sha256-a1ef067c6ba56e503a2e932bf574a441f6bbc08d574d98c3d2c33a23acfcbcb6",
+        "sha256": "sha256-dfd1b2cebc1cd61a2d4f9ebf4550b56fc4fd1ba39ff077fbe8c7dbbf84f37c27",
+        "assetHash": "sha256-39a73a9f22cbf0d05d20d66a378f98133ddffde2ce2efff4b5599314f7cea304",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 29,
-        "checkedAt": "2026-08-30T14:20:29.407Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T12:10:19.523Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -4604,14 +4604,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotBall15": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotBall15.d13d8900.glb",
-    hash: "sha256-d13d890058b4afeeee547daf8c36bf79a57c3d407210ed76862f404582825f5e",
+    url: "/aura-assets/bankShotBall15.7258fd47.glb",
+    hash: "sha256-7258fd47ead8029c0e91824286a248cdaca6572865b4b220424d747a9bcfb191",
     bounds: [
       1,
       1.01,
       1
     ],
-    sizeBytes: 85612,
+    sizeBytes: 85568,
     metadata: {
       "materials": [
         "caps-material",
@@ -4683,7 +4683,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotBall15.glb",
-      "outputPath": "public/aura-assets/bankShotBall15.d13d8900.glb",
+      "outputPath": "public/aura-assets/bankShotBall15.7258fd47.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -4765,18 +4765,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotBall15",
-        "sha256": "sha256-04dfa94942940d0fab459f0df5ccd4534189edb4698c4992d99ad335bc1c44af",
-        "assetHash": "sha256-d13d890058b4afeeee547daf8c36bf79a57c3d407210ed76862f404582825f5e",
+        "sha256": "sha256-f7753d5829bdd87b062235ec4cf93175702745d76369cd6c1d0c31c9a377ac1f",
+        "assetHash": "sha256-7258fd47ead8029c0e91824286a248cdaca6572865b4b220424d747a9bcfb191",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 30,
-        "checkedAt": "2026-08-30T14:20:33.314Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-09-02T12:10:23.389Z",
         "foregroundBounds": {
           "x": 209,
           "y": 193,
           "width": 334,
-          "height": 340
+          "height": 343
         }
       }
     },
@@ -5123,7 +5123,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 17,
-        "checkedAt": "2026-08-30T14:18:32.367Z",
+        "checkedAt": "2026-09-02T12:09:17.762Z",
         "foregroundBounds": {
           "x": 163,
           "y": 127,
@@ -5773,14 +5773,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bankShotTable": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bankShotTable.760862a2.glb",
-    hash: "sha256-760862a24d8341beae8633dced02faf4f100f5b344f0164c3f7f019bf298097b",
+    url: "/aura-assets/bankShotTable.612bc413.glb",
+    hash: "sha256-612bc413d945c69a70cb62da758216e3d739bc56a9508e955eba9f79a4e90fac",
     bounds: [
       3.26,
       0.924,
       2
     ],
-    sizeBytes: 667316,
+    sizeBytes: 857228,
     metadata: {
       "materials": [
         "felt-material",
@@ -5794,6 +5794,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "apron-material",
         "legs-material",
         "pocket-mouths-material",
+        "pocket-interiors-material",
+        "pocket-wells-material",
         "pocket-rims-material"
       ],
       "animations": [],
@@ -5825,9 +5827,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "hierarchy": {
-        "nodeCount": 12,
-        "meshCount": 12,
-        "materialCount": 12,
+        "nodeCount": 14,
+        "meshCount": 14,
+        "materialCount": 14,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -5844,11 +5846,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "apron",
           "legs",
           "pocket-mouths",
+          "pocket-interiors",
+          "pocket-wells",
           "pocket-rims"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 12 nodes across 12 roots."
+          "Detected 14 nodes across 14 roots."
         ]
       },
       "provenance": {
@@ -5868,7 +5872,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-bank-shot/assets/models/bankShotTable.glb",
-      "outputPath": "public/aura-assets/bankShotTable.760862a2.glb",
+      "outputPath": "public/aura-assets/bankShotTable.612bc413.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -5974,6 +5978,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
+          "name": "pocket-interiors-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "pocket-wells-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
           "name": "pocket-rims-material",
           "visible": true,
           "readable": true,
@@ -6001,6 +6019,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "apron",
         "legs",
         "pocket-mouths",
+        "pocket-interiors",
+        "pocket-wells",
         "pocket-rims"
       ],
       "textures": [],
@@ -6014,13 +6034,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=bankShotTable",
-        "sha256": "sha256-82bd56ff4074f749055ce90b78afde236c5a535bbd5446ea6e741ed4237b0ec2",
-        "assetHash": "sha256-760862a24d8341beae8633dced02faf4f100f5b344f0164c3f7f019bf298097b",
+        "sha256": "sha256-d9dd8199e9723d4b3923dcb2091768a88557b4064266a4827c0992ad2596399e",
+        "assetHash": "sha256-612bc413d945c69a70cb62da758216e3d739bc56a9508e955eba9f79a4e90fac",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 47,
-        "checkedAt": "2026-08-30T14:18:23.764Z",
+        "colorBuckets": 45,
+        "checkedAt": "2026-09-02T12:09:14.518Z",
         "foregroundBounds": {
           "x": 88,
           "y": 171,
@@ -26026,19 +26046,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsA.540a07d5.glb",
-    hash: "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+    url: "/aura-assets/mechArmsA.783ccb5f.glb",
+    hash: "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
     bounds: [
       2.12,
       0.681,
       0.435
     ],
-    sizeBytes: 33132,
+    sizeBytes: 33284,
     metadata: {
       "materials": [
-        "arm-armor-material",
+        "arm-armor-frame-material",
         "arm-joints-material",
-        "arm-identity-material"
+        "arm-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -26077,9 +26097,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "arm-armor",
+          "arm-armor-frame",
           "arm-joints",
-          "arm-identity"
+          "arm-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -26103,7 +26123,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsA.glb",
-      "outputPath": "public/aura-assets/mechArmsA.540a07d5.glb",
+      "outputPath": "public/aura-assets/mechArmsA.783ccb5f.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26132,7 +26152,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "arm-armor-material",
+          "name": "arm-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26146,7 +26166,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "arm-identity-material",
+          "name": "arm-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26162,9 +26182,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "arm-armor",
+        "arm-armor-frame",
         "arm-joints",
-        "arm-identity"
+        "arm-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -26178,12 +26198,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsA",
         "sha256": "sha256-9013e8ae5a6f3af2c9f810132627170ffd4772fb452a4058e3198f7d28ea7d3f",
-        "assetHash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+        "assetHash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 27,
-        "checkedAt": "2026-09-02T02:06:41.424Z",
+        "checkedAt": "2026-09-02T14:28:40.752Z",
         "foregroundBounds": {
           "x": 134,
           "y": 244,
@@ -26196,19 +26216,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsB.249052ba.glb",
-    hash: "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+    url: "/aura-assets/mechArmsB.703f2a24.glb",
+    hash: "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
     bounds: [
       2.12,
       0.681,
       0.435
     ],
-    sizeBytes: 33124,
+    sizeBytes: 33276,
     metadata: {
       "materials": [
-        "arm-armor-material",
+        "arm-armor-frame-material",
         "arm-joints-material",
-        "arm-identity-material"
+        "arm-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -26247,9 +26267,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "arm-armor",
+          "arm-armor-frame",
           "arm-joints",
-          "arm-identity"
+          "arm-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -26273,7 +26293,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsB.glb",
-      "outputPath": "public/aura-assets/mechArmsB.249052ba.glb",
+      "outputPath": "public/aura-assets/mechArmsB.703f2a24.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26302,7 +26322,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "arm-armor-material",
+          "name": "arm-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26316,7 +26336,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "arm-identity-material",
+          "name": "arm-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26332,9 +26352,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "arm-armor",
+        "arm-armor-frame",
         "arm-joints",
-        "arm-identity"
+        "arm-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -26348,12 +26368,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsB",
         "sha256": "sha256-8070f48510bd4ad8aad7093966f772a48a9afbdcfc021389002d28c7de349297",
-        "assetHash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+        "assetHash": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 27,
-        "checkedAt": "2026-09-02T02:06:44.473Z",
+        "checkedAt": "2026-09-02T14:28:44.874Z",
         "foregroundBounds": {
           "x": 134,
           "y": 244,
@@ -26366,19 +26386,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsC.380eeee7.glb",
-    hash: "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+    url: "/aura-assets/mechArmsC.82a8ae46.glb",
+    hash: "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
     bounds: [
       2.147,
       0.681,
       0.435
     ],
-    sizeBytes: 33136,
+    sizeBytes: 33288,
     metadata: {
       "materials": [
-        "arm-armor-material",
+        "arm-armor-frame-material",
         "arm-joints-material",
-        "arm-identity-material"
+        "arm-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -26417,9 +26437,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "arm-armor",
+          "arm-armor-frame",
           "arm-joints",
-          "arm-identity"
+          "arm-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -26443,7 +26463,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsC.glb",
-      "outputPath": "public/aura-assets/mechArmsC.380eeee7.glb",
+      "outputPath": "public/aura-assets/mechArmsC.82a8ae46.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26472,7 +26492,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "arm-armor-material",
+          "name": "arm-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26486,7 +26506,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "arm-identity-material",
+          "name": "arm-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26502,9 +26522,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "arm-armor",
+        "arm-armor-frame",
         "arm-joints",
-        "arm-identity"
+        "arm-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -26518,12 +26538,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsC",
         "sha256": "sha256-76cfffb8cf2302774efdc2ae535f34598117cbac15bb9b17fdc1c281b00dfac2",
-        "assetHash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+        "assetHash": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 27,
-        "checkedAt": "2026-09-02T02:06:47.429Z",
+        "checkedAt": "2026-09-02T14:28:48.704Z",
         "foregroundBounds": {
           "x": 132,
           "y": 244,
@@ -26536,19 +26556,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsD.c434c643.glb",
-    hash: "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+    url: "/aura-assets/mechArmsD.77dee477.glb",
+    hash: "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
     bounds: [
       2.134,
       0.681,
       0.435
     ],
-    sizeBytes: 33152,
+    sizeBytes: 33308,
     metadata: {
       "materials": [
-        "arm-armor-material",
+        "arm-armor-frame-material",
         "arm-joints-material",
-        "arm-identity-material"
+        "arm-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -26587,9 +26607,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "arm-armor",
+          "arm-armor-frame",
           "arm-joints",
-          "arm-identity"
+          "arm-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -26613,7 +26633,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsD.glb",
-      "outputPath": "public/aura-assets/mechArmsD.c434c643.glb",
+      "outputPath": "public/aura-assets/mechArmsD.77dee477.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26642,7 +26662,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "arm-armor-material",
+          "name": "arm-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26656,7 +26676,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "arm-identity-material",
+          "name": "arm-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26672,9 +26692,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "arm-armor",
+        "arm-armor-frame",
         "arm-joints",
-        "arm-identity"
+        "arm-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -26688,12 +26708,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsD",
         "sha256": "sha256-d0743167c1c33c236a112f4f0fdc56ce5ad0b3cbc5f27cfd05f71de2859089fe",
-        "assetHash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+        "assetHash": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 29,
-        "checkedAt": "2026-09-02T02:06:50.377Z",
+        "checkedAt": "2026-09-02T14:28:54.679Z",
         "foregroundBounds": {
           "x": 135,
           "y": 244,
@@ -26706,20 +26726,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisA.54133269.glb",
-    hash: "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+    url: "/aura-assets/mechChassisA.b61c7e1d.glb",
+    hash: "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
     bounds: [
       1.24,
       0.85,
       0.595
     ],
-    sizeBytes: 23440,
+    sizeBytes: 23604,
     metadata: {
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
         "torso-joints-material",
-        "cockpit-and-reactor-material"
+        "cockpit-and-reactor-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -26761,7 +26781,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "torso-armor",
           "torso-frame",
           "torso-joints",
-          "cockpit-and-reactor"
+          "cockpit-and-reactor-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -26785,7 +26805,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisA.glb",
-      "outputPath": "public/aura-assets/mechChassisA.54133269.glb",
+      "outputPath": "public/aura-assets/mechChassisA.b61c7e1d.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26835,7 +26855,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "cockpit-and-reactor-material",
+          "name": "cockpit-and-reactor-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -26854,7 +26874,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "torso-armor",
         "torso-frame",
         "torso-joints",
-        "cockpit-and-reactor"
+        "cockpit-and-reactor-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -26868,12 +26888,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisA",
         "sha256": "sha256-919c58fe01e7a79fbafc4fc2c4527773887ca7670427578dc3a2111bf5e65392",
-        "assetHash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+        "assetHash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 28,
-        "checkedAt": "2026-09-02T02:06:29.432Z",
+        "checkedAt": "2026-09-02T14:28:05.266Z",
         "foregroundBounds": {
           "x": 159,
           "y": 207,
@@ -26886,20 +26906,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisB.f5911080.glb",
-    hash: "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+    url: "/aura-assets/mechChassisB.917ddb9d.glb",
+    hash: "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
     bounds: [
       1.318,
       0.85,
       0.595
     ],
-    sizeBytes: 23444,
+    sizeBytes: 23608,
     metadata: {
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
         "torso-joints-material",
-        "cockpit-and-reactor-material"
+        "cockpit-and-reactor-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -26941,7 +26961,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "torso-armor",
           "torso-frame",
           "torso-joints",
-          "cockpit-and-reactor"
+          "cockpit-and-reactor-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -26965,7 +26985,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisB.glb",
-      "outputPath": "public/aura-assets/mechChassisB.f5911080.glb",
+      "outputPath": "public/aura-assets/mechChassisB.917ddb9d.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27015,7 +27035,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "cockpit-and-reactor-material",
+          "name": "cockpit-and-reactor-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -27034,7 +27054,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "torso-armor",
         "torso-frame",
         "torso-joints",
-        "cockpit-and-reactor"
+        "cockpit-and-reactor-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -27048,12 +27068,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisB",
         "sha256": "sha256-3be9a808f33bf8ccd2e862d9281201d7f63c2be61ca72c06a00834d63a6df052",
-        "assetHash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+        "assetHash": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 28,
-        "checkedAt": "2026-09-02T02:06:32.525Z",
+        "checkedAt": "2026-09-02T14:28:18.062Z",
         "foregroundBounds": {
           "x": 155,
           "y": 210,
@@ -27066,20 +27086,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisC.f4d99c52.glb",
-    hash: "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+    url: "/aura-assets/mechChassisC.b456560c.glb",
+    hash: "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
     bounds: [
       1.24,
       0.85,
       0.595
     ],
-    sizeBytes: 23456,
+    sizeBytes: 23616,
     metadata: {
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
         "torso-joints-material",
-        "cockpit-and-reactor-material"
+        "cockpit-and-reactor-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -27121,7 +27141,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "torso-armor",
           "torso-frame",
           "torso-joints",
-          "cockpit-and-reactor"
+          "cockpit-and-reactor-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -27145,7 +27165,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisC.glb",
-      "outputPath": "public/aura-assets/mechChassisC.f4d99c52.glb",
+      "outputPath": "public/aura-assets/mechChassisC.b456560c.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27195,7 +27215,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "cockpit-and-reactor-material",
+          "name": "cockpit-and-reactor-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -27214,7 +27234,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "torso-armor",
         "torso-frame",
         "torso-joints",
-        "cockpit-and-reactor"
+        "cockpit-and-reactor-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -27228,12 +27248,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisC",
         "sha256": "sha256-e6a1352521f95fe4bdc95c80309b7294067b84e74e3ae2470689babe363c748d",
-        "assetHash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+        "assetHash": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 31,
-        "checkedAt": "2026-09-02T02:06:35.563Z",
+        "checkedAt": "2026-09-02T14:28:28.719Z",
         "foregroundBounds": {
           "x": 159,
           "y": 207,
@@ -27246,20 +27266,20 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisD.e9a2bb04.glb",
-    hash: "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+    url: "/aura-assets/mechChassisD.a48c0d57.glb",
+    hash: "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
     bounds: [
       1.171,
       0.85,
       0.595
     ],
-    sizeBytes: 23444,
+    sizeBytes: 23608,
     metadata: {
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
         "torso-joints-material",
-        "cockpit-and-reactor-material"
+        "cockpit-and-reactor-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -27301,7 +27321,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "torso-armor",
           "torso-frame",
           "torso-joints",
-          "cockpit-and-reactor"
+          "cockpit-and-reactor-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -27325,7 +27345,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisD.glb",
-      "outputPath": "public/aura-assets/mechChassisD.e9a2bb04.glb",
+      "outputPath": "public/aura-assets/mechChassisD.a48c0d57.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27375,7 +27395,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "cockpit-and-reactor-material",
+          "name": "cockpit-and-reactor-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -27394,7 +27414,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "torso-armor",
         "torso-frame",
         "torso-joints",
-        "cockpit-and-reactor"
+        "cockpit-and-reactor-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -27408,12 +27428,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisD",
         "sha256": "sha256-32d038e956358636b1ddaab8b551d3962bf8aec35141cfb37077afd8580e745b",
-        "assetHash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+        "assetHash": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 30,
-        "checkedAt": "2026-09-02T02:06:38.494Z",
+        "checkedAt": "2026-09-02T14:28:36.332Z",
         "foregroundBounds": {
           "x": 163,
           "y": 204,
@@ -27770,19 +27790,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsA.4ca17b91.glb",
-    hash: "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+    url: "/aura-assets/mechLegsA.c82f6e99.glb",
+    hash: "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
     bounds: [
       0.85,
       0.689,
       0.518
     ],
-    sizeBytes: 31596,
+    sizeBytes: 31748,
     metadata: {
       "materials": [
-        "leg-armor-material",
+        "leg-armor-frame-material",
         "leg-joints-material",
-        "leg-identity-material"
+        "leg-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -27821,9 +27841,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "leg-armor",
+          "leg-armor-frame",
           "leg-joints",
-          "leg-identity"
+          "leg-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -27847,7 +27867,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsA.glb",
-      "outputPath": "public/aura-assets/mechLegsA.4ca17b91.glb",
+      "outputPath": "public/aura-assets/mechLegsA.c82f6e99.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27876,7 +27896,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "leg-armor-material",
+          "name": "leg-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -27890,7 +27910,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "leg-identity-material",
+          "name": "leg-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -27906,9 +27926,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "leg-armor",
+        "leg-armor-frame",
         "leg-joints",
-        "leg-identity"
+        "leg-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -27922,12 +27942,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsA",
         "sha256": "sha256-02bf1399cdab5367a5ee951dc3e0c0d9e211801923de6c8f4660772f0978ab37",
-        "assetHash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+        "assetHash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 25,
-        "checkedAt": "2026-09-02T02:06:53.350Z",
+        "checkedAt": "2026-09-02T14:28:59.310Z",
         "foregroundBounds": {
           "x": 166,
           "y": 182,
@@ -27940,19 +27960,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsB.79368b1e.glb",
-    hash: "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+    url: "/aura-assets/mechLegsB.25f23be8.glb",
+    hash: "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
     bounds: [
       0.85,
       0.689,
       0.518
     ],
-    sizeBytes: 31592,
+    sizeBytes: 31744,
     metadata: {
       "materials": [
-        "leg-armor-material",
+        "leg-armor-frame-material",
         "leg-joints-material",
-        "leg-identity-material"
+        "leg-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -27991,9 +28011,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "leg-armor",
+          "leg-armor-frame",
           "leg-joints",
-          "leg-identity"
+          "leg-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -28017,7 +28037,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsB.glb",
-      "outputPath": "public/aura-assets/mechLegsB.79368b1e.glb",
+      "outputPath": "public/aura-assets/mechLegsB.25f23be8.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28046,7 +28066,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "leg-armor-material",
+          "name": "leg-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28060,7 +28080,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "leg-identity-material",
+          "name": "leg-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28076,9 +28096,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "leg-armor",
+        "leg-armor-frame",
         "leg-joints",
-        "leg-identity"
+        "leg-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -28092,12 +28112,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsB",
         "sha256": "sha256-8077a8a5d7de0da47cab9225e51831da9e7309ab7191c325e088f8913066c961",
-        "assetHash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+        "assetHash": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 28,
-        "checkedAt": "2026-09-02T02:06:56.402Z",
+        "checkedAt": "2026-09-02T14:29:06.834Z",
         "foregroundBounds": {
           "x": 166,
           "y": 182,
@@ -28110,19 +28130,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsC.af7786b5.glb",
-    hash: "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+    url: "/aura-assets/mechLegsC.48171256.glb",
+    hash: "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
     bounds: [
       0.85,
       0.689,
       0.52
     ],
-    sizeBytes: 31608,
+    sizeBytes: 31760,
     metadata: {
       "materials": [
-        "leg-armor-material",
+        "leg-armor-frame-material",
         "leg-joints-material",
-        "leg-identity-material"
+        "leg-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -28161,9 +28181,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "leg-armor",
+          "leg-armor-frame",
           "leg-joints",
-          "leg-identity"
+          "leg-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -28187,7 +28207,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsC.glb",
-      "outputPath": "public/aura-assets/mechLegsC.af7786b5.glb",
+      "outputPath": "public/aura-assets/mechLegsC.48171256.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28216,7 +28236,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "leg-armor-material",
+          "name": "leg-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28230,7 +28250,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "leg-identity-material",
+          "name": "leg-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28246,9 +28266,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "leg-armor",
+        "leg-armor-frame",
         "leg-joints",
-        "leg-identity"
+        "leg-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -28262,12 +28282,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsC",
         "sha256": "sha256-e7c33ff600dc9a658ae58f4badc8b8b3eb2fdc7f7cf0b7f8b27bc216d94ff34a",
-        "assetHash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+        "assetHash": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 31,
-        "checkedAt": "2026-09-02T02:06:59.335Z",
+        "checkedAt": "2026-09-02T14:29:13.875Z",
         "foregroundBounds": {
           "x": 163,
           "y": 180,
@@ -28280,19 +28300,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsD.3aa35f4b.glb",
-    hash: "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+    url: "/aura-assets/mechLegsD.21f567a7.glb",
+    hash: "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
     bounds: [
       0.85,
       0.689,
       0.518
     ],
-    sizeBytes: 31604,
+    sizeBytes: 31756,
     metadata: {
       "materials": [
-        "leg-armor-material",
+        "leg-armor-frame-material",
         "leg-joints-material",
-        "leg-identity-material"
+        "leg-identity-energy-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -28331,9 +28351,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "leg-armor",
+          "leg-armor-frame",
           "leg-joints",
-          "leg-identity"
+          "leg-identity-energy"
         ],
         "maxDepth": 1,
         "messages": [
@@ -28357,7 +28377,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsD.glb",
-      "outputPath": "public/aura-assets/mechLegsD.3aa35f4b.glb",
+      "outputPath": "public/aura-assets/mechLegsD.21f567a7.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28386,7 +28406,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "leg-armor-material",
+          "name": "leg-armor-frame-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28400,7 +28420,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "reasons": []
         },
         {
-          "name": "leg-identity-material",
+          "name": "leg-identity-energy-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28416,9 +28436,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "leg-armor",
+        "leg-armor-frame",
         "leg-joints",
-        "leg-identity"
+        "leg-identity-energy"
       ],
       "textures": [],
       "dependencies": [],
@@ -28432,12 +28452,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsD",
         "sha256": "sha256-4759bb6f84e3fab9442ad4d58d68618376f9536fb29c2d353e4f0e18b34f506e",
-        "assetHash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+        "assetHash": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 31,
-        "checkedAt": "2026-09-02T02:07:02.268Z",
+        "checkedAt": "2026-09-02T14:29:20.756Z",
         "foregroundBounds": {
           "x": 168,
           "y": 184,
@@ -28880,19 +28900,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponA.bf6f1c25.glb",
-    hash: "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+    url: "/aura-assets/mechWeaponA.6937dc28.glb",
+    hash: "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
     bounds: [
       0.3,
       0.495,
       0.913
     ],
-    sizeBytes: 10084,
+    sizeBytes: 10280,
     metadata: {
       "materials": [
-        "weapon-body-material",
-        "weapon-mechanism-material",
-        "weapon-energy-material"
+        "weapon-armor-frame-body-material",
+        "weapon-mechanism-joints-material",
+        "weapon-energy-identity-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -28931,9 +28951,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "weapon-body",
-          "weapon-mechanism",
-          "weapon-energy"
+          "weapon-armor-frame-body",
+          "weapon-mechanism-joints",
+          "weapon-energy-identity"
         ],
         "maxDepth": 1,
         "messages": [
@@ -28957,7 +28977,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponA.glb",
-      "outputPath": "public/aura-assets/mechWeaponA.bf6f1c25.glb",
+      "outputPath": "public/aura-assets/mechWeaponA.6937dc28.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28986,21 +29006,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "weapon-body-material",
+          "name": "weapon-armor-frame-body-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-mechanism-material",
+          "name": "weapon-mechanism-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-energy-material",
+          "name": "weapon-energy-identity-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -29016,9 +29036,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "weapon-body",
-        "weapon-mechanism",
-        "weapon-energy"
+        "weapon-armor-frame-body",
+        "weapon-mechanism-joints",
+        "weapon-energy-identity"
       ],
       "textures": [],
       "dependencies": [],
@@ -29032,12 +29052,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponA",
         "sha256": "sha256-268fed0e9df0a9fea3510ddf763fab72add1600216e7dc1133bc89e2fc4ac701",
-        "assetHash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+        "assetHash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 26,
-        "checkedAt": "2026-09-02T02:07:05.238Z",
+        "checkedAt": "2026-09-02T14:29:25.504Z",
         "foregroundBounds": {
           "x": 264,
           "y": 251,
@@ -29050,19 +29070,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponB.a54dafa8.glb",
-    hash: "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+    url: "/aura-assets/mechWeaponB.6d26a243.glb",
+    hash: "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
     bounds: [
       0.34,
       0.45,
       0.85
     ],
-    sizeBytes: 7664,
+    sizeBytes: 7864,
     metadata: {
       "materials": [
-        "weapon-body-material",
-        "weapon-mechanism-material",
-        "weapon-energy-material"
+        "weapon-armor-frame-body-material",
+        "weapon-mechanism-joints-material",
+        "weapon-energy-identity-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -29101,9 +29121,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "weapon-body",
-          "weapon-mechanism",
-          "weapon-energy"
+          "weapon-armor-frame-body",
+          "weapon-mechanism-joints",
+          "weapon-energy-identity"
         ],
         "maxDepth": 1,
         "messages": [
@@ -29127,7 +29147,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponB.glb",
-      "outputPath": "public/aura-assets/mechWeaponB.a54dafa8.glb",
+      "outputPath": "public/aura-assets/mechWeaponB.6d26a243.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29156,21 +29176,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "weapon-body-material",
+          "name": "weapon-armor-frame-body-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-mechanism-material",
+          "name": "weapon-mechanism-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-energy-material",
+          "name": "weapon-energy-identity-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -29186,9 +29206,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "weapon-body",
-        "weapon-mechanism",
-        "weapon-energy"
+        "weapon-armor-frame-body",
+        "weapon-mechanism-joints",
+        "weapon-energy-identity"
       ],
       "textures": [],
       "dependencies": [],
@@ -29202,12 +29222,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponB",
         "sha256": "sha256-c298542c7f539967e85ccb72eb25e92872dc5ccc319289333e697cb958e9c405",
-        "assetHash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+        "assetHash": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 26,
-        "checkedAt": "2026-09-02T02:07:08.284Z",
+        "checkedAt": "2026-09-02T14:29:31.637Z",
         "foregroundBounds": {
           "x": 251,
           "y": 250,
@@ -29220,19 +29240,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponC.fc659725.glb",
-    hash: "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+    url: "/aura-assets/mechWeaponC.6786f19f.glb",
+    hash: "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
     bounds: [
       0.44,
       0.515,
       1.125
     ],
-    sizeBytes: 9216,
+    sizeBytes: 9412,
     metadata: {
       "materials": [
-        "weapon-body-material",
-        "weapon-mechanism-material",
-        "weapon-energy-material"
+        "weapon-armor-frame-body-material",
+        "weapon-mechanism-joints-material",
+        "weapon-energy-identity-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -29271,9 +29291,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "weapon-body",
-          "weapon-mechanism",
-          "weapon-energy"
+          "weapon-armor-frame-body",
+          "weapon-mechanism-joints",
+          "weapon-energy-identity"
         ],
         "maxDepth": 1,
         "messages": [
@@ -29297,7 +29317,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponC.glb",
-      "outputPath": "public/aura-assets/mechWeaponC.fc659725.glb",
+      "outputPath": "public/aura-assets/mechWeaponC.6786f19f.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29326,21 +29346,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "weapon-body-material",
+          "name": "weapon-armor-frame-body-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-mechanism-material",
+          "name": "weapon-mechanism-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-energy-material",
+          "name": "weapon-energy-identity-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -29356,9 +29376,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "weapon-body",
-        "weapon-mechanism",
-        "weapon-energy"
+        "weapon-armor-frame-body",
+        "weapon-mechanism-joints",
+        "weapon-energy-identity"
       ],
       "textures": [],
       "dependencies": [],
@@ -29372,12 +29392,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponC",
         "sha256": "sha256-d0fed53acacc6d1f0702eb6a7fba6ea0bc539fb32d9d819c289bfc182524b123",
-        "assetHash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+        "assetHash": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 21,
-        "checkedAt": "2026-09-02T02:07:11.220Z",
+        "checkedAt": "2026-09-02T14:29:38.462Z",
         "foregroundBounds": {
           "x": 283,
           "y": 255,
@@ -29390,19 +29410,19 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponD.2a7114d3.glb",
-    hash: "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+    url: "/aura-assets/mechWeaponD.2ab7178b.glb",
+    hash: "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
     bounds: [
       0.44,
       0.52,
       0.925
     ],
-    sizeBytes: 10784,
+    sizeBytes: 10980,
     metadata: {
       "materials": [
-        "weapon-body-material",
-        "weapon-mechanism-material",
-        "weapon-energy-material"
+        "weapon-armor-frame-body-material",
+        "weapon-mechanism-joints-material",
+        "weapon-energy-identity-material"
       ],
       "animations": [],
       "animationClips": [],
@@ -29441,9 +29461,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "weapon-body",
-          "weapon-mechanism",
-          "weapon-energy"
+          "weapon-armor-frame-body",
+          "weapon-mechanism-joints",
+          "weapon-energy-identity"
         ],
         "maxDepth": 1,
         "messages": [
@@ -29467,7 +29487,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponD.glb",
-      "outputPath": "public/aura-assets/mechWeaponD.2a7114d3.glb",
+      "outputPath": "public/aura-assets/mechWeaponD.2ab7178b.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29496,21 +29516,21 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       },
       "materialMetadata": [
         {
-          "name": "weapon-body-material",
+          "name": "weapon-armor-frame-body-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-mechanism-material",
+          "name": "weapon-mechanism-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "weapon-energy-material",
+          "name": "weapon-energy-identity-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -29526,9 +29546,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "nodeNames": [
-        "weapon-body",
-        "weapon-mechanism",
-        "weapon-energy"
+        "weapon-armor-frame-body",
+        "weapon-mechanism-joints",
+        "weapon-energy-identity"
       ],
       "textures": [],
       "dependencies": [],
@@ -29542,12 +29562,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponD",
         "sha256": "sha256-249d655d16bb90a1e16be51f454086ee6e5fafd7d3b2b4ead1bbc7bcf5505fbd",
-        "assetHash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+        "assetHash": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 25,
-        "checkedAt": "2026-09-02T02:07:14.136Z",
+        "checkedAt": "2026-09-02T14:29:45.354Z",
         "foregroundBounds": {
           "x": 286,
           "y": 259,
@@ -44724,7 +44744,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/rooftopVenueV2.thumb.svg",
       "quality": "release",
       "role": "environment",
-      "suitabilityReason": "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority.",
+      "suitabilityReason": "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. Its authored stylized flat-color material rationale keeps structural tiers and sponsor accents readable without image textures. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/rooftopVenueV2.png",
         "kind": "browser-screenshot",

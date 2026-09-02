@@ -20,7 +20,7 @@ const entries = [
   },
   {
     id: "rooftopVenueV2", role: "environment",
-    suitability: "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority."
+    suitability: "Original CC0 metre-scale surrounding rooftop streetball venue with material-varied bleachers, service towers, floodlights, banners, and water tower. Its authored stylized flat-color material rationale keeps structural tiers and sponsor accents readable without image textures. It surrounds the existing active court and deliberately contains no hoop, net, or collision authority."
   }
 ];
 if (!existsSync(cli)) throw new Error("Build packages/aura3d-cli before registering Rooftop Buckets V2 art.");
