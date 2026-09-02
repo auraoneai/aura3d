@@ -188,25 +188,43 @@ its retained floating-black frame, while Smart City, Digital Twin, and
 Cinematic Architecture remain **reference** after fresh blind review. No
 generated report is hand-authored by this receipt.
 
-**Deployment status:** source commit `2d06f7de` plus the bounded HUD identity
-fix `90ddebcb` are pushed to `origin/main`, and the local Vercel production
-build completed successfully. The bounded Vercel upload paths (source archive,
-prebuilt archive, and prebuilt `--no-wait`) all failed at upload transport
-before creating a deployment record. A separate `vercel git connect
-https://github.com/auraoneai/aura3d` attempt also failed because the Vercel
-GitHub integration does not have access to this repository; project inspection
-still reports no Git link and no deploy hooks. The production alias therefore
-still points to the prior deployment and can still show the stale black/white
-Mech Hangar slabs. This is a deployment transport/integration hold, not visual
-evidence, and it must be cleared before claiming the live site reflects
-`90ddebcb`.
+**Deployment status:** the stale-live hold is cleared as of the correction
+receipt below. The production alias now points to a READY prebuilt deployment
+whose Vercel metadata is bound to source commit `8145f666` (`fix(engine):
+preserve trusted external manifest asset provenance`). The marketing build used
+the immutable commit-bound GitHub Media asset base
+`https://media.githubusercontent.com/media/auraoneai/aura3d/46bc1cda/public/aura-assets`
+and emitted 23 showcase plus 9 evidence routes without copying the large local
+asset directory into the Vercel payload.
 
-The next required actions are: grant the Vercel GitHub integration access to
-`auraoneai/aura3d` (or provide an authorized deployment path), verify the live
-Mech Hangar HTML/assets against source commit `90ddebcb`, continue only the
-finite bounded visual lanes listed above, regenerate their named producers,
-run independent blind reviews on any new artifacts, and run focused/release
-gates. Do not turn a reference or insufficient-evidence result into `ours`.
+**Deployment correction receipt — 2026-09-02T00:33Z:**
+
+- Vercel deployment `dpl_BTyoe5TzJAESdquT9CJsk6zRXbBf` is READY at
+  `https://aura3d-9a1e094gp-veerone.vercel.app` and is aliased to
+  `https://aura3d.auraone.ai`.
+- The prebuilt payload was built with Node 22 and `AURA3D_SHOWCASE_ASSET_BASE_URL`
+  pinned to the asset commit above. Vercel retrieved 525 prebuilt files; the
+  upload was content-addressed and completed successfully.
+- A live Chromium check of `/apps/showcase-mech-hangar/` returned HTTP 200 with
+  no console errors or failed requests. It observed
+  `__AURA3D_ROUTE_READY__.status = "ready"`,
+  `document.body.dataset.aura3dReady = "true"`,
+  `aura3dRuntimeBackend = "production-runtime"`, a `1665x1350` render target,
+  and `158` draw calls. The route evidence reports `mounted: true`,
+  `catalogReady: true`, and the typed `assets.robotcand` hero binding. The
+  captured live frame is `/tmp/live-mech-after-bridge-fix.png`; it shows the
+  textured Robotcand shell rather than the old black/white slabs.
+- The root bridge now accepts only a typed `AuraAssetRef` with a non-unsafe id,
+  non-empty hash, and durable generated-manifest provenance under
+  `public/aura-assets/`; arbitrary remote URLs and `unsafeModelUrl()` remain
+  rejected. Focused API/boundary tests pass `51/51`, and repository typecheck
+  passed before deployment.
+
+This proves deployment freshness and renderer startup; it does **not** promote
+Mech Hangar or any other held route to an `ours` visual verdict. The remaining
+finite visual lanes must still regenerate their named producers and obtain fresh
+independent blind reviews. Do not turn a reference or insufficient-evidence
+result into `ours`.
 
 You are the senior Aura3D engineer, technical artist, gameplay engineer, and
 evidence reviewer responsible for finishing the repository's premium-indie
