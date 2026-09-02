@@ -1,5 +1,38 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## Coordinator receipt — 2026-09-02T02:36Z — deployment completed
+
+The scoped parallel source/asset batch is committed as `1423c197` (`fix(showcase):
+ship parallel visual correction batch`) and pushed to `origin/main`. Vercel
+production deployment `dpl_65e4wf4N9EenmqghmRVV3YnUhpGQ` reached `READY` from
+that source batch and is aliased at:
+
+- `https://aura3d.auraone.ai`
+- `https://aura3d.vercel.app`
+- `https://aura3d-veerone.vercel.app`
+- preview URL: `https://aura3d-bjk0f5d8q-veerone.vercel.app`
+
+The production build used the exact pushed asset base
+`https://media.githubusercontent.com/media/auraoneai/aura3d/1423c197/public/aura-assets`
+and completed the repository's `23` showcase plus `9` evidence routes. Vercel
+Deployment Protection remains enabled; direct headless navigation to the
+preview correctly lands on the Vercel login page, so it was not disabled or
+bypassed in the browser. The documented `vercel curl` protection-aware check
+returned HTTP `200` for every changed route path: Smart City Control, Cinematic
+Architecture, Digital Twin Ops, Gravity Post, Pulse Tunnel, Mech Hangar, and
+Skyline Runner. `vercel inspect` confirms all three public aliases and
+`readyState: READY`.
+
+This is transport/runtime proof only. No visual label was promoted: the strict
+visual set remains **11 accepted / 6 unresolved** (Turbo Drift Circuit, Gravity
+Post, Pulse Tunnel, Gallery Shift, Rooftop Buckets, and Mech Hangar), and the
+four non-game `visualReview: needs-work` rows remain Product Configurator,
+Smart City Control, Digital Twin Ops, and Cinematic Architecture. Skyline's
+fresh route-primary revalidation is materially different from the attached
+dark screenshot, but still requires the explicit human visual decision recorded
+by its route gate. The independent label-hidden comparisons remain the only
+allowed path to an `ours` verdict.
+
 ## Coordinator receipt — 2026-09-02T02:22Z
 
 This receipt closes the latest parallel execution batch and records the exact
