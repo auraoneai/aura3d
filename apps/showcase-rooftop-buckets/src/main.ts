@@ -193,6 +193,7 @@ elModalBtn.addEventListener("click", () => {
 const ballHandle = game.runtimeNode("ball-hero", { tags: ["basketball"] });
 const rimHandle = game.runtimeNode("rim-assembly", { tags: ["hoop-rim"] });
 const backboardHandle = game.runtimeNode("backboard-assembly", { tags: ["backboard"] });
+const netPulseHandle = game.runtimeNode("rim-net-pulse", { tags: ["net-feedback", "renderer-owned", "event-driven"] });
 const defenderHandle = game.runtimeNode("defender-cutout", { tags: ["defender"] });
 const shooterHandle = game.runtimeNode("shooter-player", { tags: ["shooter", "primary-character"] });
 const fireHaloHandle = game.runtimeNode("fire-halo", { tags: ["outcome-feedback", "fire"] });
@@ -312,7 +313,8 @@ function buildScene() {
       primitives.torus({ name: "rim net lower ring", material: netMaterial })
         .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y - 0.48, HOOP_BASE_POSITION.z)
         .rotate(-Math.PI / 2, 0, 0)
-        .scale([0.19, 0.19, 0.024]),
+        .scale([0.19, 0.19, 0.024])
+        .runtime(netPulseHandle),
 
       // Ball-free, continuously modeled CC-BY athlete derivative in a raised
       // shooting pose. The separately typed route ball and route-local root
@@ -324,7 +326,7 @@ function buildScene() {
         receiveShadow: true
       })
         .position(COURT_SPOTS[0]!.x, 0, COURT_SPOTS[0]!.z)
-        .scale(visualReviewCapture ? [1.22, 1.22, 1.22] : [1.08, 1.08, 1.08])
+        .scale(visualReviewCapture ? [1.34, 1.34, 1.34] : [1.08, 1.08, 1.08])
         .runtime(shooterHandle),
 
       // Ball-free asymmetric contest derivative from the same verified source.
@@ -337,7 +339,7 @@ function buildScene() {
         receiveShadow: true
       })
         .position(0, -10, 0) // Hidden initially
-        .scale(visualReviewCapture ? [1.2, 1.2, 1.2] : [1.06, 1.06, 1.06])
+        .scale(visualReviewCapture ? [1.3, 1.3, 1.3] : [1.06, 1.06, 1.06])
         .runtime(defenderHandle),
       primitives.sphere({ name: "shooter contact shadow", material: contactShadowMaterial })
         .position(COURT_SPOTS[0]!.x, 0.026, COURT_SPOTS[0]!.z)
@@ -463,7 +465,11 @@ function buildScene() {
         // enough for the verified athletes to read as characters while still
         // retaining court grounding and the complete ballistic chain.
         position: visualReviewCapture ? [4.7, 3.25, 6.65] : [0, 4.95, 10.55],
-        target: visualReviewCapture ? [-0.28, 2.12, 1.22] : [0, 2.45, 1.1],
+        // Pan the sideline lens toward the shooter while keeping the hoop and
+        // airborne defender in the same broadcast frame. The larger typed
+        // athletes now occupy the action center instead of clipping against
+        // the left edge, without changing any spot or flight coordinates.
+        target: visualReviewCapture ? [-1.08, 2.12, 1.22] : [0, 2.45, 1.1],
         fov: visualReviewCapture ? 43 : 47
       })
     );
@@ -990,6 +996,22 @@ function syncTransforms(): void {
       ?.setPosition(contactFxPosition.x, contactFxPosition.y, contactFxPosition.z)
       .setMaterial(contactMaterial)
       .setScale([ringScale, ringScale, 0.045]);
+  }
+  // Keep the authored net assembly visually connected to actual hoop contact.
+  // The lower ring is already part of the venue geometry; this renderer-owned
+  // transform gives swish/rim/board events a short downward snap and rebound
+  // without adding another draw or changing the rim sensor/scoring math.
+  const netPulse = app.nodes.get("rim-net-pulse") as AuraRuntimeNodeHandle | undefined;
+  const netPulseActive = contactFxActive && (contactFxKind === "swish" || contactFxKind === "rim" || contactFxKind === "board");
+  netPulse?.setVisible(netPulseActive);
+  if (netPulseActive) {
+    const pulse = Math.sin(Math.min(1, contactProgress) * Math.PI);
+    const drop = contactFxKind === "swish" ? 0.18 * pulse : 0.08 * pulse;
+    const spread = contactFxKind === "swish" ? 0.12 * pulse : 0.06 * pulse;
+    netPulse
+      ?.setPosition(hoopState.x, hoopState.y - 0.48 - drop, hoopState.z)
+      .setScale([0.19 + spread, 0.19 + spread, 0.024 + pulse * 0.018])
+      .setMaterial(contactFxKind === "swish" ? contactMakeMaterial : netMaterial);
   }
   for (let index = 0; index < contactRayHandles.length; index += 1) {
     const ray = app.nodes.get(`contact-ray-${index}`) as AuraRuntimeNodeHandle | undefined;

@@ -118,17 +118,17 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     // The review composition reads as a finished indoor night-league bay;
     // retain the deeper rooftop brick in normal play while warming the
     // visible review bays so the typed athletes do not disappear into navy.
-    color: options.reviewCapture ? "#633a43" : "#30283b",
-    roughness: options.reviewCapture ? 0.64 : 0.72,
+    color: options.reviewCapture ? "#70444a" : "#30283b",
+    roughness: options.reviewCapture ? 0.6 : 0.72,
     metallic: 0.05,
     clearcoat: 0.1
   });
   const pavilionGlass = material.emissive({
     name: "rooftop pavilion glass",
-    color: options.reviewCapture ? "#1a5b70" : "#102d42",
-    emissive: options.reviewCapture ? "#32b8c8" : "#1b7892",
-    emissiveIntensity: options.reviewCapture ? 0.46 : 0.19,
-    opacity: 0.92
+    color: options.reviewCapture ? "#2a6070" : "#102d42",
+    emissive: options.reviewCapture ? "#1f8295" : "#1b7892",
+    emissiveIntensity: options.reviewCapture ? 0.34 : 0.19,
+    opacity: options.reviewCapture ? 0.76 : 0.92
   });
   const pavilionTrim = material.pbr({
     name: "rooftop pavilion brass trim",
@@ -138,24 +138,27 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
   });
   const pavilionInterior = material.emissive({
     name: "rooftop pavilion occupied warm interior",
-    color: options.reviewCapture ? "#a65135" : "#6f3928",
+    color: options.reviewCapture ? "#b9673b" : "#6f3928",
     emissive: "#ff9b52",
-    emissiveIntensity: options.reviewCapture ? 0.7 : 0.36,
+    emissiveIntensity: options.reviewCapture ? 0.58 : 0.36,
     opacity: 0.9
   });
   const reviewWindowArch = material.pbr({
     name: "night league arched window trim",
-    color: "#b9774b",
+    color: "#e1a25c",
     roughness: 0.3,
     metallic: 0.58,
     clearcoat: 0.32
   });
   const reviewWindowGlow = material.emissive({
     name: "night league arched window glow",
-    color: "#b8f3ff",
-    emissive: "#38bdf8",
-    emissiveIntensity: 0.72,
-    opacity: 0.84
+    // Keep the practical glass bright enough to separate the athletes while
+    // exposing the arched trim and warm pavilion volume instead of presenting
+    // three opaque cyan cards behind the hoop.
+    color: "#8fd5de",
+    emissive: "#19738a",
+    emissiveIntensity: 0.34,
+    opacity: 0.58
   });
   const reviewScoreboard = material.pbr({
     name: "night league scoreboard bezel",
@@ -898,7 +901,10 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
           .toJSON(),
         primitives.box({ name: `review arched window glow ${index + 1}`, material: reviewWindowGlow })
           .position(x + (index - 1) * 0.22, 5.12, -6.02)
-          .scale([1.34, 1.48, 0.035])
+          // Leave a visible masonry/trim reveal around each bay. The previous
+          // full glass cards read as three flat cyan blocks and swallowed the
+          // authored arches behind the hoop.
+          .scale([1.08 - index * 0.06, 1.18 - index * 0.04, 0.035])
           .toJSON()
       );
     }
