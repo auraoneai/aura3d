@@ -26046,14 +26046,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsA.783ccb5f.glb",
-    hash: "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
+    url: "/aura-assets/mechArmsA.86f8a123.glb",
+    hash: "sha256-86f8a123a0e8d0967bb0046f8e04614e5a62e39b78d0e292cf435f37e64faf2d",
     bounds: [
       2.12,
       0.681,
       0.435
     ],
-    sizeBytes: 33284,
+    sizeBytes: 33268,
     metadata: {
       "materials": [
         "arm-armor-frame-material",
@@ -26123,7 +26123,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsA.glb",
-      "outputPath": "public/aura-assets/mechArmsA.783ccb5f.glb",
+      "outputPath": "public/aura-assets/mechArmsA.86f8a123.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26197,13 +26197,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsA",
-        "sha256": "sha256-9013e8ae5a6f3af2c9f810132627170ffd4772fb452a4058e3198f7d28ea7d3f",
-        "assetHash": "sha256-783ccb5f5f4d499eb81e15c9dd1c969ce9c36b3fcfc373429c9a51105850e6ac",
+        "sha256": "sha256-9d179799f5631c7b80ad40c43f77bb56336a182d65fa8ed28ddb6c18002b2196",
+        "assetHash": "sha256-86f8a123a0e8d0967bb0046f8e04614e5a62e39b78d0e292cf435f37e64faf2d",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 27,
-        "checkedAt": "2026-09-02T14:28:40.752Z",
+        "colorBuckets": 23,
+        "checkedAt": "2026-09-02T21:09:12.748Z",
         "foregroundBounds": {
           "x": 134,
           "y": 244,
@@ -26216,14 +26216,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsB.703f2a24.glb",
-    hash: "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
+    url: "/aura-assets/mechArmsB.b1b03025.glb",
+    hash: "sha256-b1b03025c1915d8caaefce32589f3dc5c9c5f272f6a8ceb0e7cca942c2ef3f8b",
     bounds: [
       2.12,
       0.681,
       0.435
     ],
-    sizeBytes: 33276,
+    sizeBytes: 33248,
     metadata: {
       "materials": [
         "arm-armor-frame-material",
@@ -26293,7 +26293,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsB.glb",
-      "outputPath": "public/aura-assets/mechArmsB.703f2a24.glb",
+      "outputPath": "public/aura-assets/mechArmsB.b1b03025.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26367,13 +26367,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsB",
-        "sha256": "sha256-8070f48510bd4ad8aad7093966f772a48a9afbdcfc021389002d28c7de349297",
-        "assetHash": "sha256-703f2a24f6824b1e219d2e56d3f9955f92b246a57e0352a8db019ca3f6e2db63",
+        "sha256": "sha256-567c13f0484d5f53e221cb181926398f08e056e3cda1c6e5c9f648851e5adb6a",
+        "assetHash": "sha256-b1b03025c1915d8caaefce32589f3dc5c9c5f272f6a8ceb0e7cca942c2ef3f8b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 27,
-        "checkedAt": "2026-09-02T14:28:44.874Z",
+        "colorBuckets": 29,
+        "checkedAt": "2026-09-02T21:09:25.798Z",
         "foregroundBounds": {
           "x": 134,
           "y": 244,
@@ -26386,8 +26386,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsC.82a8ae46.glb",
-    hash: "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
+    url: "/aura-assets/mechArmsC.bff864fc.glb",
+    hash: "sha256-bff864fcca7812f06807a2636bf490b5e85fc881d711e48d5cf3620b7651a254",
     bounds: [
       2.147,
       0.681,
@@ -26463,7 +26463,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsC.glb",
-      "outputPath": "public/aura-assets/mechArmsC.82a8ae46.glb",
+      "outputPath": "public/aura-assets/mechArmsC.bff864fc.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26537,13 +26537,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsC",
-        "sha256": "sha256-76cfffb8cf2302774efdc2ae535f34598117cbac15bb9b17fdc1c281b00dfac2",
-        "assetHash": "sha256-82a8ae46b1e38cccb0afef4317dd193a29db07ee4277677fcfef1c2ce289aa25",
+        "sha256": "sha256-4f955937385ab0d63f1e02f43eebbb05b319455cf94dc7d97fa85569564ec11c",
+        "assetHash": "sha256-bff864fcca7812f06807a2636bf490b5e85fc881d711e48d5cf3620b7651a254",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 27,
-        "checkedAt": "2026-09-02T14:28:48.704Z",
+        "colorBuckets": 25,
+        "checkedAt": "2026-09-02T21:09:35.348Z",
         "foregroundBounds": {
           "x": 132,
           "y": 244,
@@ -26556,14 +26556,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechArmsD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechArmsD.77dee477.glb",
-    hash: "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
+    url: "/aura-assets/mechArmsD.8671d064.glb",
+    hash: "sha256-8671d0643ff6e0eb33cf017207c021ca2b8c3b0cb1a640879cc0e601b4b337f1",
     bounds: [
       2.134,
       0.681,
       0.435
     ],
-    sizeBytes: 33308,
+    sizeBytes: 33276,
     metadata: {
       "materials": [
         "arm-armor-frame-material",
@@ -26633,7 +26633,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechArmsD.glb",
-      "outputPath": "public/aura-assets/mechArmsD.77dee477.glb",
+      "outputPath": "public/aura-assets/mechArmsD.8671d064.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26707,13 +26707,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsD",
-        "sha256": "sha256-d0743167c1c33c236a112f4f0fdc56ce5ad0b3cbc5f27cfd05f71de2859089fe",
-        "assetHash": "sha256-77dee477ad5323fbd01888f0acb51e8eed6aa33c1dfa231fe4984649948b53a7",
+        "sha256": "sha256-12d860175f4f6c53abf5bb14291213bc8dcb8da6c18e4a42dc5cb32f4dc287b8",
+        "assetHash": "sha256-8671d0643ff6e0eb33cf017207c021ca2b8c3b0cb1a640879cc0e601b4b337f1",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 29,
-        "checkedAt": "2026-09-02T14:28:54.679Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T21:09:48.037Z",
         "foregroundBounds": {
           "x": 135,
           "y": 244,
@@ -26726,14 +26726,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisA.b61c7e1d.glb",
-    hash: "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
+    url: "/aura-assets/mechChassisA.069e6c29.glb",
+    hash: "sha256-069e6c297eb139414fa00084dbab1a03a19821db3320759cb2b3d612f16f8882",
     bounds: [
       1.24,
       0.85,
       0.595
     ],
-    sizeBytes: 23604,
+    sizeBytes: 23584,
     metadata: {
       "materials": [
         "torso-armor-material",
@@ -26805,7 +26805,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisA.glb",
-      "outputPath": "public/aura-assets/mechChassisA.b61c7e1d.glb",
+      "outputPath": "public/aura-assets/mechChassisA.069e6c29.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -26887,13 +26887,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisA",
-        "sha256": "sha256-919c58fe01e7a79fbafc4fc2c4527773887ca7670427578dc3a2111bf5e65392",
-        "assetHash": "sha256-b61c7e1da1c788fe592da06c645c684024fee6c4e0301fca4f9dce1b419f2c82",
+        "sha256": "sha256-6a64c27d7085d093e24bfec414e81eadb10047da8b9faed880136f31001aef26",
+        "assetHash": "sha256-069e6c297eb139414fa00084dbab1a03a19821db3320759cb2b3d612f16f8882",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-09-02T14:28:05.266Z",
+        "colorBuckets": 25,
+        "checkedAt": "2026-09-02T21:08:33.185Z",
         "foregroundBounds": {
           "x": 159,
           "y": 207,
@@ -26906,14 +26906,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisB.917ddb9d.glb",
-    hash: "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
+    url: "/aura-assets/mechChassisB.0a008d91.glb",
+    hash: "sha256-0a008d9127550cbc2efec531411c4a1aa5f39ef9b7fee91a6fecca42f7b2a377",
     bounds: [
       1.318,
       0.85,
       0.595
     ],
-    sizeBytes: 23608,
+    sizeBytes: 23576,
     metadata: {
       "materials": [
         "torso-armor-material",
@@ -26985,7 +26985,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisB.glb",
-      "outputPath": "public/aura-assets/mechChassisB.917ddb9d.glb",
+      "outputPath": "public/aura-assets/mechChassisB.0a008d91.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27067,13 +27067,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisB",
-        "sha256": "sha256-3be9a808f33bf8ccd2e862d9281201d7f63c2be61ca72c06a00834d63a6df052",
-        "assetHash": "sha256-917ddb9d08a1b5c3f370d025f25fe59983a9e64969a1109c5e45ae233dac66fd",
+        "sha256": "sha256-3a3be2a5c7dd5f9d4870b6e5e844c4d36d6d589c3eb43314a739b007159d28ec",
+        "assetHash": "sha256-0a008d9127550cbc2efec531411c4a1aa5f39ef9b7fee91a6fecca42f7b2a377",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-09-02T14:28:18.062Z",
+        "colorBuckets": 29,
+        "checkedAt": "2026-09-02T21:08:44.693Z",
         "foregroundBounds": {
           "x": 155,
           "y": 210,
@@ -27086,8 +27086,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisC.b456560c.glb",
-    hash: "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
+    url: "/aura-assets/mechChassisC.64065dd3.glb",
+    hash: "sha256-64065dd3e705e3afc5286ed55d6be782c11495e991d9511f54c478de948821c1",
     bounds: [
       1.24,
       0.85,
@@ -27165,7 +27165,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisC.glb",
-      "outputPath": "public/aura-assets/mechChassisC.b456560c.glb",
+      "outputPath": "public/aura-assets/mechChassisC.64065dd3.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27247,13 +27247,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisC",
-        "sha256": "sha256-e6a1352521f95fe4bdc95c80309b7294067b84e74e3ae2470689babe363c748d",
-        "assetHash": "sha256-b456560c78264bcc043ff05917af4f68c900c896c77c22a813e7e4e7a82fc72b",
+        "sha256": "sha256-d706c57de265f422ed42336f8ff51872208567b30b681bb2454009ce4b1a4c6a",
+        "assetHash": "sha256-64065dd3e705e3afc5286ed55d6be782c11495e991d9511f54c478de948821c1",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 31,
-        "checkedAt": "2026-09-02T14:28:28.719Z",
+        "colorBuckets": 27,
+        "checkedAt": "2026-09-02T21:08:51.742Z",
         "foregroundBounds": {
           "x": 159,
           "y": 207,
@@ -27266,14 +27266,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechChassisD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechChassisD.a48c0d57.glb",
-    hash: "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
+    url: "/aura-assets/mechChassisD.d1a95da5.glb",
+    hash: "sha256-d1a95da5231ec469f8e2d4be434c0fdc9a47a08b876d3713d4067e7029efbd95",
     bounds: [
       1.171,
       0.85,
       0.595
     ],
-    sizeBytes: 23608,
+    sizeBytes: 23576,
     metadata: {
       "materials": [
         "torso-armor-material",
@@ -27345,7 +27345,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechChassisD.glb",
-      "outputPath": "public/aura-assets/mechChassisD.a48c0d57.glb",
+      "outputPath": "public/aura-assets/mechChassisD.d1a95da5.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27427,13 +27427,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisD",
-        "sha256": "sha256-32d038e956358636b1ddaab8b551d3962bf8aec35141cfb37077afd8580e745b",
-        "assetHash": "sha256-a48c0d57a12f513026c91d8dee9d6cda900d4a5c3ebf92fff59de854c12f33da",
+        "sha256": "sha256-cab0cc292a686f444c95f9cad27710fc1320a2d2820f9707d6a03df656ff2881",
+        "assetHash": "sha256-d1a95da5231ec469f8e2d4be434c0fdc9a47a08b876d3713d4067e7029efbd95",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 30,
-        "checkedAt": "2026-09-02T14:28:36.332Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-09-02T21:09:02.122Z",
         "foregroundBounds": {
           "x": 163,
           "y": 204,
@@ -27790,14 +27790,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsA.c82f6e99.glb",
-    hash: "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
+    url: "/aura-assets/mechLegsA.0afea017.glb",
+    hash: "sha256-0afea017a6eebb1da2c9737bf3f890a18414e86173fccb60381ca99d1d93e4e1",
     bounds: [
       0.85,
       0.689,
       0.518
     ],
-    sizeBytes: 31748,
+    sizeBytes: 31732,
     metadata: {
       "materials": [
         "leg-armor-frame-material",
@@ -27867,7 +27867,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsA.glb",
-      "outputPath": "public/aura-assets/mechLegsA.c82f6e99.glb",
+      "outputPath": "public/aura-assets/mechLegsA.0afea017.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -27941,13 +27941,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsA",
-        "sha256": "sha256-02bf1399cdab5367a5ee951dc3e0c0d9e211801923de6c8f4660772f0978ab37",
-        "assetHash": "sha256-c82f6e991f292ba916ce6a6f3a0e3f92d19053d1b4fc69a9c74e0884f2dac2c3",
+        "sha256": "sha256-5bf4114cc3bff7c1930b6244bc1f0d930c9e4b42f50bc753a79164e8ef581db5",
+        "assetHash": "sha256-0afea017a6eebb1da2c9737bf3f890a18414e86173fccb60381ca99d1d93e4e1",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 25,
-        "checkedAt": "2026-09-02T14:28:59.310Z",
+        "checkedAt": "2026-09-02T21:10:00.798Z",
         "foregroundBounds": {
           "x": 166,
           "y": 182,
@@ -27960,14 +27960,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsB.25f23be8.glb",
-    hash: "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
+    url: "/aura-assets/mechLegsB.a96b3a93.glb",
+    hash: "sha256-a96b3a937d3a26fc21cbd2cdba972025bb2e0364f37cd5638eaac603bfd6bf92",
     bounds: [
       0.85,
       0.689,
       0.518
     ],
-    sizeBytes: 31744,
+    sizeBytes: 31716,
     metadata: {
       "materials": [
         "leg-armor-frame-material",
@@ -28037,7 +28037,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsB.glb",
-      "outputPath": "public/aura-assets/mechLegsB.25f23be8.glb",
+      "outputPath": "public/aura-assets/mechLegsB.a96b3a93.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28111,13 +28111,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsB",
-        "sha256": "sha256-8077a8a5d7de0da47cab9225e51831da9e7309ab7191c325e088f8913066c961",
-        "assetHash": "sha256-25f23be86d25692342c8e4ecdea8fcbd2f353a9d271df5f1b9823b9e3c7a45e4",
+        "sha256": "sha256-19774bfdae1b8fe9cf4dd8e7486fd8d7dbf33ab1774144523260a7d5f44e02f5",
+        "assetHash": "sha256-a96b3a937d3a26fc21cbd2cdba972025bb2e0364f37cd5638eaac603bfd6bf92",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-09-02T14:29:06.834Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T21:10:08.180Z",
         "foregroundBounds": {
           "x": 166,
           "y": 182,
@@ -28130,8 +28130,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsC.48171256.glb",
-    hash: "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
+    url: "/aura-assets/mechLegsC.147a7600.glb",
+    hash: "sha256-147a7600255fb2d1684bb9c89e3476858d7efb260d0f63f23245a6035041f448",
     bounds: [
       0.85,
       0.689,
@@ -28207,7 +28207,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsC.glb",
-      "outputPath": "public/aura-assets/mechLegsC.48171256.glb",
+      "outputPath": "public/aura-assets/mechLegsC.147a7600.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28281,13 +28281,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsC",
-        "sha256": "sha256-e7c33ff600dc9a658ae58f4badc8b8b3eb2fdc7f7cf0b7f8b27bc216d94ff34a",
-        "assetHash": "sha256-481712566e533f924db741d2066c862c2dd376b2a3e893447281fefef042c28f",
+        "sha256": "sha256-a640b9318286de5d138cb367eb10ef682a5cf1ac708f1a74919650a9570d9691",
+        "assetHash": "sha256-147a7600255fb2d1684bb9c89e3476858d7efb260d0f63f23245a6035041f448",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 31,
-        "checkedAt": "2026-09-02T14:29:13.875Z",
+        "colorBuckets": 28,
+        "checkedAt": "2026-09-02T21:10:24.154Z",
         "foregroundBounds": {
           "x": 163,
           "y": 180,
@@ -28300,14 +28300,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechLegsD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechLegsD.21f567a7.glb",
-    hash: "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
+    url: "/aura-assets/mechLegsD.41ae369c.glb",
+    hash: "sha256-41ae369cdc3ec18b7cfeacc7d762f164f746abe51b8f801b6b6479bef0acbc1c",
     bounds: [
       0.85,
       0.689,
       0.518
     ],
-    sizeBytes: 31756,
+    sizeBytes: 31728,
     metadata: {
       "materials": [
         "leg-armor-frame-material",
@@ -28377,7 +28377,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechLegsD.glb",
-      "outputPath": "public/aura-assets/mechLegsD.21f567a7.glb",
+      "outputPath": "public/aura-assets/mechLegsD.41ae369c.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -28451,13 +28451,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsD",
-        "sha256": "sha256-4759bb6f84e3fab9442ad4d58d68618376f9536fb29c2d353e4f0e18b34f506e",
-        "assetHash": "sha256-21f567a73fb8eb5cb9bb10e95bea57ed07c71c995ff6eb758e07d8667a583943",
+        "sha256": "sha256-d58e283e0a1362b7f5a4f9548d3267c1b8c14793c226345d628681eeca0fc24a",
+        "assetHash": "sha256-41ae369cdc3ec18b7cfeacc7d762f164f746abe51b8f801b6b6479bef0acbc1c",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 31,
-        "checkedAt": "2026-09-02T14:29:20.756Z",
+        "colorBuckets": 32,
+        "checkedAt": "2026-09-02T21:10:32.502Z",
         "foregroundBounds": {
           "x": 168,
           "y": 184,
@@ -28900,14 +28900,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponA.6937dc28.glb",
-    hash: "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
+    url: "/aura-assets/mechWeaponA.fd93a8e0.glb",
+    hash: "sha256-fd93a8e0f2d7674a3e5583c4695e00fcef986b82b32b182e195195081df99da3",
     bounds: [
       0.3,
       0.495,
       0.913
     ],
-    sizeBytes: 10280,
+    sizeBytes: 10268,
     metadata: {
       "materials": [
         "weapon-armor-frame-body-material",
@@ -28977,7 +28977,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponA.glb",
-      "outputPath": "public/aura-assets/mechWeaponA.6937dc28.glb",
+      "outputPath": "public/aura-assets/mechWeaponA.fd93a8e0.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29051,13 +29051,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponA",
-        "sha256": "sha256-268fed0e9df0a9fea3510ddf763fab72add1600216e7dc1133bc89e2fc4ac701",
-        "assetHash": "sha256-6937dc28a727ea5d1b5f87b1f11072b2d26ecbef7c7453351b481f1892c936a5",
+        "sha256": "sha256-3daf982b90cfbe6a0af315da919d9ee62819c4a05fb6fdfdff6c5cdef9bb7dab",
+        "assetHash": "sha256-fd93a8e0f2d7674a3e5583c4695e00fcef986b82b32b182e195195081df99da3",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-09-02T14:29:25.504Z",
+        "colorBuckets": 27,
+        "checkedAt": "2026-09-02T21:10:36.861Z",
         "foregroundBounds": {
           "x": 264,
           "y": 251,
@@ -29070,14 +29070,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponB": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponB.6d26a243.glb",
-    hash: "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
+    url: "/aura-assets/mechWeaponB.d3566878.glb",
+    hash: "sha256-d356687881d1bb3ae7ae93291c304cbf35460b755c3ff2adc302c93c1e9a4347",
     bounds: [
       0.34,
       0.45,
       0.85
     ],
-    sizeBytes: 7864,
+    sizeBytes: 7832,
     metadata: {
       "materials": [
         "weapon-armor-frame-body-material",
@@ -29147,7 +29147,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponB.glb",
-      "outputPath": "public/aura-assets/mechWeaponB.6d26a243.glb",
+      "outputPath": "public/aura-assets/mechWeaponB.d3566878.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29221,13 +29221,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponB",
-        "sha256": "sha256-c298542c7f539967e85ccb72eb25e92872dc5ccc319289333e697cb958e9c405",
-        "assetHash": "sha256-6d26a24343161c935e59a8e774ab9696665c4bfead86abd24f098b0f817ec07f",
+        "sha256": "sha256-e9aa9187dd347c7dc8e1437e689350d3fb36ea98e407bf8c7c158a757f8a6fb6",
+        "assetHash": "sha256-d356687881d1bb3ae7ae93291c304cbf35460b755c3ff2adc302c93c1e9a4347",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-09-02T14:29:31.637Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T21:10:42.570Z",
         "foregroundBounds": {
           "x": 251,
           "y": 250,
@@ -29240,8 +29240,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponC": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponC.6786f19f.glb",
-    hash: "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
+    url: "/aura-assets/mechWeaponC.8811e4c9.glb",
+    hash: "sha256-8811e4c90116b592407cbb2f6011d3094d03d33783f25839a1de1447f0b4e1e8",
     bounds: [
       0.44,
       0.515,
@@ -29317,7 +29317,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponC.glb",
-      "outputPath": "public/aura-assets/mechWeaponC.6786f19f.glb",
+      "outputPath": "public/aura-assets/mechWeaponC.8811e4c9.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29391,13 +29391,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponC",
-        "sha256": "sha256-d0fed53acacc6d1f0702eb6a7fba6ea0bc539fb32d9d819c289bfc182524b123",
-        "assetHash": "sha256-6786f19f3118bd0f9c96b02c1e363fee8fd25d2231788200e1a5ff5ff12422bc",
+        "sha256": "sha256-e890c1fbdbc3807215ad79aad12de57bd138b07d55743b566b8aea0fe7782877",
+        "assetHash": "sha256-8811e4c90116b592407cbb2f6011d3094d03d33783f25839a1de1447f0b4e1e8",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 21,
-        "checkedAt": "2026-09-02T14:29:38.462Z",
+        "colorBuckets": 20,
+        "checkedAt": "2026-09-02T21:10:47.635Z",
         "foregroundBounds": {
           "x": 283,
           "y": 255,
@@ -29410,14 +29410,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "mechWeaponD": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/mechWeaponD.2ab7178b.glb",
-    hash: "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
+    url: "/aura-assets/mechWeaponD.71c83950.glb",
+    hash: "sha256-71c839501380154171518e46c2edec3bc04fce7dafbe0b952721d9dc344dc02b",
     bounds: [
       0.44,
       0.52,
       0.925
     ],
-    sizeBytes: 10980,
+    sizeBytes: 10952,
     metadata: {
       "materials": [
         "weapon-armor-frame-body-material",
@@ -29487,7 +29487,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-23T22:00:00.000Z"
       },
       "sourcePath": "apps/showcase-mech-hangar/assets/models/mechWeaponD.glb",
-      "outputPath": "public/aura-assets/mechWeaponD.2ab7178b.glb",
+      "outputPath": "public/aura-assets/mechWeaponD.71c83950.glb",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "boundsMetadata": {
@@ -29561,13 +29561,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponD",
-        "sha256": "sha256-249d655d16bb90a1e16be51f454086ee6e5fafd7d3b2b4ead1bbc7bcf5505fbd",
-        "assetHash": "sha256-2ab7178b600cfc9f6ab916e89afb40760c24c9af037da499e83c09e7628410e9",
+        "sha256": "sha256-ac261f3a252343282803d10607d05c7a0c5613590485b943a2d1111020dd797b",
+        "assetHash": "sha256-71c839501380154171518e46c2edec3bc04fce7dafbe0b952721d9dc344dc02b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 25,
-        "checkedAt": "2026-09-02T14:29:45.354Z",
+        "colorBuckets": 28,
+        "checkedAt": "2026-09-02T21:10:52.626Z",
         "foregroundBounds": {
           "x": 286,
           "y": 259,
@@ -55686,9 +55686,9 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "route": "/apps/showcase-product-configurator/",
         "renderedProbe": {
           "url": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          "sha256": "sha256-d9016f6bafc18b6a206c343c81cb9c21cd51c7f210455f3cd3dbc547b45100d3",
+          "sha256": "sha256-b46d92b219f013a78ced44e6675c8eadc84b9c6ecd824a24726f1edb1878c762",
           "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-          "checkedAt": "2026-09-01T14:16:01.321Z",
+          "checkedAt": "2026-09-02T22:28:53.126Z",
           "route": "/apps/showcase-product-configurator/"
         }
       },
@@ -55715,18 +55715,18 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "kind": "browser-screenshot",
         "renderer": "@aura3d/engine createAuraApp route-primary probe",
         "route": "/apps/showcase-product-configurator/",
-        "sha256": "sha256-d9016f6bafc18b6a206c343c81cb9c21cd51c7f210455f3cd3dbc547b45100d3",
+        "sha256": "sha256-b46d92b219f013a78ced44e6675c8eadc84b9c6ecd824a24726f1edb1878c762",
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "width": 1440,
         "height": 900,
-        "nonBlankPixels": 421443,
-        "colorBuckets": 70,
-        "checkedAt": "2026-09-01T14:16:01.321Z",
+        "nonBlankPixels": 1296000,
+        "colorBuckets": 74,
+        "checkedAt": "2026-09-02T22:28:53.126Z",
         "foregroundBounds": {
-          "x": 576,
+          "x": 521,
           "y": 293,
-          "width": 298,
-          "height": 344
+          "width": 485,
+          "height": 427
         }
       }
     },

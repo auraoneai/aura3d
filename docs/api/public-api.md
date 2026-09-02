@@ -19,7 +19,7 @@ pnpm verify:api-docs
 | `@aura3d/assets` | `2.0.3` | `packages/assets/src/index.ts` | 78 |
 | `@aura3d/assets/gltf-runtime` | `2.0.3` | `packages/assets/src/gltf-runtime.ts` | 4 |
 | `@aura3d/audio` | `2.0.3` | `packages/audio/src/index.ts` | 25 |
-| `@aura3d/cli` | `2.0.3` | `packages/aura3d-cli/src/index.ts` | 32 |
+| `@aura3d/cli` | `2.0.3` | `packages/aura3d-cli/src/index.ts` | 36 |
 | `@aura3d/controls` | `2.0.3` | `packages/controls/src/index.ts` | 25 |
 | `@aura3d/core` | `2.0.3` | `packages/core/src/index.ts` | 14 |
 | `create-aura3d` | `2.0.3` | `packages/create-aura3d/src/index.ts` | 10 |
@@ -335,7 +335,11 @@ export { admitAssetForRole, rankAssetCandidatesForRole, HERO_MIN_RENDERED_AZIMUT
 export type { AssetAdmissionCheck, AssetAdmissionInput, AssetAdmissionReport, AssetAdmissionRole, AssetAdmissionVerdict, AssetGeometryFacts, AssetProvenanceFacts, AssetRenderedFacts, AssetRoleRequirement } from "./asset-role-admission.js";
 export { DEFAULT_AURA_ASSET_MANIFEST, DEFAULT_AURA_ASSET_OUTPUT_DIR, DEFAULT_AURA_ASSET_PUBLIC_PATH, DEFAULT_AURA_ASSET_TYPEGEN } from "./asset-constants.js";
 export { listAssets, readAssetManifest, writeAssetManifest, writeTypedAssets } from "./asset-manifest.js";
-export type { AddAssetOptions, AssetCliResult, AssetSourceTypedAssetUsage, AssetSourceValidationReport, AssetValidationOptions, AssetValidationResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetManifest, AuraCliAssetProvenance, AuraCliAssetRole, AuraCliAssetType, AuraCliRenderedProbe, AuraCliRenderedProbeForegroundBounds, AuraCliRenderedProbeKind, AuraCliResolveCandidateProvenance, BindGameRouteEvidenceOptions, BindGameRouteEvidenceResult, CertifyGameGeometryOptions, CheckDeployOptions, GameGeometryCertificationResult, ReadRenderedProbeMetadataOptions } from "./asset-core-types.js";
+export type { AddAssetOptions, AssetCliResult, AssetSourceTypedAssetUsage, AssetSourceValidationReport, AssetValidationOptions, AssetValidationResult, AuraAssetQuality, AuraCliAssetEntry, AuraCliAssetManifest, AuraCliAssetProvenance, AuraCliGeneratedAssetProvenance, AuraCliAssetRole, AuraCliAssetType, AuraCliRenderedProbe, AuraCliRenderedProbeForegroundBounds, AuraCliRenderedProbeKind, AuraCliResolveCandidateProvenance, BindGameRouteEvidenceOptions, BindGameRouteEvidenceResult, CertifyGameGeometryOptions, CheckDeployOptions, GameGeometryCertificationResult, ReadRenderedProbeMetadataOptions } from "./asset-core-types.js";
+export { importMeshyAsset } from "./meshy/import.js";
+export { createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./meshy/admission.js";
+export type { MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./meshy/admission.js";
+export type { ImportMeshyOptions, ImportMeshyResult } from "./meshy/import.js";
 export type { AssetInspectionReport, AuraCliAnimationClipInspection, AuraCliAnimationInspection, AuraCliAssetBoundsInspection, AuraCliHumanoidConfidence, AuraCliHumanoidInspection, AuraCliHumanoidStatus, AuraCliMaterialInspection, AuraCliMorphTargetInspection, AuraCliMorphTargetMeshInspection, AuraCliOrientationInspection, AuraCliSceneHierarchyInspection, AuraCliSkeletonInspection, AuraCliSkeletonSkinInspection, InspectAssetOptions } from "./asset-inspection-types.js";
 export type { AnimationEpisodeAssetReadiness, AnimationEpisodeAssetRole, AnimationEpisodeMouthReadinessMode, AnimationEpisodeReadinessReport, AssetReadinessAnimationClipMetadata, AssetReadinessAnimationMetadata, AssetReadinessAssetArtifacts, AssetReadinessAssetReport, AssetReadinessArtifacts, AssetReadinessOptions, AssetReadinessReport, AssetReadinessValidationContract, AssetReadinessValidatorEvidence, AuraAssetReadinessProfile, AuraAssetReadinessStatus, AuraGameAssetReadinessProfile } from "./asset-readiness-types.js";
 export type { CharacterAssemblyPartInput, CharacterAssemblyPlanOptions, CharacterAssemblyPlanResult, CharacterAssemblyResolvedPart } from "./character-assembly-types.js";

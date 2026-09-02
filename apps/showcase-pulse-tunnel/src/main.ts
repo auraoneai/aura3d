@@ -306,27 +306,6 @@ const finaleBeaconBuilder = primitives.torus({ name: 'pulse finale beacon', mate
   // far end of the fog volume.
   .position(0, 1.0, -4.65).scale(visualReviewCapture ? [0.001, 0.001, 0.001] : [2.8, 2.8, 0.22])
   .runtime(game.runtimeNode('pulse-finale-beacon', { tags: ['finale-landmark', 'set-dressing'] }));
-// The live runner retains this timing landmark, but the evidence lens now
-// suppresses it: a single abstract ring read as a decorative target rather
-// than an opposing terminal with a concrete attack/reaction relationship.
-// The chart and collision scheduler remain the gameplay authority.
-const finaleBossRingBuilder = primitives.torus({
-  name: "pulse finale boss ring",
-  material: material.emissive({ color: "#6d28d9", emissive: "#a855f7", emissiveIntensity: 1.18, opacity: 0.86 })
-})
-  .position(0, 1.0, -4.5)
-  .scale([3.55, 2.25, 0.15])
-  .runtime(game.runtimeNode("pulse-finale-boss-ring", { tags: ["finale-landmark", "boss-silhouette", "renderer-owned"] }));
-const finaleBossWingBuilders = [-1, 1].map((side) =>
-  primitives.box({
-    name: `pulse finale boss wing ${side < 0 ? "left" : "right"}`,
-    material: material.pbr({ color: side < 0 ? "#176b87" : "#8b2b79", roughness: 0.4, metallic: 0.48, emissive: side < 0 ? "#06b6d4" : "#d946ef", emissiveIntensity: 0.3 })
-  })
-    .position(side * 1.65, 0.9, -4.42)
-    .rotate(0, side * 0.16, side * 0.56)
-    .scale([1.35, 0.24, 0.52])
-    .runtime(game.runtimeNode(`pulse-finale-boss-wing-${side < 0 ? "left" : "right"}`, { tags: ["finale-landmark", "boss-silhouette", "renderer-owned"] }))
-);
 const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
   name: "pulse original terminal sentry",
   targetMaxDimension: 2.74
@@ -379,42 +358,17 @@ const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
   }));
 const finaleProjectileBuilders = Array.from({ length: 18 }, (_, index) =>
   primitives.cylinder({
-    name: "pulse finale rhythm lance " + (index + 1),
+    name: `pulse finale ${index < 10 ? "runner lance" : "sentry cutter"} ${index + 1}`,
     material: material.emissive({
-      color: index % 3 === 0 ? "#67e8f9" : index % 3 === 1 ? "#fbbf24" : "#e879f9",
-      emissive: index % 3 === 0 ? "#0891b2" : index % 3 === 1 ? "#d97706" : "#c026d3",
-      emissiveIntensity: 1.75
+      color: index < 10 ? (index % 3 === 0 ? "#e5fdff" : "#67e8f9") : (index % 3 === 0 ? "#ffe6ee" : "#fb7185"),
+      emissive: index < 10 ? "#0891b2" : "#be123c",
+      emissiveIntensity: index < 10 ? 1.85 : 1.72
     })
   })
     .position(0, 0.45, -7.5)
     .rotate(Math.PI / 2, 0, 0)
     .scale([0.055, 0.42, 0.055])
     .runtime(game.runtimeNode("pulse-finale-projectile-" + index, { tags: ["finale-projectile", "rhythm-lance", "renderer-owned"] }))
-);
-
-// Three continuous vectors make the exchange readable before individual pulse
-// packets resolve: cyan rails originate at the runner, while the warmer rails
-// return from the interceptor. They are in-scene geometry, not UI/CSS effects.
-const finaleVectorBuilders = [
-  { name: "pulse runner outgoing vector left", x: 0.12, y: 0.58, z: -1.85, color: "#67e8f9", emissive: "#0891b2", length: 2.2 },
-  { name: "pulse runner outgoing vector center", x: 0.42, y: 0.72, z: -2.18, color: "#a5f3fc", emissive: "#0e7490", length: 2.95 },
-  { name: "pulse runner outgoing vector right", x: 0.7, y: 0.58, z: -2.06, color: "#67e8f9", emissive: "#0891b2", length: 2.35 },
-  { name: "pulse interceptor incoming vector left", x: 0.58, y: 1.22, z: -3.82, color: "#fda4af", emissive: "#be123c", length: 1.95 },
-  { name: "pulse interceptor incoming vector center", x: 0.92, y: 1.34, z: -4.42, color: "#fbbf24", emissive: "#b45309", length: 1.35 },
-  { name: "pulse interceptor incoming vector right", x: 1.22, y: 1.22, z: -4.02, color: "#fda4af", emissive: "#be123c", length: 1.9 }
-].map((vector, index) =>
-  primitives.box({
-    name: vector.name,
-    material: material.emissive({
-      color: vector.color,
-      emissive: vector.emissive,
-      emissiveIntensity: 1.4,
-      opacity: 0.9
-    })
-  })
-    .position(vector.x, vector.y, vector.z)
-    .scale([0.035, 0.035, vector.length])
-    .runtime(game.runtimeNode(`pulse-finale-vector-${index}`, { tags: ["finale-vector", "renderer-owned", "action-direction"] }))
 );
 
 // Four shield vanes frame the terminal sentry into one readable encounter
@@ -1411,8 +1365,6 @@ const app = createAuraApp("#app", {
       ...reviewSentryIdentityBuilders,
       ...reviewActorContourBuilders,
       finaleBeaconBuilder,
-      finaleBossRingBuilder,
-      ...finaleBossWingBuilders,
       ...finaleShieldVaneBuilders,
       finaleArenaShellBuilder,
       finaleTerminalSentryBuilder,
@@ -1423,7 +1375,6 @@ const app = createAuraApp("#app", {
       ...reviewImpactBurstBuilders,
       ...reviewImpactRayBuilders,
       ...reviewImpactWaveBuilders,
-      ...finaleVectorBuilders,
       // A real Aura3D particle effect supplies the encounter's volumetric
       // discharge layer.  It is review-only set dressing around the typed
       // runner/sentry exchange; route-owned pass events still determine the
@@ -1609,8 +1560,6 @@ const hitFlash = requireHandle("pulse-hit-flash");
 const shipBody = requireHandle("pulse-ship-body");
 const shipGlow = requireHandle("pulse-ship-glow");
 const finaleBeacon = requireHandle("pulse-finale-beacon");
-const finaleBossRing = requireHandle("pulse-finale-boss-ring");
-const finaleBossWings = ["left", "right"].map((side) => requireHandle("pulse-finale-boss-wing-" + side));
 const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHandle("pulse-finale-shield-vane-" + index));
 const finaleArenaShell = requireHandle("pulse-finale-arena-shell");
 const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
@@ -1621,7 +1570,6 @@ const reviewImpactShards = reviewImpactShardBuilders.map((_, index) => requireHa
 const reviewImpactBursts = reviewImpactBurstBuilders.map((_, index) => requireHandle(`pulse-review-impact-burst-${index}`));
 const reviewImpactRays = reviewImpactRayBuilders.map((_, index) => requireHandle(`pulse-review-impact-ray-${index}`));
 const reviewImpactWaves = reviewImpactWaveBuilders.map((_, index) => requireHandle(`pulse-review-impact-wave-${index}`));
-const finaleVectors = finaleVectorBuilders.map((_, index) => requireHandle("pulse-finale-vector-" + index));
 const rainHandles = rainBuilders.map((_, index) => requireHandle("pulse-rain-" + index));
 const reviewAttackOrigin = visualReviewCapture ? requireHandle("pulse-review-attack-origin") : null;
 const reviewImpactPlane = visualReviewCapture ? requireHandle("pulse-review-impact-plane") : null;
@@ -1669,8 +1617,6 @@ if (visualReviewCapture) (shipGlow as PulseNodeHandle).setMaterial(reviewRunnerG
 fogPulse.setVisible(false);
 hitFlash.setVisible(false);
 finaleBeacon.setVisible(false);
-finaleBossRing.setVisible(false);
-for (const wing of finaleBossWings) wing.setVisible(false);
 for (const vane of finaleShieldVanes) vane.setVisible(false);
 finaleArenaShell.setVisible(false);
 finaleTerminalSentry.setVisible(false);
@@ -1681,7 +1627,6 @@ for (const shard of reviewImpactShards) shard.setVisible(false);
 for (const burst of reviewImpactBursts) burst.setVisible(false);
 for (const ray of reviewImpactRays) ray.setVisible(false);
 for (const wave of reviewImpactWaves) wave.setVisible(false);
-for (const vector of finaleVectors) vector.setVisible(false);
 for (const rain of rainHandles) rain.setVisible(false);
 reviewAttackOrigin?.setVisible(false);
 reviewImpactPlane?.setVisible(false);
@@ -2106,8 +2051,6 @@ function renderWorld(dt: number): void {
   // renderer-owned boss silhouette or its last projectile pose.
   const finaleActive = lastSection === "finale" && (runState === "running" || runState === "paused");
   finaleBeacon.setVisible(finaleActive && !visualReviewCapture);
-  finaleBossRing.setVisible(finaleActive && !visualReviewCapture);
-  for (const wing of finaleBossWings) wing.setVisible(finaleActive && !visualReviewCapture);
   // The old primitive interceptor/core are deliberately suppressed for this
   // typed-sentry finale state. They have no collision or chart role.
   for (const vane of finaleShieldVanes) vane.setVisible(finaleActive && !visualReviewCapture);
@@ -2124,10 +2067,9 @@ function renderWorld(dt: number): void {
   finaleArenaShell.setVisible(finaleActive);
   finaleTerminalSentry.setVisible(finaleActive);
   // Continuous line bars from the previous composition are intentionally
-  // retired in review mode. Discrete projectile packets now connect the
-  // visible origin halo to the separate shield impact plane without becoming
-  // an opaque central pile.
-  for (const vector of finaleVectors) vector.setVisible(false);
+  // retired. Discrete projectile packets now connect the typed craft and
+  // sentry to the separate shield impact plane without becoming an opaque
+  // central pile.
   // The review packets are the visible exchange. Hide the older gameplay pool
   // in this lens because its small cylinders can alias into flat cards at the
   // final screenshot resolution.
@@ -2218,7 +2160,6 @@ function renderWorld(dt: number): void {
         .setRotation(Math.PI / 2, 0, angle + Math.PI * 0.5);
     });
     finaleBeacon.setRotation(0, 0, pulse * 0.75);
-    finaleBossRing.setRotation(0, 0, pulse * -0.32);
     finaleTerminalSentry
       .setPosition(visualReviewCapture ? 1.38 : 0, (visualReviewCapture ? 0.22 : 0.08) + Math.sin(pulse * 1.7) * 0.024, visualReviewCapture ? -3.72 : -5.16)
       .setRotation(0, Math.PI + 0.18 + Math.sin(pulse * 1.1) * 0.025, 0)
@@ -2237,23 +2178,46 @@ function renderWorld(dt: number): void {
     reviewImpactPlane
       ?.setPosition(reviewPlayerX + eventLaneBias * 0.3, 0.72 + eventKindOffset * 0.5, -0.08)
       .setScale([0.72 + (arenaPulse - 1) * 0.8 + eventResponse * 0.14, 0.72 + (arenaPulse - 1) * 0.8 + eventResponse * 0.14, 0.045]);
-    const ringPulse = 1 + (Math.sin(pulse * 2.7) * 0.5 + 0.5) * 0.08;
-    finaleBossRing.setScale(visualReviewCapture
-      ? [1.55 * ringPulse, 1.18 * ringPulse, 0.12]
-      : [3.55 * ringPulse, 2.25 * ringPulse, 0.15]);
-    // Keep the live pulse cadence in the existing ring/vane architecture while
-    // the typed sentry remains the visible target. No primitive core competes
-    // with the sentry silhouette in the finale capture.
+    // Keep the live pulse cadence in the typed sentry and shield architecture;
+    // no abstract boss ring competes with the sentry silhouette.
     finaleProjectiles.forEach((projectile, index) => {
       if (visualReviewCapture) {
         projectile.setVisible(false);
       } else {
-        const lane = index % 5 - 2;
-        const phase = (pulse * 0.52 + index * 0.073) % 1;
-        const sweep = Math.sin(pulse * 1.2 + index * 0.9) * 0.24;
-        projectile.setVisible(true).setPosition(lane * 0.68 + sweep, 0.28 + (index % 3) * 0.24, -8.2 + phase * 8.1)
-          .setScale([0.075, 0.44, 0.075])
-          .setRotation(Math.PI / 2, lane * -0.08, 0);
+        // The default playable finale uses the same authored cause/effect
+        // relationship as the review lens: cyan lances leave the runner,
+        // converge on the active gate impact plane, and rose cutters return
+        // from the typed sentry.  The old free-running lane sweep looked like
+        // unrelated decoration and made it impossible to tell who fired.
+        const outgoing = index < 10;
+        const localIndex = outgoing ? index : index - 10;
+        const column = localIndex % 5 - 2;
+        const row = Math.floor(localIndex / 5);
+        const latestEvent = reviewCombatPulse?.event ?? gateEventLog[gateEventLog.length - 1];
+        const latestEntry = latestEvent ? chart.find((entry) => entry.id === latestEvent.gateId) : undefined;
+        const latestGeometry = latestEntry ? pulseGateGeometry(latestEntry, beatClock.time()) : undefined;
+        const impactX = latestGeometry?.centerX ?? 0;
+        const impactY = latestGeometry
+          ? Math.max(0.48, Math.min(1.18, (latestGeometry.bottomY + latestGeometry.topY) * 0.5 + 0.12))
+          : 0.78;
+        const impactZ = -2.18;
+        const sourceX = outgoing ? playerState.x : 0;
+        const sourceY = outgoing ? playerState.y + 0.44 : 1.12;
+        const sourceZ = outgoing ? PULSE_PLAYER_Z - 0.18 : -4.78;
+        const targetX = outgoing ? impactX : playerState.x;
+        const targetY = outgoing ? impactY : playerState.y + 0.44;
+        const targetZ = outgoing ? impactZ : PULSE_PLAYER_Z - 0.18;
+        // Stagger the streams by beat phase so each packet remains spatially
+        // separated while preserving one shared, deterministic rhythm source.
+        const phase = (pulse * 0.52 + localIndex * 0.11 + (outgoing ? 0.04 : 0.26)) % 1;
+        const progress = 0.16 + phase * 0.66 + row * 0.035;
+        const arc = Math.sin(progress * Math.PI) * (outgoing ? 0.14 : -0.11) + column * 0.028;
+        const x = sourceX + (targetX - sourceX) * progress + arc;
+        const y = sourceY + (targetY - sourceY) * progress + Math.sin(progress * Math.PI) * (0.08 + row * 0.035);
+        const z = sourceZ + (targetZ - sourceZ) * progress;
+        projectile.setVisible(true).setPosition(x, y, z)
+          .setScale([0.082 + (localIndex % 2) * 0.012, 0.42, 0.082 + (localIndex % 2) * 0.012])
+          .setRotation(Math.PI / 2, (targetX - sourceX) * 0.16, outgoing ? 0.05 : -0.05);
       }
     });
     if (visualReviewCapture) {
@@ -2318,7 +2282,6 @@ function renderWorld(dt: number): void {
     });
   } else {
     for (const projectile of finaleProjectiles) projectile.setVisible(false);
-    for (const vector of finaleVectors) vector.setVisible(false);
     for (const rain of rainHandles) rain.setVisible(false);
     reviewAttackOrigin?.setVisible(false);
     reviewImpactPlane?.setVisible(false);

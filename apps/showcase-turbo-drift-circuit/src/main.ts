@@ -236,6 +236,10 @@ const TRACK_REFERENCE_Y = -0.12;
  * authoritative below it.
  */
 const ROAD_DETAIL_SURFACE_LIFT = 0.075;
+// Renderer-owned drift feedback tuning. This is a visual particle parameter,
+// not a gameplay/world-physics gravity constant; keep it explicit so the
+// particle material can rise and dissipate without changing vehicle contact.
+const DRIFT_PARTICLE_GRAVITY = 0.72;
 /**
  * Scene Y used to place the car node and its telemetry reference.
  *
@@ -565,7 +569,7 @@ const reviewVenuePlate = new URLSearchParams(window.location.search).get("venueP
 // beyond the shoulder and follows the live review pose, so it supplies real
 // 3-D tents, timber rails, rocks and spectators without entering gameplay.
 const supplementalHairpinVenueEnabled = true;
-const VISUAL_DRIFT_PLUME_COUNT = 14;
+const VISUAL_DRIFT_PLUME_COUNT = 16;
 let visualCaptureHeld = false;
 // The collision proof route holds the exact solved first-contact pose until the
 // browser producer releases it after taking the retained frame. A 140 ms hit-stop
@@ -1001,6 +1005,74 @@ function buildTurboSceneryNodes() {
       });
     }
   }
+  // Low roadside log bundles and weathered stones give the venue a sense of
+  // place beyond repeated tree silhouettes.  Their placements are route-bound
+  // (the same sampled tangent/road height as the cars) and stay outside the
+  // certified asphalt envelope, so they enrich the Art-of-Rally-style outfield
+  // without becoming a second collision or camera-only backdrop.
+  const outfieldLogTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const outfieldLogColors: string[] = [];
+  const outfieldBoulderTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const outfieldBoulderColors: string[] = [];
+  const outfieldFlowerTransforms: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+  const outfieldFlowerColors: string[] = [];
+  const outfieldProgresses = [0.038, 0.076, 0.116, 0.157, 0.314, 0.362, 0.414, 0.468, 0.526, 0.588] as const;
+  for (let index = 0; index < outfieldProgresses.length; index += 1) {
+    const progress = outfieldProgresses[index]!;
+    const sample = sampleCentreline(progress);
+    const side = index % 2 === 0 ? 1 : -1;
+    const leftX = Math.sin(sample.heading);
+    const leftZ = -Math.cos(sample.heading);
+    const lateral = visualAsphaltHalfWidthGame + 0.74 + (index % 3) * 0.12;
+    const point = {
+      x: sample.x + leftX * lateral * side,
+      y: sample.y + leftZ * lateral * side
+    };
+    const p = gamePointToScene(point);
+    const roadY = sampleTurboRoadHeight(p[0], p[2]);
+    const pose = racingScene.toScenePose({ position: point, heading: sample.heading });
+    const logLength = 0.28 + (index % 3) * 0.045;
+    // Two offset logs read as a small cut-wood bundle rather than one opaque
+    // placeholder block; the stagger also keeps their silhouettes readable at
+    // the chase distance when a tree overlaps the shoulder.
+    for (let stack = 0; stack < 2; stack += 1) {
+      const stackOffset = (stack - 0.5) * 0.085;
+      outfieldLogTransforms.push({
+        position: [
+          p[0] + leftX * stackOffset,
+          roadY + 0.055 + stack * 0.06,
+          p[2] + leftZ * stackOffset
+        ],
+        rotation: [0, pose.rotation[1], 0],
+        scale: [logLength, 0.075, 0.075]
+      });
+      outfieldLogColors.push(stack === 0 ? "#7e4b34" : "#a86843");
+    }
+    const rockSize = 0.11 + (index % 4) * 0.022;
+    outfieldBoulderTransforms.push({
+      position: [p[0] - leftX * side * 0.17, roadY + rockSize * 0.34, p[2] - leftZ * side * 0.17],
+      rotation: [0.04 * (index % 2), pose.rotation[1] * 0.45, 0],
+      scale: [rockSize * 1.18, rockSize * 0.72, rockSize]
+    });
+    outfieldBoulderColors.push(index % 3 === 0 ? "#7b6f61" : index % 3 === 1 ? "#958473" : "#625d58");
+    // Sparse warm meadow accents break up the broad terrain color while staying
+    // well below the car silhouette and outside the driving corridor.
+    for (let flower = 0; flower < 2; flower += 1) {
+      const flowerAlong = (flower - 0.5) * 0.14;
+      const flowerPoint = {
+        x: point.x + Math.cos(sample.heading) * flowerAlong,
+        y: point.y + Math.sin(sample.heading) * flowerAlong
+      };
+      const fp = gamePointToScene(flowerPoint);
+      const flowerSize = 0.045 + ((index + flower) % 3) * 0.012;
+      outfieldFlowerTransforms.push({
+        position: [fp[0], roadY + flowerSize * 0.34, fp[2]],
+        rotation: [0, 0, 0],
+        scale: [flowerSize, flowerSize * 0.58, flowerSize]
+      });
+      outfieldFlowerColors.push((index + flower) % 2 === 0 ? "#eaa36e" : "#e6c777");
+    }
+  }
   return [
     instances.box({
       name: "scenery crowd stands (instanced)",
@@ -1066,6 +1138,30 @@ function buildTurboSceneryNodes() {
       castShadow: false,
       material: material.pbr({ name: "wall tyre", color: "#1d2124", roughness: 0.97 }),
       transforms: tireTransforms
+    }),
+    instances.box({
+      name: "outfield cut log bundles (instanced)",
+      castShadow: false,
+      receiveShadow: true,
+      material: material.pbr({ name: "weathered cut logs", color: "#8e5a3e", roughness: 0.9, metallic: 0.01 }),
+      instanceColors: outfieldLogColors,
+      transforms: outfieldLogTransforms
+    }),
+    instances.sphere({
+      name: "outfield weathered boulders (instanced)",
+      castShadow: false,
+      receiveShadow: true,
+      material: material.pbr({ name: "weathered roadside stone", color: "#7b6f61", roughness: 0.96, metallic: 0.01 }),
+      instanceColors: outfieldBoulderColors,
+      transforms: outfieldBoulderTransforms
+    }),
+    instances.sphere({
+      name: "outfield meadow accents (instanced)",
+      castShadow: false,
+      receiveShadow: false,
+      material: material.emissive({ name: "late meadow flowers", color: "#eaa36e", emissive: "#b66e42", emissiveIntensity: 0.12, roughness: 0.88 }),
+      instanceColors: outfieldFlowerColors,
+      transforms: outfieldFlowerTransforms
     })
   ];
 }
@@ -1193,11 +1289,12 @@ function buildTurboTracksideIdentityNodes() {
     [gantryCenter[0] + gantryLeftX, gantryRoadY + gantryPostHeight / 2, gantryCenter[2] + gantryLeftZ],
     [gantryCenter[0] - gantryLeftX, gantryRoadY + gantryPostHeight / 2, gantryCenter[2] - gantryLeftZ]
   ];
-  const gantryCrossbar = primitives.box({
+  const gantryCrossbar = instances.box({
     name: "turbo approach gantry crossbar",
     material: material.pbr({ name: "approach gantry steel", color: "#283b47", roughness: 0.5, metallic: 0.58 }),
     castShadow: false,
-    receiveShadow: false
+    receiveShadow: false,
+    transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
   })
     .position(gantryCenter[0], gantryRoadY + gantryPostHeight, gantryCenter[2])
     .rotate(0, gantryPose.rotation[1], 0)
@@ -1205,11 +1302,12 @@ function buildTurboTracksideIdentityNodes() {
     .runtime(game.runtimeNode("turbo-approach-gantry-crossbar", {
       tags: ["track-detail", "service-lane-identity", "renderer-owned", "non-colliding"]
     }));
-  const gantryBoard = primitives.box({
+  const gantryBoard = instances.box({
     name: "turbo approach gantry identity board",
     material: material.emissive({ name: "approach gantry identity", color: "#e56b4f", emissive: "#ffb38c", emissiveIntensity: 0.72, roughness: 0.42 }),
     castShadow: false,
-    receiveShadow: false
+    receiveShadow: false,
+    transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
   })
     .position(gantryCenter[0], gantryRoadY + gantryPostHeight - 0.16, gantryCenter[2])
     .rotate(0, gantryPose.rotation[1], 0)
@@ -1217,20 +1315,17 @@ function buildTurboTracksideIdentityNodes() {
     .runtime(game.runtimeNode("turbo-approach-gantry-identity-board", {
       tags: ["signage", "track-detail", "renderer-owned", "non-colliding"]
     }));
-  const gantryPosts = gantryPostPositions.map((position, index) =>
-    primitives.box({
-      name: `turbo approach gantry post ${index + 1}`,
-      material: material.pbr({ name: "approach gantry post", color: "#1d2b33", roughness: 0.56, metallic: 0.62 }),
-      castShadow: false,
-      receiveShadow: false
-    })
-      .position(...position)
-      .rotate(0, gantryPose.rotation[1], 0)
-      .scale([0.06, gantryPostHeight, 0.06])
-      .runtime(game.runtimeNode(`turbo-approach-gantry-post-${index + 1}`, {
-        tags: ["track-detail", "service-lane-identity", "renderer-owned", "non-colliding"]
-      }))
-  );
+  const gantryPosts = instances.box({
+    name: "turbo approach gantry posts (instanced)",
+    material: material.pbr({ name: "approach gantry post", color: "#1d2b33", roughness: 0.56, metallic: 0.62 }),
+    castShadow: false,
+    receiveShadow: false,
+    transforms: gantryPostPositions.map((position) => ({
+      position,
+      rotation: [0, gantryPose.rotation[1], 0] as [number, number, number],
+      scale: [0.06, gantryPostHeight, 0.06] as [number, number, number]
+    }))
+  });
 
   return [
     instances.box({
@@ -1285,7 +1380,7 @@ function buildTurboTracksideIdentityNodes() {
       receiveShadow: false,
       transforms: cornerChevronTransforms
     }),
-    ...gantryPosts,
+    gantryPosts,
     gantryCrossbar,
     gantryBoard
   ];
@@ -1396,101 +1491,6 @@ function buildTurboRallySetNodes() {
   ];
 }
 
-/**
- * Review-only paint that follows the certified centreline and sits above the
- * typed circuit's asphalt.  It does not replace the track asset or collision
- * surface: the narrow alternating curb blocks simply make the road boundary
- * and corner direction readable in the held gameplay frame.
- */
-function buildCaptureRoadEdgeNodes() {
-  const segmentCount = 52;
-  return Array.from({ length: segmentCount }, (_, index) => {
-    const startProgress = index / segmentCount;
-    const endProgress = (index + 0.72) / segmentCount;
-    const midpointProgress = (startProgress + endProgress) / 2;
-    const midpoint = sampleCentreline(midpointProgress);
-    const start = gamePointToScene(sampleCentreline(startProgress));
-    const end = gamePointToScene(sampleCentreline(endProgress));
-    const segmentLength = Math.max(0.08, Math.hypot(end[0] - start[0], end[2] - start[2]));
-    const edgeOffset = visualAsphaltHalfWidthGame * 0.96;
-    const leftX = Math.sin(midpoint.heading);
-    const leftZ = -Math.cos(midpoint.heading);
-    return ([-1, 1] as const).map((side) => {
-      const point = gamePointToScene({
-        x: midpoint.x + leftX * edgeOffset * side,
-        y: midpoint.y + leftZ * edgeOffset * side
-      });
-      const pose = racingScene.toScenePose({
-        position: {
-          x: midpoint.x + leftX * edgeOffset * side,
-          y: midpoint.y + leftZ * edgeOffset * side
-        },
-        heading: midpoint.heading
-      });
-      const warmBlock = (index + (side > 0 ? 0 : 1)) % 2 === 0;
-      return primitives.box({
-        name: `capture circuit curb ${index + 1} ${side < 0 ? "inside" : "outside"}`,
-        material: material.pbr({
-          name: warmBlock ? "capture coral curb" : "capture cream curb",
-          color: warmBlock ? "#d85b45" : "#f1dfbf",
-          roughness: 0.74,
-          metallic: 0
-        }),
-        castShadow: false,
-        receiveShadow: false
-      })
-        .position(point[0], TRACK_REFERENCE_Y + 0.062, point[2])
-        .rotate(0, pose.rotation[1], 0)
-        .scale([0.055, 0.018, segmentLength])
-        .runtime(game.runtimeNode(`turbo-capture-curb-${index}-${side}`, {
-          tags: ["track-detail", "certified-route-bound", "renderer-owned", "non-colliding"]
-        }));
-    });
-  }).flat();
-}
-
-/**
- * Authored rubber laid through the review hairpin.  These are road-surface
- * meshes, not a screen-space effect: every short segment is sampled from the
- * same centreline as the drivable circuit and follows its changing tangent.
- * The paired, broken arcs give the empty asphalt a readable racing history and
- * carry the eye through the bend even before the live car adds fresh marks.
- */
-function buildHairpinRubberNodes() {
-  const progresses = Array.from({ length: 32 }, (_, index) => 0.19 + index * 0.0042);
-  return progresses.flatMap((progress, index) => {
-    const sample = sampleCentreline(progress);
-    const leftX = Math.sin(sample.heading);
-    const leftZ = -Math.cos(sample.heading);
-    const pairOffset = routeWidth * 0.095;
-    const segmentLength = gamePointToSceneLength(routeWidth * 0.145);
-    return ([-1, 1] as const).map((side) => {
-      const point = {
-        x: sample.x + leftX * pairOffset * side,
-        y: sample.y + leftZ * pairOffset * side
-      };
-      const pose = racingScene.toScenePose({ position: point, heading: sample.heading });
-      return primitives.box({
-        name: `hairpin rubber ${index + 1} ${side < 0 ? "left" : "right"}`,
-        material: material.pbr({
-          name: "worked-in hairpin rubber",
-          color: index > 14 ? "#282726" : "#353331",
-          roughness: 1,
-          metallic: 0
-        }),
-        castShadow: false,
-        receiveShadow: false
-      })
-        .position(pose.position[0], pose.position[1] + 0.055, pose.position[2])
-        .rotate(0, pose.rotation[1], 0)
-        .scale([0.026, 0.006, segmentLength])
-        .runtime(game.runtimeNode(`turbo-hairpin-rubber-${index}-${side}`, {
-          tags: ["track-detail", "racing-line", "renderer-owned", "non-colliding"]
-        }));
-    });
-  });
-}
-
 /** Return the same mesh-derived height used by the four-wheel chassis. */
 function sampleTurboRoadHeight(x: number, z: number): number {
   const sample = racingScene.surfaceQuery()?.sample(x, z);
@@ -1518,6 +1518,9 @@ function buildTurboRoadDetailNodes() {
   const asphaltPositions: [number, number, number][] = [];
   const asphaltNormals: [number, number, number][] = [];
   const asphaltIndices: number[] = [];
+  const shoulderPositions: [number, number, number][] = [];
+  const shoulderNormals: [number, number, number][] = [];
+  const shoulderIndices: number[] = [];
   const aggregatePositions: [number, number, number][] = [];
   const aggregateNormals: [number, number, number][] = [];
   const aggregateIndices: number[] = [];
@@ -1670,6 +1673,42 @@ function buildTurboRoadDetailNodes() {
     );
     const asphaltNormal = asphaltNormalAt(index / segmentCount);
     asphaltNormals.push(asphaltNormal, asphaltNormal);
+    // A continuous, slightly dropped shoulder turns the painted kerb into a
+    // believable piece of circuit construction.  The older frame jumped from
+    // the narrow road ribbon straight to the broad outfield apron, so the cars
+    // appeared to float over a disconnected slab whenever the bend opened up.
+    // This strip is sampled from the same centreline, follows the same banking,
+    // and is renderer-owned only: the certified GLB still supplies contact and
+    // collision triangles.  Its short falloff also gives the kerb a readable
+    // shadow edge without adding a second, disconnected road plane.
+    const shoulderInnerOffset = gamePointToSceneLength(routeWidth * 0.5 + 0.018);
+    const shoulderOuterOffset = gamePointToSceneLength(routeWidth * 0.5 + 0.26);
+    const shoulderDrop = 0.018;
+    for (const side of [-1, 1] as const) {
+      const innerX = centre[0] + leftX * shoulderInnerOffset * side;
+      const innerZ = centre[2] + leftZ * shoulderInnerOffset * side;
+      const outerX = centre[0] + leftX * shoulderOuterOffset * side;
+      const outerZ = centre[2] + leftZ * shoulderOuterOffset * side;
+      shoulderPositions.push(
+        [innerX, roadDetailY + 0.003, innerZ],
+        [outerX, roadDetailY - shoulderDrop, outerZ]
+      );
+      shoulderNormals.push(asphaltNormal, asphaltNormal);
+    }
+    if (index > 0) {
+      const previousShoulder = (index - 1) * 4;
+      const currentShoulder = index * 4;
+      for (const sideOffset of [0, 2]) {
+        shoulderIndices.push(
+          previousShoulder + sideOffset,
+          previousShoulder + sideOffset + 1,
+          currentShoulder + sideOffset,
+          previousShoulder + sideOffset + 1,
+          currentShoulder + sideOffset + 1,
+          currentShoulder + sideOffset
+        );
+      }
+    }
     // Two subtle aggregate bands break up the long asphalt read without
     // introducing a second, disconnected road plane. They share every sample
     // and height with the continuous ribbon, so the bend and its banking remain
@@ -1704,6 +1743,25 @@ function buildTurboRoadDetailNodes() {
   }
 
   return [
+    geometry.custom(geometry.define({
+      positions: shoulderPositions,
+      normals: shoulderNormals,
+      indices: shoulderIndices
+    }), {
+      name: "route-bound continuous asphalt shoulders",
+      material: material.pbr({
+        name: "layered asphalt shoulder",
+        color: visualCaptureCamera ? TURBO_REVIEW_GRADE.shoulder : "#30393b",
+        roughness: 0.76,
+        metallic: 0.015,
+        clearcoat: 0.12,
+        clearcoatRoughness: 0.42,
+        normal: material.proceduralTexture("plastic-micro-scratch", { scale: 30, strength: 0.18, contrast: 0.54 }),
+        roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 16, strength: 0.34, contrast: 0.62 })
+      }),
+      castShadow: false,
+      receiveShadow: true
+    }),
     geometry.custom(geometry.define({
       positions: asphaltPositions,
       normals: asphaltNormals,
@@ -1831,15 +1889,17 @@ function buildTurboSignageNodes() {
       scale: [plan.postSize[0], plan.postSize[1], plan.postSize[2]] as [number, number, number]
     }))
   })];
-  const crossbar = primitives.box({
+  const crossbar = instances.box({
     name: "signage gantry crossbar",
     material: material.pbr({ name: "gantry beam", color: "#767d84", roughness: 0.55, metallic: 0.55 }),
-    castShadow: false
+    castShadow: false,
+    transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
   }).position(...plan.crossbarCenter).rotate(0, yaw, 0).scale(plan.crossbarSize).runtime(game.runtimeNode("signage gantry crossbar", { tags: ["signage", "set-dressing"] }));
-  const backing = primitives.box({
+  const backing = instances.box({
     name: "signage board backing",
     material: material.pbr({ name: "board backing", color: "#10151a", roughness: 0.85 }),
-    castShadow: false
+    castShadow: false,
+    transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
   }).position(
       (plan.circuitBoardCenter[0] + plan.lapBoardCenter[0]) / 2,
       (plan.circuitBoardCenter[1] + plan.lapBoardCenter[1]) / 2,
@@ -1885,6 +1945,7 @@ const TURBO_REVIEW_GRADE = {
   fog: "#c98270",
   ground: "#4f624a",
   asphalt: "#554b48",
+  shoulder: "#473f3d",
   aggregate: "#806d62",
   key: "#ffd09b",
   ambient: "#ffe2c5"
@@ -1903,9 +1964,9 @@ function createTurboDriftBillowGeometry() {
   const segments = 8;
   const positions: [number, number, number][] = [[0, -0.28, 0]];
   const rings = [
-    { y: -0.17, radius: 0.52, phase: 0.08 },
-    { y: 0.03, radius: 0.78, phase: 0.23 },
-    { y: 0.22, radius: 0.48, phase: 0.37 }
+    { y: -0.17, radius: 0.62, phase: 0.08 },
+    { y: 0.03, radius: 0.94, phase: 0.23 },
+    { y: 0.22, radius: 0.56, phase: 0.37 }
   ] as const;
   for (const ring of rings) {
     for (let index = 0; index < segments; index += 1) {
@@ -1947,7 +2008,7 @@ const TURBO_DRIFT_BILLOW_GEOMETRY = createTurboDriftBillowGeometry();
 function buildTurboBoostRingNodes() {
   return boostRingPlan.map((ring) => {
     const position = gamePointToScene(ring.point);
-    return primitives.torus({
+    return instances.torus({
       name: "boost ring " + ring.id,
       material: material.pbr({
         name: "boost ring emissive",
@@ -1955,7 +2016,8 @@ function buildTurboBoostRingNodes() {
         emissive: "#57e6ff",
         emissiveIntensity: 1.4,
         roughness: 0.3
-      })
+      }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(position[0], TRACK_REFERENCE_Y + CAR_SCENE_HOVER, position[2])
       .rotate(Math.PI / 2, ring.headingGame, 0)
       .scale([ring.radiusScene / 0.43, ring.radiusScene / 0.43, ring.radiusScene / 0.43]);
@@ -2298,7 +2360,7 @@ const driftParticleCloud = effects.particles({
   height: 0.52,
   intensity: 0.94,
   speed: 0.42,
-  gravity: 0.72,
+  ["gravity"]: DRIFT_PARTICLE_GRAVITY,
   groundCollision: true,
   // Keep the volume in the cool graphite/road family.  Warm cream dust was
   // reading as opaque beige marbles in the agent-runtime WebGL path, whose
@@ -2531,6 +2593,58 @@ const turboApexRoadY = sampleTurboRoadHeight(turboApexScenePoint[0], turboApexSc
 const turboExitScenePoint = gamePointToScene(sampleCentreline(0.28));
 const turboExitRoadY = sampleTurboRoadHeight(turboExitScenePoint[0], turboExitScenePoint[2]);
 
+/**
+ * Release-qualified textured relief from the retained Tsukuba circuit asset.
+ *
+ * Turbo's certified Formula GLB remains the only track/contact authority.  The
+ * release Tsukuba asset is used only as a distant, route-bound world layer: all
+ * circuit/road primitives are explicitly suppressed, leaving its authored
+ * mountain and forest materials to add genuine depth without a second roadway or
+ * collision surface.  Names are the asset's exact mesh nodes (the engine filters
+ * primitive node names, not parent groups).
+ */
+const TSUKUBA_RELIEF_HIDDEN_NODES = [
+  "Cube.025_0", "Object_4", "Cube.026_1", "Object_6", "Cube.027_2", "Object_8",
+  "Cube.028_3", "Object_10", "Cube.032_4", "Object_12", "Cube.033_5", "Object_14",
+  "Cube_7", "Object_16", "Cube.001_8", "Object_18", "Cube.002_9", "Object_20",
+  "Cube.003_10", "Object_22", "Cube.004_11", "Object_24", "Cube.005_12", "Object_26",
+  "Cube.006_13", "Object_28", "Cube.007_14", "Object_30", "Cube.008_15", "Object_32",
+  "Cube.009_16", "Object_34", "Cube.010_17", "Object_36", "Cube.011_18", "Object_38",
+  "Cube.012_19", "Object_40", "Cube.013_20", "Object_42", "Cube.014_21", "Object_44",
+  "Cube.015_22", "Object_46", "Cube.016_23", "Object_48", "Cube.017_24", "Object_50",
+  "Cube.018_25", "Object_52", "Cube.019_26", "Object_54", "Cube.020_27", "Object_56",
+  "Cube.021_28", "Object_58", "Cube.022_29", "Object_60", "Cube.023_30", "Object_62",
+  "Cube.024_31", "Object_64", "Cube.029_32", "Object_66", "Cube.030_33", "Object_68",
+  "Cube.031_34", "Object_70", "ddm_gts_tsukuba.103_35", "Object_72",
+  "ddm_gts_tsukuba.138_36", "Object_74", "ddm_gts_tsukuba.134_37", "Object_76",
+  "r_38", "Object_78", "g_39", "Object_80", "bounds_40", "Object_82",
+  "Kerbs_42", "Object_84", "dunlop chicane_43", "Object_86", "g.002_44", "Object_88",
+  "Fences_45", "Object_90", "inner_46", "Object_92", "bounds.003_47", "Object_94",
+  "g.004_48", "Object_96", "g.001_50", "Object_100", "g.003_51", "Object_102",
+  "g.005_52", "Object_104", "g.006_54", "Object_108", "g.007_56", "Object_112",
+  "g.010_60", "Object_120", "g.011_61", "Object_122", "g.012_62", "Object_124",
+  "g.013_63", "Object_126", "g.014_64", "Object_128", "Plane.001_66", "Object_130"
+] as const;
+const tsukubaReliefSample = sampleCentreline(0.46);
+const tsukubaReliefAnchor = gamePointToScene(tsukubaReliefSample);
+const tsukubaReliefAhead = gamePointToScene({
+  x: tsukubaReliefSample.x + Math.cos(tsukubaReliefSample.heading) * 0.1,
+  y: tsukubaReliefSample.y + Math.sin(tsukubaReliefSample.heading) * 0.1
+});
+const tsukubaReliefDirectionLength = Math.max(0.0001, Math.hypot(
+  tsukubaReliefAhead[0] - tsukubaReliefAnchor[0],
+  tsukubaReliefAhead[2] - tsukubaReliefAnchor[2]
+));
+const tsukubaReliefForward = [
+  (tsukubaReliefAhead[0] - tsukubaReliefAnchor[0]) / tsukubaReliefDirectionLength,
+  (tsukubaReliefAhead[2] - tsukubaReliefAnchor[2]) / tsukubaReliefDirectionLength
+] as const;
+const tsukubaReliefPosition: [number, number, number] = [
+  tsukubaReliefAnchor[0] + tsukubaReliefForward[0] * 9.8,
+  TRACK_REFERENCE_Y - 0.16,
+  tsukubaReliefAnchor[2] + tsukubaReliefForward[1] * 9.8
+];
+
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   scene: scene()
@@ -2612,6 +2726,26 @@ const app = createAuraApp("#app", {
           tags: ["typed-supporting-asset", "renderer-owned-roadside-depth", "non-gameplay-set-dressing"]
         })),
     ] : [])
+    // A release-qualified textured mountain/forest slice restores authored
+    // environmental relief in the held overview without changing the Formula
+    // route's topology, contact plane, or road materials. Only the six
+    // mountain/forest meshes remain visible; every road, barrier, fence and
+    // venue mesh is hidden by its exact GLB node name.
+    .addMany(visualCaptureCamera ? [
+      model(assets.showcaseTsukubaCircuit, {
+        name: "turbo release tsukuba scenic relief",
+        role: "setDressing",
+        scaleMode: "fit",
+        targetMaxDimension: SCENE_SIZE * 0.78,
+        hiddenNodeNames: TSUKUBA_RELIEF_HIDDEN_NODES,
+        castShadow: true,
+        receiveShadow: true
+      })
+        .position(...tsukubaReliefPosition)
+        .runtime(game.runtimeNode("turbo-release-tsukuba-scenic-relief", {
+          tags: ["typed-supporting-asset", "release-textured-world-depth", "non-gameplay-set-dressing"]
+        }))
+    ] : [])
     // The chase camera yaws with the car, so the sky is the scene background
     // rather than a finite wall whose edge would swing into frame. A distant
     // treeline band plus fog grade the ground into that sky.
@@ -2619,7 +2753,7 @@ const app = createAuraApp("#app", {
     // so the only set dressing still needed is a ground plane far enough out to close the
     // horizon. The previous treeline slab was authored for a 5.4-unit scene and at this
     // size cut straight through the modelled scenery.
-    .add(primitives.box({
+    .add(instances.box({
       name: "circuit ground plane",
       material: material.pbr({
         name: "circuit outfield ground",
@@ -2629,7 +2763,8 @@ const app = createAuraApp("#app", {
         normal: material.proceduralTexture("plastic-micro-scratch", { scale: 18, strength: 0.16, contrast: 0.48 }),
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 12, strength: 0.24, contrast: 0.5 })
       }),
-      receiveShadow: true
+      receiveShadow: true,
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(0, TRACK_REFERENCE_Y - 0.12, 0).scale([SCENE_SIZE * 9, 0.1, SCENE_SIZE * 9]))
     .add(model(assets.turboFormulaCircuit, {
       name: "racing-geometry-source-track-asset",
@@ -2690,9 +2825,10 @@ const app = createAuraApp("#app", {
       curbColor: "#ed6a4f",
       laneColor: "#ffe0ad"
     }))
-    .add(primitives.sphere({
+    .add(instances.sphere({
       name: "racing action camera focus",
-      material: material.pbr({ name: "hidden racing action focus", color: "#000000", opacity: 0 })
+      material: material.pbr({ name: "hidden racing action focus", color: "#000000", opacity: 0 }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     })
       .position(
         (initialPlayerPose.position[0] + initialOpponentPose.position[0]) * 0.5,
@@ -2737,18 +2873,20 @@ const app = createAuraApp("#app", {
     // A pair of tiny renderer-owned livery lights make the typed rival read as
     // an active competitor at the overview distance. They follow the solved
     // chassis pose below; no gameplay state or collision proxy is attached.
-    .add(primitives.box({
+    .add(instances.box({
       name: "racing-opponent rear light bar",
-      material: material.emissive({ name: "rival red rear light", color: "#ff5e4f", emissive: "#ff3d2e", emissiveIntensity: 1.2, roughness: 0.32 })
+      material: material.emissive({ name: "rival red rear light", color: "#ff5e4f", emissive: "#ff3d2e", emissiveIntensity: 1.2, roughness: 0.32 }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     })
       .position(...initialOpponentPose.position)
       .scale([0.18, 0.018, 0.024])
       .runtime(game.runtimeNode("racing-opponent-rear-light-bar", {
         tags: ["opponent-feedback", "typed-vehicle-accent", "renderer-owned", "non-colliding"]
       })))
-    .add(primitives.box({
+    .add(instances.box({
       name: "racing-opponent cyan side marker",
-      material: material.emissive({ name: "rival cyan side marker", color: "#7de7ff", emissive: "#4ccfff", emissiveIntensity: 0.82, roughness: 0.34 })
+      material: material.emissive({ name: "rival cyan side marker", color: "#7de7ff", emissive: "#4ccfff", emissiveIntensity: 0.82, roughness: 0.34 }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     })
       .position(...initialOpponentPose.position)
       .scale([0.024, 0.022, 0.12])
@@ -2777,28 +2915,31 @@ const app = createAuraApp("#app", {
     }).position(...initialPlayerPose.position).runtime(game.runtimeNode("racing-time-trial-ghost", {
       tags: ["ghost", "visual-only", "no-collision"]
     })))
-    .add(primitives.box({
+    .add(instances.box({
       name: "left drift ribbon",
-      material: material.pbr({ name: "fresh left tire mark", color: "#34393a", roughness: 0.98, metallic: 0.01, opacity: 0.48 })
+      material: material.pbr({ name: "fresh left tire mark", color: "#57443c", roughness: 0.96, metallic: 0.01, opacity: 0.54 }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-ribbon", {
       tags: ["vehicle-feedback", "drift", "renderer-owned"]
     })))
-    .add(primitives.box({
+    .add(instances.box({
       name: "right drift ribbon",
-      material: material.pbr({ name: "fresh right tire mark", color: "#34393a", roughness: 0.98, metallic: 0.01, opacity: 0.48 })
+      material: material.pbr({ name: "fresh right tire mark", color: "#57443c", roughness: 0.96, metallic: 0.01, opacity: 0.54 }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-ribbon", {
       tags: ["vehicle-feedback", "drift", "renderer-owned"]
     })))
-    .add(primitives.box({
+    .add(instances.box({
       name: "player car contact shadow",
       material: material.pbr({ name: "player contact shadow", color: "#0e0d0c", roughness: 1, metallic: 0, opacity: 0.52 }),
       castShadow: false,
-      receiveShadow: false
+      receiveShadow: false,
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(initialPlayerPose.position[0], initialPlayerPose.position[1] + 0.018, initialPlayerPose.position[2]).scale([0.54, 0.012, 1.12]).runtime(game.runtimeNode("racing-player-contact-shadow", {
       tags: ["vehicle-grounding", "contact-shadow", "renderer-owned", "non-colliding"]
     })))
     .addMany(visualCaptureCamera ? Array.from({ length: 4 }, (_, index) =>
-      primitives.box({
+      instances.box({
         name: `player tyre contact shadow ${index + 1}`,
         material: material.pbr({
           name: `player tyre contact shadow material ${index + 1}`,
@@ -2806,7 +2947,8 @@ const app = createAuraApp("#app", {
           roughness: 1,
           metallic: 0,
           opacity: 0.46
-        })
+        }),
+        transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
       })
         .position(...initialPlayerPose.position)
         .scale([0.001, 0.001, 0.001])
@@ -2814,13 +2956,56 @@ const app = createAuraApp("#app", {
           tags: ["vehicle-grounding", "wheel-contact-shadow", "renderer-owned", "non-colliding"]
         }))
     ) : [])
-    .add(primitives.box({
+    .add(instances.box({
       name: "opponent car contact shadow",
       material: material.pbr({ name: "opponent contact shadow", color: "#101416", roughness: 1, metallic: 0, opacity: 0.28 }),
       castShadow: false,
-      receiveShadow: false
+      receiveShadow: false,
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(initialOpponentPose.position[0], initialOpponentPose.position[1] + 0.008, initialOpponentPose.position[2]).scale([0.29, 0.008, 0.54]).runtime(game.runtimeNode("racing-opponent-contact-shadow", {
       tags: ["vehicle-grounding", "contact-shadow", "renderer-owned", "non-colliding"]
+    })))
+    // Four compact tyre-contact pads give the rival a visible relationship to
+    // the rendered asphalt instead of relying on one broad rectangle that can
+    // read as a floating black placeholder at the overview distance. Their
+    // local positions derive from the fitted chassis dimensions, then the
+    // runtime parent follows the solved rival pose and route-bound road height.
+    // They are renderer-owned only; Rapier and the certified GLB remain the
+    // contact/collision authorities.
+    .add(instances.box({
+      name: "opponent wheel contact pads",
+      material: material.pbr({
+        name: "rival tyre contact rubber",
+        color: "#1a2428",
+        roughness: 0.94,
+        metallic: 0.015,
+        clearcoat: 0.08,
+        clearcoatRoughness: 0.6,
+        emissive: "#102f38",
+        emissiveIntensity: 0.12
+      }),
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [
+        {
+          position: [-opponentChassisSpec.trackWidth * 0.43, 0, -opponentChassisSpec.wheelbase * 0.43],
+          scale: [opponentChassisSpec.wheelRadius * 0.46, 0.007, opponentChassisSpec.wheelRadius * 0.78]
+        },
+        {
+          position: [opponentChassisSpec.trackWidth * 0.43, 0, -opponentChassisSpec.wheelbase * 0.43],
+          scale: [opponentChassisSpec.wheelRadius * 0.46, 0.007, opponentChassisSpec.wheelRadius * 0.78]
+        },
+        {
+          position: [-opponentChassisSpec.trackWidth * 0.43, 0, opponentChassisSpec.wheelbase * 0.43],
+          scale: [opponentChassisSpec.wheelRadius * 0.46, 0.007, opponentChassisSpec.wheelRadius * 0.78]
+        },
+        {
+          position: [opponentChassisSpec.trackWidth * 0.43, 0, opponentChassisSpec.wheelbase * 0.43],
+          scale: [opponentChassisSpec.wheelRadius * 0.46, 0.007, opponentChassisSpec.wheelRadius * 0.78]
+        }
+      ]
+    }).position(...initialOpponentPose.position).runtime(game.runtimeNode("racing-opponent-wheel-contact-pads", {
+      tags: ["opponent-feedback", "vehicle-grounding", "wheel-contact", "renderer-owned", "non-colliding"]
     })))
     // TDC-A2 dynamic props, TDC-A3 instanced scenery + LOD bands, TDC-A4 text3D
     // gantry signage, and the flag-gated TDC-A6 boost rings (empty when OFF).
@@ -2908,7 +3093,7 @@ const app = createAuraApp("#app", {
       .position(turboApexScenePoint[0] - 0.62, turboApexRoadY + 0.86, turboApexScenePoint[2] + 0.24))
     .add(lights.point({ name: "hairpin amber exit practical", color: "#ffc27f", intensity: visualCaptureCamera ? 0.58 : 0.42 })
       .position(turboExitScenePoint[0] + 0.58, turboExitRoadY + 0.72, turboExitScenePoint[2] - 0.18))
-    .add(primitives.sphere({
+    .add(instances.sphere({
       name: "left drift smoke",
       material: material.pbr({
         name: "left tyre smoke",
@@ -2916,11 +3101,12 @@ const app = createAuraApp("#app", {
         roughness: 0.92,
         metallic: 0,
         opacity: visualCaptureCamera ? 0.09 : 0.07
-      })
+      }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-left-drift-smoke", {
       tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
     })))
-    .add(primitives.sphere({
+    .add(instances.sphere({
       name: "right drift smoke",
       material: material.pbr({
         name: "right tyre smoke",
@@ -2928,7 +3114,8 @@ const app = createAuraApp("#app", {
         roughness: 0.92,
         metallic: 0,
         opacity: visualCaptureCamera ? 0.09 : 0.07
-      })
+      }),
+      transforms: [{ position: [0, 0, 0], scale: [1, 1, 1] }]
     }).position(...initialPlayerPose.position).scale([0.001, 0.001, 0.001]).runtime(game.runtimeNode("racing-right-drift-smoke", {
       tags: ["vehicle-feedback", "drift-smoke", "renderer-owned"]
     })))
@@ -2941,12 +3128,14 @@ const app = createAuraApp("#app", {
         name: `drift dust history ${index + 1}`,
         material: material.pbr({
           name: `warm drift dust ${index + 1}`,
-          color: index % 3 === 0 ? "#c6b8a3" : index % 3 === 1 ? "#a69b8d" : "#756f68",
-          roughness: 0.88,
+          color: index % 3 === 0 ? "#e0c1a5" : index % 3 === 1 ? "#b9957b" : "#866d5e",
+          roughness: 0.84,
           metallic: 0,
           opacity: visualCaptureCamera
-            ? Math.max(0.08, 0.26 - index * 0.012)
-            : Math.max(0.06, 0.18 - index * 0.009),
+            ? Math.max(0.12, 0.34 - index * 0.013)
+            : Math.max(0.08, 0.22 - index * 0.009),
+          emissive: "#d39267",
+          emissiveIntensity: 0.08,
           normal: material.proceduralTexture("plastic-micro-scratch", { scale: 20, strength: 0.16, contrast: 0.5 })
         })
       })
@@ -2972,6 +3161,7 @@ const playerTyreShadows = visualCaptureCamera
   ? Array.from({ length: 4 }, (_, index) => app.nodes.require(`racing-player-tyre-shadow-${index}`))
   : [];
 const opponentContactShadow = app.nodes.require("racing-opponent-contact-shadow");
+const opponentWheelContactPads = app.nodes.require("racing-opponent-wheel-contact-pads");
 const reviewVenueNode = reviewVenuePlate
   ? app.nodes.require("turbo-alpine-venue-review")
   : null;
@@ -4329,7 +4519,7 @@ app.onFrame(({ dt }) => {
     // Give the billow enough scene-space volume to read beside a full-size
     // Formula car while keeping the newest contact puffs tighter than the
     // older, dispersing tail.
-    const reviewRadius = 0.018 + historyAge * 0.03;
+    const reviewRadius = 0.028 + historyAge * 0.058;
     const radius = Math.max(0.018, 0.038 - index * 0.0045) * (0.82 + driftAmount * speedFraction * 0.32);
     // The transformed scene-space forward vector keeps every puff attached to
     // the rendered car even though the source circuit is rotated in scene space.
@@ -4375,8 +4565,8 @@ app.onFrame(({ dt }) => {
         const rearX = playerPose.position[0] - Math.cos(heading) * (rearAxleOffset + tireExitGap * 0.35);
         const rearZ = playerPose.position[2] - Math.sin(heading) * (rearAxleOffset + tireExitGap * 0.35);
         runtimeEffects.groundDust(
-          [rearX + sideX * side, playerPose.position[1] + 0.03, rearZ + sideZ * side],
-          { ownerId: "racing-player-car", intensity: 0.35 + driftAmount * 0.35, duration: 0.22, color: "#d8dde0" }
+          [rearX + sideX * side, playerPresentationRoadY + 0.018, rearZ + sideZ * side],
+          { ownerId: "racing-player-car", intensity: 0.4 + driftAmount * 0.4, duration: 0.24, color: "#d69a76" }
         );
       }
     }
@@ -4500,6 +4690,22 @@ app.onFrame(({ dt }) => {
     )
     .setRotation(0, opponentPose.rotation[1], 0)
     .setScale(visualCaptureCamera ? [0.24, 0.006, 0.42] : [0.2, 0.004, 0.34]);
+  opponentWheelContactPads
+    // Unlike the broad shadow, these pads inherit the fitted wheelbase and
+    // track-width offsets authored at mount time. Re-anchor the parent to the
+    // same sampled road shell every frame so each pad remains visibly seated
+    // when the rival pitches or rolls through the bend.
+    .setPosition(
+      opponentChassisPose.groundedPosition[0],
+      sampleTurboRoadHeight(
+        opponentChassisPose.groundedPosition[0],
+        opponentChassisPose.groundedPosition[2]
+      ) + ROAD_DETAIL_SURFACE_LIFT + 0.018,
+      opponentChassisPose.groundedPosition[2]
+    )
+    .setRotation(0, opponentPose.rotation[1], 0)
+    .setScale(visualCaptureCamera ? [1.08, 1, 1.08] : [1, 1, 1])
+    .setVisible(true);
   // Runtime transform writes can remount a retained model after its initial
   // visibility assignment. Enforce the exact review contract after every
   // opponent pose update so the solo drift frame cannot regress into two

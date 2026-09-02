@@ -7,7 +7,12 @@ const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(appDir, "../..");
 const reportDir = resolve(repoRoot, "tests/reports/gallery-shift");
 const modelIds = ["galleryShiftCutawayMuseumWorld", "galleryShiftPedestal", "galleryShiftExhibitA", "galleryShiftExhibitB", "galleryShiftExhibitC", "galleryShiftDisplayCase"];
-const supportingModelIds = ["showcaseWalkAnimatedGirl", "showcaseExpressiveRobot", "showcaseOrangeIndustrialRobot"];
+// The player and humanoid sentry remain the animated presentation pair.  The
+// archive patrol now uses the registered textured Robotcand shell, which has
+// ceramic armour, exposed mechanisms, optic hardware, and a distinct security
+// silhouette at the route's top-down scale.  Its patrol transform/LOS truth is
+// still authored by GuardAgent; the asset has no gameplay authority.
+const supportingModelIds = ["showcaseWalkAnimatedGirl", "showcaseExpressiveRobot", "robotcand"];
 const audioIds = ["galleryShiftSneakStepSfx", "galleryShiftWalkStepSfx", "galleryShiftGuardAlertSfx", "galleryShiftAlertRiseSfx", "galleryShiftExhibitLiftSfx", "galleryShiftLaserTripSfx", "galleryShiftCameraWhirSfx", "galleryShiftCaughtStingSfx", "galleryShiftFloorClearSfx", "galleryShiftAmbientHallSfx", "galleryShiftExitWinSfx"];
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");

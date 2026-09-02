@@ -266,6 +266,18 @@ const CONTACT_RAY_COUNT = 8;
 const contactRayHandles = Array.from({ length: CONTACT_RAY_COUNT }, (_, index) =>
   game.runtimeNode(`contact-ray-${index}`, { tags: ["contact-feedback", "renderer-owned", "event-driven"] })
 );
+// A contest contact has a readable hand/ball relationship in the typed
+// defender mesh, but the distance between a raised hand and a moving ball can
+// disappear at the fixed camera distance.  These small renderer-owned sparks
+// are keyed to contestReactionActive/defenderReach below and make the
+// asymmetric reach legible without adding a collision or changing the block
+// region.
+// A single asymmetric hand spark keeps the defender's real reach/contact
+// readable without turning the reaction into a particle-cloud substitute.
+const CONTEST_SPARK_COUNT = 1;
+const contestSparkHandles = Array.from({ length: CONTEST_SPARK_COUNT }, (_, index) =>
+  game.runtimeNode(`contest-spark-${index}`, { tags: ["contest-feedback", "renderer-owned", "ball-driven", "event-driven"] })
+);
 const RELEASE_RAY_COUNT = 6;
 const releaseRayHandles = Array.from({ length: RELEASE_RAY_COUNT }, (_, index) =>
   game.runtimeNode(`release-ray-${index}`, { tags: ["release-feedback", "renderer-owned", "flight-driven"] })
@@ -321,6 +333,13 @@ const contactMissMaterial = material.emissive({ name: "miss contact burst", colo
 const blockContactMaterial = material.emissive({ name: "defender block burst", color: "#f0abfc", emissive: "#c026d3", emissiveIntensity: 2.35, opacity: 0.88 });
 const releaseBurstMaterial = material.emissive({ name: "ball release burst", color: "#fde68a", emissive: "#fb923c", emissiveIntensity: 2.15, opacity: 0.82 });
 const contestReactionMaterial = material.emissive({ name: "live contest reaction", color: "#e879f9", emissive: "#a21caf", emissiveIntensity: 1.9, opacity: 0.76 });
+const contestSparkMaterial = material.emissive({
+  name: "contest hand sparks",
+  color: "#f5d0fe",
+  emissive: "#c026d3",
+  emissiveIntensity: visualReviewCapture ? 2.75 : 2.2,
+  opacity: 0.84
+});
 function buildScene() {
   return scene()
     .background("#20183f")
@@ -382,7 +401,13 @@ function buildScene() {
         // preserving their authored materials and node visibility.
         role: "primaryWorld",
         scaleMode: "world",
-        visible: visualReviewCapture,
+        // Keep the registered venue depth on both the default and review
+        // cameras. The route-primary producer captures the public default
+        // lens, so hiding this release-probed package there made the exact
+        // artifact read as the sparse court-only pass even though the venue
+        // was part of the route contract. It remains subordinate world
+        // dressing; the active court and all gameplay regions stay route-local.
+        visible: true,
         castShadow: true,
         receiveShadow: true,
         hiddenNodeNames: VENUE_REVIEW_HIDDEN_NODES
@@ -616,6 +641,12 @@ function buildScene() {
         primitives.torus({ name: `defender reaction ring ${index + 1}`, material: contestReactionMaterial })
           .position(0, -20, 0)
           .scale([0.18 + index * 0.08, 0.18 + index * 0.08, 0.025])
+          .runtime(handle)
+      ),
+      ...contestSparkHandles.map((handle, index) =>
+        primitives.box({ name: `contest hand spark ${index + 1}`, material: contestSparkMaterial })
+          .position(0, -20, 0)
+          .scale([0.15, 0.026, 0.026])
           .runtime(handle)
       ),
       // Renderer-owned outcome language. DOM mirrors the state accessibly, but
@@ -968,6 +999,24 @@ function stepGame(dt: number): void {
 function syncTransforms(): void {
   const currentSpot = COURT_SPOTS[currentSpotIndex]!;
   const shooterNode = app.nodes.get("shooter-player") as AuraRuntimeNodeHandle | undefined;
+  // The registered athlete assets declare +Z as forward. Derive the root yaw
+  // from the same horizontal launch vector that drives the ball rather than
+  // mirroring toward the camera: before release use the current preview
+  // launch, and during flight use the exact captured launch velocity. This
+  // keeps the shooter's chest/feet facing the hoop at every spot, including
+  // the deterministic throw staged by the route-primary producer.
+  const shooterLaunch = ballState.inFlight
+    ? { vx: ballState.vx, vz: ballState.vz }
+    : calculateLaunchVelocity(
+        currentSpot,
+        Math.max(0.05, isCharging ? chargePower : currentSpot.sweetPower),
+        aimPitch,
+        hoopState
+      );
+  const shooterHorizontalSpeed = Math.hypot(shooterLaunch.vx, shooterLaunch.vz);
+  const shooterFacingYaw = shooterHorizontalSpeed > 1e-5
+    ? Math.atan2(shooterLaunch.vx, shooterLaunch.vz)
+    : Math.atan2(hoopState.x - currentSpot.x, hoopState.z - currentSpot.z);
   const flightMotionPhase = ballState.inFlight ? Math.min(1, ballState.flightTimer / 0.58) : 0;
   const releaseExtension = ballState.inFlight ? Math.sin(flightMotionPhase * Math.PI) : 0;
   shooterBodyCompression = isCharging ? Math.min(1, chargePower) : 0;
@@ -1006,10 +1055,11 @@ function syncTransforms(): void {
     ?.setPosition(shooterX, shooterLift, shooterZ)
     // A quiet idle sway keeps the normal opening frame from reading as a
     // mannequin while remaining a presentation-only root pose.  During a
-    // live flight the same sway is overridden by the release lean below.
+    // live flight the launch-derived yaw is exact so the actor cannot drift
+    // off the hoop-facing orientation in the retained throw frame.
     .setRotation(
       -0.08 - 0.15 * (ballState.inFlight ? Math.min(1, flightMotionPhase) : 0),
-      0.22 + Math.sin(elapsedPlayTime * 1.8) * 0.028,
+      shooterFacingYaw + (ballState.inFlight ? 0 : Math.sin(elapsedPlayTime * 1.8) * 0.028),
       -0.035 - 0.08 * releaseExtension
     )
     .setScale([
@@ -1053,10 +1103,10 @@ function syncTransforms(): void {
     const landingSettle = flightMotionPhase > 0.78 ? (flightMotionPhase - 0.78) / 0.22 : 0;
     shooterNode
       // The skinned release asset is authored +Z-forward; the review camera
-      // sits on the +Z sideline. Face the lens enough to expose the real face,
-      // jersey weave, shorts, and shoes while retaining a slight broadcast
-      // three-quarter turn. This changes presentation orientation only.
-      ?.setRotation(-0.2 * followLean + 0.08 * landingSettle, 0.24, -0.11 * releaseExtension)
+      // sits on the +Z sideline. Keep its root facing the target hoop using
+      // the same launch vector as the visible presentation actor; no camera
+      // mirroring or alternate trajectory is introduced here.
+      ?.setRotation(-0.2 * followLean + 0.08 * landingSettle, shooterFacingYaw, -0.11 * releaseExtension)
       .setScale([
         ATHLETE_MODEL_SCALE - releaseExtension * 0.045 + shooterBodyCompression * 0.035,
         ATHLETE_MODEL_SCALE + releaseExtension * 0.085 - shooterBodyCompression * 0.085,
@@ -1364,6 +1414,22 @@ function syncTransforms(): void {
       .setRotation(0.12, 0.62, 0)
       .setScale([pulse, pulse, 0.025]);
   }
+  for (let index = 0; index < CONTEST_SPARK_COUNT; index += 1) {
+    const spark = app.nodes.get(`contest-spark-${index}`) as AuraRuntimeNodeHandle | undefined;
+    const sparkVisible = contestReactionActive;
+    spark?.setVisible(sparkVisible);
+    if (!sparkVisible) continue;
+    const angle = (index / CONTEST_SPARK_COUNT) * Math.PI * 2 + elapsedPlayTime * 2.4;
+    const radius = 0.16 + Math.min(0.2, defenderReach * 0.18);
+    const centerX = (defenderHand.x * 0.72) + (ballState.x * 0.28);
+    const centerY = (defenderHand.y * 0.72) + (ballState.y * 0.28);
+    const centerZ = (defenderHand.z * 0.72) + (ballState.z * 0.28);
+    const length = 0.13 + Math.min(0.12, defenderReach * 0.12);
+    spark
+      ?.setPosition(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius, centerZ + 0.025)
+      .setRotation(0, 0, angle)
+      .setScale([length, 0.026, 0.026]);
+  }
 
   const previewPower = Math.max(0.05, isCharging ? chargePower : currentSpot.sweetPower);
   const preview = predictFirstFlight(currentSpot, previewPower, aimPitch, hoopState, 96, 4);
@@ -1493,7 +1559,12 @@ function publishEvidence(): RooftopBucketsEvidence {
 
 // Deterministic visual proof pose: a live pressure heat keeps the typed defender
 // in frame while the authored ball flight and trajectory guide are visible.
-(window as unknown as { __RB_ACTIVE_SHOT__?: () => void }).__RB_ACTIVE_SHOT__ = () => {
+// This is shared by the visual producer hook and the route-primary composition
+// probe so the retained exact is an actual basketball beat rather than an
+// opening mannequin/charge pose.  All state comes from the same route-owned
+// updateHoop/stepBall functions used by normal play; there is no alternate
+// capture-only trajectory or scoring shortcut.
+function stageActiveReviewShot(): void {
   scoreState = initialScoreState(3);
   // Use a real mid-range spot for the retained pressure shot. This keeps the
   // shooter, live ball, pressure athlete, and regulation hoop in one readable
@@ -1520,6 +1591,10 @@ function publishEvidence(): RooftopBucketsEvidence {
   syncTransforms();
   updateHUD();
   publishEvidence();
+}
+
+(window as unknown as { __RB_ACTIVE_SHOT__?: () => void }).__RB_ACTIVE_SHOT__ = () => {
+  stageActiveReviewShot();
 };
 
 (window as unknown as {
@@ -1615,12 +1690,13 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       targetSize: BACKBOARD_POSITION.width
     },
     settleSubjectPose() {
-      scoreState = { ...scoreState, state: "paused" };
-      elapsedPlayTime = 0;
-      hoopState = initialHoopState(scoreState.heat);
-      resetBallToSpot();
-      syncTransforms();
-      publishEvidence();
+      // The route-primary artifact is the public visual anchor for this lane.
+      // Stage the same deterministic pressure release used by the dedicated
+      // shot producer so reviewers see a live athlete → ball → hoop chain,
+      // while the composition probe still measures the typed backboard in its
+      // declared position.  This does not alter normal startup or user input;
+      // it only chooses a truthful gameplay moment for the evidence capture.
+      stageActiveReviewShot();
     },
     setSubjectSuppressed(suppressed: boolean) {
       const node = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;

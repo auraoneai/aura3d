@@ -49,6 +49,11 @@ body[data-capture="review"] .review-brief {
   color: #ffe2b4;
   box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2), 0 0 16px rgba(255, 177, 77, 0.07);
 }
+body[data-capture="review"] .mission-rail {
+  display: block;
+  left: 24px;
+  bottom: 18px;
+}
 body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
 .viewport { position: relative; min-width: 0; min-height: 0; }
 .stage { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #04060b; }
@@ -74,6 +79,85 @@ body[data-capture="review"] .lift-progress { bottom: 20px; width: 286px; }
   line-height: 1.35; white-space: nowrap;
   box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2);
 }
+
+/* A compact in-world mission read. It is intentionally UI-only and
+ * pointer-transparent: the path, objective rings, and LOS wedges remain
+ * renderer-owned geometry in the canvas. Keeping this rail in the lower
+ * black/south apron lets the museum plan and actors stay visually dominant. */
+.mission-rail {
+  display: none;
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 2;
+  width: min(330px, calc(100vw - 32px));
+  padding: 9px 11px 8px;
+  border: 1px solid rgba(126, 248, 255, 0.25);
+  border-radius: 9px;
+  background: linear-gradient(115deg, rgba(7, 15, 27, 0.93), rgba(15, 20, 32, 0.86));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.04);
+}
+.mission-rail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: #70dce8;
+}
+.mission-rail-head b {
+  overflow: hidden;
+  color: #d8e9f0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mission-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 7px;
+}
+.mission-step {
+  display: block;
+  overflow: hidden;
+  padding: 5px 4px;
+  border: 1px solid rgba(126, 248, 255, 0.12);
+  border-radius: 5px;
+  color: #71849a;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mission-step.is-active {
+  border-color: rgba(255, 177, 77, 0.74);
+  background: rgba(255, 177, 77, 0.14);
+  color: #ffdca5;
+}
+.mission-step.is-complete {
+  border-color: rgba(61, 252, 154, 0.44);
+  background: rgba(61, 252, 154, 0.11);
+  color: #6cf6b0;
+}
+.mission-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  margin-top: 7px;
+  color: #93a6ba;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+.mission-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.legend-player { color: #56f4d3; background: #56f4d3; }
+.legend-patrol { color: #ff6b9b; background: #ff6b9b; }
+.legend-los { color: #ffd05a; background: #ffd05a; }
 
 .detection-wrap {
   position: absolute; top: 10px; right: 14px; width: 190px;

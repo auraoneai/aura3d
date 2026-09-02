@@ -139,7 +139,23 @@ The generated entry is equivalent to:
 
 The installer does not execute `npx`, contact Meshy, or put a key in command arguments or config. It validates JSON, backs up an existing file before a change, writes atomically, and is idempotent. `--check` makes no file, directory, or backup changes and exits nonzero when the exact entry is absent.
 
-The MCP server requires `MESHY_API_KEY` when it starts. Supply it through the environment of the process that launches the client: use a Keychain-backed launcher for a local desktop client, a protected secret manager for CI, or a secure hosted secret store such as AWS SSM SecureString for an internal worker. OAuth remains preferred for direct CLI work. Restart the client after changing its MCP config.
+The MCP server requires `MESHY_API_KEY` when it starts. On macOS, create a generic-password item in Keychain Access with service `aura3d-meshy-mcp` and account equal to your macOS user, then configure the MCP client to run the repository launcher instead of `npx` directly:
+
+```json
+{
+  "mcpServers": {
+    "meshy": {
+      "command": "/absolute/path/to/aura3d/cli-configs/meshy-mcp-keychain-launcher"
+    }
+  }
+}
+```
+
+At each launch, `meshy-mcp-keychain-launcher` reads the key with macOS `security`, exports it only in the child process environment, and `exec`s the exact `@meshy-ai/meshy-mcp-server@0.5.1` pin. It never prints the key or places it in command arguments. Override the lookup with `MESHY_KEYCHAIN_SERVICE` and `MESHY_KEYCHAIN_ACCOUNT` when necessary. Use a protected secret manager for CI or a secure hosted secret store such as AWS SSM SecureString for an internal worker. OAuth remains preferred for direct CLI work. Restart the client after changing its MCP config.
+
+## Authorized live smoke workflow
+
+`.github/workflows/meshy-live-smoke.yml` is manual-dispatch only and targets the protected `meshy-live-smoke` GitHub environment. Configure `MESHY_API_KEY` as an environment secret and require reviewers on that environment. The default dispatch runs only `meshy auth status` and `meshy balance`; it never generates an asset. A paid smoke additionally requires `run_paid_generation=true`, the exact confirmation phrase shown by the workflow, and a finite positive `max_credits`. The workflow has one shared concurrency group and never runs automatically for pushes, pull requests, or forks.
 
 ## Troubleshooting boundaries
 

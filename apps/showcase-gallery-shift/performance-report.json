@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.gallery-shift.performance/1.0",
-  "generatedAt": "2026-09-02T08:47:47.480Z",
+  "generatedAt": "2026-09-02T20:51:51.111Z",
   "producer": "apps/showcase-gallery-shift/scripts/write-performance-report.ts",
   "producerSourceSha256": "da2066f24cb0dba4e2636863090e9c84c0d00132fc7fbbdd5b5a2e71b1d30047",
   "routeSourceFiles": [
@@ -14,7 +14,7 @@
     "apps/showcase-gallery-shift/src/thief.ts",
     "apps/showcase-gallery-shift/src/vision.ts"
   ],
-  "routeSourceSha256": "6fd7f8fd35fc4efeba47e9313721e594553b1839b36949d0d1dd78860455eb86",
+  "routeSourceSha256": "52ce39e48468cbbbafc4b4e65b120ea64f3f26bc03c94f39952b2b7fca1fc988",
   "scope": "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
   "samples": 20000,
   "fixedStepSeconds": 0.016666666666666666,
@@ -23,9 +23,9 @@
     "drawCalls": 190
   },
   "observed": {
-    "routeLogicCpuP95Ms": 0.002,
+    "routeLogicCpuP95Ms": 0.003,
     "deterministicStateHash": "4bf7d646",
-    "drawCalls": 143,
+    "drawCalls": 161,
     "renderSize": [
       1280,
       800

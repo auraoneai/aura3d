@@ -324,6 +324,68 @@ function authoredMuseumDetails(): {
 const MUSEUM_DETAILS = authoredMuseumDetails();
 
 /**
+ * Build a thin, two-rail patrol track from the same waypoint loop that drives
+ * GuardAgent.  The mesh is deliberately visual-only: it has no collider,
+ * sensor, LOS occluder, or movement authority.  Because the route's waypoint
+ * arrays are axis-aligned, each segment can remain a clean museum inlay rather
+ * than a screen-space line that would cut through walls or props.
+ */
+function patrolPathGeometry(route: readonly { readonly x: number; readonly z: number }[]): ReturnType<typeof geometry.define> {
+  const mesh = detailMesh();
+  if (route.length === 0) return geometry.define({ positions: [], normals: [], indices: [] });
+  const railWidth = 0.085;
+  const railHeight = 0.035;
+  for (let index = 0; index < route.length; index += 1) {
+    const point = route[index]!;
+    const next = route[(index + 1) % route.length]!;
+    addDetailBox(mesh, [point.x, 0.118, point.z], [0.23, 0.055, 0.23]);
+    const dx = next.x - point.x;
+    const dz = next.z - point.z;
+    const distance = Math.hypot(dx, dz);
+    if (distance < 0.001) continue;
+    const center: [number, number, number] = [(point.x + next.x) / 2, 0.118, (point.z + next.z) / 2];
+    if (Math.abs(dx) >= Math.abs(dz)) {
+      addDetailBox(mesh, center, [Math.max(railWidth, Math.abs(dx)), railHeight, railWidth]);
+    } else {
+      addDetailBox(mesh, center, [railWidth, railHeight, Math.max(railWidth, Math.abs(dz))]);
+    }
+  }
+  return geometry.define({ positions: mesh.positions, normals: mesh.normals, indices: mesh.indices });
+}
+
+/**
+ * Objective plinths mirror the actual FloorLayout pedestal coordinates.  They
+ * are authored museum fixtures around the typed pedestal/exhibit pair, not
+ * substitute objectives: lifting, collision and scoring still consume the
+ * layout records in floor.ts.  The stepped frame gives each target a readable
+ * silhouette and a material hierarchy at the roofless review distance.
+ */
+function objectiveDetailGeometry(layout: FloorLayout): ReturnType<typeof geometry.define> {
+  const mesh = detailMesh();
+  layout.pedestals.forEach((pedestal, index) => {
+    const accent = index % 2 === 0 ? 1 : -1;
+    addDetailBox(mesh, [pedestal.x, 0.12, pedestal.z], [1.74, 0.12, 1.5]);
+    addDetailBox(mesh, [pedestal.x - 0.76, 0.22, pedestal.z], [0.055, 0.16, 1.42]);
+    addDetailBox(mesh, [pedestal.x + 0.76, 0.22, pedestal.z], [0.055, 0.16, 1.42]);
+    addDetailBox(mesh, [pedestal.x, 0.22, pedestal.z - 0.68], [1.48, 0.16, 0.055]);
+    addDetailBox(mesh, [pedestal.x, 0.22, pedestal.z + 0.68], [1.48, 0.16, 0.055]);
+    // A shallow, open rear portal is set behind the real typed pedestal. Keep
+    // the centre open so the actual exhibit remains the hero; the paired
+    // rails carry the architectural depth without becoming a solid visual
+    // wall or introducing a second gameplay occluder into the LOS world.
+    addDetailBox(mesh, [pedestal.x, 0.96, pedestal.z - 0.53], [1.42, 0.08, 0.1]);
+    addDetailBox(mesh, [pedestal.x, 1.98, pedestal.z - 0.53], [1.42, 0.08, 0.1]);
+    addDetailBox(mesh, [pedestal.x - 0.68, 1.38, pedestal.z - 0.53], [0.08, 2.44, 0.1]);
+    addDetailBox(mesh, [pedestal.x + 0.68, 1.38, pedestal.z - 0.53], [0.08, 2.44, 0.1]);
+    addDetailBox(mesh, [pedestal.x, 2.58, pedestal.z - 0.53], [1.44, 0.08, 0.1]);
+    // Small asymmetry makes the two objective suites feel authored rather than
+    // mirrored placeholders while remaining outside the objective footprint.
+    addDetailBox(mesh, [pedestal.x + accent * 0.48, 0.46, pedestal.z + 0.48], [0.16, 0.22, 0.16]);
+  });
+  return geometry.define({ positions: mesh.positions, normals: mesh.normals, indices: mesh.indices });
+}
+
+/**
  * Renderer-owned tactical feedback generated from the same FloorLayout door
  * room regions used by collision/LOS/gameplay. The typed candidate already
  * supplies distinct room floors, complete door frames, and readable portal
@@ -411,6 +473,26 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
     emissiveIntensity: 1.12,
     opacity: 0.94
   });
+  const patrolOneMaterial = material.emissive({
+    name: "archive patrol track inlay",
+    color: "#32152a",
+    emissive: "#ff5f99",
+    emissiveIntensity: 1.05,
+    opacity: 0.76
+  });
+  const patrolTwoMaterial = material.emissive({
+    name: "treasury patrol track inlay",
+    color: "#123c4b",
+    emissive: "#5ee7ff",
+    emissiveIntensity: 1.05,
+    opacity: 0.76
+  });
+  const objectiveFrameMaterial = material.metal({
+    name: "objective suite brass frame",
+    color: "#78612f",
+    roughness: 0.24,
+    metallic: 0.78
+  });
   nodes.push(
     geometry.custom(MUSEUM_DETAILS.architecture, { name: "museum authored architectural detail", material: detailStone })
       .runtime(game.runtimeNode("museum authored architectural detail", { tags: ["typed-set-dressing", "museum-architecture", "renderer-owned"] }))
@@ -429,6 +511,19 @@ export function createGalleryEnvironment(layout: FloorLayout): AuraSceneNode[] {
       .toJSON(),
     geometry.custom(MUSEUM_DETAILS.luminous, { name: "museum authored practical fixtures", material: detailGlow })
       .runtime(game.runtimeNode("museum authored practical fixtures", { tags: ["museum-lighting", "renderer-owned"] }))
+      .toJSON(),
+    // The two tracks are direct projections of FLOOR_1.guards[].route. They
+    // make patrol ownership and room circulation visible in the same frame as
+    // the live guard, while remaining subordinate to the typed museum and
+    // preserving the physics/LOS authority in floor.ts.
+    geometry.custom(patrolPathGeometry(layout.guards[0]?.route ?? []), { name: "guard-1 authored patrol track", material: patrolOneMaterial })
+      .runtime(game.runtimeNode("guard-1 authored patrol track", { tags: ["patrol-path", "derived-floor-layout", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(patrolPathGeometry(layout.guards[1]?.route ?? []), { name: "guard-2 authored patrol track", material: patrolTwoMaterial })
+      .runtime(game.runtimeNode("guard-2 authored patrol track", { tags: ["patrol-path", "derived-floor-layout", "renderer-owned"] }))
+      .toJSON(),
+    geometry.custom(objectiveDetailGeometry(layout), { name: "typed objective suite frames", material: objectiveFrameMaterial })
+      .runtime(game.runtimeNode("typed objective suite frames", { tags: ["active-objective-context", "museum-architecture", "renderer-owned"] }))
       .toJSON()
   );
 

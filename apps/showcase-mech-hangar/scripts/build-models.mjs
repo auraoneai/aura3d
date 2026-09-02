@@ -33,10 +33,15 @@ const SEGMENTS = 4;
 // identity/energy materials. The hand-authored mesh recipe is deterministic so
 // curation and probe scripts remain reproducible.
 const COLORS = {
-  armor: [0.12, 0.22, 0.31, 1],
-  armorLight: [0.26, 0.40, 0.50, 1],
-  trim: [0.055, 0.085, 0.12, 1],
-  joint: [0.075, 0.095, 0.12, 1],
+  // The route's production-safe lighting is intentionally cool and directional.
+  // The earlier nearly-black navy armour collapsed into a silhouette once it
+  // was mounted beside the brighter pit fixtures. These lifted steel values
+  // preserve the industrial night palette while leaving enough albedo for
+  // bevel highlights, contact shadows, and the authored panel seams to read.
+  armor: [0.18, 0.31, 0.43, 1],
+  armorLight: [0.36, 0.53, 0.64, 1],
+  trim: [0.065, 0.11, 0.17, 1],
+  joint: [0.09, 0.14, 0.20, 1],
   cyan: [0.16, 0.87, 0.98, 1],
   amber: [1, 0.55, 0.16, 1],
   red: [1, 0.20, 0.32, 1],
@@ -178,9 +183,9 @@ function palette(variant) {
 }
 
 function chassis(variant) {
-  const armor = mesh("torso-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.36, 0.68);
-  const frame = mesh("torso-frame", COLORS.trim, 0.68, 0.82);
-  const joint = mesh("torso-joints", COLORS.joint, 0.72, 0.72);
+  const armor = mesh("torso-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.42, 0.52);
+  const frame = mesh("torso-frame", COLORS.trim, 0.58, 0.70);
+  const joint = mesh("torso-joints", COLORS.joint, 0.68, 0.62);
   const glow = mesh("cockpit-and-reactor-identity-energy", palette(variant), 0.18, 0.18, true);
   const wide = variant === 1 ? 1.08 : variant === 3 ? 0.93 : 1;
   const tall = variant === 2 ? 1.04 : variant === 3 ? 0.98 : 1;
@@ -207,8 +212,8 @@ function chassis(variant) {
 function arms(variant) {
   // The armor shell is also the structural frame for this compact module;
   // naming both roles keeps the role boundary inspectable in a GLB viewer.
-  const armor = mesh("arm-armor-frame", variant === 1 ? COLORS.armorLight : COLORS.armor, 0.40, 0.66);
-  const joint = mesh("arm-joints", COLORS.joint, 0.65, 0.78);
+  const armor = mesh("arm-armor-frame", variant === 1 ? COLORS.armorLight : COLORS.armor, 0.44, 0.55);
+  const joint = mesh("arm-joints", COLORS.joint, 0.60, 0.64);
   const accent = mesh("arm-identity-energy", palette(variant), 0.2, 0.18, true);
   const shoulderScale = variant === 1 ? 1.1 : variant === 3 ? 0.93 : 1;
   const gauntletScale = variant === 2 ? 1.12 : variant === 3 ? 0.9 : 1;
@@ -243,8 +248,8 @@ function arms(variant) {
 function legs(variant) {
   // The load-bearing shin/foot shell carries the frame role as well as armor;
   // it is one continuous authored surface, not an unlabelled primitive.
-  const armor = mesh("leg-armor-frame", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.44, 0.64);
-  const joint = mesh("leg-joints", COLORS.joint, 0.72, 0.82);
+  const armor = mesh("leg-armor-frame", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.46, 0.54);
+  const joint = mesh("leg-joints", COLORS.joint, 0.66, 0.66);
   const accent = mesh("leg-identity-energy", palette(variant), 0.22, 0.18, true);
   const kneeWidth = variant === 1 ? 1.1 : variant === 3 ? 0.9 : 1;
   const footLength = variant === 2 ? 1.12 : variant === 3 ? 0.92 : 1;
@@ -273,8 +278,8 @@ function legs(variant) {
 }
 
 function weapon(variant) {
-  const body = mesh("weapon-armor-frame-body", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.34, 0.72);
-  const dark = mesh("weapon-mechanism-joints", COLORS.trim, 0.58, 0.84);
+  const body = mesh("weapon-armor-frame-body", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.40, 0.58);
+  const dark = mesh("weapon-mechanism-joints", COLORS.trim, 0.54, 0.68);
   const energy = mesh("weapon-energy-identity", palette(variant), 0.14, 0.16, true);
   const barrelLength = variant === 2 ? 0.58 : variant === 3 ? 0.42 : 0.5;
   if (variant === 0) {
@@ -318,7 +323,7 @@ function writeGlb(path, parts, metadata) {
       roughnessFactor: entry.roughness
     },
     ...(entry.name.includes("identity") || entry.name.includes("energy") || entry.name.includes("reactor")
-      ? { emissiveFactor: entry.color.slice(0, 3).map((value) => value * 0.55) }
+      ? { emissiveFactor: entry.color.slice(0, 3).map((value) => value * 0.42) }
       : {})
   }));
   const pushView = (array, target) => {

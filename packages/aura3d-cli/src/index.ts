@@ -182,6 +182,8 @@ export type {
   ReadRenderedProbeMetadataOptions
 } from "./asset-core-types.js";
 export { importMeshyAsset } from "./meshy/import.js";
+export { createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions } from "./meshy/admission.js";
+export type { MeshyAdmissionCheck, MeshyAdmissionReport, MeshyAdmissionVerdict, MeshyAssetProfile } from "./meshy/admission.js";
 export type { ImportMeshyOptions, ImportMeshyResult } from "./meshy/import.js";
 export type {
   AssetInspectionReport,

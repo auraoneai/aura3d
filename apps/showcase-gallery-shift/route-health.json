@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-02T09:33:51.917Z",
+  "generatedAt": "2026-09-02T20:52:29.123Z",
   "appId": "showcase-gallery-shift",
   "route": "/apps/showcase-gallery-shift/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "6fd7f8fd35fc4efeba47e9313721e594553b1839b36949d0d1dd78860455eb86",
+  "routeSourceSha256": "52ce39e48468cbbbafc4b4e65b120ea64f3f26bc03c94f39952b2b7fca1fc988",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -66,10 +66,10 @@
       "role": "character"
     },
     {
-      "typedRef": "assets.showcaseOrangeIndustrialRobot",
-      "hash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8",
+      "typedRef": "assets.robotcand",
+      "hash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516",
       "quality": "release",
-      "role": "prop"
+      "role": "character"
     }
   ],
   "audioAssets": [
@@ -152,7 +152,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 17,
+    "sourceOccurrences": 18,
     "primitiveBudget": 20,
     "role": "subordinate floor-two shell, light pools, laser beams, exit/alarm markers, frames, inlays, fixtures, debug-only diagnostics, and UI around typed primary assets",
     "status": "no-primitive-primary-subjects"
@@ -193,7 +193,7 @@
   },
   "performance": {
     "schema": "aura3d.gallery-shift.performance/1.0",
-    "generatedAt": "2026-09-02T08:47:47.480Z",
+    "generatedAt": "2026-09-02T20:51:51.111Z",
     "producer": "apps/showcase-gallery-shift/scripts/write-performance-report.ts",
     "producerSourceSha256": "da2066f24cb0dba4e2636863090e9c84c0d00132fc7fbbdd5b5a2e71b1d30047",
     "routeSourceFiles": [
@@ -207,7 +207,7 @@
       "apps/showcase-gallery-shift/src/thief.ts",
       "apps/showcase-gallery-shift/src/vision.ts"
     ],
-    "routeSourceSha256": "6fd7f8fd35fc4efeba47e9313721e594553b1839b36949d0d1dd78860455eb86",
+    "routeSourceSha256": "52ce39e48468cbbbafc4b4e65b120ea64f3f26bc03c94f39952b2b7fca1fc988",
     "scope": "Route-local authored patrol/detection CPU sampling plus browser-observed root createGameApp draw calls; no GPU frame-time, reusable stealth-kit, navigation-kit, or renderer-parity claim.",
     "samples": 20000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -216,9 +216,9 @@
       "drawCalls": 190
     },
     "observed": {
-      "routeLogicCpuP95Ms": 0.002,
+      "routeLogicCpuP95Ms": 0.003,
       "deterministicStateHash": "4bf7d646",
-      "drawCalls": 143,
+      "drawCalls": 161,
       "renderSize": [
         1280,
         800
@@ -228,13 +228,13 @@
   },
   "deploy": {
     "schema": "aura3d.gallery-shift.deploy/1.0",
-    "generatedAt": "2026-09-02T08:47:48.449Z",
+    "generatedAt": "2026-09-02T20:52:05.673Z",
     "producer": "apps/showcase-gallery-shift/scripts/write-deploy-report.mjs",
     "producerSourceSha256": "d8a3141b2d8dcfa31d9482cc7adb7e7df0b86979eddc20f0f223fc6b25356d71",
     "cli": "packages/aura3d-cli/dist/cli.js",
     "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-    "distTreeSha256": "5559f2fab21fea34d4748a3121c2b4509bdb3523f5a799baa66e2e780acf9198",
-    "sourceTreeSha256": "2f6afd60760bf3276f6e66374edc75f35aea153a2867e66cb30d3632c4162e79",
+    "distTreeSha256": "83bd179f82dfe5ecbcbed9cc6e41783069a4bc2a9d4bf7e1860348cd667e314f",
+    "sourceTreeSha256": "bb69394f8bf07f5122dbffbf44929161a91d5d25694e79b9b6aafd0af0671aa2",
     "checks": {
       "strictModels": {
         "command": "check-deploy --release --source apps/showcase-gallery-shift/src --asset <6 typed models>",
@@ -325,51 +325,51 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/gallery-shift/first-load-desktop.png",
-        "sha256": "0f0e6e02e47c04605e3a096fa80b4d0fa377627e70a34b6704a8fcd30e6c6826"
+        "sha256": "92c8715f77d85005d8794b0d86275ff6e5c4eef9b598299ed058d096dbca564b"
       },
       {
         "path": "tests/reports/gallery-shift/mid-sneak-desktop.png",
-        "sha256": "74bd7bee6a31e9b87732c8bdbbf22e09411427e7e06b234284a2143f0170602c"
+        "sha256": "337b3914cdabef2e626f65976ab0a5a9ae26af220bd420693414a071b6f35fbc"
       },
       {
         "path": "tests/reports/gallery-shift/near-detection-desktop.png",
-        "sha256": "83031faf80d04bef76afe0d3708c5fe4cfa6c6bb5b4f4abdd9246641bfc1c4a0"
+        "sha256": "9d0d50b1c509233b175c6c2b60c4494b9b7f89efc18922f118ca4e468e34a63f"
       },
       {
         "path": "tests/reports/gallery-shift/caught-desktop.png",
-        "sha256": "83031faf80d04bef76afe0d3708c5fe4cfa6c6bb5b4f4abdd9246641bfc1c4a0"
+        "sha256": "9d0d50b1c509233b175c6c2b60c4494b9b7f89efc18922f118ca4e468e34a63f"
       },
       {
         "path": "tests/reports/gallery-shift/exhibit-lift-desktop.png",
-        "sha256": "b8f083ee48643902cae6d8b270692ea73da6da7261df6e3867c11eeb3f7ac76a"
+        "sha256": "245a41842398d8b7211cb88fb5db5a0c1ed00ec11b491acfa8e7e2cf5929b0fb"
       },
       {
         "path": "tests/reports/gallery-shift/stair-crossing-desktop.png",
-        "sha256": "790f5e6a085e6396a419108a127435165168f32089f8d053d42190eaaa20801e"
+        "sha256": "bbe8da153be2d9e4ee89b48e4b416544ec65078b22268da9f896e218829667ee"
       },
       {
         "path": "tests/reports/gallery-shift/camera-sweep-desktop.png",
-        "sha256": "032b412bdcf0753706fa52c0ee44bf62cd6876fe49d7bd239af2fa72726b485a"
+        "sha256": "31f1388b733a75f7ce12950963a9d219e70bc31d7c263feecc3d41cff79b93e1"
       },
       {
         "path": "tests/reports/gallery-shift/alarm-return-desktop.png",
-        "sha256": "9ba7b877001a8c6be762b44f3760c71180a7a89ee69341130747a40924b2f285"
+        "sha256": "e5e5c1a98229b1df3a1f8c9eb809ff3841b24c5768b385844701090555cc9dcb"
       },
       {
         "path": "tests/reports/gallery-shift/exit-win-desktop.png",
-        "sha256": "be201a5cf2794541bd7f349dc88f446b7c43db9b9d1234b75cdd7e21a82ae313"
+        "sha256": "e79526865b61e7311b0f5587be9c742c141e51188aadadb616f1e59487fd8c18"
       },
       {
         "path": "tests/reports/gallery-shift/first-load-mobile.png",
-        "sha256": "cddc9366e29b1aa9e3d0d222f05f69940136bd72a603d078eaba28a3eb897486"
+        "sha256": "20ad4d9c99b1560dd60aa71d357dd387f0d97c9bf5f44c4efbc455abed4db4a5"
       },
       {
         "path": "tests/reports/gallery-shift/reduced-motion-lobby.png",
-        "sha256": "3cc4b009d3d5a414bfc5dd0da07d1371b74c67fb74b84a7bdc81cd823f524dcb"
+        "sha256": "ac39cb185816bebc1c13337aabc54b06942008cf92e75db198acae103003f289"
       },
       {
         "path": "tests/reports/gallery-shift/visual.json",
-        "sha256": "50798e915877499b5bc1e285c77a5fdafed6092003ac143cdfd0621f2c10b413"
+        "sha256": "b6535035cdcd73c75befe996762c87952ce04d1f049a03c487db0941411ac9e1"
       }
     ],
     "browserReceipts": [
@@ -426,10 +426,10 @@
         "assetHash": "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"
       },
       {
-        "asset": "showcaseOrangeIndustrialRobot",
-        "metadata": "tests/reports/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.json",
-        "screenshot": "tests/reports/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.png",
-        "assetHash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8"
+        "asset": "robotcand",
+        "metadata": "tests/reports/showcase-release-asset-probes/robotcand.json",
+        "screenshot": "tests/reports/showcase-release-asset-probes/robotcand.png",
+        "assetHash": "sha256-f71a470103b0ff13cf36f465ef958e283392414e157cce08e6e2a424cef35516"
       }
     ],
     "performance": "apps/showcase-gallery-shift/performance-report.json",

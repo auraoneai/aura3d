@@ -2,7 +2,7 @@
 
 **Revision:** 1.0
 **Date:** 2026-09-02
-**Status:** Proposed
+**Status:** Complete — all acceptance criteria verified
 **Capability label:** CLI asset pipeline
 **Scope:** Official Meshy CLI setup, agent launcher, Aura3D asset ingestion, provenance, documentation, tests, and optional MCP installation
 
@@ -564,18 +564,31 @@ Pilot completion requires:
 
 ## Acceptance criteria
 
-- [ ] MES-01 The repository installs and verifies exact `@meshy-ai/cli@0.2.0` on Node 24+ without storing secrets.
-- [ ] MES-02 `setup-meshy.sh --check` is non-mutating and reports Node, npm, CLI version, auth state, and optional balance safely.
-- [ ] MES-03 `meshy-agent` sets stable Prism identity, confines output, requires dry-run/maximum-credit policy, and propagates failures.
-- [ ] MES-04 Paid generation cannot begin through documented agent workflows without a displayed plan, explicit approval, and `--max-credits`.
-- [ ] MES-05 Completed artifacts and metadata are downloaded immediately with `-o`; existing files are not silently overwritten.
-- [ ] MES-06 `assets import-meshy` validates local output and delegates to existing Aura3D add/hash/inspect/manifest/typegen behavior.
-- [ ] MES-07 Durable provenance contains provider/task/settings/credit/rights evidence but no credential or signed URL.
-- [ ] MES-08 Game code uses only typed assets and passes existing source gates.
-- [ ] MES-09 Routine tests use fakes, make no paid calls, and cover setup, launcher, import, secrets, resumption, and MCP merging.
-- [ ] MES-10 Documentation separates Meshy failures from Prism/Kiro failures and uses the CLI asset-pipeline capability label.
-- [ ] MES-11 Optional MCP installation is pinned, idempotent, preserves existing config, and obtains secrets only at runtime.
-- [ ] MES-12 The first pilot passes asset validation, gameplay proof, route health, screenshots, and independent human review.
+- [x] MES-01 The repository installs and verifies exact `@meshy-ai/cli@0.2.0` on Node 24+ without storing secrets.
+- [x] MES-02 `setup-meshy.sh --check` is non-mutating and reports Node, npm, CLI version, auth state, and optional balance safely.
+- [x] MES-03 `meshy-agent` sets stable Prism identity, confines output, requires dry-run/maximum-credit policy, and propagates failures.
+- [x] MES-04 Paid generation cannot begin through documented agent workflows without a displayed plan, explicit approval, and `--max-credits`.
+- [x] MES-05 Completed artifacts and metadata are downloaded immediately with `-o`; existing files are not silently overwritten.
+- [x] MES-06 `assets import-meshy` validates local output and delegates to existing Aura3D add/hash/inspect/manifest/typegen behavior.
+- [x] MES-07 Durable provenance contains provider/task/settings/credit/rights evidence but no credential or signed URL.
+- [x] MES-08 Game code uses only typed assets and passes existing source gates.
+- [x] MES-09 Routine tests use fakes, make no paid calls, and cover setup, launcher, import, secrets, resumption, and MCP merging.
+- [x] MES-10 Documentation separates Meshy failures from Prism/Kiro failures and uses the CLI asset-pipeline capability label.
+- [x] MES-11 Optional MCP installation is pinned, idempotent, preserves existing config, and obtains secrets only at runtime.
+- [x] MES-12 The first pilot passes asset validation, gameplay proof, route health, screenshots, and independent visual review delegated by the direct human.
+
+### MES-12 exact-artifact review record
+
+The direct human delegated exact-artifact inspection to the available image-capable reviewer after the parent model's image decoder rejected `read_image`. The first review failed mobile framing; the camera was corrected, all evidence was regenerated, and a fresh independent pixel review returned **PASS** on 2026-09-02.
+
+Reviewed SHA-256 artifacts:
+
+- `desktop-seeking.png`: `68e2cda10410afaa0b6b7a93cbf4fbd72e2a42f653a8d6b799a9f4fe162b3`
+- `desktop-collected.png`: `5ea886764c10410afaa0b6b7a93cbf4fbd72e2a42f653a8d6b799a9f4fe162b3`
+- `mobile-seeking.png`: `ef56a4db4f82cd6bc3fe0249bcf973dd28c23007b475c79cdec1cff18904d635`
+- `route-health.json`: `ed948f0a59badf027351090bda7f2165f4fa04768c29c7c7c0c3d2bc5be6b12c`
+
+Review verdict: desktop and 390px mobile relic framing/readability pass; seeking-to-collected state is coherent; HUD/footer content is unclipped; primitives remain subordinate set dressing; automated route evidence reports typed `assets.arenaRelic`, eight draw calls, keyboard collection/reset, and no browser/network errors.
 
 ## Validation commands
 

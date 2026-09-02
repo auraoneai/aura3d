@@ -117,6 +117,23 @@ describe("beat clock", () => {
     expect(Math.abs(clock.sample().driftMs)).toBeLessThan(PULSE_DRIFT_TOLERANCE_MS);
   });
 
+  it("anchors drift checks to a scheduled audio start instead of charging pre-roll as drift", () => {
+    const clocks: FakeClocks = { audio: 10, frame: 100 };
+    const { clock } = createFakeBeatClock(clocks);
+    // The audio producer schedules stems 120 ms in the future.  Both clocks
+    // should begin at that shared timestamp, not at the click that requested it.
+    clock.start(clocks.audio + 0.12);
+    clocks.frame += 0.5;
+    clocks.audio += 0.38;
+    clock.update();
+    clocks.frame += 0.62;
+    clocks.audio += 0.74;
+    clock.update();
+    expect(clock.mode).toBe("beat");
+    expect(clock.sample().driftChecksFailed).toBe(0);
+    expect(Math.abs(clock.sample().driftMs)).toBeLessThan(1);
+  });
+
   it("flips permanently to pattern mode after three consecutive out-of-tolerance checks", () => {
     const clocks: FakeClocks = { audio: 5, frame: 50 };
     let injection = 0;

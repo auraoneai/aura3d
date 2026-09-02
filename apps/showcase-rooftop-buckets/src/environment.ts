@@ -143,37 +143,6 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     emissiveIntensity: options.reviewCapture ? 0.58 : 0.36,
     opacity: 0.9
   });
-  const reviewWindowArch = material.pbr({
-    name: "night league arched window trim",
-    color: "#e1a25c",
-    roughness: 0.3,
-    metallic: 0.58,
-    clearcoat: 0.32
-  });
-  const reviewWindowGlow = material.emissive({
-    name: "night league arched window glow",
-    // Keep the practical glass bright enough to separate the athletes while
-    // exposing the arched trim and warm pavilion volume instead of presenting
-    // three opaque cyan cards behind the hoop.
-    color: "#8fd5de",
-    emissive: "#19738a",
-    emissiveIntensity: 0.34,
-    opacity: 0.58
-  });
-  const reviewScoreboard = material.pbr({
-    name: "night league scoreboard bezel",
-    color: "#172235",
-    roughness: 0.28,
-    metallic: 0.68,
-    clearcoat: 0.28
-  });
-  const reviewScoreGlow = material.emissive({
-    name: "night league scoreboard digits",
-    color: "#fbbf24",
-    emissive: "#f97316",
-    emissiveIntensity: 1.55
-  });
-
   const buildings = [
     // Distant background skyscrapers (North / Behind Hoop)
     { x: -18, y: 15, z: -25, sx: 12, sy: 50, sz: 12, mat: buildingMatA },
@@ -962,52 +931,93 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         .toJSON()
     );
 
-    // Three shallow arched window portals make the review frame read as a
-    // finished night-league gym rather than a dark collection of rectangles.
-    // They are decorative facade geometry behind the real hoop/court and do
-    // not participate in the route's ball or player contacts.
-    for (const [index, x] of [-5.25, 0, 5.25].entries()) {
-      nodes.push(
-        primitives.torus({ name: `review arched window trim ${index + 1}`, material: reviewWindowArch })
-          .position(x, 5.0, -6.12)
-          .scale([1.76, 2.18, 0.08])
-          .toJSON(),
-        primitives.box({ name: `review arched window mullion ${index + 1}`, material: reviewWindowArch })
-          .position(x, 4.62, -6.0)
-          .scale([0.08, 2.12, 0.1])
-          .toJSON(),
-        primitives.box({ name: `review arched window glow ${index + 1}`, material: reviewWindowGlow })
-          .position(x + (index - 1) * 0.22, 5.12, -6.02)
-          // Leave a visible masonry/trim reveal around each bay. The previous
-          // full glass cards read as three flat cyan blocks and swallowed the
-          // authored arches behind the hoop.
-          .scale([1.08 - index * 0.06, 1.18 - index * 0.04, 0.035])
-          .toJSON()
-      );
-    }
-
-    // A compact scorer's display gives the right side of the composition a
-    // believable venue anchor and a second warm/cool practical. The HUD still
-    // owns score truth; these are visual set-dressing digits only.
-    nodes.push(
-      primitives.box({ name: "review venue scoreboard bezel", material: reviewScoreboard })
-        .position(7.05, 5.65, -5.98)
-        .scale([2.0, 0.9, 0.12])
-        .toJSON(),
-      primitives.box({ name: "review venue scoreboard cyan bar", material: reviewWindowGlow })
-        .position(6.65, 5.65, -5.82)
-        .scale([0.68, 0.055, 0.035])
-        .toJSON(),
-      primitives.box({ name: "review venue scoreboard amber bar", material: reviewScoreGlow })
-        .position(7.42, 5.65, -5.82)
-        .scale([0.42, 0.055, 0.035])
-        .toJSON(),
-      primitives.box({ name: "review venue scoreboard lower bar", material: reviewScoreGlow })
-        .position(7.05, 5.22, -5.82)
-        .scale([1.12, 0.045, 0.035])
-        .toJSON()
-    );
   }
+
+  // -----------------------------------------------------------------------
+  // League finish pass (shared by the normal gameplay and review lenses)
+  // -----------------------------------------------------------------------
+  // The existing typed court and venue provide the scale/collision surface,
+  // but their broad sealed slab can still read as a single untextured card at
+  // the fixed camera.  These shallow, transparent renderer-owned finish
+  // layers add the visual rhythm of a maintained hardwood rooftop court while
+  // leaving the active court lines, spots, and route-local ball regions intact.
+  // Instancing keeps the repeated boards in one renderer submission and makes
+  // the pass safe for the mobile/reduced-motion contracts.
+  const courtFinishA = material.pbr({
+    name: options.reviewCapture ? "review maple court finish" : "rooftop slate court finish",
+    color: options.reviewCapture ? "#8b4e3c" : "#315271",
+    roughness: 0.52,
+    metallic: 0.06,
+    clearcoat: 0.22,
+    opacity: 0.72
+  });
+  const courtFinishHalfWidth = options.reviewCapture ? 6.15 : 7.85;
+  const courtFinishRows = options.reviewCapture
+    ? [0.72, 4.28, 7.84]
+    : [-0.82, 3.0, 6.82];
+  nodes.push(
+    instances.box({
+      name: "night league sealed court plank family",
+      material: courtFinishA,
+      transforms: courtFinishRows.map((z, index) => ({
+        position: [0, 0.044, z],
+        scale: [courtFinishHalfWidth, 0.012, 1.56],
+        // A subtle alternating offset keeps the finish from reading as a
+        // perfect procedural grid while preserving the route's authored court
+        // dimensions and line positions.
+        rotation: [0, index % 2 === 0 ? 0.002 : -0.002, 0]
+      }))
+    }).toJSON()
+  );
+
+  // -----------------------------------------------------------------------
+  // Camera-facing facade depth
+  // -----------------------------------------------------------------------
+  // The city and pavilion geometry already surrounds the court, but the fixed
+  // sideline view benefits from a readable, layered backdrop instead of a
+  // sequence of equally flat cyan cards.  The following shared families put a
+  // dark glass bay behind warm trim, then add a real frame/arch rhythm and
+  // small practicals.  All geometry sits behind the backboard and athletes;
+  // it is venue dressing, not UI or a gameplay collider.
+  const bayGlass = material.pbr({
+    name: "night league deep glass",
+    color: options.reviewCapture ? "#1d3f50" : "#102b42",
+    roughness: 0.28,
+    metallic: 0.18,
+    clearcoat: 0.34,
+    opacity: options.reviewCapture ? 0.72 : 0.82
+  });
+  const bayFrame = material.pbr({
+    name: "night league window steel",
+    color: options.reviewCapture ? "#c58a54" : "#37657b",
+    roughness: 0.26,
+    metallic: 0.78,
+    clearcoat: 0.22
+  });
+  // The authored rooftopCourt rear bleachers end around world Z=1.5 after
+  // their route placement.  Keep this facade close behind that stand line so
+  // its glazing/trim remains visible above and between spectators; the prior
+  // -5.7 depth sat behind the opaque venue cards and contributed no readable
+  // architectural layer at the sideline camera.
+  const bayDepth = options.reviewCapture ? -1.72 : -1.18;
+  nodes.push(
+    instances.box({
+      name: "night league glass bay",
+      material: bayGlass,
+      transforms: [{
+        position: [0, 4.82, bayDepth],
+        scale: [8.35, 2.62, 0.045]
+      }]
+    }).toJSON(),
+    instances.box({
+      name: "night league warm facade returns",
+      material: bayFrame,
+      transforms: [
+        { position: [-7.9, 4.82, bayDepth - 0.08], scale: [0.16, 2.82, 0.09] },
+        { position: [7.9, 4.82, bayDepth - 0.08], scale: [0.16, 2.82, 0.09] }
+      ]
+    }).toJSON()
+  );
 
   return nodes;
 }

@@ -155,9 +155,20 @@ export function createBeatClock(options: BeatClockOptions): BeatClock {
       }
       mode = "beat";
       audioAnchor = audioStart;
-      frameAnchor = options.getFrameTime();
+      // `startRun()` schedules the decoded stems slightly in the future so all
+      // four sources share one AudioContext timestamp.  The old implementation
+      // anchored the frame clock at the click that requested the schedule,
+      // while the audio clock anchored at that future timestamp.  That made a
+      // fixed ~120 ms lead look like real drift on every browser run and forced
+      // an honest-but-avoidable pattern fallback after three checks.  Anchor the
+      // frame clock to the same future start instead.  `lastUpdateTime` still
+      // starts at the current frame so the pre-roll cannot create a fake delta.
+      const frameNow = options.getFrameTime();
+      const audioNow = options.getAudioTime();
+      const scheduledLead = Math.max(0, audioStart - audioNow);
+      frameAnchor = frameNow + scheduledLead;
       patternElapsed = 0;
-      lastUpdateTime = frameAnchor;
+      lastUpdateTime = frameNow;
       lastEmittedBeat = -1;
       nextCheckFrameElapsed = PULSE_DRIFT_CHECK_INTERVAL_SECONDS;
       driftChecksFailed = 0;

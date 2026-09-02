@@ -6,9 +6,10 @@ Aura3D's typed, provenance-tracked assets are the mechanic. Assemble a mech from
 MH-2M slot contract (chassis / arms / legs / weapon, 4 options each), watch the stat
 holograms move, validate the build, lock in, and fight a rival mech driven by the engine's
 `createCombatAi`. The current in-repository options are a deterministic procedural curation
-spike, not the required production modular family. The separate textured CC-BY Robotcand
-body remains a temporary visual fallback only; it is not part of MH-2M and cannot satisfy the
-family gate. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
+family authored by the in-repository CC0 compiler: four chassis, arm, leg, and weapon
+variants share the same metre-scale sockets and can be validated and mounted as one MH-2M
+build. This is still a route-local prototype, not a reusable production kit. Rematches cycle
+rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
 
 ## Claim boundary (read before quoting this route)
 
@@ -21,11 +22,10 @@ family gate. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balance
   no such claim is made anywhere in this route.
 - **Primitives are set dressing** (hangar floor/wall, turntable, pit rims) or
   renderer-owned feedback particles (hit sparks, landing dust). The visible review silhouette
-  currently uses the typed, release-probed Robotcand fallback, with the selected MH-2M
-  hardpoint and validated socket plan mounted as route-local state. The four typed MH-2M slots
-  remain the assembly contract and every selection changes pixels/stats; this is not a CSS
-  recolor or a skin swap. Robotcand is a separate whole-body visual asset, not a modular or
-  animation kit, and it is not evidence that the MH-2M parts form a coherent family.
+  is the four typed, release-probed MH-2M modules mounted through the validated socket plan;
+  no whole-body fallback or CSS recolor is used. Every selected slot changes the rendered
+  assembly and its owning gameplay stat. The route does not claim a reusable animation,
+  fighting, or character kit.
 - **Prototype.** Independent human visual review is pending; this route is not a public
   release candidate.
 
@@ -33,25 +33,17 @@ family gate. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balance
 
 Every part option is a typed CLI-registered asset. The legacy curation report proves
 one-metre units, centered part origins, `+Z` forward / `+Y` up, the `MH-2M` family, and the
-exact `root`, `chest`, `hips`, or `right-hand` socket metadata. That report is only a
-compatibility gate: the current **16/16 compatible** procedural spike is not a visual-family
-approval. `scripts/check-modular-family.mjs` is the required stricter gate. It rejects the
-box/cylinder generator, requires a license-clean non-procedural family declaration and
-authored armor/frame/joint/emissive material roles, and computes feet, torso/limb, and
-weapon/hand contact from exact GLB bounds. It currently returns **NO-GO** until a real
-modular family is supplied; the report is machine-readable stdout and never rewrites assets.
+exact `root`, `chest`, `hips`, or `right-hand` socket metadata. `scripts/check-modular-family.mjs`
+is the stricter family gate: it checks the license-clean original declaration, authored
+armor/frame/joint/emissive material layers, exact GLB bounds, and feet/torso/limb/weapon
+contact. The current report is **GO** with **16/16 compatible, release-proven, and unique**
+parts. The report is machine-readable stdout and never rewrites assets.
 
-The review presentation body is the separately registered CC-BY-4.0 `assets.robotcand`
-source by isramtz/Objaverse, with explicit attribution and a hash-bound root-renderer
-probe. It contributes no gameplay simulation or modular-kit claim. The selected MH-2M
-weapon remains independently typed and socket-mounted over this body.
-
-The shared route-primary gate names `assets.robotcand` as the current visual hero and keeps
-the four MH-2M slot assets as secondary typed assembly evidence. This matches the body that
-is actually visible in the review frame; it does not relabel the MH-2M parts as a whole-body
-character or claim that Robotcand belongs to that modular family. `scripts/verify-default-swap.mjs`
-validates the browser-produced default/swap receipt and deliberately fails while its visible
-primary binding is the fallback instead of all four modular parts.
+The shared route-primary gate names `assets.mechChassisA` as the hero and retains
+`assets.mechArmsA`, `assets.mechLegsA`, and `assets.mechWeaponA` as typed secondary slots.
+The default/swap verifier checks that all four bindings are present, current, and visibly
+different after a valid slot change. The legacy `register:shell` script remains only as a
+historical migration utility and is not used by the live route.
 
 ## Assembly pipeline (player-visible)
 
@@ -99,8 +91,9 @@ KO and walk cadence are wired to sim events.
   (movement/strike/pause/KO/rematch, aggression presets measurably differ, reduced-motion gates).
 - Unit specs: `tests/unit/apps/mech-hangar-assembly.test.ts`,
   `tests/unit/apps/mech-hangar-combat.test.ts` (seeded determinism via outcome hashes).
-- `performance-report.json`: 20,000 fixed simulation steps; current p95 is 0.0014 ms,
-  with 42 browser-observed hangar draw calls against a 300-call budget.
+- `performance-report.json`: 20,000 fixed simulation steps plus browser-observed hangar
+  draw calls against a 300-call budget; the generated receipt records the current p95 and
+  draw count.
 - `deploy-report.json`: strict 16-model release deploy and strict dist/source deploy both
   pass with zero warnings. WAV geometry is intentionally outside the model-bounds gate;
   all ten candidate-quality typed CC0 cues are validated by generated route health.
@@ -109,7 +102,7 @@ KO and walk cadence are wired to sim events.
 - Source- and producer-bound screenshots/receipts are retained under
   `tests/reports/mech-hangar/`. `hangar-default.png` and `hangar-swap.png` are the mandatory
   default-state visual pair; `build-core-evidence.json` binds both to the current route source
-  and `assets.robotcand` hash. The route-primary proof is retained under
+  and the four typed MH-2M asset hashes. The route-primary proof is retained under
   `tests/reports/showcase-route-primary-probes/`.
 
 ## Commands
@@ -120,12 +113,12 @@ pnpm typecheck           # strict tsc over src/
 pnpm build               # production bundle
 pnpm models              # regenerate the original 16-part MH-2M GLB family
 pnpm register:models     # register models; consumes current root-rendered probes
-pnpm register:shell      # register the attributed Robotcand visual shell after its root probe
+pnpm register:shell      # legacy migration utility; not used by the live typed assembly route
 pnpm sfx                 # regenerate the ten WAV cues
 pnpm register:sfx        # idempotent CLI registration into the root manifest
 pnpm curate:parts        # deterministic local 16-part compatibility/release gate
-pnpm verify:modular-family # strict visual-family/provenance/socket/grounding gate (currently NO-GO)
-pnpm verify:default-swap # verify source-bound default/swap browser receipt (currently NO-GO)
+pnpm verify:modular-family # strict visual-family/provenance/socket/grounding gate (16/16 GO)
+pnpm verify:default-swap # verify source-bound four-module default/swap browser receipt
 pnpm evidence:performance
 pnpm evidence:deploy
 pnpm evidence:route-health

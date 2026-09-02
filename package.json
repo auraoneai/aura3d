@@ -140,6 +140,7 @@
     "typecheck": "pnpm evidence:command --id typecheck --out tests/reports/aura3d104/typecheck.json --log tests/reports/game-runtime/typecheck.log --cwd . -- pnpm typecheck:raw",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "check:meshy-secrets": "tsx --tsconfig tsconfig.base.json tools/meshy-secret-scan/index.ts",
     "typecheck:raw": "tsc -p tsconfig.build.json --noEmit",
     "typecheck:ws1": "tsc -p tsconfig.build.json --noEmit",
     "test": "pnpm test:unit && pnpm test:integration",

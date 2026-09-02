@@ -126,7 +126,7 @@ function currentPlan() {
 }
 
 function assemblyStatusLine(): string {
-  if (!catalogReady) return "curation spike pending - mount disabled";
+  if (!catalogReady) return "MH-2M family curation pending - mount disabled";
   const built = currentPlan();
   if ("error" in built) return "plan error: " + built.error;
   const summary = validationSummary(built.report);
@@ -380,7 +380,12 @@ const footContactBuilders = (["player", "rival"] as const).flatMap((side) => [
 
 const turntableBuilder = primitives.cylinder({
   name: "hangar turntable",
-  material: material.pbr({ name: "turntable steel", color: "#344c61", roughness: 0.48, metallic: 0.68 })
+  // Lift the deck out of the near-black floor.  The earlier #344c61 surface
+  // lost its edge against the contact insert, so the typed feet read as if
+  // they were hovering over a hole.  This is still a hard-surface steel
+  // treatment; the brighter value simply gives the rim a readable bevel under
+  // the cool workshop key.
+  material: material.pbr({ name: "turntable steel", color: "#486b83", roughness: 0.44, metallic: 0.58, clearcoat: 0.24, clearcoatRoughness: 0.24 })
 }).position(HANGAR_CENTER[0], 0.055, HANGAR_CENTER[2]).scale([2.35, 0.11, 2.35]);
 
 // A separate matte insert gives the feet a readable receiver surface. It is
@@ -388,17 +393,21 @@ const turntableBuilder = primitives.cylinder({
 // from swallowing the contact point under the typed family.
 const turntableContactBuilder = primitives.cylinder({
   name: "hangar turntable contact insert",
-  material: material.pbr({ name: "turntable contact insert", color: "#0c1724", roughness: 0.92, metallic: 0.12 })
+  // Keep a blue-black value for the receiver, but not absolute black: the
+  // earlier insert swallowed the foot seals and made the mech appear to float
+  // above a void. A restrained steel blue gives the contact witness a visible
+  // boundary while retaining contrast with the cyan ring.
+  material: material.pbr({ name: "turntable contact insert", color: "#214863", roughness: 0.72, metallic: 0.16, clearcoat: 0.16, clearcoatRoughness: 0.32 })
 }).position(HANGAR_CENTER[0], 0.17, HANGAR_CENTER[2]).scale([1.82, 0.018, 1.82]);
 
 const hangarFloorBuilder = primitives.box({
   name: "hangar floor",
-  material: material.pbr({ name: "hangar deck", color: "#1a2736", roughness: 0.78, metallic: 0.26 })
+  material: material.pbr({ name: "hangar deck", color: "#20394e", roughness: 0.74, metallic: 0.30, clearcoat: 0.12, clearcoatRoughness: 0.42 })
 }).position(HANGAR_CENTER[0], -0.06, HANGAR_CENTER[2]).scale([16, 0.12, 14]);
 
 const hangarBackdropBuilder = primitives.box({
   name: "hangar back wall",
-  material: material.pbr({ name: "hangar wall", color: "#1a2a3c", roughness: 0.88, metallic: 0.08 })
+  material: material.pbr({ name: "hangar wall", color: "#13263a", roughness: 0.84, metallic: 0.12, clearcoat: 0.08, clearcoatRoughness: 0.5 })
 }).position(HANGAR_CENTER[0], 3.2, HANGAR_CENTER[2] - 6.4).scale([18, 6.6, 0.3]);
 
 const hangarFrameMaterial = material.pbr({ name: "hangar frame steel", color: "#263e55", roughness: 0.52, metallic: 0.62 });
@@ -511,7 +520,10 @@ const pitDeckBuilders = Array.from({ length: 10 }, (_, index) => {
   ];
 }).flat();
 
-const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#102538", roughness: 0.32, metallic: 0.78 });
+// The overhead frame is a major depth cue in the arena capture. Keep it dark
+// enough to sit behind the fighters, but lift it out of absolute black so the
+// clipped-at-the-edge beams read as painted steel instead of missing geometry.
+const pitTrussMaterial = material.pbr({ name: "pit overhead truss", color: "#234c66", roughness: 0.42, metallic: 0.58, clearcoat: 0.18, clearcoatRoughness: 0.3 });
 const pitTrussLight = material.emissive({ name: "pit overhead light band", color: "#174b63", emissive: "#5ee7ff", emissiveIntensity: 1.25 });
 const pitTrussBuilders = [
   primitives.box({ name: "pit overhead truss beam", material: pitTrussMaterial })
@@ -658,11 +670,11 @@ const app = createAuraApp("#app", {
     .background("#081522")
     .addMany([
       // Hangar lighting: cool workshop key + warm practicals (PRD section 6).
-      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 1.8, color: "#cfe5ff" }),
-      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.25, color: "#ffb454" }),
-      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 2.6, color: "#ff9a3d" }),
-      lights.point({ name: "workshop frontal fill", position: [0, 3.4, 3.6], intensity: 2.9, color: "#9edbff" }),
-      lights.ambient({ name: "global fill", intensity: 1.04, color: "#7d9dbd" }),
+      lights.directional({ name: "workshop cool key", position: [4.2, 5.4, 3.2], intensity: 2.25, color: "#d7ebff" }),
+      lights.point({ name: "warm practical left", position: [-2.6, 2.3, 1.9], intensity: 3.65, color: "#ffb454" }),
+      lights.point({ name: "warm practical right", position: [2.7, 2.1, -1.4], intensity: 3.05, color: "#ff9a3d" }),
+      lights.point({ name: "workshop frontal fill", position: [0, 3.4, 3.6], intensity: 3.75, color: "#a9e1ff" }),
+      lights.ambient({ name: "global fill", intensity: 1.22, color: "#89a9c4" }),
       // Arena floodlights over the pit.
       lights.directional({ name: "floodlight north", position: [0, 7.4, ARENA_CENTER_Z - 3.4], intensity: visualReviewCapture ? 2.05 : 2.65, color: "#eaf4ff" }),
       lights.directional({ name: "floodlight south", position: [2.4, 6.4, ARENA_CENTER_Z + 3.6], intensity: visualReviewCapture ? 1.6 : 2.05, color: "#cfe2ff" }),
@@ -716,7 +728,7 @@ const app = createAuraApp("#app", {
       // and both 1.7m fighters inside the frame while retaining a readable
       // three-quarter arena view; the wider combat framing prevents a close
       // strike from cropping one silhouette out of the review frame.
-      offset: visualReviewCapture ? [0, 1.82, 4.95] : [0, 1.66, 5.72],
+      offset: visualReviewCapture ? [0, 1.82, 4.62] : [0, 1.66, 5.28],
       fov: visualReviewCapture ? 52 : (reducedMotion ? 53 : 54),
       // Exact review captures must frame the current exchange, not the camera
       // anchor's prior location. Runtime play keeps the eased chase motion.

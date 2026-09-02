@@ -470,7 +470,9 @@ describe("showcase route gate registry", () => {
       }],
       ["showcase-skyline-runner", {
         category: "platformer",
-        hero: "showcaseKenneyOobiPlatformerHero",
+        // The current release candidate uses the registered Arctic runner hero;
+        // the former Oobi fixture is retained only in historical evidence.
+        hero: "skylineArcticRunnerHero",
         secondary: ["showcaseKenneyVerdantPlatformerWorld"]
       }]
     ]);
