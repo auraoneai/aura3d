@@ -410,6 +410,50 @@ describe("agent API", () => {
     app.dispose();
   });
 
+  test("keeps durable typed manifest assets eligible when deployment rewrites their URL", () => {
+    const remoteManifestAssets = defineAuraAssets({
+      robot: {
+        type: "model",
+        format: "glb",
+        url: "https://media.githubusercontent.com/media/auraoneai/aura3d/commit/public/aura-assets/robot.12345678.glb",
+        hash: "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        metadata: {
+          provenance: {
+            sourcePath: "public/aura-assets/robot.12345678.glb"
+          }
+        }
+      }
+    } as const);
+    const snapshot = scene().add(model(remoteManifestAssets.robot)).toJSON();
+    const evidence = collectAuraSceneEvidence(snapshot);
+    const diagnostics = renderer.diagnostics(snapshot);
+
+    expect(evidence.assets).toEqual([
+      expect.objectContaining({
+        source: "typed-aura-assets-manifest",
+        id: "robot",
+        hash: "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      })
+    ]);
+    expect(diagnostics.warnings.join(" ")).not.toContain("cannot mount this scene");
+    expect(diagnostics.warnings.join(" ")).toContain("will use the production renderer");
+  });
+
+  test("does not bless an arbitrary remote model that lacks manifest provenance", () => {
+    const remoteAsset = defineAuraAssets({
+      robot: {
+        type: "model",
+        format: "glb",
+        url: "https://example.invalid/not-catalogued.glb",
+        hash: "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      }
+    } as const).robot;
+    const diagnostics = renderer.diagnostics(scene().add(model(remoteAsset)));
+
+    expect(diagnostics.warnings.join(" ")).toContain("cannot mount this scene");
+    expect(diagnostics.warnings.join(" ")).toContain("unsafeModelUrl and remote/raw model URLs are blocked");
+  });
+
   test("requests mounted hover runtime for the data-viz scene kit without visual-score acceptance", () => {
     const kit = sceneKits.dataViz();
     const hoverNode = kit.nodes.find((node): node is AuraInteractionNode => node.kind === "interaction" && node.mode === "hover");

@@ -848,6 +848,10 @@ export interface AuraAssetMetadata {
   readonly materials?: readonly string[];
   readonly animations?: readonly string[];
   readonly textures?: readonly string[];
+  /** Manifest-relative source path retained by the generated asset map. */
+  readonly sourcePath?: string;
+  /** Published `/aura-assets/` output path retained by the generated asset map. */
+  readonly outputPath?: string;
   readonly boundsMetadata?: {
     readonly min?: readonly number[];
     readonly max?: readonly number[];
@@ -15202,8 +15206,35 @@ function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAssetLoadS
 
 function createAssetProvenance(asset: AuraAssetRef): AuraAssetProvenance {
   const remote = /^https?:\/\//i.test(asset.url);
+  /*
+   * A deployment may rewrite the URL of a generated manifest asset to an
+   * immutable external asset host (for example, GitHub media or an object
+   * store) so the site bundle does not need to carry every GLB.  URL location
+   * is therefore not a sufficient trust signal: the manifest identity is the
+   * typed ref's kind/id/hash plus durable source-path provenance.  Keep
+   * `unsafeModelUrl(...)` blocked by its sentinel id, and do not bless an
+   * arbitrary remote object that merely happens to carry a hash.
+   */
+  const manifestPaths = [
+    asset.metadata?.provenance?.sourcePath,
+    asset.metadata?.sourcePath,
+    asset.metadata?.outputPath,
+    asset.metadata?.provenance?.outputPath
+  ];
+  const hasDurableManifestProvenance = asset.kind === "aura-asset-ref"
+    && asset.id !== "unsafe"
+    && typeof asset.hash === "string"
+    && asset.hash.length > 0
+    && manifestPaths.some((value) =>
+      typeof value === "string" && value.replaceAll("\\", "/").startsWith("public/aura-assets/")
+    );
+  const trustedManifestAsset = !remote || hasDurableManifestProvenance;
   return {
-    source: asset.id === "unsafe" || remote ? "unsafe-url" : asset.hash ? "typed-aura-assets-manifest" : "inline-definition",
+    source: asset.id === "unsafe" || !trustedManifestAsset
+      ? "unsafe-url"
+      : asset.hash
+        ? "typed-aura-assets-manifest"
+        : "inline-definition",
     id: asset.id,
     url: asset.url,
     ...(asset.hash ? { hash: asset.hash } : {}),
