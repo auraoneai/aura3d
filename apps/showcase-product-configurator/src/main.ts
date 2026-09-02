@@ -306,7 +306,7 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     .runtime({ id: "configured-headphones", tags: ["typed-asset", "showcaseHeadphones", "configurable-product"] });
 
   const builder = scene()
-    .background("#050607")
+    .background("#0a1016")
     .add(environments.productHero({
       name: "authored product hero HDR environment",
       // Keep the environment strong enough to describe the clearcoat without
@@ -321,8 +321,9 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
       ? productModel.animate({ clip: "turntable", speed: 0.36, duration: 9, captureTime: 0.36 })
       : productModel)
     .addMany(configuratorSceneAccents(nextState))
-    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.12, color: "#cbd4dc" }))
-    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 1.72, color: "#ffe8d3" }))
+    .add(lights.ambient({ name: "product configurator ambient fill", intensity: 0.16, color: "#cbd4dc" }))
+    .add(lights.directional({ name: "large softbox product key", position: [-3.4, 5.2, 4.4], intensity: 1.32, color: "#ffe8d3" }))
+    .add(lights.rect({ name: "front diffusion product softbox", position: [-1.8, 2.35, 3.2], intensity: 0.54, width: 3.5, height: 1.65, color: "#fff7ed" }))
     .add(lights.directional({ name: "cool edge separation card", position: [3.8, 2.8, -1.5], intensity: 0.42, color: "#80b7da" }))
     .add(lights.point({ name: "earcup contour kicker", position: [0.1, 0.68, 2.25], intensity: 0.22, color: "#efbf91" }))
     .add(lights.rect({
@@ -349,31 +350,41 @@ function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSc
   // it is never presented as a product part.
   const floor = material.pbr({
     name: "deep slate studio floor",
-    color: nextState.variant === "ceramic" ? "#1c2a36" : "#0d1a27",
-    roughness: 0.68,
-    metallic: 0.1,
-    opacity: 0.98
+    // A product photograph still needs a readable floor/value break. The
+    // previous near-black floor made the pedestal disappear into the canvas,
+    // especially for the selected copper finish.
+    color: nextState.variant === "ceramic" ? "#354b57" : "#243b49",
+    roughness: 0.58,
+    metallic: 0.16,
+    opacity: 1
   });
   const wall = material.pbr({
     name: "deep slate seamless photo sweep",
-    color: nextState.variant === "ceramic" ? "#15212b" : "#070e16",
-    roughness: 0.66,
-    metallic: 0.06
+    color: nextState.variant === "ceramic" ? "#1f303b" : "#111d27",
+    roughness: 0.72,
+    metallic: 0.04
   });
   const plinth = material.clearcoat({
-    name: "low smoked glass product plinth",
-    color: "#263944",
-    roughness: 0.26,
-    metallic: 0.28,
-    clearcoat: 0.68,
-    envMapIntensity: 0.8
+    name: "brushed smoked glass product plinth",
+    color: "#3f5c68",
+    roughness: 0.42,
+    metallic: 0.34,
+    clearcoat: 0.72,
+    envMapIntensity: 0.72
   });
   const pedestalBase = material.pbr({
     name: "grounded smoked glass pedestal base",
-    color: "#172631",
-    roughness: 0.46,
-    metallic: 0.18,
-    opacity: 0.98
+    color: "#294553",
+    roughness: 0.44,
+    metallic: 0.24,
+    opacity: 1
+  });
+  const pedestalCollar = material.clearcoatPaint({
+    name: "pedestal collar shadow break",
+    color: "#1a2e39",
+    roughness: 0.3,
+    metallic: 0.3,
+    clearcoat: 0.5
   });
   const contact = material.pbr({
     name: "soft product contact shadow",
@@ -382,8 +393,17 @@ function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSc
     metallic: 0,
     opacity: 0.58
   });
-  const cyan = material.emissive({ color: "#3bc7de", emissive: "#3bc7de", emissiveIntensity: 0.18, opacity: 0.24 });
-  const amber = material.emissive({ color: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissive: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissiveIntensity: 0.14, opacity: 0.22 });
+  const cyan = material.emissive({ color: "#3bc7de", emissive: "#3bc7de", emissiveIntensity: 0.12, opacity: 0.2 });
+  const amber = material.emissive({ color: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissive: nextState.variant === "copper" ? "#f0a060" : "#d5b36a", emissiveIntensity: 0.1, opacity: 0.2 });
+  const rim = material.emissive({
+    name: "subtle turntable rim light",
+    // Keep the turntable groove in the same cool studio family instead of
+    // introducing a second bright accent that competes with the copper shell.
+    color: "#4a8a98",
+    emissive: "#4a8a98",
+    emissiveIntensity: 0.035,
+    opacity: 0.18
+  });
   return [
     primitives.plane({ name: "deep slate product studio floor", material: floor })
       .position(0, -0.018, -0.62).scale([3.6, 1, 2.6]).toJSON(),
@@ -391,14 +411,18 @@ function compactProductStageNodes(nextState: ConfiguratorState): readonly AuraSc
       .position(0, 1.2, -2.35).rotate(1.5708, 0, 0).scale([6.2, 1, 3.2]).toJSON(),
     primitives.cylinder({ name: "grounded smoked glass pedestal base", material: pedestalBase })
       .position(0, 0.22, -0.45).scale([0.76, 0.22, 0.5]).toJSON(),
-    primitives.cylinder({ name: "low smoked glass product plinth", material: plinth })
-      .position(0, 0.402, -0.45).scale([0.82, 0.055, 0.58]).toJSON(),
+    primitives.cylinder({ name: "pedestal collar shadow break", material: pedestalCollar })
+      .position(0, 0.36, -0.45).scale([0.7, 0.055, 0.46]).toJSON(),
+    primitives.cylinder({ name: "brushed smoked glass product plinth", material: plinth })
+      .position(0, 0.425, -0.45).scale([0.76, 0.045, 0.54]).toJSON(),
     primitives.cylinder({ name: "soft product contact shadow", material: contact })
-      .position(0, 0.458, -0.45).scale([0.58, 0.008, 0.36]).toJSON(),
+      .position(0, 0.469, -0.45).scale([0.55, 0.008, 0.34]).toJSON(),
+    primitives.torus({ name: "subtle turntable rim light", material: rim })
+      .position(0, 0.475, -0.45).rotate(1.5708, 0, 0).scale([0.72, 0.52, 0.018]).toJSON(),
     primitives.box({ name: "cool cyan studio reflection panel", material: cyan })
-      .position(-3.25, 1.1, -2.18).scale([0.06, 1.08, 0.018]).toJSON(),
+      .position(-2.72, 1.12, -2.14).scale([0.1, 1.2, 0.02]).toJSON(),
     primitives.box({ name: "warm amber studio reflection panel", material: amber })
-      .position(3.25, 1.12, -2.16).scale([0.06, 1.1, 0.018]).toJSON()
+      .position(2.72, 1.14, -2.12).scale([0.1, 1.22, 0.02]).toJSON()
   ];
 }
 
