@@ -20,6 +20,23 @@ Architecture. Skyline Runner remains a stale-evidence reconciliation requiring
 an explicit human visual decision. These are honest holds, not hidden work or
 false passes.
 
+## Coordinator receipt — 2026-09-02 — production transport verification
+
+The bounded correction source is pushed to `origin/main` as commit
+`3fb30d72aa8ffe872077c212fb2251a05117a819`. Vercel production deployment
+`dpl_6zXL6GHYvaa5ZvtRBrYT4YBb2zaV` reached `READY` from that commit with the
+asset base pinned to the same GitHub commit SHA. It is aliased at
+`https://aura3d.auraone.ai`, `https://aura3d.vercel.app`, and
+`https://aura3d-veerone.vercel.app`; the deployment preview is
+`https://aura3d-ddbnbf85o-veerone.vercel.app`. Protection-aware `vercel curl`
+checks returned HTTP `200` for all six changed game paths: Turbo Drift Circuit,
+Gravity Post, Pulse Tunnel, Gallery Shift, Rooftop Buckets, and Mech Hangar.
+
+This receipt closes transport, build, and evidence regeneration for the
+bounded pass. It does **not** close the human visual gates: the strict set is
+still **11 accepted / 6 unresolved**, and the four non-game `needs-work` rows
+plus Skyline's stale-evidence review remain explicitly recorded above.
+
 ## Coordinator receipt — 2026-09-02T03:36Z — bounded parallel visual pass
 
 This pass used four independent parallel agents, one owned app directory per
