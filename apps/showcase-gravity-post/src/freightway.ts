@@ -14,7 +14,10 @@
  * merging into near-black masses behind the courier.  The intermediate
  * skyline bays below are deliberately structural: they give the route a
  * readable sequence of loading gantries and depth cues while remaining part
- * of the same seven merged meshes and never touching gameplay state.
+ * of the same merged meshes and never touching gameplay state. The current
+ * pass also adds a compact architectural vocabulary (paving, facade bays,
+ * street lamps, and one destination arch) instead of another field of
+ * unrelated boxes.
  */
 import { geometry, material, type AuraSceneNode, type AuraRootVec3 } from "@aura3d/engine";
 
@@ -134,19 +137,42 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
   const horizon = mesh();
   const serviceLights = mesh();
   const serviceLightsCool = mesh();
+  // A small set of merged meshes adds the hierarchy the previous terraced
+  // slabs lacked: a readable road surface, connected facade bays, and real
+  // street furniture. These remain renderer-owned, non-colliding geometry.
+  const paving = mesh();
+  const facade = mesh();
+  const facadeTrim = mesh();
+  const streetFurniture = mesh();
+  const pavingAccent = mesh();
   const deckY = input.playPlaneY - 0.12;
 
   // One uninterrupted deck joins exchange and terminal. Two shallow lower
   // tiers expose its silhouette against the sky instead of turning the route
   // into a dark canyon.
-  appendBox(structure, point(0.54, 0, deckY), [length * 1.24, 0.16, 2.52], tangent, cross);
-  appendBox(structure, point(0.54, 0, deckY - 0.16), [length * 1.18, 0.16, 1.74], tangent, cross);
-  appendBox(cladding, point(0.54, 0, input.playPlaneY - 0.025), [length * 1.2, 0.035, 1.94], tangent, cross);
+  appendBox(structure, point(0.54, 0, deckY), [length * 1.22, 0.16, 2.34], tangent, cross);
+  appendBox(structure, point(0.54, 0, deckY - 0.16), [length * 1.16, 0.16, 1.68], tangent, cross);
+  // A warm stone apron around the graphite courier lane gives the route the
+  // grounded courtyard read of a working freight district. The alternating
+  // slabs are route-aligned world geometry rather than a screen-space grid.
+  appendBox(paving, point(0.54, 0, input.playPlaneY - 0.025), [length * 1.18, 0.035, 1.86], tangent, cross);
+  for (let index = 0; index < 9; index += 1) {
+    const progress = 0.08 + index * 0.105;
+    for (const side of [-1, 1] as const) {
+      appendBox(
+        index % 2 === 0 ? pavingAccent : paving,
+        point(progress, side * 0.9, input.playPlaneY + 0.018),
+        [length * 0.083, 0.028, 0.62],
+        tangent,
+        cross
+      );
+    }
+  }
   // A recessed graphite flight lane gives the live pod a continuous surface
   // relationship from Rust to Gale. It is deliberately wide enough to read as
   // freight infrastructure, not a UI line, and remains non-colliding scene
   // geometry underneath the immutable route coordinates.
-  appendBox(lane, point(0.54, 0, input.playPlaneY + 0.003), [length * 1.14, 0.022, 0.72], tangent, cross);
+  appendBox(lane, point(0.54, 0, input.playPlaneY + 0.003), [length * 1.12, 0.022, 0.72], tangent, cross);
   for (let index = 0; index < 7; index += 1) {
     const progress = 0.14 + index * 0.12;
     for (const side of [-1, 1] as const) {
@@ -192,8 +218,42 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
   // Continuous shoulder ribbons make the terraced bays read as one district.
   // They sit below the courier rather than rising into opaque side walls.
   for (const side of [-1, 1] as const) {
-    appendBox(structure, point(0.52, side * 1.28, input.playPlaneY + 0.07), [length * 1.24, 0.18, 0.28], tangent, cross);
-    appendBox(signals, point(0.52, side * 1.13, input.playPlaneY + 0.17), [length * 1.2, 0.045, 0.055], tangent, cross);
+    appendBox(structure, point(0.52, side * 1.2, input.playPlaneY + 0.07), [length * 1.18, 0.18, 0.24], tangent, cross);
+    appendBox(signals, point(0.52, side * 1.08, input.playPlaneY + 0.17), [length * 1.14, 0.045, 0.055], tangent, cross);
+  }
+
+  // Low courtyard facades turn the route into a connected place rather than
+  // a row of floating cargo blocks. Each bay has a recessed service spine,
+  // a lit window slot, and a projecting roof cap. The open centre remains
+  // wider than the courier lane, so this never becomes a collider or camera
+  // blocker; it is authored world geometry only.
+  for (const [progress, side, height, bayLength] of [
+    [0.16, -1, 0.92, 0.23],
+    [0.34, 1, 1.08, 0.25],
+    [0.55, -1, 1.22, 0.28],
+    [0.76, 1, 0.98, 0.24]
+  ] as const) {
+    const lateral = side * 1.98;
+    appendBox(facade, point(progress, lateral, input.playPlaneY + height / 2), [length * bayLength, height, 0.34], tangent, cross);
+    appendBox(facadeTrim, point(progress + 0.012, lateral - side * 0.18, input.playPlaneY + height + 0.035), [length * (bayLength + 0.025), 0.065, 0.26], tangent, cross);
+    appendBox(windows, point(progress - 0.022, lateral - side * 0.19, input.playPlaneY + height * 0.58), [length * bayLength * 0.62, 0.14, 0.035], tangent, cross);
+    appendBox(signals, point(progress - 0.026, lateral - side * 0.21, input.playPlaneY + 0.28), [length * bayLength * 0.42, 0.045, 0.045], tangent, cross);
+  }
+
+  // Practical lamps sit at the inner corners of those bays. The dark post
+  // and short cantilever are real scene geometry; their alternating warm and
+  // cool emitters reuse the merged terminal light materials below.
+  for (const [progress, side] of [[0.2, -1], [0.39, 1], [0.59, -1], [0.8, 1]] as const) {
+    const lateral = side * 1.08;
+    appendBox(streetFurniture, point(progress, lateral, input.playPlaneY + 0.46), [0.075, 0.92, 0.075], tangent, cross);
+    appendBox(streetFurniture, point(progress, lateral - side * 0.13, input.playPlaneY + 0.88), [0.24, 0.06, 0.07], tangent, cross);
+    appendBox(
+      progress < 0.5 ? serviceLights : serviceLightsCool,
+      point(progress, lateral - side * 0.25, input.playPlaneY + 0.82),
+      [0.09, 0.07, 0.12],
+      tangent,
+      cross
+    );
   }
 
   // Recessed continuous guide rails provide a physical route through the
@@ -209,6 +269,10 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
   appendBox(structure, point(1.02, 0, input.playPlaneY + 0.13), [0.92, 0.26, 3.18], tangent, cross);
   appendBox(cladding, point(1.04, 0, input.playPlaneY + 0.29), [0.72, 0.12, 2.92], tangent, cross);
   appendArch(structure, point(1.02, 0, input.playPlaneY), tangent, cross, 2.78, input.playPlaneY + 0.12, 1.12, 0.2, 0.16);
+  // A thinner inset trim arch establishes a destination threshold instead of
+  // leaving the crown as one oversized overhead beam. Its inset depth keeps
+  // the active courier channel open and the geometry remains non-colliding.
+  appendArch(facadeTrim, point(0.965, 0, input.playPlaneY), tangent, cross, 2.42, input.playPlaneY + 0.18, 0.88, 0.13, 0.095);
   appendBox(windows, point(1.03, -1.28, input.playPlaneY + 0.35), [0.48, 0.18, 0.026], tangent, cross);
   appendBox(windows, point(1.03, 1.28, input.playPlaneY + 0.35), [0.48, 0.18, 0.026], tangent, cross);
   appendBox(signals, point(1.0, 0, input.playPlaneY + 1.12), [0.32, 0.07, 2.24], tangent, cross);
@@ -223,11 +287,11 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
   // broken into facade/window/signals meshes so the oblique lens can read
   // material variation and scale. These are renderer-owned set dressing only.
   for (const [progress, lateral, height, width, facade] of [
-    [0.12, -2.38, 1.72, 0.62, "dark"],
-    [0.29, 2.28, 1.38, 0.54, "warm"],
-    [0.47, -2.52, 2.06, 0.72, "warm"],
-    [0.66, 2.44, 1.64, 0.58, "dark"],
-    [0.86, -2.34, 1.9, 0.68, "warm"]
+    [0.12, -2.18, 1.36, 0.56, "dark"],
+    [0.29, 2.12, 1.16, 0.5, "warm"],
+    [0.47, -2.3, 1.58, 0.62, "warm"],
+    [0.66, 2.28, 1.34, 0.54, "dark"],
+    [0.86, -2.2, 1.48, 0.58, "warm"]
   ] as const) {
     const facadeMesh = facade === "warm" ? cladding : structure;
     appendBox(facadeMesh, point(progress, lateral, input.playPlaneY + height / 2 - 0.04), [length * 0.105, height, width], tangent, cross);
@@ -259,6 +323,11 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
 
   const structuralMaterial = material.pbr({ name: "Gale freightway weathered blue alloy", color: "#244d62", roughness: 0.62, metallic: 0.36, emissive: "#153746", emissiveIntensity: 0.18 });
   const claddingMaterial = material.pbr({ name: "Rust Gale oxidized cargo cladding", color: "#9c5942", roughness: 0.68, metallic: 0.2, emissive: "#48261f", emissiveIntensity: 0.14 });
+  const pavingMaterial = material.pbr({ name: "Rust Gale courtyard pavers", color: "#bd927f", roughness: 0.78, metallic: 0.08, emissive: "#3f2526", emissiveIntensity: 0.08 });
+  const pavingAccentMaterial = material.pbr({ name: "Rust Gale slate paver accents", color: "#6f8790", roughness: 0.72, metallic: 0.18, emissive: "#1b3740", emissiveIntensity: 0.1 });
+  const facadeMaterial = material.pbr({ name: "Rust Gale connected facade bays", color: "#3d5662", roughness: 0.58, metallic: 0.3, emissive: "#182d38", emissiveIntensity: 0.16 });
+  const facadeTrimMaterial = material.metal({ name: "Rust Gale facade trim and arrival arch", color: "#c3a58f", roughness: 0.28, metallic: 0.68 });
+  const streetFurnitureMaterial = material.metal({ name: "Rust Gale lamp posts", color: "#142933", roughness: 0.4, metallic: 0.74 });
   const windowMaterial = material.emissive({ name: "Gale terminal cargo windows", color: "#245d68", emissive: "#55bdc9", emissiveIntensity: 0.52, opacity: 0.86 });
   // Signals must read as embedded industrial guidance, not a bright graphic
   // comb that flattens the terminal roof in the chase lens.
@@ -278,6 +347,11 @@ export function createRustGaleFreightway(input: FreightwayInput): readonly AuraS
     geometry.custom(geometry.define(laneMarkers), { name: "Rust Gale inset courier lane markers", material: laneMarkerMaterial }).toJSON(),
     geometry.custom(geometry.define(horizon), { name: "Gale Terminal horizon service towers", material: horizonMaterial }).toJSON(),
     geometry.custom(geometry.define(serviceLights), { name: "Rust Gale amber freight service lamps", material: serviceLightMaterial }).toJSON(),
-    geometry.custom(geometry.define(serviceLightsCool), { name: "Rust Gale cyan freight service lamps", material: serviceLightCoolMaterial }).toJSON()
+    geometry.custom(geometry.define(serviceLightsCool), { name: "Rust Gale cyan freight service lamps", material: serviceLightCoolMaterial }).toJSON(),
+    geometry.custom(geometry.define(paving), { name: "Rust Gale connected courtyard paving", material: pavingMaterial }).toJSON(),
+    geometry.custom(geometry.define(facade), { name: "Rust Gale connected freight facade bays", material: facadeMaterial }).toJSON(),
+    geometry.custom(geometry.define(facadeTrim), { name: "Rust Gale facade trim and arrival threshold", material: facadeTrimMaterial }).toJSON(),
+    geometry.custom(geometry.define(streetFurniture), { name: "Rust Gale grounded courier street lamps", material: streetFurnitureMaterial }).toJSON(),
+    geometry.custom(geometry.define(pavingAccent), { name: "Rust Gale slate courtyard paver accents", material: pavingAccentMaterial }).toJSON()
   ];
 }

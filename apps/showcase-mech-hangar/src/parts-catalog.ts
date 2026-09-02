@@ -1,8 +1,9 @@
 /**
  * Mech Hangar parts catalog — the typed, provenance-tracked part matrix.
  *
- * Every option here comes from the MH-02 curation spike (scripts/curate-parts.mjs),
- * which resolved catalog assets through the CLI with license + provenance recorded.
+ * Every option here comes from the authored MH-2M family curation gate
+ * (scripts/curate-parts.mjs), which resolves typed CLI assets with license and
+ * provenance recorded before a route can mount them.
  * The stat table below is the authored "part -> stats" mapping required by the PRD:
  * chassis drives armor, legs drive speed, arms drive guard strength, and weapons
  * drive power/special cost. Stats are per-option (slot, letter) so a part always
@@ -155,9 +156,9 @@ const PART_ASSET_REFS: Readonly<Record<string, AuraAssetRef<"model">>> = {
 /**
  * Resolve the typed model ref for a part.
  *
- * The generated root asset map only knows keys that exist in aura.assets.json, so while
- * the curation spike is still running (or if a slot failed) lookups fall back to undefined
- * and the route shows the pending state instead of inventing an id or URL.
+ * The generated root asset map only knows keys that exist in aura.assets.json. If
+ * curation is incomplete (or a slot fails), lookups fall back to undefined and
+ * the route shows a pending state instead of inventing an id or URL.
  */
 export function resolvePartAsset(assetKey: string): AuraAssetRef<"model"> | undefined {
   return PART_ASSET_REFS[assetKey];

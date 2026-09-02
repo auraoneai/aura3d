@@ -171,7 +171,7 @@ export function updateHangarHud(
 
   if (!args.catalogReady) {
     const line = el("div", "mech-passport-line is-warn");
-    line.textContent = "Part curation spike pending - mount disabled.";
+    line.textContent = "MH-2M family curation pending - mount disabled.";
     handles.passport.appendChild(line);
     return;
   }

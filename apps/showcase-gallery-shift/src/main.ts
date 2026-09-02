@@ -257,6 +257,7 @@ const PRIMARY_ASSET_REFS = [
   galleryShiftCutawayMuseumWorld,
   assets.showcaseWalkAnimatedGirl,
   assets.showcaseExpressiveRobot,
+  assets.robotcand,
   assets.galleryShiftPedestal,
   assets.galleryShiftExhibitA,
   assets.galleryShiftExhibitB,
@@ -272,6 +273,20 @@ const MAX_CUE_LOG = 48;
 ui.html("#hud", `
   <div class="hall-banner" id="gs-banner" aria-live="polite">GALLERY SHIFT - SNEAK IN, LIFT THREE, WALK OUT</div>
   <div class="review-brief" id="gs-brief" aria-live="polite">STEALTH LINK // SCANNING</div>
+  <div class="mission-rail" id="gs-mission-rail" aria-label="Live heist route">
+    <div class="mission-rail-head"><span>HEIST ROUTE</span><b id="gs-route-state">MARBLE HALL / LIVE</b></div>
+    <div class="mission-steps" aria-label="Exhibit sequence">
+      <span id="gs-step-1" class="mission-step">01 ARCHIVE</span>
+      <span id="gs-step-2" class="mission-step">02 TREASURY</span>
+      <span id="gs-step-3" class="mission-step">03 SKYLINE</span>
+      <span id="gs-step-exit" class="mission-step">EXIT</span>
+    </div>
+    <div class="mission-legend">
+      <span><i class="legend-dot legend-player"></i>PLAYER</span>
+      <span><i class="legend-dot legend-patrol"></i>PATROL TRACK</span>
+      <span><i class="legend-dot legend-los"></i>LIVE LOS</span>
+    </div>
+  </div>
   <div class="detection-wrap" aria-label="Detection meter">
     <span class="meter-label">DETECTION</span>
     <div class="detection-meter"><span id="gs-detection-fill"></span></div>
@@ -484,20 +499,20 @@ function floorClearAdvance(): void {
 // ---------------------------------------------------------------- scene ------
 function guardCharacterNodes(): AuraSceneNode[] {
   return runtime.layout.guards.flatMap((spawn) => {
-    const rover = spawn.id === "guard-1";
+    const archivePatrol = spawn.id === "guard-1";
     // Give the staged guard-1 intercept a materially different,
-    // already-registered industrial security rover, while keeping guard-2
-    // as the animated humanoid sentry. The two typed silhouettes then read as
-    // separate patrol roles instead of two near-identical gold blobs at the
-    // oblique review distance. Both still follow the same authored guard
+    // already-registered textured Robotcand security shell, while keeping
+    // guard-2 as the animated humanoid sentry. The two typed silhouettes then
+    // read as separate patrol roles instead of two near-identical gold blobs at
+    // the oblique review distance. Both still follow the same authored guard
     // state/LOS truth below.
     const nodes: AuraSceneNode[] = [
-      model(rover ? assets.showcaseOrangeIndustrialRobot : assets.showcaseExpressiveRobot, {
+      model(archivePatrol ? assets.robotcand : assets.showcaseExpressiveRobot, {
         name: spawn.id,
         role: "primaryCharacter",
         scaleMode: "fit",
-        // The humanoid sentry's source bounds are taller than the rover's,
-        // so the previous 4.8 m target made guard-2 dominate the museum plan
+        // The humanoid sentry's source bounds are taller than Robotcand's,
+        // so an equal target would make guard-2 dominate the museum plan
         // and read as a giant gold prop beside the infiltrator.  Keep both
         // typed patrol roles prominent but within one believable security
         // scale band in the same top-down frame.
@@ -505,28 +520,33 @@ function guardCharacterNodes(): AuraSceneNode[] {
         // museum plan was in frame.  Lift both typed patrol silhouettes by a
         // restrained amount so the real observer/target relationship survives
         // the wider architectural composition without turning either actor
-        // into a giant room prop.  The rover gets the larger lift because its
+        // into a giant room prop.  Robotcand gets the larger lift because its
         // low profile otherwise disappears beside the humanoid sentry.
-        targetMaxDimension: rover ? 4.75 : 5.1
+        // Robotcand is a materially authored CC-BY-4.0 security shell with
+        // ceramic armour, exposed mechanisms and optic hardware.  Its source
+        // bounds are intentionally much larger than the route's metre-scale
+        // FloorLayout, so fit it to the same ~4.75m patrol envelope as the
+        // previous patrol shell while preserving a grounded, readable silhouette.
+        targetMaxDimension: archivePatrol ? 4.75 : 5.1
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, {
-          tags: ["typed-asset", "guard", "authored-movement", rover ? "rover-sentry" : "animated-sentry"]
+          tags: ["typed-asset", "guard", "authored-movement", archivePatrol ? "robotcand-sentry" : "animated-sentry"]
         }))
         .toJSON(),
       shadows.contact({
         name: `${spawn.id} contact shadow`,
-        footprint: rover ? [1.58, 1.02] : [0.94, 0.68],
+        footprint: archivePatrol ? [1.58, 1.02] : [0.94, 0.68],
         opacity: 0.5,
         color: "#02040a"
       })
         .runtime(game.runtimeNode(`${spawn.id} contact shadow`, { tags: ["stealth-feedback", "contact-grounding", "renderer-owned"] }))
         .toJSON()
     ];
-    // The chest/visor harness is shaped for the humanoid's torso. The rover's
-    // native orange/graphite materials carry its identity without detached
-    // magenta bars crossing the vehicle silhouette.
-    if (!rover) {
+    // The chest/visor harness is shaped for the humanoid's torso. Robotcand's
+    // native ceramic/metal/cable materials carry the archive patrol identity
+    // without detached bars crossing the mech silhouette.
+    if (!archivePatrol) {
       nodes.splice(1, 0,
         geometry.custom(GUARD_DETAIL_GEOMETRY, {
           name: `${spawn.id} sentry identity detail`,
@@ -1088,11 +1108,11 @@ const thiefAnimation = new AnimationController<string>({
   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
   suppressRootMotion: true
 });
-// Guard-1 is the typed industrial rover and carries no embedded humanoid
-// clips; its patrol is the route-local authored transform. Guard-2 is the
-// expressive humanoid sentry and owns the real Idle/Walking/Running clips.
-// Keep the controller slot so guard IDs stay stable in evidence without
-// claiming animation metadata that the rover does not contain.
+// Guard-1 is the typed Robotcand security shell and carries no embedded
+// locomotion clips; its patrol is the route-local authored transform. Guard-2
+// is the expressive humanoid sentry and owns the real Idle/Walking/Running
+// clips. Keep the controller slot so guard IDs stay stable in evidence without
+// claiming animation metadata that Robotcand does not contain.
 const guardAnimations: Array<AnimationController<string> | null> = [
   null,
   new AnimationController<string>({
@@ -1144,6 +1164,13 @@ function playGuardClip(guardId: string, controllerIndex: number, clip: string): 
 // ---------------------------------------------------------------- HUD --------
 const banner = document.getElementById("gs-banner")!;
 const reviewBrief = document.getElementById("gs-brief")!;
+const routeState = document.getElementById("gs-route-state")!;
+const missionStepNodes = [
+  document.getElementById("gs-step-1"),
+  document.getElementById("gs-step-2"),
+  document.getElementById("gs-step-3"),
+  document.getElementById("gs-step-exit")
+].filter((node): node is HTMLElement => node instanceof HTMLElement);
 const detectionFill = document.getElementById("gs-detection-fill")!;
 const liftWrap = document.getElementById("gs-lift")!;
 const liftFill = document.getElementById("gs-lift-fill")!;
@@ -1199,6 +1226,19 @@ function syncHud(): void {
   const seeingGuard = lastThreatSamples.find((sample) => sample.seesThief);
   const objective = runtime.layout.pedestals.find((pedestal) => !runtime.liftedIds.includes(pedestal.id));
   const objectiveLabel = objective ? `OBJECTIVE ${runtime.liftedIds.length + completedBeforeFloor + 1}/3` : "SERVICE EXIT";
+  const missionProgress = Math.min(3, completedBeforeFloor + runtime.liftedIds.length);
+  missionStepNodes.forEach((node, index) => {
+    node.classList.toggle("is-complete", index < missionProgress);
+    node.classList.toggle("is-active", index === missionProgress);
+  });
+  if (objective) {
+    const room = roomAt(objective);
+    const roomName = room?.id.replaceAll("-", " ").toUpperCase() ?? runtime.layout.name.toUpperCase();
+    routeState.textContent = `${roomName} / ${objectiveLabel}`;
+  } else {
+    routeState.textContent = `${runtime.layout.name.toUpperCase()} / SERVICE EXIT ARMED`;
+    missionStepNodes.at(-1)?.classList.add("is-active");
+  }
   reviewBrief.textContent = seeingGuard
     ? `LIVE CONTACT // ${seeingGuard.id.toUpperCase()} HAS LOS // ${objectiveLabel}`
     : `STEALTH LINK // ${objectiveLabel} // ${runtime.ghostRun ? "CLEAN" : "SUSPICIOUS"}`;
@@ -1540,7 +1580,7 @@ function publishEvidence(): void {
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
     primaryAssets: [
-      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseWalkAnimatedGirl", "assets.showcaseExpressiveRobot",
+      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseWalkAnimatedGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
       "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA", "assets.galleryShiftExhibitB",
       "assets.galleryShiftExhibitC", "assets.galleryShiftDisplayCase"
     ],

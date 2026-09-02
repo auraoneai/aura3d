@@ -170,8 +170,10 @@ export const CONSTANT_CATEGORIES = Object.freeze({
     // design inputs, not stale asset dimensions. The track width is consumed by
     // the route-bound racing kit; plume count and review backdrop distance tune
     // the visible feedback family.
-    "FORMULA_ASPHALT_WIDTH", "VISUAL_DRIFT_PLUME_COUNT", "reviewBackdropDistance", "HEADING_CORRECTION_GAIN",
-    "PUNCH_DURATION", "SHARD_LIFETIME", "SHARD_SPEED_MIN", "SHARD_SPEED_MAX", "ATTRACT_IDLE_SECONDS", "DEFAULT_WINDOW_SECONDS"
+    "FORMULA_ASPHALT_WIDTH", "VISUAL_DRIFT_PLUME_COUNT", "ROAD_DETAIL_SURFACE_LIFT", "DRIFT_PARTICLE_GRAVITY",
+    "reviewBackdropDistance", "HEADING_CORRECTION_GAIN",
+    "PUNCH_DURATION", "SHARD_LIFETIME", "SHARD_SPEED_MIN", "SHARD_SPEED_MAX", "ATTRACT_IDLE_SECONDS", "DEFAULT_WINDOW_SECONDS",
+    "DEFAULT_PLAYER_X", "DEFAULT_RIVAL_X"
   ],
   /**
    * 2: Reusable genre defaults. Belong in a shared preset.

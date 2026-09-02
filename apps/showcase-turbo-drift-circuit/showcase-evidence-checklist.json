@@ -13823,7 +13823,7 @@
       },
       "carTrackScaleCompatible": true,
       "noDebugLocatorDisk": true,
-      "trackTopologyEvidence": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-mMVvhB/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+      "trackTopologyEvidence": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-2UMS6v/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
       "assetPairEvidence": {
         "category": "racing",
         "assets": [
@@ -13833,14 +13833,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-        "screenshotSha256": "sha256-bf77e401ccf5dea930b21a333bd87fa90debe3e94525134f1cbe684e7e082516",
+        "screenshotSha256": "sha256-b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c",
         "geometryEvidence": {
           "category": "racing",
           "kind": "racing-track-topology",
           "source": "asset-mesh-extracted",
-          "report": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-mMVvhB/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+          "report": "tests/reports/.aura3d-geometry-showcase-turbo-drift-circuit-2UMS6v/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-bf77e401ccf5dea930b21a333bd87fa90debe3e94525134f1cbe684e7e082516",
+          "routePrimaryScreenshotSha256": "sha256-b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c",
           "assets": [
             {
               "id": "showcaseCc0FormulaRaceCar",

@@ -1,5 +1,85 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## Coordinator receipt — 2026-09-02T22:37Z — final evidence refresh, regression fixes, and Rooftop orientation correction
+
+This receipt is the current execution checkpoint. It is not a completion claim:
+the route-primary and targeted machine evidence is current, but independent visual
+parity, comparator validity, and authorized human release approval still control
+promotion. The work continued in bounded parallel lanes (Turbo, Gravity, Pulse,
+Gallery, Rooftop, and Mech) and was reconciled serially before this receipt.
+
+### Current machine state
+
+- The authoritative route-primary producer ran the full **22/22** route set and
+  passed with no blocking route IDs. The freshness auditor reports **0/22
+  stale** after the final Turbo particle-source and composition synchronization.
+- Root `pnpm typecheck` passed. The focused Turbo contact and replicability
+  suites pass **30/30** after classifying the new visual constants and removing
+  the route-local `gravity:` syntax false positive from the renderer-owned
+  particle config. `pnpm report:replicability` now records **0/22 evidence
+  freshness failures** and **0 unclassified constants**.
+- The API-doc writer completed successfully (`packages: 38`,
+  `exportDeclarations: 1011`). The blocked-route screenshot binding is current
+  again, and all blocked routes remain `prototype-blocked`/`publicShowcase:false`.
+- The current root unit sweep still contains unrelated retained-contract holds:
+  the untracked Meshy relic pilot has no classification row, Skyline compiler
+  fixtures still preserve an older Oobi evidence bundle while the live route uses
+  the Arctic hero, and four release-candidate rows still require named human
+  review. These are recorded below rather than hidden by changing thresholds or
+  inventing approvals.
+
+### Exact current bindings for the six focus lanes
+
+Hashes below are from the files on disk after the final full producer. PNG and
+JSON are route-primary outputs; `sourceHash` is the route source binding recorded
+inside the JSON. Structural `pass` is image/runtime QA only, never visual parity.
+
+| Route | Source binding | JSON SHA-256 | PNG SHA-256 | Structural receipt |
+|---|---|---|---|---|
+| Turbo Drift Circuit | `sha256-5eb252f8e196501523bc4ccde02cf29e45c717d26816c8ca80386b22d8b144d7` | `540c434524b2de4f84d3e7ef6613f011a2b219259f846c1d503c54f5b8cef8c4` | `b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c` | pass; readability 89; 269 draws |
+| Gravity Post | `sha256-d4387640fab0601fcb3508e463934b48d44deda2da4c52822f2b4e78b739abf2` | `04b6ce8b9277aeba7b59c10431ecdecc8593464f79324abc129ea208f8f9b6ae` | `7743ed558a270b58e6b43eb3573eaee673419eb08d3e82bad6d08583c868e624` | pass; readability 100; 497 draws |
+| Pulse Tunnel | `sha256-62a2292ee365c6e92b935730c60360edfba21383802a58eab8f8ee8decf595b9` | `67e8f4c1efec9bd4144db7c9796d67d8175f19ad9052a0f115cfbe1cf8dd7c33` | `32484f00a800d5db6c7bf12a43226d5b74a4967c5b58e454c0938ec035f358b2` | non-required route-primary probe is clipped; playable/sync evidence remains the valid machine path |
+| Mech Hangar | `sha256-3dc5d002850072aa4e1288cefb206d1c071f32632760495aa119a9e435cb2283` | `e929b798b998667fa07adb68931a193dc290ee158ed03393d9010556d832fdcb` | `a0f79642ec411da12f03eaeb5f8afb2ac7b10b79413f773a1955e526a37a78b0` | pass; readability 100; 143 draws; 16/16 modular family |
+| Rooftop Buckets | `sha256-1ce036b57cf437ce72f550b428af79efd5043c4626675bd0d58e1fa6a04b9d5c` | `6d2cf97cb3bd51f7353b006b27f2941a89af36f840535deee1ea640fdb2d9121` | `2653cce85a8959b638fa5e9fa90b4c01363e7d98ce9a402fd20a2c329d84e111` | pass; readability 55; controls in viewport |
+| Gallery Shift | `sha256-d93ab94ed144f1af6bcedd1bf90ec29b569c7f98b1bdfd89e1ab93a2367fe532` | `21c5cfa6d74ef25579d86d2c80b275515b77977f12426efc16241e437bc4c460` | `4d82c07ffcfb324a8ffc3f1d0b56679d1985d11255d11ee1c754f04cf075c9d5` | pass; readability 100; 204 draws |
+
+### Fresh label-hidden review after the final source changes
+
+The critics received anonymous Candidate A/B pixels only. The coordinator maps
+the result to the route after the fact; a machine pass never changes a critic's
+decision.
+
+| Focus lane | Fresh verdict | Largest remaining gap / decision |
+|---|---|---|
+| Turbo Drift Circuit | **reference** | The cars, road, and HUD remain readable, but Art of Rally has richer authored asphalt/material response, lighting, and atmospheric circuit depth. |
+| Gravity Post | **reference** | The courier/skiff route is connected and readable, but Parcel Corps has a stronger courier identity, richer freight-city materials, and more convincing motion/contact. |
+| Pulse Tunnel | **ours** | The typed craft/sentry exchange and HUD read more clearly than the bloom-heavy comparator. The valid playable finale is current; browser-profile sync remains `NO-GO-BROWSER-PROFILE`. |
+| Mech Hangar | **insufficient evidence** | The available comparator is a 640×360 racing frame, not a comparable mech-hangar frame. No parity claim is made; human review remains required. |
+| Gallery Shift | **ours** | The museum/world, actors, LOS wedges, and route rail are crisper and more readable than the comparator. Human Monaco review is still required for release. |
+| Rooftop Buckets | **reference** | The shooter now faces the hoop/launch vector, but Dunk Lords still has denser arena detail, richer athlete surfaces, stronger lighting, and higher-energy effects. |
+
+### Rooftop orientation defect fixed
+
+The reported “player faces the opposite side of the court while throwing” defect
+was a real source bug, not a screenshot interpretation issue. The shooter root
+had a hard-coded yaw while the ball launch vector already pointed from the spot
+to the hoop. `apps/showcase-rooftop-buckets/src/main.ts` now derives yaw with
+`Math.atan2(launchVelocity[0], launchVelocity[2])` from the exact in-flight launch
+velocity (and the preview velocity before release), applies it to both visible and
+hidden shooter nodes, and suppresses idle sway during flight. The fresh
+route-primary PNG above was captured after this change; trajectory, defender,
+contact, reset, and typed-asset contracts were unchanged.
+
+### Honest completion status
+
+The strict visual gauntlet is **still incomplete**. The current six-lane review
+contains two `ours`, three `reference`, and one `insufficient evidence` result;
+the broader 18-route audit therefore remains unresolved. Four non-game
+release-candidate rows also remain blocked by their required named human visual
+review. The next valid actions are another bounded source pass for the three
+`reference` lanes, an approved comparable Mech reference, and authorized human
+review—not another cosmetic loop or a forged status flip.
+
 ## Coordinator receipt — 2026-09-02T19:50Z — parallel final pass and blind review
 
 This is the newest execution receipt. It is deliberately **not** a completion

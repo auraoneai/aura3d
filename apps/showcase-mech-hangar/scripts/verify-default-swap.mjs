@@ -6,9 +6,10 @@
  * verifier is a cheap, deterministic follow-up gate for CI/release scripts. It
  * checks the receipt's producer and route hashes, retained PNG hashes, material
  * and occupancy thresholds, and—critically—that the visible bindings are the
- * four MH-2M modules rather than the Robotcand whole-body fallback.  It exits
- * non-zero until a real modular family is actually rendered as the primary
- * subject; a whole-body shell cannot satisfy the modular-family requirement.
+ * four MH-2M modules rather than a whole-body fallback. The verifier is a
+ * passing follow-up gate now that the authored family is the actual primary
+ * subject; it remains deliberately strict about stale receipts and accidental
+ * fallback bindings.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -93,6 +94,6 @@ const result = {
 console.log(JSON.stringify(result, null, 2));
 if (!result.pass) {
   console.error(`MH-2M default/swap verifier: NO-GO (${blockers.length} blockers)`);
-  console.error("The browser receipt is retained, but its current Robotcand fallback is not proof of a modular family.");
+  console.error("The browser receipt is retained, but its typed MH-2M binding or visual evidence is stale/incomplete.");
   process.exitCode = 1;
 }

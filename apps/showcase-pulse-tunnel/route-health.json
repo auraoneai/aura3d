@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-02T19:02:49.445Z",
+  "generatedAt": "2026-09-02T20:54:39.428Z",
   "appId": "showcase-pulse-tunnel",
   "route": "/apps/showcase-pulse-tunnel/",
   "classification": "prototype-blocked",
@@ -195,19 +195,19 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 107,
+    "sourceOccurrences": 104,
     "primitiveBudget": 160,
     "role": "abstract tunnel structure, obstacles, arena dressing, telegraph, and state-driven feedback around the typed player craft",
     "status": "within-set-dressing-and-abstract-role-budget"
   },
   "clockContract": {
-    "decision": "NO-GO-BROWSER-PROFILE",
+    "decision": "GO",
     "toleranceMs": 80,
-    "naturalFlip": true,
+    "naturalFlip": false,
     "fallbackFlip": {
       "proven": true,
       "reason": "drift-tolerance-exceeded",
-      "flippedAtTime": 2.898666666666667,
+      "flippedAtTime": 11.010666666666669,
       "gameplayContinued": true
     },
     "measuredDriftSamples": [
@@ -216,36 +216,36 @@
         "driftMs": 0
       },
       {
-        "t": 0.883,
-        "driftMs": 119.33
+        "t": 1,
+        "driftMs": 0.2
       },
       {
-        "t": 1.896,
-        "driftMs": 120.6
+        "t": 2.035,
+        "driftMs": -1.37
       },
       {
-        "t": 2.899,
-        "driftMs": 123.13
+        "t": 3.032,
+        "driftMs": -1.4
       },
       {
-        "t": 3.881,
-        "driftMs": 0
+        "t": 4.008,
+        "driftMs": 2
       },
       {
-        "t": 4.889,
-        "driftMs": 0
+        "t": 5,
+        "driftMs": 0.5
       },
       {
-        "t": 5.893,
-        "driftMs": 0
+        "t": 6.003,
+        "driftMs": -0.57
       },
       {
-        "t": 6.904,
-        "driftMs": 0
+        "t": 7.021,
+        "driftMs": -1.63
       },
       {
-        "t": 7.905,
-        "driftMs": 0
+        "t": 8.024,
+        "driftMs": -3
       }
     ],
     "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
@@ -281,10 +281,10 @@
   },
   "performance": {
     "schema": "aura3d-pulse-tunnel-performance/1.0",
-    "generatedAt": "2026-09-02T19:02:37.846Z",
+    "generatedAt": "2026-09-02T20:54:38.308Z",
     "producer": "apps/showcase-pulse-tunnel/scripts/write-performance-report.ts",
     "producerSourceSha256": "b0bf7ffa5aaa9b2860eb31fc44b322f61f876c285b2aaf3331f1fc6dc93e89e2",
-    "routeSourceSha256": "c26295a1b270587d8f5042ead01a32a63af8eeea554f2bbf1e721af3f0a6cf38",
+    "routeSourceSha256": "b6e0fc787d6e5fe7010d6020c1aff4d31fe74d0c3f823ae90766dcbe48d26a40",
     "scope": "Headless fixed-step timing of chart-owned gate, player, and style simulation. GPU/frame-time or audio-device timing parity is not claimed.",
     "samples": 12000,
     "fixedStepSeconds": 0.008333333333333333,
@@ -293,7 +293,7 @@
       "fullRunDrawCalls": 600
     },
     "observed": {
-      "simulationP95Ms": 0.0007,
+      "simulationP95Ms": 0.0011,
       "chartEntries": 51,
       "fullRunDrawCalls": 453
     },
@@ -337,43 +337,43 @@
     "acceptanceArtifacts": [
       {
         "path": "tests/reports/pulse-tunnel/playable-load.png",
-        "sha256": "95f5b7a0f93c75be5983fb101d778e45176cef216227717a354b5cea3195e44f"
+        "sha256": "0c9d2c976c8508a7bf722b4fe029acc16941531d977c87bc14170e916812b86a"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-lane-switch.png",
-        "sha256": "70eb2157024b8fb7c61725dcd3c0891dac6f883099c5cc534946dce7e4e98ec5"
+        "sha256": "4b8aa64c420476684b735629349b523c1c0f21cbe2efaa7c142c20731a65eb07"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-jump.png",
-        "sha256": "3e4afba71b70efc459d3fe5c2857b4d88d1c54c3a2a198c4a3c257f017cea605"
+        "sha256": "24298a59b3bc6af122ccaf42058aed43813f93efdddb086121a09e8be16e88b8"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-graze.png",
-        "sha256": "8ecfb8390f81e756fbdce2ae536802d5e10cbb7b7aacfc7f9ae3e8ce5ff27f9d"
+        "sha256": "661b86c3f036e2da98ead753ca5b416d3c5c8e5a5f1bf8890927ac616c710367"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-drop-section.png",
-        "sha256": "8c9cb6b4d3f68c9ed9f3331a70d4c76e5d59fc4ec6ac674e2432c19b113f0e5b"
+        "sha256": "b6ba14377f06322af2517d3d50661137e30ada34b3f6a1bef1dcd6747d926464"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-shield-break.png",
-        "sha256": "f3a900883c661de41c581aac5f3a014e2aea07bbb6577554bc5c6345eee8cbd8"
+        "sha256": "2f92c6937c791d94e72574c6d974aed5e320b06d632bbe137d32e3d6555a8350"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-finale.png",
-        "sha256": "3dd1a8d6391cb10f82981c73ff295b50bdf325b2bdf850f9f88b0118e78df280"
+        "sha256": "29307ec2c6d54574f154baa14c634f247661e0a8cdd8b705e87e6cd7f231b6b4"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-summary.png",
-        "sha256": "3248871badf8ca06266bc4e9695902fab5859a5cf195b6fae16dd6423a65dd1a"
+        "sha256": "c984ff04c57605fee4775900734d93da53761fb41373a2e1e674176935942d8a"
       },
       {
         "path": "tests/reports/pulse-tunnel/playable-finished.png",
-        "sha256": "c30267323e8537043f58a08db07572c1438a09be00ebc41cb92cfe53f9e6cc41"
+        "sha256": "fc299814a734ae2bf2c662c96a2600e8c9fcea72ce68a58abdf42caa191dd771"
       },
       {
         "path": "tests/reports/pulse-tunnel/mobile.png",
-        "sha256": "399d10ceca529e960f63cbc6c2fd8c531ab3a98b9f47605b61f7e71447a6a449"
+        "sha256": "1f6384ddd3ab8a10048e27daf3a186a39af562c02c92c8c19bb1e880ba3a100b"
       }
     ],
     "performance": "apps/showcase-pulse-tunnel/performance-report.json",

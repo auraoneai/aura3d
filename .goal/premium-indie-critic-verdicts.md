@@ -2,6 +2,28 @@
 
 This file records only pixel-inspected, labels-hidden comparisons. Automated tests, filenames, URLs, and route-health metadata do not qualify as verdicts.
 
+## Current reconciliation — 2026-09-02T22:37Z — post-orientation evidence
+
+This is the latest six-lane reconciliation after the final full route-primary
+producer. It supersedes older hashes and verdicts below without deleting their
+history. The six route-primary JSON/PNG pairs are current and the freshness
+auditor reports 0/22 stale artifacts. The critics saw anonymous Candidate A/B
+pixels with no route names, source hashes, or machine verdicts.
+
+| Route | Current source hash | Current JSON SHA-256 | Current PNG SHA-256 | Fresh blind verdict |
+|---|---|---|---|---|
+| Turbo Drift Circuit | `sha256-5eb252f8e196501523bc4ccde02cf29e45c717d26816c8ca80386b22d8b144d7` | `540c434524b2de4f84d3e7ef6613f011a2b219259f846c1d503c54f5b8cef8c4` | `b1393dcc504f887bb8114d7ba0bced3db41eca323f0f1d8b8081940733a2544c` | **reference** — flatter asphalt/material response and less atmospheric circuit depth than Art of Rally |
+| Gravity Post | `sha256-d4387640fab0601fcb3508e463934b48d44deda2da4c52822f2b4e78b739abf2` | `04b6ce8b9277aeba7b59c10431ecdecc8593464f79324abc129ea208f8f9b6ae` | `7743ed558a270b58e6b43eb3573eaee673419eb08d3e82bad6d08583c868e624` | **reference** — weaker courier identity, freight-city materials, and motion/contact than Parcel Corps |
+| Pulse Tunnel | `sha256-62a2292ee365c6e92b935730c60360edfba21383802a58eab8f8ee8decf595b9` | `67e8f4c1efec9bd4144db7c9796d67d8175f19ad9052a0f115cfbe1cf8dd7c33` | `32484f00a800d5db6c7bf12a43226d5b74a4967c5b58e454c0938ec035f358b2` | **ours** — clearer craft/sentry exchange and HUD; browser-profile sync is still NO-GO |
+| Mech Hangar | `sha256-3dc5d002850072aa4e1288cefb206d1c071f32632760495aa119a9e435cb2283` | `e929b798b998667fa07adb68931a193dc290ee158ed03393d9010556d832fdcb` | `a0f79642ec411da12f03eaeb5f8afb2ac7b10b79413f773a1955e526a37a78b0` | **insufficient evidence** — available comparator is a 640×360 racing frame, not a mech-hangar frame |
+| Gallery Shift | `sha256-d93ab94ed144f1af6bcedd1bf90ec29b569c7f98b1bdfd89e1ab93a2367fe532` | `21c5cfa6d74ef25579d86d2c80b275515b77977f12426efc16241e437bc4c460` | `4d82c07ffcfb324a8ffc3f1d0b56679d1985d11255d11ee1c754f04cf075c9d5` | **ours** — crisper museum/actor/LOS staging and more readable route rail |
+| Rooftop Buckets | `sha256-1ce036b57cf437ce72f550b428af79efd5043c4626675bd0d58e1fa6a04b9d5c` | `6d2cf97cb3bd51f7353b006b27f2941a89af36f840535deee1ea640fdb2d9121` | `2653cce85a8959b638fa5e9fa90b4c01363e7d98ce9a402fd20a2c329d84e111` | **reference** — shooter orientation is corrected, but Dunk Lords has richer athletes, arena depth, lighting, and effects |
+
+The Rooftop shooter-facing bug is closed in source: the visible and hidden
+shooter roots now use `Math.atan2(vx, vz)` from the exact launch/preview vector,
+with idle sway disabled during flight. This receipt does not promote the route;
+the remaining visual gap and human review hold are real.
+
 ## Current reconciliation — 2026-09-02T19:50Z
 
 This receipt supersedes older verdict tables below. Four bounded implementation

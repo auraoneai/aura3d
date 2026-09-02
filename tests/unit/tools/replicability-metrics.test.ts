@@ -151,8 +151,10 @@ describe("the ratio cannot be quoted without its scope", () => {
   it("keeps the Aura Clash outlier visible rather than folded into one headline", () => {
     const report = runMetrics();
     const clash = report.routes.find((route) => route.routeId === "aura-clash-showcase");
-    // Aura Clash alone dominates route-local lines and was not part of this pass.
-    expect((clash?.handAuthoredLines ?? 0) / report.current.routeLocalLines).toBeGreaterThan(0.4);
+    // Aura Clash remains the largest single route-local source even after the
+    // parallel visual lanes expanded Turbo/Skyline/Blockfall. Keep a measured
+    // lower bound rather than freezing the pre-pass 40% denominator.
+    expect((clash?.handAuthoredLines ?? 0) / report.current.routeLocalLines).toBeGreaterThan(0.35);
     expect(report.ratios.visualOnlyAfterExcludingAuraClashOutlier as number)
       .toBeLessThan(report.ratios.visualOnlyAfter as number);
   });
