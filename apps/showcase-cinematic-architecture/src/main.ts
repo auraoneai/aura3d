@@ -279,7 +279,11 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       castShadow: true,
       receiveShadow: true,
       scaleMode: "fit",
-      targetMaxDimension: compactViewport ? 1.46 : 1.78,
+      // The release probe is authored at a 4.8-unit presentation scale, but
+      // the walkthrough camera needs room for the supporting skyline pieces
+      // below. This larger route scale keeps the road grid and facade bands
+      // legible instead of leaving the district as a small lower-half card.
+      targetMaxDimension: compactViewport ? 1.62 : 2.0,
       // The catalog model includes six high-altitude cloud meshes as optional
       // sky dressing. Keep the typed district and its grounded platform as the
       // presentation subject; hiding only those named meshes prevents the
@@ -299,6 +303,39 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
       .position(0.2, compactViewport ? -0.28 : -0.36, -0.62)
       .rotate(0, -0.28, 0)
       .runtime({ id: "architecture-district" }))
+    .add(model(assets.showcaseVoxelBuilding, {
+      name: "typed neon annex tower supporting architecture district",
+      castShadow: true,
+      receiveShadow: true,
+      scaleMode: "fit",
+      // A release-proven typed secondary building gives the wide district a
+      // readable vertical anchor. It is deliberately supporting set dressing;
+      // the Skyline City GLB remains the sole route-primary world subject.
+      targetMaxDimension: compactViewport ? 1.08 : 1.25
+    })
+      .position(compactViewport ? -0.72 : -0.8, compactViewport ? -0.48 : -0.62, -1.52)
+      .rotate(0, 0.22, 0)
+      .runtime({ id: "architecture-annex-tower" }))
+    .add(model(assets.showcaseCityVehicle, {
+      name: "typed district traffic vehicle foreground prop",
+      castShadow: true,
+      receiveShadow: true,
+      scaleMode: "fit",
+      targetMaxDimension: compactViewport ? 0.28 : 0.32
+    })
+      .position(compactViewport ? 0.44 : 0.5, -0.16, compactViewport ? 0.12 : 0.18)
+      .rotate(0, -0.72, 0)
+      .runtime({ id: "architecture-traffic-foreground" }))
+    .add(model(assets.showcaseCityVehicle, {
+      name: "typed district traffic vehicle background prop",
+      castShadow: true,
+      receiveShadow: true,
+      scaleMode: "fit",
+      targetMaxDimension: compactViewport ? 0.24 : 0.28
+    })
+      .position(compactViewport ? -0.22 : -0.32, -0.15, -1.0)
+      .rotate(0, 1.62, 0)
+      .runtime({ id: "architecture-traffic-background" }))
     .add(effects.fog({
       name: "architectural depth haze",
       density: 0.006 + haze * 0.012,

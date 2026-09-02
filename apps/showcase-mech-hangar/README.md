@@ -5,10 +5,11 @@
 Aura3D's typed, provenance-tracked assets are the mechanic. Assemble a mech from the
 original in-repository MH-2M modular family (chassis / arms / legs / weapon, 4 options each), watch
 the stat holograms move, validate the build, lock in, and fight a rival mech driven by the
-engine's `createCombatAi`. The hangar and arena use the release-probed CC-BY Robotcand
-asset as a continuous textured visual shell; the selected MH-2M parts remain the socketed
-build contract and the selected weapon is mounted as a visible hardpoint. Rematches cycle
-rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
+engine's `createCombatAi`. The hangar and arena now present the release-probed MH-2M
+family itself as one connected rigid root/chest/hips/right-hand assembly; the selected
+weapon is visibly socketed at the hand. The separately registered CC-BY Robotcand asset
+remains an attribution-backed fallback reference and is not used to mask the modular
+socket review. Rematches cycle rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
 
 ## Claim boundary (read before quoting this route)
 
@@ -21,10 +22,10 @@ rival aggression: **0.35 keep-away → 0.55 balanced → 0.8 rushdown**.
   no such claim is made anywhere in this route.
 - **Primitives are set dressing** (hangar floor/wall, turntable, pit rims) or
   renderer-owned feedback particles (hit sparks, landing dust). The connected mech silhouette
-  is the typed, release-probed Robotcand GLB shell, while the build contract remains the
-  typed MH-2M assembly plan and its visible weapon hardpoint; a build is never a CSS recolor
-  or a skin swap. Robotcand is a whole-body visual shell, not a reusable modular or animation
-  kit; the four typed MH-2M slots remain the route-local rigid assembly contract.
+  is the typed, release-probed MH-2M family, assembled from four rigid GLBs with shared
+  sockets and material language; a build is never a CSS recolor or a skin swap. Robotcand
+  remains a separate whole-body visual reference and is not a reusable modular or animation
+  kit; the four typed MH-2M slots are the route-local rigid assembly contract.
 - **Prototype.** Independent human visual review is pending; this route is not a public
   release candidate.
 
@@ -39,15 +40,15 @@ missing root-rendered probes. The current gate is **16/16 compatible, 16/16 rele
 16/16 unique geometry hashes: GO**. The report is `parts-curation-report.json`; the hangar
 passport reads its source, author, and CC0 license records.
 
-The connected presentation shell is the separately registered CC-BY-4.0
+The fallback presentation reference is the separately registered CC-BY-4.0
 `assets.robotcand` source by isramtz/Objaverse, with explicit attribution and a
-hash-bound root-renderer probe. It contributes no gameplay simulation or
-modular-kit claim.
+hash-bound root-renderer probe. It contributes no gameplay simulation or modular-kit
+claim and is intentionally hidden while the MH-2M assembly is mounted.
 
 ## Assembly pipeline (player-visible)
 
 1. Cycle slots (`1`-`4`, arrow keys): the preview mech updates the typed MH-2M assembly
-   selection and its shell/hardpoint state — pixels really change (spec-proven).
+   selection and its socketed hardpoint state — pixels really change (spec-proven).
 2. Stat holograms update from an authored part-to-stats table
    (chassis to armor, legs to speed, arms to guard, weapon to power/special cost).
 3. `Enter` builds a `characterAssembly` plan and validates it with

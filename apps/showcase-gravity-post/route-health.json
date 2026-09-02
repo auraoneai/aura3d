@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-01T10:09:07.853Z",
+  "generatedAt": "2026-09-01T20:48:37.512Z",
   "appId": "showcase-gravity-post",
   "route": "/apps/showcase-gravity-post/",
   "classification": "prototype-blocked",
@@ -19,7 +19,7 @@
       "role": "primary-vehicle",
       "status": "release-validated-typed-primary-asset",
       "quality": "release",
-      "hash": "sha256-a32c76ede1b0aa0276a0f10794b3663413db6b689cd50381868dc40c8ecdb1fc",
+      "hash": "sha256-15e45d11eb648d0dc8041d7ed4b8142e02041e8ce06943a8107e7c7a32e1d166",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis"
     },
@@ -39,7 +39,7 @@
       "role": "non-colliding-freight-world",
       "status": "release-validated-typed-supporting-world",
       "quality": "release",
-      "hash": "sha256-cb33a415e9193fd00f3b3f5efa6c69515f7bbc429c74272f20cf094c5d4547db",
+      "hash": "sha256-0536a528ab3a4b5ea8ba3b8962827fc9b34c7e2de0c531d1f6dbff05685c1a04",
       "license": "CC0-1.0",
       "author": "Aura3D synthesis",
       "renderedProbe": "tests/reports/showcase-release-asset-probes/gravityPostFreightDistrict.json",

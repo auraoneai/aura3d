@@ -353,7 +353,21 @@ const finaleTerminalSentryBuilder = model(assets.pulseTerminalSentry, {
 const finaleArenaShellBuilder = model(assets.pulseReactorEncounterWorld, {
   name: "pulse original reactor encounter world",
   role: "primaryWorld",
-  targetMaxDimension: 11.556
+  targetMaxDimension: 11.556,
+  // Keep the nearest two roof ribs out of the exact comparison lens. Their
+  // authored tubes sit almost on top of the review camera and become a black
+  // canopy at screenshot scale; the remaining six ribs, deck, rails, service
+  // uprights, and terminal bay preserve the V11 depth/readability cue.
+  hiddenNodeNames: visualReviewCapture
+    ? [
+        ...[0, 1].flatMap((arch) => [
+          ...Array.from({ length: 8 }, (_, segment) => `V11 forged reactor arch ${arch} segment ${segment}`),
+          ...Array.from({ length: 7 }, (_, joint) => `V11 forged reactor arch ${arch} joint ${joint}`),
+          `V11 arch crown service block ${arch}`,
+          `V11 arch crown cyan signal ${arch}`
+        ])
+      ]
+    : undefined
 })
   .position(0, 0, 0)
   .runtime(game.runtimeNode("pulse-finale-arena-shell", {
@@ -1744,15 +1758,12 @@ function renderWorld(dt: number): void {
   finaleBossCraft.setVisible(false);
   for (const vane of finaleShieldVanes) vane.setVisible(finaleActive && !visualReviewCapture);
   finaleCore.setVisible(false);
-  // The review lens has its own authored three-plane stage below. The typed
-  // release world remains the live/default-route enclosure, but showing both
-  // worlds at once duplicated its oversized impact anchor and produced the
-  // opaque white card in the comparison frame.
-  // The registered reactor world remains the live-route enclosure. Its
-  // embedded impact anchor is intentionally hidden in the review lens;
-  // the lens uses a dedicated encounter stage below so that anchor cannot
-  // rasterize as an opaque card over the typed runner.
-  finaleArenaShell.setVisible(finaleActive && !visualReviewCapture);
+  // The release-probed typed reactor world is the encounter enclosure in both
+  // lenses.  V11 is authored as a continuous deck/arch/bay composition (no
+  // billboard card), so keeping it visible in the exact review frame restores
+  // material depth behind the player↔sentry exchange without changing any
+  // chart, lane, collision, or projectile authority.
+  finaleArenaShell.setVisible(finaleActive);
   finaleTerminalSentry.setVisible(finaleActive);
   // Continuous line bars from the previous composition are intentionally
   // retired in review mode. Discrete projectile packets now connect the

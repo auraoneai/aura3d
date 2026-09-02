@@ -16,19 +16,19 @@ execFileSync("node", [resolve(appDir, "scripts/build-models.mjs")], { cwd: repoR
 const definitions = [
   {
     slot: "chassis", role: "character",
-    suitability: "Original CC0 stylized flat-color primary mech character torso authored at metre scale for the MH-2M root/chest socket envelope; readable cockpit, shoulder, armor, and reactor materials are hash-bound by the retained root render probe. This is a rigid static torso whose behavior is limited to route-local node mounting and combat transforms."
+    suitability: "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms."
   },
   {
     slot: "arms", role: "prop",
-    suitability: "Original CC0 stylized flat-color primary modular mech prop: a paired shoulder-to-hand assembly authored at metre scale around the MH-2M chest socket; readable armor, joint, and identity materials are hash-bound by the retained root render probe. Rigid route-local attachment only."
+    suitability: "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only."
   },
   {
     slot: "legs", role: "prop",
-    suitability: "Original CC0 stylized flat-color primary modular mech prop: a paired hip-to-foot assembly authored at metre scale around the MH-2M hips socket; readable feet, joints, and armor materials are hash-bound by the retained root render probe. Rigid route-local attachment only."
+    suitability: "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only."
   },
   {
     slot: "weapon", role: "weapon",
-    suitability: "Original CC0 stylized flat-color readable held mech weapon authored at metre scale around the MH-2M right-hand socket with declared +Z working orientation; body, mechanism, and energy materials are hash-bound by the retained root render probe. Combat behavior remains route-local."
+    suitability: "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local."
   }
 ];
 

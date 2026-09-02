@@ -1,5 +1,115 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## Coordinator receipt — 2026-09-02T02:22Z
+
+This receipt closes the latest parallel execution batch and records the exact
+evidence boundary before the controlled commit/deploy. It is **not** a visual
+completion claim. The strict gate remains **11 accepted / 6 unresolved**; the
+four separate non-game `visualReview: needs-work` rows remain Product
+Configurator, Smart City Control, Digital Twin Ops, and Cinematic Architecture.
+Machine-green route, build, or deploy evidence never becomes an `ours` label
+without an independent label-hidden pixel review.
+
+### Evidence refreshed in this batch
+
+- **Smart City Control:** source-bound route-primary passed at `555` WebGL2
+  draws with source hash
+  `sha256-9e6fc0681535101f7b508614e32c05b9f9a4cbd359b16c8b1cbe861100332182`.
+  The fresh PNG is
+  `tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png`
+  (SHA-256 `748bdeddec076de40dab8c1d211f93b03770a125825b24e2a4047a6493a18438`).
+  TypeScript, the root showcase Vite build, and the route probe pass. The
+  dense city/vehicle pass is retained, but the independent visual verdict is
+  still `reference`: city-scale depth and facade/material richness remain
+  below the comparator. Keep `visualReview: needs-work`.
+- **Cinematic Architecture:** source-bound route-primary passed with the
+  `scene-plan` backend and `1,502` draws; source hash
+  `sha256-3500a62c2eddf1be0477e65d0ea34c23cff0b4436b7a8b9237da54203eb0d459`.
+  Fresh PNG SHA-256 is
+  `3fefafa66a9740aa73834a5468929b9ce6949db757bda4d0672e6478b1024746`.
+  TypeScript, root Vite build, and the cinematic rendering spec pass. The
+  larger typed city is readable, but the independent verdict remains
+  `reference` because the frame is still a low-detail diorama with a large
+  empty upper field. Keep `visualReview: needs-work`.
+- **Digital Twin Ops:** source-bound route-primary passed with `416` WebGL2
+  draws; source hash
+  `sha256-8f55f61a641555141cc55e48fc6abbc01ddc51bda1df454887c4a13e4a09dff4`.
+  Fresh PNG SHA-256 is
+  `a6e052d79689b93576505e3146244bcbc1a4b2471a742195336ea5f8a21cd865`.
+  Route TypeScript, Vite build, and the Digital Twin browser spec pass. The
+  enlarged robot/conveyor/gantry workcell is clearer, but the independent
+  verdict remains `reference`: it is still a small enclosed cell with flat
+  equipment versus the dense factory comparator. Keep `visualReview: needs-work`.
+- **Gravity Post:** source-bound route-primary passed with `219` WebGL2 draws;
+  source hash
+  `sha256-cbc785b59693112772e8ccd17a6b8c04c2c6169810b8630c23656525271ff687`.
+  Fresh PNG SHA-256 is
+  `b23954114ecdcbc601b8c702c503aa7f4b04559ce5952fd7bc1a3424fb34bf87`.
+  TypeScript, Vite build, playable/scene evidence, and route probe pass. The
+  courier/deck presentation is retained, but the independent visual verdict
+  remains `reference`: courier identity, contact/momentum, and freight-city
+  material/depth remain weak. Gravity stays unresolved.
+- **Skyline Runner:** the one-time current-source revalidation passed with
+  `221` WebGL2 draws and source hash
+  `sha256-d594a64442073cac1351bf1a3c69f8d3652a1e544d88405590baa178a4dfa2ca`.
+  The fresh route-primary PNG SHA-256 is
+  `332d4942c4df0d58799b2481abad9ed27e79b9091686395a6f6500f8490f1bef`.
+  This is visibly a different, brighter forest/runner artifact from the dark
+  screenshot attached in the review thread (the retained local library image
+  also has a different hash). That discrepancy is recorded as stale-evidence
+  reconciliation, not user approval: the route-health blocker and pending
+  explicit visual review remain in force, and Skyline must not be called
+  visually closed from this machine pass alone.
+- **Pulse Tunnel V11 asset-family lane:** the bounded typed family was rebuilt
+  and registered through the normal CLI. The current model hashes are
+  `pulseRunnerCraft` `0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d`,
+  `pulseTerminalSentry`
+  `0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61`, and
+  `pulseReactorEncounterWorld`
+  `9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703`.
+  The deterministic builder source is SHA-256
+  `a301af7bf9e821c5480e8d77375971d715c4cd71d626272779001817f32cfb90`.
+  Scoped release asset validation for all three models, TypeScript, Vite
+  build, and the clock unit suite (`22/22`) pass. The playable producer
+  proves the required movement/collision/restart/pause gates and a 90.0027 s
+  full run; the browser-profile sync receipt honestly remains
+  `NO-GO-BROWSER-PROFILE` after proving deterministic fallback continuity.
+  The current finale PNG SHA-256 is
+  `2b844d95f95e29095f113aa6d3406a6456475e36683a5c7a4161f4cee455bf01`.
+  Pulse remains **`reference`/prototype hold**: the new encounter is still too
+  dark, the arch occludes the frame, and projectile/action-to-HUD causality is
+  under-integrated. Pulse intentionally has no route-primary probe requirement
+  in `tools/showcase-library/route-gates.json`; do not manufacture one.
+- **Mech Hangar modular-family lane:** the normal curation/deploy gate is
+  `GO` for `16/16` compatible, release-accepted, unique-geometry parts, and
+  `mech-hangar-build.spec.ts` passes `3/3`. The current source-bound
+  route-primary probe is deliberately retained as a permitted prototype
+  failure (source hash
+  `sha256-2d590727815c87d7597affb9ee38c19e4006b1c5e1c80a8184c8d641ba600f4d`)
+  with failures `primary-foreground-too-small:724` and
+  `primary-foreground-width:5`; its PNG SHA-256 is
+  `38e24cb93b53fbf29720c14d24648838b31c676a52251d46c8e984636d61a649`.
+  Fresh default/swap/arena captures still read as dark faceted slabs with a
+  detached-looking weapon and weak modular identity. This is an honest
+  **NO-GO**, not a promotion: Mech remains `prototype-blocked` and requires a
+  coherent, visibly connected modular family plus an independent review. The
+  role-aware release metadata was corrected and all sixteen parts were
+  re-registered; the final strict deploy receipt is now zero-warning/zero-failure
+  and the route gate names the four typed MH-2M slots as its primary assembly.
+
+### Release boundary after the batch
+
+The current source changes are not yet in the production deployment. The last
+deployed receipt remains the earlier `da98fbc7` / Vercel deployment
+`dpl_9S3vNFdBn26B11f86oJHM7hcWEs2`; this batch must be committed, pushed, and
+deployed before any new live URL or commit is reported. Only explicit source,
+generated manifest/report, thumbnail, and exact hashed-asset paths will be
+staged; ignored `tests/reports/` and unrelated scratch/candidate material stay
+out of the commit. After deployment, a live smoke pass will verify HTTP 200,
+canvas/readiness, zero page/console errors, and zero failed requests for the
+changed routes. The six strict visual holds and four non-game holds remain
+honest unless an independent visual reviewer changes them.
+
 ## Coordinator receipt — 2026-09-02T01:09Z
 
 The latest bounded parallel batch is pushed and deployed. This is an

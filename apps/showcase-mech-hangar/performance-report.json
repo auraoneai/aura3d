@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-mech-hangar-performance/1.0",
-  "generatedAt": "2026-09-01T10:48:41.358Z",
+  "generatedAt": "2026-09-02T02:25:58.392Z",
   "producer": "apps/showcase-mech-hangar/scripts/write-performance-report.ts",
   "producerSourceSha256": "ea6f8122d0ee660f3082adb6f7d5688ddcd7e7dc365116610ec348bc9f9b7867",
   "routeSourceFiles": [
@@ -12,7 +12,7 @@
     "apps/showcase-mech-hangar/src/parts-generated.ts",
     "apps/showcase-mech-hangar/src/stats.ts"
   ],
-  "routeSourceSha256": "7675406437b697e1ff905e7c97ce231767f6b64cc03e90a510276de9cca7aee1",
+  "routeSourceSha256": "a706c83cef4dbba2a10c7cfd58c66a76392304602c6fda3b9bfd328aae76c312",
   "scope": "Headless fixed-step route-local combat timing plus browser-observed root createAuraApp hangar draw calls. GPU frame-time parity is not claimed.",
   "samples": 20000,
   "fixedStepSeconds": 0.016666666666666666,
@@ -21,9 +21,9 @@
     "hangarDrawCalls": 300
   },
   "observed": {
-    "simulationP95Ms": 0.0033,
+    "simulationP95Ms": 0.0013,
     "matrixSelections": 16,
-    "hangarDrawCalls": 152,
+    "hangarDrawCalls": 120,
     "renderedWidth": 1665,
     "renderedHeight": 1350,
     "compatibilityAccepted": 16,

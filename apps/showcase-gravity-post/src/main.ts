@@ -571,23 +571,12 @@ if (visualReviewCapture) {
   ]);
 }
 if (!visualReviewCapture) sceneBuilder = sceneBuilder.addMany([
-  // The 115 MB orbital-dock model contains hundreds of separately submitted
-  // meshes. Keep it on the public planning board, but omit that redundant
-  // set-dressing copy from the evidence-only chase lens, where the typed Gale
-  // gate plus authored terminal deck already establish destination identity.
-  ...[
-    model(assets.gravityPostDockRing, {
-      name: "Gale Terminal typed orbital dock",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 1.45
-    })
-      .position(galeTerminal.x + 0.08, PLAY_PLANE_Y + 0.02, galeTerminal.z)
-      .rotate(0, 0.28, 0)
-      .runtime(game.runtimeNode("gale-terminal-typed-orbital-dock", {
-        tags: ["typed-asset", "destination-complex", "renderer-owned", "non-colliding"]
-      }))
-  ],
+  // The former 110 MB orbital-dock audition is intentionally not mounted.
+  // It was rejected as a heavy, high-submesh ring and made the normal planning
+  // board spend tens of seconds decoding a redundant destination prop. The
+  // release-validated typed beacon + gate above, together with this authored
+  // terminal deck, keep Gale readable while preserving the same destination
+  // identity and sensor coordinates without loading the rejected asset.
   primitives.box({
     name: "Gale Terminal armored approach deck",
     size: [terminalDeckLength, 0.1, 1.56],

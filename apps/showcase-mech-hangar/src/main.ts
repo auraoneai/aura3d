@@ -55,6 +55,11 @@ const reducedMotion = typeof window !== "undefined"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const visualReviewCapture = typeof window !== "undefined"
   && new URLSearchParams(window.location.search).get("capture") === "review";
+// The authored MH-2M family is now the visible hangar/arena hero.  Robotcand
+// remains registered and mounted as the attribution-backed fallback reference,
+// but is kept out of the frame so the reviewer sees the actual four-part
+// assembly rather than a whole-body shell that can mask socket failures.
+const SHOW_MODULAR_ASSEMBLY = true;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 // ---- world layout -----------------------------------------------------------
@@ -187,13 +192,11 @@ function partNodeBuilders(side: "player" | "rival"): ReturnType<typeof model>[] 
   return builders;
 }
 
-// The validated MH-2M slots remain the mechanic, but the default presentation
-// also needs a connected, production-probed body silhouette. The acquired
-// CC-BY robotcand is a continuous, textured whole-body source with authored
-// ceramic, metal, cable, and optic materials; it is used as the visual shell
-// while the selected typed weapon remains a real hardpoint. The old procedural
-// chassis/arms/legs are kept in the catalog for the assembly contract but are
-// not painted over the shell in the presentation frame.
+// The validated MH-2M slots are the visible presentation as one connected
+// rigid assembly. Robotcand stays in the scene as an attribution-backed
+// fallback reference (and remains in the evidence contract), but the default
+// frame must show the typed chassis/arms/legs/weapon family itself so sockets,
+// material separation, grounding, and swaps can be reviewed honestly.
 function mechShellBuilder(side: "player" | "rival"): ReturnType<typeof model> {
   return model(assets.robotcand, {
     name: "mech-" + side + "-visual-shell",
@@ -686,7 +689,7 @@ function mountSide(
   const parts = selectedParts(selection);
   const shell = shellNodes.get(side);
   if (shell) {
-    shell.setVisible(true);
+    shell.setVisible(!SHOW_MODULAR_ASSEMBLY);
     shell.setPosition(rootPosition[0], rootPosition[1], rootPosition[2]);
     shell.setRotation(0, yaw, 0);
     // Keep the selected build visible in the shell's proportions without
@@ -712,11 +715,10 @@ function mountSide(
         handle.setVisible(false);
         continue;
       }
-      // The release-probed shell owns the connected body silhouette. Keep only
-      // the selected weapon as a real hardpoint; rendering the old procedural
-      // chassis/arms/legs over the shell recreates the disconnected slab failure
-      // that invalidated the previous visual acceptance.
-      if (shell && def.slot !== "weapon") {
+      // In the shell fallback only the selected weapon is a real hardpoint;
+      // modular presentation renders every selected typed slot so the socket
+      // contract is directly visible in the review frame.
+      if (!SHOW_MODULAR_ASSEMBLY && shell && def.slot !== "weapon") {
         handle.setVisible(false);
         continue;
       }

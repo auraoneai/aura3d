@@ -5,11 +5,12 @@ import { fileURLToPath } from "node:url";
 const appDir = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const repoRoot = resolve(appDir, "../..");
 const cli = "packages/aura3d-cli/src/cli.ts";
-const retrievedAt = "2026-08-31T16:30:00Z";
+const retrievedAt = "2026-09-02T01:47:00Z";
+const sourcePage = "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py";
 const definitions = [
-  ["pulseReactorEncounterWorld", "assets/models/pulseReactorEncounterWorld.glb", "world", "Original continuous gameplay-scale reactor world with connected deck, inset lane panels, containment walls, repeated ribs, roof depth, terminal bay, hazard trim, and visible fire/impact anchors. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction, not missing texture evidence; the world is decorative and non-colliding while route-local lanes, gates, projectiles, and collisions remain authoritative."],
-  ["pulseTerminalSentry", "assets/models/pulseTerminalSentry.glb", "character", "Original rigid +Y-up, +Z-forward terminal sentry character with a readable connected silhouette, separated armour, edge plates, mechanics, reactor iris guard, optics, shoulder cannons, crown beacon, wings, and grounded claws. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction; this is a static rigid sculpture, and route-local finale targeting, projectile timing, and hit truth remain authoritative."],
-  ["pulseRunnerCraft", "assets/models/pulseRunnerCraft.glb", "vehicle", "Original compact +Y-up, +Z-forward lane-runner vehicle with a readable connected silhouette, nose lip, upper spine, swept foils, graphite keel, canopy, copper edge trim, stabilizers, and paired drive pods. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction; route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative."]
+  ["pulseReactorEncounterWorld", "assets/models/pulseReactorEncounterWorld.glb", "world", "Original CC0 V11 Pulse reactor encounter world with a continuous chamfered deck, recessed exchange runway, textured panel tiling, service conduits, forged arched ribs, overhead cabinets, and a layered terminal iris chamber. This is a rigid decorative world asset; route-local lanes, gates, projectiles, collisions, scoring, and audio timing remain authoritative."],
+  ["pulseTerminalSentry", "assets/models/pulseTerminalSentry.glb", "character", "Original CC0 V11 rigid Pulse terminal warden character with a readable +Z orientation, connected layered thorax, textured gunmetal shell, ceramic brow and wings, recessed furnace/optic rings, articulated copper spars, rotary cannons, reverse-jointed legs, crown hardware, and grounded talons. It is static presentation geometry; route-local targeting, projectile timing, damage, and outcomes remain authoritative."],
+  ["pulseRunnerCraft", "assets/models/pulseRunnerCraft.glb", "vehicle", "Original CC0 V11 compact Pulse runner craft with a continuous arrowhead fuselage, packed panel shell, raised smoked cockpit, broad delta foils, ceramic/copper leading edges, ventral keel, turbine nacelles, emissive apertures, stabilizers, rivets, and forward shield collar. Route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative."]
 ];
 
 for (const [id, relativeFile, role, suitability] of definitions) {
@@ -18,7 +19,7 @@ for (const [id, relativeFile, role, suitability] of definitions) {
     "exec", "tsx", "--tsconfig", "tsconfig.base.json", cli,
     "assets", "add", source, "--name", id, "--type", "model",
     "--license", "CC0-1.0", "--license-url", "https://creativecommons.org/publicdomain/zero/1.0/",
-    "--source-page", "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+    "--source-page", sourcePage,
     "--download-url", `https://raw.githubusercontent.com/auraoneai/aura3d/main/${source}`,
     "--author", "Aura3D synthesis", "--retrieved-at", retrievedAt,
     "--quality", "release", "--role", role, "--suitability", suitability,

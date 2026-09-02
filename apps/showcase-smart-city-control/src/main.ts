@@ -282,6 +282,18 @@ app.onFrame(({ frame, time }) => {
   const trafficSpeed = controls.traffic ? 1 : 0.18;
   app?.nodes.get("city-traffic-east")?.setPosition(Math.sin(time * trafficSpeed) * 2.1, 0.16, -0.36);
   app?.nodes.get("city-traffic-north")?.setPosition(-0.34, 0.18, Math.cos(time * trafficSpeed * 0.82) * 2.2);
+  // Keep two typed traffic actors visibly attached to the road grid. They are
+  // supporting vehicles (the docking vehicle remains the route-primary hero),
+  // but their bounded lane loops make mobility read as a city scene rather than
+  // isolated telemetry bars.
+  const trafficLoop = ((time * trafficSpeed * 0.12) % 1 + 1) % 1;
+  const trafficCrossLoop = ((time * trafficSpeed * 0.09 + 0.38) % 1 + 1) % 1;
+  app?.nodes.get("city-traffic-east-vehicle")
+    ?.setPosition(-4.7 + trafficLoop * 9.4, 0.28, -2.68)
+    .setRotation(0, Math.PI / 2, 0);
+  app?.nodes.get("city-traffic-north-vehicle")
+    ?.setPosition(2.55, 0.28, -4.3 + trafficCrossLoop * 8.6)
+    .setRotation(0, 0, 0);
   app?.nodes.get("city-data-pulse-core")?.setScale(0.12 + Math.sin(time * 2.2) * 0.025 + controls.alertLevel * 0.0005);
   app?.nodes.get("city-flythrough-drone")?.setPosition(Math.sin(time * 0.42) * 1.8, 1.62 + Math.sin(time * 0.8) * 0.08, Math.cos(time * 0.42) * 1.45);
   if (frame % 12 === 0) publishEvidence("ready");
@@ -309,6 +321,7 @@ function buildSmartCityScene(): SceneBuild {
     // the route chrome.
     .addMany(kitScene.nodes.filter((node) => !(node.kind === "label" && node.name === "city scene kit hud")))
     .addMany(depthNodes)
+    .addMany(createSmartCityTrafficNodes())
     .add(effects.fog({
       name: "smart city operational depth haze",
       density: controls.timeOfDay === "night" ? 0.018 : 0.012,
@@ -425,6 +438,51 @@ function buildSmartCityScene(): SceneBuild {
       district: controls.district
     }
   };
+}
+
+/**
+ * Two typed traffic actors ground the route's mobility telemetry in the city
+ * street grid. The command vehicle remains the only route-primary subject;
+ * these are repeated supporting uses of the same release-validated vehicle
+ * asset, with target size derived from the hero station region.
+ */
+function createSmartCityTrafficNodes(): AuraNodeInput[] {
+  const bounds = cityBounds();
+  const trafficTarget = vehicleTargetMaxDimension() * 0.52;
+  const eastRoad = resolveSemanticRegion(bounds, {
+    id: "east-traffic-road",
+    u: 0.5,
+    v: 0.04,
+    w: 0.265,
+    extent: [0.82, 0.04, 0.05]
+  });
+  const northRoad = resolveSemanticRegion(bounds, {
+    id: "north-traffic-road",
+    u: 0.724,
+    v: 0.04,
+    w: 0.5,
+    extent: [0.05, 0.04, 0.82]
+  });
+  return [
+    model(assets.showcaseCityVehicle, {
+      name: "typed east corridor traffic vehicle",
+      targetMaxDimension: trafficTarget,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(eastRoad.center[0] - eastRoad.size[0] * 0.42, bounds.floorY + 0.28, eastRoad.center[2])
+      .rotate(0, Math.PI / 2, 0)
+      .runtime(game.runtimeNode("city-traffic-east-vehicle", { tags: ["traffic", "typed-asset"] })),
+    model(assets.showcaseCityVehicle, {
+      name: "typed north corridor traffic vehicle",
+      targetMaxDimension: trafficTarget * 0.94,
+      castShadow: false,
+      receiveShadow: true
+    })
+      .position(northRoad.center[0], bounds.floorY + 0.28, northRoad.center[2] - northRoad.size[2] * 0.34)
+      .rotate(0, 0, 0)
+      .runtime(game.runtimeNode("city-traffic-north-vehicle", { tags: ["traffic", "typed-asset"] }))
+  ];
 }
 
 /**

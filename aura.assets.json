@@ -27308,37 +27308,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechArmsA.glb",
-      "outputPath": "public/aura-assets/mechArmsA.5d639e1f.glb",
-      "url": "/aura-assets/mechArmsA.5d639e1f.glb",
-      "hash": "sha256-5d639e1fef3fddf28a4eed06f43dbd9fd6b5886757cf36190a0b4a64ede463d6",
-      "sizeBytes": 14176,
+      "outputPath": "public/aura-assets/mechArmsA.540a07d5.glb",
+      "url": "/aura-assets/mechArmsA.540a07d5.glb",
+      "hash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
+      "sizeBytes": 33132,
       "bounds": [
-        1.92,
-        0.56,
-        0.38
+        2.12,
+        0.681,
+        0.435
       ],
       "boundsMetadata": {
         "min": [
-          -0.96,
-          -0.31,
-          -0.17
+          -1.06,
+          -0.396,
+          -0.2
         ],
         "max": [
-          0.96,
-          0.25,
-          0.21
+          1.06,
+          0.285,
+          0.235
         ],
         "size": [
-          1.92,
-          0.56,
-          0.38
+          2.12,
+          0.681,
+          0.435
         ],
         "center": [
           0,
-          -0.03,
-          0.02
+          -0.055,
+          0.017
         ],
-        "maxDimension": 1.92,
+        "maxDimension": 2.12,
         "grounded": false
       },
       "materials": [
@@ -27465,24 +27465,24 @@
       "thumbnailUrl": "/aura-assets/mechArmsA.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired shoulder-to-hand assembly authored at metre scale around the MH-2M chest socket; readable armor, joint, and identity materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsA.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsA",
-        "sha256": "sha256-96a1d7dddda5bde84f01d96b9e18568d6c4874d01fdcdc33305ace2618109798",
-        "assetHash": "sha256-5d639e1fef3fddf28a4eed06f43dbd9fd6b5886757cf36190a0b4a64ede463d6",
+        "sha256": "sha256-9013e8ae5a6f3af2c9f810132627170ffd4772fb452a4058e3198f7d28ea7d3f",
+        "assetHash": "sha256-540a07d59c58907d88c7bb991e7f9dcd7ecfb50ca5acb3797a95584f59acfe08",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 20,
-        "checkedAt": "2026-08-23T22:11:12.398Z",
+        "colorBuckets": 27,
+        "checkedAt": "2026-09-02T02:06:41.424Z",
         "foregroundBounds": {
-          "x": 125,
-          "y": 243,
-          "width": 510,
-          "height": 167
+          "x": 134,
+          "y": 244,
+          "width": 495,
+          "height": 174
         }
       },
       "warnings": [
@@ -27494,37 +27494,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechArmsB.glb",
-      "outputPath": "public/aura-assets/mechArmsB.64026612.glb",
-      "url": "/aura-assets/mechArmsB.64026612.glb",
-      "hash": "sha256-64026612059e03681865f72eeb514f8d86bd5cdf9999629ad67032262e4dea9b",
-      "sizeBytes": 14200,
+      "outputPath": "public/aura-assets/mechArmsB.249052ba.glb",
+      "url": "/aura-assets/mechArmsB.249052ba.glb",
+      "hash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
+      "sizeBytes": 33124,
       "bounds": [
-        2.1,
-        0.59,
-        0.44
+        2.12,
+        0.681,
+        0.435
       ],
       "boundsMetadata": {
         "min": [
-          -1.05,
-          -0.3,
+          -1.06,
+          -0.396,
           -0.2
         ],
         "max": [
-          1.05,
-          0.29,
-          0.24
+          1.06,
+          0.285,
+          0.235
         ],
         "size": [
-          2.1,
-          0.59,
-          0.44
+          2.12,
+          0.681,
+          0.435
         ],
         "center": [
           0,
-          -0.005,
-          0.02
+          -0.055,
+          0.017
         ],
-        "maxDimension": 2.1,
+        "maxDimension": 2.12,
         "grounded": false
       },
       "materials": [
@@ -27651,24 +27651,24 @@
       "thumbnailUrl": "/aura-assets/mechArmsB.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired shoulder-to-hand assembly authored at metre scale around the MH-2M chest socket; readable armor, joint, and identity materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsB.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsB",
-        "sha256": "sha256-8931f29aa11837f3012a687289b5f47ab34481b927276d946143992f3f86b845",
-        "assetHash": "sha256-64026612059e03681865f72eeb514f8d86bd5cdf9999629ad67032262e4dea9b",
+        "sha256": "sha256-8070f48510bd4ad8aad7093966f772a48a9afbdcfc021389002d28c7de349297",
+        "assetHash": "sha256-249052ba98757a3926c28da60c262c8235def9ce5e51672c26ae43e547e02644",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
         "colorBuckets": 27,
-        "checkedAt": "2026-08-23T22:11:16.984Z",
+        "checkedAt": "2026-09-02T02:06:44.473Z",
         "foregroundBounds": {
-          "x": 128,
+          "x": 134,
           "y": 244,
-          "width": 503,
-          "height": 163
+          "width": 495,
+          "height": 174
         }
       },
       "warnings": [
@@ -27680,37 +27680,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechArmsC.glb",
-      "outputPath": "public/aura-assets/mechArmsC.cb9a416f.glb",
-      "url": "/aura-assets/mechArmsC.cb9a416f.glb",
-      "hash": "sha256-cb9a416f2efd7273d496f6b09bee1fadce50b83d006694bec950222d54d25140",
-      "sizeBytes": 20904,
+      "outputPath": "public/aura-assets/mechArmsC.380eeee7.glb",
+      "url": "/aura-assets/mechArmsC.380eeee7.glb",
+      "hash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
+      "sizeBytes": 33136,
       "bounds": [
-        2.1,
-        0.55,
-        0.36
+        2.147,
+        0.681,
+        0.435
       ],
       "boundsMetadata": {
         "min": [
-          -1.05,
-          -0.3,
-          -0.18
+          -1.073,
+          -0.396,
+          -0.2
         ],
         "max": [
-          1.05,
-          0.25,
-          0.18
+          1.073,
+          0.285,
+          0.235
         ],
         "size": [
-          2.1,
-          0.55,
-          0.36
+          2.147,
+          0.681,
+          0.435
         ],
         "center": [
           0,
-          -0.025,
-          0
+          -0.055,
+          0.017
         ],
-        "maxDimension": 2.1,
+        "maxDimension": 2.147,
         "grounded": false
       },
       "materials": [
@@ -27837,24 +27837,24 @@
       "thumbnailUrl": "/aura-assets/mechArmsC.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired shoulder-to-hand assembly authored at metre scale around the MH-2M chest socket; readable armor, joint, and identity materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsC.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsC",
-        "sha256": "sha256-6666654e191740cbde7f082b08bf7bebf5c9ba42de9f52ace3d2fc527866b45f",
-        "assetHash": "sha256-cb9a416f2efd7273d496f6b09bee1fadce50b83d006694bec950222d54d25140",
+        "sha256": "sha256-76cfffb8cf2302774efdc2ae535f34598117cbac15bb9b17fdc1c281b00dfac2",
+        "assetHash": "sha256-380eeee71e961629b8827b6c6c5a235af3703058d178f1aad1a2f6fe9c949186",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 23,
-        "checkedAt": "2026-08-23T22:11:22.450Z",
+        "colorBuckets": 27,
+        "checkedAt": "2026-09-02T02:06:47.429Z",
         "foregroundBounds": {
-          "x": 124,
-          "y": 248,
-          "width": 514,
-          "height": 152
+          "x": 132,
+          "y": 244,
+          "width": 497,
+          "height": 173
         }
       },
       "warnings": [
@@ -27866,37 +27866,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechArmsD.glb",
-      "outputPath": "public/aura-assets/mechArmsD.a4e87fc5.glb",
-      "url": "/aura-assets/mechArmsD.a4e87fc5.glb",
-      "hash": "sha256-a4e87fc58dc493f97c678334f2c4960efea1c95af05fc16d0c3684f3f238c3c9",
-      "sizeBytes": 18268,
+      "outputPath": "public/aura-assets/mechArmsD.c434c643.glb",
+      "url": "/aura-assets/mechArmsD.c434c643.glb",
+      "hash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
+      "sizeBytes": 33152,
       "bounds": [
-        2.08,
-        0.66,
-        0.26
+        2.134,
+        0.681,
+        0.435
       ],
       "boundsMetadata": {
         "min": [
-          -1.04,
-          -0.41,
-          -0.13
+          -1.067,
+          -0.396,
+          -0.2
         ],
         "max": [
-          1.04,
-          0.25,
-          0.13
+          1.067,
+          0.285,
+          0.235
         ],
         "size": [
-          2.08,
-          0.66,
-          0.26
+          2.134,
+          0.681,
+          0.435
         ],
         "center": [
           0,
-          -0.08,
-          0
+          -0.055,
+          0.017
         ],
-        "maxDimension": 2.08,
+        "maxDimension": 2.134,
         "grounded": false
       },
       "materials": [
@@ -28023,24 +28023,24 @@
       "thumbnailUrl": "/aura-assets/mechArmsD.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired shoulder-to-hand assembly authored at metre scale around the MH-2M chest socket; readable armor, joint, and identity materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary modular arm module: paired shoulder, elbow, wrist, hand, and grip plates authored at metre scale around the shared chest socket; continuous +X/−X joints and separated armor/trim/emissive materials make shoulder-to-hand contact readable. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechArmsD.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechArmsD",
-        "sha256": "sha256-269022dbadf3d86e754c8031edba259d6c2c1a2d1c9421df51f8da42bf8f7611",
-        "assetHash": "sha256-a4e87fc58dc493f97c678334f2c4960efea1c95af05fc16d0c3684f3f238c3c9",
+        "sha256": "sha256-d0743167c1c33c236a112f4f0fdc56ce5ad0b3cbc5f27cfd05f71de2859089fe",
+        "assetHash": "sha256-c434c64313fe0a218c232d5fcd0b98a618ae0956bfc2aa55d60d5eb427343ffe",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 28,
-        "checkedAt": "2026-08-23T22:11:27.273Z",
+        "colorBuckets": 29,
+        "checkedAt": "2026-09-02T02:06:50.377Z",
         "foregroundBounds": {
-          "x": 131,
-          "y": 242,
-          "width": 503,
-          "height": 176
+          "x": 135,
+          "y": 244,
+          "width": 494,
+          "height": 174
         }
       },
       "warnings": [
@@ -28052,42 +28052,43 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechChassisA.glb",
-      "outputPath": "public/aura-assets/mechChassisA.cf1a0af3.glb",
-      "url": "/aura-assets/mechChassisA.cf1a0af3.glb",
-      "hash": "sha256-cf1a0af3a998acfb3c79f889bfaafc1f4390dbba475736f1ea0c24ece1838393",
-      "sizeBytes": 7848,
+      "outputPath": "public/aura-assets/mechChassisA.54133269.glb",
+      "url": "/aura-assets/mechChassisA.54133269.glb",
+      "hash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
+      "sizeBytes": 23440,
       "bounds": [
-        1.4,
-        0.87,
-        0.6
+        1.24,
+        0.85,
+        0.595
       ],
       "boundsMetadata": {
         "min": [
-          -0.7,
-          -0.45,
-          -0.29
+          -0.62,
+          -0.41,
+          -0.28
         ],
         "max": [
-          0.7,
-          0.42,
-          0.31
+          0.62,
+          0.44,
+          0.315
         ],
         "size": [
-          1.4,
-          0.87,
-          0.6
+          1.24,
+          0.85,
+          0.595
         ],
         "center": [
           0,
-          -0.015,
-          0.01
+          0.015,
+          0.017
         ],
-        "maxDimension": 1.4,
+        "maxDimension": 1.24,
         "grounded": false
       },
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
+        "torso-joints-material",
         "cockpit-and-reactor-material"
       ],
       "materialMetadata": [
@@ -28100,6 +28101,13 @@
         },
         {
           "name": "torso-frame-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "torso-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28159,9 +28167,9 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 3,
-        "meshCount": 3,
-        "materialCount": 3,
+        "nodeCount": 4,
+        "meshCount": 4,
+        "materialCount": 4,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -28169,11 +28177,12 @@
         "rootNodeNames": [
           "torso-armor",
           "torso-frame",
+          "torso-joints",
           "cockpit-and-reactor"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 3 nodes across 3 roots."
+          "Detected 4 nodes across 4 roots."
         ]
       },
       "provenance": {
@@ -28205,29 +28214,30 @@
       "nodeNames": [
         "torso-armor",
         "torso-frame",
+        "torso-joints",
         "cockpit-and-reactor"
       ],
       "thumbnailUrl": "/aura-assets/mechChassisA.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Original CC0 stylized flat-color primary mech character torso authored at metre scale for the MH-2M root/chest socket envelope; readable cockpit, shoulder, armor, and reactor materials are hash-bound by the retained root render probe. This is a rigid static torso whose behavior is limited to route-local node mounting and combat transforms.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisA.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisA",
-        "sha256": "sha256-80f6428b7aada92a1f0fcd3f6e7e97b492518597b46a61d189e80ea8e2b8e752",
-        "assetHash": "sha256-cf1a0af3a998acfb3c79f889bfaafc1f4390dbba475736f1ea0c24ece1838393",
+        "sha256": "sha256-919c58fe01e7a79fbafc4fc2c4527773887ca7670427578dc3a2111bf5e65392",
+        "assetHash": "sha256-5413326914b9575e1d3adbecd7ecbd6a8524bc8010de71d14dddce300ba84fc0",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 20,
-        "checkedAt": "2026-08-23T22:10:50.719Z",
+        "colorBuckets": 28,
+        "checkedAt": "2026-09-02T02:06:29.432Z",
         "foregroundBounds": {
-          "x": 143,
-          "y": 211,
-          "width": 454,
-          "height": 282
+          "x": 159,
+          "y": 207,
+          "width": 425,
+          "height": 297
         }
       },
       "warnings": [
@@ -28239,42 +28249,43 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechChassisB.glb",
-      "outputPath": "public/aura-assets/mechChassisB.45f69bc8.glb",
-      "url": "/aura-assets/mechChassisB.45f69bc8.glb",
-      "hash": "sha256-45f69bc8eb367dcbd11a526d87789c67e42145fd497c6a986f6bde76d7030990",
-      "sizeBytes": 7868,
+      "outputPath": "public/aura-assets/mechChassisB.f5911080.glb",
+      "url": "/aura-assets/mechChassisB.f5911080.glb",
+      "hash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
+      "sizeBytes": 23444,
       "bounds": [
-        1.1,
-        0.86,
-        0.68
+        1.318,
+        0.85,
+        0.595
       ],
       "boundsMetadata": {
         "min": [
-          -0.55,
-          -0.45,
-          -0.3
+          -0.659,
+          -0.41,
+          -0.28
         ],
         "max": [
-          0.55,
-          0.41,
-          0.38
+          0.659,
+          0.44,
+          0.315
         ],
         "size": [
-          1.1,
-          0.86,
-          0.68
+          1.318,
+          0.85,
+          0.595
         ],
         "center": [
           0,
-          -0.02,
-          0.04
+          0.015,
+          0.017
         ],
-        "maxDimension": 1.1,
+        "maxDimension": 1.318,
         "grounded": false
       },
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
+        "torso-joints-material",
         "cockpit-and-reactor-material"
       ],
       "materialMetadata": [
@@ -28287,6 +28298,13 @@
         },
         {
           "name": "torso-frame-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "torso-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28346,9 +28364,9 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 3,
-        "meshCount": 3,
-        "materialCount": 3,
+        "nodeCount": 4,
+        "meshCount": 4,
+        "materialCount": 4,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -28356,11 +28374,12 @@
         "rootNodeNames": [
           "torso-armor",
           "torso-frame",
+          "torso-joints",
           "cockpit-and-reactor"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 3 nodes across 3 roots."
+          "Detected 4 nodes across 4 roots."
         ]
       },
       "provenance": {
@@ -28392,29 +28411,30 @@
       "nodeNames": [
         "torso-armor",
         "torso-frame",
+        "torso-joints",
         "cockpit-and-reactor"
       ],
       "thumbnailUrl": "/aura-assets/mechChassisB.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Original CC0 stylized flat-color primary mech character torso authored at metre scale for the MH-2M root/chest socket envelope; readable cockpit, shoulder, armor, and reactor materials are hash-bound by the retained root render probe. This is a rigid static torso whose behavior is limited to route-local node mounting and combat transforms.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisB.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisB",
-        "sha256": "sha256-87d01c152cbf825dd34d3f9ce3cab1f862819145532e8d3b84418a959a75f5a5",
-        "assetHash": "sha256-45f69bc8eb367dcbd11a526d87789c67e42145fd497c6a986f6bde76d7030990",
+        "sha256": "sha256-3be9a808f33bf8ccd2e862d9281201d7f63c2be61ca72c06a00834d63a6df052",
+        "assetHash": "sha256-f591108059cdd5499e1f309c1b7d0a9ba5fd45f4d98532d9d06fe4691151f094",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 23,
-        "checkedAt": "2026-08-23T22:10:56.098Z",
+        "colorBuckets": 28,
+        "checkedAt": "2026-09-02T02:06:32.525Z",
         "foregroundBounds": {
-          "x": 152,
-          "y": 191,
-          "width": 417,
-          "height": 328
+          "x": 155,
+          "y": 210,
+          "width": 435,
+          "height": 286
         }
       },
       "warnings": [
@@ -28426,42 +28446,43 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechChassisC.glb",
-      "outputPath": "public/aura-assets/mechChassisC.39a7f783.glb",
-      "url": "/aura-assets/mechChassisC.39a7f783.glb",
-      "hash": "sha256-39a7f7838fe6f0ab677ab1cda2dd4ea746e645a4095dd49202cb330eac793a50",
-      "sizeBytes": 11200,
+      "outputPath": "public/aura-assets/mechChassisC.f4d99c52.glb",
+      "url": "/aura-assets/mechChassisC.f4d99c52.glb",
+      "hash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
+      "sizeBytes": 23456,
       "bounds": [
-        1.22,
-        0.86,
-        0.78
+        1.24,
+        0.85,
+        0.595
       ],
       "boundsMetadata": {
         "min": [
-          -0.61,
-          -0.45,
-          -0.39
+          -0.62,
+          -0.41,
+          -0.28
         ],
         "max": [
-          0.61,
-          0.41,
-          0.39
+          0.62,
+          0.44,
+          0.315
         ],
         "size": [
-          1.22,
-          0.86,
-          0.78
+          1.24,
+          0.85,
+          0.595
         ],
         "center": [
           0,
-          -0.02,
-          0
+          0.015,
+          0.017
         ],
-        "maxDimension": 1.22,
+        "maxDimension": 1.24,
         "grounded": false
       },
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
+        "torso-joints-material",
         "cockpit-and-reactor-material"
       ],
       "materialMetadata": [
@@ -28474,6 +28495,13 @@
         },
         {
           "name": "torso-frame-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "torso-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28533,9 +28561,9 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 3,
-        "meshCount": 3,
-        "materialCount": 3,
+        "nodeCount": 4,
+        "meshCount": 4,
+        "materialCount": 4,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -28543,11 +28571,12 @@
         "rootNodeNames": [
           "torso-armor",
           "torso-frame",
+          "torso-joints",
           "cockpit-and-reactor"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 3 nodes across 3 roots."
+          "Detected 4 nodes across 4 roots."
         ]
       },
       "provenance": {
@@ -28579,29 +28608,30 @@
       "nodeNames": [
         "torso-armor",
         "torso-frame",
+        "torso-joints",
         "cockpit-and-reactor"
       ],
       "thumbnailUrl": "/aura-assets/mechChassisC.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Original CC0 stylized flat-color primary mech character torso authored at metre scale for the MH-2M root/chest socket envelope; readable cockpit, shoulder, armor, and reactor materials are hash-bound by the retained root render probe. This is a rigid static torso whose behavior is limited to route-local node mounting and combat transforms.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisC.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisC",
-        "sha256": "sha256-a1e93e42a4f869c9ce1ffc37f6e3c2129491da8e848df93d00bd9af4fee537cb",
-        "assetHash": "sha256-39a7f7838fe6f0ab677ab1cda2dd4ea746e645a4095dd49202cb330eac793a50",
+        "sha256": "sha256-e6a1352521f95fe4bdc95c80309b7294067b84e74e3ae2470689babe363c748d",
+        "assetHash": "sha256-f4d99c527a26c478ff70ad22414102a07e6b6b82e8ff6863b76ac356ee83c911",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 21,
-        "checkedAt": "2026-08-23T22:11:02.013Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-09-02T02:06:35.563Z",
         "foregroundBounds": {
-          "x": 162,
-          "y": 208,
-          "width": 413,
-          "height": 292
+          "x": 159,
+          "y": 207,
+          "width": 425,
+          "height": 297
         }
       },
       "warnings": [
@@ -28613,42 +28643,43 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechChassisD.glb",
-      "outputPath": "public/aura-assets/mechChassisD.31df3a5c.glb",
-      "url": "/aura-assets/mechChassisD.31df3a5c.glb",
-      "hash": "sha256-31df3a5cd200e7f11bd7c9324976f47c6bc9c716e26a6d2afbbd54216995bbbf",
-      "sizeBytes": 9896,
+      "outputPath": "public/aura-assets/mechChassisD.e9a2bb04.glb",
+      "url": "/aura-assets/mechChassisD.e9a2bb04.glb",
+      "hash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
+      "sizeBytes": 23444,
       "bounds": [
-        1.3,
-        0.95,
-        0.645
+        1.171,
+        0.85,
+        0.595
       ],
       "boundsMetadata": {
         "min": [
-          -0.65,
-          -0.45,
-          -0.32
+          -0.586,
+          -0.41,
+          -0.28
         ],
         "max": [
-          0.65,
-          0.5,
-          0.325
+          0.586,
+          0.44,
+          0.315
         ],
         "size": [
-          1.3,
-          0.95,
-          0.645
+          1.171,
+          0.85,
+          0.595
         ],
         "center": [
           0,
-          0.025,
-          0.003
+          0.015,
+          0.017
         ],
-        "maxDimension": 1.3,
+        "maxDimension": 1.171,
         "grounded": false
       },
       "materials": [
         "torso-armor-material",
         "torso-frame-material",
+        "torso-joints-material",
         "cockpit-and-reactor-material"
       ],
       "materialMetadata": [
@@ -28661,6 +28692,13 @@
         },
         {
           "name": "torso-frame-material",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "torso-joints-material",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -28720,9 +28758,9 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 3,
-        "meshCount": 3,
-        "materialCount": 3,
+        "nodeCount": 4,
+        "meshCount": 4,
+        "materialCount": 4,
         "textureCount": 0,
         "animationClipCount": 0,
         "skinCount": 0,
@@ -28730,11 +28768,12 @@
         "rootNodeNames": [
           "torso-armor",
           "torso-frame",
+          "torso-joints",
           "cockpit-and-reactor"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 3 nodes across 3 roots."
+          "Detected 4 nodes across 4 roots."
         ]
       },
       "provenance": {
@@ -28766,29 +28805,30 @@
       "nodeNames": [
         "torso-armor",
         "torso-frame",
+        "torso-joints",
         "cockpit-and-reactor"
       ],
       "thumbnailUrl": "/aura-assets/mechChassisD.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Original CC0 stylized flat-color primary mech character torso authored at metre scale for the MH-2M root/chest socket envelope; readable cockpit, shoulder, armor, and reactor materials are hash-bound by the retained root render probe. This is a rigid static torso whose behavior is limited to route-local node mounting and combat transforms.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable character chassis authored at metre scale for the shared root socket envelope; chamfered shoulder pods, collar joint, chest reactor, lower skirt, and separated armor/trim/emissive materials form the continuous torso interface. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. This is a rigid static character module whose behavior is limited to route-local node mounting and combat transforms.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechChassisD.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechChassisD",
-        "sha256": "sha256-3adfcd60c0e21304031b0f660e8f88f50f74293c43b09e3bdf6fa4b7813fcc7c",
-        "assetHash": "sha256-31df3a5cd200e7f11bd7c9324976f47c6bc9c716e26a6d2afbbd54216995bbbf",
+        "sha256": "sha256-32d038e956358636b1ddaab8b551d3962bf8aec35141cfb37077afd8580e745b",
+        "assetHash": "sha256-e9a2bb04e24fed2b81145b2b6ea515dfd78bf83bd063e2bf9b7f9fc31235b267",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 23,
-        "checkedAt": "2026-08-23T22:11:07.383Z",
+        "colorBuckets": 30,
+        "checkedAt": "2026-09-02T02:06:38.494Z",
         "foregroundBounds": {
-          "x": 162,
+          "x": 163,
           "y": 204,
           "width": 416,
-          "height": 309
+          "height": 308
         }
       },
       "warnings": [
@@ -29188,37 +29228,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechLegsA.glb",
-      "outputPath": "public/aura-assets/mechLegsA.e2f19ee1.glb",
-      "url": "/aura-assets/mechLegsA.e2f19ee1.glb",
-      "hash": "sha256-e2f19ee1cbc22537ec74ff8e40df586bde453904cf0dd30ab72b4a7db687a9ca",
-      "sizeBytes": 16316,
+      "outputPath": "public/aura-assets/mechLegsA.4ca17b91.glb",
+      "url": "/aura-assets/mechLegsA.4ca17b91.glb",
+      "hash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
+      "sizeBytes": 31596,
       "bounds": [
-        0.88,
-        0.72,
-        0.48
+        0.85,
+        0.689,
+        0.518
       ],
       "boundsMetadata": {
         "min": [
-          -0.44,
-          -0.43,
-          -0.15
+          -0.425,
+          -0.473,
+          -0.315
         ],
         "max": [
-          0.44,
-          0.29,
-          0.33
+          0.425,
+          0.216,
+          0.203
         ],
         "size": [
-          0.88,
-          0.72,
-          0.48
+          0.85,
+          0.689,
+          0.518
         ],
         "center": [
           0,
-          -0.07,
-          0.09
+          -0.128,
+          -0.056
         ],
-        "maxDimension": 0.88,
+        "maxDimension": 0.85,
         "grounded": false
       },
       "materials": [
@@ -29345,24 +29385,24 @@
       "thumbnailUrl": "/aura-assets/mechLegsA.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired hip-to-foot assembly authored at metre scale around the MH-2M hips socket; readable feet, joints, and armor materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsA.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsA",
-        "sha256": "sha256-1dbc54f1dd14a971c9c445cc13bf8f993dbfc6bb3599b06bea62426f01c1bbd7",
-        "assetHash": "sha256-e2f19ee1cbc22537ec74ff8e40df586bde453904cf0dd30ab72b4a7db687a9ca",
+        "sha256": "sha256-02bf1399cdab5367a5ee951dc3e0c0d9e211801923de6c8f4660772f0978ab37",
+        "assetHash": "sha256-4ca17b91f979aa4791d9a78eac2505e25e44c99a99177c8efaf0382cf1e63fbe",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 24,
-        "checkedAt": "2026-08-23T22:11:33.525Z",
+        "colorBuckets": 25,
+        "checkedAt": "2026-09-02T02:06:53.350Z",
         "foregroundBounds": {
-          "x": 161,
-          "y": 180,
-          "width": 406,
-          "height": 348
+          "x": 166,
+          "y": 182,
+          "width": 397,
+          "height": 342
         }
       },
       "warnings": [
@@ -29374,37 +29414,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechLegsB.glb",
-      "outputPath": "public/aura-assets/mechLegsB.f6945593.glb",
-      "url": "/aura-assets/mechLegsB.f6945593.glb",
-      "hash": "sha256-f6945593126287961461091b426826a85ccc187c5ae0aa7ad61e49df39168495",
-      "sizeBytes": 14248,
+      "outputPath": "public/aura-assets/mechLegsB.79368b1e.glb",
+      "url": "/aura-assets/mechLegsB.79368b1e.glb",
+      "hash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
+      "sizeBytes": 31592,
       "bounds": [
-        0.98,
-        0.68,
-        0.49
+        0.85,
+        0.689,
+        0.518
       ],
       "boundsMetadata": {
         "min": [
-          -0.49,
-          -0.39,
-          -0.21
+          -0.425,
+          -0.473,
+          -0.315
         ],
         "max": [
-          0.49,
-          0.29,
-          0.28
+          0.425,
+          0.216,
+          0.203
         ],
         "size": [
-          0.98,
-          0.68,
-          0.49
+          0.85,
+          0.689,
+          0.518
         ],
         "center": [
           0,
-          -0.05,
-          0.035
+          -0.128,
+          -0.056
         ],
-        "maxDimension": 0.98,
+        "maxDimension": 0.85,
         "grounded": false
       },
       "materials": [
@@ -29531,24 +29571,24 @@
       "thumbnailUrl": "/aura-assets/mechLegsB.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired hip-to-foot assembly authored at metre scale around the MH-2M hips socket; readable feet, joints, and armor materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsB.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsB",
-        "sha256": "sha256-3562d574888335a28e13166a0587c9c6e3869625c21b82199bcb593f63e7cac0",
-        "assetHash": "sha256-f6945593126287961461091b426826a85ccc187c5ae0aa7ad61e49df39168495",
+        "sha256": "sha256-8077a8a5d7de0da47cab9225e51831da9e7309ab7191c325e088f8913066c961",
+        "assetHash": "sha256-79368b1e565ca0f24421a01969490afeb0abb76a2ad746a3376bbca152555c56",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 24,
-        "checkedAt": "2026-08-23T22:11:37.987Z",
+        "colorBuckets": 28,
+        "checkedAt": "2026-09-02T02:06:56.402Z",
         "foregroundBounds": {
-          "x": 152,
-          "y": 193,
-          "width": 429,
-          "height": 313
+          "x": 166,
+          "y": 182,
+          "width": 397,
+          "height": 342
         }
       },
       "warnings": [
@@ -29560,37 +29600,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechLegsC.glb",
-      "outputPath": "public/aura-assets/mechLegsC.dcca6ff4.glb",
-      "url": "/aura-assets/mechLegsC.dcca6ff4.glb",
-      "hash": "sha256-dcca6ff45f4c1577d7243474af2796eabb16150ef4539c028749f26de4554e39",
-      "sizeBytes": 17588,
+      "outputPath": "public/aura-assets/mechLegsC.af7786b5.glb",
+      "url": "/aura-assets/mechLegsC.af7786b5.glb",
+      "hash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
+      "sizeBytes": 31608,
       "bounds": [
-        0.92,
-        0.69,
-        0.44
+        0.85,
+        0.689,
+        0.52
       ],
       "boundsMetadata": {
         "min": [
-          -0.46,
-          -0.4,
-          -0.16
+          -0.425,
+          -0.473,
+          -0.315
         ],
         "max": [
-          0.46,
-          0.29,
-          0.28
+          0.425,
+          0.216,
+          0.205
         ],
         "size": [
-          0.92,
-          0.69,
-          0.44
+          0.85,
+          0.689,
+          0.52
         ],
         "center": [
           0,
-          -0.055,
-          0.06
+          -0.128,
+          -0.055
         ],
-        "maxDimension": 0.92,
+        "maxDimension": 0.85,
         "grounded": false
       },
       "materials": [
@@ -29717,24 +29757,24 @@
       "thumbnailUrl": "/aura-assets/mechLegsC.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired hip-to-foot assembly authored at metre scale around the MH-2M hips socket; readable feet, joints, and armor materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsC.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsC",
-        "sha256": "sha256-953e9f54a6d5bf6139ec276c11692201ea1b6e753e39fd92fce10985e85687bf",
-        "assetHash": "sha256-dcca6ff45f4c1577d7243474af2796eabb16150ef4539c028749f26de4554e39",
+        "sha256": "sha256-e7c33ff600dc9a658ae58f4badc8b8b3eb2fdc7f7cf0b7f8b27bc216d94ff34a",
+        "assetHash": "sha256-af7786b54415f04c197021a19e23068e3dbfbe429638b21a904e7fca2be42abb",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-08-23T22:11:42.762Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-09-02T02:06:59.335Z",
         "foregroundBounds": {
-          "x": 154,
-          "y": 186,
-          "width": 422,
-          "height": 334
+          "x": 163,
+          "y": 180,
+          "width": 400,
+          "height": 344
         }
       },
       "warnings": [
@@ -29746,37 +29786,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechLegsD.glb",
-      "outputPath": "public/aura-assets/mechLegsD.0a9ded04.glb",
-      "url": "/aura-assets/mechLegsD.0a9ded04.glb",
-      "hash": "sha256-0a9ded0491800ce5db3840a7c3a4138d732999349e963826c9b6aeabafeef742",
-      "sizeBytes": 21640,
+      "outputPath": "public/aura-assets/mechLegsD.3aa35f4b.glb",
+      "url": "/aura-assets/mechLegsD.3aa35f4b.glb",
+      "hash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
+      "sizeBytes": 31604,
       "bounds": [
-        0.82,
-        0.75,
-        0.5
+        0.85,
+        0.689,
+        0.518
       ],
       "boundsMetadata": {
         "min": [
-          -0.41,
-          -0.43,
-          -0.14
+          -0.425,
+          -0.473,
+          -0.315
         ],
         "max": [
-          0.41,
-          0.32,
-          0.36
+          0.425,
+          0.216,
+          0.203
         ],
         "size": [
-          0.82,
-          0.75,
-          0.5
+          0.85,
+          0.689,
+          0.518
         ],
         "center": [
           0,
-          -0.055,
-          0.11
+          -0.128,
+          -0.056
         ],
-        "maxDimension": 0.82,
+        "maxDimension": 0.85,
         "grounded": false
       },
       "materials": [
@@ -29903,24 +29943,24 @@
       "thumbnailUrl": "/aura-assets/mechLegsD.thumb.svg",
       "quality": "release",
       "role": "prop",
-      "suitabilityReason": "Original CC0 stylized flat-color primary modular mech prop: a paired hip-to-foot assembly authored at metre scale around the MH-2M hips socket; readable feet, joints, and armor materials are hash-bound by the retained root render probe. Rigid route-local attachment only.",
+      "suitabilityReason": "Original CC0 faceted MH-2M primary readable prop leg module: paired hip, knee, piston, ankle, and planted foot assemblies authored at metre scale around the shared hips socket; the shortened depth envelope keeps both feet grounded beneath the chassis with separated armor/trim/emissive materials. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Rigid route-local attachment only.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechLegsD.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechLegsD",
-        "sha256": "sha256-e3b0b4f126a7f58ccdf72390856e9df219ea3106871e032e90c9b9f25b6de557",
-        "assetHash": "sha256-0a9ded0491800ce5db3840a7c3a4138d732999349e963826c9b6aeabafeef742",
+        "sha256": "sha256-4759bb6f84e3fab9442ad4d58d68618376f9536fb29c2d353e4f0e18b34f506e",
+        "assetHash": "sha256-3aa35f4b327c20af8c907505ca43ede84d0636c9935d044ed9ea9c55b57bf160",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 32,
-        "checkedAt": "2026-08-23T22:11:47.689Z",
+        "colorBuckets": 31,
+        "checkedAt": "2026-09-02T02:07:02.268Z",
         "foregroundBounds": {
-          "x": 169,
-          "y": 174,
-          "width": 390,
-          "height": 366
+          "x": 168,
+          "y": 184,
+          "width": 395,
+          "height": 340
         }
       },
       "warnings": [
@@ -30417,37 +30457,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechWeaponA.glb",
-      "outputPath": "public/aura-assets/mechWeaponA.3295439d.glb",
-      "url": "/aura-assets/mechWeaponA.3295439d.glb",
-      "hash": "sha256-3295439dac0be4e318a101427eeb2ed1b5b1de085c2ce6c23f23d52f78e52a20",
-      "sizeBytes": 10220,
+      "outputPath": "public/aura-assets/mechWeaponA.bf6f1c25.glb",
+      "url": "/aura-assets/mechWeaponA.bf6f1c25.glb",
+      "hash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
+      "sizeBytes": 10084,
       "bounds": [
-        0.28,
-        0.355,
-        1.07
+        0.3,
+        0.495,
+        0.913
       ],
       "boundsMetadata": {
         "min": [
-          -0.14,
-          -0.16,
-          -0.29
+          -0.15,
+          -0.3,
+          -0.2
         ],
         "max": [
-          0.14,
+          0.15,
           0.195,
-          0.78
+          0.713
         ],
         "size": [
-          0.28,
-          0.355,
-          1.07
+          0.3,
+          0.495,
+          0.913
         ],
         "center": [
           0,
-          0.018,
-          0.245
+          -0.053,
+          0.256
         ],
-        "maxDimension": 1.07,
+        "maxDimension": 0.913,
         "grounded": false
       },
       "materials": [
@@ -30574,24 +30614,24 @@
       "thumbnailUrl": "/aura-assets/mechWeaponA.thumb.svg",
       "quality": "release",
       "role": "weapon",
-      "suitabilityReason": "Original CC0 stylized flat-color readable held mech weapon authored at metre scale around the MH-2M right-hand socket with declared +Z working orientation; body, mechanism, and energy materials are hash-bound by the retained root render probe. Combat behavior remains route-local.",
+      "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponA.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponA",
-        "sha256": "sha256-fc7aab2ac9e68df97945bf33455ca892e7b58d842ed0f95a98068bd13c807d4e",
-        "assetHash": "sha256-3295439dac0be4e318a101427eeb2ed1b5b1de085c2ce6c23f23d52f78e52a20",
+        "sha256": "sha256-268fed0e9df0a9fea3510ddf763fab72add1600216e7dc1133bc89e2fc4ac701",
+        "assetHash": "sha256-bf6f1c2540602facf41aa8a0edbab0bef68ffb500160634fd70fda14ab507d57",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 23,
-        "checkedAt": "2026-08-23T22:11:53.780Z",
+        "colorBuckets": 26,
+        "checkedAt": "2026-09-02T02:07:05.238Z",
         "foregroundBounds": {
-          "x": 253,
-          "y": 239,
-          "width": 212,
-          "height": 185
+          "x": 264,
+          "y": 251,
+          "width": 205,
+          "height": 225
         }
       },
       "warnings": [
@@ -30603,37 +30643,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechWeaponB.glb",
-      "outputPath": "public/aura-assets/mechWeaponB.67b9fed6.glb",
-      "url": "/aura-assets/mechWeaponB.67b9fed6.glb",
-      "hash": "sha256-67b9fed6706123f423710ea191793fc73571030f7fc1922a7627d273c60b2641",
-      "sizeBytes": 10892,
+      "outputPath": "public/aura-assets/mechWeaponB.a54dafa8.glb",
+      "url": "/aura-assets/mechWeaponB.a54dafa8.glb",
+      "hash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
+      "sizeBytes": 7664,
       "bounds": [
-        0.32,
-        0.32,
-        0.92
+        0.34,
+        0.45,
+        0.85
       ],
       "boundsMetadata": {
         "min": [
-          -0.16,
-          -0.16,
-          -0.26
+          -0.17,
+          -0.28,
+          -0.17
         ],
         "max": [
-          0.16,
-          0.16,
-          0.66
+          0.17,
+          0.17,
+          0.68
         ],
         "size": [
-          0.32,
-          0.32,
-          0.92
+          0.34,
+          0.45,
+          0.85
         ],
         "center": [
           0,
-          0,
-          0.2
+          -0.055,
+          0.255
         ],
-        "maxDimension": 0.92,
+        "maxDimension": 0.85,
         "grounded": false
       },
       "materials": [
@@ -30760,24 +30800,24 @@
       "thumbnailUrl": "/aura-assets/mechWeaponB.thumb.svg",
       "quality": "release",
       "role": "weapon",
-      "suitabilityReason": "Original CC0 stylized flat-color readable held mech weapon authored at metre scale around the MH-2M right-hand socket with declared +Z working orientation; body, mechanism, and energy materials are hash-bound by the retained root render probe. Combat behavior remains route-local.",
+      "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponB.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponB",
-        "sha256": "sha256-b663e6f7888b6cd60bdc7e894c4d433cd40d9308143be90b2894625453815289",
-        "assetHash": "sha256-67b9fed6706123f423710ea191793fc73571030f7fc1922a7627d273c60b2641",
+        "sha256": "sha256-c298542c7f539967e85ccb72eb25e92872dc5ccc319289333e697cb958e9c405",
+        "assetHash": "sha256-a54dafa86861d244c61cfb4af5f04d8a574a8c96d27f40e603cbe0824b86baf9",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 13,
-        "checkedAt": "2026-08-23T22:11:58.711Z",
+        "colorBuckets": 26,
+        "checkedAt": "2026-09-02T02:07:08.284Z",
         "foregroundBounds": {
-          "x": 264,
-          "y": 230,
-          "width": 215,
-          "height": 199
+          "x": 251,
+          "y": 250,
+          "width": 232,
+          "height": 220
         }
       },
       "warnings": [
@@ -30789,37 +30829,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechWeaponC.glb",
-      "outputPath": "public/aura-assets/mechWeaponC.afcec455.glb",
-      "url": "/aura-assets/mechWeaponC.afcec455.glb",
-      "hash": "sha256-afcec455c67b5cd72f76d04c087b2f6b3adf033670ac4c90332b4a269cc5a5e5",
-      "sizeBytes": 8560,
+      "outputPath": "public/aura-assets/mechWeaponC.fc659725.glb",
+      "url": "/aura-assets/mechWeaponC.fc659725.glb",
+      "hash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
+      "sizeBytes": 9216,
       "bounds": [
-        0.48,
-        0.465,
-        1.23
+        0.44,
+        0.515,
+        1.125
       ],
       "boundsMetadata": {
         "min": [
-          -0.24,
+          -0.22,
           -0.31,
-          -0.34
+          -0.32
         ],
         "max": [
-          0.24,
-          0.155,
-          0.89
+          0.22,
+          0.205,
+          0.805
         ],
         "size": [
-          0.48,
-          0.465,
-          1.23
+          0.44,
+          0.515,
+          1.125
         ],
         "center": [
           0,
-          -0.077,
-          0.275
+          -0.052,
+          0.243
         ],
-        "maxDimension": 1.23,
+        "maxDimension": 1.125,
         "grounded": false
       },
       "materials": [
@@ -30946,24 +30986,24 @@
       "thumbnailUrl": "/aura-assets/mechWeaponC.thumb.svg",
       "quality": "release",
       "role": "weapon",
-      "suitabilityReason": "Original CC0 stylized flat-color readable held mech weapon authored at metre scale around the MH-2M right-hand socket with declared +Z working orientation; body, mechanism, and energy materials are hash-bound by the retained root render probe. Combat behavior remains route-local.",
+      "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponC.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponC",
-        "sha256": "sha256-7e6410f76e6ac4fffd64773da16fec719abf9ae3ca5e4f0f4a80c76275320f9a",
-        "assetHash": "sha256-afcec455c67b5cd72f76d04c087b2f6b3adf033670ac4c90332b4a269cc5a5e5",
+        "sha256": "sha256-d0fed53acacc6d1f0702eb6a7fba6ea0bc539fb32d9d819c289bfc182524b123",
+        "assetHash": "sha256-fc65972556d5518a201effe65bb11d073c02d0e0587625bbb1825a7d8a773436",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 26,
-        "checkedAt": "2026-08-23T22:12:03.159Z",
+        "colorBuckets": 21,
+        "checkedAt": "2026-09-02T02:07:11.220Z",
         "foregroundBounds": {
-          "x": 302,
-          "y": 265,
-          "width": 185,
-          "height": 171
+          "x": 283,
+          "y": 255,
+          "width": 202,
+          "height": 200
         }
       },
       "warnings": [
@@ -30975,37 +31015,37 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-mech-hangar/assets/models/mechWeaponD.glb",
-      "outputPath": "public/aura-assets/mechWeaponD.72597e53.glb",
-      "url": "/aura-assets/mechWeaponD.72597e53.glb",
-      "hash": "sha256-72597e536acff9fc312048041462857637e33ec082ed07f8eaac6ba453559d7b",
-      "sizeBytes": 8568,
+      "outputPath": "public/aura-assets/mechWeaponD.2a7114d3.glb",
+      "url": "/aura-assets/mechWeaponD.2a7114d3.glb",
+      "hash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
+      "sizeBytes": 10784,
       "bounds": [
-        0.64,
-        0.67,
-        0.74
+        0.44,
+        0.52,
+        0.925
       ],
       "boundsMetadata": {
         "min": [
-          -0.32,
-          -0.36,
-          -0.185
+          -0.22,
+          -0.31,
+          -0.115
         ],
         "max": [
-          0.32,
-          0.31,
-          0.555
+          0.22,
+          0.21,
+          0.81
         ],
         "size": [
-          0.64,
-          0.67,
-          0.74
+          0.44,
+          0.52,
+          0.925
         ],
         "center": [
           0,
-          -0.025,
-          0.185
+          -0.05,
+          0.348
         ],
-        "maxDimension": 0.74,
+        "maxDimension": 0.925,
         "grounded": false
       },
       "materials": [
@@ -31132,24 +31172,24 @@
       "thumbnailUrl": "/aura-assets/mechWeaponD.thumb.svg",
       "quality": "release",
       "role": "weapon",
-      "suitabilityReason": "Original CC0 stylized flat-color readable held mech weapon authored at metre scale around the MH-2M right-hand socket with declared +Z working orientation; body, mechanism, and energy materials are hash-bound by the retained root render probe. Combat behavior remains route-local.",
+      "suitabilityReason": "Original CC0 faceted MH-2M readable held weapon authored at metre scale around the shared right-hand socket with declared +Z working orientation; grip, body, barrel/muzzle, mechanism, and emissive energy materials establish a continuous hand-to-muzzle contact line. Its intentionally untextured stylized flat-color materials are an explicit stylized-material rationale verified by the hash-bound root probe. Combat behavior remains route-local.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/mechWeaponD.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=mechWeaponD",
-        "sha256": "sha256-5b81effd371aad4836b7f373651c131a45881a87005764aef963a8b735e60a11",
-        "assetHash": "sha256-72597e536acff9fc312048041462857637e33ec082ed07f8eaac6ba453559d7b",
+        "sha256": "sha256-249d655d16bb90a1e16be51f454086ee6e5fafd7d3b2b4ead1bbc7bcf5505fbd",
+        "assetHash": "sha256-2a7114d3a9dfb9d3ca8684e535359704dd12a570e536bfa27e18db2a4133f6a9",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 23,
-        "checkedAt": "2026-08-23T22:12:07.481Z",
+        "colorBuckets": 25,
+        "checkedAt": "2026-09-02T02:07:14.136Z",
         "foregroundBounds": {
-          "x": 194,
-          "y": 241,
-          "width": 332,
-          "height": 284
+          "x": 286,
+          "y": 259,
+          "width": 205,
+          "height": 215
         }
       },
       "warnings": [
@@ -37915,101 +37955,101 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-pulse-tunnel/assets/models/pulseReactorEncounterWorld.glb",
-      "outputPath": "public/aura-assets/pulseReactorEncounterWorld.0c98db3a.glb",
-      "url": "/aura-assets/pulseReactorEncounterWorld.0c98db3a.glb",
-      "hash": "sha256-0c98db3aa61b4cd746488bd9d7a2e1041bc564f30fa51cf148becf0c94bf3fdd",
-      "sizeBytes": 664068,
+      "outputPath": "public/aura-assets/pulseReactorEncounterWorld.9723eba7.glb",
+      "url": "/aura-assets/pulseReactorEncounterWorld.9723eba7.glb",
+      "hash": "sha256-9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703",
+      "sizeBytes": 2838088,
       "bounds": [
-        8.98,
-        5.462,
-        11.556
+        9.699,
+        4.281,
+        14.8
       ],
       "boundsMetadata": {
         "min": [
-          -4.49,
-          -0.752,
-          -9.73
+          -4.85,
+          -0.42,
+          -12.15
         ],
         "max": [
-          4.49,
-          4.709,
-          1.826
+          4.85,
+          3.861,
+          2.65
         ],
         "size": [
-          8.98,
-          5.462,
-          11.556
+          9.699,
+          4.281,
+          14.8
         ],
         "center": [
           0,
-          1.978,
-          -3.952
+          1.72,
+          -4.75
         ],
-        "maxDimension": 11.556,
+        "maxDimension": 14.8,
         "grounded": false
       },
       "materials": [
-        "amber reactor warning",
-        "rose containment field",
-        "cyan conduit",
-        "aged copper rib",
-        "containment wall blue steel",
-        "reactor deck gunmetal",
-        "reactor deck inset panels",
-        "reactor hazard trim"
+        "V11 reactor cyan power bus",
+        "V11 reactor amber hazard bus",
+        "V11 reactor service ceramic",
+        "V11 reactor machined deck",
+        "V11 reactor heat-copper ribs",
+        "V11 reactor containment wall",
+        "V11 reactor recessed exchange lane",
+        "V11 reactor breach warning"
       ],
       "materialMetadata": [
         {
-          "name": "amber reactor warning",
+          "name": "V11 reactor cyan power bus",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "rose containment field",
+          "name": "V11 reactor amber hazard bus",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "cyan conduit",
+          "name": "V11 reactor service ceramic",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "aged copper rib",
+          "name": "V11 reactor machined deck",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "containment wall blue steel",
+          "name": "V11 reactor heat-copper ribs",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "reactor deck gunmetal",
+          "name": "V11 reactor containment wall",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "reactor deck inset panels",
+          "name": "V11 reactor recessed exchange lane",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "reactor hazard trim",
+          "name": "V11 reactor breach warning",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -38026,22 +38066,23 @@
       },
       "humanoid": {
         "humanoid": false,
-        "status": "non-humanoid",
+        "status": "unknown",
         "confidence": "low",
         "skinCount": 0,
         "jointCount": 0,
-        "matchedBones": [],
+        "matchedBones": [
+          "head"
+        ],
         "missingBones": [
           "hips",
           "spine",
-          "head",
           "leftArm",
           "rightArm",
           "leftLeg",
           "rightLeg"
         ],
         "messages": [
-          "No humanoid skeleton signals detected."
+          "Humanoid status is unknown; missing bone groups: hips, spine, leftArm, rightArm, leftLeg, rightLeg."
         ]
       },
       "skeleton": {
@@ -38061,56 +38102,326 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 10,
-        "meshCount": 10,
+        "nodeCount": 276,
+        "meshCount": 276,
         "materialCount": 8,
-        "textureCount": 0,
+        "textureCount": 3,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "boss fire anchor",
-          "boss fire anchor core",
-          "player impact anchor",
-          "pulse aged copper rib",
-          "pulse amber reactor warning",
-          "pulse containment wall blue steel",
-          "pulse cyan conduit",
-          "pulse reactor deck gunmetal",
-          "pulse reactor deck inset panels",
-          "pulse reactor hazard trim"
+          "V11 arch crown cyan signal 0",
+          "V11 arch crown cyan signal 1",
+          "V11 arch crown cyan signal 2",
+          "V11 arch crown cyan signal 3",
+          "V11 arch crown cyan signal 4",
+          "V11 arch crown cyan signal 5",
+          "V11 arch crown cyan signal 6",
+          "V11 arch crown cyan signal 7",
+          "V11 arch crown service block 0",
+          "V11 arch crown service block 1",
+          "V11 arch crown service block 2",
+          "V11 arch crown service block 3",
+          "V11 arch crown service block 4",
+          "V11 arch crown service block 5",
+          "V11 arch crown service block 6",
+          "V11 arch crown service block 7",
+          "V11 continuous chamfered reactor deck",
+          "V11 forged reactor arch 0 joint 0",
+          "V11 forged reactor arch 0 joint 1",
+          "V11 forged reactor arch 0 joint 2",
+          "V11 forged reactor arch 0 joint 3",
+          "V11 forged reactor arch 0 joint 4",
+          "V11 forged reactor arch 0 joint 5",
+          "V11 forged reactor arch 0 joint 6",
+          "V11 forged reactor arch 0 segment 0",
+          "V11 forged reactor arch 0 segment 1",
+          "V11 forged reactor arch 0 segment 2",
+          "V11 forged reactor arch 0 segment 3",
+          "V11 forged reactor arch 0 segment 4",
+          "V11 forged reactor arch 0 segment 5",
+          "V11 forged reactor arch 0 segment 6",
+          "V11 forged reactor arch 0 segment 7",
+          "V11 forged reactor arch 1 joint 0",
+          "V11 forged reactor arch 1 joint 1",
+          "V11 forged reactor arch 1 joint 2",
+          "V11 forged reactor arch 1 joint 3",
+          "V11 forged reactor arch 1 joint 4",
+          "V11 forged reactor arch 1 joint 5",
+          "V11 forged reactor arch 1 joint 6",
+          "V11 forged reactor arch 1 segment 0",
+          "V11 forged reactor arch 1 segment 1",
+          "V11 forged reactor arch 1 segment 2",
+          "V11 forged reactor arch 1 segment 3",
+          "V11 forged reactor arch 1 segment 4",
+          "V11 forged reactor arch 1 segment 5",
+          "V11 forged reactor arch 1 segment 6",
+          "V11 forged reactor arch 1 segment 7",
+          "V11 forged reactor arch 2 joint 0",
+          "V11 forged reactor arch 2 joint 1",
+          "V11 forged reactor arch 2 joint 2",
+          "V11 forged reactor arch 2 joint 3",
+          "V11 forged reactor arch 2 joint 4",
+          "V11 forged reactor arch 2 joint 5",
+          "V11 forged reactor arch 2 joint 6",
+          "V11 forged reactor arch 2 segment 0",
+          "V11 forged reactor arch 2 segment 1",
+          "V11 forged reactor arch 2 segment 2",
+          "V11 forged reactor arch 2 segment 3",
+          "V11 forged reactor arch 2 segment 4",
+          "V11 forged reactor arch 2 segment 5",
+          "V11 forged reactor arch 2 segment 6",
+          "V11 forged reactor arch 2 segment 7",
+          "V11 forged reactor arch 3 joint 0",
+          "V11 forged reactor arch 3 joint 1",
+          "V11 forged reactor arch 3 joint 2",
+          "V11 forged reactor arch 3 joint 3",
+          "V11 forged reactor arch 3 joint 4",
+          "V11 forged reactor arch 3 joint 5",
+          "V11 forged reactor arch 3 joint 6",
+          "V11 forged reactor arch 3 segment 0",
+          "V11 forged reactor arch 3 segment 1",
+          "V11 forged reactor arch 3 segment 2",
+          "V11 forged reactor arch 3 segment 3",
+          "V11 forged reactor arch 3 segment 4",
+          "V11 forged reactor arch 3 segment 5",
+          "V11 forged reactor arch 3 segment 6",
+          "V11 forged reactor arch 3 segment 7",
+          "V11 forged reactor arch 4 joint 0",
+          "V11 forged reactor arch 4 joint 1",
+          "V11 forged reactor arch 4 joint 2",
+          "V11 forged reactor arch 4 joint 3",
+          "V11 forged reactor arch 4 joint 4",
+          "V11 forged reactor arch 4 joint 5",
+          "V11 forged reactor arch 4 joint 6",
+          "V11 forged reactor arch 4 segment 0",
+          "V11 forged reactor arch 4 segment 1",
+          "V11 forged reactor arch 4 segment 2",
+          "V11 forged reactor arch 4 segment 3",
+          "V11 forged reactor arch 4 segment 4",
+          "V11 forged reactor arch 4 segment 5",
+          "V11 forged reactor arch 4 segment 6",
+          "V11 forged reactor arch 4 segment 7",
+          "V11 forged reactor arch 5 joint 0",
+          "V11 forged reactor arch 5 joint 1",
+          "V11 forged reactor arch 5 joint 2",
+          "V11 forged reactor arch 5 joint 3",
+          "V11 forged reactor arch 5 joint 4",
+          "V11 forged reactor arch 5 joint 5",
+          "V11 forged reactor arch 5 joint 6",
+          "V11 forged reactor arch 5 segment 0",
+          "V11 forged reactor arch 5 segment 1",
+          "V11 forged reactor arch 5 segment 2",
+          "V11 forged reactor arch 5 segment 3",
+          "V11 forged reactor arch 5 segment 4",
+          "V11 forged reactor arch 5 segment 5",
+          "V11 forged reactor arch 5 segment 6",
+          "V11 forged reactor arch 5 segment 7",
+          "V11 forged reactor arch 6 joint 0",
+          "V11 forged reactor arch 6 joint 1",
+          "V11 forged reactor arch 6 joint 2",
+          "V11 forged reactor arch 6 joint 3",
+          "V11 forged reactor arch 6 joint 4",
+          "V11 forged reactor arch 6 joint 5",
+          "V11 forged reactor arch 6 joint 6",
+          "V11 forged reactor arch 6 segment 0",
+          "V11 forged reactor arch 6 segment 1",
+          "V11 forged reactor arch 6 segment 2",
+          "V11 forged reactor arch 6 segment 3",
+          "V11 forged reactor arch 6 segment 4",
+          "V11 forged reactor arch 6 segment 5",
+          "V11 forged reactor arch 6 segment 6",
+          "V11 forged reactor arch 6 segment 7",
+          "V11 forged reactor arch 7 joint 0",
+          "V11 forged reactor arch 7 joint 1",
+          "V11 forged reactor arch 7 joint 2",
+          "V11 forged reactor arch 7 joint 3",
+          "V11 forged reactor arch 7 joint 4",
+          "V11 forged reactor arch 7 joint 5",
+          "V11 forged reactor arch 7 joint 6",
+          "V11 forged reactor arch 7 segment 0",
+          "V11 forged reactor arch 7 segment 1",
+          "V11 forged reactor arch 7 segment 2",
+          "V11 forged reactor arch 7 segment 3",
+          "V11 forged reactor arch 7 segment 4",
+          "V11 forged reactor arch 7 segment 5",
+          "V11 forged reactor arch 7 segment 6",
+          "V11 forged reactor arch 7 segment 7",
+          "V11 longitudinal copper hazard rail 1 joint 0",
+          "V11 longitudinal copper hazard rail 1 joint 1",
+          "V11 longitudinal copper hazard rail 1 segment 0",
+          "V11 longitudinal copper hazard rail 1 segment 1",
+          "V11 longitudinal copper hazard rail 1 segment 2",
+          "V11 longitudinal copper hazard rail -1 joint 0",
+          "V11 longitudinal copper hazard rail -1 joint 1",
+          "V11 longitudinal copper hazard rail -1 segment 0",
+          "V11 longitudinal copper hazard rail -1 segment 1",
+          "V11 longitudinal copper hazard rail -1 segment 2",
+          "V11 longitudinal cyan service artery 1 joint 0",
+          "V11 longitudinal cyan service artery 1 joint 1",
+          "V11 longitudinal cyan service artery 1 segment 0",
+          "V11 longitudinal cyan service artery 1 segment 1",
+          "V11 longitudinal cyan service artery 1 segment 2",
+          "V11 longitudinal cyan service artery -1 joint 0",
+          "V11 longitudinal cyan service artery -1 joint 1",
+          "V11 longitudinal cyan service artery -1 segment 0",
+          "V11 longitudinal cyan service artery -1 segment 1",
+          "V11 longitudinal cyan service artery -1 segment 2",
+          "V11 lower containment wall 1",
+          "V11 lower containment wall -1",
+          "V11 overhead service cabinet 0",
+          "V11 overhead service cabinet 1",
+          "V11 overhead service cabinet 2",
+          "V11 overhead service cabinet 3",
+          "V11 overhead service cabinet 4",
+          "V11 overhead service lamp 0",
+          "V11 overhead service lamp 1",
+          "V11 overhead service lamp 2",
+          "V11 overhead service lamp 3",
+          "V11 overhead service lamp 4",
+          "V11 recessed exchange runway",
+          "V11 runway center seam 0",
+          "V11 runway center seam 1",
+          "V11 runway center seam 2",
+          "V11 runway center seam 3",
+          "V11 runway center seam 4",
+          "V11 runway center seam 5",
+          "V11 runway center seam 6",
+          "V11 runway center seam 7",
+          "V11 runway center seam 8",
+          "V11 runway center seam 9",
+          "V11 runway inset plate 0",
+          "V11 runway inset plate 1",
+          "V11 runway inset plate 2",
+          "V11 runway inset plate 3",
+          "V11 runway inset plate 4",
+          "V11 runway inset plate 5",
+          "V11 runway inset plate 6",
+          "V11 runway inset plate 7",
+          "V11 runway inset plate 8",
+          "V11 runway inset plate 9",
+          "V11 runway panel edge 0 1",
+          "V11 runway panel edge 0 -1",
+          "V11 runway panel edge 1 1",
+          "V11 runway panel edge 1 -1",
+          "V11 runway panel edge 2 1",
+          "V11 runway panel edge 2 -1",
+          "V11 runway panel edge 3 1",
+          "V11 runway panel edge 3 -1",
+          "V11 runway panel edge 4 1",
+          "V11 runway panel edge 4 -1",
+          "V11 runway panel edge 5 1",
+          "V11 runway panel edge 5 -1",
+          "V11 runway panel edge 6 1",
+          "V11 runway panel edge 6 -1",
+          "V11 runway panel edge 7 1",
+          "V11 runway panel edge 7 -1",
+          "V11 runway panel edge 8 1",
+          "V11 runway panel edge 8 -1",
+          "V11 runway panel edge 9 1",
+          "V11 runway panel edge 9 -1",
+          "V11 side service upright 1 0 3.8",
+          "V11 side service upright 1 0 3.56",
+          "V11 side service upright 1 1 3.8",
+          "V11 side service upright 1 1 3.56",
+          "V11 side service upright 1 2 3.8",
+          "V11 side service upright 1 2 3.56",
+          "V11 side service upright 1 3 3.8",
+          "V11 side service upright 1 3 3.56",
+          "V11 side service upright 1 4 3.8",
+          "V11 side service upright 1 4 3.56",
+          "V11 side service upright 1 5 3.8",
+          "V11 side service upright 1 5 3.56",
+          "V11 side service upright 1 6 3.8",
+          "V11 side service upright 1 6 3.56",
+          "V11 side service upright 1 7 3.8",
+          "V11 side service upright 1 7 3.56",
+          "V11 side service upright -1 0 3.8",
+          "V11 side service upright -1 0 3.56",
+          "V11 side service upright -1 1 3.8",
+          "V11 side service upright -1 1 3.56",
+          "V11 side service upright -1 2 3.8",
+          "V11 side service upright -1 2 3.56",
+          "V11 side service upright -1 3 3.8",
+          "V11 side service upright -1 3 3.56",
+          "V11 side service upright -1 4 3.8",
+          "V11 side service upright -1 4 3.56",
+          "V11 side service upright -1 5 3.8",
+          "V11 side service upright -1 5 3.56",
+          "V11 side service upright -1 6 3.8",
+          "V11 side service upright -1 6 3.56",
+          "V11 side service upright -1 7 3.8",
+          "V11 side service upright -1 7 3.56",
+          "V11 terminal amber docking marker 1",
+          "V11 terminal amber docking marker -1",
+          "V11 terminal amber lock iris",
+          "V11 terminal full shadow bulkhead",
+          "V11 terminal iris blade 0",
+          "V11 terminal iris blade 1",
+          "V11 terminal iris blade 2",
+          "V11 terminal iris blade 3",
+          "V11 terminal iris blade 4",
+          "V11 terminal iris blade 5",
+          "V11 terminal iris blade 6",
+          "V11 terminal iris blade 7",
+          "V11 terminal iris blade 8",
+          "V11 terminal iris blade 9",
+          "V11 terminal iris blade 10",
+          "V11 terminal iris blade 11",
+          "V11 terminal layered armored backwall",
+          "V11 terminal outer mechanical iris",
+          "V11 terminal overhead articulated arm 1 joint 0",
+          "V11 terminal overhead articulated arm 1 joint 1",
+          "V11 terminal overhead articulated arm 1 segment 0",
+          "V11 terminal overhead articulated arm 1 segment 1",
+          "V11 terminal overhead articulated arm 1 segment 2",
+          "V11 terminal overhead articulated arm -1 joint 0",
+          "V11 terminal overhead articulated arm -1 joint 1",
+          "V11 terminal overhead articulated arm -1 segment 0",
+          "V11 terminal overhead articulated arm -1 segment 1",
+          "V11 terminal overhead articulated arm -1 segment 2",
+          "V11 terminal raised command dock",
+          "V11 terminal reactor core",
+          "V11 terminal recessed reactor well",
+          "V11 terminal rose breach iris",
+          "V11 upper containment shoulder 1",
+          "V11 upper containment shoulder -1"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 10 nodes across 10 roots."
+          "Detected 276 nodes across 276 roots."
         ]
       },
       "provenance": {
         "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseReactorEncounterWorld.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-pulse-tunnel/assets/models/pulseReactorEncounterWorld.glb",
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D synthesis",
-        "retrievedAt": "2026-08-31T16:30:00Z",
-        "checkedAt": "2026-08-31T16:30:00Z"
+        "retrievedAt": "2026-09-02T01:47:00Z",
+        "checkedAt": "2026-09-02T01:47:00Z"
       },
-      "textures": [],
+      "textures": [
+        "reactor-deck",
+        "reactor-wall",
+        "reactor-lane"
+      ],
       "dependencies": [],
       "orientation": {
         "source": "manifest-override",
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-0c98db3aa61b4cd746488bd9d7a2e1041bc564f30fa51cf148becf0c94bf3fdd",
+        "assetHash": "sha256-9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-09-01T11:31:35.427Z",
+        "checkedAt": "2026-09-02T01:51:16.632Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/pulseReactorEncounterWorld.png",
-          "sha256": "sha256-2ee0bd0bfda0a116ee8f5947c44c70f228e260438134a24dfb432a38d40d7cce",
-          "assetHash": "sha256-0c98db3aa61b4cd746488bd9d7a2e1041bc564f30fa51cf148becf0c94bf3fdd",
-          "checkedAt": "2026-09-01T11:31:35.427Z",
+          "sha256": "sha256-4188791f0042542c29755b8c9346138920e1150977904fd90791df82bf9bd90d",
+          "assetHash": "sha256-9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703",
+          "checkedAt": "2026-09-02T01:51:16.632Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld"
         },
         "messages": [
@@ -38118,42 +38429,307 @@
         ]
       },
       "nodeNames": [
-        "boss fire anchor",
-        "boss fire anchor core",
-        "player impact anchor",
-        "pulse aged copper rib",
-        "pulse amber reactor warning",
-        "pulse containment wall blue steel",
-        "pulse cyan conduit",
-        "pulse reactor deck gunmetal",
-        "pulse reactor deck inset panels",
-        "pulse reactor hazard trim"
+        "V11 arch crown cyan signal 0",
+        "V11 arch crown cyan signal 1",
+        "V11 arch crown cyan signal 2",
+        "V11 arch crown cyan signal 3",
+        "V11 arch crown cyan signal 4",
+        "V11 arch crown cyan signal 5",
+        "V11 arch crown cyan signal 6",
+        "V11 arch crown cyan signal 7",
+        "V11 arch crown service block 0",
+        "V11 arch crown service block 1",
+        "V11 arch crown service block 2",
+        "V11 arch crown service block 3",
+        "V11 arch crown service block 4",
+        "V11 arch crown service block 5",
+        "V11 arch crown service block 6",
+        "V11 arch crown service block 7",
+        "V11 continuous chamfered reactor deck",
+        "V11 forged reactor arch 0 joint 0",
+        "V11 forged reactor arch 0 joint 1",
+        "V11 forged reactor arch 0 joint 2",
+        "V11 forged reactor arch 0 joint 3",
+        "V11 forged reactor arch 0 joint 4",
+        "V11 forged reactor arch 0 joint 5",
+        "V11 forged reactor arch 0 joint 6",
+        "V11 forged reactor arch 0 segment 0",
+        "V11 forged reactor arch 0 segment 1",
+        "V11 forged reactor arch 0 segment 2",
+        "V11 forged reactor arch 0 segment 3",
+        "V11 forged reactor arch 0 segment 4",
+        "V11 forged reactor arch 0 segment 5",
+        "V11 forged reactor arch 0 segment 6",
+        "V11 forged reactor arch 0 segment 7",
+        "V11 forged reactor arch 1 joint 0",
+        "V11 forged reactor arch 1 joint 1",
+        "V11 forged reactor arch 1 joint 2",
+        "V11 forged reactor arch 1 joint 3",
+        "V11 forged reactor arch 1 joint 4",
+        "V11 forged reactor arch 1 joint 5",
+        "V11 forged reactor arch 1 joint 6",
+        "V11 forged reactor arch 1 segment 0",
+        "V11 forged reactor arch 1 segment 1",
+        "V11 forged reactor arch 1 segment 2",
+        "V11 forged reactor arch 1 segment 3",
+        "V11 forged reactor arch 1 segment 4",
+        "V11 forged reactor arch 1 segment 5",
+        "V11 forged reactor arch 1 segment 6",
+        "V11 forged reactor arch 1 segment 7",
+        "V11 forged reactor arch 2 joint 0",
+        "V11 forged reactor arch 2 joint 1",
+        "V11 forged reactor arch 2 joint 2",
+        "V11 forged reactor arch 2 joint 3",
+        "V11 forged reactor arch 2 joint 4",
+        "V11 forged reactor arch 2 joint 5",
+        "V11 forged reactor arch 2 joint 6",
+        "V11 forged reactor arch 2 segment 0",
+        "V11 forged reactor arch 2 segment 1",
+        "V11 forged reactor arch 2 segment 2",
+        "V11 forged reactor arch 2 segment 3",
+        "V11 forged reactor arch 2 segment 4",
+        "V11 forged reactor arch 2 segment 5",
+        "V11 forged reactor arch 2 segment 6",
+        "V11 forged reactor arch 2 segment 7",
+        "V11 forged reactor arch 3 joint 0",
+        "V11 forged reactor arch 3 joint 1",
+        "V11 forged reactor arch 3 joint 2",
+        "V11 forged reactor arch 3 joint 3",
+        "V11 forged reactor arch 3 joint 4",
+        "V11 forged reactor arch 3 joint 5",
+        "V11 forged reactor arch 3 joint 6",
+        "V11 forged reactor arch 3 segment 0",
+        "V11 forged reactor arch 3 segment 1",
+        "V11 forged reactor arch 3 segment 2",
+        "V11 forged reactor arch 3 segment 3",
+        "V11 forged reactor arch 3 segment 4",
+        "V11 forged reactor arch 3 segment 5",
+        "V11 forged reactor arch 3 segment 6",
+        "V11 forged reactor arch 3 segment 7",
+        "V11 forged reactor arch 4 joint 0",
+        "V11 forged reactor arch 4 joint 1",
+        "V11 forged reactor arch 4 joint 2",
+        "V11 forged reactor arch 4 joint 3",
+        "V11 forged reactor arch 4 joint 4",
+        "V11 forged reactor arch 4 joint 5",
+        "V11 forged reactor arch 4 joint 6",
+        "V11 forged reactor arch 4 segment 0",
+        "V11 forged reactor arch 4 segment 1",
+        "V11 forged reactor arch 4 segment 2",
+        "V11 forged reactor arch 4 segment 3",
+        "V11 forged reactor arch 4 segment 4",
+        "V11 forged reactor arch 4 segment 5",
+        "V11 forged reactor arch 4 segment 6",
+        "V11 forged reactor arch 4 segment 7",
+        "V11 forged reactor arch 5 joint 0",
+        "V11 forged reactor arch 5 joint 1",
+        "V11 forged reactor arch 5 joint 2",
+        "V11 forged reactor arch 5 joint 3",
+        "V11 forged reactor arch 5 joint 4",
+        "V11 forged reactor arch 5 joint 5",
+        "V11 forged reactor arch 5 joint 6",
+        "V11 forged reactor arch 5 segment 0",
+        "V11 forged reactor arch 5 segment 1",
+        "V11 forged reactor arch 5 segment 2",
+        "V11 forged reactor arch 5 segment 3",
+        "V11 forged reactor arch 5 segment 4",
+        "V11 forged reactor arch 5 segment 5",
+        "V11 forged reactor arch 5 segment 6",
+        "V11 forged reactor arch 5 segment 7",
+        "V11 forged reactor arch 6 joint 0",
+        "V11 forged reactor arch 6 joint 1",
+        "V11 forged reactor arch 6 joint 2",
+        "V11 forged reactor arch 6 joint 3",
+        "V11 forged reactor arch 6 joint 4",
+        "V11 forged reactor arch 6 joint 5",
+        "V11 forged reactor arch 6 joint 6",
+        "V11 forged reactor arch 6 segment 0",
+        "V11 forged reactor arch 6 segment 1",
+        "V11 forged reactor arch 6 segment 2",
+        "V11 forged reactor arch 6 segment 3",
+        "V11 forged reactor arch 6 segment 4",
+        "V11 forged reactor arch 6 segment 5",
+        "V11 forged reactor arch 6 segment 6",
+        "V11 forged reactor arch 6 segment 7",
+        "V11 forged reactor arch 7 joint 0",
+        "V11 forged reactor arch 7 joint 1",
+        "V11 forged reactor arch 7 joint 2",
+        "V11 forged reactor arch 7 joint 3",
+        "V11 forged reactor arch 7 joint 4",
+        "V11 forged reactor arch 7 joint 5",
+        "V11 forged reactor arch 7 joint 6",
+        "V11 forged reactor arch 7 segment 0",
+        "V11 forged reactor arch 7 segment 1",
+        "V11 forged reactor arch 7 segment 2",
+        "V11 forged reactor arch 7 segment 3",
+        "V11 forged reactor arch 7 segment 4",
+        "V11 forged reactor arch 7 segment 5",
+        "V11 forged reactor arch 7 segment 6",
+        "V11 forged reactor arch 7 segment 7",
+        "V11 longitudinal copper hazard rail 1 joint 0",
+        "V11 longitudinal copper hazard rail 1 joint 1",
+        "V11 longitudinal copper hazard rail 1 segment 0",
+        "V11 longitudinal copper hazard rail 1 segment 1",
+        "V11 longitudinal copper hazard rail 1 segment 2",
+        "V11 longitudinal copper hazard rail -1 joint 0",
+        "V11 longitudinal copper hazard rail -1 joint 1",
+        "V11 longitudinal copper hazard rail -1 segment 0",
+        "V11 longitudinal copper hazard rail -1 segment 1",
+        "V11 longitudinal copper hazard rail -1 segment 2",
+        "V11 longitudinal cyan service artery 1 joint 0",
+        "V11 longitudinal cyan service artery 1 joint 1",
+        "V11 longitudinal cyan service artery 1 segment 0",
+        "V11 longitudinal cyan service artery 1 segment 1",
+        "V11 longitudinal cyan service artery 1 segment 2",
+        "V11 longitudinal cyan service artery -1 joint 0",
+        "V11 longitudinal cyan service artery -1 joint 1",
+        "V11 longitudinal cyan service artery -1 segment 0",
+        "V11 longitudinal cyan service artery -1 segment 1",
+        "V11 longitudinal cyan service artery -1 segment 2",
+        "V11 lower containment wall 1",
+        "V11 lower containment wall -1",
+        "V11 overhead service cabinet 0",
+        "V11 overhead service cabinet 1",
+        "V11 overhead service cabinet 2",
+        "V11 overhead service cabinet 3",
+        "V11 overhead service cabinet 4",
+        "V11 overhead service lamp 0",
+        "V11 overhead service lamp 1",
+        "V11 overhead service lamp 2",
+        "V11 overhead service lamp 3",
+        "V11 overhead service lamp 4",
+        "V11 recessed exchange runway",
+        "V11 runway center seam 0",
+        "V11 runway center seam 1",
+        "V11 runway center seam 2",
+        "V11 runway center seam 3",
+        "V11 runway center seam 4",
+        "V11 runway center seam 5",
+        "V11 runway center seam 6",
+        "V11 runway center seam 7",
+        "V11 runway center seam 8",
+        "V11 runway center seam 9",
+        "V11 runway inset plate 0",
+        "V11 runway inset plate 1",
+        "V11 runway inset plate 2",
+        "V11 runway inset plate 3",
+        "V11 runway inset plate 4",
+        "V11 runway inset plate 5",
+        "V11 runway inset plate 6",
+        "V11 runway inset plate 7",
+        "V11 runway inset plate 8",
+        "V11 runway inset plate 9",
+        "V11 runway panel edge 0 1",
+        "V11 runway panel edge 0 -1",
+        "V11 runway panel edge 1 1",
+        "V11 runway panel edge 1 -1",
+        "V11 runway panel edge 2 1",
+        "V11 runway panel edge 2 -1",
+        "V11 runway panel edge 3 1",
+        "V11 runway panel edge 3 -1",
+        "V11 runway panel edge 4 1",
+        "V11 runway panel edge 4 -1",
+        "V11 runway panel edge 5 1",
+        "V11 runway panel edge 5 -1",
+        "V11 runway panel edge 6 1",
+        "V11 runway panel edge 6 -1",
+        "V11 runway panel edge 7 1",
+        "V11 runway panel edge 7 -1",
+        "V11 runway panel edge 8 1",
+        "V11 runway panel edge 8 -1",
+        "V11 runway panel edge 9 1",
+        "V11 runway panel edge 9 -1",
+        "V11 side service upright 1 0 3.8",
+        "V11 side service upright 1 0 3.56",
+        "V11 side service upright 1 1 3.8",
+        "V11 side service upright 1 1 3.56",
+        "V11 side service upright 1 2 3.8",
+        "V11 side service upright 1 2 3.56",
+        "V11 side service upright 1 3 3.8",
+        "V11 side service upright 1 3 3.56",
+        "V11 side service upright 1 4 3.8",
+        "V11 side service upright 1 4 3.56",
+        "V11 side service upright 1 5 3.8",
+        "V11 side service upright 1 5 3.56",
+        "V11 side service upright 1 6 3.8",
+        "V11 side service upright 1 6 3.56",
+        "V11 side service upright 1 7 3.8",
+        "V11 side service upright 1 7 3.56",
+        "V11 side service upright -1 0 3.8",
+        "V11 side service upright -1 0 3.56",
+        "V11 side service upright -1 1 3.8",
+        "V11 side service upright -1 1 3.56",
+        "V11 side service upright -1 2 3.8",
+        "V11 side service upright -1 2 3.56",
+        "V11 side service upright -1 3 3.8",
+        "V11 side service upright -1 3 3.56",
+        "V11 side service upright -1 4 3.8",
+        "V11 side service upright -1 4 3.56",
+        "V11 side service upright -1 5 3.8",
+        "V11 side service upright -1 5 3.56",
+        "V11 side service upright -1 6 3.8",
+        "V11 side service upright -1 6 3.56",
+        "V11 side service upright -1 7 3.8",
+        "V11 side service upright -1 7 3.56",
+        "V11 terminal amber docking marker 1",
+        "V11 terminal amber docking marker -1",
+        "V11 terminal amber lock iris",
+        "V11 terminal full shadow bulkhead",
+        "V11 terminal iris blade 0",
+        "V11 terminal iris blade 1",
+        "V11 terminal iris blade 2",
+        "V11 terminal iris blade 3",
+        "V11 terminal iris blade 4",
+        "V11 terminal iris blade 5",
+        "V11 terminal iris blade 6",
+        "V11 terminal iris blade 7",
+        "V11 terminal iris blade 8",
+        "V11 terminal iris blade 9",
+        "V11 terminal iris blade 10",
+        "V11 terminal iris blade 11",
+        "V11 terminal layered armored backwall",
+        "V11 terminal outer mechanical iris",
+        "V11 terminal overhead articulated arm 1 joint 0",
+        "V11 terminal overhead articulated arm 1 joint 1",
+        "V11 terminal overhead articulated arm 1 segment 0",
+        "V11 terminal overhead articulated arm 1 segment 1",
+        "V11 terminal overhead articulated arm 1 segment 2",
+        "V11 terminal overhead articulated arm -1 joint 0",
+        "V11 terminal overhead articulated arm -1 joint 1",
+        "V11 terminal overhead articulated arm -1 segment 0",
+        "V11 terminal overhead articulated arm -1 segment 1",
+        "V11 terminal overhead articulated arm -1 segment 2",
+        "V11 terminal raised command dock",
+        "V11 terminal reactor core",
+        "V11 terminal recessed reactor well",
+        "V11 terminal rose breach iris",
+        "V11 upper containment shoulder 1",
+        "V11 upper containment shoulder -1"
       ],
       "thumbnailUrl": "/aura-assets/pulseReactorEncounterWorld.thumb.svg",
       "quality": "release",
       "role": "world",
-      "suitabilityReason": "Original continuous gameplay-scale reactor world with connected deck, inset lane panels, containment walls, repeated ribs, roof depth, terminal bay, hazard trim, and visible fire/impact anchors. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction, not missing texture evidence; the world is decorative and non-colliding while route-local lanes, gates, projectiles, and collisions remain authoritative.",
+      "suitabilityReason": "Original CC0 V11 Pulse reactor encounter world with a continuous chamfered deck, recessed exchange runway, textured panel tiling, service conduits, forged arched ribs, overhead cabinets, and a layered terminal iris chamber. This is a rigid decorative world asset; route-local lanes, gates, projectiles, collisions, scoring, and audio timing remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/pulseReactorEncounterWorld.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseReactorEncounterWorld",
-        "sha256": "sha256-2ee0bd0bfda0a116ee8f5947c44c70f228e260438134a24dfb432a38d40d7cce",
-        "assetHash": "sha256-0c98db3aa61b4cd746488bd9d7a2e1041bc564f30fa51cf148becf0c94bf3fdd",
+        "sha256": "sha256-4188791f0042542c29755b8c9346138920e1150977904fd90791df82bf9bd90d",
+        "assetHash": "sha256-9723eba7376782bce15d97d39a813e38ed7d09500e65e3d3cba38c59116f8703",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 90,
-        "checkedAt": "2026-09-01T11:31:35.427Z",
+        "nonBlankPixels": 450698,
+        "colorBuckets": 99,
+        "checkedAt": "2026-09-02T01:51:16.632Z",
         "foregroundBounds": {
-          "x": 104,
-          "y": 190,
-          "width": 471,
-          "height": 234
+          "x": 90,
+          "y": 135,
+          "width": 494,
+          "height": 289
         }
       },
       "warnings": [
-        "no texture references detected",
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ]
     },
@@ -38162,85 +38738,85 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-pulse-tunnel/assets/models/pulseRunnerCraft.glb",
-      "outputPath": "public/aura-assets/pulseRunnerCraft.ede59085.glb",
-      "url": "/aura-assets/pulseRunnerCraft.ede59085.glb",
-      "hash": "sha256-ede590856a3f27188059c98d4509c4b075d668814091f7d577131b124aa5960f",
-      "sizeBytes": 227596,
+      "outputPath": "public/aura-assets/pulseRunnerCraft.0146f91b.glb",
+      "url": "/aura-assets/pulseRunnerCraft.0146f91b.glb",
+      "hash": "sha256-0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d",
+      "sizeBytes": 538584,
       "bounds": [
-        2.907,
-        0.753,
-        2.55
+        4.243,
+        1.185,
+        3.54
       ],
       "boundsMetadata": {
         "min": [
-          -1.453,
-          -0.04,
-          -1.28
+          -2.121,
+          -0.12,
+          -1.96
         ],
         "max": [
-          1.453,
-          0.712,
-          1.27
+          2.121,
+          1.065,
+          1.58
         ],
         "size": [
-          2.907,
-          0.753,
-          2.55
+          4.243,
+          1.185,
+          3.54
         ],
         "center": [
           0,
-          0.336,
-          -0.005
+          0.473,
+          -0.19
         ],
-        "maxDimension": 2.907,
-        "grounded": true
+        "maxDimension": 4.243,
+        "grounded": false
       },
       "materials": [
-        "runner copper trim",
-        "runner cyan drive",
-        "runner graphite chassis",
-        "runner pearl edge",
-        "runner pearl hull",
-        "runner canopy glass"
+        "V11 runner heat copper trim",
+        "V11 runner ceramic edge",
+        "V11 runner pearl panel shell",
+        "V11 runner graphite underframe",
+        "V11 runner phase emissive",
+        "V11 runner smoked canopy"
       ],
       "materialMetadata": [
         {
-          "name": "runner copper trim",
+          "name": "V11 runner heat copper trim",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "runner cyan drive",
+          "name": "V11 runner ceramic edge",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "runner graphite chassis",
+          "name": "V11 runner pearl panel shell",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "runner pearl edge",
+          "name": "V11 runner graphite underframe",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "runner pearl hull",
+          "name": "V11 runner phase emissive",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "runner canopy glass",
+          "name": "V11 runner smoked canopy",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -38257,22 +38833,23 @@
       },
       "humanoid": {
         "humanoid": false,
-        "status": "non-humanoid",
+        "status": "unknown",
         "confidence": "low",
         "skinCount": 0,
         "jointCount": 0,
-        "matchedBones": [],
+        "matchedBones": [
+          "spine",
+          "head"
+        ],
         "missingBones": [
           "hips",
-          "spine",
-          "head",
           "leftArm",
           "rightArm",
           "leftLeg",
           "rightLeg"
         ],
         "messages": [
-          "No humanoid skeleton signals detected."
+          "Humanoid status is unknown; missing bone groups: hips, leftArm, rightArm, leftLeg, rightLeg."
         ]
       },
       "skeleton": {
@@ -38292,53 +38869,82 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 7,
-        "meshCount": 7,
+        "nodeCount": 33,
+        "meshCount": 33,
         "materialCount": 6,
-        "textureCount": 0,
+        "textureCount": 2,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "pulse runner copper trim",
-          "pulse runner cyan drive",
-          "pulse runner graphite chassis",
-          "pulse runner pearl edge",
-          "pulse runner pearl hull",
-          "runner canopy",
-          "runner canopy brow"
+          "V11 runner canopy dorsal spine",
+          "V11 runner canopy forward frame",
+          "V11 runner ceramic leading edge 1",
+          "V11 runner ceramic leading edge -1",
+          "V11 runner continuous arrowhead fuselage",
+          "V11 runner copper wing cap 1",
+          "V11 runner copper wing cap -1",
+          "V11 runner dorsal stabilizer 1",
+          "V11 runner dorsal stabilizer -1",
+          "V11 runner forward shield collar",
+          "V11 runner integrated cockpit canopy",
+          "V11 runner nose light bar",
+          "V11 runner recessed turbine nacelle 1",
+          "V11 runner recessed turbine nacelle -1",
+          "V11 runner rivet 1",
+          "V11 runner rivet 2",
+          "V11 runner rivet 3",
+          "V11 runner rivet 4",
+          "V11 runner swept delta wing 1",
+          "V11 runner swept delta wing -1",
+          "V11 runner turbine copper race 1",
+          "V11 runner turbine copper race -1",
+          "V11 runner turbine cyan aperture 1",
+          "V11 runner turbine cyan aperture -1",
+          "V11 runner turbine phase pupil 1",
+          "V11 runner turbine phase pupil -1",
+          "V11 runner ventral armored keel",
+          "V11 runner wing service panel 1 0",
+          "V11 runner wing service panel 1 1",
+          "V11 runner wing service panel 1 2",
+          "V11 runner wing service panel -1 0",
+          "V11 runner wing service panel -1 1",
+          "V11 runner wing service panel -1 2"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 7 nodes across 7 roots."
+          "Detected 33 nodes across 33 roots."
         ]
       },
       "provenance": {
         "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseRunnerCraft.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-pulse-tunnel/assets/models/pulseRunnerCraft.glb",
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D synthesis",
-        "retrievedAt": "2026-08-31T16:30:00Z",
-        "checkedAt": "2026-08-31T16:30:00Z"
+        "retrievedAt": "2026-09-02T01:47:00Z",
+        "checkedAt": "2026-09-02T01:47:00Z"
       },
-      "textures": [],
+      "textures": [
+        "runner-shell",
+        "runner-underframe"
+      ],
       "dependencies": [],
       "orientation": {
         "source": "manifest-override",
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-ede590856a3f27188059c98d4509c4b075d668814091f7d577131b124aa5960f",
+        "assetHash": "sha256-0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-09-01T11:31:41.589Z",
+        "checkedAt": "2026-09-02T01:51:22.841Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/pulseRunnerCraft.png",
-          "sha256": "sha256-28a5540f8c2cd7db7454039dd3fa1c4de4088ad2c2a528f2576f3849375631c4",
-          "assetHash": "sha256-ede590856a3f27188059c98d4509c4b075d668814091f7d577131b124aa5960f",
-          "checkedAt": "2026-09-01T11:31:41.589Z",
+          "sha256": "sha256-c69efe57f5531e7aac0b3945ebb5b921abc36f7559875f89176a56df95d01915",
+          "assetHash": "sha256-0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d",
+          "checkedAt": "2026-09-02T01:51:22.841Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft"
         },
         "messages": [
@@ -38346,39 +38952,64 @@
         ]
       },
       "nodeNames": [
-        "pulse runner copper trim",
-        "pulse runner cyan drive",
-        "pulse runner graphite chassis",
-        "pulse runner pearl edge",
-        "pulse runner pearl hull",
-        "runner canopy",
-        "runner canopy brow"
+        "V11 runner canopy dorsal spine",
+        "V11 runner canopy forward frame",
+        "V11 runner ceramic leading edge 1",
+        "V11 runner ceramic leading edge -1",
+        "V11 runner continuous arrowhead fuselage",
+        "V11 runner copper wing cap 1",
+        "V11 runner copper wing cap -1",
+        "V11 runner dorsal stabilizer 1",
+        "V11 runner dorsal stabilizer -1",
+        "V11 runner forward shield collar",
+        "V11 runner integrated cockpit canopy",
+        "V11 runner nose light bar",
+        "V11 runner recessed turbine nacelle 1",
+        "V11 runner recessed turbine nacelle -1",
+        "V11 runner rivet 1",
+        "V11 runner rivet 2",
+        "V11 runner rivet 3",
+        "V11 runner rivet 4",
+        "V11 runner swept delta wing 1",
+        "V11 runner swept delta wing -1",
+        "V11 runner turbine copper race 1",
+        "V11 runner turbine copper race -1",
+        "V11 runner turbine cyan aperture 1",
+        "V11 runner turbine cyan aperture -1",
+        "V11 runner turbine phase pupil 1",
+        "V11 runner turbine phase pupil -1",
+        "V11 runner ventral armored keel",
+        "V11 runner wing service panel 1 0",
+        "V11 runner wing service panel 1 1",
+        "V11 runner wing service panel 1 2",
+        "V11 runner wing service panel -1 0",
+        "V11 runner wing service panel -1 1",
+        "V11 runner wing service panel -1 2"
       ],
       "thumbnailUrl": "/aura-assets/pulseRunnerCraft.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Original compact +Y-up, +Z-forward lane-runner vehicle with a readable connected silhouette, nose lip, upper spine, swept foils, graphite keel, canopy, copper edge trim, stabilizers, and paired drive pods. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction; route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative.",
+      "suitabilityReason": "Original CC0 V11 compact Pulse runner craft with a continuous arrowhead fuselage, packed panel shell, raised smoked cockpit, broad delta foils, ceramic/copper leading edges, ventral keel, turbine nacelles, emissive apertures, stabilizers, rivets, and forward shield collar. Route-local lane, jump, slide, shield, collision, and scoring systems remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/pulseRunnerCraft.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseRunnerCraft",
-        "sha256": "sha256-28a5540f8c2cd7db7454039dd3fa1c4de4088ad2c2a528f2576f3849375631c4",
-        "assetHash": "sha256-ede590856a3f27188059c98d4509c4b075d668814091f7d577131b124aa5960f",
+        "sha256": "sha256-c69efe57f5531e7aac0b3945ebb5b921abc36f7559875f89176a56df95d01915",
+        "assetHash": "sha256-0146f91bb386b7e30494563b5b96f7204a1685f1c8dfbd343a698be02866dc3d",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 52,
-        "checkedAt": "2026-09-01T11:31:41.589Z",
+        "nonBlankPixels": 445489,
+        "colorBuckets": 80,
+        "checkedAt": "2026-09-02T01:51:22.841Z",
         "foregroundBounds": {
           "x": 178,
-          "y": 229,
-          "width": 404,
-          "height": 152
+          "y": 223,
+          "width": 352,
+          "height": 170
         }
       },
       "warnings": [
-        "no texture references detected",
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ]
     },
@@ -38867,93 +39498,85 @@
       "type": "model",
       "format": "glb",
       "source": "apps/showcase-pulse-tunnel/assets/models/pulseTerminalSentry.glb",
-      "outputPath": "public/aura-assets/pulseTerminalSentry.ddb440e6.glb",
-      "url": "/aura-assets/pulseTerminalSentry.ddb440e6.glb",
-      "hash": "sha256-ddb440e66210a2a1fa7ac2566a5ba716c5956ebf8f17c910d4d85042fe3183a7",
-      "sizeBytes": 285540,
+      "outputPath": "public/aura-assets/pulseTerminalSentry.0d38226c.glb",
+      "url": "/aura-assets/pulseTerminalSentry.0d38226c.glb",
+      "hash": "sha256-0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61",
+      "sizeBytes": 965460,
       "bounds": [
-        3.25,
-        2.6,
-        1.431
+        5.02,
+        3.779,
+        1.764
       ],
       "boundsMetadata": {
         "min": [
-          -1.625,
-          -0.03,
-          -1.17
+          -2.51,
+          -0.019,
+          -1.154
         ],
         "max": [
-          1.625,
-          2.57,
-          0.261
+          2.51,
+          3.76,
+          0.61
         ],
         "size": [
-          3.25,
-          2.6,
-          1.431
+          5.02,
+          3.779,
+          1.764
         ],
         "center": [
           0,
-          1.27,
-          -0.454
+          1.871,
+          -0.272
         ],
-        "maxDimension": 3.25,
+        "maxDimension": 5.02,
         "grounded": true
       },
       "materials": [
-        "sentry cyan optics",
-        "sentry amber warning",
-        "sentry blue edge plates",
-        "sentry ceramic threat plates",
-        "sentry copper mechanics",
-        "sentry navy armour",
-        "sentry rose reactor"
+        "V11 sentry gunmetal panel shell",
+        "V11 sentry exposed heat mechanics",
+        "V11 sentry obsidian skeleton",
+        "V11 sentry ivory armor plates",
+        "V11 sentry furnace threat",
+        "V11 sentry cyan optics"
       ],
       "materialMetadata": [
         {
-          "name": "sentry cyan optics",
+          "name": "V11 sentry gunmetal panel shell",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "sentry amber warning",
+          "name": "V11 sentry exposed heat mechanics",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "sentry blue edge plates",
+          "name": "V11 sentry obsidian skeleton",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "sentry ceramic threat plates",
+          "name": "V11 sentry ivory armor plates",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "sentry copper mechanics",
+          "name": "V11 sentry furnace threat",
           "visible": true,
           "readable": true,
           "opacity": 1,
           "reasons": []
         },
         {
-          "name": "sentry navy armour",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        },
-        {
-          "name": "sentry rose reactor",
+          "name": "V11 sentry cyan optics",
           "visible": true,
           "readable": true,
           "opacity": 1,
@@ -39005,56 +39628,115 @@
         ]
       },
       "hierarchy": {
-        "nodeCount": 10,
-        "meshCount": 10,
-        "materialCount": 7,
-        "textureCount": 0,
+        "nodeCount": 66,
+        "meshCount": 66,
+        "materialCount": 6,
+        "textureCount": 2,
         "animationClipCount": 0,
         "skinCount": 0,
         "morphTargetCount": 0,
         "rootNodeNames": [
-          "optic core",
-          "pulse sentry amber warning",
-          "pulse sentry blue edge plates",
-          "pulse sentry ceramic threat plates",
-          "pulse sentry copper mechanics",
-          "pulse sentry cyan optics",
-          "pulse sentry navy armour",
-          "reactor iris",
-          "reactor iris guard",
-          "sentry crown beacon"
+          "V11 sentry armored reactor thorax",
+          "V11 sentry articulated shoulder spar 1 joint 0",
+          "V11 sentry articulated shoulder spar 1 joint 1",
+          "V11 sentry articulated shoulder spar 1 segment 0",
+          "V11 sentry articulated shoulder spar 1 segment 1",
+          "V11 sentry articulated shoulder spar 1 segment 2",
+          "V11 sentry articulated shoulder spar -1 joint 0",
+          "V11 sentry articulated shoulder spar -1 joint 1",
+          "V11 sentry articulated shoulder spar -1 segment 0",
+          "V11 sentry articulated shoulder spar -1 segment 1",
+          "V11 sentry articulated shoulder spar -1 segment 2",
+          "V11 sentry brow inset",
+          "V11 sentry cannon ceramic shroud 1",
+          "V11 sentry cannon ceramic shroud -1",
+          "V11 sentry cannon ember muzzle ring 1",
+          "V11 sentry cannon ember muzzle ring -1",
+          "V11 sentry cannon optic muzzle 1",
+          "V11 sentry cannon optic muzzle -1",
+          "V11 sentry central cyan optic",
+          "V11 sentry crown antenna mast",
+          "V11 sentry crown fin 1",
+          "V11 sentry crown fin -1",
+          "V11 sentry crown load ring",
+          "V11 sentry crown threat ring",
+          "V11 sentry crown warning beacon",
+          "V11 sentry eye gimbal",
+          "V11 sentry foot ceramic toe 1",
+          "V11 sentry foot ceramic toe -1",
+          "V11 sentry forearm heat vent 1 0",
+          "V11 sentry forearm heat vent 1 1",
+          "V11 sentry forearm heat vent 1 2",
+          "V11 sentry forearm heat vent -1 0",
+          "V11 sentry forearm heat vent -1 1",
+          "V11 sentry forearm heat vent -1 2",
+          "V11 sentry forward ceramic brow",
+          "V11 sentry grounded talon 1",
+          "V11 sentry grounded talon -1",
+          "V11 sentry ivory threat wing 1",
+          "V11 sentry ivory threat wing -1",
+          "V11 sentry lower reliquary",
+          "V11 sentry reactor copper race",
+          "V11 sentry reactor outer threat ring",
+          "V11 sentry recessed furnace iris",
+          "V11 sentry reverse joint leg 1 joint 0",
+          "V11 sentry reverse joint leg 1 joint 1",
+          "V11 sentry reverse joint leg 1 segment 0",
+          "V11 sentry reverse joint leg 1 segment 1",
+          "V11 sentry reverse joint leg 1 segment 2",
+          "V11 sentry reverse joint leg -1 joint 0",
+          "V11 sentry reverse joint leg -1 joint 1",
+          "V11 sentry reverse joint leg -1 segment 0",
+          "V11 sentry reverse joint leg -1 segment 1",
+          "V11 sentry reverse joint leg -1 segment 2",
+          "V11 sentry rivet 1",
+          "V11 sentry rivet 2",
+          "V11 sentry rivet 3",
+          "V11 sentry rivet 4",
+          "V11 sentry rotary cannon housing 1",
+          "V11 sentry rotary cannon housing -1",
+          "V11 sentry shoulder armor pod 1",
+          "V11 sentry shoulder armor pod -1",
+          "V11 sentry shoulder optic ring 1",
+          "V11 sentry shoulder optic ring -1",
+          "V11 sentry shoulder service plate 1",
+          "V11 sentry shoulder service plate -1",
+          "V11 sentry throat guard"
         ],
         "maxDepth": 1,
         "messages": [
-          "Detected 10 nodes across 10 roots."
+          "Detected 66 nodes across 66 roots."
         ]
       },
       "provenance": {
         "sourcePath": "apps/showcase-pulse-tunnel/assets/models/pulseTerminalSentry.glb",
-        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-models.py",
+        "sourcePage": "https://github.com/auraoneai/aura3d/blob/main/apps/showcase-pulse-tunnel/scripts/build-encounter-finish-v11.py",
         "downloadUrl": "https://raw.githubusercontent.com/auraoneai/aura3d/main/apps/showcase-pulse-tunnel/assets/models/pulseTerminalSentry.glb",
         "license": "CC0-1.0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Aura3D synthesis",
-        "retrievedAt": "2026-08-31T16:30:00Z",
-        "checkedAt": "2026-08-31T16:30:00Z"
+        "retrievedAt": "2026-09-02T01:47:00Z",
+        "checkedAt": "2026-09-02T01:47:00Z"
       },
-      "textures": [],
+      "textures": [
+        "sentry-shell",
+        "sentry-underframe"
+      ],
       "dependencies": [],
       "orientation": {
         "source": "manifest-override",
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-ddb440e66210a2a1fa7ac2566a5ba716c5956ebf8f17c910d4d85042fe3183a7",
+        "assetHash": "sha256-0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "checkedAt": "2026-09-01T11:31:38.440Z",
+        "checkedAt": "2026-09-02T01:51:19.757Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/pulseTerminalSentry.png",
-          "sha256": "sha256-55979abd567f7cf9d02807c8b5258a383a2f832378dc3f0ed5848e62d9a3f9b9",
-          "assetHash": "sha256-ddb440e66210a2a1fa7ac2566a5ba716c5956ebf8f17c910d4d85042fe3183a7",
-          "checkedAt": "2026-09-01T11:31:38.440Z",
+          "sha256": "sha256-a3ee8fe00278fc67146745725e76772a78ed90a513c1ae6770aafc3e0f198343",
+          "assetHash": "sha256-0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61",
+          "checkedAt": "2026-09-02T01:51:19.757Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry"
         },
         "messages": [
@@ -39062,42 +39744,97 @@
         ]
       },
       "nodeNames": [
-        "optic core",
-        "pulse sentry amber warning",
-        "pulse sentry blue edge plates",
-        "pulse sentry ceramic threat plates",
-        "pulse sentry copper mechanics",
-        "pulse sentry cyan optics",
-        "pulse sentry navy armour",
-        "reactor iris",
-        "reactor iris guard",
-        "sentry crown beacon"
+        "V11 sentry armored reactor thorax",
+        "V11 sentry articulated shoulder spar 1 joint 0",
+        "V11 sentry articulated shoulder spar 1 joint 1",
+        "V11 sentry articulated shoulder spar 1 segment 0",
+        "V11 sentry articulated shoulder spar 1 segment 1",
+        "V11 sentry articulated shoulder spar 1 segment 2",
+        "V11 sentry articulated shoulder spar -1 joint 0",
+        "V11 sentry articulated shoulder spar -1 joint 1",
+        "V11 sentry articulated shoulder spar -1 segment 0",
+        "V11 sentry articulated shoulder spar -1 segment 1",
+        "V11 sentry articulated shoulder spar -1 segment 2",
+        "V11 sentry brow inset",
+        "V11 sentry cannon ceramic shroud 1",
+        "V11 sentry cannon ceramic shroud -1",
+        "V11 sentry cannon ember muzzle ring 1",
+        "V11 sentry cannon ember muzzle ring -1",
+        "V11 sentry cannon optic muzzle 1",
+        "V11 sentry cannon optic muzzle -1",
+        "V11 sentry central cyan optic",
+        "V11 sentry crown antenna mast",
+        "V11 sentry crown fin 1",
+        "V11 sentry crown fin -1",
+        "V11 sentry crown load ring",
+        "V11 sentry crown threat ring",
+        "V11 sentry crown warning beacon",
+        "V11 sentry eye gimbal",
+        "V11 sentry foot ceramic toe 1",
+        "V11 sentry foot ceramic toe -1",
+        "V11 sentry forearm heat vent 1 0",
+        "V11 sentry forearm heat vent 1 1",
+        "V11 sentry forearm heat vent 1 2",
+        "V11 sentry forearm heat vent -1 0",
+        "V11 sentry forearm heat vent -1 1",
+        "V11 sentry forearm heat vent -1 2",
+        "V11 sentry forward ceramic brow",
+        "V11 sentry grounded talon 1",
+        "V11 sentry grounded talon -1",
+        "V11 sentry ivory threat wing 1",
+        "V11 sentry ivory threat wing -1",
+        "V11 sentry lower reliquary",
+        "V11 sentry reactor copper race",
+        "V11 sentry reactor outer threat ring",
+        "V11 sentry recessed furnace iris",
+        "V11 sentry reverse joint leg 1 joint 0",
+        "V11 sentry reverse joint leg 1 joint 1",
+        "V11 sentry reverse joint leg 1 segment 0",
+        "V11 sentry reverse joint leg 1 segment 1",
+        "V11 sentry reverse joint leg 1 segment 2",
+        "V11 sentry reverse joint leg -1 joint 0",
+        "V11 sentry reverse joint leg -1 joint 1",
+        "V11 sentry reverse joint leg -1 segment 0",
+        "V11 sentry reverse joint leg -1 segment 1",
+        "V11 sentry reverse joint leg -1 segment 2",
+        "V11 sentry rivet 1",
+        "V11 sentry rivet 2",
+        "V11 sentry rivet 3",
+        "V11 sentry rivet 4",
+        "V11 sentry rotary cannon housing 1",
+        "V11 sentry rotary cannon housing -1",
+        "V11 sentry shoulder armor pod 1",
+        "V11 sentry shoulder armor pod -1",
+        "V11 sentry shoulder optic ring 1",
+        "V11 sentry shoulder optic ring -1",
+        "V11 sentry shoulder service plate 1",
+        "V11 sentry shoulder service plate -1",
+        "V11 sentry throat guard"
       ],
       "thumbnailUrl": "/aura-assets/pulseTerminalSentry.thumb.svg",
       "quality": "release",
       "role": "character",
-      "suitabilityReason": "Original rigid +Y-up, +Z-forward terminal sentry character with a readable connected silhouette, separated armour, edge plates, mechanics, reactor iris guard, optics, shoulder cannons, crown beacon, wings, and grounded claws. Its deliberately untextured stylized flat-color PBR material separation is the finished route art direction; this is a static rigid sculpture, and route-local finale targeting, projectile timing, and hit truth remain authoritative.",
+      "suitabilityReason": "Original CC0 V11 rigid Pulse terminal warden character with a readable +Z orientation, connected layered thorax, textured gunmetal shell, ceramic brow and wings, recessed furnace/optic rings, articulated copper spars, rotary cannons, reverse-jointed legs, crown hardware, and grounded talons. It is static presentation geometry; route-local targeting, projectile timing, damage, and outcomes remain authoritative.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/pulseTerminalSentry.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=pulseTerminalSentry",
-        "sha256": "sha256-55979abd567f7cf9d02807c8b5258a383a2f832378dc3f0ed5848e62d9a3f9b9",
-        "assetHash": "sha256-ddb440e66210a2a1fa7ac2566a5ba716c5956ebf8f17c910d4d85042fe3183a7",
+        "sha256": "sha256-a3ee8fe00278fc67146745725e76772a78ed90a513c1ae6770aafc3e0f198343",
+        "assetHash": "sha256-0d38226c385a82c58b83554bcb240bf376ee4bf4f2430b90372eacc521b7ad61",
         "width": 752,
         "height": 600,
-        "nonBlankPixels": 451200,
-        "colorBuckets": 92,
-        "checkedAt": "2026-09-01T11:31:38.440Z",
+        "nonBlankPixels": 447776,
+        "colorBuckets": 106,
+        "checkedAt": "2026-09-02T01:51:19.757Z",
         "foregroundBounds": {
-          "x": 195,
-          "y": 197,
-          "width": 382,
-          "height": 347
+          "x": 202,
+          "y": 196,
+          "width": 393,
+          "height": 342
         }
       },
       "warnings": [
-        "no texture references detected",
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ]
     },

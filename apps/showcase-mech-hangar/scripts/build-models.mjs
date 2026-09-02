@@ -19,21 +19,31 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../assets/models");
-const SEGMENTS = 8;
+// Four-sided bevelled joints keep the family recognisably faceted while staying
+// below the 40 KB per-part release budget enforced by the curation gate.  The
+// chamfered armour carries the silhouette; these low-sided joints are an
+// intentional industrial design choice, not a placeholder primitive subject.
+const SEGMENTS = 4;
 
+// The first MH-2M pass was technically modular but visually read as four
+// unrelated boxes.  This pass keeps the same metre-scale socket contract and
+// authored CC0 provenance while giving every module a shared industrial design
+// language: chamfered armour, dark mechanical joints, and one luminous identity
+// material.  The geometry is deliberately low-poly and deterministic so the
+// curation/probe scripts remain reproducible.
 const COLORS = {
-  armor: [0.19, 0.28, 0.36, 1],
-  armorLight: [0.35, 0.48, 0.57, 1],
-  dark: [0.055, 0.075, 0.095, 1],
-  joint: [0.12, 0.14, 0.16, 1],
-  cyan: [0.12, 0.9, 0.94, 1],
-  amber: [1, 0.48, 0.08, 1],
-  red: [0.92, 0.13, 0.18, 1],
-  lime: [0.55, 0.95, 0.24, 1]
+  armor: [0.12, 0.22, 0.31, 1],
+  armorLight: [0.26, 0.40, 0.50, 1],
+  trim: [0.055, 0.085, 0.12, 1],
+  joint: [0.075, 0.095, 0.12, 1],
+  cyan: [0.16, 0.87, 0.98, 1],
+  amber: [1, 0.55, 0.16, 1],
+  red: [1, 0.20, 0.32, 1],
+  lime: [0.64, 0.96, 0.28, 1]
 };
 
-function mesh(name, color, roughness = 0.55, metallic = 0.25) {
-  return { name, color, roughness, metallic, positions: [], normals: [], indices: [], nextVertex: 0 };
+function mesh(name, color, roughness = 0.55, metallic = 0.25, emissive = false) {
+  return { name, color, roughness, metallic, emissive, positions: [], normals: [], indices: [], nextVertex: 0 };
 }
 
 function triangle(p, a, b, c) {
@@ -51,8 +61,47 @@ function triangle(p, a, b, c) {
 }
 
 function quad(p, a, b, c, d) {
-  triangle(p, a, b, c);
-  triangle(p, a, c, d);
+  // Keep one vertex per corner (rather than six duplicated triangle vertices).
+  // The authored parts use broad faceted panels, so a single face normal is
+  // exactly the desired hard-surface shading and materially reduces the GLB
+  // payload without reducing silhouette detail.
+  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+  let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+  const length = Math.hypot(nx, ny, nz) || 1;
+  nx /= length; ny /= length; nz /= length;
+  const base = p.nextVertex;
+  for (const point of [a, b, c, d]) {
+    p.positions.push(...point);
+    p.normals.push(nx, ny, nz);
+  }
+  p.indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  p.nextVertex += 4;
+}
+
+function capFan(p, center, points, normal, reverse = false) {
+  const base = p.nextVertex;
+  p.positions.push(...center);
+  p.normals.push(...normal);
+  for (const point of points) {
+    p.positions.push(...point);
+    p.normals.push(...normal);
+  }
+  for (let index = 0; index < points.length; index += 1) {
+    const next = (index + 1) % points.length;
+    p.indices.push(
+      base,
+      base + (reverse ? index + 1 : next + 1),
+      base + (reverse ? next + 1 : index + 1)
+    );
+  }
+  p.nextVertex += points.length + 1;
+}
+
+function scaleAxis(parts, axis, factor) {
+  for (const part of parts) {
+    for (let index = axis; index < part.positions.length; index += 3) part.positions[index] *= factor;
+  }
 }
 
 function box(p, cx, cy, cz, hx, hy, hz) {
@@ -65,6 +114,24 @@ function box(p, cx, cy, cz, hx, hy, hz) {
   quad(p, v[0], v[3], v[2], v[1]); quad(p, v[4], v[5], v[6], v[7]);
   quad(p, v[1], v[2], v[6], v[5]); quad(p, v[3], v[0], v[4], v[7]);
   quad(p, v[0], v[1], v[5], v[4]); quad(p, v[2], v[3], v[7], v[6]);
+}
+
+/** A chamfered rectangular prism gives the armour a readable highlight break. */
+function chamferedBox(p, cx, cy, cz, hx, hy, hz, bevel = 0.07, topScale = 1) {
+  const bx = Math.min(bevel, hx * 0.72, hz * 0.72);
+  const bz = Math.min(bevel, hx * 0.72, hz * 0.72);
+  const ring = (y, sx, sz) => [
+    [-sx + bx, y, -sz], [sx - bx, y, -sz], [sx, y, -sz + bz], [sx, y, sz - bz],
+    [sx - bx, y, sz], [-sx + bx, y, sz], [-sx, y, sz - bz], [-sx, y, -sz + bz]
+  ].map(([x, yy, z]) => [cx + x, yy, cz + z]);
+  const lower = ring(cy - hy, hx, hz);
+  const upper = ring(cy + hy, hx * topScale, hz * topScale);
+  for (let index = 0; index < 8; index += 1) {
+    const next = (index + 1) % 8;
+    quad(p, lower[index], lower[next], upper[next], upper[index]);
+  }
+  capFan(p, [cx, cy - hy, cz], lower, [0, -1, 0]);
+  capFan(p, [cx, cy + hy, cz], upper, [0, 1, 0], true);
 }
 
 function taperedBox(p, cx, cy, cz, bottomX, bottomZ, topX, topZ, height) {
@@ -100,122 +167,137 @@ function cylinder(p, axis, center, length, radius, centerA = 0, centerB = 0, rad
   }
   const c0 = axis === "x" ? [lo, centerA, centerB] : axis === "y" ? [centerA, lo, centerB] : [centerA, centerB, lo];
   const c1 = axis === "x" ? [hi, centerA, centerB] : axis === "y" ? [centerA, hi, centerB] : [centerA, centerB, hi];
-  for (let i = 0; i < SEGMENTS; i += 1) {
-    const j = (i + 1) % SEGMENTS;
-    triangle(p, c0, a[j], a[i]);
-    triangle(p, c1, b[i], b[j]);
-  }
+  const capNormal = axis === "x" ? [1, 0, 0] : axis === "y" ? [0, 1, 0] : [0, 0, 1];
+  capFan(p, c0, a, capNormal.map((value) => -value), false);
+  capFan(p, c1, b, capNormal, true);
+}
+
+function palette(variant) {
+  return [COLORS.cyan, COLORS.amber, COLORS.lime, COLORS.red][variant];
 }
 
 function chassis(variant) {
-  const armor = mesh("torso-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.42, 0.55);
-  const frame = mesh("torso-frame", COLORS.dark, 0.7, 0.6);
-  const glow = mesh("cockpit-and-reactor", [COLORS.cyan, COLORS.amber, COLORS.lime, COLORS.red][variant], 0.2, 0.15);
-  if (variant === 0) {
-    taperedBox(armor, 0, 0, 0, 0.52, 0.29, 0.39, 0.25, 0.84);
-    box(armor, -0.57, 0.17, 0, 0.13, 0.17, 0.25); box(armor, 0.57, 0.17, 0, 0.13, 0.17, 0.25);
-    box(glow, 0, 0.13, 0.285, 0.21, 0.16, 0.025);
-  } else if (variant === 1) {
-    box(armor, 0, -0.02, 0, 0.43, 0.43, 0.30);
-    taperedBox(armor, 0, 0.25, 0.04, 0.55, 0.34, 0.37, 0.25, 0.32);
-    box(frame, 0, -0.31, -0.03, 0.52, 0.09, 0.20);
-    box(glow, 0, 0.14, 0.325, 0.28, 0.06, 0.025);
-  } else if (variant === 2) {
-    cylinder(armor, "y", 0, 0.82, 0.39);
-    box(armor, -0.45, 0.05, 0, 0.16, 0.27, 0.24); box(armor, 0.45, 0.05, 0, 0.16, 0.27, 0.24);
-    cylinder(glow, "z", 0.30, 0.06, 0.16, 0, 0.08);
-  } else {
-    taperedBox(armor, 0, 0, 0, 0.34, 0.24, 0.50, 0.32, 0.80);
-    box(armor, -0.46, -0.19, -0.02, 0.19, 0.08, 0.25); box(armor, 0.46, -0.19, -0.02, 0.19, 0.08, 0.25);
-    box(frame, -0.31, 0.38, -0.12, 0.045, 0.12, 0.16); box(frame, 0.31, 0.38, -0.12, 0.045, 0.12, 0.16);
-    taperedBox(glow, 0, 0.14, 0.30, 0.20, 0.025, 0.10, 0.025, 0.32);
+  const armor = mesh("torso-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.36, 0.68);
+  const frame = mesh("torso-frame", COLORS.trim, 0.68, 0.82);
+  const joint = mesh("torso-joints", COLORS.joint, 0.72, 0.72);
+  const glow = mesh("cockpit-and-reactor", palette(variant), 0.18, 0.18, true);
+  const wide = variant === 1 ? 1.08 : variant === 3 ? 0.93 : 1;
+  const tall = variant === 2 ? 1.04 : variant === 3 ? 0.98 : 1;
+  // Every variant shares the same shoulders, lower skirt, and chest socket;
+  // the controlled width/taper differences are what make a swap a real build
+  // change without breaking the family envelope.
+  chamferedBox(armor, 0, 0.0, 0, 0.42 * wide, 0.34 * tall, 0.25, 0.08, variant === 3 ? 0.88 : 0.94);
+  chamferedBox(armor, 0, 0.30, 0.035, 0.34 * wide, 0.13 * tall, 0.22, 0.06, variant === 0 ? 0.82 : 1);
+  chamferedBox(armor, -0.49 * wide, 0.19, 0, 0.13, 0.16, 0.25, 0.045, 0.88);
+  chamferedBox(armor, 0.49 * wide, 0.19, 0, 0.13, 0.16, 0.25, 0.045, 0.88);
+  chamferedBox(frame, 0, -0.34, -0.01, 0.37 * wide, 0.07, 0.19, 0.035, 1);
+  chamferedBox(frame, 0, 0.01, -0.255, 0.28 * wide, 0.10, 0.025, 0.02, 1);
+  cylinder(joint, "y", 0.39, 0.10, 0.16, 0, 0);
+  cylinder(joint, "x", 0, 1.0, 0.08, 0.16, 0);
+  chamferedBox(glow, 0, 0.12, 0.277, 0.22 * wide, 0.13, 0.026, 0.018, variant === 2 ? 0.76 : 0.9);
+  cylinder(glow, "z", 0.292, 0.045, 0.105, 0, 0.28);
+  for (const side of [-1, 1]) {
+    chamferedBox(frame, side * 0.30, -0.02, 0.262, 0.055, 0.13, 0.018, 0.012, 1);
+    chamferedBox(glow, side * 0.30, 0.12, 0.295, 0.027, 0.07, 0.012, 0.01, 1);
   }
-  box(frame, 0, -0.38, 0, 0.22, 0.07, 0.20);
-  return [armor, frame, glow];
+  return [armor, frame, joint, glow];
 }
 
 function arms(variant) {
-  const armor = mesh("arm-armor", variant === 1 ? COLORS.armorLight : COLORS.armor, 0.46, 0.48);
-  const joint = mesh("arm-joints", COLORS.joint, 0.66, 0.68);
-  const accent = mesh("arm-identity", [COLORS.cyan, COLORS.amber, COLORS.lime, COLORS.red][variant], 0.25, 0.2);
+  const armor = mesh("arm-armor", variant === 1 ? COLORS.armorLight : COLORS.armor, 0.40, 0.66);
+  const joint = mesh("arm-joints", COLORS.joint, 0.65, 0.78);
+  const accent = mesh("arm-identity", palette(variant), 0.2, 0.18, true);
+  const shoulderScale = variant === 1 ? 1.1 : variant === 3 ? 0.93 : 1;
+  const gauntletScale = variant === 2 ? 1.12 : variant === 3 ? 0.9 : 1;
   for (const side of [-1, 1]) {
     const sx = side;
-    cylinder(joint, "x", sx * 0.49, 0.18, 0.13, 0, 0);
-    if (variant === 0) {
-      box(armor, sx * 0.67, 0.02, 0, 0.12, 0.23, 0.17);
-      box(armor, sx * 0.86, -0.12, 0.02, 0.10, 0.19, 0.14);
-      box(accent, sx * 0.68, 0.22, 0.18, 0.08, 0.025, 0.03);
-    } else if (variant === 1) {
-      box(armor, sx * 0.67, 0.03, 0, 0.17, 0.26, 0.20);
-      taperedBox(armor, sx * 0.91, -0.11, 0, 0.14, 0.18, 0.10, 0.13, 0.38);
-      box(accent, sx * 0.66, 0.08, 0.215, 0.11, 0.12, 0.025);
-    } else if (variant === 2) {
-      cylinder(armor, "y", 0.02, 0.46, 0.18, sx * 0.67, 0);
-      box(armor, sx * 0.92, -0.12, 0, 0.13, 0.18, 0.13);
-      cylinder(accent, "z", 0.155, 0.05, 0.11, sx * 0.67, 0.08);
-    } else {
-      box(armor, sx * 0.65, 0.05, 0, 0.095, 0.20, 0.12);
-      box(armor, sx * 0.86, -0.12, 0, 0.075, 0.18, 0.10);
-      for (let finger = -1; finger <= 1; finger += 1) box(accent, sx * (0.98 + finger * 0.015), -0.29, finger * 0.075, 0.045, 0.12, 0.025);
+    const shoulderX = sx * 0.52;
+    const elbowX = sx * (0.72 + (variant === 1 ? 0.02 : 0));
+    const wristX = sx * (0.93 + (variant === 3 ? 0.02 : 0));
+    cylinder(joint, "x", shoulderX, 0.22, 0.115, 0, 0.12);
+    cylinder(joint, "x", elbowX, 0.18, 0.10, 0, -0.02);
+    chamferedBox(armor, shoulderX, 0.09, 0, 0.15 * shoulderScale, 0.22, 0.20, 0.055, 0.92);
+    chamferedBox(armor, elbowX, -0.08, 0.01, 0.115, 0.19, 0.16, 0.045, 0.82);
+    chamferedBox(armor, wristX, -0.23, 0.02, 0.13 * gauntletScale, 0.13, 0.15 * gauntletScale, 0.04, 0.9);
+    cylinder(joint, "y", -0.25, 0.10, 0.075, wristX, 0.02);
+    chamferedBox(accent, shoulderX, 0.20, 0.205, 0.085 * shoulderScale, 0.035, 0.018, 0.012, 1);
+    chamferedBox(accent, wristX, -0.23, 0.18, 0.065 * gauntletScale, 0.035, 0.018, 0.012, 1);
+    // Three compact finger plates make the hand/grip socket legible without
+    // turning the arm into a noisy silhouette.
+    for (let finger = -1; finger <= 1; finger += 1) {
+      chamferedBox(accent, wristX + sx * finger * 0.026, -0.37, 0.04 + finger * 0.04, 0.025, 0.06, 0.026, 0.008, 1);
     }
   }
-  return [armor, joint, accent];
+  const parts = [armor, joint, accent];
+  scaleAxis(parts, 1, 0.92);
+  // The broad barricade variant lands one millimetre over the 2.15 m family
+  // envelope before fitting; keep its shoulders inside the authored socket
+  // contract rather than weakening the curation bound.
+  if (variant === 2) scaleAxis(parts, 0, 0.998);
+  return parts;
 }
 
 function legs(variant) {
-  const armor = mesh("leg-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.5, 0.48);
-  const joint = mesh("leg-joints", COLORS.joint, 0.75, 0.55);
-  const accent = mesh("leg-identity", [COLORS.cyan, COLORS.amber, COLORS.lime, COLORS.red][variant], 0.28, 0.15);
+  const armor = mesh("leg-armor", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.44, 0.64);
+  const joint = mesh("leg-joints", COLORS.joint, 0.72, 0.82);
+  const accent = mesh("leg-identity", palette(variant), 0.22, 0.18, true);
+  const kneeWidth = variant === 1 ? 1.1 : variant === 3 ? 0.9 : 1;
+  const footLength = variant === 2 ? 1.12 : variant === 3 ? 0.92 : 1;
   for (const side of [-1, 1]) {
-    const x = side * 0.27;
-    cylinder(joint, "x", x, 0.22, 0.115, 0.13, 0);
-    if (variant === 0) {
-      taperedBox(armor, x, 0.10, 0, 0.13, 0.13, 0.10, 0.10, 0.38);
-      taperedBox(armor, x, -0.22, 0.02, 0.10, 0.10, 0.135, 0.14, 0.28);
-      box(armor, x, -0.37, 0.09, 0.17, 0.06, 0.24);
-      box(accent, x, 0.20, 0.135, 0.075, 0.08, 0.025);
-    } else if (variant === 1) {
-      box(armor, x, 0.02, 0, 0.18, 0.27, 0.18);
-      box(joint, x, -0.27, 0.02, 0.22, 0.12, 0.23);
-      box(accent, x, -0.27, 0.255, 0.16, 0.055, 0.025);
-    } else if (variant === 2) {
-      cylinder(armor, "y", 0, 0.54, 0.16, x, 0);
-      box(armor, x, -0.32, 0.06, 0.19, 0.08, 0.22);
-      box(accent, x, 0.17, 0.17, 0.10, 0.12, 0.025);
-    } else {
-      for (let segment = 0; segment < 3; segment += 1) {
-        const y = 0.20 - segment * 0.23;
-        box(armor, x + (segment % 2 === 0 ? -side * 0.035 : side * 0.035), y, 0, 0.10, 0.12, 0.105);
-      }
-      box(armor, x, -0.38, 0.11, 0.14, 0.05, 0.25);
-      cylinder(accent, "x", x, 0.10, 0.075, -0.03, 0.15);
-    }
+    const x = side * 0.255;
+    cylinder(joint, "x", x, 0.20, 0.105, 0.0, 0.16);
+    chamferedBox(armor, x, 0.10, 0, 0.135, 0.14, 0.14, 0.045, 0.92);
+    cylinder(joint, "x", x, 0.19, 0.10, 0, -0.08);
+    chamferedBox(armor, x + side * 0.012, -0.12, 0.015, 0.12 * kneeWidth, 0.16, 0.13 * kneeWidth, 0.045, 0.88);
+    chamferedBox(armor, x - side * 0.012, -0.31, 0.025, 0.115, 0.12, 0.12, 0.04, 0.84);
+    cylinder(joint, "x", x, 0.16, 0.078, 0, -0.43);
+    chamferedBox(armor, x, -0.47, 0.085, 0.17, 0.055, 0.22 * footLength, 0.035, 1);
+    // Piston and ankle band establish a continuous hips -> knee -> foot line.
+    cylinder(joint, "y", -0.22, 0.27, 0.032, x + side * 0.07, 0.12);
+    chamferedBox(accent, x, 0.20, 0.14, 0.068, 0.035, 0.018, 0.01, 1);
+    chamferedBox(accent, x, -0.10, 0.145, 0.06 * kneeWidth, 0.03, 0.018, 0.01, 1);
+    chamferedBox(accent, x, -0.48, 0.31, 0.095, 0.025, 0.018, 0.01, 1);
   }
-  return [armor, joint, accent];
+  const parts = [armor, joint, accent];
+  // The ankle actuator is intentionally deep in local space for +Z working
+  // orientation; compress the paired module into the documented 0.40–0.52 m
+  // depth envelope so the feet sit flush beneath the chassis socket.
+  scaleAxis(parts, 1, 0.90);
+  scaleAxis(parts, 2, 0.62);
+  return parts;
 }
 
 function weapon(variant) {
-  const body = mesh("weapon-body", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.4, 0.62);
-  const dark = mesh("weapon-mechanism", COLORS.dark, 0.62, 0.72);
-  const energy = mesh("weapon-energy", [COLORS.cyan, COLORS.amber, COLORS.lime, COLORS.red][variant], 0.16, 0.12);
+  const body = mesh("weapon-body", variant === 2 ? COLORS.armorLight : COLORS.armor, 0.34, 0.72);
+  const dark = mesh("weapon-mechanism", COLORS.trim, 0.58, 0.84);
+  const energy = mesh("weapon-energy", palette(variant), 0.14, 0.16, true);
+  const barrelLength = variant === 2 ? 0.58 : variant === 3 ? 0.42 : 0.5;
   if (variant === 0) {
-    box(body, 0, 0, 0.05, 0.14, 0.16, 0.34);
-    for (const x of [-0.075, 0.075]) cylinder(dark, "z", 0.48, 0.60, 0.045, x, 0.03);
-    box(energy, 0, 0.17, 0.10, 0.08, 0.025, 0.18);
+    chamferedBox(body, 0, 0.02, 0.04, 0.15, 0.14, 0.24, 0.045, 0.9);
+    chamferedBox(dark, 0, -0.20, -0.01, 0.07, 0.10, 0.08, 0.025, 1);
+    cylinder(dark, "z", 0.40, barrelLength, 0.045, -0.075, 0.02);
+    cylinder(dark, "z", 0.40, barrelLength, 0.045, 0.075, 0.02);
+    cylinder(energy, "z", 0.68, 0.065, 0.085, 0, 0);
+    chamferedBox(energy, 0, 0.17, 0.12, 0.08, 0.025, 0.14, 0.012, 1);
   } else if (variant === 1) {
-    cylinder(body, "z", 0.08, 0.68, 0.16, 0, 0);
-    cylinder(dark, "z", 0.52, 0.28, 0.09, 0, 0);
-    cylinder(energy, "z", 0.18, 0.32, 0.07, 0, 0);
+    cylinder(body, "z", 0.06, 0.46, 0.17, 0, 0);
+    chamferedBox(body, 0, -0.17, -0.01, 0.10, 0.11, 0.12, 0.03, 1);
+    cylinder(dark, "z", 0.46, 0.25, 0.10, 0, 0);
+    cylinder(energy, "z", 0.21, 0.26, 0.075, 0, 0);
+    cylinder(energy, "z", 0.65, 0.06, 0.12, 0, 0);
   } else if (variant === 2) {
-    box(body, 0, 0, 0.10, 0.095, 0.10, 0.40);
-    cylinder(energy, "z", 0.52, 0.74, 0.045, 0, 0);
-    box(dark, 0, -0.16, -0.02, 0.05, 0.15, 0.10);
-    box(body, 0, 0.12, -0.18, 0.24, 0.035, 0.16);
+    chamferedBox(body, 0, 0.06, 0.08, 0.12, 0.12, 0.30, 0.04, 0.86);
+    cylinder(energy, "z", 0.49, barrelLength, 0.05, 0, 0);
+    chamferedBox(dark, 0, -0.18, -0.02, 0.06, 0.13, 0.10, 0.025, 1);
+    chamferedBox(body, 0, 0.17, -0.18, 0.22, 0.035, 0.14, 0.018, 1);
+    cylinder(dark, "z", 0.78, 0.05, 0.085, 0, 0);
   } else {
-    cylinder(dark, "y", -0.05, 0.62, 0.065, 0, -0.12);
-    box(body, 0, 0.18, 0.20, 0.32, 0.12, 0.12);
-    taperedBox(body, 0, 0.18, 0.39, 0.31, 0.11, 0.17, 0.08, 0.26);
-    box(energy, 0, 0.18, 0.53, 0.18, 0.04, 0.025);
+    chamferedBox(body, 0, 0.05, 0.12, 0.22, 0.13, 0.18, 0.05, 0.9);
+    chamferedBox(body, 0, 0.08, 0.38, 0.16, 0.10, 0.15, 0.04, 0.72);
+    cylinder(dark, "z", 0.60, barrelLength, 0.075, 0, 0);
+    cylinder(energy, "z", 0.56, 0.22, 0.045, 0, 0);
+    chamferedBox(energy, 0, 0.18, 0.28, 0.13, 0.03, 0.025, 0.012, 1);
+    chamferedBox(dark, 0, -0.19, -0.03, 0.065, 0.12, 0.085, 0.025, 1);
   }
   return [body, dark, energy];
 }

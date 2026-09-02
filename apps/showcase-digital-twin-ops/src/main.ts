@@ -134,7 +134,7 @@ const WORKCELL_POSITION: readonly [number, number, number] = [-0.08, 0.058, -0.0
 // Give the typed cell a confident hero scale.  The previous 2.35-unit fit left
 // the robot and weld bays visually subordinate to the surrounding empty stage;
 // all bay, conveyor, and label anchors below still derive from these bounds.
-const WORKCELL_TARGET_MAX_DIMENSION = 2.7;
+const WORKCELL_TARGET_MAX_DIMENSION = 2.9;
 
 /**
  * Operational zones as normalized regions of the workcell's own bounds.
@@ -242,7 +242,7 @@ function overviewCamera(): { position: readonly [number, number, number]; target
     // The workcell is a wide, low industrial asset. A closer, slightly lower
     // camera gives its robot bays and conveyor a readable hero silhouette while
     // leaving enough breathing room for the four asset-relative callouts.
-    position: compactViewport ? [4.35, 2.4, 5.8] : [3.12, 1.86, 4.34],
+    position: compactViewport ? [-4.35, 2.4, 5.8] : [-3.12, 1.86, 4.34],
     target: [-0.04, 0.48, 0.02],
     fov: compactViewport ? 43 : 34
   };
@@ -409,7 +409,7 @@ function createWorkcellPresentation(): AuraNodeInput[] {
   const { belt, deckHeight, workpieceY } = conveyorDimensions();
   // Floor and plinth are sized to the workcell's own footprint with margin, so a
   // larger or smaller asset still stands on a stage that fits it.
-  const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.42, 1, bounds.size[2] * 1.54];
+  const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.3, 1, bounds.size[2] * 1.4];
   const alarmAnchor = resolveBoundsAnchor(bounds, "top-left", { offset: Math.max(...bounds.size) * 0.1 });
   const scannerAnchor = resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 });
 
@@ -488,11 +488,11 @@ function createOperationsBay(bounds: ReturnType<typeof workcellBounds>): AuraNod
   });
   const railMaterial = material.metal({
     name: "operations bay structural rail",
-    color: "#254a56",
-    roughness: 0.38,
-    metallic: 0.72,
-    emissive: "#0a252d",
-    emissiveIntensity: 0.24
+    color: "#4b7982",
+    roughness: 0.3,
+    metallic: 0.82,
+    emissive: "#123a43",
+    emissiveIntensity: 0.28
   });
   const cyanMaterial = material.emissive({
     name: "operations bay cyan status rail",

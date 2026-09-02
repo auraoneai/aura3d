@@ -59,15 +59,15 @@ export interface HangarHudHandles {
 }
 
 /**
- * The connected Robotcand body is a presentation shell, not one of the
- * swappable MH-2M parts. Keep that distinction visible in the UI so the
- * passport cannot accidentally imply that the shell itself is modular.
+ * The visible hero is the source-owned MH-2M rigid assembly. Robotcand remains
+ * registered as an attribution-backed fallback reference, but is not allowed
+ * to stand in for the four typed sockets in the review frame.
  */
 const VISUAL_SHELL_PASSPORT = {
-  name: "ROBOTCAND // STATIC VISUAL SHELL",
-  asset: "Typed asset: assets.robotcand",
-  provenance: "Robotcand by isramtz - CC-BY-4.0",
-  boundary: "Connected body presentation only; MH-2M slot cards below drive stats and the weapon hardpoint."
+  name: "MH-2M // FACETED MODULAR ASSEMBLY",
+  asset: "Typed assets: chassis + arms + legs + weapon (4 socketed GLBs)",
+  provenance: "Aura3D synthesis - original CC0-1.0 family",
+  boundary: "Visible hero is rigid root/chest/hips/right-hand assembly; Robotcand remains a separate attributed fallback reference."
 } as const;
 
 export function setupHangarHud(host: HTMLElement, selection: BuildSelection): HangarHudHandles {
@@ -154,10 +154,9 @@ export function updateHangarHud(
   // Asset passport: provenance lines straight from the curation records.
   handles.passport.textContent = "";
 
-  // Keep the shell identity separate from the modular catalog. This is a
-  // provenance/claim boundary, not a second part entry: the shell supplies
-  // the readable body silhouette while the selected MH-2M weapon remains the
-  // live hardpoint and the four slot cards below remain the build contract.
+  // Keep the visible family identity separate from the optional Robotcand
+  // fallback. This is a provenance/claim boundary, not a second part entry:
+  // every slot card below maps to a real typed GLB in the mounted assembly.
   const shellCard = el("div", "mech-passport-card");
   shellCard.dataset.testid = "visual-shell-passport";
   const shellHead = el("div", "mech-passport-head");
@@ -226,16 +225,15 @@ export function setupArenaHud(host: HTMLElement): ArenaHudHandles {
   const topRow = el("div", "mech-arena-bars");
   const leftCol = el("div", "mech-arena-col");
   const rightCol = el("div", "mech-arena-col is-right");
-  // The two fighters intentionally share the connected visual shell. These
-  // labels make the gameplay identity explicit without presenting that shell
-  // as a modular slot: the player is the selected build, while the opponent
-  // is the fixed Bulwark loadout used by the deterministic bout.
+  // The two fighters use the same authored MH-2M family but different typed
+  // selections. These labels make player/rival identity explicit while the
+  // visible chassis/arms/legs/weapon sockets remain the actual subjects.
   const playerIdentity = el("div", "mech-fighter-identity mech-section-title");
   playerIdentity.dataset.testid = "fighter-player-identity";
-  playerIdentity.textContent = "YOU // SELECTED LOADOUT | ROBOTCAND SHELL";
+  playerIdentity.textContent = "YOU // SELECTED MH-2M LOADOUT";
   const rivalIdentity = el("div", "mech-fighter-identity mech-section-title");
   rivalIdentity.dataset.testid = "fighter-rival-identity";
-  rivalIdentity.textContent = "RIVAL // BULWARK FIXED LOADOUT | ROBOTCAND SHELL";
+  rivalIdentity.textContent = "RIVAL // BULWARK FIXED MH-2M LOADOUT";
   leftCol.append(playerIdentity, hpPlayer.root, guardPlayer.root, powerPlayer.root);
   rightCol.append(rivalIdentity, hpRival.root, guardRival.root, powerRival.root);
   topRow.append(leftCol, rightCol);

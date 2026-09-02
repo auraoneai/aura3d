@@ -11,7 +11,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "build:music": "node scripts/build-music.mjs",
     "build:sfx": "node scripts/build-sfx.mjs",
-    "build:models": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build-models.py",
+    "build:models": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build-encounter-finish-v11.py",
     "register:audio": "node scripts/register-audio.mjs",
     "register:models": "node scripts/register-models.mjs",
     "evidence:performance": "tsx --tsconfig ../../tsconfig.base.json scripts/write-performance-report.ts",
