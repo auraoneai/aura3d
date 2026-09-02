@@ -130,18 +130,16 @@ without an independent label-hidden pixel review.
   re-registered; the final strict deploy receipt is now zero-warning/zero-failure
   and the route gate names the four typed MH-2M slots as its primary assembly.
 
-### Release boundary after the batch
+### Release boundary after the batch (superseded by the deployment receipt above)
 
-The current source changes are not yet in the production deployment. The last
-deployed receipt remains the earlier `da98fbc7` / Vercel deployment
-`dpl_9S3vNFdBn26B11f86oJHM7hcWEs2`; this batch must be committed, pushed, and
-deployed before any new live URL or commit is reported. Only explicit source,
-generated manifest/report, thumbnail, and exact hashed-asset paths will be
-staged; ignored `tests/reports/` and unrelated scratch/candidate material stay
-out of the commit. After deployment, a live smoke pass will verify HTTP 200,
-canvas/readiness, zero page/console errors, and zero failed requests for the
-changed routes. The six strict visual holds and four non-game holds remain
-honest unless an independent visual reviewer changes them.
+At the time this pre-deploy section was written, the current source changes had
+not yet reached production. The superseding receipt at the top of this file now
+records the completed commit/push, Vercel deployment, protection-aware HTTP
+checks, and the unchanged visual holds. Only explicit source, generated
+manifest/report, thumbnail, and exact hashed-asset paths were staged; ignored
+`tests/reports/` and unrelated scratch/candidate material stayed out of the
+commit. The six strict visual holds and four non-game holds remain honest unless
+an independent visual reviewer changes them.
 
 ## Coordinator receipt — 2026-09-02T01:09Z
 
