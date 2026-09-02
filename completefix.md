@@ -1,5 +1,41 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## Coordinator receipt — 2026-09-02T01:09Z
+
+The latest bounded parallel batch is pushed and deployed. This is an
+operational/runtime receipt, not a visual-completion claim: the strict gate
+remains **11 accepted / 6 unresolved**.
+
+- `08f12daa` (`fix(rooftop-buckets): tighten action framing and contact
+  feedback`) enlarges and recentres the typed athlete pair, varies the
+  pavilion glazing so the authored arch/masonry reads, and binds the existing
+  net ring to real swish/rim/board events without adding draw calls.
+- `a2a9d414` (`fix(showcase): publish turbo asset and gallery presentation
+  pass`) publishes the exact current Turbo environment GLB through Git LFS so
+  the production manifest cannot point at a workspace-only file, and carries
+  the Gallery actor/LOS/light/HUD pass. Gallery typecheck/build and scene
+  evidence are green; Rooftop typecheck/build, shot-visual `2/2`, and route
+  primary are green. Neither route receives a visual `ours` label without a
+  fresh independent blind comparison.
+- Vercel deployment `dpl_GSesRo237kTfHCtxCm6YYgwMtboJ` is `READY` and aliased
+  at `https://aura3d.auraone.ai`, built from the pushed `a2a9d414` commit with
+  the asset base pinned to that same commit. A live Chromium check returned
+  HTTP 200, zero console/page errors, and zero failed requests for Turbo,
+  Gravity (review capture), Gallery (review capture), and Rooftop (review
+  capture). Observed production draw calls were Turbo `139`, Gravity `178`,
+  Gallery `189`, and Rooftop `146`; all exposed the production-runtime
+  readiness marker. Turbo's previous environment-GLB `404` is cleared.
+- Gravity's normal planning-board state eventually mounts and renders
+  (`2087` draws in the long-wait check), while the review capture mounts in
+  `178` draws. The long initial mount is a performance/UX concern, not a
+  missing-canvas claim; its visual verdict remains `reference`.
+
+The six strict visual holds are unchanged: Turbo, Gravity, Pulse, Gallery,
+Rooftop, and Mech. The four separate non-game `visualReview: needs-work` rows
+also remain Product Configurator, Smart City Control, Digital Twin Ops, and
+Cinematic Architecture. No machine-green runtime result above relabels a
+visual comparison.
+
 ## Coordinator receipt — 2026-09-01T23:45Z
 
 This receipt records the current execution state after the latest parallel
