@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 2.0.3
+Version: 2.0.4
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.3` is the coordinated showcase and test-harness patch across all 29 public packages; `2.0.2`, `2.0.1`, and `2.0.0` remain historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. Version `2.0.4` is the coordinated Meshy CLI asset-pipeline patch across all 29 public packages; `2.0.3`, `2.0.2`, `2.0.1`, and `2.0.0` remain historical. Package, showcase, visual, current-Three.js comparison, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-08-11): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -16,6 +16,17 @@ Comparison wording for the 1.6.0 entry is historical and limited to the named
 broadened into universal engine or ecosystem superiority. The current
 `three@0.185.1` comparison remains bounded by the published comparison reports
 and claim guidelines.
+
+## 2.0.4 (2026-09-02)
+
+Meshy CLI asset-pipeline integration for the coordinated 2.0.4 release:
+
+- adds candidate-only `assets import-meshy`, reusing Aura3D's existing add, inspect, hash, manifest, provenance, and type-generation path;
+- records sanitized Meshy task, settings, credit, and supplied rights evidence while rejecting credential-like metadata and temporary signed query strings;
+- adds bounded prop, environment, vehicle, and humanoid admission diagnostics without treating missing measurements as passes;
+- adds pinned setup, agent-launcher, optional MCP, Keychain-launcher, secret-scan, and protected manual live-smoke surfaces;
+- proves one typed relic collection/reset pilot as a `prototype`, with collision explicitly unproven;
+- leaves renderer, engine, PBR, WebGPU, animation, physics, and universal comparison claims unchanged.
 
 ## 2.0.3 (2026-08-16)
 

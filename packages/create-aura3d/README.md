@@ -47,7 +47,7 @@ npx create-aura3d@latest --help
 - **Static deploys are first-class.** Build output is a browser app you can
   deploy like any Vite project.
 
-Aura3D 2.0.3 scaffolds pin the packed 2.0.3 dependency graph. The historical
+Aura3D 2.0.4 scaffolds pin the packed 2.0.4 dependency graph. The historical
 2.0.0 exact-tarball lifecycle receipts remain the 2.0 major-release record:
 149/149 checks against workspace source and 149/149 checks in clean projects
 that installed that packed 2.0.0 graph. Those lifecycles cover install, typecheck,

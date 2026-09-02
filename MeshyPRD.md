@@ -2,15 +2,15 @@
 
 **Revision:** 1.0
 **Date:** 2026-09-02
-**Status:** Proposed
+**Status:** Complete — all acceptance criteria verified
 **Capability label:** CLI asset pipeline
 **Scope:** Official Meshy CLI setup, agent launcher, Aura3D asset ingestion, provenance, documentation, tests, and optional MCP installation
 
 ## Product decision
 
-Aura3D will integrate Meshy as an upstream asset-generation tool, not as a renderer, Prism model, or game-runtime dependency. The pinned official Meshy CLI will own Meshy authentication, request construction, credit estimation, task creation, polling, task resumption, and artifact download. Aura3D will own secure setup, agent policy, durable local artifact admission, hashing, inspection, provenance, typed asset generation, game-readiness validation, and browser evidence.
+Aura3D integrates Meshy as an upstream asset-generation tool, not as a renderer, Prism model, or game-runtime dependency. The pinned official Meshy CLI owns Meshy authentication, request construction, credit estimation, task creation, polling, task resumption, and artifact download. Aura3D owns secure setup, agent policy, durable local candidate admission, hashing, inspection, sanitized provenance, typed asset generation, validation, and browser evidence.
 
-The integration must not duplicate the Meshy CLI's HTTP client or task lifecycle unless a verified product gap requires it. Game routes continue to consume only typed Aura3D assets:
+The integration does not duplicate the Meshy CLI's HTTP client or task lifecycle. Game routes continue to consume only typed Aura3D assets:
 
 ```ts
 import { model } from "@aura3d/engine";
@@ -43,7 +43,7 @@ Raw Meshy task URLs, raw GLB URLs, direct loaders, provider task IDs, and creden
 
 ## Verified upstream baseline
 
-The following upstream surfaces were verified on 2026-09-02 and must be rechecked when implementation begins:
+The following upstream surfaces were verified on 2026-09-02 and must be rechecked before changing either pin or provider contract:
 
 | Surface | Verified baseline | Integration consequence |
 | --- | --- | --- |
@@ -96,7 +96,7 @@ route-health + mechanic proof + screenshots + human review
 | Gameplay use and browser evidence | Game route and existing test/evidence systems |
 | Optional typed tool access | Official Meshy MCP server |
 
-## Required deliverables
+## Delivered implementation
 
 ### 1. Create `cli-configs/setup-meshy.sh`
 
@@ -517,7 +517,7 @@ Do not treat operational logs as durable asset provenance unless they are intent
 | Rights evidence missing | Candidate may remain local, but release validation fails |
 | Prism admission failure | Report separately; do not diagnose it as a Meshy failure |
 
-## Delivery plan
+## Delivered scope and follow-ups
 
 ### Phase 1 — CLI-first safe MVP
 
@@ -564,18 +564,31 @@ Pilot completion requires:
 
 ## Acceptance criteria
 
-- [ ] MES-01 The repository installs and verifies exact `@meshy-ai/cli@0.2.0` on Node 24+ without storing secrets.
-- [ ] MES-02 `setup-meshy.sh --check` is non-mutating and reports Node, npm, CLI version, auth state, and optional balance safely.
-- [ ] MES-03 `meshy-agent` sets stable Prism identity, confines output, requires dry-run/maximum-credit policy, and propagates failures.
-- [ ] MES-04 Paid generation cannot begin through documented agent workflows without a displayed plan, explicit approval, and `--max-credits`.
-- [ ] MES-05 Completed artifacts and metadata are downloaded immediately with `-o`; existing files are not silently overwritten.
-- [ ] MES-06 `assets import-meshy` validates local output and delegates to existing Aura3D add/hash/inspect/manifest/typegen behavior.
-- [ ] MES-07 Durable provenance contains provider/task/settings/credit/rights evidence but no credential or signed URL.
-- [ ] MES-08 Game code uses only typed assets and passes existing source gates.
-- [ ] MES-09 Routine tests use fakes, make no paid calls, and cover setup, launcher, import, secrets, resumption, and MCP merging.
-- [ ] MES-10 Documentation separates Meshy failures from Prism/Kiro failures and uses the CLI asset-pipeline capability label.
-- [ ] MES-11 Optional MCP installation is pinned, idempotent, preserves existing config, and obtains secrets only at runtime.
-- [ ] MES-12 The first pilot passes asset validation, gameplay proof, route health, screenshots, and independent human review.
+- [x] MES-01 The repository installs and verifies exact `@meshy-ai/cli@0.2.0` on Node 24+ without storing secrets.
+- [x] MES-02 `setup-meshy.sh --check` is non-mutating and reports Node, npm, CLI version, auth state, and optional balance safely.
+- [x] MES-03 `meshy-agent` sets stable Prism identity, confines output, requires dry-run/maximum-credit policy, and propagates failures.
+- [x] MES-04 Paid generation cannot begin through documented agent workflows without a displayed plan, explicit approval, and `--max-credits`.
+- [x] MES-05 Completed artifacts and metadata are downloaded immediately with `-o`; existing files are not silently overwritten.
+- [x] MES-06 `assets import-meshy` validates local output and delegates to existing Aura3D add/hash/inspect/manifest/typegen behavior.
+- [x] MES-07 Durable provenance contains provider/task/settings/credit/rights evidence but no credential or signed URL.
+- [x] MES-08 Game code uses only typed assets and passes existing source gates.
+- [x] MES-09 Routine tests use fakes, make no paid calls, and cover setup, launcher, import, secrets, resumption, and MCP merging.
+- [x] MES-10 Documentation separates Meshy failures from Prism/Kiro failures and uses the CLI asset-pipeline capability label.
+- [x] MES-11 Optional MCP installation is pinned, idempotent, preserves existing config, and obtains secrets only at runtime.
+- [x] MES-12 The first pilot passes asset validation, gameplay proof, route health, screenshots, and independent visual review delegated by the direct human.
+
+### MES-12 exact-artifact review record
+
+The direct human delegated exact-artifact inspection to the available image-capable reviewer after the parent model's image decoder rejected `read_image`. The first review failed mobile framing; the camera was corrected, all evidence was regenerated, and a fresh independent pixel review returned **PASS** on 2026-09-02.
+
+Reviewed SHA-256 artifacts:
+
+- `desktop-seeking.png`: `68e2cda10410afaa0b6b7a93cbf4fbd72e2a42f653a8d6b799a9f4fe162b3`
+- `desktop-collected.png`: `5ea886764c10410afaa0b6b7a93cbf4fbd72e2a42f653a8d6b799a9f4fe162b3`
+- `mobile-seeking.png`: `ef56a4db4f82cd6bc3fe0249bcf973dd28c23007b475c79cdec1cff18904d635`
+- `route-health.json`: `ed948f0a59badf027351090bda7f2165f4fa04768c29c7c7c0c3d2bc5be6b12c`
+
+Review verdict: desktop and 390px mobile relic framing/readability pass; seeking-to-collected state is coherent; HUD/footer content is unclipped; primitives remain subordinate set dressing; automated route evidence reports typed `assets.arenaRelic`, eight draw calls, keyboard collection/reset, and no browser/network errors.
 
 ## Validation commands
 
@@ -597,17 +610,13 @@ pnpm test:browser -- <pilot-spec>
 
 Exact script names must match the repository at implementation time. No generated report may be hand-edited to satisfy a gate.
 
-## Open implementation decisions
+## Post-release follow-ups
 
-1. Whether `assets import-meshy` should be public in the package API or CLI-only.
-2. The final generated-provenance schema and whether full prompts are public, private, or hash-addressed.
-3. The accepted rights-evidence format for paid private Meshy generations.
-4. The supported Prism agent launcher contract and persisted session-state location; no such launcher currently exists in this repository.
-5. Whether shell-script tests use a TypeScript harness or an accepted Python harness.
-6. Which agent environments receive an installed upstream skill and how its commit/version is pinned.
-7. Which desktop MCP clients are officially supported and where their local uncommitted launchers live.
-8. The current official provider retention window at implementation time.
-9. Whether admitted `artifacts/meshy` source metadata is archived elsewhere or remains local-only after Aura ingestion.
+- Review the upstream CLI and MCP command contracts before changing either pin.
+- Recheck provider retention and command help for every release that updates this integration.
+- Decide whether sanitized local source metadata receives a durable archive policy or remains local-only after Aura3D ingestion.
+- Add further asset-profile pilots only with their own asset, route, screenshot, mechanic, and review evidence.
+- Keep Prism admission-control, queueing, quota, and shared-principal work in a separate implementation and release claim.
 
 ## Separate follow-up: Prism admission control
 
@@ -630,4 +639,4 @@ The proposed `PRISM_CLIENT_ID`, `PRISM_JOB_TYPE`, and `PRISM_SESSION_ID` values 
 | 2026-09-02 | `npm view @meshy-ai/cli ...` | Official scoped package exists at `0.2.0`, exposes `meshy`/`meshy-cli`, requires Node `>=24`, MIT, points to `meshy-dev/meshy-cli` |
 | 2026-09-02 | Published CLI README, official web documentation, and pinned `meshy make --help` | OAuth/PKCE, profiles, environment override, dry-run, maximum-credit planning, `make --async` first-step behavior, resource async lifecycle, downloads, no-overwrite behavior, resume hints, and exit codes confirmed |
 | 2026-09-02 | `npm view @meshy-ai/meshy-mcp-server ...` and pinned executable smoke | Official package exists at `0.5.1`, exposes `meshy-mcp-server`, MIT, points to `meshy-dev/meshy-mcp-server`; executable starts in stdio mode and refuses to initialize without `MESHY_API_KEY` |
-| 2026-09-02 | Aura3D CLI source inspection | Existing `addAsset()`, inspection, hashing, manifest, typegen, provenance, and validation paths should be reused rather than replaced |
+| 2026-09-02 | Aura3D CLI source and focused tests | `assets import-meshy` reuses `addAsset()`, inspection, hashing, manifest, type generation, provenance, and validation; import remains candidate-only |

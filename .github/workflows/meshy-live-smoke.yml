@@ -1,0 +1,88 @@
+name: Meshy live smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_paid_generation:
+        description: "Submit one paid generation (requires protected-environment approval)"
+        required: true
+        type: boolean
+        default: false
+      confirm_paid_generation:
+        description: "For a paid run, enter exactly: I AUTHORIZE MESHY SPEND"
+        required: false
+        type: string
+        default: ""
+      max_credits:
+        description: "Maximum credits authorized for the paid generation (must be > 0)"
+        required: false
+        type: number
+        default: 0
+      prompt:
+        description: "Prompt used only when paid generation is authorized"
+        required: false
+        type: string
+        default: "a simple low-poly blue cube"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meshy-live-smoke
+  cancel-in-progress: false
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    environment: meshy-live-smoke
+    timeout-minutes: 15
+    steps:
+      - name: Use supported Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install pinned Meshy CLI
+        run: npm install --global @meshy-ai/cli@0.2.0
+      - name: Require Meshy secret
+        env:
+          MESHY_API_KEY: ${{ secrets.MESHY_API_KEY }}
+        run: |
+          if [ -z "${MESHY_API_KEY:-}" ]; then
+            echo '::error::MESHY_API_KEY is not configured for the meshy-live-smoke environment'
+            exit 1
+          fi
+      - name: Check authentication and balance (read only)
+        env:
+          MESHY_API_KEY: ${{ secrets.MESHY_API_KEY }}
+        run: |
+          meshy auth status
+          meshy balance
+      - name: Validate paid-generation authorization
+        if: ${{ inputs.run_paid_generation }}
+        env:
+          MESHY_CONFIRMATION: ${{ inputs.confirm_paid_generation }}
+          MESHY_MAX_CREDITS: ${{ inputs.max_credits }}
+          MESHY_PROMPT: ${{ inputs.prompt }}
+        run: |
+          if [ "$MESHY_CONFIRMATION" != 'I AUTHORIZE MESHY SPEND' ]; then
+            echo '::error::Paid generation requires the exact confirmation phrase'
+            exit 1
+          fi
+          node - <<'NODE'
+          const credits = Number(process.env.MESHY_MAX_CREDITS);
+          if (!Number.isFinite(credits) || credits <= 0 || credits > 30) {
+            console.error("::error::max_credits must be a finite number from 1 through 30");
+            process.exit(1);
+          }
+          if (!(process.env.MESHY_PROMPT || "").trim()) {
+            console.error("::error::prompt must not be empty for paid generation");
+            process.exit(1);
+          }
+          NODE
+      - name: Submit explicitly authorized paid smoke generation
+        if: ${{ inputs.run_paid_generation }}
+        env:
+          MESHY_API_KEY: ${{ secrets.MESHY_API_KEY }}
+          MESHY_MAX_CREDITS: ${{ inputs.max_credits }}
+          MESHY_PROMPT: ${{ inputs.prompt }}
+        run: meshy make "$MESHY_PROMPT" --max-credits "$MESHY_MAX_CREDITS" --async

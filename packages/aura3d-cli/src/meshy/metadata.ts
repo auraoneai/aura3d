@@ -5,6 +5,12 @@ export const MAX_MESHY_METADATA_BYTES = 1024 * 1024;
 const SECRET_KEY = /(?:^|_)(?:api_?key|access_?token|refresh_?token|authorization|bearer|client_?secret|password|credentials?|cookie|private_?key|environment|env)(?:$|_)/i;
 const SIGNED_QUERY_KEY = /^(?:x-amz-|x-goog-|signature$|sig$|token$|expires$|credential$|policy$|key-pair-id$)/i;
 
+export interface SanitizedMeshyRightsEvidence {
+  readonly licenseName?: string;
+  readonly licenseUrl?: string;
+  readonly licenseRaw?: string;
+}
+
 export interface SanitizedMeshyMetadata {
   readonly providerCli?: string;
   readonly taskId?: string;
@@ -49,7 +55,7 @@ export function readMeshyMetadata(path: string): SanitizedMeshyMetadata {
   });
 }
 
-export function validateMeshyEvidenceJson(path: string): void {
+export function validateMeshyEvidenceJson(path: string): SanitizedMeshyRightsEvidence {
   const size = statSync(path).size;
   if (size > MAX_MESHY_METADATA_BYTES) throw new Error(`Meshy rights evidence exceeds ${MAX_MESHY_METADATA_BYTES} bytes: ${path}`);
   let parsed: unknown;
@@ -57,6 +63,10 @@ export function validateMeshyEvidenceJson(path: string): void {
   const value = record(parsed, "Meshy rights evidence");
   if (Object.keys(value).length === 0) throw new Error("Meshy rights evidence must be a non-empty JSON object.");
   rejectCredentialFields(value, "rights evidence");
+  const licenseName = boundedRightsString(value.licenseName, "licenseName", 512);
+  const licenseUrl = rightsHttpsUrl(first(value.termsUrl, value.licenseUrl), "termsUrl/licenseUrl");
+  const licenseRaw = boundedRightsString(first(value.rightsBasis, value.licenseRaw), "rightsBasis/licenseRaw", 4096);
+  return compact({ licenseName, licenseUrl, licenseRaw });
 }
 
 export function stripSignedUrl(value: string): string {
@@ -105,9 +115,33 @@ function optionalString(value: unknown, label: string): string | undefined {
   if (typeof value !== "string" || value.trim() === "" || value.length > 4096) throw new Error(`Meshy metadata field ${label} must be a non-empty bounded string.`);
   return stripSignedUrl(value.trim());
 }
+function boundedRightsString(value: unknown, label: string, maximumLength: number): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "string" || value.trim() === "" || value.length > maximumLength) {
+    throw new Error(`Meshy rights evidence field ${label} must be a non-empty string of at most ${maximumLength} characters.`);
+  }
+  return value.trim();
+}
+function rightsHttpsUrl(value: unknown, label: string): string | undefined {
+  const text = boundedRightsString(value, label, 2048);
+  if (!text) return undefined;
+  let url: URL;
+  try { url = new URL(text); } catch { throw new Error(`Meshy rights evidence field ${label} must be an HTTPS URL.`); }
+  if (url.protocol !== "https:" || url.username || url.password) {
+    throw new Error(`Meshy rights evidence field ${label} must be an HTTPS URL without embedded credentials.`);
+  }
+  return stripSignedUrl(url.toString());
+}
 function isoString(value: unknown, label: string): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value) || value < 0) throw new Error(`Meshy metadata field ${label} must be an ISO-8601 timestamp or non-negative epoch milliseconds.`);
+    const timestamp = new Date(value);
+    if (Number.isNaN(timestamp.getTime())) throw new Error(`Meshy metadata field ${label} must be an ISO-8601 timestamp or non-negative epoch milliseconds.`);
+    return timestamp.toISOString();
+  }
   const text = optionalString(value, label); if (!text) return undefined;
-  if (Number.isNaN(Date.parse(text))) throw new Error(`Meshy metadata field ${label} must be an ISO-8601 timestamp.`);
+  if (Number.isNaN(Date.parse(text))) throw new Error(`Meshy metadata field ${label} must be an ISO-8601 timestamp or non-negative epoch milliseconds.`);
   return text;
 }
 function nonNegativeNumber(value: unknown, label: string): number | undefined {

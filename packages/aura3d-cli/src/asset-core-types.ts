@@ -272,6 +272,8 @@ export interface AddAssetOptions {
   readonly attribution?: string;
   readonly sha256?: string;
   readonly provenanceEvidence?: readonly string[];
+  /** Replace prior detected/manifest evidence instead of preserving it on re-add. */
+  readonly replaceProvenanceEvidence?: boolean;
   readonly resolveCandidate?: AuraCliResolveCandidateProvenance;
   readonly generation?: AuraCliGeneratedAssetProvenance;
   readonly quality?: AuraAssetQuality;

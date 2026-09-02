@@ -89,16 +89,22 @@ async function main(): Promise<void> {
       const name = readOption("--name");
       const rightsEvidence = readOption("--rights-evidence");
       if (!input || !name || !rightsEvidence) {
-        throw new Error("Usage: aura3d assets import-meshy <output-dir> --name <typedKey> --rights-evidence <rights.json> [--file model.glb] [--allowed-root artifacts/meshy] [--quality candidate] [--role prop]");
+        throw new Error("Usage: aura3d assets import-meshy <output-dir> --name <typedKey> --rights-evidence <rights.json> [--file model.glb] [--thumbnail thumbnail.png] [--profile prop|environment|vehicle|humanoid] [--allowed-root artifacts/meshy] [--quality candidate] [--role prop]");
+      }
+      const meshyProfile = readOption("--profile");
+      if (meshyProfile && !["prop", "environment", "vehicle", "humanoid"].includes(meshyProfile)) {
+        throw new Error(`Unsupported Meshy --profile value "${meshyProfile}". Use prop, environment, vehicle, or humanoid.`);
       }
       print(importMeshyAsset({
         input,
         name,
         rightsEvidence,
         file: readOption("--file"),
+        thumbnail: readOption("--thumbnail"),
         allowedRoot: readOption("--allowed-root"),
         quality: readAssetQuality(),
-        role: readAssetRole()
+        role: readAssetRole(),
+        profile: meshyProfile as "prop" | "environment" | "vehicle" | "humanoid" | undefined
       }));
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));
