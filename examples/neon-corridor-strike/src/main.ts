@@ -197,9 +197,11 @@ function resetRun(): void {
   app.nodes.get("shot-light")?.setPosition(0, -8, 0);
   for (const enemy of ENEMIES) {
     const node = app.nodes.get(`enemy-${enemy.id}`);
+    const collar = app.nodes.get(`enemy-${enemy.id}-threat-collar`);
     node?.setVisible(true);
     node?.setRotation(0, 0, 0);
     node?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
+    collar?.setVisible(false);
   }
   for (const pickup of PICKUPS) {
     const id = `pickup-${pickup.id}`;
@@ -428,9 +430,10 @@ function publishEvidence(): void {
     bulletOnBulletContacts: 0,
     usedKit: false,
     typedAssets: Object.keys(assets),
-    // 26 authored base prims + 6 debris props + 4 lamp parts + 2 greeble pools
-    // + 3 text3D signs. Greeble instances are additional instanced transforms.
-    primitiveCount: 41,
+    // 26 authored base prims + 4 typed-enemy threat collars + 6 debris props
+    // + 4 lamp parts + 2 greeble pools + 3 text3D signs. Greeble instances and
+    // collar runtime transforms are additional instanced/runtime details.
+    primitiveCount: 45,
     propsScatteredEvents: scatterEvents(),
     overlapPickupChecks: state.overlapPickupChecks,
     losBlockedEnemies: [...enemyLosBlockedIds()],

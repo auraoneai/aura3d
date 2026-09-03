@@ -182,6 +182,10 @@ const visualReviewCapture = typeof window !== "undefined"
 const desktopComposition = typeof window !== "undefined"
   && window.innerWidth >= 1400
   && window.innerHeight >= 880;
+// Normal play uses a compact authored lane so the instanced swarm remains the
+// visual subject and the route can prove its bounded draw contract. The full
+// dressing remains available to the dedicated art/provenance mode below.
+const compactDefaultComposition = !visualReviewCapture;
 if (typeof document !== "undefined") document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const controls = [
@@ -208,7 +212,7 @@ const claimBoundary =
 const arenaLayout = createArenaLayout();
 const rect = playRect(arenaLayout.bounds);
 
-const swarm = createSwarmSimulation();
+const swarm = createSwarmSimulation({ reviewCapture: visualReviewCapture });
 const combatFeel = createCombatFeel({ reducedMotion, reducedFlash: reducedMotion });
 
 function buildLaneStrips(): Array<{ position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }> {
@@ -289,8 +293,8 @@ const appScene = scene()
 // shape, material rhythm, and near/mid depth. It is permanent arena geometry,
 // never a stand-in for an attack or simulation effect. The dark blades sit
 // below actors and deliberately leave the typed courier's footprint clear.
-const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : 16 }, (_, index) => {
-  const bladeCount = visualReviewCapture ? 1 : 16;
+const rainGardenBlades = Array.from({ length: visualReviewCapture ? 0 : compactDefaultComposition ? 6 : 16 }, (_, index) => {
+  const bladeCount = visualReviewCapture ? 1 : compactDefaultComposition ? 6 : 16;
   const angle = (index / bladeCount) * Math.PI * 2 + index * (visualReviewCapture ? 0.075 : 0.035);
   const radius = (visualReviewCapture ? 2.55 : 3.55) + (index % 3) * (visualReviewCapture ? 0.48 : 0.22);
   return primitives.box({
@@ -320,7 +324,7 @@ appScene.addMany(rainGardenBlades);
 // set dressing: they sit outside the authored play rectangle, never collide,
 // and only provide the layered near/mid/far value structure that the swarm
 // composition otherwise lacks at 320 live instances.
-const districtFrameNodes = Array.from({ length: visualReviewCapture ? 0 : 14 }, (_, index) => {
+const districtFrameNodes = Array.from({ length: visualReviewCapture || compactDefaultComposition ? 0 : 14 }, (_, index) => {
   const side = index % 2 === 0 ? -1 : 1;
   const lane = Math.floor(index / 2);
   const z = -14 + lane * 4.35;
@@ -379,7 +383,7 @@ appScene.add(
     transforms: skylineWindowTransforms,
     colors: skylineWindowColors,
     material: material.emissive({ name: "district window lattice material", color: "#35e6ff", emissive: "#35e6ff", emissiveIntensity: 0.34, opacity: 0.78 }),
-    size: visualReviewCapture ? [0.001, 0.001, 0.001] : [0.12, 0.18, 0.42]
+    size: visualReviewCapture || compactDefaultComposition ? [0.001, 0.001, 0.001] : [0.12, 0.18, 0.42]
   }).runtime(game.runtimeNode("neon-district-window-lattice", {
     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "district-frame"]
   }))
@@ -407,7 +411,7 @@ appScene.add(
     transforms: districtCanopyTransforms,
     colors: districtCanopyColors,
     material: material.pbr({ name: "district canopy cluster material", color: "#1e4752", roughness: 0.88, metallic: 0.04 }),
-    size: visualReviewCapture ? 0.001 : 1
+    size: visualReviewCapture || compactDefaultComposition ? 0.001 : 1
   }).runtime(game.runtimeNode("neon-district-canopy-clusters", {
     tags: ["set-dressing", "renderer-owned", "non-colliding", "instanced", "organic-silhouette"]
   }))
@@ -415,7 +419,7 @@ appScene.add(
 
 // Small renderer-owned garden lights pull the eye toward the center lane and
 // add depth cues between the typed street props and the far skyline.
-const gardenLightNodes = Array.from({ length: visualReviewCapture ? 0 : 12 }, (_, index) => {
+const gardenLightNodes = Array.from({ length: visualReviewCapture || compactDefaultComposition ? 0 : 12 }, (_, index) => {
   const side = index % 2 === 0 ? -1 : 1;
   const lane = Math.floor(index / 2);
   const tint = index % 3 === 0 ? "#ffc857" : side < 0 ? "#35e6ff" : "#ff4fd8";
@@ -495,7 +499,72 @@ const courierPulseEmitterNode = primitives.box({
 }).runtime(game.runtimeNode("neon-courier-pulse-emitter", {
   tags: ["primary-actor-accent", "renderer-owned", "non-colliding"]
 }));
-appScene.addMany([courierVisorNode, courierCoreNode, courierShoulderFrameNode, courierPulseEmitterNode]);
+
+// A compact authored carbine gives the courier's combat direction a readable
+// silhouette in the exact finale still. It is an attachment to the typed
+// courier (not a primitive-only hero or weapon claim): the live pulse query
+// remains the source of damage truth, while this barrel, cyan receiver, and
+// event-driven muzzle marker show which way the player is firing.
+const courierPulseCarbineNode = primitives.box({
+  name: "courier pulse carbine",
+  size: [0.18, 0.16, 0.92],
+  material: material.pbr({
+    name: "courier pulse carbine shell",
+    color: "#123246",
+    roughness: 0.28,
+    metallic: 0.72,
+    emissive: "#2bd7e7",
+    emissiveIntensity: 0.34
+  })
+}).runtime(game.runtimeNode("neon-courier-pulse-carbine", {
+  tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
+}));
+const courierPulseCarbineCoreNode = primitives.box({
+  name: "courier pulse carbine core",
+  size: [0.1, 0.1, 0.34],
+  material: material.emissive({
+    name: "courier pulse carbine core material",
+    color: "#8cf8ff",
+    emissive: "#35e6ff",
+    emissiveIntensity: 1.15
+  })
+}).runtime(game.runtimeNode("neon-courier-pulse-carbine-core", {
+  tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
+}));
+const courierPulseMuzzleRingNode = primitives.torus({
+  name: "courier pulse muzzle ring",
+  material: material.emissive({
+    name: "courier pulse muzzle ring material",
+    color: "#ffc857",
+    emissive: "#ffc857",
+    emissiveIntensity: 1.4
+  }),
+  scale: [0.22, 0.22, 0.1]
+}).runtime(game.runtimeNode("neon-courier-pulse-muzzle-ring", {
+  tags: ["primary-actor-attachment", "renderer-owned", "non-colliding", "weapon-silhouette"]
+}));
+const courierPulseMuzzleFlashNode = primitives.sphere({
+  name: "courier pulse muzzle flash",
+  material: material.emissive({
+    name: "courier pulse muzzle flash material",
+    color: "#fff3b0",
+    emissive: "#ffc857",
+    emissiveIntensity: 2.2
+  }),
+  scale: [0.24, 0.24, 0.24]
+}).position(0, -8, 0).runtime(game.runtimeNode("neon-courier-pulse-muzzle-flash", {
+  tags: ["actual-event-feedback", "pulse-fire", "renderer-owned", "non-colliding"]
+}));
+appScene.addMany([
+  courierVisorNode,
+  courierCoreNode,
+  courierShoulderFrameNode,
+  courierPulseEmitterNode,
+  courierPulseCarbineNode,
+  courierPulseCarbineCoreNode,
+  courierPulseMuzzleRingNode,
+  courierPulseMuzzleFlashNode
+]);
 
 const courierCoreRingNode = primitives.torus({
   name: "courier core ring",
@@ -561,7 +630,7 @@ appScene.add(lights.point({ position: [-1.5, 4.5, 0], color: "#35e6ff", intensit
 // The finale camera looks down the central street. These shallow median
 // islands add a near/mid/far rhythm to the frame without occupying the
 // courier's playable lane or changing any simulation bounds.
-if (!visualReviewCapture) {
+if (!visualReviewCapture && !compactDefaultComposition) {
   for (let island = -1; island <= 1; island += 1) {
     const z = -5.8 + island * 5.8;
     appScene.addMany([
@@ -794,18 +863,24 @@ appScene.add(
   })
 );
 
-appScene.addMany(Array.from({ length: REVIEW_ELITE_CARD_COUNT }, (_, index) =>
-  model(assets.neonCrownMothElite, {
-    name: `live crown moth presentation ${index}`,
-    role: "primaryCharacter",
-    scaleMode: "fit",
-    targetMaxDimension: 0.88
-  })
-    .position(0, -8, 0)
-    .runtime(game.runtimeNode(`neon-live-crown-moth-${index}`, {
-      tags: ["live-enemy-presentation", "typed-asset", "elite", "review-only"]
-    }))
-));
+// The detailed elite cards are only needed for the exact review finale. Do not
+// instantiate 48 hidden GLB actors in normal play: hidden assets still consume
+// renderer/shadow bookkeeping and were pushing the default instancing producer
+// past its honest draw/memory budget before the first input was processed.
+if (visualReviewCapture) {
+  appScene.addMany(Array.from({ length: REVIEW_ELITE_CARD_COUNT }, (_, index) =>
+    model(assets.neonCrownMothElite, {
+      name: `live crown moth presentation ${index}`,
+      role: "primaryCharacter",
+      scaleMode: "fit",
+      targetMaxDimension: 0.88
+    })
+      .position(0, -8, 0)
+      .runtime(game.runtimeNode(`neon-live-crown-moth-${index}`, {
+        tags: ["live-enemy-presentation", "typed-asset", "elite", "review-only"]
+      }))
+  ));
+}
 
 appScene.add(
   instances.sphere({
@@ -1035,6 +1110,7 @@ function resetRun(newSeed?: number): void {
   app.nodes.get("neon-burst-event-ring")?.setVisible(false);
   app.nodes.get("neon-pulse-shot-ray")?.setVisible(false);
   app.nodes.get("neon-pulse-impact-ring")?.setVisible(false);
+  app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
   for (let index = 0; index < 8; index += 1) app.nodes.get("neon-burst-spoke-" + index)?.setVisible(false);
   burstRequested = false;
   paused = false;
@@ -1094,6 +1170,19 @@ function firePulse(): void {
   app.nodes.get("neon-pulse-impact-ring")
     ?.setPosition(player.x + aim.x * (visualReviewCapture ? 2.35 : 3.15), visualReviewCapture ? 0.7 : 0.12, player.z + aim.z * (visualReviewCapture ? 2.35 : 3.15))
     .setRotation(Math.PI / 2, 0, 0)
+    .setVisible(true);
+  // Keep the event marker anchored to the carbine's +Z-facing basis so the
+  // weapon reads as the source of this real pulse query rather than a detached
+  // ray floating in the arena.
+  const pulseRightX = Math.cos(pulseYaw);
+  const pulseRightZ = -Math.sin(pulseYaw);
+  app.nodes.get("neon-courier-pulse-muzzle-flash")
+    ?.setPosition(
+      player.x + aim.x * 1.14 + pulseRightX * 0.24,
+      visualReviewCapture ? 1.58 : 1.48,
+      player.z + aim.z * 1.14 + pulseRightZ * 0.24
+    )
+    .setRotation(0, pulseYaw, 0)
     .setVisible(true);
   for (let index = 0; index < 6; index += 1) {
     const angle = index * Math.PI / 3 + 0.25;
@@ -1329,6 +1418,7 @@ function update(dt: number): void {
     if (pulseFxRemaining <= 0) {
       app.nodes.get("neon-pulse-shot-ray")?.setVisible(false);
       app.nodes.get("neon-pulse-impact-ring")?.setVisible(false);
+      app.nodes.get("neon-courier-pulse-muzzle-flash")?.setVisible(false);
       for (let index = 0; index < 6; index += 1) app.nodes.get(`neon-pulse-impact-shard-${index}`)?.setVisible(false);
     }
   }
@@ -1381,10 +1471,18 @@ function update(dt: number): void {
   }
 
   const playerNode = app.nodes.get("neon-player");
+  const aim = resolveAim();
+  const playerYaw = Math.atan2(aim.x, aim.z);
+  // The route uses +Z as the courier's neutral forward axis. Keep every
+  // attachment on that same basis so the carbine, accents, and muzzle marker
+  // remain physically aligned with the real pulse query at arbitrary aim.
+  const forwardX = Math.sin(playerYaw);
+  const forwardZ = Math.cos(playerYaw);
+  const rightX = Math.cos(playerYaw);
+  const rightZ = -Math.sin(playerYaw);
   if (playerNode) {
     const bob = Math.sin(elapsedSeconds * 9) * 0.04;
-      const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
-    const playerYaw = Math.atan2(resolveAim().x, resolveAim().z);
+    const hurtScale = player.hurtFlashRemaining > 0 ? 1.16 : 1;
     playerNode
       .setPosition(player.x, 0.06 + bob, player.z)
       .setScale([hurtScale * 0.6, hurtScale, hurtScale * 0.82]);
@@ -1394,29 +1492,59 @@ function update(dt: number): void {
     // proxy. They are visual-only and never participate in collision, damage,
     // or scoring.
     app.nodes.get("neon-courier-visor-accent")
-      ?.setPosition(player.x, 2.22 + bob, player.z + 0.34)
+      ?.setPosition(player.x + forwardX * 0.34, 2.22 + bob, player.z + forwardZ * 0.34)
       .setRotation(0, playerYaw, 0)
       .setVisible(!visualReviewCapture);
     app.nodes.get("neon-courier-chest-core")
-      ?.setPosition(player.x, 1.18 + bob, player.z + 0.34)
+      ?.setPosition(player.x + forwardX * 0.34, 1.18 + bob, player.z + forwardZ * 0.34)
       .setRotation(0, playerYaw, 0)
       .setVisible(!visualReviewCapture);
     app.nodes.get("neon-courier-shoulder-frame")
-      ?.setPosition(player.x, 1.48 + bob, player.z + 0.34)
+      ?.setPosition(player.x + forwardX * 0.34, 1.48 + bob, player.z + forwardZ * 0.34)
       .setRotation(Math.PI / 2, playerYaw, 0)
       .setVisible(!visualReviewCapture);
     app.nodes.get("neon-courier-pulse-emitter")
-      ?.setPosition(player.x, 0.84 + bob, player.z + 0.22)
+      ?.setPosition(player.x + forwardX * 0.22, 0.84 + bob, player.z + forwardZ * 0.22)
       .setRotation(0, playerYaw, 0)
       .setVisible(!visualReviewCapture);
+
+    // Weapon attachment: slight right-hand offset plus forward reach keeps the
+    // receiver distinct from the typed torso while preserving a clean player
+    // silhouette. These nodes are presentation-only; firePulse() below still
+    // owns all hit/damage/progression truth.
+    app.nodes.get("neon-courier-pulse-carbine")
+      ?.setPosition(
+        player.x + forwardX * 0.52 + rightX * 0.24,
+        1.54 + bob,
+        player.z + forwardZ * 0.52 + rightZ * 0.24
+      )
+      .setRotation(0, playerYaw, 0)
+      .setVisible(true);
+    app.nodes.get("neon-courier-pulse-carbine-core")
+      ?.setPosition(
+        player.x + forwardX * 0.76 + rightX * 0.24,
+        1.54 + bob,
+        player.z + forwardZ * 0.76 + rightZ * 0.24
+      )
+      .setRotation(0, playerYaw, 0)
+      .setVisible(true);
+    app.nodes.get("neon-courier-pulse-muzzle-ring")
+      ?.setPosition(
+        player.x + forwardX * 1.02 + rightX * 0.24,
+        1.54 + bob,
+        player.z + forwardZ * 1.02 + rightZ * 0.24
+      )
+      .setRotation(0, playerYaw, 0)
+      .setVisible(true);
   }
-  const aim = resolveAim();
-  app.nodes.get("neon-player-burst-radius")?.setPosition(player.x, 0.12, player.z).setVisible(!visualReviewCapture);
-  app.nodes.get("neon-courier-core-ring")?.setPosition(player.x, 0.26, player.z + 0.34).setVisible(!visualReviewCapture);
+  app.nodes.get("neon-player-burst-radius")?.setPosition(player.x, 0.12, player.z).setVisible(true);
+  app.nodes.get("neon-courier-core-ring")
+    ?.setPosition(player.x + forwardX * 0.34, 0.26, player.z + forwardZ * 0.34)
+    .setVisible(true);
   app.nodes.get("neon-player-aim-vector")
     ?.setPosition(player.x + aim.x * 1.35, 0.22, player.z + aim.z * 1.35)
     .setRotation(0, Math.atan2(aim.x, aim.z), 0)
-    .setVisible(!visualReviewCapture);
+    .setVisible(true);
 
   if (runState === "intermission") {
     intermissionRemaining -= dt;
@@ -1669,9 +1797,11 @@ window.__NEON_SWARM_DEBUG__ = {
     let spawned = 0;
     for (let i = 0; i < total; i += 1) {
       // A deterministic golden-angle spiral reads as an encircling horde, not
-      // a debug grid. It retains the exact live count and safe inner pocket,
-      // while spreading individual threats through the authored arena bounds.
-      const innerCount = Math.min(84, total);
+      // a debug grid. Keep a real safe pocket around the courier while placing
+      // a short pulse lane just outside the carbine's silhouette; the lane is
+      // what the finale fixture's real shot can hit without rebuilding a wall
+      // directly over the player.
+      const innerCount = Math.min(72, total);
       const inPressureRing = i < innerCount;
       const outerIndex = Math.max(0, i - innerCount);
       const outerTotal = Math.max(1, total - innerCount);
@@ -1679,12 +1809,23 @@ window.__NEON_SWARM_DEBUG__ = {
       const angle = i * 2.399963229728653;
       const centerX = player.x;
       const centerZ = player.z;
-      const x = inPressureRing
-        ? player.x + Math.cos(angle) * (3.15 + (i / innerCount) * 2.7)
-        : centerX + Math.cos(angle) * (4.45 + radial * 12.2);
-      const z = inPressureRing
-        ? player.z + Math.sin(angle) * (3.15 + (i / innerCount) * 2.45)
-        : centerZ + Math.sin(angle) * (4.0 + radial * 8.2);
+      const pulseLane = inPressureRing && i < 6;
+      const pulseDistance = 2.9 + (i % 3) * 0.16;
+      const pulseLaneOffset = (i - 2.5) * 0.22;
+      const pulsePerpX = -0.75;
+      const pulsePerpZ = -0.66;
+      const pulseAimX = 0.66;
+      const pulseAimZ = -0.75;
+      const x = pulseLane
+        ? player.x + pulseAimX * pulseDistance + pulsePerpX * pulseLaneOffset
+        : inPressureRing
+          ? player.x + Math.cos(angle) * (4.15 + (i / innerCount) * 2.05)
+          : centerX + Math.cos(angle) * (7.1 + radial * 9.2);
+      const z = pulseLane
+        ? player.z + pulseAimZ * pulseDistance + pulsePerpZ * pulseLaneOffset
+        : inPressureRing
+          ? player.z + Math.sin(angle) * (4.1 + (i / innerCount) * 1.95)
+          : centerZ + Math.sin(angle) * (6.8 + radial * 7.6);
       // The first pressure-rank slots are real six-HP elites inside the real
       // 3.6-unit pulse reach. The retained pulse damages and flashes them but
       // cannot kill them, so the exact frame shows a genuine hit/spark while
@@ -1702,7 +1843,11 @@ window.__NEON_SWARM_DEBUG__ = {
       const angle = (i / count) * Math.PI * 2;
       const x = Math.min(rect.maxX - 0.5, Math.max(rect.minX + 0.5, player.x + Math.cos(angle) * 2.1));
       const z = Math.min(rect.maxZ - 0.5, Math.max(rect.minZ + 0.5, player.z + Math.sin(angle) * 2.1));
-      swarm.spawn({ x, z, archetype: "grunt", speedMultiplier: 1 });
+      // Keep the browser's pulse fixture spatially honest without allowing a
+      // moving grunt to cross into contact damage while the input loop waits
+      // for the real fire cooldown. Gameplay waves still use their authored
+      // speeds; this only makes the deterministic staging hook repeatable.
+      swarm.spawn({ x, z, archetype: "grunt", speedMultiplier: 0 });
     }
   },
   jumpToWave(target) {
@@ -1762,7 +1907,11 @@ window.__NEON_SWARM_DEBUG__ = {
     // Place the fixture one fixed frame before the half-second award. The
     // browser still proves the live annulus decides whether that award fires.
     grazeAccumulator = 0.49;
-    swarm.spawn({ x: player.x + 2.05, z: player.z, archetype: "elite", speedMultiplier: 1 });
+    // Hold the staged threat in the live annulus for the fixed-frame proof.
+    // A moving elite can orbit across the 0.55u contact boundary during the
+    // 35-frame browser fixture, which would make the graze award depend on
+    // frame timing rather than the simulation-owned countWithin query.
+    swarm.spawn({ x: player.x + 2.05, z: player.z, archetype: "elite", speedMultiplier: 0 });
     publishEvidence();
   },
   stageBurstCluster(count = 10) {

@@ -24,6 +24,10 @@ Route-local prototype. These are not public `@aura3d/engine` claims.
   tail that leave the rifle along the hitscan, with a muzzle point light and
   end-of-shot impact flashes. `game.effects` flashes are too
   dim to carry the graphic alone. This is not a projectile physics kit.
+- Hostiles carry a small renderer-owned red/amber threat collar that follows
+  their typed visual node. It expands only during the route-local telegraph or
+  flinch clocks and collapses during the authored death crumple; it is a
+  silhouette/readability cue, not a hitbox, target lock, or reusable shooter UI.
 - The shot presentation window is measured in wall-clock time (12 s) with the
   bolt fading to a small ember after its flight; pause compensates the expiry
   clock so the remaining presentation window resumes instead of elapsing in

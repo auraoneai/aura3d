@@ -108,6 +108,12 @@ const visualReviewCapture = new URL(window.location.href).searchParams.get("capt
 if (visualReviewCapture) document.documentElement.dataset.reviewCapture = "blockfall";
 const clearChargeMaterial = material.neon({ name: "single clear reactor charge", color: "#ff9f43", emissive: "#ffb35a", emissiveIntensity: 1.05, roughness: 0.2, opacity: 0.7 });
 const quadDischargeMaterial = material.neon({ name: "quad clear gold discharge", color: "#ffd45c", emissive: "#fff08a", emissiveIntensity: 1.45, roughness: 0.14, opacity: 0.84 });
+// The catalog cabinet carries a baked "GAME OVER / RESTART?" marquee. That
+// artwork is valid asset provenance but contradicts the live running session,
+// so a shallow scene-native service plate masks only that fixed marquee while
+// leaving the typed cabinet body, screen, controls, and vents visible.
+const cabinetLivePlateMaterial = material.pbr({ name: "cabinet live-session marquee plate", color: "#071927", emissive: "#082c3a", emissiveIntensity: 0.42, roughness: 0.32, metallic: 0.58 });
+const cabinetLivePlateAccentMaterial = material.neon({ name: "cabinet live-session marquee accent", color: "#48d9e5", emissive: "#48d9e5", emissiveIntensity: 0.94, roughness: 0.18 });
 
 const REPLAY_FRAME_COUNT = Math.max(240, ...DEMO_REPLAY.map((event) => event.frame + 20));
 // Keep the boot frame visually in-flight: the opening T sits a few rows into
@@ -432,6 +438,7 @@ const activePiecePool: InstancedBoardPool = createActivePiecePool();
 const clearFxNodeGroup = createClearFxNodes();
 const scoreboardNodeGroup = createScoreboardNodes(visualReviewCapture);
 const quadWordGeometry = buildWallWord("QUAD", 0.58);
+const cabinetLiveWordGeometry = buildWallWord("LIVE", 0.32);
 const quadCelebrationNodeGroup = [
   geometry.custom(
     { kind: "aura-custom-geometry", positions: quadWordGeometry.positions, indices: quadWordGeometry.indices },
@@ -523,6 +530,26 @@ const reactorScene = scene()
       .runtime(game.runtimeNode("blockfall-reactor-cabinet", {
         tags: ["typed-primary-asset", "arcade-cabinet", "release-probed"]
       }))
+  )
+  .add(
+    // Keep the real catalog cabinet readable without exposing its baked
+    // contradictory game-over copy in a running frame. This plate is a thin
+    // physical fascia, not a DOM overlay or a second gameplay surface.
+    primitives.box({ name: "cabinet live-session marquee plate", material: cabinetLivePlateMaterial, castShadow: false, receiveShadow: false })
+      .position(-2.8, visualReviewCapture ? 3.04 : 3.2, -0.98)
+      .scale([1.72, visualReviewCapture ? 1.38 : 1.56, 0.035])
+  )
+  .add(
+    primitives.box({ name: "cabinet live-session marquee accent", material: cabinetLivePlateAccentMaterial, castShadow: false, receiveShadow: false })
+      .position(-2.8, visualReviewCapture ? 3.54 : 3.7, -0.935)
+      .scale([1.18, 0.032, 0.018])
+  )
+  .add(
+    geometry.custom(
+      { kind: "aura-custom-geometry", positions: cabinetLiveWordGeometry.positions, indices: cabinetLiveWordGeometry.indices },
+      { name: "cabinet live-session marquee word", material: cabinetLivePlateAccentMaterial }
+    )
+      .position(-2.8 - cabinetLiveWordGeometry.width / 2, visualReviewCapture ? 2.94 : 3.1, -0.93)
   )
   .add(
     // The route's authored mechanic and plasma-rival cutouts carry the actual

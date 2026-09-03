@@ -44,7 +44,6 @@ export interface HangarKeyContext {
 }
 
 export function createHangarController(audio: HangarAudioController, callbacks: HangarCallbacks, options: HangarOptions = {}) {
-  const reducedMotion = Boolean(options.reducedMotion);
   let selection: BuildSelection = { ...DEFAULT_BUILD };
   let activeSlotIndex = 0;
   let locked = false;
@@ -144,9 +143,15 @@ export function createHangarController(audio: HangarAudioController, callbacks: 
     };
   }
 
-  function update(dt: number): void {
-    // Turntable idles slowly; drag orbits the camera instead of the mech.
-    if (!reducedMotion) turntableYaw += dt * (locked ? 0.55 : 0.28);
+  function update(_dt: number): void {
+    // Keep the authored front three-quarter pose stable until the user drags
+    // the preview.  An idle spin used to advance while typed GLBs were
+    // decoding/evidence was settling, so the exact route-primary producer
+    // could retain a rear-facing blank chassis on one run and a front-facing
+    // visor on the next.  Pointer drag still updates orbitYaw/orbitPitch for
+    // deliberate inspection; freezing this automatic turntable motion makes
+    // screenshots and accessibility review deterministic without removing the
+    // interactive orbit affordance.
   }
 
   return {

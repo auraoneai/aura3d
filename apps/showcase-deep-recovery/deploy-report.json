@@ -1,12 +1,12 @@
 {
   "schema": "aura3d.deep-recovery.deploy/1.0",
-  "generatedAt": "2026-09-02T08:07:48.989Z",
+  "generatedAt": "2026-09-03T02:55:34.514Z",
   "producer": "apps/showcase-deep-recovery/scripts/write-deploy-report.mjs",
   "producerSourceSha256": "07c95fda8e5d9c1f587425f4375a09a692a62fe5fa588c58d6df958fc01b5341",
   "cli": "packages/aura3d-cli/dist/cli.js",
-  "cliSourceSha256": "4b6e599558967b9ed3910daca090a46f3fd89ac0f8292234e67cf52319c3def4",
-  "distTreeSha256": "2fa2d309e8f9169b80390ba14c3671ba712baedb6391efe2b87ff80ced7cbd9e",
-  "sourceTreeSha256": "0fff065747f6129336bacf0fde241deb9e2bdb9a7c992db95695949803e02962",
+  "cliSourceSha256": "a13fa894bcf87d629e33e1fd3c57ba8600296e99f323818532a2016bc54602ec",
+  "distTreeSha256": "a814b69110f58dddffbb901943f6f5ef96b13a9074fd72f77e194ec10c6eaf42",
+  "sourceTreeSha256": "495e00b69eb4b1f72abd9ad9ad045426be2d0485b5bb895e8ab2b9acf34966d5",
   "checks": {
     "strictModels": {
       "command": "check-deploy --release --source apps/showcase-deep-recovery/src --asset <5 typed models>",

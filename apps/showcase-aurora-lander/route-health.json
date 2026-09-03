@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-27T03:00:31.915Z",
+  "generatedAt": "2026-09-03T02:09:52.542Z",
   "appId": "showcase-aurora-lander",
   "route": "/apps/showcase-aurora-lander/",
   "classification": "prototype-blocked",
@@ -97,7 +97,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 15,
+    "sourceOccurrences": 16,
     "primitiveBudget": 20,
     "role": "terrain/weather/pad/effect support around typed vehicle and beacon assets",
     "pass": true
@@ -131,9 +131,9 @@
     },
     "observed": {
       "maxFixedStepP95Ms": 0.0007,
-      "maxPredictionP95Ms": 0.1528,
-      "terrainBuildP95Ms": 3.2508,
-      "strongestWhiteoutDrawCalls": 53,
+      "maxPredictionP95Ms": 0.1513,
+      "terrainBuildP95Ms": 3.6643,
+      "strongestWhiteoutDrawCalls": 40,
       "strongestWhiteoutVisibleNodes": 45
     },
     "sitesCompleted": 3,
@@ -157,37 +157,37 @@
       {
         "report": "tests/reports/aurora-lander-campaign/01-approach.json",
         "screenshot": "tests/reports/aurora-lander-campaign/01-approach.png",
-        "sha256": "sha256-096ca693332dab98e02efe9e935a26460ffbf8f43185eb13bc14cbf6a624fa5e"
+        "sha256": "sha256-32744d193ae98c2773b5def6e09a8f3702bc11edcd2a8f15e77671486edbdc52"
       },
       {
         "report": "tests/reports/aurora-lander-campaign/02-gust-correction.json",
         "screenshot": "tests/reports/aurora-lander-campaign/02-gust-correction.png",
-        "sha256": "sha256-b4a6a61e4a8f9c8b2dd4164b75dd3816417dfc3539cf999cd4e71c4463e0bde0"
+        "sha256": "sha256-6b6d6b43537e6a54b234ac7552a196339f3d8bbac39491b91105752c1bcdc16f"
       },
       {
         "report": "tests/reports/aurora-lander-campaign/03-strongest-whiteout.json",
         "screenshot": "tests/reports/aurora-lander-campaign/03-strongest-whiteout.png",
-        "sha256": "sha256-41c349ecd4406780c12546b75c6e42f0e377c85a3017e31514b4031facec3467"
+        "sha256": "sha256-5f64faa86a11369f74923f1b763858a5f0389c53c73b474d2e13406eff64791a"
       },
       {
         "report": "tests/reports/aurora-lander-campaign/04-final-extraction.json",
         "screenshot": "tests/reports/aurora-lander-campaign/04-final-extraction.png",
-        "sha256": "sha256-d01fee5175b924886adcafe52ee061551b8cc6e95915bb4776d9288c3ad39c6f"
+        "sha256": "sha256-ea48b76a1eb8760d8be80f05383ccfed68566513f8bdfcf84a74cec6d2785410"
       },
       {
         "report": "tests/reports/aurora-lander-campaign/05-hard-contact.json",
         "screenshot": "tests/reports/aurora-lander-campaign/05-hard-contact.png",
-        "sha256": "sha256-d69cdaced881e2aaa6bb9aab7838217eed07e51aef965779438a3343d3867ffd"
+        "sha256": "sha256-316e3e76cd4bbf92cb7390b341bdd975dfcaaccaca25612c37e2ce0e9dedef92"
       },
       {
         "report": "tests/reports/aurora-lander-campaign/06-mobile-active-play.json",
         "screenshot": "tests/reports/aurora-lander-campaign/06-mobile-active-play.png",
-        "sha256": "sha256-5f6d74e6bc17bc9a08d0d33d7b241d8ecedc5ff02a9018ecaeb3b3d89aa32beb"
+        "sha256": "sha256-ee0d575385c72727385de774854dd2146e7e181126798946b61ef01b37d04506"
       },
       {
         "report": "tests/reports/aurora-lander-campaign/07-reduced-motion-whiteout.json",
         "screenshot": "tests/reports/aurora-lander-campaign/07-reduced-motion-whiteout.png",
-        "sha256": "sha256-4c71a8041f2f04a2622dd2645f18c3a66f4cc7611a5d14148bbd14a7bdeebcf0"
+        "sha256": "sha256-7a50c723d1916cad8534f4a0af8195f4c79ced05a1d3fb9f7956a07cdc76edeb"
       }
     ],
     "contactEvidence": "tests/reports/aurora-lander-terrain/contact-evidence.json",

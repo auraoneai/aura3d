@@ -253,18 +253,18 @@ const sceneDef = scene()
       // The comparison state is a salvage chart, so its dedicated camera is
       // genuinely overhead: the submarine, chapel island, rings, and wreck
       // form one readable map instead of a forest of near-camera columns.
-      offset: visualReviewCapture ? [4.6, 21.8, 5.2] : [6.8, 15.6, -22.0],
+      offset: visualReviewCapture ? [4.6, 21.8, 5.2] : [6.4, 9.2, -15.4],
       // The default route keeps the submarine in the west foreground while
       // aiming through the illuminated wreck basin. The old neutral target
       // looked down an empty corridor and left the typed world landmark at
       // the frame edge; this target makes the approach and destination share
       // one readable water column without changing movement authority.
-      targetOffset: visualReviewCapture ? [4.5, -3.1, -5.2] : [-3.4, -1.6, -7.5],
+      targetOffset: visualReviewCapture ? [4.5, -3.1, -5.2] : [-2.0, -3.0, -5.2],
       // Keep camera and authored submarine pose coherent during sonar/replay teleports.
       // The route's evidence harness captures within a bounded frame window; interpolation
       // otherwise leaves depth-aligned landmarks outside the capture frustum.
       smoothing: 0,
-      fov: visualReviewCapture ? 47 : 57
+      fov: visualReviewCapture ? 47 : 68
     })
   )
   .addMany([
@@ -312,9 +312,9 @@ const sceneDef = scene()
       // contact silhouette remain readable in the authored underwater grade.
       material: material.pbr({
         name: "deep recovery sub teal hull",
-        color: "#1a9bb0",
-        emissive: "#0b5261",
-        emissiveIntensity: visualReviewCapture ? 0.72 : 0.74,
+        color: "#2ab0c0",
+        emissive: "#1596a8",
+        emissiveIntensity: visualReviewCapture ? 0.82 : 0.92,
         roughness: 0.3,
         metallic: 0.46,
         clearcoat: 0.2,

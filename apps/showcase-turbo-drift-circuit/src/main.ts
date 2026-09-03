@@ -1521,6 +1521,14 @@ function buildTurboRoadDetailNodes() {
   const shoulderPositions: [number, number, number][] = [];
   const shoulderNormals: [number, number, number][] = [];
   const shoulderIndices: number[] = [];
+  // A second, wider cross-section makes the road-to-verge transition a real
+  // piece of circuit construction instead of a hard seam into the giant
+  // ground plane. It follows the same sampled centreline/grade as the road
+  // skin, but remains renderer-owned: it never participates in racing
+  // alignment, wheel contact, Rapier, or route width.
+  const vergeBankPositions: [number, number, number][] = [];
+  const vergeBankNormals: [number, number, number][] = [];
+  const vergeBankIndices: number[] = [];
   const aggregatePositions: [number, number, number][] = [];
   const aggregateNormals: [number, number, number][] = [];
   const aggregateIndices: number[] = [];
@@ -1709,6 +1717,55 @@ function buildTurboRoadDetailNodes() {
         );
       }
     }
+    // A shallow, three-step bank/ditch extends the visible shoulder into the
+    // outfield. The contour is deliberately low and broad: it catches the
+    // warm key at the bend, gives the kerb a believable falloff, and keeps the
+    // cars' full silhouettes clear. Normals tip toward the inside of each
+    // bank so the slope reads under directional lighting without claiming a
+    // second physical road surface.
+    const bankSections = [
+      // The first shoulder starts just beyond the kerb, then opens into a
+      // broad outfield profile.  The wider spacing is intentional: at the
+      // review camera's chase distance a sub-0.5-game-unit falloff collapses
+      // into the V2 runoff's flat brown band and reads as another hard seam.
+      { offset: routeWidth * 0.5 + 0.32, drop: 0.042 },
+      { offset: routeWidth * 0.5 + 0.94, drop: 0.102 },
+      { offset: routeWidth * 0.5 + 1.62, drop: 0.16 }
+    ] as const;
+    for (const side of [-1, 1] as const) {
+      const bankBase = vergeBankPositions.length;
+      const inward = [-leftX * side * 0.22, 0, -leftZ * side * 0.22] as const;
+      const slopeLength = Math.max(1e-6, Math.hypot(
+        asphaltNormal[0] + inward[0],
+        asphaltNormal[1] + inward[1],
+        asphaltNormal[2] + inward[2]
+      ));
+      const slopeNormal: [number, number, number] = [
+        (asphaltNormal[0] + inward[0]) / slopeLength,
+        asphaltNormal[1] / slopeLength,
+        (asphaltNormal[2] + inward[2]) / slopeLength
+      ];
+      for (const section of bankSections) {
+        const edgeOffset = gamePointToSceneLength(section.offset);
+        vergeBankPositions.push([
+          centre[0] + leftX * edgeOffset * side,
+          roadDetailY - section.drop,
+          centre[2] + leftZ * edgeOffset * side
+        ]);
+        vergeBankNormals.push(slopeNormal);
+      }
+      if (index === 0) continue;
+      const previousBank = bankBase - 6;
+      const currentBank = bankBase;
+      for (const sectionIndex of [0, 1] as const) {
+        const previous = previousBank + sectionIndex;
+        const current = currentBank + sectionIndex;
+        vergeBankIndices.push(
+          previous, previous + 1, current,
+          previous + 1, current + 1, current
+        );
+      }
+    }
     // Two subtle aggregate bands break up the long asphalt read without
     // introducing a second, disconnected road plane. They share every sample
     // and height with the continuous ribbon, so the bend and its banking remain
@@ -1760,6 +1817,24 @@ function buildTurboRoadDetailNodes() {
         roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 16, strength: 0.34, contrast: 0.62 })
       }),
       castShadow: false,
+      receiveShadow: true
+    }),
+    geometry.custom(geometry.define({
+      positions: vergeBankPositions,
+      normals: vergeBankNormals,
+      indices: vergeBankIndices
+    }), {
+      name: "route-bound rally verge banks",
+      material: material.pbr({
+        name: "layered rally verge",
+        color: visualCaptureCamera ? "#6a704f" : "#465b42",
+        roughness: 0.94,
+        metallic: 0,
+        clearcoat: 0.04,
+        normal: material.proceduralTexture("plastic-micro-scratch", { scale: 22, strength: 0.2, contrast: 0.5 }),
+        roughnessMap: material.proceduralTexture("rubber-roughness", { scale: 14, strength: 0.22, contrast: 0.52 })
+      }),
+      castShadow: true,
       receiveShadow: true
     }),
     geometry.custom(geometry.define({
@@ -3199,6 +3274,30 @@ const visualDriftPlumes = Array.from({ length: VISUAL_DRIFT_PLUME_COUNT }, (_, i
   app.nodes.require(`racing-drift-plume-${index}`)
 );
   const driftParticleCloudNode = app.nodes.require("racing-drift-particle-cloud");
+
+/*
+ * Composition suppression is a measurement seam, not a second gameplay pose.
+ *
+ * The route-primary producer captures a normal frame, then asks the route to
+ * suppress only the typed hero and diffs the two images.  Scaling the car to a
+ * small nonzero value keeps the renderer's scene graph stable, but leaving its
+ * renderer-owned tyre marks, contact patch, and drift billows visible made the
+ * suppressed artifact look like a car buried under the asphalt.  Keep the
+ * feedback nodes' exact visibility state, hide them for that one screenshot,
+ * then restore it after the diff.  This leaves the normal held-drift frame
+ * unchanged while making the suppression artifact unambiguously car-free.
+ */
+const compositionFeedbackNodes: readonly AuraRuntimeNodeHandle[] = [
+  playerContactShadow,
+  ...playerTyreShadows,
+  ...leftDriftRibbons,
+  ...rightDriftRibbons,
+  leftDriftSmoke,
+  rightDriftSmoke,
+  ...visualDriftPlumes,
+  driftParticleCloudNode
+];
+let suppressedFeedbackVisibility: Map<AuraRuntimeNodeHandle, boolean> | null = null;
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "racing",
@@ -3287,6 +3386,22 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       // avoids the full-frame renderer invalidation produced by visibility
       // toggling while still yielding a strong car-only delta.
       playerCar.setScale(suppressed ? 0.15 : 1);
+      if (suppressed) {
+        // Suppressed pixels should describe the scene without the hero, not a
+        // pile of hero-owned drift/contact cues that can be mistaken for a
+        // submerged vehicle. Preserve every node's prior state so restoring
+        // the probe is lossless for the live route.
+        if (suppressedFeedbackVisibility === null) {
+          suppressedFeedbackVisibility = new Map(
+            compositionFeedbackNodes.map((node) => [node, node.visible])
+          );
+        }
+        compositionFeedbackNodes.forEach((node) => node.setVisible(false));
+      } else {
+        const previousVisibility = suppressedFeedbackVisibility;
+        suppressedFeedbackVisibility = null;
+        previousVisibility?.forEach((visible, node) => node.setVisible(visible));
+      }
       app.step(0);
     }
   },

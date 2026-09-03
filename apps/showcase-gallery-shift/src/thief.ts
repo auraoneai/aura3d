@@ -8,10 +8,11 @@
  * (sneak is silent). Lifting: hold-to-lift 1.2 s with a visible progress
  * value, a movement slow, and a standing noise spike for the whole hold.
  *
- * The typed `showcaseWalkAnimatedGirl` asset supplies the detailed humanoid
- * infiltrator silhouette. It contains one authored walk clip; the route keeps
- * gait, lift, carry, and footstep truth here rather than pretending that one
- * presentation clip is a full reusable stealth animation kit.
+ * The typed `showcaseRunnerGirl` asset supplies the grounded adult infiltrator
+ * silhouette. Its Kenney clip set includes idle, walk, sprint, pick-up, and
+ * holding-both poses; the route keeps gait, lift, carry, and footstep truth
+ * here rather than pretending that presentation clips are a reusable stealth
+ * animation kit.
  */
 import {
   GAIT_SPEED,
@@ -32,17 +33,18 @@ import {
 
 export type ThiefGait = "walk" | "sneak" | "sprint";
 
-/** Real embedded clip name in the typed humanoid infiltrator asset. */
+/** Real embedded clip names in the typed adult infiltrator asset. */
 export const THIEF_CLIPS = {
-  // The source asset has one embedded locomotion clip. Reusing that clip for
-  // each authored state keeps animation diagnostics truthful while movement,
-  // sneak/sprint speed, carry state, and noise remain route-owned.
-  idle: "Take 001",
-  walk: "Take 001",
-  sneak: "Take 001",
-  sprint: "Take 001",
-  lift: "Take 001",
-  carry: "Take 001"
+  // Sneak intentionally reuses the real walk pose: the route owns sneak speed
+  // and zero-noise semantics, while the asset supplies no dedicated sneak
+  // clip. Carry/lift use the asset's authored hand poses when those states are
+  // active, keeping every requested clip ID present in generated metadata.
+  idle: "idle",
+  walk: "walk",
+  sneak: "walk",
+  sprint: "sprint",
+  lift: "pick-up",
+  carry: "holding-both"
 } as const;
 export type ThiefClipKind = keyof typeof THIEF_CLIPS;
 

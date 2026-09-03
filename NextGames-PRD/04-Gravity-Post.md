@@ -42,11 +42,32 @@ Retro-future navigation chart made spatial: deep navy void, warm station windows
 
 ## Execution ledger
 
-**Status:** Machine-complete; independent exact-artifact review pending  
-**Last verified:** 2026-08-23 13:14 PDT  
+**Status:** Machine-complete; independent exact-artifact review pending; courier-operator structural pass is current
+**Last verified:** 2026-09-02 16:25 PDT
 **Implementation scope:** `apps/showcase-gravity-post/`, Gravity Post unit/browser/evidence surfaces, generated artifacts, and this PRD  
 **Authoritative evidence:** wells/scoring/flyby units; playable/scene browser specs; prediction divergence; route/deploy/review artifacts  
 **Remaining blockers:** independent human review of the exact hash-bound planning, launch/path, assist/chain, dock, collision, final-route, mobile, and reduced-motion artifacts
+
+### Current bounded visual pass — 2026-09-02
+
+The route now mounts the release-probed typed `assets.neonCourierAvatar` as a
+renderer-owned static operator seated on the courier skiff's canopy. The skiff
+remains the sole primary vehicle and the operator has no controller, animation,
+physics body, sensor, scoring, or route-integrator ownership. Its transform is
+derived from the same displayed route velocity and yaw as the skiff, so launch,
+correction, and reset keep a coherent courier heading. This is a structural
+identity improvement against the Parcel Corps gap, not an independent visual
+approval or a production animation claim.
+
+The targeted exact route-primary producer passed after the pass (`1/1`):
+`tests/reports/showcase-route-primary-probes/showcase-gravity-post.png`
+SHA-256 `sha256-6c037ed5254e72409fb6f0f84e4271792ffac7038f30f46fa4b2a359a1d05c1c`;
+route source binding `sha256-ba64e3e20f6a852bbc2df8c534757c6022a1e94bbf1fe54e952d14ee529e22c5`;
+structural pass, readability `100`, `503` draws, unclipped. Focused route units
+remain `19/19`, and app typecheck/build, route-health, performance, and strict
+release deploy pass. The fresh exact still requires anonymous Parcel Corps
+comparison and authorized human review; this pass must not be promoted as an
+`ours` verdict by itself.
 
 ### Requirement checklist
 

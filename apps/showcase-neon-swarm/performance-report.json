@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-neon-swarm-performance/1.0",
-  "generatedAt": "2026-08-27T03:11:55.737Z",
+  "generatedAt": "2026-09-03T01:43:06.744Z",
   "scope": "Route-local 320-drone typed-array steering timing plus current browser native-instancing/draw/pixel telemetry; GPU frame-time parity is not claimed.",
   "budgets": {
     "simulationStepP95Ms": 8,
@@ -10,12 +10,12 @@
   },
   "observed": {
     "stagedInstances": 320,
-    "simulationStepP95Ms": 0.4691,
-    "simulationStepMaxMs": 1.3495,
+    "simulationStepP95Ms": 0.8227,
+    "simulationStepMaxMs": 3.0075,
     "browserInstances": 320,
-    "browserDrawCalls": 37,
-    "browserNativeInstancedSubmissions": 352,
-    "browserNonBlackPixels": 1023385
+    "browserDrawCalls": 50,
+    "browserNativeInstancedSubmissions": 322,
+    "browserNonBlackPixels": 989166
   },
   "samples": 300,
   "browserEvidence": "tests/reports/neon-swarm/instancing-telemetry.json",

@@ -667,7 +667,12 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
     instances.box({
       name: "pavilion occupied room family",
       material: pavilionInterior,
-      transforms: [-5.25, 0, 5.25].map((x) => ({ position: [x, 4.65, -6.54], scale: [3.35, 3.95, 0.06] }))
+      // Leave the center bay as a dark glass recess behind the typed hoop.
+      // The previous warm center panel projected as a solid orange card over
+      // the rim in the sideline camera, making the goal unreadable in both
+      // normal and backboard-suppressed composition captures. Side bays keep
+      // the occupied-venue rhythm without occluding the gameplay target.
+      transforms: [-5.25, 5.25].map((x) => ({ position: [x, 4.65, -6.54], scale: [3.35, 3.95, 0.06] }))
     }).toJSON(),
     instances.box({
       name: "pavilion glass bay family",
@@ -968,6 +973,129 @@ export function createRooftopDressing(options: { readonly reviewCapture?: boolea
         rotation: [0, index % 2 === 0 ? 0.002 : -0.002, 0]
       }))
     }).toJSON()
+  );
+
+  // -----------------------------------------------------------------------
+  // Broadcast-bay finish
+  // -----------------------------------------------------------------------
+  // The release venue already supplies the crowd and stepped bleachers, but
+  // the fixed sideline lens benefits from a deliberate near/mid/far seating
+  // rhythm. These low upholstered seat backs and brass caps are subordinate
+  // venue dressing: they add real parallax and material breakup without
+  // touching the active court plane, shot regions, or typed primary actors.
+  // Instancing keeps the repeated detail to three renderer submissions.
+  const seatFabricWarm = material.pbr({
+    name: options.reviewCapture ? "night league coral seat fabric" : "rooftop violet seat fabric",
+    color: options.reviewCapture ? "#a4524d" : "#4e3b73",
+    roughness: 0.74,
+    metallic: 0.02,
+    clearcoat: 0.08
+  });
+  const seatFabricCool = material.pbr({
+    name: options.reviewCapture ? "night league teal seat fabric" : "rooftop blue seat fabric",
+    color: options.reviewCapture ? "#236c78" : "#285b78",
+    roughness: 0.68,
+    metallic: 0.03,
+    clearcoat: 0.1
+  });
+  const seatCapMaterial = material.pbr({
+    name: "night league seat rail caps",
+    color: options.reviewCapture ? "#d7a15d" : "#6e8ca1",
+    roughness: 0.24,
+    metallic: 0.76,
+    clearcoat: 0.24
+  });
+  const seatXs = [-7.1, -4.25, -1.4, 1.4, 4.25, 7.1];
+  const seatRows = [
+    { z: -3.36, y: 0.74, depth: 0.34, width: 1.05 },
+    { z: -4.38, y: 1.08, depth: 0.3, width: 1.02 },
+    { z: -5.28, y: 1.38, depth: 0.26, width: 0.98 }
+  ];
+  nodes.push(
+    instances.box({
+      name: "night league warm seat-back family",
+      material: seatFabricWarm,
+      transforms: seatRows.flatMap((row, rowIndex) => seatXs
+        .filter((_, seatIndex) => (seatIndex + rowIndex) % 2 === 0)
+        .map((x) => ({
+          position: [x, row.y, row.z],
+          scale: [row.width, 0.22, row.depth]
+        })))
+    }).toJSON(),
+    instances.box({
+      name: "night league cool seat-back family",
+      material: seatFabricCool,
+      transforms: seatRows.flatMap((row, rowIndex) => seatXs
+        .filter((_, seatIndex) => (seatIndex + rowIndex) % 2 !== 0)
+        .map((x) => ({
+          position: [x, row.y, row.z],
+          scale: [row.width, 0.22, row.depth]
+        })))
+    }).toJSON(),
+    instances.box({
+      name: "night league seat rail cap family",
+      material: seatCapMaterial,
+      transforms: seatRows.map((row) => ({
+        position: [0, row.y + 0.2, row.z + row.depth + 0.04],
+        scale: [7.7, 0.035, 0.035]
+      }))
+    }).toJSON()
+  );
+
+  // A compact world-space scoreboard fascia gives the hoop a designed venue
+  // anchor and restores the visual hierarchy that a HUD-only score cannot
+  // provide. It is static identity signage (not a duplicate state display),
+  // sits above the shot arc, and is made from ordinary renderer geometry.
+  const scoreboardFace = material.pbr({
+    name: "night league scoreboard face",
+    color: options.reviewCapture ? "#151f37" : "#10192e",
+    roughness: 0.34,
+    metallic: 0.48,
+    clearcoat: 0.3
+  });
+  const scoreboardTrim = material.emissive({
+    name: "night league scoreboard trim",
+    color: "#ffd18a",
+    emissive: "#f97316",
+    emissiveIntensity: options.reviewCapture ? 0.9 : 0.62
+  });
+  const scoreboardReadout = material.emissive({
+    name: "night league scoreboard readout",
+    color: "#b9f6ff",
+    emissive: "#22d3ee",
+    emissiveIntensity: options.reviewCapture ? 1.35 : 0.92
+  });
+  nodes.push(
+    primitives.box({ name: "night league scoreboard fascia", material: scoreboardFace })
+      .position(2.2, 5.05, -0.86)
+      .scale([2.7, 0.72, 0.14])
+      .toJSON(),
+    primitives.box({ name: "night league scoreboard upper trim", material: scoreboardTrim })
+      .position(2.2, 5.74, -0.67)
+      .scale([2.78, 0.045, 0.045])
+      .toJSON(),
+    primitives.box({ name: "night league scoreboard lower trim", material: scoreboardTrim })
+      .position(2.2, 4.36, -0.67)
+      .scale([2.78, 0.045, 0.045])
+      .toJSON(),
+    text3D("COURT 07", {
+      name: "night league scoreboard identity",
+      size: 0.3,
+      depth: 0.035,
+      letterSpacing: 0.024,
+      material: scoreboardReadout
+    })
+      .position(1.25, 4.98, -0.64)
+      .toJSON(),
+    text3D("DUSK", {
+      name: "night league scoreboard mode",
+      size: 0.22,
+      depth: 0.03,
+      letterSpacing: 0.018,
+      material: scoreboardTrim
+    })
+      .position(3.1, 5.01, -0.63)
+      .toJSON()
   );
 
   // -----------------------------------------------------------------------

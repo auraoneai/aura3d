@@ -14,7 +14,10 @@ The aim guide is deliberately bounded to the first ball or cushion contact. It d
 
 All primary subjects are deterministic original CC0 assets generated in-repository and registered through the Aura3D CLI:
 
-- `assets.bankShotTable`: metre-scale green-felt/walnut table with six renderer-owned mouth marks.
+- `assets.bankShotTable`: metre-scale blue-felt/walnut table with integrated cloth marks,
+  layered pocket wells, and six renderer-owned mouth materials; the route adds only
+  low-profile metallic catch-light accents around those typed mouths for the oblique
+  review camera.
 - `assets.bankShotCue`: tapered cue with a declared local strike-tip orientation.
 - `assets.bankShotBall00` through `assets.bankShotBall15`: regulation-scale cue/object balls. Solids and stripes differ geometrically by material regions, and balls 1–15 carry renderer-owned high-contrast number marks so identity is not hue-only.
 - Ten `assets.bankShot*Sfx` members: deterministic synthesized CC0 contact, pocket, foul, combo, rack, win/fail, and hall cues.

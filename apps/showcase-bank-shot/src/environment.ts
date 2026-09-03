@@ -1,9 +1,10 @@
 import {
+  game,
   primitives,
   material,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { PLAY_HALF_X, PLAY_HALF_Z } from "./table";
+import { PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS } from "./table";
 
 /**
  * Creates the complete 10/10 visual environment for Bank Shot:
@@ -77,6 +78,17 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
     name: "mother-of-pearl-diamond",
     color: "#ffffff",
     emissive: "#f1f5f9"
+  });
+
+  // The typed table owns the actual pocket wells and mouths.  These restrained
+  // steel-blue collars are a renderer-owned presentation accent only: they sit
+  // on the existing mouth lip, never cover the felt, and give all six pockets a
+  // consistent readable catch-light at the oblique review angle.
+  const pocketRimAccentMat = material.metal({
+    name: "pocket-rim-catch-light",
+    color: "#7892ad",
+    roughness: 0.24,
+    metallic: 0.74
   });
 
   // 2. Room Architecture (Floor & Walls)
@@ -279,6 +291,23 @@ export function createPoolHallSetDressing(options: { readonly portrait?: boolean
         .toJSON()
     );
   });
+
+  // Keep the accent as a single source primitive in the gate while emitting a
+  // ring at each physical pocket center.  The typed asset remains the only
+  // primary table/pocket geometry and Rapier keeps its six sensor regions.
+  for (const pocket of POCKET_CENTERS) {
+    nodes.push(
+      primitives
+        .torus({ name: `pocket catch-light ${pocket.id}`, material: pocketRimAccentMat })
+        .position(pocket.x, 0.031, pocket.z)
+        .rotate(Math.PI / 2, 0, 0)
+        .scale([0.21, 0.21, 0.11])
+        .runtime(game.runtimeNode(`pocket catch-light ${pocket.id}`, {
+          tags: ["table-detail", "composition-bound"]
+        }))
+        .toJSON()
+    );
+  }
 
   // The primary typed table already owns its grounded apron and legs. Route
   // dressing must not duplicate them: the previous decorative cylinders rose

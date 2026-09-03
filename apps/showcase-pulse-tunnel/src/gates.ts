@@ -192,6 +192,14 @@ export function createGateSystem(options: GateSystemOptions): GateSystem {
     },
     respace() {
       const schedulerTime = options.getSchedulerTime();
+      // A deterministic test seek can jump past entries that are still queued
+      // (rather than already active inside the travel window).  Retire those
+      // arrivals here as well as active gates; otherwise the next normal update
+      // would spawn a stale gate whose scheduled time is already behind the
+      // seek, causing an idle capture run to take an unexpected shield hit.
+      while (queue.length > 0 && pulseArrivalSeconds(queue[0]) <= schedulerTime) {
+        queue.shift();
+      }
       for (const gate of active) {
         if (schedulerTime >= gate.scheduleSeconds && !gate.resolved) {
           // The seek jumped past this arrival; retire it silently so the run stays

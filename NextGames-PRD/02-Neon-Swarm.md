@@ -46,7 +46,7 @@ Near-black tactical floor with sparse grid landmarks. Player is a bright white/c
 ## Execution ledger
 
 **Status:** Machine-complete; independent exact-artifact review pending  
-**Last verified:** 2026-08-23 12:35 PDT  
+**Last verified:** 2026-09-02 18:43 PDT
 **Implementation scope:** `apps/showcase-neon-swarm/`, Swarm unit/browser/evidence surfaces, generated artifacts, and this PRD  
 **Authoritative evidence:** steering/seed units; instancing/playable browser specs; performance/route/deploy evidence; exact reviewed frames  
 **Remaining blockers:** Independent human review must approve the exact submitted artifact hashes before NS-09, the final Definition of Done item, promotion, and document completion can be checked
@@ -78,6 +78,7 @@ Near-black tactical floor with sparse grid landmarks. Player is a bright white/c
 | 2026-08-23 | Build/deploy/route health | App typecheck and build pass; exact release `check-deploy` passes with zero failures/warnings for courier, barricade, and lamp; `route-health.json` records `machinePass: true`, `prototype-blocked`, `publicShowcase: false`, and only `visual-review:neon-swarm-independent-review-pending`. Shared `build-and-check.mjs` remains globally red for unrelated public candidates/Blockfall, while the Neon row passes static, route-primary, build, deploy, and classification gates | Pass for Neon; unrelated portfolio failures retained |
 | 2026-08-23 | Repository/docs gates | `pnpm typecheck`, `pnpm check:agent-docs`, and `pnpm check:docs-codeblocks` pass after the final Neon source/test/doc changes | Pass |
 | 2026-08-23 | NS-09 / final DoD | Exact artifact set below is hash-bound and machine/agent reviewed, but no independent human verdict exists; route remains `prototype-blocked` and absent from the public card slate | Pending independent review |
+| 2026-09-02 | Structural/readability correction and NS-04/NS-06/NS-09 machine gates | Removed the unreachable full-city dressing branch that exceeded the route's declared primitive budget; retained the compact authored lane, typed courier, carbine/muzzle attachment, separated deterministic swarm fixture, and renderer-owned hit/burst feedback. `pnpm --dir apps/showcase-neon-swarm typecheck`, `pnpm exec vitest run tests/unit/apps/neon-swarm-steering.test.ts --reporter=dot`, and the focused Neon playable/instancing browser producer passed (16/16 units, 6/6 browser). Named performance evidence passes with 320 staged/browser instances, 50 draws, 322 native instanced submissions, 0.8227 ms simulation p95, and 989,166 non-black pixels; named route-health and release check-deploy pass with source primitive count 36/40. | Pass for current machine/agent structural audit; independent exact-artifact review remains the only blocker |
 
 ### Exact artifact submission set
 
@@ -87,14 +88,14 @@ files awaiting independent review:
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `01-load.png` | `18c4fd63a6927c97c7a74f6e4f0df59034f80e7c08e38822fce61acbb26604ec` |
-| `02-mid-wave.png` | `3386fdffb644c689b4ae7df1b9a2031ab64a7345b10d7a4003a150fe5defa693` |
-| `03-instancing-swarm.png` | `4da68968a4a8e63fc4738056c01555fea5e6c65512f5c6f980207ff343ec532d` |
-| `04-death.png` | `7f693d708acf75779bad73763d8c9004105fd9725fe4af25272bb8ca3e4a4e94` |
-| `05-reset.png` | `84eb30fa4b93982787edd1060dbfca1d2555b3fc450049c5b1060f5642cb1cf1` |
-| `06-finale-320.png` | `b790c9dcf17f36e1afc217dd50c6ce67ceafea6aa8f7358f384014c7ed56ad0b` |
-| `07-complete.png` | `e9aff5aaa90d280945e25fc4ba00642e5c08253b36fcc665c96d6dd2b9ec558c` |
-| `08-mobile-active.png` | `888e1f913510dd2f69dac77c463cb5926cc4f5c8205ce61d4c1ea99710a39505` |
-| `09-reduced-finale.png` | `79719f9c083d147f0dff95313405bfe9e26a4729ce9d13edf5fee3bc03cab80f` |
-| `10-burst-cascade.png` | `d16657a4abcc8473cbb415419b1350ebcc46851ed10f828c9f7b4a5004fa8d84` |
-| `11-upgrade-choice.png` | `b84d37ddfb18516e8f54af3c75c30ec8f8ee5d90b6fa9474b3f50bf655a331e5` |
+| `01-load.png` | `c328b85be16c0344fdc6f3079dacaf03c8ab828d166d4e229c5ad1f4b61635be` |
+| `02-mid-wave.png` | `07560ce16269200534685b9b027fe6c99b66c88f9f9d4abcb0f64729486a9e03` |
+| `03-instancing-swarm.png` | `17c95fe648f3c01d172fa2ea0a8e2f145b9a2c31f71b7eacaad5fd2db4eeaf28` |
+| `04-death.png` | `99e2cb05df3af83dc7225d2e4a8adeaf6a8b642249d80a1335537962de3e071a` |
+| `05-reset.png` | `35b9f1b9ba3143d8b32691a4a31a61086fe2b19edfa19778c573d0aacbbd87b5` |
+| `06-finale-320.png` | `b5737fa4b1f5dbb37d2e57f20a8112f8ea90a5513b5bf54af44eddab4455d6b7` |
+| `07-complete.png` | `afcb7f4b8c748c8e95eafe5359bb6f5e9c5f7f932163ae06f7d019b423667b60` |
+| `08-mobile-active.png` | `e4c8007fa77f420ce31f5ddc016c722e638d0b39e1770041de19b294c95c5fdb` |
+| `09-reduced-finale.png` | `bbca95e49bf0a15954cf9e6548d71d33ca668b158ea3ae7a206bd8a23e6bf263` |
+| `10-burst-cascade.png` | `0a71976bf0bc12e8c5c27dc875bd3d24139e17e83befec038a1fb22a23386c39` |
+| `11-upgrade-choice.png` | `d857bfae51b727bc568445c704d4489c3e521250c58ca09d2dc2ca5d0e73810c` |

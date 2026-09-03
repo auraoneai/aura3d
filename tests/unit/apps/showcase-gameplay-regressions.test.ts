@@ -164,7 +164,10 @@ describe("public showcase gameplay regressions", () => {
     const source = readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8");
     expect(source).toContain("playerYawForFacing");
     expect(source).toContain("state.player.vx >= 0 ? 1 : -1");
-    expect(source).toContain("player.setRotation(0, playerYawForFacing(playerFacing), 0)");
+    // The shipped route keeps the gameplay-facing yaw contract while applying
+    // a documented visual profile offset to the typed hero. The old assertion
+    // required the pre-profile helper and no longer described the live source.
+    expect(source).toContain("player.setRotation(0, playerVisualYawForFacing(playerFacing), 0)");
   });
 
   it("scores Skyline flow, collection chains, checkpoint splits, retries, and reset", () => {

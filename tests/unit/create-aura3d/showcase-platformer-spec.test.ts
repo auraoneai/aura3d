@@ -55,15 +55,17 @@ describe("showcase platformer spec compiler", () => {
       expect(report.replacementCandidates).toEqual([]);
       expect(report.blockers.length).toBeGreaterThan(0);
       expect(report.blockers).not.toContain("evidence:platformer-asset-pair:verdict-not-pass:fail");
-      expect(report.assetPairComposition).toMatchObject({
-        verdict: "pass",
-        checks: expect.arrayContaining([
-          expect.objectContaining({ id: "binding-overlap", verdict: "pass" }),
-          expect.objectContaining({ id: "contact", verdict: "pass" }),
-          expect.objectContaining({ id: "camera-readability", verdict: "pass" }),
-          expect.objectContaining({ id: "scale-contract", verdict: "pass" })
-        ])
-      });
+      // The fixture intentionally points at the historical Oobi composition
+      // report while the live spec now names the Arctic hero. The compiler
+      // must fail closed rather than silently reusing that mismatched pair.
+      expect(report.assetPairComposition).toBeUndefined();
+      expect(report.blockers).toEqual(expect.arrayContaining([
+        "evidence:route-primary-probe:not-passing",
+        "evidence:route-primary-probe:hero-mismatch",
+        "evidence:route-primary-probe:missing-hero-asset",
+        "evidence:route-primary-probe:screenshot-mismatch",
+        "evidence:platformer-asset-pair:missing"
+      ]));
       expect(report.generatedFiles).toContain("game-template/showcase-skyline-runner-platformer-playable-surfaces.json");
       const generatedSurfaceEvidence = JSON.parse(readFileSync(join(outputDir, "game-template", "showcase-skyline-runner-platformer-playable-surfaces.json"), "utf8"));
       expect(generatedSurfaceEvidence.surfaceMap.evidence.routeOverlay).toBe(baseFixtureRoutePrimaryScreenshot());
@@ -79,7 +81,7 @@ describe("showcase platformer spec compiler", () => {
 
       const source = readFileSync(join(outputDir, "src", "main.ts"), "utf8");
       expect(source).toContain("import { createAuraApp, game, lights, model, scene } from \"@aura3d/engine\";");
-      expect(source).toContain("model(assets.showcaseKenneyOobiPlatformerHero");
+      expect(source).toContain("model(assets.skylineArcticRunnerHero");
       expect(source).toContain("model(assets.showcaseKenneyVerdantPlatformerWorld");
       expect(source).toContain("name: \"platformer-bound-world-asset\"");
       expect(source).toContain("targetMaxDimension: platformerScene.worldModel.targetMaxDimension");
@@ -100,10 +102,10 @@ describe("showcase platformer spec compiler", () => {
       expect(source).toContain("game.platformer");
       expect(source).toContain('import { gameGeometryContract } from "./generated/game-geometry";');
       expect(source).toContain("const playableSurfaceMap = gameGeometryContract.surfaceMap;");
-      expect(source).not.toContain("sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd");
+      expect(source).not.toMatch(/sha256-[a-f0-9]{64}/);
       const geometryContract = readFileSync(join(outputDir, "src", "generated", "game-geometry.ts"), "utf8");
       expect(geometryContract).toContain('\"schema\": \"aura3d-game-geometry-contract/1.0\"');
-      expect(geometryContract).toContain("sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd");
+      expect(geometryContract).toContain(generatedSurfaceEvidence.surfaceMap.assetHash);
       expect(report.generatedFiles).toContain("src/generated/game-geometry.ts");
       expect(report.geometryContract).toMatchObject({
         module: "src/generated/game-geometry.ts",
@@ -148,7 +150,7 @@ describe("showcase platformer spec compiler", () => {
       const routeHealth = JSON.parse(readFileSync(join(outputDir, "route-health.json"), "utf8"));
       expect(routeHealth.platformer).toMatchObject({
         cameraIntent: "side-scroller",
-        characterAsset: "showcaseKenneyOobiPlatformerHero",
+        characterAsset: "skylineArcticRunnerHero",
         worldAssets: ["showcaseKenneyVerdantPlatformerWorld"],
         gameplayRequirements: ["movement", "jump", "checkpoint", "progression"],
         levelDesign: {
@@ -230,7 +232,7 @@ describe("showcase platformer spec compiler", () => {
       expect(report.finalStatus).toBe("prototype-blocked");
       expect(report.blockers).not.toContain("evidence:platformer-playable-surface:mesh-extraction-not-passing");
       expect(report.blockers).toContain("evidence:route-primary-probe:screenshot-mismatch");
-      expect(report.blockers).toContain("evidence:platformer-asset-pair:composition-report-screenshot");
+      expect(report.blockers).toContain("evidence:platformer-asset-pair:missing");
 
       const providedEvidence = JSON.parse(readFileSync(playableSurfaceEvidencePath, "utf8"));
       expect(providedEvidence).toMatchObject({
@@ -309,6 +311,9 @@ describe("showcase platformer spec compiler", () => {
     const retainedReport = JSON.parse(readFileSync(baseSpec.evidence.assetPairCompositionReport!, "utf8"));
     writeFileSync(compositionReportPath, `${JSON.stringify({
       ...retainedReport,
+      assets: retainedReport.assets.map((asset: Record<string, unknown>) => asset.id === "showcaseKenneyOobiPlatformerHero"
+        ? { ...asset, id: baseSpec.platformer.characterAsset }
+        : asset),
       verdict: "pass",
       pass: true,
       screenshot: {

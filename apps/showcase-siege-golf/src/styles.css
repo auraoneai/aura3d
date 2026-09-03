@@ -63,7 +63,11 @@ html, body {
   right: 16px;
   bottom: auto;
   width: min(196px, calc(100vw - 32px));
-  max-height: 46vh;
+  /* Keep the evidence/control card fully usable at the 800–900px capture
+   * heights used by the route producers.  The old 46vh cap clipped the lower
+   * action row, making a screenshot look like a backend/debug card had won the
+   * composition even though the controls were mounted below the fold. */
+  max-height: min(520px, calc(100vh - 32px));
   background: rgba(35, 31, 26, 0.38);
   border: 1px solid var(--panel-edge);
   border-radius: 14px;

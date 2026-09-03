@@ -48,6 +48,9 @@ every mechanic across two cups.
   layered blue hills, red target cloth, white ball/chalk cup marks, dark iron,
   distance haze, and restrained bloom. Opening, aim, flight, and settle camera
   phases use distinct root-safe camera specs; reduced-motion removes smoothing.
+  While aiming, a renderer-owned putter silhouette follows the typed ball and
+  live launch vector so the shot reads as golf in the world; it has no physics,
+  score, or collision authority.
 - **Audio** — nine original CC0 cues (author "Aura3D synthesis") synthesized
   deterministically by `scripts/build-sfx.mjs`, registered through the asset
   CLI, split across sfx/ambient/ui buses, gesture-unlocked.

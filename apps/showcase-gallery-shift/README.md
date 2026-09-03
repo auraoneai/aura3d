@@ -8,16 +8,18 @@ Lift two exhibits on Marble Hall, enter Skyline Wing, lift the third exhibit, an
 
 Keyboard controls are WASD/arrows to move, Shift to toggle sneak, X to sprint, E to hold/lift, P/Escape to pause, and R to restart the current floor (or the full mission after a win). Named touch buttons provide move, sneak, lift, pause, and reset parity.
 
-The thief and humanoid sentry use embedded animation clips from typed assets. The
-archive patrol uses the already-registered textured `robotcand` security shell
-(ceramic armour, exposed mechanisms, and optic hardware) while the treasury
-patrol remains the animated expressive robot; both patrols use the same
-deterministic authored transform and real LOS query. Robotcand is a static
-presentation shell with no gameplay authority. Footsteps are driven by a
-distance-based authored gait because the selected humanoid clips contain no
-clip-local footstep metadata; perception truth never depends on guessed
-animation frames. Two-floor navigation is authored waypoint movement, not
-Recast/navmesh.
+The thief uses the already-registered grounded Kenney `showcaseRunnerGirl`
+character (adult silhouette with idle, walk, sprint, pick-up, and holding-both
+clips). Sneak deliberately reuses the typed walk pose while its speed and
+zero-noise behavior remain route-owned. The archive patrol uses the
+already-registered textured `robotcand` security shell (ceramic armour,
+exposed mechanisms, and optic hardware) while the treasury patrol remains the
+animated expressive robot; both patrols use the same deterministic authored
+transform and real LOS query. Robotcand is a static presentation shell with no
+gameplay authority. Footsteps are driven by a distance-based authored gait
+because the selected humanoid clips contain no clip-local footstep metadata;
+perception truth never depends on guessed animation frames. Two-floor
+navigation is authored waypoint movement, not Recast/navmesh.
 
 `?debug=1` enables deterministic browser-test controls without rendering overlays. `?debug=visual` additionally renders optional perception diagnostics; exact release-review artifacts never use that mode.
 

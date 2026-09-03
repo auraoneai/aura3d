@@ -1,13 +1,13 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-02T12:13:20.455Z",
+  "generatedAt": "2026-09-03T02:16:50.400Z",
   "appId": "showcase-bank-shot",
   "route": "/apps/showcase-bank-shot/",
   "classification": "prototype-blocked",
   "publicShowcase": false,
   "promotionStatus": "hold-public-showcase-until-independent-human-visual-review",
   "machinePass": true,
-  "routeSourceSha256": "a89027c4ecc52cf27f8b2f15043d04e4b2930f1e416453ea588428f3745d574f",
+  "routeSourceSha256": "efcf3e635900785e4d0459410779efafb22140fa020a242172d76ebe8cceace1",
   "renderer": {
     "path": "createGameApp root safe API",
     "mode": "production with safe-basic fallback",
@@ -256,7 +256,7 @@
   },
   "performance": {
     "schema": "aura3d.bank-shot.performance/1.0",
-    "generatedAt": "2026-09-02T12:13:18.009Z",
+    "generatedAt": "2026-09-03T02:16:33.718Z",
     "producer": "apps/showcase-bank-shot/scripts/write-performance-report.ts",
     "producerSourceSha256": "5d560bf31a624d32d27998c91b71061c567ead40c896365d1fa5e29fb5327349",
     "routeSourceFiles": [
@@ -269,7 +269,7 @@
       "apps/showcase-bank-shot/src/styles.css",
       "apps/showcase-bank-shot/src/table.ts"
     ],
-    "routeSourceSha256": "a89027c4ecc52cf27f8b2f15043d04e4b2930f1e416453ea588428f3745d574f",
+    "routeSourceSha256": "efcf3e635900785e4d0459410779efafb22140fa020a242172d76ebe8cceace1",
     "scope": "Route-local fixed-step public Rapier billiards CPU timing plus browser-observed root createGameApp draw calls. Host scheduling wait and GPU frame-time parity are not claimed.",
     "samples": 12000,
     "fixedStepSeconds": 0.016666666666666666,
@@ -279,9 +279,9 @@
       "physicsBodies": 40
     },
     "observed": {
-      "simulationCpuP95Ms": 2.232,
+      "simulationCpuP95Ms": 2.931,
       "deterministicPoseSamples": 20,
-      "drawCalls": 149,
+      "drawCalls": 174,
       "renderSize": [
         1248,
         800
@@ -464,55 +464,55 @@
     "exactArtifacts": [
       {
         "path": "tests/reports/bank-shot/first-load-desktop.png",
-        "sha256": "1612b8b93c1611200c521fe993a4acd6152ff5281b3f22b0c6d5f5696bac4ff6"
+        "sha256": "7dbc0c878c9aff8766c95667ac94375ed23585dd8ee71471b73dc4cd46ab3fc7"
       },
       {
         "path": "tests/reports/bank-shot/aim-charge-desktop.png",
-        "sha256": "ff17e164286a823b1a1e87f2224df11d962ba20298f167d864d7249159ad9ba6"
+        "sha256": "45cf4797bf6c27c6de1f9a24f9edabe88b1c41e5c37250c5f6b4402b299d3560"
       },
       {
         "path": "tests/reports/bank-shot/cue-contact-desktop.png",
-        "sha256": "ebcdf48e630d24aeca84638933de9708e6f224eac5f726584ca210dbbe84bc17"
+        "sha256": "060839407437cf6ce15f4544bd64eac6b090b480baf0b3cc214211f75ca20feb"
       },
       {
         "path": "tests/reports/bank-shot/break-desktop.png",
-        "sha256": "40029f1f448695e9bce12f650c97efbd71fb3620a113b925b5cd65e4f0c3dc6a"
+        "sha256": "31be1f5275eb203485b828123de1c6586e3078ece00689db8066050cdfebd71e"
       },
       {
         "path": "tests/reports/bank-shot/mid-rack-desktop.png",
-        "sha256": "e935477245226e03025af5c79254733a58924f1559ccb637a892f63a0b51fa6b"
+        "sha256": "e10b6ec8b1f3bfba8bbc5042e1bf74ed6c2070501b6c98154bb718cf775e728e"
       },
       {
         "path": "tests/reports/bank-shot/pocket-desktop.png",
-        "sha256": "36c69144783c3a0a3a26d4ba49ab99155dbcc285d3bc20db20f49248733cb929"
+        "sha256": "864f14552581fe157d4e0710a10d166dc4e0e276f9c5ef5db662d57c2f343e92"
       },
       {
         "path": "tests/reports/bank-shot/foul-desktop.png",
-        "sha256": "1572299d7d4aa4a048f29ecbf7f1dbfaa739476284776641ca61a24b163838fc"
+        "sha256": "c9308ee2938619bcd32014504f99c164e49a1ad7413bc948d6cdfc5735d38192"
       },
       {
         "path": "tests/reports/bank-shot/rack-fail-desktop.png",
-        "sha256": "dfaffcefde9f23bb0246e8dcf8bf1f5735002a8d571088cab4b755daf4f5ef5a"
+        "sha256": "2add09471a2f1b6f1684259423df46fd2c16023ff65e860ba11da240a6bfea8c"
       },
       {
         "path": "tests/reports/bank-shot/eight-ball-finish-desktop.png",
-        "sha256": "5aa494cb0ee7c512941af7dab4ce461a785ca8e9111875251a5c5a452cdaebde"
+        "sha256": "3ae2c5367c3d60dd84287c2651d2af8cf85a7f1d449b92a4c8e40add283c726e"
       },
       {
         "path": "tests/reports/bank-shot/first-load-mobile.png",
-        "sha256": "05d3198ccc48176be5a6f0d86cd1e47cf5bdcbfbfdcfdd70211da266db0e81b1"
+        "sha256": "9926b980f5ee59c41bd64de80d0a93656aee8c068329b09b3c81d05605673bde"
       },
       {
         "path": "tests/reports/bank-shot/mobile-active.png",
-        "sha256": "56a1111e34bf9e6850cba59553de65ca1565a08dd30315ae8e8a2dc044f2651e"
+        "sha256": "0165c33f3876e613231e72ee6252ef8e20d08c70f976dab0a52fd9ee460f5dac"
       },
       {
         "path": "tests/reports/bank-shot/reduced-motion-aim.png",
-        "sha256": "60f895023fa7ff54c1b20e288706008230da678ebb461aaeb04abbc023b14f86"
+        "sha256": "1aad23ed445343a6bc9e366d12560a5a2efcee5f39c4a89bb63aba1aae605d4f"
       },
       {
         "path": "tests/reports/bank-shot/visual.json",
-        "sha256": "b3a8c2ec1ee62cd2ee287241c4a210e2a882cb0fc925382bccdbc226666a2822"
+        "sha256": "71ffefd61df55361e594c73314f0c47d672bba75bdfe11d7143f0be4a158314a"
       }
     ],
     "browserReceipts": [

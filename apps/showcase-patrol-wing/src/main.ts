@@ -1041,10 +1041,12 @@ patrolWindow.__PW_SCENARIO__ = (scenario: string): string => {
     // unchanged.
     Object.assign(chaseCameraSpec as unknown as MutableCameraSpec, {
       // Chase from behind the aircraft and look through the live target
-      // corridor. The previous front-biased offset left the plane filling the
-      // lower half while the ridge hid the lead drone during hit captures.
-      offset: [0.32, 2.9, -11.4],
-      targetOffset: [-0.35, 0.38, 3.4],
+      // corridor. The camera's target-yaw offset uses the plane's -Z view
+      // convention, so positive local Z is the authored rear chase position;
+      // the former negative offset put the lens in front of the nose and made
+      // the player read as a thin, detached silhouette behind oversized drones.
+      offset: [0.32, 3.6, 15.6],
+      targetOffset: [0.35, -0.18, -2.4],
       fov: 54
     });
     evidenceCombatFocus = true;

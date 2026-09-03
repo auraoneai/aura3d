@@ -253,9 +253,13 @@ const debugMode = debugValue !== null;
 const showDebugOverlay = debugValue === "visual";
 
 const APP_ID = "showcase-gallery-shift";
+// The route-primary composition probe isolates the typed museum world only.
+// Actor models, identity details, live LOS feedback, and HUD remain visible in
+// the suppressed half so the probe cannot pass by hiding the action staging.
+const COMPOSITION_SUBJECT_NODE = "museum-interior";
 const PRIMARY_ASSET_REFS = [
   galleryShiftCutawayMuseumWorld,
-  assets.showcaseWalkAnimatedGirl,
+  assets.showcaseRunnerGirl,
   assets.showcaseExpressiveRobot,
   assets.robotcand,
   assets.galleryShiftPedestal,
@@ -522,12 +526,12 @@ function guardCharacterNodes(): AuraSceneNode[] {
         // the wider architectural composition without turning either actor
         // into a giant room prop.  Robotcand gets the larger lift because its
         // low profile otherwise disappears beside the humanoid sentry.
-        // Robotcand is a materially authored CC-BY-4.0 security shell with
-        // ceramic armour, exposed mechanisms and optic hardware.  Its source
-        // bounds are intentionally much larger than the route's metre-scale
-        // FloorLayout, so fit it to the same ~4.75m patrol envelope as the
-        // previous patrol shell while preserving a grounded, readable silhouette.
-        targetMaxDimension: archivePatrol ? 4.75 : 5.1
+        // Both source assets are now fit to the museum's metre-scale floor,
+        // rather than the former 4.75/5.1m presentation envelopes that made
+        // the sentries read like room props.  `targetMaxDimension` is applied
+        // by the safe model renderer and grounds each GLB at node y = 0,
+        // including Robotcand's centre-origin source bounds.
+        targetMaxDimension: archivePatrol ? 3.2 : 3.7
       })
         .position(spawn.x, 0, spawn.z)
         .runtime(game.runtimeNode(spawn.id, {
@@ -925,21 +929,15 @@ function buildScene(): ReturnType<typeof scene> {
   return scene()
     .background("#05070d")
     .add(
-      model(assets.showcaseWalkAnimatedGirl, {
+      model(assets.showcaseRunnerGirl, {
         name: "thief",
         role: "primaryCharacter",
         scaleMode: "fit",
-        // The stealth avatar is the review frame's focal subject.  Keep the
-        // typed character large enough to read against the museum plan while
-        // leaving the route and guard silhouettes visible around it.
-        // The typed girl is the actor that has to carry the stealth read in
-        // the oblique review frame. A modest scale lift keeps her complete
-        // body visible while giving the real LOS intercept enough pixel area
-        // to read against the room plan.
-        // The typed infiltrator remains the gameplay subject; this modest
-        // scale lift gives the complete body enough pixel area for the
-        // review's real-LOS moment while preserving the surrounding suites.
-        targetMaxDimension: 6.8
+        // The registered Kenney Runner Girl is the route's adult infiltrator
+        // asset (idle/walk/sprint/lift/carry clips, +Z orientation, grounded
+        // bounds).  Fit it to its authored 2.7m maximum so the complete body
+        // remains legible without dominating the tactical museum plan.
+        targetMaxDimension: 2.7
       })
         .position(FLOOR_LAYOUTS[0]!.thiefSpawn.x, 0, FLOOR_LAYOUTS[0]!.thiefSpawn.z)
         .runtime(game.runtimeNode("thief", { tags: ["typed-asset", "thief", "authored-movement"] }))
@@ -1104,7 +1102,7 @@ if (!input) throw new Error("Gallery Shift failed to create Aura3D input.");
 // ------------------------------------------------------ animation controllers -
 const thiefAnimation = new AnimationController<string>({
   id: "thief-animation",
-  clipRegistry: assets.showcaseWalkAnimatedGirl as unknown as AuraAnimationAssetLike,
+  clipRegistry: assets.showcaseRunnerGirl as unknown as AuraAnimationAssetLike,
   requiredClips: [THIEF_CLIPS.idle, THIEF_CLIPS.walk, THIEF_CLIPS.sneak, THIEF_CLIPS.sprint, THIEF_CLIPS.lift, THIEF_CLIPS.carry],
   suppressRootMotion: true
 });
@@ -1580,7 +1578,7 @@ function publishEvidence(): void {
       "third-lift-alarm-return", "keyboard-touch-pause-reset"
     ],
     primaryAssets: [
-      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseWalkAnimatedGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
+      "assets.galleryShiftCutawayMuseumWorld", "assets.showcaseRunnerGirl", "assets.showcaseExpressiveRobot", "assets.robotcand",
       "assets.galleryShiftPedestal", "assets.galleryShiftExhibitA", "assets.galleryShiftExhibitB",
       "assets.galleryShiftExhibitC", "assets.galleryShiftDisplayCase"
     ],
@@ -1946,7 +1944,7 @@ Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
   configurable: true,
   value: {
     category: "application",
-    subject: { position: [0, 0, 0], rotation: [0, 0, 0], targetSize: 20.8 },
+    subject: { node: COMPOSITION_SUBJECT_NODE, position: [0, 0, 0], rotation: [0, 0, 0], targetSize: 20.8 },
     settleSubjectPose() {
       // Freeze the already-staged real LOS encounter for both halves of the
       // subject-isolation diff. Without this, the patrol and its renderer
@@ -1959,7 +1957,7 @@ Object.defineProperty(galleryWindow, "__AURA3D_COMPOSITION_PROBE__", {
       publishEvidence();
     },
     setSubjectSuppressed(suppressed: boolean) {
-      app.nodes.get("museum-interior")?.setVisible(!suppressed && runtime.layout.id === 1);
+      app.nodes.get(COMPOSITION_SUBJECT_NODE)?.setVisible(!suppressed && runtime.layout.id === 1);
       if (!suppressed) paused = false;
     }
   }

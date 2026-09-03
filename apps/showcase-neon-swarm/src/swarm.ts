@@ -123,6 +123,16 @@ export interface SwarmSimulation {
   reset(): void;
 }
 
+/**
+ * Presentation-only options for the instanced renderer bridge. These values
+ * never enter the seeded simulation or terminal outcome hash; they only let a
+ * review capture give low-cost grunt silhouettes enough screen area to read
+ * between the larger typed elite presentations.
+ */
+export interface SwarmVisualOptions {
+  readonly reviewCapture?: boolean;
+}
+
 function makeTransforms(count: number): PoolTransform[] {
   return Array.from({ length: count }, () => ({
     position: [0, -8, 0] as readonly [number, number, number],
@@ -187,7 +197,7 @@ const ELITE_COLOR_FLASH = "#ffe8fb";
 const ELITE_COLOR_TELEGRAPH = "#ffc857";
 const HIDDEN_SCALE = 0;
 
-export function createSwarmSimulation(): SwarmSimulation {
+export function createSwarmSimulation(options: SwarmVisualOptions = {}): SwarmSimulation {
   const gruntCapacity = GRUNT_POOL_CAPACITY;
   const eliteCapacity = ELITE_POOL_CAPACITY;
   const grunts: DroneRecord[] = Array.from({ length: gruntCapacity }, () => blankDrone());
@@ -424,7 +434,13 @@ export function createSwarmSimulation(): SwarmSimulation {
       // desktop probe. These silhouettes are still comfortably below the
       // courier's 2.95u body, but now have enough screen area to read as
       // distinct swarm roles instead of placeholder pixels.
-      let scale = isElite ? 0.52 : 0.32 + (i % 5) * 0.016;
+      // Review captures use a larger grunt silhouette so the 272 non-elite
+      // slots remain individually findable between the 48 typed elite cards.
+      // The route's normal play view keeps the original compact scale and all
+      // gameplay transforms, pool capacities, and hashes remain unchanged.
+      let scale = isElite
+        ? 0.52
+        : (options.reviewCapture ? 0.42 + (i % 5) * 0.02 : 0.32 + (i % 5) * 0.016);
       if (drone.flashRemaining > 0) scale *= 1.18;
       if (isElite && drone.burstRemaining > 0) scale *= 1.12;
       const profile = i % 6;

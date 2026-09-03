@@ -100,6 +100,31 @@ const POD_VISUAL_SCALE = visualReviewCapture ? 0.94 : 2.28;
 // block. The public planning board keeps the larger teaching-scale carton.
 const courierParcelLift = visualReviewCapture ? 0.34 : 0.61;
 const courierParcelMaxDimensionBase = visualReviewCapture ? 0.25 : 0.42;
+// A registered, static courier operator gives the skiff a human-scale job
+// read at the same distance as the parcel and landing pods. This is a
+// presentation attachment only: it has no body, controller, animation, or
+// gameplay ownership. The asset is already release-probed and typed in the
+// shared catalog; mounting it here does not alter the route manifest.
+const courierOperatorTargetHeight = visualReviewCapture ? 0.68 : 0.54;
+// The review camera approaches Rust from behind the route. A slight aft seat
+// offset keeps the operator's feet visibly grounded in the canopy instead of
+// projecting them into the Gale gate silhouette.
+const courierOperatorSeatOffset = visualReviewCapture ? -0.08 : -0.06;
+// Lower the feet into the canopy's actual seat line. The skiff hides the
+// straight mannequin legs at the waist, leaving a connected upper-body read
+// instead of a freestanding statue behind the destination gate.
+const courierOperatorSeatHeight = visualReviewCapture ? 0.34 : 0.34;
+// Parcel Corps communicates the job through the courier's body and the handoff
+// payload, not only through a vehicle silhouette. Reuse the same hash-bound
+// parcel GLB for one small renderer-owned handoff carton at the operator's
+// lead hand. It follows the displayed route frame below; it has no collider,
+// sensor, score, inventory, or integrator ownership.
+const courierHandoffParcelTargetDimension = visualReviewCapture ? 0.17 : 0.12;
+const courierHandoffParcelLateralOffset = visualReviewCapture ? -0.2 : -0.16;
+const courierHandoffParcelForwardOffset = visualReviewCapture ? 0.035 : 0.025;
+const courierHandoffParcelHeight = visualReviewCapture
+  ? courierOperatorSeatHeight + courierOperatorTargetHeight * 0.57
+  : courierOperatorSeatHeight + courierOperatorTargetHeight * 0.55;
 
 const BODY_COLORS: Readonly<Record<string, string>> = {
   sol: "#ffd166",
@@ -860,6 +885,43 @@ sceneBuilder = sceneBuilder
       .scale(POD_VISUAL_SCALE)
       .runtime(game.runtimeNode("mail-pod"))
   )
+  // The typed low-poly courier operator is seated in the skiff's forward
+  // canopy. The vehicle remains the named primary subject; this registered
+  // character is a readable operator attachment, not a primitive replacement
+  // or a second gameplay actor.
+  .add(
+    model(assets.neonCourierAvatar, {
+      name: "mail-pod-courier-operator",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: courierOperatorTargetHeight
+    })
+      .position(stations[0]!.x, PLAY_PLANE_Y + courierOperatorSeatHeight, stations[0]!.z + courierOperatorSeatOffset)
+      .runtime(game.runtimeNode("mail-pod-courier-operator", {
+        tags: ["typed-asset", "courier-operator", "renderer-owned", "non-colliding", "static-character"]
+      }))
+  )
+  // A compact typed handoff carton sits at the operator's lead hand. It gives
+  // the character/vehicle pair a concrete delivery action in the review
+  // frame, while the larger typed parcel remains secured on the skiff's aft
+  // cradle. This is a renderer-owned attachment only: no gameplay state is
+  // inferred from the prop and no second cargo body is created.
+  .add(
+    model(assets.courierParcel, {
+      name: "mail-pod-courier-handoff-parcel",
+      role: "setDressing",
+      scaleMode: "fit",
+      targetMaxDimension: courierHandoffParcelTargetDimension
+    })
+      .position(
+        stations[0]!.x,
+        PLAY_PLANE_Y + courierHandoffParcelHeight,
+        stations[0]!.z
+      )
+      .runtime(game.runtimeNode("mail-pod-courier-handoff-parcel", {
+        tags: ["typed-asset", "courier-handoff", "renderer-owned", "non-colliding", "static-cargo"]
+      }))
+  )
   // A renderer-owned soft landing mark keeps the four skids visibly married
   // to the freight deck in the frozen review frame. It is deliberately a
   // shallow scene cylinder (not a CSS shadow, collider, or physics footprint)
@@ -1608,6 +1670,8 @@ function syncPodVisual(): void {
   const visualSpeed = compositionReviewPose ? 1.42 : speed;
   const dirX = reviewPose ? routeUnitX : (speed > 1e-4 ? pod.kinematic.velocity[0] / speed : 0);
   const dirZ = reviewPose ? routeUnitZ : (speed > 1e-4 ? pod.kinematic.velocity[1] / speed : 0);
+  const perpX = -dirZ;
+  const perpZ = dirX;
   const podYaw = Math.atan2(dirX, dirZ);
   // Derive a bounded presentation pitch/bank from the same velocity that
   // drives the live trail.  A courier that accelerates into the freight lane
@@ -1635,6 +1699,35 @@ function syncPodVisual(): void {
   podNode
     ?.setPosition(x, PLAY_PLANE_Y, z)
     .setRotation(presentationPitch, podYaw, presentationBank);
+  const operatorNode = app.nodes.get("mail-pod-courier-operator");
+  const handoffParcelNode = app.nodes.get("mail-pod-courier-handoff-parcel");
+  // Keep the operator seated on the forward canopy in the same route-authored
+  // frame as the skiff. Rotation follows the exact displayed velocity, so the
+  // courier communicates heading during launch/corrections while remaining a
+  // static typed character with no gameplay body or animation state.
+  operatorNode
+    ?.setPosition(
+      x + dirX * courierOperatorSeatOffset,
+      PLAY_PLANE_Y + courierOperatorSeatHeight,
+      z + dirZ * courierOperatorSeatOffset
+    )
+    .setRotation(presentationPitch, podYaw, presentationBank)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
+  // Keep the small typed handoff carton married to the operator's lead hand
+  // using the same displayed route frame as the skiff. The lateral offset is
+  // deliberately modest so the carton reads as held cargo rather than a
+  // detached foreground block; it remains visual-only and never enters the
+  // dock sensor or authored integrator.
+  const operatorX = x + dirX * courierOperatorSeatOffset;
+  const operatorZ = z + dirZ * courierOperatorSeatOffset;
+  handoffParcelNode
+    ?.setPosition(
+      operatorX + dirX * courierHandoffParcelForwardOffset + perpX * courierHandoffParcelLateralOffset,
+      PLAY_PLANE_Y + courierHandoffParcelHeight,
+      operatorZ + dirZ * courierHandoffParcelForwardOffset + perpZ * courierHandoffParcelLateralOffset
+    )
+    .setRotation(presentationPitch, podYaw, presentationBank)
+    .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
   // Keep the real textured parcel seated on the skiff's rear cargo cradle.
   // The offset is expressed in the same route-authored forward axis as the
   // vehicle, so it remains attached through launch, corrections, and the
@@ -1662,8 +1755,6 @@ function syncPodVisual(): void {
     .setVisible(!compositionSubjectSuppressed && pod.state !== "lost");
   const visibleMotes = !compositionSubjectSuppressed &&
     ((pod.state === "coasting" && speed > 0.08) || compositionReviewPose);
-  const perpX = -dirZ;
-  const perpZ = dirX;
   // The contact pair is intentionally tied to the same displayed velocity as
   // the trail: faster/coasting frames compress the suspension and stretch the
   // wake, while a cross-route correction introduces a small bank.  This makes
@@ -2076,6 +2167,7 @@ function publishEvidence(): void {
     primaryAssets: ["gravityPostCourierSkiff", "gravityPostDockBeacon"],
     typedAssets: [
       { id: "gravityPostCourierSkiff", typedRef: "assets.gravityPostCourierSkiff", role: "primaryVehicle" },
+      { id: "neonCourierAvatar", typedRef: "assets.neonCourierAvatar", role: "supportingCourierOperator" },
       { id: "gravityPostDockBeacon", typedRef: "assets.gravityPostDockBeacon", role: "primaryWorld" },
       { id: "courierParcel", typedRef: "assets.courierParcel", role: "supportingCargo" },
       { id: "gravityPostMailPod", typedRef: "assets.gravityPostMailPod", role: "supportingTransitVehicle" },
@@ -2228,6 +2320,8 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     setSubjectSuppressed(suppressed: boolean) {
       compositionSubjectSuppressed = suppressed;
       app.nodes.get("mail-pod")?.setVisible(!suppressed);
+      app.nodes.get("mail-pod-courier-operator")?.setVisible(!suppressed && pod.state !== "lost");
+      app.nodes.get("mail-pod-courier-handoff-parcel")?.setVisible(!suppressed && pod.state !== "lost");
       app.nodes.get("mail-pod-textured-delivery-parcel")?.setVisible(!suppressed);
       app.nodes.get("mail-pod-contact-shadow")?.setVisible(!suppressed && pod.state !== "lost");
       app.nodes.get("mail-pod-delivery-scan-ring")?.setVisible(!suppressed);

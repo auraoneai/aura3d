@@ -738,9 +738,15 @@ function buildWorldScene() {
     .camera(camera.follow({
       targetNode: "lander",
       distance: visualReviewCapture ? 10.6 : 17,
-      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 7.5, 14.5],
+      // The opening approach is still a wide three-quarter chase, but the
+      // previous 17m default left the typed probe at roughly 100px in the
+      // route-primary frame.  Bring the eye in one measured step so the
+      // lander's antenna, cabin, legs, and the scaffold's runway cues read as
+      // one intentional focal unit without changing any world coordinates or
+      // authored flight/contact state.
+      offset: visualReviewCapture ? [6.8, 5.9, 8.25] : [0, 6.4, 12.4],
       targetOffset: visualReviewCapture ? [0, -0.55, -0.65] : [0, 0, 0],
-      fov: visualReviewCapture ? 46 : 58,
+      fov: visualReviewCapture ? 46 : 54,
       smoothing: visualReviewCapture ? 0 : 0.14
     }));
 

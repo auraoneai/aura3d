@@ -28,7 +28,7 @@ import { assets } from "../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "./cue";
 import { RulesEngine, type ShotRecord, type ShotOutcome } from "./rules";
 import { rackConfigFor, RACK_COUNT } from "./racks";
-import { createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z, rackSpotFor } from "./table";
+import { createTableSimulation, CUE_SPOT, BALL_RADIUS, PLAY_HALF_X, PLAY_HALF_Z, POCKET_CENTERS, rackSpotFor } from "./table";
 import { createBilliardsAudio } from "./billiards-audio";
 import { createPoolHallSetDressing } from "./environment";
 import "./styles.css";
@@ -51,9 +51,14 @@ document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 const APP_ID = "showcase-bank-shot";
 // Keep the Rapier bodies at regulation radius while giving the typed ball
 // meshes enough pixel coverage to read as glossy, numbered subjects in the
-// wide review frame.  This is presentation scale only; all contact and pocket
-// math still uses `BALL_RADIUS` from table.ts.
-const BALL_VISUAL_SCALE = BALL_RADIUS * 2.6;
+// close review frame. This is presentation scale only; all contact and pocket
+// math still uses `BALL_RADIUS` from table.ts. The authored GLB sphere has a
+// 0.5-unit radius, so the render radius/lift below keeps the larger lacquered
+// shell sitting on (rather than intersecting) the physical felt plane.
+const BALL_VISUAL_SCALE = BALL_RADIUS * 2.9;
+const BALL_VISUAL_RADIUS = BALL_VISUAL_SCALE / 2;
+const BALL_VISUAL_LIFT = Math.max(0, BALL_VISUAL_RADIUS - BALL_RADIUS + 0.001);
+const BALL_SURFACE_Y = BALL_RADIUS + BALL_VISUAL_LIFT;
 const ROUTE_SYSTEMS = {
   physics: "public Rapier fixed-step spheres, cushions, pocket sensors, and settled-state lock",
   rules: "route-local deterministic open/combo/eight-ball rack and three-rack session state",
@@ -171,7 +176,7 @@ function cueReady(name: string, gapFrames: number): boolean {
 }
 
 // ---------------------------------------------------------------- scene ------
-const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: 0.9 });
+const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", opacity: visualReviewCapture ? 0.62 : 0.9 });
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", opacity: 0.85 });
 const AIM_MARKER_MATERIAL = material.emissive({ name: "aim marker", color: "#38bdf8", emissive: "#7dd3fc" });
 const GHOST_MATERIAL = material.emissive({ name: "cue ghost", color: "#38bdf8", emissive: "#0284c7", opacity: 0.55 });
@@ -184,13 +189,13 @@ const FELT_GUIDE_MATERIAL = material.emissive({
 });
 const BALL_CONTACT_SHADOW_MATERIAL = material.pbr({
   name: "ball contact occlusion",
-  color: "#02030a",
+  color: "#01030a",
   roughness: 1,
   metallic: 0,
   // A real contact cue should survive the blue-felt key without becoming a
   // second silhouette.  The shadow is renderer-owned and follows the live
   // Rapier pose below; it is not a CSS/canvas overlay.
-  opacity: 0.58
+  opacity: 0.72
 });
 function ballModelNode(name: string, typedAsset: string): AuraSceneNode {
   return model(assets[typedAsset as keyof typeof assets] as typeof assets.bankShotBall00, {
@@ -311,13 +316,17 @@ function buildScene(): ReturnType<typeof scene> {
       // visual priority as a real pool-room capture.  The full rail footprint
       // remains inside the canvas while the empty ceiling/floor fall away.
       // A close three-quarter spectator angle gives the rack and cue ball the
-      // visual weight of a real pool-room capture.  The previous high, wide
-      // lens left a quarter of the frame as empty ceiling/floor and reduced
-      // the typed balls to a thumbnail.  Keep the table's four corners inside
-      // the viewport while moving the focus slightly toward the live rack.
-      position: visualReviewCapture ? [-0.46, 1.68, 1.45] : [-0.18, 2.62, 2.82],
-      target: visualReviewCapture ? [0.18, -0.02, -0.02] : [0.18, -0.02, 0.02],
-      fov: visualReviewCapture ? 34.5 : 52
+      // visual weight of a real pool-room capture. The review lens is raised
+      // just enough to show the full cloth plane and its pocket/rail falloff,
+      // then tightened around the break zone so balls are not thumbnail-sized.
+      // The camera remains table-centric; the panel-free review frame has no
+      // need to reserve pixels for the DOM controls.
+      position: visualReviewCapture ? [-0.34, 2.18, 2.18] : [-0.067, 2.514, 2.641],
+      // The default route keeps the opaque HUD panel clear of the table's
+      // right rail.  Shifting the camera target a fraction toward the foot
+      // keeps every pocket in the canvas while the controls stay readable.
+      target: visualReviewCapture ? [0.16, -0.02, 0.0] : [0.32, -0.02, 0.0],
+      fov: visualReviewCapture ? 39 : 48
     });
   return scene()
     .background("#10182a")
@@ -387,6 +396,7 @@ let cueGhostHandle: AuraRuntimeNodeHandle | undefined;
 let aimLineHandle: AuraRuntimeNodeHandle | undefined;
 let aimBankHandle: AuraRuntimeNodeHandle | undefined;
 let aimMarkerHandle: AuraRuntimeNodeHandle | undefined;
+const pocketAccentHandles: AuraRuntimeNodeHandle[] = [];
 
 function resolveHandles(): void {
   tableHandle = app.nodes.get("table") as AuraRuntimeNodeHandle | undefined;
@@ -405,6 +415,11 @@ function resolveHandles(): void {
   aimLineHandle = app.nodes.get("aim-line") as AuraRuntimeNodeHandle | undefined;
   aimBankHandle = app.nodes.get("aim-bank") as AuraRuntimeNodeHandle | undefined;
   aimMarkerHandle = app.nodes.get("aim-marker") as AuraRuntimeNodeHandle | undefined;
+  pocketAccentHandles.length = 0;
+  for (const pocket of POCKET_CENTERS) {
+    const handle = app.nodes.get(`pocket catch-light ${pocket.id}`);
+    if (handle) pocketAccentHandles.push(handle as AuraRuntimeNodeHandle);
+  }
 }
 resolveHandles();
 cueGhostHandle?.setMaterial(GHOST_MATERIAL);
@@ -429,12 +444,17 @@ Object.defineProperty(bankWindow, "__AURA3D_COMPOSITION_PROBE__", {
       resolveHandles();
       tableHandle?.setVisible(true);
       tableHandle?.setScale(1);
+      pocketAccentHandles.forEach((handle) => handle.setVisible(true));
       app.step(0);
     },
     setSubjectSuppressed: (suppressed: boolean) => {
       app.pause();
       tableHandle?.setVisible(true);
       tableHandle?.setScale(suppressed ? 0.0001 : 1);
+      // Pocket catch-lights are attached presentation detail for the typed
+      // table. Hide them with the table during the checker’s suppressed pass;
+      // otherwise six orphan rings would remain suspended over the floor.
+      pocketAccentHandles.forEach((handle) => handle.setVisible(!suppressed));
       app.step(0);
     }
   },
@@ -708,7 +728,10 @@ function syncVisuals(): void {
       continue;
     }
     handle.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
-    handle.setPosition(pose.position[0], pose.position[1], pose.position[2]);
+    // The render shell is intentionally a little larger than the physical
+    // Rapier sphere for readable numbers and highlights. Lift it by the exact
+    // radius delta so the renderer-owned contact patch remains underneath.
+    handle.setPosition(pose.position[0], pose.position[1] + BALL_VISUAL_LIFT, pose.position[2]);
     if (shadowHandle) {
       // Preserve a compact contact patch at rest and stretch/rotate it from
       // the measured frame-to-frame Rapier displacement while a ball rolls.
@@ -723,7 +746,7 @@ function syncVisuals(): void {
       const travel = Math.min(0.034, Math.max(displacement * 2.8, speed * 0.0025));
       const heading = displacement > 0.00001 ? Math.atan2(-dz, dx) : 0;
       shadowHandle.setRotation(0, heading, 0);
-      shadowHandle.setScale([0.052 + travel, 0.002, 0.040]);
+      shadowHandle.setScale([0.060 + travel, 0.0025, 0.046]);
       shadowHandle.setPosition(
         pose.position[0] + (displacement > 0.00001 ? dx * 0.35 : 0),
         0.003,
@@ -756,7 +779,7 @@ function syncVisuals(): void {
     const strikeX = Math.cos(strikeAngle);
     const strikeZ = Math.sin(strikeAngle);
     cueStickHandle?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
-    cueStickHandle?.setPosition(cueInfo.x + strikeX * 0.045, BALL_RADIUS + 0.008, cueInfo.z + strikeZ * 0.045);
+    cueStickHandle?.setPosition(cueInfo.x + strikeX * 0.045, BALL_SURFACE_Y + 0.008, cueInfo.z + strikeZ * 0.045);
     cueStickHandle?.setRotation(0, -strikeAngle, 0.035);
     return;
   }
@@ -767,7 +790,7 @@ function syncVisuals(): void {
     parkNode(aimBankHandle);
     parkNode(aimMarkerHandle);
     cueGhostHandle?.setScale([BALL_VISUAL_SCALE, BALL_VISUAL_SCALE, BALL_VISUAL_SCALE]);
-    cueGhostHandle?.setPosition(ghost.x, BALL_RADIUS + 0.004, ghost.z);
+    cueGhostHandle?.setPosition(ghost.x, BALL_SURFACE_Y + 0.004, ghost.z);
     return;
   }
 
@@ -778,29 +801,25 @@ function syncVisuals(): void {
 
   // Cue stick behind the ball, pulling back with the charge.
   const pullback = 0.04 + cueController.state().charge * 0.28;
-  cueStickHandle?.setPosition(cueInfo.x - dirX * pullback, BALL_RADIUS + 0.008, cueInfo.z - dirZ * pullback);
+  cueStickHandle?.setPosition(cueInfo.x - dirX * pullback, BALL_SURFACE_Y + 0.008, cueInfo.z - dirZ * pullback);
   cueStickHandle?.setRotation(0, -angle, 0.06);
 
   // The exact review frame is the uncluttered table presentation.  Preserve
   // the live cue pose and every underlying sweep/evidence value, but keep the
   // thick training overlays for the playable route where they are useful.
   // This is renderer state, not CSS or screenshot compositing.
-  if (visualReviewCapture) {
-    parkNode(aimLineHandle);
-    parkNode(aimBankHandle);
-    parkNode(aimMarkerHandle);
-    return;
-  }
-
   // Physics sweep preview (sphereCast against live balls and cushions).
   const sweep = sim.sweepFromCue(angle);
-  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_RADIUS + 0.002, 0.006);
-  aimMarkerHandle?.setPosition(sweep.ghostX, BALL_RADIUS, sweep.ghostZ);
+  // The review capture keeps the line hairline-thin and subdued so it reads as
+  // a real tactical cue rather than a UI banner; the playable route retains a
+  // stronger training guide and bank preview.
+  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0035 : 0.006);
+  aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
   if (sweep.kind === "cushion") {
     const dot = dirX * sweep.normalX + dirZ * sweep.normalZ;
     const bankX = dirX - 2 * dot * sweep.normalX;
     const bankZ = dirZ - 2 * dot * sweep.normalZ;
-    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_RADIUS + 0.002, 0.005);
+    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.45, sweep.ghostZ + bankZ * 0.45, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.003 : 0.005);
   } else {
     parkNode(aimBankHandle);
   }

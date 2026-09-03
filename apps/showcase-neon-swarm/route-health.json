@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-27T03:11:55.111Z",
+  "generatedAt": "2026-09-03T01:43:16.967Z",
   "appId": "showcase-neon-swarm",
   "route": "/apps/showcase-neon-swarm/",
   "classification": "prototype-blocked",
@@ -123,7 +123,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 23,
+    "sourceOccurrences": 36,
     "primitiveBudget": 40,
     "role": "arena, player guides, collectible, boundaries, and effects around typed primary assets and abstract instanced enemies",
     "pass": true
@@ -143,8 +143,8 @@
     ],
     "droneLabel": "abstract-instanced-geometry",
     "observedLiveInstances": 320,
-    "observedDrawCalls": 37,
-    "observedNativeInstancedSubmissions": 352,
+    "observedDrawCalls": 50,
+    "observedNativeInstancedSubmissions": 322,
     "pass": true
   },
   "campaign": {
@@ -170,12 +170,12 @@
     },
     "observed": {
       "stagedInstances": 320,
-      "simulationStepP95Ms": 0.4694,
-      "simulationStepMaxMs": 1.4064,
+      "simulationStepP95Ms": 0.8227,
+      "simulationStepMaxMs": 3.0075,
       "browserInstances": 320,
-      "browserDrawCalls": 59,
-      "browserNativeInstancedSubmissions": 352,
-      "browserNonBlackPixels": 686529
+      "browserDrawCalls": 50,
+      "browserNativeInstancedSubmissions": 322,
+      "browserNonBlackPixels": 989166
     },
     "pass": true
   },
@@ -223,47 +223,47 @@
     "artifacts": [
       {
         "path": "tests/reports/neon-swarm/screenshots/01-load.png",
-        "sha256": "614f53ca8382396fb55a362e41545c3b3663715430b5bb637c48be0be135fce7"
+        "sha256": "c328b85be16c0344fdc6f3079dacaf03c8ab828d166d4e229c5ad1f4b61635be"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/10-burst-cascade.png",
-        "sha256": "5dd58abdf8ae3a0647e3b1c1adce4272ed6ff923db8c55eb8b02cd630136c974"
+        "sha256": "0a71976bf0bc12e8c5c27dc875bd3d24139e17e83befec038a1fb22a23386c39"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/11-upgrade-choice.png",
-        "sha256": "b2c36f267eb550e8feae0081c88f0eaa95e4cd8e8780d15973df158ff01ea8cb"
+        "sha256": "d857bfae51b727bc568445c704d4489c3e521250c58ca09d2dc2ca5d0e73810c"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/04-death.png",
-        "sha256": "d6bd603f677fc5820600b4800392881ef8f441441565c699b1b68a2ad06b9aa4"
+        "sha256": "99e2cb05df3af83dc7225d2e4a8adeaf6a8b642249d80a1335537962de3e071a"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/05-reset.png",
-        "sha256": "19602923b0648aa88e5a8781b4c196d7d21aa47999f73231164200e3ef1fb019"
+        "sha256": "35b9f1b9ba3143d8b32691a4a31a61086fe2b19edfa19778c573d0aacbbd87b5"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/02-mid-wave.png",
-        "sha256": "f373a89ef1f407bf804c4eb4582ef0ec630efdc64397cc320bc226137c4f8cd7"
+        "sha256": "07560ce16269200534685b9b027fe6c99b66c88f9f9d4abcb0f64729486a9e03"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/06-finale-320.png",
-        "sha256": "12c362fa0dc2626ad88d4337bb6785f5cec999027df43335c8209024c38fae70"
+        "sha256": "b5737fa4b1f5dbb37d2e57f20a8112f8ea90a5513b5bf54af44eddab4455d6b7"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/07-complete.png",
-        "sha256": "323feac42b6bbbcdcda7520a61ed87b75015065b56b2725a01c5a3064fa6e1dc"
+        "sha256": "afcb7f4b8c748c8e95eafe5359bb6f5e9c5f7f932163ae06f7d019b423667b60"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/08-mobile-active.png",
-        "sha256": "380bc9fdf1492047e2840d36a5f52b51ff7611df4ad6b17d32d9166f20480137"
+        "sha256": "e4c8007fa77f420ce31f5ddc016c722e638d0b39e1770041de19b294c95c5fdb"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/09-reduced-finale.png",
-        "sha256": "7fb0d53fdd37c9913d5a5528ef87b17b53fbd258c49a8c48aec8c929b8b1b33e"
+        "sha256": "bbca95e49bf0a15954cf9e6548d71d33ca668b158ea3ae7a206bd8a23e6bf263"
       },
       {
         "path": "tests/reports/neon-swarm/screenshots/03-instancing-swarm.png",
-        "sha256": "ad52dfa6bd0ad6870a417af922a5557d8dfa51cb919723dade7f024aac013fba"
+        "sha256": "17c95fe648f3c01d172fa2ea0a8e2f145b9a2c31f71b7eacaad5fd2db4eeaf28"
       }
     ],
     "renderedAssetProbes": [
@@ -280,8 +280,8 @@
     "observed": {
       "campaignStages": 5,
       "finaleLiveInstances": 320,
-      "drawCalls": 37,
-      "nativeInstancedSubmissions": 352,
+      "drawCalls": 50,
+      "nativeInstancedSubmissions": 322,
       "outcomeHash": "fnv1a32-fc06659d",
       "pickupsCollected": 1,
       "mobileBursts": 1,

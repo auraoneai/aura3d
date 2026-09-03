@@ -114,7 +114,7 @@ const routeHealth = {
   primitiveStatus: {
     sourceOccurrences: primitiveOccurrences,
     primitiveBudget: 40,
-    role: "physics guides, cup rings, aim ticks, and trail puffs as set dressing around the typed continuous world plus ball/crate/barrel/plank models",
+    role: "physics guides, cup rings, renderer-owned shot-club aim cue, aim ticks, and trail puffs as set dressing around the typed continuous world plus ball/crate/barrel/plank models",
     status: "set-dressing-with-typed-primary-assets"
   },
   claimStatus: {

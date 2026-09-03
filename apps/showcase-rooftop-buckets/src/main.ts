@@ -168,7 +168,22 @@ const VENUE_REVIEW_HIDDEN_NODES = [
   // subordinate venue dressing (not a hero asset), so suppress that node and
   // its cap in the review lane while retaining the authored bleachers,
   // banners, towers, and handrails around the court.
-  "Cylinder.016", "Cylinder.017"
+  "Cylinder.016", "Cylinder.017",
+  // The center service-core block sits directly behind the typed hoop in the
+  // sideline lens. Its warm brick face projects as a solid orange card over
+  // the rim, so keep that subordinate tower out of the action lane while the
+  // surrounding authored towers preserve the venue depth.
+  "service tower.004"
+] as const;
+
+// The authored court package includes five rear sponsor banners. The center
+// amber banner is a venue accent, not a gameplay surface, and its projection
+// lands directly below the typed hoop in the fixed sideline lens. Keep the
+// surrounding sponsor rhythm while hiding only this occluding panel (and its
+// slim rail) so the rim/net remain readable in both composition captures.
+const COURT_REVIEW_HIDDEN_NODES = [
+  "rear sponsor banner 0",
+  "rear sponsor bar 0"
 ] as const;
 
 // ---------------- Game State ----------------
@@ -246,6 +261,14 @@ elModalBtn.addEventListener("click", () => {
 // ---------------- Runtime Nodes & Scene ----------------
 const ballHandle = game.runtimeNode("ball-hero", { tags: ["basketball"] });
 const rimHandle = game.runtimeNode("rim-assembly", { tags: ["hoop-rim"] });
+// The typed rim remains the gameplay/scene authority.  This companion handle
+// owns only a small renderer-side readability ring so the goal stays legible
+// when the composition probe hides the backboard subject.  It is kept on the
+// exact live hoop transform below; unlike the original static accent it cannot
+// drift away from a route-authored hoop pose.
+const rimReadabilityHandle = game.runtimeNode("rim-readability", {
+  tags: ["hoop-rim", "renderer-owned", "readability"]
+});
 const backboardHandle = game.runtimeNode("backboard-assembly", { tags: ["backboard"] });
 const netPulseHandle = game.runtimeNode("rim-net-pulse", { tags: ["net-feedback", "renderer-owned", "event-driven"] });
 const defenderHandle = game.runtimeNode("defender-cutout", { tags: ["defender"] });
@@ -417,7 +440,8 @@ function buildScene() {
         name: "typed-rooftop-court",
         role: "primaryWorld",
         scaleMode: "world",
-        receiveShadow: true
+        receiveShadow: true,
+        hiddenNodeNames: COURT_REVIEW_HIDDEN_NODES
       })
         // The source venue keeps its authored teal/warm crowd and violet
         // bleacher materials in the review frame. A modest review-only scale
@@ -446,13 +470,17 @@ function buildScene() {
       })
         .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z)
         .runtime(rimHandle),
-      // A thin renderer-owned target halo keeps the real rim legible against
+      // A renderer-owned target halo keeps the real typed rim legible against
       // the darker backboard and gives the live ball/contact effects a clear
-      // visual destination. Collision truth remains in rim.ts.
+      // visual destination. Collision truth remains in rim.ts. The runtime
+      // binding is important: the route may move the hoop during a heat, and
+      // the composition probe may suppress the board while retaining this
+      // explicit goal cue.
       primitives.torus({ name: "rim target contact halo", material: rimGlowMaterial })
-        .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z)
+        .position(HOOP_BASE_POSITION.x, HOOP_BASE_POSITION.y, HOOP_BASE_POSITION.z + 0.12)
         .rotate(-Math.PI / 2, 0, 0)
-        .scale(visualReviewCapture ? [0.34, 0.34, 0.022] : [0.29, 0.29, 0.018]),
+        .scale(visualReviewCapture ? [0.42, 0.42, 0.038] : [0.36, 0.36, 0.03])
+        .runtime(rimReadabilityHandle),
       // The authored venue owns the target box and open net assembly. Keep a
       // single lower gather ring here so the goal reads as one constructed
       // object rather than two overlapping sets of decorative strands.
@@ -599,15 +627,14 @@ function buildScene() {
         .rotate(-Math.PI / 2, 0, 0)
         .scale(visualReviewCapture ? [0.22, 0.22, 0.03] : [0.28, 0.28, 0.035])
         .runtime(flightHaloHandle),
-      // The two trailing velocity echoes are reserved for the explicit review
-      // action frame. Keeping them out of the ordinary opening composition
-      // preserves draw-call headroom without weakening the live ball, arc,
-      // release rays, or event-driven contact feedback.
+      // The two trailing velocity accents are reserved for the explicit review
+      // action frame. They are elongated renderer-owned streaks (rather than
+      // decorative rings) so the typed ball reads as a fast broadcast throw;
+      // their transforms below are derived from the captured flight velocity.
       ...(visualReviewCapture ? flightEchoHandles.map((handle, index) =>
-        primitives.torus({ name: `ball velocity echo ${index + 1}`, material: flightMaterial })
+        primitives.box({ name: `ball velocity streak ${index + 1}`, material: flightMaterial })
           .position(0, -20, 0)
-          .rotate(-Math.PI / 2, 0, 0)
-          .scale([0.17 - index * 0.035, 0.17 - index * 0.035, 0.02])
+          .scale([0.032 - index * 0.006, 0.032 - index * 0.006, 0.28 - index * 0.06])
           .runtime(handle)
       ) : []),
       primitives.torus({ name: "rim contact burst", material: contactMakeMaterial })
@@ -1147,18 +1174,36 @@ function syncTransforms(): void {
     echo?.setVisible(ballState.inFlight);
     if (!ballState.inFlight) continue;
     const lag = 0.22 + index * 0.22;
+    // Draw each accent back along the real velocity vector. These are short
+    // renderer-owned velocity strokes, not a second trajectory or a CSS
+    // effect; the moving typed ball and route-local integrator remain the sole
+    // source of flight truth.
     echo?.setPosition(
       ballState.x - (ballState.vx / velocityMagnitude) * lag,
       ballState.y - (ballState.vy / velocityMagnitude) * lag,
       ballState.z - (ballState.vz / velocityMagnitude) * lag
     );
-    const echoScale = Math.max(0.075, 0.17 - index * 0.045);
-    echo?.setScale([echoScale, echoScale, 0.018]);
+    const echoDepth = Math.max(0.12, 0.34 - index * 0.08);
+    echo
+      ?.setRotation(-Math.asin(ballState.vy / velocityMagnitude), Math.atan2(ballState.vx, ballState.vz), 0)
+      .setScale([0.032 - index * 0.006, 0.032 - index * 0.006, echoDepth]);
   }
 
   const rimNode = app.nodes.get("rim-assembly") as AuraRuntimeNodeHandle | undefined;
   rimNode?.setPosition(hoopState.x, hoopState.y, hoopState.z);
   rimNode?.setMaterial(rimMaterial);
+
+  // Keep the renderer-owned readability ring in front of the typed rim and on
+  // the exact live hoop transform.  It remains visible when the composition
+  // probe suppresses only the backboard, so the normal and subject-suppressed
+  // captures both retain an unambiguous hoop target without changing shot
+  // collision or scoring truth.
+  const rimReadabilityNode = app.nodes.get("rim-readability") as AuraRuntimeNodeHandle | undefined;
+  rimReadabilityNode?.setVisible(true);
+  rimReadabilityNode
+    ?.setPosition(hoopState.x, hoopState.y, hoopState.z + 0.12)
+    .setMaterial(rimGlowMaterial)
+    .setScale(visualReviewCapture ? [0.42, 0.42, 0.038] : [0.36, 0.36, 0.03]);
 
   const backboardNode = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
   backboardNode?.setPosition(hoopState.x, BACKBOARD_POSITION.y, BACKBOARD_POSITION.z);
@@ -1701,6 +1746,13 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
     setSubjectSuppressed(suppressed: boolean) {
       const node = app.nodes.get("backboard-assembly") as AuraRuntimeNodeHandle | undefined;
       node?.setVisible(!suppressed);
+      // Suppression isolates the declared backboard subject only. Keep the
+      // typed rim and its route-local readability ring in frame so the goal is
+      // still an explicit scene landmark in the paired evidence capture.
+      const rim = app.nodes.get("rim-assembly") as AuraRuntimeNodeHandle | undefined;
+      rim?.setVisible(true);
+      const rimReadability = app.nodes.get("rim-readability") as AuraRuntimeNodeHandle | undefined;
+      rimReadability?.setVisible(true);
     }
   }
 });

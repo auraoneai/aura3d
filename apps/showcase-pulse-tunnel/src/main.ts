@@ -80,6 +80,10 @@ const FOG_PULSE_SECONDS = 0.18;
 const HIT_FLASH_SECONDS = 0.14;
 const INVULN_SECONDS = 1.2;
 const HUE_RINGS_PER_SECTION = 4;
+// Test-only seek captures pause the renderer immediately after jumping to the
+// finale. Reserve enough of the 90-second run for the keyboard event and
+// screenshot encoder to execute even under software-GL/reduced-motion runs.
+const PULSE_CAPTURE_HEADROOM_SECONDS = 1.75;
 
 // ---- systems ----------------------------------------------------------------
 
@@ -1256,13 +1260,17 @@ const reviewProjectileBuilders = visualReviewCapture
 // Each authored packet now leaves a short, dimmer 3D wake. The wakes are
 // intentionally separate nodes so their direction and depth can be inspected
 // in the exact frame; they are not CSS trails or gameplay/collision geometry.
+// A box is used here instead of a Y-axis capsule so the runtime can aim the
+// wake in the actual X/Z travel direction with one deterministic yaw. The
+// sphere packet remains the bright projectile core; this directional support
+// piece is what makes the two streams read as fire instead of a pile of dots.
 const reviewProjectileTrailBuilders = visualReviewCapture
   ? Array.from({ length: 16 }, (_, index) =>
-      primitives.capsule({
+      primitives.box({
         name: `pulse review ${index < 8 ? "runner lance" : "warden cutter"} trail ${index + 1}`,
         material: index < 8 ? reviewTrailCyan : reviewTrailRose
       })
-        .position(0, 0.4, -2.2).scale([0.042, 0.042, 0.36])
+        .position(0, 0.4, -2.2).scale([0.28, 0.036, 0.036])
         .runtime(game.runtimeNode(`pulse-review-projectile-trail-${index}`, { tags: ["finale-projectile-trail", "renderer-owned", "non-colliding"] }))
     )
   : [];
@@ -1564,6 +1572,21 @@ const finaleShieldVanes = finaleShieldVaneBuilders.map((_, index) => requireHand
 const finaleArenaShell = requireHandle("pulse-finale-arena-shell");
 const finaleTerminalSentry = requireHandle("pulse-finale-terminal-sentry");
 const finaleProjectiles = finaleProjectileBuilders.map((_, index) => requireHandle("pulse-finale-projectile-" + index));
+// The authored basalt arena is finale dressing, not a permanent spawn-room
+// floor.  Before this state gate the large concentric rings/perimeter were
+// visible from the ready/intro frame, filling the route-primary probe and
+// obscuring the playable lane before any finale encounter existed.  Keep the
+// same renderer-owned modules and IDs, but make their visibility follow the
+// actual finale state just like the typed sentry and shield architecture.
+const finaleArenaDressing: RuntimeNodeHandleLike[] = !visualReviewCapture
+  ? [
+      requireHandle("pulse-cavern-world-floor"),
+      requireHandle("pulse-finale-arena-dais"),
+      ...Array.from({ length: 3 }, (_, index) => requireHandle(`pulse-finale-arena-ring-${index}`)),
+      ...Array.from({ length: 12 }, (_, index) => requireHandle(`pulse-finale-groove-${index}`)),
+      ...Array.from({ length: 18 }, (_, index) => requireHandle(`pulse-finale-perimeter-${index}`))
+    ]
+  : [];
 const reviewProjectiles = reviewProjectileBuilders.map((_, index) => requireHandle(`pulse-review-projectile-${index}`));
 const reviewProjectileTrails = reviewProjectileTrailBuilders.map((_, index) => requireHandle(`pulse-review-projectile-trail-${index}`));
 const reviewImpactShards = reviewImpactShardBuilders.map((_, index) => requireHandle(`pulse-review-impact-shard-${index}`));
@@ -1620,6 +1643,7 @@ finaleBeacon.setVisible(false);
 for (const vane of finaleShieldVanes) vane.setVisible(false);
 finaleArenaShell.setVisible(false);
 finaleTerminalSentry.setVisible(false);
+for (const dressing of finaleArenaDressing) dressing.setVisible(false);
 for (const projectile of finaleProjectiles) projectile.setVisible(false);
 for (const projectile of reviewProjectiles) projectile.setVisible(false);
 for (const trail of reviewProjectileTrails) trail.setVisible(false);
@@ -1777,7 +1801,14 @@ Object.defineProperty(window, "__PULSE_TUNNEL_TEST__", {
      * (e.g. the drop-section hue capture) without surviving the whole run.
      */
     seekAhead(seconds: number): void {
-      beatClock.advanceScheduler(seconds);
+      // Keep this seam deterministic without allowing a large requested seek
+      // to cross the natural `finished` boundary before the caller can freeze
+      // the finale frame. Normal gameplay and the live clock are unchanged.
+      const remainingCaptureWindow = Math.max(
+        0,
+        PULSE_RUN_SECONDS - PULSE_CAPTURE_HEADROOM_SECONDS - beatClock.time()
+      );
+      beatClock.advanceScheduler(Math.min(Math.max(0, seconds), remainingCaptureWindow));
       gateSystem.respace();
     }
   },
@@ -2066,6 +2097,7 @@ function renderWorld(dt: number): void {
   // renderer-owned/non-colliding; gameplay timing and lanes are unchanged.
   finaleArenaShell.setVisible(finaleActive);
   finaleTerminalSentry.setVisible(finaleActive);
+  for (const dressing of finaleArenaDressing) dressing.setVisible(finaleActive);
   // Continuous line bars from the previous composition are intentionally
   // retired. Discrete projectile packets now connect the typed craft and
   // sentry to the separate shield impact plane without becoming an opaque
@@ -2246,20 +2278,32 @@ function renderWorld(dt: number): void {
         const z = sourceZ + (targetZ - sourceZ) * progress;
         const y = outgoing
           ? 0.46 + row * 0.24 + progress * (encounterY - 0.46) + column * 0.055
-          : encounterY + row * 0.28 - progress * (encounterY - 0.56) + column * 0.065;
+          // Keep the sentry's return fire on a visibly higher band. It still
+          // descends toward the runner's shield plane, but no longer crosses
+          // the cyan stream at the exact center of the review frame.
+          : encounterY + 0.30 + row * 0.24 - progress * 0.42 + column * 0.065;
         projectile.setVisible(true)
           .setPosition(x, y, z)
-          .setScale(outgoing ? [0.16, 0.16, 0.16] : [0.17, 0.17, 0.17]);
+          .setScale(outgoing ? [0.17, 0.17, 0.17] : [0.18, 0.18, 0.18]);
         const trailProgress = Math.max(0.02, progress - (outgoing ? 0.14 : 0.16));
         const trailX = sourceX + (targetX - sourceX) * trailProgress;
         const trailZ = sourceZ + (targetZ - sourceZ) * trailProgress;
         const trailY = outgoing
           ? 0.46 + row * 0.24 + trailProgress * (encounterY - 0.46) + column * 0.055
-          : encounterY + row * 0.28 - trailProgress * (encounterY - 0.56) + column * 0.065;
+          : encounterY + 0.30 + row * 0.24 - trailProgress * 0.42 + column * 0.065;
+        // The wake is centred between the packet and its previous point so
+        // it reads as a directional streak rather than a detached marker.
+        const trailMidProgress = Math.max(0, progress - (outgoing ? 0.07 : 0.08));
+        const trailMidX = sourceX + (targetX - sourceX) * trailMidProgress;
+        const trailMidZ = sourceZ + (targetZ - sourceZ) * trailMidProgress;
+        const trailMidY = outgoing
+          ? 0.46 + row * 0.24 + trailMidProgress * (encounterY - 0.46) + column * 0.055
+          : encounterY + 0.30 + row * 0.24 - trailMidProgress * 0.42 + column * 0.065;
+        const travelYaw = Math.atan2(-(targetZ - sourceZ), targetX - sourceX);
         reviewProjectileTrails[index].setVisible(true)
-          .setPosition(trailX, trailY, trailZ)
-          .setScale(outgoing ? [0.036, 0.036, 0.30] : [0.040, 0.040, 0.33])
-          .setRotation(Math.PI / 2, outgoing ? -0.16 : 0.16, outgoing ? 0.08 : -0.08);
+          .setPosition((trailX + trailMidX) * 0.5, (trailY + trailMidY) * 0.5, (trailZ + trailMidZ) * 0.5)
+          .setScale(outgoing ? [0.30, 0.042, 0.042] : [0.34, 0.045, 0.045])
+          .setRotation(0, travelYaw, 0);
       });
     } else {
       for (const projectile of reviewProjectiles) projectile.setVisible(false);

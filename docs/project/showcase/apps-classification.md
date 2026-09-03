@@ -64,6 +64,7 @@ still not be a public release candidate.
 | `showcase-aurora-lander` | prototype-blocked | Three-site precision-landing campaign with typed probe/beacons, route-local deterministic arcade thrust/RCS/gust motion, bounded prediction, hull/fuel progression, Rapier-owned static contact detection, strongest-whiteout/mobile/reduced-motion evidence, and extraction; machine gates pass and independent exact-artifact review is pending. |
 | `showcase-pulse-tunnel` | prototype-blocked | Rhythm neon tunnel glider with synchronized rhythm gate timings. |
 | `showcase-mech-hangar` | prototype-blocked | Mech assembly hangar with tactical weapons systems. |
+| `showcase-meshy-relic-pilot` | prototype | Meshy CLI asset-pipeline prototype with a typed relic collection loop; private-generation rights and collision claims remain unproven, so it is not public showcase material. |
 | `aura-clash-showcase` | development showcase | Development showcase multiplayer arena fighter. |
 | `neon-corridor-strike` | library demo | Neon corridor speed runner demo. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |

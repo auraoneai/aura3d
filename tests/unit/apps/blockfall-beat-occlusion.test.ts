@@ -48,4 +48,17 @@ describe("Blockfall line-clear beat does not occlude the board", () => {
       expect(Number(opacity)).toBeLessThan(1);
     }
   });
+
+  it("keeps the active and clear rings face-on to the board", () => {
+    const activeStart = source.indexOf('name: "active reactor drop reticle"');
+    const clearStart = source.indexOf('name: "line clear reactor wave"');
+    expect(activeStart).toBeGreaterThanOrEqual(0);
+    expect(clearStart).toBeGreaterThan(activeStart);
+    const activeNode = source.slice(activeStart, clearStart);
+    const clearNode = source.slice(clearStart, source.indexOf("// The guide is hidden", clearStart));
+    // The falling-block well faces the camera in XY. Rotating either torus to
+    // XZ makes the feedback collapse to an edge-on line in the review frame.
+    expect(activeNode).not.toContain(".rotate(Math.PI / 2, 0, 0)");
+    expect(clearNode).not.toContain(".rotate(Math.PI / 2, 0, 0)");
+  });
 });

@@ -232,6 +232,9 @@ let trailHandles: AuraRuntimeNodeHandle[] = [];
 let aimHandles: AuraRuntimeNodeHandle[] = [];
 let strikeRingHandles: AuraRuntimeNodeHandle[] = [];
 let strikeChevronHandles: AuraRuntimeNodeHandle[] = [];
+let shotClubShaftHandle: AuraRuntimeNodeHandle | undefined;
+let shotClubHeadHandle: AuraRuntimeNodeHandle | undefined;
+let shotClubGripHandle: AuraRuntimeNodeHandle | undefined;
 let dustHandles: AuraRuntimeNodeHandle[] = [];
 let bestGhostHandles: AuraRuntimeNodeHandle[] = [];
 interface DustPuff { frames: number; age: number; node: AuraRuntimeNodeHandle; vx: number; vz: number; }
@@ -339,10 +342,14 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
       name: "aim-node-" + i,
       material: material.emissive({
         name: "painted coral shot markers",
-        color: i % 3 === 0 ? "#fff2c9" : "#ff6855",
-        emissive: i % 3 === 0 ? "#ffe2a0" : "#d94742",
-        emissiveIntensity: 0.34,
-        opacity: 0.9
+        // Alternate ivory and coral markers keep the projected path readable
+        // against both the teal causeway and the pale world asset.  These are
+        // renderer-owned guides only; the launch vector still comes from the
+        // live ShotController and Rapier ball.
+        color: i % 3 === 0 ? "#fff6d2" : "#ff5e4f",
+        emissive: i % 3 === 0 ? "#ffe4a2" : "#e13b35",
+        emissiveIntensity: 0.48,
+        opacity: 0.96
       })
     }).position(0, -9, 0).scale([0.08 + (i / (AIM_NODE_COUNT - 1)) * 0.08, 0.025, 0.16])
       .runtime(game.runtimeNode("aim-node-" + i, { tags: ["aim-guide"] }))
@@ -379,6 +386,31 @@ function visualNodes(phase: SiegeCameraPhase = "opening"): AuraSceneNode[] {
       .runtime(game.runtimeNode(`strike-chevron-${i}`, { tags: ["renderer-owned", "live-strike-indicator"] }))
       .toJSON());
   }
+  // A compact renderer-owned putter makes the charge/aim state immediately
+  // read as golf instead of a generic ball launcher.  It is presentation only:
+  // it follows the live ball + ShotController angle, creates no Rapier body,
+  // and is hidden as soon as the ball leaves the tee.  The typed siegeGolfBall
+  // remains the sole primary subject and collision authority.
+  nodes.push(
+    primitives.box({
+      name: "shot-club-shaft",
+      material: material.pbr({ name: "shot club graphite", color: "#263d46", roughness: 0.34, metallic: 0.62 })
+    }).position(0, -9, 0).scale([0.042, 0.042, 0.72])
+      .runtime(game.runtimeNode("shot-club-shaft", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
+      .toJSON(),
+    primitives.box({
+      name: "shot-club-head",
+      material: material.pbr({ name: "shot club face", color: "#d7e4dc", roughness: 0.24, metallic: 0.78 })
+    }).position(0, -9, 0).scale([0.22, 0.075, 0.13])
+      .runtime(game.runtimeNode("shot-club-head", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
+      .toJSON(),
+    primitives.sphere({
+      name: "shot-club-grip",
+      material: material.emissive({ name: "shot club coral grip", color: "#ff805e", emissive: "#cf3e39", emissiveIntensity: 0.34 })
+    }).position(0, -9, 0).scale(0.09)
+      .runtime(game.runtimeNode("shot-club-grip", { tags: ["renderer-owned", "visual-only", "aim-guide"] }))
+      .toJSON()
+  );
   for (let i = 0; i < DUST_NODE_COUNT; i += 1) {
     nodes.push(primitives.sphere({
       name: "impact-dust-pool-" + i,
@@ -646,9 +678,13 @@ function cameraForPhase(hole: HoleDefinition, phase: SiegeCameraPhase) {
       // and the sensor keep at the far end. This is intentionally fixed rather
       // than a crop around any one prop; live play still uses the follow camera.
       return camera.perspective({
-        position: [4.9, 4.85, 9.35],
-        target: [0.12, 0.42, -2.75],
-        fov: 40
+        // Pull the horizon down and lower the lens slightly so the authored
+        // fairway owns the frame instead of leaving a third of the capture as
+        // empty mint sky.  The tee, obstacle and target remain inside the
+        // validated route bounds; only presentation changes here.
+        position: [4.75, 4.28, 9.2],
+        target: [0.12, 0.68, -2.62],
+        fov: 42
       });
     }
     return camera.follow({
@@ -766,6 +802,9 @@ function resolveHandles(): void {
   for (let i = 0; i < STRIKE_CHEVRON_COUNT; i += 1) {
     strikeChevronHandles.push(app.nodes.require(`strike-chevron-${i}`) as AuraRuntimeNodeHandle);
   }
+  shotClubShaftHandle = app.nodes.require("shot-club-shaft") as AuraRuntimeNodeHandle;
+  shotClubHeadHandle = app.nodes.require("shot-club-head") as AuraRuntimeNodeHandle;
+  shotClubGripHandle = app.nodes.require("shot-club-grip") as AuraRuntimeNodeHandle;
   dustHandles = [];
   for (let i = 0; i < DUST_NODE_COUNT; i += 1) {
     dustHandles.push(app.nodes.require("impact-dust-pool-" + i) as AuraRuntimeNodeHandle);
@@ -1196,6 +1235,31 @@ function syncAim(): void {
   const dirZ = -Math.cos(shot.state.angle);
   const base = flow.sim.ball.position;
   const charge = shot.state.charge;
+  // Keep the visual club just behind the typed ball and aligned to the exact
+  // launch vector.  This makes the next action legible in the world while
+  // leaving the canonical shot vector/power and Rapier state untouched.
+  const clubYaw = Math.atan2(dirX, dirZ);
+  const clubBack = 0.46;
+  const clubX = base[0] - dirX * clubBack;
+  const clubZ = base[2] - dirZ * clubBack;
+  const clubVisible = aiming;
+  for (const handle of [shotClubShaftHandle, shotClubHeadHandle, shotClubGripHandle]) {
+    handle?.setVisible(clubVisible);
+  }
+  if (clubVisible) {
+    shotClubShaftHandle?.setPosition(clubX, 0.18, clubZ);
+    shotClubShaftHandle?.setRotation(0, clubYaw, 0);
+    shotClubShaftHandle?.setScale([0.042, 0.042, 0.72 + charge * 0.06]);
+    const headX = base[0] - dirX * 0.12;
+    const headZ = base[2] - dirZ * 0.12;
+    shotClubHeadHandle?.setPosition(headX, 0.105, headZ);
+    shotClubHeadHandle?.setRotation(0, clubYaw, 0);
+    shotClubHeadHandle?.setScale([0.22 + charge * 0.03, 0.075, 0.13]);
+    const gripX = base[0] - dirX * 0.82;
+    const gripZ = base[2] - dirZ * 0.82;
+    shotClubGripHandle?.setPosition(gripX, 0.22, gripZ);
+    shotClubGripHandle?.setScale(0.09 + charge * 0.015);
+  }
   for (let i = 0; i < strikeRingHandles.length; i += 1) {
     const ring = strikeRingHandles[i]!;
     ring.setVisible(aiming);
@@ -1209,10 +1273,13 @@ function syncAim(): void {
     const chevron = strikeChevronHandles[i]!;
     chevron.setVisible(aiming);
     if (!aiming) continue;
-    const reach = 0.62 + i * 0.34;
+    // The chevrons sit above the dotted guide as the immediate "strike here"
+    // affordance.  Their wider footprint survives the wide review lens while
+    // the launch vector and charge remain sourced from the real controller.
+    const reach = 0.68 + i * 0.4;
     chevron.setPosition(base[0] + dirX * reach, 0.075, base[2] + dirZ * reach);
     chevron.setRotation(0, Math.atan2(dirX, dirZ), Math.PI / 4);
-    chevron.setScale([0.2 + charge * 0.08, 0.035, 0.2 + charge * 0.08]);
+    chevron.setScale([0.25 + charge * 0.12, 0.045, 0.25 + charge * 0.12]);
   }
   for (let i = 0; i < AIM_NODE_COUNT; i += 1) {
     const handle = aimHandles[i]!;
@@ -1221,9 +1288,10 @@ function syncAim(): void {
       continue;
     }
     handle.setVisible(true);
-    const reach = 0.5 + i * 0.53;
+    const reach = 0.52 + i * 0.55;
     handle.setPosition(base[0] + dirX * reach, 0.04, base[2] + dirZ * reach);
     handle.setRotation(0, Math.atan2(dirX, dirZ), 0);
+    handle.setScale([0.12 + (i / (AIM_NODE_COUNT - 1)) * 0.13, 0.035, 0.23]);
   }
 }
 

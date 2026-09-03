@@ -1,6 +1,6 @@
 {
   "schema": "aura3d.deep-recovery.performance/1.0",
-  "generatedAt": "2026-09-02T08:07:40.631Z",
+  "generatedAt": "2026-09-03T02:55:32.765Z",
   "producer": "apps/showcase-deep-recovery/scripts/write-performance-report.ts",
   "producerSourceSha256": "e209be0cfd04b530e8b606b40e958f80ea38e1ef30c013184e847b8be8f37d44",
   "routeSourceFiles": [
@@ -14,7 +14,7 @@
     "apps/showcase-deep-recovery/src/styles.css",
     "apps/showcase-deep-recovery/src/sub.ts"
   ],
-  "routeSourceSha256": "9968fd58b165f75bfb104109ebb0f4590fa0d9cd9af9f9f32080edab889b5f31",
+  "routeSourceSha256": "776deec2ff8b68078a7840dd7bd649881907c79b092603fe149d4bdd7e6687af",
   "scope": "Route-local authored submarine/tether/sonar CPU sampling plus browser-observed root createAuraApp draw calls; no GPU frame-time, fluid-simulation, reusable submarine-kit, physics-engine, or renderer-parity claim.",
   "samples": 20000,
   "fixedStepSeconds": 0.016666666666666666,
@@ -23,9 +23,9 @@
     "drawCalls": 240
   },
   "observed": {
-    "routeLogicCpuP95Ms": 0.003,
+    "routeLogicCpuP95Ms": 0.004,
     "deterministicStateHash": "ebc8fe50",
-    "drawCalls": 236,
+    "drawCalls": 235,
     "renderSize": [
       1280,
       800

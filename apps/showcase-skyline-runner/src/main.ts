@@ -139,6 +139,15 @@ const level = createSkylineLevel();
  */
 const WORLD_PLANE_DEPTH = -0.46;
 const GAMEPLAY_ACTOR_DEPTH = 0.42;
+// The certified ledge cards are front-facing XY planes whose safe-rendered
+// origin is their lowest model bound. Their authored snow lip sits above the
+// origin, so this fitted-height offset puts that lip on the extracted surface
+// instead of lifting the card through the runner's feet. Keep this presentation
+// alignment separate from the platformer collision transform.
+const SKYLINE_LEDGE_SURFACE_ALIGNMENT = 0.78;
+// Keep ledge cards behind the live typed runner without changing the gameplay
+// actor depth used by the scene binding or contact evidence.
+const SKYLINE_LEDGE_PRESENTATION_DEPTH = GAMEPLAY_ACTOR_DEPTH - 0.26;
 
 const platformerScene = game.platformerSceneBinding({
   surfaceMap: playableSurfaceMap,
@@ -501,11 +510,16 @@ const skylineReviewLedgeNodes = platforms
           castShadow: false,
           receiveShadow: false
         })
-          // Keep the certified ledge immediately behind the live actor. Pulling
-          // it forward by six centimetres prevents the high-detail tree line
-          // from cutting through its icicle silhouette while retaining the
-          // exact collision-derived X/Y placement.
-          .position(rect.center[0], surfaceTop - renderedHeight * 0.49, GAMEPLAY_ACTOR_DEPTH - 0.1)
+          // Keep the certified ledge immediately behind the live actor. The
+          // card's safe-rendered origin is its minimum-Y bound; aligning the
+          // fitted snow lip to the extracted surface keeps the runner's full
+          // typed feet readable while retaining the exact collision-derived
+          // X/Y placement.
+          .position(
+            rect.center[0],
+            surfaceTop - renderedHeight * SKYLINE_LEDGE_SURFACE_ALIGNMENT,
+            SKYLINE_LEDGE_PRESENTATION_DEPTH
+          )
           .runtime(game.runtimeNode(`skyline-certified-ice-ledge-${index + 1}`, {
             tags: ["typed-environment", "platform-presentation", "certified-surface-aligned", "non-colliding"]
           }));

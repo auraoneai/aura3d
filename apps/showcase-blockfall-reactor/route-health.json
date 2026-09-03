@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-08-30T02:18:00.678Z",
+  "generatedAt": "2026-09-03T00:22:49.830Z",
   "appId": "showcase-blockfall-reactor",
   "route": "/apps/showcase-blockfall-reactor/",
   "classification": "prototype-blocked",
@@ -27,7 +27,7 @@
     }
   ],
   "primitiveStatus": {
-    "sourceOccurrences": 37,
+    "sourceOccurrences": 42,
     "primitiveBudget": 40,
     "role": "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
     "status": "gameplay-geometry-with-typed-primary-cabinet"
@@ -111,7 +111,7 @@
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
     "sourceReview": "apps/showcase-blockfall-reactor/src/main.ts",
-    "sourceSha256": "5643de4c3e93c6c5106b0a6362afc95096423848bfd21d85864a8239884fe9a9",
+    "sourceSha256": "074c77d35cd6e711b50d87a19487f6d58bce9d0173c6498efea3f07b728325d1",
     "exactAcceptanceStates": {
       "report": "tests/reports/blockfall-reactor-fx/acceptance-states.json",
       "source": "mounted public game.fallingBlocks transitions",
@@ -121,34 +121,34 @@
       },
       "states": {
         "play": {
-          "checksum": "756ca627",
+          "checksum": "78dfc644",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-play.png",
-          "screenshotSha256": "c5db3106db0aac106d08f6e2d3c26ad8ff724b935e1516278f8ec529ddb88844"
+          "screenshotSha256": "c326b8fcbe4eb6e3d0ba922f233cb9c90e4375eb74a2f5c6c7f417493aa00ed0"
         },
         "single-clear": {
           "checksum": "76ab5f2d",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-single-clear.png",
-          "screenshotSha256": "d5600115f4dd1cb4d0164a190941ac422f33cf0bfb948c066107685958c4df36"
+          "screenshotSha256": "b58916168d5bb8bab1ad537a4bb3cce42f31e74ec6ba0bd21c4992e257044eee"
         },
         "quad": {
           "checksum": "b9fd6bed",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-quad.png",
-          "screenshotSha256": "adb4e10a54ebd5e728cd84cefffed1a71b81c34c653e4f997b04c2d0e4469969"
+          "screenshotSha256": "e1deb0490465daad8b52d857a61cee9d5c99af3a6b4e5bc2a6f7fec48bdce458"
         },
         "level-up": {
           "checksum": "391498a2",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-level-up.png",
-          "screenshotSha256": "ea7e2570f12c0859aea3145a925c4d12a442126a731b65313b01c78338bd1999"
+          "screenshotSha256": "1b4bb514c04c27cdf40ca4e1ada48f7f38a9df44ba9d74397ad253f723858fce"
         },
         "danger": {
           "checksum": "d9b9746f",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-danger.png",
-          "screenshotSha256": "b28523f03126aea7ef4f2c8c4e19be8e9560cddc963b11c34231e17de97948d2"
+          "screenshotSha256": "4d9b52ce91a0c7662f72ce696aedff35e8a612720e02dfc675024db4c66c7542"
         },
         "game-over": {
           "checksum": "dd2a74fc",
           "screenshot": "tests/reports/blockfall-reactor-fx/acceptance-game-over.png",
-          "screenshotSha256": "028a870e4f7d43f7686c0d5664113ddc706fd7bc4a3db29d750ca6eb398675d4"
+          "screenshotSha256": "62d735d6374468c12a1d4a7f8de9cb29f7dc6fecc6c2e5786f3d9cc3cb1b92dd"
         }
       }
     },

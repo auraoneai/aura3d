@@ -20,6 +20,7 @@ const assetsPrelude = `const assets = {
   showcaseKenneyOobiPlatformerHero: { id: "showcaseKenneyOobiPlatformerHero" },
   showcaseKenneyRaceCarRed: { id: "showcaseKenneyRaceCarRed" },
   showcaseKenneyVerdantPlatformerWorld: { id: "showcaseKenneyVerdantPlatformerWorld" },
+  skylineArcticRunnerHero: { id: "skylineArcticRunnerHero" },
   showcaseOrangeIndustrialRobot: { id: "showcaseOrangeIndustrialRobot" },
   showcaseParticleCore: { id: "showcaseParticleCore" },
   showcasePlatformerWorldLevel: { id: "showcasePlatformerWorldLevel" },

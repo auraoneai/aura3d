@@ -4,6 +4,7 @@ import { EYE_HEIGHT, type FpsRunState } from "./state";
 interface MutableNode {
   setPosition(x: number, y: number, z: number): unknown;
   setRotation(x: number, y: number, z: number): unknown;
+  setScale(scale: number | readonly [number, number, number]): unknown;
   setVisible(visible: boolean): unknown;
 }
 
@@ -178,12 +179,14 @@ export function updateEnemies(
     const id = "enemy-" + enemy.id;
     const body = physics.bodies.get(id);
     const node = nodes.get(id);
+    const collar = nodes.get(`${id}-threat-collar`);
 
     // Death crumple: the capsule is already gone, the mesh gets weight.
     if (state.killed.includes(id)) {
       const remaining = dyingClock.get(id);
       if (remaining === undefined || remaining <= 0) {
         node?.setVisible(false);
+        collar?.setVisible(false);
         if (body) physics.removeBody(id);
         continue;
       }
@@ -194,6 +197,16 @@ export function updateEnemies(
       node?.setVisible(true);
       node?.setRotation(-1.35 * t, yaw, 0.25 * t);
       node?.setPosition(at[0], ENEMY_VISUAL_Y - 0.5 * t, at[2]);
+      // Let the collar collapse with the typed model during the authored
+      // crumple window, then hide with it. This preserves a visible cause /
+      // reaction without moving or mutating the removed physics capsule.
+      collar?.setVisible(true);
+      collar?.setPosition(at[0], 1.2 - 0.48 * t, at[2] - 0.24);
+      collar?.setRotation(0, yaw, 0.25 * t);
+      const deathScale = Math.max(0.08, 1 - t);
+      collar?.setScale(enemy.asset === "neonContainmentWardenB"
+        ? [0.66 * deathScale, 0.42 * deathScale, 0.022 * deathScale]
+        : [0.5 * deathScale, 0.68 * deathScale, 0.022 * deathScale]);
       continue;
     }
 
@@ -210,6 +223,11 @@ export function updateEnemies(
       node?.setPosition(enemy.x, ENEMY_VISUAL_Y, enemy.z);
       node?.setRotation(0, yaw, 0);
       node?.setVisible(true);
+      collar?.setPosition(enemy.x, 1.2, enemy.z - 0.24);
+      collar?.setRotation(0, yaw, 0);
+      // The first frame is a safe airlock read; the collar only appears when
+      // the real alarm transitions the corridor into an active combat state.
+      collar?.setVisible(false);
       continue;
     }
 
@@ -275,5 +293,16 @@ export function updateEnemies(
       z + backZ - Math.cos(yaw) * 0.12 * telegraphLean
     );
     node?.setVisible(true);
+
+    // The collar is a compact hostile silhouette cue, not gameplay truth. Its
+    // small pulse expands only during the real telegraph/flinch clocks, making
+    // the attack read in a still while preserving the typed model's identity.
+    const collarPulse = 1 + telegraphLean * 0.16 + (flinch > 0 ? 0.1 : 0);
+    collar?.setPosition(x, 1.2 + 0.04 * telegraphLean, z - 0.24);
+    collar?.setRotation(0, yaw, 0.06 * flinchK);
+    collar?.setVisible(true);
+    collar?.setScale(enemy.asset === "neonContainmentWardenB"
+      ? [0.66 * collarPulse, 0.42 * collarPulse, 0.022 * collarPulse]
+      : [0.5 * collarPulse, 0.68 * collarPulse, 0.022 * collarPulse]);
   }
 }

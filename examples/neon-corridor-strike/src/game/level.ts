@@ -168,7 +168,11 @@ export function buildScene() {
     .addMany(ENEMIES.map((enemy) => {
       const asset = enemy.asset === "neonContainmentWardenA" ? assets.neonContainmentWardenA : assets.neonContainmentWardenB;
       const placed = groundedRenderedAssetPlacement(asset, {
-        targetHeight: enemy.asset === "neonContainmentWardenA" ? 1.72 : 1.92,
+        // Give the typed combatants a little more screen presence at the real
+        // review distance. Their physics capsules stay unchanged; this is a
+        // visual-scale correction so armour/wing details survive the full
+        // 1280x800 gameplay frame instead of collapsing into orange dots.
+        targetHeight: enemy.asset === "neonContainmentWardenA" ? 2.08 : 2.2,
         floorY: ENEMY_VISUAL_Y,
         x: enemy.x,
         z: enemy.z
@@ -177,6 +181,33 @@ export function buildScene() {
         .position(placed.position[0], placed.position[1], placed.position[2])
         .scale(placed.scale)
         .runtime(game.runtimeNode(`enemy-${enemy.id}`, { tags: ["enemy"] }));
+    }))
+    // A renderer-owned hostile collar keeps each typed warden legible against
+    // the dark bay at gameplay scale. It is deliberately a restrained vertical
+    // ring behind the model (not a DOM reticle or a replacement body), and the
+    // enemy runtime updates its pose/scale for patrol, telegraph, flinch, and
+    // death. The ring's red/amber language is the same alarm signal as the
+    // imported threat plates, so the shot frame communicates target ownership
+    // without elongating the tracer or adding a collectible-like orb chain.
+    .addMany(ENEMIES.map((enemy) => {
+      const isManta = enemy.asset === "neonContainmentWardenB";
+      return primitives.torus({
+        name: `hostile threat collar ${enemy.id}`,
+        material: material.glowingEmissive({
+          color: isManta ? "#401625" : "#4a2418",
+          emissive: isManta ? "#c52245" : "#bd4b24",
+          emissiveIntensity: 0.34
+        }),
+        castShadow: false,
+        receiveShadow: false
+      })
+        // Park below the collision floor until the alarm transition exposes it;
+        // AuraPrimitiveOptions has no static visibility flag on the public API.
+        .position(enemy.x, -8, enemy.z - 0.24)
+        // Aura torus geometry lies in local XY (normal +Z), so it is already a
+        // vertical, camera-facing collar. Keep Z as the thin tube axis.
+        .scale(isManta ? [0.66, 0.42, 0.022] : [0.5, 0.68, 0.022])
+        .runtime(game.runtimeNode(`enemy-${enemy.id}-threat-collar`, { tags: ["enemy", "telegraph", "fx"] }));
     }))
     .addMany(PICKUPS.map((pickup) => {
       const asset = pickup.kind === "ammo" ? assets.ammoCrate : assets.medkit;

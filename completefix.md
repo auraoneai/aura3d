@@ -1,5 +1,219 @@
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
+## TAKEOVER / HANDOFF — 2026-09-03T03:14:50Z
+
+**Work stopped at the user's request; this project is not complete.** This is a
+handoff receipt for the next agent, not a pass certificate. Route source,
+generated evidence, human/comparator decisions, release-candidate reviews, and
+the remaining visual gauntlet are called out below so the next agent can resume
+from evidence instead of assuming that a green automated check means a game is
+finished.
+
+### Stop state and ownership
+
+- All active child lanes were interrupted when the user asked for a handoff:
+  deep_recovery_scene_pass, gallery_exact_capture_audit,
+  mech_hangar_presentation_pass, pulse_combat_readability_pass, and
+  siege_golf_visual_pass. There is no active parallel producer now.
+- The previous execution deliberately used bounded parallel agents with
+  directory ownership. Continue that operating model when work resumes: assign
+  one agent per independent game, make each agent state the files it owns,
+  require source/test/evidence receipts, and reconcile conflicts serially.
+  Never have two agents edit the same route or generated report at once.
+- Do not touch Talent, VAP, Kubernetes, database, reconciliation Jobs, or
+  admission policies. That lane belongs to another goal thread and is
+  explicitly read-only from this project handoff.
+- The strict visual gauntlet is still unresolved. The user's latest ledger was
+  ours: 2 (Pulse Tunnel, Rooftop Buckets), reference: 5 (Neon Swarm,
+  Courier Rush, Bank Shot, Patrol Wing, Deep Recovery), and insufficient
+  evidence: 11. Some later targeted critics changed individual labels (for
+  example Gallery was reported as ours), but those changes do not erase the
+  need for a fresh, label-hidden, comparable review of the complete set.
+
+### Git and release starting point
+
+At handoff, this worktree was on local main at
+23f35e58ec3f66a8eac9b5b04afeb9a5dc00cfe8, five commits behind origin/main.
+The remote origin/main tip is aa0d79599235ae50b0b2ce3f879482820725475d, the
+Aura3D 2.0.4 release line. Local package manifests still report 2.0.3 until
+the branch is carefully integrated with that remote tip. Verify versions after
+integration; do not infer them from this receipt.
+
+The extra clean worktree is
+/Users/gurbakshchahal/platforms/aura3d-release-2.0.4, on the publication
+receipts branch. Remove that worktree only after the final push and a clean
+check in the primary worktree. The user has now also requested that the local
+release branches be deleted after their contents are merged into main; inspect
+remote refs before deleting them and preserve only origin/main unless a remote
+release ref is still demonstrably needed.
+
+The safe starting sequence for the next agent is:
+
+    git fetch origin
+    git status --short --branch
+    node -e "console.log(require('./package.json').version, require('./packages/engine/package.json').version)"
+    git log --oneline --decorate -8
+
+Then integrate the audited local checkpoint onto origin/main with a
+non-destructive fast-forward/rebase/merge. Preserve both the route fixes and
+the v2.0.4 Meshy release files; do not reset hard, discard dirty files, or
+force-push.
+
+### Secret and Meshy handoff
+
+The user supplied a Meshy key and it has been saved locally at
+/Users/gurbakshchahal/platforms/aura3d/.env as MESHY_API_KEY. The file is
+ignored by .gitignore, has mode 600, and its value must never be printed,
+committed, placed in a prompt/task record, or sent to a browser/client bundle.
+The key is intentionally not represented anywhere in this document.
+
+The user also supplied the current package reference:
+https://www.npmjs.com/package/@aura3d/engine
+
+The canonical origin/main release contains Aura3D @aura3d/engine 2.0.4 and the
+Meshy pipeline. The local checkout was still 2.0.3 at the moment this receipt
+was written, so the next agent must verify the post-integration manifest
+versions. The official CLI baseline documented by this repository is
+@meshy-ai/cli@0.2.0; meshy was not on PATH in this session, so check meshy
+--version and meshy auth status rather than claiming it is installed. Read
+docs/meshy-cli.md and MeshyPRD.md before using it.
+
+For a custom 3D asset, the required path is:
+
+1. Keep MESHY_API_KEY environment-only. Never pass it as a CLI argument, prompt
+   text, URL, log field, test fixture, browser variable, or task metadata.
+2. Run meshy make "<asset intent>" --dry-run first. Require explicit spend
+   authorization and a finite --max-credits before a live generation.
+3. Put the run under ignored artifacts/meshy/<run>/. Immediately retain the
+   task metadata, downloaded artifact, rights/provenance record, and thumbnail.
+4. Admit the result through the normal Aura3D CLI add/hash/inspect/typed-asset
+   flow. The game must consume a generated assets.<typedId> entry; it must
+   never consume a Meshy provider URL, task ID, or ad-hoc .glb path.
+5. Rerun asset validation, route health, screenshot/visual evidence, parity
+   review, and release checks. A Meshy output is not production-ready merely
+   because the generation succeeded.
+
+Meshy is an option for a missing custom 3D subject, not permission to bypass
+the existing asset, licensing, safe-API, visual, or human-review gates.
+
+### What was fixed, what was interrupted, and what still needs proof
+
+The following table is the latest agent-reported state. Hashes are evidence
+bindings, not visual-quality approvals. A receipt marked targeted or partial
+must be regenerated by the next agent with the canonical full producer after
+the v2.0.4 integration.
+
+| Route | Source / files touched | Latest evidence (agent-reported) | Tests / machine state | Remaining blocker |
+| --- | --- | --- | --- | --- |
+| Turbo Drift Circuit | apps/showcase-turbo-drift-circuit/src/main.ts; route-derived verge-bank mesh and composition suppression for hero feedback | source sha256-6779c7bd8af51cb74e4dc41498850aee5fc4814beb03d3b880a61e679ce9740b; normal PNG sha256-0f6bf1931387e7c636cc542b73e6ffc325cd05b12da8f4067c0f904b7b286da8; suppressed PNG sha256-a7aa490a7ae6b53a0d896ea201cb141a713b8cdb3d40a513c7704fdf2221b44c; normal foreground 449x420, unclipped, readability 100 | TSC, 64 Turbo Vitest tests, opponent distinction Playwright pass; visual evidence shows full red car on asphalt and readable rival | turbo-vehicle-grounding still reports first-stint everUngrounded=true (front-wheel gap up to .359) and collision review timeout; do not weaken physics thresholds. Art of Rally material/lighting/scenery remains richer (reference). |
+| Gravity Post | apps/showcase-gravity-post/src/main.ts; typed courier avatar plus typed parcel handoff attached to lead-hand offset and suppression/lost gates | source sha256-1536ecd3de12d4a8b0e213aada666b4a3856281493ac31683ed5a4e401ef1cc8; PNG sha256-7da3194c5ffa46c438e47dc8b01b6de4cb7046982a5e9c8685e4df79d2956519; JSON sha256-a2931920b67c3f40b1ba9447062187d76693a8ef3b4819e6441aa4731eee55ca; suppressed sha256-f2dee2f07fd80b52709bdb1a724fd5d5178be6d55d180c0a595a4ce5f524ef4e | 19/19 units, playable+scene 8/8, performance, route-health and build pass; readability 100, 505 draws, unclipped | Human/anonymous Parcel Corps comparison remains open; courier identity, motion/contact and freight-city material depth still trail the reference. |
+| Pulse Tunnel | apps/showcase-pulse-tunnel/src/main.ts; finale review projectiles use deterministic X/Z yaw, bright cores and rose sentry return fire | playable-final PNG sha256-9c59b26922b287ef9ca8274dfb30242887bf3aac7fd16a7445044b88ff49cb78; load sha256-56c2efe77dd93954179a388a99b8b61d476618ea3930be81ea17290929f52a71; mobile sha256-4ae90d91348e1fea2ca3575f24a9bfe2521adcc1455cf2066b60cd1142f60900; drop sha256-07291ca2e093d710acfb710db1948c2e2df4604635848037858afbf8988d9975 | TSC, 23/23 clock units, build, playable 3/3, sync 1/1, performance and route-health pass; 453 draws; fresh finale reads cyan/rose combat | Browser-profile sync remains NO-GO-BROWSER-PROFILE; valid evidence is the playable finale, not a clipped/non-required route-primary probe. Furi/human parity remains pending. |
+| Gallery Shift | apps/showcase-gallery-shift/src/main.ts, src/thief.ts, README and route-health writer; replaced childlike/oversized showcaseWalkAnimatedGirl with grounded adult assets.showcaseRunnerGirl, normalized guards, narrowed suppression to museum world | targeted audit JSON generated 2026-09-03T02:52:56.778Z; PNG sha256-47a553981cb176072b6c055475343f2d72e6c499d0e29be731236c79e6c37584; suppressed sha256-9fe94a6be0dd615a9bbd8c3812ac85ef16429377ba2b2de6a58bb47ed4837691; reported readability 100, foreground 1312x680, unclipped | TSC, 37/37 vision/patrol units, build pass | Normal and suppressed pixels were not re-viewed after the interrupted audit. Rerun and inspect; Monaco comparison/human release review remains required. |
+| Rooftop Buckets | apps/showcase-rooftop-buckets/src/environment.ts, src/main.ts; hid typed sponsor-banner occluder, added runtime-bound rim/net readability torus, preserved typed court, fixed shooter yaw from launch vector | Normal/suppressed captures after the fix visibly show white backboard, orange circular rim and hanging white net. Older report bindings include source sha256-c72742f016c6623ea9c39fbe75099994bc02a2cc5122409ab224f0f257e67c83, PNG sha256-e5e880c317424a004a8ddd6e7850b986ccbe434b8f9a3fb8685823a10ffd4eb0, suppressed sha256-8508c1ed2cf6060a053b9c3d5c7961bf8c6fa282a43a1cc65c9f42ccbb2349e5 | Shot/playable/route checks mostly pass; normal image shows actual rim, net, defender, trajectory and scoreboard | Rerun exact route-primary after v2.0.4 merge because the cited report may predate the final occluder fix. Human Dunk Lords review still says reference; arena/athlete/light/effect polish remains. |
+| Skyline Runner | apps/showcase-skyline-runner/src/main.ts; corrected typed ice-ledge presentation alignment/depth without changing gameplay contact | source sha256-2877f481e542b455d5985f3d334a438989569a8ef367d3d66f28df0d46e87f5e; PNG sha256-2d4099ece47e214da1c88375a70f1853e951151997b11a46fbc6283ee3e55113; suppressed sha256-144340b1aa02c391e1489e28bc2ebc96640b543427576b4b4ed91ceac3084a7f; bounds 147x154, readability 55, unclipped | TSC, 25 Skyline units, camera 2/2 and gameplay proof 1/1 pass; normal image shows full torso, legs and shoes on first ledge | Continue aesthetic review; keep gameplay/render separation. Recheck candidate asset quality/orientation/scale warnings and do not promote the old low-poly comparator result without a fresh human review. |
+| Bank Shot | apps/showcase-bank-shot/src/environment.ts, src/main.ts, README; close table camera, larger typed balls, contact shadows and six renderer-owned pocket catch-lights with suppression | source sha256-ff7600567f5cefa78913aa9c03b14ffdb4d70495eefa5a551888faf7f30bdaf6; PNG sha256-1d8ae48e26559d5af1dc2333253d2a11e59acdcc13849a073ee898fa05a10461; suppressed sha256-788925d7ab4c65dd57989c0aa18cb5a1f7892a2ca94d0c1167ffed33a4730885 | TSC/build, 27/27 units, visual 1/1 and playable 2/2 pass; foreground 1125x553, readability 100, unclipped | Pure Pool human comparison remains pending/prototype-blocked; verify no orphan catch-lights and rerun the full producer. |
+| Blockfall Reactor | apps/showcase-blockfall-reactor/src/board-view.ts, src/main.ts, src/reactor-scene.ts; corrected native XY rings, armored bezel/rails/lamps/deck and LIVE marquee mask | PNG sha256-a78e577996e8f43f2bfba9c7d7955e2fb5c9957431c74b4bbf3902cc76043c46; JSON sha256-ab846c1233fd85fee0e462a3c85a9460caf113b4f35156c8d429d719934c910c; source sha256-dbd9617eccca7736c56118e01b3ae0a381da93407c7a492342d7176c733d9455; suppressed sha256-5956730941209911925fe2ba4caebfa5e745c5796bc3ba57ced4aba9b0c01738 | 146 draws, readability 100, unclipped; 5 focused files/28 tests, audio 8/8, gameplay and route-primary 1/1, TSC/build pass | Human visual review remains prototype-blocked; retain honest comparator status. |
+| Neon Swarm | apps/showcase-neon-swarm/src/environment.ts, src/main.ts, src/swarm.ts; typed courier carbine/core/muzzle aligned to resolveAim, renderer-owned muzzle/radius/pulse, review-only grunt scale | source sha256-55b1ac2442b30409b19d22354c2a3e8e147e7615efc20d6587f7161f063f9628; campaign hash fnv1a32-fc06659d | 16/16 units, playable/instancing 6/6, TSC, perf and release checks pass; 50 draws, 322 instanced submissions, sim p95 .8227ms / max 3.0075ms; route-health primitive 36/40 | Latest gauntlet still lists this as reference against Neon White. Keep machine pass separate from the required independent visual decision. |
+| Neon Corridor Strike | examples/neon-corridor-strike/src/game/enemies.ts, level.ts, main.ts, KNOWN-LIMITS.md; renderer-owned red/amber threat collars tied to telegraph/flinch/death | source hashes: level 0cb121dd0014ac6a22682454b1fc85a4211e97bc8a5ee46133db63356d8fd59b, enemies 07a83e1c8df2dbe0cdaf2a3f671804ae8281742f7b5594d5b192b3f0a705004f, main f7a4880a44af854c862f03f515df1b4073d69df0af1ef9c89c21d3def293bf76, limits b617e74b66e125eb0e45fe23c1178e1d23b57c181fe30eb3555cf47b3debc1bf | Shot PNG sha256-39f7e0fa651f28a6e25de06ea13342403941849ec1e81880651a2592eacf783; TSC, 11/11 corridor suites, shot visual and route-health 1/1 pass | Neon White comparison remains reference; richer architecture/material/atmosphere and human review are still open. |
+| Aurora Lander | apps/showcase-aurora-lander/src/main.ts; route-local follow-camera offset and FOV framing only | source sha256-4fed4c44fe867bb48729a2f3712cb5e316d3aa52f70c5461c2d2d372026bcae4; PNG sha256-5e1f572b4408efd4a4315052b20a770fdf7ea59462f760105b8cdaf54920fd9b; suppressed sha256-73732a6ff5263d28dc33c46ad0805dd6877fb7b63db3d615f9031125ff8d0cb7 | 25/25 focused units, 8/8 campaign/playable/terrain, performance, route-health and build pass; bounds 134x145, readability 55, unclipped | Human Infinifactory review pending; rerun full producer because reports can be overwritten by targeted producers. |
+| Patrol Wing | apps/showcase-patrol-wing/src/main.ts; rear chase camera and smaller/midground drones while retaining typed foreground plane | source sha256-859a4def3063b50a4b7bedb972961bda5bf1caa173c9ce3da089480d4ba97742; PNG sha256-697fab73d2c62783db080c86b73f7f7910442175d66fcb964779e7e01e652678; suppressed sha256-3fe806fe492978a4f7103c5f35610ac60ce81399dde96c09b328a7b9849b066b | 23/23 units, playable 1/1, TSC/build pass; readability 75, foreground 568x361, unclipped | Latest gauntlet lists reference versus Sky Rogue; continue identity/formation/airspace polish and human review. |
+| Deep Recovery | apps/showcase-deep-recovery/src/main.ts, deploy-report.json, performance-report.json were modified by an interrupted lane | Report before interruption: generated 2026-09-03T02:45:54.777Z, source sha256-5ef5b7312a094e476ad26f4768062532b6d52c54fe977103b6d51918e470f44e, PNG sha256-a0042aaf12fe15432d80977b042934556e4c0a820215f3f1a386035ca336bf51, suppressed sha256-ef16cf8227f1701fe9a24d9ebeee7a6f9664fe1c8c2cc23e46f2950fb135d36a; readability 67, foreground 221x204 | Partial source/report work only; no final child receipt | Inspect the diff and rerun camera/scene, route-primary, gameplay and suppression evidence. Latest gauntlet lists reference versus Subnautica; comparator validity/human review is unresolved. |
+| Siege Golf | apps/showcase-siege-golf/src/main.ts, styles, README and route-health writer; interrupted lane added renderer-owned shot club aligned to live ball/shot angle | source sha256-98724998b27fdfc1cee9a7dc6121adf975382ef5b9bca88924572b6dac0fb7de; PNG sha256-14c611d8502473bce56169ef7702494c3e91931b9d07770342d36fed75a17aea; suppressed sha256-3a52617f9b7e3d53369d2bad1d2335f750c66c8eb65e9cf3b4f157e51e61b4e5; report sha256-205365a90691a6dd52cf7fb0eb8838adf4ab9fd280b8f2f85ae7deafd7e81ded | pass true, foreground 202x107, readability 53, unclipped; tests/typecheck/build/route-health and playable+shot 5/5 pass | Last agent sent a final message but was interrupted before serial reconciliation. Human What the Golf? comparison remains pending/prototype-blocked. |
+| Mech Hangar | apps/showcase-mech-hangar/src/hangar.ts; prior typed robot hero/socket work, latest lane attempted to freeze turntable auto-rotation | Prior report: source sha256-8571b111af7827b4deea88a76d69f803c61e0f94786c286699fe3b7daa9260ab, PNG sha256-787ab5fa52832d277e84c9cb9166a2d44e40f68aab00c24c526335cb8f74a6fe, suppressed sha256-28d784ccac8a89c88387bda4bd5116ab62c23d6ac549a92a6d43b44b542f6ae8; pass true, bounds 317x370, readability 100 | Prior focused modular family 16/16 and 25/25 checks were green; current auto-rotation fix is unverified because the lane was interrupted | Inspect hangar.ts, freeze only automatic rotation (preserve pointer orbit), rerun deterministic captures. Existing comparator is an invalid 640x360 racing frame; no parity claim. |
+| Courier Rush | Route files/reports are machine green in the broader producer; prior independent label was reported as ours before the user's latest ledger | route-primary report was pass true with reported readability 62 (source/PNG bindings are in generated report) | Playable and route-health evidence exists; rerun after branch integration | Latest user ledger calls this reference; human comparator review and exact fresh label-hidden evidence are still required. |
+| Data Galaxy | Existing route-primary machine evidence is pass true; reported readability 86 | Generated source/PNG bindings are in tests/reports/showcase-route-primary-probes | Accepted/independent review was reported, but release promotion still requires current evidence | Re-run full producer and retain a valid anonymous comparator decision; do not broaden root API claims. |
+| Vault Breakers | Existing route-primary evidence pass true; prior critic reported ours/accepted exact | Reported readability 68; generated bindings are in the route-primary report directory | Machine route/playable evidence exists | Human review remains pending; preserve prototype/publicShowcase labels until approved. |
+
+The other route-primary IDs are not substitutes for the 18-game visual
+gauntlet. The current report directory also contains release-candidate/demo
+routes such as showcase-cinematic-architecture, showcase-digital-twin-ops,
+showcase-material-asset-inspector, showcase-product-configurator,
+showcase-smart-city-control, and showcase-webgpu-particle-lab. Treat their
+generated reports as machine evidence only and rerun the canonical producer
+after integration.
+
+### Release-candidate holds outside the game ledger
+
+These four named rows still require an independent human visual decision:
+
+- showcase-cinematic-architecture
+- showcase-digital-twin-ops
+- showcase-product-configurator
+- showcase-smart-city-control
+
+Do not convert prototype-blocked, insufficient evidence, or a machine pass true
+into a release approval. Mech Hangar, Deep Recovery, and Aurora
+Clash-style comparisons also need a valid comparable reference before parity
+can be discussed. The Pulse browser-profile sync hold and Turbo grounding hold
+remain technical blockers even when screenshots look good.
+
+### Required next-agent execution order
+
+1. Fetch and integrate origin/main v2.0.4 while preserving the audited local
+   checkpoint. Inspect every conflict, especially package versions, Meshy
+   pipeline files, asset manifests, showcase classification, and generated
+   reports.
+2. Read llms.txt and docs/agents/claims-and-boundaries.md. Confirm that all
+   public game code still uses the safe Aura3D API, typed assets, and renderer
+   ownership rules. Keep generated aura.assets.json and src/aura-assets.ts
+   provenance intact.
+3. Inspect the interrupted diffs first: Deep Recovery, Mech Hangar, Gallery
+   Shift, and Siege Golf. Do not treat an interrupted child message as a
+   completed review. Re-run the route-specific producer and visually inspect
+   both normal and subject-suppressed pixels.
+4. Run the full route-primary producer and freshness auditor from the canonical
+   tree. A targeted report can be useful during development but cannot replace
+   the complete 22-route binding.
+5. For every visual decision, provide anonymous Candidate A/B pixels to an
+   independent critic, record comparator dimensions/validity, and keep
+   reference, ours, or insufficient evidence honest. A screenshot is evidence
+   of what is visible, not proof of parity.
+6. Address remaining visual blockers in bounded parallel lanes. Prioritize
+   Turbo material/scenery/grounding, Gravity courier identity/contact, Pulse
+   craft/sentinel/world family and browser sync, the Gallery post-pass capture,
+   Rooftop exact rerun, and the partial Deep/Mech/Siege verification.
+7. Run focused tests first, then pnpm typecheck, pnpm build,
+   pnpm check:agent-docs, pnpm check:docs-codeblocks,
+   node tools/evidence-freshness/explain-staleness.mjs, the complete route
+   producer, and pnpm check:release. Expect named human holds until they are
+   actually approved.
+
+### Safe commit, push, merge, and branch cleanup
+
+The user's requested finalization is authorized, but it must be an audited
+checkpoint:
+
+1. Keep all child agents stopped. Confirm no Talent/VAP/Kubernetes/DB work is
+   running.
+2. Inspect git status --short, git diff --stat, and git diff --check. Stage the
+   audited tracked source/docs/report/test changes and this completefix.md.
+   Do not stage .env, .goal, .commandcode, .orchestrate, candidate asset trees,
+   debug/probe scripts, or ad-hoc generated files that have not passed the
+   named producer. The ignored Meshy key must never be in the commit.
+3. Commit the checkpoint on local main, fetch origin, then rebase or merge it
+   onto origin/main without force or destructive reset. Resolve conflicts by
+   preserving the v2.0.4 release and the audited route changes.
+4. Re-run at least the focused route checks and repository diff checks after
+   integration. Before pushing, verify that the root and engine manifests
+   report 2.0.4 and that git diff --check is clean.
+5. Push the resulting commit to origin main. Verify that local HEAD and
+   origin/main agree and record the commit hash in the next receipt.
+6. Confirm the primary worktree is clean with respect to tracked files. Then,
+   only because the user authorized it and the secondary worktree is clean,
+   run:
+
+       git worktree remove /Users/gurbakshchahal/platforms/aura3d-release-2.0.4
+
+   Verify git worktree list. Delete the local release/2.0.4 and
+   release/2.0.4-publication-receipts branches only after their commits are
+   reachable from main. If matching remote release refs are no longer needed,
+   delete those explicitly as well, then verify origin/main is the canonical
+   branch. Do not delete the ignored .env or silently delete candidate assets;
+   report any intentionally preserved untracked material.
+
+This handoff is complete as documentation only. The implementation/visual
+gauntlet, independent reviews, and release approval are **not** complete.
+
 ## Coordinator receipt — 2026-09-02T22:37Z — final evidence refresh, regression fixes, and Rooftop orientation correction
 
 This receipt is the current execution checkpoint. It is not a completion claim:

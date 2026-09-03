@@ -119,6 +119,12 @@ const arenaCyanRailMaterial = material.neon({ name: "championship cyan conduit",
 const arenaCoralRailMaterial = material.neon({ name: "championship coral conduit", color: "#e45884", emissive: "#ff89ad", emissiveIntensity: 0.82, roughness: 0.2 });
 const arenaDeepPanelMaterial = material.pbr({ name: "championship depth panel", color: "#081526", roughness: 0.38, metallic: 0.52 });
 const dropGuideMaterial = material.emissive({ name: "live drop trajectory guide", color: "#7ef7ff", emissive: "#7ef7ff", emissiveIntensity: 0.92, roughness: 0.24, opacity: 0.58 });
+// The well needs a physical bezel between the typed arena card and the live
+// falling-block projection.  These materials stay dark enough to preserve cell
+// contrast while giving the board a convincing instrument depth at review scale.
+const boardBezelMaterial = material.metal({ name: "reactor well armored bezel", color: "#15253a", roughness: 0.28, metallic: 0.78 });
+const boardBezelInsetMaterial = material.neon({ name: "reactor well bezel signal rails", color: "#48d9e5", emissive: "#48d9e5", emissiveIntensity: 0.82, roughness: 0.18 });
+const boardServiceMaterial = material.pbr({ name: "reactor lower service deck", color: "#0b182a", roughness: 0.36, metallic: 0.64 });
 
 /** Runtime id for the state-bound ghost-to-active trajectory guide. */
 export const DROP_GUIDE_NODE_ID = "blockfall-drop-trajectory-guide";
@@ -364,6 +370,59 @@ export function createArcadeRoomNodes(): AuraNodeInput[] {
 
 export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
+    // A layered metal bezel and lower service deck make the well read as the
+    // face of a working cabinet instead of a flat rectangle over the backdrop.
+    // All four rails sit outside the 10x20 cell projection and are static scene
+    // dressing; gameplay remains exclusively owned by game.fallingBlocks.
+    instances.box({
+      name: "reactor well armored bezel",
+      material: boardBezelMaterial,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: [
+        { position: [-1.76, BOARD_CENTER_Y, -0.105], scale: [0.16, 4.58, 0.18] },
+        { position: [1.76, BOARD_CENTER_Y, -0.105], scale: [0.16, 4.58, 0.18] },
+        { position: [0, BOARD_CENTER_Y + 2.25, -0.105], scale: [3.44, 0.16, 0.18] },
+        { position: [0, BOARD_CENTER_Y - 2.25, -0.105], scale: [3.44, 0.16, 0.18] }
+      ]
+    }),
+    instances.box({
+      name: "reactor well bezel signal rails",
+      material: boardBezelInsetMaterial,
+      instanceColors: ["#48d9e5", "#e279ff", "#ffe866", "#48d9e5"],
+      castShadow: false,
+      receiveShadow: false,
+      transforms: [
+        { position: [-1.66, BOARD_CENTER_Y, 0.005], scale: [0.028, 4.18, 0.035] },
+        { position: [1.66, BOARD_CENTER_Y, 0.005], scale: [0.028, 4.18, 0.035] },
+        { position: [0, BOARD_CENTER_Y + 2.12, 0.005], scale: [1.66, 0.028, 0.035] },
+        { position: [0, BOARD_CENTER_Y - 2.12, 0.005], scale: [1.66, 0.028, 0.035] }
+      ]
+    }),
+    instances.box({
+      name: "reactor lower service deck",
+      material: boardServiceMaterial,
+      castShadow: true,
+      receiveShadow: true,
+      transforms: [
+        { position: [0, -0.42, -0.16], scale: [3.2, 0.24, 0.34] },
+        { position: [0, -0.69, -0.33], scale: [2.72, 0.08, 0.24] }
+      ]
+    }),
+    instances.sphere({
+      name: "reactor bezel status lamps",
+      material: boardBezelInsetMaterial,
+      instanceColors: ["#48d9e5", "#e279ff", "#ffe866", "#48d9e5", "#e279ff", "#ffe866"],
+      castShadow: false,
+      receiveShadow: false,
+      transforms: Array.from({ length: 6 }, (_, index) => {
+        const y = BOARD_BOTTOM_Y + 0.38 + index * 0.72;
+        return [
+          { position: [-1.65, y, 0.06] as [number, number, number], scale: [0.045, 0.045, 0.045] as [number, number, number] },
+          { position: [1.65, y, 0.06] as [number, number, number], scale: [0.045, 0.045, 0.045] as [number, number, number] }
+        ];
+      }).flat()
+    }),
     // Depth order from back to front: recess shell, board backplate, grid,
     // locked blocks, ghost, then the active piece nearest the camera.
     primitives.box({ name: "arcade reactor screen recess", material: material.pbr({ color: "#020806", roughness: 0.8, metallic: 0.08 }) }).position(0, BOARD_CENTER_Y, -0.06).scale([3.34, 4.48, 0.08]),
@@ -423,12 +482,16 @@ export function createBoardShell(reviewCapture = false): AuraNodeInput[] {
     // no review-only geometry is used to stand in for the game.
     primitives.torus({ name: "active reactor drop reticle", material: activeFocusMaterial })
       .position(0, -50, 0.112)
-      .rotate(Math.PI / 2, 0, 0)
+      // The board is an XY-facing instrument.  Keeping the torus in its native
+      // XY plane makes the live focus read as a ring around the active piece;
+      // rotating it onto XZ collapses the ring to a near-invisible line from the
+      // review camera.
       .scale(HIDDEN_BLOCK_SCALE)
       .runtime(game.runtimeNode(ACTIVE_FOCUS_NODE_ID, { tags: ["blockfall", "active", "reticle", "renderer-owned"] })),
     primitives.torus({ name: "line clear reactor wave", material: clearWaveMaterial })
       .position(0, -50, 0.23)
-      .rotate(Math.PI / 2, 0, 0)
+      // Clear feedback shares the board's XY plane so its expanding ring traces
+      // the cleared row instead of becoming another edge-on bar.
       .scale(HIDDEN_BLOCK_SCALE)
       .runtime(game.runtimeNode(CLEAR_WAVE_NODE_ID, { tags: ["blockfall", "line-clear", "renderer-owned", "event-bound"] })),
     // The guide is hidden at boot and positioned by `syncGhostPiece` from the

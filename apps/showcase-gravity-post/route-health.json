@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-09-02T21:50:59.310Z",
+  "generatedAt": "2026-09-03T02:03:00.912Z",
   "appId": "showcase-gravity-post",
   "route": "/apps/showcase-gravity-post/",
   "classification": "prototype-blocked",
@@ -155,7 +155,7 @@
   },
   "performance": {
     "schema": "aura3d-gravity-post-performance/1.0",
-    "generatedAt": "2026-09-02T21:50:54.732Z",
+    "generatedAt": "2026-09-03T01:59:12.365Z",
     "scope": "Headless route-local fixed-step and bounded-prediction timing over exact integer-drag fixtures. GPU/frame-time parity is not claimed.",
     "budgets": {
       "fixedStepP95Ms": 1,
@@ -164,9 +164,9 @@
       "campaignCompleteDrawCalls": 600
     },
     "observed": {
-      "maxFixedStepP95Ms": 0.0035,
-      "maxPredictionP95Ms": 0.2054,
-      "campaignCompleteDrawCalls": 485
+      "maxFixedStepP95Ms": 0.0095,
+      "maxPredictionP95Ms": 0.3457,
+      "campaignCompleteDrawCalls": 499
     },
     "routes": [
       {
@@ -179,13 +179,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 389,
-          "p95": 0.0035,
-          "max": 0.2997
+          "p95": 0.0095,
+          "max": 0.5205
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.2054,
-          "max": 0.3134
+          "p95": 0.3457,
+          "max": 0.6783
         }
       },
       {
@@ -202,13 +202,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 872,
-          "p95": 0.001,
-          "max": 0.0769
+          "p95": 0.0017,
+          "max": 0.1688
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.1242,
-          "max": 0.1478
+          "p95": 0.2045,
+          "max": 0.2871
         }
       },
       {
@@ -227,13 +227,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 2088,
-          "p95": 0.001,
-          "max": 0.0644
+          "p95": 0.0018,
+          "max": 0.0943
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.0884,
-          "max": 0.1866
+          "p95": 0.1559,
+          "max": 0.4293
         }
       },
       {
@@ -246,13 +246,13 @@
         "assistPass": true,
         "fixedStepMs": {
           "samples": 406,
-          "p95": 0.0004,
-          "max": 0.0019
+          "p95": 0.0008,
+          "max": 0.0046
         },
         "predictionMs": {
           "samples": 50,
-          "p95": 0.0447,
-          "max": 0.098
+          "p95": 0.0784,
+          "max": 0.2167
         }
       }
     ],
