@@ -6,6 +6,7 @@ import type { AssetCliResult, AuraAssetQuality, AuraCliAssetRole } from "../asse
 import { readAssetManifest } from "../asset-manifest.js";
 import { inspectGlbGeometry } from "../asset-screening-effects.js";
 import { createMeshyAdmissionReport, inferMeshyAssetProfile, inspectMeshyTextureDimensions, type MeshyAdmissionReport, type MeshyAssetProfile } from "./admission.js";
+import { retainMeshyEvidence } from "./evidence.js";
 import { readMeshyMetadata, validateMeshyEvidenceJson } from "./metadata.js";
 import { createMeshyProvenance } from "./provenance.js";
 import { retainMeshyThumbnail } from "./thumbnail.js";
@@ -50,7 +51,8 @@ export function importMeshyAsset(options: ImportMeshyOptions): ImportMeshyResult
   const rightsEvidence = resolveConfinedPath(allowedRoot, rightsCandidate, "rights evidence");
   const rights = validateMeshyEvidenceJson(rightsEvidence);
   const metadata = readMeshyMetadata(metadataFile);
-  const generation = createMeshyProvenance(projectDir, metadataFile, rightsEvidence, metadata);
+  const retainedEvidence = retainMeshyEvidence({ projectDir, assetName: options.name, metadata, rights });
+  const generation = createMeshyProvenance(projectDir, resolve(projectDir, retainedEvidence.metadataPath), resolve(projectDir, retainedEvidence.rightsPath), metadata);
   const inspection = inspectAsset({ projectDir, file: relative(projectDir, sourceFile), animation: true, humanoid: true, skeleton: true, morphs: true });
   const geometry = inspectGlbGeometry(sourceFile);
   const manifest = readAssetManifest(projectDir);
@@ -83,6 +85,7 @@ export function importMeshyAsset(options: ImportMeshyOptions): ImportMeshyResult
     ...(rights.licenseUrl ? { licenseUrl: rights.licenseUrl } : {}),
     ...(rights.licenseRaw ? { licenseRaw: rights.licenseRaw } : {}),
     provenanceEvidence,
+    replaceProvenanceEvidence: true,
     retrievedAt: metadata.finishedAt ?? metadata.createdAt,
     generation,
     ...(thumbnail ? { renderedProbe: thumbnail.renderedProbe } : {})

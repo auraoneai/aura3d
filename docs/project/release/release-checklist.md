@@ -1,11 +1,11 @@
 # Aura3D Release Checklist
 
-Version: 2.0.3
+Version: 2.0.4
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-Date: 2026-08-16
-Status: Aura3D 2.0.3 release gate checklist
+Date: 2026-09-02
+Status: Aura3D 2.0.4 release gate checklist
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained
@@ -27,7 +27,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
 - [ ] The current release-candidate summary in
-  `docs/project/aura3d-203-release-notes.md` matches the commands being run for
+  `docs/project/aura3d-204-release-notes.md` matches the commands being run for
   this release.
 
 ## Package Gates

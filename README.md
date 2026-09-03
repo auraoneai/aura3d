@@ -90,45 +90,21 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 2.0.3
+## Current Release: Aura3D 2.0.4
 
-Aura3D 2.0.3 is the coordinated showcase and test-harness patch across all 29
-public packages and is documented at
-[aura3d.auraone.ai](https://aura3d.auraone.ai). It retains the 2.0.2 playable,
-catalog, and Smart City corrections while restoring Vite 7-ready browser
-evidence, adding the promised draw-range interaction, tightening 390px route
-chrome, and removing local-dev favicon noise. Public authoring is centered on
-typed assets and the safe root API, commodity subsystems have one declared
-owner, duplicate or misleading public hosts have been internalized, and every
-retained example is subject to separate canvas and full-page review. It is not
-promoted as a universal Three.js replacement. The comparison is bounded to the
-named, repository-locked `three@0.185.1` workloads and discloses remaining
-visual and ecosystem losses.
+Aura3D 2.0.4 adds a bounded Meshy integration to the **CLI asset pipeline**. The pinned official Meshy CLI remains responsible for authentication, spend planning, task execution, resumption, and artifact download. Aura3D admits selected local outputs as candidate-quality typed assets with hashes, sanitized provenance, supplied rights evidence, profile-specific validation, and generated `assets.name` references.
 
-### What ships in 2.0.3
+### What ships in 2.0.4
 
-- **Evidence harness recovery.** Vite 7’s colored port output is stripped before
-  the gallery and wow screenshot specs match their ready lines, restoring the
-  11 previously blocked gallery tests and the wow spec. Smart City’s medium
-  stress level is back above its gate at 328 instances without changing the
-  Tokyo-only hero or keepout.
-- **Interactive example proof.** Geometry Draw Range now exposes ↑/↓/Space/click
-  range control, and every selected range remains partial rather than stepping
-  into a full-range state.
-- **Responsive and local-dev hygiene.** The examples catalog and
-  geometry-drawrange route no longer overflow a 390px viewport, and 15 route
-  entry points link the existing favicon to remove development 404 noise.
-- **2.0.2 corrections retained.** Turbo Drift Circuit’s tarmac passing,
-  Skyline Runner’s collectibles and ember volleys, the corrected catalog
-  posters, Tokyo-only Smart City composition, Draco decoder path, and exposure
-  fixes remain part of the current release line.
-- **Templates pin 2.0.3.** All 19 public scaffolds install the packed 2.0.3
-  dependency graph. Historical 2.0.0 exact-tarball lifecycle receipts remain
-  historical.
-- **Claim boundary unchanged.** One public owner per capability, typed real
-  assets on public routes, and the repository-locked `three@0.185.1`
-  comparison remain in force. See
-  [`docs/project/aura3d-203-release-notes.md`](docs/project/aura3d-203-release-notes.md).
+- **Candidate-only Meshy import.** `assets import-meshy` reuses Aura3D's existing add, inspect, hash, manifest, and type-generation path. Import cannot certify release quality.
+- **Fail-closed admission.** Ambiguous or invalid GLBs, unsafe metadata, missing required rights evidence, out-of-root paths, and attempts to request release quality during import are rejected.
+- **Profile diagnostics.** Prop, environment, vehicle, and humanoid candidates receive bounded profile-specific checks and next actions. Missing measurements remain unproven rather than passing.
+- **Spend and secret controls.** Repository setup and agent-launcher flows pin `@meshy-ai/cli@0.2.0`, require a dry run and an explicitly approved maximum for documented paid workflows, preserve resumable task state, and keep credentials out of arguments and committed files.
+- **Optional MCP setup.** The pinned Meshy MCP server is optional and receives its API key only when its process starts. It is not a browser or engine dependency.
+- **Bounded pilot.** The relic pilot proves typed candidate use, visible browser rendering, keyboard collection, score/reset state, and desktop/mobile route evidence. It remains a `prototype`; its route-local distance threshold is not collision-system proof.
+- **Claim boundary unchanged.** Meshy is an upstream asset-generation tool, not an Aura3D renderer, Prism model, or game-runtime API. This release does not broaden renderer, PBR, WebGPU, animation, physics, or universal Three.js claims.
+
+See [the Meshy CLI guide](docs/meshy-cli.md) and [the 2.0.4 release notes](docs/project/aura3d-204-release-notes.md).
 
 ### Consolidated 2.0 outcomes
 
@@ -235,9 +211,9 @@ The current product boundary and evidence are documented in
 Install the current release:
 
 ```bash
-npm install @aura3d/engine@2.0.3
+npm install @aura3d/engine@2.0.4
 # or scaffold an app
-npx create-aura3d@2.0.3 my-product --template product-viewer
+npx create-aura3d@2.0.4 my-product --template product-viewer
 ```
 
 The current 2.0 candidate notes are in
@@ -267,7 +243,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 2.0 runtime launch track
 
-Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.3 is
+Aura3D 2.0 introduced the runtime and animation evidence foundation; 2.0.4 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -730,7 +706,7 @@ Aura3D 2.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The published 2.0.3 patch packages carry the
+Expected current state — The published 2.0.4 patch packages carry the
 playable-route, catalog, and documentation corrections on this tag. The
 historical exact-installed 2.0.0 comparison against
 `three@0.185.1` passes its bounded local checks across 15 workloads. That

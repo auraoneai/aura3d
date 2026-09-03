@@ -57,7 +57,8 @@ const showcaseRoutes = [
   "showcase-deep-recovery",
   "showcase-rooftop-buckets",
   "showcase-data-galaxy",
-  "showcase-webgpu-particle-lab"
+  "showcase-webgpu-particle-lab",
+  "showcase-meshy-relic-pilot"
 ];
 
 const evidenceRoutes = [
@@ -301,6 +302,14 @@ function copyAuraAssetFile(assetUrl) {
   copyFileSync(source, target);
 }
 
+function copyRouteLocalAuraAssets(route) {
+  const source = path.join(repoRoot, "apps", route, "public", "aura-assets");
+  const target = path.join(distDir, "aura-assets");
+  if (!existsSync(source)) throw new Error(`route-local Aura assets are missing: ${source}`);
+  mkdirSync(target, { recursive: true });
+  cpSync(source, target, { recursive: true });
+}
+
 function assertBuiltRoutes() {
   const auraClashPlayable = path.join(distDir, "showcase", "aura-clash", "playable", "index.html");
   if (!existsSync(auraClashPlayable)) {
@@ -344,6 +353,9 @@ function assertBuiltRoutes() {
     }
   }
 
+  const meshyPilotAsset = path.join(distDir, "aura-assets", "arenaRelic.0b04ec2f.glb");
+  if (!existsSync(meshyPilotAsset)) throw new Error(`Meshy pilot asset was not published: ${meshyPilotAsset}`);
+
   for (const route of ["showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
     const publicHtml = path.join(distDir, "apps", route, "index.html");
     if (!existsSync(publicHtml)) {
@@ -368,6 +380,7 @@ function main() {
     } else {
       copyAuraAssets();
     }
+    copyRouteLocalAuraAssets("showcase-meshy-relic-pilot");
     assertBuiltRoutes();
     console.log(`Built ${showcaseRoutes.length} showcase routes and ${evidenceRoutes.length} evidence routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
   } finally {

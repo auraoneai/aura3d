@@ -1,0 +1,35 @@
+#!/bin/sh
+set -eu
+
+PACKAGE='@meshy-ai/meshy-mcp-server@0.5.1'
+SERVICE=${MESHY_KEYCHAIN_SERVICE:-aura3d-meshy-mcp}
+ACCOUNT=${MESHY_KEYCHAIN_ACCOUNT:-${USER:-}}
+
+command -v security >/dev/null 2>&1 || {
+  echo 'error: macOS security tool was not found' >&2
+  exit 3
+}
+command -v npx >/dev/null 2>&1 || {
+  echo "error: npx is required to launch ${PACKAGE}" >&2
+  exit 3
+}
+
+if [ -n "${ACCOUNT}" ]; then
+  if ! MESHY_API_KEY=$(security find-generic-password -w -s "${SERVICE}" -a "${ACCOUNT}"); then
+    echo "error: could not read Meshy API key from macOS Keychain service '${SERVICE}'" >&2
+    exit 4
+  fi
+else
+  if ! MESHY_API_KEY=$(security find-generic-password -w -s "${SERVICE}"); then
+    echo "error: could not read Meshy API key from macOS Keychain service '${SERVICE}'" >&2
+    exit 4
+  fi
+fi
+
+[ -n "${MESHY_API_KEY}" ] || {
+  echo "error: macOS Keychain service '${SERVICE}' returned an empty Meshy API key" >&2
+  exit 4
+}
+export MESHY_API_KEY
+
+exec npx -y "${PACKAGE}"

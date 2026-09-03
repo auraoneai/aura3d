@@ -90,7 +90,11 @@ npx @aura3d/cli assets import-meshy artifacts/meshy/arena-relic/ \
   --rights-evidence artifacts/meshy/arena-relic/rights.json
 ```
 
-That command is **not part of the current package source in this documentation-only slice**. Do not run or advertise it as available until the owning CLI implementation and tests land. Once available, it must reuse Aura3D's existing add, hash, inspect, manifest, and type-generation path. Game code then imports `assets.arenaRelic`; it never consumes `artifacts/meshy`, provider URLs, or task IDs directly. Provider output remains candidate quality until normal asset, route-health, mechanic, screenshot, and human-review gates pass.
+`assets import-meshy` is available in `@aura3d/cli@2.0.4`. It accepts a completed local Meshy output beneath the allowed root, requires durable rights evidence, rejects ambiguous or invalid GLBs and unsafe metadata, and delegates to Aura3D's existing add, inspect, hash, manifest, and type-generation path. It defaults to `quality: candidate` and rejects attempts to certify release quality during import.
+
+Use `--file` when a run contains multiple GLBs, `--thumbnail` to retain a local candidate thumbnail, `--profile prop|environment|vehicle|humanoid` for bounded admission diagnostics, and `--allowed-root` only when the repository's default `artifacts/meshy` root is intentionally different. Game code imports the generated `assets.arenaRelic`; it never consumes provider URLs, task IDs, or `artifacts/meshy` paths directly.
+
+Import success proves local admission only. Rights evidence is recorded, not invented; missing measurements stay unproven; provider labels such as "game-ready" do not prove route readiness. Release-facing use still requires applicable asset validation, route health, mechanic evidence, screenshots, and independent review.
 
 ## Exit codes
 

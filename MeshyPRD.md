@@ -8,9 +8,9 @@
 
 ## Product decision
 
-Aura3D will integrate Meshy as an upstream asset-generation tool, not as a renderer, Prism model, or game-runtime dependency. The pinned official Meshy CLI will own Meshy authentication, request construction, credit estimation, task creation, polling, task resumption, and artifact download. Aura3D will own secure setup, agent policy, durable local artifact admission, hashing, inspection, provenance, typed asset generation, game-readiness validation, and browser evidence.
+Aura3D integrates Meshy as an upstream asset-generation tool, not as a renderer, Prism model, or game-runtime dependency. The pinned official Meshy CLI owns Meshy authentication, request construction, credit estimation, task creation, polling, task resumption, and artifact download. Aura3D owns secure setup, agent policy, durable local candidate admission, hashing, inspection, sanitized provenance, typed asset generation, validation, and browser evidence.
 
-The integration must not duplicate the Meshy CLI's HTTP client or task lifecycle unless a verified product gap requires it. Game routes continue to consume only typed Aura3D assets:
+The integration does not duplicate the Meshy CLI's HTTP client or task lifecycle. Game routes continue to consume only typed Aura3D assets:
 
 ```ts
 import { model } from "@aura3d/engine";
@@ -43,7 +43,7 @@ Raw Meshy task URLs, raw GLB URLs, direct loaders, provider task IDs, and creden
 
 ## Verified upstream baseline
 
-The following upstream surfaces were verified on 2026-09-02 and must be rechecked when implementation begins:
+The following upstream surfaces were verified on 2026-09-02 and must be rechecked before changing either pin or provider contract:
 
 | Surface | Verified baseline | Integration consequence |
 | --- | --- | --- |
@@ -96,7 +96,7 @@ route-health + mechanic proof + screenshots + human review
 | Gameplay use and browser evidence | Game route and existing test/evidence systems |
 | Optional typed tool access | Official Meshy MCP server |
 
-## Required deliverables
+## Delivered implementation
 
 ### 1. Create `cli-configs/setup-meshy.sh`
 
@@ -517,7 +517,7 @@ Do not treat operational logs as durable asset provenance unless they are intent
 | Rights evidence missing | Candidate may remain local, but release validation fails |
 | Prism admission failure | Report separately; do not diagnose it as a Meshy failure |
 
-## Delivery plan
+## Delivered scope and follow-ups
 
 ### Phase 1 — CLI-first safe MVP
 
@@ -610,17 +610,13 @@ pnpm test:browser -- <pilot-spec>
 
 Exact script names must match the repository at implementation time. No generated report may be hand-edited to satisfy a gate.
 
-## Open implementation decisions
+## Post-release follow-ups
 
-1. Whether `assets import-meshy` should be public in the package API or CLI-only.
-2. The final generated-provenance schema and whether full prompts are public, private, or hash-addressed.
-3. The accepted rights-evidence format for paid private Meshy generations.
-4. The supported Prism agent launcher contract and persisted session-state location; no such launcher currently exists in this repository.
-5. Whether shell-script tests use a TypeScript harness or an accepted Python harness.
-6. Which agent environments receive an installed upstream skill and how its commit/version is pinned.
-7. Which desktop MCP clients are officially supported and where their local uncommitted launchers live.
-8. The current official provider retention window at implementation time.
-9. Whether admitted `artifacts/meshy` source metadata is archived elsewhere or remains local-only after Aura ingestion.
+- Review the upstream CLI and MCP command contracts before changing either pin.
+- Recheck provider retention and command help for every release that updates this integration.
+- Decide whether sanitized local source metadata receives a durable archive policy or remains local-only after Aura3D ingestion.
+- Add further asset-profile pilots only with their own asset, route, screenshot, mechanic, and review evidence.
+- Keep Prism admission-control, queueing, quota, and shared-principal work in a separate implementation and release claim.
 
 ## Separate follow-up: Prism admission control
 
@@ -643,4 +639,4 @@ The proposed `PRISM_CLIENT_ID`, `PRISM_JOB_TYPE`, and `PRISM_SESSION_ID` values 
 | 2026-09-02 | `npm view @meshy-ai/cli ...` | Official scoped package exists at `0.2.0`, exposes `meshy`/`meshy-cli`, requires Node `>=24`, MIT, points to `meshy-dev/meshy-cli` |
 | 2026-09-02 | Published CLI README, official web documentation, and pinned `meshy make --help` | OAuth/PKCE, profiles, environment override, dry-run, maximum-credit planning, `make --async` first-step behavior, resource async lifecycle, downloads, no-overwrite behavior, resume hints, and exit codes confirmed |
 | 2026-09-02 | `npm view @meshy-ai/meshy-mcp-server ...` and pinned executable smoke | Official package exists at `0.5.1`, exposes `meshy-mcp-server`, MIT, points to `meshy-dev/meshy-mcp-server`; executable starts in stdio mode and refuses to initialize without `MESHY_API_KEY` |
-| 2026-09-02 | Aura3D CLI source inspection | Existing `addAsset()`, inspection, hashing, manifest, typegen, provenance, and validation paths should be reused rather than replaced |
+| 2026-09-02 | Aura3D CLI source and focused tests | `assets import-meshy` reuses `addAsset()`, inspection, hashing, manifest, type generation, provenance, and validation; import remains candidate-only |

@@ -1,9 +1,9 @@
 # Site Map
 
-Version: 2.0.3
+Version: 2.0.4
 
-Date: 2026-08-16
-Status: Aura3D 2.0.3 site map
+Date: 2026-09-02
+Status: Aura3D 2.0.4 site map
 
 ## Public Marketing Pages
 

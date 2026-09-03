@@ -369,7 +369,13 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     skeleton: inspection.skeleton,
     morphTargets: inspection.morphTargets,
     hierarchy: inspection.hierarchy,
-    provenance: createAssetProvenance(projectDir, sourcePath, options, mergeDetectedProvenance(existing?.provenance, inspection.provenance), outputPath),
+    provenance: createAssetProvenance(
+      projectDir,
+      sourcePath,
+      options,
+      options.replaceProvenanceEvidence ? inspection.provenance : mergeDetectedProvenance(existing?.provenance, inspection.provenance),
+      outputPath
+    ),
     textures: inspection.textures,
     dependencies: inspection.dependencies,
     orientation: options.orientation ?? (

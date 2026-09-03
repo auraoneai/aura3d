@@ -137,8 +137,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify test files exist
-        run: pnpm tsx scripts/verify-tests.ts
+      - name: Verify source package tests
+        run: pnpm test:packages
 
   benchmarks:
     name: Run Benchmarks

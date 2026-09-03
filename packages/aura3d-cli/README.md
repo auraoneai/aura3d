@@ -55,12 +55,32 @@ npx @aura3d/cli@latest assets typegen
 `resolve` brings the chosen catalog result into the same typed local pipeline,
 so the rest of the app still uses `model(assets.helmet)`.
 
+## Import A Meshy Candidate
+
+**Capability label:** CLI asset pipeline
+
+Meshy generation runs through the pinned official Meshy CLI. After a completed run is downloaded locally, admit a selected GLB through Aura3D:
+
+```bash
+npx @aura3d/cli@2.0.4 assets import-meshy artifacts/meshy/arena-relic/ \
+  --name arenaRelic \
+  --quality candidate \
+  --role prop \
+  --profile prop \
+  --rights-evidence artifacts/meshy/arena-relic/rights.json
+```
+
+The import reuses the normal Aura3D add, inspect, hash, manifest, and type-generation path and prints the generated `assets.arenaRelic` key plus the next validation steps. It records supplied rights evidence but does not invent a license or promote provider output to release quality.
+
+See the [Meshy CLI guide](https://github.com/auraoneai/aura3d/blob/main/docs/meshy-cli.md).
+
 ## Command Shortlist
 
 ```bash
 npx @aura3d/cli@latest assets add ./model.glb --name model
 npx @aura3d/cli@latest assets search "studio robot" --json
 npx @aura3d/cli@latest assets resolve "studio robot" --name robot
+npx @aura3d/cli@2.0.4 assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
 npx @aura3d/cli@latest assets inspect ./model.glb --animation --humanoid
 npx @aura3d/cli@latest assets validate --source --release
 npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Aura3D Meshy relic prototype with keyboard collection and reset proof." />
+    <title>Aura3D — Meshy Relic Pilot</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23efbd63'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell" aria-label="Meshy relic pilot">
+      <header class="intro">
+        <p class="eyebrow">CLI ASSET PIPELINE · PROTOTYPE</p>
+        <h1>Relic Recovery</h1>
+        <p class="summary">Guide the survey marker to the imported arena relic. This route proves typed ingestion and one route-local collection mechanic; release quality still requires human visual review.</p>
+      </header>
+      <section class="playfield" aria-label="Relic collection playfield">
+        <div id="app" class="stage" data-testid="meshy-relic-stage"></div>
+        <div class="hud" aria-live="polite">
+          <div><span>Objective</span><strong id="objective" data-testid="objective">Reach the relic</strong></div>
+          <div><span>Score</span><strong id="score" data-testid="score">000</strong></div>
+        </div>
+        <p id="status" class="status" data-testid="status">Survey link starting…</p>
+      </section>
+      <footer class="controls">
+        <p><kbd>WASD</kbd> / <kbd>ARROWS</kbd> Move</p><p><kbd>R</kbd> Reset</p>
+        <p class="boundary">Meshy is the upstream authoring tool. Aura3D’s CLI asset pipeline admitted the local candidate and generated the typed route reference.</p>
+      </footer>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
