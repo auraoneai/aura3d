@@ -184,8 +184,14 @@ let dropLookbackRemainingSeconds = 0;
 let lastVanSpeed = 0;
 let lastVanHeading = START_HEADING;
 let parcelAttachedVisible = false;
-/** Short renderer-owned impact envelope. It is fed only by a real strike,
- * never by a HUD timer or a decorative loop. */
+/**
+ * Renderer-owned impact envelope, fed only by a real strike, never by a HUD
+ * timer or a decorative loop. The hold covers the named scene producer's
+ * strike-poll latency (100 ms sample intervals) plus key release, settle wait,
+ * and screenshot latency, so the retained exact pressure frame deterministically
+ * shows the causal contact feedback instead of a clean van parked behind a car.
+ */
+const IMPACT_FEEDBACK_SECONDS = 1.15;
 let impactFeedbackRemainingSeconds = 0;
 let impactPose: { x: number; z: number; heading: number } | null = null;
 
@@ -1094,7 +1100,7 @@ app.onFrame(({ dt }) => {
       };
       const pushed = pushOut(beforePushX, beforePushZ, hit);
       vanAfter = vanVehicle.constrain({ x: pushed.x, z: pushed.z, speedMultiplier: 0.35 });
-      impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : 0.42;
+      impactFeedbackRemainingSeconds = reducedMotion ? 0.12 : IMPACT_FEEDBACK_SECONDS;
       if (!reducedMotion) {
         runtimeEffects.hitSpark([contactX, 0.52, contactZ], { color: "#ff8d6a", intensity: 0.82, radius: 1.08 });
       }
@@ -1173,7 +1179,7 @@ app.onFrame(({ dt }) => {
   // impact timer expires, so a static capture cannot imply a hit that did not
   // happen.
   const impactVisible = Boolean(impactPose) && impactFeedbackRemainingSeconds > 0 && !reducedMotion;
-  const impactProgress = 1 - Math.max(0, Math.min(1, impactFeedbackRemainingSeconds / 0.42));
+  const impactProgress = 1 - Math.max(0, Math.min(1, impactFeedbackRemainingSeconds / IMPACT_FEEDBACK_SECONDS));
   if (impactPose) {
     const impactScale = 0.42 + impactProgress * 0.55;
     impactRingNode

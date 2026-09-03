@@ -96,7 +96,53 @@ For a custom 3D asset, the required path is:
 Meshy is an option for a missing custom 3D subject, not permission to bypass
 the existing asset, licensing, safe-API, visual, or human-review gates.
 
+Meshy redo budget is unlimited. A Meshy-generated asset may be regenerated,
+re-prompted, re-textured, or replaced as many times as needed until it passes
+the visual quality gates below — there is no cap on Meshy attempts per route.
+Meshy asset passes are explicitly exempt from the one-pass / second-pass freeze
+rules in the operating loop; only non-Meshy cosmetic looping is frozen. Each
+attempt must still follow the spend-authorization and admission path above
+(dry-run first, finite --max-credits per live run, ignored artifacts/meshy
+directory, CLI add/hash/inspect/typed-asset admission, full evidence rerun).
+
 ### What was fixed, what was interrupted, and what still needs proof
+
+### Current checkpoint — showcase index game catalog restored (2026-09-03T03:52:20Z)
+
+The missing-game screenshot was a real source regression, not a browser-cache
+problem. Commit `fba1b2f8` removed the complete `games-library` section from
+`apps/showcase-index/index.html` while leaving the `18 playable games` metric,
+the route metadata, and the browser assertions in place. The deployed index
+therefore rendered only the non-game gallery cards even though the game routes
+and thumbnail assets still existed.
+
+The section has now been restored with all 18 direct game links and current
+review labels (`Playable game` for the five machine-complete entries and
+`Game · review pending` for routes that still require independent visual
+review). The index copy and npm/nav version were updated to 2.0.4. The route
+gate unit logic now treats review-pending game cards as visible catalog links
+without counting them as release-ready public cards. This preserves honest
+release classification while making every game discoverable.
+
+Verification completed from the current source:
+
+- `pnpm --dir marketing build` completed and produced the current 24 showcase
+  routes plus 9 evidence routes with Aura3D 2.0.4.
+- `marketing/dist/apps/showcase-index/index.html` contains one
+  `games-library`, 18 game cards, 18 game links, and 18 preview slugs.
+- `pnpm exec playwright test tests/browser/marketing-preview.spec.ts --grep
+  "renders all 18 game cards" --workers=1` passed (1 test); the check resolved
+  all 18 game thumbnails (50 total showcase images).
+- The full route-gate unit file still has one unrelated generated-evidence
+  failure for `showcase-digital-twin-ops` classification; do not weaken that
+  gate or treat this index fix as a release approval.
+
+The production URL will continue to show the old index until the post-fix
+commit is pushed and a new Vercel deployment reaches Ready. After deployment,
+open `/apps/showcase-index/` and verify the visible “Playable games” section,
+18 cards, direct links, and thumbnail loading before calling the catalog fix
+published. This checkpoint does not close the five reference or 11
+insufficient-evidence visual-gauntlet rows.
 
 The following table is the latest agent-reported state. Hashes are evidence
 bindings, not visual-quality approvals. A receipt marked targeted or partial
@@ -1348,11 +1394,25 @@ For each route:
    - `reference` — the route still needs work;
    - `insufficient evidence` — the pairing is not defensible and cannot be
      counted.
+6. The executing agent applies its own visual-quality-gate logic and confirms
+   the gate is met. Open the final normal and subject-suppressed captures
+   yourself with `view_image` — do not rely on hashes, `pass: true`, draw
+   counts, readability scores, or the critic token alone. Judge each frame
+   against the Visual review checklist below (subject scale/silhouette,
+   composition, contrast, grounding/contact, active gameplay moment,
+   cause-and-effect feedback, no hero-obscuring debug text, typed primary
+   subject, no blank/washed/cropped/mostly-black frame) and record a per-route
+   gate verdict of `gate-pass` or `gate-fail` with the single largest remaining
+   visual gap named in your own words. A route counts only when it has BOTH a
+   fresh `ours` critic token AND your own `gate-pass`. If the critic says
+   `ours` but your own inspection finds a material gap, the route stays open
+   and the next pass targets your gap. If you say `gate-pass` but the critic
+   says `reference`, the route stays open and the critic's gap controls.
 
-All 18 rows must end at `ours` before claiming that the visual gauntlet is
-complete. If a named reference cannot be obtained or is fundamentally
-non-comparable, document that blocker honestly; never convert an invalid
-pairing into a win.
+All 18 rows must end at `ours` plus an agent-confirmed `gate-pass` before
+claiming that the visual gauntlet is complete. If a named reference cannot be
+obtained or is fundamentally non-comparable, document that blocker honestly;
+never convert an invalid pairing into a win.
 
 ## Current state and stale-evidence warning
 
@@ -1378,19 +1438,26 @@ compromised reference.
 
 ### Mandatory parallel execution and anti-loop rule
 
-Do not execute this gauntlet as a single serial polishing loop. Use parallel
-agents to work on different games at the same time whenever two or more
-independent routes remain. Parallelism is mandatory for route-local source,
-producer, test, artifact-inspection, and independent-critic work that does not
-touch the same files.
+Do not execute this gauntlet as a single serial polishing loop. Farm work out
+to subagents and parallelize as aggressively as the executing agent's capacity
+allows — up to all 18 games at once. Whenever two or more independent routes
+remain, run them concurrently; if capacity allows a lane per game, open a lane
+per game. Parallelism is mandatory for route-local source, producer, test,
+artifact-inspection, Meshy asset generation, and independent-critic work that
+does not touch the same files. The only limit on lane count is what the
+executing agent can actually handle; never artificially serialize work the
+agent has capacity to run in parallel.
 
 Execution requirements:
 
-1. Maintain multiple active route lanes. Give each implementation agent one
-   named game, its exact artifact/reference pair, its nested instructions, and
-   a bounded deliverable: diagnose the largest root cause, make one coherent
-   structural pass, run the narrow producer/gates, and report the exact changed
-   files, commands, artifacts, and remaining blocker.
+1. Maintain as many active route lanes as capacity allows — one subagent per
+   game, all games concurrently when possible. Give each implementation
+   subagent one named game, its exact artifact/reference pair, its nested
+   instructions, explicit directory/file ownership, and a bounded deliverable:
+   diagnose the largest root cause, make one coherent structural pass, run the
+   narrow producer/gates, and report the exact changed files, commands,
+   artifacts, and remaining blocker. State owned files up front and never give
+   two subagents overlapping source or generated outputs.
 2. Do not assign two implementation agents to overlapping source or generated
    outputs. The coordinating agent must inspect `git status` and route-local
    diffs before integrating each lane and must preserve all unrelated user and
@@ -1402,10 +1469,14 @@ Execution requirements:
    stop that agent, validate the lane, and immediately reassign available
    capacity to a different unfinished route. Do not leave completed agents idle
    while games remain.
-5. A route gets one coherent structural pass followed by one evidence run and
-   one fresh critic verdict. If the verdict is `ours`, close the route. If it is
-   `reference` or `insufficient evidence`, record the precise blocker and move
-   capacity to the next unfinished route before considering another pass.
+5. A route gets one coherent structural pass followed by one evidence run,
+   one fresh critic verdict, and your own gate verdict (`gate-pass` /
+   `gate-fail` per item 6 of Definition of complete). Close the route only on
+   `ours` AND `gate-pass` together. Otherwise record the precise blocker
+   (critic gap and/or your gap) and move capacity to the next unfinished route
+   before considering another pass. Meshy asset regeneration is exempt from
+   this rotation: a route blocked purely on asset quality may keep cycling
+   Meshy attempts without waiting for full breadth rotation.
 6. Never spend repeated passes on color tweaks, decorative overlays, screenshot
    timing, or other cosmetic changes when the critic identifies a structural
    blocker such as asset quality, camera hierarchy, world geometry, grounding,
@@ -1413,7 +1484,9 @@ Execution requirements:
 7. A second pass on a rejected route is allowed only after every remaining
    route has received its first structural pass, or when the fix is a small,
    deterministic correction that immediately unlocks the route's producer or
-   machine gates. Document why the exception is justified.
+   machine gates. Document why the exception is justified. Meshy asset
+   regeneration needs no exception justification: redo a Meshy asset as many
+   times as needed, in any order, until it clears the visual quality gates.
 8. Report progress by completed route lanes and fresh verdicts, not by hours
    spent, number of edits, or tests that do not bind the final visual artifact.
 
@@ -1865,6 +1938,15 @@ Before asking for a critic, inspect each final image for:
 When a frame is visually weak, classify the symptom and fix the source that
 caused it. Do not add another decorative overlay merely to change pixels.
 
+Own-gate confirmation is mandatory, not advisory. For each route, after the
+fresh critic returns, the executing agent must record its own gate line in the
+final audit row: `gate-pass` or `gate-fail` plus the largest remaining gap in
+its own words, based on its own `view_image` inspection of the current normal
+and suppressed captures. A green machine gate plus an `ours` critic token
+without your own recorded `gate-pass` does not close the route. When the root
+cause is asset quality, prefer generating a replacement via the Meshy path
+(unlimited redos) over further camera, lighting, or cosmetic iteration.
+
 ## Final audit and report
 
 At the end, produce a concise machine-readable and human-readable audit with
@@ -1878,13 +1960,17 @@ one row per route containing:
 - TypeScript result;
 - `git diff --check` result;
 - fresh critic token and largest gap;
+- own gate verdict (`gate-pass` / `gate-fail`) and largest gap in the
+  executing agent's own words, from its own `view_image` inspection;
 - unresolved evidence or environment blockers.
 
-Only after all 18 rows have fresh `ours` verdicts may you say the gauntlet is
-complete. Otherwise say exactly which rows remain `reference` or
-`insufficient evidence`, what was fixed, and what new evidence or root-cause
-work is still required. Do not commit, push, or perform release mechanics as
-part of this prompt.
+Only after all 18 rows have fresh `ours` verdicts AND agent-recorded
+`gate-pass` verdicts may you say the gauntlet is complete. Otherwise say
+exactly which rows remain `reference` or `insufficient evidence` (from either
+the critic or your own gate), what was fixed, and what new evidence or
+root-cause work is still required. A route where you and the critic disagree
+stays open with both gaps recorded. Do not commit, push, or perform release
+mechanics as part of this prompt.
 
 ## 2026-08-31 superseding execution record — do not repeat rejected work
 

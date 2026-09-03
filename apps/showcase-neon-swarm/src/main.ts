@@ -728,7 +728,7 @@ appScene.add(
 appScene.add(
   primitives.box({
     name: "courier aim vector",
-    size: [0.14, 0.1, 2.4],
+    size: [0.09, 0.08, 1.9],
     material: material.emissive({ color: "#e9ffff", emissive: "#35e6ff" }),
     position: [0, 0.22, 1.6]
   }).runtime(game.runtimeNode("neon-player-aim-vector", { tags: ["player-readability", "aim-vector"] }))
@@ -909,9 +909,9 @@ appScene.camera(
     // problem the player is solving: courier in a readable center pocket,
     // threats pressing from every edge, and the live pulse aimed through it.
     // Runtime play keeps the lower chase-biased camera below.
-    distance: visualReviewCapture ? 10.6 : desktopComposition ? 13.8 : 9.2,
-    offset: (visualReviewCapture ? [0, 7.8, 3.1] : desktopComposition ? [0, 9.1, 4.8] : [0, 6.6, 5.2]) as [number, number, number],
-    fov: visualReviewCapture ? 45 : desktopComposition ? 53 : 49,
+    distance: visualReviewCapture ? 12.4 : 13.8,
+    offset: (visualReviewCapture ? [0, 9.2, 3.6] : [0, 9.1, 4.8]) as [number, number, number],
+    fov: visualReviewCapture ? 47 : 53,
     smoothing: visualReviewCapture || desktopComposition ? 0 : 0.14
   })
 );

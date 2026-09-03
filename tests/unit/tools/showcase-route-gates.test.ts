@@ -784,8 +784,17 @@ describe("showcase route gate registry", () => {
     const indexHtml = readFileSync(resolve("apps/showcase-index/index.html"), "utf8");
     const indexIds = new Set(Array.from(indexSource.matchAll(/\bid:\s*"([^"]+)"/g)).map((match) => match[1] ?? ""));
     const publicReleaseRoutes = publishedAppRoutes.filter((route) => route.releaseClass === "release-ready candidate");
+    const gameLibraryHtml = indexHtml.match(/<div class="library games-library">[\s\S]*?<\/div>/)?.[0] ?? "";
+    const releaseCardHtml = gameLibraryHtml ? indexHtml.replace(gameLibraryHtml, "") : indexHtml;
+    const gameCardHrefs = new Set(
+      Array.from(gameLibraryHtml.matchAll(/href="([^"]+)"/g))
+        .map((match) => match[1] ?? "")
+    );
+    expect(gameLibraryHtml, "showcase index keeps the playable-games catalog").not.toBe("");
+    expect(gameCardHrefs.size, "showcase index exposes all 18 playable game links").toBe(18);
+    expect(gameLibraryHtml.match(/data-preview="[^"]+"/g) ?? [], "showcase index exposes one preview slug per game card").toHaveLength(18);
     const publicCardHrefs = new Set(
-      Array.from(indexHtml.matchAll(/href="([^"]+)"/g))
+      Array.from(releaseCardHtml.matchAll(/href="([^"]+)"/g))
         .map((match) => match[1] ?? "")
         .filter((href) => href.startsWith("/apps/showcase-"))
     );
@@ -813,6 +822,8 @@ describe("showcase route gate registry", () => {
       expect(healthPrimaryAssets, `${route.id} route-health primary assets`).toEqual(new Set(route.primaryAssets));
       if (route.releaseClass === "release-ready candidate") {
         expect(indexHtml, `${route.id} public card href`).toContain(`href="${route.path}"`);
+      } else if (gameCardHrefs.has(route.path)) {
+        expect(gameLibraryHtml, route.id + " review-pending game card").toContain('href="' + route.path + '"');
       } else {
         expect(indexHtml, `${route.id} non-public route is not a public card`).not.toContain(`href="${route.path}"`);
       }

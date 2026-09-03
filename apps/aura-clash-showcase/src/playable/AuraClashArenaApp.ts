@@ -3177,30 +3177,9 @@ function createSpecialSilhouetteItems(fighter: RuntimeFighter, reducedMotion: bo
       includeInAutoFrame: false
     } satisfies RenderItem;
   });
-  // A short directional lance ties the active silhouette to the contact side.  It is deliberately
-  // separate from the confirmed-hit spark below: during startup/recovery the player sees the move
-  // shape, while only a real engine hit can add the gold contact burst and recoil trail.
-  const lance = Array.from({ length: 4 }, (_, index) => {
-    const t = index / 3;
-    const distance = 0.22 + t * 0.5;
-    const taper = 1 - t * 0.42;
-    return {
-      label: `aura-clash-special-lance:${fighter.state.id}:${index}`,
-      geometry: impactShardGeometry,
-      material: fighter.state.id === "player" ? playerSpecialSweepMaterial : rivalSpecialSweepMaterial,
-      modelMatrix: composeMat4(
-        [
-          fighter.state.x + fighter.state.facing * distance,
-          0.93 + Math.sin(Math.PI * t) * 0.08,
-          stage.z + 0.14
-        ],
-        quatFromEuler(0, 0, fighter.state.facing * -Math.PI / 2),
-        [0.09 * taper, 0.28 * taper, 0.07 * taper]
-      ) as Mat4,
-      includeInAutoFrame: false
-    } satisfies RenderItem;
-  });
-  return [halo, ...sweepSegments, ...lance];
+  // No separate lance layer: the sweep carries the move shape and the confirmed-hit
+  // spark carries contact, so the extra translucent overdraw only cost frame budget.
+  return [halo, ...sweepSegments];
 }
 
 function createFighterEffectItems(fighter: RuntimeFighter, reducedMotion: boolean): RenderItem[] {
