@@ -2,9 +2,9 @@
 
 Version: 2.0.4
 
-Status: release candidate; change to published only after npm, GitHub, and canonical-site verification
+Status: published and verified on npm, GitHub, and the canonical production site
 
-Date: 2026-09-02
+Date: 2026-09-03
 
 Aura3D 2.0.4 adds a bounded Meshy integration to the **CLI asset pipeline**. The official Meshy CLI remains the owner of provider authentication, spend planning, task execution, resumption, and artifact download. Aura3D owns local candidate admission, inspection, hashing, sanitized provenance, typed asset generation, and validation. This release does not add Meshy to the browser runtime and does not change renderer or engine capability.
 
@@ -50,7 +50,7 @@ Rights evidence is supplied and recorded, not inferred. Provider terms such as "
 
 ## Install
 
-After 2.0.4 is published:
+Aura3D 2.0.4 is published on npm:
 
 ```sh
 npx @aura3d/cli@2.0.4 assets import-meshy \
@@ -74,13 +74,10 @@ See `docs/meshy-cli.md` for provider setup, spend controls, asynchronous task ha
 
 ## Publication record
 
-Before changing this document to `published`, record and verify:
-
-- the exact published package set and versions;
-- the immutable release commit and Git tag;
-- npm package visibility and deprecation state;
-- the canonical marketing deployment;
-- hosted documentation and release-note HTTP checks;
-- the exact final pilot evidence and independent-review state.
-
-Do not replace these checks with intended dates, planned commit IDs, or unpublished package claims.
+- Release commit: `aa0d79599235ae50b0b2ce3f879482820725475d`.
+- Git tag and release: [`v2.0.4`](https://github.com/auraoneai/aura3d/releases/tag/v2.0.4), published 2026-09-03 with 29 exact npm tarballs plus machine-readable release-plan and registry-verification receipts.
+- npm: all 29 public packages are visible at `2.0.4`, use `latest`, are not deprecated, and match their local SHA-512 integrity receipts.
+- Production deployment: `dpl_ARgfFqv1SyvoRkoCq9f6Ex6kuXUe`, READY and aliased to `https://aura3d.auraone.ai`, `https://aura3d.vercel.app`, and `https://aura3d-veerone.vercel.app`.
+- Canonical checks returned HTTP 200 for `/` and `/apps/showcase-meshy-relic-pilot/`; the homepage contains `2.0.4`.
+- The deployed `arenaRelic.0b04ec2f.glb` is 3,486,768 bytes, begins with `glTF`, and has SHA-256 `0b04ec2f66f20109d8d7e3c385f61fa80459938201210a79f44f513f327c7381`.
+- The pilot remains labeled `prototype`; imported output remains candidate-only and rights evidence remains supplied rather than inferred.
