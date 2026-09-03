@@ -1,4 +1,7 @@
 node_modules/
+.env
+.env.*
+!.env.example
 apps/**/dist/
 apps/**/node_modules/
 apps/*/dist/
