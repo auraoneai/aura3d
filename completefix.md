@@ -1,3 +1,33 @@
+## Coordinator receipt — 2026-09-03T04:05Z — per-route self-gate + independent critic completion ledger
+
+This receipt records per-route critic tokens alongside lane self-gate verdicts for
+13 reported lanes against the 18-row gate. A row is fully complete only when
+critic = ours AND self-gate = gate-pass (marked ✓). This receipt is not a
+release claim: human/comparator approval and the 5 unreported rows below remain
+open. All older sections below are preserved as history and are not rewritten.
+
+| Route | Critic | Self-gate | Complete |
+| --- | --- | --- | --- |
+| Turbo Drift Circuit | reference — flat gray asphalt, sparse low-poly scenery, weak lighting trail reference sunset materials, dense foliage/crowds, atmospheric dust | gate-fail — fresh action frame lost rival car, unshaded dark mass with marker spheres at left track edge; flat asphalt, weak drift-smoke | open |
+| Aura Clash Arena | reference — flat untextured rooftop backdrop, plain ground plane, thin hit effects trail reference moonlit castle stage, smoke/lighting, detailed platform art | gate-pass — spectacle depth vs Brawlhalla frame; composition preserved, no structural defect | open |
+| Neon Corridor Strike | reference — dark flat repetitive box-corridor, primitive robot/weapon silhouettes vs reference sunlit architectural detail, material/lighting depth, character/card composition | gate-fail — primitive block enemies, flat corridor materials/lighting vs Neon White; Meshy asset pass blocked (meshy CLI absent, no spend authorization in lane, no live generation attempted) | open |
+| Blockfall Reactor ✓ | ours — generic glossy rectangles lack reference expressive characterful piece identities and stadium depth | gate-pass — fresh-game state (score 0 / lines 0), no line-clear moment in pixels; feedback exists in code/proof | ✓ complete |
+| Skyline Runner | reference — coherent layered snow-runner frame but below reference on character identity, material/lighting detail, story-rich staging | gate-fail — hero identity/scale and traversal framing below Celeste; world asset texture/scale/orientation warnings; Meshy hero replacement blocked (CLI not installed, no live-spend authorization in lane) | open |
+| Siege Golf | reference — clear playable aim-to-goal sequence but flatter low-poly shading, sparser dressing, dominant debug-style side panel vs reference cohesive character-rich composition | gate-pass — human What-the-Golf comparison pending; readability 53, small ball-only foreground 202x107; no parity claimed | open |
+| Neon Swarm ✓ | ours — flat untextured green hexagonal pickups read as placeholder geometry vs otherwise lit arena | gate-pass — single-archetype faceted instanced moths, flat green pickup tokens; pulse ray still a thick diagonal bar over hero | ✓ complete |
+| Aurora Lander ✓ | ours — leads outright on allowed common dimensions; no landing-mechanic or vehicle-design parity claimable from cross-genre pairing | gate-pass — no material gap; extraction tableau is near-static post-landing rest pose, active-flight evidence in 01-approach/02-gust-correction/03-whiteout frames | ✓ complete |
+| Gravity Post | reference — flat-shaded blocky low-poly courier skiff and freight canyon, static top-down read vs Parcel Corps characterized courier, rich lit city materials, rail-grind motion/contact | gate-fail — featureless mannequin courier, flat low-poly freight-city materials vs Parcel Corps; static READY moment | open |
+| Courier Rush | ours — flat low-poly materials, sparse static lighting, weak motion/contact spectacle trail reference metallic/neon finish and boss-scale threat | gate-fail — small dark matte catalog van, no forward boss-scale threat vs large chrome spectacle hero; Meshy hero-van replacement blocked (CLI unauthenticated in lane, no spend authorization) | open |
+| Pulse Tunnel | reference — sparse flat neon corridor, small combatants, thin projectile exchange vs reference integrated rocky arena, rain/atmosphere, dense bullet-hell duel readability | gate-pass — browser-profile sync remains NO-GO-BROWSER-PROFILE (environment hold, not source-fixable in lane); Furi/human parity pending coordinator blind critic + human approval | open |
+| Mech Hangar | insufficient-evidence — cross-genre racing comparator shares no mech subject, hangar staging, or combat-articulation basis; no parity claim | gate-fail — procedural box/cylinder MH-2M hero reads as primitive kitbash with harsh black/blown-out facets, weak foot grounding; needs Meshy coherent typed modular mech family (spend authorization needed; CLI not on PATH) | open |
+| Vault Breakers ✓ | ours — flat untextured low-poly materials, even lighting, sparse playfield dressing fall short of premium glossy physical pi[nball presentation — text as received, truncated] | gate-pass — playfield materials/lighting flat, balls small/low-contrast vs richer Demetrios reference; human review pending | ✓ complete |
+
+Unreported in this batch (carried open, unchanged): Bank Shot, Patrol Wing,
+Gallery Shift, Deep Recovery, Rooftop Buckets.
+
+Gate tally: 4 / 18 fully complete (ours AND gate-pass). Remaining open: 14
+(9 reported open above + 5 unreported carried open).
+
 # Aura3D 2.0 — Complete 18-Route Visual Gauntlet Fix Prompt
 
 ## TAKEOVER / HANDOFF — 2026-09-03T03:14:50Z
@@ -137,12 +167,20 @@ Verification completed from the current source:
   failure for `showcase-digital-twin-ops` classification; do not weaken that
   gate or treat this index fix as a release approval.
 
-The production URL will continue to show the old index until the post-fix
-commit is pushed and a new Vercel deployment reaches Ready. After deployment,
-open `/apps/showcase-index/` and verify the visible “Playable games” section,
-18 cards, direct links, and thumbnail loading before calling the catalog fix
-published. This checkpoint does not close the five reference or 11
-insufficient-evidence visual-gauntlet rows.
+The post-fix commit is now pushed and a new Vercel production deployment is
+Ready (`dpl_CmdDJCLH1gkhWpV46TaUCfkiXhwF`, alias
+`https://aura3d.auraone.ai`). A live fetch of
+`/apps/showcase-index/` returned 21,238 bytes, one `games-library`, all 18
+`data-preview` slugs, and no stale 2.0.3 marker; the two cards with additional
+style classes still count as game cards, so the live catalog contains all 18
+direct links. The source/browser check and the live HTML check now agree.
+This checkpoint does not close the five reference or 11 insufficient-evidence
+visual-gauntlet rows.
+
+The first archive upload path failed before creating a deployment. One bounded
+retry using the non-archive prebuilt upload completed successfully; do not
+repeat the failed archive loop unless a new, evidenced transport change is
+available.
 
 The following table is the latest agent-reported state. Hashes are evidence
 bindings, not visual-quality approvals. A receipt marked targeted or partial
